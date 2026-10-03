@@ -1,4 +1,7 @@
 [
+"castle_1.png",
+"castle_2.png",
+"castle_3.png",
 "enemy_bandit.png",
 "enemy_bat.png",
 "enemy_goblin.png",
@@ -7,8 +10,8 @@
 "enemy_shaman.png",
 "enemy_troll.png",
 "enemy_wolf.png",
-"grass_forest.png",
-"grass_meadow.png",
+"grass_forest.jpg",
+"grass_meadow.jpg",
 "grass_rocky.png",
 "hero.png",
 "militia.png",

@@ -2360,6 +2360,13 @@ function towerStats(type, L) {
 }
 
 
+// Kale görseli (izometrik, kapısı sol önde): kapı yolun bittiği noktaya gelecek şekilde biraz sola-aşağı kaydırılır.
+// Eski yedek görsel (kışla) ise kale noktasına ortalanır.
+function castlePlace(x, y, im) {
+  if (im === spr('tower_barracks_3')) return { x, y, w: 118 };
+  return { x: x - 15, y: y + 10, w: 124 };
+}
+
 // Kale: Gemini sprite'ı (castle_1..3, hasar evresine göre) yoksa kışlanın en büyük hali yedek olarak kullanılır.
 function drawCastle() {
   const c = G.castle, ratio = G.lives / G.maxLives;
@@ -2367,13 +2374,13 @@ function drawCastle() {
   const im = spr('castle_' + stage) || spr('castle_1') || spr('tower_barracks_3');
   const sh = c.shake > 0 ? Math.sin(c.shake * 70) * c.shake * 8 : 0;
   if (im) {
-    const w = 118, h = w * im.height / im.width;
-    ctx.save(); ctx.translate(c.x + sh, c.y);
-    drawSprite(ctx, im, 0, 0, w);
-    if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, w); }
+    const cp = castlePlace(c.x, c.y, im);
+    ctx.save(); ctx.translate(cp.x + sh, cp.y);
+    drawSprite(ctx, im, 0, 0, cp.w);
+    if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     // can barı
-    const bw = 64, by = c.y + 10; // can barı kalenin altında: sağ üstteki düğmelerle çakışmasın
+    const bw = 64, by = c.y + 22; // can barı kalenin altında: sağ üstteki düğmelerle çakışmasın
     roundRect(c.x - bw / 2 - 14, by - 6, bw + 20, 12, 6, 'rgba(29,26,20,0.8)', '#d7b77a', 1.5);
     ctx.fillStyle = '#e8434b';
     ctx.beginPath(); const hx = c.x - bw / 2 - 6, hy = by + 3;
@@ -2475,7 +2482,7 @@ function thumbOf(i) {
   g.scale(480 / W, 270 / H);
   g.drawImage(pickMip(g, bg, W), 0, 0, W, H);
   const im = spr('castle_1') || spr('tower_barracks_3');
-  if (im) drawSprite(g, im, lv.castle[0], lv.castle[1], 118);
+  if (im) { const cp = castlePlace(lv.castle[0], lv.castle[1], im); drawSprite(g, im, cp.x, cp.y, cp.w); }
   return (THUMB[i] = c);
 }
 
