@@ -2083,7 +2083,7 @@ function drawEnemy(e) {
     });
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
-    if (d.chief) drawCrown(e.x + e.face * d.h * 0.06, top - 2, d.h / 44, e.face);
+    if (d.chief && im.generated) drawCrown(e.x + e.face * d.h * 0.06, top - 2, d.h / 44, e.face);
     if (e.shieldT > 0) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       glow(ctx, e.x, e.y - d.h * 0.5, d.h * 0.85, '110,190,255', 0.55 + Math.sin(time * 12) * 0.1);
@@ -2241,7 +2241,7 @@ const RIG = {
   enemy_goblin: { legY: 0.7 }, enemy_bandit: { legY: 0.72 }, enemy_orc: { legY: 0.7 }, enemy_shaman: { legY: 0.8, stride: 0.55 },
   enemy_knight: { legY: 0.72 }, enemy_troll: { legY: 0.7, stride: 0.8 }, enemy_wolf: { legY: 0.6, stride: 1.25 }, enemy_bat: { wings: true },
   hero: { legY: 0.72 }, soldier: { legY: 0.7 }, militia: { legY: 0.74 },
-  hero_caner: { legY: 0.74 }, hero_zeynep: { legY: 0.73 }, hero_cat: { legY: 0.71, stride: 1.15 }, hero_sage: { legY: 0.8, stride: 0.55 },
+  hero_caner: { legY: 0.7 }, hero_zeynep: { legY: 0.7 }, hero_cat: { legY: 0.72, stride: 1.15 }, hero_sage: { legY: 0.8, stride: 0.55 },
 };
 const easeInOut = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 
@@ -3708,6 +3708,7 @@ function enemySprite(type) {
     a[i] = rgb[0]; a[i + 1] = rgb[1]; a[i + 2] = rgb[2];
   }
   g.putImageData(im, 0, 0);
+  c.generated = true;
   return (SPR[name] = c);
 }
 // başın üstünde taç
