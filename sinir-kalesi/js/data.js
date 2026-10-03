@@ -8,36 +8,61 @@ const TOWERS = {
     name: 'Okçu Kulesi', icon: 'archer', dmgType: 'phys', air: true,
     desc: 'Hızlı atış, havayı da vurur',
     levels: [
-      { cost: 70,  range: 140, dmg: [4, 6],   rate: 0.8 },
-      { cost: 110, range: 155, dmg: [7, 11],  rate: 0.6 },
-      { cost: 160, range: 170, dmg: [11, 17], rate: 0.5 },
+      { cost: 70,  range: 140, dmg: [4, 6],   rate: 0.8, perk: 'Hızlı atış, uçanları da vurur' },
+      { cost: 110, range: 155, dmg: [7, 11],  rate: 0.6, perk: 'Delici ok: %25 şansla zırhı yok sayar' },
+      { cost: 160, range: 170, dmg: [11, 17], rate: 0.5, perk: '3 okçu · %15 kritik vuruş (2 kat hasar)' },
+    ],
+    // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
+    abilities: [
+      { id: 'poison', name: 'Zehirli Oklar', desc: (r) => `Oklar 3 sn boyunca saniyede ${r.dps} zehir hasarı verir`,
+        ranks: [{ cost: 150, dps: 4 }, { cost: 200, dps: 8 }, { cost: 260, dps: 13 }] },
+      { id: 'snipe', name: 'Keskin Nişancı', desc: (r) => `${r.cd} sn'de bir en güçlü düşmana ${r.dmg} zırh delen atış`,
+        ranks: [{ cost: 180, cd: 9, dmg: 70 }, { cost: 240, cd: 7.5, dmg: 120 }, { cost: 300, cd: 6, dmg: 180 }] },
     ],
   },
   barracks: {
     name: 'Kışla', icon: 'barracks', dmgType: 'phys', air: false,
     desc: 'Askerler yolu keser',
     levels: [
-      { cost: 70,  range: 120, hp: 50,  dmg: [1, 3],  armor: 0,    respawn: 10 },
-      { cost: 110, range: 130, hp: 100, dmg: [3, 5],  armor: 0.15, respawn: 10 },
-      { cost: 150, range: 140, hp: 150, dmg: [6, 10], armor: 0.3,  respawn: 10 },
+      { cost: 70,  range: 120, hp: 50,  dmg: [1, 3],  armor: 0,    respawn: 10, perk: 'Deri zırhlı 3 asker yolu keser' },
+      { cost: 110, range: 130, hp: 100, dmg: [3, 5],  armor: 0.15, respawn: 9,  perk: 'Çelik zırh, sorguçlu miğfer, keskin kılıç' },
+      { cost: 150, range: 140, hp: 150, dmg: [6, 10], armor: 0.3,  respawn: 8,  perk: 'Altın şövalye zırhı · vuruşlar %15 can çalar' },
+    ],
+    abilities: [
+      { id: 'shield', name: 'Kalkan Duvarı', desc: (r) => `Askerlere +%${Math.round(r.armor * 100)} zırh ve +${r.hp} can`,
+        ranks: [{ cost: 140, armor: 0.1, hp: 30 }, { cost: 190, armor: 0.18, hp: 60 }, { cost: 240, armor: 0.25, hp: 100 }] },
+      { id: 'blade', name: 'Kılıç Ustası', desc: (r) => `Hasar x${r.mult} · %${Math.round(r.crit * 100)} kritik vuruş`,
+        ranks: [{ cost: 160, mult: 1.3, crit: 0.1 }, { cost: 220, mult: 1.6, crit: 0.15 }, { cost: 280, mult: 2, crit: 0.2 }] },
     ],
   },
   mage: {
     name: 'Büyücü Kulesi', icon: 'mage', dmgType: 'magic', air: true,
     desc: 'Büyü hasarı zırhı deler',
     levels: [
-      { cost: 100, range: 130, dmg: [9, 17],  rate: 1.5 },
-      { cost: 160, range: 140, dmg: [23, 43], rate: 1.5 },
-      { cost: 240, range: 150, dmg: [40, 74], rate: 1.5 },
+      { cost: 100, range: 130, dmg: [9, 17],  rate: 1.5, perk: 'Büyü hasarı zırhı deler' },
+      { cost: 160, range: 140, dmg: [23, 43], rate: 1.5, perk: 'Buz dokunuşu: vurduğunu 1 sn %30 yavaşlatır' },
+      { cost: 240, range: 150, dmg: [40, 74], rate: 1.5, perk: 'Zincir büyü: yakındaki ikinci düşmana %60 hasar' },
+    ],
+    abilities: [
+      { id: 'frost', name: 'Buz Küresi', desc: (r) => `Vurduğunu ${r.t} sn %${Math.round(r.k * 100)} yavaşlatır`,
+        ranks: [{ cost: 160, k: 0.45, t: 2 }, { cost: 220, k: 0.55, t: 2.5 }, { cost: 280, k: 0.65, t: 3 }] },
+      { id: 'blast', name: 'Arkan Patlama', desc: (r) => `${r.cd} sn'de bir kalabalığa ${r.dmg} alan büyü hasarı`,
+        ranks: [{ cost: 200, cd: 10, dmg: 60 }, { cost: 260, cd: 9, dmg: 100 }, { cost: 320, cd: 8, dmg: 150 }] },
     ],
   },
   artillery: {
     name: 'Top Kulesi', icon: 'artillery', dmgType: 'phys', air: false,
     desc: 'Alan hasarı, yavaş',
     levels: [
-      { cost: 125, range: 140, dmg: [8, 15],  rate: 3.0, splash: 50 },
-      { cost: 220, range: 150, dmg: [20, 40], rate: 3.0, splash: 55 },
-      { cost: 320, range: 165, dmg: [30, 60], rate: 3.0, splash: 62 },
+      { cost: 125, range: 140, dmg: [8, 15],  rate: 3.0, splash: 50, perk: 'Alan hasarı, yavaş atış' },
+      { cost: 220, range: 150, dmg: [20, 40], rate: 3.0, splash: 58, perk: 'Ağır gülle: daha geniş patlama alanı' },
+      { cost: 320, range: 165, dmg: [30, 60], rate: 2.7, splash: 64, perk: 'Sarsıcı gülle: %30 şansla 0.6 sn sersemletir' },
+    ],
+    abilities: [
+      { id: 'napalm', name: 'Napalm', desc: (r) => `Patlama yeri 3 sn yanar: saniyede ${r.dps} ateş hasarı`,
+        ranks: [{ cost: 170, dps: 10 }, { cost: 230, dps: 18 }, { cost: 290, dps: 28 }] },
+      { id: 'double', name: 'Çifte Atış', desc: (r) => `Her atışta ikinci bir gülle (%${Math.round(r.mult * 100)} hasar)`,
+        ranks: [{ cost: 200, mult: 0.5 }, { cost: 260, mult: 0.75 }, { cost: 320, mult: 1 }] },
     ],
   },
 };
