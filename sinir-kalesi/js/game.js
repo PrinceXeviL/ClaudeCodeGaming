@@ -540,7 +540,7 @@ function makeHero(id, x, y, slot) {
 }
 // seviye ve kalıcı yeteneklerden kahraman değerleri
 function heroStats(h) {
-  const d = h.def, k = 1 + 0.12 * (h.lvl - 1), L = h.learned;
+  const d = h.def, k = 1 + 0.2 * (h.lvl - 1), L = h.learned;
   const ratio = h.maxHp ? h.hp / h.maxHp : 1;
   h.maxHp = Math.round(d.hp * k); h.hp = Math.min(h.maxHp, h.maxHp * ratio);
   h.dmg = [Math.round(d.dmg[0] * k), Math.round(d.dmg[1] * k)];
@@ -553,9 +553,9 @@ function heroStats(h) {
 }
 function heroPoints(h) { return (h.lvl - 1) - Object.keys(h.learned).length; }
 // bir yolun sıradaki öğrenilebilir yeteneği (yol içinde sırayla açılır)
-function nextSkill(h, pi) { return h.def.paths[pi].skills.find(sk => !h.learned[sk.id]) || null; }
-function learnSkill(h, pi) {
-  const sk = nextSkill(h, pi);
+function nextSkill(h, pi) { const p = h.def.paths[pi] || h.def.paths[0]; return p.skills.find(sk => !h.learned[sk.id]) || null; }
+function learnSkill(h, pi, want) {
+  const sk = want && !h.learned[want.id] ? want : nextSkill(h, pi);
   if (!sk || heroPoints(h) <= 0) return null;
   h.learned[sk.id] = true;
   if (sk.id === 'revive') h.reviveLeft = 1;
@@ -702,9 +702,15 @@ function fxExplosion(x, y, r, big) {
   G.decals.push({ x, y, r: r * (big ? 0.95 : 0.75), t: 0, life: 8 });
   shakeScreen(big ? 5 : 2.4, big ? 0.38 : 0.2);
 }
-function fxMuzzle(x, y) {
-  const P = G.parts;
+function fxMuzzle(x, y, face = 1) {
+  const P = G.parts, dx = 0.8 * face, dy = -0.6; // namlu yönü: yukarı ve hedef tarafına
   emit(P, { kind: 'glow', add: true, x, y, col: '255,200,110', s0: 20, s1: 26, life: 0.12 });
+  emit(P, { kind: 'glow', add: true, x: x + dx * 8, y: y + dy * 8, col: '255,240,190', s0: 12, s1: 4, life: 0.1 });
+  for (let i = 0; i < 6; i++) {
+    const v = rand(50, 120);
+    emit(P, { kind: 'glow', x: x + dx * 4, y: y + dy * 4, vx: dx * v + rand(-15, 15), vy: dy * v + rand(-15, 15), drag: 3.5,
+      col: '200,195,185', s0: rand(3, 5), s1: rand(9, 14), life: rand(0.5, 0.9), a: 0.6 });
+  }
   for (let i = 0; i < 6; i++) {
     emit(P, { kind: 'glow', x: x + rand(-4, 4), y: y + rand(-3, 3), vx: rand(-25, 25), vy: rand(-45, -15), drag: 2,
       col: '150,144,136', s0: rand(4, 6), s1: rand(11, 16), life: rand(0.6, 1), a: 0.55, fadeIn: 0.1 });
@@ -820,7 +826,11 @@ function gainXp(h, amount) {
       col: '255,230,140', s0: rand(3, 5), s1: 0.5, life: rand(0.6, 1) });
   }
   sfx('levelup');
-  G.banner = { title: `${h.def.name} seviye ${h.lvl}!`, sub: 'Yetenek puanı kazandın: portredeki yeşil + düğmesine dokun', t: 0, dur: 3.5 };
+  // yetenekler seviye atladıkça sırayla kendiliğinden açılır
+  const sk = learnSkill(h, 0);
+  G.banner = sk ? { title: `${h.def.name}: ${sk.name}`, sub: sk.desc, t: 0, dur: 3.5 }
+    : { title: `${h.def.name} seviye ${h.lvl}!`, sub: 'Can ve hasar arttı', t: 0, dur: 3 };
+  if (sk) floatText(h.x, h.y - 56, sk.name + ' açıldı!', '#ffe27a');
 }
 
 // ----- düşen altınlar -----
@@ -1025,25 +1035,48 @@ const ARCHER_POS = [
   [[0.30, 0.10], [0.47, 0.13], [0.68, 0.11]],
 ];
 function archerPoint(t, ts, i) {
-  const [rx, ry] = ARCHER_POS[t.lvl][i];
-  return { x: t.x - ts.w / 2 + rx * ts.w, y: ts.bottom - ts.h + ry * ts.h };
+  const [rx, ry] = ARCHER_POS[t.lvl][i], a = t.shots && t.shots[i];
+  return { x: t.x - ts.w / 2 + rx * ts.w + (a ? a.ox || 0 : 0), y: ts.bottom - ts.h + ry * ts.h };
 }
+// okun çıktığı nokta: okçunun yayının ucu
+function bowPoint(t, ts, i) {
+  const o = archerPoint(t, ts, i), a = t.shots[i], s = ts.w / 68;
+  return { x: o.x + Math.cos(a.ang) * 6 * s, y: o.y + 2.3 * s + Math.sin(a.ang) * 6 * s };
+}
+// top kulesi görsellerinde namlu ağzının yeri (genişlik/yükseklik oranı, top sağa bakarken)
+const MUZZLE = [[0.715, 0.084], [0.696, 0.066], [0.742, 0.284]];
+const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 
 function updateArchers(t, dt, L) {
   const ts = towerSprite(t);
   const n = ts ? ARCHER_POS[t.lvl].length : 1;
   if (!t.shots || t.shots.length !== n) {
-    t.shots = Array.from({ length: n }, (_, i) => ({ cd: 0.2 + i * L.rate * 0.5, fx: 0 }));
+    t.shots = Array.from({ length: n }, (_, i) => ({ cd: 0.2 + i * L.rate * 0.5, fx: 0, ang: i % 2 ? 0.3 : Math.PI - 0.3, ox: 0, seed: rand(0, 9), draw: 0 }));
   }
+  const e0 = findTarget(t, L.range, true);
   t.shots.forEach((a, i) => {
     a.fx = Math.max(0, a.fx - dt);
     a.cd -= dt;
-    if (a.cd > 0) return;
-    const e = findTarget(t, L.range, true);
-    if (!e) { a.cd = 0; return; }
-    a.cd = L.rate * n; // her okçu kendi sırasıyla; kulenin toplam atış hızı aynı kalır
-    a.fx = 0.18;
+    // dolaşma: hedef yokken platformda sağa sola yürür, etrafa bakınır; hedef varken yerinde durup nişan alır
+    const roam = ts ? ts.w * 0.045 : 0;
+    const want = e0 ? a.ox * 0.9 : Math.sin(G.t * 0.55 + a.seed) * roam;
+    a.vx = (want - a.ox) * (e0 ? 6 : 1.5);
+    a.ox += a.vx * dt;
+    a.walk = Math.abs(a.vx) > 0.4 ? (a.walk || 0) + dt : 0;
     const o = ts ? archerPoint(t, ts, i) : { x: t.x, y: t.y - 34 };
+    let goal;
+    if (e0) goal = Math.atan2(aimY(e0) - o.y, e0.x - o.x);
+    else goal = a.vx > 0.3 ? 0.35 : a.vx < -0.3 ? Math.PI - 0.35 : a.ang;
+    a.ang += clamp(angDiff(goal, a.ang), -9 * dt, 9 * dt);
+    // yay germe: atıştan önceki 0.4 sn'de gerilir
+    a.draw = e0 ? clamp(1 - a.cd / 0.4, 0, 1) : Math.max(0, a.draw - dt * 4);
+    if (a.cd > 0) return;
+    const e = e0;
+    if (!e) { a.cd = 0; return; }
+    if (Math.abs(angDiff(goal, a.ang)) > 0.35) { a.cd = 0.02; return; } // önce hedefe dönsün
+    a.cd = L.rate * n; // her okçu kendi sırasıyla; kulenin toplam atış hızı aynı kalır
+    a.fx = 0.18; a.draw = 0;
+    if (ts) { const bp = bowPoint(t, ts, i); o.x = bp.x; o.y = bp.y; }
     const d = dist(o.x, o.y, e.x, e.y);
     const pierce = t.lvl >= 1 && Math.random() < 0.25, crit = t.lvl >= 2 && Math.random() < 0.15, po = abRank(t, 'poison');
     G.projectiles.push({ kind: 'arrow', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(d / 420, 0.15, 0.6),
@@ -1073,6 +1106,7 @@ function updateArchers(t, dt, L) {
 
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
+  if (t.type === 'artillery') t.faceS = (t.faceS ?? 1) + clamp((t.face || 1) - (t.faceS ?? 1), -7 * dt, 7 * dt);
   if (t.type === 'barracks') return;
   const L = effLevel(t);
   if (t.type === 'archer') { updateArchers(t, dt, L); return; }
@@ -1100,9 +1134,14 @@ function updateTower(t, dt) {
   const e = findTarget(t, L.range, t.def.air);
   if (!e) return;
   t.cd = L.rate;
-  t.shotAnim = 0.2;
+  t.shotAnim = t.type === 'artillery' ? 0.35 : 0.2;
   const ts = towerSprite(t);
-  const sx = t.x, sy = ts ? ts.bottom - ts.h * TOWER_TOP[t.type] : t.y - 34;
+  let sx = t.x, sy = ts ? ts.bottom - ts.h * TOWER_TOP[t.type] : t.y - 34;
+  if (t.type === 'artillery' && ts) {
+    t.face = e.x < t.x ? -1 : 1;
+    if (Math.abs((t.faceS ?? 1) - t.face) > 0.3) { t.cd = 0.2; t.shotAnim = 0; return; } // dönüş bitmeden ateş etmez
+    const m = MUZZLE[t.lvl]; sx = t.x + (m[0] - 0.5) * ts.w * t.face; sy = ts.bottom - ts.h + m[1] * ts.h;
+  }
   if (t.type === 'archer') {
     const d = dist(sx, sy, e.x, e.y);
     G.projectiles.push({ kind: 'arrow', sx, sy, target: e, tx: e.x, ty: e.y, t: 0, dur: clamp(d / 420, 0.15, 0.6), dmg: roll(L.dmg), dtype: 'phys', arc: 18 });
@@ -1119,7 +1158,7 @@ function updateTower(t, dt) {
     let tx = e.x, ty = e.y;
     if (!e.blocker) { const f = pathPos(e.p, e.d + e.def.speed * dur, e.off); tx = f.x; ty = f.y; }
     const na = abRank(t, 'napalm'), db = abRank(t, 'double');
-    const shell = { kind: 'shell', sx, sy: sy + 6, gy: t.y, target: null, tx, ty, t: 0, dur, dmg: roll(L.dmg), dtype: 'phys', arc: 70, splash: L.splash,
+    const shell = { kind: 'shell', sx, sy, gy: t.y, target: null, tx, ty, t: 0, dur, dmg: roll(L.dmg), dtype: 'phys', arc: 70, splash: L.splash,
       stun: t.lvl >= 2 ? 0.3 : 0, napalm: na ? na.dps : 0 };
     G.projectiles.push(shell);
     if (db) {
@@ -1130,7 +1169,7 @@ function updateTower(t, dt) {
       if (other && !other.blocker) { const f = pathPos(other.p, other.d + other.def.speed * dur, other.off); x2 = f.x; y2 = f.y; }
       G.projectiles.push(Object.assign({}, shell, { tx: x2, ty: y2, t: -0.22, dmg: shell.dmg * db.mult, arc: 80 }));
     }
-    fxMuzzle(sx, sy + 4);
+    fxMuzzle(sx, sy, t.face || 1);
     sfx('cannon');
   }
 }
@@ -2009,27 +2048,80 @@ function towerSprite(t) {
   return { im, w, h, bottom: t.y + (m ? w * 0.24 : 10) };
 }
 
+// Kule tepesindeki okçu: gövde, başlık/miğfer, hedef yönüne dönen kollar ve yay; kiriş atıştan önce gerilir
+const ARCHER_LOOK = [
+  { body: '#3f7a2e', dark: '#24501c', hood: '#4f8f36', trim: '#8a5a2a' },
+  { body: '#2f6a2a', dark: '#1c4418', hood: '#3f7e30', trim: '#c9a24a' },
+  { body: '#c9302a', dark: '#7a1612', hood: '#e2b13c', trim: '#ffe08a', helm: true },
+];
+function drawArcher(t, ts, i, a) {
+  const o = archerPoint(t, ts, i), s = ts.w / 68, L = ARCHER_LOOK[t.lvl];
+  const face = Math.cos(a.ang) >= 0 ? 1 : -1, la = face > 0 ? a.ang : Math.PI - a.ang;
+  const bob = a.walk ? Math.abs(Math.sin(a.walk * 10)) * 1.2 : Math.sin(G.t * 2.5 + a.seed) * 0.4;
+  const rec = a.fx > 0 ? a.fx / 0.18 : 0; // bırakış sonrası
+  ctx.save();
+  // bel hizasının altı korkuluğun / mazgalın arkasında kalır
+  ctx.beginPath(); ctx.rect(o.x - 14 * s, o.y - 20 * s, 28 * s, 26 * s); ctx.clip();
+  ctx.translate(o.x, o.y + 3.5 * s - bob * s); ctx.scale(s * face, s);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const out = 'rgba(28,16,6,0.95)';
+  ctx.fillStyle = L.dark; ctx.strokeStyle = out; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(-3, -3); ctx.quadraticCurveTo(-7.5, 3, -5.5, 9); ctx.lineTo(1, 9); ctx.lineTo(2, -2); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = L.body; ctx.beginPath(); ctx.roundRect(-3.6, -3, 7.2, 11, 2.5); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = L.trim; ctx.fillRect(-3.4, 3.4, 6.8, 1.4);
+  ctx.fillStyle = '#7a4a22'; ctx.beginPath(); ctx.roundRect(-5.2, -4.5, 2.6, 7, 1); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#efe6d2'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-4.4, -4.5); ctx.lineTo(-5, -6.5); ctx.moveTo(-3.4, -4.5); ctx.lineTo(-3.4, -6.8); ctx.stroke();
+  ctx.strokeStyle = out; ctx.lineWidth = 1.4;
+  ctx.fillStyle = '#f2c69a'; ctx.beginPath(); ctx.arc(0.6, -6.2, 3.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = L.hood; ctx.beginPath();
+  if (L.helm) { ctx.arc(0.4, -6.8, 3.6, Math.PI * 1.02, Math.PI * 2.02); ctx.lineTo(4, -6); ctx.lineTo(-3.2, -6); }
+  else { ctx.moveTo(-3, -4); ctx.quadraticCurveTo(-4.2, -10.5, 1, -10.2); ctx.quadraticCurveTo(4.6, -9.6, 3.8, -6.6); ctx.quadraticCurveTo(1.6, -7.8, 0.4, -5.4); ctx.quadraticCurveTo(-0.8, -3.8, -3, -4); }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  if (L.helm) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(0, -10.4); ctx.quadraticCurveTo(-3.5, -13, -5.5, -9.5); ctx.quadraticCurveTo(-3, -11, 0, -10.4); ctx.fill(); }
+  circle(2.3, -6.3, 0.55, '#1a0e04');
+  ctx.save(); ctx.translate(0.5, -1.2); ctx.rotate(la);
+  const R = 5.4, dr = a.draw * 3.6 - rec * 0.6;
+  const tipX = Math.cos(1.15) * R, tipY = Math.sin(1.15) * R;
+  const arm = (x0, x1, col) => { ctx.strokeStyle = out; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x1, 0); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x1, 0); ctx.stroke(); };
+  arm(0, tipX - dr, L.body);
+  arm(0, R - 0.6, '#f2c69a');
+  ctx.strokeStyle = out; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, 0, R, -1.15, 1.15); ctx.stroke();
+  ctx.strokeStyle = t.lvl >= 2 ? '#e8b440' : '#a8743a'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(0, 0, R, -1.15, 1.15); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,248,225,0.9)'; ctx.lineWidth = 0.6;
+  ctx.beginPath(); ctx.moveTo(tipX, -tipY); ctx.lineTo(tipX - dr, 0); ctx.lineTo(tipX, tipY); ctx.stroke();
+  if (a.fx <= 0.08) {
+    ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(tipX - dr, 0); ctx.lineTo(R + 2.2, 0); ctx.stroke();
+    ctx.fillStyle = '#e8ecf2'; ctx.beginPath(); ctx.moveTo(R + 3.4, 0); ctx.lineTo(R + 1.8, -1); ctx.lineTo(R + 1.8, 1); ctx.fill();
+  }
+  ctx.restore();
+  ctx.restore();
+  if (rec > 0.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const bp = bowPoint(t, ts, i); glow(ctx, bp.x, bp.y, 5 * rec, '255,245,200', rec * 0.8); ctx.restore(); }
+}
+
 function drawTower(t) {
   const ts = towerSprite(t);
   if (ts) {
     const age = G.t - (t.born ?? -9);
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
-    const kick = t.type === 'artillery' && t.shotAnim > 0 ? t.shotAnim / 0.2 : 0; // top geri tepmesi
-    ctx.save(); ctx.translate(t.x, ts.bottom);
-    ctx.scale(pop * (1 + kick * 0.05), pop * (1 - kick * 0.07));
+    // top: ateşte önce sert geri teper (kule namlunun tersine kayar ve ezilir), sonra yaylanarak yerine döner
+    let kx = 0, ksx = 1, ksy = 1;
+    if (t.type === 'artillery' && t.shotAnim > 0) {
+      const k = 1 - t.shotAnim / 0.35, e = k < 0.15 ? k / 0.15 : Math.exp(-6 * (k - 0.15)) * Math.cos((k - 0.15) * 14);
+      kx = -e * 3 * (t.face || 1); ksx = 1 + e * 0.05; ksy = 1 - e * 0.08;
+    }
+    const fs = t.type === 'artillery' ? (t.faceS ?? 1) : 1;
+    ctx.save(); ctx.translate(t.x + kx, ts.bottom);
+    ctx.scale(pop * ksx * (Math.abs(fs) < 0.08 ? 0.08 * Math.sign(fs || 1) : fs), pop * ksy);
     drawSprite(ctx, ts.im, 0, 0, ts.w);
     ctx.restore();
-    if (t.type === 'archer' && t.shots) {
-      t.shots.forEach((a, i) => {
-        if (a.fx <= 0 || !ARCHER_POS[t.lvl][i]) return;
-        const o = archerPoint(t, ts, i), k = a.fx / 0.18;
-        // yay gerilip bırakılır: kısa bir yay çizgisi ve parıltı
-        ctx.save(); ctx.globalAlpha = k;
-        ctx.strokeStyle = '#fff3c4'; ctx.lineWidth = 1.6;
-        ctx.beginPath(); ctx.arc(o.x, o.y, 5 + (1 - k) * 4, -1.1, 1.1); ctx.stroke();
-        circle(o.x + 2, o.y, 1.8 + k * 1.5, 'rgba(255,250,220,0.9)');
-        ctx.restore();
-      });
+    if (t.type === 'artillery' && t.shotAnim > 0.27) {
+      const m = MUZZLE[t.lvl], mx = t.x + kx + (m[0] - 0.5) * ts.w * fs, my = ts.bottom - ts.h + m[1] * ts.h, k = (t.shotAnim - 0.27) / 0.08;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, mx, my, 16 + 10 * k, '255,190,90', k); glow(ctx, mx + 6 * fs, my - 5, 9 * k, '255,250,220', k);
+      ctx.restore();
+    }
+    if (t.type === 'archer' && t.shots && age > 0.3) {
+      t.shots.forEach((a, i) => { if (ARCHER_POS[t.lvl][i]) drawArcher(t, ts, i, a); });
     }
     if (t.ab) {
       const ids = t.def.abilities.filter(a => t.ab[a.id]);
@@ -3533,18 +3625,18 @@ function drawHeroSkillIcon(id, x, y, s) {
 // ----- yetenek ağacı penceresi (oyun durur) -----
 function openSkills(h) {
   G.skillHero = h; G.skillSel = null;
-  const pi = [0, 1].find(i => nextSkill(h, i));
-  if (heroPoints(h) > 0 && pi != null) G.skillSel = { sk: nextSkill(h, pi), pi };
+  const pi = h.def.paths.findIndex((p, i) => nextSkill(h, i));
+  if (heroPoints(h) > 0 && pi >= 0) G.skillSel = { sk: nextSkill(h, pi), pi };
   setOverlay('skills');
   sfx('open');
 }
 function drawSkillsPanel(k, px, py, pw, ph, cx) {
   const h = G.skillHero, pts = heroPoints(h);
   ribbon(cx, py + 4, 300, h.def.name, 'blue', 24);
-  txt(`Seviye ${h.lvl}/${HERO_MAX}  ·  ${pts > 0 ? pts + ' yetenek puanı' : 'puan yok'}`, cx, py + 54, 15, pts > 0 ? '#2f7a1c' : '#7a5530', 'center', '800', FONT_B, false);
+  txt(`Seviye ${h.lvl}/${HERO_MAX}  ·  yetenekler seviye atladıkça kendiliğinden açılır`, cx, py + 54, 14, '#7a5530', 'center', '800', FONT_B, false);
   roundBtn('sk_close', px + pw - 26, py + 26, 17, 'close', () => setOverlay(null), { style: 'red', appear: k - 0.2 });
   h.def.paths.forEach((path, pi) => {
-    const colX = cx + (pi ? 130 : -130);
+    const colX = h.def.paths.length === 1 ? cx - 60 : cx + (pi ? 130 : -130);
     roundRect(colX - 92, py + 70, 184, 24, 12, 'rgba(90,60,25,0.18)');
     txt(path.name, colX, py + 83, 16, '#4a2a0e', 'center', '400', FONT_T, false);
     const nxt = nextSkill(h, pi);
@@ -3554,7 +3646,7 @@ function drawSkillsPanel(k, px, py, pw, ph, cx) {
         ctx.strokeStyle = h.learned[path.skills[si - 1].id] ? path.col : 'rgba(90,60,25,0.35)'; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.moveTo(nx, ny - 58 + 22); ctx.lineTo(nx, ny - 22); ctx.stroke();
       }
-      const learned = h.learned[sk.id], avail = nxt === sk && pts > 0, sel = G.skillSel && G.skillSel.sk === sk;
+      const learned = h.learned[sk.id], avail = !learned && pts > 0, sel = G.skillSel && G.skillSel.sk === sk;
       const appear = easeOutBack(clamp((k - 0.15 - si * 0.07 - pi * 0.05) / 0.35, 0, 1));
       ctx.save(); ctx.translate(nx, ny); ctx.scale(appear * pressScale('sk' + sk.id), appear * pressScale('sk' + sk.id));
       if (avail) glow(ctx, 0, 0, 40, '120,255,120', 0.45 + Math.sin(time * 5) * 0.15);
@@ -3572,7 +3664,7 @@ function drawSkillsPanel(k, px, py, pw, ph, cx) {
       if (sk.passive) { roundRect(nx - 16, ny + 15, 32, 11, 5.5, '#5a3a8a'); txt('KALICI', nx, ny + 20.5, 7, '#fff', 'center', '800', FONT_B, false); }
       if (learned) { circle(nx + 15, ny - 15, 7, '#3cbf3c', '#fff', 1.5); drawIcon('check', nx + 15, ny - 15, 9); }
       txt(sk.name, nx + 28, ny - 6, 14, learned ? '#4a2a0e' : '#7a5530', 'left', '400', FONT_T, false);
-      txt(sk.passive ? 'Kalıcı güç' : `${sk.cd} sn bekleme`, nx + 28, ny + 10, 11, '#8a6238', 'left', '700', FONT_B, false);
+      txt(learned ? (sk.passive ? 'Kalıcı güç' : `${sk.cd} sn bekleme`) : `Seviye ${si + 2}${['', '', "'de", "'te", "'te"][si + 2]} açılır`, nx + 28, ny + 10, 11, '#8a6238', 'left', '700', FONT_B, false);
       buttons.push({ key: 'sk' + sk.id, x: nx - 26, y: ny - 26, w: 150, h: 52, fn: () => { G.skillSel = { sk, pi }; sfx('pick'); } });
     });
   });
@@ -3581,26 +3673,26 @@ function drawSkillsPanel(k, px, py, pw, ph, cx) {
   roundRect(px + 26, by, pw - 52, 58, 12, 'rgba(90,60,25,0.16)', 'rgba(90,60,25,0.35)', 1.5);
   const ss = G.skillSel && G.skillSel.sk;
   if (ss) {
-    const can = nextSkill(h, G.skillSel.pi) === ss && pts > 0, learned = h.learned[ss.id];
+    const learned = h.learned[ss.id], can = !learned && pts > 0;
     txt(ss.name, px + 44, by + 18, 17, '#4a2a0e', 'left', '400', FONT_T, false);
     txt(ss.desc, px + 44, by + 39, 12.5, '#6a4420', 'left', '700', FONT_B, false);
     if (can) {
       gameButton('sk_learn', px + pw - 100, by + 26, 120, 40, 'ÖĞREN', () => {
-        const got = learnSkill(h, G.skillSel.pi);
+        const got = learnSkill(h, G.skillSel.pi, ss);
         if (!got) return;
         sfx('upgrade');
         for (let i = 0; i < 20; i++) {
           const a = rand(0, Math.PI * 2), v = rand(60, 180);
           emit(uiParts, { kind: 'glow', add: true, x: px + pw - 100, y: by + 26, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: '140,255,140', s0: 5, s1: 0.5, life: 0.6 });
         }
-        const pi2 = [G.skillSel.pi, 1 - G.skillSel.pi].find(i => nextSkill(h, i));
-        G.skillSel = heroPoints(h) > 0 && pi2 != null ? { sk: nextSkill(h, pi2), pi: pi2 } : G.skillSel;
+        const pi2 = h.def.paths.findIndex((p, i) => nextSkill(h, i));
+        G.skillSel = heroPoints(h) > 0 && pi2 >= 0 ? { sk: nextSkill(h, pi2), pi: pi2 } : G.skillSel;
       }, 'green', { icon: 'check', shine: true, size: 17 });
     } else {
-      txt(learned ? 'Öğrenildi' : pts <= 0 ? 'Puan gerekli' : 'Önce yoldaki önceki yetenek', px + pw - 100, by + 29, 12, '#8a6238', 'center', '800', FONT_B, false);
+      txt(learned ? 'Açık' : 'Henüz açılmadı', px + pw - 100, by + 29, 12, '#8a6238', 'center', '800', FONT_B, false);
     }
   } else {
-    txt('Bir yetenek seç: her seviyede 1 puan, iki yoldan dilediğini geliştir', cx, by + 29, 13, '#7a5530', 'center', '700', FONT_B, false);
+    txt('Ayrıntısını görmek için bir yeteneğe dokun', cx, by + 29, 13, '#7a5530', 'center', '700', FONT_B, false);
   }
 }
 

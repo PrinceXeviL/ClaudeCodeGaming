@@ -85,7 +85,7 @@ const ENEMIES = {
 // seviye 2-6 arasında her seviyede 1 yetenek puanı kazanılır. Yetenek ağacının iki yolu vardır, her yolda 3 yetenek
 // sırayla açılır; 5 puanla 6 yeteneğin hepsi alınamaz, oyuncu hangi yola ağırlık vereceğini seçer.
 // unlock: kahramanın açılması için bitirilmesi gereken bölüm numarası (null: baştan açık).
-const HERO_MAX = 6;
+const HERO_MAX = 4;
 const HEROES = {
   commander: {
     name: 'Komutan', role: 'Yakın dövüş · Lider', sprite: 'hero', h: 29, aura: '255,210,90',
@@ -434,3 +434,16 @@ const DIFFS = [
   { name: 'Normal', hp: 1.15, gold: 1,    lives: 20 },
   { name: 'Zor',    hp: 1.4,  gold: 0.9,  lives: 15 },
 ];
+
+// Her kahramanın 3 yeteneği vardır (sade tutmak için); kahraman 4. seviyeye kadar çıkar, her seviyede 1 puan kazanır.
+const HERO_SKILLS = {
+  commander: ['bash', 'whirl', 'cry'],
+  caner: ['holy', 'shieldthrow', 'quake'],
+  zeynep: ['volley', 'multishot', 'blastarrow'],
+  tarcin: ['shadowstep', 'clawstorm', 'dodge'],
+  sage: ['flamering', 'icelance', 'meteor2'],
+};
+for (const id in HERO_SKILLS) {
+  const all = HEROES[id].paths.flatMap(p => p.skills);
+  HEROES[id].paths = [{ name: 'Yetenekler', col: '#ffd34d', skills: HERO_SKILLS[id].map(k => all.find(s => s.id === k)) }];
+}
