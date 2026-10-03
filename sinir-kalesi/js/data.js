@@ -103,35 +103,51 @@ const HEROES = {
       ] },
     ],
   },
-  paladin: {
-    name: 'Ak Şövalye', role: 'Tank · Koruyucu', sprite: 'hero_paladin', base: 'enemy_knight', h: 31, aura: '200,230,255',
-    hp: 480, dmg: [10, 16], armor: 0.5, rate: 1.2, speed: 65, respawn: 18, regen: 14, engage: 65, unlock: 2,
+  caner: {
+    name: 'Caner', role: 'Zırhlı şövalye · Tank', sprite: 'hero_caner', base: 'enemy_knight', h: 32, aura: '200,230,255',
+    hp: 520, dmg: [12, 18], armor: 0.55, rate: 1.15, speed: 66, respawn: 18, regen: 14, engage: 68, unlock: null,
     paths: [
       { name: 'Kutsal Yol', col: '#ffe27a', skills: [
         { id: 'holy',       name: 'Kutsal Işık', cd: 14, desc: 'Kendini ve yakındaki askerleri büyük oranda iyileştirir' },
         { id: 'consecrate', name: 'Kutsal Alan', cd: 15, desc: 'Ayağının altı 4 sn kutsanır, düşmanlar yanar' },
         { id: 'revive',     name: 'Diriliş', passive: true, desc: 'Kalıcı: her bölümde bir kez, ölünce yarı canla dirilir' },
       ] },
-      { name: 'Adalet Yolu', col: '#8fd0ff', skills: [
+      { name: 'Çelik Yol', col: '#8fd0ff', skills: [
         { id: 'shieldthrow', name: 'Kalkan Fırlatma', cd: 9,  desc: 'Kalkan 3 düşmana seker, her birini 1 sn sersemletir' },
         { id: 'quake',       name: 'Yer Sarsıntısı', cd: 13, desc: 'Çevresindeki düşmanları sarsıp 1.2 sn sersemletir' },
         { id: 'judgment',    name: 'Ceza Kılıcı',    cd: 11, desc: 'Üç kat hasarlı darbe; canı %25 altındaki düşmanı bitirir' },
       ] },
     ],
   },
-  rogue: {
-    name: 'Gölge Avcı', role: 'Menzilli · Hızlı', sprite: 'hero_rogue', base: 'enemy_bandit', h: 28, aura: '120,255,170',
-    hp: 210, dmg: [9, 14], armor: 0.1, rate: 0.75, speed: 100, respawn: 12, regen: 8, engage: 60, ranged: 135, proj: 'dagger', unlock: 4,
+  zeynep: {
+    name: 'Zeynep', role: 'Okçu · Çok uzun menzil', sprite: 'hero_zeynep', h: 29, aura: '140,255,160',
+    hp: 200, dmg: [10, 15], armor: 0.1, rate: 0.9, speed: 85, respawn: 13, regen: 8, engage: 60, ranged: 215, proj: 'harrow', splash: 26, unlock: 2,
     paths: [
-      { name: 'Bıçak Yolu', col: '#c0f0a0', skills: [
-        { id: 'fan',    name: 'Bıçak Yelpazesi', cd: 8,  desc: 'Menzildeki 5 düşmana aynı anda bıçak fırlatır' },
-        { id: 'venom',  name: 'Zehirli Bıçaklar', passive: true, desc: 'Kalıcı: her bıçak 3 sn zehirler' },
-        { id: 'deadly', name: 'Ölümcül Atış',    cd: 14, desc: 'En güçlü düşmana zırh delen büyük hasar' },
+      { name: 'Patlayıcı Oklar', col: '#ffb347', skills: [
+        { id: 'volley',    name: 'Ok Yağmuru',    cd: 10, desc: 'Kalabalığın üstüne 12 ok yağdırır (alan hasarı)' },
+        { id: 'blastarrow',name: 'Patlayan Ok',   cd: 8,  desc: 'Çarptığı yerde büyük patlama yapan ok' },
+        { id: 'fireaim',   name: 'Ateşli Uçlar', passive: true, desc: 'Kalıcı: okların alan hasarı %60 büyür ve yakar' },
       ] },
+      { name: 'Keskin Göz', col: '#9fe8ff', skills: [
+        { id: 'multishot', name: 'Çoklu Atış',    cd: 7,  desc: 'Aynı anda 4 farklı düşmana ok atar' },
+        { id: 'pierce',    name: 'Delici Atış',   cd: 11, desc: 'Yol boyunca bütün düşmanları delip geçen güçlü ok' },
+        { id: 'eagle',     name: 'Kartal Gözü', passive: true, desc: 'Kalıcı: +%20 menzil, %25 kritik vuruş' },
+      ] },
+    ],
+  },
+  tarcin: {
+    name: 'Tarçın', role: 'Kedi suikastçı · Çok hızlı', sprite: 'hero_cat', h: 27, aura: '255,170,80',
+    hp: 240, dmg: [11, 17], armor: 0.15, rate: 0.55, speed: 135, respawn: 10, regen: 12, engage: 75, unlock: 4,
+    paths: [
       { name: 'Gölge Yolu', col: '#b8a0ff', skills: [
-        { id: 'smoke',  name: 'Duman Bombası', cd: 12, desc: 'Kalabalığı 3 sn %50 yavaşlatan duman' },
-        { id: 'trap',   name: 'Diken Tuzağı',  cd: 10, desc: 'Yola tuzak kurar: basan düşman hasar alır, sersemler' },
-        { id: 'shadow', name: 'Gölge Ustası', passive: true, desc: 'Kalıcı: %20 çifte hasar, %25 daha hızlı saldırı' },
+        { id: 'shadowstep', name: 'Gölge Adımı', cd: 8,  desc: 'En güçlü düşmanın arkasına ışınlanıp 3 kat hasarlı bıçak vurur' },
+        { id: 'bleed',      name: 'Kanatan Pençe', passive: true, desc: 'Kalıcı: her vuruş 3 sn kanatır' },
+        { id: 'ninelives',  name: 'Dokuz Can', passive: true, desc: 'Kalıcı: ölünce yarı canla dirilir (bölümde 2 kez), yeniden doğma yarı sürede' },
+      ] },
+      { name: 'Çeviklik Yolu', col: '#ffd34d', skills: [
+        { id: 'clawstorm', name: 'Pençe Fırtınası', cd: 9,  desc: 'Etrafında dönerek çevresindeki herkesi art arda keser' },
+        { id: 'dodge',     name: 'Kedi Çevikliği', passive: true, desc: 'Kalıcı: saldırıların %35’inden kaçar' },
+        { id: 'mark',      name: 'Ölüm İşareti', cd: 12, desc: 'Hedefi işaretler: 6 sn boyunca herkesten %60 fazla hasar alır' },
       ] },
     ],
   },
@@ -152,7 +168,7 @@ const HEROES = {
     ],
   },
 };
-const HERO_ORDER = ['commander', 'paladin', 'rogue', 'sage'];
+const HERO_ORDER = ['commander', 'caner', 'zeynep', 'tarcin', 'sage'];
 
 const SPELLS = {
   meteor:    { name: 'Ateş Yağmuru', cd: 45, count: 3, dmg: [35, 60], radius: 55 },
@@ -215,7 +231,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Gün Batımı Tepesi', gold: 420, lives: 20, theme: 'dusk', castle: [905, 400], hpMul: 1.5,
+    name: 'Gün Batımı Tepesi', gold: 420, lives: 20, theme: 'dusk', castle: [905, 400], hpMul: 2.1,
     paths: [
       [[-40, 200], [120, 200], [200, 120], [330, 110], [410, 200], [360, 320], [420, 430], [560, 450], [640, 360], [600, 250], [680, 160], [800, 170], [850, 280], [855, 386]],
     ],
@@ -234,7 +250,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Bataklık Sınırı', gold: 490, lives: 20, theme: 'swamp', castle: [905, 250], hpMul: 1.25,
+    name: 'Bataklık Sınırı', gold: 490, lives: 20, theme: 'swamp', castle: [905, 250], hpMul: 1.5,
     paths: [
       [[-40, 100], [140, 110], [260, 190], [420, 170], [520, 250], [640, 300], [740, 240], [855, 236]],
       [[-40, 430], [150, 420], [270, 340], [420, 330], [520, 250], [640, 300], [740, 240], [855, 236]],
@@ -297,7 +313,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Kül Vadisi', gold: 700, lives: 20, theme: 'volcano', castle: [905, 270], hpMul: 1.0,
+    name: 'Kül Vadisi', gold: 700, lives: 20, theme: 'volcano', castle: [905, 270], hpMul: 0.9,
     paths: [
       [[-40, 150], [130, 150], [220, 80], [380, 90], [470, 180], [620, 160], [720, 230], [855, 256]],
       [[-40, 420], [160, 430], [280, 340], [400, 390], [540, 450], [660, 380], [720, 300], [855, 256]],
@@ -319,7 +335,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Donmuş Nehir', gold: 770, lives: 20, theme: 'winter', castle: [905, 420], hpMul: 1.4,
+    name: 'Donmuş Nehir', gold: 770, lives: 20, theme: 'winter', castle: [905, 420], hpMul: 1.95,
     paths: [
       [[480, -40], [480, 80], [340, 140], [220, 220], [320, 320], [500, 300], [620, 380], [760, 420], [855, 406]],
       [[-40, 250], [100, 250], [220, 220], [320, 320], [500, 300], [620, 380], [760, 420], [855, 406]],
@@ -342,12 +358,12 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Son Kale', gold: 840, lives: 20, theme: 'volcano', castle: [905, 300], hpMul: 0.85,
+    name: 'Son Kale', gold: 900, lives: 20, theme: 'volcano', castle: [905, 300], hpMul: 0.75,
     paths: [
       [[-40, 90], [200, 100], [320, 200], [480, 180], [600, 100], [740, 130], [800, 230], [855, 286]],
       [[-40, 460], [180, 450], [300, 360], [460, 400], [600, 460], [740, 420], [800, 330], [855, 286]],
     ],
-    plots: [[726, 224], [646, 168], [686, 48], [726, 304], [830, 160], [766, 80], [510, 88], [566, 192], [374, 280], [294, 296], [870, 344], [454, 272], [646, 384]],
+    plots: [[726, 224], [646, 168], [686, 48], [726, 304], [830, 160], [766, 80], [510, 88], [566, 192], [374, 280], [294, 296], [870, 344], [454, 272], [646, 384], [210, 326], [504, 338], [150, 380], [60, 386]],
     waves: [
       [{t: 'goblin', n: 28, gap: 0.9, p: 0}, {t: 'goblin', n: 14, gap: 0.9, p: 1, at: 2}],
       [{t: 'knight', n: 3, gap: 2.4, at: 0, p: 1}, {t: 'shaman', n: 5, gap: 2, at: 6, p: 0}],
@@ -356,13 +372,65 @@ const LEVELS = [
       [{t: 'knight', n: 4, gap: 2.4, at: 0, p: 1}, {t: 'knight', n: 4, gap: 2.4, at: 5, p: 0}],
       [{t: 'wolf', n: 19, gap: 0.6, at: 0, p: 0}, {t: 'bandit', n: 10, gap: 1.05, at: 4, p: 0}, {t: 'wolf', n: 19, gap: 0.6, at: 10, p: 1}],
       [{t: 'bat', n: 22, gap: 0.85, at: 0, p: 0}, {t: 'shaman', n: 10, gap: 2, at: 7, p: 1}],
-      [{t: 'shaman', n: 12, gap: 2, at: 0, p: 1}, {t: 'knight', n: 6, gap: 2.4, at: 5, p: 0}],
+      [{t: 'shaman', n: 7, gap: 2, at: 0, p: 1}, {t: 'knight', n: 4, gap: 2.4, at: 5, p: 0}],
       [{t: 'troll', n: 1, gap: 1, at: 0, p: 0}, {t: 'orc', n: 8, gap: 1.2, at: 0, p: 0}, {t: 'knight', n: 3, gap: 2.4, at: 5, p: 0}, {t: 'wolf', n: 17, gap: 0.6, at: 13, p: 1}],
-      [{t: 'orc', n: 9, gap: 1.2, at: 0, p: 0}, {t: 'orc', n: 9, gap: 1.2, at: 4, p: 1}, {t: 'orc', n: 9, gap: 1.2, at: 11, p: 0}, {t: 'orc', n: 9, gap: 1.2, at: 9, p: 0}],
+      [{t: 'orc', n: 9, gap: 1.2, at: 0, p: 0}, {t: 'orc', n: 9, gap: 1.2, at: 4, p: 1}, {t: 'orc', n: 7, gap: 1.2, at: 13, p: 0}],
       [{t: 'shaman', n: 10, gap: 2, at: 0, p: 1}, {t: 'knight', n: 5, gap: 2.4, at: 6, p: 0}, {t: 'bandit', n: 17, gap: 1.05, at: 11, p: 0}],
       [{t: 'shaman', n: 11, gap: 2, at: 0, p: 0}, {t: 'shaman', n: 11, gap: 2, at: 6, p: 0}, {t: 'bandit', n: 18, gap: 1.05, at: 6, p: 1}],
       [{t: 'orc', n: 16, gap: 1.2, at: 0, p: 0}, {t: 'bat', n: 25, gap: 0.85, at: 3, p: 1}, {t: 'bandit', n: 19, gap: 1.05, at: 10, p: 0}],
       [{t: 'troll', n: 1, gap: 1, at: 0, p: 0}, {t: 'troll', n: 1, gap: 1, at: 14, p: 1}, {t: 'troll', n: 1, gap: 1, at: 28, p: 0}, {t: 'shaman', n: 5, gap: 2, at: 0, p: 1}, {t: 'bat', n: 12, gap: 0.85, at: 3, p: 0}, {t: 'knight', n: 3, gap: 2.4, at: 9, p: 0}, {t: 'knight', n: 3, gap: 2.4, at: 19, p: 1}],
     ],
   },
+];
+
+// ----- bosslar -----
+// Her bölümün son dalgasının sonunda bir boss gelir. Görselleri temel düşman görselinin yeniden renklendirilmiş,
+// büyütülmüş ve taçlandırılmış hâlidir. ab: özel yetenekler (summon: asker çağırır, howl: yakındakileri hızlandırır,
+// slam: yere vurup askerleri sersemletir, shield: kısa süre hasar almaz, heal: yakındakileri iyileştirir,
+// blink: yolda ileri ışınlanır, regen: sürekli can yeniler).
+Object.assign(ENEMIES, {
+  goblin_king:  { name: 'Goblin Kral', base: 'goblin', h: 40, hp: 700, speed: 19, armor: 0.15, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true,
+    desc: 'Arada bir yanına goblin muhafızları çağırır', ab: { summon: { t: 'goblin', n: 3, cd: 8 } } },
+  wolf_alpha:   { name: 'Kara Kurt Alfa', base: 'wolf', h: 38, hp: 850, speed: 30, armor: 0.1, mr: 0.1, gold: 90, dmg: [12, 20], rate: 0.9, lives: 5, r: 14, boss: true, chief: true,
+    desc: 'Uluyunca yakındaki düşmanlar 4 sn hızlanır', ab: { howl: { cd: 9, r: 110 } } },
+  orc_warlord:  { name: 'Ork Savaş Ağası', base: 'orc', h: 50, hp: 1500, speed: 15, armor: 0.4, mr: 0.1, gold: 130, dmg: [20, 32], rate: 1.4, lives: 6, r: 16, boss: true, chief: true,
+    desc: 'Yere vurup çevresindeki askerleri 2 sn sersemletir', ab: { slam: { cd: 7, r: 62, stun: 2, dmg: 25 } } },
+  dark_shaman:  { name: 'Kara Büyücü', base: 'shaman', h: 46, hp: 1300, speed: 16, armor: 0.1, mr: 0.7, gold: 140, dmg: [10, 16], rate: 1.2, lives: 6, r: 15, boss: true, chief: true,
+    desc: 'Büyü kalkanıyla 3 sn hasar almaz, yakındakileri iyileştirir', ab: { shield: { cd: 12, t: 3 }, heal: { cd: 6, amt: 70, r: 90 } } },
+  death_knight: { name: 'Ölüm Şövalyesi', base: 'knight', h: 50, hp: 2000, speed: 14, armor: 0.7, mr: 0.15, gold: 170, dmg: [22, 34], rate: 1.3, lives: 7, r: 16, boss: true, chief: true,
+    desc: 'Kalın zırhlı; arada bir yolda ileri ışınlanır', ab: { blink: { cd: 9, d: 85 } } },
+  troll_king:   { name: 'Troll Kral', base: 'troll', h: 66, hp: 3400, speed: 10, armor: 0.35, mr: 0.25, gold: 260, dmg: [35, 55], rate: 2, lives: 8, r: 22, boss: true, chief: true,
+    desc: 'Sürekli can yeniler, yere vurup askerleri sersemletir', ab: { regen: 0.005, slam: { cd: 9, r: 70, stun: 1.5, dmg: 40 } } },
+  overlord:     { name: 'Kara Lord', base: 'knight', h: 62, hp: 4600, speed: 11, armor: 0.55, mr: 0.4, gold: 400, dmg: [40, 60], rate: 1.5, lives: 10, r: 22, boss: true, chief: true,
+    desc: 'Son düşman: kara şövalye çağırır, kalkan açar, yeri sarsar', ab: { summon: { t: 'knight', n: 2, cd: 14 }, shield: { cd: 16, t: 3 }, slam: { cd: 10, r: 70, stun: 1.5, dmg: 40 } } },
+});
+const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord'];
+LEVELS.forEach((lv, i) => {
+  lv.boss = LEVEL_BOSS[i];
+  const w = lv.waves[lv.waves.length - 1];
+  const end = Math.max(...w.map(g => (g.at || 0) + g.gap * (g.n - 1)));
+  w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0 });
+});
+
+// yeni düşman tanıtım kartları için kısa açıklamalar
+const ENEMY_DESC = {
+  goblin: 'Zayıf ama kalabalık gelir', wolf: 'Çok hızlı koşar, askerlerin yanından kaçabilir', bandit: 'Dayanıklı yakın dövüşçü',
+  orc: 'Zırhlı: büyü ve top hasarı işe yarar', bat: 'Uçar: yalnızca okçu ve büyücü kulesi vurur', shaman: 'Yakındaki düşmanları iyileştirir, büyüye dirençli',
+  knight: 'Çok kalın zırh: büyücü kulesi kullan', troll: 'Dev boss: kaleden 5 can götürür',
+};
+
+// ----- yıldız gelişmeleri (bölüm haritasındaki GELİŞMELER ekranı) -----
+// Toplanan yıldızlarla kalıcı güçlendirmeler alınır; her satırda 3 kademe sırayla açılır. İstenince sıfırlanabilir.
+const UPGRADES = [
+  { id: 'archer',   name: 'Okçular',   ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%10 menzil' }, { cost: 3, desc: '+%15 hasar' }] },
+  { id: 'barracks', name: 'Kışla',     ranks: [{ cost: 1, desc: '+%20 asker canı' }, { cost: 2, desc: '+%20 asker hasarı' }, { cost: 3, desc: '+%15 zırh, hızlı doğma' }] },
+  { id: 'mage',     name: 'Büyücüler', ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%10 menzil' }, { cost: 3, desc: '+%15 hasar' }] },
+  { id: 'artillery',name: 'Toplar',    ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%15 patlama alanı' }, { cost: 3, desc: '+%15 hasar' }] },
+  { id: 'spells',   name: 'Büyüler',   ranks: [{ cost: 1, desc: '+1 göktaşı' }, { cost: 2, desc: '+1 takviye askeri' }, { cost: 3, desc: '%25 hızlı dolma' }] },
+  { id: 'castle',   name: 'Kale',      ranks: [{ cost: 1, desc: '+3 can' }, { cost: 2, desc: '+60 altın' }, { cost: 3, desc: '+3 can, +60 altın' }] },
+];
+const DIFFS = [
+  { name: 'Kolay',  hp: 0.85, gold: 1.15, lives: 25 },
+  { name: 'Normal', hp: 1.15, gold: 1,    lives: 20 },
+  { name: 'Zor',    hp: 1.4,  gold: 0.9,  lives: 15 },
 ];
