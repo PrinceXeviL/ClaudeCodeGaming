@@ -8,16 +8,16 @@ const TOWERS = {
     name: 'Okçu Kulesi', icon: 'archer', dmgType: 'phys', air: true,
     desc: 'Hızlı atış, havayı da vurur',
     levels: [
-      { cost: 70,  range: 140, dmg: [4, 6],   rate: 0.8, perk: 'Hızlı atış, uçanları da vurur' },
-      { cost: 110, range: 155, dmg: [7, 11],  rate: 0.6, perk: 'Delici ok: %25 şansla zırhı yok sayar' },
-      { cost: 160, range: 170, dmg: [11, 17], rate: 0.5, perk: '3 okçu · %15 kritik vuruş (2 kat hasar)' },
+      { cost: 70,  range: 135, dmg: [4, 6],   rate: 0.8, perk: 'Hızlı atış, uçanları da vurur' },
+      { cost: 110, range: 158, dmg: [8, 12],  rate: 0.6, perk: 'Delici ok: %25 şansla zırhı yok sayar · +menzil' },
+      { cost: 160, range: 192, dmg: [13, 19], rate: 0.5, perk: '3 okçu · %15 kritik vuruş (2 kat) · çok daha uzun menzil' },
     ],
     // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
     abilities: [
       { id: 'poison', name: 'Zehirli Oklar', desc: (r) => `Oklar 3 sn boyunca saniyede ${r.dps} zehir hasarı verir`,
         ranks: [{ cost: 150, dps: 4 }, { cost: 200, dps: 8 }, { cost: 260, dps: 13 }] },
-      { id: 'snipe', name: 'Keskin Nişancı', desc: (r) => `${r.cd} sn'de bir en güçlü düşmana ${r.dmg} zırh delen atış`,
-        ranks: [{ cost: 180, cd: 9, dmg: 70 }, { cost: 240, cd: 7.5, dmg: 120 }, { cost: 300, cd: 6, dmg: 180 }] },
+      { id: 'snipe', name: 'Keskin Nişancı', desc: (r) => `${r.cd} sn'de bir en güçlü düşmana ${r.dmg} zırh delen kritik atış · menzil +${r.range}`,
+        ranks: [{ cost: 180, cd: 9, dmg: 70, range: 12 }, { cost: 240, cd: 7.5, dmg: 120, range: 22 }, { cost: 300, cd: 6, dmg: 180, range: 32 }] },
     ],
   },
   barracks: {
@@ -37,11 +37,11 @@ const TOWERS = {
   },
   mage: {
     name: 'Büyücü Kulesi', icon: 'mage', dmgType: 'magic', air: true,
-    desc: 'Büyü hasarı zırhı deler',
+    desc: 'Yıldırım atar, zırhı deler',
     levels: [
-      { cost: 100, range: 130, dmg: [9, 17],  rate: 1.5, perk: 'Büyü hasarı zırhı deler' },
-      { cost: 160, range: 140, dmg: [23, 43], rate: 1.5, perk: 'Buz dokunuşu: vurduğunu 1 sn %30 yavaşlatır' },
-      { cost: 240, range: 150, dmg: [40, 74], rate: 1.5, perk: 'Zincir büyü: yakındaki ikinci düşmana %60 hasar' },
+      { cost: 100, range: 128, dmg: [10, 18], rate: 1.5, perk: 'Yıldırım: büyü hasarı zırhı deler' },
+      { cost: 160, range: 140, dmg: [24, 44], rate: 1.45, perk: 'Şok: vurduğunu 1 sn %30 yavaşlatır' },
+      { cost: 240, range: 152, dmg: [42, 76], rate: 1.4, perk: 'Zincir yıldırım: yakındaki ikinci düşmana %60 hasar' },
     ],
     abilities: [
       { id: 'frost', name: 'Buz Küresi', desc: (r) => `Vurduğunu ${r.t} sn %${Math.round(r.k * 100)} yavaşlatır`,
@@ -52,11 +52,11 @@ const TOWERS = {
   },
   artillery: {
     name: 'Top Kulesi', icon: 'artillery', dmgType: 'phys', air: false,
-    desc: 'Alan hasarı, yavaş',
+    desc: 'Kısa menzil, en ağır vuruş, alan hasarı',
     levels: [
-      { cost: 125, range: 140, dmg: [8, 15],  rate: 3.0, splash: 50, perk: 'Alan hasarı, yavaş atış' },
-      { cost: 220, range: 150, dmg: [20, 40], rate: 3.0, splash: 58, perk: 'Ağır gülle: daha geniş patlama alanı' },
-      { cost: 320, range: 165, dmg: [30, 60], rate: 2.7, splash: 64, perk: 'Sarsıcı gülle: %30 şansla 0.6 sn sersemletir' },
+      { cost: 125, range: 112, dmg: [16, 26], rate: 3.0, splash: 54, perk: 'Ağır gülle, geniş alan hasarı' },
+      { cost: 220, range: 120, dmg: [38, 60], rate: 2.9, splash: 62, perk: 'Daha ağır gülle, daha geniş patlama' },
+      { cost: 320, range: 128, dmg: [66, 98], rate: 2.7, splash: 72, perk: 'Sarsıcı gülle: %30 şansla 0.6 sn sersemletir' },
     ],
     abilities: [
       { id: 'napalm', name: 'Napalm', desc: (r) => `Patlama yeri 3 sn yanar: saniyede ${r.dps} ateş hasarı`,
@@ -171,8 +171,8 @@ const HEROES = {
 const HERO_ORDER = ['commander', 'caner', 'zeynep', 'tarcin', 'sage'];
 
 const SPELLS = {
-  meteor:    { name: 'Ateş Yağmuru', cd: 45, count: 3, dmg: [35, 60], radius: 55 },
-  reinforce: { name: 'Takviye',      cd: 15, count: 2, hp: 40, dmg: [2, 4], life: 20 },
+  meteor:    { name: 'Ateş Yağmuru', cd: 60, count: 3, dmg: [35, 60], radius: 55 },
+  reinforce: { name: 'Takviye',      cd: 24, count: 2, hp: 40, dmg: [2, 4], life: 20 },
 };
 
 // Dalga: { t: tür, n: adet, gap: sn aralık, at: dalga başından gecikme, p: yol no }
@@ -421,6 +421,28 @@ LEVELS.forEach((lv, i) => {
   const end = Math.max(...w.map(g => (g.at || 0) + g.gap * (g.n - 1)));
   w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0 });
 });
+
+// Düşmanların hasar kaynaklarına göre zayıflık (>1) ve dirençleri (<1): ok, büyü (yıldırım), top (patlama/ateş), kılıç (askerler)
+// Zırh ve büyü direnci bunlara ek olarak ayrıca uygulanır. Kahraman hasarı bundan etkilenmez.
+const ENEMY_WK = {
+  goblin:  { blast: 1.4, melee: 1.2 },
+  wolf:    { arrow: 1.3, blast: 0.6 },
+  bandit:  { melee: 0.7, magic: 1.3 },
+  orc:     { arrow: 0.7, magic: 1.25 },
+  bat:     { arrow: 1.4 },
+  shaman:  { arrow: 1.3, melee: 1.3 },
+  knight:  { magic: 1.4, blast: 0.75, arrow: 0.8 },
+  troll:   { blast: 1.4, arrow: 0.6 },
+  goblin_king:  { blast: 1.3, melee: 1.2 },
+  wolf_alpha:   { arrow: 1.25, blast: 0.6 },
+  orc_warlord:  { arrow: 0.6, melee: 0.8, magic: 1.3 },
+  dark_shaman:  { magic: 0.5, arrow: 1.3 },
+  death_knight: { magic: 1.35, arrow: 0.6, blast: 0.7 },
+  troll_king:   { blast: 1.4, arrow: 0.6 },
+  overlord:     { magic: 0.75, arrow: 0.75, melee: 0.85, blast: 1.15 },
+};
+for (const k in ENEMY_WK) if (ENEMIES[k]) ENEMIES[k].wk = ENEMY_WK[k];
+const WK_NAME = { arrow: 'Ok', magic: 'Yıldırım', blast: 'Top', melee: 'Kılıç' };
 
 // yeni düşman tanıtım kartları için kısa açıklamalar
 const ENEMY_DESC = {

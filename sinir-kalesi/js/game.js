@@ -617,8 +617,9 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   }
   if (def.chief) bossIntro(e);
   else {
-    save.seenEnemies = save.seenEnemies || [];
-    if (!save.seenEnemies.includes(type)) { save.seenEnemies.push(type); persist(); if (!G.intro) G.intro = { type, t: 0, dur: 4.5 }; }
+    // (v2: zayıflık/direnç bilgisiyle her düşman kartı bir kez daha gösterilir)
+    save.seenEnemies2 = save.seenEnemies2 || [];
+    if (!save.seenEnemies2.includes(type)) { save.seenEnemies2.push(type); persist(); if (!G.intro) G.intro = { type, t: 0, dur: 4.5 }; }
   }
   return e;
 }
@@ -715,6 +716,83 @@ function fxExplosion(x, y, r, big) {
   G.decals.push({ x, y, r: r * (big ? 0.95 : 0.75), t: 0, life: 8 });
   shakeScreen(big ? 5 : 2.4, big ? 0.38 : 0.2);
 }
+// Göktaşı çarpması: kör edici parlama, alev halkası, akkor kaya parçaları, duman sütunu, kızgın krater
+function fxMeteorImpact(x, y, r, burn) {
+  fxExplosion(x, y, r, true);
+  const P = G.parts;
+  emit(P, { kind: 'glow', add: true, x, y: y - 10, col: '255,240,200', s0: r * 1.3, s1: r * 1.6, life: 0.12, a: 0.8 });
+  for (let i = 0; i < 14; i++) {
+    const a = rand(Math.PI * 1.05, Math.PI * 1.95), v = rand(110, 230);
+    emit(P, { kind: 'chunk', x: x + rand(-5, 5), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 480, col: i % 2 ? '#3a2a22' : '#ff7a2a',
+      s0: rand(2.5, 4.5), s1: 2, life: rand(0.8, 1.2), vr: rand(-14, 14), floor: y + rand(-10, 12) });
+  }
+  for (let i = 0; i < 10; i++) {
+    emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.3, y: y - rand(0, 14), vx: rand(-14, 14), vy: rand(-60, -30), drag: 0.6,
+      col: i % 2 ? '58,50,46' : '92,82,74', s0: rand(10, 14), s1: rand(26, 36), life: rand(1.4, 2.2), a: 0.55, fadeIn: 0.15 });
+  }
+  for (let i = 0; i < 16; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.6, y: y + rand(-r, r) * 0.3, vy: -rand(30, 90), drag: 1, col: '255,170,60', s0: rand(2, 4), s1: 0.5, life: rand(0.8, 1.5) });
+  G.effects.push({ kind: 'firering', x, y, r: r * 1.25, t: 0, dur: 0.55 });
+  G.decals.push({ x, y, r: r * 1.05, t: 0, life: 10, hot: true });
+  if (burn) G.zones.push({ x, y, r: r * 0.6, dps: 8, t: 0, life: 2.5, fxT: 0, src: 'blast' });
+  shakeScreen(7, 0.45);
+}
+// Göktaşının kayası (bir kez çizilir): çatlaklarından akkor ışık sızan, köşeli koyu kaya
+let METEOR_ROCK = null;
+function meteorRock() {
+  if (METEOR_ROCK) return METEOR_ROCK;
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d'); g.translate(32, 32);
+  const pts = [];
+  for (let i = 0; i < 11; i++) { const a = i / 11 * Math.PI * 2, r = 22 + Math.sin(i * 2.7) * 4 + (i % 3) * 1.5; pts.push([Math.cos(a) * r, Math.sin(a) * r]); }
+  const path = () => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
+  const gr = g.createRadialGradient(-7, -8, 2, 0, 0, 26);
+  gr.addColorStop(0, '#8a6a58'); gr.addColorStop(0.55, '#4a3428'); gr.addColorStop(1, '#1e140e');
+  path(); g.fillStyle = gr; g.fill(); g.lineWidth = 2.5; g.strokeStyle = '#140a06'; g.stroke();
+  g.save(); path(); g.clip();
+  g.strokeStyle = '#ffb040'; g.lineWidth = 2.2; g.lineCap = 'round'; g.shadowColor = '#ff7a20'; g.shadowBlur = 6;
+  for (const seg of [[[-14, -4], [-4, 2], [3, -6], [12, -2]], [[-6, 10], [2, 6], [8, 12]], [[4, -16], [6, -8]]]) {
+    g.beginPath(); seg.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
+  }
+  g.restore();
+  g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.ellipse(-8, -10, 7, 4, -0.6, 0, Math.PI * 2); g.fill();
+  return (METEOR_ROCK = c);
+}
+// Göktaşı: yerde hedef işareti, alev kuyruğu, ısı halesi ve dönen kaya
+function drawMeteor(p) {
+  const k = clamp(p.t / p.dur, 0, 1), pre = p.t < 0 ? clamp(1 + p.t / 0.6, 0, 1) : 1;
+  // hedef işareti: düşüşe yaklaştıkça parlaklaşan ve daralan halka
+  {
+    const a = (p.t < 0 ? pre * 0.5 : 0.5 + 0.5 * k), r = p.splash * (1.1 - 0.3 * k);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = `rgba(255,120,40,${0.55 * a})`; ctx.lineWidth = 2;
+    ctx.setLineDash([6, 5]); ctx.lineDashOffset = -time * 30;
+    ctx.beginPath(); ctx.ellipse(p.tx, p.ty, r, r * 0.45, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    glow(ctx, p.tx, p.ty, r * 0.9, '255,110,30', 0.25 * a);
+    ctx.restore();
+  }
+  if (p.t < 0) return;
+  const { x, y } = projPos(p, k), dx = p.tx - p.sx, dy = p.ty - p.sy, l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l;
+  // gölge yerde büyür
+  ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.25 * k})`; ctx.beginPath(); ctx.ellipse(p.tx, p.ty, 6 + 14 * k, (6 + 14 * k) * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+  // alev kuyruğu
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const TL = 95, nx = -uy, ny = ux;
+  for (const [w, col, len] of [[15, '255,90,20', TL], [9, '255,170,60', TL * 0.75], [4.5, '255,245,200', TL * 0.45]]) {
+    const g = ctx.createLinearGradient(x, y, x - ux * len, y - uy * len);
+    g.addColorStop(0, `rgba(${col},0.9)`); g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g; ctx.beginPath();
+    ctx.moveTo(x + nx * w, y + ny * w);
+    ctx.quadraticCurveTo(x - ux * len * 0.5 + nx * w * 0.6 + Math.sin(time * 30) * 2, y - uy * len * 0.5 + ny * w * 0.6, x - ux * len, y - uy * len);
+    ctx.quadraticCurveTo(x - ux * len * 0.5 - nx * w * 0.6, y - uy * len * 0.5 - ny * w * 0.6 + Math.cos(time * 27) * 2, x - nx * w, y - ny * w);
+    ctx.closePath(); ctx.fill();
+  }
+  glow(ctx, x, y, 34, '255,120,30', 0.85); glow(ctx, x, y, 16, '255,230,170', 0.9);
+  ctx.restore();
+  ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 5);
+  ctx.drawImage(meteorRock(), -12, -12, 24, 24);
+  ctx.restore();
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + ux * 6, y + uy * 6, 9, '255,200,120', 0.7); ctx.restore();
+}
 function fxMuzzle(x, y, face = 1) {
   const P = G.parts, dx = 0.8 * face, dy = -0.6; // namlu yönü: yukarı ve hedef tarafına
   emit(P, { kind: 'glow', add: true, x, y, col: '255,200,110', s0: 20, s1: 26, life: 0.12 });
@@ -734,21 +812,66 @@ function fxMuzzle(x, y, face = 1) {
   }
 }
 function fxMagicCharge(x, y) {
-  emit(G.parts, { kind: 'glow', add: true, x, y, col: '200,150,255', s0: 26, s1: 10, life: 0.25 });
+  emit(G.parts, { kind: 'glow', add: true, x, y, col: '170,210,255', s0: 30, s1: 8, life: 0.2 });
+  emit(G.parts, { kind: 'glow', add: true, x, y, col: '255,255,255', s0: 12, s1: 2, life: 0.12 });
   for (let i = 0; i < 6; i++) {
-    const a = rand(0, Math.PI * 2);
-    emit(G.parts, { kind: 'glow', add: true, x: x + Math.cos(a) * 18, y: y + Math.sin(a) * 18, vx: -Math.cos(a) * 70, vy: -Math.sin(a) * 70,
-      col: '220,190,255', s0: 4, s1: 1, life: 0.25 });
+    const a = rand(0, Math.PI * 2), v = rand(80, 160);
+    emit(G.parts, { kind: 'streak', add: true, x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, col: '#cfe6ff', s0: 1.4, s1: 0.2, life: rand(0.1, 0.2) });
   }
 }
+// yıldırım çarpması: beyaz parlama, elektrik kıvılcımları, yerde şok halkası
 function fxMagicHit(x, y, frost) {
-  const P = G.parts, c1 = frost ? '150,210,255' : '190,120,255', c0 = frost ? '200,235,255' : '210,160,255';
-  emit(P, { kind: 'glow', add: true, x, y, col: c0, s0: 22, s1: 30, life: 0.2 });
-  for (let i = 0; i < 10; i++) {
-    const a = rand(0, Math.PI * 2), v = rand(50, 130);
-    emit(P, { kind: 'glow', add: true, x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, drag: 4, col: i % 2 ? c1 : '255,240,255', s0: rand(3, 5), s1: 0.5, life: rand(0.3, 0.5) });
+  const P = G.parts, c0 = frost ? '190,240,255' : '170,205,255';
+  emit(P, { kind: 'glow', add: true, x, y, col: c0, s0: 26, s1: 34, life: 0.16 });
+  emit(P, { kind: 'glow', add: true, x, y, col: '255,255,255', s0: 12, s1: 4, life: 0.1 });
+  for (let i = 0; i < 12; i++) {
+    const a = rand(0, Math.PI * 2), v = rand(90, 220);
+    emit(P, { kind: 'streak', add: true, x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7 - 30, g: 300, col: i % 3 ? '#bfe0ff' : '#ffffff', s0: 1.5, s1: 0.2, life: rand(0.15, 0.35) });
   }
-  G.effects.push({ kind: 'ring', x, y: y + 6, r: 26, col: frost ? '160,220,255' : '200,150,255', t: 0, dur: 0.35 });
+  if (frost) for (let i = 0; i < 5; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-8, 8), y: y + rand(-8, 8), vy: -20, col: '210,245,255', s0: 4, s1: 1, life: 0.5 });
+  G.effects.push({ kind: 'ring', x, y: y + 8, r: 22, col: frost ? '170,235,255' : '150,200,255', t: 0, dur: 0.3 });
+}
+// Zikzaklı yıldırım çizgisi: orta nokta kaydırmayla dallanır; tohum her ~40 ms değişir (titreme)
+function lightningPts(x0, y0, x1, y1, seed, rough) {
+  let pts = [[x0, y0], [x1, y1]];
+  const R = (k) => { const v = Math.sin(seed * 12.9898 + k * 78.233) * 43758.5453; return v - Math.floor(v) - 0.5; };
+  let amp = Math.hypot(x1 - x0, y1 - y0) * rough, n = 0;
+  for (let lvl = 0; lvl < 4; lvl++) {
+    const out = [pts[0]];
+    for (let i = 1; i < pts.length; i++) {
+      const [ax, ay] = pts[i - 1], [bx, by] = pts[i], dx = bx - ax, dy = by - ay, l = Math.hypot(dx, dy) || 1;
+      const o = R(n++) * amp;
+      out.push([(ax + bx) / 2 - dy / l * o, (ay + by) / 2 + dx / l * o], pts[i]);
+    }
+    pts = out; amp *= 0.5;
+  }
+  return pts;
+}
+function strokeLightning(pts, w, col, a) {
+  const line = () => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); };
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const op = ctx.globalCompositeOperation;
+  ctx.globalCompositeOperation = 'source-over'; // dış hale normal karışımla: açık zeminde de mavi kalsın
+  ctx.globalAlpha = a * 0.35; ctx.strokeStyle = col; ctx.lineWidth = 7 * w; line();
+  ctx.globalAlpha = a * 0.9; ctx.lineWidth = 2.6 * w; line();
+  ctx.globalCompositeOperation = op;
+  ctx.globalAlpha = a; ctx.strokeStyle = '#eef6ff'; ctx.lineWidth = 0.9 * w; line();
+}
+function drawZap(f) {
+  if (f.target && !f.target.dead) { f.x1 = f.target.x; f.y1 = aimY(f.target); }
+  const k = f.t / f.dur, a = k < 0.15 ? 1 : 1 - (k - 0.15) / 0.85;
+  const seed = f.seed + Math.floor(f.t * 25), col = f.frost ? 'rgb(90,220,255)' : 'rgb(70,130,255)';
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const pts = lightningPts(f.x0, f.y0, f.x1, f.y1, seed, 0.26);
+  strokeLightning(pts, f.w || 1, col, a);
+  // yan dallar
+  for (let b = 0; b < 2; b++) {
+    const i = 3 + ((seed * 7 + b * 5) % (pts.length - 6)) | 0, [bx, by] = pts[i];
+    const ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0) + (b ? 0.7 : -0.7), L = 12 + (seed % 10);
+    strokeLightning(lightningPts(bx, by, bx + Math.cos(ang) * L, by + Math.sin(ang) * L, seed + b * 3, 0.3), (f.w || 1) * 0.55, col, a * 0.8);
+  }
+  glow(ctx, f.x0, f.y0, 12, '170,210,255', a); glow(ctx, f.x1, f.y1, 16, '190,220,255', a);
+  ctx.restore();
 }
 function fxFireHit(x, y, big) {
   emit(G.parts, { kind: 'glow', add: true, x, y, col: '255,190,90', s0: big ? 26 : 16, s1: big ? 34 : 22, life: 0.18 });
@@ -783,8 +906,18 @@ function aimY(e) {
 
 // ---------- hasar ----------
 // type: 'phys' (zırh azaltır), 'magic' (büyü direnci azaltır), 'true' (hiçbir şey azaltmaz: zehir, ateş, delici ok)
-function damageEnemy(e, amount, type, quiet) {
+// src: hasar kaynağı (arrow/magic/blast/melee); düşmanın zayıflık/direnç çarpanı uygulanır
+function damageEnemy(e, amount, type, quiet, src) {
   if (e.dead) return;
+  const wk = src && e.def.wk && e.def.wk[src];
+  if (wk) {
+    amount *= wk;
+    // belirgin zayıflık/direnci arada bir göster (oyuncu hangi kulenin işe yaradığını görsün)
+    if (!quiet && (wk >= 1.25 || wk <= 0.7) && (!e.wkFx || time - e.wkFx > 2.5)) {
+      e.wkFx = time;
+      floatText(e.x, e.y - (e.def.h || CHAR_H['enemy_' + e.type] || 26) - 10, wk > 1 ? 'ZAYIF!' : 'DİRENÇ', wk > 1 ? '#ffb04a' : '#8fc8ff');
+    }
+  }
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
   if (e.markT > 0) amount *= 1.6;
   const red = type === 'magic' ? e.def.mr : type === 'phys' ? e.def.armor : 0;
@@ -841,8 +974,9 @@ function gainXp(h, amount) {
   sfx('levelup');
   // yetenekler seviye atladıkça sırayla kendiliğinden açılır
   const sk = learnSkill(h, 0);
-  G.banner = sk ? { title: `${h.def.name}: ${sk.name}`, sub: sk.desc, t: 0, dur: 3.5 }
-    : { title: `${h.def.name} seviye ${h.lvl}!`, sub: 'Can ve hasar arttı', t: 0, dur: 3 };
+  // küçük, dikkat dağıtmayan bildirim
+  G.banner = sk ? { title: `${h.def.name} Sv.${h.lvl} · ${sk.name}`, sub: sk.desc, t: 0, dur: 2.6, small: true }
+    : { title: `${h.def.name} seviye ${h.lvl}`, sub: 'Can ve hasar arttı', t: 0, dur: 2, small: true };
   if (sk) floatText(h.x, h.y - 56, sk.name + ' açıldı!', '#ffe27a');
 }
 
@@ -1136,7 +1270,7 @@ function updateArchers(t, dt, L) {
     const d = dist(o.x, o.y, e.x, e.y);
     const pierce = t.lvl >= 1 && Math.random() < 0.25, crit = t.lvl >= 2 && Math.random() < 0.15, po = abRank(t, 'poison');
     G.projectiles.push({ kind: 'arrow', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(d / 420, 0.15, 0.6),
-      dmg: roll(L.dmg) * (crit ? 2 : 1), dtype: pierce ? 'true' : 'phys', arc: 18, crit, pierce, poison: po ? po.dps : 0 });
+      dmg: roll(L.dmg) * (crit ? 2 : 1), dtype: pierce ? 'true' : 'phys', arc: 18, crit, pierce, poison: po ? po.dps : 0, src: 'arrow' });
     sfx('arrow');
   });
   // Keskin nişancı: belli aralıkla menzildeki en canlı düşmana zırh delen tek atış
@@ -1153,7 +1287,7 @@ function updateArchers(t, dt, L) {
         fxArrowHit(best.x, aimY(best), true);
         emit(G.parts, { kind: 'glow', add: true, x: best.x, y: aimY(best), col: '255,240,190', s0: 18, s1: 26, life: 0.2 });
         floatText(best.x, best.y - 40, `-${sn.dmg}`, '#ffe9a0');
-        damageEnemy(best, sn.dmg, 'true');
+        damageEnemy(best, sn.dmg, 'true', false, 'arrow');
         sfx('arrow'); sfx('bash');
       } else t.snipeCd = 0.3;
     }
@@ -1189,7 +1323,7 @@ function updateTower(t, dt) {
       }
       if (best) {
         t.blastCd = bl.cd; t.shotAnim = 0.3;
-        for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, best.x, best.y) < 62) damageEnemy(o, bl.dmg, 'magic');
+        for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, best.x, best.y) < 62) damageEnemy(o, bl.dmg, 'magic', false, 'magic');
         fxArcaneBlast(best.x, best.y);
         sfx('meteor');
       } else t.blastCd = 0.4;
@@ -1215,16 +1349,18 @@ function updateTower(t, dt) {
   } else if (t.type === 'mage') {
     const d = dist(sx, sy, e.x, e.y);
     const fr = abRank(t, 'frost');
-    G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(d / 340, 0.2, 0.7), dmg: roll(L.dmg), dtype: 'magic', arc: 10,
+    // yıldırım: kuleden hedefe neredeyse anında çakar
+    G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: 0.07, dmg: roll(L.dmg), dtype: 'magic', arc: 0, src: 'magic',
       slow: fr ? fr : t.lvl >= 1 ? { k: 0.3, t: 1 } : null, chain: t.lvl >= 2, frost: !!fr });
+    G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: 0.28, w: 1 + t.lvl * 0.25, frost: !!fr, seed: rand(0, 99) });
     fxMagicCharge(sx, sy - 8);
-    sfx('magic');
+    sfx('zap');
   } else if (t.type === 'artillery') {
     const dur = 0.9;
     let tx = e.x, ty = e.y;
     if (!e.blocker) { const f = pathPos(e.p, e.d + e.def.speed * dur, e.off); tx = f.x; ty = f.y; }
     const na = abRank(t, 'napalm'), db = abRank(t, 'double');
-    const shell = { kind: 'shell', sx, sy, gy: t.y, target: null, tx, ty, t: 0, dur, dmg: roll(L.dmg), dtype: 'phys', arc: 70, splash: L.splash,
+    const shell = { kind: 'shell', src: 'blast', sx, sy, gy: t.y, target: null, tx, ty, t: 0, dur, dmg: roll(L.dmg), dtype: 'phys', arc: 70, splash: L.splash,
       stun: t.lvl >= 2 ? 0.3 : 0, napalm: na ? na.dps : 0 };
     G.projectiles.push(shell);
     if (db) {
@@ -1303,7 +1439,7 @@ function updateEnemy(e, dt) {
   }
   if (e.poisonT > 0) {
     e.poisonT -= dt;
-    damageEnemy(e, e.poisonDps * dt, 'true', true);
+    damageEnemy(e, e.poisonDps * dt, 'true', true, 'arrow');
     if (Math.random() < dt * 8) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: aimY(e) + rand(-6, 6), vy: -18, col: '140,255,90', s0: 2.8, s1: 0.5, life: 0.7 });
     if (e.dead) return;
   }
@@ -1467,7 +1603,7 @@ function updateSoldier(s, dt) {
           s.swingT = 0.3;
           if (s.learned.bleed) { t.bleedDps = Math.max(t.bleedT > 0 ? t.bleedDps : 0, 6 + s.lvl * 2); t.bleedT = 3; }
         }
-        damageEnemy(t, dmg, 'phys');
+        damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee');
         if (s.steal) s.hp = Math.min(s.maxHp, s.hp + dmg * s.steal);
         if (crit) floatText(t.x, t.y - 30, 'KRİTİK!', '#ffb347');
         slashFx(t.x, t.y - (CHAR_H['enemy_' + t.type] || 20) * 0.55, s.face, s.gear >= 2 ? '#ffe9a0' : '#ffffff', crit ? 1.5 : 1);
@@ -1838,8 +1974,7 @@ function updateProjectile(pr, dt) {
     if (pr.fxT <= 0) {
       const q = projPos(pr, pr.t / pr.dur);
       if (pr.kind === 'bolt') {
-        pr.fxT = 0.016;
-        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-2, 2), y: q.y + rand(-2, 2), vx: rand(-14, 14), vy: rand(-14, 14), col: '180,120,255', s0: rand(5, 8), s1: 1, life: rand(0.25, 0.4) });
+        pr.fxT = 1;
       } else if (pr.kind === 'fireball') {
         pr.fxT = 0.016;
         emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-2, 2), y: q.y + rand(-2, 2), vx: rand(-12, 12), vy: rand(-20, 0), col: Math.random() < 0.5 ? '255,130,40' : '255,210,90', s0: rand(5, 8), s1: 1, life: rand(0.25, 0.4) });
@@ -1847,9 +1982,10 @@ function updateProjectile(pr, dt) {
         pr.fxT = 0.03;
         emit(G.parts, { kind: 'glow', x: q.x, y: q.y, vx: rand(-5, 5), vy: -8, col: '130,124,118', s0: 2.5, s1: 7, life: 0.5, a: 0.4 });
       } else if (pr.kind === 'meteor') {
-        pr.fxT = 0.012;
-        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-4, 4), y: q.y + rand(-4, 4), vx: rand(-20, 20), vy: rand(-30, 0), col: Math.random() < 0.5 ? '255,140,40' : '255,210,100', s0: rand(9, 13), s1: 2, life: rand(0.25, 0.4) });
-        emit(G.parts, { kind: 'glow', x: q.x, y: q.y, vx: rand(-10, 10), vy: rand(-15, -5), col: '80,70,64', s0: 6, s1: 14, life: 0.7, a: 0.4 });
+        pr.fxT = 0.01;
+        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-5, 5), y: q.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-35, 5), drag: 2, col: Math.random() < 0.5 ? '255,120,30' : '255,200,90', s0: rand(10, 15), s1: 2, life: rand(0.3, 0.5) });
+        emit(G.parts, { kind: 'glow', x: q.x + rand(-3, 3), y: q.y, vx: rand(-12, 12), vy: rand(-22, -8), drag: 0.8, col: Math.random() < 0.5 ? '60,52,48' : '96,86,78', s0: rand(6, 9), s1: rand(16, 22), life: rand(0.8, 1.2), a: 0.45, fadeIn: 0.08 });
+        if (Math.random() < 0.6) emit(G.parts, { kind: 'streak', add: true, x: q.x, y: q.y, vx: rand(-60, 60), vy: rand(-80, 20), g: 260, col: '#ffcf70', s0: 1.4, s1: 0.2, life: rand(0.25, 0.45) });
       }
     }
   }
@@ -1864,11 +2000,12 @@ function updateProjectile(pr, dt) {
     for (const e of G.enemies) {
       if (e.dead || e.def.flying) continue;
       const d = dist(e.x, e.y, pr.tx, pr.ty);
-      if (d <= pr.splash) damageEnemy(e, pr.dmg * (1 - 0.5 * d / pr.splash), 'phys');
+      if (d <= pr.splash) damageEnemy(e, pr.dmg * (1 - 0.5 * d / pr.splash), 'phys', false, pr.src);
     }
     if (pr.stun) for (const e of G.enemies) if (!e.dead && !e.def.flying && dist(e.x, e.y, pr.tx, pr.ty) <= pr.splash * 0.8 && Math.random() < pr.stun) stunEnemy(e, 0.6);
-    if (pr.napalm) G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.75, dps: pr.napalm, t: 0, life: 3, fxT: 0 });
-    fxExplosion(pr.tx, pr.ty, pr.splash, pr.kind === 'meteor');
+    if (pr.napalm) G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.75, dps: pr.napalm, t: 0, life: 3, fxT: 0, src: 'blast' });
+    if (pr.kind === 'meteor') fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn);
+    else fxExplosion(pr.tx, pr.ty, pr.splash, false);
     sfx(pr.kind === 'meteor' ? 'meteor' : 'boom');
   } else if (pr.target && !pr.target.dead) {
     const e = pr.target;
@@ -1877,7 +2014,7 @@ function updateProjectile(pr, dt) {
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
     if (pr.inferno) for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.inferno) damageEnemy(o, pr.dmg * 0.5, 'magic');
     if (pr.splash) {
-      for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.splash) damageEnemy(o, pr.dmg * 0.55, pr.dtype);
+      for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.splash) damageEnemy(o, pr.dmg * 0.55, pr.dtype, false, pr.src);
       if (pr.burn) G.zones.push({ x: e.x, y: e.y, r: pr.splash * 0.8, dps: 8, dtype: 'true', kind: 'fire', t: 0, life: 1.5, fxT: 0 });
       G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: pr.splash, col: pr.burn ? '255,160,70' : '255,240,190', t: 0, dur: 0.3 });
       if (pr.big) fxExplosion(e.x, e.y, pr.splash, false);
@@ -1885,15 +2022,15 @@ function updateProjectile(pr, dt) {
     if (pr.crit) floatText(e.x, e.y - 34, 'KRİTİK!', '#ffb347');
     if (pr.poison) poisonEnemy(e, pr.poison, 3);
     if (pr.slow) slowEnemy(e, pr.slow.k, pr.slow.t);
-    damageEnemy(e, pr.dmg, pr.dtype);
+    damageEnemy(e, pr.dmg, pr.dtype, false, pr.src);
     if (pr.chain) {
       const n = G.enemies.filter(o => o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < 85)
         .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))[0];
       if (n) {
-        G.effects.push({ kind: 'bolt', pts: [[pr.tx, pr.ty], [n.x, aimY(n)]], t: 0, dur: 0.25, col: pr.frost ? 'frost' : 'arcane' });
+        G.effects.push({ kind: 'zap', x0: pr.tx, y0: pr.ty, target: n, x1: n.x, y1: aimY(n), t: 0, dur: 0.25, w: 0.8, frost: pr.frost, seed: rand(0, 99) });
         fxMagicHit(n.x, aimY(n), pr.frost);
         if (pr.slow) slowEnemy(n, pr.slow.k, pr.slow.t);
-        damageEnemy(n, pr.dmg * 0.6, 'magic');
+        damageEnemy(n, pr.dmg * 0.6, 'magic', false, 'magic');
       }
     }
   }
@@ -1905,8 +2042,8 @@ function castSpell(id, x, y) {
   const ur = upgRank('spells');
   if (id === 'meteor') {
     for (let i = 0; i < S.count + (ur >= 1 ? 1 : 0); i++) {
-      const tx = x + rand(-30, 30), ty = y + rand(-20, 20);
-      G.projectiles.push({ kind: 'meteor', sx: tx - 120, sy: ty - 400, tx, ty, t: -i * 0.25, dur: 0.6, dmg: roll(S.dmg), splash: S.radius, arc: 0 });
+      const tx = x + (i ? rand(-34, 34) : 0), ty = y + (i ? rand(-20, 20) : 0);
+      G.projectiles.push({ kind: 'meteor', sx: tx + 170, sy: ty - 470, tx, ty, t: -0.35 - i * 0.28, dur: 0.8, dmg: roll(S.dmg), splash: S.radius, arc: 0, src: 'blast', spin: rand(0, 6), burn: true });
     }
   } else if (id === 'reinforce') {
     for (let i = 0; i < S.count + (ur >= 2 ? 1 : 0); i++) {
@@ -1954,7 +2091,7 @@ function update(dt) {
   if (G.intro) { G.intro.t += dt; if (G.intro.t > G.intro.dur) G.intro = null; }
   for (const z of G.zones) {
     z.t += dt; z.fxT -= dt;
-    for (const e of G.enemies) if (!e.dead && !e.def.flying && dist(e.x, e.y, z.x, z.y) <= z.r) damageEnemy(e, z.dps * dt, z.dtype || 'true', true);
+    for (const e of G.enemies) if (!e.dead && !e.def.flying && dist(e.x, e.y, z.x, z.y) <= z.r) damageEnemy(e, z.dps * dt, z.dtype || 'true', true, z.src);
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
@@ -2579,9 +2716,16 @@ function drawTower(t) {
     if (t.type === 'mage') {
       const gy = ts.bottom - ts.h * 0.9, r = 9 + Math.sin(t.anim * 3) * 2 + (t.shotAnim > 0 ? 8 : 0);
       const g = ctx.createRadialGradient(t.x, gy, 0, t.x, gy, r * 2);
-      g.addColorStop(0, 'rgba(230,200,255,0.55)'); g.addColorStop(1, 'rgba(160,90,255,0)');
+      g.addColorStop(0, 'rgba(200,230,255,0.6)'); g.addColorStop(1, 'rgba(80,140,255,0)');
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(t.x, gy, r * 2, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.arc(t.x, gy, r * 2, 0, Math.PI * 2); ctx.fill();
+      // küre etrafında çıtırdayan kısa elektrik arkları
+      const sd = Math.floor(G.t * 14 + t.x);
+      if (sd % 3 === 0 || t.shotAnim > 0) {
+        const a0 = (sd * 2.39996) % (Math.PI * 2), L = 7 + (sd % 5);
+        strokeLightning(lightningPts(t.x + Math.cos(a0) * 3, gy + Math.sin(a0) * 3, t.x + Math.cos(a0) * L, gy + Math.sin(a0) * L * 0.8, sd, 0.35), 0.45, 'rgb(130,180,255)', 0.9);
+      }
+      ctx.restore();
     }
     return;
   }
@@ -2631,8 +2775,11 @@ function drawEnemy(e) {
       ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-4, 0); ctx.moveTo(4, 0); ctx.lineTo(9, 0); ctx.moveTo(0, -9); ctx.lineTo(0, -4); ctx.moveTo(0, 4); ctx.lineTo(0, 9); ctx.stroke();
       ctx.restore();
     }
-    if (!d.chief) hpBar(e.x, top, d.boss ? 30 : 14, fr, d.boss ? '#ff7a3a' : fr > 0.5 ? '#5bd35b' : fr > 0.25 ? '#f2c230' : '#ef4a3a');
-    else hpBar(e.x, top + 6, 34, fr, '#ff5a3a');
+    // can barı yalnızca hasar almış düşmanda görünür
+    if (fr < 0.999) {
+      if (!d.chief) hpBar(e.x, top, d.boss ? 30 : 14, fr, d.boss ? '#ff7a3a' : fr > 0.5 ? '#5bd35b' : fr > 0.25 ? '#f2c230' : '#ef4a3a');
+      else hpBar(e.x, top + 6, 34, fr, '#ff5a3a');
+    }
     if (e.stun > 0) {
       for (let i = 0; i < 3; i++) {
         const a = time * 5 + i * 2.1;
@@ -2705,7 +2852,7 @@ function drawEnemy(e) {
   }
   ctx.restore();
   const top = y - d.r * 2 - (d.flying ? 6 : 8);
-  hpBar(e.x, top, d.boss ? 40 : 20, e.hp / e.maxHp);
+  if (e.hp < e.maxHp * 0.999) hpBar(e.x, top, d.boss ? 40 : 20, e.hp / e.maxHp);
 }
 
 function drawSoldier(s) {
@@ -3035,6 +3182,7 @@ function drawCorpse(f) {
 }
 
 function drawProjectile(p) {
+  if (p.kind === 'meteor') { drawMeteor(p); return; }
   if (p.t < 0) return;
   const k = clamp(p.t / p.dur, 0, 1);
   const { x, y } = projPos(p, k);
@@ -3057,14 +3205,7 @@ function drawProjectile(p) {
     ctx.fillStyle = '#d8dbe2'; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2.4); ctx.lineTo(3, 2.4); ctx.fill();
     ctx.restore();
   } else if (p.kind === 'bolt') {
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, x, y, 18, '170,100,255', 0.9);
-    glow(ctx, x, y, 8, '255,240,255', 1);
-    ctx.restore();
-    ctx.save(); ctx.translate(x, y); ctx.rotate(time * 9);
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(6, 0); ctx.moveTo(0, -6); ctx.lineTo(0, 6); ctx.stroke();
-    ctx.restore();
+    // yıldırım 'zap' efektiyle çiziliyor
   } else if (p.kind === 'dagger') {
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 22);
     ctx.fillStyle = '#e8ecf4'; ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.8;
@@ -3149,6 +3290,8 @@ function drawEffect(f) {
       ctx.beginPath(); ctx.ellipse(0, 6, 46, 18, 0, a, a + 1.4); ctx.stroke();
     }
     ctx.restore();
+  } else if (f.kind === 'zap') {
+    drawZap(f);
   } else if (f.kind === 'bolt') {
     ctx.save(); ctx.globalAlpha = 1 - k; ctx.lineJoin = 'round';
     const bc = f.col === 'arcane' ? 'rgba(190,120,255,0.55)' : f.col === 'frost' ? 'rgba(140,210,255,0.55)' : f.col === 'holy' ? 'rgba(255,235,160,0.6)' : 'rgba(140,180,255,0.5)';
@@ -3190,6 +3333,15 @@ function drawEffect(f) {
     ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
     ctx.strokeStyle = '#fffbe8'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
+    ctx.restore();
+  } else if (f.kind === 'firering') {
+    // yerde genişleyen alev halkası
+    const e = 1 - Math.pow(1 - k, 2.5), r = f.r * (0.25 + 0.75 * e);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 18; i++) {
+      const a = i / 18 * Math.PI * 2, fx = f.x + Math.cos(a) * r, fy = f.y + Math.sin(a) * r * 0.45;
+      glow(ctx, fx, fy - 4, 10 * (1 - k) + 3, i % 2 ? '255,130,40' : '255,200,90', 1 - k);
+    }
     ctx.restore();
   } else if (f.kind === 'shock') {
     const e = 1 - Math.pow(1 - k, 3), r = f.r * (0.2 + 0.8 * e);
@@ -3516,8 +3668,8 @@ function drawMenu() {
   // menzil önizleme
   if (G.sel.kind === 'tower') {
     const t = G.sel.tower;
-    let rangeShow = t.def.levels[t.lvl].range;
-    if (G.preview && G.preview.id === 'upgrade') rangeShow = t.def.levels[t.lvl + 1].range;
+    let rangeShow = effLevel(t).range; // yıldız gelişmeleri ve yetenekler dahil gerçek menzil
+    if (G.preview && G.preview.id === 'upgrade') rangeShow = effLevel(Object.assign({}, t, { lvl: t.lvl + 1 })).range;
     drawRange(t.x, t.y - (t.type === 'barracks' ? 0 : 10), rangeShow * Math.min(1, easeOutBack(clamp((time - G.menuT) / 0.3, 0, 1))), t.type === 'barracks');
     if (t.type === 'barracks') drawRally(t.rx, t.ry);
   } else if (G.preview && G.preview.id === 'build') {
@@ -3951,6 +4103,17 @@ function drawBanner() {
   const b = G.banner;
   if (!b) return;
   const a = clamp(Math.min(1, b.t / 0.25, (b.dur - b.t) / 0.4), 0, 1), e = easeOutBack(clamp(b.t / 0.35, 0, 1));
+  if (b.small) {
+    // kahraman seviye bildirimi: üstte ince bir şerit
+    ctx.save(); ctx.globalAlpha = a * 0.95; ctx.translate(W / 2, 78 - (1 - e) * 8);
+    ctx.font = `700 10px ${FONT_B}`;
+    const w = Math.max(170, ctx.measureText(b.sub).width + 28);
+    roundRect(-w / 2, -15, w, 30, 10, 'rgba(24,16,8,0.82)', 'rgba(255,211,77,0.7)', 1.2);
+    txt(b.title, 0, -4.5, 11.5, '#ffd34d', 'center', '400', FONT_T, false);
+    txt(b.sub, 0, 8, 9.5, '#e8dcc4', 'center', '700', FONT_B, false);
+    ctx.restore();
+    return;
+  }
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, 112); ctx.scale(0.7 + 0.3 * e, 0.7 + 0.3 * e);
   ctx.font = `700 13px ${FONT_B}`;
   const w = Math.max(320, ctx.measureText(b.sub).width + 48);
@@ -4328,7 +4491,8 @@ function drawIntro() {
   if (!it) return;
   if (it.t > it.dur) { G.intro = null; return; }
   const d = ENEMIES[it.type], a = clamp(Math.min(it.t / 0.3, (it.dur - it.t) / 0.4), 0, 1), e = easeOutBack(clamp(it.t / 0.4, 0, 1));
-  const w = it.boss ? 340 : 300, h = 70, x0 = W / 2 - w / 2, y0 = it.boss ? 92 : 64;
+  const wk = d.wk || {}, weak = Object.keys(wk).filter(k => wk[k] > 1), res = Object.keys(wk).filter(k => wk[k] < 1);
+  const w = it.boss ? 340 : 300, h = weak.length || res.length ? 88 : 70, x0 = W / 2 - w / 2, y0 = it.boss ? 92 : 64;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, y0 + h / 2); ctx.scale(e, e); ctx.translate(-W / 2, -(y0 + h / 2));
   roundRect(x0 + 2, y0 + 5, w, h, 16, 'rgba(0,0,0,0.3)');
   const g = ctx.createLinearGradient(0, y0, 0, y0 + h);
@@ -4344,6 +4508,17 @@ function drawIntro() {
   txt(it.boss ? 'BOSS GELİYOR' : 'YENİ DÜŞMAN', x0 + 72, y0 + 16, 11, it.boss ? '#ff9a7a' : '#ffd34d', 'left', '800', FONT_B, false);
   txt(d.name, x0 + 72, y0 + 34, 19, '#fff', 'left', '400', FONT_T);
   txt(d.desc || ENEMY_DESC[it.type] || '', x0 + 72, y0 + 54, 11.5, '#f0e2c4', 'left', '700', FONT_B, false);
+  let tx = x0 + 72;
+  const tag = (label, list, col, bg) => {
+    if (!list.length) return;
+    const s = label + ' ' + list.map(k => WK_NAME[k]).join(', ');
+    ctx.font = `800 10.5px ${FONT_B}`; const tw = ctx.measureText(s).width + 14;
+    roundRect(tx, y0 + 64, tw, 16, 8, bg, col, 1);
+    txt(s, tx + tw / 2, y0 + 72.5, 10.5, col, 'center', '800', FONT_B, false);
+    tx += tw + 6;
+  };
+  tag('Zayıf:', weak, '#ffd08a', 'rgba(150,60,10,0.6)');
+  tag('Dirençli:', res, '#a8d8ff', 'rgba(20,60,120,0.6)');
   ctx.restore();
 }
 
@@ -4372,7 +4547,10 @@ function starsSpent() { return UPGRADES.reduce((a, u) => a + u.ranks.slice(0, up
 function diff() { return GAME_DIFF; } // zorluk sabit
 // gelişmelerle güçlenmiş kule seviyesi değerleri
 function effLevel(t) {
-  const L = t.def.levels[t.lvl], r = upgRank(t.type);
+  let L = t.def.levels[t.lvl];
+  const sn = t.type === 'archer' && abRank(t, 'snipe'); // keskin nişancı menzili de artırır
+  if (sn) L = Object.assign({}, L, { range: L.range + sn.range });
+  const r = upgRank(t.type);
   if (!r || t.type === 'barracks') return L;
   const dm = (r >= 1 ? 1.1 : 1) * (r >= 3 ? 1.15 : 1);
   const o = Object.assign({}, L, { dmg: [L.dmg[0] * dm, L.dmg[1] * dm] });
@@ -4643,8 +4821,13 @@ function drawPlay() {
   if (sh > 0) ctx.translate(rand(-sh, sh), rand(-sh, sh));
   ctx.drawImage(G.bg, 0, 0, W, H);
   for (const d of G.decals) {
-    ctx.globalAlpha = 0.38 * Math.min(1, (d.life - d.t) / 2.5);
+    ctx.globalAlpha = (d.hot ? 0.6 : 0.38) * Math.min(1, (d.life - d.t) / 2.5);
     ctx.drawImage(scorchTex(), d.x - d.r, d.y - d.r * 0.5, d.r * 2, d.r);
+    if (d.hot && d.t < 3) {
+      ctx.globalAlpha = 1; ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, d.x, d.y, d.r * 0.7, '255,110,30', (1 - d.t / 3) * (0.55 + Math.sin(time * 9 + d.x) * 0.1));
+      ctx.restore();
+    }
   }
   ctx.globalAlpha = 1;
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
