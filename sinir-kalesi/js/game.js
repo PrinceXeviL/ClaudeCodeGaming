@@ -1033,9 +1033,9 @@ function findTarget(t, range, allowAir) {
 const ARCHER_DECK = [
   { cx: 0.5, cy: 0.30, hw: 0.29, hh: 0.10, n: 2 },
   { cx: 0.388, cy: 0.341, hw: 0.22, hh: 0.10, n: 2 },
-  { cx: 0.5, cy: 0.252, hw: 0.23, hh: 0.085, n: 3 },
+  { cx: 0.5, cy: 0.252, hw: 0.25, hh: 0.09, n: 3 },
 ];
-const archerScale = (ts) => ts.w / 58;
+const archerScale = (ts) => Math.min(ts.w, 72) / 78;
 // okçunun ayak noktası; p,q platform içindeki konumu (|p|+|q| <= 1)
 function archerPoint(t, ts, i) {
   const D = ARCHER_DECK[t.lvl], a = t.shots && t.shots[i];
@@ -1044,13 +1044,19 @@ function archerPoint(t, ts, i) {
 }
 // okun çıktığı nokta: okçunun omzundan nişan yönünde yayın ucu
 function bowPoint(t, ts, i) {
-  const o = archerPoint(t, ts, i), a = t.shots[i], s = archerScale(ts);
-  return { x: o.x + Math.cos(a.ang) * 6 * s, y: o.y - 14.2 * s + Math.sin(a.ang) * 6 * s };
+  const o = archerPoint(t, ts, i), a = t.shots[i], s = archerScale(ts), f = Math.cos(a.ang) >= 0 ? 1 : -1;
+  return { x: o.x + f * 0.6 * s + Math.cos(a.ang) * 11 * s, y: o.y - 16.4 * s + Math.sin(a.ang) * 11 * s };
 }
-// platformda rastgele bir nokta (köşelere fazla yaklaşmadan)
-function deckSpot() {
-  const p = rand(-0.75, 0.75), r = 0.8 - Math.abs(p);
-  return [p, rand(-r, r)];
+// platformda rastgele bir nokta; birkaç adaydan diğer okçulara en uzak olanı seçilir
+function deckSpot(shots, me, px, py) {
+  let best = null, bd = -1;
+  for (let k = 0; k < 6; k++) {
+    const p = rand(-0.75, 0.75), r = 0.8 - Math.abs(p), q = rand(-r, r);
+    let d = 9;
+    for (const b of shots) if (b !== me) d = Math.min(d, Math.hypot((p - b.gp) * px / 14, (q - b.gq) * py / 9), Math.hypot((p - b.p) * px / 14, (q - b.q) * py / 9));
+    if (d > bd) { bd = d; best = [p, q]; }
+  }
+  return best;
 }
 const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 
@@ -1064,6 +1070,7 @@ function updateArchers(t, dt, L) {
     });
   }
   const e0 = findTarget(t, L.range, true);
+  const D = ARCHER_DECK[t.lvl], px = ts ? D.hw * ts.w : 20, py = ts ? D.hh * ts.h : 8; // platformun yarı ölçüleri (px)
   t.shots.forEach((a, i) => {
     a.fx = Math.max(0, a.fx - dt);
     a.cd -= dt;
@@ -1075,24 +1082,30 @@ function updateArchers(t, dt, L) {
       if (d < 0.03) {
         a.moving = false;
         a.wait -= dt;
-        if (a.wait <= 0) { [a.gp, a.gq] = deckSpot(); a.wait = rand(0.8, 3); }
+        if (a.wait <= 0) { [a.gp, a.gq] = deckSpot(t.shots, a, px, py); a.wait = rand(0.8, 3); a.walkT = 0; }
       } else {
         const sp = Math.min(0.42 * dt, d);
         a.p += dp / d * sp; a.q += (dq / d * sp) / 0.45;
         vx = dp / d; a.moving = true;
+        // yolu başka okçu tıkıyorsa yerinde yürümesin: bir süre sonra vazgeçip olduğu yerde durur
+        a.walkT = (a.walkT || 0) + dt;
+        if (a.walkT > 2.5) { a.gp = a.p; a.gq = a.q; a.walkT = 0; }
       }
     } else { a.moving = false; a.gp = a.p; a.gq = a.q; a.wait = rand(0.6, 1.5); }
-    // birbirinin içinden geçmesinler
+    // birbirinin içinden geçmesinler: ekranda ~14 px yan, ~9 px derinlik aralığı korunur
     for (let j = 0; j < t.shots.length; j++) {
       if (j === i) continue;
-      const b = t.shots[j], dp = a.p - b.p, dq = (a.q - b.q) * 0.45, d = Math.hypot(dp, dq);
-      if (d < 0.3 && d > 1e-4) { const k = (0.3 - d) * 2 * dt; a.p += dp / d * k; a.q += dq / d * k / 0.45; }
+      const b = t.shots[j], dx = (a.p - b.p) * px, dy = (a.q - b.q) * py, e = Math.hypot(dx / 14, dy / 9);
+      if (e < 1) {
+        const ux = e > 1e-4 ? dx / 14 / e : (i < j ? -1 : 1), uy = e > 1e-4 ? dy / 9 / e : 0, k = (1 - e) * 3 * dt;
+        a.p += ux * k * 14 / px; a.q += uy * k * 9 / py;
+      }
     }
     const m = Math.abs(a.p) + Math.abs(a.q);
     if (m > 0.9) { a.p *= 0.9 / m; a.q *= 0.9 / m; }
     a.walk = a.moving ? a.walk + dt : 0;
     const o = ts ? archerPoint(t, ts, i) : { x: t.x, y: t.y - 34 };
-    if (ts) o.y -= 14.2 * archerScale(ts);
+    if (ts) o.y -= 16.4 * archerScale(ts);
     let goal;
     if (e0) goal = Math.atan2(aimY(e0) - o.y, e0.x - o.x);
     else if (a.moving) goal = vx >= 0 ? 0.3 : Math.PI - 0.3;
@@ -2162,68 +2175,214 @@ function drawArtilleryBanners(t, ts) {
   }
 }
 
-// Kule tepesindeki okçu: gövde, başlık/miğfer, hedef yönüne dönen kollar ve yay; kiriş atıştan önce gerilir
+// ---- Kule okçusu: önceden çizilmiş (önbellekli) gövde/bacak/yay parçaları + eklemli kollar ----
+// Birim uzay: ayaklar (0,0), boy ~30 birim, sağa bakar. Parçalar ARCH_R px/birim çözünürlükte bir kez çizilir.
+const ARCH_R = 10;
 const ARCHER_LOOK = [
-  { body: '#3f7a2e', dark: '#24501c', hood: '#4f8f36', trim: '#8a5a2a' },
-  { body: '#2f6a2a', dark: '#1c4418', hood: '#3f7e30', trim: '#c9a24a' },
-  { body: '#c9302a', dark: '#7a1612', hood: '#e2b13c', trim: '#ffe08a', helm: true },
+  { tunic: ['#7dbb4e', '#3d7424'], hood: ['#86c454', '#3f7a26'], inner: '#1f3a12', cape: ['#4a8030', '#22451a'], sleeve: ['#6aa842', '#356a20'],
+    trim: '#b07a3a', belt: '#5a3416', buckle: '#d9b45a', pants: ['#7a6446', '#4a3a26'], boot: ['#6a4022', '#3a200c'], bow: ['#d49a56', '#7a4a1e'], fletch: '#f1ead6', quiver: ['#a8703a', '#64401a'] },
+  { tunic: ['#5aa848', '#2a6420'], hood: ['#3f8a34', '#1c4a16'], inner: '#122a0c', cape: ['#2f6a26', '#133212'], sleeve: ['#4f9a3c', '#265a1c'], vest: ['#b4783e', '#6c4018'],
+    trim: '#e8b84a', belt: '#4a2a10', buckle: '#f2cd5a', pants: ['#5e4c34', '#3a2c1c'], boot: ['#5a3418', '#2e1808'], bow: ['#e0a65a', '#84501e'], fletch: '#e2412e', quiver: ['#8a5428', '#502e10'] },
+  { tunic: ['#e04a40', '#8a1a16'], helm: ['#f4f8fc', '#8492a2'], plume: ['#ff5a48', '#a8141a'], cape: ['#c42a2c', '#5e0c10'], sleeve: ['#d2dae2', '#76808c'],
+    trim: '#f4c84e', belt: '#4a2a10', buckle: '#ffe27a', pants: ['#4a4258', '#2a2434'], boot: ['#4a2e14', '#24140a'], bow: ['#ffd866', '#a06c10'], fletch: '#ffffff', quiver: ['#7a3a1e', '#401a0a'], hair: '#6a3a1a' },
 ];
+const ARCH_OUT = '#2a160a';
+function archCanvas(x0, y0, w, h, paint) {
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(w * ARCH_R); c.height = Math.ceil(h * ARCH_R);
+  const g = c.getContext('2d');
+  g.scale(ARCH_R, ARCH_R); g.translate(-x0, -y0);
+  g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = ARCH_OUT; g.lineWidth = 1.05;
+  paint(g);
+  return { c, x0, y0, w, h };
+}
+const archGrad = (g, x0, y0, x1, y1, c) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, c[0]); gr.addColorStop(1, c[1]); return gr; };
+function paintArcherBody(g, L, lvl) {
+  const fs = (fill) => { g.fillStyle = fill; g.fill(); g.stroke(); };
+  // pelerin (arkada)
+  g.beginPath(); g.moveTo(-1.5, -18.2);
+  g.bezierCurveTo(-6.5, -17.5, -9.6, -12.5, -10, -6.4);
+  g.quadraticCurveTo(-8.6, -7.4, -7.4, -6.2); g.quadraticCurveTo(-6.2, -7.3, -4.8, -6.4);
+  g.lineTo(-2.2, -9); g.closePath();
+  fs(archGrad(g, -6, -18, -6, -6, L.cape));
+  g.save(); g.globalAlpha = 0.35; g.strokeStyle = '#000'; g.lineWidth = 0.5;
+  g.beginPath(); g.moveTo(-4, -16); g.quadraticCurveTo(-6.8, -12, -7.2, -7.2); g.stroke(); g.restore();
+  // sadak: sırtta, oklar omzun üstünden görünür
+  g.save(); g.translate(-4.4, -15.2); g.rotate(-0.42);
+  for (const [dx, h, col] of [[-0.9, 3.4, L.fletch], [0.2, 4.2, L.fletch], [1.1, 3.0, L.fletch]]) {
+    g.strokeStyle = ARCH_OUT; g.lineWidth = 0.9; g.beginPath(); g.moveTo(dx, -4.8); g.lineTo(dx, -4.8 - h + 1.2); g.stroke();
+    g.beginPath(); g.moveTo(dx, -4.8 - h); g.lineTo(dx + 0.9, -4.8 - h + 1.8); g.lineTo(dx, -4.8 - h + 1.3); g.lineTo(dx - 0.9, -4.8 - h + 1.8); g.closePath();
+    g.lineWidth = 0.55; g.fillStyle = col; g.fill(); g.stroke();
+  }
+  g.lineWidth = 1.05; g.beginPath(); g.roundRect(-2, -5.2, 4, 10.6, 1.3); fs(archGrad(g, -2, 0, 2, 0, L.quiver));
+  g.fillStyle = L.trim; g.fillRect(-2, -4.4, 4, 0.9); g.fillRect(-2, 3.2, 4, 0.9);
+  g.restore();
+  // gövde (tunik)
+  g.beginPath();
+  g.moveTo(-4.4, -17.6); g.quadraticCurveTo(0, -18.6, 4.2, -17.6);
+  g.lineTo(4.4, -10.6); g.quadraticCurveTo(5.4, -8.4, 5.6, -6.8);
+  g.quadraticCurveTo(0, -5.8, -5.4, -6.8);
+  g.quadraticCurveTo(-5.2, -8.6, -4.3, -10.6); g.closePath();
+  fs(archGrad(g, -4, -18, 4, -7, L.tunic));
+  // etek yırtmacı ve kenar süsü
+  g.save(); g.clip();
+  g.strokeStyle = L.trim; g.lineWidth = 0.8; g.beginPath(); g.moveTo(-5.6, -7.2); g.quadraticCurveTo(0, -6.3, 5.8, -7.2); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.ellipse(1.4, -15.2, 1.6, 2.6, 0.2, 0, 7); g.fill();
+  if (L.vest) {
+    g.beginPath(); g.moveTo(-1.2, -18); g.lineTo(4.6, -17.8); g.lineTo(4.8, -10.4); g.lineTo(-0.6, -10.4); g.closePath();
+    g.fillStyle = archGrad(g, -1, -18, 4, -10, L.vest); g.fill(); g.strokeStyle = ARCH_OUT; g.lineWidth = 0.7; g.stroke();
+    g.fillStyle = L.trim; for (const y of [-16.4, -14.4, -12.4]) { g.beginPath(); g.arc(1.6, y, 0.45, 0, 7); g.fill(); }
+  }
+  if (lvl === 2) {
+    // altın şeritli arma önlüğü
+    g.fillStyle = L.trim; g.fillRect(0.6, -18, 1.4, 12);
+    g.fillStyle = '#7a1210'; g.fillRect(1.0, -18, 0.6, 12);
+  }
+  g.restore();
+  // kemer
+  g.lineWidth = 0.7; g.beginPath(); g.roundRect(-4.6, -11.2, 9.4, 1.6, 0.5); fs(L.belt);
+  g.beginPath(); g.roundRect(1.6, -11.5, 2.2, 2.2, 0.5); g.fillStyle = L.buckle; g.fill(); g.stroke();
+  g.lineWidth = 1.05;
+  // boyun
+  g.beginPath(); g.roundRect(-0.6, -19.4, 3, 2.4, 0.8); fs('#e8a878');
+  const hx = 1.2, hy = -23;
+  const skin = archGrad(g, hx - 4, hy - 5, hx + 4, hy + 5, ['#ffe0bc', '#e9a674']);
+  const face = () => {
+    g.beginPath(); g.arc(hx, hy, 5.5, 0, Math.PI * 2); g.fillStyle = skin; g.fill();
+    // yanak, göz, kaş, burun, ağız
+    g.fillStyle = 'rgba(240,120,100,0.45)'; g.beginPath(); g.ellipse(hx + 3.0, hy + 1.8, 1.2, 0.8, 0, 0, 7); g.fill();
+    g.fillStyle = '#1e1008'; g.beginPath(); g.ellipse(hx + 3.0, hy - 0.4, 0.75, 1.15, 0, 0, 7); g.fill();
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(hx + 3.25, hy - 0.8, 0.32, 0, 7); g.fill();
+    g.strokeStyle = '#4a2810'; g.lineWidth = 0.6; g.beginPath(); g.moveTo(hx + 1.9, hy - 2.4); g.lineTo(hx + 4.0, hy - 2.0); g.stroke();
+    g.strokeStyle = '#a8603a'; g.lineWidth = 0.5; g.beginPath(); g.moveTo(hx + 3.6, hy + 2.9); g.quadraticCurveTo(hx + 4.4, hy + 3.2, hx + 4.8, hy + 2.7); g.stroke();
+    g.fillStyle = skin; g.strokeStyle = ARCH_OUT; g.lineWidth = 0.6;
+    g.beginPath(); g.moveTo(hx + 5.2, hy - 0.4); g.quadraticCurveTo(hx + 6.6, hy + 0.9, hx + 5.2, hy + 1.4); g.fill(); g.stroke();
+    g.lineWidth = 1.05;
+  };
+  if (L.helm) {
+    // saç, yüz, miğfer, sorguç
+    g.beginPath(); g.moveTo(hx - 5.4, hy - 1); g.quadraticCurveTo(hx - 6.6, hy + 4, hx - 3, hy + 5); g.lineTo(hx - 1, hy + 2); g.closePath(); fs(L.hair);
+    face();
+    g.beginPath(); g.arc(hx, hy, 5.5, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(hx - 0.6, hy - 6.6); g.bezierCurveTo(hx - 3, hy - 11.2, hx - 8.4, hy - 9.6, hx - 9.4, hy - 6.2);
+    g.bezierCurveTo(hx - 7.6, hy - 7.6, hx - 4, hy - 7.6, hx - 0.6, hy - 6.6); fs(archGrad(g, hx, hy - 11, hx - 9, hy - 6, L.plume));
+    g.beginPath(); g.ellipse(hx + 0.2, hy - 1.6, 6.3, 5.6, 0, Math.PI, Math.PI * 2); g.closePath(); fs(archGrad(g, hx - 3, hy - 7, hx + 4, hy - 1, L.helm));
+    g.beginPath(); g.ellipse(hx + 0.2, hy - 1.4, 7.6, 1.5, 0, 0, Math.PI * 2); fs(archGrad(g, hx, hy - 3, hx, hy, L.helm));
+    g.fillStyle = L.trim; g.strokeStyle = ARCH_OUT; g.lineWidth = 0.6; g.beginPath(); g.roundRect(hx - 0.5, hy - 7.4, 1.4, 6, 0.6); g.fill(); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.ellipse(hx - 2.2, hy - 4.8, 1.6, 0.8, -0.5, 0, 7); g.fill();
+  } else {
+    // başlık: dış kontur + sivri ucu, yüz açıklığı
+    g.beginPath();
+    g.moveTo(hx + 4.8, hy + 4.6);
+    g.bezierCurveTo(hx + 7.6, hy + 1, hx + 7.4, hy - 5.6, hx + 2.6, hy - 7.0);
+    g.bezierCurveTo(hx - 2.4, hy - 8.2, hx - 6.0, hy - 5.6, hx - 7.0, hy - 2.4);
+    g.quadraticCurveTo(hx - 8.6, hy + 0.6, hx - 10.2, hy + 2.2);
+    g.quadraticCurveTo(hx - 7.4, hy + 3.4, hx - 6.2, hy + 4.6);
+    g.quadraticCurveTo(hx - 3.6, hy + 6.6, hx - 1, hy + 6.4); g.closePath();
+    fs(archGrad(g, hx - 6, hy - 8, hx + 4, hy + 6, L.hood));
+    const open = () => { g.beginPath(); g.ellipse(hx + 2.7, hy + 0.3, 3.9, 4.9, -0.12, 0, Math.PI * 2); };
+    g.save(); open(); g.clip(); g.fillStyle = L.inner; g.fillRect(hx - 3, hy - 6, 10, 12);
+    g.translate(0.5, 0.3); face(); g.restore();
+    open(); g.strokeStyle = L.hood[0]; g.lineWidth = 1.1; g.stroke();
+    g.strokeStyle = ARCH_OUT; g.lineWidth = 0.55; g.stroke(); g.lineWidth = 1.05;
+    // başlık parlaması ve dikiş
+    g.fillStyle = 'rgba(255,255,255,0.22)'; g.beginPath(); g.ellipse(hx - 2, hy - 5.4, 2.6, 1.1, -0.35, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 0.45; g.beginPath(); g.moveTo(hx - 1.4, hy - 7.6); g.quadraticCurveTo(hx - 5.4, hy - 3.6, hx - 9.4, hy + 2); g.stroke();
+    if (L.trim && lvl === 1) { g.strokeStyle = L.trim; g.lineWidth = 0.5; open(); g.stroke(); }
+  }
+  // omuz yaması
+  g.lineWidth = 0.8; g.beginPath(); g.ellipse(-0.2, -17.4, 2.4, 1.5, 0, 0, Math.PI * 2); fs(archGrad(g, 0, -19, 0, -16, L.sleeve));
+}
+function paintArcherLeg(g, L, back) {
+  const d = (c) => back ? [shade(c[0], 0.78), shade(c[1], 0.78)] : c;
+  g.beginPath(); g.roundRect(-1.55, -0.4, 3.1, 7.6, 1.3); g.fillStyle = archGrad(g, -1.5, 0, 1.5, 0, d(L.pants)); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(-1.8, 5.6); g.lineTo(1.7, 5.6); g.quadraticCurveTo(3.8, 7.2, 3.6, 8.9); g.lineTo(-1.9, 8.9); g.closePath();
+  g.fillStyle = archGrad(g, 0, 5.6, 0, 9, d(L.boot)); g.fill(); g.stroke();
+  g.strokeStyle = shade(L.boot[0], 1.25); g.lineWidth = 0.5; g.beginPath(); g.moveTo(-1.5, 6.4); g.lineTo(1.6, 6.4); g.stroke();
+}
+function paintArcherBow(g, L) {
+  const limb = () => { g.beginPath(); g.moveTo(-1.6, -8.6); g.quadraticCurveTo(-0.6, -8.2, 0, -7.4); g.bezierCurveTo(2.6, -4.6, 1.6, -1.4, 1.0, 0); g.bezierCurveTo(1.6, 1.4, 2.6, 4.6, 0, 7.4); g.quadraticCurveTo(-0.6, 8.2, -1.6, 8.6); };
+  limb(); g.lineWidth = 2.0; g.strokeStyle = ARCH_OUT; g.stroke();
+  limb(); g.lineWidth = 1.05; g.strokeStyle = L.bow[0]; g.stroke();
+  limb(); g.lineWidth = 0.35; g.strokeStyle = 'rgba(255,255,255,0.55)'; g.stroke();
+  g.beginPath(); g.roundRect(0.1, -1.3, 1.8, 2.6, 0.6); g.fillStyle = L.bow[1]; g.fill(); g.lineWidth = 0.6; g.strokeStyle = ARCH_OUT; g.stroke();
+}
+function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16), f = (v) => Math.max(0, Math.min(255, Math.round(v * k)));
+  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => f(v).toString(16).padStart(2, '0')).join('');
+}
+const ARCH_CACHE = [];
+function archerParts(lvl) {
+  if (ARCH_CACHE[lvl]) return ARCH_CACHE[lvl];
+  const L = ARCHER_LOOK[lvl];
+  return (ARCH_CACHE[lvl] = {
+    body: archCanvas(-12, -32, 21.5, 27, g => paintArcherBody(g, L, lvl)),
+    leg: archCanvas(-2.6, -1.2, 7, 11, g => paintArcherLeg(g, L, false)),
+    legB: archCanvas(-2.6, -1.2, 7, 11, g => paintArcherLeg(g, L, true)),
+    bow: archCanvas(-2.8, -9.8, 6.4, 19.6, g => paintArcherBow(g, L)),
+  });
+}
+function blitPart(c, P) { c.drawImage(pickMip(c, P.c, P.w), P.x0, P.y0, P.w, P.h); }
+// o: ayak noktası; s: ölçek; a: okçu durumu (ang, draw, fx, walk, seed); lvl: kule seviyesi
+function paintArcher(c, o, s, a, lvl) {
+  const P = archerParts(lvl), L = ARCHER_LOOK[lvl];
+  const face = Math.cos(a.ang) >= 0 ? 1 : -1;
+  const la = clamp(face > 0 ? a.ang : Math.PI - a.ang, -1.25, 1.25);
+  const walking = a.walk > 0;
+  const bob = walking ? Math.abs(Math.sin(a.walk * 10)) * 0.9 : Math.sin(G.t * 2.4 + a.seed) * 0.3;
+  const rel = a.fx > 0 ? a.fx / 0.18 : 0;
+  c.save(); c.translate(o.x, o.y); c.scale(s * face, s);
+  // gölge
+  c.fillStyle = 'rgba(25,14,4,0.38)'; c.beginPath(); c.ellipse(0.4, 0, 5.6, 1.7, 0, 0, Math.PI * 2); c.fill();
+  // bacaklar
+  const sw = walking ? Math.sin(a.walk * 10) * 0.5 : 0, st = walking ? 0 : 0.2;
+  const leg = (part, hx, ang) => { c.save(); c.translate(hx, -9 - bob * 0.3); c.rotate(ang); blitPart(c, part); c.restore(); };
+  leg(P.legB, -1.2, -sw - st);
+  leg(P.leg, 1.3, sw + st * 0.6);
+  // gövde: hedefe doğru hafifçe eğilir, nefes alır
+  const lean = la * 0.12 + (walking ? 0.06 : 0);
+  c.translate(0, -9 - bob); c.rotate(lean); c.translate(0, 9);
+  const br = 1 + Math.sin(G.t * 2.4 + a.seed) * 0.012;
+  c.save(); c.translate(0, -9); c.scale(1, br); c.translate(0, 9); blitPart(c, P.body); c.restore();
+  // kollar ve yay (gövde eğimine göre yerel açı)
+  const aim = la - lean, ca = Math.cos(aim), sa = Math.sin(aim);
+  const S = { x: 0.6, y: -16.4 }, H = { x: S.x + ca * 7.2, y: S.y + sa * 7.2 };
+  const dr = 1.3 + a.draw * 5.6 - rel * 1.0;
+  const Pw = { x: H.x - ca * dr, y: H.y - sa * dr };
+  const limb = (pts, col, w) => {
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath(); pts.forEach((p, i) => c[i ? 'lineTo' : 'moveTo'](p.x, p.y)); c.strokeStyle = ARCH_OUT; c.lineWidth = w + 1.1; c.stroke();
+    c.beginPath(); pts.forEach((p, i) => c[i ? 'lineTo' : 'moveTo'](p.x, p.y)); c.strokeStyle = col; c.lineWidth = w; c.stroke();
+  };
+  // yay kolu
+  limb([S, H], L.sleeve[1], 2.2);
+  // yay
+  c.save(); c.translate(H.x, H.y); c.rotate(aim); blitPart(c, P.bow);
+  // kiriş
+  c.strokeStyle = 'rgba(255,250,235,0.95)'; c.lineWidth = 0.38; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(-1.6, -8.6); c.lineTo(-dr, 0); c.lineTo(-1.6, 8.6); c.stroke();
+  // ok
+  if (a.fx <= 0.06) {
+    c.strokeStyle = ARCH_OUT; c.lineWidth = 0.95; c.beginPath(); c.moveTo(-dr, 0); c.lineTo(5.2, 0); c.stroke();
+    c.strokeStyle = '#b07a3a'; c.lineWidth = 0.45; c.beginPath(); c.moveTo(-dr, 0); c.lineTo(5.2, 0); c.stroke();
+    c.fillStyle = '#e6ecf2'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.35;
+    c.beginPath(); c.moveTo(7.0, 0); c.lineTo(5.0, -1.0); c.lineTo(5.4, 0); c.lineTo(5.0, 1.0); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = L.fletch; c.beginPath(); c.moveTo(-dr + 0.4, 0); c.lineTo(-dr - 1.2, -1.0); c.lineTo(-dr + 1.6, 0); c.lineTo(-dr - 1.2, 1.0); c.closePath(); c.fill(); c.stroke();
+  }
+  c.restore();
+  // yay elinin eli
+  c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(H.x, H.y, 1.25, 0, Math.PI * 2); c.fill(); c.stroke();
+  // çeken kol: dirsek dışarı/yukarı kalkar
+  const S2 = { x: -0.6, y: -16.0 };
+  const mx = (S2.x + Pw.x) / 2, my = (S2.y + Pw.y) / 2, k = 1.6 + a.draw * 1.4;
+  const E = { x: mx - sa * k * 0.4 - ca * a.draw * 1.4, y: my - Math.abs(ca) * k * 0.55 };
+  limb([S2, E, Pw], L.sleeve[0], 2.3);
+  c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(Pw.x, Pw.y, 1.2, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.restore();
+}
 function drawArcher(t, ts, i, a) {
-  const o = archerPoint(t, ts, i), s = archerScale(ts), L = ARCHER_LOOK[t.lvl];
-  const face = Math.cos(a.ang) >= 0 ? 1 : -1, la = face > 0 ? a.ang : Math.PI - a.ang;
-  const bob = a.walk ? Math.abs(Math.sin(a.walk * 10)) * 1.1 : Math.sin(G.t * 2.5 + a.seed) * 0.35;
-  const rec = a.fx > 0 ? a.fx / 0.18 : 0; // bırakış sonrası
-  // ayak gölgesi
-  ctx.fillStyle = 'rgba(30,16,4,0.35)'; ctx.beginPath(); ctx.ellipse(o.x, o.y, 4.2 * s, 1.5 * s, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.save();
-  ctx.translate(o.x, o.y - 13 * s); ctx.scale(s * face, s);
-  // bacaklar: yürürken karşılıklı salınır, nişan alırken açık duruş
-  {
-    const sw = a.walk ? Math.sin(a.walk * 10) * 0.55 : 0, stance = a.walk ? 0 : 0.18;
-    const leg = (hx, ang, col) => {
-      ctx.save(); ctx.translate(hx, -bob + 7.2); ctx.rotate(ang);
-      ctx.strokeStyle = 'rgba(28,16,6,0.95)'; ctx.lineWidth = 3.2; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 5.2); ctx.stroke();
-      ctx.strokeStyle = col; ctx.lineWidth = 1.9; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 4.4); ctx.stroke();
-      ctx.fillStyle = '#4a2c14'; ctx.beginPath(); ctx.ellipse(0.8, 5.6, 1.9, 1.05, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-    };
-    leg(-1.4, -sw - stance, L.dark);
-    leg(1.4, sw + stance, L.dark);
-  }
-  ctx.translate(0, -bob);
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  const out = 'rgba(28,16,6,0.95)';
-  ctx.fillStyle = L.dark; ctx.strokeStyle = out; ctx.lineWidth = 1.4;
-  ctx.beginPath(); ctx.moveTo(-3, -3); ctx.quadraticCurveTo(-7.5, 3, -5.5, 9); ctx.lineTo(1, 9); ctx.lineTo(2, -2); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = L.body; ctx.beginPath(); ctx.roundRect(-3.6, -3, 7.2, 11, 2.5); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = L.trim; ctx.fillRect(-3.4, 3.4, 6.8, 1.4);
-  ctx.fillStyle = '#7a4a22'; ctx.beginPath(); ctx.roundRect(-5.2, -4.5, 2.6, 7, 1); ctx.fill(); ctx.stroke();
-  ctx.strokeStyle = '#efe6d2'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-4.4, -4.5); ctx.lineTo(-5, -6.5); ctx.moveTo(-3.4, -4.5); ctx.lineTo(-3.4, -6.8); ctx.stroke();
-  ctx.strokeStyle = out; ctx.lineWidth = 1.4;
-  ctx.fillStyle = '#f2c69a'; ctx.beginPath(); ctx.arc(0.6, -6.2, 3.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = L.hood; ctx.beginPath();
-  if (L.helm) { ctx.arc(0.4, -6.8, 3.6, Math.PI * 1.02, Math.PI * 2.02); ctx.lineTo(4, -6); ctx.lineTo(-3.2, -6); }
-  else { ctx.moveTo(-3, -4); ctx.quadraticCurveTo(-4.2, -10.5, 1, -10.2); ctx.quadraticCurveTo(4.6, -9.6, 3.8, -6.6); ctx.quadraticCurveTo(1.6, -7.8, 0.4, -5.4); ctx.quadraticCurveTo(-0.8, -3.8, -3, -4); }
-  ctx.closePath(); ctx.fill(); ctx.stroke();
-  if (L.helm) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(0, -10.4); ctx.quadraticCurveTo(-3.5, -13, -5.5, -9.5); ctx.quadraticCurveTo(-3, -11, 0, -10.4); ctx.fill(); }
-  circle(2.3, -6.3, 0.55, '#1a0e04');
-  ctx.save(); ctx.translate(0.5, -1.2); ctx.rotate(la);
-  const R = 5.4, dr = a.draw * 3.6 - rec * 0.6;
-  const tipX = Math.cos(1.15) * R, tipY = Math.sin(1.15) * R;
-  const arm = (x0, x1, col) => { ctx.strokeStyle = out; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x1, 0); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x1, 0); ctx.stroke(); };
-  arm(0, tipX - dr, L.body);
-  arm(0, R - 0.6, '#f2c69a');
-  ctx.strokeStyle = out; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, 0, R, -1.15, 1.15); ctx.stroke();
-  ctx.strokeStyle = t.lvl >= 2 ? '#e8b440' : '#a8743a'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(0, 0, R, -1.15, 1.15); ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,248,225,0.9)'; ctx.lineWidth = 0.6;
-  ctx.beginPath(); ctx.moveTo(tipX, -tipY); ctx.lineTo(tipX - dr, 0); ctx.lineTo(tipX, tipY); ctx.stroke();
-  if (a.fx <= 0.08) {
-    ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(tipX - dr, 0); ctx.lineTo(R + 2.2, 0); ctx.stroke();
-    ctx.fillStyle = '#e8ecf2'; ctx.beginPath(); ctx.moveTo(R + 3.4, 0); ctx.lineTo(R + 1.8, -1); ctx.lineTo(R + 1.8, 1); ctx.fill();
-  }
-  ctx.restore();
-  ctx.restore();
+  paintArcher(ctx, archerPoint(t, ts, i), archerScale(ts), a, t.lvl);
+  const rec = a.fx > 0 ? a.fx / 0.18 : 0;
   if (rec > 0.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const bp = bowPoint(t, ts, i); glow(ctx, bp.x, bp.y, 5 * rec, '255,245,200', rec * 0.8); ctx.restore(); }
 }
 
