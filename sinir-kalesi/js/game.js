@@ -595,19 +595,32 @@ function nextWavePaths() {
   return [...s];
 }
 
-function spawnEnemy(type, pi, d0 = 0) {
+// Muhafız dizilişi: [boss'a göre yol üzerindeki ileri/geri mesafe, yanal kayma]
+const ESCORT_FORM = [[18, -11], [18, 11], [0, -17], [0, 17], [-16, -10], [-16, 10], [34, 0]];
+function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const def = ENEMIES[type];
   const p = G.paths[pi] || G.paths[0];
-  const off = def.boss ? 0 : rand(-11, 11);
+  const esc = def.chief && BOSS_ESCORT[type];
+  if (esc && d0 === 0) d0 = 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
+  const off = off0 ?? (def.boss ? 0 : rand(-11, 11));
   const q = pathPos(p, d0, off);
   const hp = def.hp * (G.lv.hpMul || 1) * diff().hp * (def.chief ? 1 + 0.12 * G.idx : 1);
   const e = { type, def, p, d: d0, off, x: q.x, y: q.y, hp, maxHp: hp, blocker: null, atk: 0, dead: false, anim: rand(0, 10), face: 1, healT: 3 };
   G.enemies.push(e);
+  if (esc) {
+    let k = 0;
+    for (const [t2, n] of esc) for (let i = 0; i < n; i++, k++) {
+      const [fd, fo] = ESCORT_FORM[k % ESCORT_FORM.length];
+      const m = spawnEnemy(t2, G.paths.indexOf(p), Math.max(0, d0 + fd + (k >= ESCORT_FORM.length ? -30 : 0)), fo);
+      m.leader = e; m.form = fd + (k >= ESCORT_FORM.length ? -30 : 0);
+    }
+  }
   if (def.chief) bossIntro(e);
   else {
     save.seenEnemies = save.seenEnemies || [];
     if (!save.seenEnemies.includes(type)) { save.seenEnemies.push(type); persist(); if (!G.intro) G.intro = { type, t: 0, dur: 4.5 }; }
   }
+  return e;
 }
 
 // ---------- parçacıklar ----------
@@ -891,9 +904,9 @@ function drawCoin(x, y, r, spin) {
   const w = Math.max(0.15, Math.abs(Math.cos(spin)));
   ctx.drawImage(COIN_IM, x - r * w, y - r, 2 * r * w, 2 * r);
 }
-function drawCoinsWorld() {
-  for (const c of G.coins) {
-    if (c.state === 'fly') continue;
+// yerdeki altın: kule/düşmanlarla birlikte derinliğe göre sıralanıp çizilir (kulenin arkasında kalabilir)
+function drawCoinWorld(c) {
+  {
     const bob = c.state === 'rest' ? Math.sin(time * 4 + c.spin) * 0.8 : 0;
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(c.x, c.y + 1, 3.2, 1.3, 0, 0, Math.PI * 2); ctx.fill();
     drawCoin(c.x, c.y - c.z - 3 - bob, 3, c.state === 'rest' ? time * 2 + c.spin : c.spin);
@@ -1155,8 +1168,12 @@ function updateTower(t, dt) {
     // top hedefe doğru döner (zemin düzleminde açı; dikeyde perspektif sıkışması telafi edilir)
     if (t.yaw == null) t.yaw = t.x < W / 2 ? 0.25 : Math.PI - 0.25;
     const e = findTarget(t, L.range, false);
-    if (e) t.yawGoal = Math.atan2((e.y - t.y) * 1.7, e.x - t.x);
+    if (e) {
+      t.yawGoal = Math.atan2((e.y - t.y) / CAM_S, e.x - t.x);
+      t.elGoal = 0.14 + 0.32 * clamp(dist(t.x, t.y, e.x, e.y) / L.range, 0, 1); // uzak hedefe namlu daha çok kalkar
+    }
     if (t.yawGoal != null) t.yaw += clamp(angDiff(t.yawGoal, t.yaw), -3.2 * dt, 3.2 * dt);
+    t.el = (t.el ?? 0.25) + clamp((t.elGoal ?? 0.25) - (t.el ?? 0.25), -0.8 * dt, 0.8 * dt);
   }
   if (t.type === 'archer') { updateArchers(t, dt, L); return; }
   const bl = t.type === 'mage' && abRank(t, 'blast');
@@ -1187,10 +1204,9 @@ function updateTower(t, dt) {
   const ts = towerSprite(t);
   let sx = t.x, sy = ts ? ts.bottom - ts.h * TOWER_TOP[t.type] : t.y - 34;
   if (t.type === 'artillery' && ts) {
-    const goal = Math.atan2((e.y - t.y) * 1.7, e.x - t.x);
+    const goal = Math.atan2((e.y - t.y) / CAM_S, e.x - t.x);
     if (Math.abs(angDiff(goal, t.yaw ?? goal)) > 0.25) { t.cd = 0.05; t.shotAnim = 0; return; } // dönüş bitmeden ateş etmez
-    const P = cannonPose(t, ts);
-    if (P) { const m = cannonMuzzle(P); sx = m.x; sy = m.y; t.muzzleDir = P.fx; }
+    const m = cannonMuzzle(t, ts); sx = m.x; sy = m.y; t.muzzleDir = m.dx;
   }
   if (t.type === 'archer') {
     const d = dist(sx, sy, e.x, e.y);
@@ -1325,7 +1341,17 @@ function updateEnemy(e, dt) {
     return; // bloklanmış: durur
   }
   e.inMelee = false;
-  e.d += e.def.speed * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * dt;
+  let spd = e.def.speed * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1);
+  // muhafız: boss'un yanında dizilişini korur; boss savaşırken bekler, boss ölünce serbest kalır
+  if (e.leader) {
+    const L = e.leader;
+    if (L.dead || L.p !== e.p || L.siege != null) e.leader = null;
+    else {
+      const ls = L.blocker ? 0 : L.def.speed * (L.slowT > 0 ? 1 - L.slowK : 1) * (L.hasteT > 0 ? 1.5 : 1);
+      spd = clamp(ls + ((L.d + e.form) - e.d) * 1.5, 0, spd * 1.3);
+    }
+  }
+  e.d += spd * dt;
   if (e.d >= e.p.total) {
     e.d = e.p.total;
     e.siege = 0; // kalenin kapısına vardı: saldırıya hazırlanır
@@ -2098,40 +2124,179 @@ function towerSprite(t) {
   return { im, w, h, bottom: t.y + (m ? w * (m[2] ?? 0.24) : 10) };
 }
 
-// Top kulesinin tepesindeki döner top. Görsel oranları: pivot = kundak tablasının ortası, namlu ağzı.
-// floor: kule görselinde zeminin ortası; w: kule genişliğine göre top genişliği (seviyeye göre)
-const CANNON = { px: 126 / 300, py: 148 / 177, mx: 276 / 300, my: 36 / 177, floor: [0.48, 0.226], w: [0.66, 0.7, 0.74] };
+// ---- Top kulesinin 3B topu: gerçek 3B modelden eğik (ortografik) izdüşümle çizilir ----
+// Dünya: X sağ, Y yukarı, Z izleyiciye doğru. Kamera yukarıdan CAM_S açısıyla bakar.
+const CAM_S = 0.45, CAM_C = Math.sqrt(1 - CAM_S * CAM_S);
+const CAM_V = [0, CAM_S, CAM_C]; // kameraya doğru birim vektör
+const CANNON_LOOK = [
+  { scale: 1, wood: '#9a6434', rim: '#b88a3a', barrel: ['#a6afba', '#4c525c', '#1c1f24'], band: '#2a2e34', bandHi: '#6c737e', bore: '#0c0a08' },
+  { scale: 1.08, wood: '#844a28', rim: '#d8aa44', barrel: ['#b4bcc6', '#50565f', '#1c1f24'], band: '#c8962e', bandHi: '#ffe08a', bore: '#0c0a08' },
+  { scale: 1.16, wood: '#6c3a1e', rim: '#f2c64e', barrel: ['#ffe9a0', '#c08a2e', '#5a3608'], band: '#f2c64e', bandHi: '#fff6c8', bore: '#1a0e04' },
+];
+const v3 = { add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k], dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  norm: (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; } };
+function shadeHex(hex, k) {
+  const n = parseInt(hex.slice(1), 16), f = (v) => Math.max(0, Math.min(255, Math.round(v * k)));
+  return `rgb(${f((n >> 16) & 255)},${f((n >> 8) & 255)},${f(n & 255)})`;
+}
+const C_OUT = '#24140a', C_LIGHT = v3.norm([-0.45, 0.85, 0.35]);
+// yaw: zemin düzleminde namlu yönü; el: namlu yükselişi; rec: geri tepme (0..1)
+function cannonModel(ox, oy, k, yaw, el, rec, lvl) {
+  const L = CANNON_LOOK[lvl], K = k * L.scale;
+  const P = (p) => ({ x: ox + p[0] * K, y: oy + (p[2] * CAM_S - p[1] * CAM_C) * K });
+  const u = [Math.cos(yaw), 0, Math.sin(yaw)], w = [-Math.sin(yaw), 0, Math.cos(yaw)], up = [0, 1, 0];
+  const back = -rec * 3.5;
+  const d = v3.norm([Math.cos(yaw) * Math.cos(el + rec * 0.12), Math.sin(el + rec * 0.12), Math.sin(yaw) * Math.cos(el + rec * 0.12)]);
+  const trun = v3.add(v3.add(v3.mul(u, -1 + back), [0, 14, 0]), [0, 0, 0]);
+  return { L, K, P, u, w, up, back, d, trun, muzzle: v3.add(trun, v3.mul(d, 27)) };
+}
+function cannonMuzzlePos(ox, oy, k, yaw, el, rec, lvl) {
+  const M = cannonModel(ox, oy, k, yaw, el, rec, lvl);
+  return Object.assign(M.P(M.muzzle), { dx: M.d[0], dy: M.d[2] * CAM_S - M.d[1] * CAM_C });
+}
+function drawCannonModel(g, ox, oy, k, yaw, el, rec, lvl) {
+  const M = cannonModel(ox, oy, k, yaw, el, rec, lvl), { L, K, P, u, w, up, back, d, trun } = M;
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  const lw = Math.max(0.7, 0.9 * K);
+  const poly = (pts, fill, stroke = true) => {
+    g.beginPath(); pts.forEach((p, i) => { const q = P(p); i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); }); g.closePath();
+    g.fillStyle = fill; g.fill(); if (stroke) { g.strokeStyle = C_OUT; g.lineWidth = lw; g.stroke(); }
+  };
+  const lit = (n, base) => shadeHex(base, 0.62 + 0.55 * Math.max(0, v3.dot(n, C_LIGHT)));
+  // kutu: merkez c, eksenler (a: uzunluk, b: genişlik, yukarı), yarı ölçüler
+  const box = (c, a, b, ha, hb, h0, h1, col) => {
+    const pt = (sa, sb, hh) => v3.add(v3.add(v3.add(c, v3.mul(a, sa * ha)), v3.mul(b, sb * hb)), [0, hh, 0]);
+    const faces = [
+      [up, [pt(-1, -1, h1), pt(1, -1, h1), pt(1, 1, h1), pt(-1, 1, h1)]],
+      [a, [pt(1, -1, h0), pt(1, 1, h0), pt(1, 1, h1), pt(1, -1, h1)]],
+      [v3.mul(a, -1), [pt(-1, -1, h0), pt(-1, 1, h0), pt(-1, 1, h1), pt(-1, -1, h1)]],
+      [b, [pt(-1, 1, h0), pt(1, 1, h0), pt(1, 1, h1), pt(-1, 1, h1)]],
+      [v3.mul(b, -1), [pt(-1, -1, h0), pt(1, -1, h0), pt(1, -1, h1), pt(-1, -1, h1)]],
+    ];
+    for (const [n, pts] of faces) if (v3.dot(n, CAM_V) > 0.001) poly(pts, lit(n, col));
+  };
+  // dikey düzlemde daire (tekerlek): merkez c, normal n
+  const disc = (c, n, r, col, hub) => {
+    const e1 = v3.norm(v3.cross(n, up)), pts = [];
+    for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2; pts.push(v3.add(c, v3.add(v3.mul(e1, Math.cos(a) * r), v3.mul(up, Math.sin(a) * r)))); }
+    poly(pts, lit(n, col));
+    const hc = P(c); g.fillStyle = hub; g.beginPath(); g.arc(hc.x, hc.y, Math.max(0.8, r * 0.32 * K), 0, Math.PI * 2); g.fill(); g.strokeStyle = C_OUT; g.lineWidth = lw * 0.7; g.stroke();
+  };
+  // 1) döner tabla
+  {
+    const R = 17 * K, c0 = P([0, 0, 0]), c1 = P([0, 3, 0]);
+    g.fillStyle = shadeHex(L.wood, 0.5); g.strokeStyle = C_OUT; g.lineWidth = lw;
+    g.beginPath(); g.ellipse(c0.x, c0.y, R, R * CAM_S, 0, 0, Math.PI); g.lineTo(c1.x - R, c1.y); g.ellipse(c1.x, c1.y, R, R * CAM_S, 0, Math.PI, 0, true); g.closePath(); g.fill(); g.stroke();
+    const gr = g.createLinearGradient(c1.x, c1.y - R * CAM_S, c1.x, c1.y + R * CAM_S);
+    gr.addColorStop(0, shadeHex(L.wood, 1.25)); gr.addColorStop(1, shadeHex(L.wood, 0.85));
+    g.fillStyle = gr; g.beginPath(); g.ellipse(c1.x, c1.y, R, R * CAM_S, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.strokeStyle = L.rim; g.lineWidth = Math.max(0.6, 1.1 * K); g.beginPath(); g.ellipse(c1.x, c1.y, R * 0.82, R * 0.82 * CAM_S, 0, 0, Math.PI * 2); g.stroke();
+  }
+  const base = v3.mul(u, back);
+  const near = Math.cos(yaw) >= 0 ? 1 : -1; // izleyiciye bakan yan
+  const wheelPos = [];
+  for (const sa of [-1, 1]) for (const sb of [-1, 1]) wheelPos.push([sa, sb]);
+  const wheel = ([sa, sb]) => disc(v3.add(v3.add(v3.add(base, v3.mul(u, sa * 8.5)), v3.mul(w, sb * 8.6)), [0, 6.6, 0]), v3.mul(w, sb), 3.6, L.wood, L.rim);
+  wheelPos.filter(p => p[1] !== near).forEach(wheel);
+  // 2) kundak tabanı
+  box(base, u, w, 12, 7.5, 3, 8, L.wood);
+  // 3) yanaklar ve namlu (uzak yanak, namlu, yakın yanak)
+  const cheek = (sb) => box(v3.add(base, v3.mul(w, sb * 6)), u, w, 8.5, 1.5, 8, 15.5, shadeHex(L.wood, 1.08).replace(/rgb\((\d+),(\d+),(\d+)\)/, (m, r, gg, b) => '#' + [r, gg, b].map(x => (+x).toString(16).padStart(2, '0')).join('')));
+  cheek(-near);
+  // namlu
+  {
+    const ends = [[-15, 5.1], [-9, 5.3], [-8, 4.9], [1, 4.7], [2, 5.0], [3, 4.6], [21, 3.9], [23, 4.6], [27, 4.7]];
+    const pts3 = ends.map(([t]) => v3.add(trun, v3.mul(d, t)));
+    const ps = pts3.map(P);
+    const ax = { x: ps[ps.length - 1].x - ps[0].x, y: ps[ps.length - 1].y - ps[0].y }, al = Math.hypot(ax.x, ax.y);
+    let px = al > 0.01 ? -ax.y / al : 0, py = al > 0.01 ? ax.x / al : -1;
+    if (py > 0) { px = -px; py = -py; } // dik vektör ekranda yukarıyı göstersin
+    const facing = v3.dot(d, CAM_V); // >0: namlu ağzı izleyiciye bakıyor
+    const e1 = v3.norm(v3.cross(d, up)), e2 = v3.cross(e1, d);
+    const ring = (c, r, col, wdt, full) => {
+      g.strokeStyle = col; g.lineWidth = wdt; g.beginPath(); let on = false;
+      for (let i = 0; i <= 28; i++) {
+        const a = i / 28 * Math.PI * 2, n = v3.add(v3.mul(e1, Math.cos(a)), v3.mul(e2, Math.sin(a)));
+        const vis = full || v3.dot(n, CAM_V) > -0.05, q = P(v3.add(c, v3.mul(n, r)));
+        if (vis) { on ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); on = true; } else on = false;
+      }
+      g.stroke();
+    };
+    const cap = (c, r, fill) => {
+      g.beginPath();
+      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, q = P(v3.add(c, v3.add(v3.mul(e1, Math.cos(a) * r), v3.mul(e2, Math.sin(a) * r)))); i ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); }
+      g.closePath(); g.fillStyle = fill; g.fill(); g.strokeStyle = C_OUT; g.lineWidth = lw; g.stroke();
+    };
+    const knob = () => { const q = P(v3.add(trun, v3.mul(d, -17))); const r = 2.4 * K;
+      const gr = g.createRadialGradient(q.x - r * 0.4, q.y - r * 0.4, 0, q.x, q.y, r); gr.addColorStop(0, L.barrel[0]); gr.addColorStop(1, L.barrel[2]);
+      g.fillStyle = gr; g.beginPath(); g.arc(q.x, q.y, r, 0, Math.PI * 2); g.fill(); g.strokeStyle = C_OUT; g.lineWidth = lw; g.stroke(); };
+    if (facing > 0) knob();
+    if (facing <= 0) cap(pts3[ps.length - 1], 4.7, L.barrel[1]); // namlu ağzı arkada: dış halkası görünür
+    if (facing > 0) cap(pts3[0], 5.1, L.barrel[2]);
+    // gövde
+    g.beginPath();
+    ps.forEach((q, i) => { const r = ends[i][1] * K; i ? g.lineTo(q.x + px * r, q.y + py * r) : g.moveTo(q.x + px * r, q.y + py * r); });
+    for (let i = ps.length - 1; i >= 0; i--) { const q = ps[i], r = ends[i][1] * K; g.lineTo(q.x - px * r, q.y - py * r); }
+    g.closePath();
+    const m = ps[3], R0 = 5 * K, gr = g.createLinearGradient(m.x + px * R0, m.y + py * R0, m.x - px * R0, m.y - py * R0);
+    gr.addColorStop(0, L.barrel[1]); gr.addColorStop(0.22, L.barrel[0]); gr.addColorStop(0.5, L.barrel[1]); gr.addColorStop(1, L.barrel[2]);
+    g.fillStyle = gr; g.fill(); g.strokeStyle = C_OUT; g.lineWidth = lw; g.stroke();
+    // halkalar
+    for (const [t, r] of [[-8.5, 5.3], [1.5, 5.0], [22, 4.6]]) {
+      const c = v3.add(trun, v3.mul(d, t));
+      ring(c, r, C_OUT, Math.max(1.2, 2.3 * K), false); ring(c, r, L.band, Math.max(0.7, 1.4 * K), false);
+    }
+    if (facing <= 0) knob();
+    if (facing > 0) {
+      // namlu ağzı ve karanlık iç
+      const mc = pts3[ps.length - 1];
+      cap(mc, 4.7, L.barrel[1]); cap(mc, 3.0, L.bore);
+      ring(mc, 4.7, L.bandHi, Math.max(0.5, 0.7 * K), true);
+    }
+  }
+  cheek(near);
+  // yakın yanakta muylu başlığı
+  { const q = P(v3.add(v3.add(trun, v3.mul(w, near * 7.6)), [0, 0, 0])); g.fillStyle = L.rim; g.beginPath(); g.arc(q.x, q.y, Math.max(1, 1.7 * K), 0, Math.PI * 2); g.fill(); g.strokeStyle = C_OUT; g.lineWidth = lw * 0.8; g.stroke(); }
+  wheelPos.filter(p => p[1] === near).forEach(wheel);
+}
+
+// Kule görselinde topun oturduğu zemin noktası (oran); top ölçeği kule genişliğine göre
+const CANNON = { floor: [0.48, 0.235], k: 1 / 68 };
 function cannonPose(t, ts) {
-  const im = spr(t.lvl >= 2 ? 'cannon_3' : 'cannon_1');
-  if (!im) return null;
-  const w = ts.w * CANNON.w[t.lvl], h = w * im.height / im.width;
-  const yaw = t.yaw ?? 0.25, c = Math.cos(yaw), sn = Math.sin(yaw);
-  // yandan görünüşte dönüş: namlu bize/uzağa döndükçe kısalır (yatay ölçek), sonra yön değiştirir
-  const fx = (c >= 0 ? 1 : -1) * (0.45 + 0.55 * Math.abs(c));
   let rec = 0;
   if (t.shotAnim > 0) { const k = 1 - t.shotAnim / 0.35; rec = k < 0.15 ? k / 0.15 : Math.exp(-6 * (k - 0.15)) * Math.cos((k - 0.15) * 14); }
-  // hedef aşağıdaysa namlu biraz eğilir; ateşte namlu yukarı tepip top geri kayar
-  const rot = sn * 0.25 * (1 - Math.abs(c)) - 0.05 - rec * 0.16;
-  const pop = t.born != null ? (G.t - t.born < 0.45 ? easeOutBack(clamp((G.t - t.born) / 0.45, 0, 1)) : 1) : 1;
-  return { im, w: w * pop, h: h * pop, fx, rot, rec,
-    x: t.x + ((CANNON.floor[0] - 0.5) * ts.w - rec * 0.09 * w * Math.sign(fx)) * pop,
-    y: ts.bottom - (1 - CANNON.floor[1]) * ts.h * pop };
+  const pop = t.born != null && G.t - t.born < 0.45 ? easeOutBack(clamp((G.t - t.born) / 0.45, 0, 1)) : 1;
+  return { x: t.x + (CANNON.floor[0] - 0.5) * ts.w * pop, y: ts.bottom - (1 - CANNON.floor[1]) * ts.h * pop,
+    k: ts.w * CANNON.k * pop, yaw: t.yaw ?? 0.25, el: t.el ?? 0.25, rec };
 }
-function cannonMuzzle(P) {
-  const lx = (CANNON.mx - CANNON.px) * P.w, ly = (CANNON.my - CANNON.py) * P.h;
-  const cr = Math.cos(P.rot), sr = Math.sin(P.rot);
-  return { x: P.x + (lx * cr - ly * sr) * P.fx, y: P.y + lx * sr + ly * cr };
+function cannonMuzzle(t, ts) {
+  const P = cannonPose(t, ts);
+  return cannonMuzzlePos(P.x, P.y, P.k, P.yaw, P.el, P.rec, t.lvl);
+}
+// Her karede 3B modeli yeniden çizmemek için açılar kademelere bölünüp önbelleğe alınır
+const CANNON_CACHE = new Map(), CC_K = 2.4, CC_X = 44, CC_Y0 = -52, CC_Y1 = 16;
+function cannonSprite(lvl, yaw, el, rec) {
+  const qy = ((Math.round(yaw / (Math.PI * 2) * 72) % 72) + 72) % 72, qe = Math.round(el / 0.05), qr = Math.round(rec * 5);
+  const key = lvl * 1e6 + qy * 1e3 + qe * 20 + (qr + 5);
+  let c = CANNON_CACHE.get(key);
+  if (!c) {
+    if (CANNON_CACHE.size > 1200) CANNON_CACHE.clear();
+    c = document.createElement('canvas');
+    c.width = Math.ceil(CC_X * 2 * CC_K); c.height = Math.ceil((CC_Y1 - CC_Y0) * CC_K);
+    drawCannonModel(c.getContext('2d'), CC_X * CC_K, -CC_Y0 * CC_K, CC_K, qy / 72 * Math.PI * 2, qe * 0.05, qr / 5, lvl);
+    CANNON_CACHE.set(key, c);
+  }
+  return c;
 }
 function drawCannon(t, ts) {
   const P = cannonPose(t, ts);
-  if (!P) return;
-  ctx.save(); ctx.translate(P.x, P.y); ctx.scale(P.fx, 1); ctx.rotate(P.rot);
-  ctx.drawImage(pickMip(ctx, P.im, P.w), -CANNON.px * P.w, -CANNON.py * P.h, P.w, P.h);
-  ctx.restore();
+  ctx.drawImage(cannonSprite(t.lvl, P.yaw, P.el, P.rec), P.x - CC_X * P.k, P.y + CC_Y0 * P.k, CC_X * 2 * P.k, (CC_Y1 - CC_Y0) * P.k);
   if (t.shotAnim > 0.25) {
-    const m = cannonMuzzle(P), k = (t.shotAnim - 0.25) / 0.1, d = Math.sign(P.fx);
+    const m = cannonMuzzlePos(P.x, P.y, P.k, P.yaw, P.el, P.rec, t.lvl), k = (t.shotAnim - 0.25) / 0.1;
+    const l = Math.hypot(m.dx, m.dy) || 1;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, m.x, m.y, 15 + 10 * k, '255,190,90', k); glow(ctx, m.x + 6 * d, m.y - 2, 9 * k, '255,250,220', k);
+    glow(ctx, m.x, m.y, 15 + 10 * k, '255,190,90', k); glow(ctx, m.x + m.dx / l * 6, m.y + m.dy / l * 6, 9 * k, '255,250,220', k);
     ctx.restore();
   }
 }
@@ -2141,13 +2306,10 @@ function towerIcon(type, lvl) {
   const name = `tower_${type}_${lvl}`, im = spr(name);
   if (!im || type !== 'artillery') return im;
   if (TOWER_ICONS[name]) return TOWER_ICONS[name];
-  const cn = spr(lvl >= 3 ? 'cannon_3' : 'cannon_1');
-  if (!cn) return im;
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
-  const g = c.getContext('2d'), w = im.width * CANNON.w[lvl - 1], h = w * cn.height / cn.width;
-  g.imageSmoothingQuality = 'high';
+  const g = c.getContext('2d');
   g.drawImage(im, 0, 0);
-  g.drawImage(cn, CANNON.floor[0] * im.width - CANNON.px * w, CANNON.floor[1] * im.height - CANNON.py * h, w, h);
+  drawCannonModel(g, CANNON.floor[0] * im.width, CANNON.floor[1] * im.height, im.width * CANNON.k, 0.45, 0.28, 0, lvl - 1);
   return (TOWER_ICONS[name] = c);
 }
 // Top kulesi 2. ve 3. seviyede gövdesine asılı sancaklar
@@ -4207,7 +4369,7 @@ function drawIncoming() {
 function upgRank(id) { return (save.upg && save.upg[id]) || 0; }
 function starsTotal() { return save.stars.reduce((a, b) => a + (b || 0), 0); }
 function starsSpent() { return UPGRADES.reduce((a, u) => a + u.ranks.slice(0, upgRank(u.id)).reduce((b, r) => b + r.cost, 0), 0); }
-function diff() { return DIFFS[save.diff ?? 1]; }
+function diff() { return GAME_DIFF; } // zorluk sabit
 // gelişmelerle güçlenmiş kule seviyesi değerleri
 function effLevel(t) {
   const L = t.def.levels[t.lvl], r = upgRank(t.type);
@@ -4271,19 +4433,6 @@ function upgradeIcon(id, x, y) {
   else drawIcon('heart', x, y, 20);
 }
 
-// harita ekranındaki zorluk seçici
-function drawDiffPicker(st) {
-  const cur = save.diff ?? 1, x0 = 26, y = H - 32;
-  ctx.save(); ctx.globalAlpha = clamp((st - 0.3) / 0.3, 0, 1);
-  roundRect(x0 - 4, y - 18, 3 * 76 + 8, 36, 18, 'rgba(24,14,6,0.88)', '#d4ab5a', 1.6);
-  DIFFS.forEach((d, i) => {
-    const x = x0 + i * 76, on = i === cur;
-    if (on) roundRect(x, y - 14, 72, 28, 14, ['#4caf33', '#d99a2a', '#c8392c'][i], '#fff', 1.5);
-    txt(d.name, x + 36, y + 1, 14, on ? '#fff' : '#bba888', 'center', '400', FONT_T, on);
-    buttons.push({ key: 'df' + i, x, y: y - 16, w: 72, h: 32, fn: () => { save.diff = i; persist(); sfx('select'); } });
-  });
-  ctx.restore();
-}
 
 // ---------- ekranlar ----------
 // başlık görselinin bulanık kopyası (harita ekranının arka planı): küçültüp büyütmek her tarayıcıda çalışan ucuz bir bulanıklık
@@ -4399,7 +4548,6 @@ function drawMap() {
   const freeStars = starsTotal() - starsSpent();
   gameButton('upgrades', W - 126, H - 32, 210, 42, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 18, shine: freeStars > 0 });
   if (freeStars > 0) { const bx = W - 30, by = H - 52 + Math.sin(time * 5) * 2; circle(bx, by, 11, '#e8434b', '#fff', 1.5); txt(freeStars + '', bx, by + 1, 12, '#fff', 'center', '400', FONT_T); }
-  drawDiffPicker(st);
   if (fresh.length) {
     const bx = W / 2 + 110, by = H - 52 + Math.sin(time * 5) * 2;
     roundRect(bx - 22, by - 10, 44, 20, 10, '#e8434b', '#fff', 1.5); txt('YENİ', bx, by + 1, 11, '#fff', 'center', '400', FONT_T);
@@ -4521,11 +4669,11 @@ function drawPlay() {
   for (const t of G.towers) ents.push([t.y, 0, t]);
   for (const e of G.enemies) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]);
   for (const s of G.soldiers) ents.push([s.y, 2, s]);
+  for (const c of G.coins) if (c.state !== 'fly') ents.push([c.y, 4, c]);
   ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
   for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f);
-  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? drawEnemy(o) : k === 2 ? drawSoldier(o) : drawCastle();
-  drawCoinsWorld();
+  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? drawEnemy(o) : k === 2 ? drawSoldier(o) : k === 4 ? drawCoinWorld(o) : drawCastle();
   for (const p of G.projectiles) drawProjectile(p);
   for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
   drawPartsAll(G.parts);
@@ -4600,7 +4748,7 @@ function drawOverlay() {
     drawIcon('heart', cx - lw / 2 - 8, py + 182, 22);
     txt(lt, cx + 12, py + 178, 21, '#5a3410', 'center', '400', FONT_T, false);
     const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60);
-    txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')} · ${diff().name}`, cx, py + 206, 13, '#8a6238', 'center', '800', FONT_B, false);
+    txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 13, '#8a6238', 'center', '800', FONT_B, false);
     const appear = k - 1.3;
     if (G.idx + 1 < LEVELS.length) {
       roundBtn('ov_retry', cx - 168, py + 262, 25, 'restart', () => go(() => startLevel(G.idx)), { appear });

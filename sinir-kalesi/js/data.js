@@ -335,7 +335,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Donmuş Nehir', gold: 770, lives: 20, theme: 'winter', castle: [905, 420], hpMul: 1.95,
+    name: 'Donmuş Nehir', gold: 790, lives: 20, theme: 'winter', castle: [905, 420], hpMul: 1.8,
     paths: [
       [[480, -40], [480, 80], [340, 140], [220, 220], [320, 320], [500, 300], [620, 380], [760, 420], [855, 406]],
       [[-40, 250], [100, 250], [220, 220], [320, 320], [500, 300], [620, 380], [760, 420], [855, 406]],
@@ -358,7 +358,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Son Kale', gold: 900, lives: 20, theme: 'volcano', castle: [905, 300], hpMul: 0.75,
+    name: 'Son Kale', gold: 960, lives: 20, theme: 'volcano', castle: [905, 300], hpMul: 0.68,
     paths: [
       [[-40, 90], [200, 100], [320, 200], [480, 180], [600, 100], [740, 130], [800, 230], [855, 286]],
       [[-40, 460], [180, 450], [300, 360], [460, 400], [600, 460], [740, 420], [800, 330], [855, 286]],
@@ -404,6 +404,16 @@ Object.assign(ENEMIES, {
   overlord:     { name: 'Kara Lord', base: 'knight', h: 62, hp: 4600, speed: 11, armor: 0.55, mr: 0.4, gold: 400, dmg: [40, 60], rate: 1.5, lives: 10, r: 22, boss: true, chief: true,
     desc: 'Son düşman: kara şövalye çağırır, kalkan açar, yeri sarsar', ab: { summon: { t: 'knight', n: 2, cd: 14 }, shield: { cd: 16, t: 3 }, slam: { cd: 10, r: 70, stun: 1.5, dmg: 40 } } },
 });
+// Bosslar yalnız gelmez: yanında muhafızlarıyla birlikte yürür
+const BOSS_ESCORT = {
+  goblin_king: [['goblin', 4]],
+  wolf_alpha: [['wolf', 4]],
+  orc_warlord: [['orc', 3]],
+  dark_shaman: [['shaman', 1], ['bandit', 3]],
+  death_knight: [['knight', 2], ['bandit', 2]],
+  troll_king: [['orc', 4]],
+  overlord: [['knight', 3], ['orc', 2]],
+};
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord'];
 LEVELS.forEach((lv, i) => {
   lv.boss = LEVEL_BOSS[i];
@@ -429,11 +439,8 @@ const UPGRADES = [
   { id: 'spells',   name: 'Büyüler',   ranks: [{ cost: 1, desc: '+1 göktaşı' }, { cost: 2, desc: '+1 takviye askeri' }, { cost: 3, desc: '%25 hızlı dolma' }] },
   { id: 'castle',   name: 'Kale',      ranks: [{ cost: 1, desc: '+3 can' }, { cost: 2, desc: '+60 altın' }, { cost: 3, desc: '+3 can, +60 altın' }] },
 ];
-const DIFFS = [
-  { name: 'Kolay',  hp: 0.85, gold: 1.15, lives: 25 },
-  { name: 'Normal', hp: 1.15, gold: 1,    lives: 20 },
-  { name: 'Zor',    hp: 1.4,  gold: 0.9,  lives: 15 },
-];
+// Oyun tek, sabit zorlukta oynanır
+const GAME_DIFF = { hp: 1.15, gold: 1, lives: 20 };
 
 // Her kahramanın 3 yeteneği vardır (sade tutmak için); kahraman 4. seviyeye kadar çıkar, her seviyede 1 puan kazanır.
 const HERO_SKILLS = {
