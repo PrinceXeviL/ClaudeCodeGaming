@@ -4101,22 +4101,13 @@ function statPill(x, y, w, icon, text, col, popT, label) {
 function waveButtonPos(pi) {
   if (G.waveBtn[pi]) return G.waveBtn[pi];
   const p = G.paths[pi];
+  // HUD'a çarpmayan güvenli bölge
+  const blocked = (x, y) => x < 26 || x > W - 26 || y < 26 || y > H - 26 ||
+    (x < 300 && y < 64) || (x > W - 180 && y < 74) || (x < 280 && y > H - 92);
   let d = 0, q = pathPos(p, 0);
-  while (d < p.total && (q.x < 40 || q.x > W - 40 || q.y < 84 || q.y > H - 40)) { d += 4; q = pathPos(p, d); }
-  const cands = [];
-  for (const along of [0, 24, 48]) {
-    const a = pathPos(p, d + along);
-    for (const side of [1, -1]) {
-      const x = clamp(a.x - a.dy * 54 * side, 30, W - 30), y = clamp(a.y + a.dx * 54 * side, 86, H - 70);
-      let score = nearestOnPaths(G.paths, x, y).d;
-      for (const pl of G.plots) score = Math.min(score, dist(x, y, pl.x, pl.y) - 12);
-      if (x < 270 && y > H - 130) score -= 100; // sol alttaki kahraman/büyü düğmeleri
-      if (x < 280 && y < 70) score -= 100;      // sol üstteki bilgi hapları
-      cands.push({ x, y, score });
-    }
-  }
-  const best = cands.sort((a, b) => b.score - a.score)[0];
-  return (G.waveBtn[pi] = { x: best.x, y: best.y, ax: q.x, ay: q.y, dx: q.dx, dy: q.dy });
+  while (d < p.total - 40 && blocked(q.x, q.y)) { d += 3; q = pathPos(p, d); }
+  d += 8; q = pathPos(p, d);
+  return (G.waveBtn[pi] = { x: q.x, y: q.y, dx: q.dx, dy: q.dy });
 }
 
 // erken çağrı ödülü: kalan geri sayım ve dalga numarasıyla büyür
@@ -4128,113 +4119,69 @@ function earlyBonus() {
 function waveCallable() {
   return G.wave < G.lv.waves.length && (G.wave === 0 || (G.waveCountdown != null && G.spawners.length === 0 && G.enemies.length === 0));
 }
-// Dalga çağırma amblemi: altın çerçeveli kırmızı arma kalkanı üzerinde çapraz kılıçlar (bir kez çizilir)
-let WAVE_EMBLEM = null;
-function waveEmblem() {
-  if (WAVE_EMBLEM) return WAVE_EMBLEM;
-  const S = 4, c = document.createElement('canvas'); c.width = 64 * S; c.height = 72 * S;
-  const g = c.getContext('2d'); g.scale(S, S); g.translate(32, 34); g.lineJoin = 'round'; g.lineCap = 'round';
-  const shield = (k) => { g.beginPath(); g.moveTo(-21 * k, -21 * k); g.quadraticCurveTo(0, -28 * k, 21 * k, -21 * k); g.lineTo(21 * k, 0); g.quadraticCurveTo(19 * k, 18 * k, 0, 28 * k); g.quadraticCurveTo(-19 * k, 18 * k, -21 * k, 0); g.closePath(); };
-  // gölge
-  g.save(); g.translate(0, 3.5); shield(1); g.fillStyle = 'rgba(0,0,0,0.35)'; g.fill(); g.restore();
-  // altın çerçeve
-  shield(1);
-  const rim = g.createLinearGradient(0, -28, 0, 28); rim.addColorStop(0, '#fff4b8'); rim.addColorStop(0.45, '#e8b040'); rim.addColorStop(1, '#8a5210');
-  g.fillStyle = rim; g.fill(); g.strokeStyle = '#2a1406'; g.lineWidth = 2; g.stroke();
-  // kırmızı mine
-  shield(0.8);
-  const body = g.createRadialGradient(-6, -10, 2, 0, 0, 26); body.addColorStop(0, '#f05040'); body.addColorStop(0.6, '#a81c18'); body.addColorStop(1, '#4a0808');
-  g.fillStyle = body; g.fill(); g.strokeStyle = '#3a0606'; g.lineWidth = 1.2; g.stroke();
-  // çapraz kılıçlar
-  for (const side of [-1, 1]) {
-    g.save(); g.rotate(side * 0.72);
-    const bl = g.createLinearGradient(-2, 0, 2, 0); bl.addColorStop(0, '#9aa4b0'); bl.addColorStop(0.5, '#ffffff'); bl.addColorStop(1, '#7a8490');
-    g.beginPath(); g.moveTo(-1.8, 8); g.lineTo(-1.8, -14); g.lineTo(0, -18); g.lineTo(1.8, -14); g.lineTo(1.8, 8); g.closePath();
-    g.fillStyle = bl; g.fill(); g.strokeStyle = '#1e1a18'; g.lineWidth = 1; g.stroke();
-    g.beginPath(); g.roundRect(-5.5, 7.5, 11, 2.6, 1.2); g.fillStyle = '#f2c64e'; g.fill(); g.stroke();
-    g.beginPath(); g.roundRect(-1.3, 10, 2.6, 5.5, 1); g.fillStyle = '#5a3418'; g.fill(); g.stroke();
-    g.beginPath(); g.arc(0, 16.6, 1.8, 0, Math.PI * 2); g.fillStyle = '#f2c64e'; g.fill(); g.stroke();
-    g.restore();
-  }
-  // parlama ve altın perçinler
-  g.save(); shield(0.8); g.clip();
-  g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.ellipse(-6, -16, 14, 6, -0.3, 0, Math.PI * 2); g.fill();
-  g.restore();
-  for (const [x, y] of [[-16, -18], [16, -18], [0, 22]]) { g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fillStyle = '#fff2b0'; g.fill(); g.strokeStyle = '#6a3e0a'; g.lineWidth = 0.6; g.stroke(); }
-  return (WAVE_EMBLEM = c);
-}
-// kurdele biçimli etiket (BAŞLAT / erken çağrı ödülü)
-function ribbon2(x, y, w, h) {
-  const n = h * 0.45;
-  ctx.save(); ctx.translate(x, y);
-  ctx.beginPath(); ctx.moveTo(-w / 2 - n, -h / 2 + 3); ctx.lineTo(-w / 2 + 4, -h / 2 + 3); ctx.lineTo(-w / 2 + 4, h / 2 + 3); ctx.lineTo(-w / 2 - n, h / 2 + 3); ctx.lineTo(-w / 2 - n * 0.4, 3); ctx.closePath();
-  ctx.moveTo(w / 2 + n, -h / 2 + 3); ctx.lineTo(w / 2 - 4, -h / 2 + 3); ctx.lineTo(w / 2 - 4, h / 2 + 3); ctx.lineTo(w / 2 + n, h / 2 + 3); ctx.lineTo(w / 2 + n * 0.4, 3); ctx.closePath();
-  ctx.fillStyle = '#7a1410'; ctx.fill(); ctx.strokeStyle = '#2a0604'; ctx.lineWidth = 1.4; ctx.stroke();
-  const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, '#e8483a'); g.addColorStop(1, '#a01a14');
-  roundRect(-w / 2, -h / 2, w, h, 4, g, '#f2c64e', 1.6);
-  ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(-w / 2 + 3, -h / 2 + 2, w - 6, h * 0.3);
-  ctx.restore();
+// Dalga çağırma işareti (popüler kule savunma oyunlarındaki gibi): yolun girişinde, yol yönünü gösteren
+// küçük damla biçimli altın çerçeveli madalyon; içinde kırmızı kuru kafa; dikkat çekmek için radar dalgası
+let WAVE_PIN = null;
+function wavePinIcon() {
+  if (WAVE_PIN) return WAVE_PIN;
+  const S = 4, c = document.createElement('canvas'); c.width = c.height = 48 * S;
+  const g = c.getContext('2d'); g.scale(S, S); g.translate(24, 24); g.lineJoin = 'round'; g.lineCap = 'round';
+  // damla: sağa (yol yönüne) bakan uç
+  const drop = (r) => { g.beginPath(); g.arc(0, 0, r, Math.PI * 0.27, Math.PI * 1.73); g.lineTo(r * 1.62, 0); g.closePath(); };
+  g.save(); g.translate(0, 1.6); drop(13); g.fillStyle = 'rgba(0,0,0,0.35)'; g.fill(); g.restore();
+  drop(13);
+  const rim = g.createLinearGradient(0, -13, 0, 13); rim.addColorStop(0, '#fff2b0'); rim.addColorStop(0.5, '#e6b040'); rim.addColorStop(1, '#8a5410');
+  g.fillStyle = rim; g.fill(); g.strokeStyle = '#2a1406'; g.lineWidth = 1.4; g.stroke();
+  g.beginPath(); g.arc(0, 0, 10, 0, Math.PI * 2);
+  const body = g.createRadialGradient(-3, -4, 1, 0, 0, 11); body.addColorStop(0, '#e8443a'); body.addColorStop(1, '#5a0a08');
+  g.fillStyle = body; g.fill(); g.strokeStyle = 'rgba(40,6,4,0.8)'; g.lineWidth = 0.8; g.stroke();
+  // kuru kafa
+  g.fillStyle = '#fbf3e4'; g.strokeStyle = '#3a0a06'; g.lineWidth = 0.7;
+  g.beginPath(); g.moveTo(-5.4, 0.6); g.bezierCurveTo(-6.2, -6.2, 6.2, -6.2, 5.4, 0.6); g.quadraticCurveTo(5.2, 2.6, 3.4, 3.1);
+  g.lineTo(3.2, 5.2); g.lineTo(-3.2, 5.2); g.lineTo(-3.4, 3.1); g.quadraticCurveTo(-5.2, 2.6, -5.4, 0.6); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#3a0a06';
+  g.beginPath(); g.ellipse(-2.3, -0.4, 1.55, 1.75, 0.2, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(2.3, -0.4, 1.55, 1.75, -0.2, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(0, 1.3); g.lineTo(-0.8, 2.6); g.lineTo(0.8, 2.6); g.closePath(); g.fill();
+  g.lineWidth = 0.55; g.beginPath(); for (const x of [-1.6, 0, 1.6]) { g.moveTo(x, 3.6); g.lineTo(x, 5.2); } g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.28)'; g.beginPath(); g.ellipse(-3.5, -6, 4.5, 2, -0.4, 0, Math.PI * 2); g.fill();
+  return (WAVE_PIN = c);
 }
 function drawWaveButtons() {
   const show = waveCallable();
   if (show && G.waveShowT == null) G.waveShowT = time;
   if (!show) G.waveShowT = null;
   if (!show) return;
-  const appear = easeOutBack(clamp((time - G.waveShowT) / 0.4, 0, 1));
-  const next = G.lv.waves[G.wave], bonus = earlyBonus();
+  const appear = easeOutBack(clamp((time - G.waveShowT) / 0.4, 0, 1)), bonus = earlyBonus();
   for (const pi of nextWavePaths()) {
-    const b = waveButtonPos(pi);
-    // yolun girişinde akan yön okları
-    const ang = Math.atan2(b.dy, b.dx);
-    for (let j = 0; j < 3; j++) {
-      const ph = (time * 0.9 + j / 3) % 1, ax = b.ax + b.dx * (ph * 46 - 6), ay = b.ay + b.dy * (ph * 46 - 6);
-      ctx.save(); ctx.globalAlpha = Math.sin(ph * Math.PI) * 0.95; ctx.translate(ax, ay); ctx.rotate(ang);
-      ctx.beginPath(); ctx.moveTo(-6, -9); ctx.lineTo(4, 0); ctx.lineTo(-6, 9); ctx.lineTo(-2, 0); ctx.closePath();
-      ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(70,30,4,0.9)'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#ffc94a'; ctx.fill();
+    const b = waveButtonPos(pi), ang = Math.atan2(b.dy, b.dx);
+    ctx.save(); ctx.translate(b.x, b.y);
+    // radar dalgası: dikkat çeker ama yer kaplamaz
+    for (let j = 0; j < 2; j++) {
+      const ph = (time * 0.8 + j * 0.5) % 1;
+      ctx.strokeStyle = `rgba(255,${190 - ph * 80},90,${(1 - ph) * 0.7})`; ctx.lineWidth = 2 * (1 - ph) + 0.5;
+      ctx.beginPath(); ctx.arc(0, 0, 14 + ph * 16, 0, Math.PI * 2); ctx.stroke();
+    }
+    const s = appear * pressScale('wave' + pi) * (1 + Math.sin(time * 5) * 0.04);
+    ctx.scale(s, s);
+    if (G.wave > 0 && G.waveCountdown != null) {
+      ctx.strokeStyle = 'rgba(20,8,2,0.65)'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(0, 0, 17, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - G.waveCountdown / G.waveCountdownMax)); ctx.stroke();
+    }
+    ctx.rotate(ang);
+    ctx.drawImage(wavePinIcon(), -24, -24, 48, 48);
+    ctx.restore();
+    // erken çağrı ödülü: işaretin altında minik hap
+    if (bonus > 0) {
+      const bx = clamp(b.x, 30, W - 30), by = b.y + 33 > H ? b.y - 25 : b.y + 25;
+      ctx.save(); ctx.globalAlpha = appear;
+      ctx.font = `400 10.5px ${FONT_T}`; const tw = ctx.measureText('+' + bonus).width + 22;
+      roundRect(bx - tw / 2, by - 8, tw, 16, 8, 'rgba(24,12,4,0.85)', '#e8bb4a', 1.2);
+      drawIcon('coin', bx - tw / 2 + 8.5, by, 9);
+      txt('+' + bonus, bx + 5, by + 0.5, 10.5, '#ffe27a', 'center', '400', FONT_T, false);
       ctx.restore();
     }
-    ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = 'rgba(255,220,150,0.55)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.ax, b.ay); ctx.stroke(); ctx.restore();
-    ctx.save(); ctx.translate(b.x, b.y);
-    const s = appear * pressScale('wave' + pi) * (1 + Math.sin(time * 4) * 0.035); ctx.scale(s, s);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 40, '255,170,60', 0.3 + Math.sin(time * 4) * 0.1); ctx.restore();
-    if (G.wave > 0 && G.waveCountdown != null) {
-      ctx.strokeStyle = 'rgba(20,8,2,0.6)'; ctx.lineWidth = 4.5; ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.stroke();
-      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.arc(0, 0, 30, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - G.waveCountdown / G.waveCountdownMax)); ctx.stroke();
-    }
-    ctx.drawImage(waveEmblem(), -24, -26, 48, 54);
-    // kalkanın üstünde ara sıra kayan parıltı
-    const sh = (time * 0.6) % 1;
-    if (sh < 0.25) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -18 + sh * 144, -14 + sh * 40, 9, '255,250,220', Math.sin(sh / 0.25 * Math.PI) * 0.6); ctx.restore(); }
-    ctx.restore();
-    // etiket (BAŞLAT ya da erken çağrı ödülü) arsalardan ve yoldan uzak tarafa; gelecek düşmanlar karşı tarafa
-    const room = (y) => (y < 80 || y > H - 20) ? -1e9 : Math.min(nearestOnPaths(G.paths, b.x, y).d + 10, ...G.plots.map(pl => dist(b.x, y, pl.x, pl.y)));
-    if (b.ly == null) b.ly = room(b.y + 42) >= room(b.y - 42) ? b.y + 42 : b.y - 42;
-    const bob = Math.sin(time * 4) * 2, ly = b.ly + bob;
-    ctx.save(); ctx.globalAlpha = appear;
-    if (G.wave === 0) {
-      ribbon2(b.x, ly, 74, 22);
-      txt('BAŞLAT', b.x, ly + 1, 14, '#fff3c8', 'center', '400', FONT_T);
-    } else if (bonus > 0) {
-      ribbon2(b.x, ly, 64, 20);
-      drawIcon('coin', b.x - 17, ly, 12);
-      txt('+' + bonus, b.x + 7, ly + 1, 13, '#fff3c8', 'center', '400', FONT_T);
-    }
-    // gelecek dalganın düşman türleri (bu yoldan)
-    const types = [...new Set(next.filter(g => (g.p || 0) === pi).map(g => g.t))].slice(0, 4);
-    const cy = b.ly > b.y ? b.y - 40 : b.y + 40;
-    types.forEach((t, i) => {
-      const cx = b.x + (i - (types.length - 1) / 2) * 22, im = enemySprite(t) || spr('enemy_' + t);
-      circle(cx, cy + 1.5, 10, 'rgba(0,0,0,0.35)');
-      circle(cx, cy, 10, '#2a1c10', ENEMIES[t].boss ? '#ff6a4a' : ENEMIES[t].flying ? '#8fd0ff' : '#c9a35a', 1.6);
-      if (im) {
-        ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, 8.8, 0, Math.PI * 2); ctx.clip();
-        const hh = ENEMIES[t].boss ? 30 : 24; drawSprite(ctx, im, cx, cy + hh * 0.62, hh * im.width / im.height);
-        ctx.restore();
-      }
-    });
-    ctx.restore();
   }
 }
 
@@ -5395,7 +5342,7 @@ function playTap(x, y) {
   if (waveCallable()) {
     for (const pi of nextWavePaths()) {
       const b = waveButtonPos(pi);
-      if (dist(b.x, b.y, x, y) < 30) { tapPop('wave' + pi); waveBonusAndStart(); return; }
+      if (dist(b.x, b.y, x, y) < 24) { tapPop('wave' + pi); waveBonusAndStart(); return; }
     }
   }
   // hedefleme modları
