@@ -161,7 +161,7 @@ const SOUND = {
   boom:    { vol: 0.50, gap: 0.08, max: 3, rate: [0.9, 1.1] },
   meteor:  { vol: 0.70, gap: 0.15, max: 2, rate: [0.85, 1.0] },
   clash:   { vol: 0.22, gap: 0.10, max: 3, rate: [0.9, 1.15] },
-  death:   { vol: 0.30, gap: 0.07, max: 3, rate: [0.9, 1.25] },
+  death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
   coin:    { vol: 0.22, gap: 0.09, max: 2, rate: [0.95, 1.15] },
   coins:   { vol: 0.45, gap: 0.25, max: 1 },
   build:   { vol: 0.60, gap: 0.10, max: 1 },
@@ -220,8 +220,53 @@ function initAudio() {
   Object.keys(rawSnd).forEach(decodeOne);
 }
 
+// Arayüz sesleri: ince/tiz dosyalar yerine sentezlenmiş dolgun "pop" sesleri
+// (mobil oyunlardaki yumuşak, tahta-kabarcık hissi veren düğme sesi: perdesi hızla düşen sinüs + kısa tık)
+let NOISE_BUF = null;
+function noiseBuf() {
+  if (NOISE_BUF) return NOISE_BUF;
+  const n = Math.floor(actx.sampleRate * 0.3), b = actx.createBuffer(1, n, actx.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  return (NOISE_BUF = b);
+}
+function uiPop(t0, f0, f1, dur, vol, out) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur * 0.7);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + dur + 0.02);
+  // gövde: bir oktav üstte hafif üçgen dalga (sese dolgunluk verir)
+  const o2 = actx.createOscillator(), g2 = actx.createGain();
+  o2.type = 'triangle'; o2.frequency.setValueAtTime(f0 * 2, t0); o2.frequency.exponentialRampToValueAtTime(f1 * 2, t0 + dur * 0.5);
+  g2.gain.setValueAtTime(0.0001, t0); g2.gain.exponentialRampToValueAtTime(vol * 0.22, t0 + 0.003); g2.gain.exponentialRampToValueAtTime(0.0001, t0 + dur * 0.6);
+  o2.connect(g2); g2.connect(out); o2.start(t0); o2.stop(t0 + dur);
+}
+function uiTick(t0, f, vol, out) {
+  const n = actx.createBufferSource(), bp = actx.createBiquadFilter(), g = actx.createGain();
+  n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.2;
+  g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.018);
+  n.connect(bp); bp.connect(g); g.connect(out); n.start(t0); n.stop(t0 + 0.03);
+}
+const UI_LAST = {};
+function uiSound(kind) {
+  const now = actx.currentTime;
+  if (now - (UI_LAST[kind] || -1) < 0.045) return true;
+  UI_LAST[kind] = now;
+  const out = actx.createBiquadFilter(); out.type = 'lowpass'; out.frequency.value = 2400; out.connect(master);
+  if (kind === 'click') { uiTick(now, 1500, 0.07, out); uiPop(now, 380, 150, 0.12, 0.42, out); }
+  else if (kind === 'select') { uiTick(now, 1800, 0.06, out); uiPop(now, 460, 190, 0.1, 0.36, out); uiPop(now + 0.055, 620, 300, 0.09, 0.22, out); }
+  else if (kind === 'pick') { uiTick(now, 1600, 0.05, out); uiPop(now, 420, 210, 0.09, 0.32, out); }
+  else if (kind === 'open') {
+    uiPop(now, 260, 120, 0.14, 0.3, out);
+    const n = actx.createBufferSource(), bp = actx.createBiquadFilter(), g = actx.createGain();
+    n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.Q.value = 2; bp.frequency.setValueAtTime(450, now); bp.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.09, now + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+    n.connect(bp); bp.connect(g); g.connect(out); n.start(now); n.stop(now + 0.17);
+  } else return false;
+  return true;
+}
 function sfx(kind) {
   if (muted || !actx) return;
+  if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
   if (!def || !list || !list.length) return;
   const st = sndState[kind] || (sndState[kind] = { last: -1, playing: 0 });
@@ -242,11 +287,11 @@ function sfx(kind) {
 // Testere dalgası (gırtlak) iki ünlü formant süzgecinden geçer; perde düşer, genlik söner.
 const VOWEL = { a: [800, 1200], e: [450, 1900], i: [320, 2300], o: [500, 900], u: [350, 750] };
 const VOICE = {
-  goblin:  { f0: [430, 250], v: 'i', dur: 0.2,  vol: 0.09 },
-  wolf:    { f0: [880, 470], v: 'u', dur: 0.24, vol: 0.07, wave: 'triangle' },
+  goblin:  { f0: [300, 185], v: 'e', dur: 0.2,  vol: 0.08 },
+  wolf:    { f0: [560, 330], v: 'u', dur: 0.24, vol: 0.06, wave: 'triangle' },
   bandit:  { f0: [150, 92],  v: 'u', dur: 0.28, vol: 0.1 },
   orc:     { f0: [100, 62],  v: 'o', dur: 0.34, vol: 0.11, growl: 28 },
-  bat:     { f0: [2300, 1500], dur: 0.1, vol: 0.05, wave: 'sine' },
+  bat:     { f0: [760, 520], v: 'i', dur: 0.12, vol: 0.045, wave: 'triangle' },
   shaman:  { f0: [190, 115], v: 'a', dur: 0.32, vol: 0.09 },
   knight:  { f0: [125, 80],  v: 'u', dur: 0.3,  vol: 0.1, clank: true },
   troll:   { f0: [72, 42],   v: 'o', dur: 0.55, vol: 0.13, growl: 22 },
@@ -255,7 +300,7 @@ let voiceLast = 0, voicePlaying = 0;
 function deathVoice(e) {
   if (muted || !actx) return;
   const def = e.def, V = VOICE[def.base || e.type] || VOICE.bandit, now = actx.currentTime;
-  if (now - voiceLast < 0.06 || voicePlaying >= 4) return; // kalabalıkta üst üste binmesin
+  if (now - voiceLast < 0.12 || voicePlaying >= 3) return; // kalabalıkta üst üste binmesin
   voiceLast = now; voicePlaying++;
   const p = rand(0.92, 1.08) * (def.chief ? 0.8 : 1), dur = V.dur * (def.chief ? 1.5 : 1);
   const osc = actx.createOscillator(); osc.type = V.wave || 'sawtooth';
@@ -910,7 +955,7 @@ function strokeLightning(pts, w, col, a) {
 function drawZap(f) {
   if (f.target && !f.target.dead) { f.x1 = f.target.x; f.y1 = aimY(f.target); }
   const k = f.t / f.dur, a = k < 0.15 ? 1 : 1 - (k - 0.15) / 0.85;
-  const seed = f.seed + Math.floor(f.t * 25), col = f.frost ? 'rgb(90,220,255)' : 'rgb(70,130,255)';
+  const seed = f.seed + Math.floor(f.t * 25), col = f.col || (f.frost ? 'rgb(90,220,255)' : 'rgb(70,130,255)');
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const pts = lightningPts(f.x0, f.y0, f.x1, f.y1, seed, 0.26);
   strokeLightning(pts, f.w || 1, col, a);
@@ -920,7 +965,8 @@ function drawZap(f) {
     const ang = Math.atan2(f.y1 - f.y0, f.x1 - f.x0) + (b ? 0.7 : -0.7), L = 12 + (seed % 10);
     strokeLightning(lightningPts(bx, by, bx + Math.cos(ang) * L, by + Math.sin(ang) * L, seed + b * 3, 0.3), (f.w || 1) * 0.55, col, a * 0.8);
   }
-  glow(ctx, f.x0, f.y0, 12, '170,210,255', a); glow(ctx, f.x1, f.y1, 16, '190,220,255', a);
+  if (!f.col) { glow(ctx, f.x0, f.y0, 12, '170,210,255', a); glow(ctx, f.x1, f.y1, 16, '190,220,255', a); }
+  else glow(ctx, f.x1, f.y1, 16, f.col.slice(4, -1), a * 0.8);
   ctx.restore();
 }
 function fxFireHit(x, y, big) {
@@ -961,6 +1007,7 @@ function damageEnemy(e, amount, type, quiet, src) {
   if (e.dead) return;
   const wk = src && e.def.wk && e.def.wk[src];
   if (wk) amount *= wk;
+  if (e.rageT > 0) amount *= 0.5; // boss öfkesi
   if (HERO_SKILL) amount *= HERO_POWER; // kahraman yetenek hasarı
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
   if (e.markT > 0) amount *= 1.6;
@@ -1341,6 +1388,7 @@ function updateArchers(t, dt, L) {
 
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
+  if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
   if (t.type === 'barracks') return;
   const L = effLevel(t);
   if (t.type === 'artillery') {
@@ -2049,6 +2097,13 @@ function updateProjectile(pr, dt) {
     fxArrowHit(pr.tx, pr.ty, false);
     return;
   }
+  if (pr.kind === 'bossthrow') {
+    const t = pr.tower;
+    fxExplosion(pr.tx, pr.ty + 18, 26, false);
+    if (t && G.towers.includes(t)) { t.disabledT = Math.max(t.disabledT || 0, pr.stun); t.disabledKind = 'stun'; floatText(t.x, t.y - 60, 'Sersemledi!', '#ffd08a'); }
+    sfx('boom');
+    return;
+  }
   if (pr.kind === 'shell' || pr.kind === 'meteor') {
     for (const e of G.enemies) {
       if (e.dead || e.def.flying) continue;
@@ -2742,6 +2797,28 @@ function drawArcher(t, ts, i, a) {
 }
 
 function drawTower(t) {
+  drawTowerBody(t);
+  if (t.disabledT > 0) drawTowerDisabled(t);
+}
+// susturulan kule: üstünde dönen yıldızlar (sersemleme) ya da mor lanet halkası
+function drawTowerDisabled(t) {
+  const ts = towerSprite(t), top = ts ? ts.bottom - ts.h - 4 : t.y - 70, a = Math.min(1, t.disabledT / 0.4);
+  ctx.save(); ctx.globalAlpha = a;
+  if (t.disabledKind === 'hex') {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, t.x, t.y - 30, 40, '150,60,255', 0.35 + Math.sin(time * 8) * 0.1); ctx.restore();
+    ctx.strokeStyle = 'rgba(200,130,255,0.9)'; ctx.lineWidth = 2; ctx.setLineDash([4, 5]); ctx.lineDashOffset = time * 25;
+    ctx.beginPath(); ctx.ellipse(t.x, t.y - 26, 30, 10, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+  }
+  for (let i = 0; i < 3; i++) {
+    const an = time * 4 + i * 2.09, sx = t.x + Math.cos(an) * 14, sy = top + Math.sin(an) * 4;
+    ctx.save(); ctx.translate(sx, sy); ctx.rotate(time * 3);
+    ctx.beginPath(); for (let j = 0; j < 10; j++) { const r = j % 2 ? 2 : 4.6, aa = j / 10 * Math.PI * 2 - Math.PI / 2; ctx.lineTo(Math.cos(aa) * r, Math.sin(aa) * r); } ctx.closePath();
+    ctx.fillStyle = t.disabledKind === 'hex' ? '#d8a8ff' : '#ffe27a'; ctx.fill(); ctx.strokeStyle = '#3a2408'; ctx.lineWidth = 0.8; ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
     const age = G.t - (t.born ?? -9);
@@ -2819,6 +2896,11 @@ function drawEnemy(e) {
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
     if (d.chief && im.generated) drawCrown(e.x + e.face * d.h * 0.06, top - 2, d.h / 44, e.face);
+    if (e.rageT > 0) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, e.x, e.y - d.h * 0.45, d.h * 0.9, '255,60,30', 0.45 + Math.sin(time * 14) * 0.12);
+      ctx.restore();
+    }
     if (e.shieldT > 0) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       glow(ctx, e.x, e.y - d.h * 0.5, d.h * 0.85, '110,190,255', 0.55 + Math.sin(time * 12) * 0.1);
@@ -3273,6 +3355,22 @@ function drawProjectile(p) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     glow(ctx, x, y, 16, '255,120,40', 0.9); glow(ctx, x, y, 7, '255,240,190', 1);
     ctx.restore();
+  } else if (p.kind === 'bossthrow') {
+    const gx = lerp(p.sx, p.tx, k), gy = lerp(p.sy + 40, p.ty + 30, k);
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(gx, gy, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(x, y); ctx.rotate(p.spin + time * 8);
+    if (p.sub === 'bomb') {
+      const g = ctx.createRadialGradient(-2, -2, 1, 0, 0, 7); g.addColorStop(0, '#6a6e78'); g.addColorStop(1, '#0e0e12');
+      circle(0, 0, 6.5, g, '#000', 1.2);
+      ctx.strokeStyle = '#a07a40'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(3, -5); ctx.quadraticCurveTo(6, -9, 5, -11); ctx.stroke();
+      ctx.restore();
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + Math.cos(p.spin + time * 8) * 5, y - 10, 6, '255,200,90', 0.9 + Math.sin(time * 50) * 0.1); ctx.restore();
+    } else {
+      const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, 10); g.addColorStop(0, '#a49a8c'); g.addColorStop(1, '#4a4238');
+      ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, r = 8.5 + Math.sin(i * 2.3) * 1.6; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath();
+      ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#241c14'; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.restore();
+    }
   } else if (p.kind === 'shell') {
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k), hgt = 1 - Math.sin(k * Math.PI);
     ctx.fillStyle = `rgba(0,0,0,${0.18 + 0.15 * hgt})`;
@@ -3293,6 +3391,7 @@ function drawProjectile(p) {
 }
 
 function drawEffect(f) {
+  if (f.t < 0) return; // gecikmeli başlayan efekt
   const k = f.t / f.dur;
   if (f.kind === 'boom') {
     ctx.globalAlpha = 1 - k;
@@ -3390,6 +3489,18 @@ function drawEffect(f) {
     ctx.strokeStyle = '#fffbe8'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
     ctx.restore();
+  } else if (f.kind === 'portal') {
+    // yerde dönen büyü geçidi
+    const o = k < 0.2 ? k / 0.2 : k > 0.75 ? (1 - k) / 0.25 : 1, r = 26 * (0.6 + 0.4 * Math.min(1, k * 4));
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, f.x, f.y - 4, r * 1.6, f.col, 0.55 * o);
+    ctx.lineWidth = 2.2;
+    for (let i = 0; i < 3; i++) {
+      ctx.strokeStyle = `rgba(${f.col},${0.8 * o})`;
+      ctx.beginPath(); ctx.ellipse(f.x, f.y, r * (1 - i * 0.25), r * (1 - i * 0.25) * 0.42, 0, time * (3 + i) + i * 2, time * (3 + i) + i * 2 + Math.PI * 1.3); ctx.stroke();
+    }
+    ctx.restore();
+    if (Math.random() < 0.5) emit(G.parts, { kind: 'glow', add: true, x: f.x + rand(-r, r), y: f.y + rand(-r, r) * 0.4, vy: -rand(30, 70), col: f.col, s0: 3, s1: 0.5, life: 0.6 });
   } else if (f.kind === 'firering') {
     // yerde genişleyen alev halkası
     const e = 1 - Math.pow(1 - k, 2.5), r = f.r * (0.25 + 0.75 * e);
@@ -4017,6 +4128,53 @@ function earlyBonus() {
 function waveCallable() {
   return G.wave < G.lv.waves.length && (G.wave === 0 || (G.waveCountdown != null && G.spawners.length === 0 && G.enemies.length === 0));
 }
+// Dalga çağırma amblemi: altın çerçeveli kırmızı arma kalkanı üzerinde çapraz kılıçlar (bir kez çizilir)
+let WAVE_EMBLEM = null;
+function waveEmblem() {
+  if (WAVE_EMBLEM) return WAVE_EMBLEM;
+  const S = 4, c = document.createElement('canvas'); c.width = 64 * S; c.height = 72 * S;
+  const g = c.getContext('2d'); g.scale(S, S); g.translate(32, 34); g.lineJoin = 'round'; g.lineCap = 'round';
+  const shield = (k) => { g.beginPath(); g.moveTo(-21 * k, -21 * k); g.quadraticCurveTo(0, -28 * k, 21 * k, -21 * k); g.lineTo(21 * k, 0); g.quadraticCurveTo(19 * k, 18 * k, 0, 28 * k); g.quadraticCurveTo(-19 * k, 18 * k, -21 * k, 0); g.closePath(); };
+  // gölge
+  g.save(); g.translate(0, 3.5); shield(1); g.fillStyle = 'rgba(0,0,0,0.35)'; g.fill(); g.restore();
+  // altın çerçeve
+  shield(1);
+  const rim = g.createLinearGradient(0, -28, 0, 28); rim.addColorStop(0, '#fff4b8'); rim.addColorStop(0.45, '#e8b040'); rim.addColorStop(1, '#8a5210');
+  g.fillStyle = rim; g.fill(); g.strokeStyle = '#2a1406'; g.lineWidth = 2; g.stroke();
+  // kırmızı mine
+  shield(0.8);
+  const body = g.createRadialGradient(-6, -10, 2, 0, 0, 26); body.addColorStop(0, '#f05040'); body.addColorStop(0.6, '#a81c18'); body.addColorStop(1, '#4a0808');
+  g.fillStyle = body; g.fill(); g.strokeStyle = '#3a0606'; g.lineWidth = 1.2; g.stroke();
+  // çapraz kılıçlar
+  for (const side of [-1, 1]) {
+    g.save(); g.rotate(side * 0.72);
+    const bl = g.createLinearGradient(-2, 0, 2, 0); bl.addColorStop(0, '#9aa4b0'); bl.addColorStop(0.5, '#ffffff'); bl.addColorStop(1, '#7a8490');
+    g.beginPath(); g.moveTo(-1.8, 8); g.lineTo(-1.8, -14); g.lineTo(0, -18); g.lineTo(1.8, -14); g.lineTo(1.8, 8); g.closePath();
+    g.fillStyle = bl; g.fill(); g.strokeStyle = '#1e1a18'; g.lineWidth = 1; g.stroke();
+    g.beginPath(); g.roundRect(-5.5, 7.5, 11, 2.6, 1.2); g.fillStyle = '#f2c64e'; g.fill(); g.stroke();
+    g.beginPath(); g.roundRect(-1.3, 10, 2.6, 5.5, 1); g.fillStyle = '#5a3418'; g.fill(); g.stroke();
+    g.beginPath(); g.arc(0, 16.6, 1.8, 0, Math.PI * 2); g.fillStyle = '#f2c64e'; g.fill(); g.stroke();
+    g.restore();
+  }
+  // parlama ve altın perçinler
+  g.save(); shield(0.8); g.clip();
+  g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.ellipse(-6, -16, 14, 6, -0.3, 0, Math.PI * 2); g.fill();
+  g.restore();
+  for (const [x, y] of [[-16, -18], [16, -18], [0, 22]]) { g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fillStyle = '#fff2b0'; g.fill(); g.strokeStyle = '#6a3e0a'; g.lineWidth = 0.6; g.stroke(); }
+  return (WAVE_EMBLEM = c);
+}
+// kurdele biçimli etiket (BAŞLAT / erken çağrı ödülü)
+function ribbon2(x, y, w, h) {
+  const n = h * 0.45;
+  ctx.save(); ctx.translate(x, y);
+  ctx.beginPath(); ctx.moveTo(-w / 2 - n, -h / 2 + 3); ctx.lineTo(-w / 2 + 4, -h / 2 + 3); ctx.lineTo(-w / 2 + 4, h / 2 + 3); ctx.lineTo(-w / 2 - n, h / 2 + 3); ctx.lineTo(-w / 2 - n * 0.4, 3); ctx.closePath();
+  ctx.moveTo(w / 2 + n, -h / 2 + 3); ctx.lineTo(w / 2 - 4, -h / 2 + 3); ctx.lineTo(w / 2 - 4, h / 2 + 3); ctx.lineTo(w / 2 + n, h / 2 + 3); ctx.lineTo(w / 2 + n * 0.4, 3); ctx.closePath();
+  ctx.fillStyle = '#7a1410'; ctx.fill(); ctx.strokeStyle = '#2a0604'; ctx.lineWidth = 1.4; ctx.stroke();
+  const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, '#e8483a'); g.addColorStop(1, '#a01a14');
+  roundRect(-w / 2, -h / 2, w, h, 4, g, '#f2c64e', 1.6);
+  ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(-w / 2 + 3, -h / 2 + 2, w - 6, h * 0.3);
+  ctx.restore();
+}
 function drawWaveButtons() {
   const show = waveCallable();
   if (show && G.waveShowT == null) G.waveShowT = time;
@@ -4032,25 +4190,23 @@ function drawWaveButtons() {
       const ph = (time * 0.9 + j / 3) % 1, ax = b.ax + b.dx * (ph * 46 - 6), ay = b.ay + b.dy * (ph * 46 - 6);
       ctx.save(); ctx.globalAlpha = Math.sin(ph * Math.PI) * 0.95; ctx.translate(ax, ay); ctx.rotate(ang);
       ctx.beginPath(); ctx.moveTo(-6, -9); ctx.lineTo(4, 0); ctx.lineTo(-6, 9); ctx.lineTo(-2, 0); ctx.closePath();
-      ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(60,8,4,0.9)'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#ff6a4a'; ctx.fill();
+      ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(70,30,4,0.9)'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#ffc94a'; ctx.fill();
       ctx.restore();
     }
     ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = 'rgba(255,220,150,0.55)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.ax, b.ay); ctx.stroke(); ctx.restore();
     ctx.save(); ctx.translate(b.x, b.y);
-    const s = appear * pressScale('wave' + pi) * (1 + Math.sin(time * 5) * 0.06); ctx.scale(s, s);
-    glow(ctx, 0, 0, 44, '255,80,50', 0.45 + Math.sin(time * 5) * 0.15);
-    circle(0, 5, 24, 'rgba(0,0,0,0.4)');
-    const rim = ctx.createLinearGradient(0, -22, 0, 22); rim.addColorStop(0, '#fff0a8'); rim.addColorStop(1, '#a8681a');
-    circle(0, 0, 23, rim, '#2e1606', 1.5);
-    const body = ctx.createRadialGradient(-5, -7, 2, 0, 0, 21); body.addColorStop(0, '#f2584a'); body.addColorStop(1, '#5e0e0a');
-    circle(0, 0, 19.5, body);
-    drawIcon('skull', 0, 0, 22);
+    const s = appear * pressScale('wave' + pi) * (1 + Math.sin(time * 4) * 0.035); ctx.scale(s, s);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 40, '255,170,60', 0.3 + Math.sin(time * 4) * 0.1); ctx.restore();
     if (G.wave > 0 && G.waveCountdown != null) {
-      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.stroke();
-      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.arc(0, 0, 28, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - G.waveCountdown / G.waveCountdownMax)); ctx.stroke();
+      ctx.strokeStyle = 'rgba(20,8,2,0.6)'; ctx.lineWidth = 4.5; ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(0, 0, 30, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - G.waveCountdown / G.waveCountdownMax)); ctx.stroke();
     }
+    ctx.drawImage(waveEmblem(), -24, -26, 48, 54);
+    // kalkanın üstünde ara sıra kayan parıltı
+    const sh = (time * 0.6) % 1;
+    if (sh < 0.25) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -18 + sh * 144, -14 + sh * 40, 9, '255,250,220', Math.sin(sh / 0.25 * Math.PI) * 0.6); ctx.restore(); }
     ctx.restore();
     // etiket (BAŞLAT ya da erken çağrı ödülü) arsalardan ve yoldan uzak tarafa; gelecek düşmanlar karşı tarafa
     const room = (y) => (y < 80 || y > H - 20) ? -1e9 : Math.min(nearestOnPaths(G.paths, b.x, y).d + 10, ...G.plots.map(pl => dist(b.x, y, pl.x, pl.y)));
@@ -4058,12 +4214,12 @@ function drawWaveButtons() {
     const bob = Math.sin(time * 4) * 2, ly = b.ly + bob;
     ctx.save(); ctx.globalAlpha = appear;
     if (G.wave === 0) {
-      roundRect(b.x - 38, ly - 12, 76, 24, 12, 'rgba(26,14,6,0.92)', '#e8bb4a', 2);
-      txt('BAŞLAT', b.x, ly + 1, 15, '#ffe27a', 'center', '400', FONT_T);
+      ribbon2(b.x, ly, 74, 22);
+      txt('BAŞLAT', b.x, ly + 1, 14, '#fff3c8', 'center', '400', FONT_T);
     } else if (bonus > 0) {
-      roundRect(b.x - 34, ly - 11, 68, 22, 11, 'rgba(26,14,6,0.92)', '#e8bb4a', 2);
-      drawIcon('coin', b.x - 20, ly, 13);
-      txt('+' + bonus, b.x + 7, ly + 1, 14, '#ffe27a', 'center', '400', FONT_T);
+      ribbon2(b.x, ly, 64, 20);
+      drawIcon('coin', b.x - 17, ly, 12);
+      txt('+' + bonus, b.x + 7, ly + 1, 13, '#fff3c8', 'center', '400', FONT_T);
     }
     // gelecek dalganın düşman türleri (bu yoldan)
     const types = [...new Set(next.filter(g => (g.p || 0) === pi).map(g => g.t))].slice(0, 4);
@@ -4534,22 +4690,45 @@ function bossIntro(e) {
 }
 
 // boss yetenekleri
+// Boss yeteneği kullanırken: adı belirir, boss parlar ve etrafına kıvılcım saçılır
+function bossCastFx(e, name, col) {
+  floatText(e.x, e.y - (e.def.h || 40) - 18, name, `rgb(${col})`);
+  emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - (e.def.h || 40) * 0.5, col, s0: (e.def.h || 40) * 1.4, s1: (e.def.h || 40) * 0.6, life: 0.35 });
+  for (let i = 0; i < 14; i++) {
+    const a = rand(0, Math.PI * 2), v = rand(40, 110);
+    emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - (e.def.h || 40) * 0.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6 - 20, drag: 2.5, col, s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.7) });
+  }
+}
+// yakındaki (susturulmamış) kulelerden rastgele biri
+function bossTowerTarget(e, r) {
+  const list = G.towers.filter(t => !(t.disabledT > 0) && dist(t.x, t.y, e.x, e.y) <= r);
+  return list.length ? list[Math.floor(Math.random() * list.length)] : null;
+}
 function bossAbilities(e, dt) {
   const ab = e.def.ab;
   if (!ab) return;
   e.abT = e.abT || {};
   const ready = (k, cd) => { e.abT[k] = (e.abT[k] ?? cd * 0.6) - dt; if (e.abT[k] > 0) return false; e.abT[k] = cd; return true; };
+  if (e.rageT > 0) {
+    e.rageT -= dt;
+    if (Math.random() < dt * 30) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-14, 14), y: e.y - rand(0, e.def.h || 40), vy: -rand(30, 70), col: Math.random() < 0.5 ? '255,70,40' : '255,150,60', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.7) });
+  }
   if (ab.regen && e.hp < e.maxHp && time - (e.hitAt || -9) > 4) e.hp = Math.min(e.maxHp, e.hp + e.maxHp * ab.regen * dt);
-  if (ab.summon && ready('summon', ab.summon.cd)) {
-    for (let i = 0; i < ab.summon.n; i++) spawnEnemy(ab.summon.t, G.paths.indexOf(e.p), Math.max(0, e.d - 12 - i * 14));
-    G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 40, col: '190,90,255', t: 0, dur: 0.5 });
-    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-30, 30), y: e.y + rand(-8, 8), vy: -rand(20, 60), col: '190,110,255', s0: 4, s1: 0.5, life: 0.7 });
-    floatText(e.x, e.y - 60, 'Çağrı!', '#d8a8ff'); sfx('spell');
+  // Muhafız çağırma: boss'un arkasında açılan geçitten minyonlar çıkar ve onunla yürür
+  if (ab.summon && e.siege === undefined && ready('summon', ab.summon.cd)) {
+    const pi = G.paths.indexOf(e.p), d0 = Math.max(0, e.d - 24), q = pathPos(e.p, d0);
+    G.effects.push({ kind: 'portal', x: q.x, y: q.y, t: 0, dur: 1.2, col: e.def.base === 'knight' || e.type === 'dark_shaman' ? '170,90,255' : '120,230,90' });
+    for (let i = 0; i < ab.summon.n; i++) {
+      const m = spawnEnemy(ab.summon.t, pi, Math.max(0, d0 - i * 10), i % 2 ? 10 : -10);
+      m.leader = e; m.form = -22 - i * 12;
+      for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: m.x + rand(-8, 8), y: m.y - rand(0, 20), vy: -rand(20, 50), col: '200,160,255', s0: 4, s1: 0.5, life: 0.6 });
+    }
+    bossCastFx(e, 'Çağrı!', '200,140,255'); sfx('spell');
   }
   if (ab.howl && ready('howl', ab.howl.cd)) {
     for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, e.x, e.y) < ab.howl.r) o.hasteT = 4;
-    G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.howl.r, col: '255,90,70', t: 0, dur: 0.6 });
-    floatText(e.x, e.y - 50, 'Uluma!', '#ff8a7a'); sfx('cry');
+    for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.howl.r * (0.5 + i * 0.25), col: '255,90,70', t: -i * 0.12, dur: 0.6 });
+    bossCastFx(e, 'Uluma!', '255,110,80'); sfx('cry');
   }
   if (ab.slam && ready('slam', ab.slam.cd)) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);
@@ -4557,22 +4736,86 @@ function bossAbilities(e, dt) {
     else {
       for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg); s.stunT = ab.slam.stun; }
       G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: ab.slam.r * 1.3, t: 0, dur: 0.45 });
-      for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-20, 20), y: e.y, vx: rand(-90, 90), vy: -rand(60, 150), g: 420, col: '#6a5040', s0: 3, s1: 2, life: 0.8, vr: rand(-10, 10), floor: e.y + rand(-6, 8) });
-      shakeScreen(4, 0.3); sfx('boom');
+      G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: ab.slam.r, t: 0, dur: 0.4 });
+      G.decals.push({ x: e.x, y: e.y, r: ab.slam.r * 0.6, t: 0, life: 6 });
+      for (let i = 0; i < 18; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-20, 20), y: e.y, vx: rand(-110, 110), vy: -rand(70, 170), g: 420, col: '#6a5040', s0: 3, s1: 2, life: 0.8, vr: rand(-10, 10), floor: e.y + rand(-6, 8) });
+      bossCastFx(e, 'Yer Sarsıntısı!', '255,190,110');
+      shakeScreen(5, 0.35); sfx('boom');
     }
   }
-  if (ab.shield && ready('shield', ab.shield.cd)) { e.shieldT = ab.shield.t; sfx('magic'); }
+  if (ab.shield && ready('shield', ab.shield.cd)) { e.shieldT = ab.shield.t; bossCastFx(e, 'Kalkan!', '120,200,255'); sfx('magic'); }
   if (ab.heal && ready('heal', ab.heal.cd)) {
+    let any = false;
     for (const o of G.enemies) if (!o.dead && o !== e && dist(o.x, o.y, e.x, e.y) < ab.heal.r && o.hp < o.maxHp) {
-      o.hp = Math.min(o.maxHp, o.hp + ab.heal.amt); G.effects.push({ kind: 'heal', x: o.x, y: o.y, t: 0, dur: 0.6 });
+      any = true; o.hp = Math.min(o.maxHp, o.hp + ab.heal.amt); G.effects.push({ kind: 'heal', x: o.x, y: o.y, t: 0, dur: 0.6 });
+      G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - 30, target: o, x1: o.x, y1: aimY(o), t: 0, dur: 0.35, w: 0.5, col: 'rgb(90,220,110)', seed: rand(0, 99) });
     }
+    if (any) bossCastFx(e, 'Şifa!', '120,255,140');
   }
   if (ab.blink && !e.blocker && e.siege === undefined && ready('blink', ab.blink.cd)) {
-    for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: '90,220,230', s0: 6, s1: 12, life: 0.5, a: 0.7 });
+    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: '40,200,140', s0: 6, s1: 12, life: 0.6, a: 0.7 });
+    G.effects.push({ kind: 'portal', x: e.x, y: e.y, t: 0, dur: 0.8, col: '60,230,160' });
     e.d = Math.min(e.p.total - 30, e.d + ab.blink.d);
     const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y;
-    for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: '120,240,255', s0: 5, s1: 0.5, life: 0.5 });
-    sfx('zap');
+    G.effects.push({ kind: 'portal', x: e.x, y: e.y, t: 0, dur: 0.8, col: '60,230,160' });
+    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: '120,255,200', s0: 5, s1: 0.5, life: 0.5 });
+    bossCastFx(e, 'Işınlanma!', '90,240,190'); sfx('zap');
+  }
+  // İleri atılış: toz bulutu ve hız izleriyle yolda sıçrar
+  if (ab.pounce && !e.blocker && e.siege === undefined && ready('pounce', ab.pounce.cd)) {
+    const x0 = e.x, y0 = e.y;
+    e.d = Math.min(e.p.total - 30, e.d + ab.pounce.d);
+    const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y;
+    for (let i = 0; i < 10; i++) { const k = i / 9; emit(G.parts, { kind: 'glow', x: lerp(x0, e.x, k) + rand(-4, 4), y: lerp(y0, e.y, k) - Math.sin(k * Math.PI) * 26, col: '200,180,150', s0: 6, s1: 12, life: 0.5, a: 0.5 }); }
+    G.effects.push({ kind: 'dust', x: x0, y: y0, t: 0, dur: 0.5 }); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.5 });
+    bossCastFx(e, 'Atılış!', '255,200,120'); sfx('whirl');
+  }
+  // Öfke: kısa süre yarı hasar alır, kırmızı alev halesi
+  if (ab.rage && ready('rage', ab.rage.cd)) {
+    e.rageT = ab.rage.t;
+    G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: 50, t: 0, dur: 0.5 });
+    bossCastFx(e, 'Öfke!', '255,80,50'); sfx('cry');
+  }
+  // Bomba / kaya: menzildeki bir kuleye fırlatır, kule birkaç saniye susar
+  for (const kind of ['bomb', 'boulder']) {
+    const A = ab[kind];
+    if (!A) continue;
+    e.abT[kind] = (e.abT[kind] ?? A.cd * 0.6) - dt;
+    if (e.abT[kind] > 0) continue;
+    const t = bossTowerTarget(e, A.r);
+    if (!t) { e.abT[kind] = 1; continue; }
+    e.abT[kind] = A.cd;
+    G.projectiles.push({ kind: 'bossthrow', sub: kind, sx: e.x, sy: e.y - (e.def.h || 40) * 0.7, tx: t.x, ty: t.y - 30, tower: t, stun: A.stun, t: 0, dur: 0.9, arc: 90, spin: rand(0, 6) });
+    bossCastFx(e, kind === 'bomb' ? 'Bomba!' : 'Kaya!', '255,200,120'); sfx('whirl');
+  }
+  // Lanet: gökten kara yıldırım bir kuleyi susturur
+  if (ab.hex) {
+    e.abT.hex = (e.abT.hex ?? ab.hex.cd * 0.6) - dt;
+    if (e.abT.hex <= 0) {
+      const t = bossTowerTarget(e, ab.hex.r);
+      if (!t) e.abT.hex = 1;
+      else {
+        e.abT.hex = ab.hex.cd;
+        const ts = towerSprite(t), ty = ts ? ts.bottom - ts.h * 0.8 : t.y - 40;
+        G.effects.push({ kind: 'zap', x0: t.x + rand(-30, 30), y0: ty - 230, x1: t.x, y1: ty, t: 0, dur: 0.45, w: 1.6, col: 'rgb(170,70,255)', seed: rand(0, 99) });
+        G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - (e.def.h || 40), x1: e.x, y1: e.y - (e.def.h || 40) - 60, t: 0, dur: 0.3, w: 0.8, col: 'rgb(170,70,255)', seed: rand(0, 99) });
+        G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 40, col: '190,110,255', t: 0, dur: 0.5 });
+        t.disabledT = Math.max(t.disabledT || 0, ab.hex.t); t.disabledKind = 'hex';
+        bossCastFx(e, 'Lanet!', '190,110,255'); sfx('zap');
+      }
+    }
+  }
+  // Can emme: yakındaki askerlerden yeşil ışınlarla can çeker
+  if (ab.drain && ready('drain', ab.drain.cd)) {
+    const vs = G.soldiers.filter(s2 => !s2.dead && dist(s2.x, s2.y, e.x, e.y) < ab.drain.r);
+    if (!vs.length) e.abT.drain = 1;
+    else {
+      for (const s2 of vs) {
+        damageSoldier(s2, ab.drain.dmg); e.hp = Math.min(e.maxHp, e.hp + ab.drain.dmg * 1.5);
+        G.effects.push({ kind: 'zap', x0: s2.x, y0: s2.y - 14, x1: e.x, y1: e.y - (e.def.h || 40) * 0.5, t: 0, dur: 0.5, w: 0.7, col: 'rgb(80,230,110)', seed: rand(0, 99) });
+      }
+      bossCastFx(e, 'Can Emme!', '110,255,140'); sfx('magic');
+    }
   }
 }
 

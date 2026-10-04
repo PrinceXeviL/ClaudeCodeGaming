@@ -250,7 +250,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Bataklık Sınırı', gold: 490, lives: 20, theme: 'swamp', castle: [905, 250], hpMul: 1.42,
+    name: 'Bataklık Sınırı', gold: 520, lives: 20, theme: 'swamp', castle: [905, 250], hpMul: 1.3,
     paths: [
       [[-40, 100], [140, 110], [260, 190], [420, 170], [520, 250], [640, 300], [740, 240], [855, 236]],
       [[-40, 430], [150, 420], [270, 340], [420, 330], [520, 250], [640, 300], [740, 240], [855, 236]],
@@ -390,19 +390,19 @@ const LEVELS = [
 // blink: yolda ileri ışınlanır, regen: sürekli can yeniler).
 Object.assign(ENEMIES, {
   goblin_king:  { name: 'Goblin Kral', base: 'goblin', h: 40, hp: 700, speed: 19, armor: 0.15, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true,
-    desc: 'Arada bir yanına goblin muhafızları çağırır', ab: { summon: { t: 'goblin', n: 3, cd: 8 } } },
+    desc: 'Goblin çağırır, kulelere bomba atıp susturur, savaş narasıyla hızlandırır', ab: { summon: { t: 'goblin', n: 3, cd: 11 }, bomb: { cd: 10, stun: 3, r: 170 }, howl: { cd: 14, r: 110 } } },
   wolf_alpha:   { name: 'Kara Kurt Alfa', base: 'wolf', h: 38, hp: 850, speed: 30, armor: 0.1, mr: 0.1, gold: 90, dmg: [12, 20], rate: 0.9, lives: 5, r: 14, boss: true, chief: true,
-    desc: 'Uluyunca yakındaki düşmanlar 4 sn hızlanır', ab: { howl: { cd: 9, r: 110 } } },
+    desc: 'Ulur (yakındakiler hızlanır), sürüsünü çağırır, yolda ileri atılır', ab: { howl: { cd: 10, r: 110 }, summon: { t: 'wolf', n: 3, cd: 12 }, pounce: { cd: 8, d: 70 } } },
   orc_warlord:  { name: 'Ork Savaş Ağası', base: 'orc', h: 50, hp: 1500, speed: 15, armor: 0.4, mr: 0.1, gold: 130, dmg: [20, 32], rate: 1.4, lives: 6, r: 16, boss: true, chief: true,
-    desc: 'Yere vurup çevresindeki askerleri 2 sn sersemletir', ab: { slam: { cd: 7, r: 62, stun: 2, dmg: 25 } } },
+    desc: 'Yeri dövüp askerleri sersemletir, ork çağırır, öfkelenince 5 sn yarı hasar alır', ab: { slam: { cd: 7, r: 62, stun: 2, dmg: 25 }, summon: { t: 'orc', n: 2, cd: 13 }, rage: { cd: 15, t: 5 } } },
   dark_shaman:  { name: 'Kara Büyücü', base: 'shaman', h: 46, hp: 1300, speed: 16, armor: 0.1, mr: 0.7, gold: 140, dmg: [10, 16], rate: 1.2, lives: 6, r: 15, boss: true, chief: true,
-    desc: 'Büyü kalkanıyla 3 sn hasar almaz, yakındakileri iyileştirir', ab: { shield: { cd: 12, t: 3 }, heal: { cd: 6, amt: 70, r: 90 } } },
+    desc: 'Kalkan açar, yakındakileri iyileştirir, haydut çağırır, kara yıldırımla kuleyi susturur', ab: { shield: { cd: 13, t: 3 }, heal: { cd: 7, amt: 70, r: 90 }, summon: { t: 'bandit', n: 2, cd: 13 }, hex: { cd: 11, t: 3.5, r: 190 } } },
   death_knight: { name: 'Ölüm Şövalyesi', base: 'knight', h: 50, hp: 2000, speed: 14, armor: 0.7, mr: 0.15, gold: 170, dmg: [22, 34], rate: 1.3, lives: 7, r: 16, boss: true, chief: true,
-    desc: 'Kalın zırhlı; arada bir yolda ileri ışınlanır', ab: { blink: { cd: 9, d: 85 } } },
+    desc: 'Işınlanır, haydut çağırır, yakındaki askerlerin canını emer', ab: { blink: { cd: 10, d: 85 }, summon: { t: 'bandit', n: 2, cd: 16 }, drain: { cd: 9, r: 85, dmg: 24 } } },
   troll_king:   { name: 'Troll Kral', base: 'troll', h: 66, hp: 3400, speed: 10, armor: 0.35, mr: 0.25, gold: 260, dmg: [35, 55], rate: 2, lives: 8, r: 22, boss: true, chief: true,
-    desc: 'Sürekli can yeniler, yere vurup askerleri sersemletir', ab: { regen: 0.005, slam: { cd: 9, r: 70, stun: 1.5, dmg: 40 } } },
+    desc: 'Can yeniler, yeri döver, ork çağırır, kulelere kaya fırlatıp sersemletir', ab: { regen: 0.005, slam: { cd: 9, r: 70, stun: 1.5, dmg: 40 }, summon: { t: 'orc', n: 2, cd: 14 }, boulder: { cd: 10, stun: 3, r: 200 } } },
   overlord:     { name: 'Kara Lord', base: 'knight', h: 62, hp: 4600, speed: 11, armor: 0.55, mr: 0.4, gold: 400, dmg: [40, 60], rate: 1.5, lives: 10, r: 22, boss: true, chief: true,
-    desc: 'Son düşman: kara şövalye çağırır, kalkan açar, yeri sarsar', ab: { summon: { t: 'knight', n: 2, cd: 14 }, shield: { cd: 16, t: 3 }, slam: { cd: 10, r: 70, stun: 1.5, dmg: 40 } } },
+    desc: 'Son düşman: şövalye çağırır, kalkan açar, yeri sarsar, kuleleri lanetler, öfkelenir', ab: { summon: { t: 'knight', n: 2, cd: 14 }, shield: { cd: 17, t: 3 }, slam: { cd: 10, r: 70, stun: 1.5, dmg: 40 }, hex: { cd: 12, t: 3.5, r: 210 }, rage: { cd: 20, t: 4 } } },
 });
 // Bosslar yalnız gelmez: yanında muhafızlarıyla birlikte yürür
 const BOSS_ESCORT = {
