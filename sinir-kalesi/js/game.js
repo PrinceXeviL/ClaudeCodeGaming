@@ -1035,7 +1035,7 @@ const ARCHER_DECK = [
   { cx: 0.388, cy: 0.341, hw: 0.22, hh: 0.10, n: 2 },
   { cx: 0.5, cy: 0.252, hw: 0.25, hh: 0.09, n: 3 },
 ];
-const archerScale = (ts) => Math.min(ts.w, 72) / 78;
+const archerScale = (ts) => Math.min(ts.w, 72) / 100;
 // okçunun ayak noktası; p,q platform içindeki konumu (|p|+|q| <= 1)
 function archerPoint(t, ts, i) {
   const D = ARCHER_DECK[t.lvl], a = t.shots && t.shots[i];
@@ -1053,7 +1053,7 @@ function deckSpot(shots, me, px, py) {
   for (let k = 0; k < 6; k++) {
     const p = rand(-0.75, 0.75), r = 0.8 - Math.abs(p), q = rand(-r, r);
     let d = 9;
-    for (const b of shots) if (b !== me) d = Math.min(d, Math.hypot((p - b.gp) * px / 14, (q - b.gq) * py / 9), Math.hypot((p - b.p) * px / 14, (q - b.q) * py / 9));
+    for (const b of shots) if (b !== me) d = Math.min(d, Math.hypot((p - b.gp) * px / 11, (q - b.gq) * py / 7), Math.hypot((p - b.p) * px / 11, (q - b.q) * py / 7));
     if (d > bd) { bd = d; best = [p, q]; }
   }
   return best;
@@ -1092,13 +1092,13 @@ function updateArchers(t, dt, L) {
         if (a.walkT > 2.5) { a.gp = a.p; a.gq = a.q; a.walkT = 0; }
       }
     } else { a.moving = false; a.gp = a.p; a.gq = a.q; a.wait = rand(0.6, 1.5); }
-    // birbirinin içinden geçmesinler: ekranda ~14 px yan, ~9 px derinlik aralığı korunur
+    // birbirinin içinden geçmesinler: ekranda ~11 px yan, ~7 px derinlik aralığı korunur
     for (let j = 0; j < t.shots.length; j++) {
       if (j === i) continue;
-      const b = t.shots[j], dx = (a.p - b.p) * px, dy = (a.q - b.q) * py, e = Math.hypot(dx / 14, dy / 9);
+      const b = t.shots[j], dx = (a.p - b.p) * px, dy = (a.q - b.q) * py, e = Math.hypot(dx / 11, dy / 7);
       if (e < 1) {
-        const ux = e > 1e-4 ? dx / 14 / e : (i < j ? -1 : 1), uy = e > 1e-4 ? dy / 9 / e : 0, k = (1 - e) * 3 * dt;
-        a.p += ux * k * 14 / px; a.q += uy * k * 9 / py;
+        const ux = e > 1e-4 ? dx / 11 / e : (i < j ? -1 : 1), uy = e > 1e-4 ? dy / 7 / e : 0, k = (1 - e) * 3 * dt;
+        a.p += ux * k * 11 / px; a.q += uy * k * 7 / py;
       }
     }
     const m = Math.abs(a.p) + Math.abs(a.q);
