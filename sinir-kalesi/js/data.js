@@ -358,7 +358,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Son Kale', gold: 960, lives: 20, theme: 'volcano', castle: [905, 300], hpMul: 0.68,
+    name: 'Son Kale', gold: 960, lives: 20, theme: 'volcano', castle: [905, 300], hpMul: 0.62,
     paths: [
       [[-40, 90], [200, 100], [320, 200], [480, 180], [600, 100], [740, 130], [800, 230], [855, 286]],
       [[-40, 460], [180, 450], [300, 360], [460, 400], [600, 460], [740, 420], [800, 330], [855, 286]],
@@ -370,11 +370,11 @@ const LEVELS = [
       [{t: 'orc', n: 8, gap: 1.2, at: 0, p: 0}, {t: 'wolf', n: 18, gap: 0.6, at: 5, p: 0}],
       [{t: 'knight', n: 3, gap: 2.4, at: 0, p: 0}, {t: 'orc', n: 6, gap: 1.2, at: 6, p: 1}, {t: 'knight', n: 3, gap: 2.4, at: 11, p: 0}],
       [{t: 'knight', n: 4, gap: 2.4, at: 0, p: 1}, {t: 'knight', n: 4, gap: 2.4, at: 5, p: 0}],
-      [{t: 'wolf', n: 19, gap: 0.6, at: 0, p: 0}, {t: 'bandit', n: 10, gap: 1.05, at: 4, p: 0}, {t: 'wolf', n: 19, gap: 0.6, at: 10, p: 1}],
-      [{t: 'bat', n: 22, gap: 0.85, at: 0, p: 0}, {t: 'shaman', n: 10, gap: 2, at: 7, p: 1}],
+      [{t: 'wolf', n: 15, gap: 0.7, at: 0, p: 0}, {t: 'bandit', n: 9, gap: 1.1, at: 4, p: 0}, {t: 'wolf', n: 15, gap: 0.7, at: 10, p: 1}],
+      [{t: 'bat', n: 17, gap: 1, at: 0, p: 0}, {t: 'shaman', n: 10, gap: 2, at: 7, p: 1}],
       [{t: 'shaman', n: 7, gap: 2, at: 0, p: 1}, {t: 'knight', n: 4, gap: 2.4, at: 5, p: 0}],
       [{t: 'troll', n: 1, gap: 1, at: 0, p: 0}, {t: 'orc', n: 8, gap: 1.2, at: 0, p: 0}, {t: 'knight', n: 3, gap: 2.4, at: 5, p: 0}, {t: 'wolf', n: 17, gap: 0.6, at: 13, p: 1}],
-      [{t: 'orc', n: 9, gap: 1.2, at: 0, p: 0}, {t: 'orc', n: 9, gap: 1.2, at: 4, p: 1}, {t: 'orc', n: 7, gap: 1.2, at: 13, p: 0}],
+      [{t: 'orc', n: 7, gap: 1.3, at: 0, p: 0}, {t: 'orc', n: 7, gap: 1.3, at: 5, p: 1}, {t: 'orc', n: 6, gap: 1.3, at: 15, p: 0}],
       [{t: 'shaman', n: 10, gap: 2, at: 0, p: 1}, {t: 'knight', n: 5, gap: 2.4, at: 6, p: 0}, {t: 'bandit', n: 17, gap: 1.05, at: 11, p: 0}],
       [{t: 'shaman', n: 11, gap: 2, at: 0, p: 0}, {t: 'shaman', n: 11, gap: 2, at: 6, p: 0}, {t: 'bandit', n: 18, gap: 1.05, at: 6, p: 1}],
       [{t: 'orc', n: 16, gap: 1.2, at: 0, p: 0}, {t: 'bat', n: 25, gap: 0.85, at: 3, p: 1}, {t: 'bandit', n: 19, gap: 1.05, at: 10, p: 0}],
@@ -389,19 +389,19 @@ const LEVELS = [
 // slam: yere vurup askerleri sersemletir, shield: kısa süre hasar almaz, heal: yakındakileri iyileştirir,
 // blink: yolda ileri ışınlanır, regen: sürekli can yeniler).
 Object.assign(ENEMIES, {
-  goblin_king:  { name: 'Goblin Kral', base: 'goblin', h: 40, hp: 700, speed: 19, armor: 0.15, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true,
+  goblin_king:  { name: 'Goblin Kral', base: 'goblin', h: 40, hp: 700, speed: 14.2, armor: 0.15, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true, hpK: 1,
     desc: 'Goblin çağırır, kulelere bomba atıp susturur, savaş narasıyla hızlandırır', ab: { summon: { t: 'goblin', n: 3, cd: 11 }, bomb: { cd: 10, stun: 3, r: 170 }, howl: { cd: 14, r: 110 } } },
-  wolf_alpha:   { name: 'Kara Kurt Alfa', base: 'wolf', h: 38, hp: 850, speed: 30, armor: 0.1, mr: 0.1, gold: 90, dmg: [12, 20], rate: 0.9, lives: 5, r: 14, boss: true, chief: true,
+  wolf_alpha:   { name: 'Kara Kurt Alfa', base: 'wolf', h: 38, hp: 850, speed: 22.5, armor: 0.1, mr: 0.1, gold: 90, dmg: [12, 20], rate: 0.9, lives: 5, r: 14, boss: true, chief: true, hpK: 0.8,
     desc: 'Ulur (yakındakiler hızlanır), sürüsünü çağırır, yolda ileri atılır', ab: { howl: { cd: 10, r: 110 }, summon: { t: 'wolf', n: 3, cd: 12 }, pounce: { cd: 8, d: 70 } } },
-  orc_warlord:  { name: 'Ork Savaş Ağası', base: 'orc', h: 50, hp: 1500, speed: 15, armor: 0.4, mr: 0.1, gold: 130, dmg: [20, 32], rate: 1.4, lives: 6, r: 16, boss: true, chief: true,
+  orc_warlord:  { name: 'Ork Savaş Ağası', base: 'orc', h: 50, hp: 1500, speed: 11.2, armor: 0.4, mr: 0.1, gold: 130, dmg: [20, 32], rate: 1.4, lives: 6, r: 16, boss: true, chief: true, hpK: 1.05,
     desc: 'Yeri dövüp askerleri sersemletir, ork çağırır, öfkelenince 5 sn yarı hasar alır', ab: { slam: { cd: 7, r: 62, stun: 2, dmg: 25 }, summon: { t: 'orc', n: 2, cd: 13 }, rage: { cd: 15, t: 5 } } },
-  dark_shaman:  { name: 'Kara Büyücü', base: 'shaman', h: 46, hp: 1300, speed: 16, armor: 0.1, mr: 0.7, gold: 140, dmg: [10, 16], rate: 1.2, lives: 6, r: 15, boss: true, chief: true,
+  dark_shaman:  { name: 'Kara Büyücü', base: 'shaman', h: 46, hp: 1300, speed: 12, armor: 0.1, mr: 0.7, gold: 140, dmg: [10, 16], rate: 1.2, lives: 6, r: 15, boss: true, chief: true, hpK: 0.95,
     desc: 'Kalkan açar, yakındakileri iyileştirir, haydut çağırır, kara yıldırımla kuleyi susturur', ab: { shield: { cd: 13, t: 3 }, heal: { cd: 7, amt: 70, r: 90 }, summon: { t: 'bandit', n: 2, cd: 13 }, hex: { cd: 11, t: 3.5, r: 190 } } },
-  death_knight: { name: 'Ölüm Şövalyesi', base: 'knight', h: 50, hp: 2000, speed: 14, armor: 0.7, mr: 0.15, gold: 170, dmg: [22, 34], rate: 1.3, lives: 7, r: 16, boss: true, chief: true,
+  death_knight: { name: 'Ölüm Şövalyesi', base: 'knight', h: 50, hp: 2000, speed: 10.5, armor: 0.7, mr: 0.15, gold: 170, dmg: [22, 34], rate: 1.3, lives: 7, r: 16, boss: true, chief: true, hpK: 1.05,
     desc: 'Işınlanır, haydut çağırır, yakındaki askerlerin canını emer', ab: { blink: { cd: 10, d: 85 }, summon: { t: 'bandit', n: 2, cd: 16 }, drain: { cd: 9, r: 85, dmg: 24 } } },
-  troll_king:   { name: 'Troll Kral', base: 'troll', h: 66, hp: 3400, speed: 10, armor: 0.35, mr: 0.25, gold: 260, dmg: [35, 55], rate: 2, lives: 8, r: 22, boss: true, chief: true,
+  troll_king:   { name: 'Troll Kral', base: 'troll', h: 66, hp: 3400, speed: 7.5, armor: 0.35, mr: 0.25, gold: 260, dmg: [35, 55], rate: 2, lives: 8, r: 22, boss: true, chief: true, hpK: 1.15,
     desc: 'Can yeniler, yeri döver, ork çağırır, kulelere kaya fırlatıp sersemletir', ab: { regen: 0.005, slam: { cd: 9, r: 70, stun: 1.5, dmg: 40 }, summon: { t: 'orc', n: 2, cd: 14 }, boulder: { cd: 10, stun: 3, r: 200 } } },
-  overlord:     { name: 'Kara Lord', base: 'knight', h: 62, hp: 4600, speed: 11, armor: 0.55, mr: 0.4, gold: 400, dmg: [40, 60], rate: 1.5, lives: 10, r: 22, boss: true, chief: true,
+  overlord:     { name: 'Kara Lord', base: 'knight', h: 62, hp: 4600, speed: 8.2, armor: 0.55, mr: 0.4, gold: 400, dmg: [40, 60], rate: 1.5, lives: 10, r: 22, boss: true, chief: true, hpK: 1.15,
     desc: 'Son düşman: şövalye çağırır, kalkan açar, yeri sarsar, kuleleri lanetler, öfkelenir', ab: { summon: { t: 'knight', n: 2, cd: 14 }, shield: { cd: 17, t: 3 }, slam: { cd: 10, r: 70, stun: 1.5, dmg: 40 }, hex: { cd: 12, t: 3.5, r: 210 }, rage: { cd: 20, t: 4 } } },
 });
 // Bosslar yalnız gelmez: yanında muhafızlarıyla birlikte yürür
@@ -476,3 +476,7 @@ for (const id in HERO_SKILLS) {
   const all = HEROES[id].paths.flatMap(p => p.skills);
   HEROES[id].paths = [{ name: 'Yetenekler', col: '#ffd34d', skills: HERO_SKILLS[id].map(k => all.find(s => s.id === k)) }];
 }
+
+// Kingdom Rush usulü: kule her seviyede yeni bir ad alır
+const TOWER_TITLES = {'archer': ['Okçu Kulesi', 'Nişancı Kulesi', 'Keskin Nişancı Kalesi'], 'barracks': ['Milis Kışlası', 'Piyade Kışlası', 'Şövalye Kışlası'], 'mage': ['Çırak Kulesi', 'Büyücü Kulesi', 'Yıldırım Ustası Kulesi'], 'artillery': ['Topçu Kulesi', 'Ağır Topçu', 'Büyük Bombard']};
+for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });

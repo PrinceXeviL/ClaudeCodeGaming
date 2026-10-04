@@ -699,9 +699,10 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   if (esc && d0 === 0) d0 = 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
   const off = off0 ?? (def.boss ? 0 : rand(-11, 11));
   const q = pathPos(p, d0, off);
-  const hp = def.hp * (G.lv.hpMul || 1) * diff().hp * (def.chief ? 1 + 0.12 * G.idx : 1);
+  const hp = def.chief ? (650 + 400 * G.idx) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp;
   const e = { type, def, p, d: d0, off, x: q.x, y: q.y, hp, maxHp: hp, blocker: null, atk: 0, dead: false, anim: rand(0, 10), face: 1, healT: 3 };
   G.enemies.push(e);
+  if (def.chief) { e.dmgMul = 1 + 0.08 * G.idx; e.cdMul = 1 - 0.025 * G.idx; } // boss gücü bölümle artar: hasar ve yetenek sıklığı
   if (esc) {
     let k = 0;
     for (const [t2, n] of esc) for (let i = 0; i < n; i++, k++) {
@@ -1209,6 +1210,10 @@ function applySoldierStats(t) {
   for (const s of t.soldiers) {
     const gain = st.maxHp - s.maxHp;
     s.maxHp = st.maxHp; s.hp = s.dead ? 0 : Math.min(st.maxHp, s.hp + Math.max(0, gain) + st.maxHp * 0.5);
+    if (s.gear !== t.lvl && !s.dead) {
+      for (let k = 0; k < 10; k++) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-7, 7), y: s.y - rand(0, 22), vy: -rand(20, 60), col: '255,225,140', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
+      G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,170', t: 0, dur: 0.6, small: true });
+    }
     s.dmg = st.dmg; s.armor = st.armor; s.crit = st.crit; s.steal = st.steal; s.gear = t.lvl;
   }
 }
@@ -1242,6 +1247,7 @@ function upgradeTower(t) {
   G.gold -= cost; t.spent += cost; t.lvl++; t.born = G.t;
   if (t.type === 'barracks') applySoldierStats(t);
   G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 });
+  floatText(t.x, t.y - 80, t.def.levels[t.lvl].title, '#ffe27a');
   sfx('upgrade');
   return true;
 }
@@ -1563,7 +1569,7 @@ function updateEnemy(e, dt) {
         e.atk = e.def.rate;
         const victim = e.blocker;
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
-        damageSoldier(victim, roll(e.def.dmg));
+        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1));
         sfx('clash');
       }
     }
@@ -1709,6 +1715,8 @@ function updateSoldier(s, dt) {
     if (arrived) {
       s.moving = false;
       if (s.hero && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.regen * dt);
+      // askerler savaşmadığında yaralarını sarar (saniyede canının %8'i)
+      else if (!s.hero && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt);
     }
   }
   if (s.hero) runHeroSkills(s, dt);
@@ -2790,6 +2798,200 @@ function paintArcher(c, o, s, a, lvl) {
   c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(Pw.x, Pw.y, 1.2, 0, Math.PI * 2); c.fill(); c.stroke();
   c.restore();
 }
+// ---- Kışla askerleri: seviyeye göre belirgin zırh ve silah (önceden çizilmiş parçalar + eklemli kollar) ----
+// 1. seviye: deri başlık, deri yelek, yuvarlak tahta kalkan, kısa kılıç
+// 2. seviye: sorguçlu çelik miğfer, zincir zırh + mavi arma önlüğü, armalı badem kalkan, uzun kılıç
+// 3. seviye: kapalı şövalye miğferi (beyaz-altın sorguç), altın işlemeli plaka zırh, omuzluklar,
+//            kırmızı pelerin, altın taçlı büyük kalkan, altın kabzalı geniş kılıç
+const SOLDIER_LOOK = [
+  { tunic: ['#a8783e', '#6a4420'], sleeve: ['#9a6a36', '#5a3818'], pants: ['#6a5638', '#3e3020'], boot: ['#5a3a1c', '#2e1c0c'], belt: '#3e240e', trim: '#c9a05a',
+    blade: ['#e8ecf2', '#8a929c'], hilt: '#6a4422', guard: '#8a8a90', bladeLen: 9.5 },
+  { tunic: ['#3f78d0', '#1e3f80'], mail: ['#c8ced6', '#6e7680'], sleeve: ['#b8c0ca', '#646c78'], pants: ['#5a6270', '#30363e'], boot: ['#5a5e66', '#2a2e34'], belt: '#3a2410', trim: '#f2f4f8',
+    helm: ['#f2f6fa', '#7c8896'], plume: ['#ff5a48', '#a8141a'], blade: ['#ffffff', '#9aa4b0'], hilt: '#4a2e18', guard: '#c9ced6', bladeLen: 12 },
+  { tunic: ['#f4f6fa', '#9aa4b2'], plate: true, sleeve: ['#e8edf3', '#8a96a6'], pants: ['#d4dae2', '#7c8898'], boot: ['#c8d0da', '#6c7888'], belt: '#7a1a14', trim: '#f2c64e',
+    helm: ['#ffffff', '#8592a2'], plume: ['#ffffff', '#d8c89a'], cape: ['#d8302c', '#6a0c10'], blade: ['#ffffff', '#b8c2ce'], hilt: '#5a1410', guard: '#f2c64e', bladeLen: 14 },
+];
+const SOL_OUT = '#22140a';
+function paintSoldierBody(g, L, lvl) {
+  const fs = (fill) => { g.fillStyle = fill; g.fill(); g.stroke(); };
+  g.lineWidth = 1.05; g.strokeStyle = SOL_OUT;
+  // pelerin
+  if (L.cape) {
+    g.beginPath(); g.moveTo(-2, -18.4); g.bezierCurveTo(-7.5, -17, -10.4, -12, -10.2, -5.6);
+    g.quadraticCurveTo(-8.4, -6.8, -7, -5.4); g.quadraticCurveTo(-5.6, -6.6, -4, -5.8); g.lineTo(-2.4, -9); g.closePath();
+    fs(archGrad(g, -6, -18, -6, -6, L.cape));
+    g.fillStyle = L.trim; g.fillRect(-9.8, -6.6, 0.1, 0.1);
+  }
+  // gövde
+  g.beginPath();
+  g.moveTo(-4.6, -17.8); g.quadraticCurveTo(0, -19, 4.6, -17.8);
+  g.lineTo(4.8, -10.2); g.quadraticCurveTo(5.6, -8.2, 5.6, -6.6); g.quadraticCurveTo(0, -5.6, -5.4, -6.6); g.quadraticCurveTo(-5.4, -8.4, -4.5, -10.2); g.closePath();
+  fs(archGrad(g, -4, -18, 4, -7, L.mail || L.tunic));
+  g.save(); g.clip();
+  if (L.mail) {
+    // zincir zırh dokusu + mavi önlük
+    g.strokeStyle = 'rgba(40,46,56,0.35)'; g.lineWidth = 0.35;
+    for (let y = -18; y < -6; y += 1.1) for (let x = -5; x < 6; x += 1.1) { g.beginPath(); g.arc(x + (Math.round(y) % 2) * 0.55, y, 0.45, 0, Math.PI); g.stroke(); }
+    g.beginPath(); g.moveTo(-2.2, -18.6); g.lineTo(4.2, -18.6); g.lineTo(4.6, -6); g.lineTo(-2.6, -6); g.closePath();
+    g.fillStyle = archGrad(g, 0, -18, 0, -6, L.tunic); g.fill(); g.strokeStyle = SOL_OUT; g.lineWidth = 0.6; g.stroke();
+    g.fillStyle = L.trim; g.fillRect(0.6, -16.5, 1, 6); g.fillRect(-0.9, -14.2, 4, 1);
+  } else if (L.plate) {
+    // plaka zırh: göğüs plakası parlaması ve altın şeritler
+    g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(1.2, -15, 1.6, 3, 0.15, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = L.trim; g.lineWidth = 0.9;
+    g.beginPath(); g.moveTo(-4.6, -12.6); g.quadraticCurveTo(0, -11.6, 4.8, -12.6); g.stroke();
+    g.beginPath(); g.moveTo(0.4, -18.6); g.lineTo(0.6, -12); g.stroke();
+    g.strokeStyle = 'rgba(60,70,84,0.5)'; g.lineWidth = 0.5;
+    for (const y of [-9.4, -7.8]) { g.beginPath(); g.moveTo(-5.4, y); g.quadraticCurveTo(0, y + 0.8, 5.6, y); g.stroke(); }
+  } else {
+    // deri yelek: dikiş ve çapraz kayış
+    g.fillStyle = 'rgba(255,255,255,0.14)'; g.beginPath(); g.ellipse(1.4, -15, 1.6, 2.6, 0.2, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = 'rgba(40,20,6,0.45)'; g.lineWidth = 0.45; g.setLineDash([0.7, 0.6]);
+    g.beginPath(); g.moveTo(0.5, -18.4); g.lineTo(0.8, -6.2); g.stroke(); g.setLineDash([]);
+    g.strokeStyle = '#4a2a10'; g.lineWidth = 1.1; g.beginPath(); g.moveTo(-4.4, -17.6); g.lineTo(4.6, -10.6); g.stroke();
+  }
+  g.restore();
+  g.strokeStyle = SOL_OUT; g.lineWidth = 0.7;
+  g.beginPath(); g.roundRect(-4.8, -11, 10, 1.6, 0.5); fs(L.belt);
+  g.beginPath(); g.roundRect(1.8, -11.3, 2, 2.2, 0.5); g.fillStyle = L.trim; g.fill(); g.stroke();
+  g.lineWidth = 1.05;
+  // omuzluk
+  if (L.plate) {
+    g.beginPath(); g.ellipse(-0.6, -17.4, 3.6, 2.2, -0.15, Math.PI, Math.PI * 2.05); g.closePath(); fs(archGrad(g, 0, -20, 0, -16, L.sleeve));
+    g.strokeStyle = L.trim; g.lineWidth = 0.6; g.beginPath(); g.ellipse(-0.6, -17.4, 3.1, 1.7, -0.15, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); g.strokeStyle = SOL_OUT; g.lineWidth = 1.05;
+  }
+  // boyun ve baş
+  g.beginPath(); g.roundRect(-0.6, -19.6, 3, 2.4, 0.8); fs('#e8a878');
+  const hx = 1.2, hy = -23.2;
+  const skin = archGrad(g, hx - 4, hy - 5, hx + 4, hy + 5, ['#ffe0bc', '#e9a674']);
+  const face = () => {
+    g.beginPath(); g.arc(hx, hy, 5.3, 0, Math.PI * 2); g.fillStyle = skin; g.fill(); g.stroke();
+    g.fillStyle = 'rgba(240,120,100,0.4)'; g.beginPath(); g.ellipse(hx + 3, hy + 1.8, 1.1, 0.75, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#1e1008'; g.beginPath(); g.ellipse(hx + 3, hy - 0.2, 0.7, 1.05, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#4a2810'; g.lineWidth = 0.6; g.beginPath(); g.moveTo(hx + 1.8, hy - 2); g.lineTo(hx + 4, hy - 1.7); g.stroke();
+    g.fillStyle = skin; g.strokeStyle = SOL_OUT; g.lineWidth = 0.6;
+    g.beginPath(); g.moveTo(hx + 5, hy - 0.2); g.quadraticCurveTo(hx + 6.4, hy + 1, hx + 5, hy + 1.6); g.fill(); g.stroke();
+    g.lineWidth = 1.05;
+  };
+  if (lvl === 0) {
+    face();
+    // deri başlık + kulaklık
+    g.beginPath(); g.ellipse(hx - 0.2, hy - 1.2, 5.9, 5.2, 0, Math.PI * 0.98, Math.PI * 2.05); g.lineTo(hx + 1, hy - 0.6); g.lineTo(hx - 1.2, hy + 3.4); g.lineTo(hx - 5.6, hy + 2); g.closePath();
+    fs(archGrad(g, hx, hy - 7, hx, hy + 2, ['#9a6a36', '#5a3818']));
+    g.strokeStyle = 'rgba(40,20,6,0.5)'; g.lineWidth = 0.5; g.beginPath(); g.moveTo(hx - 5.6, hy - 1.6); g.quadraticCurveTo(hx, hy - 3.2, hx + 5.6, hy - 1.8); g.stroke();
+  } else if (lvl === 1) {
+    face();
+    // burun korumalı çelik miğfer + kırmızı sorguç
+    g.beginPath(); g.moveTo(hx - 0.4, hy - 6.4); g.bezierCurveTo(hx - 2, hy - 11.4, hx - 8, hy - 10.4, hx - 9.6, hy - 6.4);
+    g.bezierCurveTo(hx - 7.4, hy - 8, hx - 3.6, hy - 7.8, hx - 0.4, hy - 6.4); fs(archGrad(g, hx, hy - 11, hx - 9, hy - 6, L.plume));
+    g.beginPath(); g.ellipse(hx - 0.1, hy - 1, 6.1, 6, 0, Math.PI * 1.02, Math.PI * 1.98); g.lineTo(hx + 6, hy - 0.4); g.lineTo(hx - 6, hy - 0.4); g.closePath();
+    fs(archGrad(g, hx - 3, hy - 7, hx + 4, hy, L.helm));
+    g.beginPath(); g.roundRect(hx + 3.6, hy - 1.2, 1.3, 4.2, 0.5); fs(archGrad(g, 0, hy - 1, 0, hy + 3, L.helm));
+    g.beginPath(); g.moveTo(hx - 6, hy - 0.4); g.lineTo(hx - 6.2, hy + 3.4); g.lineTo(hx - 3.4, hy + 3); g.lineTo(hx - 3, hy - 0.4); g.closePath(); fs(archGrad(g, 0, hy, 0, hy + 3, L.helm));
+    g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.ellipse(hx - 2.4, hy - 4.6, 1.8, 0.8, -0.5, 0, Math.PI * 2); g.fill();
+  } else {
+    // kapalı şövalye miğferi: göz yarığı, nefes delikleri, altın taç şeridi, uzun beyaz sorguç
+    g.beginPath(); g.moveTo(hx - 0.6, hy - 6.6); g.bezierCurveTo(hx - 3, hy - 13.4, hx - 10.4, hy - 12.2, hx - 11.4, hy - 6.4);
+    g.bezierCurveTo(hx - 9.6, hy - 7.2, hx - 8, hy - 5.6, hx - 7.6, hy - 3.4);
+    g.bezierCurveTo(hx - 6.8, hy - 7, hx - 3.6, hy - 8, hx - 0.6, hy - 6.6); fs(archGrad(g, hx, hy - 13, hx - 10, hy - 4, L.plume));
+    g.beginPath(); g.moveTo(hx - 5.8, hy + 4.2); g.lineTo(hx - 6, hy - 2.6); g.bezierCurveTo(hx - 5.6, hy - 8, hx + 4.6, hy - 8.4, hx + 6, hy - 2.4);
+    g.lineTo(hx + 6.4, hy + 1.4); g.quadraticCurveTo(hx + 5.6, hy + 4.4, hx + 2.6, hy + 5); g.lineTo(hx - 3, hy + 5); g.closePath();
+    fs(archGrad(g, hx - 4, hy - 8, hx + 4, hy + 4, L.helm));
+    g.fillStyle = '#1a1c22'; g.beginPath(); g.roundRect(hx + 0.6, hy - 1.6, 5.6, 1.1, 0.5); g.fill();
+    g.fillStyle = '#2a2e36'; for (const [x, y] of [[3.6, 1.4], [4.8, 1.4], [3.6, 2.6], [4.8, 2.6]]) { g.beginPath(); g.arc(hx + x, hy + y, 0.35, 0, Math.PI * 2); g.fill(); }
+    g.strokeStyle = L.trim; g.lineWidth = 0.9; g.beginPath(); g.moveTo(hx - 5.8, hy - 3.2); g.bezierCurveTo(hx - 3, hy - 4.6, hx + 3, hy - 4.6, hx + 6.1, hy - 2.8); g.stroke();
+    g.beginPath(); g.moveTo(hx - 0.2, hy - 7.6); g.lineTo(hx - 0.2, hy - 3.8); g.stroke();
+    g.strokeStyle = SOL_OUT; g.lineWidth = 1.05;
+    g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.ellipse(hx - 2.6, hy - 5, 1.9, 0.9, -0.5, 0, Math.PI * 2); g.fill();
+  }
+}
+function paintSoldierShield(g, L, lvl) {
+  g.lineWidth = 1.05; g.strokeStyle = SOL_OUT; g.lineJoin = 'round';
+  if (lvl === 0) {
+    g.beginPath(); g.arc(0, 0, 4.6, 0, Math.PI * 2); g.fillStyle = archGrad(g, -4, -4, 4, 4, ['#b07a40', '#6a4420']); g.fill(); g.stroke();
+    g.strokeStyle = 'rgba(40,20,6,0.45)'; g.lineWidth = 0.4; for (const x of [-2, 0, 2]) { g.beginPath(); g.moveTo(x, -4.2); g.lineTo(x, 4.2); g.stroke(); }
+    g.strokeStyle = '#8a8e96'; g.lineWidth = 0.9; g.beginPath(); g.arc(0, 0, 4.1, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.arc(0, 0, 1.4, 0, Math.PI * 2); g.fillStyle = '#b8bcc4'; g.fill(); g.strokeStyle = SOL_OUT; g.lineWidth = 0.6; g.stroke();
+  } else if (lvl === 1) {
+    g.beginPath(); g.moveTo(-4, -5.4); g.quadraticCurveTo(0, -6.4, 4, -5.4); g.lineTo(4, 0); g.quadraticCurveTo(3.4, 4.6, 0, 7.4); g.quadraticCurveTo(-3.4, 4.6, -4, 0); g.closePath();
+    g.fillStyle = archGrad(g, 0, -6, 0, 7, ['#4a86e0', '#1c3a7a']); g.fill(); g.stroke();
+    g.fillStyle = '#f4f6fa'; g.fillRect(-0.6, -5.2, 1.2, 11); g.fillRect(-3.4, -2.4, 6.8, 1.2);
+    g.strokeStyle = '#c9ced6'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(-3.4, -4.9); g.quadraticCurveTo(0, -5.8, 3.4, -4.9); g.lineTo(3.4, 0); g.quadraticCurveTo(2.9, 4, 0, 6.6); g.quadraticCurveTo(-2.9, 4, -3.4, 0); g.closePath(); g.stroke();
+  } else {
+    g.beginPath(); g.moveTo(-5, -6.6); g.quadraticCurveTo(0, -7.8, 5, -6.6); g.lineTo(5, 0.4); g.quadraticCurveTo(4.2, 5.8, 0, 9); g.quadraticCurveTo(-4.2, 5.8, -5, 0.4); g.closePath();
+    g.fillStyle = archGrad(g, 0, -7, 0, 9, ['#e83a32', '#7a0e10']); g.fill(); g.lineWidth = 1.2; g.stroke();
+    g.strokeStyle = '#f2c64e'; g.lineWidth = 1; g.beginPath(); g.moveTo(-4.3, -6); g.quadraticCurveTo(0, -7, 4.3, -6); g.lineTo(4.3, 0.4); g.quadraticCurveTo(3.6, 5.2, 0, 8); g.quadraticCurveTo(-3.6, 5.2, -4.3, 0.4); g.closePath(); g.stroke();
+    // altın taç amblemi
+    g.fillStyle = '#f2c64e'; g.strokeStyle = '#6a3e0a'; g.lineWidth = 0.4;
+    g.beginPath(); g.moveTo(-2.6, 1.6); g.lineTo(-2.6, -1.6); g.lineTo(-1.3, -0.2); g.lineTo(0, -2.4); g.lineTo(1.3, -0.2); g.lineTo(2.6, -1.6); g.lineTo(2.6, 1.6); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,0.3)'; g.beginPath(); g.ellipse(-2, -4, 2, 1, -0.4, 0, Math.PI * 2); g.fill();
+  }
+}
+function paintSoldierSword(g, L) {
+  const len = L.bladeLen;
+  g.lineJoin = 'round'; g.strokeStyle = SOL_OUT; g.lineWidth = 0.8;
+  g.beginPath(); g.moveTo(-0.9, 0); g.lineTo(-0.9, -len); g.lineTo(0, -len - 1.6); g.lineTo(0.9, -len); g.lineTo(0.9, 0); g.closePath();
+  g.fillStyle = archGrad(g, -1, 0, 1, 0, L.blade); g.fill(); g.stroke();
+  g.strokeStyle = 'rgba(120,130,145,0.6)'; g.lineWidth = 0.3; g.beginPath(); g.moveTo(0, -0.5); g.lineTo(0, -len + 0.5); g.stroke();
+  g.strokeStyle = SOL_OUT; g.lineWidth = 0.7;
+  g.beginPath(); g.roundRect(-2.6, -0.3, 5.2, 1.3, 0.5); g.fillStyle = L.guard; g.fill(); g.stroke();
+  g.beginPath(); g.roundRect(-0.7, 0.9, 1.4, 2.6, 0.5); g.fillStyle = L.hilt; g.fill(); g.stroke();
+  g.beginPath(); g.arc(0, 4.1, 0.9, 0, Math.PI * 2); g.fillStyle = L.guard; g.fill(); g.stroke();
+}
+const SOL_CACHE = [];
+function soldierParts(lvl) {
+  if (SOL_CACHE[lvl]) return SOL_CACHE[lvl];
+  const L = SOLDIER_LOOK[lvl];
+  return (SOL_CACHE[lvl] = {
+    body: archCanvas(-12.5, -37, 22, 32.5, g => paintSoldierBody(g, L, lvl)),
+    leg: archCanvas(-2.6, -1.2, 7, 11, g => paintArcherLeg(g, L, false)),
+    legB: archCanvas(-2.6, -1.2, 7, 11, g => paintArcherLeg(g, L, true)),
+    shield: archCanvas(-6, -9, 12, 19, g => paintSoldierShield(g, L, lvl)),
+    sword: archCanvas(-3, -L.bladeLen - 2.4, 6, L.bladeLen + 7.6, g => paintSoldierSword(g, L)),
+  });
+}
+// o: ayak; s: ölçek; face: yön; walk: yürüyüş zamanı (0 = durgun); atk: saldırı evresi (atkPhase) ya da null
+function paintSoldier(c, o, s, face, lvl, walk, atk, seed, fx) {
+  const P = soldierParts(lvl), L = SOLDIER_LOOK[lvl];
+  const bob = walk ? Math.abs(Math.sin(walk * 9)) * 0.9 : Math.sin(G.t * 2.2 + seed) * 0.25;
+  c.save(); c.translate(o.x, o.y); c.scale(s * face, s);
+  c.fillStyle = 'rgba(25,14,4,0.35)'; c.beginPath(); c.ellipse(0.4, 0, 5.8, 1.7, 0, 0, Math.PI * 2); c.fill();
+  // saldırı: hazırlıkta kılıç geriye-yukarı kalkar, vuruşta öne-aşağı iner; gövde öne atılır
+  // nöbet duruşu: kılıç önde, yukarı bakar; hazırlıkta başın üstüne kalkar, vuruşta öne-aşağı iner
+  let swing = 0.75 + Math.sin(G.t * 2.2 + seed) * 0.04, lunge = 0;
+  if (atk != null) {
+    if (atk < 0) { const k = clamp(1 + atk / 0.35, 0, 1); swing = 0.75 - 2.3 * k; lunge = -0.6 * k; }
+    else { const k = clamp(atk / 0.12, 0, 1), r = clamp((atk - 0.12) / 0.2, 0, 1); swing = -1.55 + 3.5 * k - 1.2 * r; lunge = 1.6 * k * (1 - r); }
+  }
+  const sw = walk ? Math.sin(walk * 9) * 0.5 : 0, st = walk ? 0 : 0.18;
+  const leg = (part, hx, ang) => { c.save(); c.translate(hx, -9 - bob * 0.3); c.rotate(ang); blitPart(c, part); c.restore(); };
+  c.translate(lunge, 0);
+  leg(P.legB, -1.2, -sw - st);
+  leg(P.leg, 1.3, sw + st * 0.6);
+  c.translate(0, -bob);
+  // kılıç kolu (uzak taraf): omuzdan, kılıçla birlikte döner
+  const S = { x: -0.2, y: -16.6 };
+  c.save(); c.translate(S.x, S.y); c.rotate(swing);
+  c.lineCap = 'round';
+  c.strokeStyle = SOL_OUT; c.lineWidth = 3.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -6.2); c.stroke();
+  c.strokeStyle = L.sleeve[1]; c.lineWidth = 2.3; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -6.2); c.stroke();
+  c.translate(0, -6.6); c.rotate(-0.25); blitPart(c, P.sword);
+  if (fx && fx.blade) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.5 + Math.sin(G.t * 6) * 0.2; c.fillStyle = 'rgba(255,200,90,0.9)'; c.fillRect(-1.3, -L.bladeLen - 1, 2.6, L.bladeLen); c.restore(); }
+  c.fillStyle = '#f2c095'; c.strokeStyle = SOL_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(0, 1.6, 1.3, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.restore();
+  // vuruş izi
+  if (atk != null && atk >= 0 && atk < 0.22) {
+    c.save(); c.globalAlpha = (1 - atk / 0.22) * 0.8; c.strokeStyle = '#fff6dc'; c.lineWidth = 1.6; c.lineCap = 'round';
+    c.beginPath(); c.arc(S.x, S.y, 6.6 + L.bladeLen * 0.8, -1.55 - Math.PI / 2, swing - Math.PI / 2); c.stroke(); c.restore();
+  }
+  blitPart(c, P.body);
+  // kalkan (yakın taraf), göğüs önünde
+  c.save(); c.translate(3.6 + lunge * 0.4, -12.4); c.rotate(0.08); blitPart(c, P.shield);
+  if (fx && fx.wall) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.35 + Math.sin(G.t * 4) * 0.12; c.fillStyle = '#9fd8ff'; c.beginPath(); c.ellipse(0, 0.6, 5.2, 7.2, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
+  c.restore();
+  c.restore();
+}
+
 function drawArcher(t, ts, i, a) {
   paintArcher(ctx, archerPoint(t, ts, i), archerScale(ts), a, t.lvl);
   const rec = a.fx > 0 ? a.fx / 0.18 : 0;
@@ -3005,6 +3207,17 @@ function drawSoldier(s) {
   const fighting = s.target && dist(s.x, s.y, s.target.x, s.target.y) < 24;
   const r = s.hero ? 8 : 5.5;
   const name = s.hero ? s.def.sprite : s.militia ? 'militia' : 'soldier';
+  // kışla askeri: seviyeye göre zırh/silah değişen çizim
+  if (name === 'soldier') {
+    const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
+    s.px = s.x; s.py = s.y;
+    const ab = s.tower && s.tower.ab;
+    paintSoldier(ctx, { x: s.x, y: s.y }, 0.72, s.face || 1, s.gear || 0, walking ? s.anim : 0, fighting ? atkPhase(s.rate, s.atk) : null, (s.slot || 0) * 1.7,
+      ab ? { blade: !!ab.blade, wall: !!ab.shield } : null);
+    if (s.flash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 12, 14, '255,255,255', s.flash * 6); ctx.restore(); }
+    if (s.hp < s.maxHp) hpBar(s.x, s.y - CHAR_H.soldier - 6, 11, s.hp / s.maxHp, '#4cd34c');
+    return;
+  }
   let im = s.hero ? heroSprite(s.def) : spr(name), key = name, pad = 0, glowIm = null;
   if (name === 'soldier') { const gs = gearSprite(s.gear || 0); if (gs) { im = gs.im; key = gs.key; pad = gs.pad; glowIm = gs.glow; } }
   if (im) {
@@ -4354,7 +4567,7 @@ function infoText() {
     const t = G.sel.tower;
     if (G.preview && G.preview.id === 'upgrade') {
       const L = t.def.levels[t.lvl + 1];
-      return [`Yükselt → Seviye ${t.lvl + 2} — ${L.cost} altın`, `${towerStats(t.type, L)} · Yeni: ${L.perk}`];
+      return [`Yükselt → ${L.title} — ${L.cost} altın`, `${towerStats(t.type, L)} · Yeni: ${L.perk}`];
     }
     if (G.preview && G.preview.id === 'sell') return ['Sat', `${Math.floor(t.spent * SELL_RATIO)} altın geri al`];
     if (G.preview && G.preview.id === 'ability') {
@@ -4363,8 +4576,8 @@ function infoText() {
       return [`${a.name} ${r + 1}/${a.ranks.length} — ${a.ranks[r].cost} altın`, a.desc(a.ranks[r])];
     }
     const L = t.def.levels[t.lvl];
-    if (t.lvl >= t.def.levels.length - 1) return [`${t.def.name} — Seviye ${t.lvl + 1} (son)`, `${L.perk} · Yetenek geliştirmek için yukarıdaki düğmeler`];
-    return [`${t.def.name} — Seviye ${t.lvl + 1}`, `${towerStats(t.type, L)} · ${L.perk}`];
+    if (t.lvl >= t.def.levels.length - 1) return [`${L.title} — Seviye ${t.lvl + 1} (son)`, `${L.perk} · Yetenek geliştirmek için yukarıdaki düğmeler`];
+    return [`${L.title} — Seviye ${t.lvl + 1}`, `${towerStats(t.type, L)} · ${L.perk}`];
   }
   return null;
 }
@@ -4655,7 +4868,7 @@ function bossAbilities(e, dt) {
   const ab = e.def.ab;
   if (!ab) return;
   e.abT = e.abT || {};
-  const ready = (k, cd) => { e.abT[k] = (e.abT[k] ?? cd * 0.6) - dt; if (e.abT[k] > 0) return false; e.abT[k] = cd; return true; };
+  const ready = (k, cd) => { cd *= e.cdMul || 1; e.abT[k] = (e.abT[k] ?? cd * 0.6) - dt; if (e.abT[k] > 0) return false; e.abT[k] = cd; return true; };
   if (e.rageT > 0) {
     e.rageT -= dt;
     if (Math.random() < dt * 30) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-14, 14), y: e.y - rand(0, e.def.h || 40), vy: -rand(30, 70), col: Math.random() < 0.5 ? '255,70,40' : '255,150,60', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.7) });
@@ -4681,7 +4894,7 @@ function bossAbilities(e, dt) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);
     if (!hitAny) e.abT.slam = 1;
     else {
-      for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg); s.stunT = ab.slam.stun; }
+      for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg * (e.dmgMul || 1)); s.stunT = ab.slam.stun; }
       G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: ab.slam.r * 1.3, t: 0, dur: 0.45 });
       G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: ab.slam.r, t: 0, dur: 0.4 });
       G.decals.push({ x: e.x, y: e.y, r: ab.slam.r * 0.6, t: 0, life: 6 });
@@ -4731,7 +4944,7 @@ function bossAbilities(e, dt) {
     if (e.abT[kind] > 0) continue;
     const t = bossTowerTarget(e, A.r);
     if (!t) { e.abT[kind] = 1; continue; }
-    e.abT[kind] = A.cd;
+    e.abT[kind] = A.cd * (e.cdMul || 1);
     G.projectiles.push({ kind: 'bossthrow', sub: kind, sx: e.x, sy: e.y - (e.def.h || 40) * 0.7, tx: t.x, ty: t.y - 30, tower: t, stun: A.stun, t: 0, dur: 0.9, arc: 90, spin: rand(0, 6) });
     bossCastFx(e, kind === 'bomb' ? 'Bomba!' : 'Kaya!', '255,200,120'); sfx('whirl');
   }
@@ -4742,7 +4955,7 @@ function bossAbilities(e, dt) {
       const t = bossTowerTarget(e, ab.hex.r);
       if (!t) e.abT.hex = 1;
       else {
-        e.abT.hex = ab.hex.cd;
+        e.abT.hex = ab.hex.cd * (e.cdMul || 1);
         const ts = towerSprite(t), ty = ts ? ts.bottom - ts.h * 0.8 : t.y - 40;
         G.effects.push({ kind: 'zap', x0: t.x + rand(-30, 30), y0: ty - 230, x1: t.x, y1: ty, t: 0, dur: 0.45, w: 1.6, col: 'rgb(170,70,255)', seed: rand(0, 99) });
         G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - (e.def.h || 40), x1: e.x, y1: e.y - (e.def.h || 40) - 60, t: 0, dur: 0.3, w: 0.8, col: 'rgb(170,70,255)', seed: rand(0, 99) });
@@ -4758,7 +4971,7 @@ function bossAbilities(e, dt) {
     if (!vs.length) e.abT.drain = 1;
     else {
       for (const s2 of vs) {
-        damageSoldier(s2, ab.drain.dmg); e.hp = Math.min(e.maxHp, e.hp + ab.drain.dmg * 1.5);
+        damageSoldier(s2, ab.drain.dmg * (e.dmgMul || 1)); e.hp = Math.min(e.maxHp, e.hp + ab.drain.dmg * 1.5);
         G.effects.push({ kind: 'zap', x0: s2.x, y0: s2.y - 14, x1: e.x, y1: e.y - (e.def.h || 40) * 0.5, t: 0, dur: 0.5, w: 0.7, col: 'rgb(80,230,110)', seed: rand(0, 99) });
       }
       bossCastFx(e, 'Can Emme!', '110,255,140'); sfx('magic');
