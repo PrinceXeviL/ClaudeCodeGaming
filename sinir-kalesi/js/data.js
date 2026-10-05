@@ -177,11 +177,14 @@ const SPELLS = {
   reinforce: { name: 'Takviye',      cd: 24, count: 2, hp: 40, dmg: [2, 4], life: 20 },
 };
 
-// Hava: bölümde weather: 'rain' | 'snow'. speed: tüm birimlerin (düşman, asker, kahraman) yürüme hızı çarpanı.
+// Hava: bölümde weather: 'rain' | 'snow' | 'sand' | 'night'. speed: tüm birimlerin (düşman, asker, kahraman) yürüme hızı çarpanı.
 // rain.lightning: iki şimşek arası süre aralığı (sn).
+// sand: kum fırtınası (range: kule menzili çarpanı), night: gece (karanlık; kuleler, kale ve kahramanlar ışık saçar)
 const WEATHER = {
   rain: { speed: 1, lightning: [5, 12] },
   snow: { speed: 0.8 },
+  sand: { speed: 1, range: 0.85 },
+  night: { speed: 1 },
 };
 
 // Dalga: { t: tür, n: adet, gap: sn aralık, at: dalga başından gecikme, p: yol no }
@@ -390,7 +393,209 @@ const LEVELS = [
       [{t: 'troll', n: 1, gap: 1, at: 0, p: 0}, {t: 'troll', n: 1, gap: 1, at: 14, p: 1}, {t: 'troll', n: 1, gap: 1, at: 28, p: 0}, {t: 'shaman', n: 5, gap: 2, at: 0, p: 1}, {t: 'bat', n: 12, gap: 0.85, at: 3, p: 0}, {t: 'knight', n: 3, gap: 2.4, at: 9, p: 0}, {t: 'knight', n: 3, gap: 2.4, at: 19, p: 1}],
     ],
   },
+  // ===== 2. SEFER: KIZILKUM SULTANLIĞI =====
+  {
+    ep: 2, name: 'Kızılkum Kapısı', gold: 650, lives: 20, theme: 'desert', castle: [905, 300], hpMul: 1.0,
+    paths: [[[-40, 330], [110, 330], [210, 250], [350, 235], [440, 320], [560, 380], [690, 330], [770, 250], [855, 286]]],
+    plots: [[242, 319], [806, 177], [632, 444], [500, 269], [322, 154], [50, 412], [824, 355], [43, 260], [426, 403]],
+    waves: [
+      [{t: 'raider', n: 10, gap: 1.0, p: 0}],
+      [{t: 'raider', n: 8, gap: 1.0, p: 0}, {t: 'scorpion', n: 4, gap: 1.4, at: 5.0, p: 0}],
+      [{t: 'scorpion', n: 8, gap: 1.0, p: 0}],
+      [{t: 'raider', n: 12, gap: 0.8, p: 0}, {t: 'scorpion', n: 5, gap: 1.2, at: 6.0, p: 0}],
+      [{t: 'scorpion', n: 8, gap: 0.9, p: 0}, {t: 'raider', n: 10, gap: 0.8, at: 4.0, p: 0}],
+      [{t: 'raider', n: 16, gap: 0.7, p: 0}, {t: 'scorpion', n: 8, gap: 1.0, at: 5.0, p: 0}],
+      [{t: 'scorpion', n: 12, gap: 0.8, p: 0}, {t: 'raider', n: 14, gap: 0.7, at: 6.0, p: 0}],
+      [{t: 'raider', n: 18, gap: 0.6, p: 0}, {t: 'scorpion', n: 12, gap: 0.8, at: 4.0, p: 0}],
+    ],
+  },
+  {
+    ep: 2, name: 'Vaha Yolu', gold: 700, lives: 20, theme: 'oasis', castle: [905, 250], hpMul: 1.0,
+    paths: [[[-40, 160], [140, 160], [250, 250], [260, 380], [400, 450], [560, 420], [620, 300], [560, 190], [640, 110], [780, 130], [855, 236]]],
+    plots: [[725, 188], [48, 77], [293, 484], [649, 435], [322, 226], [539, 85], [545, 292], [176, 344], [45, 230], [397, 372]],
+    waves: [
+      [{t: 'raider', n: 12, gap: 0.9, p: 0}],
+      [{t: 'vulture', n: 6, gap: 1.1, p: 0}],
+      [{t: 'scorpion', n: 8, gap: 1.0, p: 0}, {t: 'raider', n: 8, gap: 0.9, at: 4.0, p: 0}],
+      [{t: 'vulture', n: 8, gap: 0.9, p: 0}, {t: 'raider', n: 10, gap: 0.8, at: 3.0, p: 0}],
+      [{t: 'scorpion', n: 12, gap: 0.8, p: 0}, {t: 'vulture', n: 6, gap: 1.0, at: 6.0, p: 0}],
+      [{t: 'raider', n: 16, gap: 0.7, p: 0}, {t: 'scorpion', n: 8, gap: 0.9, at: 5.0, p: 0}],
+      [{t: 'vulture', n: 12, gap: 0.7, p: 0}, {t: 'scorpion', n: 10, gap: 0.8, at: 4.0, p: 0}],
+      [{t: 'raider', n: 20, gap: 0.6, p: 0}, {t: 'vulture', n: 10, gap: 0.8, at: 5.0, p: 0}, {t: 'scorpion', n: 10, gap: 0.8, at: 9.0, p: 0}],
+      [{t: 'scorpion', n: 16, gap: 0.7, p: 0}, {t: 'raider', n: 16, gap: 0.7, at: 3.0, p: 0}, {t: 'vulture', n: 12, gap: 0.7, at: 8.0, p: 0}],
+    ],
+  },
+  {
+    ep: 2, name: 'Akrep Vadisi', gold: 750, lives: 20, theme: 'canyon', castle: [905, 280], hpMul: 1.0,
+    paths: [[[-40, 120], [150, 140], [300, 200], [420, 250], [560, 260], [700, 230], [855, 266]], [[-40, 440], [150, 420], [300, 360], [420, 300], [560, 260], [700, 230], [855, 266]]],
+    plots: [[288, 436], [814, 175], [133, 71], [450, 191], [44, 358], [635, 322], [221, 235], [832, 339], [443, 360], [45, 190], [630, 162]],
+    waves: [
+      [{t: 'raider', n: 10, gap: 0.9, at: 0.0, p: 0}, {t: 'raider', n: 10, gap: 0.9, at: 3.0, p: 1}],
+      [{t: 'scorpion', n: 8, gap: 1.0, at: 0.0, p: 0}, {t: 'vulture', n: 6, gap: 1.0, at: 3.0, p: 1}],
+      [{t: 'scorpion', n: 10, gap: 0.9, at: 0.0, p: 1}, {t: 'raider', n: 10, gap: 0.8, at: 4.0, p: 0}],
+      [{t: 'vulture', n: 10, gap: 0.8, at: 0.0, p: 0}, {t: 'scorpion', n: 10, gap: 0.9, at: 2.0, p: 1}],
+      [{t: 'raider', n: 16, gap: 0.7, at: 0.0, p: 0}, {t: 'scorpion', n: 12, gap: 0.8, at: 3.0, p: 1}],
+      [{t: 'scorpion', n: 14, gap: 0.7, at: 0.0, p: 0}, {t: 'scorpion', n: 14, gap: 0.7, at: 3.0, p: 1}],
+      [{t: 'vulture', n: 14, gap: 0.7, at: 0.0, p: 1}, {t: 'raider', n: 16, gap: 0.7, at: 2.0, p: 0}],
+      [{t: 'scorpion', n: 18, gap: 0.6, at: 0.0, p: 0}, {t: 'raider', n: 16, gap: 0.7, at: 3.0, p: 1}, {t: 'vulture', n: 10, gap: 0.8, at: 8.0, p: 0}],
+      [{t: 'raider', n: 20, gap: 0.6, at: 0.0, p: 0}, {t: 'scorpion', n: 18, gap: 0.6, at: 2.0, p: 1}, {t: 'vulture', n: 14, gap: 0.7, at: 8.0, p: 1}],
+    ],
+  },
+  {
+    ep: 2, name: 'Tuz Gölü', gold: 800, lives: 20, theme: 'salt', castle: [905, 380], hpMul: 1.05,
+    paths: [[[480, -40], [480, 80], [330, 130], [180, 200], [200, 320], [360, 360], [520, 300], [660, 250], [760, 320], [855, 366]]],
+    plots: [[696, 368], [130, 140], [564, 63], [279, 432], [433, 256], [725, 195], [112, 318], [339, 60], [485, 399], [251, 238], [561, 197]],
+    waves: [
+      [{t: 'raider', n: 14, gap: 0.8, p: 0}],
+      [{t: 'camel', n: 3, gap: 2.5, p: 0}, {t: 'raider', n: 8, gap: 0.9, at: 4.0, p: 0}],
+      [{t: 'scorpion', n: 12, gap: 0.8, p: 0}, {t: 'vulture', n: 6, gap: 1.0, at: 5.0, p: 0}],
+      [{t: 'camel', n: 5, gap: 2.0, p: 0}, {t: 'scorpion', n: 8, gap: 0.9, at: 3.0, p: 0}],
+      [{t: 'raider', n: 18, gap: 0.6, p: 0}, {t: 'camel', n: 4, gap: 2.0, at: 6.0, p: 0}],
+      [{t: 'vulture', n: 14, gap: 0.7, p: 0}, {t: 'scorpion', n: 10, gap: 0.8, at: 4.0, p: 0}],
+      [{t: 'camel', n: 7, gap: 1.6, p: 0}, {t: 'raider', n: 14, gap: 0.7, at: 4.0, p: 0}],
+      [{t: 'scorpion', n: 16, gap: 0.6, p: 0}, {t: 'camel', n: 6, gap: 1.6, at: 5.0, p: 0}, {t: 'vulture', n: 10, gap: 0.8, at: 9.0, p: 0}],
+      [{t: 'raider', n: 20, gap: 0.6, p: 0}, {t: 'camel', n: 8, gap: 1.4, at: 4.0, p: 0}, {t: 'scorpion', n: 14, gap: 0.7, at: 8.0, p: 0}],
+      [{t: 'camel', n: 10, gap: 1.2, p: 0}, {t: 'vulture', n: 16, gap: 0.6, at: 4.0, p: 0}, {t: 'raider', n: 18, gap: 0.6, at: 8.0, p: 0}],
+    ],
+  },
+  {
+    ep: 2, name: 'Yıkık Şehir', gold: 850, lives: 20, theme: 'ruins', weather: 'sand', castle: [905, 250], hpMul: 0.95,
+    paths: [[[-40, 250], [140, 250], [260, 160], [420, 140], [540, 210], [660, 250], [855, 236]], [[300, 580], [320, 440], [440, 380], [560, 320], [660, 250], [855, 236]]],
+    plots: [[105, 192], [856, 312], [380, 496], [516, 103], [458, 300], [740, 162], [283, 73], [48, 332], [648, 348], [285, 368], [306, 212], [518, 427]],
+    waves: [
+      [{t: 'raider', n: 10, gap: 0.9, at: 0.0, p: 0}, {t: 'scorpion', n: 6, gap: 1.0, at: 3.0, p: 1}],
+      [{t: 'sandworm', n: 4, gap: 2.0, at: 0.0, p: 1}, {t: 'raider', n: 10, gap: 0.8, at: 3.0, p: 0}],
+      [{t: 'camel', n: 4, gap: 2.0, at: 0.0, p: 0}, {t: 'vulture', n: 8, gap: 0.9, at: 3.0, p: 1}],
+      [{t: 'sandworm', n: 6, gap: 1.6, at: 0.0, p: 0}, {t: 'scorpion', n: 10, gap: 0.8, at: 3.0, p: 1}],
+      [{t: 'raider', n: 16, gap: 0.7, at: 0.0, p: 1}, {t: 'camel', n: 5, gap: 1.8, at: 4.0, p: 0}],
+      [{t: 'sandworm', n: 8, gap: 1.4, at: 0.0, p: 1}, {t: 'vulture', n: 10, gap: 0.8, at: 4.0, p: 0}],
+      [{t: 'scorpion', n: 16, gap: 0.6, at: 0.0, p: 0}, {t: 'sandworm', n: 6, gap: 1.5, at: 4.0, p: 1}],
+      [{t: 'camel', n: 8, gap: 1.4, at: 0.0, p: 0}, {t: 'raider', n: 16, gap: 0.7, at: 3.0, p: 1}, {t: 'sandworm', n: 6, gap: 1.5, at: 8.0, p: 0}],
+      [{t: 'sandworm', n: 10, gap: 1.2, at: 0.0, p: 0}, {t: 'scorpion', n: 16, gap: 0.6, at: 3.0, p: 1}, {t: 'vulture', n: 12, gap: 0.7, at: 8.0, p: 0}],
+      [{t: 'camel', n: 10, gap: 1.2, at: 0.0, p: 1}, {t: 'sandworm', n: 10, gap: 1.2, at: 3.0, p: 0}, {t: 'raider', n: 20, gap: 0.6, at: 8.0, p: 1}],
+    ],
+  },
+  {
+    ep: 2, name: 'Kum Denizi', gold: 900, lives: 20, theme: 'dunes', weather: 'sand', castle: [905, 330], hpMul: 0.95,
+    paths: [[[-40, 90], [180, 110], [300, 200], [260, 320], [380, 410], [560, 400], [700, 330], [855, 316]], [[640, -40], [620, 90], [520, 180], [560, 280], [700, 330], [855, 316]]],
+    plots: [[639, 251], [51, 157], [269, 440], [580, 473], [361, 152], [862, 392], [708, 61], [199, 281], [452, 341], [517, 77], [815, 244], [422, 493]],
+    waves: [
+      [{t: 'scorpion', n: 10, gap: 0.9, at: 0.0, p: 0}, {t: 'raider', n: 8, gap: 0.9, at: 3.0, p: 1}],
+      [{t: 'sandworm', n: 6, gap: 1.6, at: 0.0, p: 0}, {t: 'vulture', n: 6, gap: 1.0, at: 3.0, p: 1}],
+      [{t: 'camel', n: 5, gap: 1.8, at: 0.0, p: 1}, {t: 'raider', n: 12, gap: 0.8, at: 3.0, p: 0}],
+      [{t: 'sandworm', n: 8, gap: 1.4, at: 0.0, p: 1}, {t: 'scorpion', n: 10, gap: 0.8, at: 3.0, p: 0}],
+      [{t: 'vulture', n: 14, gap: 0.7, at: 0.0, p: 0}, {t: 'camel', n: 5, gap: 1.8, at: 4.0, p: 1}],
+      [{t: 'raider', n: 18, gap: 0.6, at: 0.0, p: 0}, {t: 'sandworm', n: 8, gap: 1.4, at: 3.0, p: 1}],
+      [{t: 'scorpion', n: 16, gap: 0.6, at: 0.0, p: 1}, {t: 'camel', n: 7, gap: 1.5, at: 4.0, p: 0}],
+      [{t: 'sandworm', n: 10, gap: 1.2, at: 0.0, p: 0}, {t: 'vulture', n: 12, gap: 0.7, at: 3.0, p: 1}, {t: 'raider', n: 14, gap: 0.7, at: 8.0, p: 0}],
+      [{t: 'camel', n: 10, gap: 1.2, at: 0.0, p: 0}, {t: 'scorpion', n: 18, gap: 0.6, at: 3.0, p: 1}, {t: 'sandworm', n: 8, gap: 1.4, at: 8.0, p: 1}],
+      [{t: 'sandworm', n: 12, gap: 1.1, at: 0.0, p: 1}, {t: 'raider', n: 20, gap: 0.6, at: 3.0, p: 0}, {t: 'vulture', n: 14, gap: 0.7, at: 8.0, p: 1}],
+      [{t: 'camel', n: 12, gap: 1.1, at: 0.0, p: 0}, {t: 'sandworm', n: 12, gap: 1.1, at: 3.0, p: 1}, {t: 'scorpion', n: 18, gap: 0.6, at: 8.0, p: 0}],
+    ],
+  },
+  {
+    ep: 2, name: 'Gece Kervanı', gold: 950, lives: 20, theme: 'desert', weather: 'night', castle: [905, 160], hpMul: 0.95,
+    paths: [[[-40, 460], [160, 460], [260, 380], [180, 280], [260, 180], [420, 160], [520, 250], [460, 360], [600, 430], [740, 380], [760, 240], [855, 146]]],
+    plots: [[373, 78], [709, 488], [44, 401], [807, 103], [398, 334], [134, 195], [828, 303], [582, 199], [497, 481], [615, 354], [294, 466], [304, 230]],
+    waves: [
+      [{t: 'raider', n: 14, gap: 0.8, p: 0}],
+      [{t: 'djinn', n: 3, gap: 2.5, p: 0}, {t: 'scorpion', n: 8, gap: 0.9, at: 4.0, p: 0}],
+      [{t: 'camel', n: 5, gap: 1.8, p: 0}, {t: 'vulture', n: 8, gap: 0.9, at: 5.0, p: 0}],
+      [{t: 'djinn', n: 5, gap: 2.0, p: 0}, {t: 'raider', n: 12, gap: 0.8, at: 3.0, p: 0}],
+      [{t: 'sandworm', n: 8, gap: 1.4, p: 0}, {t: 'scorpion', n: 10, gap: 0.8, at: 5.0, p: 0}],
+      [{t: 'djinn', n: 6, gap: 1.8, p: 0}, {t: 'camel', n: 6, gap: 1.6, at: 4.0, p: 0}],
+      [{t: 'vulture', n: 16, gap: 0.6, p: 0}, {t: 'raider', n: 14, gap: 0.7, at: 5.0, p: 0}],
+      [{t: 'djinn', n: 8, gap: 1.5, p: 0}, {t: 'sandworm', n: 8, gap: 1.4, at: 4.0, p: 0}, {t: 'scorpion', n: 12, gap: 0.7, at: 9.0, p: 0}],
+      [{t: 'camel', n: 10, gap: 1.2, p: 0}, {t: 'djinn', n: 8, gap: 1.5, at: 4.0, p: 0}, {t: 'raider', n: 18, gap: 0.6, at: 8.0, p: 0}],
+      [{t: 'sandworm', n: 12, gap: 1.1, p: 0}, {t: 'vulture', n: 14, gap: 0.7, at: 4.0, p: 0}, {t: 'djinn', n: 8, gap: 1.5, at: 9.0, p: 0}],
+      [{t: 'djinn', n: 10, gap: 1.3, p: 0}, {t: 'camel', n: 10, gap: 1.2, at: 4.0, p: 0}, {t: 'scorpion', n: 18, gap: 0.6, at: 9.0, p: 0}],
+      [{t: 'raider', n: 24, gap: 0.5, p: 0}, {t: 'djinn', n: 10, gap: 1.3, at: 4.0, p: 0}, {t: 'sandworm', n: 12, gap: 1.1, at: 9.0, p: 0}],
+    ],
+  },
+  {
+    ep: 2, name: 'Mezarlar Vadisi', gold: 1000, lives: 20, theme: 'tombs', weather: 'night', castle: [905, 300], hpMul: 0.95,
+    paths: [[[-40, 180], [160, 180], [280, 260], [420, 240], [540, 160], [680, 180], [760, 280], [855, 286]], [[-40, 420], [180, 430], [320, 360], [460, 380], [600, 420], [720, 380], [760, 280], [855, 286]]],
+    plots: [[111, 249], [848, 362], [558, 81], [439, 453], [511, 271], [775, 172], [675, 485], [318, 187], [48, 99], [265, 322], [667, 339], [43, 364], [200, 114]],
+    waves: [
+      [{t: 'mummy', n: 4, gap: 2.0, at: 0.0, p: 0}, {t: 'raider', n: 10, gap: 0.8, at: 3.0, p: 1}],
+      [{t: 'mummy', n: 6, gap: 1.6, at: 0.0, p: 1}, {t: 'scorpion', n: 8, gap: 0.9, at: 3.0, p: 0}],
+      [{t: 'djinn', n: 4, gap: 2.0, at: 0.0, p: 0}, {t: 'mummy', n: 6, gap: 1.6, at: 3.0, p: 1}],
+      [{t: 'camel', n: 5, gap: 1.8, at: 0.0, p: 1}, {t: 'mummy', n: 6, gap: 1.6, at: 3.0, p: 0}],
+      [{t: 'mummy', n: 8, gap: 1.4, at: 0.0, p: 0}, {t: 'vulture', n: 10, gap: 0.8, at: 3.0, p: 1}],
+      [{t: 'sandworm', n: 8, gap: 1.4, at: 0.0, p: 1}, {t: 'mummy', n: 8, gap: 1.4, at: 3.0, p: 0}],
+      [{t: 'djinn', n: 8, gap: 1.5, at: 0.0, p: 0}, {t: 'raider', n: 16, gap: 0.7, at: 3.0, p: 1}],
+      [{t: 'mummy', n: 10, gap: 1.2, at: 0.0, p: 0}, {t: 'mummy', n: 10, gap: 1.2, at: 3.0, p: 1}, {t: 'scorpion', n: 12, gap: 0.7, at: 8.0, p: 0}],
+      [{t: 'camel', n: 10, gap: 1.2, at: 0.0, p: 1}, {t: 'djinn', n: 8, gap: 1.5, at: 3.0, p: 0}, {t: 'mummy', n: 8, gap: 1.4, at: 8.0, p: 1}],
+      [{t: 'mummy', n: 12, gap: 1.1, at: 0.0, p: 0}, {t: 'sandworm', n: 10, gap: 1.2, at: 3.0, p: 1}, {t: 'vulture', n: 12, gap: 0.7, at: 8.0, p: 0}],
+      [{t: 'djinn', n: 10, gap: 1.3, at: 0.0, p: 1}, {t: 'mummy', n: 12, gap: 1.1, at: 3.0, p: 0}, {t: 'camel', n: 8, gap: 1.4, at: 8.0, p: 1}],
+      [{t: 'mummy', n: 14, gap: 1.0, at: 0.0, p: 0}, {t: 'mummy', n: 14, gap: 1.0, at: 3.0, p: 1}, {t: 'djinn', n: 10, gap: 1.3, at: 8.0, p: 0}],
+    ],
+  },
+  {
+    ep: 2, name: 'Güneş Tapınağı', gold: 1060, lives: 20, theme: 'temple', castle: [905, 270], hpMul: 0.9,
+    paths: [[[260, -40], [260, 90], [400, 160], [540, 130], [660, 190], [700, 270], [855, 256]], [[220, 580], [240, 440], [380, 380], [520, 420], [640, 360], [700, 270], [855, 256]]],
+    plots: [[359, 83], [861, 332], [300, 495], [699, 123], [534, 338], [297, 319], [526, 496], [525, 194], [691, 416], [178, 82], [169, 410], [269, 196], [548, 66]],
+    waves: [
+      [{t: 'golem', n: 1, gap: 1.0, at: 0.0, p: 0}, {t: 'raider', n: 12, gap: 0.8, at: 3.0, p: 1}],
+      [{t: 'mummy', n: 6, gap: 1.6, at: 0.0, p: 1}, {t: 'scorpion', n: 10, gap: 0.8, at: 3.0, p: 0}],
+      [{t: 'golem', n: 2, gap: 4.0, at: 0.0, p: 0}, {t: 'vulture', n: 10, gap: 0.8, at: 3.0, p: 1}],
+      [{t: 'djinn', n: 6, gap: 1.8, at: 0.0, p: 1}, {t: 'camel', n: 6, gap: 1.6, at: 3.0, p: 0}],
+      [{t: 'golem', n: 2, gap: 4.0, at: 0.0, p: 1}, {t: 'mummy', n: 8, gap: 1.4, at: 3.0, p: 0}],
+      [{t: 'sandworm', n: 10, gap: 1.2, at: 0.0, p: 0}, {t: 'raider', n: 16, gap: 0.7, at: 3.0, p: 1}],
+      [{t: 'golem', n: 3, gap: 3.5, at: 0.0, p: 0}, {t: 'djinn', n: 8, gap: 1.5, at: 3.0, p: 1}],
+      [{t: 'mummy', n: 12, gap: 1.1, at: 0.0, p: 1}, {t: 'scorpion', n: 16, gap: 0.6, at: 3.0, p: 0}, {t: 'vulture', n: 10, gap: 0.8, at: 8.0, p: 1}],
+      [{t: 'golem', n: 3, gap: 3.5, at: 0.0, p: 1}, {t: 'camel', n: 10, gap: 1.2, at: 3.0, p: 0}, {t: 'djinn', n: 8, gap: 1.5, at: 8.0, p: 0}],
+      [{t: 'sandworm', n: 12, gap: 1.1, at: 0.0, p: 0}, {t: 'mummy', n: 12, gap: 1.1, at: 3.0, p: 1}, {t: 'raider', n: 18, gap: 0.6, at: 8.0, p: 0}],
+      [{t: 'golem', n: 4, gap: 3.0, at: 0.0, p: 0}, {t: 'djinn', n: 10, gap: 1.3, at: 3.0, p: 1}, {t: 'scorpion', n: 18, gap: 0.6, at: 8.0, p: 1}],
+      [{t: 'golem', n: 4, gap: 3.0, at: 0.0, p: 1}, {t: 'mummy', n: 14, gap: 1.0, at: 3.0, p: 0}, {t: 'camel', n: 10, gap: 1.2, at: 8.0, p: 1}],
+    ],
+  },
+  {
+    ep: 2, name: 'Kızıl Saray', gold: 1190, lives: 20, theme: 'palace', weather: 'sand', castle: [905, 300], hpMul: 0.9,
+    paths: [[[-40, 120], [160, 120], [300, 200], [460, 220], [600, 280], [740, 290], [855, 286]], [[-40, 460], [180, 450], [320, 380], [460, 350], [600, 280], [740, 290], [855, 286]], [[520, -40], [520, 100], [460, 220], [600, 280], [740, 290], [855, 286]]],
+    plots: [[811, 352], [42, 180], [300, 476], [588, 69], [410, 262], [52, 384], [278, 99], [516, 408], [667, 225], [234, 338], [208, 221], [439, 116], [650, 343], [813, 212]],
+    waves: [
+      [{t: 'raider', n: 12, gap: 0.8, at: 0.0, p: 0}, {t: 'scorpion', n: 8, gap: 0.9, at: 3.0, p: 1}],
+      [{t: 'vulture', n: 10, gap: 0.8, at: 0.0, p: 2}, {t: 'camel', n: 5, gap: 1.8, at: 3.0, p: 0}],
+      [{t: 'mummy', n: 8, gap: 1.4, at: 0.0, p: 1}, {t: 'djinn', n: 5, gap: 2.0, at: 3.0, p: 2}],
+      [{t: 'sandworm', n: 8, gap: 1.4, at: 0.0, p: 0}, {t: 'raider', n: 14, gap: 0.7, at: 3.0, p: 1}],
+      [{t: 'golem', n: 2, gap: 4.0, at: 0.0, p: 2}, {t: 'scorpion', n: 14, gap: 0.7, at: 3.0, p: 0}],
+      [{t: 'camel', n: 8, gap: 1.4, at: 0.0, p: 1}, {t: 'mummy', n: 10, gap: 1.2, at: 3.0, p: 0}, {t: 'vulture', n: 10, gap: 0.8, at: 8.0, p: 2}],
+      [{t: 'djinn', n: 10, gap: 1.3, at: 0.0, p: 2}, {t: 'sandworm', n: 10, gap: 1.2, at: 3.0, p: 1}],
+      [{t: 'golem', n: 3, gap: 3.5, at: 0.0, p: 0}, {t: 'raider', n: 20, gap: 0.6, at: 3.0, p: 1}, {t: 'scorpion', n: 14, gap: 0.7, at: 8.0, p: 2}],
+      [{t: 'mummy', n: 14, gap: 1.0, at: 0.0, p: 0}, {t: 'camel', n: 10, gap: 1.2, at: 3.0, p: 1}, {t: 'djinn', n: 8, gap: 1.5, at: 8.0, p: 2}],
+      [{t: 'sandworm', n: 12, gap: 1.1, at: 0.0, p: 1}, {t: 'golem', n: 3, gap: 3.5, at: 3.0, p: 0}, {t: 'vulture', n: 16, gap: 0.6, at: 8.0, p: 2}],
+      [{t: 'djinn', n: 12, gap: 1.2, at: 0.0, p: 2}, {t: 'mummy', n: 14, gap: 1.0, at: 3.0, p: 1}, {t: 'scorpion', n: 18, gap: 0.6, at: 8.0, p: 0}],
+      [{t: 'golem', n: 4, gap: 3.0, at: 0.0, p: 0}, {t: 'camel', n: 12, gap: 1.1, at: 3.0, p: 1}, {t: 'raider', n: 24, gap: 0.5, at: 8.0, p: 2}],
+      [{t: 'sandworm', n: 14, gap: 1.0, at: 0.0, p: 0}, {t: 'djinn', n: 12, gap: 1.2, at: 3.0, p: 2}, {t: 'mummy', n: 14, gap: 1.0, at: 8.0, p: 1}],
+      [{t: 'golem', n: 5, gap: 2.6, at: 0.0, p: 1}, {t: 'scorpion', n: 20, gap: 0.5, at: 3.0, p: 0}, {t: 'vulture', n: 18, gap: 0.6, at: 6.0, p: 2}, {t: 'camel', n: 12, gap: 1.1, at: 10.0, p: 0}],
+    ],
+  },
 ];
+
+// ----- seferler -----
+// Bölümler seferlere ayrılır; her sefer bir ülkede geçer ve haritada kendi sayfası olur.
+// Bir sefer, bir önceki seferin son bölümü bitince açılır. bg: harita arka planı.
+const EPISODES = [
+  { name: 'Ardan Krallığı', bg: 'title_bg' },
+  { name: 'Kızılkum Sultanlığı', bg: 'title_bg_2' },
+];
+
+// ----- 2. sefer: Kızılkum düşmanları -----
+// Özel yetenekler: dismount (ölünce yerine yaya çıkar), burrow (up sn yüzeyde, down sn kumun altında:
+// gömülüyken vurulamaz ve durdurulamaz, daha hızlı ilerler), revive (bir kez yarı canla dirilir; top/göktaşı
+// gibi patlama hasarıyla ölürse dirilmez), blink (ileri ışınlanır), ward (yakındaki dostlarına kısa kalkan),
+// stoneskin (sersemlemez, en fazla %20 yavaşlar)
+Object.assign(ENEMIES, {
+  raider:   { name: 'Çöl Akıncısı',  h: 27, hp: 110, speed: 26, armor: 0,    mr: 0,   gold: 11,  dmg: [6, 10],  rate: 1,   lives: 1, r: 9 },
+  scorpion: { name: 'Kum Akrebi',    h: 23, hp: 120, speed: 30, armor: 0.5, mr: 0,   gold: 14, dmg: [5, 9],   rate: 0.9, lives: 1, r: 9 },
+  vulture:  { name: 'Akbaba',        h: 27, hp: 60,  speed: 40, armor: 0,    mr: 0,   gold: 11,  dmg: [0, 0],   rate: 1,   lives: 1, r: 9, flying: true },
+  camel:    { name: 'Deve Süvarisi', h: 37, hp: 260, speed: 30, armor: 0.1,  mr: 0,   gold: 22, dmg: [8, 14],  rate: 1.1, lives: 2, r: 12, dismount: 'raider' },
+  sandworm: { name: 'Kum Solucanı',  h: 31, hp: 200, speed: 22, armor: 0.2,  mr: 0,   gold: 20, dmg: [9, 14],  rate: 1.2, lives: 1, r: 11, burrow: { up: 4, down: 2, speed: 1 } },
+  mummy:    { name: 'Mumya',         h: 28, hp: 280, speed: 15, armor: 0.1,  mr: 0.2, gold: 21, dmg: [8, 12],  rate: 1.2, lives: 1, r: 10, revive: 0.5 },
+  djinn:    { name: 'Kum Cini',      h: 32, hp: 150, speed: 30, armor: 0,    mr: 0.35, gold: 24, dmg: [0, 0],   rate: 1,   lives: 1, r: 10, flying: true, blink: { cd: 12, d: 45 }, ward: { cd: 11, r: 75, t: 1.2, n: 3 } },
+  golem:    { name: 'Taş Muhafız',   h: 38, hp: 900, speed: 12, armor: 0.8,  mr: 0,   gold: 46, dmg: [18, 28], rate: 1.4, lives: 2, r: 15, stoneskin: true },
+});
 
 // ----- bosslar -----
 // Her bölümün son dalgasının sonunda bir boss gelir. Görselleri temel düşman görselinin yeniden renklendirilmiş,
@@ -426,7 +631,31 @@ const BOSS_ESCORT = {
   troll_king: [['orc', 4]],
   overlord: [['knight', 3], ['orc', 3], ['shaman', 1]],
 };
-const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord'];
+// 2. sefer bossları: Çöl Şeyhi, Akrep Kraliçe ve Mumya Kral, Taş Titan (yeniden renklendirilmiş / kendi görselleri),
+// Dev Kum Solucanı (kuma dalar), sefer sonu Fırtına Cini (iki bar, kum fırtınası, lejyon)
+Object.assign(ENEMIES, {
+  raider_chief:   { name: 'Çöl Şeyhi', base: 'raider', h: 42, hp: 1000, speed: 15, armor: 0.2, mr: 0.1, gold: 120, dmg: [16, 26], rate: 1.1, lives: 5, r: 15, boss: true, chief: true, hpK: 0.9,
+    desc: 'Akıncı çağırır, savaş narasıyla çevresini hızlandırır', ab: { summon: { t: 'raider', n: 3, cd: 11 }, howl: { cd: 13, r: 110 } } },
+  scorpion_queen: { name: 'Akrep Kraliçe', h: 46, hp: 1000, speed: 14, armor: 0.55, mr: 0.1, gold: 150, dmg: [18, 28], rate: 1.2, lives: 6, r: 17, boss: true, chief: true, hpK: 1,
+    desc: 'Yavru akrep çağırır, kuyruğuyla yere vurup askerleri sersemletir', ab: { summon: { t: 'scorpion', n: 3, cd: 11 }, slam: { cd: 8, r: 64, stun: 1.8, dmg: 30 } } },
+  worm_king:      { name: 'Dev Kum Solucanı', h: 54, hp: 1000, speed: 11, armor: 0.3, mr: 0.2, gold: 180, dmg: [26, 40], rate: 1.5, lives: 7, r: 20, boss: true, chief: true, hpK: 1.05,
+    burrow: { up: 6, down: 3, speed: 1.8 }, desc: 'Kuma dalar (vurulamaz), çıkarken yeri sarsar, solucan çağırır', ab: { slam: { cd: 9, r: 72, stun: 1.5, dmg: 38 }, summon: { t: 'sandworm', n: 2, cd: 15 } } },
+  mummy_king:     { name: 'Mumya Kral', base: 'mummy', h: 46, hp: 1000, speed: 11, armor: 0.25, mr: 0.4, gold: 170, dmg: [22, 34], rate: 1.3, lives: 7, r: 17, boss: true, chief: true, hpK: 1.05, revive: 0.4,
+    desc: 'Mumya çağırır, dostlarını iyileştirir, bir kez dirilir (ateşle ölürse dirilmez)', ab: { summon: { t: 'mummy', n: 2, cd: 13 }, heal: { cd: 8, amt: 80, r: 90 }, hex: { cd: 12, t: 3, r: 190 } } },
+  golem_titan:    { name: 'Taş Titan', base: 'golem', h: 60, hp: 1000, speed: 8, armor: 0.75, mr: 0.1, gold: 220, dmg: [40, 60], rate: 2, lives: 8, r: 22, boss: true, chief: true, hpK: 1.1, stoneskin: true,
+    desc: 'Sersemlemez, yeri döver, kulelere kaya fırlatır, can yeniler', ab: { regen: 0.004, slam: { cd: 9, r: 75, stun: 1.5, dmg: 45 }, boulder: { cd: 10, stun: 3, r: 210 } } },
+  storm_djinn:    { name: 'Fırtına Cini', h: 82, hp: 1000, speed: 8.5, armor: 0.3, mr: 0.4, gold: 600, dmg: [45, 70], rate: 1.5, lives: 20, r: 26, boss: true, chief: true, hpK: 1.3, float: true,
+    plate: 3000, phase2: { speed: 1.3, cd: 0.7 }, legion: [['djinn', 3], ['mummy', 3], ['raider', 4], ['vulture', 3]],
+    desc: 'Sefer sonu: önce zırhı kırılmalı. Kum fırtınası çağırır (kule menzili düşer), lejyon getirir', ab: { summon: { t: ['raider', 'mummy', 'scorpion'], n: 3, cd: 12 }, storm: { cd: 16, t: 6 }, hex: { cd: 11, t: 3.5, r: 220 }, shield: { cd: 17, t: 2.5 }, rage: { cd: 20, t: 4 } } },
+});
+Object.assign(BOSS_ESCORT, {
+  raider_chief: [['raider', 4]], scorpion_queen: [['scorpion', 4]], worm_king: [['sandworm', 2], ['raider', 2]],
+  mummy_king: [['mummy', 3]], golem_titan: [['golem', 1], ['raider', 3]], storm_djinn: [['djinn', 2], ['golem', 1], ['mummy', 2]],
+});
+const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
+  'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];
+// boss gücü kademesi: 1. seferde bölüm sırası; 2. sefer 1. seferin sonlarından başlar, yavaşça yükselir
+LEVELS.forEach((lv, i) => { lv.ep = lv.ep || 1; lv.tier = lv.ep === 2 ? 7 + 0.5 * (i - 10) : i; });
 // ----- dalga düzeni -----
 // Her dalga bir öncekinden WAVE_GROW, son dalga LAST_GROW kat kalabalık. Bölümün toplam düşman sayısı
 // yaklaşık WAVE_TOTAL katında kalır (yuvarlama ve ağır birimlerle biraz artar) ve dalgalara bu oranla dağıtılır (ilk dalgalar hafifler, sonrakiler büyür).
@@ -512,7 +741,17 @@ for (const k in ENEMY_WK) if (ENEMIES[k]) ENEMIES[k].wk = ENEMY_WK[k];
 const WK_NAME = { arrow: 'Ok', magic: 'Yıldırım', blast: 'Top', melee: 'Kılıç' };
 
 // yeni düşman tanıtım kartları için kısa açıklamalar
+Object.assign(ENEMY_WK, {
+  raider: { melee: 1.2, blast: 1.2 }, scorpion: { magic: 1.35, arrow: 0.75 }, vulture: { arrow: 1.4 }, camel: { melee: 1.3, arrow: 1.15 },
+  sandworm: { blast: 1.4, arrow: 0.8 }, mummy: { blast: 1.3, magic: 1.15, arrow: 0.8 }, djinn: { arrow: 1.35, magic: 0.85 }, golem: { magic: 1.45, arrow: 0.6, melee: 0.7 },
+  raider_chief: { melee: 1.1 }, scorpion_queen: { magic: 1.3, arrow: 0.7 }, worm_king: { blast: 1.3, arrow: 0.8 }, mummy_king: { blast: 1.3 }, golem_titan: { magic: 1.35, arrow: 0.6 },
+  storm_djinn: { arrow: 1.15, magic: 0.8, blast: 0.9 },
+});
 const ENEMY_DESC = {
+  raider: 'Kalabalık gelen çöl piyadesi', scorpion: 'Zırhlı ve hızlı: büyücü kulesi kullan', vulture: 'Uçar: yalnızca okçu ve büyücü vurur',
+  camel: 'Hızlı ve dayanıklı; ölünce süvarisi yaya devam eder', sandworm: 'Kuma gömülür: gömülüyken vurulamaz, top yüzeye çıkınca iyi vurur',
+  mummy: 'Bir kez dirilir; top ve göktaşıyla ölürse dirilmez', djinn: 'Uçan cin: ileri ışınlanır, yakındakilere kalkan verir',
+  golem: 'Taş muhafız: çok kalın zırh, sersemlemez. Büyü kullan',
   goblin: 'Zayıf ama kalabalık gelir', wolf: 'Çok hızlı koşar, askerlerin yanından kaçabilir', bandit: 'Dayanıklı yakın dövüşçü',
   orc: 'Zırhlı: büyü ve top hasarı işe yarar', bat: 'Uçar: yalnızca okçu ve büyücü kulesi vurur', shaman: 'Yakındaki düşmanları iyileştirir, büyüye dirençli',
   knight: 'Çok kalın zırh: büyücü kulesi kullan', troll: 'Dev boss: kaleden 5 can götürür',

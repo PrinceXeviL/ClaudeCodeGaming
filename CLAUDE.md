@@ -25,7 +25,9 @@ Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4U
 - `scripts/generate_image.py` — Gemini görsel üretimi (anahtar `.env` içinde, repoya girmez).
 
 ## Son durum
-Yapılanlar: 10 bölüm, 5 kahraman (3'er yetenek), boss + muhafız + efektli boss yetenekleri, düşman zayıflık/direnç
+2 sefer (EPISODES): 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl; LEVELS'ta ep: 2).
+2. sefer görselleri: Game Lab/varliklar/ham/s2_*.jpg → varliklar/sefer2_isle.py (numpy+scipy+pillow) → img/.
+Yapılanlar: 20 bölüm, 5 kahraman (3'er yetenek), boss + muhafız + efektli boss yetenekleri, düşman zayıflık/direnç
 ve dokununca bilgi paneli, yıldırım atan büyücü kulesi, 3B top, seviyeli okçu/asker çizimleri, kule unvanları,
 yol girişinde küçük dalga işareti. Bot dengesi: 1–10. bölümler kazanılıyor, 10. bölüm en zor.
 
