@@ -21,6 +21,8 @@ Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4U
 - `sinir-kalesi/tools/` — Playwright test araçları (sunucu 8765'te açıkken `node tools/...`):
   - `akis-testi.js` menü→bölüm→kule kur akışı, sayfa hatalarını yazar
   - `denge-botu.js [bölümler] [kahramanlar]` ör. `node tools/denge-botu.js 0,4,9 commander,caner` — botla bölüm oynatır
+  - `arsa-denetim.js` (Playwright gerekmez: `node tools/arsa-denetim.js js/data.js`) arsaların dalga düğmesine
+    ve arayüze taşmadığını denetler, taşanlar için yol kenarında yeni yer önerir. Yeni bölüm ekleyince çalıştır.
   - `fps.js` yoğun sahnede FPS; `magenta-sil.js girdi.jpg cikti.png` magenta zeminli görseli saydamlaştırır
 - `scripts/generate_image.py` — Gemini görsel üretimi (anahtar `.env` içinde, repoya girmez).
 
