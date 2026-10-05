@@ -433,7 +433,8 @@ const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', '
 // Ağır birimler (canı HEAVY_HP üstü) çoğaltılmaz; artış hafif birimlerle yapılır.
 // Karışım: aynı yoldaki iki grup bazen tek karma akışa dönüşür (ör. ork-goblin-ork...), büyük gruplar bazen
 // 3-4'lük paketler halinde gelir. Dağılım her bölüm için sabittir (tohumlu rastgele).
-const WAVE_GROW = 1.2, LAST_GROW = 1.3, WAVE_TOTAL = 0.85, HEAVY_HP = 600, MIX_CHANCE = 0.5, PACK_CHANCE = 0.4;
+// DENSITY: hafif düşman sayısı çarpanı; dalga süresi aynı kalır, düşmanlar zamana daha seyrek yayılır.
+const WAVE_GROW = 1.2, LAST_GROW = 1.3, WAVE_TOTAL = 0.85, DENSITY = 0.8, HEAVY_HP = 600, MIX_CHANCE = 0.5, PACK_CHANCE = 0.4;
 function shapeWaves(lv, li) {
   let seed = ((li + 1) * 2654435761) >>> 0;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -461,6 +462,7 @@ function shapeWaves(lv, li) {
       for (const g of light) g.hpK = Math.min(1.4, Math.max(0.6, 1 / Math.sqrt(r)));
     }
     prev = count(w);
+    for (const g of light) { const n2 = Math.max(1, Math.round(g.n * DENSITY)); g.gap = g.gap * g.n / n2; g.n = n2; }
     // karma akış: aynı yoldaki iki hafif grup birleşir, türler sırayla karışık gelir
     const byPath = {};
     for (const g of light) (byPath[g.p || 0] = byPath[g.p || 0] || []).push(g);
