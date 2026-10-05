@@ -76,7 +76,7 @@ const ENEMIES = {
   wolf:    { name: 'Kurt',          hp: 37,   speed: 42, armor: 0,    mr: 0,   gold: 5,   dmg: [1, 3],   rate: 1,   lives: 1, r: 8 },
   // ranged: menzilli saldırı (yalnız kahramanlara; yol dışında duran kahramanları da vurur). r menzil, rate sn
   bandit:  { name: 'Haydut',        hp: 86,   speed: 24, armor: 0,    mr: 0,   gold: 9,   dmg: [4, 8],   rate: 1,   lives: 1, r: 9, ranged: { r: 95, dmg: [5, 9], rate: 3.2, proj: 'knife' } },
-  orc:     { name: 'Ork',           hp: 99,   speed: 19, armor: 0.3,  mr: 0,   gold: 11,   dmg: [3, 7],   rate: 1,   lives: 1, r: 10 },
+  orc:     { ranged: { r: 105, dmg: [7, 12], rate: 1.6, proj: 'axe', ammo: 3, any: true }, name: 'Ork',           hp: 99,   speed: 19, armor: 0.3,  mr: 0,   gold: 11,   dmg: [3, 7],   rate: 1,   lives: 1, r: 10 },
   bat:     { name: 'Yarasa',        hp: 37,   speed: 33, armor: 0,    mr: 0,   gold: 7,   dmg: [0, 0],   rate: 1,   lives: 1, r: 8, flying: true },
   shaman:  { name: 'Şaman',         hp: 108,   speed: 20, armor: 0,    mr: 0.6, gold: 15,  dmg: [2, 4],   rate: 1,   lives: 1, r: 9, heals: true, ranged: { r: 125, dmg: [8, 13], rate: 2.6, proj: 'hex' } },
   knight:  { name: 'Kara Şövalye',  hp: 292,  speed: 16, armor: 0.75, mr: 0,   gold: 28,  dmg: [8, 14],  rate: 1.2, lives: 1, r: 11 },
@@ -402,7 +402,7 @@ Object.assign(ENEMIES, {
     desc: 'Goblin çağırır, kulelere bomba atıp susturur, savaş narasıyla hızlandırır', ab: { summon: { t: 'goblin', n: 3, cd: 11 }, bomb: { cd: 10, stun: 3, r: 170 }, howl: { cd: 14, r: 110 } } },
   wolf_alpha:   { name: 'Kara Kurt Alfa', base: 'wolf', h: 38, hp: 850, speed: 22.5, armor: 0.1, mr: 0.1, gold: 90, dmg: [12, 20], rate: 0.9, lives: 5, r: 14, boss: true, chief: true, hpK: 0.8,
     desc: 'Ulur (yakındakiler hızlanır), sürüsünü çağırır, yolda ileri atılır', ab: { howl: { cd: 10, r: 110 }, summon: { t: 'wolf', n: 3, cd: 12 }, pounce: { cd: 8, d: 70 } } },
-  orc_warlord:  { name: 'Ork Savaş Ağası', base: 'orc', h: 50, hp: 1500, speed: 11.2, armor: 0.4, mr: 0.1, gold: 130, dmg: [20, 32], rate: 1.4, lives: 6, r: 16, boss: true, chief: true, hpK: 1.05,
+  orc_warlord:  { ranged: { r: 130, dmg: [20, 30], rate: 2.4, proj: 'axe', ammo: 3, any: true }, name: 'Ork Savaş Ağası', base: 'orc', h: 50, hp: 1500, speed: 11.2, armor: 0.4, mr: 0.1, gold: 130, dmg: [20, 32], rate: 1.4, lives: 6, r: 16, boss: true, chief: true, hpK: 1.05,
     desc: 'Yeri dövüp askerleri sersemletir, ork çağırır, öfkelenince 5 sn yarı hasar alır', ab: { slam: { cd: 7, r: 62, stun: 2, dmg: 25 }, summon: { t: 'orc', n: 2, cd: 13 }, rage: { cd: 15, t: 5 } } },
   dark_shaman:  { name: 'Kara Büyücü', base: 'shaman', ranged: { r: 160, dmg: [22, 32], rate: 2.2, proj: 'hex' }, h: 46, hp: 1300, speed: 12, armor: 0.1, mr: 0.7, gold: 140, dmg: [10, 16], rate: 1.2, lives: 6, r: 15, boss: true, chief: true, hpK: 0.95,
     desc: 'Kalkan açar, yakındakileri iyileştirir, haydut çağırır, kara yıldırımla kuleyi susturur', ab: { shield: { cd: 13, t: 3 }, heal: { cd: 7, amt: 70, r: 90 }, summon: { t: 'bandit', n: 2, cd: 13 }, hex: { cd: 11, t: 3.5, r: 190 } } },
@@ -427,6 +427,59 @@ const BOSS_ESCORT = {
   overlord: [['knight', 3], ['orc', 3], ['shaman', 1]],
 };
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord'];
+// ----- dalga düzeni -----
+// Her dalga bir öncekinden WAVE_GROW, son dalga LAST_GROW kat kalabalık. Bölümün toplam düşman sayısı
+// yaklaşık WAVE_TOTAL katında kalır (yuvarlama ve ağır birimlerle biraz artar) ve dalgalara bu oranla dağıtılır (ilk dalgalar hafifler, sonrakiler büyür).
+// Ağır birimler (canı HEAVY_HP üstü) çoğaltılmaz; artış hafif birimlerle yapılır.
+// Karışım: aynı yoldaki iki grup bazen tek karma akışa dönüşür (ör. ork-goblin-ork...), büyük gruplar bazen
+// 3-4'lük paketler halinde gelir. Dağılım her bölüm için sabittir (tohumlu rastgele).
+const WAVE_GROW = 1.2, LAST_GROW = 1.3, WAVE_TOTAL = 0.85, HEAVY_HP = 600, MIX_CHANCE = 0.5, PACK_CHANCE = 0.4;
+function shapeWaves(lv, li) {
+  let seed = ((li + 1) * 2654435761) >>> 0;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const heavy = (g) => ENEMIES[g.t].hp >= HEAVY_HP;
+  const count = (w) => w.reduce((a, g) => a + g.n, 0);
+  const N = lv.waves.length, orig = lv.waves.map(count);
+  const shape = [1];
+  for (let k = 1; k < N; k++) shape.push(shape[k - 1] * (k === N - 1 ? LAST_GROW : WAVE_GROW));
+  const A = orig.reduce((a, b) => a + b) * WAVE_TOTAL / shape.reduce((a, b) => a + b);
+  let prev = 0;
+  lv.waves.forEach((w, k) => {
+    let target = Math.max(4, Math.round(A * shape[k]));
+    if (k) target = Math.max(target, Math.ceil(prev * (k === N - 1 ? LAST_GROW : WAVE_GROW)));
+    const light = w.filter(g => !heavy(g)), hc = count(w.filter(heavy)), lc = count(light);
+    if (lc) {
+      const f = Math.max(0.15, (target - hc) / lc);
+      // aralık kısmen kısalır: kalabalık dalga daha sık gelir ama süresi de uzar (kuleler bir anda boğulmasın)
+      for (const g of light) { const n2 = Math.max(1, Math.round(g.n * f)); g.gap = Math.max(0.4, g.gap * Math.sqrt(g.n / n2)); g.n = n2; }
+      let diff = target - count(w);
+      const big = light.reduce((a, g) => (g.n > a.n ? g : a), light[0]);
+      big.n = Math.max(1, big.n + diff);
+      // kalabalıklaşan dalgada hafif düşmanlar biraz zayıflar, seyrelen dalgada güçlenir (karekök oranında):
+      // iki kat kalabalık dalga her biri %30 daha az canlı, toplamda yine %40 daha güçlü
+      const r = (count(w) - hc) / lc;
+      for (const g of light) g.hpK = Math.min(1.4, Math.max(0.6, 1 / Math.sqrt(r)));
+    }
+    prev = count(w);
+    // karma akış: aynı yoldaki iki hafif grup birleşir, türler sırayla karışık gelir
+    const byPath = {};
+    for (const g of light) (byPath[g.p || 0] = byPath[g.p || 0] || []).push(g);
+    for (const gs of Object.values(byPath)) {
+      if (gs.length < 2 || rnd() > MIX_CHANCE) continue;
+      const [a, b] = gs.sort((x, y) => y.n - x.n);
+      const n = a.n + b.n, types = [];
+      for (let i = 0, ia = 0, ib = 0; i < n; i++) {
+        const takeA = ib >= b.n || (ia < a.n && ia / a.n <= ib / b.n);
+        types.push(takeA ? a.t : b.t); takeA ? ia++ : ib++;
+      }
+      a.types = types; a.n = n; a.gap = Math.max(0.28, Math.min(a.gap, b.gap) * 0.9); a.at = Math.min(a.at || 0, b.at || 0);
+      w.splice(w.indexOf(b), 1);
+    }
+    // paketler: büyük grup 3-4'lük kümeler halinde gelir (küme içi sık, kümeler arası boşluk)
+    for (const g of w) if (!heavy(g) && g.n >= 6 && rnd() < PACK_CHANCE) g.pack = rnd() < 0.5 ? 3 : 4;
+  });
+}
+LEVELS.forEach((lv, i) => shapeWaves(lv, i));
 LEVELS.forEach((lv, i) => {
   lv.boss = LEVEL_BOSS[i];
   const w = lv.waves[lv.waves.length - 1];

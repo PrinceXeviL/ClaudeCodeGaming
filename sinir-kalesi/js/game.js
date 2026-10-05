@@ -53,7 +53,7 @@ const CHAR_H = {
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 // Ortak ölçekler: UNIT_K tüm birimler (asker, kahraman, düşman), BUILD_K binalar (kule, kale, arsa),
 // ROAD_K yol genişliği. ZOOM_MAX: en yakın zoom (arka plan dokusunun keskin kaldığı sınır).
-const UNIT_K = 0.8, BUILD_K = 0.9, ROAD_K = 1.2, ZOOM_MAX = 2.5;
+const UNIT_K = 0.8, BUILD_K = 0.81, ROAD_K = 1.2, ZOOM_MAX = 2.5;
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
 const TOWER_K = 0.12 * BUILD_K, TREE_K = 0.105, ROCK_K = 0.075;
 const TOWER_TOP = { archer: 0.86, barracks: 0.7, mage: 0.92, artillery: 0.74 }; // mermi çıkış yüksekliği
@@ -732,11 +732,17 @@ function waveBonusAndStart() {
   const def = G.lv.waves[G.wave];
   let lastSpawn = 0;
   for (const grp of def) {
-    G.spawners.push({ t: grp.t, left: grp.n, n: grp.n, gap: grp.gap, timer: grp.at || 0, p: grp.p || 0 });
+    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: grp.at || 0, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + grp.gap * (grp.n - 1));
   }
-  G.wave++;
+  G.wave++; G.wavePop = time;
   sfx('wave');
+  if (G.wave === G.lv.waves.length && G.wave > 1) {
+    // son dalga: kırmızı duyuru, ekran kenarı kızarır, kısa sarsıntı
+    G.banner = { title: 'SON DALGA!', sub: 'En kalabalık dalga geliyor. Kaleyi tut!', t: 0, dur: 3.6, red: true };
+    G.finalT = 0; G.hurt = Math.max(G.hurt, 0.5);
+    shakeScreen(4, 0.5); setTimeout(() => { if (actx && !muted) waveSound(); }, 450);
+  }
   if (G.wave < G.lv.waves.length) {
     G.waveCountdown = lastSpawn + 18;
     G.waveCountdownMax = G.waveCountdown;
@@ -1651,19 +1657,21 @@ function updateEnemy(e, dt) {
   if (b && (b.dead || b.removed)) e.blocker = null;
   // kahraman başka yere yürüdüyse düşman takılı kalmaz
   else if (b && b.hero && b.target !== e && dist(e.x, e.y, b.x, b.y) > HERO_AGGRO.r + 12) e.blocker = null;
-  // menzilli düşman: menzildeki kahramana (yol dışında olsa da) durup atış yapar
+  // menzilli düşman: menzildeki kahramana (yol dışında olsa da) durup atış yapar.
+  // any: askerleri de hedefler; ammo: sınırlı atış hakkı (ork: 3 balta)
   const RG = e.def.ranged;
-  if (RG && !e.blocker) {
+  if (RG && !e.blocker && (RG.ammo == null || (e.ammo ?? RG.ammo) > 0)) {
     if (e.shootT > 0) { e.shootT -= dt; return; }
     e.rcd = (e.rcd ?? rand(0.5, 1.5)) - dt;
     if (e.rcd <= 0) {
       let tgt = null, bd = RG.r;
-      for (const h of G.heroes) { if (h.dead) continue; const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; } }
+      for (const h of RG.any ? G.soldiers : G.heroes) { if (h.dead || h.removed) continue; const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; } }
       if (!tgt) e.rcd = 0.3;
       else {
         e.rcd = RG.rate; e.shootT = 0.45; e.face = tgt.x < e.x ? -1 : 1;
+        if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
-          dur: clamp(bd / 260, 0.25, 0.7), arc: RG.proj === 'knife' ? 12 : 4, edmg: roll(RG.dmg) * (e.dmgMul || 1) * HERO_AGGRO.dmg });
+          dur: clamp(bd / 260, 0.25, 0.7), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
         return;
       }
     }
@@ -2204,11 +2212,12 @@ function updateProjectile(pr, dt) {
     // düşmandan kahramana: hedefi izler, varınca vurur
     const h = pr.hero;
     if (h && !h.dead) { pr.tx = h.x; pr.ty = h.y - 12; }
-    if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'knife' ? 'arrow' : 'magic'); }
+    if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'hex' ? 'magic' : pr.kind === 'axe' ? 'whirl' : 'arrow'); }
     if (pr.t < pr.dur) return;
     pr.done = true;
-    if (h && !h.dead) {
+    if (h && !h.dead && !h.removed) {
       damageSoldier(h, pr.edmg);
+      if (pr.kind === 'axe') sfx('clash');
       for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-4, 4), y: pr.ty + rand(-4, 4), vx: rand(-40, 40), vy: rand(-50, 10), drag: 3,
         col: pr.kind === 'hex' ? '140,255,110' : '255,230,190', s0: 3, s1: 0.5, life: 0.35 });
     }
@@ -2322,8 +2331,13 @@ function update(dt) {
   for (const sp of G.spawners) {
     sp.timer -= dt;
     while (sp.left > 0 && sp.timer <= 0) {
-      spawnEnemy(sp.t, sp.p);
-      sp.left--; sp.timer += sp.gap;
+      const i = sp.n - sp.left;
+      const e = spawnEnemy(sp.types ? sp.types[i] : sp.t, sp.p);
+      if (sp.hpK && !e.def.chief) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; }
+      sp.left--;
+      // paket: küme içinde sık, kümeler arasında uzun ara (ortalama sıklık aynı kalır)
+      if (sp.pack) sp.timer += (i + 1) % sp.pack ? sp.gap * 0.35 : sp.gap * (sp.pack - 0.35 * (sp.pack - 1));
+      else sp.timer += sp.gap;
     }
   }
   G.spawners = G.spawners.filter(s => s.left > 0);
@@ -3878,6 +3892,14 @@ function drawProjectile(p) {
     glow(ctx, x, y, 10, '120,255,90', 0.85); glow(ctx, x, y, 4, '235,255,220', 1);
     for (let i = 0; i < 2; i++) { const a = time * 14 + i * Math.PI; glow(ctx, x + Math.cos(a) * 5, y + Math.sin(a) * 3, 2.5, '170,255,140', 0.8); }
     ctx.restore();
+  } else if (p.kind === 'axe') {
+    // ork baltası: dönerek uçar
+    ctx.save(); ctx.translate(x, y); ctx.rotate(time * 16 * (p.tx < p.sx ? -1 : 1));
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1608'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(0, -5); ctx.stroke();
+    ctx.strokeStyle = '#8a5a2a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(0, -5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(5.5, -6.5, 6, -1.5); ctx.quadraticCurveTo(3, -2.4, 0, -1.6); ctx.closePath();
+    ctx.fillStyle = '#c8ced8'; ctx.fill(); ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7; ctx.stroke();
+    ctx.restore();
   } else if (p.kind === 'knife') {
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 20);
     ctx.fillStyle = '#e8ecf4'; ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7;
@@ -4631,12 +4653,24 @@ const HUD = {
 const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 });
 
 // küçük bilgi hapı: solda ikon, sağda değer
-function statPill(x, y, w, icon, text, col, popT, label) {
+// Dalga göstergesinin rengi dalgaya göre ısınır: yeşil → sarı → turuncu; son dalga yanıp sönen kırmızı
+function waveTint() {
+  const n = G.lv.waves.length, w = G.wave;
+  if (w <= 0) return null;
+  if (w >= n) return ['rgba(190,30,20,0.96)', 'rgba(80,6,4,0.96)', '#ff9a7a', '255,60,30'];
+  const k = (w - 1) / Math.max(1, n - 2); // 0 ilk dalga, 1 sondan bir önceki
+  const stops = [[60, 120, 40], [170, 140, 30], [200, 90, 20], [190, 50, 20]];
+  const f = k * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(f)), t = f - i;
+  const c = stops[i].map((v, j) => Math.round(v + (stops[i + 1][j] - v) * t));
+  return [`rgba(${c[0]},${c[1]},${c[2]},0.94)`, `rgba(${c[0] * 0.35 | 0},${c[1] * 0.35 | 0},${c[2] * 0.35 | 0},0.94)`, `rgb(${Math.min(255, c[0] + 70)},${Math.min(255, c[1] + 70)},${Math.min(255, c[2] + 60)})`];
+}
+function statPill(x, y, w, icon, text, col, popT, label, tint) {
   const h = 26;
   roundRect(x + 1.5, y + 3, w, h, h / 2, 'rgba(0,0,0,0.28)');
   const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, 'rgba(66,48,30,0.92)'); g.addColorStop(1, 'rgba(26,18,10,0.92)');
-  roundRect(x, y, w, h, h / 2, g, '#c9a35a', 1.6);
+  g.addColorStop(0, tint ? tint[0] : 'rgba(66,48,30,0.92)'); g.addColorStop(1, tint ? tint[1] : 'rgba(26,18,10,0.92)');
+  if (tint && tint[3]) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + w / 2, y + h / 2, w * 0.75, tint[3], 0.3 + Math.sin(time * 6) * 0.12); ctx.restore(); }
+  roundRect(x, y, w, h, h / 2, g, tint ? tint[2] : '#c9a35a', 1.6);
   roundRect(x + 4, y + 2.5, w - 8, h * 0.36, h / 4, 'rgba(255,255,255,0.08)');
   drawIcon(icon, x + h / 2, y + h / 2, 17);
   const p = popT != null ? Math.max(0, 1 - (time - popT) / 0.35) : 0;
@@ -4789,7 +4823,7 @@ function drawHud() {
   if (G.livesShown !== G.lives) { if (G.livesShown != null) G.livesPop = time; G.livesShown = G.lives; }
   statPill(8, 8, 70, 'heart', G.lives + '', G.lives <= 5 ? '#ff8a7a' : '#fff', G.livesPop);
   statPill(84, 8, 86, 'coin', Math.floor(G.gold) + '', '#ffe27a', G.goldPop);
-  statPill(176, 8, 78, 'skull', `${G.wave}/${G.lv.waves.length}`, '#fff', null, 'DALGA');
+  statPill(176, 8, 78, 'skull', `${G.wave}/${G.lv.waves.length}`, '#fff', G.wavePop, G.wave >= G.lv.waves.length ? 'SON DALGA' : 'DALGA', waveTint());
 
   roundBtn('hud_pause', HUD.pause.x, HUD.pause.y, HUD.pause.r, 'pause', null);
   roundBtn('hud_speed', HUD.speed.x, HUD.speed.y, HUD.speed.r, () => {
@@ -4879,14 +4913,17 @@ function drawBanner() {
     ctx.restore();
     return;
   }
-  const by = G.enemies.some(o => o.def.chief && !o.dead) ? 140 : 112; // boss barı açıkken altına iner
+  const by = G.intro ? 200 : G.enemies.some(o => o.def.chief && !o.dead) ? 140 : 112; // tanıtım kartı / boss barı açıkken altına iner
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, by); ctx.scale(0.7 + 0.3 * e, 0.7 + 0.3 * e);
+  if (b.red) { const k = 1 + Math.sin(time * 10) * 0.04; ctx.scale(k, k); }
   ctx.font = `700 13px ${FONT_B}`;
   const w = Math.max(320, ctx.measureText(b.sub).width + 48);
   roundRect(-w / 2 + 2, -24 + 5, w, 52, 14, 'rgba(0,0,0,0.3)');
-  const g = ctx.createLinearGradient(0, -24, 0, 28); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
-  roundRect(-w / 2, -24, w, 52, 14, g, '#ffd34d', 2);
-  txt(b.title, 0, -7, 18, '#ffd34d', 'center', '400', FONT_T);
+  const g = ctx.createLinearGradient(0, -24, 0, 28);
+  g.addColorStop(0, b.red ? 'rgba(150,24,16,0.97)' : 'rgba(62,44,26,0.96)'); g.addColorStop(1, b.red ? 'rgba(60,6,4,0.97)' : 'rgba(24,16,8,0.96)');
+  if (b.red) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, w * 0.6, '255,60,30', 0.25 + Math.sin(time * 10) * 0.08); ctx.restore(); }
+  roundRect(-w / 2, -24, w, 52, 14, g, b.red ? '#ff8a6a' : '#ffd34d', 2);
+  txt(b.title, 0, -7, b.red ? 21 : 18, b.red ? '#fff0c0' : '#ffd34d', 'center', '400', FONT_T);
   txt(b.sub, 0, 13, 13, '#f2e8d4', 'center', '700', FONT_B, false);
   ctx.restore();
 }
