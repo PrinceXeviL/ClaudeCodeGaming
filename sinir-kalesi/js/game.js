@@ -272,8 +272,29 @@ function uiSound(kind) {
   } else return false;
   return true;
 }
+// Dalga çağırma: uzaktan gelen yumuşak bir borazan ve iki boğuk savaş davulu (yorucu olmayan, alçak ses)
+function waveSound() {
+  const t = actx.currentTime;
+  const out = actx.createBiquadFilter(); out.type = 'lowpass'; out.frequency.value = 900; out.Q.value = 0.5; out.connect(master);
+  for (const [f, v] of [[196, 0.07], [293.7, 0.05]]) {
+    const o = actx.createOscillator(), g = actx.createGain(), lfo = actx.createOscillator(), lg = actx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = f;
+    lfo.frequency.value = 5; lg.gain.value = f * 0.006; lfo.connect(lg); lg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t + 0.12); g.gain.exponentialRampToValueAtTime(v, t + 0.35);
+    g.gain.setValueAtTime(v, t + 0.75); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.25);
+    o.connect(g); g.connect(out); o.start(t + 0.1); lfo.start(t + 0.1); o.stop(t + 1.3); lfo.stop(t + 1.3);
+  }
+  for (const dt of [0, 0.3]) {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(95, t + dt); o.frequency.exponentialRampToValueAtTime(50, t + dt + 0.25);
+    g.gain.setValueAtTime(0.0001, t + dt); g.gain.exponentialRampToValueAtTime(0.32, t + dt + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.3);
+    o.connect(g); g.connect(master); o.start(t + dt); o.stop(t + dt + 0.32);
+  }
+}
+
 function sfx(kind) {
   if (muted || !actx) return;
+  if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
   if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
   if (!def || !list || !list.length) return;
@@ -470,10 +491,24 @@ function renderBackground(lv, paths, res = 2) {
   // kenara doğru koyulaşan iç gölge: kenar yumuşak bir eğimle çimene karışır
   for (let k = 0; k < 4; k++) strokePath((42 - k * 6) * R, `rgba(255,240,205,${0.035 + k * 0.012})`);
   strokePath(14 * R, 'rgba(255,244,215,0.08)');
+  // Kavşaklar: bir yolun kenar süsleri (taş, çimen tutamı) başka bir yolun üstüne düşmesin.
+  // Ortak gövdede tekerlek izlerini yalnız ilk yol çizer, öbürü onun yüzeyine iz bırakmaz.
+  const onRoad = (p, x, y, onlyBefore) => {
+    for (const o of paths) {
+      if (o === p) { if (onlyBefore) break; continue; }
+      if (nearestOnPaths([o], x, y).d < 19 * R) return true;
+    }
+    return false;
+  };
   for (const p of paths) {
     for (const side of [-1, 1]) {
       g.strokeStyle = 'rgba(70,45,20,0.16)'; g.lineWidth = 3; g.beginPath();
-      for (let d = 0; d <= p.total; d += 6) { const q = pathPos(p, d, side * 8 * R); d ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); }
+      let pen = false;
+      for (let d = 0; d <= p.total; d += 6) {
+        const q = pathPos(p, d, side * 8 * R);
+        if (onRoad(p, q.x, q.y, true)) { pen = false; continue; }
+        pen ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); pen = true;
+      }
       g.stroke();
     }
   }
@@ -486,16 +521,18 @@ function renderBackground(lv, paths, res = 2) {
     }
     for (let d = 0; d < p.total; d += 16 + rnd() * 30) {
       const side = rnd() < 0.5 ? -1 : 1, q = pathPos(p, d, side * (22 * R + rnd() * 3)), r = 1.8 + rnd() * 2.4;
+      if (onRoad(p, q.x, q.y)) { rnd(); continue; } // rastgele dizi kaymasın diye aynı sayıda çekilir
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q.x + 1, q.y + 1.2, r * 1.2, r * 0.8, 0, 0, Math.PI * 2); g.fill();
       g.fillStyle = th.stone[0]; g.beginPath(); g.ellipse(q.x, q.y, r * 1.2, r * 0.85, rnd(), 0, Math.PI * 2); g.fill();
       g.fillStyle = th.stone[1]; g.beginPath(); g.ellipse(q.x - r * 0.3, q.y - r * 0.3, r * 0.55, r * 0.4, 0, 0, Math.PI * 2); g.fill();
     }
   }
   // yol kenarına taşan çimen tutamları: düz çizgi yerine organik, yumuşak bir sınır
-  const tuft = (x, y, s, col) => {
+  const tuft = (x, y, s, col, skip) => {
     g.strokeStyle = col; g.lineWidth = 1.3 * s; g.lineCap = 'round';
     for (let k = 0; k < 5; k++) {
       const a = -Math.PI / 2 + (k - 2) * 0.38 + (rnd() - 0.5) * 0.3, len = (4 + rnd() * 4) * s;
+      if (skip) continue;
       g.beginPath(); g.moveTo(x + (k - 2) * 1.2 * s, y);
       g.quadraticCurveTo(x + Math.cos(a) * len * 0.5, y + Math.sin(a) * len * 0.6, x + Math.cos(a) * len, y + Math.sin(a) * len);
       g.stroke();
@@ -506,7 +543,7 @@ function renderBackground(lv, paths, res = 2) {
       for (const side of [-1, 1]) {
         if (rnd() < 0.35) continue;
         const q = pathPos(p, d, side * (20 * R + rnd() * 6));
-        tuft(q.x, q.y + 2, 0.7 + rnd() * 0.5, rnd() < 0.5 ? th.tuft[0] : th.tuft[1]);
+        tuft(q.x, q.y + 2, 0.7 + rnd() * 0.5, rnd() < 0.5 ? th.tuft[0] : th.tuft[1], onRoad(p, q.x, q.y));
       }
     }
   }
@@ -652,15 +689,19 @@ function makeHero(id, x, y, slot) {
 }
 // seviye ve kalıcı yeteneklerden kahraman değerleri
 // Kahramanların genel gücü (can, saldırı ve yetenek hasarı) bu çarpanla ölçeklenir
-const HERO_POWER = 0.8;
+// Kahraman dengesi: HERO_POWER hasar ve yetenek hasarı, HERO_HP can ve can yenileme çarpanı
+const HERO_POWER = 0.64, HERO_HP = 0.64;
+// Düşmanların kahramanlara saldırganlığı: yakından geçen düşman kahramana saldırmak için durur
+// (bir kahramana en çok HERO_AGGRO.max düşman), kahramana vuruşları HERO_AGGRO.dmg kat sert
+const HERO_AGGRO = { r: 30, max: 3, dmg: 1.3 };
 let HERO_SKILL = false; // yetenek hasarı işlenirken true
 function heroStats(h) {
-  const d = h.def, k = (1 + 0.2 * (h.lvl - 1)) * HERO_POWER, L = h.learned;
+  const d = h.def, lk = 1 + 0.2 * (h.lvl - 1), k = lk * HERO_POWER, L = h.learned;
   const ratio = h.maxHp ? h.hp / h.maxHp : 1;
-  h.maxHp = Math.round(d.hp * k); h.hp = Math.min(h.maxHp, h.maxHp * ratio);
+  h.maxHp = Math.round(d.hp * lk * HERO_HP); h.hp = Math.min(h.maxHp, h.maxHp * ratio);
   h.dmg = [Math.max(1, Math.round(d.dmg[0] * k)), Math.max(1, Math.round(d.dmg[1] * k))];
   h.armor = Math.min(0.8, d.armor + (L.iron ? 0.25 : 0));
-  h.regen = d.regen * (L.iron ? 2 : 1);
+  h.regen = d.regen * HERO_HP * (L.iron ? 2 : 1);
   h.rate = d.rate * (L.shadow ? 0.75 : 1);
   h.crit = L.shadow ? 0.2 : L.eagle ? 0.25 : 0;
   h.ranged = (d.ranged || 0) * (L.eagle ? 1.2 : 1);
@@ -1608,6 +1649,25 @@ function updateEnemy(e, dt) {
   if (e.siege !== undefined) { updateSiege(e, dt); return; }
   const b = e.blocker;
   if (b && (b.dead || b.removed)) e.blocker = null;
+  // kahraman başka yere yürüdüyse düşman takılı kalmaz
+  else if (b && b.hero && b.target !== e && dist(e.x, e.y, b.x, b.y) > HERO_AGGRO.r + 12) e.blocker = null;
+  // menzilli düşman: menzildeki kahramana (yol dışında olsa da) durup atış yapar
+  const RG = e.def.ranged;
+  if (RG && !e.blocker) {
+    if (e.shootT > 0) { e.shootT -= dt; return; }
+    e.rcd = (e.rcd ?? rand(0.5, 1.5)) - dt;
+    if (e.rcd <= 0) {
+      let tgt = null, bd = RG.r;
+      for (const h of G.heroes) { if (h.dead) continue; const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; } }
+      if (!tgt) e.rcd = 0.3;
+      else {
+        e.rcd = RG.rate; e.shootT = 0.45; e.face = tgt.x < e.x ? -1 : 1;
+        G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
+          dur: clamp(bd / 260, 0.25, 0.7), arc: RG.proj === 'knife' ? 12 : 4, edmg: roll(RG.dmg) * (e.dmgMul || 1) * HERO_AGGRO.dmg });
+        return;
+      }
+    }
+  }
   if (e.blocker) {
     const bd = dist(e.x, e.y, e.blocker.x, e.blocker.y);
     e.inMelee = bd < 22;
@@ -1618,13 +1678,22 @@ function updateEnemy(e, dt) {
         e.atk = e.def.rate;
         const victim = e.blocker;
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
-        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1));
+        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (victim.hero ? HERO_AGGRO.dmg : 1));
         sfx('clash');
       }
     }
     return; // bloklanmış: durur
   }
   e.inMelee = false;
+  // kahramana saldırı: yanından geçerken durup kahramanla dövüşür
+  if (!e.def.flying && !e.leader) {
+    for (const h of G.heroes) {
+      if (h.dead || dist(e.x, e.y, h.x, h.y) > HERO_AGGRO.r) continue;
+      let n = 0;
+      for (const o of G.enemies) if (o.blocker === h && !o.dead) n++;
+      if (n < HERO_AGGRO.max) { e.blocker = h; return; }
+    }
+  }
   let spd = e.def.speed * G.wspd * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1);
   // muhafız: boss'un yanında dizilişini korur; boss savaşırken bekler, boss ölünce serbest kalır
   if (e.leader) {
@@ -2131,6 +2200,20 @@ function projPos(pr, k) {
 }
 function updateProjectile(pr, dt) {
   pr.t += dt;
+  if (pr.foe) {
+    // düşmandan kahramana: hedefi izler, varınca vurur
+    const h = pr.hero;
+    if (h && !h.dead) { pr.tx = h.x; pr.ty = h.y - 12; }
+    if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'knife' ? 'arrow' : 'magic'); }
+    if (pr.t < pr.dur) return;
+    pr.done = true;
+    if (h && !h.dead) {
+      damageSoldier(h, pr.edmg);
+      for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-4, 4), y: pr.ty + rand(-4, 4), vx: rand(-40, 40), vy: rand(-50, 10), drag: 3,
+        col: pr.kind === 'hex' ? '140,255,110' : '255,230,190', s0: 3, s1: 0.5, life: 0.35 });
+    }
+    return;
+  }
   if (pr.target && !pr.target.dead) { pr.tx = pr.target.x; pr.ty = aimY(pr.target); }
   if (pr.t > 0) {
     pr.fxT = (pr.fxT || 0) - dt;
@@ -3275,8 +3358,8 @@ function drawEnemy(e) {
     drawUnit(name, im, e.x, e.y, e.face, {
       rig: d.base ? 'enemy_' + d.base : undefined,
       h: CHAR_H[name] || d.r * 2.6, phase: e.anim * (5 + d.speed * G.wspd / 9),
-      walking: !e.blocker && e.siege === undefined && !(e.stun > 0), fly: d.flying ? fly : 0,
-      atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : null,
+      walking: !e.blocker && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0), fly: d.flying ? fly : 0,
+      atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off,
     });
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
@@ -3789,6 +3872,18 @@ function drawProjectile(p) {
     ctx.restore();
   } else if (p.kind === 'bolt') {
     // yıldırım 'zap' efektiyle çiziliyor
+  } else if (p.kind === 'hex') {
+    // şaman büyüsü: yeşil kıvrık ışık topu
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, x, y, 10, '120,255,90', 0.85); glow(ctx, x, y, 4, '235,255,220', 1);
+    for (let i = 0; i < 2; i++) { const a = time * 14 + i * Math.PI; glow(ctx, x + Math.cos(a) * 5, y + Math.sin(a) * 3, 2.5, '170,255,140', 0.8); }
+    ctx.restore();
+  } else if (p.kind === 'knife') {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(time * 20);
+    ctx.fillStyle = '#e8ecf4'; ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7;
+    ctx.beginPath(); ctx.moveTo(-1.3, 0); ctx.lineTo(0, -5.6); ctx.lineTo(1.3, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    roundRect(-0.9, 0, 1.8, 3, 0.7, '#5a3418');
+    ctx.restore();
   } else if (p.kind === 'dagger') {
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 22);
     ctx.fillStyle = '#e8ecf4'; ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.8;
