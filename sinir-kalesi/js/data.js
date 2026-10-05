@@ -175,6 +175,13 @@ const SPELLS = {
   reinforce: { name: 'Takviye',      cd: 24, count: 2, hp: 40, dmg: [2, 4], life: 20 },
 };
 
+// Hava: bölümde weather: 'rain' | 'snow'. speed: tüm birimlerin (düşman, asker, kahraman) yürüme hızı çarpanı.
+// rain.lightning: iki şimşek arası süre aralığı (sn).
+const WEATHER = {
+  rain: { speed: 1, lightning: [5, 12] },
+  snow: { speed: 0.8 },
+};
+
 // Dalga: { t: tür, n: adet, gap: sn aralık, at: dalga başından gecikme, p: yol no }
 // castle: [x, y] kalenin taban ortası; yollar kalenin kapısında (yolun son noktası) biter.
 const LEVELS = [
@@ -250,7 +257,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Bataklık Sınırı', gold: 520, lives: 20, theme: 'swamp', castle: [905, 250], hpMul: 1.3,
+    name: 'Bataklık Sınırı', gold: 520, lives: 20, theme: 'swamp', weather: 'rain', castle: [905, 250], hpMul: 1.3,
     paths: [
       [[-40, 100], [140, 110], [260, 190], [420, 170], [520, 250], [640, 300], [740, 240], [855, 236]],
       [[-40, 430], [150, 420], [270, 340], [420, 330], [520, 250], [640, 300], [740, 240], [855, 236]],
@@ -271,7 +278,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Kayalık Boğaz', gold: 560, lives: 20, theme: 'rocky', castle: [905, 230], hpMul: 1.4,
+    name: 'Kayalık Boğaz', gold: 560, lives: 20, theme: 'rocky', weather: 'rain', castle: [905, 230], hpMul: 1.4,
     paths: [
       [[300, 580], [300, 460], [170, 430], [120, 340], [230, 280], [430, 300], [540, 400], [690, 420], [760, 330], [650, 240], [560, 170], [660, 100], [790, 130], [855, 216]],
     ],
@@ -291,7 +298,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Karlı Geçit', gold: 630, lives: 20, theme: 'winter', castle: [905, 330], hpMul: 1.2,
+    name: 'Karlı Geçit', gold: 630, lives: 20, theme: 'winter', weather: 'snow', castle: [905, 330], hpMul: 1.2,
     paths: [
       [[260, -40], [260, 90], [380, 170], [520, 150], [620, 210], [700, 250], [780, 330], [855, 316]],
       [[-40, 330], [110, 330], [220, 420], [400, 440], [540, 380], [620, 300], [700, 250], [780, 330], [855, 316]],
@@ -335,7 +342,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Donmuş Nehir', gold: 790, lives: 20, theme: 'winter', castle: [905, 420], hpMul: 1.8,
+    name: 'Donmuş Nehir', gold: 790, lives: 20, theme: 'winter', weather: 'snow', castle: [905, 420], hpMul: 1.8,
     paths: [
       [[480, -40], [480, 80], [340, 140], [220, 220], [320, 320], [500, 300], [620, 380], [760, 420], [855, 406]],
       [[-40, 250], [100, 250], [220, 220], [320, 320], [500, 300], [620, 380], [760, 420], [855, 406]],
