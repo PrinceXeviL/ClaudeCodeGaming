@@ -8,9 +8,10 @@ const TOWERS = {
     name: 'Okçu Kulesi', icon: 'archer', dmgType: 'phys', air: true,
     desc: 'Hızlı atış, havayı da vurur',
     levels: [
-      { cost: 70,  range: 135, dmg: [4, 6],   rate: 0.8, perk: 'Hızlı atış, uçanları da vurur' },
-      { cost: 110, range: 158, dmg: [8, 12],  rate: 0.6, perk: 'Delici ok: %25 şansla zırhı yok sayar · +menzil' },
-      { cost: 160, range: 192, dmg: [13, 19], rate: 0.5, perk: '3 okçu · %15 kritik vuruş (2 kat) · çok daha uzun menzil' },
+      // rate: kulenin iki atışı arası (sn). Seviye atladıkça atışlar belirgin hızlanır.
+      { cost: 70,  range: 135, dmg: [4, 6],   rate: 1.15, perk: 'Uçanları da vurur' },
+      { cost: 110, range: 158, dmg: [8, 12],  rate: 0.8,  perk: 'Daha hızlı atış · delici ok: %25 şansla zırhı yok sayar · +menzil' },
+      { cost: 160, range: 192, dmg: [13, 19], rate: 0.55, perk: '3 okçu, çok hızlı atış · %15 kritik vuruş (2 kat) · çok daha uzun menzil' },
     ],
     // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
     abilities: [
@@ -39,9 +40,9 @@ const TOWERS = {
     name: 'Büyücü Kulesi', icon: 'mage', dmgType: 'magic', air: true,
     desc: 'Yıldırım atar, zırhı deler',
     levels: [
-      { cost: 100, range: 128, dmg: [10, 18], rate: 1.5, perk: 'Yıldırım: büyü hasarı zırhı deler' },
-      { cost: 160, range: 140, dmg: [24, 44], rate: 1.45, perk: 'Şok: vurduğunu 1 sn %30 yavaşlatır' },
-      { cost: 240, range: 152, dmg: [42, 76], rate: 1.4, perk: 'Zincir yıldırım: yakındaki ikinci düşmana %60 hasar' },
+      { cost: 100, range: 128, dmg: [10, 18], rate: 2.1, perk: 'Yıldırım: büyü hasarı zırhı deler' },
+      { cost: 160, range: 140, dmg: [24, 44], rate: 1.7, perk: 'Daha hızlı yükleme · şok: vurduğunu 1 sn %30 yavaşlatır' },
+      { cost: 240, range: 152, dmg: [42, 76], rate: 1.3, perk: 'Hızlı yükleme · zincir yıldırım: yakındaki ikinci düşmana %60 hasar' },
     ],
     abilities: [
       { id: 'frost', name: 'Buz Küresi', desc: (r) => `Vurduğunu ${r.t} sn %${Math.round(r.k * 100)} yavaşlatır`,
@@ -408,8 +409,11 @@ Object.assign(ENEMIES, {
     desc: 'Işınlanır, haydut çağırır, yakındaki askerlerin canını emer', ab: { blink: { cd: 10, d: 85 }, summon: { t: 'bandit', n: 2, cd: 16 }, drain: { cd: 9, r: 85, dmg: 24 } } },
   troll_king:   { name: 'Troll Kral', base: 'troll', h: 66, hp: 3400, speed: 7.5, armor: 0.35, mr: 0.25, gold: 260, dmg: [35, 55], rate: 2, lives: 8, r: 22, boss: true, chief: true, hpK: 1.15,
     desc: 'Can yeniler, yeri döver, ork çağırır, kulelere kaya fırlatıp sersemletir', ab: { regen: 0.005, slam: { cd: 9, r: 70, stun: 1.5, dmg: 40 }, summon: { t: 'orc', n: 2, cd: 14 }, boulder: { cd: 10, stun: 3, r: 200 } } },
-  overlord:     { name: 'Kara Lord', base: 'knight', h: 62, hp: 4600, speed: 8.2, armor: 0.55, mr: 0.4, gold: 400, dmg: [40, 60], rate: 1.5, lives: 10, r: 22, boss: true, chief: true, hpK: 1.15,
-    desc: 'Son düşman: şövalye çağırır, kalkan açar, yeri sarsar, kuleleri lanetler, öfkelenir', ab: { summon: { t: 'knight', n: 2, cd: 14 }, shield: { cd: 17, t: 3 }, slam: { cd: 10, r: 70, stun: 1.5, dmg: 40 }, hex: { cd: 12, t: 3.5, r: 210 }, rage: { cd: 20, t: 4 } } },
+  // Sefer sonu bossu: dev boy, iki bar (önce zırh erir, sonra can). Zırh varken sersemlemez; zırh kırılınca
+  // 2. evreye geçer: lejyon çağırır, hızlanır, yetenekleri sıklaşır. Canı yarıya inince ikinci bir lejyon gelir.
+  overlord:     { name: 'Kara Lord', base: 'knight', h: 86, hp: 4600, speed: 8.2, armor: 0.35, mr: 0.3, gold: 500, dmg: [45, 70], rate: 1.5, lives: 20, r: 26, boss: true, chief: true, hpK: 1.25,
+    plate: 2600, phase2: { speed: 1.3, cd: 0.7 }, legion: [['knight', 2], ['orc', 3], ['bandit', 3], ['bat', 3]],
+    desc: 'Son düşman: önce zırhı kırılmalı. Zırhı düşünce öfkelenir ve lejyonunu çağırır', ab: { summon: { t: ['knight', 'orc', 'bandit'], n: 3, cd: 12 }, shield: { cd: 17, t: 2.5 }, slam: { cd: 9, r: 75, stun: 1.5, dmg: 45 }, hex: { cd: 11, t: 3.5, r: 220 }, rage: { cd: 20, t: 4 } } },
 });
 // Bosslar yalnız gelmez: yanında muhafızlarıyla birlikte yürür
 const BOSS_ESCORT = {
@@ -419,7 +423,7 @@ const BOSS_ESCORT = {
   dark_shaman: [['shaman', 1], ['bandit', 3]],
   death_knight: [['knight', 2], ['bandit', 2]],
   troll_king: [['orc', 4]],
-  overlord: [['knight', 3], ['orc', 2]],
+  overlord: [['knight', 3], ['orc', 3], ['shaman', 1]],
 };
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord'];
 LEVELS.forEach((lv, i) => {
@@ -487,3 +491,15 @@ for (const id in HERO_SKILLS) {
 // Kingdom Rush usulü: kule her seviyede yeni bir ad alır
 const TOWER_TITLES = {'archer': ['Okçu Kulesi', 'Nişancı Kulesi', 'Keskin Nişancı Kalesi'], 'barracks': ['Milis Kışlası', 'Piyade Kışlası', 'Şövalye Kışlası'], 'mage': ['Çırak Kulesi', 'Büyücü Kulesi', 'Yıldırım Ustası Kulesi'], 'artillery': ['Topçu Kulesi', 'Ağır Topçu', 'Büyük Bombard']};
 for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
+// Uzmanlık: son seviyede iki yetenekten biri seçilir (ilk alınan yetenek yolu belirler, diğeri kapanır).
+// Seçilen yol kulenin adını ve görünüşünü değiştirir: askerlerin kostümü, okçuların kıyafeti, kule süsleri.
+const SPEC = {
+  shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
+  blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
+  poison: { title: 'Zehir Avcıları',  who: 'Maskeli avcılar, yeşil zehirli oklar' },
+  snipe:  { title: 'Kartal Göz Kalesi', who: 'Şapkalı nişancılar, uzun kara yay' },
+  frost:  { title: 'Ayaz Kulesi',     who: 'Buz kristalleri, mavi küre' },
+  blast:  { title: 'Arkan Kulesi',    who: 'Mor arkan küre, dönen rünler' },
+  napalm: { title: 'Ateş Bataryası',  who: 'Kızgın namlu, alevli sancaklar' },
+  double: { title: 'İkiz Toplar',     who: 'Yan yana iki top' },
+};
