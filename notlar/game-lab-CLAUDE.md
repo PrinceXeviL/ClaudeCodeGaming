@@ -36,6 +36,7 @@ Caner'in üçüncü projesi (Backtest Lab / Chart Trials ve Maya Vale'den tamame
   pillow gerekir) arka planı siler, parçalar. 1. sefer betikleri (gorsel_isle, sprite_uret, doku_uret)
   artık `varliklar/cikti/` içine yazar (canlı img/ manifestini ezmesinler; gerekeni elle kopyala).
   `sefer2_isle.py` doğrudan `sinir-kalesi/img/` içine yazar ve manifest/meta'ya ekler.
+  Yol dokuları: `ham/yol_toprak.jpg`, `yol_kum.jpg` → `yol_isle.py` (dikişsiz karo) → `img/road_dirt.jpg`, `road_sand.jpg`.
   Oyun içi boyutlar `game.js` başında: CHAR_H, TOWER_K, TREE_K, ROCK_K.
   Önizleme: `/onizleme.html?h=200&f=tower`.
 - Kale: her bölümde `castle` konumu (data.js), yollar kale kapısında biter; düşman kapıda bir kez vurur,

@@ -460,7 +460,7 @@ function bgRes() {
 // Yol yüzeyi ayrıntısı: ayrı katmanda çizilir, yol şekline kırpılıp zemine basılır.
 // Tonal lekeler (dövülmüş toprak), çatlaklar ve yer yer gömülü yassı taş kümeleri.
 // Kendi rastgele dizisini kullanır; ağaç/kaya yerleşimi değişmesin.
-function drawRoadDetail(g, c, res, paths, th, rr) {
+function drawRoadDetail(g, c, res, paths, th, rr, painted) {
   const R = ROAD_K;
   const det = document.createElement('canvas'); det.width = c.width; det.height = c.height;
   const d = det.getContext('2d'); d.scale(res, res);
@@ -472,6 +472,7 @@ function drawRoadDetail(g, c, res, paths, th, rr) {
       d.fillStyle = dark ? hex(th.road[2], 0.05 + rr() * 0.07) : `rgba(255,244,214,${0.05 + rr() * 0.06})`;
       d.beginPath(); d.ellipse(q.x, q.y, 5 + rr() * 13, 3 + rr() * 7, rr() * 3, 0, Math.PI * 2); d.fill();
     }
+    if (painted) continue; // boyalı dokuda çatlak ve taş zaten var; yalnız lekeler tekrarı kırar
     // çatlaklar: kırık çizgi, altında ince açık kenar (derinlik)
     for (let s = 10 + rr() * 30; s < p.total; s += 26 + rr() * 46) {
       const q = pathPos(p, s, (rr() - 0.5) * 30 * R);
@@ -550,16 +551,25 @@ function renderBackground(lv, paths, res = 2) {
   strokePath(56 * R, 'rgba(40,28,12,0.18)');
   strokePath(50 * R, th.road[2]);
   strokePath(46 * R, th.road[0]);
-  const roadTex = spr('road');
+  // Boyalı yol dokusu (Gemini): çölde taş döşemeli kum, diğer temalarda toprak. Yoksa eski üretilmiş doku.
+  const desert = th.tex === 'desert';
+  const painted = spr(desert ? 'road_sand' : 'road_dirt');
+  const roadTex = painted || spr('road');
   if (roadTex) {
     const pat = g.createPattern(roadTex, 'repeat');
-    pat.setTransform(new DOMMatrix().scale(0.5));
+    pat.setTransform(new DOMMatrix().scale(painted ? (desert ? 0.24 : 0.3) : 0.5));
     strokePath(42 * R, pat);
-    if (th.roadTint) strokePath(42 * R, th.roadTint); // çölde yol kum rengine boyanır
+    if (painted) {
+      // doku tonu temaya uyar: rengi temanın yol renginden, açıklık/ayrıntı dokudan gelir
+      g.save(); g.globalCompositeOperation = 'color'; g.globalAlpha = desert ? 0.15 : 0.55;
+      strokePath(42 * R, th.road[1]); g.restore();
+    } else if (th.roadTint) strokePath(42 * R, th.roadTint); // çölde yol kum rengine boyanır
   } else strokePath(42 * R, th.road[1]);
   // kenara doğru koyulaşan iç gölge: kenar yumuşak bir eğimle çimene karışır
-  for (let k = 0; k < 4; k++) strokePath((42 - k * 6) * R, `rgba(255,240,205,${0.035 + k * 0.012})`);
-  strokePath(14 * R, 'rgba(255,244,215,0.08)');
+  // (boyalı dokuda hafif tutulur, yoksa doku ayrıntısı soluklaşır)
+  const lit = painted ? 0.35 : 1;
+  for (let k = 0; k < 4; k++) strokePath((42 - k * 6) * R, `rgba(255,240,205,${(0.035 + k * 0.012) * lit})`);
+  strokePath(14 * R, `rgba(255,244,215,${0.08 * lit})`);
   // Kavşaklar: bir yolun kenar süsleri (taş, çimen tutamı) başka bir yolun üstüne düşmesin.
   // Ortak gövdede tekerlek izlerini yalnız ilk yol çizer, öbürü onun yüzeyine iz bırakmaz.
   const onRoad = (p, x, y, onlyBefore) => {
@@ -569,7 +579,7 @@ function renderBackground(lv, paths, res = 2) {
     }
     return false;
   };
-  drawRoadDetail(g, c, res, paths, th, seeded(lv.name.length * 131 + lv.plots.length * 7));
+  drawRoadDetail(g, c, res, paths, th, seeded(lv.name.length * 131 + lv.plots.length * 7), !!painted);
   // çakıllar ve kenar taşları
   for (const p of paths) {
     for (let d = 0; d < p.total; d += 7) {
