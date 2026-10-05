@@ -21,8 +21,8 @@ Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4U
 - `sinir-kalesi/tools/` — Playwright test araçları (sunucu 8765'te açıkken `node tools/...`):
   - `akis-testi.js` menü→bölüm→kule kur akışı, sayfa hatalarını yazar
   - `denge-botu.js [bölümler] [kahramanlar]` ör. `node tools/denge-botu.js 0,4,9 commander,caner` — botla bölüm oynatır
-  - `arsa-denetim.js` (Playwright gerekmez: `node tools/arsa-denetim.js js/data.js`) arsaların dalga düğmesine
-    ve arayüze taşmadığını denetler, taşanlar için yol kenarında yeni yer önerir. Yeni bölüm ekleyince çalıştır.
+  - `arsa-denetim.js` (Playwright gerekmez: `node tools/arsa-denetim.js js/data.js [--apply]`) arsaların dalga düğmesine,
+    arayüze ve yola (ROAD_MIN=66, yol genişleyince büyüt) taşmadığını denetler, yeni yer önerir; --apply data.js'e yazar.
   - `fps.js` yoğun sahnede FPS; `magenta-sil.js girdi.jpg cikti.png` magenta zeminli görseli saydamlaştırır
 - `tasarim/` tasarım notları ve Gemini promptları, `arastirma/`, `notlar/` (Game Lab ana notu: `notlar/game-lab-CLAUDE.md`).
 - `varliklar/` ham Gemini görselleri (`ham/`) ve işleme betikleri.
@@ -36,9 +36,10 @@ ve dokununca bilgi paneli, yıldırım atan büyücü kulesi, 3B top, seviyeli o
 yol girişinde küçük dalga işareti. Bot dengesi: 1–10. bölümler kazanılıyor, 10. bölüm en zor.
 
 Sistemler (6 Eki): bölüm haritası (EPISODES[].nodes: bayrak yerleri, noktalı patika, bayrağa dokununca bölüm kartı),
-kahraman güçleri (HERO_ULT: takımdaki her kahramanın sol altta hedefli düğmesi; meteor kaldırıldı),
-takviye kaleden çıkıp yol boyunca yürür (marchSoldier), kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE),
-yol dışı esprili NPC'ler (NPC_THEME, drawNpc; dokununca konuşur), 6 evreli saldırı/yürüyüş/ölüm animasyonu,
+kahraman güçleri (HERO_ULT: takımdaki her kahramanın sol altta hedefli düğmesi; meteor ve takviye düğmesi yok),
+paralı askerler (MERCS: ilk dalgadan sonra kale her dakika 2 asker çıkarır, yol boyunca yavaş yürürler; SOLDIER_LOOK.merc),
+kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE), yol kenarı dalgalı (roadVary/roadShape),
+NPC sistemi hazır ama kapalı (NPC_ON=false; Gemini görselleriyle yeniden yapılacak), 6 evreli saldırı/yürüyüş/ölüm animasyonu,
 sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).
 
 Her değişiklikten sonra: akış testi + gerekirse denge botu, sonra commit/push.

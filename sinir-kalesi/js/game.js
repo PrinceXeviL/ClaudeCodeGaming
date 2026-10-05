@@ -53,7 +53,7 @@ const CHAR_H = {
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 // Ortak ölçekler: UNIT_K tüm birimler (asker, kahraman, düşman), BUILD_K binalar (kule, kale, arsa),
 // ROAD_K yol genişliği. ZOOM_MAX: en yakın zoom (arka plan dokusunun keskin kaldığı sınır).
-const UNIT_K = 0.8, BUILD_K = 0.81, ROAD_K = 1.45, ZOOM_MAX = 2.5;
+const UNIT_K = 0.8, BUILD_K = 0.81, ROAD_K = 1.74, ZOOM_MAX = 2.5;
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
 const TOWER_K = 0.12 * BUILD_K, TREE_K = 0.105, ROCK_K = 0.075;
 const TOWER_TOP = { archer: 0.86, barracks: 0.7, mage: 0.92, artillery: 0.74 }; // mermi çıkış yüksekliği
@@ -492,7 +492,10 @@ const NPC_SAY = {
   carpet: ['Halı uçuyor ama yakıtı pahalı.', 'Çay ister misin? Uçarken içilir.', 'Aşağıdakiler hep kavga ediyor.'],
   sleeper: ['Zzz… nöbetteyim… Zzz…', 'Kimse geçmedi, yemin ederim!', 'Arkadaki el benim değil.'],
 };
+// Şimdilik kapalı: NPC'ler Gemini görselleriyle yeniden tasarlanacak (yerleşim ve konuşma sistemi hazır kalır).
+const NPC_ON = false;
 function placeNpcs(lv, paths, blocked) {
+  if (!NPC_ON) return [];
   const rr = seeded(lv.name.length * 53 + lv.castle[0] * 3 + 11), out = [];
   for (const type of NPC_THEME[lv.theme] || []) {
     const R = NPC_R[type] || 26;
@@ -813,6 +816,31 @@ const THEMES = {
 function bgRes() {
   return clamp(Math.ceil(view.scale * view.dpr * ZOOM_MAX), 2, 4);
 }
+// Yol kenarı doğal dursun: iki kenar birbirinden bağımsız dalgalanır (uzun yumuşak kıvrım + kısa çıkıntılar);
+// yol yer yer genişleyip daralır, hafifçe asimetrik olur. Fazlar yola özgüdür, her çizimde aynı çıkar.
+function roadVary(p, d, side) {
+  const f = p.vph || (p.vph = (() => { const r = seeded(Math.round(p.total * 7) + p.pts.length * 13); return [0, 1, 2, 3, 4, 5].map(() => r() * 6.283); })());
+  const k = side > 0 ? 0 : 3;
+  return 1 + 0.085 * Math.sin(d * 0.017 + f[k]) + 0.05 * Math.sin(d * 0.058 + f[k + 1]) + 0.025 * Math.sin(d * 0.16 + f[k + 2]);
+}
+// w genişliğindeki yol şeridi: sol kenar ileri, sağ kenar geri izlenir (tüm şeritler aynı yönde döner,
+// kavşaklarda üst üste binenler tek parça dolar); kale kapısında yuvarlak biter
+function roadShape(g, paths, w) {
+  g.beginPath();
+  for (const p of paths) {
+    const Lp = [], Rp = [];
+    for (let d = 0; ; d = Math.min(p.total, d + 4)) {
+      Lp.push(pathPos(p, d, -w / 2 * roadVary(p, d, -1))); Rp.push(pathPos(p, d, w / 2 * roadVary(p, d, 1)));
+      if (d >= p.total) break;
+    }
+    g.moveTo(Lp[0].x, Lp[0].y); for (const q of Lp) g.lineTo(q.x, q.y);
+    for (let i = Rp.length - 1; i >= 0; i--) g.lineTo(Rp[i].x, Rp[i].y);
+    g.closePath();
+    const e = pathPos(p, p.total), r = w / 2 * (roadVary(p, p.total, 1) + roadVary(p, p.total, -1)) / 2;
+    g.moveTo(e.x + r, e.y); g.arc(e.x, e.y, r, 0, Math.PI * 2);
+  }
+}
+
 // Yol yüzeyi ayrıntısı: ayrı katmanda çizilir, yol şekline kırpılıp zemine basılır.
 // Tonal lekeler (dövülmüş toprak), çatlaklar ve yer yer gömülü yassı taş kümeleri.
 // Kendi rastgele dizisini kullanır; ağaç/kaya yerleşimi değişmesin.
@@ -858,8 +886,7 @@ function drawRoadDetail(g, c, res, paths, th, rr, painted) {
   }
   // yol şekline kırp
   d.globalCompositeOperation = 'destination-in';
-  d.lineJoin = 'round'; d.lineCap = 'round'; d.lineWidth = 40 * R; d.strokeStyle = '#000';
-  d.beginPath(); for (const p of paths) p.pts.forEach((q, i) => i ? d.lineTo(q[0], q[1]) : d.moveTo(q[0], q[1])); d.stroke();
+  d.fillStyle = '#000'; roadShape(d, paths, 40 * R); d.fill();
   g.drawImage(det, 0, 0, W, H);
 }
 
@@ -899,8 +926,8 @@ function renderBackground(lv, paths, res = 2) {
 
   // yol: yumuşak gölge → koyu toprak kenar → doku → ortada açık aşınma izi → tekerlek izleri
   g.lineJoin = 'round'; g.lineCap = 'round';
-  const tracePaths = () => { g.beginPath(); for (const p of paths) p.pts.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); };
-  const strokePath = (w, col) => { g.strokeStyle = col; g.lineWidth = w; tracePaths(); g.stroke(); };
+  // yol katmanları, kenarları doğal dalgalanan dolu şekiller olarak çizilir (roadShape)
+  const strokePath = (w, col) => { g.fillStyle = col; roadShape(g, paths, w); g.fill(); };
   g.save(); g.shadowColor = 'rgba(30,20,8,0.55)'; g.shadowBlur = 16; g.shadowOffsetY = 3;
   const R = ROAD_K;
   strokePath(52 * R, th.road[2]); g.restore();
@@ -944,7 +971,7 @@ function renderBackground(lv, paths, res = 2) {
       g.beginPath(); g.arc(q.x, q.y, 0.8 + rnd() * 1.6, 0, Math.PI * 2); g.fill();
     }
     for (let d = 0; d < p.total; d += 16 + rnd() * 30) {
-      const side = rnd() < 0.5 ? -1 : 1, q = pathPos(p, d, side * (22 * R + rnd() * 3)), r = 1.8 + rnd() * 2.4;
+      const side = rnd() < 0.5 ? -1 : 1, q = pathPos(p, d, side * (22 * R * roadVary(p, d, side) + rnd() * 3)), r = 1.8 + rnd() * 2.4;
       if (onRoad(p, q.x, q.y)) { rnd(); continue; } // rastgele dizi kaymasın diye aynı sayıda çekilir
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q.x + 1, q.y + 1.2, r * 1.2, r * 0.8, 0, 0, Math.PI * 2); g.fill();
       g.fillStyle = th.stone[0]; g.beginPath(); g.ellipse(q.x, q.y, r * 1.2, r * 0.85, rnd(), 0, Math.PI * 2); g.fill();
@@ -966,7 +993,7 @@ function renderBackground(lv, paths, res = 2) {
     for (let d = 0; d < p.total; d += 3.2) {
       for (const side of [-1, 1]) {
         if (rnd() < 0.35) continue;
-        const q = pathPos(p, d, side * (20 * R + rnd() * 6));
+        const q = pathPos(p, d, side * (20 * R * roadVary(p, d, side) + rnd() * 6));
         tuft(q.x, q.y + 2, 0.7 + rnd() * 0.5, rnd() < 0.5 ? th.tuft[0] : th.tuft[1], onRoad(p, q.x, q.y));
       }
     }
@@ -974,7 +1001,7 @@ function renderBackground(lv, paths, res = 2) {
 
   let npcs = [];
   const blocked = (x, y, pad) => {
-    if (nearestOnPaths(paths, x, y).d < 36 + 21 * (R - 1) + pad) return true;
+    if (nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad) return true; // dalgalı kenar payı dahil
     for (const n of npcs) if (dist(x, y, n.x, n.y) < (NPC_R[n.type] || 26) + pad) return true;
     for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
     if (y < 52 && (x < 300 || x > 860)) return true;
@@ -1090,7 +1117,7 @@ function startLevel(idx) {
     parts: [], decals: [], zones: [], coins: [], traps: [], shakeT: 0, shakeAmp: 0, shakeDur: 1, ambT: 0,
     plots: lv.plots.map(([x, y]) => ({ x, y, tower: null })),
     heroes: [],
-    spells: { reinforce: 0 },
+    spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
     stars: 0, t: 0, starFx: 0,
     castle: { x: lv.castle[0], y: lv.castle[1], shake: 0, flash: 0, smokeT: 0, lvl: 0, archers: [] },
@@ -1705,8 +1732,9 @@ function damageSoldier(s, amount) {
       return;
     }
     s.dead = true; s.hp = 0;
-    G.effects.push({ kind: 'corpse', name: s.hero ? s.def.sprite : s.militia ? 'militia' : 'soldier', rig: s.hero ? s.def.sprite : null,
-      h: s.hero ? s.def.h * UNIT_K : CHAR_H[s.militia ? 'militia' : 'soldier'], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
+    const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
+    G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
+      h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : 0;
     releaseSoldier(s);
   }
@@ -2858,44 +2886,51 @@ function updateProjectile(pr, dt) {
 }
 
 // ---------- büyüler ve kahraman güçleri ----------
-// Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1) ve takviye
-const spellIds = () => [...G.heroes.map((h, i) => 'ult' + i), 'reinforce'];
+// Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
+const spellIds = () => G.heroes.map((h, i) => 'ult' + i);
 const spellBtn = (i) => ({ x: 168 + i * 58, y: H - 34, r: 23 });
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
-  if (id === 'reinforce') return { name: SPELLS.reinforce.name, cd: SPELLS.reinforce.cd * fast };
   const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
   return { name: U.name, cd: U.cd * fast, hero: h, U };
 }
 function castSpell(id, x, y) {
   const ur = upgRank('spells');
-  if (id === 'reinforce') {
-    // askerler kalenin kapısından çıkar ve yol boyunca yürüyerek hedefe gider; yolda düşmana rastlarsa orada dövüşür
-    const S = SPELLS.reinforce, q = nearestOnPaths(G.paths, x, y);
-    const p = q.p || G.paths[0], goal = q.along ?? 0, n = S.count + (ur >= 2 ? 1 : 0);
-    for (let i = 0; i < n; i++) {
-      const off = (i - (n - 1) / 2) * 9, st = pathPos(p, p.total, off);
-      const s = { militia: true, x: st.x, y: st.y, rx: x + off, ry: y, hp: S.hp, maxHp: S.hp, dmg: S.dmg, armor: 0,
-        rate: 1, speed: 60, engage: 60, atk: 0, target: null, dead: false, face: -1, anim: 0, slot: i,
-        march: { p, d: p.total + i * 14, goal, off } };
-      s.life = S.life + (p.total - goal) / (S.march * G.wspd);
-      G.soldiers.push(s);
-    }
-    G.effects.push({ kind: 'dust', x: G.castle.x, y: G.castle.y, t: 0, dur: 0.5 });
-    G.castle.flash = 0.15;
-    sfx('reinforce');
-  } else castUlt(G.heroes[+id.slice(3)], x, y);
+  castUlt(G.heroes[+id.slice(3)], x, y);
   G.spells[id] = spellInfo(id).cd;
 }
-// takviye askerinin yürüyüşü: kaleden hedefe yol üzerinde geri geri
+// Paralı askerler: kale kapısından çıkıp en ilerlemiş düşmanın geldiği yol boyunca yürürler
+function spawnMercs() {
+  const n = MERCS.count + (upgRank('spells') >= 2 ? 1 : 0);
+  let p = G.paths[0], best = -1;
+  for (const e of G.enemies) if (!e.dead && e.d / e.p.total > best) { best = e.d / e.p.total; p = e.p; }
+  const goal = Math.max(0, p.total - MERCS.guard);
+  for (let i = 0; i < n; i++) {
+    const off = (i - (n - 1) / 2) * 10, st = pathPos(p, p.total, off), g0 = pathPos(p, goal, off);
+    G.soldiers.push({ militia: true, merc: true, x: st.x, y: st.y, rx: g0.x, ry: g0.y, hp: MERCS.hp, maxHp: MERCS.hp, dmg: MERCS.dmg, armor: MERCS.armor,
+      rate: 1, speed: 60, engage: 60, atk: 0, target: null, dead: false, face: -1, anim: 0, slot: i, life: MERCS.life,
+      march: { p, d: p.total + i * 16, goal, off } });
+  }
+  G.effects.push({ kind: 'dust', x: G.castle.x, y: G.castle.y, t: 0, dur: 0.5 });
+  G.castle.flash = 0.15;
+  floatText(G.castle.x - 10, G.castle.y - 70, 'Paralı askerler!', '#ffe27a');
+  sfx('reinforce');
+}
+function updateMercs(dt) {
+  if (G.wave <= 0 || G.lives <= 0) return;
+  if (G.mercT == null) G.mercT = MERCS.first;
+  G.mercT -= dt;
+  if (G.mercT <= 0) { spawnMercs(); G.mercT = MERCS.every * (upgRank('spells') >= 3 ? 0.75 : 1); }
+}
+// paralı askerin yürüyüşü: kaleden hedefe yol üzerinde geri geri
 function marchSoldier(s, dt) {
-  const m = s.march, sp = SPELLS.reinforce.march * G.wspd;
+  const m = s.march, sp = MERCS.march * G.wspd;
   // yolda (önünde) bir düşman varsa yürüyüşü bırakıp orada dövüşür
   const foe = G.enemies.find(e => !e.dead && !e.def.flying && !e.under && dist(e.x, e.y, s.x, s.y) < 34);
   if (foe || m.d <= m.goal) { s.march = null; if (foe) { s.rx = s.x; s.ry = s.y; } return; }
   m.d = Math.max(m.goal, m.d - sp * dt);
   const q = pathPos(m.p, Math.min(m.d, m.p.total), m.off);
-  s.face = q.x < s.x ? -1 : 1; s.x = q.x; s.y = q.y; s.anim += dt * 1.6;
+  s.face = q.x < s.x ? -1 : 1; s.x = q.x; s.y = q.y; s.anim += dt;
 }
 
 // Kahraman gücü: seviyeyle hasar %15 artar, yıldız gelişmesiyle +%20
@@ -2968,6 +3003,7 @@ function update(dt) {
 
   castleAmbient(dt);
   updateCastleArchers(dt);
+  updateMercs(dt);
   for (const n of G.npcs) if (n.sayT > 0) n.sayT -= dt;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
   for (const t of G.towers) updateTower(t, dt);
@@ -3680,6 +3716,9 @@ SOLDIER_LOOK.guard = { tunic: ['#e6edf6', '#7d8a9c'], plate: true, sleeve: ['#df
   helm: ['#eef3fa', '#6d7a8c'], plume: ['#5a9cff', '#1a3a8a'], cape: ['#2a4a9a', '#0e1e48'], blade: ['#ffffff', '#b8c2ce'], hilt: '#1c2e5a', guard: '#cfdcf0', bladeLen: 11, shield: 'tower', head: 2 };
 SOLDIER_LOOK.berserk = { tunic: ['#d8362c', '#6a0e0c'], mail: ['#8a7460', '#3e3228'], sleeve: ['#f0b888', '#b0704a'], pants: ['#3a2a22', '#1e140e'], boot: ['#4a2e14', '#24140a'], belt: '#2a1206', trim: '#ffb040',
   helm: ['#a8b0bc', '#3e4652'], plume: ['#3a2a2a', '#0a0606'], cape: ['#4a0c0a', '#1a0404'], blade: ['#fff8ec', '#c0a890'], hilt: '#3a0e08', guard: '#ffb040', bladeLen: 15, offhand: true, head: 'crest' };
+// Paralı asker: yamalı yeşil cüppe altında eski zincir zırh, burun korumalı miğfer, kahverengi pelerin, tahta kalkan
+SOLDIER_LOOK.merc = { tunic: ['#6a7a3a', '#33401a'], mail: ['#9a968c', '#4e4a44'], sleeve: ['#8a6a44', '#4a3018'], pants: ['#5a4030', '#2e2018'], boot: ['#3a2618', '#1a100a'], belt: '#2a1608', trim: '#d8a040',
+  helm: ['#c4beb2', '#5e5a52'], plume: ['#5a4434', '#1e140c'], cape: ['#7a4a22', '#34180a'], blade: ['#ece8de', '#8a8478'], hilt: '#3a2010', guard: '#a8946a', bladeLen: 11, head: 1, shieldLvl: 0 };
 const SOL_OUT = '#22140a';
 function paintSoldierBody(g, L, lvl) {
   const fs = (fill) => { g.fillStyle = fill; g.fill(); g.stroke(); };
@@ -3803,7 +3842,7 @@ function paintSoldierShield(g, L, lvl) {
     g.fillStyle = 'rgba(255,255,255,0.28)'; g.beginPath(); g.ellipse(-2.6, -5.6, 2.2, 1.1, -0.4, 0, Math.PI * 2); g.fill();
     return;
   }
-  if (lvl === 0) {
+  if ((L.shieldLvl ?? lvl) === 0) {
     g.beginPath(); g.arc(0, 0, 4.6, 0, Math.PI * 2); g.fillStyle = archGrad(g, -4, -4, 4, 4, ['#b07a40', '#6a4420']); g.fill(); g.stroke();
     g.strokeStyle = 'rgba(40,20,6,0.45)'; g.lineWidth = 0.4; for (const x of [-2, 0, 2]) { g.beginPath(); g.moveTo(x, -4.2); g.lineTo(x, 4.2); g.stroke(); }
     g.strokeStyle = '#8a8e96'; g.lineWidth = 0.9; g.beginPath(); g.arc(0, 0, 4.1, 0, Math.PI * 2); g.stroke();
@@ -4140,13 +4179,13 @@ function drawSoldier(s) {
   const bob = Math.abs(Math.sin(s.anim * 9)) * 1.5;
   const fighting = s.target && dist(s.x, s.y, s.target.x, s.target.y) < 21;
   const r = s.hero ? 8 : 5.5;
-  const name = s.hero ? s.def.sprite : s.militia ? 'militia' : 'soldier';
-  // kışla askeri: seviyeye göre zırh/silah değişen çizim
+  const name = s.hero ? s.def.sprite : s.merc ? 'soldier' : s.militia ? 'militia' : 'soldier';
+  // kışla askeri (ve paralı asker): seviyeye göre zırh/silah değişen çizim
   if (name === 'soldier') {
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
     const ab = s.tower && s.tower.ab;
-    const look = s.tower && s.tower.spec === 'shield' ? 'guard' : s.tower && s.tower.spec === 'blade' ? 'berserk' : s.gear || 0;
+    const look = s.merc ? 'merc' : s.tower && s.tower.spec === 'shield' ? 'guard' : s.tower && s.tower.spec === 'blade' ? 'berserk' : s.gear || 0;
     paintSoldier(ctx, { x: s.x, y: s.y }, 0.72 * UNIT_K, s.face || 1, look, walking ? s.anim : 0, fighting ? atkPhase(s.rate, s.atk) : null, (s.slot || 0) * 1.7,
       ab ? { blade: !!ab.blade, wall: !!ab.shield } : null);
     if (s.flash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 12, 14, '255,255,255', s.flash * 6); ctx.restore(); }
@@ -7372,8 +7411,7 @@ function worldTap(x, y) {
   if (G.mode) {
     const m = G.mode; G.mode = null;
     if (m.kind === 'spell') {
-      if (m.id === 'reinforce') { const n = nearestOnPaths(G.paths, x, y); if (n.d > 60) { sfx('error'); return; } castSpell(m.id, n.x, n.y); }
-      else castSpell(m.id, x, y);
+      castSpell(m.id, x, y);
     } else if (m.kind === 'rally') {
       const t = m.tower;
       const n = nearestOnPaths(G.paths, x, y);

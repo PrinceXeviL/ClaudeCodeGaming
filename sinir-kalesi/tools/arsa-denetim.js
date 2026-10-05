@@ -1,8 +1,10 @@
 // Arsa denetimi: kule gövdesi (arsanın ~80 px yukarısına uzanır) dalga düğmesine ve arayüze taşmasın.
-// Kullanım: node tools/arsa-denetim.js js/data.js [düzeltilmiş.json]  → ihlalleri ve önerilen yeni yerleri yazar
+// Ayrıca arsa yolun kenarına taşmasın: merkezi yol ortasından en az ROAD_MIN px uzakta olmalı (yol genişleyince büyüt).
+// Kullanım: node tools/arsa-denetim.js js/data.js [düzeltilmiş.json | --apply]  → ihlalleri ve önerilen yeni yerleri yazar;
+// --apply önerilen yerleri doğrudan data.js'e yazar.
 const fs = require('fs');
 eval(fs.readFileSync(process.argv[2], 'utf8') + ';global.LEVELS=LEVELS;');
-const W = 960, H = 540, ROAD = 33;
+const W = 960, H = 540, ROAD = 33, ROAD_MIN = +(process.env.ROAD_MIN || 66);
 const dist = (a, b, c, d) => Math.hypot(a - c, b - d);
 function smoothPts(pts, step = 5) {
   if (pts.length < 3) return pts;
@@ -46,16 +48,16 @@ LEVELS.forEach((lv, li) => {
   const castleBad = (x, y) => Math.abs(x - lv.castle[0]) < 90 && y > lv.castle[1] - 140 && y < lv.castle[1] + 50;
   const plots = lv.plots.map(p => p.slice());
   plots.forEach((pl, k) => {
-    const why = bad(pl[0], pl[1], btns);
+    const why = bad(pl[0], pl[1], btns) || (dPath(pl[0], pl[1]) < ROAD_MIN ? 'yola yakın' : null);
     if (!why) return;
     // en yakın uygun yer: yol kenarı adayları (yoldan 60-95 px), diğer arsalara en az 72 px
     let best = null, bd = 1e9;
     for (const p of ps) for (let i = 0; i < p.length; i += 2) {
       const a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1;
-      for (const s of [-1, 1]) for (const off of [62, 70, 78, 86]) {
+      for (const s of [-1, 1]) for (const off of [ROAD_MIN, ROAD_MIN + 6, ROAD_MIN + 12, ROAD_MIN + 18, ROAD_MIN + 26]) {
         const x = Math.round(p[i][0] - dy / l * off * s), y = Math.round(p[i][1] + dx / l * off * s);
         if (bad(x, y, btns) || castleBad(x, y)) continue;
-        const dp = dPath(x, y); if (dp < 58 || dp > 95) continue;
+        const dp = dPath(x, y); if (dp < ROAD_MIN || dp > ROAD_MIN + 36) continue;
         if (plots.some((o, j) => j !== k && Math.hypot(o[0] - x, (o[1] - y) * 1.3) < 72)) continue;
         const d = Math.hypot(x - pl[0], y - pl[1]);
         if (d < bd) { bd = d; best = [x, y]; }
@@ -67,5 +69,9 @@ LEVELS.forEach((lv, li) => {
   lv._fixed = plots;
 });
 for (const f of fixes) console.log(`${f.li + 1}. bölüm arsa ${f.k}: [${f.from}] (${f.why}) -> ${f.to ? '[' + f.to + ']' : 'YER YOK'}`);
-if (process.argv[3]) fs.writeFileSync(process.argv[3], JSON.stringify(LEVELS.map(l => l._fixed)));
+if (process.argv[3] === '--apply') {
+  let src = fs.readFileSync(process.argv[2], 'utf8'), n = 0;
+  src = src.replace(/plots: \[\[[^\n]*?\]\],/g, (m) => { const P = LEVELS[n++]._fixed; return 'plots: ' + JSON.stringify(P).replace(/,/g, ', ').replace(/\], \[/g, '], [') + ','; });
+  fs.writeFileSync(process.argv[2], src); console.log(n + ' bölümün arsaları yazıldı');
+} else if (process.argv[3]) fs.writeFileSync(process.argv[3], JSON.stringify(LEVELS.map(l => l._fixed)));
 if (!fixes.length) console.log("Tüm arsalar uygun.");

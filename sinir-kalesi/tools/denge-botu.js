@@ -31,7 +31,6 @@ const { chromium } = require('playwright');
         // büyüler
         // kahraman güçleri: kalabalığın üstüne
         for (const id of ['ult0', 'ult1']) if (G.spells[id] != null && G.spells[id] <= 0) { const [e, n] = dens(); if (e && n >= 4) g.cast(id, e.x, e.y); }
-        if (G.spells.reinforce <= 0) { const e = G.enemies.filter(e => !e.dead && !e.def.flying).sort((a, b) => b.d / b.p.total - a.d / a.p.total)[0]; if (e && e.d / e.p.total > 0.55) g.cast('reinforce', e.x, e.y); }
         g.sim(0.5); time += 0.5;
       }
       return { lvl: lvl + 1, result: g.overlay, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time) };
