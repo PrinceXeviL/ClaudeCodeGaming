@@ -457,6 +457,55 @@ const THEMES = {
 function bgRes() {
   return clamp(Math.ceil(view.scale * view.dpr * ZOOM_MAX), 2, 4);
 }
+// Yol yüzeyi ayrıntısı: ayrı katmanda çizilir, yol şekline kırpılıp zemine basılır.
+// Tonal lekeler (dövülmüş toprak), çatlaklar ve yer yer gömülü yassı taş kümeleri.
+// Kendi rastgele dizisini kullanır; ağaç/kaya yerleşimi değişmesin.
+function drawRoadDetail(g, c, res, paths, th, rr) {
+  const R = ROAD_K;
+  const det = document.createElement('canvas'); det.width = c.width; det.height = c.height;
+  const d = det.getContext('2d'); d.scale(res, res);
+  const hex = (h, a) => `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;
+  for (const p of paths) {
+    // tonal lekeler: koyu ezilmiş ve açık kurumuş bölgeler
+    for (let s = 0; s < p.total; s += 7) {
+      const q = pathPos(p, s, (rr() - 0.5) * 34 * R), dark = rr() < 0.55;
+      d.fillStyle = dark ? hex(th.road[2], 0.05 + rr() * 0.07) : `rgba(255,244,214,${0.05 + rr() * 0.06})`;
+      d.beginPath(); d.ellipse(q.x, q.y, 5 + rr() * 13, 3 + rr() * 7, rr() * 3, 0, Math.PI * 2); d.fill();
+    }
+    // çatlaklar: kırık çizgi, altında ince açık kenar (derinlik)
+    for (let s = 10 + rr() * 30; s < p.total; s += 26 + rr() * 46) {
+      const q = pathPos(p, s, (rr() - 0.5) * 30 * R);
+      let x = q.x, y = q.y, a = rr() * Math.PI * 2;
+      const pts = [[x, y]], n = 3 + Math.floor(rr() * 3);
+      for (let k = 0; k < n; k++) { a += (rr() - 0.5) * 1.4; const l = 2.5 + rr() * 4; x += Math.cos(a) * l; y += Math.sin(a) * l; pts.push([x, y]); }
+      const line = (dx, dy) => { d.beginPath(); pts.forEach((t, i) => i ? d.lineTo(t[0] + dx, t[1] + dy) : d.moveTo(t[0] + dx, t[1] + dy)); d.stroke(); };
+      d.lineCap = 'round'; d.lineJoin = 'round';
+      d.strokeStyle = 'rgba(255,240,210,0.28)'; d.lineWidth = 0.9; line(0.5, 0.7);
+      d.strokeStyle = hex(th.road[2], 0.55); d.lineWidth = 0.8; line(0, 0);
+      if (rr() < 0.5) { // kısa yan kol
+        const t = pts[1 + Math.floor(rr() * (pts.length - 1))], b = a + (rr() < 0.5 ? 1 : -1) * (0.9 + rr() * 0.6), l = 2 + rr() * 3;
+        d.beginPath(); d.moveTo(t[0], t[1]); d.lineTo(t[0] + Math.cos(b) * l, t[1] + Math.sin(b) * l); d.stroke();
+      }
+    }
+    // gömülü yassı taş kümeleri: yüzeyle aynı hizada, hafif gölgeli
+    for (let s = 30 + rr() * 60; s < p.total; s += 70 + rr() * 90) {
+      const q = pathPos(p, s, (rr() - 0.5) * 22 * R), n = 3 + Math.floor(rr() * 4);
+      for (let k = 0; k < n; k++) {
+        const x = q.x + (rr() - 0.5) * 14, y = q.y + (rr() - 0.5) * 9, r = 2.4 + rr() * 2.6, sides = 5 + Math.floor(rr() * 3), rot = rr() * 6;
+        const poly = (dx, dy, kk) => { d.beginPath(); for (let i = 0; i < sides; i++) { const an = rot + i / sides * Math.PI * 2, rad = r * kk * (0.8 + ((i * 37 + k * 11) % 7) / 20); d[i ? 'lineTo' : 'moveTo'](x + dx + Math.cos(an) * rad * 1.25, y + dy + Math.sin(an) * rad * 0.85); } d.closePath(); };
+        d.fillStyle = 'rgba(40,26,12,0.28)'; poly(0.6, 1, 1.08); d.fill();
+        d.fillStyle = hex(th.stone[0], 0.85); poly(0, 0, 1); d.fill();
+        d.fillStyle = hex(th.stone[1], 0.6); poly(-r * 0.22, -r * 0.2, 0.55); d.fill();
+      }
+    }
+  }
+  // yol şekline kırp
+  d.globalCompositeOperation = 'destination-in';
+  d.lineJoin = 'round'; d.lineCap = 'round'; d.lineWidth = 40 * R; d.strokeStyle = '#000';
+  d.beginPath(); for (const p of paths) p.pts.forEach((q, i) => i ? d.lineTo(q[0], q[1]) : d.moveTo(q[0], q[1])); d.stroke();
+  g.drawImage(det, 0, 0, W, H);
+}
+
 function renderBackground(lv, paths, res = 2) {
   const c = document.createElement('canvas');
   c.width = W * res; c.height = H * res;
@@ -520,18 +569,7 @@ function renderBackground(lv, paths, res = 2) {
     }
     return false;
   };
-  for (const p of paths) {
-    for (const side of [-1, 1]) {
-      g.strokeStyle = 'rgba(70,45,20,0.16)'; g.lineWidth = 3; g.beginPath();
-      let pen = false;
-      for (let d = 0; d <= p.total; d += 6) {
-        const q = pathPos(p, d, side * 8 * R);
-        if (onRoad(p, q.x, q.y, true)) { pen = false; continue; }
-        pen ? g.lineTo(q.x, q.y) : g.moveTo(q.x, q.y); pen = true;
-      }
-      g.stroke();
-    }
-  }
+  drawRoadDetail(g, c, res, paths, th, seeded(lv.name.length * 131 + lv.plots.length * 7));
   // çakıllar ve kenar taşları
   for (const p of paths) {
     for (let d = 0; d < p.total; d += 7) {
