@@ -24,11 +24,13 @@ Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4U
   - `arsa-denetim.js` (Playwright gerekmez: `node tools/arsa-denetim.js js/data.js`) arsaların dalga düğmesine
     ve arayüze taşmadığını denetler, taşanlar için yol kenarında yeni yer önerir. Yeni bölüm ekleyince çalıştır.
   - `fps.js` yoğun sahnede FPS; `magenta-sil.js girdi.jpg cikti.png` magenta zeminli görseli saydamlaştırır
+- `tasarim/` tasarım notları ve Gemini promptları, `arastirma/`, `notlar/` (Game Lab ana notu: `notlar/game-lab-CLAUDE.md`).
+- `varliklar/` ham Gemini görselleri (`ham/`) ve işleme betikleri.
 - `scripts/generate_image.py` — Gemini görsel üretimi (anahtar `.env` içinde, repoya girmez).
 
 ## Son durum
 2 sefer (EPISODES): 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl; LEVELS'ta ep: 2).
-2. sefer görselleri: Game Lab/varliklar/ham/s2_*.jpg → varliklar/sefer2_isle.py (numpy+scipy+pillow) → img/.
+2. sefer görselleri: varliklar/ham/s2_*.jpg → varliklar/sefer2_isle.py (numpy+scipy+pillow) → img/.
 Yapılanlar: 20 bölüm, 5 kahraman (3'er yetenek), boss + muhafız + efektli boss yetenekleri, düşman zayıflık/direnç
 ve dokununca bilgi paneli, yıldırım atan büyücü kulesi, 3B top, seviyeli okçu/asker çizimleri, kule unvanları,
 yol girişinde küçük dalga işareti. Bot dengesi: 1–10. bölümler kazanılıyor, 10. bölüm en zor.
