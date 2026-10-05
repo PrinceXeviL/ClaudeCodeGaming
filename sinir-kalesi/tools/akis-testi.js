@@ -1,0 +1,22 @@
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch();
+  const p = await b.newPage({ viewport: { width: 960, height: 540 }, ignoreHTTPSErrors: true, hasTouch: true });
+  const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.goto('http://localhost:8765/index.html?' + Date.now());
+  await p.waitForTimeout(1500);
+  const st = () => p.evaluate(() => ({ screen: window.__game.screen, overlay: window.__game.overlay, sel: window.__game.G && window.__game.G.sel && window.__game.G.sel.kind, towers: window.__game.G && window.__game.G.towers.length }));
+  const tap = async (x, y) => { await p.mouse.click(x, y); await p.waitForTimeout(700); };
+  await tap(480, 452); console.log('OYNA ->', await st());
+  await tap(194, 430); console.log('kart 1 ->', await st());
+  await tap(110, 215); console.log('arsa ->', await st());
+  await tap(110 - 48, 215 - 16 - 44); console.log('okçu önizleme ->', await st());
+  await tap(110 - 48, 215 - 16 - 44); console.log('okçu inşa ->', await st());
+  await tap(W = 960 - 32, 32); console.log('duraklat ->', await st());
+  await tap(480, 288 + 18 - 175 + 104); console.log('devam ->', await st());
+  await p.evaluate(() => { window.__game.G.stars = 3; window.__game.setOverlay('win'); });
+  await p.waitForTimeout(2200);
+  await tap(480 + 70, 288 + 18 - 175 + 262); console.log('sonraki bölüm ->', await st(), await p.evaluate(() => window.__game.G.idx));
+  console.log('errors', errs);
+  await b.close();
+})();

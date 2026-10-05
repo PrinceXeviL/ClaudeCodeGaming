@@ -1,0 +1,32 @@
+# Sınır Kalesi — devir notu
+
+Kingdom Rush tarzı tarayıcı kule savunma oyunu. Saf HTML5 Canvas + vanilla JS, derleme adımı yok.
+Kullanıcı Türkçe konuşur; yanıtlar ve koddaki yorumlar Türkçe.
+
+## Çalıştırma
+```
+cd sinir-kalesi && python3 -m http.server 8765   # http://localhost:8765
+```
+Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4UkEbF8QzEmFp
+
+## Dosyalar
+- `sinir-kalesi/js/data.js` — tüm veriler: TOWERS (seviyeler, `title` unvanları, yetenekler), ENEMIES
+  (`wk` zayıflık/direnç, bosslarda `chief`, `ab` yetenekler, `hpK`), BOSS_ESCORT, LEVELS (dalgalar, `hpMul`),
+  HEROES/HERO_SKILLS, SPELLS, UPGRADES, GAME_DIFF (sabit zorluk).
+- `sinir-kalesi/js/game.js` — tek IIFE içinde oyun mantığı ve çizim (~5000 satır). Mantıksal çözünürlük 960x540.
+  Test kancası: `window.__game` (G, startLevel, build, upgrade, wave, sim, cast, kill, ...).
+- `sinir-kalesi/img/` — görseller (`manifest.json` yüklenecekler, `meta.json` kaynak genişlik/taban ofseti).
+  Kule okçuları, kışla askerleri, 3B top ve efektler kodla çizilir (önbellekli parçalar).
+- `sinir-kalesi/ses/` — Kenney CC0 sesleri; arayüz "pop" sesleri ve düşman ölüm sesleri WebAudio ile sentezlenir.
+- `sinir-kalesi/tools/` — Playwright test araçları (sunucu 8765'te açıkken `node tools/...`):
+  - `akis-testi.js` menü→bölüm→kule kur akışı, sayfa hatalarını yazar
+  - `denge-botu.js [bölümler] [kahramanlar]` ör. `node tools/denge-botu.js 0,4,9 commander,caner` — botla bölüm oynatır
+  - `fps.js` yoğun sahnede FPS; `magenta-sil.js girdi.jpg cikti.png` magenta zeminli görseli saydamlaştırır
+- `scripts/generate_image.py` — Gemini görsel üretimi (anahtar `.env` içinde, repoya girmez).
+
+## Son durum
+Yapılanlar: 10 bölüm, 5 kahraman (3'er yetenek), boss + muhafız + efektli boss yetenekleri, düşman zayıflık/direnç
+ve dokununca bilgi paneli, yıldırım atan büyücü kulesi, 3B top, seviyeli okçu/asker çizimleri, kule unvanları,
+yol girişinde küçük dalga işareti. Bot dengesi: 1–10. bölümler kazanılıyor, 10. bölüm en zor.
+
+Her değişiklikten sonra: akış testi + gerekirse denge botu, sonra commit/push.
