@@ -35,4 +35,10 @@ Yapılanlar: 20 bölüm, 5 kahraman (3'er yetenek), boss + muhafız + efektli bo
 ve dokununca bilgi paneli, yıldırım atan büyücü kulesi, 3B top, seviyeli okçu/asker çizimleri, kule unvanları,
 yol girişinde küçük dalga işareti. Bot dengesi: 1–10. bölümler kazanılıyor, 10. bölüm en zor.
 
+Sistemler (6 Eki): bölüm haritası (EPISODES[].nodes: bayrak yerleri, noktalı patika, bayrağa dokununca bölüm kartı),
+kahraman güçleri (HERO_ULT: takımdaki her kahramanın sol altta hedefli düğmesi; meteor kaldırıldı),
+takviye kaleden çıkıp yol boyunca yürür (marchSoldier), kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE),
+yol dışı esprili NPC'ler (NPC_THEME, drawNpc; dokununca konuşur), 6 evreli saldırı/yürüyüş/ölüm animasyonu,
+sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).
+
 Her değişiklikten sonra: akış testi + gerekirse denge botu, sonra commit/push.

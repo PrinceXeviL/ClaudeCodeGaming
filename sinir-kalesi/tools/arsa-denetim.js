@@ -34,7 +34,7 @@ function bad(x, y, btns) {
   const top = y - 80;
   if (top < 74 && (x < 300 || x > W - 200)) return 'üst arayüz';     // sol üst göstergeler / sağ üst düğmeler
   if (top < 40) return 'ekran üstü';
-  if (y > H - 110 && x < 300) return 'sol alt arayüz';              // kahraman / büyü düğmeleri
+  if (y > H - 110 && x < 330) return 'sol alt arayüz';              // kahraman / güç düğmeleri
   if (x < 36 || x > W - 36 || y > H - 30) return 'kenar';
   for (const b of btns) if (dist(x, y - 30, b[0], b[1]) < 80 || dist(x, y, b[0], b[1]) < 70) return 'dalga düğmesi';
   return null;

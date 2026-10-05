@@ -172,9 +172,29 @@ const HEROES = {
 };
 const HERO_ORDER = ['commander', 'caner', 'zeynep', 'tarcin', 'sage'];
 
+// Takviye: askerler kaleden çıkar, yol boyunca yürüyerek seçilen noktaya gider (march: yürüme hızı).
 const SPELLS = {
-  meteor:    { name: 'Ateş Yağmuru', cd: 60, count: 3, dmg: [35, 60], radius: 55 },
-  reinforce: { name: 'Takviye',      cd: 24, count: 2, hp: 40, dmg: [2, 4], life: 20 },
+  reinforce: { name: 'Takviye', cd: 24, count: 2, hp: 40, dmg: [2, 4], life: 20, march: 120 },
+};
+// Kale okçuları: kale de ok atar; kaleye dokunup yükseltilir (3 seviye, her seviyede bir okçu daha).
+// rate: her okçunun kendi atış aralığı (sn). spots: okçuların durduğu kule tepeleri (kale görselinde oran olarak).
+const CASTLE = {
+  range: 150,
+  spots: [[0.492, 0.6], [0.867, 0.43], [0.14, 0.44]],
+  levels: [
+    { title: 'Kale Okçuları',    dmg: [5, 8],   rate: 1.4, archers: 1, perk: 'Kale bir okçuyla kendini savunur' },
+    { title: 'Kale Nişancıları', cost: 180, dmg: [8, 12],  rate: 1.2, archers: 2, perk: 'İki okçu, daha sert oklar' },
+    { title: 'Kale Muhafızları', cost: 280, dmg: [11, 17], rate: 1.0, archers: 3, crit: 0.15, perk: 'Üç usta okçu, %15 kritik vuruş' },
+  ],
+};
+// Kahraman gücü: takımdaki her kahramanın sol altta kendi düğmesi vardır; dokunup haritada hedef seçilir.
+// r: etki yarıçapı, cd: bekleme (sn), dmg: tek vuruş hasarı (kahraman seviyesiyle %15 artar).
+const HERO_ULT = {
+  commander: { name: 'Kılıç Yağmuru',      cd: 55, r: 62, dmg: [20, 28], n: 9, stun: 1, desc: 'Gökten 9 kılıç saplanır: hasar ve 1 sn sersemletme' },
+  caner:     { name: 'Kutsal Çekiç',       cd: 60, r: 66, dmg: [80, 110], stun: 2, heal: 0.5, desc: 'Dev ışık çekici iner: ağır hasar, 2 sn sersemletme, askerleri iyileştirir' },
+  zeynep:    { name: 'Zehirli Ok Yağmuru', cd: 55, r: 70, dmg: [10, 15], n: 22, poison: 9, poisonT: 5, desc: '22 zehirli ok yağar, vurulanlar 5 sn zehirlenir' },
+  tarcin:    { name: 'Gölge Kediler',      cd: 55, r: 72, dmg: [18, 26], n: 5, hits: 3, mark: 5, desc: '5 gölge kedi sıçrar, her biri 3 kez pençeler; hedefler 5 sn fazla hasar alır' },
+  sage:      { name: 'Alev Sütunları',     cd: 60, r: 70, dmg: [34, 48], n: 5, burn: 13, burnT: 4, desc: '5 alev sütunu fışkırır, yerde 4 sn yanan alev kalır' },
 };
 
 // Hava: bölümde weather: 'rain' | 'snow' | 'sand' | 'night'. speed: tüm birimlerin (düşman, asker, kahraman) yürüme hızı çarpanı.
@@ -412,7 +432,7 @@ const LEVELS = [
   {
     ep: 2, name: 'Vaha Yolu', gold: 700, lives: 20, theme: 'oasis', castle: [905, 250], hpMul: 1.0,
     paths: [[[-40, 160], [140, 160], [250, 250], [260, 380], [400, 450], [560, 420], [620, 300], [560, 190], [640, 110], [780, 130], [855, 236]]],
-    plots: [[725, 188], [115, 217], [306, 487], [649, 435], [322, 226], [511, 127], [545, 292], [176, 344], [154, 267], [397, 372]],
+    plots: [[725, 188], [115, 217], [331, 497], [649, 435], [322, 226], [511, 127], [545, 292], [176, 344], [154, 267], [397, 372]],
     waves: [
       [{t: 'raider', n: 12, gap: 0.9, p: 0}],
       [{t: 'vulture', n: 6, gap: 1.1, p: 0}],
@@ -496,7 +516,7 @@ const LEVELS = [
   {
     ep: 2, name: 'Gece Kervanı', gold: 950, lives: 20, theme: 'desert', weather: 'night', castle: [905, 160], hpMul: 0.95,
     paths: [[[-40, 460], [160, 460], [260, 380], [180, 280], [260, 180], [420, 160], [520, 250], [460, 360], [600, 430], [740, 380], [760, 240], [855, 146]]],
-    plots: [[485, 122], [709, 488], [44, 401], [759, 125], [398, 334], [134, 195], [828, 303], [582, 199], [497, 481], [615, 354], [301, 462], [304, 230]],
+    plots: [[485, 122], [709, 488], [44, 401], [759, 125], [398, 334], [134, 195], [828, 303], [582, 199], [497, 481], [615, 354], [316, 429], [304, 230]],
     waves: [
       [{t: 'raider', n: 14, gap: 0.8, p: 0}],
       [{t: 'djinn', n: 3, gap: 2.5, p: 0}, {t: 'scorpion', n: 8, gap: 0.9, at: 4.0, p: 0}],
@@ -534,7 +554,7 @@ const LEVELS = [
   {
     ep: 2, name: 'Güneş Tapınağı', gold: 1060, lives: 20, theme: 'temple', castle: [905, 270], hpMul: 0.9,
     paths: [[[260, -40], [260, 90], [400, 160], [540, 130], [660, 190], [700, 270], [855, 256]], [[220, 580], [240, 440], [380, 380], [520, 420], [640, 360], [700, 270], [855, 256]]],
-    plots: [[344, 211], [861, 332], [321, 484], [699, 123], [534, 338], [297, 319], [526, 496], [525, 194], [691, 416], [227, 340], [169, 410], [269, 196], [596, 218]],
+    plots: [[344, 211], [861, 332], [333, 479], [699, 123], [534, 338], [297, 319], [526, 496], [525, 194], [691, 416], [227, 340], [169, 410], [269, 196], [596, 218]],
     waves: [
       [{t: 'golem', n: 1, gap: 1.0, at: 0.0, p: 0}, {t: 'raider', n: 12, gap: 0.8, at: 3.0, p: 1}],
       [{t: 'mummy', n: 6, gap: 1.6, at: 0.0, p: 1}, {t: 'scorpion', n: 10, gap: 0.8, at: 3.0, p: 0}],
@@ -553,7 +573,7 @@ const LEVELS = [
   {
     ep: 2, name: 'Kızıl Saray', gold: 1190, lives: 20, theme: 'palace', weather: 'sand', castle: [905, 300], hpMul: 0.85,
     paths: [[[-40, 120], [160, 120], [300, 200], [460, 220], [600, 280], [740, 290], [855, 286]], [[-40, 460], [180, 450], [320, 380], [460, 350], [600, 280], [740, 290], [855, 286]], [[520, -40], [520, 100], [460, 220], [600, 280], [740, 290], [855, 286]]],
-    plots: [[811, 352], [102, 199], [300, 476], [603, 121], [410, 262], [52, 384], [300, 122], [516, 408], [667, 225], [234, 338], [208, 221], [437, 121], [650, 343], [813, 212]],
+    plots: [[811, 352], [102, 199], [331, 469], [603, 121], [410, 262], [52, 384], [300, 122], [516, 408], [667, 225], [234, 338], [208, 221], [437, 121], [650, 343], [813, 212]],
     waves: [
       [{t: 'raider', n: 12, gap: 0.8, at: 0.0, p: 0}, {t: 'scorpion', n: 8, gap: 0.9, at: 3.0, p: 1}],
       [{t: 'vulture', n: 10, gap: 0.8, at: 0.0, p: 2}, {t: 'camel', n: 5, gap: 1.8, at: 3.0, p: 0}],
@@ -576,9 +596,13 @@ const LEVELS = [
 // ----- seferler -----
 // Bölümler seferlere ayrılır; her sefer bir ülkede geçer ve haritada kendi sayfası olur.
 // Bir sefer, bir önceki seferin son bölümü bitince açılır. bg: harita arka planı.
+// nodes: bölüm haritasında bölüm bayraklarının yeri (960x540 ekran koordinatı; harita görseli ekranı kaplar).
+// Bayraklar bu sırayla, aralarındaki noktalı patikayla birbirine bağlanır.
 const EPISODES = [
-  { name: 'Ardan Krallığı', bg: 'title_bg' },
-  { name: 'Kızılkum Sultanlığı', bg: 'title_bg_2' },
+  { name: 'Ardan Krallığı', bg: 'title_bg',
+    nodes: [[96, 470], [190, 428], [292, 458], [392, 486], [468, 436], [574, 452], [680, 418], [774, 366], [700, 318], [512, 376]] },
+  { name: 'Kızılkum Sultanlığı', bg: 'title_bg_2',
+    nodes: [[178, 470], [280, 412], [407, 404], [540, 430], [667, 427], [776, 369], [782, 302], [704, 257], [649, 221], [746, 190]] },
 ];
 
 // ----- 2. sefer: Kızılkum düşmanları -----
@@ -764,7 +788,7 @@ const UPGRADES = [
   { id: 'barracks', name: 'Kışla',     ranks: [{ cost: 1, desc: '+%20 asker canı' }, { cost: 2, desc: '+%20 asker hasarı' }, { cost: 3, desc: '+%15 zırh, hızlı doğma' }] },
   { id: 'mage',     name: 'Büyücüler', ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%10 menzil' }, { cost: 3, desc: '+%15 hasar' }] },
   { id: 'artillery',name: 'Toplar',    ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%15 patlama alanı' }, { cost: 3, desc: '+%15 hasar' }] },
-  { id: 'spells',   name: 'Büyüler',   ranks: [{ cost: 1, desc: '+1 göktaşı' }, { cost: 2, desc: '+1 takviye askeri' }, { cost: 3, desc: '%25 hızlı dolma' }] },
+  { id: 'spells',   name: 'Güçler',    ranks: [{ cost: 1, desc: '+%20 kahraman gücü hasarı' }, { cost: 2, desc: '+1 takviye askeri' }, { cost: 3, desc: '%25 hızlı dolma' }] },
   { id: 'castle',   name: 'Kale',      ranks: [{ cost: 1, desc: '+3 can' }, { cost: 2, desc: '+60 altın' }, { cost: 3, desc: '+3 can, +60 altın' }] },
 ];
 // Oyun tek, sabit zorlukta oynanır
@@ -776,7 +800,7 @@ const HERO_SKILLS = {
   caner: ['holy', 'shieldthrow', 'quake'],
   zeynep: ['volley', 'multishot', 'blastarrow'],
   tarcin: ['shadowstep', 'clawstorm', 'dodge'],
-  sage: ['flamering', 'icelance', 'meteor2'],
+  sage: ['flamering', 'icelance', 'freeze'],
 };
 for (const id in HERO_SKILLS) {
   const all = HEROES[id].paths.flatMap(p => p.skills);

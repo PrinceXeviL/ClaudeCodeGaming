@@ -200,3 +200,19 @@ Seamless tileable top-down texture, hand-painted mobile strategy game art style:
 ```
 Seamless tileable top-down texture, hand-painted mobile strategy game art style: a compacted desert sand road with some worn, half-buried old sandstone paving slabs, warm beige-orange tones, small pebbles and fine cracks between slabs. Uniform pattern in all directions, no wheel tracks, no lines, no edges or borders, no objects, no text. Even soft lighting from above, no cast shadows.
 ```
+
+## Bölüm haritaları (16:9, isteğe bağlı)
+
+Şu an harita olarak kapak görselleri kullanılıyor. 1. seferin kapağında yol kısa, bayraklar çimenin üstüne dizildi. Gerçek bir dünya haritası daha iyi durur. Görsel gelince bayrak yerleri (`EPISODES[].nodes`, data.js) yola göre yeniden ayarlanır.
+
+### harita_1.jpg — Ardan Krallığı
+
+```
+16:9 hand-painted fantasy world map seen from high above at an angle, mobile tower defense game style, warm colors: green meadows, a dark forest, a swamp, rocky hills, snowy mountains and a smoking volcano in the far corner, connected by ONE long winding dirt road that starts at the bottom-left and snakes across the whole map to a big stone castle at the top-right. Leave the top strip calm (sky or clouds) for a title. No text, no labels, no flags, no characters.
+```
+
+### harita_2.jpg — Kızılkum Sultanlığı
+
+```
+16:9 hand-painted fantasy desert world map seen from high above at an angle, mobile tower defense game style: red sand dunes, a palm oasis with a blue pond, a narrow canyon, a white salt lake, ruined columns, rock tombs, a golden sun temple, connected by ONE long winding sand road from the bottom-left to a golden domed sultan's palace at the top-right. Leave the top strip calm for a title. No text, no labels, no flags, no characters.
+```
