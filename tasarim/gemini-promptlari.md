@@ -184,3 +184,19 @@ Seamless tileable top-down texture, hand-painted game art style: warm reddish-or
 ```
 16:9 hand-painted fantasy landscape painting: a vast red desert with rolling dunes, a green oasis with palm trees in the middle, a winding sand road leading to a distant golden domed sultan's palace on the horizon, warm late-afternoon sky. Leave the top-center area calm and empty for a title. No text.
 ```
+
+## Yol dokuları (1:1, STİL bloğunu KULLANMA)
+
+Yol boyunca döşenir. Doku yönsüz olmalı: yol kıvrıldıkça döndürülmüyor, o yüzden çizgi, iz ya da tek yönlü desen olmamalı.
+
+### yol_toprak.jpg — 1. sefer toprak yol
+
+```
+Seamless tileable top-down texture, hand-painted mobile strategy game art style: a packed dirt road surface, warm light-brown earth with subtle darker compacted patches, small scattered pebbles and a few flat embedded stones, fine hairline cracks. Uniform pattern in all directions, no wheel tracks, no lines, no grass, no edges or borders, no objects, no text. Even soft lighting from above, no cast shadows.
+```
+
+### yol_kum.jpg — 2. sefer kum ve taş yol
+
+```
+Seamless tileable top-down texture, hand-painted mobile strategy game art style: a compacted desert sand road with some worn, half-buried old sandstone paving slabs, warm beige-orange tones, small pebbles and fine cracks between slabs. Uniform pattern in all directions, no wheel tracks, no lines, no edges or borders, no objects, no text. Even soft lighting from above, no cast shadows.
+```
