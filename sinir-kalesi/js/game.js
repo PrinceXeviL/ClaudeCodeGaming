@@ -4174,12 +4174,15 @@ function drawEnemy(e) {
   const dh = (d.h || 30) * UNIT_K;
   if (e.under) { drawBurrow(e); return; }
   if (im) {
+    const moved = e.px !== undefined && Math.hypot(e.x - e.px, e.y - e.py) > 0.004;
+    e.px = e.x; e.py = e.y;
     if (d.chief) drawBossAura(e, dh);
     drawUnit(name, im, e.x, e.y, e.face, {
       rig: d.base ? 'enemy_' + d.base : undefined,
       h: CHAR_H[name] || d.r * 2.6, phase: e.anim * (5 + d.speed * G.wspd / 9),
       rise: e.reviveT > 0 ? 0.25 + 0.75 * (1 - e.reviveT / 1.1) : e.emergeT > 0 ? 1 - e.emergeT / 0.35 * 0.85 : null,
-      walking: !e.blocker && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
+      // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
+      walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
       atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off,
