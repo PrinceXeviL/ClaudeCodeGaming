@@ -4505,7 +4505,7 @@ const RIG = {
   hero: { legY: 0.72 }, soldier: { legY: 0.7 }, militia: { legY: 0.74 },
   hero_caner: { legY: 0.7 }, hero_zeynep: { legY: 0.7 }, hero_cat: { legY: 0.72, stride: 1.15 }, hero_sage: { legY: 0.8, stride: 0.55 },
   // 2. sefer. flip: görsel sola bakıyor (aynalanır). solid: bacaksız tek parça (float: süzülür, worm: tabandan salınır)
-  enemy_raider: { legY: 0.72 }, enemy_scorpion: { legY: 0.58, stride: 1.3, flip: true }, enemy_vulture: { wings: true, flip: true },
+  enemy_raider: { legY: 0.72, flip: true }, enemy_scorpion: { legY: 0.58, stride: 1.3, flip: true }, enemy_vulture: { wings: true, flip: true },
   enemy_camel: { legY: 0.62, stride: 1.2, flip: true }, enemy_sandworm: { solid: 'worm' }, enemy_mummy: { legY: 0.72, stride: 0.7 },
   enemy_djinn: { solid: 'float' }, enemy_golem: { legY: 0.7, stride: 0.8 },
   enemy_scorpion_queen: { legY: 0.6, stride: 1.2 }, enemy_worm_king: { solid: 'worm' }, enemy_storm_djinn: { solid: 'float' },
