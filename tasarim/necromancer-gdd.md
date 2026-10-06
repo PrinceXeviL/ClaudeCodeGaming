@@ -6,7 +6,7 @@ Ton: **esprili ve karanlık** (Kingdom Rush ve Overlord gibi). Mekanik Sınır K
 ## Hikâye
 
 **Aurum İmparatorluğu** (altın, güneş arması, kibirli ve bürokratik) bütün dünyayı fethetti. İmparatorun dev haritasında
-tek bir kara leke kaldı: necromancer **Morvane**'ın lanetli toprakları. Morvane kötü değil; huysuz bir münzevi.
+tek bir kara leke kaldı: necromancer **Mortimer**'ın lanetli toprakları. Mortimer kötü değil; huysuz bir münzevi.
 Kitaplarını okumak, çayını içmek ve rahat bırakılmak istiyor. İmparator lekeyi silmek için lejyonlarını yolluyor.
 
 Sefer 1, **Lanetli Sınır**: İmparatorluğun ilk lejyonu ormana girer. Sonunda General **Gloriosus** gelir.
@@ -24,13 +24,13 @@ Sefer 1 giriş panelleri:
 1. İmparatorun altın harita odası. Dev haritada her yer altın, bir köşede kara bir leke.
 2. İmparator lekeyi işaret ediyor. Danışman terliyor: "Necromancer'ın toprakları, majesteleri. Rahat bırakılmak istiyor."
 3. İmparator: "Sil şunu." Lejyon borular çalarak yola çıkıyor.
-4. Morvane kulesinde, terlikleriyle kitap okuyup çay içiyor. Uzaktan borular duyuluyor; çay bardağı titriyor.
-5. Morvane kitabı kapatıyor, gözleri yeşil parlıyor: "Peki."
+4. Mortimer kulesinde, terlikleriyle kitap okuyup çay içiyor. Uzaktan borular duyuluyor; çay bardağı titriyor.
+5. Mortimer kitabı kapatıyor, gözleri yeşil parlıyor: "Peki."
 
 ## Bizim taraf
 
 ### Necromancer (kale yerine)
-Morvane kulesinde oturur. Kule hasar aldıkça çatlar ve 3 evreden geçer (eski kalenin yeri). Sahaya çıkmaz.
+Mortimer kulesinde oturur. Kule hasar aldıkça çatlar ve 3 evreden geçer (eski kalenin yeri). Sahaya çıkmaz.
 Sol altta **3 büyü düğmesi** vardır, her birinin bekleme süresi var:
 
 | Büyü | Etki | Bekleme |
@@ -92,7 +92,7 @@ Altın zırhlı, aşırı kendini beğenmiş, atlı bir general. Yetenekleri:
 | 2 | Sisli Bataklık | yeşil sisli bataklık, batık mezar taşları | Gladyatör, Kıdemli rütbe |
 | 3 | Unutulmuş Mezarlık | mezar taşları, türbeler, kemik yığınları | Suikastçı, Savaş Rahibi |
 | 4 | Kara Göl Geçidi | kara göl, kemik köprü, yıkık şapel | Süvari, Ağır Piyade, Koçbaşı |
-| 5 | Morvane'ın Kapısı | kulenin eteği, mezarlık bahçesi | Mancınık, Yüzbaşılar, **Boss: General Gloriosus** |
+| 5 | Mortimer'ın Kapısı | kulenin eteği, mezarlık bahçesi | Mancınık, Yüzbaşılar, **Boss: General Gloriosus** |
 
 ## Görsel üretim sırası (Gemini / Nano Banana)
 
@@ -112,7 +112,7 @@ Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: 
 | 5 | Düşmanlar 2: Ağır Piyade, Süvari, Savaş Rahibi, General Gloriosus | `nm_dusman_2.png` |
 | 6 | Kuşatma: Koçbaşı, Mancınık Arabası | `nm_kusatma.png` |
 | 7 | Diğer kuleler: Kemik Okçu, Ruh Kulesi, Kemik Mancınığı (3'er seviye) | `nm_kuleler.png` |
-| 8 | Komutanlar: Kont Vladrik, Wailing Wren; Morvane portresi | `nm_komutanlar.png` |
+| 8 | Komutanlar: Kont Vladrik, Wailing Wren; Mortimer portresi | `nm_komutanlar.png` |
 | 9 | Zemin dokusu: lanetli orman ve bataklık | `nm_zemin.jpg` |
 | 10 | Dekor: çarpık ağaçlar, mezar taşları, kemikler, mantarlar | `nm_dekor.png` |
 | 11 | Çizgi roman panelleri (5 adet, yazısız) | `nm_panel_1..5.jpg` |
