@@ -21,6 +21,8 @@ Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4U
 - `sinir-kalesi/tools/` — Playwright test araçları (sunucu 8765'te açıkken `node tools/...`):
   - `akis-testi.js` menü→bölüm→kule kur akışı, sayfa hatalarını yazar
   - `denge-botu.js [bölümler] [kahramanlar]` ör. `node tools/denge-botu.js 0,4,9 commander,caner` — botla bölüm oynatır
+  - `arsa-uret.js` (`node tools/arsa-uret.js js/data.js [1,2,..]`) arsaları yollara göre otomatik yerleştirir ve yazar:
+    yola değmez, kenar/arayüz/kale/dalga düğmesinden uzak, kıvrım ve kavşakları gören yerler önce. Yol değişince çalıştır (yavaş, ~3 dk).
   - `arsa-denetim.js` (Playwright gerekmez: `node tools/arsa-denetim.js js/data.js [--apply]`) arsaların dalga düğmesine,
     arayüze ve yola (ROAD_MIN=66, yol genişleyince büyüt) taşmadığını denetler, yeni yer önerir; --apply data.js'e yazar.
   - `fps.js` yoğun sahnede FPS; `magenta-sil.js girdi.jpg cikti.png` magenta zeminli görseli saydamlaştırır
@@ -37,7 +39,10 @@ yol girişinde küçük dalga işareti. Bot dengesi: 1–10. bölümler kazanıl
 
 Sistemler (6 Eki): bölüm haritası (EPISODES[].nodes: bayrak yerleri, noktalı patika, bayrağa dokununca bölüm kartı),
 kahraman güçleri (HERO_ULT: takımdaki her kahramanın sol altta hedefli düğmesi; meteor ve takviye düğmesi yok),
-paralı askerler (MERCS: ilk dalgadan sonra kale her dakika 2 asker çıkarır, yol boyunca yavaş yürürler; SOLDIER_LOOK.merc),
+paralı askerler (MERCS: ilk dalgadan sonra kale her dakika 2 asker çıkarır, yol boyunca yavaş yürürler; SOLDIER_LOOK.merc;
+kaleye dokunup bayrakla haritanın her yerine gönderilir: G.castle.rally, sendMerc),
+yollar (6 Eki yeniden tasarım): girişler + kollar (routes), kesişen/ayrılıp birleşen yollar; kale ilk yolun ucuna kapısıyla oturur
+(lv.castle data.js sonunda hesaplanır), yol kapıya doğru daralır; kazanç GAME_DIFF.bounty (0.8),
 kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE), yol kenarı dalgalı (roadVary/roadShape),
 NPC sistemi hazır ama kapalı (NPC_ON=false; Gemini görselleriyle yeniden yapılacak), 6 evreli saldırı/yürüyüş/ölüm animasyonu,
 sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).

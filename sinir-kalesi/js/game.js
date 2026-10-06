@@ -830,13 +830,15 @@ function roadShape(g, paths, w) {
   for (const p of paths) {
     const Lp = [], Rp = [];
     for (let d = 0; ; d = Math.min(p.total, d + 4)) {
-      Lp.push(pathPos(p, d, -w / 2 * roadVary(p, d, -1))); Rp.push(pathPos(p, d, w / 2 * roadVary(p, d, 1)));
+      // kale kapısına yaklaşırken yol daralır ve kapının altında biter
+      const tp = 0.4 + 0.6 * easeInOut(clamp((p.total - d) / 60, 0, 1));
+      Lp.push(pathPos(p, d, -w / 2 * tp * roadVary(p, d, -1))); Rp.push(pathPos(p, d, w / 2 * tp * roadVary(p, d, 1)));
       if (d >= p.total) break;
     }
     g.moveTo(Lp[0].x, Lp[0].y); for (const q of Lp) g.lineTo(q.x, q.y);
     for (let i = Rp.length - 1; i >= 0; i--) g.lineTo(Rp[i].x, Rp[i].y);
     g.closePath();
-    const e = pathPos(p, p.total), r = w / 2 * (roadVary(p, p.total, 1) + roadVary(p, p.total, -1)) / 2;
+    const e = pathPos(p, p.total), r = w / 2 * 0.4;
     g.moveTo(e.x + r, e.y); g.arc(e.x, e.y, r, 0, Math.PI * 2);
   }
 }
@@ -1607,7 +1609,7 @@ function killEnemy(e) {
     r.hopT = 0.4; r.anim = 0;
   }
   G.kills = (G.kills || 0) + 1;
-  dropCoins(e.x, e.y, e.def.gold);
+  dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)));
   sfx('death');
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
@@ -2904,12 +2906,15 @@ function spawnMercs() {
   const n = MERCS.count + (upgRank('spells') >= 2 ? 1 : 0);
   let p = G.paths[0], best = -1;
   for (const e of G.enemies) if (!e.dead && e.d / e.p.total > best) { best = e.d / e.p.total; p = e.p; }
-  const goal = Math.max(0, p.total - MERCS.guard);
+  // toplanma yeri seçildiyse oraya en yakın yol noktasına kadar yolu izlerler, sonra yerine yürürler
+  const R = G.castle.rally, q = R ? nearestOnPaths(G.paths, R.x, R.y) : null;
+  if (q) p = q.p;
+  const goal = q ? q.along : Math.max(0, p.total - MERCS.guard);
   for (let i = 0; i < n; i++) {
-    const off = (i - (n - 1) / 2) * 10, st = pathPos(p, p.total, off), g0 = pathPos(p, goal, off);
+    const off = (i - (n - 1) / 2) * 10, st = pathPos(p, p.total, off), g0 = R ? { x: R.x + off, y: R.y + (i % 2 ? 6 : -6) } : pathPos(p, goal, off);
     G.soldiers.push({ militia: true, merc: true, x: st.x, y: st.y, rx: g0.x, ry: g0.y, hp: MERCS.hp, maxHp: MERCS.hp, dmg: MERCS.dmg, armor: MERCS.armor,
-      rate: 1, speed: 60, engage: 60, atk: 0, target: null, dead: false, face: -1, anim: 0, slot: i, life: MERCS.life,
-      march: { p, d: p.total + i * 16, goal, off } });
+      rate: 1, speed: MERCS.march, engage: 60, atk: 0, target: null, dead: false, face: -1, anim: 0, slot: i, life: MERCS.life,
+      march: { p, d: p.total + i * 16, goal, off, rally: !!R } });
   }
   G.effects.push({ kind: 'dust', x: G.castle.x, y: G.castle.y, t: 0, dur: 0.5 });
   G.castle.flash = 0.15;
@@ -2922,13 +2927,22 @@ function updateMercs(dt) {
   G.mercT -= dt;
   if (G.mercT <= 0) { spawnMercs(); G.mercT = MERCS.every * (upgRank('spells') >= 3 ? 0.75 : 1); }
 }
-// paralı askerin yürüyüşü: kaleden hedefe yol üzerinde geri geri
+// Sahadaki paralı askeri yeni toplanma yerine gönderir: yolun üstündeyse yol boyunca, değilse dümdüz yürür
+function sendMerc(s) {
+  const R = G.castle.rally, i = s.slot || 0;
+  releaseSoldier(s);
+  s.rx = R.x + (i - 0.5) * 10; s.ry = R.y + (i % 2 ? 6 : -6);
+  const q = nearestOnPaths(G.paths, R.x, R.y), me = nearestOnPaths([q.p], s.x, s.y);
+  if (me.d < 26) s.march = { p: q.p, d: me.along, goal: q.along, off: (i - 0.5) * 10, rally: true };
+  else { s.march = null; s.moving = true; }
+}
+// paralı askerin yürüyüşü: yol üzerinde hedef noktaya (iki yöne de) yürür
 function marchSoldier(s, dt) {
   const m = s.march, sp = MERCS.march * G.wspd;
-  // yolda (önünde) bir düşman varsa yürüyüşü bırakıp orada dövüşür
-  const foe = G.enemies.find(e => !e.dead && !e.def.flying && !e.under && dist(e.x, e.y, s.x, s.y) < 34);
-  if (foe || m.d <= m.goal) { s.march = null; if (foe) { s.rx = s.x; s.ry = s.y; } return; }
-  m.d = Math.max(m.goal, m.d - sp * dt);
+  // toplanma yeri seçilmediyse yolda karşılaştığı ilk düşmanla orada dövüşür; seçildiyse yerine gider
+  const foe = !m.rally && G.enemies.find(e => !e.dead && !e.def.flying && !e.under && dist(e.x, e.y, s.x, s.y) < 34);
+  if (foe || Math.abs(m.d - m.goal) < 1) { s.march = null; if (foe) { s.rx = s.x; s.ry = s.y; } else s.moving = true; return; }
+  m.d += Math.sign(m.goal - m.d) * Math.min(sp * dt, Math.abs(m.goal - m.d));
   const q = pathPos(m.p, Math.min(m.d, m.p.total), m.off);
   s.face = q.x < s.x ? -1 : 1; s.x = q.x; s.y = q.y; s.anim += dt;
 }
@@ -2991,7 +3005,10 @@ function update(dt) {
     sp.timer -= dt;
     while (sp.left > 0 && sp.timer <= 0) {
       const i = sp.n - sp.left;
-      const e = spawnEnemy(sp.types ? sp.types[i] : sp.t, sp.p);
+      // kollu girişte düşmanlar kollara sırayla (rastgele başlangıçla) dağılır
+      const rt = G.lv.routes && G.lv.routes[sp.p];
+      const pi = rt ? rt[(sp.rk = (sp.rk ?? Math.floor(Math.random() * rt.length)) + 1) % rt.length] : sp.p;
+      const e = spawnEnemy(sp.types ? sp.types[i] : sp.t, pi);
       if (sp.hpK && !e.def.chief) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; }
       sp.left--;
       // paket: küme içinde sık, kümeler arasında uzun ara (ortalama sıklık aynı kalır)
@@ -5181,7 +5198,8 @@ function menuLayout(sel = G.sel) {
   let items, cx, cy;
   if (sel.kind === 'castle') {
     const c = G.castle, q = worldToScreen(c.x - 10, c.y - 40), N = CASTLE.levels[c.lvl + 1];
-    items = [N ? { id: 'upgrade', type: 'castle', x: q.x, y: q.y - 74, cost: N.cost } : { id: 'max', x: q.x, y: q.y - 74 }];
+    items = [N ? { id: 'upgrade', type: 'castle', x: q.x, y: q.y - 74, cost: N.cost } : { id: 'max', x: q.x, y: q.y - 74 },
+      { id: 'rally', type: 'castle', x: q.x - 66, y: q.y - 20 }];
     cx = q.x; cy = q.y;
   } else
   // halka menü ekran koordinatında kurulur: seçilen yerin ekrandaki konumu merkez alınır
@@ -5275,7 +5293,11 @@ function drawMenu() {
 // menzil önizleme ve toplanma bayrağı: dünyada çizilir, zoomla birlikte büyür
 function drawMenuRange() {
   if (!G.sel) return;
-  if (G.sel.kind === 'castle') { drawRange(G.castle.x, G.castle.y - 30, CASTLE.range * Math.min(1, easeOutBack(clamp((time - G.menuT) / 0.3, 0, 1))), false); return; }
+  if (G.sel.kind === 'castle') {
+    drawRange(G.castle.x, G.castle.y - 30, CASTLE.range * Math.min(1, easeOutBack(clamp((time - G.menuT) / 0.3, 0, 1))), false);
+    if (G.castle.rally) drawRally(G.castle.rally.x, G.castle.rally.y);
+    return;
+  }
   if (G.sel.kind === 'tower') {
     const t = G.sel.tower;
     let rangeShow = effLevel(t).range; // yıldız gelişmeleri ve yetenekler dahil gerçek menzil
@@ -5513,7 +5535,7 @@ function waveButtonPos(pi) {
 
 // erken çağrı ödülü: kalan geri sayım ve dalga numarasıyla büyür
 function earlyBonus() {
-  return G.wave > 0 && G.waveCountdown > 0 ? Math.ceil(G.waveCountdown * (1.5 + 0.15 * G.wave)) : 0;
+  return G.wave > 0 && G.waveCountdown > 0 ? Math.ceil(G.waveCountdown * (1.5 + 0.15 * G.wave) * diff().bounty) : 0;
 }
 
 // dalga çağrılınca buton kaybolur; sahadaki düşmanlar temizlenince (sonraki dalga kendiliğinden gelmeden önce) geri gelir
@@ -5725,7 +5747,7 @@ function drawHud() {
     txt(info[0], W / 2, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
     txt(info[1], W / 2, y0 + 34, 13, '#f2e8d4', 'center', '700', FONT_B, false);
   }
-  const hint = G.mode ? (G.mode.kind === 'rally' ? 'Askerlerin toplanma noktasını seç' : `${spellInfo(G.mode.id).name}: hedefi seç`)
+  const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? 'Paralı askerleri göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
     ctx.font = `700 15px ${FONT_B}`;
@@ -5782,7 +5804,7 @@ function infoText() {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
     const st = (X) => `${X.archers} okçu · Hasar ${X.dmg[0]}-${X.dmg[1]} · Menzil ${CASTLE.range} · Atış ${X.rate}sn`;
     if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, `${st(N)} · ${N.perk}`];
-    return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Yükseltmek için oka dokun' : L.perk}`];
+    return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Ok: yükselt' : L.perk} · Bayrak: paralı askerleri gönder`];
   }
   if (G.preview && G.preview.id === 'build') {
     const T = TOWERS[G.preview.type], L = T.levels[0];
@@ -7092,7 +7114,8 @@ function drawPlay() {
   }
   drawTraps();
   drawIncoming();
-  if (G.mode && G.mode.kind === 'rally') {
+  if (G.mode && G.mode.kind === 'rally' && G.mode.castle) { if (G.castle.rally) drawRally(G.castle.rally.x, G.castle.rally.y); }
+  else if (G.mode && G.mode.kind === 'rally') {
     const t = G.mode.tower; drawRange(t.x, t.y, t.def.levels[t.lvl].range, true); drawRally(t.rx, t.ry);
   }
   // derinlik sıralı varlıklar
@@ -7382,7 +7405,7 @@ function hudTap(x, y) {
       if (dist(it.x, it.y, x, y) <= MENU_R + 8) {
         const same = G.preview && G.preview.id === it.id && G.preview.type === it.type;
         tapPop('mi' + it.id + (it.type || ''));
-        if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = { kind: 'rally', tower: tw }; sfx('pick'); return true; }
+        if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
         if (it.id === 'max') return true;
         if (!same) { G.preview = it; sfx('pick'); return true; }
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
@@ -7412,6 +7435,14 @@ function worldTap(x, y) {
     const m = G.mode; G.mode = null;
     if (m.kind === 'spell') {
       castSpell(m.id, x, y);
+    } else if (m.kind === 'rally' && m.castle) {
+      // paralı askerlerin toplanma yeri: haritanın her yeri (yola yakınsa yola oturur)
+      const n = nearestOnPaths(G.paths, x, y);
+      const px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
+      G.castle.rally = { x: clamp(px, 12, W - 12), y: clamp(py, 60, H - 12) };
+      for (const s of G.soldiers) if (s.merc && !s.dead) sendMerc(s);
+      G.effects.push({ kind: 'ring', x: px, y: py, r: 22, col: '216,160,64', t: 0, dur: 0.4 });
+      sfx('click');
     } else if (m.kind === 'rally') {
       const t = m.tower;
       const n = nearestOnPaths(G.paths, x, y);
