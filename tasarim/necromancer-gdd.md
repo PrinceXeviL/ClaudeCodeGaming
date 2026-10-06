@@ -5,7 +5,7 @@ Ton: **esprili ve karanlık** (Kingdom Rush ve Overlord gibi). Mekanik Sınır K
 
 ## Hikâye
 
-**Aurum İmparatorluğu** (altın, güneş arması, kibirli ve bürokratik) bütün dünyayı fethetti. İmparatorun dev haritasında
+**Solarian İmparatorluğu** (altın, güneş arması, kibirli ve bürokratik) bütün dünyayı fethetti. İmparatorun dev haritasında
 tek bir kara leke kaldı: necromancer **Mortimer**'ın lanetli toprakları. Mortimer kötü değil; huysuz bir münzevi.
 Kitaplarını okumak, çayını içmek ve rahat bırakılmak istiyor. İmparator lekeyi silmek için lejyonlarını yolluyor.
 
@@ -55,7 +55,7 @@ Paralı askerlerin yerini **mezardan kalkan ölüler** alır: kulenin önündeki
 | Büyücü | **Ruh Kulesi** | yeşil ruh kristali; hayalet ışın atar | Lanet (yavaşlatır) / Ruh Fırtınası (zincirleme) |
 | Top | **Kemik Mancınığı** | kafatası fırlatır, alan hasarı | Veba Kazanı (zehir bulutu) / Kemik Yağmuru (çoklu atış) |
 
-## Düşmanlar: Aurum İmparatorluğu
+## Düşmanlar: Solarian İmparatorluğu
 
 ### Rütbeler
 Her asker türünün 3 rütbesi var. Aynı görsel kodla renklendirilir ve güçlenir:
@@ -151,7 +151,7 @@ A sheet of 5 skeleton soldier characters in a row, same height, full body, each 
 ### Prompt 4 — Düşmanlar 1 (`nm_dusman_1.png`)
 ```
 [ortak stil]
-A sheet of 4 enemy soldiers of the golden AURUM EMPIRE (pompous, polished, sun emblems, white-and-gold with red cloth), in a row, same scale, full body, walking pose facing RIGHT:
+A sheet of 4 enemy soldiers of the golden SOLARIAN EMPIRE (pompous, polished, sun emblems, white-and-gold with red cloth), in a row, same scale, full body, walking pose facing RIGHT:
 1. Legionnaire: Roman-style legionary, rectangular red-and-gold shield with a sun emblem, short spear, plumed helmet with a GREY plume, determined but slightly dim expression.
 2. Imperial Archer: light leather armor, gold-trimmed hood, longbow, quiver, arrogant smirk.
 3. Gladiator: muscular arena fighter, half-helmet, one bare shoulder, net and two short swords, showing off.
@@ -161,7 +161,7 @@ A sheet of 4 enemy soldiers of the golden AURUM EMPIRE (pompous, polished, sun e
 ### Prompt 5 — Düşmanlar 2 (`nm_dusman_2.png`)
 ```
 [ortak stil]
-A sheet of 4 characters of the golden AURUM EMPIRE, in a row, same scale (the general is 1.5x bigger), full body, facing RIGHT:
+A sheet of 4 characters of the golden SOLARIAN EMPIRE, in a row, same scale (the general is 1.5x bigger), full body, facing RIGHT:
 1. Heavy Infantry: wide square body, huge tower shield, full gold-and-steel plate, slow and sturdy.
 2. Imperial Cavalry: knight on a white armored warhorse with a golden caparison, lance lowered, charging.
 3. War Priest: plump priest in white-and-gold robes, sun-topped staff, holy glow around the hands, smug face.
