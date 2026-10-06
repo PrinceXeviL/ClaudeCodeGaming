@@ -32,6 +32,15 @@ artırmazsan tarayıcı eski önbellek kopyasını gösterir). Başlık ekranın
 - `varliklar/` ham Gemini görselleri (`ham/`) ve işleme betikleri.
 - `scripts/generate_image.py` — Gemini görsel üretimi (anahtar `.env` içinde, repoya girmez).
 
+## DON'T MESS WITH THE NECROMANCER (7 Eki 2026, aktif)
+Oyun yeniden temalandı: necromancer Mortimer kulesinde (kale), Solarian İmparatorluğu saldırıyor. Tasarım: `tasarim/necromancer-gdd.md`.
+`data.js` sonundaki NECRO bloğu: yeni düşmanlar/bosslar, 5 bölüm (eski ilk 5 bölümün yol/arsa düzeni), tek sefer "Lanetli Sınır",
+kule/komutan adları (Vladrik = eski commander, Wren = eski zeynep). Eski seferlerin verisi duruyor ama görünmüyor.
+Görseller: `varliklar/ham/nm_*.jpg` (Gemini, magenta zemin) → `python3 varliklar/nm_isle.py` → img/ (castle_*, tower_*, unit_skel_*, enemy_*, nm_* dekor,
+grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık/harita arka planı `img/nm_title.jpg` (kod dışında birleştirildi).
+Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
+Sırada: çizgi roman panelleri, Mortimer'ın 3 büyüsü (şimdilik eski kahraman gücü sistemi), animasyon kareleri (poz kılavuzu), rütbe renkleri.
+
 ## Son durum
 2 sefer (EPISODES): 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl; LEVELS'ta ep: 2).
 2. sefer görselleri: varliklar/ham/s2_*.jpg → varliklar/sefer2_isle.py (numpy+scipy+pillow) → img/.
