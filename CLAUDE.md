@@ -8,6 +8,8 @@ Kullanıcı Türkçe konuşur; yanıtlar ve koddaki yorumlar Türkçe.
 cd sinir-kalesi && python3 -m http.server 8765   # http://localhost:8765
 ```
 Yayınlanan sürüm (claude.ai artifact): https://claude.ai/artifact/8P186cq2J4UkEbF8QzEmFp
+Her yayında `yayin.html` ve `index.html` içindeki `window.SURUM` değerini artır (js ve görseller `?v=` ile yüklenir;
+artırmazsan tarayıcı eski önbellek kopyasını gösterir). Başlık ekranının sağ altında "yayın N" yazar.
 
 ## Dosyalar
 - `sinir-kalesi/js/data.js` — tüm veriler: TOWERS (seviyeler, `title` unvanları, yetenekler), ENEMIES

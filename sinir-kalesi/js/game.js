@@ -39,7 +39,7 @@ fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopy
       SPR[name] = out;
       if (/^(grass_|road|tree_|rock_|castle|s2_)/.test(name)) bgDirty = Math.max(time, 0.001);
     };
-    im.src = 'img/' + file;
+    im.src = 'img/' + file + (window.SURUM ? '?v=' + window.SURUM : '');
   }))
   .catch(() => {});
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
@@ -7083,7 +7083,7 @@ function drawTitle() {
   gameButton('play', W / 2, 452, 250, 66, 'OYNA', () => go(() => { screen = 'map'; }), 'green', { icon: 'play', shine: true, breathe: true, appear: st - 0.55, size: 32 });
   roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7 });
   roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75 });
-  txt('v0.3', W - 14, H - 14, 12, 'rgba(255,255,255,0.75)', 'right', '700', FONT_B, false);
+  txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.75)', 'right', '700', FONT_B, false); // yayın sürümü (önbellek kontrolü)
   if (Math.random() < 0.3) {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.3, H), vx: rand(-8, 8), vy: rand(-18, -6),
       col: '255,220,150', s0: rand(1.5, 3.2), s1: 0.5, life: rand(3, 5), a: 0.85, fadeIn: 0.3 });
