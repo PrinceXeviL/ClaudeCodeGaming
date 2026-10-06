@@ -48,6 +48,10 @@ boss havası: bossSting girişi + kızıl karartma, drawBossAura (hale + yetenek
 sentez sesler portal/roar/stomp; kilitlendiği hedef gelmeyen düşman kendisi yürür (e.offPath ile yola döner),
 kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE), yol kenarı dalgalı (roadVary/roadShape),
 NPC sistemi hazır ama kapalı (NPC_ON=false; Gemini görselleriyle yeniden yapılacak), 12 pozlu animasyonlar (track/pose: saldırı, yürüyüş, ölüm, kanat, yetenek, kışla askeri, yay çekişi; Hermite eğri),
+iskelet (6 Eki): ARMS (game.js) her karakter görselinin silahlı kolunu çokgenle keser, omuzdan döndürür (cutImage: kopan adacıklar kola geçer,
+arkada kalan boşluk itme-çekme ile dolar; bölüm başında bakeNext ile hazırlanır); gövde 5 dilimde omurga gibi kıvrılır (P.bend),
+bacaklar kalçadan döner; yarı saydam çizim RIGBUF tamponundan geçer. Yeni görsel eklenince ARMS'a kol çokgeni ekle.
+Test: tools/kesim-onizleme.js (showCuts, showAnim, strip) + __game.anim / __game.bench. Görsellerdeki beyaz delikler temizlendi.
 sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).
 
 Her değişiklikten sonra: akış testi + gerekirse denge botu, sonra commit/push.
