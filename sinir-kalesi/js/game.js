@@ -42,6 +42,16 @@ fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopy
     im.src = 'img/' + file + (window.SURUM ? '?v=' + window.SURUM : '');
   }))
   .catch(() => {});
+// Kare kare animasyon şeritleri (img/anim.json): ad -> { n: kare sayısı, fw/fh: kare boyu (px), base: ayak çizgisinin
+// alttan oranı, ch: karakter boyunun kare boyuna oranı }. Şerit varsa o hareket bu karelerle çizilir (ör. enemy_orc_walk).
+const ANIM_META = {};
+fetch('img/anim.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => Object.assign(ANIM_META, m)).catch(() => {});
+// şeridin i. karesi: ayaklar orijinde, karakter boyu h olacak şekilde
+function drawFrame(img, F, i, h) {
+  const k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
+  const m = pickMip(ctx, img, dw * F.n), s = m.width / img.width;
+  ctx.drawImage(m, i * F.fw * s, 0, F.fw * s, F.fh * s, -dw / 2, -dh * (1 - F.base), dw, dh);
+}
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
 const SPR_META = {};
 fetch('img/meta.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => Object.assign(SPR_META, m)).catch(() => {});
@@ -4810,6 +4820,15 @@ function drawUnit(name, im, x, y, face, o) {
   ctx.translate(x + ox * face, y + 1 + oy);
   ctx.scale(face * (rig.flip ? -1 : 1), 1);
   if (o.rise != null) ctx.scale(1, o.rise); // kumdan çıkış
+  // çizilmiş yürüyüş kareleri varsa: döngüdeki yerine göre kare seçilir (iskelet yerine)
+  const WK = o.walking && !rig.wings ? ANIM_META[name + '_walk'] : null, wImg = WK && spr(name + '_walk');
+  if (wImg) {
+    const fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * WK.n) % WK.n;
+    drawFrame(wImg, WK, fi, o.h);
+    if (o.flash > 0) { ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7; drawFrame(whiteOf(name + '_walk', wImg), WK, fi, o.h); }
+    ctx.restore();
+    return;
+  }
   if (ghost > 0) {
     // vuruşun hız izi: bir önceki pozun soluk kopyası
     ctx.save(); ctx.globalAlpha *= 0.3 * ghost; ctx.translate(-7, 0);
