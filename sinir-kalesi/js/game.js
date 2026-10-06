@@ -884,6 +884,17 @@ const THEMES = {
     treeSpr: ['s2_palm_1', 's2_palm_2', 's2_palm_double'], rockSpr: ['s2_column', 's2_column', 's2_head'], treeK: 1.35, rockK: 1.3 },
   palace: { tex: 'desert', grass: '#d88a4c', grass2: '#a85a34', patch: ['#d88a4c', '#a85a34'], trees: 12, rocks: 10, treeCol: ['#4a6a2a', '#5a7a3a', '#6a8a4a'], road: ['#b49a74', '#ecdcbc', '#7c664a'], tuft: ['#7a9a3a', '#9ab04a'], stone: ['#d4bc8c', '#f4e4bc'], light: 'rgba(255,210,150,0.22)', amb: '255,200,140', flowers: 0, roadTint: 'rgba(230,190,130,0.35)',
     treeSpr: ['s2_palm_double', 's2_palm_2', 's2_palm_1'], rockSpr: ['s2_column', 's2_rock_1', 's2_head'], treeK: 1.35, rockK: 1.2, bushes: 8 },
+  // ----- Necromancer seferi: lanetli orman, bataklık, mezarlık, kara göl, Mortimer'ın kapısı -----
+  cursed:    { tex: 'cursed', grass: '#3a4030', grass2: '#22281c', patch: ['#3a4030', '#22281c'], trees: 26, rocks: 12, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#4a3626', '#7a6048', '#2a1c12'], tuft: ['#4a5a2a', '#6a7a34'], stone: ['#6a6a62', '#9a9a8e'], light: 'rgba(150,255,170,0.08)', amb: '150,255,140', flowers: 0,
+    roadTex: 'road_cursed', treeSpr: ['nm_tree_1', 'nm_tree_3', 'nm_tree_2', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_tomb_2', 'nm_bones'], treeK: 0.95, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 10 },
+  bog:       { tex: 'cursed', tint: 'rgba(30,80,60,0.25)', grass: '#34402e', grass2: '#1e2a1e', patch: ['#34402e', '#1e2a1e'], trees: 18, rocks: 8, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#3e3424', '#6a5a40', '#241c10'], tuft: ['#3a5a30', '#5a7a3a'], stone: ['#5a665a', '#8a968a'], light: 'rgba(160,255,200,0.1)', amb: '170,255,140', flowers: 0,
+    roadTex: 'road_cursed', treeSpr: ['nm_tree_3', 'nm_tree_2', 'nm_tree_1'], rockSpr: ['nm_rock_2', 'nm_rock_1', 'nm_crow'], treeK: 0.9, rockK: 1.1, pondSpr: 'nm_pond', ponds: 5, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
+  graveyard: { tex: 'cursed', tint: 'rgba(40,30,60,0.22)', grass: '#3a3a38', grass2: '#222226', patch: ['#3a3a38', '#222226'], trees: 12, rocks: 30, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#4a4038', '#7a6a5a', '#2a221c'], tuft: ['#4a5236', '#646e44'], stone: ['#6e6e72', '#a0a0a6'], light: 'rgba(190,170,255,0.08)', amb: '200,180,255', flowers: 0,
+    roadTex: 'road_cursed', treeSpr: ['nm_tree_4', 'nm_tree_1', 'nm_tree_2'], rockSpr: ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_fence', 'nm_tomb_1', 'nm_crow'], treeK: 0.95, rockK: 1.25, bushSpr: ['nm_shroom'], bushes: 8 },
+  blacklake: { tex: 'cursed', tint: 'rgba(20,30,50,0.3)', grass: '#2e3434', grass2: '#181e22', patch: ['#2e3434', '#181e22'], trees: 16, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#3a3430', '#66584a', '#201a14'], tuft: ['#3a4a3a', '#566a48'], stone: ['#5a6066', '#8a9298'], light: 'rgba(140,200,255,0.08)', amb: '160,220,255', flowers: 0,
+    roadTex: 'road_cursed', treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow'], treeK: 0.9, rockK: 1.15, pondSpr: 'nm_pond', ponds: 7, bushSpr: ['nm_bush'], bushes: 8 },
+  necrogate: { tex: 'cursed', tint: 'rgba(60,20,70,0.22)', grass: '#36302e', grass2: '#1e1a1c', patch: ['#36302e', '#1e1a1c'], trees: 20, rocks: 22, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#463830', '#76604e', '#261c16'], tuft: ['#4a4a30', '#6a6a3a'], stone: ['#665e66', '#9a909a'], light: 'rgba(180,255,170,0.1)', amb: '170,255,150', flowers: 0,
+    roadTex: 'road_cursed', treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3'], rockSpr: ['nm_tomb_3', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
   rocky:  { grass: '#a3ad6e', grass2: '#7f8c52', patch: ['#a0a878', '#5f6a40'], trees: 12, rocks: 22, treeCol: ['#3a5a2a', '#4d7236', '#628a44'], road: ['#6a6058', '#b0a690', '#4a4239'], tuft: ['#6f7a40', '#8f9a55'], stone: ['#8d877c', '#bdb6a6'], light: 'rgba(255,214,150,0.18)' },
 };
 
@@ -1013,7 +1024,7 @@ function renderBackground(lv, paths, res = 2) {
   strokePath(46 * R, th.road[0]);
   // Boyalı yol dokusu (Gemini): çölde taş döşemeli kum, diğer temalarda toprak. Yoksa eski üretilmiş doku.
   const desert = th.tex === 'desert';
-  const painted = spr(desert ? 'road_sand' : 'road_dirt');
+  const painted = spr(th.roadTex || (desert ? 'road_sand' : 'road_dirt'));
   const roadTex = painted || spr('road');
   if (roadTex) {
     const pat = g.createPattern(roadTex, 'repeat');
@@ -1089,14 +1100,14 @@ function renderBackground(lv, paths, res = 2) {
   npcs = placeNpcs(lv, paths, blocked);
   // vaha gölleri ve çalılar (yerde, gölgesiz)
   for (let i = 0, n = 0; i < 300 && n < (th.ponds || 0); i++) {
-    const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr('s2_pond_2');
+    const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr(th.pondSpr || 's2_pond_2');
     if (blocked(x, y, 34) || !im) continue;
     n++;
     drawSprite(g, im, x, y, 60 + rnd() * 30, 0.5);
-    for (let k = 0; k < 4; k++) { const b = spr('s2_bush_' + (1 + (k % 2))); if (b) drawSprite(g, b, x + (rnd() - 0.5) * 80, y + 18 + rnd() * 10, 16 + rnd() * 8); }
+    for (let k = 0; k < 4; k++) { const b = spr(th.bushSpr ? th.bushSpr[k % th.bushSpr.length] : 's2_bush_' + (1 + (k % 2))); if (b) drawSprite(g, b, x + (rnd() - 0.5) * 80, y + 18 + rnd() * 10, 16 + rnd() * 8); }
   }
   for (let i = 0, n = 0; i < 400 && n < (th.bushes || 0); i++) {
-    const x = rnd() * W, y = rnd() * H, b = spr('s2_bush_' + (1 + (i % 2)));
+    const x = rnd() * W, y = rnd() * H, b = spr(th.bushSpr ? th.bushSpr[i % th.bushSpr.length] : 's2_bush_' + (1 + (i % 2)));
     if (blocked(x, y, 6) || !b) continue;
     n++; drawSprite(g, b, x, y + 4, 12 + rnd() * 10);
   }
@@ -1176,7 +1187,7 @@ function heroUnlocked(id) {
 // seçili kahraman takımı (en fazla 2, yalnızca açılmış olanlar)
 // seçili kahraman (savaşa tek kahraman gider; kahramanlar ekranından ya da ayarlardan seçilir)
 function team() {
-  const t = (save.team || ['commander']).filter(id => HEROES[id] && heroUnlocked(id)).slice(0, 1);
+  const t = (save.team || ['commander']).filter(id => HEROES[id] && HERO_ORDER.includes(id) && heroUnlocked(id)).slice(0, 1);
   return t.length ? t : ['commander'];
 }
 
@@ -1941,7 +1952,11 @@ function findTarget(t, range, allowAir) {
 
 // Okçu kulelerinin platformu (sprite genişliği/yüksekliği oranında): okçuların ayaklarının
 // dolaşabildiği eşkenar dörtgen. Önündeki korkuluk/mazgal ayrı bir "_front" katmanıyla üstten çizilir.
-const ARCHER_DECK = [
+const ARCHER_DECK = NECRO ? [
+  { cx: 0.5, cy: 0.33, hw: 0.2, hh: 0.05, n: 2 },
+  { cx: 0.55, cy: 0.17, hw: 0.2, hh: 0.05, n: 2 },
+  { cx: 0.55, cy: 0.14, hw: 0.22, hh: 0.06, n: 3 },
+] : [
   { cx: 0.5, cy: 0.30, hw: 0.29, hh: 0.10, n: 2 },
   { cx: 0.388, cy: 0.341, hw: 0.22, hh: 0.10, n: 2 },
   { cx: 0.5, cy: 0.252, hw: 0.25, hh: 0.09, n: 3 },
@@ -3030,7 +3045,7 @@ function spawnMercs() {
   }
   G.effects.push({ kind: 'dust', x: G.castle.x, y: G.castle.y, t: 0, dur: 0.5 });
   G.castle.flash = 0.15;
-  floatText(G.castle.x - 10, G.castle.y - 70, 'Paralı askerler!', '#ffe27a');
+  floatText(G.castle.x - 10, G.castle.y - 70, NECRO ? 'Ölüler kalkıyor!' : 'Paralı askerler!', NECRO ? '#9dff8a' : '#ffe27a');
   sfx('reinforce');
 }
 function updateMercs(dt) {
@@ -3612,6 +3627,11 @@ ARCHER_LOOK.poison = { tunic: ['#3a4a2c', '#161e10'], hood: ['#3e5a2c', '#121c0a
 ARCHER_LOOK.snipe = { tunic: ['#4a4e5c', '#1c1e26'], hat: ['#5a4630', '#21160a'], feather: ['#ff4a3a', '#8a1010'], hair: '#3a2210', cape: ['#6a1e18', '#2a0806'],
   sleeve: ['#545866', '#24262e'], vest: ['#6a4a2a', '#3a2410'], trim: '#e8c66a', belt: '#2a1608', buckle: '#e8c66a', pants: ['#3e3a40', '#1e1c22'],
   boot: ['#3a2414', '#180c04'], bow: ['#4a3420', '#140a04'], fletch: '#ff4a3a', quiver: ['#5a2a14', '#2a1006'], apron: true };
+// Necromancer: okçular mor başlıklı, kemik renkli giysili ölüler
+if (NECRO) for (const L of [...ARCHER_LOOK, ARCHER_LOOK.poison, ARCHER_LOOK.snipe]) for (const [k, v] of Object.entries({
+  tunic: ['#cfc9ae', '#7c7660'], hood: ['#5a3a7a', '#24143a'], hat: ['#4a2e66', '#1e1030'], inner: '#0c0614', cape: ['#4a2a6a', '#1c0e30'],
+  sleeve: ['#cfc9ae', '#7c7660'], vest: ['#3a2a4a', '#1a1024'], pants: ['#3a3040', '#1a1420'], boot: ['#2a2430', '#100c14'], trim: '#7ad36a', buckle: '#7ad36a',
+})) if (k in L) L[k] = v; // yalnız görünümde olan renkler değişir (eksik alan çizimi bozar)
 const ARCH_OUT = '#2a160a';
 function archCanvas(x0, y0, w, h, paint) {
   const c = document.createElement('canvas');
@@ -4105,7 +4125,7 @@ function drawTowerBody(t) {
     ctx.save(); ctx.translate(t.x, ts.bottom); ctx.scale(pop, pop * ksy);
     drawSprite(ctx, ts.im, 0, 0, ts.w);
     ctx.restore();
-    if (t.type === 'artillery') { drawArtilleryBanners(t, ts); drawCannon(t, ts); }
+    if (t.type === 'artillery' && !NECRO) { drawArtilleryBanners(t, ts); drawCannon(t, ts); }
     if (t.type === 'archer' && t.shots && age > 0.3) {
       // okçular arkadan öne sıralı çizilir; önlerindeki korkuluk/mazgal katmanı en üste gelir
       const ord = t.shots.map((a, i) => i).sort((i, j) => t.shots[i].q - t.shots[j].q);
@@ -4129,15 +4149,15 @@ function drawTowerBody(t) {
       if (ice) drawFrostCrown(t, ts, gy);
       if (arc) drawArcaneRunes(t, ts, gy);
       const g = ctx.createRadialGradient(t.x, gy, 0, t.x, gy, r * 2);
-      g.addColorStop(0, arc ? 'rgba(240,190,255,0.7)' : ice ? 'rgba(220,250,255,0.7)' : 'rgba(200,230,255,0.6)');
-      g.addColorStop(1, arc ? 'rgba(170,60,255,0)' : ice ? 'rgba(120,220,255,0)' : 'rgba(80,140,255,0)');
+      g.addColorStop(0, arc ? 'rgba(240,190,255,0.7)' : ice ? 'rgba(220,250,255,0.7)' : NECRO ? 'rgba(190,255,200,0.6)' : 'rgba(200,230,255,0.6)');
+      g.addColorStop(1, arc ? 'rgba(170,60,255,0)' : ice ? 'rgba(120,220,255,0)' : NECRO ? 'rgba(60,255,120,0)' : 'rgba(80,140,255,0)');
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(t.x, gy, r * 2, 0, Math.PI * 2); ctx.fill();
       // küre etrafında çıtırdayan kısa elektrik arkları
       const sd = Math.floor(G.t * 14 + t.x);
       if (sd % 3 === 0 || t.shotAnim > 0) {
         const a0 = (sd * 2.39996) % (Math.PI * 2), L = 7 + (sd % 5);
-        strokeLightning(lightningPts(t.x + Math.cos(a0) * 3, gy + Math.sin(a0) * 3, t.x + Math.cos(a0) * L, gy + Math.sin(a0) * L * 0.8, sd, 0.35), 0.45, arc ? 'rgb(200,120,255)' : ice ? 'rgb(170,235,255)' : 'rgb(130,180,255)', 0.9);
+        strokeLightning(lightningPts(t.x + Math.cos(a0) * 3, gy + Math.sin(a0) * 3, t.x + Math.cos(a0) * L, gy + Math.sin(a0) * L * 0.8, sd, 0.35), 0.45, arc ? 'rgb(200,120,255)' : ice ? 'rgb(170,235,255)' : NECRO ? 'rgb(120,255,150)' : 'rgb(130,180,255)', 0.9);
       }
       ctx.restore();
     }
@@ -4306,6 +4326,18 @@ function drawSoldier(s) {
   const fighting = s.target && dist(s.x, s.y, s.target.x, s.target.y) < 21;
   const r = s.hero ? 8 : 5.5;
   const name = s.hero ? s.def.sprite : s.merc ? 'soldier' : s.militia ? 'militia' : 'soldier';
+  // Necromancer: mahzen askerleri, paralı askerler ve çağrılanlar iskelet (seviye ve uzmanlığa göre 5 görsel)
+  if (NECRO && !s.hero && spr('unit_skel_1')) {
+    const look = s.merc || s.militia ? 1 : s.tower && s.tower.spec === 'shield' ? 4 : s.tower && s.tower.spec === 'blade' ? 5 : Math.min(3, (s.gear || 0) + 1);
+    const key = 'unit_skel_' + look, im = spr(key) || spr('unit_skel_1');
+    const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
+    s.px = s.x; s.py = s.y;
+    const ch = SKEL_H[look] * UNIT_K;
+    drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0,
+      atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
+    if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, '#7ad36a');
+    return;
+  }
   // kışla askeri (ve paralı asker): seviyeye göre zırh/silah değişen çizim
   if (name === 'soldier') {
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
@@ -4524,6 +4556,16 @@ const RIG = {
   enemy_scorpion_queen: { legY: 0.6, stride: 1.2 }, enemy_worm_king: { solid: 'worm' }, enemy_storm_djinn: { solid: 'float' },
 };
 const easeInOut = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+// Necromancer seferi görselleri: iskeletler (1 acemi, 2 muhafız, 3 kemik şövalye, 4 mezar bekçisi, 5 ölüm şövalyesi),
+// Solarian askerleri, atlılar (bacak bölgesi alçak), tekerlekli kuşatma araçları (cart: hafif sarsıntı), uçan banshee
+const SKEL_H = [0, 27, 28, 30, 31, 29];
+Object.assign(RIG, {
+  unit_skel_1: { legY: 0.72 }, unit_skel_2: { legY: 0.72 }, unit_skel_3: { legY: 0.72 }, unit_skel_4: { legY: 0.72 }, unit_skel_5: { legY: 0.72 },
+  enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
+  enemy_priest: { legY: 0.82, stride: 0.5 }, enemy_heavy: { legY: 0.74, stride: 0.8 }, enemy_cavalry: { legY: 0.62, stride: 1.2 },
+  enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' },
+  hero_vladrik: { legY: 0.72 }, hero_wren: { solid: 'float' },
+});
 
 // ----- silah kolu ve gövde iskeleti -----
 // Her karakter görselinin silahlı kolu (silahıyla birlikte) ayrı bir parça olarak kesilir ve omuzdan döner.
@@ -4711,12 +4753,12 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
     -w / 2 + x0 * w + dx, -h + y0 * h + dy, (x1 - x0) * w, (y1 - y0) * h);
   if (rig.solid) {
     // bacaksız: süzülen cin merkezinden hafifçe sallanır ve yükselip alçalır; solucan tabanından salınır, nefes alır gibi uzar
-    const fl = rig.solid === 'float', py = fl ? -h * 0.5 : 0;
-    const sway = fl ? Math.sin(time * 1.8 + w) * 0.03 : Math.sin(time * 3 + w) * 0.06;
-    const bob = fl ? Math.sin(time * 2.4 + w) * h * 0.04 : 0, st = fl ? 1 : 1 + Math.sin(time * 4 + w) * 0.04;
+    const fl = rig.solid === 'float', cart = rig.solid === 'cart', py = fl ? -h * 0.5 : 0;
+    const sway = cart ? Math.sin(time * 9 + w) * 0.008 : fl ? Math.sin(time * 1.8 + w) * 0.03 : Math.sin(time * 3 + w) * 0.06;
+    const bob = fl ? Math.sin(time * 2.4 + w) * h * 0.04 : cart ? Math.abs(Math.sin(time * 9 + w)) * h * -0.01 : 0, st = fl || cart ? 1 : 1 + Math.sin(time * 4 + w) * 0.04;
     ctx.save(); ctx.translate(0, py + P.bodyDy + bob); ctx.rotate(P.rot * 0.7 + sway); ctx.scale(P.sx, P.sy * st); ctx.translate(0, -py);
     // gövde dilimleri yatayda kayarak kıvrılır (cin dumanı, solucan gövdesi)
-    const N = 6, bend = (P.bend || 0) * h + (fl ? Math.sin(time * 2.1 + w) : Math.sin(time * 3.4 + w)) * h * 0.03;
+    const N = cart ? 1 : 6, bend = cart ? 0 : (P.bend || 0) * h + (fl ? Math.sin(time * 2.1 + w) : Math.sin(time * 3.4 + w)) * h * 0.03;
     for (let i = 0; i < N; i++) {
       const ya = i / N, yb = (i + 1) / N, oA = bend * (1 - ya) * (1 - ya), oB = bend * (1 - yb) * (1 - yb);
       const cA = -h + ya * h, cB = -h + yb * h, sh = (oA - oB) / (cA - cB);
@@ -6169,7 +6211,7 @@ function drawHud() {
     txt(info[0], W / 2, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
     txt(info[1], W / 2, y0 + 34, 13, '#f2e8d4', 'center', '700', FONT_B, false);
   }
-  const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? 'Paralı askerleri göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
+  const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
     ctx.font = `700 15px ${FONT_B}`;
@@ -6265,6 +6307,7 @@ function towerStats(type, L) {
 // Eski yedek görsel (kışla) ise kale noktasına ortalanır.
 function castlePlace(x, y, im) {
   if (im === spr('tower_barracks_3')) return { x, y, w: 118 * BUILD_K };
+  if (NECRO) return { x: x - 41, y: y + 6, w: 74 };
   return { x: x - 15 * BUILD_K, y: y + 10, w: 124 * BUILD_K };
 }
 
@@ -6454,7 +6497,7 @@ function drawSkillsPanel(k, px, py, pw, ph, cx) {
 let settingsBack = 'title', resetArm = 0;
 function openSettings(from) { settingsBack = from; resetArm = 0; go(() => { screen = 'settings'; }); }
 function drawSettings() {
-  const st = time - screenT, bg = spr('title_bg');
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
   else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
   const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -6497,7 +6540,7 @@ function drawSettings() {
 }
 
 function drawHeroes() {
-  const st = time - screenT, bg = spr('title_bg');
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
   else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
   const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -6996,7 +7039,7 @@ function effLevel(t) {
 }
 
 function drawUpgrades() {
-  const st = time - screenT, bg = spr('title_bg');
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
   else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
   const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -7066,7 +7109,7 @@ function coverImage(im, zoom = 1, ox = 0, oy = 0) {
 }
 
 function drawTitle() {
-  const st = time - screenT, bg = spr('title_bg');
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (bg) coverImage(bg, 1.07 + Math.sin(time * 0.1) * 0.03, Math.sin(time * 0.07) * 10, Math.cos(time * 0.09) * 5);
   else {
     const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -7094,12 +7137,12 @@ function drawTitle() {
   const e = easeOutBack(clamp(st / 0.7, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.25, 0, 1);
   ctx.translate(W / 2, 96); ctx.scale(e, e); ctx.rotate(Math.sin(time * 1.2) * 0.01);
-  logo('SINIR KALESİ', 0, 0, 76);
+  if (NECRO) { logo("DON'T MESS WITH", 0, -30, 44); logo('THE NECROMANCER', 0, 26, 60); } else logo('SINIR KALESİ', 0, 0, 76);
   ctx.restore();
   const r = clamp((st - 0.35) / 0.35, 0, 1);
   if (r > 0) {
     ctx.save(); ctx.globalAlpha = r; ctx.translate(W / 2, 160); const rs = 0.6 + 0.4 * easeOutBack(r); ctx.scale(rs, rs);
-    ribbon(0, 0, 250, 'KULE SAVUNMA', 'red', 19);
+    ribbon(0, 26, 250, 'KULE SAVUNMA', 'red', 19);
     ctx.restore();
   }
   gameButton('play', W / 2, 452, 250, 66, 'OYNA', () => go(() => { screen = 'map'; }), 'green', { icon: 'play', shine: true, breathe: true, appear: st - 0.55, size: 32 });

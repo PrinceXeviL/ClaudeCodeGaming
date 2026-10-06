@@ -725,6 +725,116 @@ Object.assign(BOSS_ESCORT, {
   raider_chief: [['raider', 4]], scorpion_queen: [['scorpion', 4]], worm_king: [['sandworm', 2], ['raider', 2]],
   mummy_king: [['mummy', 3]], golem_titan: [['golem', 1], ['raider', 3]], storm_djinn: [['djinn', 2], ['golem', 1], ['mummy', 2]],
 });
+// =====================================================================================
+// DON'T MESS WITH THE NECROMANCER — Sefer 1: Lanetli Sınır (tasarım: tasarim/necromancer-gdd.md)
+// Mekanik aynı; kuleler, askerler, düşmanlar, kahramanlar ve bölümler yeni temaya göre. Eski seferlerin verisi
+// yukarıda duruyor ama oyunda yalnız bu sefer görünür (LEVELS/EPISODES aşağıda yeniden kurulur).
+// =====================================================================================
+const NECRO = true;
+Object.assign(ENEMIES, {
+  // Solarian İmparatorluğu askerleri
+  legion:    { name: 'Lejyoner',            h: 30, hp: 60,  speed: 24, armor: 0.15, mr: 0,    gold: 8,  dmg: [2, 5],   rate: 1,   lives: 1, r: 9 },
+  solarcher: { name: 'Solarian Okçusu',     h: 30, hp: 45,  speed: 26, armor: 0,    mr: 0,    gold: 9,  dmg: [1, 3],   rate: 1,   lives: 1, r: 9, ranged: { r: 115, dmg: [4, 7], rate: 2, proj: 'knife' } },
+  gladiator: { name: 'Gladyatör',           h: 31, hp: 120, speed: 30, armor: 0,    mr: 0,    gold: 14, dmg: [6, 10],  rate: 0.8, lives: 1, r: 9 },
+  assassin:  { name: 'Suikastçı',           h: 30, hp: 80,  speed: 38, armor: 0,    mr: 0.25, gold: 15, dmg: [5, 9],   rate: 0.8, lives: 1, r: 9, blink: { cd: 9, d: 55 } },
+  priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true },
+  heavy:     { name: 'Ağır Piyade',         h: 33, hp: 380, speed: 14, armor: 0.7,  mr: 0,    gold: 32, dmg: [9, 15],  rate: 1.3, lives: 1, r: 12 },
+  cavalry:   { name: 'Solarian Süvarisi',   h: 42, hp: 280, speed: 34, armor: 0.3,  mr: 0,    gold: 28, dmg: [10, 16], rate: 1.1, lives: 2, r: 13 },
+  ram:       { name: 'Koçbaşı',             h: 40, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 16 },
+  catapult:  { name: 'Mancınık Arabası',    h: 40, hp: 420, speed: 12, armor: 0.2,  mr: 0,    gold: 38, dmg: [2, 4],   rate: 2,   lives: 2, r: 14,
+    desc: 'Durup kulelerimize taş atar, 3 sn susturur', ab: { bomb: { cd: 12, stun: 3, r: 200 } } },
+  // bölüm sonu komutanları (rütbeli subaylar) ve sefer sonu: General Gloriosus
+  centurion:    { name: 'Yüzbaşı Lucius', base: 'legion', h: 40, hp: 700, speed: 15, armor: 0.3, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true, hpK: 1,
+    desc: 'Lejyoner çağırır, borusuyla çevresini hızlandırır', ab: { summon: { t: 'legion', n: 3, cd: 11 }, howl: { cd: 13, r: 110 } } },
+  champion:     { name: 'Arena Şampiyonu Maximus', base: 'gladiator', h: 42, hp: 850, speed: 20, armor: 0.1, mr: 0.1, gold: 90, dmg: [14, 22], rate: 0.9, lives: 5, r: 14, boss: true, chief: true, hpK: 0.9,
+    desc: 'Yere vurup askerleri sersemletir, kalabalığı coşturup hızlandırır', ab: { slam: { cd: 8, r: 64, stun: 1.6, dmg: 30 }, howl: { cd: 12, r: 110 } } },
+  shadowmaster: { name: 'Gölge Usta', base: 'assassin', h: 40, hp: 900, speed: 20, armor: 0, mr: 0.3, gold: 110, dmg: [12, 20], rate: 0.8, lives: 5, r: 14, boss: true, chief: true, hpK: 0.95,
+    desc: 'Gölgeden gölgeye atlar, suikastçı çağırır', ab: { pounce: { cd: 7, d: 70 }, summon: { t: 'assassin', n: 2, cd: 12 } } },
+  cavcaptain:   { name: 'Süvari Kaptanı Aurelius', base: 'cavalry', h: 50, hp: 1300, speed: 22, armor: 0.35, mr: 0.1, gold: 140, dmg: [16, 26], rate: 1.1, lives: 5, r: 16, boss: true, chief: true, hpK: 0.75,
+    desc: 'Hücumla ileri atılır, lejyoner çağırır, borusuyla hızlandırır', ab: { pounce: { cd: 12, d: 60 }, howl: { cd: 14, r: 110 }, summon: { t: 'legion', n: 2, cd: 16 } } },
+  gloriosus:    { name: 'General Gloriosus', h: 60, hp: 3000, speed: 10, armor: 0.4, mr: 0.3, gold: 400, dmg: [30, 48], rate: 1.4, lives: 20, r: 22, boss: true, chief: true, hpK: 1.2,
+    desc: 'Kendini çok beğenir. Kalkan açar, lejyon çağırır, kulelere mancınık ateşi yağdırır, öfkelenince yayan saldırır',
+    ab: { summon: { t: ['legion', 'heavy', 'gladiator'], n: 3, cd: 11 }, shield: { cd: 16, t: 2.5 }, howl: { cd: 12, r: 130 }, bomb: { cd: 12, stun: 3, r: 220 } } },
+});
+Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator', 2]], shadowmaster: [['assassin', 3]], cavcaptain: [['cavalry', 2]], gloriosus: [['heavy', 2], ['legion', 4]] });
+
+// Bölümler: yol ve arsa düzeni eski ilk 5 bölümden; ortam, dalgalar ve boss yeni
+{
+  const old = LEVELS.slice(0, 5).map(l => ({ paths: l.paths, plots: l.plots, routes: l.routes }));
+  const L = [
+    { name: 'Ölü Orman', theme: 'cursed', gold: 300, bossT: 'centurion', waves: [
+      [{ t: 'legion', n: 5, gap: 1.6 }],
+      [{ t: 'legion', n: 8, gap: 1.2 }],
+      [{ t: 'legion', n: 6, gap: 1.1 }, { t: 'solarcher', n: 3, gap: 2, at: 5 }],
+      [{ t: 'legion', n: 8, gap: 0.9 }, { t: 'solarcher', n: 4, gap: 1.5, at: 6 }],
+      [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'solarcher', n: 5, gap: 1.2, at: 6 }],
+      [{ t: 'solarcher', n: 6, gap: 1 }, { t: 'legion', n: 12, gap: 0.7, at: 4 }],
+    ] },
+    { name: 'Sisli Bataklık', theme: 'bog', gold: 380, weather: 'rain', bossT: 'champion', waves: [
+      [{ t: 'legion', n: 6, gap: 1.3 }],
+      [{ t: 'gladiator', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 4 }],
+      [{ t: 'solarcher', n: 5, gap: 1.2 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
+      [{ t: 'gladiator', n: 5, gap: 1.5 }, { t: 'legion', n: 8, gap: 0.9, at: 6 }],
+      [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'gladiator', n: 5, gap: 1.2, at: 6 }, { t: 'solarcher', n: 4, gap: 1.2, at: 10 }],
+      [{ t: 'gladiator', n: 8, gap: 1 }, { t: 'legion', n: 10, gap: 0.7, at: 6 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
+    ] },
+    { name: 'Unutulmuş Mezarlık', theme: 'graveyard', gold: 470, hpMul: 0.9, bossT: 'shadowmaster', waves: [
+      [{ t: 'legion', n: 8, gap: 1.1 }],
+      [{ t: 'assassin', n: 4, gap: 1.6 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
+      [{ t: 'priest', n: 2, gap: 3 }, { t: 'gladiator', n: 5, gap: 1.3, at: 2 }],
+      [{ t: 'assassin', n: 6, gap: 1.2 }, { t: 'solarcher', n: 5, gap: 1.2, at: 6 }],
+      [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'priest', n: 3, gap: 2.5, at: 4 }, { t: 'assassin', n: 5, gap: 1, at: 9 }],
+      [{ t: 'gladiator', n: 8, gap: 1 }, { t: 'priest', n: 3, gap: 2, at: 4 }, { t: 'assassin', n: 8, gap: 0.8, at: 10 }],
+      [{ t: 'legion', n: 12, gap: 0.6 }, { t: 'assassin', n: 6, gap: 0.9, at: 5 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
+    ] },
+    { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.75, bossT: 'cavcaptain', waves: [
+      [{ t: 'legion', n: 8, gap: 1 }, { t: 'heavy', n: 1, gap: 1, at: 8 }],
+      [{ t: 'cavalry', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
+      [{ t: 'heavy', n: 3, gap: 2.4 }, { t: 'priest', n: 2, gap: 3, at: 3 }, { t: 'solarcher', n: 5, gap: 1.2, at: 7 }],
+      [{ t: 'ram', n: 1, gap: 1 }, { t: 'legion', n: 10, gap: 0.8, at: 2 }, { t: 'gladiator', n: 4, gap: 1.2, at: 10 }],
+      [{ t: 'cavalry', n: 5, gap: 1.5 }, { t: 'assassin', n: 6, gap: 1, at: 6 }, { t: 'heavy', n: 2, gap: 3, at: 10 }],
+      [{ t: 'heavy', n: 4, gap: 2 }, { t: 'priest', n: 3, gap: 2.5, at: 3 }, { t: 'cavalry', n: 4, gap: 1.6, at: 10 }, { t: 'legion', n: 10, gap: 0.7, at: 14 }],
+      [{ t: 'ram', n: 2, gap: 6 }, { t: 'gladiator', n: 8, gap: 0.9, at: 3 }, { t: 'cavalry', n: 4, gap: 1.5, at: 12 }],
+    ] },
+    { name: "Mortimer'ın Kapısı", theme: 'necrogate', gold: 650, hpMul: 0.7, bossT: 'gloriosus', waves: [
+      [{ t: 'legion', n: 10, gap: 0.9 }, { t: 'solarcher', n: 4, gap: 1.4, at: 5 }],
+      [{ t: 'catapult', n: 1, gap: 1 }, { t: 'heavy', n: 3, gap: 2, at: 3 }, { t: 'legion', n: 8, gap: 0.9, at: 8 }],
+      [{ t: 'cavalry', n: 5, gap: 1.4 }, { t: 'assassin', n: 6, gap: 1, at: 6 }, { t: 'priest', n: 2, gap: 3, at: 10 }],
+      [{ t: 'ram', n: 1, gap: 1 }, { t: 'heavy', n: 4, gap: 2, at: 2 }, { t: 'gladiator', n: 8, gap: 0.9, at: 8 }],
+      [{ t: 'catapult', n: 2, gap: 8 }, { t: 'legion', n: 14, gap: 0.6, at: 2 }, { t: 'solarcher', n: 8, gap: 0.9, at: 8 }],
+      [{ t: 'cavalry', n: 6, gap: 1.2 }, { t: 'heavy', n: 5, gap: 1.8, at: 5 }, { t: 'priest', n: 3, gap: 2.4, at: 8 }, { t: 'assassin', n: 8, gap: 0.8, at: 12 }],
+      [{ t: 'ram', n: 2, gap: 6 }, { t: 'catapult', n: 1, gap: 1, at: 4 }, { t: 'gladiator', n: 10, gap: 0.8, at: 6 }, { t: 'legion', n: 14, gap: 0.6, at: 12 }],
+      [{ t: 'heavy', n: 6, gap: 1.6 }, { t: 'cavalry', n: 8, gap: 1.1, at: 6 }, { t: 'assassin', n: 10, gap: 0.7, at: 12 }, { t: 'priest', n: 4, gap: 2, at: 14 }],
+    ] },
+  ];
+  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1 }));
+  LEVELS.splice(0, LEVELS.length, ...L);
+  EPISODES.splice(0, EPISODES.length, { name: 'Lanetli Sınır', bg: 'nm_title', nodes: [[150, 450], [300, 420], [450, 450], [600, 410], [760, 360]] });
+}
+// kuleler: Mortimer'ın yapıları
+Object.assign(TOWERS.archer, { name: 'Kemik Okçular', desc: 'İskelet okçular hızlı atar, havayı da vurur' });
+Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'İskelet savaşçılar yolu keser' });
+Object.assign(TOWERS.mage, { name: 'Ruh Kulesi', desc: 'Ruh ışını atar, zırhı deler' });
+Object.assign(TOWERS.artillery, { name: 'Kemik Mancınığı', desc: 'Kafatası fırlatır: kısa menzil, ağır alan hasarı' });
+TOWERS.barracks.levels[0].perk = 'Tencere miğferli 3 iskelet acemi yolu keser';
+TOWERS.barracks.levels[1].perk = 'İskelet muhafızlar: zincir zırh, kalkan, uzun kılıç';
+TOWERS.barracks.levels[2].perk = 'Kemik şövalyeler: kara zırh · vuruşlar %15 can çalar';
+TOWERS.artillery.levels[0].perk = 'Kafatası mermisi, geniş alan hasarı';
+TOWERS.artillery.levels[1].perk = 'Yeşil alevli kafatası, daha geniş patlama';
+TOWERS.artillery.levels[2].perk = 'Veba kazanı: %30 şansla 0.6 sn sersemletir';
+TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
+const NAMES = { poison: 'Veba Okları', snipe: 'Hayalet Nişancı', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Veba Kazanı', double: 'Kemik Yağmuru' };
+for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
+// komutanlar (tek seçilir): Kont Vladrik (eski komutanın yetenekleri), Wailing Wren (eski okçunun yetenekleri)
+Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
+Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep');
+Object.assign(HERO_ULT.commander, { name: 'Kan Kılıçları' });
+Object.assign(HERO_ULT.zeynep, { name: 'Ruh Okları' });
+// kale yerine Mortimer'ın kulesi; okçular balkonda ve pencere önlerinde
+Object.assign(CASTLE, { spots: [[0.66, 0.37], [0.3, 0.58], [0.82, 0.6]] });
+CASTLE.levels[0].title = 'Kule Okçuları'; CASTLE.levels[1].title = 'Kule Nişancıları'; CASTLE.levels[2].title = 'Kule Muhafızları';
+
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
   'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];
 // boss gücü kademesi: 1. seferde bölüm sırası; 2. sefer 1. seferin sonlarından başlar, yavaşça yükselir
@@ -794,7 +904,7 @@ LEVELS.forEach((lv) => {
 });
 LEVELS.forEach((lv, i) => shapeWaves(lv, i));
 LEVELS.forEach((lv, i) => {
-  lv.boss = LEVEL_BOSS[i];
+  lv.boss = lv.bossT || LEVEL_BOSS[i];
   const w = lv.waves[lv.waves.length - 1];
   const end = Math.max(...w.map(g => (g.at || 0) + g.gap * (g.n - 1)));
   w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0 });
@@ -881,3 +991,11 @@ const SPEC = {
   napalm: { title: 'Ateş Bataryası',  who: 'Kızgın namlu, alevli sancaklar' },
   double: { title: 'İkiz Toplar',     who: 'Yan yana iki top' },
 };
+
+// Necromancer seferi: zayıflık / direnç
+Object.assign(ENEMY_WK, {
+  legion: { magic: 1.2 }, solarcher: { melee: 1.3, arrow: 1.2 }, gladiator: { arrow: 1.2, blast: 1.2 }, assassin: { blast: 1.3, melee: 0.8 },
+  priest: { arrow: 1.3 }, heavy: { magic: 1.4, arrow: 0.6 }, cavalry: { melee: 0.8, blast: 1.2 }, ram: { blast: 1.4, arrow: 0.5, magic: 0.8 },
+  catapult: { blast: 1.3, melee: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
+  gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
+});
