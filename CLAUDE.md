@@ -47,7 +47,7 @@ tek kahraman (team() 1 kişi; kahramanlar ekranı ve AYARLAR ekranından seçili
 boss havası: bossSting girişi + kızıl karartma, drawBossAura (hale + yetenek uyarı halkaları), dev boss adımı (stomp), öfke evresi %50 canda,
 sentez sesler portal/roar/stomp; kilitlendiği hedef gelmeyen düşman kendisi yürür (e.offPath ile yola döner),
 kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE), yol kenarı dalgalı (roadVary/roadShape),
-NPC sistemi hazır ama kapalı (NPC_ON=false; Gemini görselleriyle yeniden yapılacak), 6 evreli saldırı/yürüyüş/ölüm animasyonu,
+NPC sistemi hazır ama kapalı (NPC_ON=false; Gemini görselleriyle yeniden yapılacak), 12 pozlu animasyonlar (track/pose: saldırı, yürüyüş, ölüm, kanat, yetenek, kışla askeri, yay çekişi; Hermite eğri),
 sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).
 
 Her değişiklikten sonra: akış testi + gerekirse denge botu, sonra commit/push.

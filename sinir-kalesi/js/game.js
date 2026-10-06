@@ -3751,27 +3751,27 @@ function paintArcher(c, o, s, a, lvl) {
   const P = archerParts(lvl), L = ARCHER_LOOK[lvl];
   const face = Math.cos(a.ang) >= 0 ? 1 : -1;
   const la = clamp(face > 0 ? a.ang : Math.PI - a.ang, -1.25, 1.25);
-  const walking = a.walk > 0;
-  const bob = walking ? Math.abs(Math.sin(a.walk * 10)) * 0.9 : Math.sin(G.t * 2.4 + a.seed) * 0.3;
-  const rel = a.fx > 0 ? a.fx / 0.18 : 0;
+  const walking = a.walk > 0, g8 = walking ? gaitOf(a.walk * 10 / TAU) : null; // 12 pozlu yürüyüş
+  const bob = g8 ? -g8.dy * 26 : Math.sin(G.t * 2.4 + a.seed) * 0.3;
+  const rel = a.fx > 0 ? a.fx / 0.18 : 0, dw = pose(BOW_DRAW, a.draw, Q).d; // yay çekişi 12 poz
   c.save(); c.translate(o.x, o.y); c.scale(s * face, s);
   // gölge
   c.fillStyle = 'rgba(25,14,4,0.38)'; c.beginPath(); c.ellipse(0.4, 0, 5.6, 1.7, 0, 0, Math.PI * 2); c.fill();
-  // bacaklar
-  const sw = walking ? Math.sin(a.walk * 10) * 0.5 : 0, st = walking ? 0 : 0.2;
-  const leg = (part, hx, ang) => { c.save(); c.translate(hx, -9 - bob * 0.3); c.rotate(ang); blitPart(c, part); c.restore(); };
-  leg(P.legB, -1.2, -sw - st);
-  leg(P.leg, 1.3, sw + st * 0.6);
+  // bacaklar (açı artı yönde ayak geriye gider)
+  const st = walking ? 0 : 0.2;
+  const leg = (part, hx, ang, lift) => { c.save(); c.translate(hx, -9 - bob * 0.3 - lift); c.rotate(ang); blitPart(c, part); c.restore(); };
+  leg(P.legB, -1.2, (g8 ? -g8.b * 0.5 : 0) - st, g8 ? Math.max(0, g8.bl) * 1.3 : 0);
+  leg(P.leg, 1.3, (g8 ? -g8.f * 0.5 : 0) + st * 0.6, g8 ? Math.max(0, g8.fl) * 1.3 : 0);
   // gövde: hedefe doğru hafifçe eğilir, nefes alır
   // atıştan sonra kısa geri tepme: gövde geriye yaslanır, yay kolu hafifçe düşer
-  const lean = la * 0.12 + (walking ? 0.06 : 0) - Math.sin(rel * Math.PI) * 0.07 + a.draw * 0.03;
+  const lean = la * 0.12 + (walking ? 0.06 : 0) - Math.sin(rel * Math.PI) * 0.07 + dw * 0.03;
   c.translate(0, -9 - bob); c.rotate(lean); c.translate(0, 9);
   const br = 1 + Math.sin(G.t * 2.4 + a.seed) * 0.012;
   c.save(); c.translate(0, -9); c.scale(1, br); c.translate(0, 9); blitPart(c, P.body); c.restore();
   // kollar ve yay (gövde eğimine göre yerel açı)
   const aim = la - lean, ca = Math.cos(aim), sa = Math.sin(aim);
   const S = { x: 0.6, y: -16.4 }, H = { x: S.x + ca * 7.2, y: S.y + sa * 7.2 };
-  const dr = 1.3 + a.draw * 5.6 - rel * 1.0;
+  const dr = 1.3 + dw * 5.6 - rel * 1.0;
   const Pw = { x: H.x - ca * dr, y: H.y - sa * dr };
   const limb = (pts, col, w) => {
     c.lineCap = 'round'; c.lineJoin = 'round';
@@ -3784,7 +3784,8 @@ function paintArcher(c, o, s, a, lvl) {
   c.save(); c.translate(H.x, H.y); c.rotate(aim); blitPart(c, P.bow);
   // kiriş
   c.strokeStyle = 'rgba(255,250,235,0.95)'; c.lineWidth = 0.38; c.lineCap = 'round';
-  c.beginPath(); c.moveTo(-1.6, -8.6); c.lineTo(-dr, 0); c.lineTo(-1.6, 8.6); c.stroke();
+  const vib = rel > 0 ? Math.sin(rel * 42) * rel * 1.4 : 0; // atıştan sonra kiriş titrer
+  c.beginPath(); c.moveTo(-1.6, -8.6); c.lineTo(-dr + vib, 0); c.lineTo(-1.6, 8.6); c.stroke();
   // ok
   if (a.fx <= 0.06) {
     c.strokeStyle = ARCH_OUT; c.lineWidth = 0.95; c.beginPath(); c.moveTo(-dr, 0); c.lineTo(5.2, 0); c.stroke();
@@ -3798,8 +3799,8 @@ function paintArcher(c, o, s, a, lvl) {
   c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(H.x, H.y, 1.25, 0, Math.PI * 2); c.fill(); c.stroke();
   // çeken kol: dirsek dışarı/yukarı kalkar
   const S2 = { x: -0.6, y: -16.0 };
-  const mx = (S2.x + Pw.x) / 2, my = (S2.y + Pw.y) / 2, k = 1.6 + a.draw * 1.4;
-  const E = { x: mx - sa * k * 0.4 - ca * a.draw * 1.4, y: my - Math.abs(ca) * k * 0.55 };
+  const mx = (S2.x + Pw.x) / 2, my = (S2.y + Pw.y) / 2, k = 1.6 + dw * 1.4;
+  const E = { x: mx - sa * k * 0.4 - ca * dw * 1.4, y: my - Math.abs(ca) * k * 0.55 };
   limb([S2, E, Pw], L.sleeve[0], 2.3);
   c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(Pw.x, Pw.y, 1.2, 0, Math.PI * 2); c.fill(); c.stroke();
   c.restore();
@@ -3996,29 +3997,27 @@ function soldierParts(lvl) {
 // o: ayak; s: ölçek; face: yön; walk: yürüyüş zamanı (0 = durgun); atk: saldırı evresi (atkPhase) ya da null
 function paintSoldier(c, o, s, face, lvl, walk, atk, seed, fx) {
   const P = soldierParts(lvl), L = SOLDIER_LOOK[lvl];
-  const bob = walk ? Math.abs(Math.sin(walk * 9)) * 0.9 : Math.sin(G.t * 2.2 + seed) * 0.25;
+  // yürüyüş (12 poz): bacaklar yerde geri kayar, havada diz kalkarak öne savrulur; gövde adımda iner-kalkar
+  const g8 = walk ? gaitOf(walk * 9 / TAU) : null;
+  const bob = g8 ? -g8.dy * 26 : Math.sin(G.t * 2.2 + seed) * 0.25;
   c.save(); c.translate(o.x, o.y); c.scale(s * face, s);
   c.fillStyle = 'rgba(25,14,4,0.35)'; c.beginPath(); c.ellipse(0.4, 0, 5.8, 1.7, 0, 0, Math.PI * 2); c.fill();
-  // saldırı: hazırlıkta kılıç geriye-yukarı kalkar, vuruşta öne-aşağı iner; gövde öne atılır
-  // nöbet duruşu: kılıç önde, yukarı bakar; hazırlıkta başın üstüne kalkar, vuruşta öne-aşağı iner
-  let swing = 0.75 + Math.sin(G.t * 2.2 + seed) * 0.04, lunge = 0;
-  // altı evre: sezdirme (kılıç öne iner, çömelir) → kurulma (kılıç başın üstüne) → vuruş (hızla öne-aşağı)
-  // → çarpma (titreşim) → devam (savuruş biraz daha iner) → toparlanma (nöbet duruşuna döner)
-  let step = 0, crouch = 0;
+  // nöbet duruşu: kılıç önde, yukarı bakar. Saldırı 12 poz (SOL_ATK): ağırlık geri → sezdirme (kılıç öne iner,
+  // çömelir) → kılıç kalkar → kurulma (başın üstü) → gerilim → savuruş → darbe → sekme → devam → toparlanma
+  let swing = 0.75 + Math.sin(G.t * 2.2 + seed) * 0.04, lunge = 0, step = 0, crouch = 0;
   if (atk != null) {
-    if (atk < -0.18) { const k = easeInOut(clamp((atk + 0.3) / 0.12, 0, 1)); swing = 0.75 + 0.25 * k; lunge = 0.3 * k; crouch = 0.6 * k; }
-    else if (atk < 0) { const k = easeInOut((atk + 0.18) / 0.18); swing = lerp(1.0, -1.55, k); lunge = lerp(0.3, -0.6, k); step = -0.15 * k; crouch = 0.6 * (1 - k) - 0.3 * k; }
-    else if (atk < 0.06) { const k = easeOutQ(atk / 0.06); swing = -1.55 + 3.6 * k; lunge = lerp(-0.6, 1.8, k); step = 0.4 * k; crouch = lerp(-0.3, 0.5, k); }
-    else if (atk < 0.13) { const k = (atk - 0.06) / 0.07; swing = 2.05 + Math.sin(k * Math.PI * 3) * 0.1 * (1 - k); lunge = 1.8; step = 0.4; crouch = 0.5 * (1 - k); }
-    else if (atk < 0.24) { const k = (atk - 0.13) / 0.11, sw = Math.sin(k * Math.PI); swing = 2.05 + 0.2 * sw; lunge = 1.8 + 0.3 * sw; step = 0.4; }
-    else { const k = easeInOut(clamp((atk - 0.24) / 0.21, 0, 1)); swing = 2.05 - 1.3 * k; lunge = 1.8 * (1 - k); step = 0.4 * (1 - k); crouch = -Math.sin(k * Math.PI) * 0.3; }
+    const A = pose(SOL_ATK, atk, Q);
+    swing = A.sw; lunge = A.lu; step = A.st; crouch = A.cr;
+    if (atk > 0.06 && atk < 0.13) { const k = (atk - 0.06) / 0.07; swing += Math.sin(k * Math.PI * 3) * 0.1 * (1 - k); } // darbe titremesi
   }
-  const sw = walk ? Math.sin(walk * 9) * 0.5 : 0, st = walk ? 0 : 0.18;
-  const leg = (part, hx, ang) => { c.save(); c.translate(hx, -9 - bob * 0.3); c.rotate(ang); blitPart(c, part); c.restore(); };
+  // bacak açısı artı yönde ayak geriye gider: öne savrulma için işaret ters
+  const sw = g8 ? -g8.f * 0.5 : 0, swB = g8 ? -g8.b * 0.5 : 0, st = g8 ? 0 : 0.18;
+  const leg = (part, hx, ang, lift) => { c.save(); c.translate(hx, -9 - bob * 0.3 - lift); c.rotate(ang); blitPart(c, part); c.restore(); };
   c.translate(lunge, 0);
-  leg(P.legB, -1.2, -sw - st - step * 0.5);
-  leg(P.leg, 1.3, sw + st * 0.6 + step);
+  leg(P.legB, -1.2, swB - st - step * 0.5, g8 ? Math.max(0, g8.bl) * 1.3 : 0);
+  leg(P.leg, 1.3, sw + st * 0.6 + step, g8 ? Math.max(0, g8.fl) * 1.3 : 0);
   c.translate(0, -bob + crouch);
+  if (g8) c.rotate((g8.rot - 0.04) * 0.6);
   // kılıç kolu (uzak taraf): omuzdan, kılıçla birlikte döner
   const S = { x: -0.2, y: -16.6 };
   c.save(); c.translate(S.x, S.y); c.rotate(swing);
@@ -4342,6 +4341,145 @@ function atkPhase(rate, atk) {
 }
 const easeOutQ = (x) => 1 - (1 - x) * (1 - x);
 
+// ----- anahtar pozlar -----
+// Animasyonlar her ekran karesinde hesaplanır. Her hareket 12 anahtar pozla tanımlanır; aradaki kareler
+// yumuşak (Hermite) eğriyle doldurulur. Pozda yazılmayan alan bir önceki pozdan aynen taşınır.
+// '!' işaretli pozda hareket keskin yön değiştirir (darbe, yere basma), '=' işaretli pozda bir an asılı kalır (gerilim).
+function track(keys, loop) {
+  const n = keys.length, ts = keys.map(k => k[0]), per = ts[n - 1] - ts[0], names = new Set(), F = {};
+  keys.forEach(k => Object.keys(k[1]).forEach(f => names.add(f)));
+  for (const f of names) {
+    let last = f === 'sx' || f === 'sy' ? 1 : 0;
+    const v = keys.map(k => (last = k[1][f] ?? last)), mi = [], mo = [];
+    for (let i = 0; i < n; i++) {
+      // komşu pozlar; döngüde ilk ve son poz aynıdır, komşu öbür uçtan alınır
+      const hasP = i > 0 || loop, hasN = i < n - 1 || loop;
+      const pv = i > 0 ? v[i - 1] : v[n - 2], pt = i > 0 ? ts[i - 1] : ts[n - 2] - per;
+      const nv = i < n - 1 ? v[i + 1] : v[1], nt = i < n - 1 ? ts[i + 1] : ts[1] + per;
+      const sIn = hasP ? (v[i] - pv) / (ts[i] - pt) : 0, sOut = hasN ? (nv - v[i]) / (nt - ts[i]) : 0, fl = keys[i][2];
+      if (fl === '=' || !hasP || !hasN) { mi[i] = mo[i] = 0; }
+      else if (fl === '!') { mi[i] = sIn; mo[i] = sOut; }
+      else if (sIn * sOut <= 0) { mi[i] = mo[i] = 0; } // tepe noktası: taşma olmadan döner
+      else {
+        const a = ts[i] - pt, b = nt - ts[i];
+        let m = (sIn * b + sOut * a) / (a + b);
+        const cap = 3 * Math.min(Math.abs(sIn), Math.abs(sOut));
+        if (Math.abs(m) > cap) m = Math.sign(m) * cap;
+        mi[i] = mo[i] = m;
+      }
+    }
+    F[f] = { v, mi, mo };
+  }
+  return { ts, F, loop, per };
+}
+function pose(tr, t, out = {}) {
+  const ts = tr.ts, n = ts.length;
+  if (tr.loop) t = ts[0] + (((t - ts[0]) % tr.per) + tr.per) % tr.per;
+  t = clamp(t, ts[0], ts[n - 1]);
+  let i = 0;
+  while (i < n - 2 && t > ts[i + 1]) i++;
+  const h = ts[i + 1] - ts[i], s = h > 0 ? (t - ts[i]) / h : 0, s2 = s * s, s3 = s2 * s;
+  const a0 = 2 * s3 - 3 * s2 + 1, b0 = (s3 - 2 * s2 + s) * h, a1 = 3 * s2 - 2 * s3, b1 = (s3 - s2) * h;
+  for (const f in tr.F) { const c = tr.F[f]; out[f] = a0 * c.v[i] + b0 * c.mo[i] + a1 * c.v[i + 1] + b1 * c.mi[i + 1]; }
+  return out;
+}
+const TAU = Math.PI * 2;
+
+// Yakın dövüş saldırısı (zaman: vuruşa kalan / vuruştan geçen saniye). ox: birim boyu/24, dy: boy oranı.
+// rot: gövde eğimi, sf/sb: ön/arka ayak adımı, lf: ön ayağın kalkması, ghost: hız izi, glow: silah parıltısı
+const ATK_POSE = track([
+  [-0.30, { rot: 0, sx: 1, sy: 1, dy: 0, ox: 0, sf: 0, sb: 0, lf: 0, ghost: 0, glow: 0 }],
+  [-0.25, { rot: -0.04, sy: 1.015, ox: -0.4 }],                                         // 1 ağırlık bir an geriye
+  [-0.19, { rot: 0.09, sx: 1.05, sy: 0.93, dy: 0.026, ox: 0.7 }],                       // 2 sezdirme: çömelip öne eğilir
+  [-0.12, { rot: -0.18, sx: 1, sy: 1, dy: 0.008, ox: -1, sb: -0.03 }],                  // 3 silah geriye kalkmaya başlar
+  [-0.05, { rot: -0.44, sx: 0.96, sy: 1.07, dy: -0.01, ox: -2.7, sf: 0.03, sb: -0.07, lf: 0.025 }], // 4 kurulma: ön ayak kalkar
+  [-0.012, { rot: -0.49, sx: 0.955, sy: 1.08, ox: -3 }, '='],                            // 5 gerilim: tepe noktada asılı
+  [0.025, { rot: 0.12, sx: 1.03, sy: 1, dy: 0, ox: 3, sf: 0.09, sb: -0.08, lf: 0.01, ghost: 1, glow: 0.6 }], // 6 savuruş
+  [0.06, { rot: 0.6, sx: 1.1, sy: 0.92, dy: 0.022, ox: 7.6, sf: 0.125, lf: 0, glow: 1 }, '!'],              // 7 darbe
+  [0.1, { rot: 0.5, sx: 1.03, sy: 0.99, dy: 0.008, ox: 7.1, ghost: 0.35 }],             // 8 sekme: darbenin tepkisi
+  [0.17, { rot: 0.68, sx: 1, sy: 1.02, dy: 0, ox: 8.4, ghost: 0, glow: 0.75 }],         // 9 devam: savuruşun ağırlığı
+  [0.3, { rot: 0.24, sy: 1.035, ox: 3.6, sf: 0.05, sb: -0.035, glow: 0.3 }],            // 10 toparlanma, küçük zıplama
+  [0.45, { rot: 0, sx: 1, sy: 1, ox: 0, sf: 0, sb: 0, glow: 0 }],                       // 11 duruş
+]);
+// Yürüyüşte tek bacak (tam döngü; öbür bacak yarım döngü geriden gelir). x: adım (-1 geride, 1 önde), l: kalkma.
+// Yerdeyken sabit hızla geriye kayar (döngünün %58'i), havadayken hızla öne savrulur ve diz yukarı kalkar.
+const GAIT_LEG = track([
+  [0, { x: 1, l: 0 }], [0.1, { x: 0.68 }], [0.2, { x: 0.35 }], [0.3, { x: 0.02 }], [0.4, { x: -0.32 }], [0.5, { x: -0.65 }],
+  [0.58, { x: -0.92, l: 0.12 }], [0.66, { x: -0.78, l: 0.7 }], [0.75, { x: -0.2, l: 1 }], [0.83, { x: 0.42, l: 0.82 }],
+  [0.92, { x: 0.9, l: 0.3 }], [1, { x: 1, l: 0 }],
+], true);
+// Gövde her adımda: değme → çöküş → itiş → geçiş → tepe → iniş (döngü başına 2 adım = 12 poz)
+const GAIT_BODY = track([
+  [0, { dy: 0.004, sy: 0.985, sx: 1.012, rot: 0.04 }],
+  [0.17, { dy: 0.022, sy: 0.968, sx: 1.022, rot: 0.06 }],
+  [0.33, { dy: 0.004, sy: 0.998, sx: 1, rot: 0.065 }],
+  [0.5, { dy: -0.022, sy: 1.024, sx: 0.992, rot: 0.055 }],
+  [0.67, { dy: -0.034, sy: 1.03, sx: 0.99, rot: 0.04 }],
+  [0.83, { dy: -0.016, sy: 1.008, sx: 1, rot: 0.03 }],
+  [1, { dy: 0.004, sy: 0.985, sx: 1.012, rot: 0.04 }],
+], true);
+// Kanat çırpma: aşağı vuruş hızlı (gövdeyi kaldırır), yukarı kalkış yavaş. f: 1 aşağı, -1 yukarı
+const FLAP = track([
+  [0, { f: -1 }], [0.06, { f: -0.85 }], [0.13, { f: -0.35 }], [0.2, { f: 0.35 }], [0.27, { f: 0.85 }], [0.34, { f: 1.05 }, '='],
+  [0.42, { f: 0.9 }], [0.52, { f: 0.45 }], [0.62, { f: -0.05 }], [0.74, { f: -0.55 }], [0.87, { f: -0.92 }], [1, { f: -1 }],
+], true);
+// Ölüm (saniye). rot: gövde, R: bütün beden devrilmesi, bd: gövdenin çökmesi (bacak boyu oranı), oy: zıplama (boy oranı)
+const DEATH_POSE = track([
+  [0, { rot: 0, sf: 0, sb: 0, bd: 0, sx: 1, sy: 1, R: 0, oy: 0 }],
+  [0.035, { rot: -0.24, sx: 0.96, sy: 1.05, oy: -0.045 }],                         // 1 darbe: geriye savrulur
+  [0.075, { rot: -0.33, sx: 0.98, sy: 1.03, oy: -0.06 }],                          // 2 havada
+  [0.125, { rot: -0.22, sx: 1.02, sy: 0.98, oy: 0, sf: -0.03, sb: -0.07 }, '!'],   // 3 geri adımla yere basar
+  [0.18, { rot: -0.36, sx: 1, sy: 1, sf: -0.045 }],                                // 4 sendeleme
+  [0.24, { rot: -0.4, bd: 0.22, sy: 0.97, sx: 1.02, sf: 0 }],                      // 5 dizler çözülür
+  [0.3, { rot: -0.5, bd: 0.4, sy: 0.93, sx: 1.04, sf: 0.06, R: -0.06 }],           // 6 çöküş
+  [0.39, { R: -0.5 }],                                                             // 7 devrilmeye başlar
+  [0.47, { R: -1.52, sy: 0.9, sx: 1.07 }, '!'],                                    // 8 sırtüstü yere çarpar
+  [0.55, { R: -1.34, oy: -0.05, sy: 0.95, sx: 1.03 }],                             // 9 seker
+  [0.63, { R: -1.47, oy: 0, sy: 0.92, sx: 1.05 }, '!'],                            // 10 ikinci kez değer
+  [0.78, { R: -1.45, sy: 0.93, sx: 1.04 }],                                        // 11 yerleşir
+]);
+// Yetenek kullanma (0 → 1): toplanır, yükselir, gücü salar, asılı kalır, yere iner
+const CAST_POSE = track([
+  [0, { rot: 0, sx: 1, sy: 1, oy: 0 }],
+  [0.08, { rot: 0.06, sx: 1.04, sy: 0.94 }],
+  [0.16, { rot: 0.08, sx: 1.06, sy: 0.91, oy: 0.5 }],
+  [0.26, { rot: -0.08, sx: 1, sy: 1.04, oy: -2 }],
+  [0.36, { rot: -0.2, sx: 0.96, sy: 1.1, oy: -4.5 }],
+  [0.44, { rot: -0.24, sx: 0.95, sy: 1.11, oy: -5 }, '='],
+  [0.54, { rot: -0.2, sx: 0.96, sy: 1.08, oy: -4.6 }],
+  [0.64, { rot: -0.12, sx: 0.98, sy: 1.04, oy: -3 }],
+  [0.74, { rot: -0.04, sx: 1, sy: 1, oy: -1.2 }],
+  [0.84, { rot: 0.03, sx: 1.03, sy: 0.96, oy: 0 }, '!'],
+  [0.92, { rot: 0.01, sx: 1, sy: 1.01 }],
+  [1, { rot: 0, sx: 1, sy: 1, oy: 0 }],
+]);
+// Kışla askerinin kılıç saldırısı. sw: kılıç kolu açısı, lu: öne atılma, st: adım, cr: çömelme (+ aşağı)
+const SOL_ATK = track([
+  [-0.3, { sw: 0.75, lu: 0, st: 0, cr: 0 }],
+  [-0.25, { sw: 0.68, lu: -0.15, cr: -0.1 }],
+  [-0.19, { sw: 1.02, lu: 0.35, cr: 0.6 }],
+  [-0.12, { sw: 0.1, lu: 0.05, st: -0.06, cr: 0.2 }],
+  [-0.05, { sw: -1.45, lu: -0.55, st: -0.15, cr: -0.3 }],
+  [-0.012, { sw: -1.6, lu: -0.65, cr: -0.35 }, '='],
+  [0.025, { sw: 0.4, lu: 0.9, st: 0.25, cr: 0.1 }],
+  [0.06, { sw: 2.08, lu: 1.85, st: 0.4, cr: 0.55 }, '!'],
+  [0.1, { sw: 1.9, lu: 1.6, cr: 0.35 }],
+  [0.17, { sw: 2.28, lu: 2.1, cr: 0.15 }],
+  [0.3, { sw: 1.3, lu: 0.9, st: 0.18, cr: -0.25 }],
+  [0.45, { sw: 0.75, lu: 0, st: 0, cr: 0 }],
+]);
+// Yay çekişi (0 → 1): oku kirişe takar, hızla çeker, sonra son santimleri zorlanarak yavaşça gerer
+const BOW_DRAW = track([
+  [0, { d: 0 }], [0.08, { d: 0.02 }], [0.16, { d: 0.08 }], [0.26, { d: 0.25 }], [0.36, { d: 0.48 }], [0.46, { d: 0.66 }],
+  [0.56, { d: 0.78 }], [0.66, { d: 0.86 }], [0.76, { d: 0.92 }], [0.86, { d: 0.96 }], [0.94, { d: 0.99 }], [1, { d: 1 }],
+]);
+// kodla çizilen askerler/okçular için yürüyüş: bacak açıları, kalkma ve gövde zıplaması (u: 0..1 döngü)
+const GL = {}, GL2 = {}, GB = {}, Q = {}; // ortak ara nesneler (her karede yeni nesne üretilmesin)
+function gaitOf(u) {
+  pose(GAIT_LEG, u, GL); pose(GAIT_LEG, u + 0.5, GL2); pose(GAIT_BODY, u * 2, GB);
+  return { f: GL.x, fl: GL.l, b: GL2.x, bl: GL2.l, dy: GB.dy, rot: GB.rot };
+}
+
 // ----- karakter animasyonu -----
 // Her karakter görseli üç parçaya ayrılır: gövde, arka bacak (sol yarı) ve ön bacak (sağ yarı).
 // Yürürken bacaklar sırayla öne savrulup kalkar, gövde adım ortasında yükselip iner ve kalçadan hafif sallanır.
@@ -4401,61 +4539,31 @@ function drawUnit(name, im, x, y, face, o) {
   const P = { rot: 0, sx: 1, sy: 1, bodyDy: 0, stepF: 0, stepB: 0, liftF: 0, liftB: 0, flap: 0 };
   let ox = 0, oy = -o.fly, ghost = 0, glowK = 0;
   if (rig.wings && o.wings != null) {
-    P.flap = Math.sin(o.wings * 14); oy -= P.flap * 2.5;
+    P.flap = pose(FLAP, o.wings * 14 / TAU, Q).f; oy -= P.flap * 2.5;
   } else if (o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER) {
-    const u = h / 24; // öne atılma mesafesi birim boyuyla orantılı
-    const t = o.atk;
-    if (t < -0.18) {
-      // 1) sezdirme: kısa bir çömelme, gövde bir an öne eğilir (asıl hareketten önceki karşı hareket)
-      const k = easeInOut((t + ATK_PREP) / (ATK_PREP - 0.18));
-      P.rot = 0.07 * k; P.sy = 1 - 0.06 * k; P.sx = 1 + 0.04 * k; P.bodyDy = h * 0.02 * k; ox = 0.6 * u * k;
-    } else if (t < 0) {
-      // 2) kurulma: silah geriye kalkar, ağırlık arka ayağa geçer, gövde uzar
-      const k = easeInOut((t + 0.18) / 0.18);
-      P.rot = lerp(0.07, -0.42, k); P.sy = lerp(0.94, 1.06, k); P.sx = lerp(1.04, 0.97, k); P.bodyDy = h * 0.02 * (1 - k);
-      ox = lerp(0.6, -2.8, k) * u; P.stepF = 0.03 * k; P.stepB = -0.06 * k;
-    } else if (t < 0.06) {
-      // 3) vuruş: çok hızlı öne savrulur, ön ayak öne basar, arkada hız izi
-      const k = easeOutQ(t / 0.06);
-      P.rot = lerp(-0.42, 0.55, k); ox = lerp(-2.8, 7.5, k) * u; P.stepF = lerp(0.03, 0.12, k) * S; P.stepB = lerp(-0.06, -0.08, k) * S;
-      P.sx = 1 + 0.05 * k; P.sy = lerp(1.06, 0.97, k);
-      ghost = 1; glowK = k;
-    } else if (t < 0.13) {
-      // 4) çarpma: gövde ezilir, darbenin etkisiyle titrer
-      const k = (t - 0.06) / 0.07;
-      P.rot = 0.55 + Math.sin(k * Math.PI * 3) * 0.05 * (1 - k); ox = 7.5 * u; P.stepF = 0.12 * S; P.stepB = -0.08 * S;
-      P.sx = 1 + 0.09 * (1 - k); P.sy = 1 - 0.08 * (1 - k); P.bodyDy = h * 0.018 * (1 - k);
-      ghost = 1 - k; glowK = 1;
-    } else if (t < 0.24) {
-      // 5) devam: savuruşun ağırlığıyla biraz daha ileri gider, sonra geri tutar
-      const k = (t - 0.13) / 0.11, sw = Math.sin(k * Math.PI);
-      P.rot = 0.55 + 0.13 * sw; ox = (7.5 + 0.8 * sw) * u; P.stepF = 0.12 * S; P.stepB = -0.08 * S;
-      P.sy = 1 + 0.02 * sw; glowK = 1 - k * 0.5;
-    } else {
-      // 6) toparlanma: yavaşça duruşa döner, sonunda küçük bir zıplamayla yerine oturur
-      const k = easeInOut(clamp((t - 0.24) / (ATK_AFTER - 0.24), 0, 1));
-      P.rot = 0.55 * (1 - k); ox = 7.5 * u * (1 - k); P.stepF = 0.12 * S * (1 - k); P.stepB = -0.08 * S * (1 - k);
-      P.sy = 1 + Math.sin(k * Math.PI) * 0.03; glowK = 0.5 * (1 - k);
-    }
+    // 12 pozlu saldırı (ATK_POSE): sezdirme → kurulma → gerilim → savuruş → darbe → sekme → devam → toparlanma
+    const u = h / 24, t = o.atk, A = pose(ATK_POSE, t, Q); // öne atılma mesafesi birim boyuyla orantılı
+    P.rot = A.rot; P.sx = A.sx; P.sy = A.sy; P.bodyDy = A.dy * h; ox = A.ox * u;
+    P.stepF = A.sf * S; P.stepB = A.sb * S; P.liftF = Math.max(0, A.lf) * S;
+    ghost = clamp(A.ghost, 0, 1); glowK = clamp(A.glow, 0, 1);
+    if (t > 0.06 && t < 0.13) { const k = (t - 0.06) / 0.07; P.rot += Math.sin(k * Math.PI * 3) * 0.05 * (1 - k); } // darbe titremesi
   } else if (o.walking) {
-    // yürüyüş döngüsü (6 poz): değme → çöküş → geçiş → yükselme → değme → çöküş (her adımda gövde iki kez iner/kalkar)
-    const p = o.phase, sp = Math.sin(p), cp = Math.cos(p), as = Math.abs(sp);
-    P.stepF = sp * 0.078 * S; P.stepB = -sp * 0.078 * S;
-    P.liftF = Math.max(0, cp) * 0.06 * S; P.liftB = Math.max(0, -cp) * 0.06 * S;
-    const recoil = Math.max(0, Math.sin(2 * p - 0.9)) * 0.012;         // ayak bastıktan hemen sonra çöküş
-    P.bodyDy = -(1 - as) * h * 0.032 + recoil * h;
-    P.rot = 0.05 + Math.sin(2 * p + 0.6) * 0.025;                        // gövde adımın gerisinden gelir
-    P.sy = 1 + (1 - as) * 0.025 - Math.pow(as, 6) * 0.03;               // geçişte uzar, değmede ezilir
-    P.sx = 1 + Math.pow(as, 6) * 0.02;
-    ox = Math.sin(2 * p) * 0.35;
+    // 12 pozlu yürüyüş: bacaklar yerdeyken sabit hızla geri kayar, havada hızla öne savrulur;
+    // gövde her adımda değme → çöküş → itiş → geçiş → tepe → iniş pozlarından geçer
+    const u = o.phase / TAU;
+    pose(GAIT_LEG, u, GL); pose(GAIT_LEG, u + 0.5, GL2); pose(GAIT_BODY, u * 2, GB);
+    P.stepF = GL.x * 0.078 * S; P.stepB = GL2.x * 0.078 * S;
+    P.liftF = Math.max(0, GL.l) * 0.06 * S; P.liftB = Math.max(0, GL2.l) * 0.06 * S;
+    P.bodyDy = GB.dy * h; P.rot = GB.rot; P.sy = GB.sy; P.sx = GB.sx;
+    ox = Math.sin(2 * o.phase) * 0.35;
   } else {
     // dururken nefes alır, ağırlığını hafifçe bir ayaktan diğerine verir
     P.sy = 1 + Math.sin(time * 2.6 + o.seed) * 0.02; P.rot = Math.sin(time * 1.3 + o.seed) * 0.02;
   }
   if (o.cast > 0) {
-    // yetenek kullanırken: geriye yaslanıp yükselir, elleri parlar
-    const k = Math.sin(clamp(o.cast / 0.45, 0, 1) * Math.PI);
-    P.rot = -0.2 * k; P.sy = 1 + 0.09 * k; P.sx = 1 - 0.04 * k; oy -= 4 * k;
+    // yetenek kullanırken (12 poz): toplanır, yükselir, gücü salar, bir an asılı kalır, yere iner
+    const C = pose(CAST_POSE, 1 - clamp(o.cast / 0.45, 0, 1), Q);
+    P.rot = C.rot; P.sy = C.sy; P.sx = C.sx; oy += C.oy;
   }
   if (o.hit > 0) { const k = o.hit / 0.18; P.rot -= 0.16 * k; ox -= 2 * k; }   // darbe alınca geriye sarsılır
   if (o.spin > 0) P.sx *= Math.cos((0.5 - o.spin) * Math.PI * 6);           // kasırga: hızlı dönüş
@@ -4653,34 +4761,12 @@ function drawCorpse(f) {
     const k = clamp(t / 0.45, 0, 1);
     P.flap = Math.sin(t * 34) * (1 - k) - 0.8 * k;
     oy = -f.fly * (1 - k * k); rot = k * 1.1;
-  } else if (t < 0.07) {
-    // 1) darbe: geriye savrulup hafifçe havalanır
-    const k = t / 0.07;
-    P.rot = -0.3 * k; oy = -h * 0.06 * Math.sin(k * Math.PI); P.sy = 1 + 0.04 * k;
-  } else if (t < 0.18) {
-    // 2) sendeleme: bir adım geri, gövde sallanır
-    const k = easeInOut((t - 0.07) / 0.11);
-    P.rot = -0.3 + Math.sin(k * Math.PI * 2) * 0.08; P.stepF = -0.04 * k; P.stepB = -0.07 * k; P.sy = 1.04 - 0.04 * k;
-  } else if (t < 0.3) {
-    // 3) dizler çözülür: gövde çöker
-    const k = easeInOut((t - 0.18) / 0.12);
-    P.rot = -0.3 - 0.2 * k; P.bodyDy = h * (1 - legY) * 0.4 * k; P.sy = 1 - 0.07 * k; P.sx = 1 + 0.04 * k;
-    P.stepF = lerp(-0.04, 0.06, k); P.stepB = -0.07;
   } else {
-    P.rot = -0.5; P.bodyDy = h * (1 - legY) * 0.4; P.sy = 0.93; P.sx = 1.04; P.stepF = 0.06; P.stepB = -0.07;
-    if (t < 0.48) {
-      // 4) düşüş: hızlanarak sırtüstü devrilir
-      const k = (t - 0.3) / 0.18;
-      rot = -1.45 * k * k;
-    } else if (t < 0.62) {
-      // 5) sekme: yere çarpıp bir kez hafifçe zıplar
-      const k = (t - 0.48) / 0.14;
-      rot = -1.45 + Math.sin(k * Math.PI) * 0.14; oy = -Math.sin(k * Math.PI) * h * 0.05;
-    } else {
-      // 6) yerleşme: son küçük salınımla durur, sonra söner
-      const k = clamp((t - 0.62) / 0.16, 0, 1);
-      rot = -1.45 + Math.sin(k * Math.PI) * 0.035 * (1 - k);
-    }
+    // 12 pozlu ölüm (DEATH_POSE): darbe → havada → geri adım → sendeleme → dizler çözülür → çöküş →
+    // devrilme → yere çarpma → sekme → ikinci değme → yerleşme, sonra söner
+    const D = pose(DEATH_POSE, t, Q);
+    P.rot = D.rot; P.sx = D.sx; P.sy = D.sy; P.stepF = D.sf; P.stepB = D.sb; P.bodyDy = h * (1 - legY) * D.bd;
+    rot = D.R; oy = D.oy * h;
   }
   ctx.save();
   ctx.globalAlpha = 1 - clamp((t - 0.78) / (CORPSE_DUR - 0.78), 0, 1);
