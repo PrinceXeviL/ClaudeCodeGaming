@@ -286,7 +286,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Bataklık Sınırı', gold: 520, lives: 20, theme: 'swamp', weather: 'rain', hpMul: 1.3,
+    name: 'Bataklık Sınırı', gold: 520, lives: 20, theme: 'swamp', weather: 'rain', hpMul: 1.1,
     paths: [
       [[-40, 270], [140, 270], [260, 200], [420, 150], [580, 170], [680, 250], [760, 300], [862, 300]],
       [[-40, 270], [140, 270], [260, 350], [420, 400], [580, 380], [680, 320], [760, 300], [862, 300]],
@@ -308,7 +308,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Kayalık Boğaz', gold: 560, lives: 20, theme: 'rocky', weather: 'rain', hpMul: 1.32,
+    name: 'Kayalık Boğaz', gold: 560, lives: 20, theme: 'rocky', weather: 'rain', hpMul: 1.15,
     paths: [
       [[300, -40], [300, 90], [420, 170], [540, 230], [660, 190], [770, 230], [760, 330], [790, 400], [862, 390]],
       [[-40, 410], [120, 410], [260, 360], [420, 290], [540, 230], [660, 190], [770, 230], [760, 330], [790, 400], [862, 390]],
@@ -373,7 +373,7 @@ const LEVELS = [
     ],
   },
   {
-    name: 'Donmuş Nehir', gold: 790, lives: 20, theme: 'winter', weather: 'snow', hpMul: 1.4,
+    name: 'Donmuş Nehir', gold: 790, lives: 20, theme: 'winter', weather: 'snow', hpMul: 1.2,
     paths: [
       [[-40, 130], [150, 130], [350, 200], [500, 320], [620, 420], [760, 430], [862, 380]],
       [[-40, 430], [150, 430], [350, 360], [500, 250], [620, 170], [760, 200], [800, 300], [862, 380]],
@@ -500,7 +500,7 @@ const LEVELS = [
     ],
   },
   {
-    ep: 2, name: 'Yıkık Şehir', gold: 850, lives: 20, theme: 'ruins', weather: 'sand', hpMul: 0.68,
+    ep: 2, name: 'Yıkık Şehir', gold: 850, lives: 20, theme: 'ruins', weather: 'sand', hpMul: 0.58,
     paths: [
       [[-40, 290], [150, 290], [450, 290], [760, 300], [862, 300]],
       [[-40, 290], [150, 290], [240, 150], [420, 130], [600, 150], [700, 230], [760, 300], [862, 300]],
@@ -708,11 +708,11 @@ const BOSS_ESCORT = {
 // Dev Kum Solucanı (kuma dalar), sefer sonu Fırtına Cini (iki bar, kum fırtınası, lejyon)
 Object.assign(ENEMIES, {
   raider_chief:   { name: 'Çöl Şeyhi', base: 'raider', h: 42, hp: 1000, speed: 15, armor: 0.2, mr: 0.1, gold: 120, dmg: [16, 26], rate: 1.1, lives: 5, r: 15, boss: true, chief: true, hpK: 0.9,
-    desc: 'Akıncı çağırır, savaş narasıyla çevresini hızlandırır', ab: { summon: { t: 'raider', n: 3, cd: 11 }, howl: { cd: 13, r: 110 } } },
+    desc: 'Akıncı çağırır, savaş narasıyla çevresini hızlandırır, kulelere ateş testisi atıp susturur', ab: { summon: { t: 'raider', n: 3, cd: 11 }, howl: { cd: 13, r: 110 }, bomb: { cd: 11, stun: 3, r: 180 } } },
   scorpion_queen: { name: 'Akrep Kraliçe', h: 46, hp: 1000, speed: 14, armor: 0.55, mr: 0.1, gold: 150, dmg: [18, 28], rate: 1.2, lives: 6, r: 17, boss: true, chief: true, hpK: 1,
-    desc: 'Yavru akrep çağırır, kuyruğuyla yere vurup askerleri sersemletir', ab: { summon: { t: 'scorpion', n: 3, cd: 11 }, slam: { cd: 8, r: 64, stun: 1.8, dmg: 30 } } },
+    desc: 'Yavru akrep çağırır, kuyruğuyla yere vurup askerleri sersemletir, zehir püskürtür', ab: { summon: { t: 'scorpion', n: 3, cd: 11 }, slam: { cd: 8, r: 64, stun: 1.8, dmg: 30 }, venom: { cd: 10, r: 85, dmg: 22, stun: 1 } } },
   worm_king:      { name: 'Dev Kum Solucanı', h: 54, hp: 1000, speed: 11, armor: 0.3, mr: 0.2, gold: 180, dmg: [26, 40], rate: 1.5, lives: 7, r: 20, boss: true, chief: true, hpK: 1.05,
-    burrow: { up: 6, down: 3, speed: 1.8 }, desc: 'Kuma dalar (vurulamaz), çıkarken yeri sarsar, solucan çağırır', ab: { slam: { cd: 9, r: 72, stun: 1.5, dmg: 38 }, summon: { t: 'sandworm', n: 2, cd: 15 } } },
+    burrow: { up: 6, down: 3, speed: 1.8 }, desc: 'Kuma dalar (vurulamaz), çıkarken yeri sarsar, solucan çağırır, kulelere kaya tükürür', ab: { slam: { cd: 9, r: 72, stun: 1.5, dmg: 38 }, summon: { t: 'sandworm', n: 2, cd: 15 }, boulder: { cd: 11, stun: 3, r: 200 } } },
   mummy_king:     { name: 'Mumya Kral', base: 'mummy', h: 46, hp: 1000, speed: 11, armor: 0.25, mr: 0.4, gold: 170, dmg: [22, 34], rate: 1.3, lives: 7, r: 17, boss: true, chief: true, hpK: 1.05, revive: 0.4,
     desc: 'Mumya çağırır, dostlarını iyileştirir, bir kez dirilir (ateşle ölürse dirilmez)', ab: { summon: { t: 'mummy', n: 2, cd: 13 }, heal: { cd: 8, amt: 80, r: 90 }, hex: { cd: 12, t: 3, r: 190 } } },
   golem_titan:    { name: 'Taş Titan', base: 'golem', h: 60, hp: 1000, speed: 8, armor: 0.75, mr: 0.1, gold: 220, dmg: [40, 60], rate: 2, lives: 8, r: 22, boss: true, chief: true, hpK: 1.1, stoneskin: true,
@@ -851,7 +851,7 @@ const UPGRADES = [
 ];
 // Oyun tek, sabit zorlukta oynanır
 // gold: başlangıç altını çarpanı, bounty: düşman ödülü ve erken çağrı bonusu çarpanı (kazanç)
-const GAME_DIFF = { hp: 1.15, gold: 1, bounty: 0.8, lives: 20 };
+const GAME_DIFF = { hp: 1.0, gold: 1, bounty: 0.8, lives: 20 }; // tek kahramana geçince düşman canı 1.15'ten 1.0'a indi
 
 // Her kahramanın 3 yeteneği vardır (sade tutmak için); kahraman 4. seviyeye kadar çıkar, her seviyede 1 puan kazanır.
 const HERO_SKILLS = {

@@ -43,6 +43,9 @@ paralı askerler (MERCS: ilk dalgadan sonra kale her dakika 2 asker çıkarır, 
 kaleye dokunup bayrakla haritanın her yerine gönderilir: G.castle.rally, sendMerc),
 yollar (6 Eki yeniden tasarım): girişler + kollar (routes), kesişen/ayrılıp birleşen yollar; kale ilk yolun ucuna kapısıyla oturur
 (lv.castle data.js sonunda hesaplanır), yol kapıya doğru daralır; kazanç GAME_DIFF.bounty (0.8),
+tek kahraman (team() 1 kişi; kahramanlar ekranı ve AYARLAR ekranından seçilir), ayarlar: save.settings (ses düzeyi, sarsıntı, grafik),
+boss havası: bossSting girişi + kızıl karartma, drawBossAura (hale + yetenek uyarı halkaları), dev boss adımı (stomp), öfke evresi %50 canda,
+sentez sesler portal/roar/stomp; kilitlendiği hedef gelmeyen düşman kendisi yürür (e.offPath ile yola döner),
 kale okçuları + kaleye dokunup 3 seviye yükseltme (CASTLE), yol kenarı dalgalı (roadVary/roadShape),
 NPC sistemi hazır ama kapalı (NPC_ON=false; Gemini görselleriyle yeniden yapılacak), 6 evreli saldırı/yürüyüş/ölüm animasyonu,
 sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).

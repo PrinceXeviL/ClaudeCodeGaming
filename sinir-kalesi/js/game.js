@@ -112,6 +112,14 @@ function drawSprite(c, im, x, y, w, anchorY = 1) {
 const SAVE_KEY = 'sinirKalesi.v1';
 let save = { stars: [] };
 try { save = JSON.parse(localStorage.getItem(SAVE_KEY)) || save; } catch (e) {}
+// ----- ayarlar (kayıtta saklanır) -----
+const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto' };
+function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
+function setSetting(k, v) {
+  save.settings = Object.assign({}, save.settings, { [k]: v }); persist();
+  if (k === 'vol' && master) master.gain.value = 0.9 * v;
+  if (k === 'gfx') { quality = v === 'low' ? 0.75 : QMAX; resize(); }
+}
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 
 // ---------- canvas & ölçek ----------
@@ -127,10 +135,10 @@ document.body.appendChild(safeProbe);
 // Çizim çözünürlüğü: ekranın piksel yoğunluğu en fazla 1.5'e sınırlanır (fark gözle seçilmez, çizim yükü yarıya iner).
 // Kare hızı düşerse çözünürlük kademeli olarak azaltılır, toparlanınca geri yükseltilir.
 const QMAX = Math.min(window.devicePixelRatio || 1, 1.5);
-let quality = QMAX;
+let quality = setting('gfx') === 'low' ? 0.75 : QMAX;
 const perf = { acc: 0, n: 0, t: 0, good: 0 };
 function adaptQuality(real) {
-  if (real > 0.2) return; // sekme arka plandaydı
+  if (real > 0.2 || setting('gfx') !== 'auto') return; // sekme arka plandaydı / kalite elle seçildi
   perf.acc += real; perf.n++; perf.t += real;
   if (perf.t < 2) return;
   const avg = perf.acc / perf.n;
@@ -190,6 +198,9 @@ const SOUND = {
   wind:    { vol: 0.08 },
   spell:   { vol: 0.45, gap: 0.2, max: 1 },
   reinforce: { vol: 0.55, gap: 0.2, max: 1 },
+  portal:  { vol: 1, gap: 0.6, max: 1 },
+  roar:    { vol: 1, gap: 1.2, max: 1 },
+  stomp:   { vol: 1, gap: 0.22, max: 1 },
 };
 let actx = null, master = null;
 let muted = false;
@@ -223,7 +234,7 @@ function initAudio() {
   const comp = actx.createDynamicsCompressor();
   comp.threshold.value = -14; comp.ratio.value = 4;
   master = actx.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = 0.9 * setting('vol');
   master.connect(comp); comp.connect(actx.destination);
   Object.keys(rawSnd).forEach(decodeOne);
 }
@@ -331,7 +342,61 @@ function clashSound(now, list) {
     sg.gain.value = 0.11; src.connect(sg); sg.connect(out); src.start(now);
   }
 }
-const SYNTH_SFX = { zap: zapSound, clash: clashSound };
+// Boss çağrısı: tiz büyü sesi yerine yumuşak, alçak bir geçit uğultusu (süzülmüş gürültü + derin sinüs)
+function portalSound(now) {
+  const n = actx.createBufferSource(), lp = actx.createBiquadFilter(), g = actx.createGain();
+  n.buffer = noiseBuf(); n.loop = true; lp.type = 'lowpass'; lp.Q.value = 4;
+  lp.frequency.setValueAtTime(220, now); lp.frequency.exponentialRampToValueAtTime(700, now + 0.35); lp.frequency.exponentialRampToValueAtTime(160, now + 0.9);
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.14, now + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
+  n.connect(lp); lp.connect(g); g.connect(master); n.start(now); n.stop(now + 1);
+  const o = actx.createOscillator(), og = actx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(58, now); o.frequency.exponentialRampToValueAtTime(42, now + 0.9);
+  og.gain.setValueAtTime(0.0001, now); og.gain.exponentialRampToValueAtTime(0.16, now + 0.25); og.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
+  o.connect(og); og.connect(master); o.start(now); o.stop(now + 1);
+}
+// Boss kükremesi: gırtlaktan testere dalgası, iki ünlü süzgeci, hızlı hırıltı titreşimi ve nefes gürültüsü
+function roarSound(now) {
+  const dur = 0.85, o = actx.createOscillator(), amp = actx.createGain(), tr = actx.createGain(), lfo = actx.createOscillator(), lg = actx.createGain();
+  o.type = 'sawtooth'; o.frequency.setValueAtTime(rand(92, 105), now); o.frequency.linearRampToValueAtTime(rand(120, 130), now + 0.2); o.frequency.exponentialRampToValueAtTime(58, now + dur);
+  lfo.frequency.value = 27; lg.gain.value = 0.5; tr.gain.value = 0.6; lfo.connect(lg); lg.connect(tr.gain);
+  amp.gain.setValueAtTime(0.0001, now); amp.gain.exponentialRampToValueAtTime(0.2, now + 0.08); amp.gain.setValueAtTime(0.2, now + 0.45); amp.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  for (const [f, q, k] of [[520, 5, 1], [880, 7, 0.6], [240, 3, 0.8]]) { const bp = actx.createBiquadFilter(), bg = actx.createGain(); bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = q; bg.gain.value = k; o.connect(bp); bp.connect(bg); bg.connect(tr); }
+  tr.connect(amp); amp.connect(master);
+  const n = actx.createBufferSource(), nl = actx.createBiquadFilter(), ng = actx.createGain();
+  n.buffer = noiseBuf(); n.loop = true; nl.type = 'bandpass'; nl.frequency.value = 600; nl.Q.value = 0.7;
+  ng.gain.setValueAtTime(0.0001, now); ng.gain.exponentialRampToValueAtTime(0.07, now + 0.1); ng.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  n.connect(nl); nl.connect(ng); ng.connect(master);
+  o.start(now); lfo.start(now); n.start(now); o.stop(now + dur + 0.05); lfo.stop(now + dur + 0.05); n.stop(now + dur + 0.05);
+}
+// Dev boss adımı: kısa, derin bir gümleme
+function stompSound(now) {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(70, now); o.frequency.exponentialRampToValueAtTime(32, now + 0.16);
+  g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.22, now + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+  o.connect(g); g.connect(master); o.start(now); o.stop(now + 0.22);
+}
+// Boss girişi: uzaktan derin boru akoru, üç ağır savaş davulu ve yer gürültüsü
+function bossSting() {
+  if (muted || !actx) return;
+  const t = actx.currentTime, out = actx.createBiquadFilter(); out.type = 'lowpass'; out.frequency.value = 650; out.Q.value = 0.6; out.connect(master);
+  for (const [f, v] of [[55, 0.1], [82.4, 0.08], [110, 0.06], [65.4, 0.05]]) {
+    const o = actx.createOscillator(), g = actx.createGain(), lfo = actx.createOscillator(), lg = actx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = f; lfo.frequency.value = 4.5; lg.gain.value = f * 0.008; lfo.connect(lg); lg.connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.6); g.gain.setValueAtTime(v, t + 1.6); g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+    o.connect(g); g.connect(out); o.start(t); lfo.start(t); o.stop(t + 2.7); lfo.stop(t + 2.7);
+  }
+  for (const dt of [0, 0.42, 0.84, 1.5]) {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(80, t + dt); o.frequency.exponentialRampToValueAtTime(38, t + dt + 0.35);
+    g.gain.setValueAtTime(0.0001, t + dt); g.gain.exponentialRampToValueAtTime(dt > 1 ? 0.42 : 0.32, t + dt + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.45);
+    o.connect(g); g.connect(master); o.start(t + dt); o.stop(t + dt + 0.5);
+  }
+  const n = actx.createBufferSource(), lp = actx.createBiquadFilter(), ng = actx.createGain();
+  n.buffer = noiseBuf(); n.loop = true; lp.type = 'lowpass'; lp.frequency.value = 140;
+  ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.25, t + 0.8); ng.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+  n.connect(lp); lp.connect(ng); ng.connect(master); n.start(t); n.stop(t + 2.7);
+}
+const SYNTH_SFX = { zap: zapSound, clash: clashSound, portal: portalSound, roar: roarSound, stomp: stompSound };
 
 function sfx(kind) {
   if (muted || !actx) return;
@@ -1099,8 +1164,9 @@ function heroUnlocked(id) {
   return !u || (save.stars[u - 1] || 0) > 0;
 }
 // seçili kahraman takımı (en fazla 2, yalnızca açılmış olanlar)
+// seçili kahraman (savaşa tek kahraman gider; kahramanlar ekranından ya da ayarlardan seçilir)
 function team() {
-  const t = (save.team || ['commander', 'caner']).filter(id => HEROES[id] && heroUnlocked(id)).slice(0, 2);
+  const t = (save.team || ['commander']).filter(id => HEROES[id] && heroUnlocked(id)).slice(0, 1);
   return t.length ? t : ['commander'];
 }
 
@@ -1324,6 +1390,7 @@ function drawPartsAll(list) {
 }
 
 function shakeScreen(amp, dur) {
+  if (!setting('shake')) return;
   if (G.shakeT > 0 && G.shakeAmp * (G.shakeT / G.shakeDur) > amp) return;
   G.shakeAmp = amp; G.shakeT = dur; G.shakeDur = dur;
 }
@@ -2203,8 +2270,20 @@ function updateEnemy(e, dt) {
     }
   }
   if (e.blocker) {
-    const bd = dist(e.x, e.y, e.blocker.x, e.blocker.y);
+    const B = e.blocker, bd = dist(e.x, e.y, B.x, B.y);
     e.inMelee = bd < 22;
+    if (!e.inMelee) {
+      // Kilitlendiği asker/kahraman yanına gelmiyorsa (kahraman yol dışında durur, asker başka düşmanla uğraşır)
+      // düşman kısa bir bekleyişten sonra kendisi ona yürür; çok uzaklaşan hedefi bırakır.
+      const coming = !B.hero && B.target === e && !B.moving;
+      e.waitT = (e.waitT || 0) + dt;
+      if (bd > 75 || (!coming && !B.hero && e.waitT > 3)) { e.blocker = null; e.waitT = 0; }
+      else if (!coming || e.waitT > 1.2) {
+        const sp = e.def.speed * G.wspd * (e.spdMul || 1) * slow, k = Math.min(1, sp * dt / Math.max(1, bd - 18));
+        e.face = B.x < e.x ? -1 : 1; e.x += (B.x - e.x) * k; e.y += (B.y - e.y) * k; e.offPath = true;
+      }
+      if (!e.blocker) return;
+    } else e.waitT = 0;
     if (e.inMelee) {
       e.face = e.blocker.x < e.x ? -1 : 1;
       e.atk -= dt;
@@ -2238,11 +2317,21 @@ function updateEnemy(e, dt) {
       spd = clamp(ls + ((L.d + e.form) - e.d) * 1.5, 0, spd * 1.3);
     }
   }
+  // dövüş için yoldan çıktıysa önce yumuşakça yola geri döner
+  if (e.offPath) {
+    const q = pathPos(e.p, e.d, e.off), d = dist(e.x, e.y, q.x, q.y), st = Math.max(spd, 12) * dt;
+    if (d <= st + 0.5) e.offPath = false;
+    else { e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
+  }
   e.d += spd * dt;
   // ayak tozu: yürüyüş döngüsünde her adım yere bastığında (çizimdeki adım hızıyla aynı)
   if (!e.def.flying && spd > 0) {
     const step = Math.floor(e.anim * (5 + e.def.speed * G.wspd / 9) / Math.PI);
-    if (step !== e.step) { e.step = step; footDust(e); }
+    if (step !== e.step) {
+      e.step = step; footDust(e);
+      // dev bossun her adımı yeri sarsar
+      if (e.def.chief && (e.def.h || 0) >= 46 && !(e.def.ab && e.def.ab.blink) && !e.def.float) { shakeScreen(1.3, 0.1); sfx('stomp'); }
+    }
   }
   if (e.d >= e.p.total) {
     e.d = e.p.total;
@@ -2890,7 +2979,7 @@ function updateProjectile(pr, dt) {
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
 const spellIds = () => G.heroes.map((h, i) => 'ult' + i);
-const spellBtn = (i) => ({ x: 168 + i * 58, y: H - 34, r: 23 });
+const spellBtn = (i) => ({ x: 108 + i * 58, y: H - 34, r: 23 });
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
   const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
@@ -3022,6 +3111,7 @@ function update(dt) {
   updateCastleArchers(dt);
   updateMercs(dt);
   for (const n of G.npcs) if (n.sayT > 0) n.sayT -= dt;
+  if (G.bossFx && (G.bossFx.t += dt) > G.bossFx.dur) G.bossFx = null;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
   for (const t of G.towers) updateTower(t, dt);
   for (const e of G.enemies) if (!e.dead) updateEnemy(e, dt);
@@ -4062,13 +4152,7 @@ function drawEnemy(e) {
   const dh = (d.h || 30) * UNIT_K;
   if (e.under) { drawBurrow(e); return; }
   if (im) {
-    if (d.chief) {
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      glow(ctx, e.x, e.y - 2, dh * 0.9, d.ab && d.ab.blink ? '90,220,230' : '255,70,40', 0.3 + Math.sin(time * 4) * 0.1);
-      ctx.restore();
-      ctx.strokeStyle = `rgba(255,90,60,${0.6 + Math.sin(time * 5) * 0.2})`; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.ellipse(e.x, e.y + 1, dh * 0.55, dh * 0.2, 0, 0, Math.PI * 2); ctx.stroke();
-    }
+    if (d.chief) drawBossAura(e, dh);
     drawUnit(name, im, e.x, e.y, e.face, {
       rig: d.base ? 'enemy_' + d.base : undefined,
       h: CHAR_H[name] || d.r * 2.6, phase: e.anim * (5 + d.speed * G.wspd / 9),
@@ -5101,6 +5185,9 @@ function drawIcon(name, x, y, s, col = '#fff') {
   ctx.beginPath();
   switch (name) {
     case 'play': ctx.moveTo(-6, -9); ctx.lineTo(9, 0); ctx.lineTo(-6, 9); ctx.closePath(); fs(); break;
+    case 'gear':
+      for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r = i % 2 ? 7.6 : 10.4; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+      ctx.closePath(); ctx.moveTo(3.6, 0); ctx.arc(0, 0, 3.6, 0, Math.PI * 2, true); fs(); break;
     case 'next': case 'fast':
       ctx.moveTo(-10, -8); ctx.lineTo(-1, 0); ctx.lineTo(-10, 8); ctx.closePath();
       ctx.moveTo(0, -8); ctx.lineTo(9, 0); ctx.lineTo(0, 8); ctx.closePath(); fs(); break;
@@ -6028,6 +6115,52 @@ function drawSkillsPanel(k, px, py, pw, ph, cx) {
 }
 
 // ----- kahraman seçim ekranı -----
+// ----- ayarlar ekranı -----
+let settingsBack = 'title', resetArm = 0;
+function openSettings(from) { settingsBack = from; resetArm = 0; go(() => { screen = 'settings'; }); }
+function drawSettings() {
+  const st = time - screenT, bg = spr('title_bg');
+  if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
+  else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, 'rgba(24,12,4,0.55)'); g.addColorStop(1, 'rgba(14,8,2,0.82)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const rk = easeOutBack(clamp(st / 0.45, 0, 1));
+  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 280, 'AYARLAR', 'gold', 26); ctx.restore();
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
+  const pw = 560, ph = 390, px = W / 2 - pw / 2, py = 100;
+  const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
+  ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
+  roundRect(px + 5, py + 10, pw, ph, 22, 'rgba(0,0,0,0.45)');
+  const fr = ctx.createLinearGradient(0, py, 0, py + ph); fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
+  roundRect(px, py, pw, ph, 22, fr, '#22120a', 3);
+  const pg = ctx.createLinearGradient(0, py + 10, 0, py + ph - 10); pg.addColorStop(0, '#f8ebcc'); pg.addColorStop(1, '#dcc089');
+  roundRect(px + 10, py + 10, pw - 20, ph - 20, 15, pg, 'rgba(92,58,22,0.6)', 1.5);
+  ctx.restore();
+  if (pk < 0.9) return;
+  const VOL = [[0.4, 'DÜŞÜK'], [0.7, 'ORTA'], [1, 'YÜKSEK']], GFX = [['auto', 'OTOMATİK'], ['high', 'YÜKSEK'], ['low', 'DÜŞÜK']];
+  const cyc = (list, cur) => list[(list.findIndex(v => v[0] === cur) + 1) % list.length][0];
+  const hero = HEROES[team()[0]];
+  const rows = [
+    ['Ses efektleri', muted ? 'KAPALI' : 'AÇIK', () => setMuted(!muted), muted ? 'dark' : 'green'],
+    ['Ses düzeyi', (VOL.find(v => v[0] === setting('vol')) || VOL[2])[1], () => setSetting('vol', cyc(VOL, setting('vol'))), 'wood'],
+    ['Ekran sarsıntısı', setting('shake') ? 'AÇIK' : 'KAPALI', () => setSetting('shake', !setting('shake')), setting('shake') ? 'green' : 'dark'],
+    ['Grafik kalitesi', (GFX.find(v => v[0] === setting('gfx')) || GFX[0])[1], () => setSetting('gfx', cyc(GFX, setting('gfx'))), 'wood'],
+    ['Kahraman', hero.name.toLocaleUpperCase('tr'), () => go(() => { screen = 'heroes'; }), 'blue'],
+    ['İlerlemeyi sıfırla', time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
+      if (time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
+      else resetArm = time;
+    }, 'red'],
+  ];
+  rows.forEach(([label, val, fn, style], i) => {
+    const y = py + 52 + i * 58;
+    if (i) { ctx.fillStyle = 'rgba(92,58,22,0.18)'; ctx.fillRect(px + 34, y - 29, pw - 68, 1.5); }
+    txt(label, px + 44, y + 2, 20, '#4a2a0e', 'left', '400', FONT_T, false);
+    gameButton('set' + i, px + pw - 140, y, 190, 40, val, fn, style, { appear: st - 0.25 - i * 0.04, size: 15 });
+  });
+  if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
+}
+
 function drawHeroes() {
   const st = time - screenT, bg = spr('title_bg');
   if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
@@ -6039,7 +6172,7 @@ function drawHeroes() {
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, 'KAHRAMANLAR', 'blue', 26); ctx.restore();
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
   const tm = team();
-  txt('Savaşa en fazla 2 kahraman götürebilirsin · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
+  txt('Savaşa bir kahraman götürürsün · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
   HERO_ORDER.forEach((id, i) => drawHeroCard(id, W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, 300, st - 0.1 - i * 0.08, tm));
   save.seenHeroes = save.seenHeroes || ['commander'];
   for (const id of HERO_ORDER) if (heroUnlocked(id) && !save.seenHeroes.includes(id)) { save.seenHeroes.push(id); persist(); }
@@ -6083,6 +6216,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   if (!unlocked) { /* kilitliyken rozet yok */ }
   else if (d.ranged) { roundRect(-34, y0 + 290, 68, 16, 8, '#2a5fb8'); txt('MENZİLLİ', 0, y0 + 298, 9, '#fff', 'center', '800', FONT_B, false); }
   else { roundRect(-44, y0 + 290, 88, 16, 8, '#8a3a1a'); txt('YAKIN DÖVÜŞ', 0, y0 + 298, 9, '#fff', 'center', '800', FONT_B, false); }
+  if (unlocked) txt('Güç: ' + HERO_ULT[id].name, 0, y0 + 315, 9.5, '#5a3410', 'center', '800', FONT_B, false);
   if (sel) { circle(w / 2 - 20, y0 + 22, 13, '#3cbf3c', '#fff', 2); drawIcon('check', w / 2 - 20, y0 + 22, 16); }
   if (unlocked && !(save.seenHeroes || ['commander']).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
   if (!unlocked) {
@@ -6095,10 +6229,8 @@ function drawHeroCard(id, cx, cy, at, tm) {
   if (unlocked) buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => toggleHero(id) });
 }
 function toggleHero(id) {
-  let t = team().slice();
-  if (t.includes(id)) { if (t.length > 1) t = t.filter(x => x !== id); else { sfx('error'); return; } }
-  else { t.push(id); if (t.length > 2) t.shift(); }
-  save.team = t; persist(); sfx('select');
+  if (team()[0] === id) return;
+  save.team = [id]; persist(); sfx('select');
 }
 
 // ---------- bosslar ----------
@@ -6149,11 +6281,13 @@ function drawCrown(x, y, s, face) {
   ctx.restore();
 }
 
+// Boss girişi: ekran kızıl karanlığa bürünür, boru ve davullar çalar, ekran sarsılır, kükrer
 function bossIntro(e) {
   G.bossT = 0;
   G.intro = { type: e.type, t: 0, dur: 5, boss: true };
-  shakeScreen(4, 0.6);
-  sfx('wave'); sfx('castlehit');
+  G.bossFx = { t: 0, dur: 3.4 };
+  shakeScreen(7, 1.1);
+  bossSting(); setTimeout(() => sfx('roar'), 900);
 }
 
 // Zırh parçalanır: çelik parçaları saçılır, ekran sarsılır, boss 2. evreye geçer ve lejyonunu çağırır
@@ -6214,6 +6348,28 @@ function bossAbilities(e, dt) {
     if (Math.random() < dt * 30) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-14, 14), y: e.y - rand(0, e.def.h || 40), vy: -rand(30, 70), col: Math.random() < 0.5 ? '255,70,40' : '255,150,60', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.7) });
   }
   if (ab.regen && e.hp < e.maxHp && time - (e.hitAt || -9) > 4) e.hp = Math.min(e.maxHp, e.hp + e.maxHp * ab.regen * dt);
+  // Öfke evresi (her bossta): canı yarıya inince kükrer, askerlere %25 sert vurur, yetenekleri %20 sık gelir
+  if (e.def.chief && !e.enraged && e.hp < e.maxHp * 0.5) {
+    e.enraged = true; e.dmgMul = (e.dmgMul || 1) * 1.25; e.cdMul = (e.cdMul || 1) * 0.8;
+    bossCastFx(e, 'ÖFKELENDİ!', '255,60,40');
+    G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: 110, t: 0, dur: 0.6 });
+    for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 40 + i * 30, col: '255,60,40', t: -i * 0.1, dur: 0.6 });
+    shakeScreen(6, 0.6); sfx('roar'); G.hurt = Math.max(G.hurt, 0.35);
+  }
+  // Zehir: çevresindeki askerlere yeşil zehir püskürtür (hasar + kısa sersemleme)
+  if (ab.venom && ready('venom', ab.venom.cd)) {
+    const vs = G.soldiers.filter(s2 => !s2.dead && dist(s2.x, s2.y, e.x, e.y) < ab.venom.r);
+    if (!vs.length) e.abT.venom = 1;
+    else {
+      for (const s2 of vs) {
+        damageSoldier(s2, ab.venom.dmg * (e.dmgMul || 1)); s2.stunT = Math.max(s2.stunT || 0, ab.venom.stun);
+        for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: s2.x + rand(-6, 6), y: s2.y - rand(4, 18), vy: -rand(10, 30), col: k % 2 ? '140,255,80' : '90,200,60', s0: 4, s1: 0.5, life: 0.7 });
+      }
+      for (let k = 0; k < 24; k++) { const a = rand(0, Math.PI * 2), v = rand(60, 140); emit(G.parts, { kind: 'glow', x: e.x, y: e.y - 14, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5, drag: 2.5, col: '120,220,70', s0: 6, s1: 14, life: 0.7, a: 0.55 }); }
+      G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.venom.r, col: '140,255,80', t: 0, dur: 0.5 });
+      bossCastFx(e, 'Zehir!', '140,255,90'); sfx('roar');
+    }
+  }
   // sefer sonu bossu: canı yarıya inince ikinci lejyon
   if (e.def.legion && e.phase2 && !e.legion2 && e.hp < e.maxHp * 0.5) { e.legion2 = true; bossCastFx(e, 'Son Çağrı!', '255,90,70'); summonLegion(e); shakeScreen(5, 0.4); }
   // Muhafız çağırma: boss'un arkasında açılan geçitten minyonlar çıkar ve onunla yürür
@@ -6226,12 +6382,12 @@ function bossAbilities(e, dt) {
       m.leader = e; m.form = -22 - i * 12;
       for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: m.x + rand(-8, 8), y: m.y - rand(0, 20), vy: -rand(20, 50), col: '200,160,255', s0: 4, s1: 0.5, life: 0.6 });
     }
-    bossCastFx(e, 'Çağrı!', '200,140,255'); sfx('spell');
+    bossCastFx(e, 'Çağrı!', '200,140,255'); sfx('portal');
   }
   if (ab.howl && ready('howl', ab.howl.cd)) {
     for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, e.x, e.y) < ab.howl.r) o.hasteT = 4;
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.howl.r * (0.5 + i * 0.25), col: '255,90,70', t: -i * 0.12, dur: 0.6 });
-    bossCastFx(e, 'Uluma!', '255,110,80'); sfx('cry');
+    bossCastFx(e, 'Uluma!', '255,110,80'); sfx('roar');
   }
   if (ab.slam && ready('slam', ab.slam.cd)) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);
@@ -6281,7 +6437,7 @@ function bossAbilities(e, dt) {
   if (ab.rage && ready('rage', ab.rage.cd)) {
     e.rageT = ab.rage.t;
     G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: 50, t: 0, dur: 0.5 });
-    bossCastFx(e, 'Öfke!', '255,80,50'); sfx('cry');
+    bossCastFx(e, 'Öfke!', '255,80,50'); sfx('roar');
   }
   // Bomba / kaya: menzildeki bir kuleye fırlatır, kule birkaç saniye susar
   for (const kind of ['bomb', 'boulder']) {
@@ -6323,6 +6479,43 @@ function bossAbilities(e, dt) {
       }
       bossCastFx(e, 'Can Emme!', '110,255,140'); sfx('magic');
     }
+  }
+}
+
+// Boss halesi: ayağının altında karanlık, nabız gibi atan kızıl gölge ve dönen rün halkası, çevresinde yükselen
+// kor ve duman; öfkelenince kırmızı yanar. Yetenekten hemen önce yerde uyarı halkası belirir (yer sarsıntısı,
+// zehir, çağrı), oyuncu ne geleceğini görür.
+function drawBossAura(e, dh) {
+  const d = e.def, col = d.ab && d.ab.blink ? '90,220,230' : e.enraged ? '255,40,20' : '255,70,40', pulse = 0.5 + Math.sin(time * (e.enraged ? 9 : 4)) * 0.5;
+  ctx.save();
+  const g = ctx.createRadialGradient(e.x, e.y + 2, 2, e.x, e.y + 2, dh * 0.9);
+  g.addColorStop(0, `rgba(30,0,0,${0.45 + pulse * 0.1})`); g.addColorStop(1, 'rgba(30,0,0,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, dh * 0.95, dh * 0.36, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, e.x, e.y - 2, dh * 1.05, col, 0.32 + pulse * 0.14 + (e.enraged ? 0.15 : 0));
+  ctx.restore();
+  ctx.save(); ctx.translate(e.x, e.y + 1); ctx.scale(1, 0.36);
+  ctx.strokeStyle = `rgba(${col},${0.55 + pulse * 0.3})`; ctx.lineWidth = 2.2;
+  ctx.setLineDash([7, 5]); ctx.lineDashOffset = -time * 24;
+  ctx.beginPath(); ctx.arc(0, 0, dh * 0.62, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]); ctx.lineWidth = 1.2; ctx.strokeStyle = `rgba(${col},0.4)`;
+  ctx.beginPath(); ctx.arc(0, 0, dh * 0.78, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+  if (Math.random() < (e.enraged ? 0.7 : 0.35)) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.45, dh * 0.45), y: e.y - rand(0, dh * 0.3), vy: -rand(18, 45), col: e.enraged ? '255,80,40' : '255,140,70', s0: rand(1.5, 3), s1: 0.3, life: rand(0.6, 1) });
+  if (Math.random() < 0.18) emit(G.parts, { kind: 'glow', x: e.x + rand(-dh * 0.4, dh * 0.4), y: e.y - rand(0, 6), vy: -rand(8, 20), col: '30,18,22', s0: rand(5, 8), s1: rand(12, 18), life: rand(0.8, 1.3), a: 0.35 });
+  // yetenek uyarısı: hazır olmaya 0.9 sn kala yerde büyüyen kesik çizgili kırmızı halka
+  const A = d.ab || {}, T = e.abT || {};
+  for (const k of ['slam', 'venom', 'summon']) {
+    if (!A[k] || T[k] == null || T[k] > 0.9 || T[k] <= 0) continue;
+    if (k !== 'summon' && !G.soldiers.some(s2 => !s2.dead && dist(s2.x, s2.y, e.x, e.y) < A[k].r)) continue;
+    const r = k === 'summon' ? 34 : A[k].r, kk = 1 - T[k] / 0.9, c2 = k === 'venom' ? '140,255,80' : k === 'summon' ? '190,120,255' : '255,60,40';
+    let cx = e.x, cy = e.y;
+    if (k === 'summon') { const q = pathPos(e.p, Math.max(0, e.d - 24)); cx = q.x; cy = q.y; }
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.42);
+    ctx.fillStyle = `rgba(${c2},${0.1 + kk * 0.15})`; ctx.beginPath(); ctx.arc(0, 0, r * kk, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = `rgba(${c2},${0.5 + Math.sin(time * 20) * 0.3})`; ctx.lineWidth = 2.5; ctx.setLineDash([9, 6]); ctx.lineDashOffset = time * 30;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
   }
 }
 
@@ -6576,6 +6769,7 @@ function drawTitle() {
   }
   gameButton('play', W / 2, 452, 250, 66, 'OYNA', () => go(() => { screen = 'map'; }), 'green', { icon: 'play', shine: true, breathe: true, appear: st - 0.55, size: 32 });
   roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7 });
+  roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75 });
   txt('v0.3', W - 14, H - 14, 12, 'rgba(255,255,255,0.75)', 'right', '700', FONT_B, false);
   if (Math.random() < 0.3) {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.3, H), vx: rand(-8, 8), vy: rand(-18, -6),
@@ -6708,6 +6902,7 @@ function drawMap() {
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2 + 40, 46); ctx.scale(rk, rk); ribbon(0, 0, 330, `${mapEp}. SEFER: ${E.name.toLocaleUpperCase('tr')}`, mapEp === 1 ? 'red' : 'gold', 20); ctx.restore();
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
+  roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
   const total = save.stars.reduce((a, b) => a + (b || 0), 0);
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
   roundRect(W - 150, 22, 132, 38, 19, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
@@ -7142,6 +7337,13 @@ function drawPlay() {
   drawEnemyRing();
   ctx.restore();
   drawWeather();
+  if (G.bossFx) {
+    // boss girişi: ekran kenarları kızıl karanlığa bürünür, nabız gibi atar, sonra açılır
+    const B = G.bossFx, k = Math.min(1, B.t / 0.4) * (1 - clamp((B.t - B.dur + 1) / 1, 0, 1)), p = 0.75 + Math.sin(B.t * 7) * 0.25;
+    const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, W * 0.65);
+    g.addColorStop(0, `rgba(40,0,0,${0.28 * k})`); g.addColorStop(1, `rgba(110,0,0,${0.82 * k * p})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
   if (G.hurt > 0) {
     // kale hasar alınca ekran kenarları kızarır
     const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, W * 0.62);
@@ -7551,6 +7753,7 @@ function frame(now) {
   if (screen === 'title') drawTitle();
   else if (screen === 'map') drawMap();
   else if (screen === 'heroes') drawHeroes();
+  else if (screen === 'settings') drawSettings();
   else if (screen === 'upgrades') drawUpgrades();
   else drawPlay();
   drawPartsAll(uiParts);
