@@ -1,3 +1,22 @@
+# Kuleler — yeni kadro (8 Eki): Caner'in listesi benimsendi
+
+ÖNCEKİ mancınık ve okçu promptları (aşağıda, eski bölüm) İPTAL. Yeni kule kadrosu:
+
+| Kule | Yerine geçtiği | Rol | Mekanik | Uzmanlıklar |
+|---|---|---|---|---|
+| Kemik Dikilitaşı | Okçu | tek hedef, hızlı, uçanları vurur | kemik kıymığı fırlatır | Veba Kemiği (zehir) / Kemik Mızrak (kritik, uzun menzil) |
+| Veba Kazanı | Mancınık | alan hasarı | veba güllesi; düştüğü yerde gaz kalır (sürekli hasar), zırh çürütür | Çürüme Bulutu (büyük gaz) / Çifte Kazan |
+| Mezar Mahzeni | Kışla | minyon | iskeletler yolu keser | Mezar Bekçisi / Zombi Sürüsü |
+| Ruh Feneri | Büyücü | zayıflatma | ruh ışını: zırh deler, yavaşlatır | Lanet (güçlü yavaşlatma) / Korku Işığı (kaçırma şansı) |
+| Kan Sunağı (yeni, 3. bölüm) | — | güçlendirme | çevredeki kulelere +%20/30/40 saldırı hızı | Kan Ayini (+hasar) / Kan Kalkanı (iskeletleri iyileştirir) |
+| Nekropol (yeni, 5. bölüm) | — | ağır savunma | tek dev Abomination: çok canlı, yolu tıkar, yere vurup sersemletir | İkiz Ucube / Zehirli Patlama |
+
+Promptlar (kule sayfalarında `varliklar/ham/nm_mahzen.jpg` stil referansı, birimlerde `nm_iskeletler.jpg`): sohbette 8 Eki
+mesajında tam metin; dosya adları: nm_dikilitas.jpg, nm_kazan.jpg, nm_fener.jpg, nm_sunak.jpg, nm_nekropol.jpg, nm_abomination.jpg.
+
+---
+
+## ESKİ (iptal)
 # Kemik Mancınığı ve iskelet okçular — yeniden tasarım promptları (karanlık ambiyans)
 
 Sıra: 1 → 2 → 3 (mancınık), 4 → 5 (okçular). Her sonucu kaydet: `varliklar/ham/` (adlar aşağıda).
