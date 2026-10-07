@@ -123,7 +123,7 @@ const SAVE_KEY = 'sinirKalesi.v1';
 let save = { stars: [] };
 try { save = JSON.parse(localStorage.getItem(SAVE_KEY)) || save; } catch (e) {}
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto' };
+const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto', music: true };
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 function setSetting(k, v) {
   save.settings = Object.assign({}, save.settings, { [k]: v }); persist();
@@ -478,6 +478,26 @@ function deathVoice(e) {
   if (V.clank) sfx('clash');
 }
 
+// ----- ana tema müziği (Banquet for the Uninvited): menülerde döngüyle çalar, bölümde yavaşça susar,
+// menüye dönünce kaldığı yerden devam eder. Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez.
+// Parça yüksek masterlandığı için efektlerin altında kalacak kadar kısık çalınır.
+const MUSIC = { el: null, vol: 0, started: false };
+function startMusic() {
+  if (MUSIC.started) return;
+  MUSIC.el = MUSIC.el || new Audio('ses/muzik_menu.mp3' + (window.SURUM ? '?v=' + window.SURUM : ''));
+  MUSIC.el.loop = true; MUSIC.el.volume = 0; MUSIC.started = true;
+  MUSIC.el.play().catch((e) => { if (e && e.name === 'NotAllowedError') MUSIC.started = false; }); // izin yoksa sonraki dokunuşta yeniden denenir
+}
+// iOS ve bazı tarayıcılar sesi yalnız parmak kalkınca / tıklamada açar: birkaç olayda denenir
+for (const [t, o] of [['pointerup', window], ['touchend', window], ['click', window], ['keydown', window]]) o.addEventListener(t, () => startMusic(), { passive: true });
+function updateMusic(dt) {
+  if (!MUSIC.started) return;
+  const el = MUSIC.el, tgt = !muted && setting('music') && screen !== 'play' && !document.hidden ? 0.3 * setting('vol') : 0;
+  MUSIC.vol += clamp(tgt - MUSIC.vol, -dt * 0.4, dt * 0.15); // giriş ~2 sn, çıkış ~0.8 sn
+  el.volume = clamp(MUSIC.vol, 0, 1);
+  if (MUSIC.vol <= 0.002 && tgt === 0 && !el.paused) el.pause();
+  else if (tgt > 0 && el.paused) el.play().catch(() => {});
+}
 function setMuted(m) {
   muted = m;
   try { localStorage.setItem('sinirKalesi.muted', m ? '1' : '0'); } catch (e) {}
@@ -6645,6 +6665,7 @@ function drawSettings() {
   const hero = HEROES[team()[0]];
   const rows = [
     ['Ses efektleri', muted ? 'KAPALI' : 'AÇIK', () => setMuted(!muted), muted ? 'dark' : 'green'],
+    ['Müzik', setting('music') ? 'AÇIK' : 'KAPALI', () => setSetting('music', !setting('music')), setting('music') ? 'green' : 'dark'],
     ['Ses düzeyi', (VOL.find(v => v[0] === setting('vol')) || VOL[2])[1], () => setSetting('vol', cyc(VOL, setting('vol'))), 'wood'],
     ['Ekran sarsıntısı', setting('shake') ? 'AÇIK' : 'KAPALI', () => setSetting('shake', !setting('shake')), setting('shake') ? 'green' : 'dark'],
     ['Grafik kalitesi', (GFX.find(v => v[0] === setting('gfx')) || GFX[0])[1], () => setSetting('gfx', cyc(GFX, setting('gfx'))), 'wood'],
@@ -6655,8 +6676,8 @@ function drawSettings() {
     }, 'red'],
   ];
   rows.forEach(([label, val, fn, style], i) => {
-    const y = py + 52 + i * 58;
-    if (i) { ctx.fillStyle = 'rgba(92,58,22,0.18)'; ctx.fillRect(px + 34, y - 29, pw - 68, 1.5); }
+    const y = py + 46 + i * 50;
+    if (i) { ctx.fillStyle = 'rgba(92,58,22,0.18)'; ctx.fillRect(px + 34, y - 25, pw - 68, 1.5); }
     txt(label, px + 44, y + 2, 20, '#4a2a0e', 'left', '400', FONT_T, false);
     gameButton('set' + i, px + pw - 140, y, 190, 40, val, fn, style, { appear: st - 0.25 - i * 0.04, size: 15 });
   });
@@ -7974,6 +7995,7 @@ const DRAG_PX = 8;          // bu kadar kayarsa dokunuş değil sürüklemedir (
 canvas.addEventListener('pointerdown', (ev) => {
   ev.preventDefault();
   initAudio();
+  startMusic();
   if (trans) return;
   const p = toLogical(ev);
   const ptr = { x: p.x, y: p.y, sx: p.x, sy: p.y, moved: false, hud: false };
@@ -8241,6 +8263,7 @@ function frame(now) {
   }
   if (screen === 'play' && G) { updateCamera(real); weatherVisuals(real); }
   weatherAudio();
+  updateMusic(real);
   if (trans) {
     trans.t += real;
     if (!trans.fired && trans.t >= 0.22) { trans.fired = true; uiParts = []; trans.fn(); screenT = time; }
@@ -8307,6 +8330,7 @@ window.__game = {
     });
     return out.toDataURL();
   },
+  music: MUSIC,
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
