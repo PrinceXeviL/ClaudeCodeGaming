@@ -31,6 +31,9 @@ const { chromium } = require('playwright');
         // büyüler
         // kahraman güçleri: kalabalığın üstüne
         for (const id of ['ult0', 'ult1']) if (G.spells[id] != null && G.spells[id] <= 0) { const [e, n] = dens(); if (e && n >= 4) g.cast(id, e.x, e.y); }
+        // Mortimer'ın büyüleri: korku kalabalığa, diriltme yerde 3+ ceset varken
+        if (G.spells.nm_fear != null && G.spells.nm_fear <= 0) { const [e, n] = dens(); if (e && n >= 5) g.cast('nm_fear', e.x, e.y); }
+        if (G.spells.nm_raise != null && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 3) g.cast('nm_raise', 0, 0);
         g.sim(0.5); time += 0.5;
       }
       return { lvl: lvl + 1, result: g.overlay, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time) };

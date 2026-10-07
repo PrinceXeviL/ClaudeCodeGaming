@@ -769,6 +769,8 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'legion', n: 8, gap: 0.9 }, { t: 'solarcher', n: 4, gap: 1.5, at: 6 }],
       [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'solarcher', n: 5, gap: 1.2, at: 6 }],
       [{ t: 'solarcher', n: 6, gap: 1 }, { t: 'legion', n: 12, gap: 0.7, at: 4 }],
+      [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'solarcher', n: 6, gap: 1, at: 5 }],
+      [{ t: 'legion', n: 12, gap: 0.7 }, { t: 'solarcher', n: 6, gap: 1, at: 4 }, { t: 'legion', n: 8, gap: 0.6, at: 12 }],
     ] },
     { name: 'Sisli Bataklık', theme: 'bog', gold: 380, weather: 'rain', bossT: 'champion', waves: [
       [{ t: 'legion', n: 6, gap: 1.3 }],
@@ -777,6 +779,8 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'gladiator', n: 5, gap: 1.5 }, { t: 'legion', n: 8, gap: 0.9, at: 6 }],
       [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'gladiator', n: 5, gap: 1.2, at: 6 }, { t: 'solarcher', n: 4, gap: 1.2, at: 10 }],
       [{ t: 'gladiator', n: 8, gap: 1 }, { t: 'legion', n: 10, gap: 0.7, at: 6 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
+      [{ t: 'gladiator', n: 6, gap: 1.2 }, { t: 'solarcher', n: 6, gap: 1, at: 5 }, { t: 'legion', n: 10, gap: 0.7, at: 9 }],
+      [{ t: 'legion', n: 12, gap: 0.6 }, { t: 'gladiator', n: 8, gap: 1, at: 5 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
     ] },
     { name: 'Unutulmuş Mezarlık', theme: 'graveyard', gold: 470, hpMul: 0.9, bossT: 'shadowmaster', waves: [
       [{ t: 'legion', n: 8, gap: 1.1 }],
@@ -786,6 +790,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'priest', n: 3, gap: 2.5, at: 4 }, { t: 'assassin', n: 5, gap: 1, at: 9 }],
       [{ t: 'gladiator', n: 8, gap: 1 }, { t: 'priest', n: 3, gap: 2, at: 4 }, { t: 'assassin', n: 8, gap: 0.8, at: 10 }],
       [{ t: 'legion', n: 12, gap: 0.6 }, { t: 'assassin', n: 6, gap: 0.9, at: 5 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
+      [{ t: 'priest', n: 3, gap: 2.5 }, { t: 'gladiator', n: 8, gap: 1, at: 3 }, { t: 'assassin', n: 8, gap: 0.8, at: 9 }, { t: 'legion', n: 10, gap: 0.6, at: 14 }],
     ] },
     { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.75, bossT: 'cavcaptain', waves: [
       [{ t: 'legion', n: 8, gap: 1 }, { t: 'heavy', n: 1, gap: 1, at: 8 }],
@@ -795,6 +800,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'cavalry', n: 5, gap: 1.5 }, { t: 'assassin', n: 6, gap: 1, at: 6 }, { t: 'heavy', n: 2, gap: 3, at: 10 }],
       [{ t: 'heavy', n: 4, gap: 2 }, { t: 'priest', n: 3, gap: 2.5, at: 3 }, { t: 'cavalry', n: 4, gap: 1.6, at: 10 }, { t: 'legion', n: 10, gap: 0.7, at: 14 }],
       [{ t: 'ram', n: 2, gap: 6 }, { t: 'gladiator', n: 8, gap: 0.9, at: 3 }, { t: 'cavalry', n: 4, gap: 1.5, at: 12 }],
+      [{ t: 'heavy', n: 4, gap: 2 }, { t: 'cavalry', n: 6, gap: 1.4, at: 4 }, { t: 'priest', n: 3, gap: 2.5, at: 8 }, { t: 'legion', n: 12, gap: 0.6, at: 12 }],
     ] },
     { name: "Mortimer'ın Kapısı", theme: 'necrogate', gold: 650, hpMul: 0.7, bossT: 'gloriosus', waves: [
       [{ t: 'legion', n: 10, gap: 0.9 }, { t: 'solarcher', n: 4, gap: 1.4, at: 5 }],
@@ -807,7 +813,10 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'heavy', n: 6, gap: 1.6 }, { t: 'cavalry', n: 8, gap: 1.1, at: 6 }, { t: 'assassin', n: 10, gap: 0.7, at: 12 }, { t: 'priest', n: 4, gap: 2, at: 14 }],
     ] },
   ];
-  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1 }));
+  // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
+  // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
+  const TOTAL = [118, 134, 155, 155, 250];
+  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3 }));
   LEVELS.splice(0, LEVELS.length, ...L);
   EPISODES.splice(0, EPISODES.length, { name: 'Lanetli Sınır', bg: 'nm_title', nodes: [[150, 450], [300, 420], [450, 450], [600, 410], [760, 360]] });
 }
@@ -863,13 +872,15 @@ function shapeWaves(lv, li) {
   const heavy = (g) => ENEMIES[g.t].hp >= HEAVY_HP;
   const count = (w) => w.reduce((a, g) => a + g.n, 0);
   const N = lv.waves.length, orig = lv.waves.map(count);
+  // lv.total + lv.grow (necro bölümleri): toplam düşman sayısı ve dalga büyümesi doğrudan verilir
+  const GROW = lv.grow || WAVE_GROW, LGROW = lv.grow || LAST_GROW, DENS = lv.total ? 1 : DENSITY;
   const shape = [1];
-  for (let k = 1; k < N; k++) shape.push(shape[k - 1] * (k === N - 1 ? LAST_GROW : WAVE_GROW));
-  const A = orig.reduce((a, b) => a + b) * WAVE_TOTAL / shape.reduce((a, b) => a + b);
+  for (let k = 1; k < N; k++) shape.push(shape[k - 1] * (k === N - 1 ? LGROW : GROW));
+  const A = (lv.total || orig.reduce((a, b) => a + b) * WAVE_TOTAL) / shape.reduce((a, b) => a + b);
   let prev = 0;
   lv.waves.forEach((w, k) => {
     let target = Math.max(4, Math.round(A * shape[k]));
-    if (k) target = Math.max(target, Math.ceil(prev * (k === N - 1 ? LAST_GROW : WAVE_GROW)));
+    if (k) target = Math.max(target, Math.ceil(prev * (k === N - 1 ? LGROW : GROW)));
     const light = w.filter(g => !heavy(g)), hc = count(w.filter(heavy)), lc = count(light);
     if (lc) {
       const f = Math.max(0.15, (target - hc) / lc);
@@ -884,7 +895,7 @@ function shapeWaves(lv, li) {
       for (const g of light) g.hpK = Math.min(1.4, Math.max(0.6, 1 / Math.sqrt(r)));
     }
     prev = count(w);
-    for (const g of light) { const n2 = Math.max(1, Math.round(g.n * DENSITY)); g.gap = g.gap * g.n / n2; g.n = n2; }
+    for (const g of light) { const n2 = Math.max(1, Math.round(g.n * DENS)); g.gap = g.gap * g.n / n2; g.n = n2; }
     // karma akış: aynı yoldaki iki hafif grup birleşir, türler sırayla karışık gelir
     const byPath = {};
     for (const g of light) (byPath[g.p || 0] = byPath[g.p || 0] || []).push(g);
