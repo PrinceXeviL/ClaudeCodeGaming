@@ -1264,6 +1264,7 @@ function startLevel(idx) {
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
+  setupMech();
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
 }
 function bakeNext() {
@@ -2539,13 +2540,21 @@ function heroDust(h, dt) {
 function updateBowSoldier(s, dt) {
   const home = soldierHome(s);
   if (s.moving || dist(s.x, s.y, home.x, home.y) > 2) {
+    if (s.melee && s.melee.blocker === s) s.melee.blocker = null;
+    s.melee = null;
     if (moveToward(s, home.x, home.y, dt)) s.moving = false;
     s.shootT = 0;
     return;
   }
   if (s.shootT > 0) s.shootT -= dt;
-  let best = null, bestRemain = 1e9;
-  for (const e of G.enemies) {
+  // yanına kadar gelen düşmanı durdurur: düşman ona saldırır, okçu da onu yakından vurur
+  if (s.melee && (s.melee.dead || s.melee.blocker !== s)) s.melee = null;
+  if (!s.melee) for (const e of G.enemies) {
+    if (e.dead || e.def.flying || e.under || e.blocker || e.siege !== undefined || e.reviveT > 0) continue;
+    if (dist(e.x, e.y, s.x, s.y) < 20) { e.blocker = s; s.melee = e; break; }
+  }
+  let best = s.melee, bestRemain = 1e9;
+  if (!best) for (const e of G.enemies) {
     if (e.dead || e.under || e.reviveT > 0 || dist(s.x, s.y - 10, e.x, e.y) > s.bow.r) continue;
     const remain = e.p.total - e.d;
     if (remain < bestRemain) { bestRemain = remain; best = e; }
@@ -3292,6 +3301,9 @@ const MORT_LINES = {
   raise: ['Kalkın! Mesai bitmedi.', 'Ölmek bahane değil. Kalk!', 'Emekliliğiniz iptal.', 'Kalkın tembeller!'],
   fear: ['Böö!', 'Annenizi mi istiyorsunuz?', 'Koşun! Koşun! Hah!', 'Arkanıza bakmayın.'],
   boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
+  sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
+  graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
+  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'],
   streak: ['Mükemmel. Yeni malzeme.', 'Hepsini kemik deposuna!', 'Bir, iki, on... yetmez.', 'İşte buna verimlilik denir.'],
 };
 function mortSay(kind, force) {
@@ -3330,6 +3342,175 @@ function drawMortSay() {
   ctx.fillRect(clamp(m.x - 5, bx + 9, bx + bw - 19), by + bh - 3, 10, 3);
   lines.forEach((l, i) => txt(l, bx + bw / 2, by + 11 + i * 13, 11, '#2a1838', 'center', '800', FONT_B, false));
   ctx.restore();
+}
+// ----- bölüme özel mekanikler (lv.mech) -----
+// mud: yoldaki çamur düşmanı yavaşlatır · graves: yol kenarı mezarlardan arada bir bizim tarafa ölü kalkar
+// lake: göldeki yaratık yoldaki bir düşmanı suya çeker · sunbeam: Solarian güneş ışını bir kuleyi kısa süre susturur
+const MECH = {
+  mud: { title: 'ÇAMURLU YOL', sub: 'Çamur birikintileri düşmanları yavaşlatır' },
+  graves: { title: 'MEZARLAR UYANIYOR', sub: 'Arada bir mezarlardan senin için ölüler kalkar', every: 18 },
+  lake: { title: 'GÖLDE BİR ŞEY VAR', sub: 'Göl yaratığı yoldaki düşmanları suya çeker', every: 30 },
+  sunbeam: { title: 'GÜNEŞ IŞINI', sub: 'Solarian rahipleri arada bir kulelerinden birini susturur', every: 30, warn: 2, off: 4 },
+};
+function setupMech() {
+  const kind = G.lv.mech;
+  G.mech = kind ? { kind, timer: (MECH[kind].every || 0) * 0.6, spots: [], fx: [], shown: false } : null;
+  if (!kind) return;
+  const M = G.mech, P0 = G.paths[0];
+  const free = (x, y, r) => x > 30 && x < W - 30 && y > 80 && y < H - 30 && G.plots.every(p => dist(p.x, p.y, x, y) > r) && dist(x, y, G.castle.x, G.castle.y) > 90;
+  const spaced = (x, y, r) => M.spots.every(o => dist(o.x, o.y, x, y) > r);
+  if (kind === 'mud') {
+    for (const [p, f] of [[P0, 0.3], [P0, 0.56]].concat(G.paths.slice(1, 2).map(p => [p, 0.45]))) {
+      const q = pathPos(p, p.total * f);
+      if (spaced(q.x, q.y, 60)) M.spots.push({ x: q.x, y: q.y, r: 32, seed: Math.random() * 9 });
+    }
+  } else if (kind === 'graves' || kind === 'lake') {
+    for (let f = 0.18; f <= 0.82 && M.spots.length < (kind === 'graves' ? 4 : 2); f += 0.06) {
+      for (const side of [1, -1]) {
+        const q = pathPos(P0, P0.total * f, side * (kind === 'graves' ? 44 : 50));
+        const near = nearestOnPaths(G.paths, q.x, q.y);
+        if (near.d > 32 && free(q.x, q.y, 46) && spaced(q.x, q.y, kind === 'graves' ? 110 : 200)) {
+          const r = pathPos(P0, P0.total * f);
+          M.spots.push({ x: q.x, y: q.y, rx: r.x, ry: r.y, look: 1 + (M.spots.length % 3), seed: Math.random() * 9 });
+          break;
+        }
+      }
+    }
+  }
+}
+function updateMech(dt) {
+  const M = G.mech; if (!M) return;
+  const D = MECH[M.kind];
+  if (!M.shown && G.t > 3.5) { M.shown = true; G.banner = { title: D.title, sub: D.sub, t: 0, dur: 3.4 }; }
+  for (const f of M.fx) f.t += dt;
+  if (M.kind === 'mud') {
+    for (const e of G.enemies) {
+      if (e.dead || e.def.flying || e.under) continue;
+      for (const m of M.spots) if (((e.x - m.x) / m.r) ** 2 + ((e.y - m.y) / (m.r * 0.55)) ** 2 < 1) { slowEnemy(e, 0.35, 0.25); break; }
+    }
+  }
+  if (G.wave <= 0) return;
+  M.timer -= dt;
+  if (M.kind === 'graves' && M.timer <= 0 && M.spots.length) {
+    M.timer = D.every;
+    const m = M.spots[Math.floor(Math.random() * M.spots.length)];
+    const pool = [...new Set(G.lv.waves.flat().map(g => g.t))].filter(t => ENEMIES[t] && !ENEMIES[t].chief && ENEMIES[t].hp < 600 && !ENEMIES[t].flying);
+    const t = pool[Math.floor(Math.random() * pool.length)] || 'legion';
+    raiseMinion({ x: m.x, y: m.y + 6, face: m.x < m.rx ? 1 : -1, name: 'enemy_' + t, rig: ENEMIES[t].base ? 'enemy_' + ENEMIES[t].base : null });
+    m.flash = 1; mortSay('graves');
+  } else if (M.kind === 'lake' && M.timer <= 0) {
+    // menzildeki (boss olmayan, uçmayan) en öndeki düşmanı yakalar; yoksa kısa süre sonra yine dener
+    let pick = null, spot = null;
+    for (const m of M.spots) for (const e of G.enemies) {
+      if (e.dead || e.def.chief || e.def.flying || e.under || e.grabbed || dist(e.x, e.y, m.rx, m.ry) > 48) continue;
+      if (!pick || e.d > pick.d) { pick = e; spot = m; }
+    }
+    if (!pick) { M.timer = 0.8; return; }
+    M.timer = D.every; pick.grabbed = true; stunEnemy(pick, 1.2);
+    M.fx.push({ kind: 'tentacle', x: spot.x, y: spot.y, e: pick, t: 0, dur: 1.3 });
+    sfx('roar'); mortSay('lake');
+  } else if (M.kind === 'sunbeam' && M.timer <= 0) {
+    const list = G.towers.filter(t => !(t.disabledT > 0));
+    if (!list.length) { M.timer = 3; return; }
+    M.timer = D.every;
+    M.fx.push({ kind: 'sun', tower: list[Math.floor(Math.random() * list.length)], t: 0, dur: D.warn + 0.7 });
+  }
+  // efektlerin zamanlı sonuçları
+  for (const f of M.fx) {
+    if (f.kind === 'tentacle' && !f.done && f.t > 0.75) {
+      f.done = true;
+      if (!f.e.dead) { killEnemy(f.e); f.e.leaked = true; }
+      for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', x: f.x + rand(-10, 10), y: f.y - rand(0, 8), vx: rand(-40, 40), vy: -rand(40, 110), g: 220, col: '90,170,160', s0: rand(2, 4), s1: 1, life: rand(0.4, 0.8) });
+      comicPop(f.x, f.y - 26, 'ŞAPUR!', false, 15);
+    }
+    if (f.kind === 'sun' && !f.done && f.t > D.warn) {
+      f.done = true;
+      if (G.towers.includes(f.tower)) { f.tower.disabledT = Math.max(f.tower.disabledT || 0, D.off); f.tower.disabledKind = 'sun'; }
+      comicPop(f.tower.x, f.tower.y - 70, 'ZZAP!', true, 15); shakeScreen(2, 0.2); mortSay('sun');
+    }
+  }
+  M.fx = M.fx.filter(f => f.t < f.dur);
+  for (const m of M.spots) if (m.flash > 0) m.flash -= dt;
+}
+function drawMechGround() {
+  const M = G.mech; if (!M) return;
+  if (M.kind === 'mud') {
+    for (const m of M.spots) {
+      ctx.save(); ctx.translate(m.x, m.y);
+      const g = ctx.createRadialGradient(0, 0, 4, 0, 0, m.r);
+      g.addColorStop(0, 'rgba(40,46,26,0.85)'); g.addColorStop(0.75, 'rgba(58,60,34,0.7)'); g.addColorStop(1, 'rgba(58,60,34,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, m.r, m.r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(120,130,70,0.35)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(0, 0, m.r * 0.72, m.r * 0.38, 0, 0, Math.PI * 2); ctx.stroke();
+      // kabarcıklar
+      for (let i = 0; i < 3; i++) {
+        const ph = (time * 0.7 + i / 3 + m.seed) % 1, bx = Math.sin(m.seed * 7 + i * 2.4) * m.r * 0.5, by = Math.cos(m.seed * 3 + i * 1.7) * m.r * 0.2;
+        ctx.strokeStyle = `rgba(160,170,100,${0.6 * (1 - ph)})`; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(bx, by, 1 + ph * 3, 0, Math.PI * 2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  } else if (M.kind === 'graves') {
+    for (const m of M.spots) {
+      const im = spr('nm_tomb_' + m.look), soon = M.timer < 2 || m.flash > 0;
+      if (soon) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, m.x, m.y - 8, 26, '120,255,140', 0.35 + Math.sin(time * 9) * 0.15); ctx.restore(); }
+      shadow(m.x, m.y + 2, 12, 4);
+      if (im) drawSprite(ctx, im, m.x, m.y + 3, 22);
+      else roundRect(m.x - 7, m.y - 18, 14, 20, 6, '#6a6a72', '#1a1a20', 1.5);
+    }
+  } else if (M.kind === 'lake') {
+    for (const m of M.spots) {
+      ctx.save(); ctx.translate(m.x, m.y);
+      const g = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
+      g.addColorStop(0, 'rgba(8,22,26,0.95)'); g.addColorStop(0.8, 'rgba(14,40,44,0.85)'); g.addColorStop(1, 'rgba(14,40,44,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, 24, 12, 0, 0, Math.PI * 2); ctx.fill();
+      for (let i = 0; i < 2; i++) {
+        const ph = (time * 0.5 + i * 0.5 + m.seed) % 1;
+        ctx.strokeStyle = `rgba(120,200,190,${0.4 * (1 - ph)})`; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(0, 0, 6 + ph * 16, 3 + ph * 8, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+      // iki parlak göz: arada bir kırpar
+      if (Math.sin(time * 0.8 + m.seed) > -0.85) {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        glow(ctx, -4, -1, 3.5, '255,220,80', 0.9); glow(ctx, 4, -1, 3.5, '255,220,80', 0.9); ctx.restore();
+      }
+      ctx.restore();
+    }
+  }
+}
+function drawMechFx() {
+  const M = G.mech; if (!M) return;
+  for (const f of M.fx) {
+    if (f.kind === 'tentacle') {
+      // dokunaç: göl gözünden kalkıp kurbana uzanır, sarar, suya çeker
+      const k = f.t / f.dur, reach = k < 0.45 ? easeOutBack(k / 0.45) : k < 0.75 ? 1 : 1 - (k - 0.75) / 0.25;
+      const tx = f.done ? f.x : lerp(f.x, f.e.x, reach), ty = f.done ? f.y : lerp(f.y, f.e.y - 10, reach);
+      const mx = (f.x + tx) / 2 + Math.sin(time * 12) * 6, my = Math.min(f.y, ty) - 30 * reach;
+      ctx.save(); ctx.lineCap = 'round';
+      for (const [w, c] of [[11, '#140a1c'], [8, '#4a2a5a'], [4, '#7a4a8a']]) {
+        ctx.strokeStyle = c; ctx.lineWidth = w * (1 - k * 0.3);
+        ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.quadraticCurveTo(mx, my, tx, ty); ctx.stroke();
+      }
+      for (let i = 1; i < 5; i++) { const u = i / 5, px = (1 - u) ** 2 * f.x + 2 * (1 - u) * u * mx + u * u * tx, py = (1 - u) ** 2 * f.y + 2 * (1 - u) * u * my + u * u * ty; circle(px, py - 1, 1.6, '#d8b0e0'); }
+      ctx.restore();
+    } else if (f.kind === 'sun') {
+      const t = f.tower, D = MECH.sunbeam;
+      if (!f.done) {
+        // uyarı: kulenin altında daralan altın halka
+        const k = f.t / D.warn;
+        ctx.save(); ctx.strokeStyle = `rgba(255,220,110,${0.5 + 0.4 * Math.sin(time * 14)})`; ctx.lineWidth = 2.5; ctx.setLineDash([6, 5]); ctx.lineDashOffset = -time * 30;
+        ctx.beginPath(); ctx.ellipse(t.x, t.y, 46 - k * 16, (46 - k * 16) * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      } else {
+        // ışın: gökten inen altın sütun
+        const k = (f.t - D.warn) / 0.7, a = 1 - k;
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createLinearGradient(t.x - 22, 0, t.x + 22, 0);
+        g.addColorStop(0, 'rgba(255,220,120,0)'); g.addColorStop(0.5, `rgba(255,245,200,${0.85 * a})`); g.addColorStop(1, 'rgba(255,220,120,0)');
+        ctx.fillStyle = g; ctx.fillRect(t.x - 22, 0, 44, t.y);
+        glow(ctx, t.x, t.y - 20, 60, '255,220,120', 0.6 * a);
+        ctx.restore();
+      }
+    }
+  }
 }
 // Paralı askerler: kale kapısından çıkıp en ilerlemiş düşmanın geldiği yol boyunca yürürler
 function spawnMercs() {
@@ -3434,6 +3615,7 @@ function update(dt) {
   if (G.raiseT > 0) G.raiseT -= dt;
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortSay(dt);
+  updateMech(dt);
 
   if (G.waveCountdown != null && G.wave > 0) {
     G.waveCountdown -= dt;
@@ -8368,6 +8550,7 @@ function drawPlay() {
   ctx.globalAlpha = 1;
   drawGround();
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
+  drawMechGround();
   if (G.sel && G.sel.kind === 'plot') {
     const pl = G.sel.plot, k = clamp((time - G.menuT) / 0.25, 0, 1);
     ctx.strokeStyle = `rgba(255,230,160,${0.9 * k})`; ctx.lineWidth = 2.5;
@@ -8399,6 +8582,7 @@ function drawPlay() {
   for (const p of G.projectiles) drawProjectile(p);
   for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
   drawPartsAll(G.parts);
+  drawMechFx();
   for (const f of G.floaters) {
     const k = f.t / 1.1, pop = easeOutBack(clamp(f.t / 0.2, 0, 1));
     ctx.save(); ctx.globalAlpha = 1 - k * k; ctx.translate(f.x, f.y); ctx.scale(pop, pop);
