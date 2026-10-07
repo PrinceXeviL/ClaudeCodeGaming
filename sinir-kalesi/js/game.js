@@ -601,321 +601,6 @@ function nearestOnPaths(paths, x, y) {
   return best;
 }
 
-// ---------- yol dışındaki NPC'ler ----------
-// Her temada yola yakın boş bir yere 1-2 esprili figür konur (arka plan çizilirken yer ayrılır, ağaç/kaya oraya düşmez).
-// Düşük kareli (saniyede 3-5 kare) basit animasyonları var; dokununca konuşma balonu çıkar.
-const NPC_THEME = {
-  meadow: ['bard', 'shepherd'], forest: ['lumberjack'], rocky: ['caravan'], dusk: ['caravan', 'bard'], swamp: ['fisher'],
-  winter: ['snowkid'], volcano: ['griller'], desert: ['beach', 'caravan'], oasis: ['melon', 'fisher'], canyon: ['caravan'],
-  salt: ['beach'], ruins: ['digger'], dunes: ['caravan'], tombs: ['sleeper'], temple: ['yogi'], palace: ['carpet'],
-};
-const NPC_K = 0.95; // çizim ölçeği (askerlerden biraz iri; uzaktan da seçilsinler)
-const NPC_R = { beach: 50, caravan: 48, fisher: 42, melon: 40, shepherd: 44, carpet: 36 }; // kapladığı alanın yarıçapı
-const NPC_SAY = {
-  bard: ['La la laa… ork geliyor laa!', 'Bu şarkıyı kahramanlara yazdım!', 'Bahşiş kabul edilir.'],
-  shepherd: ['Zzz… koyun sayıyorum… 4831…', 'Beş dakika daha…', 'Koyunlar kendi başının çaresine bakar.'],
-  lumberjack: ['Bu ağaçla aramızda kişisel bir mesele var.', 'Kule mi? Ben ona odun derim.', 'Hop! Bir tane daha.'],
-  caravan: ['Kervan yolda düzülür… ama yol dolu!', 'Elma? Taze, orklardan önce topladım.', 'Atım da ben de moladayız.'],
-  fisher: ['Bugün yine çizme tuttum.', 'Sessiz ol, balıklar ürküyor!', 'Ork mu? Yem bile olmazlar.'],
-  snowkid: ['Adı Bay Havuç!', 'Kartopu savaşına var mısın?', 'Annem soğukta durma dedi…'],
-  griller: ['Lavda sosis en iyisi!', 'Sana da bir tane pişireyim mi?', 'Volkan mı? Bence mangal.'],
-  beach: ['Kremini sürdün mü canım?', 'Savaş mı? Biz tatildeyiz.', 'Topu atsana!', 'Kum fırtınası mı? Doğal peeling!'],
-  melon: ['Kesmece karpuz! Kırmızı değilse para yok!', 'Bal gibi karpuz, gel gel!', 'Akreplere indirim yok.'],
-  digger: ['Bu kemik çok değerli olabilir… ya da tavuk.', 'Kazıyorum, demek ki varım.', 'Mumya mı? Müzeye gidecek.'],
-  yogi: ['Ommm… düşman da gelir, geçer…', 'Nefes al… kule kur… nefes ver.', 'İç huzurum üç yıldızlı.'],
-  carpet: ['Halı uçuyor ama yakıtı pahalı.', 'Çay ister misin? Uçarken içilir.', 'Aşağıdakiler hep kavga ediyor.'],
-  sleeper: ['Zzz… nöbetteyim… Zzz…', 'Kimse geçmedi, yemin ederim!', 'Arkadaki el benim değil.'],
-};
-// Şimdilik kapalı: NPC'ler Gemini görselleriyle yeniden tasarlanacak (yerleşim ve konuşma sistemi hazır kalır).
-const NPC_ON = false;
-function placeNpcs(lv, paths, blocked) {
-  if (!NPC_ON) return [];
-  const rr = seeded(lv.name.length * 53 + lv.castle[0] * 3 + 11), out = [];
-  for (const type of NPC_THEME[lv.theme] || []) {
-    const R = NPC_R[type] || 26;
-    for (let i = 0; i < 800; i++) {
-      const x = 70 + rr() * (W - 140), y = 100 + rr() * (H - 170);
-      const q = nearestOnPaths(paths, x, y);
-      if (q.d < 50 + R * 0.7 || q.d > 160) continue;
-      if (blocked(x, y, R)) continue;
-      if ((x < 340 && y > 420) || (x < 310 && y < 95) || (x > W - 210 && y < 95)) continue; // arayüz köşeleri
-      if (out.some(o => dist(o.x, o.y, x, y) < 150)) continue;
-      out.push({ type, x, y, face: q.x > x ? 1 : -1, seed: rr() * 10 });
-      break;
-    }
-  }
-  return out;
-}
-
-const NO = '#2a1a0e';
-function nEll(x, y, rx, ry, fill, rot = 0, lw = 0.9) {
-  ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2);
-  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-  if (lw) { ctx.strokeStyle = NO; ctx.lineWidth = lw; ctx.stroke(); }
-}
-function nRect(x, y, w, h, r, fill, lw = 0.9) { roundRect(x, y, w, h, r, fill, lw ? NO : null, lw); }
-function nLine(pts, col, w) {
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath(); pts.forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](p[0], p[1]));
-  ctx.strokeStyle = NO; ctx.lineWidth = w + 1.3; ctx.stroke();
-  ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke();
-}
-function nPoly(pts, fill, lw = 0.9) {
-  ctx.beginPath(); pts.forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](p[0], p[1])); ctx.closePath();
-  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-  if (lw) { ctx.strokeStyle = NO; ctx.lineWidth = lw; ctx.stroke(); }
-}
-// kafa: ten rengi yuvarlak, saç/şapka üstte, gözler bakış yönünde
-function nHead(x, y, r, skin, hair, eyes = true) {
-  nEll(x, y, r, r, skin);
-  if (hair) { ctx.beginPath(); ctx.arc(x, y - 0.3, r, Math.PI * 1.05, Math.PI * 1.95); ctx.closePath(); ctx.fillStyle = hair; ctx.fill(); ctx.strokeStyle = NO; ctx.lineWidth = 0.9; ctx.stroke(); }
-  if (eyes) { ctx.fillStyle = NO; ctx.fillRect(x + r * 0.25, y - 0.4, 0.9, 1.3); ctx.fillRect(x + r * 0.62, y - 0.4, 0.9, 1.3); }
-}
-// ayakta duran kişi (ayak noktası 0,0; boy ~24 birim). arm: kolların açısı [arka, ön] (radyan, aşağı = 0)
-function nPerson(o) {
-  const lg = o.legs || [0, 0];
-  nLine([[-1.8, -9], [-1.8 + lg[0], 0]], o.pants, 2.6); nLine([[1.8, -9], [1.8 + lg[1], 0]], o.pants, 2.6);
-  nEll(-1.6 + lg[0], 0.2, 1.9, 1, o.shoe || '#4a2e18', 0, 0.6); nEll(2.2 + lg[1], 0.2, 1.9, 1, o.shoe || '#4a2e18', 0, 0.6);
-  const arm = (sx, a, len = 7) => nLine([[sx, -16.5], [sx + Math.sin(a) * len, -16.5 + Math.cos(a) * len]], o.sleeve || o.shirt, 2.2);
-  arm(-3.6, (o.arm || [0.2, -0.2])[0]);
-  nRect(-4.6, -18.5, 9.2, 10.5, 3.2, o.shirt);
-  if (o.belt) nRect(-4.6, -10.5, 9.2, 1.6, 0.6, o.belt, 0.5);
-  nHead(0.4, -22.5, 4.4, o.skin || '#f2c095', o.hair);
-  arm(3.6, (o.arm || [0.2, -0.2])[1]);
-}
-function nShadow(rx, ry = rx * 0.32) { ctx.fillStyle = 'rgba(20,12,4,0.3)'; ctx.beginPath(); ctx.ellipse(0, 0.5, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }
-function nZzz(x, y, seed) {
-  for (let i = 0; i < 3; i++) {
-    const k = (time * 0.45 + seed + i / 3) % 1;
-    ctx.save(); ctx.globalAlpha = Math.sin(k * Math.PI);
-    txt('z', x + k * 8 + Math.sin(k * 6) * 1.5, y - k * 14, 5 + k * 4, '#fff', 'center', '800', FONT_B);
-    ctx.restore();
-  }
-}
-
-function drawNpc(n) {
-  const f = Math.floor(time * 4 + n.seed * 7), f2 = f % 2, f4 = f % 4;
-  ctx.save(); ctx.translate(n.x, n.y); ctx.scale(NPC_K, NPC_K);
-  const T = n.type;
-  if (T === 'bard') {
-    // ozan: tüylü şapka, lavta çalar; notalar havaya süzülür
-    ctx.scale(n.face, 1); nShadow(9);
-    nPerson({ shirt: '#3f9a4a', pants: '#6a3a1a', hair: '#8a4a1a', arm: [0.9, f2 ? 1.5 : 1.15], legs: [0, f4 === 1 ? 0.8 : 0] });
-    ctx.save(); ctx.translate(2, -13); ctx.rotate(-0.5);
-    nEll(0, 0, 5, 3.6, '#c88a3a'); nEll(0, 0, 1.3, 1.3, '#3a200c', 0, 0.4); nRect(4, -0.8, 8, 1.6, 0.8, '#8a5a2a', 0.6);
-    ctx.restore();
-    nPoly([[-4.6, -26.5], [5.4, -26.5], [3, -29.5], [-3, -29]], '#2e6a34'); nLine([[3, -28.5], [8, -33]], '#e8434b', 1.4);
-    for (let i = 0; i < 2; i++) {
-      const k = (time * 0.5 + n.seed + i * 0.5) % 1;
-      ctx.save(); ctx.globalAlpha = Math.sin(k * Math.PI); txt(i ? '♫' : '♪', 8 + k * 6, -28 - k * 16, 8, '#fff6c0', 'center', '800', FONT_B); ctx.restore();
-    }
-  } else if (T === 'shepherd') {
-    // uyuyan çoban (şapka yüzünde) ve otlayan iki koyun
-    ctx.scale(n.face, 1); nShadow(16);
-    nRect(-12, -5, 16, 5, 2.5, '#8a6a3a'); nLine([[4, -2], [12, -1.5]], '#5a4a2a', 2.6);
-    nEll(-14, -4, 4, 4, '#f2c095'); nEll(-14, -6.5, 6.5, 2.4, '#d8b25a'); nEll(-14, -8, 3.4, 2.4, '#d8b25a');
-    nLine([[6, -10], [10, 2]], '#7a5a2a', 1.4);
-    nZzz(-12, -12, n.seed);
-    for (const [sx, sy, ph] of [[18, -2, 0], [30, 6, 1]]) {
-      const down = (f + ph) % 4 < 2;
-      ctx.save(); ctx.translate(sx, sy);
-      nShadow(7); nLine([[-4, -3], [-4, 0]], '#3a2a20', 1.4); nLine([[4, -3], [4, 0]], '#3a2a20', 1.4);
-      nEll(0, -5.5, 7, 4.6, '#f6f2ea'); nEll(-3, -7.5, 3, 2.4, '#ffffff', 0, 0); nEll(2.5, -8, 3, 2.4, '#ffffff', 0, 0);
-      nEll(7, down ? -3 : -6.5, 2.6, 2.1, '#3a2a20'); nEll(6, down ? -4.5 : -8, 1.4, 0.8, '#3a2a20', 0.6, 0.6);
-      ctx.restore();
-    }
-  } else if (T === 'lumberjack') {
-    // oduncu: kütüğe balta indirir, yongalar sıçrar
-    ctx.scale(n.face, 1); nShadow(14);
-    nEll(10, -3, 6, 3.4, '#a8763a'); nRect(4, -6, 12, 4, 1.5, '#8a5a2a'); nEll(10, -6, 6, 2.6, '#d8b07a'); nEll(10, -6, 3, 1.2, null, 0, 0.5);
-    const up = f2 === 0;
-    nPerson({ shirt: '#c8302c', pants: '#3a4a6a', hair: '#5a2e14', belt: '#2a1a0a', arm: [up ? 2.6 : 1.4, up ? 2.8 : 1.6] });
-    nPoly([[0.4, -19], [-3, -15], [0.4, -16], [4, -15]], '#6a3a14', 0.6); // sakal
-    ctx.save(); ctx.translate(up ? 0 : 7, up ? -31 : -11); ctx.rotate(up ? -0.6 : 1.3);
-    nLine([[0, 0], [0, 12]], '#8a5a2a', 1.6); nPoly([[-0.5, -1], [4, -2.5], [4, 2.5], [-0.5, 1.5]], '#c8ced8', 0.7);
-    ctx.restore();
-    if (!up) for (let i = 0; i < 3; i++) { const k = (time * 4 + i * 0.3) % 1; nEll(10 + k * 6 * (i - 1), -8 - Math.sin(k * Math.PI) * 6, 1, 0.7, '#e8c890', 0, 0.3); }
-  } else if (T === 'caravan') {
-    // kervancı: arabasında elma yer, atı kuyruğunu sallar
-    ctx.scale(n.face, 1); nShadow(26, 7);
-    const swish = f2 ? 0.3 : -0.2, bob = f4 === 0 ? 1 : 0;
-    // at
-    nLine([[-26, -12], [-30 + swish * 4, -4]], '#3a2410', 2);
-    for (const lx of [-23, -19, -9, -5]) nLine([[lx, -10], [lx, 0]], '#7a4a24', 2.2);
-    nEll(-14, -14, 11, 5.6, '#9a5a2c');
-    nPoly([[-5, -16], [-1, -24 + bob], [3, -24 + bob], [2, -19 + bob], [-3, -12]], '#9a5a2c');
-    nEll(2.5, -22.5 + bob, 3.4, 2.4, '#9a5a2c', 0.4); nLine([[-3, -21 + bob], [-6, -15]], '#3a2410', 1.6);
-    ctx.fillStyle = NO; ctx.fillRect(1, -24 + bob, 1, 1);
-    // araba
-    nLine([[-4, -10], [6, -8]], '#6a4a2a', 1.4);
-    nRect(6, -16, 22, 8, 1.5, '#a8743a'); nRect(6, -19, 22, 3, 1, '#8a5a2a');
-    ctx.save(); ctx.translate(12, -6); ctx.rotate(time * 0); nEll(0, 0, 5, 5, '#6a4a2a'); nEll(0, 0, 1.4, 1.4, '#3a2410', 0, 0.5); ctx.restore();
-    ctx.save(); ctx.translate(24, -6); nEll(0, 0, 5, 5, '#6a4a2a'); nEll(0, 0, 1.4, 1.4, '#3a2410', 0, 0.5); ctx.restore();
-    for (const [ax, ay] of [[10, -19], [14, -20], [18, -19]]) nEll(ax, ay, 2, 2, '#d8302c', 0, 0.5);
-    // kervancı (oturur, elma ısırır)
-    ctx.save(); ctx.translate(22, -16);
-    nRect(-4, -10, 8, 10, 3, '#3a6ab0'); nHead(0.4, -14, 4, '#e8b088', null); nPoly([[-4.6, -15], [5, -15], [3.5, -20], [-3, -20]], '#e8e0c8');
-    nLine([[3, -7], [f2 ? 5 : 3.6, f2 ? -12 : -11]], '#3a6ab0', 2); nEll(f2 ? 5.6 : 4.6, f2 ? -13 : -12, 1.8, 1.8, '#d8302c', 0, 0.5);
-    ctx.restore();
-  } else if (T === 'fisher') {
-    // balıkçı: göletin kenarında taburede; bazen çizme yakalar
-    ctx.scale(n.face, 1);
-    nEll(22, 2, 17, 6, '#4a8ab8', 0, 1.1); nEll(20, 1, 11, 3, 'rgba(255,255,255,0.18)', 0, 0);
-    nShadow(9);
-    nRect(-5, -6, 10, 6, 1.5, '#7a5a2a');
-    const catchT = (time * 0.15 + n.seed) % 1 > 0.88;
-    ctx.save(); ctx.translate(0, -5);
-    nRect(-4.6, -11, 9.2, 10, 3, '#5a7a3a'); nHead(0.4, -15, 4.4, '#f2c095', null); nEll(0.4, -17.5, 6.5, 1.8, '#c8a050'); nEll(0.4, -19, 3.6, 2.4, '#c8a050');
-    nLine([[3, -8], [8, -10]], '#5a7a3a', 2);
-    ctx.restore();
-    const tip = catchT ? [16, -32] : [26, -24];
-    nLine([[8, -15], tip], '#6a4a2a', 1);
-    const by = catchT ? -22 : 1 + (f2 ? 1 : 0);
-    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(tip[0], tip[1]); ctx.lineTo(catchT ? 16 : 26, by); ctx.stroke();
-    if (catchT) { nPoly([[13, by], [18, by], [18, by + 7], [21, by + 9], [21, by + 11], [13, by + 11]], '#4a3a2a'); }
-    else nEll(26, by, 1.4, 1.4, '#e8434b', 0, 0.5);
-  } else if (T === 'snowkid') {
-    // çocuk kardan adama son dokunuşları yapar
-    ctx.scale(n.face, 1); nShadow(16);
-    ctx.save(); ctx.translate(12, 0);
-    nEll(0, -6, 7.5, 6.5, '#f8fbff'); nEll(0, -16, 5.5, 5, '#f8fbff'); nEll(0, -24, 4, 3.8, '#f8fbff');
-    ctx.fillStyle = NO; ctx.fillRect(-1.6, -25.5, 1, 1); ctx.fillRect(1, -25.5, 1, 1);
-    nPoly([[0, -23.5], [-6, -22.5], [0, -22.4]], '#ff8a2a', 0.5);
-    for (const by of [-17, -14]) { ctx.fillStyle = NO; ctx.beginPath(); ctx.arc(0.5, by, 0.7, 0, 7); ctx.fill(); }
-    nRect(-4.2, -29.5, 8.4, 2, 0.5, '#2a2a30', 0.5); nRect(-2.8, -34.5, 5.6, 5.4, 0.8, '#2a2a30', 0.5);
-    nLine([[-5, -16], [-10, -20 + (f2 ? 1 : 0)]], '#6a4a2a', 0.9);
-    ctx.restore();
-    ctx.save(); ctx.scale(0.8, 0.8); ctx.translate(-4, 0);
-    nPerson({ shirt: '#e8434b', pants: '#2a3a6a', hair: '#5a3a1a', arm: [0.3, f2 ? 1.8 : 1.4], legs: [0, 0] });
-    nPoly([[-4.8, -24.5], [5.2, -24.5], [3, -29], [-2, -29.5]], '#3f86e8'); nEll(1, -30, 1.6, 1.6, '#fff', 0, 0.6);
-    ctx.restore();
-  } else if (T === 'griller') {
-    // cüce lav çatlağında sosis pişirir
-    ctx.scale(n.face, 1);
-    const gl = 0.65 + Math.sin(time * 5 + n.seed) * 0.15;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 14, -1, 16, '255,110,30', gl); ctx.restore();
-    nEll(14, 0, 9, 3, '#ff7a2a', 0, 1); nEll(14, -0.4, 5, 1.6, '#ffe08a', 0, 0);
-    nShadow(7);
-    ctx.save(); ctx.scale(0.85, 0.85);
-    nPerson({ shirt: '#8a3a2a', pants: '#4a3a2a', hair: null, arm: [0.4, 1.7], legs: [0, 0] });
-    nPoly([[-3.6, -21], [4.6, -21], [3, -12], [0.4, -9], [-2, -12]], '#e8e8e0'); // uzun beyaz sakal
-    nPoly([[-4.8, -24.5], [5.2, -24.5], [0.4, -34]], '#3a6a3a');
-    ctx.restore();
-    const rot = f2 ? 0.05 : -0.05;
-    ctx.save(); ctx.translate(5, -12); ctx.rotate(0.45 + rot);
-    nLine([[0, 0], [12, 0]], '#7a5a2a', 0.9); nEll(13, 0, 2.6, 1.3, f4 < 2 ? '#c8502a' : '#a83a1a', 0, 0.6);
-    ctx.restore();
-    if (Math.random() < 0.08) emit(G.parts, { kind: 'glow', add: true, x: n.x + 14 * NPC_K * n.face + rand(-4, 4), y: n.y - 2, vy: -rand(15, 35), col: '255,170,60', s0: 1.8, s1: 0.3, life: 0.6 });
-  } else if (T === 'beach') {
-    // güneşlenen çift: şemsiye, havlular, plaj topu, kokteyl
-    ctx.scale(n.face, 1);
-    nRect(-30, -4, 20, 8, 1.5, '#3f86e8', 0.7); for (let i = 0; i < 3; i++) nRect(-27 + i * 6, -4, 2.6, 8, 0, '#ffffff', 0);
-    nRect(2, -4, 20, 8, 1.5, '#ff6a8a', 0.7); for (let i = 0; i < 3; i++) nRect(5 + i * 6, -4, 2.6, 8, 0, '#fff6a0', 0);
-    // adam: sırtüstü, güneş gözlüklü, göbekli
-    nEll(-20, -1.5, 7, 3, '#f2b888'); nEll(-17, -2.6, 3.4, 2.4, '#f2b888'); nEll(-28, -1.4, 3.6, 3.2, '#f2b888');
-    nRect(-24, -3.6, 5.5, 5, 1.5, '#e8434b', 0.6);
-    nRect(-30, -3, 2.4, 1.4, 0.6, '#1a1a1a', 0.4); nRect(-27, -3, 2.4, 1.4, 0.6, '#1a1a1a', 0.4);
-    nLine([[-13, -1], [-10, -1]], '#f2b888', 1.8);
-    // kadın: şemsiyenin altında, şapkalı, kitap okur
-    nEll(12, -1.5, 6.5, 2.6, '#e8a878'); nEll(5, -1.6, 3.4, 3, '#e8a878'); nEll(5, -3.5, 5.5, 2, '#f2d88a');
-    nRect(9, -3.4, 5, 3.6, 1, '#ff4a8a', 0.5); nRect(6, -8, 5, 3.6, 0.5, f4 === 3 ? '#e8e0c8' : '#3a7ad0', 0.5);
-    // şemsiye
-    nLine([[10, 0], [8, -30]], '#e8e0c8', 1);
-    ctx.save(); ctx.translate(8, -30);
-    for (let i = 0; i < 6; i++) { const a0 = Math.PI + i * Math.PI / 6, a1 = a0 + Math.PI / 6; nPoly([[0, 0], [Math.cos(a0) * 18, Math.sin(a0) * 7 + 4], [Math.cos(a1) * 18, Math.sin(a1) * 7 + 4]], i % 2 ? '#ffffff' : '#e8434b', 0.6); }
-    ctx.restore();
-    // plaj topu: aralarında sekip durur
-    const k = (time * 0.8 + n.seed) % 1, bx = lerp(-12, 0, k), by = -4 - Math.abs(Math.sin(k * Math.PI * 2)) * 14;
-    nEll(bx, 0.5, 2.6 - (-by - 4) * 0.08, 0.9, 'rgba(0,0,0,0.25)', 0, 0);
-    ctx.save(); ctx.translate(bx, by); ctx.rotate(time * 5);
-    nEll(0, 0, 3.4, 3.4, '#ffffff', 0, 0.7);
-    for (const [c0, a] of [['#e8434b', 0], ['#3f86e8', 2.1], ['#ffd34d', 4.2]]) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 3.3, a, a + 1); ctx.closePath(); ctx.fillStyle = c0; ctx.fill(); }
-    ctx.restore();
-    // kokteyl
-    nPoly([[-6, -1], [-3, -1], [-4.5, -6]], 'rgba(255,170,60,0.9)', 0.5); nLine([[-4.5, -6], [-3, -9]], '#fff', 0.5); nEll(-2.6, -9.4, 1.6, 0.8, '#ff5a8a', 0, 0.3);
-  } else if (T === 'melon') {
-    // karpuzcu: tezgâh, "KARPUZ" tabelası, el sallar
-    ctx.scale(n.face, 1); nShadow(20, 6);
-    nRect(-2, -10, 26, 10, 1.5, '#a8743a'); nRect(-4, -12, 30, 3, 1, '#8a5a2a');
-    for (const [mx, my] of [[3, -15], [10, -15], [17, -15], [6.5, -19], [13.5, -19]]) { nEll(mx, my, 3.8, 3, '#3a8a3a', 0, 0.8); nLine([[mx - 2, my - 1], [mx + 2, my - 1]], '#5aaa4a', 0.5); }
-    ctx.save(); ctx.translate(20, -21); ctx.rotate(-0.2); nPoly([[0, 0], [7, 0], [3.5, -5]], '#e8434b', 0.6); nLine([[0.5, -0.3], [6.5, -0.3]], '#3a8a3a', 0.8); ctx.restore();
-    nLine([[25, -10], [25, -30]], '#6a4a2a', 1); nRect(16, -36, 22, 7, 1, '#fff6d8', 0.7); txt('KARPUZ', 27, -32.3, 4.6, '#c8302c', 'center', '800', FONT_B, false);
-    ctx.save(); ctx.translate(-10, 0);
-    nPerson({ shirt: '#f0e8d8', pants: '#3a4a6a', hair: null, belt: '#c8302c', arm: [0.2, f2 ? 2.7 : 2.2] });
-    nRect(-2.6, -30, 6, 4, 1, '#c8302c', 0.6); nLine([[3, -29.5], [5, -27]], '#2a1a0e', 0.5);
-    nLine([[-2.6, -21.5], [3.4, -21.5]], '#3a2410', 0.9); // bıyık
-    ctx.restore();
-  } else if (T === 'digger') {
-    // arkeolog: kazar, ara sıra kemik bulup havaya kaldırır
-    ctx.scale(n.face, 1); nShadow(14);
-    nEll(13, -2, 8, 4, '#b8864a', 0, 0.9); nEll(13, -3.4, 5, 2, '#d8a868', 0, 0);
-    const found = (time * 0.12 + n.seed) % 1 > 0.82, dig = f2 === 0;
-    nPerson({ shirt: '#c8b080', pants: '#8a7050', hair: null, belt: '#5a3a1a', arm: found ? [3, 2.9] : dig ? [1.8, 2] : [1.1, 1.3] });
-    nEll(0.4, -26, 6.5, 2, '#e8d8a8'); nEll(0.4, -27.5, 4.2, 3, '#e8d8a8');
-    if (found) {
-      ctx.save(); ctx.translate(2, -36); ctx.rotate(Math.sin(time * 8) * 0.2);
-      nLine([[-4, 0], [4, 0]], '#f8f2e0', 1.6); nEll(-4.5, -1, 1.4, 1.4, '#f8f2e0', 0, 0.5); nEll(-4.5, 1, 1.4, 1.4, '#f8f2e0', 0, 0.5); nEll(4.5, -1, 1.4, 1.4, '#f8f2e0', 0, 0.5); nEll(4.5, 1, 1.4, 1.4, '#f8f2e0', 0, 0.5);
-      ctx.restore();
-      txt('!', 8, -40, 8, '#ffe27a', 'center', '800', FONT_B);
-    } else {
-      ctx.save(); ctx.translate(dig ? 9 : 6, dig ? -6 : -14); ctx.rotate(dig ? 0.5 : 0.1);
-      nLine([[0, -12], [0, 2]], '#8a5a2a', 1.2); nPoly([[-2, 2], [2, 2], [1.4, 6], [-1.4, 6]], '#a8b0bc', 0.6);
-      ctx.restore();
-    }
-  } else if (T === 'yogi') {
-    // keşiş: bağdaş kurmuş, havada süzülür
-    const fl = Math.sin(time * 1.6 + n.seed) * 2 - 5;
-    ctx.save(); ctx.globalAlpha = 0.3; nShadow(8 + fl * 0.3); ctx.restore();
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, fl - 10, 18, '255,220,140', 0.35); ctx.restore();
-    ctx.save(); ctx.translate(0, fl);
-    nEll(0, -2, 9, 3.4, '#e88a2a'); nRect(-5, -13, 10, 11, 4, '#e88a2a');
-    nLine([[-4.5, -10], [-7, -4], [-3, -3]], '#d8a070', 1.8); nLine([[4.5, -10], [7, -4], [3, -3]], '#d8a070', 1.8);
-    nHead(0, -17.5, 4.2, '#d8a070', null, false);
-    ctx.strokeStyle = NO; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(-2.4, -17.5); ctx.lineTo(-0.8, -17.5); ctx.moveTo(0.8, -17.5); ctx.lineTo(2.4, -17.5); ctx.stroke();
-    ctx.restore();
-  } else if (T === 'carpet') {
-    // uçan halıda çay içen adam; püsküller dalgalanır
-    const fl = Math.sin(time * 2 + n.seed) * 2.5 - 12;
-    ctx.save(); ctx.globalAlpha = 0.35; nShadow(16); ctx.restore();
-    ctx.save(); ctx.translate(0, fl); ctx.scale(n.face, 1);
-    const wv = (x) => Math.sin(time * 6 + x * 0.3) * 1.4;
-    nPoly([[-18, wv(-18)], [18, wv(18)], [18, 4 + wv(18)], [-18, 4 + wv(-18)]], '#b8282c', 0.9);
-    nLine([[-15, 2 + wv(-15)], [15, 2 + wv(15)]], '#f2c64e', 0.8);
-    for (let i = -18; i <= 18; i += 6) nLine([[i, 4 + wv(i)], [i + wv(i) * 0.5, 7 + wv(i)]], '#f2c64e', 0.6);
-    nRect(-6, -9, 10, 9, 3, '#3a6ab0'); nHead(0, -13, 4.2, '#e8b088', null); nEll(0, -16.5, 5, 3.2, '#ffffff'); nEll(0, -19, 1.6, 1.6, '#e8434b', 0, 0.5);
-    nLine([[3, -6], [6, f2 ? -11 : -8]], '#3a6ab0', 2); nRect(5, f2 ? -14 : -11, 3, 3.4, 0.8, '#ffffff', 0.5);
-    ctx.restore();
-  } else if (T === 'sleeper') {
-    // mezar bekçisi sandalyesinde uyur; arkada kumdan bir mumya eli el sallar
-    ctx.scale(n.face, 1);
-    const wave = Math.sin(time * 3 + n.seed) * 0.4;
-    ctx.save(); ctx.translate(18, 0); ctx.rotate(wave);
-    nLine([[0, 0], [0, -6]], '#e8dcc0', 2.2); nLine([[-1.4, -6], [-2, -9]], '#e8dcc0', 0.9); nLine([[0, -6.5], [0, -10]], '#e8dcc0', 0.9); nLine([[1.4, -6], [2, -9]], '#e8dcc0', 0.9);
-    ctx.restore(); nEll(18, 0, 4, 1.4, '#c8a070', 0, 0.6);
-    nShadow(9);
-    nLine([[-5, 0], [-4, -8]], '#6a4a2a', 1.2); nLine([[4, 0], [3, -8]], '#6a4a2a', 1.2); nRect(-6, -9, 11, 2, 0.5, '#8a5a2a', 0.6);
-    ctx.save(); ctx.translate(0, -9); ctx.rotate(-0.35);
-    nRect(-4, -11, 8, 11, 3, '#4a5a7a'); nHead(0.2, -15, 4.2, '#e8b088', '#3a2410', false);
-    ctx.strokeStyle = NO; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(1.4, -15); ctx.lineTo(3, -15); ctx.stroke();
-    ctx.restore();
-    nZzz(2, -26, n.seed);
-    nLine([[-10, 0], [-10, -6]], '#3a2a1a', 0.8); nRect(-12.5, -12, 5, 6, 1, '#f2c64e', 0.6);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -10, -9, 10, '255,200,90', 0.5 + Math.sin(time * 7) * 0.08); ctx.restore();
-  }
-  ctx.restore();
-  // konuşma balonu
-  if (n.sayT > 0) {
-    const a = clamp(n.sayT / 0.3, 0, 1);
-    ctx.save(); ctx.globalAlpha = a;
-    ctx.font = `800 8px ${FONT_B}`;
-    const w = ctx.measureText(n.say).width + 12, bx = n.x - w / 2, by = n.y - 54;
-    roundRect(bx, by, w, 14, 7, 'rgba(255,252,240,0.96)', '#5a3a1a', 1);
-    ctx.fillStyle = 'rgba(255,252,240,0.96)'; ctx.beginPath(); ctx.moveTo(n.x - 3, by + 13.5); ctx.lineTo(n.x + 3, by + 13.5); ctx.lineTo(n.x, by + 19); ctx.fill();
-    txt(n.say, n.x, by + 7.4, 8, '#3a2410', 'center', '800', FONT_B, false);
-    ctx.restore();
-  }
-}
-
 // ---------- arka plan (önceden çizilir) ----------
 const THEMES = {
   meadow: { grass: '#8cc25a', grass2: '#6a9e46', patch: ['#8cc15a', '#5a8a3a'], trees: 17, rocks: 6, treeCol: ['#2f6b2a', '#3f8a35', '#56a446'], road: ['#7a5a32', '#cfa96b', '#5a3f1f'], tuft: ['#4f8a2e', '#6ea83e'], stone: ['#a49c8a', '#cfc7b4'], light: 'rgba(255,226,160,0.16)' },
@@ -1146,17 +831,14 @@ function renderBackground(lv, paths, res = 2) {
     }
   }
 
-  let npcs = [];
   const blocked = (x, y, pad) => {
     if (nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad) return true; // dalgalı kenar payı dahil
-    for (const n of npcs) if (dist(x, y, n.x, n.y) < (NPC_R[n.type] || 26) + pad) return true;
     for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
     if (y < 52 && (x < 300 || x > 860)) return true;
     if (y > 465 && x < 230) return true;
     if (Math.abs(x - lv.castle[0]) < 75 + pad && y > lv.castle[1] - 130 && y < lv.castle[1] + 30 + pad) return true;
     return false;
   };
-  npcs = placeNpcs(lv, paths, blocked);
   // vaha gölleri ve çalılar (yerde, gölgesiz)
   for (let i = 0, n = 0; i < 300 && n < (th.ponds || 0); i++) {
     const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr(th.pondSpr || 's2_pond_2');
@@ -1222,7 +904,6 @@ function renderBackground(lv, paths, res = 2) {
   const vig = g.createRadialGradient(W / 2, H / 2, H * 0.42, W / 2, H / 2, W * 0.66);
   vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(10,15,5,0.38)');
   g.fillStyle = vig; g.fillRect(0, 0, W, H);
-  c.npcs = npcs;
   return c;
 }
 
@@ -1273,7 +954,6 @@ function startLevel(idx) {
     weather: lv.weather || null, wspd: (WEATHER[lv.weather] || {}).speed ?? 1,
     ground: [], // yer seviyesi efektleri (ayak tozu, yağmur sıçraması): birimlerin altında çizilir
   };
-  G.npcs = (G.bg.npcs || []).map(n => Object.assign({ sayT: 0, say: '' }, n));
   cam.z = 1; cam.x = 0; cam.y = 0; zoomGoal = null;
   initWeather();
   team().forEach((id, i) => {
@@ -1722,6 +1402,39 @@ function fxArrowHit(x, y, metal) {
   }
   emit(G.parts, { kind: 'glow', x, y: y + 4, vx: rand(-8, 8), vy: -10, col: '200,185,160', s0: 3, s1: 8, life: 0.4, a: 0.45 });
 }
+// gaz/buhar öbeği: bir kez çizilen yumuşak yeşil daire (her karede degrade oluşturmamak için)
+let GAS_BLOB = null, GAS_CORE = null;
+function gasBlob(core) {
+  if (!GAS_BLOB) {
+    const mk = (c0, c1, c2) => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, c0); gr.addColorStop(0.6, c1); gr.addColorStop(1, c2); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c; };
+    GAS_BLOB = mk('rgba(170,240,110,1)', 'rgba(110,200,70,0.6)', 'rgba(80,160,50,0)');
+    GAS_CORE = mk('rgba(232,255,200,1)', 'rgba(168,240,112,0.6)', 'rgba(90,170,60,0)');
+  }
+  return core ? GAS_CORE : GAS_BLOB;
+}
+// Veba Kazanı gaz bulutu: yolu kaplayan, yavaşça dönen yarı saydam yeşil buhar öbekleri (2 sn)
+function drawGasClouds() {
+  for (const z of G.zones) {
+    if (!z.gas) continue;
+    const a = Math.min(1, z.t / 0.15, (z.life - z.t) / 0.5);
+    if (a <= 0) continue;
+    for (let i = 0; i < 5; i++) {
+      const an = z.seed + i * 1.26 + time * 0.5 * (i % 2 ? 1 : -1), rr = z.r * (0.25 + 0.2 * (i % 3));
+      const x = z.x + Math.cos(an) * rr, y = z.y - 4 + Math.sin(an) * rr * 0.45 - z.t * 3, r = z.r * (0.55 + 0.12 * Math.sin(time * 2 + i));
+      ctx.globalAlpha = 0.3 * a; ctx.drawImage(gasBlob(), x - r, y - r * 0.6, r * 2, r * 1.2);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+// kemik kıymığı çarpması: fildişi kırıntılar saçılır, yeşil ruh tozu
+function fxShardHit(x, y, crit) {
+  for (let i = 0; i < (crit ? 8 : 5); i++) {
+    const a = rand(-Math.PI * 0.95, -0.05), v = rand(60, 140);
+    emit(G.parts, { kind: 'chunk', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 420, drag: 0.6, vr: rand(-14, 14), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#c9bd98', s0: rand(1.6, 2.6), s1: 1, life: rand(0.3, 0.5) });
+  }
+  emit(G.parts, { kind: 'glow', add: true, x, y, col: '150,255,160', s0: crit ? 12 : 8, s1: crit ? 18 : 12, life: 0.18, a: 0.7 });
+}
 // hedefin gövde ortası (oklar ve büyü ayağa değil gövdeye gider)
 function aimY(e) {
   return e.y - (e.def.flying ? 26 : 0) - (CHAR_H['enemy_' + e.type] || 20) * 0.5;
@@ -2152,11 +1865,15 @@ function towerEye(t, ts) {
 function updateObelisk(t, dt, L) {
   const ts = towerSprite(t);
   t.cd -= dt;
+  // hazırlık: ateşten hemen önce kıymıklar göze toplanır (yalnız hedef varken)
+  t.charge = t.hasFoe ? clamp(1 - t.cd / Math.min(0.35, L.rate * 0.6), 0, 1) : 0;
   if (t.cd <= 0) {
     const e = findTarget(t, L.range, true);
+    t.hasFoe = !!e;
     if (e) {
-      t.cd = L.rate; t.shotAnim = 0.25;
+      t.cd = L.rate; t.shotAnim = 0.25; t.charge = 0;
       const o = towerEye(t, ts), d = dist(o.x, o.y, e.x, e.y);
+      G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: 12 + t.lvl * 2, col: '160,255,170', t: 0, dur: 0.22 });
       const pierce = t.lvl >= 1 && Math.random() < 0.25, crit = t.lvl >= 2 && Math.random() < 0.15, po = abRank(t, 'poison');
       G.projectiles.push({ kind: 'arrow', shard: true, sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(d / 520, 0.12, 0.5),
         dmg: roll(L.dmg) * (crit ? 2 : 1), dtype: pierce ? 'true' : 'phys', arc: 6, crit, pierce, poison: po ? po.dps : 0, src: 'arrow' });
@@ -2258,6 +1975,25 @@ function updateTower(t, dt) {
     let tx = e.x, ty = e.y;
     if (!e.blocker) { const f = pathPos(e.p, e.d + e.def.speed * G.wspd * dur, e.off); tx = f.x; ty = f.y; }
     const na = abRank(t, 'napalm'), db = abRank(t, 'double');
+    if (NECRO) {
+      // buhar jeti: kazandan hedefe alçak kavisle yeşil buhar püskürür; değdiği yerde yolu kaplayan gaz bulutu kalır
+      const fire = (x2, y2, dmg, delay, path, along) => G.projectiles.push({ kind: 'vapor', src: 'blast', sx, sy, gy: t.y, target: null, tx: x2, ty: y2, t: delay, dur: 0.42,
+        dmg, dtype: 'phys', arc: 26, splash: L.splash, stun: t.lvl >= 2 ? 0.3 : 0, gas: (L.dmg[0] + L.dmg[1]) * 0.09 + (na ? na.dps : 0), big: !!na, path, along });
+      const tp = e.blocker ? null : e.p, ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * 0.42;
+      if (!e.blocker) { const f = pathPos(e.p, ta, e.off); tx = f.x; ty = f.y; }
+      fire(tx, ty, roll(L.dmg), 0, tp, ta);
+      if (db) {
+        const other = G.enemies.find(o => o !== e && !o.dead && !o.def.flying && dist(t.x, t.y, o.x, o.y) <= L.range) || e;
+        fire(other.x + (other === e ? rand(-16, 16) : 0), other.y, roll(L.dmg) * db.mult, -0.2, other.blocker ? null : other.p, other.d);
+      }
+      t.aimX = tx; t.aimY = ty;
+      for (let i = 0; i < 10; i++) {
+        const a = Math.atan2(ty - sy, tx - sx) + rand(-0.5, 0.5), v = rand(40, 110);
+        emit(G.parts, { kind: 'glow', x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, drag: 2.5, col: i % 2 ? '150,230,100' : '200,255,150', s0: rand(4, 7), s1: rand(10, 16), life: rand(0.4, 0.7), a: 0.45 });
+      }
+      sfx('boom');
+      return;
+    }
     const shell = { kind: 'shell', src: 'blast', sx, sy, gy: t.y, target: null, tx, ty, t: 0, dur, dmg: roll(L.dmg), dtype: 'phys', arc: 70, splash: L.splash,
       stun: t.lvl >= 2 ? 0.3 : 0, napalm: na ? na.dps : 0, plague: NECRO ? (L.dmg[0] + L.dmg[1]) * 0.06 : 0 };
     G.projectiles.push(shell);
@@ -3158,6 +2894,19 @@ function updateProjectile(pr, dt) {
     sfx('boom');
     return;
   }
+  if (pr.kind === 'vapor') {
+    for (const e of G.enemies) {
+      if (e.dead || e.def.flying) continue;
+      const d = dist(e.x, e.y, pr.tx, pr.ty);
+      if (d <= pr.splash) { damageEnemy(e, pr.dmg * (1 - 0.4 * d / pr.splash), 'phys', false, pr.src); e.rotT = 4; if (pr.stun && Math.random() < pr.stun) stunEnemy(e, 0.5); }
+    }
+    // gaz bulutu yolu boylamasına kaplar: hedef noktası ve yolun iki yanındaki iki halka, 2 sn kalır
+    const R = pr.splash * (pr.big ? 0.75 : 0.6), spots = [[pr.tx, pr.ty]];
+    if (pr.path) for (const k of [-1, 1]) { const q = pathPos(pr.path, pr.along + k * R * 1.1); spots.push([q.x, q.y]); }
+    for (const [x, y] of spots) G.zones.push({ x, y, r: R, dps: pr.gas, t: 0, life: 2, fxT: 0, src: 'blast', kind: 'plague', gas: true, seed: rand(0, 9) });
+    fxPlagueSplash(pr.tx, pr.ty, pr.splash);
+    return;
+  }
   if (pr.kind === 'shell' || pr.kind === 'meteor') {
     for (const e of G.enemies) {
       if (e.dead || e.def.flying) continue;
@@ -3179,6 +2928,7 @@ function updateProjectile(pr, dt) {
     const e = pr.target;
     if (pr.kind === 'bolt') fxMagicHit(pr.tx, pr.ty, pr.frost);
     else if (pr.kind === 'fireball') fxFireHit(pr.tx, pr.ty, pr.inferno);
+    else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
     if (pr.inferno) for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.inferno) damageEnemy(o, pr.dmg * 0.5, 'magic');
     if (pr.splash) {
@@ -3723,7 +3473,6 @@ function update(dt) {
   castleAmbient(dt);
   updateCastleArchers(dt);
   updateMercs(dt);
-  for (const n of G.npcs) if (n.sayT > 0) n.sayT -= dt;
   if (G.bossFx && (G.bossFx.t += dt) > G.bossFx.dur) G.bossFx = null;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
   for (const t of G.towers) updateTower(t, dt);
@@ -3752,7 +3501,7 @@ function update(dt) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
       if (z.kind === 'plague') {
-        z.fxT = 0.07;
+        z.fxT = z.gas ? 0.22 : 0.07;
         emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-6, 6), vy: -rand(6, 16), col: Math.random() < 0.5 ? '120,200,80' : '150,230,100', s0: rand(5, 8), s1: rand(10, 14), life: rand(0.8, 1.2), a: 0.35 });
         continue;
       }
@@ -4706,15 +4455,21 @@ function drawNecroTowerFx(t, ts) {
   ctx.save();
   if (t.type === 'archer') {
     // tepede dönen kemik kıymıkları (ön yarısı kulenin önünde, arka yarısı arkasında görünür gibi soluk)
-    const n = 3 + t.lvl, R = (8 + t.lvl * 3) * s;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, (10 + 8 * sh) * s, '150,255,160', 0.3 + 0.4 * sh + Math.sin(time * 3 + t.x) * 0.06); ctx.restore();
+    const ch = t.charge || 0, n = 3 + t.lvl - (sh > 0.4 ? 1 : 0), R = (8 + t.lvl * 3) * s * (1 - 0.65 * ch);
+    t.spin = (t.spin || 0) + (1.6 + t.lvl * 0.3 + ch * 9) * 0.016;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, o.x, o.y, (10 + 10 * ch + 12 * sh) * s, '150,255,160', 0.3 + 0.5 * ch + 0.5 * sh + Math.sin(time * 3 + t.x) * 0.06);
+    if (ch > 0.3) glow(ctx, o.x, o.y, 4 * s, '230,255,230', ch);
+    ctx.restore();
+    if (sh > 0) { ctx.save(); ctx.translate(0, -sh * 2 * s); } // atışta tepe hafifçe geri teper
     for (let i = 0; i < n; i++) {
-      const a = time * (1.6 + t.lvl * 0.3) + i * Math.PI * 2 / n, x = o.x + Math.cos(a) * R, y = o.y + Math.sin(a) * R * 0.35 - 2 * s, front = Math.sin(a) > 0;
+      const a = t.spin + i * Math.PI * 2 / n, x = o.x + Math.cos(a) * R, y = o.y + Math.sin(a) * R * 0.35 - 2 * s, front = Math.sin(a) > 0;
       ctx.save(); ctx.globalAlpha = front ? 1 : 0.55; ctx.translate(x, y); ctx.rotate(a + Math.PI / 2 + Math.sin(time * 5 + i) * 0.2); ctx.scale(s, s);
       ctx.fillStyle = '#efe6cc'; ctx.strokeStyle = '#2a1c10'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(1.6, 1.5); ctx.lineTo(0, 3); ctx.lineTo(-1.6, 1.5); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.restore();
     }
+    if (sh > 0) ctx.restore();
   } else if (t.type === 'mage') {
     // fenerdeki ruh: nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
     const pulse = 0.5 + Math.sin(time * 3.2 + t.x) * 0.15 + 0.4 * sh;
@@ -5748,6 +5503,7 @@ function buildGear(base, lvl) {
 
 // Ölüm beş evre: geri sarsılma → dizler bükülür, gövde çöker → geriye devrilir → yere çarpıp seker → solar
 const CORPSE_DUR = 1.15;
+let CORPSE_BAKE = 3; // kare başına en çok bu kadar ceset önbelleğe alınır (çok ölüm aynı karede takılma yapmasın)
 function drawCorpse(f) {
   const im = spr(f.name);
   if (!im) return;
@@ -5773,6 +5529,20 @@ function drawCorpse(f) {
   ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
   // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
   if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '110,255,140', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
+  // ölüm pozu bitince (0.8 sn) ceset değişmez: bir kez ayrı tuvale çizilir, sonra tek resim olarak basılır (10 sn yatan cesetler ucuzlasın)
+  if (t > 0.8 && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
+    if (!f.cache) {
+      const cw = Math.ceil((w + h) * 1.7 + 8), chh = Math.ceil((w + h) * 1.5 + 8), ay = chh * 0.66, K = 2;
+      const c = document.createElement('canvas'); c.width = cw * K; c.height = chh * K;
+      const g2 = c.getContext('2d'); g2.scale(K, K); g2.translate(cw / 2, ay + 1 + oy); g2.scale(f.face * (rig.flip ? -1 : 1), 1); g2.rotate(rot);
+      drawRigTo(g2, im, w, h, legY, P, rig, arms);
+      f.cache = { c, cw, chh, ay };
+    }
+    const C = f.cache;
+    ctx.drawImage(C.c, f.x - C.cw / 2, f.y - C.ay, C.cw, C.chh);
+    ctx.restore();
+    return;
+  }
   ctx.translate(f.x, f.y + 1 + oy);
   ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
   ctx.rotate(rot);
@@ -5816,10 +5586,13 @@ function drawProjectile(p) {
       return;
     }
     if (p.shard) {
-      // kemik kıymığı: sivri fildişi diken, arkasında yeşil ruh izi
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      ctx.strokeStyle = p.poison ? 'rgba(140,255,80,0.6)' : 'rgba(140,255,150,0.5)'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke(); glow(ctx, x, y, 6, '140,255,150', 0.5); ctx.restore();
+      // kemik kıymığı: sivri fildişi diken, arkasında incelen yeşil ruh izi ve soluk kopyalar
+      const tl2 = projPos(p, k - 0.3);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+      ctx.strokeStyle = p.poison ? 'rgba(140,255,80,0.25)' : 'rgba(140,255,150,0.22)'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(tl2.x, tl2.y); ctx.lineTo(x, y); ctx.stroke();
+      ctx.strokeStyle = p.poison ? 'rgba(170,255,110,0.7)' : 'rgba(190,255,200,0.6)'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke(); glow(ctx, x, y, 7, '140,255,150', 0.55); ctx.restore();
       ctx.save(); ctx.translate(x, y); ctx.rotate(a);
       ctx.fillStyle = '#efe6cc'; ctx.strokeStyle = '#2a1c10'; ctx.lineWidth = 0.9;
       ctx.beginPath(); ctx.moveTo(8, 0); ctx.lineTo(-4, -2.4); ctx.lineTo(-7, 0); ctx.lineTo(-4, 2.4); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -5884,6 +5657,17 @@ function drawProjectile(p) {
       ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#241c14'; ctx.lineWidth = 1.4; ctx.stroke();
       ctx.restore();
     }
+  } else if (p.kind === 'vapor') {
+    // yeşil buhar jeti: kazandan başa uzanan, incelip saydamlaşan bulut kuyruğu
+    ctx.save();
+    for (let i = 14; i >= 0; i--) {
+      const kk = k - i * 0.04; if (kk < 0) continue;
+      const q = projPos(p, kk), f = 1 - i / 15, r = (5 + 10 * f) * (0.75 + 0.25 * Math.sin(time * 18 + i * 1.7));
+      q.x += Math.sin(time * 9 + i) * 2 * (1 - f); q.y += Math.cos(time * 7 + i) * 2 * (1 - f);
+      ctx.globalAlpha = 0.14 + 0.5 * f;
+      ctx.drawImage(gasBlob(f > 0.8), q.x - r, q.y - r, r * 2, r * 2);
+    }
+    ctx.restore();
   } else if (p.kind === 'shell') {
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k), hgt = 1 - Math.sin(k * Math.PI);
     ctx.fillStyle = `rgba(0,0,0,${0.18 + 0.15 * hgt})`;
@@ -8656,6 +8440,7 @@ function drawPlay() {
   drawGround();
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
   drawMechGround();
+  CORPSE_BAKE = 3;
   if (G.sel && G.sel.kind === 'plot') {
     const pl = G.sel.plot, k = clamp((time - G.menuT) / 0.25, 0, 1);
     ctx.strokeStyle = `rgba(255,230,160,${0.9 * k})`; ctx.lineWidth = 2.5;
@@ -8679,11 +8464,11 @@ function drawPlay() {
   for (const e of G.enemies) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]);
   for (const s of G.soldiers) ents.push([s.y, 2, s]);
   for (const c of G.coins) if (c.state !== 'fly') ents.push([c.y, 4, c]);
-  for (const n of G.npcs) ents.push([n.y, 5, n]);
   ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
   for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f);
-  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? drawEnemy(o) : k === 2 ? drawSoldier(o) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawNpc(o) : drawCastle();
+  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? drawEnemy(o) : k === 2 ? drawSoldier(o) : k === 4 ? drawCoinWorld(o) : drawCastle();
+  drawGasClouds();
   for (const p of G.projectiles) drawProjectile(p);
   for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
   drawPartsAll(G.parts);
@@ -9068,13 +8853,6 @@ function worldTap(x, y) {
       if (d < Math.max(16, h * 0.6) && d < bd) { bd = d; best = e; }
     }
     if (best) { setSel(G.sel && G.sel.enemy === best ? null : { kind: 'enemy', enemy: best }); sfx('select'); return; }
-  }
-  // NPC: dokununca konuşur
-  for (const n of G.npcs) {
-    if (dist(n.x, n.y - 12, x, y) < 26) {
-      const L = NPC_SAY[n.type]; n.lastSay = ((n.lastSay ?? Math.floor(n.seed * 3)) + 1) % L.length;
-      n.say = L[n.lastSay]; n.sayT = 3.2; setSel(null); sfx('pick'); return;
-    }
   }
   // kale: dokununca okçu yükseltme menüsü
   {

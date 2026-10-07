@@ -46,6 +46,12 @@ Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme 
 ve eski tasarım notları silindi (git geçmişinde duruyor). data.js'teki eski LEVELS/ENEMIES verisi duruyor: NECRO bölümleri eski ilk 5 bölümün
 yol ve arsa düzenini kullanıyor. Görsel işleme artık yalnız `varliklar/nm_isle.py` (sayfa adı verilirse yalnız o sayfa) ve `anim_isle.py`.
 
+## Performans ve görseller (8 Eki 2026)
+- Görseller WebP (`varliklar/webp_cevir.py`; nm_isle.py ve anim_isle.py artık doğrudan WebP yazar). img/ ~3.5 MB.
+- Kare maliyeti: `__game.perf(n)` (güncelleme + tam sahne çizimi, ms). 80 düşman + 60 ceset + 17 gaz bulutu: çizim ort. ~3.3 ms (masaüstü).
+- Cesetler ölüm pozundan sonra önbelleğe alınır (kare başına en çok 3); gaz/buhar öbekleri hazır görselle çizilir.
+- NPC sistemi kaldırıldı. Eski seferlere ait ama çalışmayan kod hâlâ var (eski kahraman güçleri, çöl düşman yetenekleri, eski okçu/asker çizimleri, eski temalar).
+
 ## Son durum (eski oyun, tarihçe)
 2 sefer (EPISODES): 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl; LEVELS'ta ep: 2).
 2. sefer görselleri: varliklar/ham/s2_*.jpg → varliklar/sefer2_isle.py (numpy+scipy+pillow) → img/.
