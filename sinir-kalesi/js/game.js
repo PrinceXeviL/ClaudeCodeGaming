@@ -885,16 +885,16 @@ const THEMES = {
   palace: { tex: 'desert', grass: '#d88a4c', grass2: '#a85a34', patch: ['#d88a4c', '#a85a34'], trees: 12, rocks: 10, treeCol: ['#4a6a2a', '#5a7a3a', '#6a8a4a'], road: ['#b49a74', '#ecdcbc', '#7c664a'], tuft: ['#7a9a3a', '#9ab04a'], stone: ['#d4bc8c', '#f4e4bc'], light: 'rgba(255,210,150,0.22)', amb: '255,200,140', flowers: 0, roadTint: 'rgba(230,190,130,0.35)',
     treeSpr: ['s2_palm_double', 's2_palm_2', 's2_palm_1'], rockSpr: ['s2_column', 's2_rock_1', 's2_head'], treeK: 1.35, rockK: 1.2, bushes: 8 },
   // ----- Necromancer seferi: lanetli orman, bataklık, mezarlık, kara göl, Mortimer'ın kapısı -----
-  cursed:    { tex: 'cursed', grass: '#3a4030', grass2: '#22281c', patch: ['#3a4030', '#22281c'], trees: 26, rocks: 12, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#4a3626', '#7a6048', '#2a1c12'], tuft: ['#4a5a2a', '#6a7a34'], stone: ['#6a6a62', '#9a9a8e'], light: 'rgba(150,255,170,0.08)', amb: '150,255,140', flowers: 0,
-    roadTex: 'road_cursed', treeSpr: ['nm_tree_1', 'nm_tree_3', 'nm_tree_2', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_tomb_2', 'nm_bones'], treeK: 0.95, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 10 },
-  bog:       { tex: 'cursed', tint: 'rgba(30,80,60,0.25)', grass: '#34402e', grass2: '#1e2a1e', patch: ['#34402e', '#1e2a1e'], trees: 18, rocks: 8, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#3e3424', '#6a5a40', '#241c10'], tuft: ['#3a5a30', '#5a7a3a'], stone: ['#5a665a', '#8a968a'], light: 'rgba(160,255,200,0.1)', amb: '170,255,140', flowers: 0,
-    roadTex: 'road_cursed', treeSpr: ['nm_tree_3', 'nm_tree_2', 'nm_tree_1'], rockSpr: ['nm_rock_2', 'nm_rock_1', 'nm_crow'], treeK: 0.9, rockK: 1.1, pondSpr: 'nm_pond', ponds: 5, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
-  graveyard: { tex: 'cursed', tint: 'rgba(40,30,60,0.22)', grass: '#3a3a38', grass2: '#222226', patch: ['#3a3a38', '#222226'], trees: 12, rocks: 30, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#4a4038', '#7a6a5a', '#2a221c'], tuft: ['#4a5236', '#646e44'], stone: ['#6e6e72', '#a0a0a6'], light: 'rgba(190,170,255,0.08)', amb: '200,180,255', flowers: 0,
-    roadTex: 'road_cursed', treeSpr: ['nm_tree_4', 'nm_tree_1', 'nm_tree_2'], rockSpr: ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_fence', 'nm_tomb_1', 'nm_crow'], treeK: 0.95, rockK: 1.25, bushSpr: ['nm_shroom'], bushes: 8 },
-  blacklake: { tex: 'cursed', tint: 'rgba(20,30,50,0.3)', grass: '#2e3434', grass2: '#181e22', patch: ['#2e3434', '#181e22'], trees: 16, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#3a3430', '#66584a', '#201a14'], tuft: ['#3a4a3a', '#566a48'], stone: ['#5a6066', '#8a9298'], light: 'rgba(140,200,255,0.08)', amb: '160,220,255', flowers: 0,
-    roadTex: 'road_cursed', treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow'], treeK: 0.9, rockK: 1.15, pondSpr: 'nm_pond', ponds: 7, bushSpr: ['nm_bush'], bushes: 8 },
-  necrogate: { tex: 'cursed', tint: 'rgba(60,20,70,0.22)', grass: '#36302e', grass2: '#1e1a1c', patch: ['#36302e', '#1e1a1c'], trees: 20, rocks: 22, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#463830', '#76604e', '#261c16'], tuft: ['#4a4a30', '#6a6a3a'], stone: ['#665e66', '#9a909a'], light: 'rgba(180,255,170,0.1)', amb: '170,255,150', flowers: 0,
-    roadTex: 'road_cursed', treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3'], rockSpr: ['nm_tomb_3', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
+  cursed:    { tex: 'cursed', grass: '#3a4030', grass2: '#22281c', patch: ['#3a4030', '#22281c'], trees: 26, rocks: 12, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5e5040', '#a4927a', '#2e2418'], tuft: ['#4a5a2a', '#6a7a34'], stone: ['#6a6a62', '#9a9a8e'], light: 'rgba(150,255,170,0.08)', amb: '150,255,140', flowers: 0,
+    treeSpr: ['nm_tree_1', 'nm_tree_3', 'nm_tree_2', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_tomb_2', 'nm_bones'], treeK: 0.95, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 10 },
+  bog:       { tex: 'cursed', tint: 'rgba(30,80,60,0.25)', grass: '#34402e', grass2: '#1e2a1e', patch: ['#34402e', '#1e2a1e'], trees: 18, rocks: 8, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#56503e', '#9a9074', '#262014'], tuft: ['#3a5a30', '#5a7a3a'], stone: ['#5a665a', '#8a968a'], light: 'rgba(160,255,200,0.1)', amb: '170,255,140', flowers: 0,
+    treeSpr: ['nm_tree_3', 'nm_tree_2', 'nm_tree_1'], rockSpr: ['nm_rock_2', 'nm_rock_1', 'nm_crow'], treeK: 0.9, rockK: 1.1, pondSpr: 'nm_pond', ponds: 5, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
+  graveyard: { tex: 'cursed', tint: 'rgba(40,30,60,0.22)', grass: '#3a3a38', grass2: '#222226', patch: ['#3a3a38', '#222226'], trees: 12, rocks: 30, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a5450', '#a49a8e', '#2a2420'], tuft: ['#4a5236', '#646e44'], stone: ['#6e6e72', '#a0a0a6'], light: 'rgba(190,170,255,0.08)', amb: '200,180,255', flowers: 0,
+    treeSpr: ['nm_tree_4', 'nm_tree_1', 'nm_tree_2'], rockSpr: ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_fence', 'nm_tomb_1', 'nm_crow'], treeK: 0.95, rockK: 1.25, bushSpr: ['nm_shroom'], bushes: 8 },
+  blacklake: { tex: 'cursed', tint: 'rgba(20,30,50,0.3)', grass: '#2e3434', grass2: '#181e22', patch: ['#2e3434', '#181e22'], trees: 16, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#54504c', '#9c948a', '#24201c'], tuft: ['#3a4a3a', '#566a48'], stone: ['#5a6066', '#8a9298'], light: 'rgba(140,200,255,0.08)', amb: '160,220,255', flowers: 0,
+    treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow'], treeK: 0.9, rockK: 1.15, pondSpr: 'nm_pond', ponds: 7, bushSpr: ['nm_bush'], bushes: 8 },
+  necrogate: { tex: 'cursed', tint: 'rgba(60,20,70,0.22)', grass: '#36302e', grass2: '#1e1a1c', patch: ['#36302e', '#1e1a1c'], trees: 20, rocks: 22, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5048', '#a8968a', '#2a201a'], tuft: ['#4a4a30', '#6a6a3a'], stone: ['#665e66', '#9a909a'], light: 'rgba(180,255,170,0.1)', amb: '170,255,150', flowers: 0,
+    treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3'], rockSpr: ['nm_tomb_3', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
   rocky:  { grass: '#a3ad6e', grass2: '#7f8c52', patch: ['#a0a878', '#5f6a40'], trees: 12, rocks: 22, treeCol: ['#3a5a2a', '#4d7236', '#628a44'], road: ['#6a6058', '#b0a690', '#4a4239'], tuft: ['#6f7a40', '#8f9a55'], stone: ['#8d877c', '#bdb6a6'], light: 'rgba(255,214,150,0.18)' },
 };
 
@@ -4333,6 +4333,8 @@ function drawSoldier(s) {
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
     const ch = SKEL_H[look] * UNIT_K;
+    // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore();
     drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, '#7ad36a');
@@ -4558,7 +4560,7 @@ const RIG = {
 const easeInOut = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 // Necromancer seferi görselleri: iskeletler (1 acemi, 2 muhafız, 3 kemik şövalye, 4 mezar bekçisi, 5 ölüm şövalyesi),
 // Solarian askerleri, atlılar (bacak bölgesi alçak), tekerlekli kuşatma araçları (cart: hafif sarsıntı), uçan banshee
-const SKEL_H = [0, 27, 28, 30, 31, 29];
+const SKEL_H = [0, 32, 33, 35, 36, 34];
 Object.assign(RIG, {
   unit_skel_1: { legY: 0.72 }, unit_skel_2: { legY: 0.72 }, unit_skel_3: { legY: 0.72 }, unit_skel_4: { legY: 0.72 }, unit_skel_5: { legY: 0.72 },
   enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
