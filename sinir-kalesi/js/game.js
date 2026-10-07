@@ -2563,10 +2563,22 @@ function updateBowSoldier(s, dt) {
   if (!best) { if (s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt); s.atk = Math.max(s.atk, 0.15 * (s.slot || 0)); return; }
   s.face = best.x < s.x ? -1 : 1;
   s.anim += dt;
+  if (s.melee && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
+    // ikinci silah: kemik hançer, daha sık ama biraz zayıf vurur
+    if (s.atk <= 0) {
+      s.atk = 0.75; s.shootT = 0.25;
+      const crit = s.crit && Math.random() < s.crit, dmg = roll(s.dmg) * 0.75 * (s.buffT > 0 ? 1.5 : 1) * (crit ? 2 : 1);
+      damageEnemy(s.melee, dmg, 'phys', false, 'melee');
+      slashFx(s.melee.x, s.melee.y - (CHAR_H['enemy_' + s.melee.type] || 22) * 0.5, s.face, '#d8ffcf', crit ? 1.2 : 0.7);
+      if (crit) comicPop(s.melee.x, s.melee.y - 30, 'ÇAT!');
+      sfx('clash');
+    }
+    return;
+  }
   if (s.atk <= 0) {
     s.atk = s.bow.rate; s.shootT = 0.35;
     const sx = s.x + s.face * 5, sy = s.y - 18, d = dist(sx, sy, best.x, best.y), crit = s.crit && Math.random() < s.crit;
-    G.projectiles.push({ kind: 'arrow', shard: true, sx, sy, target: best, tx: best.x, ty: aimY(best), t: 0, dur: clamp(d / 480, 0.12, 0.55),
+    G.projectiles.push({ kind: 'arrow', boneArrow: true, sx, sy, target: best, tx: best.x, ty: aimY(best), t: 0, dur: clamp(d / 480, 0.12, 0.55),
       dmg: roll(s.dmg) * (s.buffT > 0 ? 1.5 : 1) * (crit ? 2 : 1), dtype: 'phys', arc: 14, crit, src: 'arrow' });
     sfx('arrow');
   }
@@ -4937,6 +4949,16 @@ function drawSoldier(s) {
     const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
+    if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
+      // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur
+      const sw = s.shootT > 0 ? Math.sin(clamp(1 - s.shootT / 0.25, 0, 1) * Math.PI) : 0;
+      ctx.save(); ctx.translate(s.x + (s.face || 1) * (6 + sw * 4), s.y - ch * 0.48); ctx.scale(s.face || 1, 1); ctx.rotate(-0.9 + sw * 1.5);
+      roundRect(-1.2, -1, 2.4, 5, 1, '#4a3020', '#140a06', 0.8);
+      ctx.beginPath(); ctx.moveTo(-1.6, -1); ctx.lineTo(0, -10); ctx.lineTo(1.6, -1); ctx.closePath();
+      ctx.fillStyle = '#f2ead2'; ctx.fill(); ctx.strokeStyle = '#140a06'; ctx.lineWidth = 0.8; ctx.stroke();
+      roundRect(-3, -1.6, 6, 1.6, 0.8, '#cbbf9c', '#140a06', 0.6);
+      ctx.restore();
+    }
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, '#7ad36a');
     return;
   }
@@ -5710,6 +5732,19 @@ function drawProjectile(p) {
   }
   if (p.kind === 'arrow' || p.kind === 'harrow') {
     const n = projPos(p, k + 0.05), a = Math.atan2(n.y - y, n.x - x), tl = projPos(p, k - 0.14), bone = NECRO && p.kind === 'arrow';
+    if (p.boneArrow) {
+      // iskelet okçunun oku: ince uzun kemik şaft, sivri kemik uç, yeşil tüy; arkasında hafif ruh izi
+      ctx.save(); ctx.strokeStyle = 'rgba(150,255,160,0.35)'; ctx.lineWidth = 0.8; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.lineCap = 'round';
+      ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
+      ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
+      ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(5, -1.6); ctx.lineTo(6, 0); ctx.lineTo(5, 1.6); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#8fe88a'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-13, -2); ctx.lineTo(-11.5, 0); ctx.lineTo(-13, 2); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      return;
+    }
     if (p.shard) {
       // kemik kıymığı: sivri fildişi diken, arkasında yeşil ruh izi
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
