@@ -5,7 +5,7 @@
 Her sayfada nesneler bağlı bileşenlerle bulunur (yakın parçalar birleşir), soldan sağa (dekor: satır satır) adlandırılır,
 sinir-kalesi/img/ içine PNG yazılır, manifest.json ve meta.json güncellenir. Ad None ise o nesne atılır.
 """
-import json, os
+import json, os, sys
 import numpy as np
 from PIL import Image
 from anim_isle import remove_magenta
@@ -28,7 +28,8 @@ SHEETS = [
     ('nm_dusman_1.jpg', ['enemy_legion', 'enemy_solarcher', 'enemy_gladiator', 'enemy_assassin'], 'unit'),
     ('nm_dusman_2.jpg', ['enemy_heavy', 'enemy_cavalry', 'enemy_priest', 'enemy_gloriosus'], 'unit'),
     ('nm_kusatma.jpg', ['enemy_ram', 'enemy_catapult'], 'unit'),
-    ('nm_komutanlar.jpg', ['hero_vladrik', None, None, 'mortimer'], 'unit'),
+    ('nm_komutanlar.jpg', ['hero_vladrik', None, None, None], 'unit'),  # eski Mortimer (4.) artık kullanılmıyor
+    ('nm_mortimer.jpg', [None, 'mortimer'], 'unit'),  # azrail Mortimer: sola bakan 3/4 görünüş
     ('nm_banshee.jpg', ['hero_wren'], 'unit'),
     ('nm_dekor.jpg', ['nm_tree_1', 'nm_tree_2', 'nm_tree_3', 'nm_tree_4',
                       'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_shroom', 'nm_bush',
@@ -40,6 +41,7 @@ ERASE = {
     'enemy_priest': [(0, 0, 1070, 1116), (1330, 0, 2000, 592), (1475, 0, 2000, 1116)],
     'enemy_gloriosus': [(0, 0, 1330, 1116), (1330, 596, 1478, 745)],
     'hero_vladrik': [(522, 230, 800, 600)],
+    'mortimer': [(1720, 680, 2000, 1116)],  # sağa savrulan duman kuyruğu (görseli genişletiyor)
 }
 
 
@@ -141,7 +143,9 @@ def crop(rgba, o, big):
 def main():
     man_p, meta_p = os.path.join(IMG, 'manifest.json'), os.path.join(IMG, 'meta.json')
     man, meta = set(json.load(open(man_p))), json.load(open(meta_p))
+    only = set(sys.argv[1:])  # ör. `nm_isle.py nm_mortimer.jpg`: yalnız bu sayfalar (diğer çıktılar elle düzeltilmiş olabilir)
     for fname, names, kind in SHEETS:
+        if only and fname not in only: continue
         rgba = remove_magenta(np.asarray(Image.open(os.path.join(HAM, fname)).convert('RGB')))
         if kind == 'decor':
             objs, big = objects(rgba, len(names), rows=True)
@@ -201,6 +205,8 @@ def main():
             meta[name] = entry; man.add(name + '.png')
             print(fname, '->', name, im.size)
     # zemin ve yol dokuları
+    if only:
+        json.dump(sorted(man), open(man_p, 'w'), indent=0); json.dump(meta, open(meta_p, 'w')); return
     g = Image.open(os.path.join(HAM, 'nm_zemin.jpg')).convert('RGB').resize((720, 720), Image.LANCZOS)
     g.save(os.path.join(IMG, 'grass_cursed.jpg'), quality=86); man.add('grass_cursed.jpg')
     r = Image.open(os.path.join(HAM, 'nm_yol.jpg')).convert('RGB').resize((720, 720), Image.LANCZOS)

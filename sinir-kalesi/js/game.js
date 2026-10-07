@@ -3199,8 +3199,8 @@ function drawMortimer() {
   ctx.rotate(-0.12 * k); ctx.scale(1 - 0.03 * k, 1 + 0.08 * k);
   drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
   ctx.restore();
-  // asasındaki kafatası: büyü yaparken parlar; diriltme sürerken yeşil nabız
-  const sx = m.x + face * hgt * im.width / im.height * 0.32, sy = m.y - hgt * 0.9 - 4 * k; // asanın kafatası
+  // tırpandaki kafatası: büyü yaparken parlar; diriltme sürerken yeşil nabız
+  const sx = m.x - face * hgt * im.width / im.height * 0.34, sy = m.y - hgt * 0.47 - 4 * k; // tırpandan sarkan kafatası
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   glow(ctx, sx, sy, 8 + 14 * k + (G.raiseT > 0 ? 4 + Math.sin(time * 8) * 2 : 0), '120,255,140', 0.35 + 0.6 * k + (G.raiseT > 0 ? 0.25 : 0));
   ctx.restore();
