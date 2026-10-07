@@ -41,7 +41,12 @@ grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık
 Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
 Sırada: çizgi roman panelleri, Mortimer'ın 3 büyüsü (şimdilik eski kahraman gücü sistemi), animasyon kareleri (poz kılavuzu), rütbe renkleri.
 
-## Son durum
+## Eski oyun dosyaları (8 Eki 2026)
+Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)
+ve eski tasarım notları silindi (git geçmişinde duruyor). data.js'teki eski LEVELS/ENEMIES verisi duruyor: NECRO bölümleri eski ilk 5 bölümün
+yol ve arsa düzenini kullanıyor. Görsel işleme artık yalnız `varliklar/nm_isle.py` (sayfa adı verilirse yalnız o sayfa) ve `anim_isle.py`.
+
+## Son durum (eski oyun, tarihçe)
 2 sefer (EPISODES): 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl; LEVELS'ta ep: 2).
 2. sefer görselleri: varliklar/ham/s2_*.jpg → varliklar/sefer2_isle.py (numpy+scipy+pillow) → img/.
 Yapılanlar: 20 bölüm, 5 kahraman (3'er yetenek), boss + muhafız + efektli boss yetenekleri, düşman zayıflık/direnç

@@ -18,9 +18,8 @@ Caner'in üçüncü projesi (Backtest Lab / Chart Trials ve Maya Vale'den tamame
 - 4–5 Ekim'de oyun bulut oturumunda (claude.ai/code) geliştirildi; yerel kopya geride kaldı.
   İşe başlamadan `git pull` yap. Eskimiş kopyalar: `kod/www/` (3 Ekim) ve `kod/www-v03/` (geçiş kopyası), bunları kullanma.
 - Yayın: `sinir-kalesi/yayin.html` + değişen dosyalar `files` ile aynı Artifact URL'ine.
-- Seferler: 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl). Tasarım: `tasarim/sefer-2.md`.
-- 2. sefer görselleri: `varliklar/ham/s2_*.jpg` → `varliklar/sefer2_isle.py` → repo `img/` (+manifest/meta).
-  scipy sistemde yok: geçici venv ile çalıştır (`python3 -m venv ... && pip install numpy scipy pillow`).
+- Oyun artık "Don't Mess with the Necromancer" (tek sefer, 5 bölüm). Eski seferlerin dosyaları 8 Eki'de silindi (git geçmişinde).
+- Görseller: `varliklar/ham/nm_*.jpg` → `python3 varliklar/nm_isle.py [sayfa.jpg]`; kare kare animasyon: `varliklar/anim_isle.py` + poz kılavuzları.
 
 ## Konsept (kararlar)
 
