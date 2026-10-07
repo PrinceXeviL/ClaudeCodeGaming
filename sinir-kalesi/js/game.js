@@ -71,6 +71,22 @@ const easeOutBack = (x) => 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow
 
 // İsabet anında sprite'ın üzerine çizilen beyaz siluet (önbellekli)
 const WHITE = {};
+// dirilen cesetler: aynı görselin solgun, yeşilimsi-gri çürümüş renkli kopyası (önbellekli)
+const ROT = {};
+function rottenOf(name, im) {
+  if (ROT[name]) return ROT[name];
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
+  for (let i = 0; i < a.length; i += 4) {
+    const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
+    a[i] = (a[i] * 0.3 + (L * 0.74 + 16) * 0.7) * 0.86;
+    a[i + 1] = (a[i + 1] * 0.3 + (L * 0.92 + 30) * 0.7) * 0.86;
+    a[i + 2] = (a[i + 2] * 0.3 + (L * 0.68 + 12) * 0.7) * 0.86;
+  }
+  g.putImageData(d, 0, 0);
+  return (ROT[name] = c);
+}
 function whiteOf(name, im) {
   if (!WHITE[name]) {
     const c = document.createElement('canvas');
@@ -2567,6 +2583,9 @@ function updateSoldier(s, dt) {
   }
   if (s.stunT > 0) { s.stunT -= dt; return; }
   if (s.march) { marchSoldier(s, dt); return; }
+  // dirilen ceset: hedefi yokken ve yakında düşman kalmamışken yolun başına doğru yürümeyi sürdürür
+  if (s.zombie && !s.target && !s.moving && G.t - (s.fightT || 0) > 0.6 && !G.enemies.some(o => !o.dead && !o.def.flying && dist(o.x, o.y, s.x, s.y) < s.engage)) zombieMarch(s);
+  if (s.zombie && s.target) s.fightT = G.t;
   if (s.hero && s.ranged) { updateRangedHero(s, dt); runHeroSkills(s, dt); return; }
   if (s.bow) { updateBowSoldier(s, dt); return; }
   const home = soldierHome(s);
@@ -3179,12 +3198,25 @@ function castNecro(id, x, y) {
     sfx('roar');
   }
 }
+// dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
+function zombieMarch(s) {
+  const q = nearestOnPaths(G.paths, s.x, s.y);
+  if (!q.p || q.along < 8) return false;
+  s.march = { p: q.p, d: q.along, goal: 0, off: rand(-7, 7), zombie: true };
+  return true;
+}
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
   const S = NECRO_SPELLS.nm_raise, M = S.minion;
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
-  G.soldiers.push({ militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp, maxHp: M.hp, dmg: M.dmg, armor: M.armor,
-    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay });
+  const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp, maxHp: M.hp, dmg: M.dmg, armor: M.armor,
+    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay };
+  // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), düşmanların geldiği yöne doğru yolda yürür
+  if (e.name) {
+    const D = ENEMIES[e.name.slice(6)];
+    s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true; zombieMarch(s);
+  }
+  G.soldiers.push(s);
   G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '140,255,140', t: 0, dur: 0.7 });
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: '140,255,120', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
@@ -3336,10 +3368,10 @@ function sendMerc(s) {
 }
 // paralı askerin yürüyüşü: yol üzerinde hedef noktaya (iki yöne de) yürür
 function marchSoldier(s, dt) {
-  const m = s.march, sp = MERCS.march * G.wspd;
+  const m = s.march, sp = (m.zombie ? 30 : MERCS.march) * G.wspd; // dirilenler ağır ağır yürür
   // toplanma yeri seçilmediyse yolda karşılaştığı ilk düşmanla orada dövüşür; seçildiyse yerine gider
   const foe = !m.rally && G.enemies.find(e => !e.dead && !e.def.flying && !e.under && dist(e.x, e.y, s.x, s.y) < 34);
-  if (foe || Math.abs(m.d - m.goal) < 1) { s.march = null; if (foe) { s.rx = s.x; s.ry = s.y; } else s.moving = true; return; }
+  if (foe || Math.abs(m.d - m.goal) < 1) { s.march = null; if (foe || m.zombie) { s.rx = s.x; s.ry = s.y; } else s.moving = true; return; }
   m.d += Math.sign(m.goal - m.d) * Math.min(sp * dt, Math.abs(m.goal - m.d));
   const q = pathPos(m.p, Math.min(m.d, m.p.total), m.off);
   s.face = q.x < s.x ? -1 : 1; s.x = q.x; s.y = q.y; s.anim += dt;
@@ -4689,6 +4721,25 @@ function drawSoldier(s) {
   const r = s.hero ? 8 : 5.5;
   const name = s.hero ? s.def.sprite : s.merc ? 'soldier' : s.militia ? 'militia' : 'soldier';
   // Necromancer: mahzen askerleri, paralı askerler ve çağrılanlar iskelet (seviye ve uzmanlığa göre 5 görsel)
+  if (NECRO && s.zname) {
+    const base = spr(s.zname) || enemySprite(s.zname.slice(6));
+    if (base) {
+      const key = s.zname + '_rot', im = rottenOf(s.zname, base);
+      if (ARMS[s.zname] && !ARMS[key]) ARMS[key] = ARMS[s.zname];
+      const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
+      s.px = s.x; s.py = s.y;
+      const ch = s.zh || 30 * UNIT_K;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '110,255,140', 0.25); ctx.restore();
+      if (s.born != null && G.t < s.born) return;
+      const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
+      drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: s.zrig || s.zname, phase: s.anim * 7, walking, fly: 0, rise,
+        atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7 });
+      // başının üstünde soluk yeşil ruh alevi: bizim tarafta olduğu belli olsun
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch - 3, 5 + Math.sin(time * 6 + s.slot) * 1, '120,255,140', 0.55); ctx.restore();
+      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#7ad36a');
+      return;
+    }
+  }
   if (NECRO && !s.hero && spr('unit_skel_1')) {
     const sp2 = s.tower && s.tower.spec;
     // okçu yolu: kademe (1-3) arttıkça zırhı güçlenen 3 okçu görseli (unit_skel_6..8)
