@@ -3143,7 +3143,7 @@ function updateProjectile(pr, dt) {
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
 const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear'] : []).concat(G.heroes.map((h, i) => 'ult' + i));
-const spellBtn = (i) => ({ x: 124 + i * 62, y: H - 44, r: 26 }); // kare büyü kartı (r = yarı genişlik)
+const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
   if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast, necro: S, U: S }; }
@@ -6425,9 +6425,9 @@ function drawRally(x, y) {
 // Arayüz yerleşimi (KR düzeninden esinli): sol üst can/altın + dalga, sağ üst kare düğmeler,
 // sol alt çerçeveli komutan portresi (altında seviye ve can plakası), yanında kare büyü kartları
 const HUD = {
-  pause: { x: W - 32, y: 32, r: 21 },
-  speed: { x: W - 80, y: 32, r: 21 },
-  mute:  { x: -99, y: -99, r: 0 }, // ses düğmesi duraklat menüsünde
+  pause: { x: W - 30, y: 30, r: 19 },
+  speed: { x: W - 78, y: 30, r: 19 },
+  mute:  { x: W - 122, y: 30, r: 16 },
   heroes: [{ x: 46, y: H - 62, r: 28 }, { x: 112, y: H - 62, r: 24 }],
 };
 const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 });
@@ -6651,66 +6651,63 @@ function drawHud() {
   if (G.goldShown !== Math.floor(G.gold)) { if (G.goldShown != null) G.goldPop = time; G.goldShown = Math.floor(G.gold); }
   if (G.livesShown !== G.lives) { if (G.livesShown != null) G.livesPop = time; G.livesShown = G.lives; }
   const pop = (t) => (t != null ? 1 + Math.max(0, 1 - (time - t) / 0.35) * 0.3 : 1);
-  // sol üst: can + altın şeridi, altında dalga şeridi
-  hudBar(10, 9, 172, 32);
-  drawIcon('heart', 28, 25, 21);
-  ctx.save(); ctx.translate(44, 26); ctx.scale(pop(G.livesPop), pop(G.livesPop)); hudNum(G.lives + '', 0, 0, 19, G.lives <= 5 ? '#ff8a7a' : '#fff'); ctx.restore();
-  drawIcon('coin', 96, 25, 21);
-  ctx.save(); ctx.translate(112, 26); ctx.scale(pop(G.goldPop), pop(G.goldPop)); hudNum(Math.floor(G.gold) + '', 0, 0, 19, '#ffe27a'); ctx.restore();
-  const last = G.wave >= G.lv.waves.length && G.wave > 0;
-  hudBar(10, 45, 104, 27);
-  if (last) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 62, 58, 60, '255,60,30', 0.3 + Math.sin(time * 6) * 0.12); ctx.restore(); }
-  drawIcon('skull', 27, 58.5, 18);
-  ctx.save(); ctx.translate(42, 59.5); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(`${G.wave}/${G.lv.waves.length}`, 0, 0, 16, last ? '#ff9a7a' : '#fff'); ctx.restore();
-
-  // sağ üst: kare duraklat ve hız düğmeleri
-  for (const [key, b] of [['hud_pause', HUD.pause], ['hud_speed', HUD.speed]]) {
-    ctx.save(); ctx.translate(b.x, b.y); const sc = pressScale(key); ctx.scale(sc, sc);
-    if (key === 'hud_speed' && speed > 1) glow(ctx, 0, 0, 40, '255,220,120', 0.4 + Math.sin(time * 6) * 0.12);
-    hudFrame(-b.r, -b.r, b.r * 2, b.r * 2, 8);
-    if (key === 'hud_pause') { roundRect(-7, -9, 5.5, 18, 1.5, '#f2ecd8', '#0a0612', 1.2); roundRect(1.5, -9, 5.5, 18, 1.5, '#f2ecd8', '#0a0612', 1.2); }
-    else { drawIcon('fast', 0, -3, 15, speed > 1 ? '#ffe27a' : '#f2ecd8'); txt(speed + 'x', 0, 10, 10, speed > 1 ? '#ffe27a' : '#f2ecd8', 'center', '400', FONT_T); }
-    ctx.restore();
+  // sol üst: küçük can + altın şeridi, altında dolan dalga çubuğu
+  hudBar(8, 7, 136, 24);
+  drawIcon('heart', 22, 19, 16);
+  ctx.save(); ctx.translate(34, 20); ctx.scale(pop(G.livesPop), pop(G.livesPop)); hudNum(G.lives + '', 0, 0, 14, G.lives <= 5 ? '#ff8a7a' : '#fff'); ctx.restore();
+  drawIcon('coin', 76, 19, 16);
+  ctx.save(); ctx.translate(88, 20); ctx.scale(pop(G.goldPop), pop(G.goldPop)); hudNum(Math.floor(G.gold) + '', 0, 0, 14, '#ffe27a'); ctx.restore();
+  const n = G.lv.waves.length, last = G.wave >= n && G.wave > 0, wk = clamp(G.wave / n, 0, 1);
+  hudBar(8, 34, 96, 20);
+  // dolum: dalga ilerledikçe yeşilden kırmızıya, son dalgada tamamen dolu ve nabız gibi
+  if (wk > 0) {
+    const fw = (96 - 6) * wk, wt = waveTint();
+    const fg = ctx.createLinearGradient(0, 37, 0, 51);
+    fg.addColorStop(0, wt ? wt[2] : '#8fdc6a'); fg.addColorStop(1, wt ? wt[0] : '#3a7a2a');
+    ctx.save(); ctx.globalAlpha = last ? 0.75 + Math.sin(time * 6) * 0.2 : 0.85;
+    roundRect(11, 37, fw, 14, 5, fg); ctx.restore();
+    roundRect(12, 38, fw - 2, 4, 2, 'rgba(255,255,255,0.18)');
   }
+  drawIcon('skull', 21, 44, 14);
+  ctx.save(); ctx.translate(58, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(`${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
+
+  // sağ üst: duraklat, hız, ses
+  roundBtn('hud_pause', HUD.pause.x, HUD.pause.y, HUD.pause.r, 'pause', null);
+  roundBtn('hud_speed', HUD.speed.x, HUD.speed.y, HUD.speed.r, () => {
+    drawIcon('fast', 0, -3, 15, speed > 1 ? '#ffe27a' : '#fff');
+    txt(speed + 'x', 0, 9, 10, speed > 1 ? '#ffe27a' : '#fff', 'center', '400', FONT_T);
+  }, null, { active: speed > 1 });
+  roundBtn('hud_mute', HUD.mute.x, HUD.mute.y, HUD.mute.r, muted ? 'mute' : 'sound', null);
 
   G.heroes.forEach((h, i) => drawHeroPortrait(h, HUD.heroes[i], i));
 
   spellIds().forEach((id, i) => {
     const b = spellBtn(i), cd = G.spells[id], info = spellInfo(id), max = info.cd;
-    const active = G.mode && G.mode.kind === 'spell' && G.mode.id === id, ready = cd <= 0;
+    const active = G.mode && G.mode.kind === 'spell' && G.mode.id === id, ready = cd <= 0, peek = G.spellPeek === id;
     const col = info.hero ? info.hero.def.aura : info.necro ? info.necro.col : '120,200,255';
-    ctx.save(); ctx.translate(b.x, b.y); const s = pressScale('hud_' + id); ctx.scale(s, s);
+    ctx.save(); ctx.translate(b.x, b.y); const s = pressScale('hud_' + id) * (peek ? 1.12 : 1); ctx.scale(s, s);
     if (active) glow(ctx, 0, 0, b.r * 2.3, '255,220,120', 0.7 + Math.sin(time * 8) * 0.2);
-    else if (ready) glow(ctx, 0, 0, b.r * 1.9, col, 0.2 + Math.sin(time * 3) * 0.08);
-    const bd = ctx.createRadialGradient(-5, -9, 2, 0, 0, b.r * 1.3);
+    else if (peek) glow(ctx, 0, 0, b.r * 2.2, '255,240,200', 0.5 + Math.sin(time * 6) * 0.15);
+    else if (ready) glow(ctx, 0, 0, b.r * 1.9, col, 0.25 + Math.sin(time * 3) * 0.1);
+    circle(0, 5, b.r + 4, 'rgba(0,0,0,0.45)');
+    const rm = ctx.createLinearGradient(0, -b.r, 0, b.r);
+    rm.addColorStop(0, ready ? '#d8d2e8' : '#8a8494'); rm.addColorStop(0.5, ready ? '#6e6886' : '#4a4452'); rm.addColorStop(1, '#2c2640');
+    circle(0, 0, b.r + 4, rm, '#0a0612', 2);
+    circle(0, 0, b.r + 2.5, null, 'rgba(255,255,255,0.3)', 1);
+    const bd = ctx.createRadialGradient(-5, -7, 2, 0, 0, b.r);
     bd.addColorStop(0, `rgba(${col},0.95)`); bd.addColorStop(1, '#120c18');
-    hudFrame(-b.r, -b.r, b.r * 2, b.r * 2, 8, bd);
-    // hazır ışığı: kartın altındaki küçük taş
-    roundRect(-9, b.r - 2, 18, 7, 3, '#0a0612');
-    roundRect(-7.5, b.r - 0.5, 15, 4, 2, ready ? '#ffd34d' : '#3a3448');
-    if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, b.r + 1.5, 12, '255,210,80', 0.5); ctx.restore(); }
-    ctx.save(); roundRect(-b.r + 4, -b.r + 4, b.r * 2 - 8, b.r * 2 - 8, 5); ctx.clip();
+    circle(0, 0, b.r, bd);
+    ctx.save(); ctx.beginPath(); ctx.arc(0, 0, b.r - 1, 0, Math.PI * 2); ctx.clip();
     if (info.hero) { if (NECRO && info.hero.id === 'zeynep') drawNecroGlyph('nm_scream', b.r); else drawUltGlyph(info.hero.id, b.r); }
     else if (info.necro) drawNecroGlyph(id, b.r);
-    else {
-      const mil = spr('militia'), sol = spr('soldier');
-      const sh = ctx.createRadialGradient(0, -4, 2, 0, 0, b.r); sh.addColorStop(0, 'rgba(140,200,255,0.55)'); sh.addColorStop(1, 'rgba(140,200,255,0)');
-      ctx.fillStyle = sh; ctx.fillRect(-b.r, -b.r, b.r * 2, b.r * 2);
-      if (mil && sol) {
-        ctx.save(); ctx.translate(-8, 22); ctx.scale(-1, 1); drawSprite(ctx, mil, 0, 0, 34 * mil.width / mil.height); ctx.restore();
-        drawSprite(ctx, sol, 8, 24, 38 * sol.width / sol.height);
-      }
-    }
     ctx.restore();
-    roundRect(-b.r + 5, -b.r + 5, b.r * 2 - 10, b.r * 0.55, 4, 'rgba(255,255,255,0.1)');
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.ellipse(0, -b.r * 0.5, b.r * 0.6, b.r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
     if (!ready) {
-      // bekleme: koyu perde yukarıdan iner, süre azaldıkça kalkar
-      const ih = b.r * 2 - 8, ch = ih * clamp(cd / max, 0, 1);
-      ctx.save(); roundRect(-b.r + 4, -b.r + 4, b.r * 2 - 8, ih, 5); ctx.clip();
-      ctx.fillStyle = 'rgba(6,4,10,0.7)'; ctx.fillRect(-b.r + 4, -b.r + 4, b.r * 2 - 8, ch);
-      ctx.restore();
-      hudNum(Math.ceil(cd) + '', 0, 1, 18, '#fff', 'center');
+      ctx.fillStyle = 'rgba(0,0,0,0.62)';
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, b.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (cd / max)); ctx.fill();
+      txt(Math.ceil(cd) + '', 0, 1, 16, '#fff', 'center', '400', FONT_T);
     }
+    if (peek) { ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, b.r + 6, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   });
 
@@ -6720,12 +6717,13 @@ function drawHud() {
   const info = infoText();
   if (info) {
     ctx.font = `700 13px ${FONT_B}`;
-    const w = Math.max(290, ctx.measureText(info[1]).width + 44), x0 = W / 2 - w / 2, y0 = H - 58;
+    const w = Math.max(290, ctx.measureText(info[1]).width + 44), y0 = H - 58;
+    const x0 = clamp(W / 2 - w / 2, 278, W - w - 10), cxp = x0 + w / 2; // sol alttaki portre ve büyü düğmelerinin sağında kalır
     roundRect(x0 + 2, y0 + 5, w, 48, 15, 'rgba(0,0,0,0.3)');
     const g = ctx.createLinearGradient(0, y0, 0, y0 + 48); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
     roundRect(x0, y0, w, 48, 15, g, '#d4ab5a', 2);
-    txt(info[0], W / 2, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
-    txt(info[1], W / 2, y0 + 34, 13, '#f2e8d4', 'center', '700', FONT_B, false);
+    txt(info[0], cxp, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
+    txt(info[1], cxp, y0 + 34, 13, '#f2e8d4', 'center', '700', FONT_B, false);
   }
   const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
@@ -6780,11 +6778,15 @@ function drawSkillGlyph(id, x, y) {
 
 
 function infoText() {
+  if (G.spellPeek) {
+    const I = spellInfo(G.spellPeek), cd = G.spells[G.spellPeek];
+    return [I.name, `${I.U.short || I.U.desc} · ${cd > 0 ? Math.ceil(cd) + ' sn sonra hazır' : 'Kullanmak için tekrar dokun'}`];
+  }
   if (G.sel && G.sel.kind === 'castle') {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
     const st = (X) => `${X.archers} okçu · Hasar ${X.dmg[0]}-${X.dmg[1]} · Menzil ${CASTLE.range} · Atış ${X.rate}sn`;
     if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, `${st(N)} · ${N.perk}`];
-    return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Ok: yükselt' : L.perk} · Bayrak: paralı askerleri gönder`];
+    return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Ok: yükselt' : L.perk} · Bayrak: ${NECRO ? 'ölüleri' : 'paralı askerleri'} gönder`];
   }
   if (G.preview && G.preview.id === 'build') {
     const T = TOWERS[G.preview.type], L = T.levels[0];
@@ -8607,8 +8609,10 @@ const hit = (b, x, y, pad = 6) => dist(b.x, b.y, x, y) <= b.r + pad;
 // Ekran koordinatlı öğeler (HUD, büyüler, dalga işareti, halka menü, düşman paneli).
 // Parmak değdiği an çalışır; dokunuş bunlardan birine denk geldiyse true döner.
 function hudTap(x, y) {
+  const peeked = G.spellPeek; G.spellPeek = null; // büyü seçimi: başka yere dokununca kalkar
   if (hit(HUD.pause, x, y)) { tapPop('hud_pause'); sfx('click'); setOverlay('pause'); return true; }
   if (hit(HUD.speed, x, y)) { tapPop('hud_speed'); sfx('click'); speed = speed >= 3 ? 1 : speed + 1; return true; }
+  if (hit(HUD.mute, x, y)) { tapPop('hud_mute'); setMuted(!muted); sfx('click'); return true; }
   for (let i = 0; i < G.heroes.length; i++) {
     const h = G.heroes[i], hb = HUD.heroes[i], bd = heroBadge(hb);
     if (dist(bd.x, bd.y, x, y) <= bd.r + 6) { tapPop('hb' + i); openSkills(h); return true; }
@@ -8623,7 +8627,9 @@ function hudTap(x, y) {
     if (hit(spellBtn(i), x, y)) {
       tapPop('hud_' + id);
       setSel(null);
-      if (G.spells[id] > 0) { sfx('error'); return true; }
+      // ilk dokunuş: seç ve ne yaptığını göster; ikinci dokunuş: kullan
+      if (peeked !== id && !(G.mode && G.mode.id === id)) { G.spellPeek = id; G.mode = null; sfx('select'); return true; }
+      if (G.spells[id] > 0) { G.spellPeek = id; sfx('error'); return true; }
       if (id === 'nm_raise') { G.mode = null; castSpell(id); return true; }
       G.mode = G.mode && G.mode.id === id ? null : { kind: 'spell', id };
       if (G.mode) sfx('spell');

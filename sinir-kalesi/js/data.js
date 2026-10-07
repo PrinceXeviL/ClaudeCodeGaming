@@ -841,7 +841,7 @@ for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.i
 Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
 HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep');
-Object.assign(HERO_ULT.commander, { name: 'Kan Kılıçları' });
+Object.assign(HERO_ULT.commander, { name: 'Kan Kılıçları', short: 'Seçtiğin yere 9 kan kılıcı saplanır, düşmanlar sersemler' });
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
@@ -850,8 +850,9 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 4, col: '120,255,140', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
-    desc: 'Yerde yatan düşman cesetleri (ölümden sonra 4 sn) iskelet minyonun olarak kalkar · 30 sn yaşarlar' },
-  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar' },
+    desc: 'Yerde yatan düşman cesetleri (ölümden sonra 4 sn) iskelet minyonun olarak kalkar · 30 sn yaşarlar',
+    short: 'Yerdeki düşman cesetleri 30 sn senin için savaşan iskeletlere dönüşür' },
+  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar', short: 'Seçtiğin alandaki düşmanlar 3,5 sn geri kaçar' },
 };
 Object.assign(CASTLE.levels[0], { title: 'Şapel Okçuları', perk: 'Şapel bir iskelet okçuyla kendini savunur' });
 Object.assign(CASTLE.levels[1], { title: 'Kemik Nişancılar', perk: 'İki iskelet okçu, daha sert kemik oklar' });
