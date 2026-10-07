@@ -961,7 +961,7 @@ function startLevel(idx) {
     const h = makeHero(id, q.x + i * 6, q.y, i);
     G.heroes.push(h); G.soldiers.push(h);
     G.spells['ult' + i] = 0;
-    if (NECRO) { G.spells.nm_raise = 0; G.spells.nm_fear = 0; }
+    if (NECRO) { G.spells.nm_raise = 0; G.spells.nm_fear = 0; G.spells.nm_wall = 0; }
   });
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
@@ -1618,6 +1618,11 @@ function drawCoinsFlying() {
 }
 function damageSoldier(s, amount) {
   if (s.dead) return;
+  if (s.wall) {
+    s.hp -= amount * (1 - s.armor); s.flash = 0.08;
+    if (s.hp <= 0) { s.dead = true; s.hp = 0; s.life = 0; wallCrumble(s); releaseSoldier(s); }
+    return;
+  }
   // Ateş Bilgesi'nin buz zırhı aurası
   if (G.heroes.some(h => !h.dead && h.learned.frostarmor && dist(h.x, h.y, s.x, s.y) < 110)) amount *= 0.8;
   if (s.dodge && Math.random() < s.dodge) { if (Math.random() < 0.4) floatText(s.x, s.y - 30, 'Kaçtı!', '#ffe9b0'); return; }
@@ -1638,6 +1643,11 @@ function damageSoldier(s, amount) {
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : 0;
     releaseSoldier(s);
   }
+}
+function wallCrumble(s) {
+  for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'chunk', x: s.x + rand(-24, 24), y: s.y - rand(0, 16), vx: rand(-60, 60), vy: -rand(40, 120), g: 420, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#c9bd98', s0: rand(1.8, 3), s1: 1, life: rand(0.4, 0.8) });
+  G.effects.push({ kind: 'dust', x: s.x, y: s.y, t: 0, dur: 0.6 });
+  comicPop(s.x, s.y - 30, 'ÇATIR!', true, 14);
 }
 function releaseSoldier(s) {
   for (const e of G.enemies) if (e.blocker === s) e.blocker = null;
@@ -2343,6 +2353,13 @@ function updateBowSoldier(s, dt) {
     sfx('arrow');
   }
 }
+// Kemik Duvarı: yerinden kıpırdamaz, yanına gelen her yer düşmanını durdurur; düşmanlar ona vurur
+function updateWall(s, dt) {
+  for (const e of G.enemies) {
+    if (e.dead || e.def.flying || e.under || e.blocker || e.siege !== undefined || e.reviveT > 0) continue;
+    if (dist(e.x, e.y, s.x, s.y) < 24) e.blocker = s;
+  }
+}
 function updateSoldier(s, dt) {
   if (s.born != null && G.t < s.born) return; // diriltilen minyon sırasını bekliyor
   if (s.flash > 0) s.flash -= dt;
@@ -2362,6 +2379,7 @@ function updateSoldier(s, dt) {
     }
     return;
   }
+  if (s.wall) { updateWall(s, dt); return; }
   if (s.stunT > 0) { s.stunT -= dt; return; }
   if (s.march) { marchSoldier(s, dt); return; }
   // dirilen ceset: hedefi yokken ve yakında düşman kalmamışken yolun başına doğru yürümeyi sürdürür
@@ -2956,7 +2974,7 @@ function updateProjectile(pr, dt) {
 
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
-const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear'] : []).concat(G.heroes.map((h, i) => 'ult' + i));
+const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall'] : []).concat(G.heroes.map((h, i) => 'ult' + i));
 const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
@@ -2981,6 +2999,16 @@ function castNecro(id, x, y) {
     bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; });
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
     sfx('portal');
+  } else if (id === 'nm_wall') {
+    // yolun en yakın noktasına, yola dik kemik duvar
+    const q = nearestOnPaths(G.paths, x, y);
+    if (q.d > 45) { G.mortCast = 0; floatText(x, y - 20, 'Yolun üstüne koy!', '#c8c8c8'); sfx('error'); return false; }
+    const dir = pathPos(q.p, q.along);
+    G.soldiers.push({ militia: true, wall: true, x: q.x, y: q.y, rx: q.x, ry: q.y, hp: S.hp, maxHp: S.hp, dmg: [0, 0], armor: 0.3, rate: 99, speed: 0,
+      engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: S.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
+    G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.6 });
+    for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: q.x + rand(-22, 22), y: q.y + rand(-6, 6), vx: rand(-40, 40), vy: -rand(60, 140), g: 420, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#efe6cc' : '#6a5a48', s0: rand(1.6, 2.6), s1: 1, life: rand(0.4, 0.7) });
+    comicPop(q.x, q.y - 34, 'KRAK!', true, 16); shakeScreen(2, 0.2); sfx('build'); mortSay('wall', true);
   } else if (id === 'nm_fear') {
     G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 }); mortSay('fear', true);
     // Mortimer'dan hedefe uzanan mor ruh dalgası
@@ -3033,6 +3061,14 @@ function mortimerPoint() {
 }
 // büyü düğmesi simgeleri: diriltme = yerden kalkan iskelet, korku = çığlık atan hayalet
 function drawNecroGlyph(id, r) {
+  if (id === 'nm_wall') {
+    // kemik çit: dört kazık, iki kaburga, ortada kafatası
+    for (let i = 0; i < 4; i++) { const x = -r * 0.5 + i * r * 0.33, hh = r * (0.7 + (i % 2) * 0.18); roundRect(x - 2, r * 0.45 - hh, 4, hh, 2, '#efe6cc', '#2a1c10', 1); }
+    ctx.strokeStyle = '#d8cfb0'; ctx.lineWidth = 2;
+    for (const yy of [0, r * 0.22]) { ctx.beginPath(); ctx.moveTo(-r * 0.62, yy); ctx.quadraticCurveTo(0, yy - 4, r * 0.62, yy); ctx.stroke(); }
+    drawSkullIcon(0, -r * 0.42, r * 0.28);
+    return;
+  }
   if (id === 'nm_raise') {
     const im = spr('unit_skel_1');
     ctx.fillStyle = 'rgba(30,16,8,0.7)'; ctx.beginPath(); ctx.ellipse(0, r * 0.62, r * 0.75, r * 0.2, 0, 0, Math.PI * 2); ctx.fill();
@@ -3090,6 +3126,7 @@ const MORT_LINES = {
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
   lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'],
+  wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
   streak: ['Mükemmel. Yeni malzeme.', 'Hepsini kemik deposuna!', 'Bir, iki, on... yetmez.', 'İşte buna verimlilik denir.'],
 };
 function mortSay(kind, force) {
@@ -4727,7 +4764,35 @@ function drawEnemy(e) {
   if (e.hp < e.maxHp * 0.999) hpBar(e.x, top, d.boss ? 40 : 20, e.hp / e.maxHp);
 }
 
+// Kemik Duvarı çizimi: yola dik dizilmiş kemik kazıklar, aralarında kaburgalar, tepelerde kafatası; yerden yükselir, hasar aldıkça çatlar
+function drawBoneWall(s) {
+  const age = G.t - s.born, rise = easeOutBack(clamp(age / 0.35, 0, 1)), endA = clamp(s.life / 0.4, 0, 1), dmg = 1 - s.hp / s.maxHp;
+  const nx = -s.dy, ny = s.dx * 0.5; // yola dik yön (perspektifte basık)
+  ctx.save(); ctx.globalAlpha = endA;
+  shadow(s.x, s.y + 2, 30, 8);
+  const N = 9;
+  for (let i = 0; i < N; i++) {
+    const u = (i / (N - 1) - 0.5) * 52, x = s.x + nx * u, y = s.y + ny * u, hh = (16 + ((i * 7 + s.seed * 3) % 5) * 2.2) * rise * (1 - dmg * 0.25 * ((i % 3) / 2));
+    const lean = Math.sin(i * 1.9 + s.seed) * 0.12 + (s.flash > 0 ? rand(-0.08, 0.08) : 0);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(lean);
+    roundRect(-2.3, -hh, 4.6, hh, 2, '#efe6cc', '#2a1c10', 1.2);
+    circle(-1.6, -hh, 2.4, '#efe6cc', '#2a1c10', 1); circle(1.6, -hh, 2.4, '#efe6cc', '#2a1c10', 1); // kemik başı
+    if (dmg > 0.4 && i % 2) { ctx.strokeStyle = '#5a4630'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-1.5, -hh * 0.6); ctx.lineTo(1.2, -hh * 0.45); ctx.lineTo(-0.8, -hh * 0.3); ctx.stroke(); }
+    ctx.restore();
+    if (i % 4 === 0 && i < N - 1) drawSkullIcon(x, y - hh - 4, 4.2);
+  }
+  // kaburga kuşakları
+  for (const k of [0.45, 0.75]) {
+    ctx.strokeStyle = '#2a1c10'; ctx.lineWidth = 3; ctx.beginPath();
+    ctx.moveTo(s.x - nx * 26, s.y - ny * 26 - 16 * k * rise); ctx.quadraticCurveTo(s.x, s.y - 16 * k * rise - 4, s.x + nx * 26, s.y + ny * 26 - 16 * k * rise); ctx.stroke();
+    ctx.strokeStyle = '#d8cfb0'; ctx.lineWidth = 1.6; ctx.stroke();
+  }
+  if (s.flash > 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 10, 26, '255,255,255', s.flash * 4); }
+  ctx.restore();
+  if (s.hp < s.maxHp) hpBar(s.x, s.y - 34, 18, s.hp / s.maxHp, '#e8dcb8');
+}
 function drawSoldier(s) {
+  if (s.wall) { drawBoneWall(s); return; }
   if (s.dead) {
     if (s.hero) {
       ctx.globalAlpha = 0.5; circle(s.x, s.y - 4, 7, '#888'); ctx.globalAlpha = 1;
@@ -6840,7 +6905,7 @@ function drawHud() {
   if (info) {
     ctx.font = `700 13px ${FONT_B}`;
     const w = Math.max(290, ctx.measureText(info[1]).width + 44), y0 = H - 58;
-    const x0 = clamp(W / 2 - w / 2, 278, W - w - 10), cxp = x0 + w / 2; // sol alttaki portre ve büyü düğmelerinin sağında kalır
+    const x0 = clamp(W / 2 - w / 2, 120 + spellIds().length * 58, W - w - 10), cxp = x0 + w / 2; // sol alttaki portre ve büyü düğmelerinin sağında kalır
     roundRect(x0 + 2, y0 + 5, w, 48, 15, 'rgba(0,0,0,0.3)');
     const g = ctx.createLinearGradient(0, y0, 0, y0 + 48); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
     roundRect(x0, y0, w, 48, 15, g, '#d4ab5a', 2);

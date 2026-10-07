@@ -854,6 +854,9 @@ const NECRO_SPELLS = {
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 10, col: '120,255,140', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
     desc: 'Yerde yatan düşman cesetleri (ölümden sonra 10 sn) çürümüş ölüler olarak kalkar, düşmanın geldiği yöne yürüyüp senin için savaşır · 30 sn yaşarlar',
     short: 'Yerdeki cesetler çürümüş ölüler olarak kalkar, düşmana yürüyüp 30 sn senin için savaşır' },
+  nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 6, col: '235,225,200',
+    desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 6 sn durdurur, vurularak kırılabilir',
+    short: 'Yola kemik duvar diker: düşmanlar 6 sn takılır (kırılabilir)' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar', short: 'Seçtiğin alandaki düşmanlar 3,5 sn geri kaçar' },
 };
 Object.assign(CASTLE.levels[0], { title: 'Şapel Okçuları', perk: 'Şapel bir iskelet okçuyla kendini savunur' });
