@@ -8384,7 +8384,7 @@ function drawPlay() {
 
 const TIPS = NECRO ? [
   'İpucu: Mahzen iskeletleri düşmanı yolda durdurur, dikilitaşlar arkadan vurur.',
-  'İpucu: Ölüleri kaldırmak için yerde ceset olmalı; cesetler 4 saniye bekler.',
+  'İpucu: Ölüleri kaldırmak için yerde ceset olmalı; cesetler 10 saniye bekler.',
   'İpucu: Veba Kazanı\'nın gazı zırhı çürütür; ağır zırhlılara karşı iyidir.',
   'İpucu: Korkuyla kaçan düşmanlar kulelerinin menzilinde daha uzun kalır.',
   'İpucu: Kan Sunağı yanındaki kulelerin saldırı hızını artırır.',

@@ -849,8 +849,8 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 // fear: hedefli alan, düşmanlar kavgayı bırakıp yolda geri kaçar (bosslar yarı süre).
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
-  nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 4, col: '120,255,140', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
-    desc: 'Yerde yatan düşman cesetleri (ölümden sonra 4 sn) iskelet minyonun olarak kalkar · 30 sn yaşarlar',
+  nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 10, col: '120,255,140', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
+    desc: 'Yerde yatan düşman cesetleri (ölümden sonra 10 sn) iskelet minyonun olarak kalkar · 30 sn yaşarlar',
     short: 'Yerdeki düşman cesetleri 30 sn senin için savaşan iskeletlere dönüşür' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar', short: 'Seçtiğin alandaki düşmanlar 3,5 sn geri kaçar' },
 };
