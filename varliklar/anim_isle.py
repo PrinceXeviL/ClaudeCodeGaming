@@ -5,7 +5,7 @@
 - Magenta zemin silinir, kenardaki pembe taşma temizlenir.
 - Her kare ayrılır; ayakların en alt noktası ortak zemin çizgisine, gövdenin (üst yarının) ortası kare ortasına hizalanır
   (bacaklar açılıp kapandıkça karakter sağa sola kaymasın).
-- Çıktı: sinir-kalesi/img/<ad>.png (kareler yan yana tek şerit), img/anim.json'a kare bilgisi, manifest'e dosya adı eklenir.
+- Çıktı: sinir-kalesi/img/<ad>.webp (kareler yan yana tek şerit), img/anim.json'a kare bilgisi, manifest'e dosya adı eklenir.
 """
 import json, os, sys
 import numpy as np
@@ -104,15 +104,16 @@ def main(src, name, cols, rows, flip=False):
     out = Image.new('RGBA', strip.size, (0, 0, 0, 0))
     for i in range(len(frames)):
         out.paste(strip.crop((i * FW, 0, (i + 1) * FW, FH)), (i * FW, 0))
-    out.save(os.path.join(IMG, name + '.png'), optimize=True)
+    out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=88, method=6)
+    if os.path.exists(os.path.join(IMG, name + '.png')): os.remove(os.path.join(IMG, name + '.png'))
     meta_p = os.path.join(IMG, 'anim.json')
     meta = json.load(open(meta_p)) if os.path.exists(meta_p) else {}
     meta[name] = {'n': len(frames), 'fw': FW, 'fh': FH, 'base': round(pad * k / FH, 4), 'ch': round(chH * k / FH, 4)}
     json.dump(meta, open(meta_p, 'w'), indent=1)
     man_p = os.path.join(IMG, 'manifest.json')
     man = json.load(open(man_p))
-    if name + '.png' not in man:
-        man = sorted(man + [name + '.png']); json.dump(man, open(man_p, 'w'), indent=0)
+    if name + '.webp' not in man:
+        man = sorted([m for m in man if m != name + '.png'] + [name + '.webp']); json.dump(man, open(man_p, 'w'), indent=0)
     print(name, len(frames), 'kare', FW, 'x', FH)
 
 

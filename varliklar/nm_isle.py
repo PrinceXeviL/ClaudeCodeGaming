@@ -215,10 +215,11 @@ def main():
                 im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
             elif im.width > 700:
                 k = 700 / im.width; im = im.resize((700, round(im.height * k)), Image.LANCZOS)
-            im.save(os.path.join(IMG, name + '.png'), optimize=True)
+            im.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=88, method=6)  # webp: indirme boyutu ~%75 küçük
+            if os.path.exists(os.path.join(IMG, name + '.png')): os.remove(os.path.join(IMG, name + '.png'))
             entry = [im.width, im.height]
             if kind == 'tower': entry.append(TOWER_BASE)
-            meta[name] = entry; man.add(name + '.png')
+            meta[name] = entry; man.discard(name + '.png'); man.add(name + '.webp')
             print(fname, '->', name, im.size)
     # zemin ve yol dokuları
     if only:

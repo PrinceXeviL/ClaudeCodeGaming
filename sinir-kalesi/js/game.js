@@ -309,6 +309,29 @@ function uiSound(kind) {
   } else return false;
   return true;
 }
+// Mortimer konuşurken: kısa, anlamsız, boğuk hece mırıltısı (kare dalga + ağız formantı) ve arada kemik takırtısı
+function mortMumble(text) {
+  if (muted || !actx || !master) return;
+  const now = actx.currentTime, n = clamp(Math.round(text.length / 4), 4, 12), base = 112 + Math.random() * 24;
+  const out = actx.createBiquadFilter(); out.type = 'lowpass'; out.frequency.value = 1700; out.connect(master);
+  let t = now + 0.02;
+  for (let i = 0; i < n; i++) {
+    const dur = 0.05 + Math.random() * 0.045, f0 = base * (i === n - 1 ? 0.78 : 0.85 + Math.random() * 0.6);
+    const o = actx.createOscillator(), bp = actx.createBiquadFilter(), g = actx.createGain();
+    o.type = Math.random() < 0.5 ? 'square' : 'sawtooth';
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * (0.82 + Math.random() * 0.3), t + dur);
+    bp.type = 'bandpass'; bp.Q.value = 3.5; bp.frequency.setValueAtTime(480 + Math.random() * 700, t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.11, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(bp); bp.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.02);
+    if (i % 4 === 3) { // kemik takırtısı
+      const nz = actx.createBufferSource(), nb = actx.createBiquadFilter(), ng = actx.createGain();
+      nz.buffer = noiseBuf(); nb.type = 'bandpass'; nb.frequency.value = 2600; nb.Q.value = 6;
+      ng.gain.setValueAtTime(0.06, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+      nz.connect(nb); nb.connect(ng); ng.connect(out); nz.start(t); nz.stop(t + 0.04);
+    }
+    t += dur + 0.012 + Math.random() * 0.035;
+  }
+}
 // Dalga çağırma: uzaktan gelen yumuşak bir borazan ve iki boğuk savaş davulu (yorucu olmayan, alçak ses)
 function waveSound() {
   const t = actx.currentTime;
@@ -1265,6 +1288,7 @@ function startLevel(idx) {
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
+  G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
 }
 function bakeNext() {
@@ -3324,6 +3348,7 @@ function mortSay(kind, force) {
   let text = L[Math.floor(Math.random() * L.length)];
   if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
   G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
+  mortMumble(text);
 }
 function updateMortSay(dt) {
   if (!NECRO) return;
@@ -3353,6 +3378,50 @@ function drawMortSay() {
   ctx.closePath(); ctx.fillStyle = '#f2ecd8'; ctx.fill(); ctx.strokeStyle = '#1a1024'; ctx.lineWidth = 2; ctx.stroke();
   ctx.fillRect(clamp(m.x - 5, bx + 9, bx + bw - 19), by + bh - 3, 10, 3);
   lines.forEach((l, i) => txt(l, bx + bw / 2, by + 11 + i * 13, 11, '#2a1838', 'center', '800', FONT_B, false));
+  ctx.restore();
+}
+// ----- 1. bölüm eğitimi: ilk oynanışta adım adım ok işaretiyle yol gösterir (save.tutDone) -----
+const TUT = [
+  { text: 'Yolun kenarındaki kule yerlerinden birine dokun ve bir kule kur.', done: () => G.towers.length > 0,
+    at: () => { const P = G.paths[0], q = pathPos(P, P.total * 0.25); let b = null; for (const pl of G.plots) if (!pl.tower && (!b || dist(pl.x, pl.y, q.x, q.y) < dist(b.x, b.y, q.x, q.y))) b = pl; return b && worldToScreen(b.x, b.y - 10); } },
+  { text: 'Hazırsan kafatasına dokun: ilk dalga gelsin.', done: () => G.wave > 0,
+    at: () => { const ps = nextWavePaths(); return ps.length && waveCallable() ? waveBtnScreen(ps[0]) : null; } },
+  { text: 'Ölen düşmanların cesetleri 10 sn yerde kalır. Ölüleri Diriltme büyüsüne iki kez dokun!', when: () => G.effects.some(f => f.kind === 'corpse' && f.raisable),
+    done: () => G.raiseT > 0 || G.spells.nm_raise > 0, timeout: 15, at: () => spellBtn(spellIds().indexOf('nm_raise')) },
+  { text: 'Altının yetince kuleye dokunup yükselt: daha güçlü olur.', when: () => G.towers.some(t => t.lvl < t.def.levels.length - 1 && G.gold >= t.def.levels[t.lvl + 1].cost),
+    done: () => G.towers.some(t => t.lvl > 0), timeout: 14, at: () => { const t = G.towers[0]; return t && worldToScreen(t.x, t.y - 46); } },
+];
+function updateTut(dt) {
+  const T = G.tut; if (!T) return;
+  while (T.i < TUT.length && TUT[T.i].done()) { T.i++; T.t = 0; }
+  if (T.i >= TUT.length) { G.tut = null; save.tutDone = true; persist(); return; }
+  const S = TUT[T.i];
+  if (S.when && !S.when()) { T.on = false; return; }
+  T.on = true; T.t += dt;
+  if (S.timeout && T.t > S.timeout) { T.i++; T.t = 0; }
+}
+function drawTut() {
+  const T = G.tut; if (!T || !T.on || overlay) return;
+  const S = TUT[T.i], p = S.at && S.at(), a = clamp(T.t / 0.3, 0, 1);
+  ctx.save(); ctx.globalAlpha = a;
+  // üstte kemik parşömen şeridi
+  ctx.font = `700 14px ${FONT_B}`;
+  const w = Math.min(W - 40, ctx.measureText(S.text).width + 46), x0 = W / 2 - w / 2, y0 = 82;
+  roundRect(x0 + 2, y0 + 4, w, 34, 12, 'rgba(0,0,0,0.4)');
+  roundRect(x0, y0, w, 34, 12, '#efe8d2', '#1a1024', 2);
+  drawSkullIcon(x0 + 18, y0 + 17, 9);
+  txt(S.text, W / 2 + 10, y0 + 17.5, 14, '#2a1838', 'center', '800', FONT_B, false);
+  // hedefin üstünde zıplayan ok ve nabız halkası
+  if (p) {
+    const bob = Math.abs(Math.sin(time * 5)) * 8, ph = (time * 1.2) % 1;
+    ctx.strokeStyle = `rgba(255,236,150,${0.9 * (1 - ph)})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 16 + ph * 22, 0, Math.PI * 2); ctx.stroke();
+    ctx.save(); ctx.translate(p.x, p.y - 30 - bob);
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 22, '255,220,120', 0.45); ctx.globalCompositeOperation = 'source-over';
+    ctx.beginPath(); ctx.moveTo(-9, -16); ctx.lineTo(9, -16); ctx.lineTo(9, -4); ctx.lineTo(15, -4); ctx.lineTo(0, 10); ctx.lineTo(-15, -4); ctx.lineTo(-9, -4); ctx.closePath();
+    ctx.fillStyle = '#ffe27a'; ctx.fill(); ctx.strokeStyle = '#2a1406'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.restore();
+  }
   ctx.restore();
 }
 // ----- bölüme özel mekanikler (lv.mech) -----
@@ -3628,6 +3697,7 @@ function update(dt) {
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortSay(dt);
   updateMech(dt);
+  updateTut(dt);
 
   if (G.waveCountdown != null && G.wave > 0) {
     G.waveCountdown -= dt;
@@ -8649,6 +8719,7 @@ function drawPlay() {
   drawBossBar();
   drawIntro();
   drawBanner();
+  drawTut();
   if (overlay) drawOverlay();
 }
 
@@ -9087,6 +9158,17 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 window.__game = {
   cut: (n) => spr(n) && ARMS[n] ? cutImage(spr(n), ARMS[n]) : null, ARMS,
+  // kare maliyeti ölçümü (test): n kare boyunca güncelleme ve tam sahne çizimi süresini ölçer (ms; ortalama ve en kötü %5)
+  perf(n = 120) {
+    const U = [], D = [], { dpr, scale, ox, oy } = view;
+    for (let i = 0; i < n; i++) {
+      const t0 = performance.now(); update(1 / 60); const t1 = performance.now();
+      ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawPlay(); ctx.restore();
+      U.push(t1 - t0); D.push(performance.now() - t1);
+    }
+    const st = (a) => { const b = [...a].sort((x, y) => x - y); return { ort: +(a.reduce((x, y) => x + y) / a.length).toFixed(2), p95: +b[Math.floor(b.length * 0.95)].toFixed(2) }; };
+    return { guncelleme: st(U), cizim: st(D), dusman: G.enemies.filter(e => !e.dead).length, asker: G.soldiers.length, parca: G.parts.length, kalite: quality };
+  },
   // çizim maliyeti ölçümü (test): bir karakteri n kez yürürken/saldırırken çizer, çizim başına ms döndürür
   bench(name, n = 500) {
     const type = name.slice(6), d = ENEMIES[type], im = d.base ? enemySprite(type) : spr(name), rig = d.base ? 'enemy_' + d.base : name;

@@ -3,7 +3,7 @@
     python3 varliklar/baslik_sapel.py
 
 Kaynak: varliklar/ham/nm_title_kule.jpg (eski kuleli arka plan, ilk çalıştırmada img/nm_title.jpg'den kopyalanır).
-Şapel: img/castle_1.png; Mortimer: img/mortimer_cast.png 2. kare (dururken). Gece sahnesine uysun diye hafif karartılır.
+Şapel: img/castle_1.webp; Mortimer: img/mortimer_cast.webp 2. kare (dururken). Gece sahnesine uysun diye hafif karartılır.
 """
 import json, os, shutil
 import numpy as np
@@ -16,7 +16,7 @@ if not os.path.exists(SRC):
     shutil.copy(os.path.join(IMG, 'nm_title.jpg'), SRC)
 
 bg = Image.open(SRC).convert('RGBA')
-castle = Image.open(os.path.join(IMG, 'castle_1.png')).convert('RGBA')
+castle = Image.open(os.path.join(IMG, 'castle_1.webp')).convert('RGBA')
 H = 690                                   # şapelin boyu (arka plan 1600x900)
 k = H / castle.height
 c = castle.resize((round(castle.width * k), H), Image.LANCZOS)
@@ -29,7 +29,7 @@ bg.alpha_composite(c, (x0, y0))
 
 # Mortimer balkonda (oyundaki MORT_STAGE[1] ve MORT_PX ile aynı oranlar)
 meta = json.load(open(os.path.join(IMG, 'anim.json')))['mortimer_cast']
-strip = Image.open(os.path.join(IMG, 'mortimer_cast.png')).convert('RGBA')
+strip = Image.open(os.path.join(IMG, 'mortimer_cast.webp')).convert('RGBA')
 fr = strip.crop((meta['fw'] * 1, 0, meta['fw'] * 2, meta['fh']))
 mh = 125 * k                              # Mortimer'ın boyu
 s = mh / (meta['ch'] * meta['fh'])
