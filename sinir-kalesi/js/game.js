@@ -3118,7 +3118,7 @@ function castSpell(id, x, y) {
 // ----- Mortimer'ın büyüleri -----
 function castNecro(id, x, y) {
   const S = NECRO_SPELLS[id], c = G.castle, m = mortimerPoint();
-  G.mortCast = 0.9; // balkonda asasını kaldırır
+  G.mortCast = MORT_CAST_T; // balkonda tırpanını kaldırır (büyü kareleri)
   if (id === 'nm_raise') {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length;
     const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15).sort((a, b) => a.t - b.t).slice(0, Math.max(0, S.max - alive));
@@ -3191,24 +3191,25 @@ function drawNecroGlyph(id, r) {
   ctx.beginPath(); ctx.ellipse(0, r * 0.1, r * 0.1, r * 0.16, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore(); ctx.restore();
 }
+// Mortimer'ın büyü kareleri (mortimer_cast, 8 kare): 0 aura, 1 dur, 2 kaldır, 3 başın üstünde, 4 doruk, 5 tut, 6 indir, 7 aura
+const MORT_CAST_T = 1.2, MORT_CAST_SEQ = [2, 3, 3, 4, 4, 5, 5, 6, 7];
 function drawMortimer() {
-  const im = spr('mortimer');
-  if (!im) return;
-  const m = mortimerPoint(), hgt = m.h, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
-  const bob = Math.sin(time * 1.6) * 0.5, face = 1; // önden görünüş: balkondan ekrana/aşağı bakar, aynalanmaz
-  // arkasında mor-yeşil büyü halesi: kulenin üstünde belirgin dursun
+  const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / MORT_CAST_T, 0, 1) : -1;
+  const k = p >= 0 ? Math.sin(p * Math.PI) : 0;
+  const F = ANIM_META.mortimer_cast, fim = F && spr('mortimer_cast'), im = spr('mortimer');
+  if (!fim && !im) return;
+  // arkasında mor-yeşil büyü halesi: büyüde parlar
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.75, '150,90,255', 0.22 + 0.25 * k + Math.sin(time * 2) * 0.05);
-  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.45, '120,255,140', 0.12 + 0.3 * k);
+  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.75, '150,90,255', 0.22 + 0.3 * k + Math.sin(time * 2) * 0.05);
+  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.45, '120,255,140', 0.12 + 0.4 * k + (G.raiseT > 0 ? 0.2 : 0));
   ctx.restore();
-  ctx.save(); ctx.translate(m.x, m.y + bob);
-  ctx.scale(1 + 0.04 * k, 1 + 0.08 * k); // büyüde göğsünü kabartıp dikleşir
-  drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
-  ctx.restore();
-  // tırpandaki kafatası: büyü yaparken parlar; diriltme sürerken yeşil nabız
-  const sx = m.x - face * hgt * im.width / im.height * 0.24, sy = m.y + bob - hgt * 0.8 * (1 + 0.08 * k); // tırpandan sarkan kafatası
-  ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, sx, sy, 8 + 14 * k + (G.raiseT > 0 ? 4 + Math.sin(time * 8) * 2 : 0), '120,255,140', 0.35 + 0.6 * k + (G.raiseT > 0 ? 0.25 : 0));
+  ctx.save(); ctx.translate(m.x, m.y);
+  if (fim) {
+    // boşta 1. kare hafifçe nefes alır; büyüde kareler sırayla oynar
+    const i = p >= 0 ? MORT_CAST_SEQ[Math.min(MORT_CAST_SEQ.length - 1, Math.floor(p * MORT_CAST_SEQ.length))] : 1;
+    if (p < 0) ctx.scale(1, 1 + Math.sin(time * 1.6) * 0.012);
+    drawFrame(fim, F, i, hgt * 0.97);
+  } else drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
   ctx.restore();
 }
 // Paralı askerler: kale kapısından çıkıp en ilerlemiş düşmanın geldiği yol boyunca yürürler
