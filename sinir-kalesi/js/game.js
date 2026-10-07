@@ -1705,7 +1705,6 @@ function killEnemy(e) {
     return;
   }
   e.dead = true;
-  if (G.raiseT > 0 && !e.def.flying && !e.def.chief && !e.summoned) raiseMinion(e);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
     const r = spawnEnemy(e.def.dismount, G.paths.indexOf(e.p), e.d, e.off);
@@ -1716,7 +1715,8 @@ function killEnemy(e) {
   sfx('death');
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
-    x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0, dur: CORPSE_DUR });
+    x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
+    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief });
   for (let i = 0; i < 5; i++) {
     emit(G.parts, { kind: 'glow', x: e.x + rand(-7, 7), y: e.y + rand(-6, 2), vx: rand(-14, 14), vy: rand(-22, -6), drag: 1.5,
       col: '205,195,175', s0: rand(3, 5), s1: rand(9, 13), life: rand(0.5, 0.8), a: 0.5 });
@@ -2443,6 +2443,7 @@ function heroDust(h, dt) {
 }
 
 function updateSoldier(s, dt) {
+  if (s.born != null && G.t < s.born) return; // diriltilen minyon sırasını bekliyor
   if (s.flash > 0) s.flash -= dt;
   if (s.buffT > 0) s.buffT -= dt;
   if (s.spinT > 0) s.spinT -= dt;
@@ -3038,7 +3039,7 @@ function spellInfo(id) {
   return { name: U.name, cd: U.cd * fast, hero: h, U };
 }
 function castSpell(id, x, y) {
-  if (NECRO_SPELLS[id]) castNecro(id, x, y);
+  if (NECRO_SPELLS[id]) { if (castNecro(id, x, y) === false) return; }
   else castUlt(G.heroes[+id.slice(3)], x, y);
   G.spells[id] = spellInfo(id).cd;
 }
@@ -3047,7 +3048,11 @@ function castNecro(id, x, y) {
   const S = NECRO_SPELLS[id], c = G.castle, m = mortimerPoint();
   G.mortCast = 0.9; // balkonda asasını kaldırır
   if (id === 'nm_raise') {
-    G.raiseT = S.t;
+    const alive = G.soldiers.filter(s => s.minion && !s.dead).length;
+    const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15).sort((a, b) => a.t - b.t).slice(0, Math.max(0, S.max - alive));
+    if (!bodies.length) { G.mortCast = 0; floatText(m.x, m.y - 40, 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    G.raiseT = 1.2;
+    bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; });
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
     floatText(m.x, m.y - 40, 'Kalkın, ölüler!', '#9dff8a');
     sfx('portal');
@@ -3064,11 +3069,11 @@ function castNecro(id, x, y) {
   }
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
-function raiseMinion(e) {
+function raiseMinion(e, delay = 0) {
   const S = NECRO_SPELLS.nm_raise, M = S.minion;
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
   G.soldiers.push({ militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp, maxHp: M.hp, dmg: M.dmg, armor: M.armor,
-    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life });
+    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay });
   G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '140,255,140', t: 0, dur: 0.7 });
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: '140,255,120', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
@@ -3089,6 +3094,11 @@ function drawNecroGlyph(id, r) {
     return;
   }
   const w = Math.sin(time * 4) * 1.5;
+  if (id === 'nm_scream') {
+    ctx.save(); ctx.strokeStyle = 'rgba(220,240,255,0.9)'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    for (let i = 0; i < 2; i++) { ctx.beginPath(); ctx.arc(r * 0.05, r * 0.1, r * (0.62 + i * 0.2), -0.5, 0.5); ctx.stroke(); }
+    ctx.restore(); ctx.save(); ctx.translate(-r * 0.15, 0); ctx.scale(0.85, 0.85);
+  } else ctx.save();
   ctx.save(); ctx.translate(0, w * 0.3);
   ctx.fillStyle = 'rgba(240,228,255,0.95)'; ctx.strokeStyle = '#2a1640'; ctx.lineWidth = 1.6;
   ctx.beginPath(); ctx.arc(0, -r * 0.18, r * 0.5, Math.PI, 0);
@@ -3098,7 +3108,7 @@ function drawNecroGlyph(id, r) {
   ctx.fillStyle = '#1a0a2a';
   ctx.beginPath(); ctx.ellipse(-r * 0.18, -r * 0.2, r * 0.09, r * 0.14, 0, 0, Math.PI * 2); ctx.ellipse(r * 0.18, -r * 0.2, r * 0.09, r * 0.14, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(0, r * 0.1, r * 0.1, r * 0.16, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
+  ctx.restore(); ctx.restore();
 }
 function drawMortimer() {
   const im = spr('mortimer');
@@ -3184,6 +3194,11 @@ function castUlt(h, x, y) {
   } else if (h.id === 'caner') {
     G.projectiles.push({ kind: 'ulthammer', sx: x, sy: y - 160, tx: x, ty: y, t: 0, dur: 0.5, arc: 0, dmg: dmg(), splash: U.r, stun: U.stun, heal: U.heal });
     sfx('spell');
+  } else if (h.id === 'zeynep' && NECRO) {
+    // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
+    for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
+    for (const e of enemiesNear(x, y, U.r, true)) { damageEnemy(e, dmg(), 'magic'); stunEnemy(e, U.stun); }
+    shakeScreen(3, 0.3); sfx('roar');
   } else if (h.id === 'zeynep') {
     for (let i = 0; i < U.n; i++) {
       const [tx, ty] = spot(U.r);
@@ -4434,7 +4449,9 @@ function drawSoldier(s) {
     const ch = SKEL_H[look] * UNIT_K;
     // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore();
-    drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0,
+    if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
+    const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
+    drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, '#7ad36a');
     return;
@@ -5161,7 +5178,10 @@ function drawCorpse(f) {
     rot = D.R; oy = D.oy * h; P.arm = D.arm; P.arm2 = -D.arm * 0.7; P.bend = D.bend;
   }
   ctx.save();
-  ctx.globalAlpha = 1 - clamp((t - 0.78) / (CORPSE_DUR - 0.78), 0, 1);
+  const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78; // uzun yatan ceset son yarım saniyede solar
+  ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
+  // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
+  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '110,255,140', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
   ctx.translate(f.x, f.y + 1 + oy);
   ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
   ctx.rotate(rot);
@@ -6280,7 +6300,7 @@ function drawHud() {
     if (info.hero || info.necro) { bd.addColorStop(0, `rgba(${col},0.95)`); bd.addColorStop(1, '#14100c'); } else { bd.addColorStop(0, '#3a6aa0'); bd.addColorStop(1, '#0e1a2c'); }
     circle(0, 0, b.r, bd);
     ctx.save(); ctx.beginPath(); ctx.arc(0, 0, b.r - 1, 0, Math.PI * 2); ctx.clip();
-    if (info.hero) drawUltGlyph(info.hero.id, b.r);
+    if (info.hero) { if (NECRO && info.hero.id === 'zeynep') drawNecroGlyph('nm_scream', b.r); else drawUltGlyph(info.hero.id, b.r); }
     else if (info.necro) drawNecroGlyph(id, b.r);
     else {
       const mil = spr('militia'), sol = spr('soldier');
