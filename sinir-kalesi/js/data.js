@@ -841,7 +841,9 @@ const NECRO_SPELLS = {
     desc: 'Yerde yatan düşman cesetleri (ölümden sonra 4 sn) iskelet minyonun olarak kalkar · 30 sn yaşarlar' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar' },
 };
-CASTLE.levels[0].title = 'Kule Okçuları'; CASTLE.levels[1].title = 'Kule Nişancıları'; CASTLE.levels[2].title = 'Kule Muhafızları';
+Object.assign(CASTLE.levels[0], { title: 'Şapel Okçuları', perk: 'Şapel bir iskelet okçuyla kendini savunur' });
+Object.assign(CASTLE.levels[1], { title: 'Kemik Nişancılar', perk: 'İki iskelet okçu, daha sert kemik oklar' });
+Object.assign(CASTLE.levels[2], { title: 'Ölüm Muhafızları', perk: 'Üç usta iskelet okçu, %15 kritik vuruş' });
 
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
   'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];
@@ -1047,4 +1049,16 @@ if (NECRO) {
   };
   TOWER_ORDER.push('altar');
   Object.assign(SPEC, { rite: { title: 'Kan Ayini Tapınağı', who: 'Kulelere ek hasar veren kan ritüeli' }, ward: { title: 'Kan Kalkanı Tapınağı', who: 'İskeletleri iyileştiren kan halesi' } });
+}
+
+// necro teması: yıldız gelişmeleri ve hasar türü adları (eski kule/kale adlarının yerine)
+if (NECRO) {
+  const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
+  U.archer.name = 'Dikilitaşlar'; U.barracks.name = 'Mahzen'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
+  U.barracks.ranks[0].desc = '+%20 iskelet canı'; U.barracks.ranks[1].desc = '+%20 iskelet hasarı';
+  U.artillery.ranks[1].desc = '+%15 veba alanı';
+  U.spells.name = 'Büyüler';
+  U.spells.ranks[0].desc = '+%20 komutan gücü hasarı'; U.spells.ranks[1].desc = '+1 şapel iskeleti'; U.spells.ranks[2].desc = 'Güçler ve iskeletler %25 hızlı';
+  U.castle.name = 'Şapel';
+  Object.assign(WK_NAME, { arrow: 'Kemik', magic: 'Ruh', blast: 'Veba', melee: 'Kılıç' });
 }

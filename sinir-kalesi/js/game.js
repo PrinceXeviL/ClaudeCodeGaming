@@ -1265,7 +1265,14 @@ function setOverlay(o) {
   overlay = o; overlayT = time;
   press.key = null;
   if (G) { G.starFx = 0; if (o) setSel(null); }
-  if (o === 'win') {
+  if (o === 'win' && NECRO) {
+    // necro zaferi: konfeti yerine yukarı süzülen yeşil-mor ruh kıvılcımları ve dökülen kemik kırıntıları
+    for (let i = 0; i < 70; i++) emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.4, H + 40), vx: rand(-12, 12), vy: -rand(25, 70),
+      drag: 0.2, col: i % 3 ? '120,255,140' : '180,120,255', s0: rand(3, 6), s1: 0.5, life: rand(2.5, 4.5) });
+    const bone = ['#efe8d2', '#cbbf9c', '#a89c7c'];
+    for (let i = 0; i < 40; i++) emit(uiParts, { kind: 'chunk', x: rand(0, W), y: rand(-200, -10), vx: rand(-20, 20), vy: rand(30, 90),
+      g: 50, drag: 0.5, vr: rand(-6, 6), rot: rand(0, 6), col: bone[i % 3], s0: rand(4, 7), s1: 3, life: rand(3.5, 5) });
+  } else if (o === 'win') {
     const cols = ['#ffd34d', '#ff5a4a', '#4fc3ff', '#7be05a', '#ffffff', '#c77dff'];
     for (let i = 0; i < 110; i++) emit(uiParts, { kind: 'chunk', x: rand(0, W), y: rand(-260, -10), vx: rand(-30, 30), vy: rand(30, 110),
       g: 50, drag: 0.5, vr: rand(-9, 9), rot: rand(0, 6), col: cols[i % cols.length], s0: rand(5, 8), s1: 4, life: rand(3.5, 5.5) });
@@ -1333,7 +1340,7 @@ function waveBonusAndStart() {
   sfx('wave');
   if (G.wave === G.lv.waves.length && G.wave > 1) {
     // son dalga: kırmızı duyuru, ekran kenarı kızarır, kısa sarsıntı
-    G.banner = { title: 'SON DALGA!', sub: 'En kalabalık dalga geliyor. Kaleyi tut!', t: 0, dur: 3.6, red: true };
+    G.banner = { title: 'SON DALGA!', sub: NECRO ? 'En kalabalık dalga geliyor. Şapeli tut!' : 'En kalabalık dalga geliyor. Kaleyi tut!', t: 0, dur: 3.6, red: true };
     G.finalT = 0; G.hurt = Math.max(G.hurt, 0.5);
     shakeScreen(4, 0.5); setTimeout(() => { if (actx && !muted) waveSound(); }, 450);
   }
@@ -5693,6 +5700,11 @@ const STYLES = {
   wood:  ['#cf9f66', '#8c5f34', '#5a391b', '#2e1b0b'],
   dark:  ['#6a5644', '#2c2118', '#1a120b', '#0c0805'],
 };
+if (NECRO) Object.assign(STYLES, {
+  wood: ['#9a8cb0', '#54476c', '#2f2742', '#130f1e'], // kara taş
+  gold: ['#f4ecd2', '#cbb98a', '#8a7a52', '#3a3020'], // kemik
+  blue: ['#c9a6ff', '#7446c8', '#3e2380', '#1a0c40'], // ruh moru
+});
 
 function gameButton(key, x, y, w, h, label, fn, style = 'gold', o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
@@ -5761,6 +5773,7 @@ function roundBtn(key, x, y, r, icon, fn, o = {}) {
 
 // tahta çerçeveli parşömen panel
 function panel(x, y, w, h) {
+  if (NECRO) return necroPanel(x, y, w, h);
   roundRect(x + 4, y + 10, w, h, 24, 'rgba(0,0,0,0.45)');
   const fr = ctx.createLinearGradient(0, y, 0, y + h);
   fr.addColorStop(0, '#a87442'); fr.addColorStop(1, '#4e2f16');
@@ -5779,7 +5792,33 @@ function panel(x, y, w, h) {
   }
 }
 
+// necro paneli: kara taş çerçeve, mor ışıltılı kenar, eskimiş kemik rengi parşömen, yeşil lekeler, köşelerde kafatası
+function necroPanel(x, y, w, h) {
+  roundRect(x + 4, y + 10, w, h, 20, 'rgba(0,0,0,0.55)');
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, x + w / 2, y + h / 2, Math.max(w, h) * 0.62, '140,80,255', 0.16 + Math.sin(time * 1.5) * 0.03);
+  ctx.restore();
+  const fr = ctx.createLinearGradient(0, y, 0, y + h);
+  fr.addColorStop(0, '#5a4e6c'); fr.addColorStop(0.5, '#2e2640'); fr.addColorStop(1, '#16111f');
+  roundRect(x, y, w, h, 20, fr, '#07040c', 3);
+  roundRect(x + 4, y + 4, w - 8, h - 8, 16, null, 'rgba(190,150,255,0.35)', 1.5);
+  // taş derzleri
+  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1.2; ctx.beginPath();
+  for (let i = 1; i < 6; i++) { const xx = x + (w * i) / 6; ctx.moveTo(xx, y + 3); ctx.lineTo(xx, y + 13); ctx.moveTo(xx, y + h - 13); ctx.lineTo(xx, y + h - 3); }
+  ctx.stroke(); ctx.restore();
+  const inner = ctx.createLinearGradient(0, y + 14, 0, y + h - 14);
+  inner.addColorStop(0, '#efe8d2'); inner.addColorStop(1, '#c9bd98');
+  roundRect(x + 14, y + 14, w - 28, h - 28, 12, inner, 'rgba(30,20,40,0.7)', 2);
+  const vg = ctx.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * 0.22, x + w / 2, y + h / 2, Math.max(w, h) * 0.62);
+  vg.addColorStop(0, 'rgba(70,110,60,0)'); vg.addColorStop(1, 'rgba(70,90,50,0.32)');
+  roundRect(x + 14, y + 14, w - 28, h - 28, 12, vg);
+  for (const [cx, cy] of [[x + 14, y + 14], [x + w - 14, y + 14], [x + 14, y + h - 14], [x + w - 14, y + h - 14]]) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, cy, 16, '120,255,140', 0.25); ctx.restore();
+    drawSkullIcon(cx, cy, 10);
+  }
+}
 const RIBBON = { red: ['#ef5b4c', '#a92a1f', '#6a140b'], green: ['#76d050', '#3b8c26', '#1d5011'], blue: ['#5fb2ff', '#2f6fc8', '#173f7a'], gold: ['#ffd968', '#d6921f', '#7a4a0a'] };
+if (NECRO) Object.assign(RIBBON, { red: ['#c8443c', '#7c1616', '#3c0606'], green: ['#86e88e', '#2e8a4a', '#113e22'], blue: ['#a888ff', '#5a34b0', '#26125e'] });
 function ribbon(cx, cy, w, text, col = 'red', size = 26) {
   const c = RIBBON[col], h = size * 1.75, t = h * 0.7;
   for (const sd of [-1, 1]) {
@@ -6824,7 +6863,7 @@ function drawSettings() {
     ['Ses düzeyi', (VOL.find(v => v[0] === setting('vol')) || VOL[2])[1], () => setSetting('vol', cyc(VOL, setting('vol'))), 'wood'],
     ['Ekran sarsıntısı', setting('shake') ? 'AÇIK' : 'KAPALI', () => setSetting('shake', !setting('shake')), setting('shake') ? 'green' : 'dark'],
     ['Grafik kalitesi', (GFX.find(v => v[0] === setting('gfx')) || GFX[0])[1], () => setSetting('gfx', cyc(GFX, setting('gfx'))), 'wood'],
-    ['Kahraman', hero.name.toLocaleUpperCase('tr'), () => go(() => { screen = 'heroes'; }), 'blue'],
+    [NECRO ? 'Komutan' : 'Kahraman', hero.name.toLocaleUpperCase('tr'), () => go(() => { screen = 'heroes'; }), 'blue'],
     ['İlerlemeyi sıfırla', time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
       if (time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
       else resetArm = time;
@@ -6847,10 +6886,10 @@ function drawHeroes() {
   g.addColorStop(0, 'rgba(24,12,4,0.5)'); g.addColorStop(1, 'rgba(14,8,2,0.8)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, 'KAHRAMANLAR', 'blue', 26); ctx.restore();
+  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', 'blue', 26); ctx.restore();
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
   const tm = team();
-  txt('Savaşa bir kahraman götürürsün · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
+  txt(NECRO ? 'Savaşa bir komutan götürürsün · seçmek için karta dokun' : 'Savaşa bir kahraman götürürsün · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
   HERO_ORDER.forEach((id, i) => drawHeroCard(id, W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, 300, st - 0.1 - i * 0.08, tm));
   save.seenHeroes = save.seenHeroes || ['commander'];
   for (const id of HERO_ORDER) if (heroUnlocked(id) && !save.seenHeroes.includes(id)) { save.seenHeroes.push(id); persist(); }
@@ -7704,7 +7743,7 @@ function drawMap() {
   });
   // kahramanlar ve gelişmeler (sağ alt)
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id));
-  gameButton('heroes', W - 340, H - 32, 200, 42, 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 });
+  gameButton('heroes', W - 340, H - 32, 200, 42, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 });
   const freeStars = starsTotal() - starsSpent();
   gameButton('upgrades', W - 122, H - 32, 200, 42, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
   if (freeStars > 0) { const bx = W - 30, by = H - 52 + Math.sin(time * 5) * 2; circle(bx, by, 11, '#e8434b', '#fff', 1.5); txt(freeStars + '', bx, by + 1, 12, '#fff', 'center', '400', FONT_T); }
@@ -8153,21 +8192,35 @@ function drawPlay() {
   if (overlay) drawOverlay();
 }
 
-const TIPS = [
+const TIPS = NECRO ? [
+  'İpucu: Mahzen iskeletleri düşmanı yolda durdurur, dikilitaşlar arkadan vurur.',
+  'İpucu: Ölüleri kaldırmak için yerde ceset olmalı; cesetler 4 saniye bekler.',
+  'İpucu: Veba Kazanı\'nın gazı zırhı çürütür; ağır zırhlılara karşı iyidir.',
+  'İpucu: Korkuyla kaçan düşmanlar kulelerinin menzilinde daha uzun kalır.',
+  'İpucu: Kan Sunağı yanındaki kulelerin saldırı hızını artırır.',
+] : [
   'İpucu: Kışla askerleri düşmanı yolda durdurur, okçular da arkadan vurur.',
   'İpucu: Uçan yarasaları yalnızca okçu ve büyücü kuleleri vurabilir.',
   'İpucu: Kara şövalyenin zırhı kalın; büyücü kulesi zırhı deler.',
 ];
+// zafer ekranında bölüme göre Mortimer esprisi
+const WIN_QUIPS = [
+  'Mortimer çayına kaldığı yerden devam ediyor.',
+  'Ölüler bugün de fazla mesai yaptı.',
+  'İmparatorluk yine eli boş döndü. Biraz da eksik.',
+  'Solarian ordusu yeni gönüllüler arıyor. Acil.',
+  'Mortimer\'ı rahatsız etmeyin. Etmeyin işte.',
+];
 
 function drawOverlay() {
   const k = time - overlayT, fade = clamp(k / 0.25, 0, 1);
-  ctx.fillStyle = `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = NECRO ? `rgba(8,4,16,${0.7 * fade})` : `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(0, 0, W, H);
   const big = overlay === 'skills';
   const pw = big ? 600 : 470, ph = big ? 400 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
-  if (overlay === 'win') sunburst(cx, py + 110, 300, '255,220,120');
+  if (overlay === 'win') sunburst(cx, py + 110, 300, NECRO ? '140,255,150' : '255,220,120');
   panel(px, py, pw, ph);
   if (overlay === 'skills') {
     drawSkillsPanel(k, px, py, pw, ph, cx);
@@ -8203,25 +8256,26 @@ function drawOverlay() {
     txt(lt, cx + 12, py + 178, 21, '#5a3410', 'center', '400', FONT_T, false);
     const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60);
     txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 13, '#8a6238', 'center', '800', FONT_B, false);
-    const appear = k - 1.3;
+    if (NECRO) txt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + 228, 13, '#3e6a34', 'center', '700', FONT_B, false);
+    const appear = k - 1.3, by = NECRO ? 10 : 0; // necro: espri satırına yer aç
     if (G.idx + 1 < LEVELS.length) {
-      roundBtn('ov_retry', cx - 168, py + 262, 25, 'restart', () => go(() => startLevel(G.idx)), { appear });
-      txt('Tekrar', cx - 168, py + 302, 12, '#6a4420', 'center', '800', FONT_B, false);
-      roundBtn('ov_map', cx - 104, py + 262, 25, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
-      txt('Harita', cx - 104, py + 302, 12, '#6a4420', 'center', '800', FONT_B, false);
-      gameButton('ov_next', cx + 70, py + 262, 236, 56, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
+      roundBtn('ov_retry', cx - 168, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx)), { appear });
+      txt('Tekrar', cx - 168, py + 302 + by, 12, '#6a4420', 'center', '800', FONT_B, false);
+      roundBtn('ov_map', cx - 104, py + 262 + by, 25, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
+      txt('Harita', cx - 104, py + 302 + by, 12, '#6a4420', 'center', '800', FONT_B, false);
+      gameButton('ov_next', cx + 70, py + 262 + by, 236, 56, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
         { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 22, glow: '140,255,120' });
     } else {
-      txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
+      if (!NECRO) txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
       gameButton('ov_retry', cx - 100, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx)), 'wood', { icon: 'restart', appear });
       gameButton('ov_map', cx + 100, py + 278, 170, 50, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'green', { icon: 'map', appear: appear - 0.06, shine: true });
     }
   } else if (overlay === 'lose') {
-    ribbon(cx, py + 4, 280, 'KALE DÜŞTÜ', 'red', 28);
+    ribbon(cx, py + 4, 280, NECRO ? 'ŞAPEL DÜŞTÜ' : 'KALE DÜŞTÜ', 'red', 28);
     ctx.save(); ctx.translate(cx, py + 104); ctx.rotate(Math.sin(time * 2) * 0.05);
     drawIcon('skull', 0, 0, 64); ctx.restore();
     txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, '#5a3410', 'center', '400', FONT_T, false);
-    txt(TIPS[G.idx % TIPS.length], cx, py + 192, 13, '#8a6238', 'center', '700', FONT_B, false);
+    txt(TIPS[(G.idx + G.wave) % TIPS.length], cx, py + 192, 13, '#8a6238', 'center', '700', FONT_B, false);
     gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
     gameButton('ov_map', cx, py + 304, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
   }
