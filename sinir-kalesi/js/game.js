@@ -26,7 +26,7 @@ const spr = (name) => SPR[name] || null;
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
   .then(r => (r.ok ? r.json() : []))
-  .then(list => list.forEach(file => {
+  .then(list => list.sort((a, b) => (b.startsWith('nm_title') ? 1 : 0) - (a.startsWith('nm_title') ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
     const name = file.replace(/\.(png|svg|jpg|webp)$/, '');
     const im = new Image();
     im.onload = () => {
@@ -7415,7 +7415,93 @@ function coverImage(im, zoom = 1, ox = 0, oy = 0) {
   ctx.drawImage(im.width > w * 1.5 ? pickMip(ctx, im, w) : im, (W - w) / 2 + ox, (H - h) / 2 + oy, w, h);
 }
 
+// ----- Necromancer giriş ekranı: kemik rengi, mor konturlu, yeşil ışıklı başlık ve mezar taşı düğme -----
+function necroLogo(s, x, y, size) {
+  ctx.font = `${size}px ${FONT_T}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  const pulse = 0.55 + Math.sin(time * 2.2) * 0.15;
+  ctx.save(); ctx.shadowColor = `rgba(110,255,140,${pulse})`; ctx.shadowBlur = size * 0.5;
+  ctx.strokeStyle = '#0c0614'; ctx.lineWidth = size * 0.26; ctx.strokeText(s, x, y); ctx.restore();
+  ctx.strokeStyle = '#4a1f6e'; ctx.lineWidth = size * 0.12; ctx.strokeText(s, x, y);
+  const g = ctx.createLinearGradient(0, y - size / 2, 0, y + size / 2);
+  g.addColorStop(0, '#fbf6e4'); g.addColorStop(0.5, '#ddd2b0'); g.addColorStop(0.62, '#b4a682'); g.addColorStop(1, '#7e7058');
+  ctx.fillStyle = g; ctx.fillText(s, x, y);
+  // harflerin içinden süzülen yeşil ruh ışığı
+  const w = ctx.measureText(s).width, ph = (time * 0.25) % 1.6 - 0.3;
+  if (ph > -0.2 && ph < 1.2) {
+    const sx = x - w / 2 + ph * w, sg = ctx.createLinearGradient(sx - 60, 0, sx + 60, 0);
+    sg.addColorStop(0, 'rgba(140,255,160,0)'); sg.addColorStop(0.5, 'rgba(160,255,170,0.55)'); sg.addColorStop(1, 'rgba(140,255,160,0)');
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = sg; ctx.fillText(s, x, y); ctx.restore();
+  }
+}
+// mezar taşı biçimli OYNA düğmesi: koyu taş, yeşil ruh ışığıyla parlayan yazı ve kenar, iki yanda kafatası
+function necroPlayButton(key, x, y, w, h, label, fn, appear) {
+  const a = appear == null ? 1 : easeOutBack(clamp(appear / 0.35, 0, 1));
+  if (a <= 0.01) return;
+  const down = press.key === key, sc = pressScale(key) * a * (1 + Math.sin(time * 2.6) * 0.02), dy = down ? 3 : 0;
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 6, w * 0.7, '90,255,130', 0.22 + Math.sin(time * 2.6) * 0.08); ctx.restore();
+  const shape = (o) => { ctx.beginPath(); ctx.moveTo(-w / 2 + o, h / 2 + 6 - o); ctx.lineTo(-w / 2 + o, -h / 2 + 14); ctx.quadraticCurveTo(-w / 2 + o, -h / 2 - 8 + o, -w / 2 + 40, -h / 2 - 10 + o);
+    ctx.lineTo(w / 2 - 40, -h / 2 - 10 + o); ctx.quadraticCurveTo(w / 2 - o, -h / 2 - 8 + o, w / 2 - o, -h / 2 + 14); ctx.lineTo(w / 2 - o, h / 2 + 6 - o); ctx.closePath(); };
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.save(); ctx.translate(3, 8); shape(0); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(0, dy);
+  shape(0); ctx.fillStyle = '#0c0812'; ctx.fill();
+  const g = ctx.createLinearGradient(0, -h / 2, 0, h / 2); g.addColorStop(0, '#5a5466'); g.addColorStop(0.5, '#3a3444'); g.addColorStop(1, '#221e2a');
+  shape(4); ctx.fillStyle = g; ctx.fill();
+  ctx.strokeStyle = `rgba(120,255,150,${0.55 + Math.sin(time * 3) * 0.2})`; ctx.lineWidth = 2; shape(7); ctx.stroke();
+  // taş çatlakları
+  ctx.strokeStyle = 'rgba(10,6,14,0.6)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-w / 2 + 22, -h / 2 + 4); ctx.lineTo(-w / 2 + 34, -h / 2 + 18); ctx.lineTo(-w / 2 + 28, -h / 2 + 30);
+  ctx.moveTo(w / 2 - 26, h / 2 - 2); ctx.lineTo(w / 2 - 38, h / 2 - 16); ctx.stroke();
+  for (const sx of [-1, 1]) drawSkullIcon(sx * (w / 2 - 26), 2, 12);
+  ctx.font = `${Math.round(h * 0.5)}px ${FONT_T}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.save(); ctx.shadowColor = 'rgba(110,255,140,0.9)'; ctx.shadowBlur = 16; ctx.fillStyle = '#d8ffd8'; ctx.fillText(label, 0, 3); ctx.restore();
+  ctx.fillStyle = '#efffe8'; ctx.fillText(label, 0, 3);
+  ctx.restore(); ctx.restore();
+  if (fn) buttons.push({ key, x: x - w / 2, y: y - h / 2 - 10, w, h: h + 16, fn });
+}
+function drawSkullIcon(x, y, r) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = '#e8e0c8'; ctx.strokeStyle = '#140c18'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(0, -r * 0.15, r * 0.75, Math.PI * 0.9, Math.PI * 2.1); ctx.lineTo(r * 0.45, r * 0.55); ctx.lineTo(-r * 0.45, r * 0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#140c18'; ctx.beginPath(); ctx.ellipse(-r * 0.3, -r * 0.1, r * 0.2, r * 0.24, 0, 0, Math.PI * 2); ctx.ellipse(r * 0.3, -r * 0.1, r * 0.2, r * 0.24, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); glow(ctx, r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); ctx.restore();
+  ctx.restore();
+}
+function drawNecroTitle(st) {
+  const bg = spr('nm_title');
+  if (bg) coverImage(bg, 1.06 + Math.sin(time * 0.1) * 0.02, Math.sin(time * 0.07) * 8, Math.cos(time * 0.09) * 4);
+  else { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0c0614'); g.addColorStop(1, '#141a12'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  // sürüklenen yeşil sis katmanları
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 7; i++) {
+    const x = ((time * (8 + i * 3) + i * 170) % (W + 400)) - 200, y = H * (0.62 + (i % 3) * 0.12) + Math.sin(time * 0.5 + i) * 10;
+    glow(ctx, x, y, 140 + (i % 3) * 40, '90,200,120', 0.07);
+  }
+  ctx.restore();
+  // ay ışığı nabzı ve kenar karartması
+  let g = ctx.createLinearGradient(0, 0, 0, 230); g.addColorStop(0, 'rgba(8,4,14,0.75)'); g.addColorStop(1, 'rgba(8,4,14,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, 230);
+  g = ctx.createLinearGradient(0, H - 170, 0, H); g.addColorStop(0, 'rgba(6,4,10,0)'); g.addColorStop(1, 'rgba(6,4,10,0.75)');
+  ctx.fillStyle = g; ctx.fillRect(0, H - 170, W, 170);
+  // başlık
+  const e = easeOutBack(clamp(st / 0.7, 0, 1));
+  ctx.save(); ctx.globalAlpha = clamp(st / 0.25, 0, 1);
+  ctx.translate(W / 2, 92); ctx.scale(e, e); ctx.rotate(Math.sin(time * 1.1) * 0.008);
+  necroLogo("DON'T MESS WITH", 0, -34, 40); necroLogo('THE NECROMANCER', 0, 22, 64);
+  ctx.restore();
+  necroPlayButton('play', W / 2, 462, 230, 58, 'OYNA', () => go(() => { screen = 'map'; }), st - 0.55);
+  // yükselen yeşil ruh kıvılcımları ve uçuşan küller
+  if (Math.random() < 0.45) emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.55, H), vx: rand(-6, 6), vy: rand(-26, -10),
+    col: Math.random() < 0.7 ? '120,255,140' : '190,140,255', s0: rand(1.5, 3.4), s1: 0.4, life: rand(3, 5), a: 0.9, fadeIn: 0.4 });
+}
 function drawTitle() {
+  if (NECRO) {
+    const st = time - screenT;
+    drawNecroTitle(st);
+    roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7 });
+    roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75 });
+    txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
+    return;
+  }
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (bg) coverImage(bg, 1.07 + Math.sin(time * 0.1) * 0.03, Math.sin(time * 0.07) * 10, Math.cos(time * 0.09) * 5);
   else {
