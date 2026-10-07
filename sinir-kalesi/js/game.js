@@ -2089,7 +2089,7 @@ function updateArchers(t, dt, L) {
   towerSnipe(t, dt, L, ts);
 }
 // Necromancer kulelerinde merminin çıktığı nokta (görsel oranı): dikilitaş tepesi, fener kafesi, kazan ağzı
-const TOWER_EYE = { archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
+const TOWER_EYE = { altar: [[0.5, 0.2], [0.4, 0.19], [0.5, 0.22]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
 function towerEye(t, ts) {
   ts = ts || towerSprite(t);
   const E = (TOWER_EYE[t.type] || [])[t.lvl];
@@ -2140,6 +2140,7 @@ function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
   if (t.type === 'barracks') return;
+  if (t.type === 'altar') { updateAltar(t, dt); return; }
   const L = effLevel(t);
   if (t.type === 'artillery') {
     // top hedefe doğru döner (zemin düzleminde açı; dikeyde perspektif sıkışması telafi edilir)
@@ -3715,7 +3716,7 @@ function drawCannon(t, ts) {
 const TOWER_ICONS = {};
 function towerIcon(type, lvl) {
   const name = `tower_${type}_${lvl}`, im = spr(name);
-  if (!im || type !== 'artillery') return im;
+  if (!im || type !== 'artillery' || NECRO) return im;
   if (TOWER_ICONS[name]) return TOWER_ICONS[name];
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
   const g = c.getContext('2d');
@@ -4312,6 +4313,20 @@ function drawNecroTowerFx(t, ts) {
     for (let i = 0; i < 2 + t.lvl; i++) {
       const a = time * 1.4 + i * 2.1 + t.x, x = o.x + Math.cos(a) * (10 + 3 * t.lvl) * s, y = o.y + Math.sin(a * 1.3) * 6 * s - ((time * 12 + i * 9) % 14) * s * 0.4;
       glow(ctx, x, y, 3 * s, i % 2 ? '170,255,220' : '190,150,255', 0.55);
+    }
+  } else if (t.type === 'altar') {
+    // kan sunağı: nabız gibi atan kızıl ışık; güçlendirdiği kulelere akan kan bağı
+    const beat = Math.pow(Math.max(0, Math.sin(time * 3.2 + t.x)), 6), L = t.def.levels[t.lvl];
+    ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, o.x, o.y, (12 + 4 * t.lvl + 8 * beat) * s, '255,40,50', 0.35 + 0.35 * beat);
+    for (const u of G.towers) {
+      if (u === t || u.type === 'altar' || u.type === 'barracks' || dist(u.x, u.y, t.x, t.y) > L.range) continue;
+      const uts = towerSprite(u), ux = u.x, uy = uts ? uts.bottom - uts.h * 0.5 : u.y - 30;
+      ctx.strokeStyle = `rgba(255,50,60,${0.35 + 0.25 * beat})`; ctx.lineWidth = 2.4 * s; ctx.setLineDash([3 * s, 5 * s]); ctx.lineDashOffset = -time * 20;
+      ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.quadraticCurveTo((o.x + ux) / 2, Math.min(o.y, uy) - 20 * s, ux, uy); ctx.stroke(); ctx.setLineDash([]);
+      const k = (time * 0.7 + u.x * 0.01) % 1, qx = (1 - k) * (1 - k) * o.x + 2 * k * (1 - k) * (o.x + ux) / 2 + k * k * ux, qy = (1 - k) * (1 - k) * o.y + 2 * k * (1 - k) * (Math.min(o.y, uy) - 20 * s) + k * k * uy;
+      glow(ctx, qx, qy, 5 * s, '255,60,70', 0.9);
+      glow(ctx, ux, u.y, 18 * s, '255,40,50', 0.25 + 0.2 * beat);
     }
   } else if (t.type === 'artillery') {
     // kazan: kaynayan kabarcıklar, atışta yükselen bulamaç, üstte yeşil buhar ışığı
@@ -5894,9 +5909,11 @@ function logo(s, x, y, size) {
 // ---------- menüler (halka menü) ----------
 // Arsa ya da kule seçilince öğeler merkezden yaylanarak sırayla açılır, seçim kalkınca içeri toplanıp kapanır.
 const MENU_R = 25;
+function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; return u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
-  const offs = [[-48, -44], [48, -44], [-48, 44], [48, 44]];
-  return TOWER_ORDER.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0], y: pl.y - 16 + offs[i][1], cost: TOWERS[type].levels[0].cost }));
+  const types = TOWER_ORDER.filter(towerUnlocked);
+  const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
+  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0], y: pl.y - 16 + offs[i][1], cost: TOWERS[type].levels[0].cost }));
 }
 function towerMenuItems(t) {
   const items = [];
@@ -6554,6 +6571,7 @@ function infoText() {
   return null;
 }
 function towerStats(type, L) {
+  if (type === 'altar') return `Menzil ${L.range} · Kuleler +%${Math.round(L.buff * 100)} atış hızı`;
   if (type === 'barracks') return `3 asker · Can ${L.hp} · Hasar ${L.dmg[0]}-${L.dmg[1]} · Zırh %${Math.round(L.armor * 100)}`;
   let s = `Hasar ${L.dmg[0]}-${L.dmg[1]} · Menzil ${L.range} · Atış ${L.rate}sn`;
   if (L.splash) s += ' · Alan';
@@ -7282,8 +7300,28 @@ function diff() { return GAME_DIFF; } // zorluk sabit
 // gelişmelerle güçlenmiş kule seviyesi değerleri
 // uzmanlık seçen kule +%20 hasar (kışlada asker canı ve hasarı) alır: tek yol seçmenin karşılığı
 const SPEC_BONUS = 1.2;
+// Kan Sunağı: menzilindeki (kule merkezleri arası) en güçlü sunağın etkisi
+function altarBuff(t) {
+  let buff = 0, dmg = 0;
+  if (!G || !TOWERS.altar) return null;
+  for (const a of G.towers) {
+    if (a.type !== 'altar' || a === t || a.disabledT > 0) continue;
+    const L = a.def.levels[a.lvl];
+    if (dist(a.x, a.y, t.x, t.y) > L.range) continue;
+    const ri = abRank(a, 'rite');
+    buff = Math.max(buff, L.buff); dmg = Math.max(dmg, ri ? ri.dmg : 0);
+  }
+  return buff || dmg ? { buff, dmg } : null;
+}
+function updateAltar(t, dt) {
+  const L = t.def.levels[t.lvl], w = abRank(t, 'ward');
+  if (w) for (const s of G.soldiers) if (!s.dead && !s.hero && s.hp < s.maxHp && dist(s.x, s.y, t.x, t.y) <= L.range) s.hp = Math.min(s.maxHp, s.hp + w.hps * dt);
+}
 function effLevel(t) {
   let L = t.def.levels[t.lvl];
+  if (t.type === 'altar') return L;
+  const ab = t.type !== 'barracks' && altarBuff(t);
+  if (ab) L = Object.assign({}, L, { rate: L.rate / (1 + ab.buff), dmg: [L.dmg[0] * (1 + ab.dmg), L.dmg[1] * (1 + ab.dmg)] });
   const sn = t.type === 'archer' && abRank(t, 'snipe'); // keskin nişancı menzili de artırır
   if (sn) L = Object.assign({}, L, { range: L.range + sn.range });
   if (t.spec && t.type !== 'barracks') L = Object.assign({}, L, { dmg: [L.dmg[0] * SPEC_BONUS, L.dmg[1] * SPEC_BONUS] });

@@ -1027,3 +1027,24 @@ if (NECRO) {
   TOWERS.mage.levels[1].perk = 'Daha hızlı yükleme · ruh soğuğu: vurduğunu 1 sn %30 yavaşlatır';
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
+
+// ----- Kan Sunağı (yeni kule, 3. bölümde açılır): saldırmaz, menzilindeki kuleleri hızlandırır -----
+if (NECRO) {
+  TOWERS.altar = {
+    name: 'Kan Sunağı', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2,
+    desc: 'Saldırmaz: çevresindeki kulelerin atış hızını artırır',
+    levels: [
+      { cost: 90,  range: 110, buff: 0.2, title: 'Kan Sunağı', perk: 'Menzildeki kuleler %20 daha hızlı atar' },
+      { cost: 130, range: 122, buff: 0.3, title: 'Kan Kadehi', perk: 'Menzildeki kuleler %30 daha hızlı atar · +menzil' },
+      { cost: 180, range: 135, buff: 0.4, title: 'Kanlı Kalp Tapınağı', perk: 'Menzildeki kuleler %40 daha hızlı atar · geniş menzil' },
+    ],
+    abilities: [
+      { id: 'rite', name: 'Kan Ayini', desc: (r) => `Güçlendirdiği kulelere +%${Math.round(r.dmg * 100)} hasar`,
+        ranks: [{ cost: 150, dmg: 0.1 }, { cost: 200, dmg: 0.18 }, { cost: 260, dmg: 0.25 }] },
+      { id: 'ward', name: 'Kan Kalkanı', desc: (r) => `Menzildeki iskeletler saniyede ${r.hps} can yeniler`,
+        ranks: [{ cost: 140, hps: 4 }, { cost: 190, hps: 8 }, { cost: 240, hps: 13 }] },
+    ],
+  };
+  TOWER_ORDER.push('altar');
+  Object.assign(SPEC, { rite: { title: 'Kan Ayini Tapınağı', who: 'Kulelere ek hasar veren kan ritüeli' }, ward: { title: 'Kan Kalkanı Tapınağı', who: 'İskeletleri iyileştiren kan halesi' } });
+}
