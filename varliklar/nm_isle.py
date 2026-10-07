@@ -20,9 +20,9 @@ TOWER_BASE = 0.13  # kule: arsa merkezinin görselin altından uzaklığı (geni
 SHEETS = [
     ('nm_kule.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),
     ('nm_mahzen.jpg', ['tower_barracks_1', 'tower_barracks_2', 'tower_barracks_3'], 'tower'),
-    ('nm_okcu.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),
-    ('nm_ruh.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),
-    ('nm_mancinik.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_3'], 'tower'),
+    ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
+    ('nm_fener.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # Ruh Feneri
+    ('nm_kazan.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_3'], 'tower'),  # Veba Kazanı
     ('nm_iskeletler.jpg', ['unit_skel_1', 'unit_skel_2', 'unit_skel_3', 'unit_skel_4', 'unit_skel_5'], 'unit'),
     ('nm_dusman_1.jpg', ['enemy_legion', 'enemy_solarcher', 'enemy_gladiator', 'enemy_assassin'], 'unit'),
     ('nm_dusman_2.jpg', ['enemy_heavy', 'enemy_cavalry', 'enemy_priest', 'enemy_gloriosus'], 'unit'),

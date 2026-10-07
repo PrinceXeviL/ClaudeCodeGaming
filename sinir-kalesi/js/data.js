@@ -812,16 +812,16 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   EPISODES.splice(0, EPISODES.length, { name: 'Lanetli Sınır', bg: 'nm_title', nodes: [[150, 450], [300, 420], [450, 450], [600, 410], [760, 360]] });
 }
 // kuleler: Mortimer'ın yapıları
-Object.assign(TOWERS.archer, { name: 'Kemik Okçular', desc: 'İskelet okçular hızlı atar, havayı da vurur' });
+Object.assign(TOWERS.archer, { name: 'Kemik Dikilitaşı', desc: 'Hızla kemik kıymığı fırlatır, havayı da vurur' });
 Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'İskelet savaşçılar yolu keser' });
-Object.assign(TOWERS.mage, { name: 'Ruh Kulesi', desc: 'Ruh ışını atar, zırhı deler' });
-Object.assign(TOWERS.artillery, { name: 'Kemik Mancınığı', desc: 'Kafatası fırlatır: kısa menzil, ağır alan hasarı' });
+Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır' });
+Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: alan hasarı, zehirli gaz, zırhı çürütür' });
 TOWERS.barracks.levels[0].perk = 'Tencere miğferli 3 iskelet acemi yolu keser';
 TOWERS.barracks.levels[1].perk = 'İskelet muhafızlar: zincir zırh, kalkan, uzun kılıç';
 TOWERS.barracks.levels[2].perk = 'Kemik şövalyeler: kara zırh · vuruşlar %15 can çalar';
-TOWERS.artillery.levels[0].perk = 'Kafatası mermisi, geniş alan hasarı';
-TOWERS.artillery.levels[1].perk = 'Yeşil alevli kafatası, daha geniş patlama';
-TOWERS.artillery.levels[2].perk = 'Veba kazanı: %30 şansla 0.6 sn sersemletir';
+TOWERS.artillery.levels[0].perk = 'Veba bulamacı: alan hasarı, yerde zehirli gaz, zırh yarıya iner';
+TOWERS.artillery.levels[1].perk = 'Daha ağır veba, daha geniş gaz bulutu';
+TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir';
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
 const NAMES = { poison: 'Veba Okları', snipe: 'Hayalet Nişancı', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Veba Kazanı', double: 'Kemik Yağmuru' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
@@ -1010,20 +1010,20 @@ Object.assign(ENEMY_WK, {
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
-  Object.assign(TOWER_TITLES, { archer: ['Kemik Okçular', 'Kemik Nişancılar', 'Kafatası Kalesi'], barracks: ['Mahzen', 'Kemik Mahzeni', 'Kara Türbe'],
-    mage: ['Ruh Taşı', 'Ruh Kulesi', 'Ruhlar Sarayı'], artillery: ['Kemik Mancınığı', 'Kafatası Mancınığı', 'Veba Mancınığı'] });
+  Object.assign(TOWER_TITLES, { archer: ['Kemik Dikilitaşı', 'Dikenli Dikilitaş', 'Omurga Dikilitaşı'], barracks: ['Mahzen', 'Kemik Mahzeni', 'Kara Türbe'],
+    mage: ['Ruh Feneri', 'Ruh Kafesi', 'Ruhlar Feneri'], artillery: ['Veba Kazanı', 'Kemik Kazanı', 'Veba Sunağı'] });
   for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
   Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
   Object.assign(SPEC.blade, { title: 'Ölüm Şövalyeleri', who: 'Yeşil alevli çift kemik kılıç' });
-  Object.assign(SPEC.poison, { title: 'Veba Okçuları', who: 'Yeşil veba oklu iskeletler' });
-  Object.assign(SPEC.snipe, { title: 'Hayalet Nişancılar', who: 'Uzun menzilli hayalet oklar' });
-  Object.assign(SPEC.frost, { title: 'Lanet Kulesi', who: 'Düşmanları yavaşlatan lanet' });
-  Object.assign(SPEC.blast, { title: 'Ruh Fırtınası', who: 'Dönen kafatası halkası' });
-  Object.assign(SPEC.napalm, { title: 'Veba Kazanı', who: 'Kaynayan yeşil veba' });
-  Object.assign(SPEC.double, { title: 'Kemik Yağmuru', who: 'Çifte kafatası atışı' });
-  TOWERS.archer.levels[0].perk = 'İki iskelet okçu kemik ok atar · uçanları da vurur';
-  TOWERS.archer.levels[1].perk = 'Daha hızlı atış · delici kemik ok: %25 şansla zırhı yok sayar · +menzil';
-  TOWERS.archer.levels[2].perk = '3 iskelet okçu, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil';
+  Object.assign(SPEC.poison, { title: 'Veba Kemiği', who: 'Zehirli yeşil kıymıklar' });
+  Object.assign(SPEC.snipe, { title: 'Kemik Mızrak', who: 'Uzun menzilli dev kemik mızrak' });
+  Object.assign(SPEC.frost, { title: 'Lanet Feneri', who: 'Düşmanları donduran soğuk lanet' });
+  Object.assign(SPEC.blast, { title: 'Ruh Fırtınası', who: 'Kalabalığa patlayan ruh dalgası' });
+  Object.assign(SPEC.napalm, { title: 'Çürüme Bulutu', who: 'Daha büyük, uzun süren gaz' });
+  Object.assign(SPEC.double, { title: 'Çifte Kazan', who: 'Her atışta ikinci veba' });
+  TOWERS.archer.levels[0].perk = 'Hızla kemik kıymığı fırlatır · uçanları da vurur';
+  TOWERS.archer.levels[1].perk = 'Daha hızlı · delici kıymık: %25 şansla zırhı yok sayar · +menzil';
+  TOWERS.archer.levels[2].perk = 'Çok hızlı kıymık yağmuru · %15 kritik vuruş · çok daha uzun menzil';
   TOWERS.mage.levels[1].perk = 'Daha hızlı yükleme · ruh soğuğu: vurduğunu 1 sn %30 yavaşlatır';
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
