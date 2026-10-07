@@ -832,7 +832,7 @@ HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep');
 Object.assign(HERO_ULT.commander, { name: 'Kan Kılıçları' });
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
-Object.assign(CASTLE, { spots: [[0.28, 0.57], [0.84, 0.6], [0.4, 0.4]] });
+Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
 // Mortimer'ın büyüleri (sol altta, bekleme süreli). raise: hedefsiz, süre boyunca ölen düşmanlar iskelet minyon olur.
 // fear: hedefli alan, düşmanlar kavgayı bırakıp yolda geri kaçar (bosslar yarı süre).
 const NECRO_SPELLS = {

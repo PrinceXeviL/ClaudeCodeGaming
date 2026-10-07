@@ -3149,16 +3149,21 @@ function raiseMinion(e, delay = 0) {
   G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '140,255,140', t: 0, dur: 0.7 });
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: '140,255,120', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
-// Mortimer'ın balkondaki ayak noktası (kule görselinin balkonu)
-// Mortimer kale görselinde balkonun ön kenarına basar (görsel oranı) ve kale genişliğine göre büyük durur
-const MORT_AT = [0.69, 0.47], MORT_H = 62;
-// balkon korkuluğu (görsel oranı x0, y0, x1, y1): Mortimer'dan sonra yeniden çizilir, ayakları korkuluğun arkasında kalır
-const MORT_RAIL = [0.5, 0.458, 0.92, 0.56];
+// Mortimer şapelin ön balkonunda durur. Hasar evresine göre (castle_1..3): at = ayak noktası (görsel oranı),
+// rail = korkuluk dikdörtgeni (x0, y0, x1, y1; Mortimer'dan sonra yeniden çizilir, ayakları korkuluğun arkasında kalır;
+// 3. evrede korkuluk kırık). MORT_PX: Mortimer'ın boyu, kale görselinin pikseliyle (balkon kapısından biraz uzun).
+const MORT_STAGE = [null,
+  { at: [0.454, 0.558], rail: [0.29, 0.548, 0.625, 0.6] },
+  { at: [0.454, 0.562], rail: [0.29, 0.551, 0.625, 0.6] },
+  { at: [0.515, 0.558], rail: null }];
+const MORT_PX = 125;
+function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r > 0.3 ? 2 : 3; }
+function castleStageSprite() { return spr('castle_' + castleStage()) || spr('castle_1') || spr('tower_barracks_3'); }
 function mortimerPoint() {
-  const c = G.castle, im = castleSprite();
-  if (!im) return { x: c.x, y: c.y - 60 };
-  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width;
-  return { x: cp.x - cp.w / 2 + MORT_AT[0] * cp.w, y: cp.y - h + MORT_AT[1] * h };
+  const c = G.castle, im = castleStageSprite();
+  if (!im) return { x: c.x, y: c.y - 60, h: 30 };
+  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, S = MORT_STAGE[castleStage()] || MORT_STAGE[1];
+  return { x: cp.x - cp.w / 2 + S.at[0] * cp.w, y: cp.y - h + S.at[1] * h, h: MORT_PX * cp.w / im.width };
 }
 // büyü düğmesi simgeleri: diriltme = yerden kalkan iskelet, korku = çığlık atan hayalet
 function drawNecroGlyph(id, r) {
@@ -3189,7 +3194,7 @@ function drawNecroGlyph(id, r) {
 function drawMortimer() {
   const im = spr('mortimer');
   if (!im) return;
-  const m = mortimerPoint(), hgt = MORT_H, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
+  const m = mortimerPoint(), hgt = m.h, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
   const bob = Math.sin(time * 1.6) * 0.5, face = 1; // önden görünüş: balkondan ekrana/aşağı bakar, aynalanmaz
   // arkasında mor-yeşil büyü halesi: kulenin üstünde belirgin dursun
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -6593,15 +6598,14 @@ function towerStats(type, L) {
 // Eski yedek görsel (kışla) ise kale noktasına ortalanır.
 function castlePlace(x, y, im) {
   if (im === spr('tower_barracks_3')) return { x, y, w: 118 * BUILD_K };
-  if (NECRO) return { x: x - 43, y: y + 6, w: 96 };
+  if (NECRO) return { x: Math.min(x + 4, 960 - 70), y: y + 30, w: 135 }; // şapel: kapı ortada, kapı eşiği yolun ucunda; ekran kenarına taşmaz
   return { x: x - 15 * BUILD_K, y: y + 10, w: 124 * BUILD_K };
 }
 
 // Kale: Gemini sprite'ı (castle_1..3, hasar evresine göre) yoksa kışlanın en büyük hali yedek olarak kullanılır.
 function drawCastle() {
-  const c = G.castle, ratio = G.lives / G.maxLives;
-  const stage = ratio > 0.6 ? 1 : ratio > 0.3 ? 2 : 3;
-  const im = spr('castle_' + stage) || spr('castle_1') || spr('tower_barracks_3');
+  const c = G.castle, ratio = G.lives / G.maxLives, stage = castleStage();
+  const im = castleStageSprite();
   const sh = c.shake > 0 ? Math.sin(c.shake * 70) * c.shake * 8 : 0;
   if (im) {
     const cp = castlePlace(c.x, c.y, im);
@@ -6612,13 +6616,15 @@ function drawCastle() {
     drawCastleArchers();
     if (NECRO) {
       drawMortimer();
-      const h = cp.w * im.height / im.width, R = MORT_RAIL, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
-      ctx.save(); ctx.beginPath(); ctx.rect(x0 + R[0] * cp.w, y0 + R[1] * h, (R[2] - R[0]) * cp.w, (R[3] - R[1]) * h); ctx.clip();
-      ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
+      const h = cp.w * im.height / im.width, R = (MORT_STAGE[stage] || {}).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
+      if (R) {
+        ctx.save(); ctx.beginPath(); ctx.rect(x0 + R[0] * cp.w, y0 + R[1] * h, (R[2] - R[0]) * cp.w, (R[3] - R[1]) * h); ctx.clip();
+        ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
+      }
     }
     if (G.sel && G.sel.kind === 'castle') {
       ctx.save(); ctx.strokeStyle = `rgba(255,230,160,${0.9 * clamp((time - G.menuT) / 0.25, 0, 1)})`; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.ellipse(c.x - 12, c.y + 4, 56 + Math.sin(time * 6) * 1.5, 22, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      ctx.beginPath(); ctx.ellipse(c.x - (NECRO ? -4 : 12), c.y + (NECRO ? 14 : 4), (NECRO ? 72 : 56) + Math.sin(time * 6) * 1.5, NECRO ? 26 : 22, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
     // kale seviyesi: can barının yanında küçük yıldızlar
     for (let i = 0; i <= c.lvl; i++) fancyStar(c.x + 46 + i * 9, c.y + 22, 4.5, true);

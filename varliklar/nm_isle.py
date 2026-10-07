@@ -18,7 +18,7 @@ TOWER_BASE = 0.13  # kule: arsa merkezinin görselin altından uzaklığı (geni
 
 # sayfa, adlar (sıralı), tür, ek
 SHEETS = [
-    ('nm_kule.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),
+    ('nm_sapel.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),  # Mortimer'ın kara şapeli, boş balkon (eski kule: nm_kule.jpg)
     ('nm_mahzen.jpg', ['tower_barracks_1', 'tower_barracks_2', 'tower_barracks_3'], 'tower'),
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
     ('nm_fener.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # Ruh Feneri
@@ -35,12 +35,16 @@ SHEETS = [
                       'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_shroom', 'nm_bush',
                       'nm_rock_1', 'nm_rock_2', 'nm_pond', 'nm_fence', 'nm_crow'], 'decor'),
 ]
+# yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
+SMOKE_FIX = {'castle_2', 'castle_3'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
 # komşu nesneden taşan parçalar: kaynak sayfada silinecek dikdörtgenler (x0, y0, x1, y1)
 ERASE = {
     'enemy_priest': [(0, 0, 1070, 1116), (1330, 0, 2000, 592), (1475, 0, 2000, 1116)],
     'enemy_gloriosus': [(0, 0, 1330, 1116), (1330, 596, 1478, 745)],
     'hero_vladrik': [(522, 230, 800, 600)],
+    'castle_2': [(1290, 0, 1420, 300)],  # sağ kuleden yukarı savrulan duman
+    'castle_3': [(1150, 0, 1430, 860), (1150, 860, 1340, 1116)],  # soldaki 2. evreden taşan kule/haç/duman
     'mortimer': [(0, 760, 400, 1116), (800, 700, 1000, 1116)],  # eteğin iki yanına savrulan duman (görseli genişletiyor)
 }
 
@@ -191,7 +195,18 @@ def main():
             if name in ERASE:
                 src = rgba.copy()
                 for x0, y0, x1, y1 in ERASE[name]: src[y0:y1, x0:x1, 3] = 0
-            im = Image.fromarray(crop(src, o, big))
+            c = crop(src, o, big)
+            if name in SMOKE_FIX:
+                rgb = c[..., :3].astype(np.float32); r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+                fire = (r > g) & (r > b + 40)
+                pur = (r + b) / 2 - g  # magentaya karışmış duman: kırmızı+mavi yeşilden belirgin fazla
+                m = ((c[..., 3] < 245) | (pur > 30)) & ~fire
+                lum = 0.3 * r + 0.55 * g + 0.15 * b
+                gray = np.where(pur > 30, g * 1.15, lum)
+                for ch in range(3): rgb[..., ch] = np.where(m, gray * (1.0, 0.97, 0.95)[ch], rgb[..., ch])
+                al = c[..., 3].astype(np.float32) * np.where(pur > 30, 1 - np.clip((pur - 30) / 110, 0, 0.85), 1)
+                c = np.dstack([rgb.clip(0, 255).astype(np.uint8), al.astype(np.uint8)])
+            im = Image.fromarray(c)
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if kind == 'unit' and im.height > UNIT_H * 1.05:
                 k = UNIT_H / im.height
