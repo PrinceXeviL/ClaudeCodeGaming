@@ -29,7 +29,7 @@ SHEETS = [
     ('nm_dusman_2.jpg', ['enemy_heavy', 'enemy_cavalry', 'enemy_priest', 'enemy_gloriosus'], 'unit'),
     ('nm_kusatma.jpg', ['enemy_ram', 'enemy_catapult'], 'unit'),
     ('nm_komutanlar.jpg', ['hero_vladrik', None, None, None], 'unit'),  # eski Mortimer (4.) artık kullanılmıyor
-    ('nm_mortimer.jpg', [None, 'mortimer'], 'unit'),  # azrail Mortimer: sola bakan 3/4 görünüş
+    ('nm_mortimer.jpg', ['mortimer', None], 'unit'),  # azrail Mortimer: önden görünüş (balkondan ekrana/aşağı bakar)
     ('nm_banshee.jpg', ['hero_wren'], 'unit'),
     ('nm_dekor.jpg', ['nm_tree_1', 'nm_tree_2', 'nm_tree_3', 'nm_tree_4',
                       'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_shroom', 'nm_bush',
@@ -41,7 +41,7 @@ ERASE = {
     'enemy_priest': [(0, 0, 1070, 1116), (1330, 0, 2000, 592), (1475, 0, 2000, 1116)],
     'enemy_gloriosus': [(0, 0, 1330, 1116), (1330, 596, 1478, 745)],
     'hero_vladrik': [(522, 230, 800, 600)],
-    'mortimer': [(1720, 680, 2000, 1116)],  # sağa savrulan duman kuyruğu (görseli genişletiyor)
+    'mortimer': [(0, 760, 400, 1116), (800, 700, 1000, 1116)],  # eteğin iki yanına savrulan duman (görseli genişletiyor)
 }
 
 

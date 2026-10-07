@@ -3150,11 +3150,13 @@ function raiseMinion(e, delay = 0) {
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: '140,255,120', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
 // Mortimer'ın balkondaki ayak noktası (kule görselinin balkonu)
+// Mortimer kale görselinde balkonun ön kenarına basar (görsel oranı) ve kale genişliğine göre büyük durur
+const MORT_AT = [0.66, 0.5], MORT_H = 62;
 function mortimerPoint() {
   const c = G.castle, im = castleSprite();
   if (!im) return { x: c.x, y: c.y - 60 };
   const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width;
-  return { x: cp.x - cp.w / 2 + 0.69 * cp.w, y: cp.y - h + 0.425 * h };
+  return { x: cp.x - cp.w / 2 + MORT_AT[0] * cp.w, y: cp.y - h + MORT_AT[1] * h };
 }
 // büyü düğmesi simgeleri: diriltme = yerden kalkan iskelet, korku = çığlık atan hayalet
 function drawNecroGlyph(id, r) {
@@ -3185,22 +3187,19 @@ function drawNecroGlyph(id, r) {
 function drawMortimer() {
   const im = spr('mortimer');
   if (!im) return;
-  const m = mortimerPoint(), hgt = 46, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
-  const bob = Math.sin(time * 1.6) * 0.5;
-  // yola dönük: kaleye giren yolun son parçası hangi yandan geliyorsa o yana bakar (görsel sola bakıyor)
-  const P = G.lv.paths[0], a0 = P[P.length - 2], a1 = P[P.length - 1], face = a0[0] <= a1[0] ? 1 : -1;
+  const m = mortimerPoint(), hgt = MORT_H, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
+  const bob = Math.sin(time * 1.6) * 0.5, face = 1; // önden görünüş: balkondan ekrana/aşağı bakar, aynalanmaz
   // arkasında mor-yeşil büyü halesi: kulenin üstünde belirgin dursun
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.75, '150,90,255', 0.22 + 0.25 * k + Math.sin(time * 2) * 0.05);
   glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.45, '120,255,140', 0.12 + 0.3 * k);
   ctx.restore();
   ctx.save(); ctx.translate(m.x, m.y + bob);
-  ctx.scale(face, 1); // görsel sola bakıyor: düşmanlar soldan geliyorsa olduğu gibi, sağdan geliyorsa aynalanır
-  ctx.rotate(-0.12 * k); ctx.scale(1 - 0.03 * k, 1 + 0.08 * k);
+  ctx.scale(1 + 0.04 * k, 1 + 0.08 * k); // büyüde göğsünü kabartıp dikleşir
   drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
   ctx.restore();
   // tırpandaki kafatası: büyü yaparken parlar; diriltme sürerken yeşil nabız
-  const sx = m.x - face * hgt * im.width / im.height * 0.34, sy = m.y - hgt * 0.47 - 4 * k; // tırpandan sarkan kafatası
+  const sx = m.x - face * hgt * im.width / im.height * 0.24, sy = m.y + bob - hgt * 0.8 * (1 + 0.08 * k); // tırpandan sarkan kafatası
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   glow(ctx, sx, sy, 8 + 14 * k + (G.raiseT > 0 ? 4 + Math.sin(time * 8) * 2 : 0), '120,255,140', 0.35 + 0.6 * k + (G.raiseT > 0 ? 0.25 : 0));
   ctx.restore();
