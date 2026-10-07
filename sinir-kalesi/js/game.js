@@ -1222,6 +1222,7 @@ function startLevel(idx) {
     const h = makeHero(id, q.x + i * 6, q.y, i);
     G.heroes.push(h); G.soldiers.push(h);
     G.spells['ult' + i] = 0;
+    if (NECRO) { G.spells.nm_raise = 0; G.spells.nm_fear = 0; }
   });
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
@@ -1704,6 +1705,7 @@ function killEnemy(e) {
     return;
   }
   e.dead = true;
+  if (G.raiseT > 0 && !e.def.flying && !e.def.chief && !e.summoned) raiseMinion(e);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
     const r = spawnEnemy(e.def.dismount, G.paths.indexOf(e.p), e.d, e.off);
@@ -2222,6 +2224,17 @@ function updateEnemy(e, dt) {
   if (e.markT > 0) e.markT -= dt;
   if (e.hasteT > 0) e.hasteT -= dt;
   if (e.shieldT > 0) e.shieldT -= dt;
+  // Korku (Mortimer): kavgayı bırakır, yolda geri kaçar
+  if (e.fearT > 0) {
+    e.fearT -= dt;
+    if (e.blocker) { for (const s of G.soldiers) if (s.target === e) s.target = null; e.blocker = null; }
+    e.inMelee = false; e.offPath = false;
+    const sp = e.def.speed * G.wspd * 1.1 * (e.slowT > 0 ? 1 - e.slowK : 1);
+    e.d = Math.max(0, e.d - sp * dt);
+    const q = pathPos(e.p, e.d, e.off); e.face = q.x < e.x ? -1 : 1; e.x = q.x; e.y = q.y;
+    if (Math.random() < dt * 4) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: aimY(e) - 8, vy: -rand(15, 30), col: '190,120,255', s0: 2.5, s1: 0.5, life: 0.6 });
+    return;
+  }
   if (e.bleedT > 0) {
     e.bleedT -= dt;
     damageEnemy(e, e.bleedDps * dt, 'true', true);
@@ -3016,17 +3029,91 @@ function updateProjectile(pr, dt) {
 
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
-const spellIds = () => G.heroes.map((h, i) => 'ult' + i);
+const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear'] : []).concat(G.heroes.map((h, i) => 'ult' + i));
 const spellBtn = (i) => ({ x: 108 + i * 58, y: H - 34, r: 23 });
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
+  if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast, necro: S, U: S }; }
   const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
   return { name: U.name, cd: U.cd * fast, hero: h, U };
 }
 function castSpell(id, x, y) {
-  const ur = upgRank('spells');
-  castUlt(G.heroes[+id.slice(3)], x, y);
+  if (NECRO_SPELLS[id]) castNecro(id, x, y);
+  else castUlt(G.heroes[+id.slice(3)], x, y);
   G.spells[id] = spellInfo(id).cd;
+}
+// ----- Mortimer'ın büyüleri -----
+function castNecro(id, x, y) {
+  const S = NECRO_SPELLS[id], c = G.castle, m = mortimerPoint();
+  G.mortCast = 0.9; // balkonda asasını kaldırır
+  if (id === 'nm_raise') {
+    G.raiseT = S.t;
+    G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
+    floatText(m.x, m.y - 40, 'Kalkın, ölüler!', '#9dff8a');
+    sfx('portal');
+  } else if (id === 'nm_fear') {
+    G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 });
+    // Mortimer'dan hedefe uzanan mor ruh dalgası
+    for (let i = 0; i < 18; i++) { const k = i / 17; emit(G.parts, { kind: 'glow', add: true, x: lerp(m.x, x, k) + rand(-6, 6), y: lerp(m.y - 18, y, k) + rand(-6, 6), vy: -rand(5, 20), col: S.col, s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.8) }); }
+    for (const e of G.enemies) {
+      if (e.dead || e.siege !== undefined || dist(e.x, e.y, x, y) > S.r) continue;
+      e.fearT = e.def.chief ? S.t * 0.5 : S.t;
+      floatText(e.x, e.y - 30, '!', '#d8a8ff');
+    }
+    sfx('roar');
+  }
+}
+// ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
+function raiseMinion(e) {
+  const S = NECRO_SPELLS.nm_raise, M = S.minion;
+  if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
+  G.soldiers.push({ militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp, maxHp: M.hp, dmg: M.dmg, armor: M.armor,
+    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life });
+  G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '140,255,140', t: 0, dur: 0.7 });
+  for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: '140,255,120', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
+}
+// Mortimer'ın balkondaki ayak noktası (kule görselinin balkonu)
+function mortimerPoint() {
+  const c = G.castle, im = castleSprite();
+  if (!im) return { x: c.x, y: c.y - 60 };
+  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width;
+  return { x: cp.x - cp.w / 2 + 0.69 * cp.w, y: cp.y - h + 0.425 * h };
+}
+// büyü düğmesi simgeleri: diriltme = yerden kalkan iskelet, korku = çığlık atan hayalet
+function drawNecroGlyph(id, r) {
+  if (id === 'nm_raise') {
+    const im = spr('unit_skel_1');
+    ctx.fillStyle = 'rgba(30,16,8,0.7)'; ctx.beginPath(); ctx.ellipse(0, r * 0.62, r * 0.75, r * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+    if (im) drawSprite(ctx, im, 0, r * 0.75, r * 1.5 * im.width / im.height);
+    if (G.raiseT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r, '120,255,140', 0.4 + Math.sin(time * 8) * 0.15); ctx.restore(); }
+    return;
+  }
+  const w = Math.sin(time * 4) * 1.5;
+  ctx.save(); ctx.translate(0, w * 0.3);
+  ctx.fillStyle = 'rgba(240,228,255,0.95)'; ctx.strokeStyle = '#2a1640'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.arc(0, -r * 0.18, r * 0.5, Math.PI, 0);
+  ctx.lineTo(r * 0.5, r * 0.5);
+  for (let i = 0; i < 4; i++) { const x0 = r * 0.5 - (i + 0.5) * r * 0.25; ctx.quadraticCurveTo(x0, r * (i % 2 ? 0.66 : 0.34) + w, x0 - r * 0.125, r * 0.5); }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#1a0a2a';
+  ctx.beginPath(); ctx.ellipse(-r * 0.18, -r * 0.2, r * 0.09, r * 0.14, 0, 0, Math.PI * 2); ctx.ellipse(r * 0.18, -r * 0.2, r * 0.09, r * 0.14, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, r * 0.1, r * 0.1, r * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function drawMortimer() {
+  const im = spr('mortimer');
+  if (!im) return;
+  const m = mortimerPoint(), hgt = 37, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
+  const bob = Math.sin(time * 1.6) * 0.5;
+  ctx.save(); ctx.translate(m.x, m.y + bob);
+  ctx.rotate(-0.12 * k); ctx.scale(1 - 0.03 * k, 1 + 0.08 * k);
+  drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
+  ctx.restore();
+  // asasındaki kafatası: büyü yaparken parlar; diriltme sürerken yeşil nabız
+  const sx = m.x - 7, sy = m.y - hgt * 0.92 - 4 * k;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, sx, sy, 8 + 14 * k + (G.raiseT > 0 ? 4 + Math.sin(time * 8) * 2 : 0), '120,255,140', 0.35 + 0.6 * k + (G.raiseT > 0 ? 0.25 : 0));
+  ctx.restore();
 }
 // Paralı askerler: kale kapısından çıkıp en ilerlemiş düşmanın geldiği yol boyunca yürürler
 function spawnMercs() {
@@ -3123,6 +3210,8 @@ function castUlt(h, x, y) {
 function update(dt) {
   G.t += dt;
   for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt);
+  if (G.raiseT > 0) G.raiseT -= dt;
+  if (G.mortCast > 0) G.mortCast -= dt;
 
   if (G.waveCountdown != null && G.wave > 0) {
     G.waveCountdown -= dt;
@@ -3693,7 +3782,17 @@ function paintArcherBody(g, L, lvl) {
   g.beginPath(); g.roundRect(-0.6, -19.4, 3, 2.4, 0.8); fs('#e8a878');
   const hx = 1.2, hy = -23;
   const skin = archGrad(g, hx - 4, hy - 5, hx + 4, hy + 5, ['#ffe0bc', '#e9a674']);
-  const face = () => {
+  // Necromancer: okçular iskelet; yüz yerine yeşil gözlü kafatası
+  const face = NECRO ? () => {
+    g.beginPath(); g.arc(hx, hy, 5.5, 0, Math.PI * 2); g.fillStyle = archGrad(g, hx - 4, hy - 5, hx + 4, hy + 5, ['#f6f1de', '#b4ac90']); g.fill();
+    g.fillStyle = '#140c18'; g.beginPath(); g.ellipse(hx + 2.7, hy - 0.5, 1.6, 1.8, 0, 0, 7); g.fill();
+    g.fillStyle = '#8dff7a'; g.beginPath(); g.arc(hx + 2.9, hy - 0.5, 0.65, 0, 7); g.fill();
+    g.fillStyle = '#140c18'; g.beginPath(); g.moveTo(hx + 4.7, hy + 0.9); g.lineTo(hx + 5.4, hy + 2.3); g.lineTo(hx + 4.2, hy + 2.2); g.closePath(); g.fill();
+    g.strokeStyle = '#3a3020'; g.lineWidth = 0.45;
+    g.beginPath(); g.moveTo(hx + 1.6, hy + 3.4); g.lineTo(hx + 5.2, hy + 3.4); g.stroke();
+    for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(hx + 2 + i * 0.9, hy + 2.9); g.lineTo(hx + 2 + i * 0.9, hy + 4.1); g.stroke(); }
+    g.lineWidth = 1.05;
+  } : () => {
     g.beginPath(); g.arc(hx, hy, 5.5, 0, Math.PI * 2); g.fillStyle = skin; g.fill();
     // yanak, göz, kaş, burun, ağız
     g.fillStyle = 'rgba(240,120,100,0.45)'; g.beginPath(); g.ellipse(hx + 3.0, hy + 1.8, 1.2, 0.8, 0, 0, 7); g.fill();
@@ -3839,13 +3938,13 @@ function paintArcher(c, o, s, a, lvl) {
   }
   c.restore();
   // yay elinin eli
-  c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(H.x, H.y, 1.25, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.fillStyle = NECRO ? '#e6e0c8' : '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(H.x, H.y, 1.25, 0, Math.PI * 2); c.fill(); c.stroke();
   // çeken kol: dirsek dışarı/yukarı kalkar
   const S2 = { x: -0.6, y: -16.0 };
   const mx = (S2.x + Pw.x) / 2, my = (S2.y + Pw.y) / 2, k = 1.6 + dw * 1.4;
   const E = { x: mx - sa * k * 0.4 - ca * dw * 1.4, y: my - Math.abs(ca) * k * 0.55 };
   limb([S2, E, Pw], L.sleeve[0], 2.3);
-  c.fillStyle = '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(Pw.x, Pw.y, 1.2, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.fillStyle = NECRO ? '#e6e0c8' : '#f2c095'; c.strokeStyle = ARCH_OUT; c.lineWidth = 0.6; c.beginPath(); c.arc(Pw.x, Pw.y, 1.2, 0, Math.PI * 2); c.fill(); c.stroke();
   c.restore();
 }
 // ---- Kışla askerleri: seviyeye göre belirgin zırh ve silah (önceden çizilmiş parçalar + eklemli kollar) ----
@@ -5091,14 +5190,15 @@ function drawProjectile(p) {
     return;
   }
   if (p.kind === 'arrow' || p.kind === 'harrow') {
-    const n = projPos(p, k + 0.05), a = Math.atan2(n.y - y, n.x - x), tl = projPos(p, k - 0.14);
-    ctx.strokeStyle = p.poison ? 'rgba(140,255,80,0.6)' : 'rgba(255,250,230,0.35)'; ctx.lineWidth = p.poison ? 1.8 : 1.2; ctx.lineCap = 'round';
+    const n = projPos(p, k + 0.05), a = Math.atan2(n.y - y, n.x - x), tl = projPos(p, k - 0.14), bone = NECRO && p.kind === 'arrow';
+    ctx.strokeStyle = p.poison ? 'rgba(140,255,80,0.6)' : bone ? 'rgba(150,255,160,0.45)' : 'rgba(255,250,230,0.35)'; ctx.lineWidth = p.poison ? 1.8 : 1.2; ctx.lineCap = 'round';
     if (p.poison) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 6, '140,255,80', 0.6); ctx.restore(); }
     ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke();
     ctx.save(); ctx.translate(x, y); ctx.rotate(a);
-    ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke();
-    ctx.fillStyle = '#f0ece0'; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-11, -2.6); ctx.lineTo(-6, 0); ctx.lineTo(-11, 2.6); ctx.fill();
-    ctx.fillStyle = '#d8dbe2'; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2.4); ctx.lineTo(3, 2.4); ctx.fill();
+    ctx.strokeStyle = bone ? '#3a3024' : '#5a3a1a'; ctx.lineWidth = bone ? 2.6 : 1.8; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke();
+    if (bone) { ctx.strokeStyle = '#ece4cc'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke(); ctx.fillStyle = '#ece4cc'; ctx.beginPath(); ctx.arc(-8.5, -1, 1.3, 0, 7); ctx.arc(-8.5, 1, 1.3, 0, 7); ctx.fill(); }
+    else { ctx.fillStyle = '#f0ece0'; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-11, -2.6); ctx.lineTo(-6, 0); ctx.lineTo(-11, 2.6); ctx.fill(); }
+    ctx.fillStyle = bone ? '#f6f0dc' : '#d8dbe2'; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2.4); ctx.lineTo(3, 2.4); ctx.fill();
     ctx.restore();
   } else if (p.kind === 'bolt') {
     // yıldırım 'zap' efektiyle çiziliyor
@@ -6168,7 +6268,7 @@ function drawHud() {
   spellIds().forEach((id, i) => {
     const b = spellBtn(i), cd = G.spells[id], info = spellInfo(id), max = info.cd;
     const active = G.mode && G.mode.kind === 'spell' && G.mode.id === id, ready = cd <= 0;
-    const col = info.hero ? info.hero.def.aura : '120,200,255';
+    const col = info.hero ? info.hero.def.aura : info.necro ? info.necro.col : '120,200,255';
     ctx.save(); ctx.translate(b.x, b.y); const s = pressScale('hud_' + id); ctx.scale(s, s);
     if (active) glow(ctx, 0, 0, b.r * 2.3, '255,220,120', 0.7 + Math.sin(time * 8) * 0.2);
     else if (ready) glow(ctx, 0, 0, b.r * 1.9, col, 0.25 + Math.sin(time * 3) * 0.1);
@@ -6177,10 +6277,11 @@ function drawHud() {
     rm.addColorStop(0, ready ? '#fff0b0' : '#b8b0a0'); rm.addColorStop(1, ready ? '#8a5a14' : '#4a443c');
     circle(0, 0, b.r + 4, rm, '#2a1606', 1.5);
     const bd = ctx.createRadialGradient(-5, -7, 2, 0, 0, b.r);
-    if (info.hero) { bd.addColorStop(0, `rgba(${col},0.95)`); bd.addColorStop(1, '#14100c'); } else { bd.addColorStop(0, '#3a6aa0'); bd.addColorStop(1, '#0e1a2c'); }
+    if (info.hero || info.necro) { bd.addColorStop(0, `rgba(${col},0.95)`); bd.addColorStop(1, '#14100c'); } else { bd.addColorStop(0, '#3a6aa0'); bd.addColorStop(1, '#0e1a2c'); }
     circle(0, 0, b.r, bd);
     ctx.save(); ctx.beginPath(); ctx.arc(0, 0, b.r - 1, 0, Math.PI * 2); ctx.clip();
     if (info.hero) drawUltGlyph(info.hero.id, b.r);
+    else if (info.necro) drawNecroGlyph(id, b.r);
     else {
       const mil = spr('militia'), sol = spr('soldier');
       const sh = ctx.createRadialGradient(0, -4, 2, 0, 0, b.r); sh.addColorStop(0, 'rgba(140,200,255,0.55)'); sh.addColorStop(1, 'rgba(140,200,255,0)');
@@ -6309,7 +6410,7 @@ function towerStats(type, L) {
 // Eski yedek görsel (kışla) ise kale noktasına ortalanır.
 function castlePlace(x, y, im) {
   if (im === spr('tower_barracks_3')) return { x, y, w: 118 * BUILD_K };
-  if (NECRO) return { x: x - 41, y: y + 6, w: 74 };
+  if (NECRO) return { x: x - 43, y: y + 6, w: 96 };
   return { x: x - 15 * BUILD_K, y: y + 10, w: 124 * BUILD_K };
 }
 
@@ -6326,6 +6427,7 @@ function drawCastle() {
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     drawCastleArchers();
+    if (NECRO) drawMortimer();
     if (G.sel && G.sel.kind === 'castle') {
       ctx.save(); ctx.strokeStyle = `rgba(255,230,160,${0.9 * clamp((time - G.menuT) / 0.25, 0, 1)})`; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.ellipse(c.x - 12, c.y + 4, 56 + Math.sin(time * 6) * 1.5, 22, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
@@ -7970,6 +8072,7 @@ function hudTap(x, y) {
       tapPop('hud_' + id);
       setSel(null);
       if (G.spells[id] > 0) { sfx('error'); return true; }
+      if (id === 'nm_raise') { G.mode = null; castSpell(id); return true; }
       G.mode = G.mode && G.mode.id === id ? null : { kind: 'spell', id };
       if (G.mode) sfx('spell');
       return true;

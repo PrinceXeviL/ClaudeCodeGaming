@@ -831,8 +831,15 @@ Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menz
 HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep');
 Object.assign(HERO_ULT.commander, { name: 'Kan Kılıçları' });
 Object.assign(HERO_ULT.zeynep, { name: 'Ruh Okları' });
-// kale yerine Mortimer'ın kulesi; okçular balkonda ve pencere önlerinde
-Object.assign(CASTLE, { spots: [[0.66, 0.37], [0.3, 0.58], [0.82, 0.6]] });
+// kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
+Object.assign(CASTLE, { spots: [[0.28, 0.57], [0.84, 0.6], [0.4, 0.4]] });
+// Mortimer'ın büyüleri (sol altta, bekleme süreli). raise: hedefsiz, süre boyunca ölen düşmanlar iskelet minyon olur.
+// fear: hedefli alan, düşmanlar kavgayı bırakıp yolda geri kaçar (bosslar yarı süre).
+const NECRO_SPELLS = {
+  nm_raise: { name: 'Ölüleri Diriltme', cd: 45, t: 10, col: '120,255,140', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
+    desc: '10 sn boyunca ölen her düşman askeri iskelet minyonun olarak kalkar (30 sn yaşar)' },
+  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar' },
+};
 CASTLE.levels[0].title = 'Kule Okçuları'; CASTLE.levels[1].title = 'Kule Nişancıları'; CASTLE.levels[2].title = 'Kule Muhafızları';
 
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
@@ -999,3 +1006,23 @@ Object.assign(ENEMY_WK, {
   catapult: { blast: 1.3, melee: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
   gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
 });
+
+// Necromancer: kule seviye unvanları ve uzmanlık adları
+if (NECRO) {
+  Object.assign(TOWER_TITLES, { archer: ['Kemik Okçular', 'Kemik Nişancılar', 'Kafatası Kalesi'], barracks: ['Mahzen', 'Kemik Mahzeni', 'Kara Türbe'],
+    mage: ['Ruh Taşı', 'Ruh Kulesi', 'Ruhlar Sarayı'], artillery: ['Kemik Mancınığı', 'Kafatası Mancınığı', 'Veba Mancınığı'] });
+  for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
+  Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
+  Object.assign(SPEC.blade, { title: 'Ölüm Şövalyeleri', who: 'Yeşil alevli çift kemik kılıç' });
+  Object.assign(SPEC.poison, { title: 'Veba Okçuları', who: 'Yeşil veba oklu iskeletler' });
+  Object.assign(SPEC.snipe, { title: 'Hayalet Nişancılar', who: 'Uzun menzilli hayalet oklar' });
+  Object.assign(SPEC.frost, { title: 'Lanet Kulesi', who: 'Düşmanları yavaşlatan lanet' });
+  Object.assign(SPEC.blast, { title: 'Ruh Fırtınası', who: 'Dönen kafatası halkası' });
+  Object.assign(SPEC.napalm, { title: 'Veba Kazanı', who: 'Kaynayan yeşil veba' });
+  Object.assign(SPEC.double, { title: 'Kemik Yağmuru', who: 'Çifte kafatası atışı' });
+  TOWERS.archer.levels[0].perk = 'İki iskelet okçu kemik ok atar · uçanları da vurur';
+  TOWERS.archer.levels[1].perk = 'Daha hızlı atış · delici kemik ok: %25 şansla zırhı yok sayar · +menzil';
+  TOWERS.archer.levels[2].perk = '3 iskelet okçu, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil';
+  TOWERS.mage.levels[1].perk = 'Daha hızlı yükleme · ruh soğuğu: vurduğunu 1 sn %30 yavaşlatır';
+  TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
+}
