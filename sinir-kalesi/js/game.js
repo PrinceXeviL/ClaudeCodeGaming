@@ -204,7 +204,7 @@ const SOUND = {
   error:   { vol: 0.35, gap: 0.15, max: 1 },
   // dosyasız, WebAudio ile üretilen sesler: gök gürültüsü ve hava ortam sesleri
   thunder: { vol: 0.9 },
-  rain:    { vol: 0.11 },
+  rain:    { vol: 0.07 },
   wind:    { vol: 0.08 },
   spell:   { vol: 0.45, gap: 0.2, max: 1 },
   reinforce: { vol: 0.55, gap: 0.2, max: 1 },
@@ -3151,7 +3151,9 @@ function raiseMinion(e, delay = 0) {
 }
 // Mortimer'ın balkondaki ayak noktası (kule görselinin balkonu)
 // Mortimer kale görselinde balkonun ön kenarına basar (görsel oranı) ve kale genişliğine göre büyük durur
-const MORT_AT = [0.66, 0.5], MORT_H = 62;
+const MORT_AT = [0.69, 0.47], MORT_H = 62;
+// balkon korkuluğu (görsel oranı x0, y0, x1, y1): Mortimer'dan sonra yeniden çizilir, ayakları korkuluğun arkasında kalır
+const MORT_RAIL = [0.5, 0.458, 0.92, 0.56];
 function mortimerPoint() {
   const c = G.castle, im = castleSprite();
   if (!im) return { x: c.x, y: c.y - 60 };
@@ -6608,7 +6610,12 @@ function drawCastle() {
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     drawCastleArchers();
-    if (NECRO) drawMortimer();
+    if (NECRO) {
+      drawMortimer();
+      const h = cp.w * im.height / im.width, R = MORT_RAIL, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
+      ctx.save(); ctx.beginPath(); ctx.rect(x0 + R[0] * cp.w, y0 + R[1] * h, (R[2] - R[0]) * cp.w, (R[3] - R[1]) * h); ctx.clip();
+      ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
+    }
     if (G.sel && G.sel.kind === 'castle') {
       ctx.save(); ctx.strokeStyle = `rgba(255,230,160,${0.9 * clamp((time - G.menuT) / 0.25, 0, 1)})`; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.ellipse(c.x - 12, c.y + 4, 56 + Math.sin(time * 6) * 1.5, 22, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
@@ -8002,7 +8009,8 @@ function weatherAudio() {
       src.connect(f); f.connect(g); g.connect(master); src.start();
       return g;
     };
-    amb = { rain: mk('bandpass', 2400, 0.45), wind: mk('lowpass', 420, 0.8) };
+    // yağmur: tiz cızırtı yerine alçak geçiren süzgeçle yumuşak, boğuk bir hışırtı
+    amb = { rain: mk('lowpass', 1100, 0.5), wind: mk('lowpass', 420, 0.8) };
   }
   if (time - ambLast.t < 0.2) return;
   ambLast.t = time;
