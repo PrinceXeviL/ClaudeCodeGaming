@@ -1338,6 +1338,7 @@ function waveBonusAndStart() {
   }
   G.wave++; G.wavePop = time;
   sfx('wave');
+  if (G.wave === G.lv.waves.length && G.wave > 1) mortSay('last', true); else if (G.wave > 1 && Math.random() < 0.6) mortSay('wave');
   if (G.wave === G.lv.waves.length && G.wave > 1) {
     // son dalga: kırmızı duyuru, ekran kenarı kızarır, kısa sarsıntı
     G.banner = { title: 'SON DALGA!', sub: NECRO ? 'En kalabalık dalga geliyor. Şapeli tut!' : 'En kalabalık dalga geliyor. Kaleyi tut!', t: 0, dur: 3.6, red: true };
@@ -2251,6 +2252,7 @@ function castleHit(e) {
   const c = G.castle, before = G.lives / G.maxLives;
   const dmg = e.def.lives;
   G.lives = Math.max(0, G.lives - dmg);
+  mortSay('leak');
   c.shake = 0.4; c.flash = 0.25; G.hurt = 0.6;
   const hx = e.x + e.face * 10, hy = e.y - 14;
   slashFx(hx, hy, e.face, '#ffb070', 1.4);
@@ -3160,13 +3162,12 @@ function castNecro(id, x, y) {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length;
     const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15).sort((a, b) => a.t - b.t).slice(0, Math.max(0, S.max - alive));
     if (!bodies.length) { G.mortCast = 0; floatText(m.x, m.y - 40, 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
-    G.raiseT = 1.2;
+    G.raiseT = 1.2; mortSay('raise', true);
     bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; });
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
-    floatText(m.x, m.y - 40, 'Kalkın, ölüler!', '#9dff8a');
     sfx('portal');
   } else if (id === 'nm_fear') {
-    G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 });
+    G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 }); mortSay('fear', true);
     // Mortimer'dan hedefe uzanan mor ruh dalgası
     for (let i = 0; i < 18; i++) { const k = i / 17; emit(G.parts, { kind: 'glow', add: true, x: lerp(m.x, x, k) + rand(-6, 6), y: lerp(m.y - 18, y, k) + rand(-6, 6), vy: -rand(5, 20), col: S.col, s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.8) }); }
     for (const e of G.enemies) {
@@ -3247,6 +3248,54 @@ function drawMortimer() {
     if (p < 0) ctx.scale(1, 1 + Math.sin(time * 1.6) * 0.012);
     drawFrame(fim, F, i, hgt * 0.97);
   } else drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
+  ctx.restore();
+}
+// Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
+const MORT_LINES = {
+  start: ['Yine mi misafir? Çayımı yeni demlemiştim.', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
+  wave: ['Bir dalga daha. Ne azimliler.', 'Sıraya girin. Mezarlıkta herkese yer var.', 'Yeni gönüllüler! İskeletim azalmıştı.', 'Kalabalık geldiler. Çayı tazeleyeyim.', 'İmparator hiç mi ders almaz?'],
+  last: ['Son dalga mı? Sonunda biraz sessizlik.', 'Hepsi bu mu? Kalanlar da gelsin!'],
+  leak: ['Hey! Halıma basma!', 'Kapı kilitli değil diye girilmez!', 'Çayımı döktürdün!', 'Bu kaç oldu? Saymayı bıraktım.', 'Kim açtı o kapıyı?!'],
+  raise: ['Kalkın! Mesai bitmedi.', 'Ölmek bahane değil. Kalk!', 'Emekliliğiniz iptal.', 'Kalkın tembeller!'],
+  fear: ['Böö!', 'Annenizi mi istiyorsunuz?', 'Koşun! Koşun! Hah!', 'Arkanıza bakmayın.'],
+  boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
+  streak: ['Mükemmel. Yeni malzeme.', 'Hepsini kemik deposuna!', 'Bir, iki, on... yetmez.', 'İşte buna verimlilik denir.'],
+};
+function mortSay(kind, force) {
+  if (!NECRO || !G || (!force && G.sayCd > 0)) return;
+  const L = MORT_LINES[kind]; if (!L) return;
+  let text = L[Math.floor(Math.random() * L.length)];
+  if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
+  G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
+}
+function updateMortSay(dt) {
+  if (!NECRO) return;
+  G.sayCd = (G.sayCd || 0) - dt;
+  if (G.say && (G.say.t += dt) > G.say.dur) G.say = null;
+  if (!G.saidStart && G.t > 1.2) { G.saidStart = true; mortSay('start', true); }
+  // seri öldürme: 4 sn içinde 8 düşman
+  const k = G.kills || 0;
+  G.killLog = (G.killLog || []).filter(([t]) => G.t - t < 4);
+  if (k > (G.killSeen || 0)) { for (let i = G.killSeen || 0; i < k; i++) G.killLog.push([G.t]); G.killSeen = k; }
+  if (G.killLog.length >= 8) { G.killLog = []; mortSay('streak'); }
+}
+function drawMortSay() {
+  const S = G.say; if (!S) return;
+  const m = mortimerPoint(), a = Math.min(1, S.t / 0.15, (S.dur - S.t) / 0.3), pop = easeOutBack(clamp(S.t / 0.25, 0, 1));
+  ctx.save(); ctx.font = `700 11px ${FONT_B}`;
+  const tw = Math.min(170, ctx.measureText(S.text).width), words = S.text.split(' '), lines = [];
+  for (const w of words) { const cur = lines[lines.length - 1]; if (cur && ctx.measureText(cur + ' ' + w).width <= 170) lines[lines.length - 1] = cur + ' ' + w; else lines.push(w); }
+  const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 18, bh = lines.length * 13 + 10;
+  // balon: Mortimer'ın başının üstünde, ekran içinde kalır
+  let bx = clamp(m.x - bw / 2, 6, W - bw - 6), by = Math.max(6, m.y - m.h - bh - 14);
+  ctx.globalAlpha = clamp(a, 0, 1);
+  ctx.translate(m.x, m.y - m.h - 10); ctx.scale(pop, pop); ctx.translate(-m.x, -(m.y - m.h - 10));
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'; roundRect(bx + 2, by + 3, bw, bh, 8, 'rgba(0,0,0,0.35)');
+  roundRect(bx, by, bw, bh, 8, '#f2ecd8', '#1a1024', 2);
+  ctx.beginPath(); ctx.moveTo(clamp(m.x - 6, bx + 8, bx + bw - 20), by + bh - 1); ctx.lineTo(m.x, m.y - m.h - 2); ctx.lineTo(clamp(m.x + 6, bx + 14, bx + bw - 8), by + bh - 1);
+  ctx.closePath(); ctx.fillStyle = '#f2ecd8'; ctx.fill(); ctx.strokeStyle = '#1a1024'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillRect(clamp(m.x - 5, bx + 9, bx + bw - 19), by + bh - 3, 10, 3);
+  lines.forEach((l, i) => txt(l, bx + bw / 2, by + 11 + i * 13, 11, '#2a1838', 'center', '800', FONT_B, false));
   ctx.restore();
 }
 // Paralı askerler: kale kapısından çıkıp en ilerlemiş düşmanın geldiği yol boyunca yürürler
@@ -3351,6 +3400,7 @@ function update(dt) {
   for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt);
   if (G.raiseT > 0) G.raiseT -= dt;
   if (G.mortCast > 0) G.mortCast -= dt;
+  updateMortSay(dt);
 
   if (G.waveCountdown != null && G.wave > 0) {
     G.waveCountdown -= dt;
@@ -7066,6 +7116,7 @@ function bossIntro(e) {
   G.bossFx = { t: 0, dur: 3.4 };
   shakeScreen(7, 1.1);
   bossSting(); setTimeout(() => sfx('roar'), 900);
+  setTimeout(() => mortSay('boss', true), 1600);
 }
 
 // Zırh parçalanır: çelik parçaları saçılır, ekran sarsılır, boss 2. evreye geçer ve lejyonunu çağırır
@@ -8226,6 +8277,7 @@ function drawPlay() {
     txt(f.text, 0, 0, 15, f.col, 'center', '400', FONT_T);
     ctx.restore();
   }
+  drawMortSay();
   drawMenuRange();
   drawEnemyRing();
   ctx.restore();
