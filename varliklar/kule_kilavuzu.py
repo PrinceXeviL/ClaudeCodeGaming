@@ -1,6 +1,7 @@
 """Kale (Mortimer'ın katedrali) için Gemini yerleşim kılavuzu: 3 hasar evresi yan yana.
 
-    python3 varliklar/kule_kilavuzu.py  ->  varliklar/ham/kule_kilavuz.png
+    python3 varliklar/kule_kilavuzu.py  ->  varliklar/ham/kule_kilavuz.png (Mortimer'lı) ve kule_kilavuz_bos.png (boş balkon)
+Boş balkonlu sürüm kale görseli içindir: Mortimer ayrı ve animasyonlu çizilir, balkona kodla yerleşir.
 
 Gotik katedral cephesi izleyiciye bakar: iki yanda sivri çan kuleleri, ortada üçgen alınlık ve gül penceresi (yeşil),
 altta sivri kemerli büyük kapı, kapının üstünde öne çıkan balkon. Ölçek: Mortimer (kırmızı) binanın ~1/8'i.
@@ -8,14 +9,21 @@ altta sivri kemerli büyük kapı, kapının üstünde öne çıkan balkon. Öl�
 import os
 from PIL import Image, ImageDraw
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ham', 'kule_kilavuz.png')
+HAM = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ham')
 W, H = 2000, 1116
-im = Image.new('RGB', (W, H), (255, 0, 255))
-d = ImageDraw.Draw(im)
 STONE, STONE_D, ROOF, GLASS = (120, 120, 130), (90, 90, 100), (55, 57, 70), (60, 230, 110)
 
-for cx in (340, 1000, 1660):
+SIDE = (70, 70, 80)  # sağ yan yüzler: eski kule gibi üç çeyrek görünüş (derinlik)
+
+
+def draw(with_mort):
+  im = Image.new('RGB', (W, H), (255, 0, 255))
+  d = ImageDraw.Draw(im)
+  for cx in (340, 1000, 1660):
     base = 1030
+    # yan yüzler (sağa ve yukarı kayık): binanın derinliği görünsün
+    d.polygon([(cx + 220, 185), (cx + 265, 160), (cx + 265, base - 60), (cx + 220, base - 30)], fill=SIDE)
+    d.polygon([(cx + 125, 335), (cx + 170, 310), (cx + 170, 400), (cx + 125, 420)], fill=SIDE)
     d.polygon([(cx - 280, base - 20), (cx, base - 120), (cx + 280, base - 20), (cx, base + 70)], fill=(92, 70, 40))
     # orta gövde (nef cephesi) ve üçgen alınlık
     d.rectangle([cx - 125, 330, cx + 125, base - 40], fill=STONE)
@@ -42,14 +50,18 @@ for cx in (340, 1000, 1660):
     d.ellipse([cx - 120, by - 30, cx + 120, by + 55], fill=(170, 170, 175))
     d.rectangle([cx - 120, by + 10, cx + 120, by + 25], fill=(170, 170, 175))
     # Mortimer: KÜÇÜK (~125 px), önden, solunda tırpan
-    d.ellipse([cx - 15, by - 122, cx + 15, by - 92], fill=(200, 20, 30))
-    d.polygon([(cx - 19, by - 96), (cx + 19, by - 96), (cx + 30, by + 10), (cx - 30, by + 10)], fill=(200, 20, 30))
-    d.line([(cx - 40, by - 132), (cx - 40, by + 8)], fill=(40, 30, 20), width=6)
-    d.polygon([(cx - 40, by - 132), (cx - 90, by - 112), (cx - 104, by - 70), (cx - 52, by - 117)], fill=(210, 210, 220))
+    if with_mort:
+        d.ellipse([cx - 15, by - 122, cx + 15, by - 92], fill=(200, 20, 30))
+        d.polygon([(cx - 19, by - 96), (cx + 19, by - 96), (cx + 30, by + 10), (cx - 30, by + 10)], fill=(200, 20, 30))
+        d.line([(cx - 40, by - 132), (cx - 40, by + 8)], fill=(40, 30, 20), width=6)
+        d.polygon([(cx - 40, by - 132), (cx - 90, by - 112), (cx - 104, by - 70), (cx - 52, by - 117)], fill=(210, 210, 220))
     d.arc([cx - 120, by - 30, cx + 120, by + 55], 0, 180, fill=(20, 20, 20), width=10)
     for k in range(-100, 101, 25):
         d.line([(cx + k, by + 12), (cx + k, by + 48 - abs(k) * 0.2)], fill=(20, 20, 20), width=6)
     d.line([(cx - 120, by + 10), (cx + 120, by + 10)], fill=(20, 20, 20), width=7)
 
-im.save(OUT)
-print(OUT)
+  return im
+
+
+for name, m in (('kule_kilavuz.png', True), ('kule_kilavuz_bos.png', False)):
+    draw(m).save(os.path.join(HAM, name)); print(name)
