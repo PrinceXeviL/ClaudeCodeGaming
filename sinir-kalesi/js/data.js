@@ -823,7 +823,7 @@ TOWERS.artillery.levels[0].perk = 'Veba bulamacı: alan hasarı, yerde zehirli g
 TOWERS.artillery.levels[1].perk = 'Daha ağır veba, daha geniş gaz bulutu';
 TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir';
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
-const NAMES = { poison: 'Veba Okları', snipe: 'Hayalet Nişancı', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Veba Kazanı', double: 'Kemik Yağmuru' };
+const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
 // komutanlar (tek seçilir): Kont Vladrik (eski komutanın yetenekleri), Wailing Wren (eski okçunun yetenekleri)
 Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
@@ -1011,7 +1011,7 @@ Object.assign(ENEMY_WK, {
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
   Object.assign(TOWER_TITLES, { archer: ['Kemik Dikilitaşı', 'Dikenli Dikilitaş', 'Omurga Dikilitaşı'], barracks: ['Mahzen', 'Kemik Mahzeni', 'Kara Türbe'],
-    mage: ['Ruh Feneri', 'Ruh Kafesi', 'Ruhlar Feneri'], artillery: ['Veba Kazanı', 'Kemik Kazanı', 'Veba Sunağı'] });
+    mage: ['Ruh Feneri', 'Ruh Kafesi', 'Ruhlar Feneri'], artillery: ['Veba Kazanı', 'Kaynayan Veba Kazanı', 'Büyük Veba Kazanı'] });
   for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
   Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
   Object.assign(SPEC.blade, { title: 'Ölüm Şövalyeleri', who: 'Yeşil alevli çift kemik kılıç' });

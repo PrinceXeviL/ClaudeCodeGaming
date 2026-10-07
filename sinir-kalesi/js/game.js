@@ -3185,14 +3185,22 @@ function drawNecroGlyph(id, r) {
 function drawMortimer() {
   const im = spr('mortimer');
   if (!im) return;
-  const m = mortimerPoint(), hgt = 37, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
+  const m = mortimerPoint(), hgt = 46, k = G.mortCast > 0 ? Math.sin(clamp(1 - G.mortCast / 0.9, 0, 1) * Math.PI) : 0;
   const bob = Math.sin(time * 1.6) * 0.5;
+  // yola dönük: kaleye giren yolun son parçası hangi yandan geliyorsa o yana bakar (görsel sola bakıyor)
+  const P = G.lv.paths[0], a0 = P[P.length - 2], a1 = P[P.length - 1], face = a0[0] <= a1[0] ? 1 : -1;
+  // arkasında mor-yeşil büyü halesi: kulenin üstünde belirgin dursun
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.75, '150,90,255', 0.22 + 0.25 * k + Math.sin(time * 2) * 0.05);
+  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.45, '120,255,140', 0.12 + 0.3 * k);
+  ctx.restore();
   ctx.save(); ctx.translate(m.x, m.y + bob);
+  ctx.scale(face, 1); // görsel sola bakıyor: düşmanlar soldan geliyorsa olduğu gibi, sağdan geliyorsa aynalanır
   ctx.rotate(-0.12 * k); ctx.scale(1 - 0.03 * k, 1 + 0.08 * k);
   drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
   ctx.restore();
   // asasındaki kafatası: büyü yaparken parlar; diriltme sürerken yeşil nabız
-  const sx = m.x - 7, sy = m.y - hgt * 0.92 - 4 * k;
+  const sx = m.x + face * hgt * im.width / im.height * 0.32, sy = m.y - hgt * 0.9 - 4 * k; // asanın kafatası
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   glow(ctx, sx, sy, 8 + 14 * k + (G.raiseT > 0 ? 4 + Math.sin(time * 8) * 2 : 0), '120,255,140', 0.35 + 0.6 * k + (G.raiseT > 0 ? 0.25 : 0));
   ctx.restore();
