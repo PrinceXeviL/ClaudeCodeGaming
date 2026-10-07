@@ -4491,7 +4491,10 @@ function drawEnemy(e) {
   if (e.under) { drawBurrow(e); return; }
   if (im) {
     const moved = e.px !== undefined && Math.hypot(e.x - e.px, e.y - e.py) > 0.004;
+    if (moved) { e.hdx = lerp(e.hdx || 0, e.x - e.px, 0.2); e.hdy = lerp(e.hdy || 0, e.y - e.py, 0.2); }
     e.px = e.x; e.py = e.y;
+    // yürüyüş yönü: belirgin aşağı = önden, yukarı = arkadan, yoksa yandan
+    const dir = Math.abs(e.hdy || 0) > Math.abs(e.hdx || 0) * 1.3 ? (e.hdy > 0 ? 'on' : 'arka') : null;
     if (d.chief) drawBossAura(e, dh);
     drawUnit(name, im, e.x, e.y, e.face, {
       rig: d.base ? 'enemy_' + d.base : undefined,
@@ -4501,7 +4504,7 @@ function drawEnemy(e) {
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
       atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null,
-      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off,
+      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir,
     });
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
@@ -4696,6 +4699,8 @@ function drawSoldier(s) {
 // yürürken adım zıplaması ve sallanma, saldırıda öne atılma, dururken nefes, isabette beyaz parlama.
 // Saldırı zamanlaması: negatif = vuruşa kalan süre (hazırlık), pozitif = vuruştan beri geçen süre
 const ATK_PREP = 0.3, ATK_AFTER = 0.45; // hazırlık süresi / vuruştan sonra toparlanmanın bittiği an
+// 8 karelik çizilmiş saldırı: karelerin başladığı an (0 = darbe). 0 hazır, 1 geri çek, 2 kaldır, 3 savuruş başı, 4 iniş, 5 darbe, 6 devam, 7 toparlan
+const ATK_FRAME_T = [-0.3, -0.22, -0.15, -0.08, -0.03, 0, 0.12, 0.28];
 function atkPhase(rate, atk) {
   const since = rate - atk;
   return since < ATK_AFTER ? since : -atk;
@@ -5164,16 +5169,29 @@ function drawUnit(name, im, x, y, face, o) {
     ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.ellipse(x, y + 1, w * 0.5, w * 0.18, 0, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
+  // çizilmiş kareler (kare kare animasyon) varsa iskelet yerine onlar çizilir:
+  // saldırı (<ad>_atk) ya da yürüyüş; yürüyüşte yöne göre önden (_walk_on), arkadan (_walk_arka) veya yandan (_walk)
+  let fName = null, fi = 0;
+  const atkOn = o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER;
+  if (atkOn && ANIM_META[name + '_atk'] && spr(name + '_atk')) {
+    fName = name + '_atk';
+    const T = ANIM_META[fName].n === 8 ? ATK_FRAME_T : null;
+    if (T) { fi = 0; for (let i = 0; i < 8; i++) if (o.atk >= T[i]) fi = i; }
+    else fi = Math.min(ANIM_META[fName].n - 1, Math.floor((o.atk + ATK_PREP) / (ATK_PREP + ATK_AFTER) * ANIM_META[fName].n));
+  } else if (o.walking && !rig.wings) {
+    const suf = o.dir === 'on' ? '_walk_on' : o.dir === 'arka' ? '_walk_arka' : '_walk';
+    for (const n of [name + suf, name + '_walk']) if (ANIM_META[n] && spr(n)) { fName = n; break; }
+    if (fName) fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * ANIM_META[fName].n) % ANIM_META[fName].n;
+  }
+  const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
   ctx.save();
-  ctx.translate(x + ox * face, y + 1 + oy);
-  ctx.scale(face * (rig.flip ? -1 : 1), 1);
+  ctx.translate(x + (frontBack ? 0 : ox * face), y + 1 + oy);
+  ctx.scale(frontBack ? 1 : face * (rig.flip ? -1 : 1), 1);
   if (o.rise != null) ctx.scale(1, o.rise); // kumdan çıkış
-  // çizilmiş yürüyüş kareleri varsa: döngüdeki yerine göre kare seçilir (iskelet yerine)
-  const WK = o.walking && !rig.wings ? ANIM_META[name + '_walk'] : null, wImg = WK && spr(name + '_walk');
-  if (wImg) {
-    const fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * WK.n) % WK.n;
-    drawFrame(wImg, WK, fi, o.h);
-    if (o.flash > 0) { ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7; drawFrame(whiteOf(name + '_walk', wImg), WK, fi, o.h); }
+  if (fName) {
+    const F = ANIM_META[fName], fImg = spr(fName);
+    drawFrame(fImg, F, fi, o.h);
+    if (o.flash > 0) { ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7; drawFrame(whiteOf(fName, fImg), F, fi, o.h); }
     ctx.restore();
     return;
   }
