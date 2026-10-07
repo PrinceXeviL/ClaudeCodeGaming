@@ -1912,10 +1912,11 @@ function buildTower(plot, type) {
 }
 const SLOTS = [[-13, -7], [13, -7], [0, 10]];
 function soldierStats(t) {
-  const L = TOWERS.barracks.levels[t.lvl], sh = abRank(t, 'shield'), bl = abRank(t, 'blade'), ur = upgRank('barracks');
+  const L = TOWERS.barracks.levels[t.lvl], sh = abRank(t, 'shield'), bl = abRank(t, 'blade'), bw = abRank(t, 'bow'), ur = upgRank('barracks');
   const sp = t.spec ? SPEC_BONUS : 1; // uzmanlık seçen kışlanın askerleri daha güçlü
-  const hm = (ur >= 1 ? 1.2 : 1) * sp, dm = (ur >= 2 ? 1.2 : 1) * (bl ? bl.mult : 1) * sp;
+  const hm = (ur >= 1 ? 1.2 : 1) * sp * (bw ? 0.75 : 1), dm = (ur >= 2 ? 1.2 : 1) * (bl ? bl.mult : 1) * (bw ? bw.mult : 1) * sp;
   return {
+    bow: bw ? { r: bw.r, rate: bw.rate } : null,
     maxHp: Math.round((L.hp + (sh ? sh.hp : 0)) * hm), armor: Math.min(0.75, L.armor + (sh ? sh.armor : 0) + (ur >= 3 ? 0.15 : 0)),
     dmg: [L.dmg[0] * dm, L.dmg[1] * dm], crit: bl ? bl.crit : 0, steal: t.lvl >= 2 ? 0.15 : 0,
   };
@@ -1929,12 +1930,13 @@ function applySoldierStats(t) {
       for (let k = 0; k < 10; k++) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-7, 7), y: s.y - rand(0, 22), vy: -rand(20, 60), col: '255,225,140', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
       G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,170', t: 0, dur: 0.6, small: true });
     }
-    s.dmg = st.dmg; s.armor = st.armor; s.crit = st.crit; s.steal = st.steal; s.gear = t.lvl;
+    s.dmg = st.dmg; s.armor = st.armor; s.crit = st.crit; s.steal = st.steal; s.gear = t.lvl; s.bow = st.bow;
+    if (s.bow && s.target) { if (s.target.blocker === s) s.target.blocker = null; s.target = null; } // okçular yolu bırakır
   }
 }
 function makeSoldier(t, i) {
   const st = soldierStats(t);
-  return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal,
+  return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
     gear: t.lvl, rate: 1, speed: 60, engage: 55, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
 }
 // son seviyedeki kulenin yeteneğini bir kademe geliştir
@@ -2514,6 +2516,33 @@ function heroDust(h, dt) {
   emit(G.parts, { kind: 'glow', x: h.x - h.face * 4, y: h.y, vx: -h.face * rand(5, 15), vy: -rand(4, 12), col: '200,185,160', s0: 2.5, s1: 6, life: 0.5, a: 0.45 });
 }
 
+// Mahzenin okçu yolu: iskelet okçu toplanma yerinde durur, menzildeki (uçan dahil) en öndeki düşmana kemik ok atar
+function updateBowSoldier(s, dt) {
+  const home = soldierHome(s);
+  if (s.moving || dist(s.x, s.y, home.x, home.y) > 2) {
+    if (moveToward(s, home.x, home.y, dt)) s.moving = false;
+    s.shootT = 0;
+    return;
+  }
+  if (s.shootT > 0) s.shootT -= dt;
+  let best = null, bestRemain = 1e9;
+  for (const e of G.enemies) {
+    if (e.dead || e.under || e.reviveT > 0 || dist(s.x, s.y - 10, e.x, e.y) > s.bow.r) continue;
+    const remain = e.p.total - e.d;
+    if (remain < bestRemain) { bestRemain = remain; best = e; }
+  }
+  s.atk -= dt;
+  if (!best) { if (s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt); s.atk = Math.max(s.atk, 0.15 * (s.slot || 0)); return; }
+  s.face = best.x < s.x ? -1 : 1;
+  s.anim += dt;
+  if (s.atk <= 0) {
+    s.atk = s.bow.rate; s.shootT = 0.35;
+    const sx = s.x + s.face * 5, sy = s.y - 18, d = dist(sx, sy, best.x, best.y), crit = s.crit && Math.random() < s.crit;
+    G.projectiles.push({ kind: 'arrow', shard: true, sx, sy, target: best, tx: best.x, ty: aimY(best), t: 0, dur: clamp(d / 480, 0.12, 0.55),
+      dmg: roll(s.dmg) * (s.buffT > 0 ? 1.5 : 1) * (crit ? 2 : 1), dtype: 'phys', arc: 14, crit, src: 'arrow' });
+    sfx('arrow');
+  }
+}
 function updateSoldier(s, dt) {
   if (s.born != null && G.t < s.born) return; // diriltilen minyon sırasını bekliyor
   if (s.flash > 0) s.flash -= dt;
@@ -2536,6 +2565,7 @@ function updateSoldier(s, dt) {
   if (s.stunT > 0) { s.stunT -= dt; return; }
   if (s.march) { marchSoldier(s, dt); return; }
   if (s.hero && s.ranged) { updateRangedHero(s, dt); runHeroSkills(s, dt); return; }
+  if (s.bow) { updateBowSoldier(s, dt); return; }
   const home = soldierHome(s);
   const e = s.target;
   if (e && (e.dead || e.under || e.reviveT > 0 || dist(e.x, e.y, home.x, home.y) > s.engage + 40 || s.moving)) {
@@ -4589,12 +4619,15 @@ function drawSoldier(s) {
     return;
   }
   const bob = Math.abs(Math.sin(s.anim * 9)) * 1.5;
-  const fighting = s.target && dist(s.x, s.y, s.target.x, s.target.y) < 21;
+  const fighting = (s.target && dist(s.x, s.y, s.target.x, s.target.y) < 21) || s.shootT > 0;
   const r = s.hero ? 8 : 5.5;
   const name = s.hero ? s.def.sprite : s.merc ? 'soldier' : s.militia ? 'militia' : 'soldier';
   // Necromancer: mahzen askerleri, paralı askerler ve çağrılanlar iskelet (seviye ve uzmanlığa göre 5 görsel)
   if (NECRO && !s.hero && spr('unit_skel_1')) {
-    const look = s.merc || s.militia ? 1 : s.tower && s.tower.spec === 'shield' ? 4 : s.tower && s.tower.spec === 'blade' ? 5 : Math.min(3, (s.gear || 0) + 1);
+    const sp2 = s.tower && s.tower.spec;
+    // okçu yolu: kademe (1-3) arttıkça zırhı güçlenen 3 okçu görseli (unit_skel_6..8)
+    let look = s.merc || s.militia ? 1 : sp2 === 'shield' ? 4 : sp2 === 'blade' ? 5 : sp2 === 'bow' ? 5 + Math.max(1, (s.tower.ab && s.tower.ab.bow) || 1) : Math.min(3, (s.gear || 0) + 1);
+    if (look >= 6 && !spr('unit_skel_' + look)) look = spr('unit_skel_6') ? 6 : 2; // okçu görseli gelene kadar
     const key = 'unit_skel_' + look, im = spr(key) || spr('unit_skel_1');
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
@@ -4828,7 +4861,7 @@ const RIG = {
 const easeInOut = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 // Necromancer seferi görselleri: iskeletler (1 acemi, 2 muhafız, 3 kemik şövalye, 4 mezar bekçisi, 5 ölüm şövalyesi),
 // Solarian askerleri, atlılar (bacak bölgesi alçak), tekerlekli kuşatma araçları (cart: hafif sarsıntı), uçan banshee
-const SKEL_H = [0, 32, 33, 35, 36, 34];
+const SKEL_H = [0, 32, 33, 35, 36, 34, 33, 34, 35];
 Object.assign(RIG, {
   unit_skel_1: { legY: 0.72 }, unit_skel_2: { legY: 0.72 }, unit_skel_3: { legY: 0.72 }, unit_skel_4: { legY: 0.72 }, unit_skel_5: { legY: 0.72 },
   enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
@@ -5978,11 +6011,12 @@ function towerMenuItems(t) {
     t.def.abilities.forEach((a, i) => {
       if (t.spec && t.spec !== a.id) return;
       const r = (t.ab && t.ab[a.id]) || 0;
-      items.push({ id: 'ability', type: a.id, ab: a, rank: r, x: t.spec ? t.x : t.x + (i ? 44 : -44), y: t.y - 76, cost: r < a.ranks.length ? a.ranks[r].cost : null });
+      const n = t.def.abilities.length, ox = n === 3 ? [-58, 0, 58][i] : (i ? 44 : -44), oy = n === 3 && i === 1 ? -92 : -76;
+      items.push({ id: 'ability', type: a.id, ab: a, rank: r, x: t.spec ? t.x : t.x + ox, y: t.spec ? t.y - 76 : t.y + oy, cost: r < a.ranks.length ? a.ranks[r].cost : null });
     });
   }
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: Math.floor(t.spent * SELL_RATIO) });
-  if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 60, y: t.y - 20 });
+  if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
 }
 // menüyü ekran içinde tutmak için kaydırma
@@ -6254,6 +6288,15 @@ function drawAbilityIcon(id, x, y, s) {
     ctx.strokeStyle = dark; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#eef2f8'; ctx.fill();
     roundRect(-7, 5, 14, 3.5, 1.5, '#ffd34d', dark, 1.2); roundRect(-1.8, 8, 3.6, 7, 1.2, '#7a4a20', dark, 1);
     ctx.restore();
+  } else if (id === 'bow') {
+    // kemik yay ve ok
+    ctx.beginPath(); ctx.arc(-3, 0, 12, -1.15, 1.15); ctx.strokeStyle = dark; ctx.lineWidth = 5; ctx.stroke();
+    ctx.strokeStyle = '#efe8d2'; ctx.lineWidth = 2.8; ctx.stroke();
+    const a = 1.15, ex = -3 + Math.cos(a) * 12, ey = Math.sin(a) * 12;
+    ctx.beginPath(); ctx.moveTo(ex, -ey); ctx.lineTo(ex, ey); ctx.strokeStyle = '#d8d0c0'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(10, 0); ctx.strokeStyle = dark; ctx.lineWidth = 3.5; ctx.stroke();
+    ctx.strokeStyle = '#c8b890'; ctx.lineWidth = 1.8; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(8, -3.5); ctx.lineTo(8, 3.5); ctx.closePath(); ctx.fillStyle = '#9dff8a'; ctx.fill(); ctx.strokeStyle = dark; ctx.lineWidth = 1.2; ctx.stroke();
   }
   ctx.restore();
 }
@@ -6619,7 +6662,7 @@ function infoText() {
     }
     const L = t.def.levels[t.lvl];
     if (t.spec) return [`${SPEC[t.spec].title} — Seviye ${t.lvl + 1}`, `${L.perk} · ${SPEC[t.spec].who}`];
-    if (t.lvl >= t.def.levels.length - 1) return [`${L.title} — Seviye ${t.lvl + 1} (son)`, `${L.perk} · Bir uzmanlık seç: yukarıdaki iki düğmeden biri`];
+    if (t.lvl >= t.def.levels.length - 1) return [`${L.title} — Seviye ${t.lvl + 1} (son)`, `${L.perk} · Bir uzmanlık seç: yukarıdaki ${t.def.abilities.length === 3 ? 'üç' : 'iki'} düğmeden biri`];
     return [`${L.title} — Seviye ${t.lvl + 1}`, `${towerStats(t.type, L)} · ${L.perk}`];
   }
   return null;

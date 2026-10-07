@@ -34,6 +34,9 @@ const TOWERS = {
         ranks: [{ cost: 140, armor: 0.1, hp: 30 }, { cost: 190, armor: 0.18, hp: 60 }, { cost: 240, armor: 0.25, hp: 100 }] },
       { id: 'blade', name: 'Kılıç Ustası', desc: (r) => `Hasar x${r.mult} · %${Math.round(r.crit * 100)} kritik vuruş`,
         ranks: [{ cost: 160, mult: 1.3, crit: 0.1 }, { cost: 220, mult: 1.6, crit: 0.15 }, { cost: 280, mult: 2, crit: 0.2 }] },
+      // okçu yolu: askerler yolu kesmez, toplanma yerinden ok atar (uçanları da vurur); canları %25 düşük
+      { id: 'bow', name: 'Okçular', desc: (r) => `${r.r} menzilden ok atarlar, havayı da vururlar · hasar x${r.mult} · yolu kesmezler`,
+        ranks: [{ cost: 150, r: 115, mult: 1.1, rate: 1.1 }, { cost: 200, r: 130, mult: 1.4, rate: 1 }, { cost: 260, r: 145, mult: 1.75, rate: 0.85 }] },
     ],
   },
   mage: {
@@ -832,7 +835,7 @@ TOWERS.artillery.levels[0].perk = 'Veba bulamacı: alan hasarı, yerde zehirli g
 TOWERS.artillery.levels[1].perk = 'Daha ağır veba, daha geniş gaz bulutu';
 TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir';
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
-const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
+const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', bow: 'Kemik Okçular', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
 // komutanlar (tek seçilir): Kont Vladrik (eski komutanın yetenekleri), Wailing Wren (eski okçunun yetenekleri)
 Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
@@ -1005,6 +1008,7 @@ for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOW
 const SPEC = {
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
   blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
+  bow:    { title: 'Okçu Ocağı',      who: 'Okçular: deri zırh, uzun yay' },
   poison: { title: 'Zehir Avcıları',  who: 'Maskeli avcılar, yeşil zehirli oklar' },
   snipe:  { title: 'Kartal Göz Kalesi', who: 'Şapkalı nişancılar, uzun kara yay' },
   frost:  { title: 'Ayaz Kulesi',     who: 'Buz kristalleri, mavi küre' },
@@ -1028,6 +1032,7 @@ if (NECRO) {
   for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
   Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
   Object.assign(SPEC.blade, { title: 'Ölüm Şövalyeleri', who: 'Yeşil alevli çift kemik kılıç' });
+  Object.assign(SPEC.bow, { title: 'Kemik Okçular', who: 'Kapüşonlu, deri zırhlı iskeletler, kemik yay' });
   Object.assign(SPEC.poison, { title: 'Veba Kemiği', who: 'Zehirli yeşil kıymıklar' });
   Object.assign(SPEC.snipe, { title: 'Kemik Mızrak', who: 'Uzun menzilli dev kemik mızrak' });
   Object.assign(SPEC.frost, { title: 'Lanet Feneri', who: 'Düşmanları donduran soğuk lanet' });
