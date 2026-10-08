@@ -189,3 +189,10 @@ Test: tools/kesim-onizleme.js (showCuts, showAnim, strip) + __game.anim / __game
 sentez sesler: zapSound (elektrik kulesi), clashSound (kılıç). Yol dokuları: road_dirt / road_sand (Gemini).
 
 Her değişiklikten sonra: akış testi + gerekirse denge botu, sonra commit/push.
+
+## Animasyon şeritleri ve bellek (9 Eki 2026, yayın 130)
+Saldırı şeritleri eklenince hepsi açılışta yüklenip ~350 MB çözülmüş bellek tuttu, oyun tablette dondu (yayın 125–127; 128'de geri alındı).
+Kural: düşman/iskelet şeritleri karakter boyu 160 px (video_isle.py UNIT_H; eskiler `varliklar/serit_kucult.py` ile küçültülür).
+game.js: `/^(enemy|unit)_..._(walk|atk)$/` şeritleri manifestte olsa da açılışta yüklenmez (LAZY); startLevel bölümün düşman türleri
+(+ base, split, summon) ve iskeletler için useStrips(keep) çağırır, gerekmeyenleri bellekten atar; bölüm dışında ilk istekte yüklenir (loadStrip).
+Yeni ağır görsel eklerken çözülmüş boyu (genişlik × yükseklik × 4) hesapla.
