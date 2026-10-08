@@ -1161,6 +1161,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
       m.leader = e; m.form = fd + (k >= ESCORT_FORM.length ? -30 : 0);
     }
   }
+  codexNote(type);
   if (type === 'ram' && !G.saidRam) { G.saidRam = true; setTimeout(() => mortSay('ram', true), 1200); }
   if (def.chief) bossIntro(e);
   else {
@@ -8211,6 +8212,271 @@ function upgradeIcon(id, x, y) {
   else drawIcon('heart', x, y, 20);
 }
 
+// ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
+// save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
+const CODEX_ENEMIES = ['legion', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry', 'ram', 'catapult',
+  'centurion', 'champion', 'shadowmaster', 'cavcaptain', 'gloriosus'];
+const CODEX_NOTE = {
+  legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
+  solarcher: 'Uzaktan ok atar, yakından ağlar. İskeletlerimi yanına yolla.',
+  gladiator: 'Arenada alkış bekler. Burada tek alkış kemiklerinin takırtısı.',
+  assassin: 'Gölgeye saklanır. Benim bahçemde gölgeler de benim, haberi yok.',
+  priest: 'Yaralıları iyileştirir. Ben de ölüleri. Mesleki rekabet.',
+  heavy: 'Kalkanı kapımdan geniş. Kıymıklar seker, ruh ışını geçer.',
+  cavalry: 'At güzel. Üstündeki fazlalık. Atı bende kalsın.',
+  ram: 'Kapımı çalmanın en kaba yolu. Zil var, zil!',
+  catapult: 'Bahçeme taş atıyor. Komşuluk bunu gerektirmez.',
+  centurion: 'Borazanı çok sesli. Çayımı içemiyorum.',
+  champion: 'Kalabalığı coşturur. Kalabalık az sonra benim olacak.',
+  shadowmaster: 'Gölgelerin ustası. Ben de mezarların ustasıyım. Tanışırız.',
+  cavcaptain: 'Hücum ederken bağırır. Neden hep bağırıyorlar?',
+  gloriosus: 'Kendi heykelini sipariş etmiş. Mezar taşını ben hediye ederim.',
+  archer: 'Kemikten dikilitaş. Kıymıkları geri dönüşümlü.',
+  barracks: 'Eski komşular. Kira ödemiyorlar ama kapıyı iyi tutuyorlar.',
+  mage: 'Ruhlar burada çalışıyor. Mesai bitince de çalışıyor.',
+  artillery: 'Tarifi gizli: biraz veba, biraz çürük, bolca sevgi.',
+  altar: 'Kan bağışı gönüllüdür. Genellikle.',
+};
+const CODEX = { tab: 'e', sel: { e: 'legion', t: 'archer' }, rank: 0, lvl: 2, t0: 0 };
+function codexSeen(t) { return (save.codex || []).includes(t); }
+function codexNote(type) {
+  const d = ENEMIES[type], base = d.rank ? d.base : type;
+  save.codex = save.codex || [];
+  if (save.codex.includes(base)) return;
+  save.codex.push(base); save.codexNew = save.codexNew || []; save.codexNew.push(base); persist();
+}
+// eski kayıtlar: tanıtım kartı gösterilmiş düşmanlar kodekse sayılır
+if (save.seenEnemies2 && !save.codex) { save.codex = save.seenEnemies2.filter(t => CODEX_ENEMIES.includes(t)); persist(); }
+function codexTowerOpen(type) { const u = TOWERS[type].unlockLevel; return u == null || (save.stars[u - 1] || 0) > 0; }
+// düşmanın ilk göründüğü bölüm (dalgalar, boss, muhafız)
+function codexFirstLevel(type) {
+  for (let i = 0; i < LEVELS.length; i++) {
+    const lv = LEVELS[i];
+    if (lv.boss === type) return i;
+    for (const w of lv.waves) for (const g of w) {
+      const ts = g.types || [g.t];
+      if (ts.some(t => t === type || (ENEMIES[t] && ENEMIES[t].base === type && ENEMIES[t].rank))) return i;
+      if ((BOSS_ESCORT[g.t] || []).some(([t]) => t === type)) return i;
+    }
+  }
+  return -1;
+}
+// siluet: görülmemiş düşman karartılmış görünür
+const SILHOUETTE = {};
+function silhouette(name, im) {
+  if (SILHOUETTE[name]) return SILHOUETTE[name];
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#1c1426'; g.fillRect(0, 0, c.width, c.height);
+  return (SILHOUETTE[name] = c);
+}
+function codexEnemyImg(type) { const d = ENEMIES[type]; return d.base ? enemySprite(type) : spr('enemy_' + type); }
+function speedName(v) { return v < 13 ? 'Çok yavaş' : v < 20 ? 'Yavaş' : v < 28 ? 'Orta' : v < 34 ? 'Hızlı' : 'Çok hızlı'; }
+// düşman yetenekleri (veriden)
+function enemySkills(d) {
+  const L = [], ab = d.ab || {};
+  if (d.ranged) L.push('Menzilli: durup iskeletlere ok atar');
+  if (d.heals) L.push('İyileştirir: yakındaki askerlerin canını doldurur');
+  if (d.blink || ab.blink) L.push('Gölgeye dalar: ileri ışınlanır');
+  if (ab.summon) L.push('Çağırır: yanına asker getirir');
+  if (ab.howl) L.push(ab.howl.say === 'Borazan!' || d.chief ? 'Borazan: çevresindekileri hızlandırır' : 'Uluma: çevresindekileri hızlandırır');
+  if (ab.slam) L.push('Yere vurur: iskeletleri sersemletir');
+  if (ab.pounce) L.push('Atılır: ileri hücum eder');
+  if (ab.shield) L.push('Kalkan: kısa süre hasar almaz');
+  if (ab.bomb) L.push(`Mancınık ateşi: kuleyi ${ab.bomb.stun} sn susturur`);
+  if (d.chief) L.push('Öfke: canı yarıya inince daha sert vurur');
+  return L;
+}
+function codexBossHp(type) {
+  const i = LEVELS.findIndex(lv => lv.boss === type), lv = LEVELS[i] || {}, tier = lv.tier ?? i;
+  return Math.round((650 + 400 * Math.max(0, tier)) * (ENEMIES[type].hpK || 1));
+}
+function codexBookIcon(r) {
+  ctx.save(); ctx.scale(r / 20, r / 20); ctx.lineJoin = 'round';
+  // kapak: mor deri, ortada yeşil kafatası mührü
+  ctx.fillStyle = '#e8dcbc'; ctx.strokeStyle = 'rgba(28,15,5,0.9)'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.roundRect(-9, -11, 19, 22, 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#5a2a7a'; ctx.beginPath(); ctx.roundRect(-11, -12, 18, 22, 3); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3a1a52'; ctx.fillRect(-11, -10, 3, 18);
+  ctx.fillStyle = '#9dff9a'; ctx.beginPath(); ctx.arc(-1, -3, 4, Math.PI, 0); ctx.lineTo(3, 1); ctx.lineTo(-5, 1); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#3a1a52'; ctx.beginPath(); ctx.arc(-2.6, -2.6, 1.1, 0, Math.PI * 2); ctx.arc(0.6, -2.6, 1.1, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function fitTxt(s, x, y, maxW, size, col, align = 'left', weight = '800', font = FONT_B, stroke = false, min = 7.5) {
+  let sz = size; ctx.font = `${weight} ${sz}px ${font}`; lastFont = null;
+  while (sz > min && ctx.measureText(s).width > maxW) { sz -= 0.5; ctx.font = `${weight} ${sz}px ${font}`; }
+  if (ctx.measureText(s).width > maxW) { while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1); s += '…'; }
+  txt(s, x, y, sz, col, align, weight, font, stroke);
+}
+function codexStats(stats, x0, y) {
+  stats.forEach(([a, b], i) => {
+    const sx = x0 + (i % 2) * 112, sy = y + Math.floor(i / 2) * 20;
+    txt(a, sx, sy, 10, '#a898b8', 'left', '700', FONT_B, false);
+    fitTxt(b, sx + 106, sy, 44, 12, '#fff', 'right', '400', FONT_T);
+  });
+  return y + Math.ceil(stats.length / 2) * 20;
+}
+function codexChip(x, y, s, col, bg, size = 10.5) {
+  ctx.font = `800 ${size}px ${FONT_B}`; lastFont = null; const w = ctx.measureText(s).width + 14;
+  roundRect(x, y - 8, w, 16, 8, bg, col, 1); txt(s, x + w / 2, y + 0.5, size, col, 'center', '800', FONT_B, false);
+  return w;
+}
+function codexPill(key, x, y, w, label, on, fn) {
+  const sc = pressScale(key);
+  ctx.save(); ctx.translate(x + w / 2, y); ctx.scale(sc, sc);
+  roundRect(-w / 2, -12, w, 24, 12, on ? '#c9962e' : 'rgba(40,26,14,0.9)', on ? '#ffe9a0' : 'rgba(212,171,90,0.5)', on ? 2 : 1.2);
+  txt(label, 0, 1, 12, on ? '#fff' : '#cdbb98', 'center', '400', FONT_T);
+  ctx.restore();
+  buttons.push({ key, x, y: y - 14, w, h: 28, fn: () => { if (!on) { fn(); sfx('pick'); } } });
+}
+function drawCodex() {
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
+  if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
+  else { ctx.fillStyle = '#2a1a2a'; ctx.fillRect(0, 0, W, H); }
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(20,10,24,0.55)'); g.addColorStop(1, 'rgba(10,6,12,0.88)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const rk = easeOutBack(clamp(st / 0.45, 0, 1));
+  ctx.save(); ctx.translate(W / 2, 46); ctx.scale(rk, rk); ribbon(0, 0, 300, 'KODEKS', 'blue', 26); ctx.restore();
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
+  // sekmeler
+  const tab = CODEX.tab, nE = CODEX_ENEMIES.filter(codexSeen).length;
+  gameButton('cx_e', 160, 104, 200, 34, `DÜŞMANLAR ${nE}/${CODEX_ENEMIES.length}`, () => { CODEX.tab = 'e'; CODEX.t0 = time; }, tab === 'e' ? 'red' : 'dark', { size: 14, appear: st - 0.15 });
+  gameButton('cx_t', 372, 104, 190, 34, 'KULELER', () => { CODEX.tab = 't'; CODEX.t0 = time; }, tab === 't' ? 'gold' : 'dark', { size: 14, appear: st - 0.2 });
+  // sol: kart ızgarası
+  const list = tab === 'e' ? CODEX_ENEMIES : TOWER_ORDER, cols = tab === 'e' ? 5 : 3, tw = tab === 'e' ? 74 : 118, th = tab === 'e' ? 84 : 118, gap = 8;
+  const gx = 40, gy = 136;
+  list.forEach((id, i) => {
+    const x = gx + (i % cols) * (tw + gap), y = gy + Math.floor(i / cols) * (th + gap), p = clamp((st - 0.15 - i * 0.025) / 0.3, 0, 1);
+    if (p <= 0) return;
+    const known = tab === 'e' ? codexSeen(id) : codexTowerOpen(id), on = CODEX.sel[tab] === id, key = 'cx' + tab + id, sc = pressScale(key) * easeOutBack(p);
+    const boss = tab === 'e' && ENEMIES[id].chief;
+    ctx.save(); ctx.translate(x + tw / 2, y + th / 2); ctx.scale(sc, sc); ctx.translate(-(x + tw / 2), -(y + th / 2));
+    if (on) glow(ctx, x + tw / 2, y + th / 2, tw * 0.8, boss ? '255,110,80' : '170,120,255', 0.35 + Math.sin(time * 4) * 0.1);
+    const bgc = ctx.createLinearGradient(0, y, 0, y + th); bgc.addColorStop(0, boss ? 'rgba(90,24,20,0.95)' : 'rgba(58,36,70,0.95)'); bgc.addColorStop(1, 'rgba(18,10,22,0.95)');
+    roundRect(x, y, tw, th, 12, bgc, on ? '#ffe9a0' : boss ? '#c8563a' : 'rgba(170,140,210,0.55)', on ? 2.5 : 1.5);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(x + 3, y + 3, tw - 6, th - 22, 9); ctx.clip();
+    if (tab === 'e') {
+      const im = codexEnemyImg(id);
+      if (im) { const ih = boss ? 92 : id === 'ram' || id === 'catapult' || id === 'cavalry' ? 70 : 82; drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
+    } else {
+      const im = towerIcon(id, 3);
+      if (im) drawSprite(ctx, known ? im : silhouette('tower_' + id, im), x + tw / 2, y + th - 24, (th - 26) * im.width / im.height * 0.95);
+    }
+    ctx.restore();
+    fitTxt(known ? (tab === 'e' ? ENEMIES[id].name : TOWERS[id].name) : '???', x + tw / 2, y + th - 10, tw - 8, tab === 'e' ? 9.5 : 11, known ? '#f0e2c4' : '#8a7a9a', 'center', '800', FONT_B, false, 7);
+    if (!known) drawIcon('lock', x + tw - 14, y + 14, 14);
+    if ((save.codexNew || []).includes(id)) { const by = y + 6 + Math.sin(time * 5 + i) * 1.5; roundRect(x + tw - 34, by - 7, 34, 14, 7, '#e8434b', '#fff', 1.2); txt('YENİ', x + tw - 17, by + 0.5, 8.5, '#fff', 'center', '400', FONT_T); }
+    ctx.restore();
+    buttons.push({ key, x, y, w: tw, h: th, fn: () => { if (!known) { sfx('error'); return; } if (!on) { CODEX.sel[tab] = id; CODEX.t0 = time; CODEX.rank = 0; sfx('pick'); } } });
+  });
+  // sağ: ayrıntı kartı
+  const id = CODEX.sel[tab], known = tab === 'e' ? codexSeen(id) : codexTowerOpen(id);
+  const px = 476, py = 86, pw = 456, ph = 434, pk = clamp((st - 0.2) / 0.3, 0, 1);
+  if (pk <= 0) return;
+  ctx.save(); ctx.globalAlpha = pk;
+  roundRect(px + 3, py + 6, pw, ph, 18, 'rgba(0,0,0,0.4)');
+  const pg = ctx.createLinearGradient(0, py, 0, py + ph); pg.addColorStop(0, 'rgba(52,34,62,0.97)'); pg.addColorStop(1, 'rgba(20,12,24,0.97)');
+  roundRect(px, py, pw, ph, 18, pg, '#b89ad8', 2);
+  roundRect(px + 5, py + 5, pw - 10, ph - 10, 14, null, 'rgba(255,255,255,0.1)', 1.2);
+  if (!known) {
+    drawIcon('lock', px + pw / 2, py + ph / 2 - 20, 40);
+    txt(tab === 'e' ? 'Henüz karşılaşmadın' : 'Henüz açılmadı', px + pw / 2, py + ph / 2 + 22, 18, '#cdbb98', 'center', '400', FONT_T);
+  } else if (tab === 'e') drawCodexEnemy(id, px, py, pw, ph);
+  else drawCodexTower(id, px, py, pw, ph);
+  ctx.restore();
+  // bakılan kayıt artık yeni değil
+  if (known && save.codexNew && save.codexNew.includes(id)) { save.codexNew = save.codexNew.filter(t => t !== id); persist(); }
+}
+// sahne: kaidenin üstünde canlı (yürüyen) karakter
+function codexStage(x, y, w, h, col) {
+  const g = ctx.createRadialGradient(x, y - h * 0.4, 10, x, y - h * 0.4, w * 0.7); g.addColorStop(0, `rgba(${col},0.28)`); g.addColorStop(1, `rgba(${col},0)`);
+  ctx.fillStyle = g; ctx.fillRect(x - w, y - h, w * 2, h + 20);
+  ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = `rgba(${col},0.5)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.stroke();
+}
+function drawCodexEnemy(id, px, py, pw, ph) {
+  const ranked = RANKED.includes(id), r = ranked ? CODEX.rank : 0, type = r ? id + '_' + RANKS[r].id : id, d = ENEMIES[type];
+  const k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
+  // sol üst: canlı karakter
+  const cx = px + 104, cy = py + 210, im = codexEnemyImg(type);
+  codexStage(cx, cy, 170, 190, d.chief ? '255,110,80' : r === 2 ? '255,210,90' : '170,130,255');
+  if (im) {
+    const big = d.chief ? 168 : ['ram', 'catapult', 'cavalry'].includes(id) ? 132 : 150;
+    const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k);
+    ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 236); ctx.clip();
+    drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * 6, walking: true, fly: 0, seed: 0, rig: d.base ? 'enemy_' + d.base : undefined });
+    ctx.restore();
+    if (r === 2) drawRankStar(cx, cy - hh - 8);
+  }
+  // rütbe seçimi
+  if (ranked) ['Er', 'Kıdemli', 'Yüzbaşı'].forEach((lb, i) => codexPill('cxr' + i, px + 14 + i * 66, py + 250, i ? 70 : 52, lb, r === i, () => { CODEX.rank = i; CODEX.t0 = time; }));
+  // sağ üst: ad ve bilgiler
+  const x0 = px + 222;
+  txt(d.chief ? 'BOSS' : r ? `RÜTBE: ${RANKS[r].name.toLocaleUpperCase('tr')}` : 'SOLARIAN İMPARATORLUĞU', x0, py + 26, 10.5, d.chief ? '#ff9a7a' : '#c8a8ff', 'left', '800', FONT_B, false);
+  const nl = wrapLines(d.name, pw - 236, 22, '400', FONT_T, 2);
+  nl.forEach((l, i) => txt(l, x0, py + 48 + i * 24, 22, '#fff', 'left', '400', FONT_T));
+  let y = py + 54 + nl.length * 24;
+  const fl = codexFirstLevel(id);
+  if (fl >= 0) { fitTxt(`İlk görüldüğü yer: ${fl + 1}. bölüm · ${LEVELS[fl].name}`, x0, y, pw - 236, 10, '#a898b8', 'left', '700'); y += 18; }
+  const hp = d.chief ? codexBossHp(id) : d.hp;
+  const stats = [['Can', hp + ''], ['Zırh', `%${Math.round(d.armor * 100)}`], ['Büyü dir.', `%${Math.round(d.mr * 100)}`],
+    ['Hız', speedName(d.speed)], ['Hasar', `${d.dmg[0]}–${d.dmg[1]}`], ['Can kaybı', d.lives + ''], ['Altın', d.gold + '']];
+  y = codexStats(stats, x0, y) + 6;
+  const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
+  let cxp = x0;
+  for (const q of weak) cxp += codexChip(cxp, y, `Zayıf: ${WK_NAME[q]} +%${Math.round((wk[q] - 1) * 100)}`, '#ffd08a', 'rgba(150,60,10,0.6)', 9.5) + 4;
+  if (weak.length) { y += 20; cxp = x0; }
+  for (const q of res) cxp += codexChip(cxp, y, `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`, '#a8d8ff', 'rgba(20,60,120,0.6)', 9.5) + 4;
+  // alt: açıklama, yetenekler, Mortimer'ın notu
+  let by = py + 284;
+  const desc = ENEMY_DESC[id] || d.desc || '';
+  if (r) { txt(r === 1 ? 'Kıdemli: %60 daha canlı, daha sert vurur, biraz daha zırhlı' : 'Yüzbaşı: 2,5 kat canlı, borazanıyla çevresini hızlandırır', px + 18, by, 11.5, r === 2 ? '#ffe27a' : '#ff9a8a', 'left', '800', FONT_B, false); by += 18; }
+  wrapLines(d.chief ? d.desc : desc, pw - 36, 11.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 11.5, '#f0e2c4', 'left', '700', FONT_B, false); by += 16; });
+  const sk = enemySkills(d);
+  if (sk.length) {
+    by += 2;
+    for (const l of sk.slice(0, 4)) { circle(px + 22, by, 3, '#c8a8ff'); txt(l, px + 32, by + 0.5, 10.5, '#e0d4f0', 'left', '700', FONT_B, false); by += 15; }
+  }
+  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 6, py + ph - 58), pw);
+}
+function codexNoteBox(note, px, y, pw) {
+  if (!note) return;
+  roundRect(px + 14, y, pw - 28, 44, 10, 'rgba(232,220,188,0.95)', '#1a1024', 1.6);
+  drawSkullIcon(px + 32, y + 22, 9);
+  txt("Mortimer'ın notu", px + 48, y + 12, 9.5, '#6a4a8a', 'left', '800', FONT_B, false);
+  wrapLines(note, pw - 80, 11.5, '800', FONT_B, 2).forEach((l, i) => txt(l, px + 48, y + 26 + i * 13, 11.5, '#2a1838', 'left', '800', FONT_B, false));
+}
+const DMG_NAME = { archer: 'Kemik (kıymık)', mage: 'Ruh (büyü)', artillery: 'Veba (alan)', barracks: 'Kılıç (iskeletler)', altar: 'Saldırmaz' };
+function drawCodexTower(id, px, py, pw, ph) {
+  const T = TOWERS[id], li = clamp(CODEX.lvl, 0, T.levels.length - 1), L = T.levels[li], k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
+  const cx = px + 104, cy = py + 214, im = towerIcon(id, li + 1);
+  codexStage(cx, cy, 170, 190, '170,130,255');
+  if (im) { const h = (110 + li * 20) * (0.7 + 0.3 * k); drawSprite(ctx, im, cx, cy + 4, h * im.width / im.height); }
+  ['1', '2', '3'].forEach((lb, i) => codexPill('cxl' + i, px + 30 + i * 54, py + 250, 46, lb + '. sv', li === i, () => { CODEX.lvl = i; CODEX.t0 = time; }));
+  const x0 = px + 222;
+  txt(T.name.toLocaleUpperCase('tr'), x0, py + 26, 10.5, '#c8a8ff', 'left', '800', FONT_B, false);
+  txt(L.title, x0, py + 48, 22, '#fff', 'left', '400', FONT_T);
+  txt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 70, 10, '#a898b8', 'left', '700', FONT_B, false);
+  const stats = [['Maliyet', L.cost + ' altın'], ['Menzil', L.range + '']];
+  if (id === 'barracks') stats.push(['İskelet canı', L.hp + ''], ['İsk. hasarı', `${L.dmg[0]}–${L.dmg[1]}`], ['İsk. zırhı', `%${Math.round(L.armor * 100)}`], ['Doğma süresi', L.respawn + ' sn']);
+  else if (id === 'altar') stats.push(['Hızlandırma', `%${Math.round(L.buff * 100)}`]);
+  else { stats.push(['Hasar', `${L.dmg[0]}–${L.dmg[1]}`], ['Atış arası', L.rate + ' sn']); if (L.splash) stats.push(['Alan', L.splash + '']); }
+  let y = codexStats(stats, x0, py + 92) + 4;
+  wrapLines(L.perk || T.desc, pw - 236, 11, '700', FONT_B, 3).forEach(l => { txt(l, x0, y, 11, '#f0e2c4', 'left', '700', FONT_B, false); y += 15; });
+  // uzmanlıklar
+  let by = py + 284;
+  txt('UZMANLIKLAR (3. seviyede biri seçilir)', px + 18, by, 10.5, '#ffe27a', 'left', '800', FONT_B, false); by += 16;
+  for (const a of T.abilities || []) {
+    const S = SPEC[a.id] || {}, top = a.ranks[a.ranks.length - 1], title = S.title || a.name;
+    txt(title, px + 18, by, 12.5, '#fff', 'left', '400', FONT_T);
+    ctx.font = `400 12.5px ${FONT_T}`; lastFont = null; const nw = ctx.measureText(title).width;
+    if (S.who) fitTxt('· ' + S.who, px + 24 + nw, by, pw - 48 - nw, 10, '#a898b8', 'left', '700');
+    by += 13;
+    fitTxt(`${a.name}, en üst kademe: ${a.desc(top)}`, px + 18, by, pw - 36, 10, '#cdbb98', 'left', '700');
+    by += 14;
+  }
+  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 4, py + ph - 58), pw);
+}
+
 
 // ---------- ekranlar ----------
 // başlık görselinin bulanık kopyası (harita ekranının arka planı): küçültüp büyütmek her tarayıcıda çalışan ucuz bir bulanıklık
@@ -8488,6 +8754,8 @@ function drawMap() {
   ctx.save(); ctx.translate(W / 2 + 40, 46); ctx.scale(rk, rk); ribbon(0, 0, 330, `${mapEp}. SEFER: ${E.name.toLocaleUpperCase('tr')}`, mapEp === 1 ? 'red' : 'gold', 20); ctx.restore();
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
+  roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
+  if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
   const total = save.stars.reduce((a, b) => a + (b || 0), 0);
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
   roundRect(W - 150, 22, 132, 38, 19, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
@@ -9380,6 +9648,7 @@ function frame(now) {
   else if (screen === 'heroes') drawHeroes();
   else if (screen === 'settings') drawSettings();
   else if (screen === 'upgrades') drawUpgrades();
+  else if (screen === 'codex') drawCodex();
   else drawPlay();
   drawPartsAll(uiParts);
   if (trans) {
@@ -9443,7 +9712,7 @@ window.__game = {
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },
+  goMap: () => { screen = 'map'; screenT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; }, goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX,
   learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };

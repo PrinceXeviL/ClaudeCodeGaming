@@ -39,9 +39,10 @@ kule/komutan adları (Vladrik = eski commander, Wren = eski zeynep). Eski seferl
 Görseller: `varliklar/ham/nm_*.jpg` (Gemini, magenta zemin) → `python3 varliklar/nm_isle.py` → img/ (castle_*, tower_*, unit_skel_*, enemy_*, nm_* dekor,
 grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık/harita arka planı `img/nm_title.jpg` (kod dışında birleştirildi).
 Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
-Yapıldı: Mortimer'ın 3 büyüsü (Ölüleri Diriltme, Kemik Duvarı, Korku), rütbe renkleri (yayın 87).
+Yapıldı: Mortimer'ın 3 büyüsü (Ölüleri Diriltme, Kemik Duvarı, Korku), rütbe renkleri (yayın 87), kodeks (yayın 90).
+Oyun yapım aşamasında: sistemler oturunca ~100 bölüm tasarlanacak (şimdilik 5).
 Sırada (öneri listesi, 8 Eki): dokunulabilir dekor şakaları (karga, mezar eli, Mortimer'ın çayı), meydan okuma modları
-(3 yıldızdan sonra Kahramanlık/Demir, ek yıldız), kodeks (düşman/kule kartları), başarımlar, çizgi roman panelleri
+(3 yıldızdan sonra Kahramanlık/Demir, ek yıldız), başarımlar, çizgi roman panelleri
 (sefer girişi 5, boss öncesi 2-3; Gemini yazısız, balonlar kodla), Sefer 2 (çöl lejyonları / kuzey savaşçıları), animasyon kareleri (poz kılavuzu).
 
 ## Müzik, dalga önizleme, rütbeler, Mortimer lafları (8 Eki 2026, yayın 87)
@@ -67,6 +68,14 @@ Sırada (öneri listesi, 8 Eki): dokunulabilir dekor şakaları (karga, mezar el
 yer düzlemi MUD_SQ=0.6 basık). Durağan katman önbellekte (mudBase: ıslak leke, sıçrantılar, ıslak kenar, yosun, topaklar, çubuklar),
 her karede girdap, parıltı, kabarcık (şişer/patlar), yağmur halkaları, içinden geçenlerin halkaları ve yarı gömülü kemik/kafatası (mudProp).
 Yavaşlatma alanı mudAt (döndürülmüş elips). Çamurdaki birimlerin ayağına drawWade ile çamur halkası çizilir, yürürken çamur sıçrar.
+
+## Kodeks (8 Eki 2026, yayın 90)
+Haritada ayarların solundaki kitap düğmesi (yeni kayıt sayısı rozetli) → `screen = 'codex'` (game.js drawCodex).
+İki sekme: DÜŞMANLAR (CODEX_ENEMIES, görülmeyen karartılmış siluet + kilit) ve KULELER (TOWER_ORDER, açılmamışsa kilitli).
+Ayrıntı kartı: kaidede yürüyen canlı karakter (drawUnit), Er/Kıdemli/Yüzbaşı seçimi (rütbeli görünüm ve değerler), ilk görüldüğü bölüm,
+can/zırh/büyü direnci/hız/hasar/can kaybı/altın, zayıf/dirençli rozetleri, yetenekler (enemySkills: veriden), açıklama, "Mortimer'ın notu"
+(CODEX_NOTE, yeni düşman/kule eklenince buraya esprili not ekle). Kulelerde 1-3. seviye seçimi, değerler, uzmanlıklar.
+Kayıt: save.codex (görülen asıl türler; spawnEnemy → codexNote), save.codexNew (bakılmamış yeniler). Yeni düşman eklenince CODEX_ENEMIES'e ekle.
 
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)
