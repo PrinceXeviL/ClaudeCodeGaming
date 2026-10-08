@@ -108,6 +108,18 @@ renk kayması, zemin çizgisi, satırlar arası boy farkı; promptta "ALL 8 fram
 Sonraki düşmanlar aynı sırayla: model sayfası → yandan yürüyüş → önden → arkadan → saldırı (kendi silahına uygun kılavuzla).
 anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor body|head|heel, --order, --norm.
 
+## Parçalı (iskeletli) animasyon (8 Eki 2026, yayın 95) — kare kare yerine bu kullanılıyor
+Kullanıcı Gemini kare kare animasyonlarını "amatörce" buldu (az kare ~10 fps, her karede çizim titriyor). Yerine Spine benzeri parçalı karakter:
+Gemini'den bir PARÇA SAYFASI (baş, gövde, etek, pelerin, üst kol/önkol x2, uyluk/baldır/ayak x2, kalkan, mızrak; magenta zemin, ayrık parçalar)
+→ `python3 varliklar/kukla_isle.py ham/anim/lejyoner_parcalar.jpg enemy_legion_parts <ad listesi satır satır>` → img/<atlas>.webp + img/puppet.json.
+game.js PUPPETS: kemikler (ebeveyn, bağlantı oranı, eklem noktası, dinlenme açısı, abs = dünya açısı, sc = ölçek) ve çizim sırası;
+puppetSolve (ileri kinematik), legionPose (yürüyüş: uyluk salınımı, salınımda diz bükülür, topuk kalkar, gövde iner kalkar, kollar karşı salınır,
+pelerin gecikmeli; saldırı: kurulma → saplama → toparlanma, ATK_FRAME_T ölçeğinde 0 = darbe; duruş: nefes), drawPuppet (taban her an zemine basar).
+drawUnit'te PUPPETS[rig] varsa her yönde parçalı çizim kullanılır (kare şeritleri devre dışı; önden/arkadan parça sayfaları ileride).
+Rütbe/boss renkleri atlası yeniden boyar (puppetAtlas; sorguç = baş parçasının üstü). Test: `__game.puppet(ctx,x,y,h,{walking,phase|atk,type})`, `__game.pupOff(true)`.
+Yeni düşman: model sayfası → parça sayfası (şablon `tasarim/promptlar/kukla_parcalar_lejyoner.txt`) → kukla_isle.py → PUPPETS'e kemikler + poz işlevi.
+Parça adlarını ve eklem noktalarını belirlemek için parçaları %10 ızgarayla görüntüle (bkz. lejyoner değerleri).
+
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)
 ve eski tasarım notları silindi (git geçmişinde duruyor). data.js'teki eski LEVELS/ENEMIES verisi duruyor: NECRO bölümleri eski ilk 5 bölümün

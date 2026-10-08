@@ -5615,6 +5615,144 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
   ctx.restore();
 }
 
+
+// ----- Parçalı (iskeletli) animasyon: Gemini parça sayfası → varliklar/kukla_isle.py → img/<atlas>.webp + puppet.json -----
+// Karakter tek bir temiz çizimin parçalarından (baş, gövde, kollar, bacaklar, kalkan, mızrak, pelerin) kurulur ve her karede
+// eklemlerden döndürülür: 60 kare akıcı, çizim titremez. Açılar derece, saat yönü (+) = canvas döndürmesi; sağa bakan karakterde
+// bacak/kol için eksi = öne. Ayaklar ileri kinematikle hesaplanır: en alttaki taban her an zemine basar (kayma/batma yok).
+const PUPPET_META = {};
+fetch('img/puppet.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => Object.assign(PUPPET_META, m)).catch(() => {});
+// kemik: p ebeveyn (yoksa kalça kökü), at: ebeveyn parçasındaki bağlantı (oran; kökte piksel), pv: kendi eklem noktası (oran),
+// a: dinlenme açısı, abs: dönüşü ebeveynden bağımsız (dünya açısı; kalkan, mızrak, baş, pelerin)
+const PUPPETS = {
+  enemy_legion: {
+    atlas: 'enemy_legion_parts', sole: 'footN',
+    bones: {
+      thighF: { at: [7, -2], pv: [0.5, 0.12] }, shinF: { p: 'thighF', at: [0.5, 0.86], pv: [0.52, 0.08] }, footF: { p: 'shinF', at: [0.5, 0.78], pv: [0.3, 0.12] },
+      thighN: { at: [-6, 0], pv: [0.5, 0.12] }, shinN: { p: 'thighN', at: [0.5, 0.86], pv: [0.52, 0.08] }, footN: { p: 'shinN', at: [0.5, 0.78], pv: [0.3, 0.12] },
+      torso: { at: [0, -4], pv: [0.6, 0.9] },
+      skirt: { p: 'torso', at: [0.6, 0.84], pv: [0.5, 0.14] },
+      cape: { p: 'torso', at: [0.36, 0.14], pv: [0.8, 0.05], abs: true, sc: 0.78 },
+      head: { p: 'torso', at: [0.55, 0.16], pv: [0.62, 0.9], abs: true },
+      uarmF: { p: 'torso', at: [0.84, 0.26], pv: [0.36, 0.2], a: 18 },
+      farmF: { p: 'uarmF', at: [0.74, 0.86], pv: [0.07, 0.45], a: -95 },
+      shield: { p: 'farmF', at: [0.8, 0.5], pv: [0.32, 0.5], abs: true },
+      uarmN: { p: 'torso', at: [0.22, 0.3], pv: [0.55, 0.2], a: -6 },
+      farmN: { p: 'uarmN', at: [0.36, 0.9], pv: [0.07, 0.45], a: 30 },
+      spear: { p: 'farmN', at: [0.86, 0.5], pv: [0.42, 0.5], abs: true, a: -12 },
+    },
+    order: ['cape', 'thighF', 'shinF', 'footF', 'uarmF', 'thighN', 'shinN', 'footN', 'skirt', 'torso', 'head', 'farmF', 'shield', 'uarmN', 'spear', 'farmN'],
+  },
+};
+const PUP_BONE_ORDER = ['thighF', 'shinF', 'footF', 'thighN', 'shinN', 'footN', 'torso', 'skirt', 'cape', 'head', 'uarmF', 'farmF', 'shield', 'uarmN', 'farmN', 'spear'];
+const D2R = Math.PI / 180;
+const mMul = (A, B) => [A[0] * B[0] + A[2] * B[1], A[1] * B[0] + A[3] * B[1], A[0] * B[2] + A[2] * B[3], A[1] * B[2] + A[3] * B[3], A[0] * B[4] + A[2] * B[5] + A[4], A[1] * B[4] + A[3] * B[5] + A[5]];
+const mPt = (M, x, y) => [M[0] * x + M[2] * y + M[4], M[1] * x + M[3] * y + M[5]];
+// iskeletin dünya matrislerini hesaplar (kök = kalça, (0,0)); poz: kemik -> ek açı, ayrıca torsoY (kalça yüksekliği oynaması)
+function puppetSolve(P, R, pose) {
+  const W = {};
+  for (const n of PUP_BONE_ORDER) {
+    const b = P.bones[n], r = R[n]; if (!b || !r) continue;
+    const ang = ((b.a || 0) + (pose[n] || 0)) * D2R, c = Math.cos(ang), s = Math.sin(ang);
+    let px, py, base;
+    if (b.p) { const pr = R[b.p], M = W[b.p]; [px, py] = mPt(M, b.at[0] * pr[2], b.at[1] * pr[3]); base = b.abs ? [1, 0, 0, 1, 0, 0] : [M[0], M[1], M[2], M[3], 0, 0]; }
+    else { px = b.at[0]; py = b.at[1] + (n === 'torso' ? pose.torsoY || 0 : 0); base = [1, 0, 0, 1, 0, 0]; }
+    let M = mMul([base[0], base[1], base[2], base[3], px, py], [c, s, -s, c, 0, 0]);
+    if (b.sc) M = mMul(M, [b.sc, 0, 0, b.sc, 0, 0]);
+    M = mMul(M, [1, 0, 0, 1, -b.pv[0] * r[2], -b.pv[1] * r[3]]);
+    W[n] = M;
+  }
+  return W;
+}
+// yürüyüş, duruş ve saldırı pozu (u: adım evresi 0-1, atk: saldırı zamanı, ATK_FRAME_T ölçeğinde; 0 = darbe)
+function legionPose(o) {
+  const pose = {}, ease = (x) => x * x * (3 - 2 * x), lerpK = (k, ...v) => { const n = v.length - 1, i = Math.min(n - 1, Math.floor(k * n)), f = k * n - i; return v[i] + (v[i + 1] - v[i]) * ease(f); };
+  const t = time + (o.seed || 0) * 7;
+  if (o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER) {
+    // saldırı: kurulma (mızrak geri, gövde geri) → saplama (kol ileri, gövde öne, ön ayak adım) → toparlanma
+    const k = clamp((o.atk + ATK_PREP) / (ATK_PREP + ATK_AFTER), 0, 1), hitK = ATK_PREP / (ATK_PREP + ATK_AFTER);
+    const keys = [0, hitK * 0.55, hitK * 0.85, hitK, hitK + (1 - hitK) * 0.35, 1];
+    const at = (...v) => { let i = 0; while (i < keys.length - 2 && k > keys[i + 1]) i++; const f = (k - keys[i]) / Math.max(1e-6, keys[i + 1] - keys[i]); return v[i] + (v[i + 1] - v[i]) * ease(clamp(f, 0, 1)); };
+    pose.torso = at(0, 8, 6, -12, -9, 0);
+    pose.uarmN = at(0, 40, 30, -62, -50, 0);
+    pose.farmN = at(0, -10, -40, -26, -20, 0);
+    pose.spear = at(0, 4, -2, 8, 6, 0);
+    pose.uarmF = at(0, 6, 4, -14, -10, 0);
+    pose.shield = at(0, 2, 2, -4, -3, 0);
+    pose.thighN = at(0, 4, -6, -26, -22, 0); pose.shinN = at(0, 0, 10, 14, 12, 0);
+    pose.thighF = at(0, 6, 10, 16, 14, 0); pose.shinF = at(0, 4, 6, 2, 2, 0);
+    pose.head = at(0, 3, 0, -4, -3, 0);
+    pose.cape = at(6, 2, 4, 18, 14, 6) + Math.sin(t * 6) * 2;
+    return pose;
+  }
+  if (o.walking) {
+    const ph = o.phase, sN = Math.sin(ph), cN = Math.cos(ph);
+    // uyluk salınımı (eksi = öne); salınımda diz bükülür, duruşta düz; arka ayakta topuk kalkar
+    const A = 26, swingN = Math.max(0, cN), swingF = Math.max(0, -cN);
+    pose.thighN = -A * sN; pose.thighF = A * sN;
+    pose.shinN = 6 + 46 * swingN ** 1.4; pose.shinF = 6 + 46 * swingF ** 1.4;
+    pose.footN = -pose.thighN - pose.shinN + 18 * Math.max(0, sN) * (1 - swingN) - 6 * swingN;
+    pose.footF = -pose.thighF - pose.shinF + 18 * Math.max(0, -sN) * (1 - swingF) - 6 * swingF;
+    pose.torso = -5 + Math.sin(2 * ph) * 1.2;
+    pose.torsoY = -Math.cos(2 * ph) * 2.5;
+    pose.uarmN = 16 * sN; pose.farmN = -6 * sN;
+    pose.uarmF = -6 * sN; pose.shield = Math.sin(ph + 0.6) * 2.5;
+    pose.spear = 3 * Math.sin(ph + 0.4);
+    pose.head = Math.sin(2 * ph + 0.5) * 1.5;
+    pose.cape = 10 + Math.sin(2 * ph - 0.8) * 4;
+    return pose;
+  }
+  // duruş: nefes, pelerin hafif dalgalanır
+  pose.torsoY = Math.sin(t * 2.4) * 0.8; pose.torso = Math.sin(t * 1.2) * 1;
+  pose.uarmN = Math.sin(t * 1.2 + 0.5) * 3; pose.uarmF = Math.sin(t * 1.2 + 1.5) * 2;
+  pose.head = Math.sin(t * 0.9) * 2; pose.cape = 3 + Math.sin(t * 1.7) * 2.5;
+  return pose;
+}
+const PUP_REST = {};
+let PUP_OFF = false; // test: parçalı çizimi kapatır (__game.pupOff)
+// parçalı karakteri (alt-orta = zemin) yüksekliği h olacak şekilde g'ye çizer; atlas rütbe/boss rengiyle boyanabilir
+function drawPuppet(g, P, atlas, pose, h) {
+  const R = PUPPET_META[P.atlas]; if (!R || !atlas) return false;
+  let rest = PUP_REST[P.atlas];
+  if (!rest) {
+    // dinlenme pozunda en üst nokta (başın tepesi) ile taban arası = ölçek
+    const W = puppetSolve(P, R, {}), top = mPt(W.head, 0.5 * R.head[2], 0)[1], sole = puppetSole(W, R);
+    rest = PUP_REST[P.atlas] = { H: sole - top };
+  }
+  const W = puppetSolve(P, R, pose), sole = puppetSole(W, R), k = h / rest.H;
+  const m = pickMip(g, atlas, atlas.width * k), ms = m.width / atlas.width;
+  // her parça için kaydet/geri yükle yerine matris doğrudan kurulur (kare başına yüzlerce parça)
+  const B = g.getTransform(), T = mMul([B.a, B.b, B.c, B.d, B.e, B.f], [k, 0, 0, k, 0, -sole * k]);
+  for (const n of P.order) {
+    const M = W[n], r = R[n]; if (!M || !r) continue;
+    const Q = mMul(T, M);
+    g.setTransform(Q[0], Q[1], Q[2], Q[3], Q[4], Q[5]);
+    g.drawImage(m, r[0] * ms, r[1] * ms, r[2] * ms, r[3] * ms, 0, 0, r[2], r[3]);
+  }
+  g.setTransform(B);
+  return true;
+}
+// iki ayağın tabanından en alttaki (zemine basan) nokta
+function puppetSole(W, R) {
+  let y = -1e9;
+  for (const f of ['footN', 'footF']) { const r = R[f]; if (!W[f] || !r) continue; for (const fx of [0.12, 0.5, 0.95]) y = Math.max(y, mPt(W[f], fx * r[2], 0.97 * r[3])[1]); }
+  return y;
+}
+// rütbe/boss rengi: atlas yeniden boyanır (sorguç = baş parçasının üst kısmı)
+const PUP_ATLAS = {};
+function puppetAtlas(P, type) {
+  const base = spr(P.atlas); if (!base) return null;
+  const d = ENEMIES[type], f = d && (BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank]));
+  if (!f) return base;
+  if (PUP_ATLAS[type]) return PUP_ATLAS[type];
+  const R = PUPPET_META[P.atlas]; if (!R) return base;
+  const hd = R.head, W = base.width, H = base.height;
+  // sorguç: baş parçasının üst %45'i (RANK_LOOK y<0.24 ölçeğine çevrilir); diğer parçalar sorguç sayılmaz
+  return (PUP_ATLAS[type] = recolorCanvas(base, (h, s, l, x, y) => {
+    const px = x * W, py = y * H, inHead = px >= hd[0] && px < hd[0] + hd[2] && py >= hd[1] && py < hd[1] + hd[3];
+    return f(h, s, l, x, inHead ? (py - hd[1]) / hd[3] * 0.52 : 0.6);
+  }));
+}
 function drawUnit(name, im, x, y, face, o) {
   const pad = o.pad || 0, h = o.h * (1 + pad), w = h * im.width / im.height;
   const rig = RIG[o.rig || name] || { legY: 0.7 };
@@ -5683,6 +5821,20 @@ function drawUnit(name, im, x, y, face, o) {
     if (fName) fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * ANIM_META[fName].n) % ANIM_META[fName].n;
   }
   const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
+  const pup = !PUP_OFF && PUPPETS[o.rig || name];
+  if (pup && PUPPET_META[pup.atlas] && spr(pup.atlas)) {
+    const atlas = puppetAtlas(pup, name.slice(6));
+    ctx.save(); ctx.translate(x, y + 1 + oy); ctx.scale(face, 1);
+    if (o.rise != null) ctx.scale(1, o.rise);
+    drawPuppet(ctx, pup, atlas, legionPose(o), o.h);
+    if (o.flash > 0) {
+      // vuruş parlaması: beyaz kopya atlas
+      ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7;
+      drawPuppet(ctx, pup, whiteOf(pup.atlas, spr(pup.atlas)), legionPose(o), o.h);
+    }
+    ctx.restore();
+    return;
+  }
   ctx.save();
   ctx.translate(x + (frontBack ? 0 : ox * face), y + 1 + oy);
   ctx.scale(frontBack ? 1 : face * (rig.flip ? -1 : 1), 1);
@@ -9746,7 +9898,7 @@ window.__game = {
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; }, goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX,
+  goMap: () => { screen = 'map'; screenT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; }, pupOff: (v) => { PUP_OFF = v; }, puppet: (g, x, y, h, o) => { const P = PUPPETS.enemy_legion; g.save(); g.translate(x, y); return drawPuppet(g, P, puppetAtlas(P, o.type || 'legion'), legionPose(o), h) && g.restore(); }, goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX,
   learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
