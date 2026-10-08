@@ -2881,10 +2881,10 @@ function zombieHunt(s) {
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
-  const S = NECRO_SPELLS.nm_raise, M = S.minion;
+  const S = NECRO_SPELLS.nm_raise, M = S.minion, up = upgRank('spells') >= 2 ? 1.25 : 1; // gelişme: dirilenler %25 dayanıklı
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
-  const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp, maxHp: M.hp, dmg: M.dmg, armor: M.armor,
-    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay };
+  const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
+    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life * up, born: G.t + delay };
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
     const D = ENEMIES[e.name.slice(6)];
@@ -2988,6 +2988,8 @@ function drawMortimer() {
   ctx.restore();
   ctx.save(); ctx.translate(m.x, m.y);
   const MA = mortAnim(p);
+  // panik şeridi yoksa: ayakta tedirgin titreme ve küçük sekmeler
+  if (!MA && p < 0 && G.mort && G.mort.st === 'panic') ctx.translate(Math.sin(time * 47) * 0.5, -Math.abs(Math.sin(time * 9)) * 1.2);
   if (MA) drawFrame(spr(MA.n), ANIM_META[MA.n], MA.i, hgt * 1.15 * MA.k);
   else if (fim) {
     // boşta 1. kare hafifçe nefes alır; büyüde kareler sırayla oynar
@@ -3761,6 +3763,7 @@ function spawnMercs() {
   sfx('reinforce');
 }
 function updateMercs(dt) {
+  if (NECRO) return; // şapelden kendiliğinden iskelet çıkmaz
   if (G.wave <= 0 || G.lives <= 0) return;
   if (G.mercT == null) G.mercT = MERCS.first;
   G.mercT -= dt;
@@ -7081,6 +7084,7 @@ function castleArcherPoint(i) {
 }
 const CASTLE_ARCHER_S = 0.5;
 function updateCastleArchers(dt) {
+  if (NECRO) return; // şapelde yalnız Mortimer var
   const c = G.castle, L = CASTLE.levels[c.lvl];
   while (c.archers.length < L.archers) c.archers.push({ ang: Math.PI - 0.3, draw: 0, fx: 0, walk: 0, seed: rand(0, 9), cd: rand(0.2, 1) });
   if (G.lives <= 0) return;
@@ -7103,6 +7107,7 @@ function updateCastleArchers(dt) {
   });
 }
 function drawCastleArchers() {
+  if (NECRO) return;
   const c = G.castle;
   c.archers.forEach((a, i) => paintArcher(ctx, castleArcherPoint(i), CASTLE_ARCHER_S, a, Math.min(c.lvl, 2)));
 }
@@ -9602,7 +9607,7 @@ function worldTap(x, y) {
   // kale: dokununca okçu yükseltme menüsü
   {
     const c = G.castle;
-    if (Math.abs(x - (c.x - 12)) < 52 && y < c.y + 22 && y > c.y - 92) {
+    if (!NECRO && Math.abs(x - (c.x - 12)) < 52 && y < c.y + 22 && y > c.y - 92) {
       setSel(G.sel && G.sel.kind === 'castle' ? null : { kind: 'castle' }); sfx('select'); return;
     }
   }
@@ -9695,11 +9700,14 @@ window.__game = {
       const RX = 29, RY = 17, ring = (x, y, ax, ay) => { for (let a = 0; a < 6.283; a += 0.2) if (road(x + Math.cos(a) * ax, y + 2 + Math.sin(a) * ay)) return true; return false; };
       const hit = (x, y) => ring(x, y, RX, RY) || ring(x, y, RX * 0.6, RY * 0.6) || road(x, y + 2);
       const near = (x, y) => ring(x, y, RX + 16, RY + 12);
-      const ui = (x, y) => { const top = y - 80; return (top < 74 && (x < 300 || x > W - 200)) || top < 40 || (y > H - 110 && x < 330) || x < 36 || x > W - 36 || y > H - 30 ||
-        (Math.abs(x - lv.castle[0]) < 95 && y > lv.castle[1] - 150 && y < lv.castle[1] + 50); };
+      // şapel görselinin kutusu: arsa üstüne binmesin, arsanın kulesi (80 px yukarı uzanır) şapeli örtmesin
+      const cim = spr('castle_1'), cp = cim ? castlePlace(lv.castle[0], lv.castle[1], cim) : { x: lv.castle[0], y: lv.castle[1], w: 120 };
+      const cTop = cp.y - cp.w * (cim ? cim.height / cim.width : 1.2), cHalf = cp.w / 2;
+      const onCastle = (x, y) => Math.abs(x - cp.x) < cHalf + RX + 4 && y > cTop - RY - 6 && y < cp.y + 80;
+      const ui = (x, y) => { const top = y - 80; return (top < 74 && (x < 300 || x > W - 200)) || top < 40 || (y > H - 110 && x < 330) || x < 36 || x > W - 36 || y > H - 30 || onCastle(x, y); };
       const plots = lv.plots.map(p => p.slice());
       plots.forEach((pl, k) => {
-        if (!hit(pl[0], pl[1])) return;
+        if (!hit(pl[0], pl[1]) && !onCastle(pl[0], pl[1])) return;
         let best = null, bd = 1e9;
         for (const S of [90, 180]) if (!best) for (let dy = -S; dy <= S; dy += 3) for (let dx = -S; dx <= S; dx += 3) {
           const x = pl[0] + dx, y = pl[1] + dy, d = Math.hypot(dx, dy);
@@ -9708,8 +9716,9 @@ window.__game = {
           best = [x, y]; bd = d;
         }
         out.push({ level: li + 1, plot: k, from: pl.slice(), to: best });
-        if (best) plots[k] = best;
+        plots[k] = best; // yer bulunamazsa arsa kalkar
       });
+      for (let k = plots.length - 1; k >= 0; k--) if (!plots[k]) plots.splice(k, 1);
       if (fix) lv.plots = plots;
       out.push({ level: li + 1, plots: JSON.stringify(plots) });
     });
