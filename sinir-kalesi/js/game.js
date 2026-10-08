@@ -3176,7 +3176,7 @@ function drawAchievements() {
   ctx.save(); ctx.translate(W / 2, 40); ctx.scale(rk, rk); ribbon(0, 0, 300, 'BAŞARIMLAR', 'blue', 24); ctx.restore();
   const got = ACH.filter(a => save.ach && save.ach[a.id]).length;
   txt(`${got} / ${ACH.length}`, W / 2, 74, 15, '#ffe27a', 'center', '400', FONT_T);
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st });
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; }), { appear: st });
   const cols = 3, cw = 290, ch = 58, gx = 10, gy = 6, x0 = W / 2 - (cols * cw + (cols - 1) * gx) / 2, y0 = 88;
   ACH.forEach((a, i) => {
     const c = i % cols, r = Math.floor(i / cols), x = x0 + c * (cw + gx), y = y0 + r * (ch + gy), on = save.ach && save.ach[a.id];
@@ -7249,7 +7249,7 @@ function drawHeroes() {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', 'blue', 26); ctx.restore();
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; }), { appear: st - 0.1 });
   const tm = team();
   txt(NECRO ? 'Savaşa bir komutan götürürsün · seçmek için karta dokun' : 'Savaşa bir kahraman götürürsün · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
   HERO_ORDER.forEach((id, i) => drawHeroCard(id, W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, 300, st - 0.1 - i * 0.08, tm));
@@ -7882,7 +7882,7 @@ function drawUpgrades() {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 320, 'GELİŞMELER', 'gold', 26); ctx.restore();
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; }), { appear: st - 0.1 });
   const free = starsTotal() - starsSpent();
   roundRect(W - 160, 26, 138, 38, 19, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
   fancyStar(W - 139, 45, 13, true);
@@ -8057,7 +8057,7 @@ function drawCodex() {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 46); ctx.scale(rk, rk); ribbon(0, 0, 300, 'KODEKS', 'blue', 26); ctx.restore();
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; }), { appear: st - 0.1 });
   // sekmeler
   const tab = CODEX.tab, nE = CODEX_ENEMIES.filter(codexSeen).length;
   gameButton('cx_e', 160, 104, 200, 34, `DÜŞMANLAR ${nE}/${CODEX_ENEMIES.length}`, () => { CODEX.tab = 'e'; CODEX.t0 = time; }, tab === 'e' ? 'red' : 'dark', { size: 14, appear: st - 0.15 });
@@ -8279,146 +8279,192 @@ function drawTitleLogo(x, y, k) {
   tg.globalCompositeOperation = 'destination-in'; tg.setTransform(1, 0, 0, 1, 0, 0); tg.drawImage(L.m, 0, 0);
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(t, x - L.w / 2 * k, y - L.h / 2 * k, L.w * k, L.h * k); ctx.restore();
 }
-// büyük OYNA düğmesi: gotik kemer biçimli koyu taş, kemik çerçeve, zehir yeşili parlayan kenar, iki yanda kafatası (gövde önbellekte)
-function playButtonBody(w, h, label) {
-  const key = w + 'x' + h + label;
-  if (TITLE_C.btn && TITLE_C.btn.key === key && (TITLE_C.btnOk || !fontReady())) return TITLE_C.btn;
-  const P = 24, [c, g] = offscreen(w + P * 2, h + P * 2), x0 = P, y0 = P;
-  const shape = (o) => { g.beginPath(); g.moveTo(x0 + o, y0 + h - o); g.lineTo(x0 + o, y0 + 18); g.quadraticCurveTo(x0 + o, y0 + o, x0 + 30, y0 + o);
-    g.lineTo(x0 + w / 2 - 22, y0 + o); g.lineTo(x0 + w / 2, y0 - 10 + o); g.lineTo(x0 + w / 2 + 22, y0 + o); g.lineTo(x0 + w - 30, y0 + o);
-    g.quadraticCurveTo(x0 + w - o, y0 + o, x0 + w - o, y0 + 18); g.lineTo(x0 + w - o, y0 + h - o); g.closePath(); };
-  g.save(); g.translate(0, 7); shape(0); g.fillStyle = 'rgba(0,0,0,0.55)'; g.fill(); g.restore();
-  shape(0); g.fillStyle = '#07040b'; g.fill();
-  let gr = g.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, '#e9dfc2'); gr.addColorStop(1, '#8f8466');
-  shape(3); g.fillStyle = gr; g.fill(); // kemik çerçeve
-  gr = g.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, '#2c5a34'); gr.addColorStop(0.5, '#173a22'); gr.addColorStop(1, '#0c1f14');
-  shape(8); g.fillStyle = gr; g.fill();
-  gr = g.createLinearGradient(0, y0, 0, y0 + h * 0.5); gr.addColorStop(0, 'rgba(255,255,255,0.22)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
-  shape(10); g.fillStyle = gr; g.fill();
-  g.strokeStyle = 'rgba(140,255,150,0.85)'; g.lineWidth = 2; shape(12); g.stroke();
-  // yanlarda kafatası ve kemik çivileri
-  for (const sd of [-1, 1]) {
-    const sx = x0 + w / 2 + sd * (w / 2 - 30);
-    g.save(); g.translate(sx, y0 + h / 2 + 1);
-    g.fillStyle = '#efe6cc'; g.strokeStyle = '#140c18'; g.lineWidth = 1.6;
-    g.beginPath(); g.arc(0, -2, 11, Math.PI * 0.9, Math.PI * 2.1); g.lineTo(6.5, 8); g.lineTo(-6.5, 8); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = '#140c18'; g.beginPath(); g.ellipse(-4, -1, 3, 3.5, 0, 0, Math.PI * 2); g.ellipse(4, -1, 3, 3.5, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#7dff7a'; g.beginPath(); g.arc(-4, -1, 1.3, 0, Math.PI * 2); g.arc(4, -1, 1.3, 0, Math.PI * 2); g.fill();
-    g.restore();
-  }
-  g.font = `${Math.round(h * 0.52)}px ${FONT_T}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  g.save(); g.shadowColor = 'rgba(120,255,140,0.9)'; g.shadowBlur = 18; g.strokeStyle = '#05030a'; g.lineWidth = 7; g.strokeText(label, x0 + w / 2, y0 + h / 2 + 3); g.restore();
-  gr = g.createLinearGradient(0, y0 + h * 0.2, 0, y0 + h * 0.8); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#bfffb0');
-  g.fillStyle = gr; g.fillText(label, x0 + w / 2, y0 + h / 2 + 3);
-  const [m, mg] = offscreen(w + P * 2, h + P * 2);
-  // parıltı maskesi: düğmenin iç yüzü
-  const mm = (o) => { mg.beginPath(); mg.moveTo(x0 + o, y0 + h - o); mg.lineTo(x0 + o, y0 + 18); mg.quadraticCurveTo(x0 + o, y0 + o, x0 + 30, y0 + o);
-    mg.lineTo(x0 + w / 2 - 22, y0 + o); mg.lineTo(x0 + w / 2, y0 - 10 + o); mg.lineTo(x0 + w / 2 + 22, y0 + o); mg.lineTo(x0 + w - 30, y0 + o);
-    mg.quadraticCurveTo(x0 + w - o, y0 + o, x0 + w - o, y0 + 18); mg.lineTo(x0 + w - o, y0 + h - o); mg.closePath(); };
-  mm(8); mg.fillStyle = '#fff'; mg.fill();
-  TITLE_C.btn = { key, c, m, P, w, h }; TITLE_C.btnOk = fontReady();
-  return TITLE_C.btn;
+// ----- ana menü: "Mortimer'ın tepesi" -----
+// Sol: logo ve mezar taşı levhası menü. Sağ: tepede ışıklı şapel, balkonda çay içen Mortimer, kapıda iki iskelet nöbetçi.
+// Arka: yıldızlı mor gök, ay ve bulutlar, mezar taşlı tepe siluetleri; uzak sırtta meşaleli lejyon yürür.
+// Durağan katmanlar (gök, tepeler, ağaç siluetleri, levha gövdeleri) bir kez çizilir.
+function titleBackdrop() {
+  if (TITLE_C.sky && TITLE_C.skyOk) return TITLE_C.sky;
+  const [c, g] = offscreen(W, H, 1.5), rnd = seeded(11);
+  let gr = g.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, '#07040f'); gr.addColorStop(0.45, '#1a1030'); gr.addColorStop(0.7, '#2c1b40'); gr.addColorStop(1, '#0c0812');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 140; i++) { const x = rnd() * W, y = rnd() * H * 0.55, r = rnd() * 1.1 + 0.3; g.fillStyle = `rgba(230,225,255,${0.25 + rnd() * 0.6})`; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+  // ufukta soluk yeşil sis
+  gr = g.createLinearGradient(0, H * 0.5, 0, H * 0.72); gr.addColorStop(0, 'rgba(90,200,120,0)'); gr.addColorStop(1, 'rgba(90,200,120,0.12)');
+  g.fillStyle = gr; g.fillRect(0, H * 0.5, W, H * 0.22);
+  const ridge = (y0, amp, col, seed, tombs) => {
+    const r = seeded(seed), pts = [];
+    g.fillStyle = col; g.beginPath(); g.moveTo(0, H);
+    for (let x = 0; x <= W; x += 16) { const y = y0 + Math.sin(x * 0.006 + seed) * amp + Math.sin(x * 0.019 + seed * 2) * amp * 0.35; pts.push([x, y]); g.lineTo(x, y); }
+    g.lineTo(W, H); g.closePath(); g.fill();
+    for (let i = 0; i < tombs; i++) { // mezar taşı ve haç siluetleri
+      const [x, y] = pts[Math.floor(r() * pts.length)], k = 0.6 + r() * 0.7;
+      if (r() < 0.5) { g.beginPath(); g.roundRect(x - 4 * k, y - 11 * k, 8 * k, 13 * k, [4 * k, 4 * k, 0, 0]); g.fill(); }
+      else { g.fillRect(x - 1.2 * k, y - 15 * k, 2.4 * k, 16 * k); g.fillRect(x - 5 * k, y - 11 * k, 10 * k, 2.4 * k); }
+    }
+    return pts;
+  };
+  TITLE_C.farRidge = ridge(H * 0.6, 18, '#1a1226', 3, 26);
+  // ağaç siluetleri (dekor görselleri kararartılarak)
+  const tree = (name, x, y, h) => {
+    const im = spr(name); if (!im) return;
+    const w = h * im.width / im.height, [t, tg] = offscreen(w, h, 1);
+    tg.drawImage(im, 0, 0, w, h); tg.globalCompositeOperation = 'source-in'; tg.fillStyle = '#0d0915'; tg.fillRect(0, 0, w, h);
+    g.drawImage(t, x - w / 2, y - h, w, h);
+  };
+  tree('nm_tree_2', 70, H * 0.86, 260); tree('nm_tree_4', 420, H * 0.7, 150); tree('nm_tree_1', 930, H * 0.84, 230);
+  ridge(H * 0.8, 10, '#0e0a16', 7, 18);
+  // şapelin tepesi: yuvarlak toprak tepe, kenarında çimen tutamları, kapıya çıkan soluk patika
+  const hx = 730, hy = H * 0.86;
+  g.fillStyle = '#140e1c'; g.beginPath(); g.moveTo(hx - 280, H); g.quadraticCurveTo(hx - 200, hy - 30, hx, hy - 34); g.quadraticCurveTo(hx + 200, hy - 30, hx + 300, H); g.closePath(); g.fill();
+  gr = g.createLinearGradient(0, hy - 40, 0, hy + 20); gr.addColorStop(0, 'rgba(120,255,150,0.10)'); gr.addColorStop(1, 'rgba(120,255,150,0)');
+  g.fillStyle = gr; g.beginPath(); g.moveTo(hx - 280, H); g.quadraticCurveTo(hx - 200, hy - 30, hx, hy - 34); g.quadraticCurveTo(hx + 200, hy - 30, hx + 300, H); g.closePath(); g.fill();
+  g.fillStyle = '#2a2232'; g.beginPath(); g.moveTo(hx - 8, hy - 30); g.quadraticCurveTo(hx - 60, hy + 20, hx - 150, H); g.lineTo(hx - 90, H); g.quadraticCurveTo(hx - 20, hy + 20, hx + 12, hy - 30); g.closePath(); g.fill();
+  g.strokeStyle = '#0a0710'; g.lineWidth = 1.5;
+  for (let i = 0; i < 40; i++) { const t = i / 39, x = hx - 250 + t * 520, y = hy - 30 + Math.pow(Math.abs(t - 0.5) * 2, 2) * 60 - 2; g.beginPath(); g.moveTo(x, y + 4); g.lineTo(x - 2, y - 4); g.moveTo(x + 2, y + 4); g.lineTo(x + 4, y - 3); g.stroke(); }
+  TITLE_C.sky = c; TITLE_C.skyOk = !!(spr('nm_tree_2') && spr('nm_tree_1'));
+  return c;
 }
-function necroPlayButton(key, x, y, w, h, label, fn, appear) {
-  const a = appear == null ? 1 : easeOutBack(clamp(appear / 0.35, 0, 1));
-  if (a <= 0.01) return;
-  const B = playButtonBody(w, h, label), down = press.key === key;
-  const sc = pressScale(key) * a * (1 + Math.sin(time * 2.4) * 0.025), dy = down ? 3 : 0;
-  ctx.save(); ctx.translate(x, y + dy); ctx.scale(sc, sc);
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 4, w * 0.75, '90,255,130', 0.26 + Math.sin(time * 2.4) * 0.09); ctx.restore();
-  const X = -w / 2 - B.P, Y = -h / 2 - B.P, CW = w + B.P * 2, CH = h + B.P * 2;
-  ctx.drawImage(B.c, X, Y, CW, CH);
-  const ph = (time * 0.45) % 1.8 - 0.2;
-  if (ph > -0.1 && ph < 1.1) {
-    const [t, tg] = TITLE_C.bshine && TITLE_C.bshine[2] === B.key ? TITLE_C.bshine : (TITLE_C.bshine = [...offscreen(CW, CH), B.key]);
-    tg.setTransform(2, 0, 0, 2, 0, 0); tg.globalCompositeOperation = 'source-over'; tg.clearRect(0, 0, CW, CH);
-    const sx = ph * CW, sg = tg.createLinearGradient(sx - 40, 0, sx + 10, CH);
-    sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(0.5, 'rgba(220,255,220,0.45)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
-    tg.fillStyle = sg; tg.fillRect(0, 0, CW, CH);
-    tg.globalCompositeOperation = 'destination-in'; tg.setTransform(1, 0, 0, 1, 0, 0); tg.drawImage(B.m, 0, 0);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(t, X, Y, CW, CH); ctx.restore();
-  }
-  ctx.restore();
-  if (fn) buttons.push({ key, x: x - w / 2, y: y - h / 2 - 12, w, h: h + 20, fn });
+// menü levhası: koyu taş, kemik kenar, oyulmuş yazı ve simge (gövde önbellekte). primary: OYNA (yeşil, büyük)
+function slabBody(w, h, label, icon, primary) {
+  const key = [w, h, label, primary].join('|');
+  TITLE_C.slabs = TITLE_C.slabs || {};
+  const S = TITLE_C.slabs[key];
+  if (S && (S.ok || !fontReady())) return S;
+  const P = 16, [c, g] = offscreen(w + P * 2, h + P * 2), x0 = P, y0 = P;
+  const shape = (o) => { g.beginPath(); g.moveTo(x0 + o, y0 + h - o); g.lineTo(x0 + o, y0 + 12); g.quadraticCurveTo(x0 + o, y0 + o, x0 + 14, y0 + o);
+    g.lineTo(x0 + w - 14, y0 + o); g.quadraticCurveTo(x0 + w - o, y0 + o, x0 + w - o, y0 + 12); g.lineTo(x0 + w - o, y0 + h - o); g.closePath(); };
+  g.save(); g.translate(3, 6); shape(0); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fill(); g.restore();
+  shape(0); g.fillStyle = '#06040a'; g.fill();
+  let gr = g.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, primary ? '#e9dfc2' : '#a89c80'); gr.addColorStop(1, primary ? '#8f8466' : '#5e5444');
+  shape(2.5); g.fillStyle = gr; g.fill();
+  gr = g.createLinearGradient(0, y0, 0, y0 + h);
+  if (primary) { gr.addColorStop(0, '#2f6338'); gr.addColorStop(0.55, '#173a22'); gr.addColorStop(1, '#0b1d12'); }
+  else { gr.addColorStop(0, '#3a3244'); gr.addColorStop(0.55, '#241e2c'); gr.addColorStop(1, '#16121c'); }
+  shape(6); g.fillStyle = gr; g.fill();
+  gr = g.createLinearGradient(0, y0, 0, y0 + h * 0.5); gr.addColorStop(0, 'rgba(255,255,255,0.16)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  shape(7); g.fillStyle = gr; g.fill();
+  if (primary) { g.strokeStyle = 'rgba(140,255,150,0.8)'; g.lineWidth = 1.6; shape(9); g.stroke(); }
+  // köşe perçinleri
+  for (const [px, py] of [[x0 + 11, y0 + h / 2], [x0 + w - 11, y0 + h / 2]]) { g.fillStyle = '#cfc4a8'; g.beginPath(); g.arc(px, py, 2.4, 0, Math.PI * 2); g.fill(); g.fillStyle = '#3a3226'; g.beginPath(); g.arc(px + 0.5, py + 0.5, 1, 0, Math.PI * 2); g.fill(); }
+  const fs = Math.round(h * (primary ? 0.5 : 0.46));
+  g.font = `${fs}px ${FONT_T}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  const tx = x0 + w / 2 + (icon ? h * 0.32 : 0), ty = y0 + h / 2 + 2;
+  if (icon) { g.save(); g.translate(tx - g.measureText(label).width / 2 - h * 0.42, ty - 1); icon(g, h * 0.3); g.restore(); }
+  if (primary) { g.save(); g.shadowColor = 'rgba(120,255,140,0.9)'; g.shadowBlur = 16; g.strokeStyle = '#05030a'; g.lineWidth = 6; g.strokeText(label, tx, ty); g.restore(); }
+  else { g.strokeStyle = '#05030a'; g.lineWidth = 5; g.strokeText(label, tx, ty); }
+  gr = g.createLinearGradient(0, ty - fs / 2, 0, ty + fs / 2);
+  if (primary) { gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#bfffb0'); } else { gr.addColorStop(0, '#f6eed8'); gr.addColorStop(1, '#c8b88e'); }
+  g.fillStyle = gr; g.fillText(label, tx, ty);
+  return (TITLE_C.slabs[key] = { c, P, w, h, ok: fontReady() });
 }
-// giriş ekranı ikincil düğmesi: küçük koyu taş levha, kemik kenar, simge ve yazı
-function titleSmallBtn(key, x, y, w, label, icon, fn, appear) {
-  const a = appear == null ? 1 : easeOutBack(clamp(appear / 0.35, 0, 1));
-  if (a <= 0.01) return;
-  const h = 34, sc = pressScale(key) * a;
-  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
-  roundRect(-w / 2 + 2, -h / 2 + 5, w, h, 10, 'rgba(0,0,0,0.5)');
-  roundRect(-w / 2, -h / 2, w, h, 10, '#1d1826', '#cfc4a8', 1.6);
-  roundRect(-w / 2 + 3, -h / 2 + 3, w - 6, h * 0.42, 7, 'rgba(255,255,255,0.07)');
-  ctx.save(); ctx.translate(-w / 2 + 20, 0); icon(11); ctx.restore();
-  txt(label, 10, 1, 15, '#efe6cc', 'center', '400', FONT_T);
+function menuSlab(key, x, y, w, h, label, icon, fn, appear, primary) {
+  const a = clamp(appear / 0.4, 0, 1);
+  if (a <= 0) return;
+  const B = slabBody(w, h, label, icon, primary), down = press.key === key;
+  const sc = pressScale(key) * (primary ? 1 + Math.sin(time * 2.4) * 0.02 : 1), slide = (1 - easeOutCubic(a)) * -60;
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(x + slide, y + (down ? 2 : 0)); ctx.scale(sc, sc);
+  if (primary) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 2, w * 0.62, '90,255,130', 0.22 + Math.sin(time * 2.4) * 0.08); ctx.restore(); }
+  ctx.drawImage(B.c, -w / 2 - B.P, -h / 2 - B.P, w + B.P * 2, h + B.P * 2);
+  if (primary) { // üzerinden geçen ışık
+    const ph = (time * 0.45) % 1.8 - 0.2;
+    if (ph > 0 && ph < 1) {
+      ctx.save(); ctx.beginPath(); ctx.roundRect(-w / 2 + 6, -h / 2 + 6, w - 12, h - 12, 8); ctx.clip();
+      const sx = -w / 2 + ph * w, sg = ctx.createLinearGradient(sx - 30, 0, sx + 30, 0);
+      sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(0.5, 'rgba(220,255,220,0.35)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = sg; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.restore();
+    }
+  }
   ctx.restore();
   buttons.push({ key, x: x - w / 2, y: y - h / 2, w, h, fn });
 }
-function drawSkullIcon(x, y, r) {
-  ctx.save(); ctx.translate(x, y);
-  ctx.fillStyle = '#e8e0c8'; ctx.strokeStyle = '#140c18'; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(0, -r * 0.15, r * 0.75, Math.PI * 0.9, Math.PI * 2.1); ctx.lineTo(r * 0.45, r * 0.55); ctx.lineTo(-r * 0.45, r * 0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#140c18'; ctx.beginPath(); ctx.ellipse(-r * 0.3, -r * 0.1, r * 0.2, r * 0.24, 0, 0, Math.PI * 2); ctx.ellipse(r * 0.3, -r * 0.1, r * 0.2, r * 0.24, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); glow(ctx, r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); ctx.restore();
-  ctx.restore();
-}
+const easeOutCubic = (k) => 1 - (1 - k) ** 3;
+let menuBack = 'map'; // komutanlar/gelişmeler/başarımlar/kodeks ekranının geri düğmesi nereye döner
+// levha simgeleri (önbellek tuvaline çizilir: g, r)
+const MENU_ICON = {
+  play: (g, r) => { g.fillStyle = '#d8ffd0'; g.strokeStyle = '#05030a'; g.lineWidth = 2; g.beginPath(); g.moveTo(-r * 0.6, -r); g.lineTo(r, 0); g.lineTo(-r * 0.6, r); g.closePath(); g.fill(); g.stroke(); },
+  crown: (g, r) => { g.fillStyle = '#ffd35a'; g.strokeStyle = '#2a1608'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-r, r * 0.6); g.lineTo(-r, -r * 0.4); g.lineTo(-r * 0.45, r * 0.05); g.lineTo(0, -r * 0.7); g.lineTo(r * 0.45, r * 0.05); g.lineTo(r, -r * 0.4); g.lineTo(r, r * 0.6); g.closePath(); g.fill(); g.stroke(); },
+  skull: (g, r) => { g.fillStyle = '#efe6cc'; g.strokeStyle = '#140c18'; g.lineWidth = 1.5; g.beginPath(); g.arc(0, -r * 0.15, r * 0.8, Math.PI * 0.9, Math.PI * 2.1); g.lineTo(r * 0.45, r * 0.65); g.lineTo(-r * 0.45, r * 0.65); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#140c18'; g.beginPath(); g.ellipse(-r * 0.3, -r * 0.1, r * 0.2, r * 0.24, 0, 0, Math.PI * 2); g.ellipse(r * 0.3, -r * 0.1, r * 0.2, r * 0.24, 0, 0, Math.PI * 2); g.fill(); },
+  star: (g, r) => { g.fillStyle = '#ffd35a'; g.strokeStyle = '#2a1608'; g.lineWidth = 1.5; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); g.fill(); g.stroke(); },
+  book: (g, r) => { g.fillStyle = '#6a2a8a'; g.strokeStyle = '#140818'; g.lineWidth = 1.5; g.beginPath(); g.roundRect(-r * 0.75, -r, r * 1.5, r * 2, 2); g.fill(); g.stroke(); g.fillStyle = '#efe6cc'; g.fillRect(-r * 0.75, r * 0.65, r * 1.5, r * 0.3); g.fillStyle = '#7dff7a'; g.beginPath(); g.arc(0, -r * 0.2, r * 0.3, 0, Math.PI * 2); g.fill(); },
+};
 function drawNecroTitle(st) {
-  const bg = spr('nm_title');
-  if (bg) coverImage(bg, 1.06 + Math.sin(time * 0.1) * 0.02, Math.sin(time * 0.07) * 8, Math.cos(time * 0.09) * 4);
-  else { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0c0614'); g.addColorStop(1, '#141a12'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
-  // ay ışığı: soğuk mor ton, aydan inen yavaş dönen huzmeler
-  ctx.fillStyle = 'rgba(40,20,70,0.16)'; ctx.fillRect(0, 0, W, H);
-  const mx = W * 0.77, my = H * 0.16;
+  ctx.drawImage(titleBackdrop(), 0, 0, W, H);
+  // ay ve hale, önünden geçen bulutlar
+  const mx = 610, my = 92;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my, 170, '190,200,255', 0.2 + Math.sin(time * 0.7) * 0.03); ctx.restore();
+  circle(mx, my, 44, '#e9e6f2'); circle(mx - 12, my - 8, 9, 'rgba(180,176,200,0.6)'); circle(mx + 14, my + 10, 6, 'rgba(180,176,200,0.5)'); circle(mx + 6, my - 18, 4, 'rgba(180,176,200,0.5)');
+  if (!TITLE_C.cloud) {
+    TITLE_C.cloud = [0, 1, 2].map(v => {
+      const [c, g] = offscreen(260, 70, 1.5), r = seeded(40 + v);
+      const puffs = Array.from({ length: 7 }, (_, i) => [30 + i * 33 + r() * 10, 42 - Math.sin(i / 6 * Math.PI) * 14 + r() * 6, 22 + r() * 14]);
+      g.fillStyle = 'rgba(34,24,52,0.95)'; for (const [x, y, rr] of puffs) { g.beginPath(); g.ellipse(x, y, rr * 1.3, rr, 0, 0, Math.PI * 2); g.fill(); }
+      g.globalCompositeOperation = 'source-atop'; const gr = g.createLinearGradient(0, 0, 0, 70); gr.addColorStop(0, 'rgba(200,200,255,0.35)'); gr.addColorStop(0.4, 'rgba(200,200,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 260, 70); return c;
+    });
+  }
+  for (let i = 0; i < 4; i++) {
+    const x = ((time * (5 + i * 2) + i * 300) % (W + 400)) - 200, y = 58 + i * 36;
+    ctx.globalAlpha = 0.85 - i * 0.12; ctx.drawImage(TITLE_C.cloud[i % 3], x - 130, y - 35, 260, 70);
+  }
+  ctx.globalAlpha = 1;
+  // uzak sırtta meşaleli lejyon: şapele doğru ilerleyen titrek ışıklar
+  const R = TITLE_C.farRidge;
+  if (R) for (let i = 0; i < 9; i++) {
+    const u = ((time * 0.012 + i * 0.045) % 0.5), x = 40 + u * 700, j = Math.min(R.length - 1, Math.floor(x / 16)), y = R[j][1] - 6;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 10 + Math.sin(time * 9 + i) * 2, '255,150,60', 0.9); glow(ctx, x, y, 3, '255,240,200', 1); ctx.restore();
+  }
+  // şapel, balkonda Mortimer, kapıda nöbetçiler
+  const ch = spr('castle_1'), cw = 250, cx = 730, gy = H * 0.84;
+  if (ch) {
+    const chh = cw * ch.height / ch.width, base = gy + 0.17 * chh;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, gy - chh * 0.45, cw * 0.9, '120,255,140', 0.12 + Math.sin(time * 1.3) * 0.03); ctx.restore();
+    drawSprite(ctx, ch, cx, base, cw);
+    const S = MORT_STAGE[1], mxp = cx - cw / 2 + S.at[0] * cw, myp = base - chh + S.at[1] * chh, mh = 125 * cw / ch.width * 1.15;
+    const tea = mortStrip('mortimer_cay'), mort = spr('mortimer');
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mxp, myp - mh * 0.5, mh, '150,90,255', 0.35 + Math.sin(time * 2) * 0.08); ctx.restore();
+    if (tea) { ctx.save(); ctx.translate(mxp, myp); drawFrame(spr(tea), ANIM_META[tea], Math.floor(time * 12) % ANIM_META[tea].n, mh * MORT_SIT_K); ctx.restore(); }
+    else if (mort) drawSprite(ctx, mort, mxp, myp, mh * mort.width / mort.height);
+    if (S.rail) { const [x0, y0, x1, y1] = S.rail; ctx.drawImage(ch, x0 * ch.width, y0 * ch.height, (x1 - x0) * ch.width, (y1 - y0) * ch.height, cx - cw / 2 + x0 * cw, base - chh + y0 * chh, (x1 - x0) * cw, (y1 - y0) * chh); }
+    for (const [sd, key] of [[-1, 'unit_skel_2'], [1, 'unit_skel_3']]) {
+      const im = spr(key); if (!im) continue;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx + sd * 92, gy + 4, 34, '120,255,140', 0.18); ctx.restore();
+      ctx.save(); ctx.translate(cx + sd * 92, gy + 24); ctx.scale(-sd, 1); ctx.scale(1, 1 + Math.sin(time * 1.7 + sd) * 0.012);
+      drawSprite(ctx, im, 0, 0, 66 * im.width / im.height);
+      ctx.restore();
+    }
+  }
+  // yer sisi ve ruh ışıkları
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, mx, my, 150, '200,210,255', 0.16 + Math.sin(time * 0.8) * 0.03);
-  ctx.translate(mx, my);
-  for (let i = 0; i < 5; i++) {
-    const a = 1.75 + i * 0.22 + Math.sin(time * 0.15 + i) * 0.05, len = 520, wd = 0.045 + (i % 2) * 0.02;
-    const gr = ctx.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
-    gr.addColorStop(0, 'rgba(190,200,255,0.10)'); gr.addColorStop(1, 'rgba(190,200,255,0)');
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, len, a - wd, a + wd); ctx.closePath(); ctx.fill();
-  }
+  for (let i = 0; i < 6; i++) { const x = ((time * (9 + i * 3) + i * 180) % (W + 400)) - 200; glow(ctx, x, H * (0.86 + (i % 3) * 0.05), 160, '90,200,120', 0.07); }
+  for (let i = 0; i < 14; i++) { const ph = (time * 0.09 + i * 0.137) % 1, x = (i * 97 + Math.sin(time * 0.7 + i) * 20) % W, y = H * 0.95 - ph * H * 0.5; glow(ctx, x, y, 4, i % 3 ? '140,255,160' : '200,160,255', 0.7 * Math.sin(ph * Math.PI)); }
   ctx.restore();
-  // sürüklenen yeşil sis
-  ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  for (let i = 0; i < 6; i++) {
-    const x = ((time * (8 + i * 3) + i * 170) % (W + 400)) - 200, y = H * (0.66 + (i % 3) * 0.1) + Math.sin(time * 0.5 + i) * 10;
-    glow(ctx, x, y, 150 + (i % 3) * 40, '90,200,120', 0.08);
-  }
-  ctx.restore();
-  // kenar karartması (önbellekte)
-  if (!TITLE_C.vig) {
-    const [c, g] = offscreen(W, H, 1);
-    let gr = g.createRadialGradient(W / 2, H * 0.55, H * 0.35, W / 2, H * 0.55, W * 0.72); gr.addColorStop(0, 'rgba(4,2,8,0)'); gr.addColorStop(1, 'rgba(4,2,8,0.7)');
-    g.fillStyle = gr; g.fillRect(0, 0, W, H);
-    gr = g.createLinearGradient(0, 0, 0, 200); gr.addColorStop(0, 'rgba(6,3,12,0.7)'); gr.addColorStop(1, 'rgba(6,3,12,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, 200);
-    gr = g.createLinearGradient(0, H - 190, 0, H); gr.addColorStop(0, 'rgba(4,2,8,0)'); gr.addColorStop(1, 'rgba(4,2,8,0.85)'); g.fillStyle = gr; g.fillRect(0, H - 190, W, 190);
-    TITLE_C.vig = c;
-  }
-  ctx.drawImage(TITLE_C.vig, 0, 0, W, H);
-  // uzakta ara ara şimşek
-  TITLE_C.bolt = TITLE_C.bolt ?? time + 5;
-  if (time > TITLE_C.bolt) { TITLE_C.bolt = time + rand(7, 13); TITLE_C.flash = time; }
+  // ara ara şimşek
+  TITLE_C.bolt = TITLE_C.bolt ?? time + 6;
+  if (time > TITLE_C.bolt) { TITLE_C.bolt = time + rand(8, 14); TITLE_C.flash = time; }
   if (TITLE_C.flash && time - TITLE_C.flash < 0.5) {
-    const k = time - TITLE_C.flash, a = (k < 0.08 ? 1 : k < 0.16 ? 0.3 : k < 0.24 ? 0.8 : Math.max(0, 1 - (k - 0.24) / 0.26)) * 0.22;
-    ctx.fillStyle = `rgba(210,220,255,${a})`; ctx.fillRect(0, 0, W, H);
+    const k = time - TITLE_C.flash, fa = (k < 0.08 ? 1 : k < 0.16 ? 0.3 : k < 0.24 ? 0.8 : Math.max(0, 1 - (k - 0.24) / 0.26)) * 0.2;
+    ctx.fillStyle = `rgba(210,220,255,${fa})`; ctx.fillRect(0, 0, W, H);
   }
-  // gökte geçen kargalar
+  // kargalar
   TITLE_C.crows = (TITLE_C.crows || []).filter(c => c.x > -60 && c.x < W + 60);
-  if (!TITLE_C.crowT || time > TITLE_C.crowT) { TITLE_C.crowT = time + rand(5, 9); const l = Math.random() < 0.5; TITLE_C.crows.push({ x: l ? -40 : W + 40, y: rand(150, 260), v: (l ? 1 : -1) * rand(60, 90), ph: rand(0, 6), t: time }); }
-  for (const c of TITLE_C.crows) { const dt = time - c.t; c.t = time; c.x += c.v * dt; drawFlyingCrow(c.x, c.y + Math.sin(time + c.ph) * 4, c.v > 0 ? 1 : -1, time * 9 + c.ph); }
-  // logo: düşerek gelir, sonra hafifçe süzülür
+  if (!TITLE_C.crowT || time > TITLE_C.crowT) { TITLE_C.crowT = time + rand(6, 10); const l = Math.random() < 0.5; TITLE_C.crows.push({ x: l ? -40 : W + 40, y: rand(130, 230), v: (l ? 1 : -1) * rand(55, 80), ph: rand(0, 6), t: time }); }
+  for (const c of TITLE_C.crows) { const d = time - c.t; c.t = time; c.x += c.v * d; drawFlyingCrow(c.x, c.y + Math.sin(time + c.ph) * 4, c.v > 0 ? 1 : -1, time * 9 + c.ph); }
+  // sol taraf: koyu perde, logo, menü
+  if (!TITLE_C.shade) { const [c, g] = offscreen(W, H, 1); const gr = g.createLinearGradient(0, 0, W * 0.55, 0); gr.addColorStop(0, 'rgba(6,3,10,0.82)'); gr.addColorStop(0.75, 'rgba(6,3,10,0.4)'); gr.addColorStop(1, 'rgba(6,3,10,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H); TITLE_C.shade = c; }
+  ctx.drawImage(TITLE_C.shade, 0, 0, W, H);
   const e = easeOutBack(clamp(st / 0.8, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.3, 0, 1);
-  drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
+  drawTitleLogo(250, 96 + Math.sin(time * 1.2) * 2 - (1 - e) * 30, 0.6);
   ctx.restore();
-  necroPlayButton('play', W / 2, 448, 270, 64, 'OYNA', () => go(() => { screen = 'map'; }), st - 0.6);
-  titleSmallBtn('t_ach', W / 2 - 92, 506, 160, 'Başarımlar', (r) => drawIcon('crown', 0, 0, r * 1.6), () => go(() => { screen = 'ach'; screenT = time; }), st - 0.8);
-  titleSmallBtn('t_codex', W / 2 + 92, 506, 160, 'Kodeks', (r) => codexBookIcon(r), () => go(() => { screen = 'codex'; screenT = time; CODEX.t0 = time; }), st - 0.85);
-  // yükselen yeşil ruh kıvılcımları
-  if (Math.random() < 0.4) emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.55, H), vx: rand(-6, 6), vy: rand(-26, -10),
-    col: Math.random() < 0.7 ? '120,255,140' : '190,140,255', s0: rand(1.5, 3.4), s1: 0.4, life: rand(3, 5), a: 0.9, fadeIn: 0.4 });
+  const X = 250;
+  menuSlab('play', X, 222, 300, 64, 'OYNA', MENU_ICON.play, () => go(() => { screen = 'map'; }), st - 0.5, true);
+  menuSlab('t_heroes', X, 296, 260, 44, 'Komutanlar', MENU_ICON.skull, () => go(() => { menuBack = 'title'; screen = 'heroes'; screenT = time; }), st - 0.62);
+  menuSlab('t_upg', X, 348, 260, 44, 'Gelişmeler', MENU_ICON.star, () => go(() => { menuBack = 'title'; screen = 'upgrades'; screenT = time; }), st - 0.7);
+  menuSlab('t_ach', X, 400, 260, 44, 'Başarımlar', MENU_ICON.crown, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), st - 0.78);
+  menuSlab('t_codex', X, 452, 260, 44, 'Kodeks', MENU_ICON.book, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), st - 0.86);
 }
 function drawTitle() {
     const st = time - screenT;
@@ -8701,8 +8747,8 @@ function drawMap() {
   ctx.save(); ctx.translate(W / 2 + 40, 46); ctx.scale(rk, rk); ribbon(0, 0, 300, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 22); ctx.restore();
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
-  roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
-  roundBtn('ach', W - 272, 41, 19, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
+  roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
+  roundBtn('ach', W - 272, 41, 19, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
   if (save.achNew) { circle(W - 258, 27, 8, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', W - 258, 27.5, 10, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
   const total = starsTotal();
@@ -8722,9 +8768,9 @@ function drawMap() {
   });
   // kahramanlar ve gelişmeler (sağ alt)
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id));
-  gameButton('heroes', W - 340, H - 32, 200, 42, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 });
+  gameButton('heroes', W - 340, H - 32, 200, 42, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { menuBack = 'map'; screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 });
   const freeStars = starsTotal() - starsSpent();
-  gameButton('upgrades', W - 122, H - 32, 200, 42, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
+  gameButton('upgrades', W - 122, H - 32, 200, 42, 'GELİŞMELER', () => go(() => { menuBack = 'map'; screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
   if (freeStars > 0) { const bx = W - 30, by = H - 52 + Math.sin(time * 5) * 2; circle(bx, by, 11, '#e8434b', '#fff', 1.5); txt(freeStars + '', bx, by + 1, 12, '#fff', 'center', '400', FONT_T); }
   if (fresh.length) {
     const bx = W - 250, by = H - 52 + Math.sin(time * 5) * 2;
