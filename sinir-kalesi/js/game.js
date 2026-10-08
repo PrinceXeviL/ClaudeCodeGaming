@@ -7341,20 +7341,23 @@ function drawEnemyProp(e, prop, hh) {
   const f = e.face, bob = Math.abs(Math.sin(e.anim * 9)) * 1.2;
   ctx.save(); ctx.lineCap = 'round';
   if (prop === 'banner') {
-    const px = e.x - f * hh * 0.18, top = e.y - hh * 1.55 - bob, sway = Math.sin(time * 2 + e.off) * 1.2;
-    ctx.strokeStyle = '#3a2410'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(px, e.y - hh * 0.3); ctx.lineTo(px, top); ctx.stroke();
-    ctx.strokeStyle = '#8a5a2a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(px, e.y - hh * 0.3); ctx.lineTo(px, top); ctx.stroke();
-    // çapraz kol ve kırmızı bayrak (altın saçaklı)
-    ctx.strokeStyle = '#d9b04a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(px - 6, top + 6); ctx.lineTo(px + 6, top + 6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(px - 5.5, top + 6.5); ctx.lineTo(px + 5.5, top + 6.5); ctx.lineTo(px + 5 + sway, top + 17); ctx.lineTo(px - 5 + sway, top + 17); ctx.closePath();
+    // gerçekteki gibi: direk öndeki elde, dipçiği yere yakın, dimdik; tepede çapraz kol, ondan sarkan kırmızı bayrak ve altın güneş
+    const px = e.x + f * hh * 0.22, foot = e.y - 1 - bob * 0.3, grip = e.y - hh * 0.52 - bob, top = e.y - hh * 1.5 - bob;
+    const sway = Math.sin(time * 2.2 + e.off) * 0.8;
+    ctx.strokeStyle = '#2a1808'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(px, foot); ctx.lineTo(px, top); ctx.stroke();
+    ctx.strokeStyle = '#9a6a34'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(px, foot); ctx.lineTo(px, top); ctx.stroke();
+    // tutan el (yumruk) direğin önünde
+    circle(px, grip, 2, '#e8b890', '#4a2a14', 0.7);
+    // çapraz kol ve sarkan bayrak (saçaklı)
+    ctx.strokeStyle = '#d9b04a'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(px - 6, top + 5); ctx.lineTo(px + 6, top + 5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px - 5.5, top + 5.5); ctx.lineTo(px + 5.5, top + 5.5); ctx.lineTo(px + 5.5 + sway, top + 16); ctx.lineTo(px - 5.5 + sway, top + 16); ctx.closePath();
     ctx.fillStyle = '#b8261e'; ctx.fill(); ctx.strokeStyle = '#4a0c08'; ctx.lineWidth = 0.8; ctx.stroke();
-    ctx.fillStyle = '#e8c35a'; ctx.fillRect(px - 5 + sway, top + 16.2, 10, 1.6);
-    circle(px + sway * 0.5, top + 11.5, 2.2, '#f2d77a', '#5a3a08', 0.6);
-    // tepede altın güneş
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, px, top, 7, '255,210,110', 0.4); ctx.restore();
-    circle(px, top, 2.6, '#ffd96a', '#6a4408', 0.8);
+    ctx.fillStyle = '#e8c35a'; ctx.fillRect(px - 5.5 + sway, top + 15.2, 11, 1.6);
+    circle(px + sway * 0.5, top + 10.5, 2.1, '#f2d77a', '#5a3a08', 0.6);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, px, top, 6, '255,210,110', 0.35); ctx.restore();
+    circle(px, top, 2.4, '#ffd96a', '#6a4408', 0.8);
     // zırh halesi: çevresindekiler korunuyor
-    ctx.strokeStyle = `rgba(255,215,120,${0.18 + Math.sin(time * 3 + e.off) * 0.06})`; ctx.lineWidth = 1;
+    ctx.strokeStyle = `rgba(255,215,120,${0.16 + Math.sin(time * 3 + e.off) * 0.05})`; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, e.def.aura.r * 0.9, e.def.aura.r * 0.4, 0, 0, Math.PI * 2); ctx.stroke();
   } else if (prop === 'drum') {
     const dx = e.x + f * hh * 0.16, dy = e.y - hh * 0.38 - bob, hit = Math.max(0, Math.sin(time * 9 + e.off));
