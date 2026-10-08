@@ -22,7 +22,7 @@ subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', '-U', 'diffusers',
                 'imageio', 'imageio-ffmpeg', 'hf_transfer', 'sentencepiece'], check=True)
 subprocess.run([sys.executable, '-m', 'pip', 'uninstall', '-y', '-q', 'torchao'])  # Kaggle'daki eski torchao yeni diffusers'ı bozuyor; gerek yok
 os.environ['HF_HUB_ENABLE_HF_TRANSFER'] = '1'
-import io, gc, torch
+import io, gc, ctypes, torch
 from PIL import Image
 from huggingface_hub import hf_hub_download
 from diffusers import WanImageToVideoPipeline, WanTransformer3DModel, AutoencoderKLWan, GGUFQuantizationConfig, FlowMatchEulerDiscreteScheduler
@@ -77,7 +77,7 @@ for j, emb in zip(JOBS, EMB):
     except Exception as e:
         log('HATA', j['name'], repr(e)[:400])
         pipe.maybe_free_model_hooks()  # hata modeli kartta bırakmasın, sonraki iş bellek bulsun
-    gc.collect(); torch.cuda.empty_cache()
+    gc.collect(); torch.cuda.empty_cache(); ctypes.CDLL('libc.so.6').malloc_trim(0)  # boşalan belleği sisteme geri ver (yoksa oturum 'Killed' ile düşüyor)
 log('hepsi bitti')
 '''
 
@@ -139,6 +139,8 @@ if __name__ == '__main__':
     jobs = video_uret.modal_jobs(meta)
     if '--isler' in sys.argv:  # hazır iş listesi (ör. Mortimer animasyonları)
         jobs = json.load(open(sys.argv[sys.argv.index('--isler') + 1]))
+    if '--sadece' in sys.argv:  # ör. --sadece _atk: yalnız adı bu ekle bitenler
+        suf = sys.argv[sys.argv.index('--sadece') + 1]; jobs = [j for j in jobs if j['name'].endswith(suf)]
     if '--dene' in sys.argv: jobs = jobs[:int(sys.argv[sys.argv.index('--dene') + 1])]
     slug = SLUG
     if '--ad' in sys.argv: slug = f"{SLUG}-{sys.argv[sys.argv.index('--ad') + 1]}"

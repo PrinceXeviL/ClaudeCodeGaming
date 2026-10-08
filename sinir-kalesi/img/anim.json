@@ -58,5 +58,124 @@
   "base": 0.0141,
   "ch": 0.9435,
   "idle": 7
+ },
+ "enemy_assassin_atk": {
+  "n": 32,
+  "fw": 326,
+  "fh": 319,
+  "base": 0.0146,
+  "ch": 0.9416
+ },
+ "enemy_priest_walk": {
+  "n": 32,
+  "fw": 275,
+  "fh": 324,
+  "base": 0.0183,
+  "ch": 0.9266,
+  "idle": 10
+ },
+ "enemy_heavy_walk": {
+  "n": 32,
+  "fw": 286,
+  "fh": 317,
+  "base": 0.0143,
+  "ch": 0.9475,
+  "idle": 9
+ },
+ "enemy_cavalry_walk": {
+  "n": 32,
+  "fw": 282,
+  "fh": 318,
+  "base": 0.0145,
+  "ch": 0.9422,
+  "idle": 23
+ },
+ "enemy_ram_walk": {
+  "n": 32,
+  "fw": 407,
+  "fh": 309,
+  "base": 0.0146,
+  "ch": 0.9708,
+  "idle": 8
+ },
+ "enemy_catapult_walk": {
+  "n": 32,
+  "fw": 344,
+  "fh": 309,
+  "base": 0.0146,
+  "ch": 0.9707,
+  "idle": 1
+ },
+ "enemy_gloriosus_walk": {
+  "n": 32,
+  "fw": 238,
+  "fh": 314,
+  "base": 0.0145,
+  "ch": 0.9566,
+  "idle": 19
+ },
+ "unit_skel_1_walk": {
+  "n": 32,
+  "fw": 204,
+  "fh": 318,
+  "base": 0.0143,
+  "ch": 0.943,
+  "idle": 19
+ },
+ "unit_skel_2_walk": {
+  "n": 32,
+  "fw": 172,
+  "fh": 317,
+  "base": 0.0143,
+  "ch": 0.9475,
+  "idle": 18
+ },
+ "unit_skel_3_walk": {
+  "n": 32,
+  "fw": 162,
+  "fh": 312,
+  "base": 0.0145,
+  "ch": 0.9614,
+  "idle": 0
+ },
+ "unit_skel_4_walk": {
+  "n": 32,
+  "fw": 230,
+  "fh": 311,
+  "base": 0.0145,
+  "ch": 0.9637,
+  "idle": 1
+ },
+ "unit_skel_5_walk": {
+  "n": 32,
+  "fw": 192,
+  "fh": 318,
+  "base": 0.0142,
+  "ch": 0.9433,
+  "idle": 9
+ },
+ "unit_skel_6_walk": {
+  "n": 32,
+  "fw": 256,
+  "fh": 317,
+  "base": 0.0143,
+  "ch": 0.9454,
+  "idle": 21
+ },
+ "unit_skel_7_walk": {
+  "n": 32,
+  "fw": 246,
+  "fh": 317,
+  "base": 0.0142,
+  "ch": 0.9456,
+  "idle": 20
+ },
+ "unit_skel_8_walk": {
+  "n": 32,
+  "fw": 238,
+  "fh": 309,
+  "base": 0.0146,
+  "ch": 0.9708,
+  "idle": 27
  }
 }
