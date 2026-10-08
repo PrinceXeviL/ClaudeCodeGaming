@@ -44,6 +44,8 @@ python3 scripts/generate_image.py --list-models      # erişilebilir görsel mod
 - DİKKAT: görsel modellerinin ücretsiz kotası 0. Anahtarın Google AI Studio projesinde faturalandırma açık değilse her çağrı
   "429 ... free_tier ... limit: 0" verir (8 Eki'de böyleydi). O zaman kullanıcıya bir kez söyle: aistudio.google.com → API anahtarının
   projesi → faturalandırmayı aç (Paid tier). Açılana kadar kullanıcı Gemini uygulamasında "Görsel oluştur" ile çizip dosyayı gönderebilir.
+  Faturalandırma kapalıyken kullanıcı adım adım ilerlemek istiyor: her seferinde TEK adım ver (Gemini'de "Görsel oluştur" aracını seç,
+  şu dosyaları ekle, şu promptu yapıştır, çıkan görseli gönder); gelen görseli incele, işle, sonra bir sonraki adımı ver.
 - Uzun promptlar `tasarim/promptlar/*.txt` içinde (-f ile okunur); tasarım notları `tasarim/*.md`.
 
 ## DON'T MESS WITH THE NECROMANCER (7 Eki 2026, aktif)
