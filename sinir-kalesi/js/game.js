@@ -1014,6 +1014,11 @@ function startLevel(idx, chal = null) {
     G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_burst.name, sub: NECRO_SPELLS.nm_burst.short, t: 0, dur: 4.2 };
   }
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
+  // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
+  if (NECRO) {
+    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.boss;
+    if (COMICS[key] && !seen[key]) startComic(key);
+  }
 }
 function bakeNext() {
   const k = G.bakeQ.shift();
@@ -9315,6 +9320,221 @@ const WIN_QUIPS = [
   'Mortimer\'ı rahatsız etmeyin. Etmeyin işte.',
 ];
 
+// ----- hikâye panelleri (çizgi roman): bölge girişi ve her yeni bossun ilk gelişinden önce, oyundaki çizimlerle kurulur -----
+// panel: bg (gece | gun | mezar | karanlik | balkon), act (oyuncular: s = 'mort' | 'mort_sit' | 'mort_cast' | 'e:tür' | 'k:iskelet no',
+// x/y yer oranı, h boy oranı, f yön, rise yerden çıkış 0..1, walk yürür), say (konuşma: who, text, x, y balon üstü-orta oranı, to konuşanın ağzı),
+// cap (üst altyazı), title (büyük başlık)
+const COMICS = {
+  intro: [
+    { bg: 'balkon', mort: 'sit', cap: 'Lanetli Sınır. Huzurlu bir akşam.',
+      say: [{ who: 'Mortimer', text: 'Earl Grey, sessizlik ve tek bir misafir bile yok. Mükemmel.', x: 0.27, y: 0.16, to: [0.5, 0.42] }] },
+    { bg: 'gun', cap: 'Bu sırada, sınırın öbür yanında...',
+      act: [{ s: 'e:legion', x: 0.2, y: 0.9, h: 0.42, walk: 1 }, { s: 'e:legion', x: 0.38, y: 0.9, h: 0.42, walk: 1 }, { s: 'e:centurion', x: 0.66, y: 0.92, h: 0.55, walk: 1 }],
+      say: [{ who: 'Yüzbaşı Lucius', text: 'İmparator emretti: necromancer\'ın toprakları artık bizim!', x: 0.42, y: 0.12, to: [0.64, 0.42] }] },
+    { bg: 'gun',
+      act: [{ s: 'e:gloriosus', x: 0.5, y: 0.95, h: 0.8 }],
+      say: [{ who: 'General Gloriosus', text: 'Ve o meşhur çaydanlığı da. İmparator çaya bayılır.', x: 0.5, y: 0.06, to: [0.5, 0.3] }] },
+    { bg: 'balkon', mort: 'stand', shake: 1,
+      say: [{ who: 'Mortimer', text: 'Çaydanlığım mı?!', x: 0.5, y: 0.1, to: [0.5, 0.36] }] },
+    { bg: 'mezar',
+      act: [{ s: 'k:1', x: 0.2, y: 0.92, h: 0.5, rise: 1 }, { s: 'k:2', x: 0.45, y: 0.94, h: 0.52, rise: 1, d: 0.3 }, { s: 'k:6', x: 0.7, y: 0.92, h: 0.5, rise: 1, d: 0.6 }, { s: 'mort_cast', x: 0.9, y: 0.7, h: 0.34 }],
+      say: [{ who: 'Mortimer', text: 'Kalkın tembeller. Davetsiz misafirlerimiz var.', x: 0.5, y: 0.08, to: [0.88, 0.4] }],
+      title: 'DAVETSİZ MİSAFİRLER' },
+  ],
+  champion: [
+    { bg: 'gun', act: [{ s: 'e:gladiator', x: 0.25, y: 0.92, h: 0.42 }, { s: 'e:champion', x: 0.62, y: 0.94, h: 0.6 }],
+      say: [{ who: 'Arena Şampiyonu Maximus', text: 'Arenada yüz zafer! Bir torba kemik bana ne yapabilir?', x: 0.45, y: 0.08, to: [0.6, 0.36] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Yüz bir oldu. Mezar taşına yazdırırım.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  hierophant: [
+    { bg: 'gun', sun: 1, act: [{ s: 'e:priest', x: 0.22, y: 0.92, h: 0.42 }, { s: 'e:hierophant', x: 0.6, y: 0.94, h: 0.6 }],
+      say: [{ who: 'Başrahip Sollemnis', text: 'Güneşin ışığı karanlığını yakacak, necromancer!', x: 0.45, y: 0.08, to: [0.58, 0.36] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Perdeleri kapatın. Ve biri şu adama şapka versin.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  shadowmaster: [
+    { bg: 'karanlik', act: [{ s: 'e:shadowmaster', x: 0.5, y: 0.94, h: 0.62, fade: 1 }],
+      say: [{ who: 'Gölge Usta', text: 'Gölgelerden geleceğim. Fark etmeyeceksin bile.', x: 0.5, y: 0.08, to: [0.5, 0.36] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Gölgeler benim mahallem, ufaklık. Kira da istiyorum.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  ironwarden: [
+    { bg: 'gun', act: [{ s: 'e:heavy', x: 0.22, y: 0.92, h: 0.44 }, { s: 'e:ironwarden', x: 0.62, y: 0.95, h: 0.64 }],
+      say: [{ who: 'Demir Muhafız Brutus', text: 'Bu zırhı hiçbir büyü delemez!', x: 0.4, y: 0.08, to: [0.6, 0.34] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Harika. O zaman büyü yapmam. Kazanı getirin.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  cavcaptain: [
+    { bg: 'gun', act: [{ s: 'e:cavalry', x: 0.25, y: 0.92, h: 0.5, walk: 1 }, { s: 'e:cavcaptain', x: 0.65, y: 0.95, h: 0.66, walk: 1 }],
+      say: [{ who: 'Süvari Kaptanı Aurelius', text: 'Atlılar! Şapele varana kadar durmak yok!', x: 0.42, y: 0.08, to: [0.62, 0.32] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Atlar da ölür, kaptan. Sonra benim olurlar.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  gloriosus: [
+    { bg: 'gun', act: [{ s: 'e:legion', x: 0.14, y: 0.9, h: 0.38 }, { s: 'e:heavy', x: 0.86, y: 0.9, h: 0.4, f: -1 }, { s: 'e:gloriosus', x: 0.5, y: 0.96, h: 0.82 }],
+      say: [{ who: 'General Gloriosus', text: 'Gloriosus bizzat geldi! Teslim ol ve çaydanlığı ver!', x: 0.5, y: 0.05, to: [0.5, 0.28] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Çaydanlığımı ancak cesedimden alırsın. Bir dakika... ben zaten ölüyüm.', x: 0.3, y: 0.08, to: [0.5, 0.36] }] },
+    { bg: 'mezar', act: [{ s: 'k:4', x: 0.18, y: 0.93, h: 0.5, rise: 1 }, { s: 'k:3', x: 0.4, y: 0.94, h: 0.52, rise: 1, d: 0.25 }, { s: 'k:8', x: 0.62, y: 0.93, h: 0.5, rise: 1, d: 0.5 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
+      say: [{ who: 'Mortimer', text: 'Herkes yerine! Bu sefer misafir ağırlamıyoruz.', x: 0.45, y: 0.08, to: [0.86, 0.4] }] },
+  ],
+};
+// sayfa düzeni: panel sayısına göre ızgara
+function comicRects(n) {
+  const x0 = 34, y0 = 34, w = W - 68, h = H - 84, g = 12, R = (x, y, ww, hh) => ({ x: x0 + x * w, y: y0 + y * h, w: ww * w - g / 2, h: hh * h - g / 2 });
+  if (n === 5) return [R(0, 0, 0.56, 0.5), R(0.56 + 0.006, 0, 0.44, 0.5), R(0, 0.5 + 0.01, 1 / 3, 0.5), R(1 / 3 + 0.004, 0.51, 1 / 3, 0.5), R(2 / 3 + 0.008, 0.51, 1 / 3, 0.5)];
+  if (n === 3) return [R(0, 0, 1, 0.5), R(0, 0.51, 0.5, 0.5), R(0.506, 0.51, 0.5, 0.5)];
+  return [R(0, 0, 0.5, 1), R(0.506, 0, 0.5, 1)];
+}
+function startComic(key, then) {
+  const P = COMICS[key];
+  if (!P) { then && then(); return; }
+  const C = { key, P, i: 0, at: [time], then };
+  // panellerde yürüyen düşmanların şeritleri
+  for (const p of P) for (const a of p.act || []) if (a.s.startsWith('e:')) { const d = ENEMIES[a.s.slice(2)]; animStrip('enemy_' + a.s.slice(2), d && d.base ? 'enemy_' + d.base : null, '_walk'); }
+  G.comic = C; setOverlay('comic');
+}
+function endComic() {
+  const C = G.comic; if (!C) return;
+  save.comics = save.comics || {}; save.comics[C.key] = true; persist();
+  G.comic = null; setOverlay(null);
+  if (C.then) C.then();
+}
+function comicNext() {
+  const C = G.comic; if (!C) return;
+  if (time - C.at[C.i] < 0.3) return; // açılış bitmeden geçme
+  if (C.i + 1 >= C.P.length) { endComic(); return; }
+  C.i++; C.at[C.i] = time; sfx('click');
+}
+function comicBg(p, r, t) {
+  const g = ctx;
+  if (p.bg === 'gun') {
+    let gr = g.createLinearGradient(0, r.y, 0, r.y + r.h); gr.addColorStop(0, '#f3c27c'); gr.addColorStop(0.6, '#e08a54'); gr.addColorStop(1, '#a8583a');
+    g.fillStyle = gr; g.fillRect(r.x, r.y, r.w, r.h);
+    g.save(); g.globalCompositeOperation = 'lighter'; glow(g, r.x + r.w * 0.78, r.y + r.h * 0.3, r.h * (p.sun ? 0.8 : 0.5), '255,230,150', p.sun ? 0.7 : 0.45); g.restore();
+    g.fillStyle = '#9a5240'; g.beginPath(); g.moveTo(r.x, r.y + r.h * 0.7);
+    for (let i = 0; i <= 8; i++) g.lineTo(r.x + r.w * i / 8, r.y + r.h * (0.62 + 0.06 * Math.sin(i * 1.7)));
+    g.lineTo(r.x + r.w, r.y + r.h); g.lineTo(r.x, r.y + r.h); g.fill();
+    g.fillStyle = '#c8986a'; g.fillRect(r.x, r.y + r.h * 0.82, r.w, r.h * 0.18);
+    g.fillStyle = 'rgba(90,50,30,0.35)'; g.fillRect(r.x, r.y + r.h * 0.82, r.w, 3);
+  } else if (p.bg === 'karanlik') {
+    let gr = g.createRadialGradient(r.x + r.w / 2, r.y + r.h * 0.6, 10, r.x + r.w / 2, r.y + r.h * 0.6, r.w * 0.7);
+    gr.addColorStop(0, '#3a1c50'); gr.addColorStop(1, '#06030a'); g.fillStyle = gr; g.fillRect(r.x, r.y, r.w, r.h);
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 4; i++) glow(g, r.x + r.w * (0.2 + i * 0.2) + Math.sin(t + i) * 10, r.y + r.h * 0.85, r.w * 0.2, '140,80,200', 0.12);
+    g.restore();
+  } else {
+    // gece / balkon / mezar: ay ışıklı mor gece
+    let gr = g.createLinearGradient(0, r.y, 0, r.y + r.h); gr.addColorStop(0, '#0d0818'); gr.addColorStop(1, '#2a1838');
+    g.fillStyle = gr; g.fillRect(r.x, r.y, r.w, r.h);
+    g.save(); g.globalCompositeOperation = 'lighter'; glow(g, r.x + r.w * 0.82, r.y + r.h * 0.2, r.h * 0.35, '210,220,255', 0.35); g.restore();
+    circle(r.x + r.w * 0.82, r.y + r.h * 0.2, r.h * 0.08, '#eef0ff');
+    if (p.bg === 'mezar') {
+      // mezarlık: koyu tepe, arkada mezar taşları ve çıplak ağaç, yerde yeşil sis
+      g.fillStyle = '#1a1424'; g.beginPath(); g.moveTo(r.x, r.y + r.h * 0.72);
+      for (let i = 0; i <= 6; i++) g.lineTo(r.x + r.w * i / 6, r.y + r.h * (0.66 + 0.05 * Math.sin(i * 2.1)));
+      g.lineTo(r.x + r.w, r.y + r.h); g.lineTo(r.x, r.y + r.h); g.fill();
+      const tomb = ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3'], tree = spr('nm_tree_2');
+      if (tree) { g.save(); g.globalAlpha = 0.7; drawSprite(g, tree, r.x + r.w * 0.08, r.y + r.h * 0.74, r.h * 0.5); g.restore(); }
+      for (let i = 0; i < 5; i++) { const im = spr(tomb[i % 3]); if (im) drawSprite(g, im, r.x + r.w * (0.12 + i * 0.19), r.y + r.h * (0.74 + (i % 2) * 0.04), r.h * 0.16); }
+      g.fillStyle = '#100c16'; g.fillRect(r.x, r.y + r.h * 0.88, r.w, r.h * 0.12);
+      g.save(); g.globalCompositeOperation = 'lighter'; glow(g, r.x + r.w * 0.45, r.y + r.h * 0.9, r.w * 0.5, '110,255,140', 0.25); g.restore();
+    } else {
+      g.fillStyle = '#120c18'; g.fillRect(r.x, r.y + r.h * 0.9, r.w, r.h * 0.1);
+    }
+  }
+}
+// balkonda Mortimer: şapelin yakın planı (oturup çay içer / ayakta)
+function comicBalcony(p, r, t) {
+  const ch = spr('castle_1'); if (!ch) return;
+  const mh = r.h * 0.5, cw = mh * ch.width / MORT_PX, chh = cw * ch.height / ch.width, S = MORT_STAGE[1];
+  const fx = r.x + r.w * 0.5, fy = r.y + r.h * 0.84; // Mortimer'ın ayağı
+  const X = fx - S.at[0] * cw, Y = fy - S.at[1] * chh;
+  ctx.drawImage(ch, X, Y, cw, chh);
+  ctx.save(); ctx.translate(fx + (p.shake ? Math.sin(t * 50) * 1.5 : 0), fy);
+  const sit = p.mort === 'sit' && mortStrip('mortimer_cay'), im = spr('mortimer');
+  if (sit) drawFrame(spr(sit), ANIM_META[sit], Math.floor(t * 12) % ANIM_META[sit].n, mh * 1.15 * MORT_SIT_K);
+  else if (im) drawSprite(ctx, im, 0, 0, mh * im.width / im.height);
+  ctx.restore();
+  // korkuluk Mortimer'ın önünde
+  const rl = S.rail;
+  if (rl) ctx.drawImage(ch, rl[0] * ch.width, rl[1] * ch.height, (rl[2] - rl[0]) * ch.width, (rl[3] - rl[1]) * ch.height, X + rl[0] * cw, Y + rl[1] * chh, (rl[2] - rl[0]) * cw, (rl[3] - rl[1]) * chh);
+  if (p.shake) { txt('!', fx + r.w * 0.12, fy - mh * 1.05, r.h * 0.18, '#ff5a3c', 'center', '400', FONT_LOGO); }
+}
+function comicActor(a, r, t) {
+  const x = r.x + a.x * r.w, y = r.y + a.y * r.h, h = a.h * r.h, k = a.rise ? easeOutQ(clamp((t - 0.25 - (a.d || 0)) / 0.7, 0, 1)) : 1;
+  ctx.save();
+  if (a.rise) { ctx.beginPath(); ctx.rect(r.x, r.y, r.w, y - r.y + 2); ctx.clip(); ctx.translate(0, (1 - k) * h); }
+  if (a.fade) ctx.globalAlpha *= 0.55 + 0.45 * Math.abs(Math.sin(t * 1.3));
+  if (a.rise) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - h * 0.2, h * 0.5, '110,255,140', 0.3 * k); ctx.restore(); }
+  if (a.s === 'mort_cast') {
+    const n = mortStrip('mortimer_buyu'), im = spr('mortimer');
+    ctx.translate(x, y);
+    if (n) drawFrame(spr(n), ANIM_META[n], Math.floor(t * 10) % ANIM_META[n].n, h); else if (im) drawSprite(ctx, im, 0, 0, h * im.width / im.height);
+  } else if (a.s.startsWith('k:')) {
+    const im = spr('unit_skel_' + a.s.slice(2)); if (im) drawSprite(ctx, im, x, y, h * im.width / im.height);
+  } else {
+    const ty = a.s.slice(2), d = ENEMIES[ty], name = 'enemy_' + ty;
+    const st = a.walk && animStrip(name, d && d.base ? 'enemy_' + d.base : null, '_walk');
+    ctx.translate(x, y); ctx.scale(a.f || 1, 1);
+    if (st) drawFrame(spr(st), ANIM_META[st], Math.floor(t * 14) % ANIM_META[st].n, h);
+    else { const im = enemySprite(ty) || spr(name); if (im) drawSprite(ctx, im, 0, 0, h * im.width / im.height); }
+  }
+  ctx.restore();
+}
+function comicBubble(s, r, a) {
+  if (a <= 0) return;
+  const mw = Math.min(r.w * 0.8, 300), size = clamp(r.h * 0.055, 11, 15);
+  const lines = wrapLines(s.text, mw - 22, size, '800', FONT_B, 4);
+  ctx.font = `800 ${size}px ${FONT_B}`;
+  const tw = Math.max(...lines.map(l => ctx.measureText(l).width), s.who ? ctx.measureText(s.who).width * 0.8 : 0);
+  const bw = tw + 24, bh = lines.length * (size + 3) + 14 + (s.who ? size : 0);
+  const cx = clamp(r.x + s.x * r.w, r.x + bw / 2 + 6, r.x + r.w - bw / 2 - 6), by = r.y + s.y * r.h, tx = r.x + s.to[0] * r.w, ty = r.y + s.to[1] * r.h;
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(cx, by + bh / 2); ctx.scale(0.85 + 0.15 * a, 0.85 + 0.15 * a); ctx.translate(-cx, -(by + bh / 2));
+  // kuyruk konuşana uzanır
+  const bx = clamp(tx, cx - bw / 2 + 14, cx + bw / 2 - 14), down = ty > by + bh;
+  ctx.fillStyle = '#fbf6e8'; ctx.strokeStyle = '#120a10'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(bx - 8, down ? by + bh - 2 : by + 2); ctx.lineTo(lerp(bx, tx, 0.85), lerp(down ? by + bh : by, ty, 0.85)); ctx.lineTo(bx + 8, down ? by + bh - 2 : by + 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+  roundRect(cx - bw / 2, by, bw, bh, 12, '#fbf6e8', '#120a10', 2);
+  ctx.fillStyle = '#fbf6e8'; ctx.fillRect(bx - 6.5, down ? by + bh - 3 : by + 1, 13, 3); // kuyruk birleşimi
+  let y = by + 8;
+  if (s.who) { txt(s.who, cx - bw / 2 + 12, y + size * 0.4, size * 0.78, '#8a2a3a', 'left', '800', FONT_B, false); y += size; }
+  for (const l of lines) { txt(l, cx, y + size * 0.55, size, '#1a1018', 'center', '800', FONT_B, false); y += size + 3; }
+  ctx.restore();
+}
+function drawComic() {
+  const C = G.comic; if (!C) return;
+  const k = time - overlayT;
+  ctx.fillStyle = `rgba(6,3,10,${0.92 * clamp(k / 0.3, 0, 1)})`; ctx.fillRect(0, 0, W, H);
+  const R = comicRects(C.P.length);
+  buttons.push({ key: 'comic_next', x: 0, y: 0, w: W, h: H, fn: comicNext });
+  for (let i = 0; i <= C.i; i++) {
+    const p = C.P[i], r = R[i], t = time - C.at[i], a = clamp(t / 0.35, 0, 1), e = easeOutBack(a);
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.translate(r.x + r.w / 2, r.y + r.h / 2); ctx.scale(0.9 + 0.1 * e, 0.9 + 0.1 * e); ctx.translate(-(r.x + r.w / 2), -(r.y + r.h / 2));
+    roundRect(r.x - 4, r.y - 4, r.w + 8, r.h + 8, 6, '#0a0608');
+    ctx.save(); ctx.beginPath(); ctx.rect(r.x, r.y, r.w, r.h); ctx.clip();
+    comicBg(p, r, t);
+    if (p.bg === 'balkon') comicBalcony(p, r, t);
+    for (const ac of p.act || []) comicActor(ac, r, t);
+    if (p.title) {
+      const q = clamp((t - 1.1) / 0.4, 0, 1);
+      if (q > 0) { // alt şeritte büyük başlık
+        ctx.save(); ctx.globalAlpha *= q;
+        const gr = ctx.createLinearGradient(0, r.y + r.h * 0.68, 0, r.y + r.h); gr.addColorStop(0, 'rgba(6,3,10,0)'); gr.addColorStop(0.5, 'rgba(6,3,10,0.85)'); gr.addColorStop(1, 'rgba(6,3,10,0.95)');
+        ctx.fillStyle = gr; ctx.fillRect(r.x, r.y + r.h * 0.68, r.w, r.h * 0.32);
+        txt(p.title, r.x + r.w / 2, r.y + r.h * 0.88, Math.min(r.h * 0.14, r.w * 0.085), '#ff3b2e', 'center', '400', FONT_LOGO); ctx.restore();
+      }
+    }
+    ctx.restore();
+    ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 2; ctx.strokeRect(r.x - 1, r.y - 1, r.w + 2, r.h + 2);
+    if (p.cap) { // üst sol altyazı kutusu
+      ctx.font = `700 12px ${FONT_B}`; const cw = ctx.measureText(p.cap).width + 18;
+      roundRect(r.x + 8, r.y + 8, cw, 22, 3, '#f2d98a', '#120a10', 1.6);
+      txt(p.cap, r.x + 17, r.y + 19.5, 12, '#2a1a10', 'left', '700', FONT_B, false);
+    }
+    for (const s of p.say || []) comicBubble(s, r, clamp((t - 0.35) / 0.25, 0, 1));
+    ctx.restore();
+  }
+  const last = C.i + 1 >= C.P.length;
+  txt(last ? 'Başla ›' : 'Dokun ›', W - 40, H - 24, 14, `rgba(239,230,204,${0.55 + 0.35 * Math.sin(time * 4)})`, 'right', '800', FONT_B, false);
+  gameButton('comic_skip', W - 70, 16, 96, 26, 'Geç ›', () => endComic(), 'wood', { size: 13 });
+}
 // zafer ekranı özeti: sayılar sırayla sayarak dolar; en çok öldüren vurgulanır
 const KILLER_NAME = { arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
 function drawWinSummary(k, px, py, pw, cx) {
@@ -9343,6 +9563,7 @@ function drawWinSummary(k, px, py, pw, cx) {
   ctx.restore();
 }
 function drawOverlay() {
+  if (overlay === 'comic') { drawComic(); return; }
   const k = time - overlayT, fade = clamp(k / 0.25, 0, 1);
   ctx.fillStyle = NECRO ? `rgba(8,4,16,${0.7 * fade})` : `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(0, 0, W, H);
   const big = overlay === 'skills';
