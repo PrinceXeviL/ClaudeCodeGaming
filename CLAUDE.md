@@ -57,8 +57,10 @@ grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık
 Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
 Yapıldı: Mortimer'ın 3 büyüsü (Ölüleri Diriltme, Kemik Duvarı, Korku), rütbe renkleri (yayın 87), kodeks (yayın 90).
 Oyun yapım aşamasında: sistemler oturunca ~100 bölüm tasarlanacak (şimdilik 5).
-Sırada (öneri listesi, 8 Eki): dokunulabilir dekor şakaları (karga, mezar eli, Mortimer'ın çayı), meydan okuma modları
-(3 yıldızdan sonra Kahramanlık/Demir, ek yıldız), başarımlar, çizgi roman panelleri
+Yapıldı (8 Eki, yayın 106): dekor şakaları (setupProps/tapProps/drawProps: karga, mezar eli, Mortimer'ın çayı),
+meydan okuma modları (CHAL h/i, IRON_TOWERS, save.ch, kart üstünde 3 yıldızdan sonra açılır),
+başarımlar (ACH tablosu, `cnt(k)` kalıcı sayaç save.cnt, `achGive(id)` save.ach + üstten kayan bildirim, haritada kupa düğmesi → screen 'ach').
+Sırada: çizgi roman panelleri
 (sefer girişi 5, boss öncesi 2-3; Gemini yazısız, balonlar kodla), Sefer 2 (çöl lejyonları / kuzey savaşçıları), animasyon kareleri (poz kılavuzu).
 
 ## Müzik, dalga önizleme, rütbeler, Mortimer lafları (8 Eki 2026, yayın 87)

@@ -1571,6 +1571,7 @@ function killEnemy(e) {
     r.hopT = 0.4; r.anim = 0;
   }
   G.kills = (G.kills || 0) + 1;
+  cnt('kills'); if (e.def.chief) cnt('bosses');
   dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)));
   sfx('death');
   deathVoice(e);
@@ -1781,6 +1782,7 @@ function buyAbility(t, id) {
   G.gold -= cost; t.spent += cost; t.ab = t.ab || {}; t.ab[id] = cur + 1; t.born = G.t;
   const first = !t.spec;
   t.spec = id;
+  if (cur + 1 >= def.ranks.length) achGive('master');
   if (t.type === 'barracks') applySoldierStats(t);
   for (let i = 0; i < 14; i++) {
     const a = rand(0, Math.PI * 2), v = rand(30, 90);
@@ -2738,13 +2740,14 @@ function castNecro(id, x, y) {
     const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15).sort((a, b) => a.t - b.t).slice(0, Math.max(0, S.max - alive));
     if (!bodies.length) { G.mortCast = 0; floatText(m.x, m.y - 40, 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
     G.raiseT = 1.2; mortSay('raise', true);
-    bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; });
+    bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); cnt('raise', bodies.length);
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
     sfx('portal');
   } else if (id === 'nm_wall') {
     // yolun en yakın noktasına, yola dik kemik duvar
     const q = nearestOnPaths(G.paths, x, y);
     if (q.d > 45) { G.mortCast = 0; floatText(x, y - 20, 'Yolun üstüne koy!', '#c8c8c8'); sfx('error'); return false; }
+    cnt('wall');
     const dir = pathPos(q.p, q.along);
     G.soldiers.push({ militia: true, wall: true, x: q.x, y: q.y, rx: q.x, ry: q.y, hp: S.hp, maxHp: S.hp, dmg: [0, 0], armor: 0.3, rate: 99, speed: 0,
       engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: S.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
@@ -2757,7 +2760,7 @@ function castNecro(id, x, y) {
     for (let i = 0; i < 18; i++) { const k = i / 17; emit(G.parts, { kind: 'glow', add: true, x: lerp(m.x, x, k) + rand(-6, 6), y: lerp(m.y - 18, y, k) + rand(-6, 6), vy: -rand(5, 20), col: S.col, s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.8) }); }
     for (const e of G.enemies) {
       if (e.dead || e.siege !== undefined || dist(e.x, e.y, x, y) > S.r) continue;
-      e.fearT = e.def.chief ? S.t * 0.5 : S.t;
+      e.fearT = e.def.chief ? S.t * 0.5 : S.t; cnt('fear');
       floatText(e.x, e.y - 30, '!', '#d8a8ff');
     }
     sfx('roar');
@@ -2977,6 +2980,117 @@ function drawTut() {
   }
   ctx.restore();
 }
+// ----- başarımlar -----
+// save.ach: açılanlar (id -> zaman), save.cnt: kalıcı sayaçlar. cnt(k, n) sayacı artırır ve ilgili başarımları dener.
+// Sayaçlar bellekte artar; kayıt başarım açılınca ve bölüm bitince yazılır.
+const ACH = [
+  { id: 'first', name: 'İlk Kan', desc: 'Bir bölümü bitir', icon: 'skull' },
+  { id: 'flawless', name: 'Kusursuz', desc: 'Bir bölümü hiç can kaybetmeden bitir', icon: 'heart' },
+  { id: 'allstars', name: 'Yıldız Avcısı', desc: 'Bütün bölümlerden 3 yıldız al', icon: 'star' },
+  { id: 'heroic', name: 'Kahraman', desc: 'Bir Kahramanlık meydan okumasını bitir', icon: 'shield' },
+  { id: 'iron', name: 'Demir İrade', desc: 'Bir Demir meydan okumasını bitir', icon: 'anvil' },
+  { id: 'kills', name: 'Mezarlık Dolu', desc: 'Toplam 1000 düşman öldür', icon: 'skull', cnt: 'kills', need: 1000 },
+  { id: 'bosses', name: 'Rütbe Söken', desc: '5 komutan (boss) devir', icon: 'crown', cnt: 'bosses', need: 5 },
+  { id: 'raise', name: 'Mesai Arkadaşları', desc: 'Toplam 100 ölüyü dirilt', icon: 'raise', cnt: 'raise', need: 100 },
+  { id: 'fear', name: 'Böö!', desc: 'Korku büyüsüyle 50 düşman kaçır', icon: 'fear', cnt: 'fear', need: 50 },
+  { id: 'wall', name: 'Duvarcı Ustası', desc: 'Kemik Duvarı 15 kez dik', icon: 'wall', cnt: 'wall', need: 15 },
+  { id: 'tea', name: 'Çay Saati', desc: "Mortimer'a 10 kez çay içir", icon: 'tea', cnt: 'tea', need: 10 },
+  { id: 'crow', name: 'Kargalar Dostu', desc: '15 kargayı ürküt', icon: 'crow', cnt: 'crow', need: 15 },
+  { id: 'tip', name: 'Mezar Bahşişi', desc: 'Mezardaki elden bahşiş al', icon: 'coin', cnt: 'tip', need: 1 },
+  { id: 'hoard', name: 'Cimri Büyücü', desc: 'Bir bölümde 2000 altın biriktir', icon: 'coin' },
+  { id: 'master', name: 'Kara Türbe', desc: 'Bir kulenin uzmanlığını son kademeye çıkar', icon: 'tower' },
+  { id: 'codex', name: 'Ansiklopedist', desc: 'Kodeksteki bütün düşmanları gör', icon: 'book' },
+  { id: 'chal5', name: 'Lanetli Efsane', desc: 'Bütün meydan okumaları bitir', icon: 'crown' },
+];
+const ACH_TOAST = [];
+function cnt(k, n = 1) {
+  save.cnt = save.cnt || {}; save.cnt[k] = (save.cnt[k] || 0) + n;
+  if (!cnt.due) cnt.due = setTimeout(() => { cnt.due = 0; persist(); }, 3000); // sayaçlar bölüm ortasında çıkılsa da kaybolmasın
+  for (const a of ACH) if (a.cnt === k && save.cnt[k] >= a.need) achGive(a.id);
+}
+function achGive(id) {
+  save.ach = save.ach || {};
+  if (save.ach[id]) return;
+  save.ach[id] = Date.now(); save.achNew = (save.achNew || 0) + 1; persist();
+  ACH_TOAST.push({ a: ACH.find(x => x.id === id), t: null });
+  if (actx && !muted) sfx('levelup');
+}
+// bölüm sonu ve diğer durum başarımları
+function achLevelEnd(win) {
+  if (win) {
+    achGive('first');
+    if (!G.chal && G.lives >= G.maxLives) achGive('flawless');
+    if (LEVELS.every((lv, i) => (save.stars[i] || 0) >= 3)) achGive('allstars');
+    if (G.chal === 'h') achGive('heroic');
+    if (G.chal === 'i') achGive('iron');
+    if (LEVELS.every((lv, i) => save.ch && save.ch[i] && save.ch[i].h && save.ch[i].i)) achGive('chal5');
+  }
+  persist();
+}
+function achIcon(icon, r) {
+  ctx.save(); ctx.lineJoin = 'round';
+  if (icon === 'skull' || icon === 'raise') drawSkullIcon(0, 0, r * 0.95);
+  else if (icon === 'heart') drawIcon('heart', 0, 0, r * 1.4);
+  else if (icon === 'star') fancyStar(0, 0, r * 0.75, true);
+  else if (icon === 'coin') drawIcon('coin', 0, 0, r * 1.4);
+  else if (icon === 'crown') drawIcon('crown', 0, 0, r * 1.4);
+  else if (icon === 'fear') drawNecroGlyph('nm_fear', r);
+  else if (icon === 'wall') drawNecroGlyph('nm_wall', r);
+  else if (icon === 'book') codexBookIcon(r);
+  else if (icon === 'shield') { ctx.beginPath(); ctx.moveTo(0, -r * 0.6); ctx.lineTo(r * 0.5, -r * 0.4); ctx.lineTo(r * 0.45, r * 0.15); ctx.quadraticCurveTo(r * 0.3, r * 0.5, 0, r * 0.65); ctx.quadraticCurveTo(-r * 0.3, r * 0.5, -r * 0.45, r * 0.15); ctx.lineTo(-r * 0.5, -r * 0.4); ctx.closePath(); ctx.fillStyle = '#e04a3a'; ctx.fill(); ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2; ctx.stroke(); }
+  else if (icon === 'anvil') { ctx.fillStyle = '#9aa6b8'; ctx.strokeStyle = '#10141c'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-r * 0.6, -r * 0.3); ctx.lineTo(r * 0.5, -r * 0.3); ctx.lineTo(r * 0.7, -r * 0.1); ctx.lineTo(r * 0.2, 0); ctx.lineTo(r * 0.35, r * 0.45); ctx.lineTo(-r * 0.35, r * 0.45); ctx.lineTo(-r * 0.2, 0); ctx.lineTo(-r * 0.6, -r * 0.05); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  else if (icon === 'tea') { roundRect(-r * 0.45, -r * 0.2, r * 0.8, r * 0.6, r * 0.2, '#f2ecd8', '#1a1024', 1.6); ctx.strokeStyle = '#1a1024'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(r * 0.42, r * 0.08, r * 0.17, -1.4, 1.4); ctx.stroke(); ctx.strokeStyle = 'rgba(230,230,220,0.8)'; ctx.beginPath(); ctx.moveTo(-r * 0.1, -r * 0.3); ctx.quadraticCurveTo(r * 0.05, -r * 0.5, -r * 0.05, -r * 0.7); ctx.stroke(); }
+  else if (icon === 'crow') { const im = spr('nm_crow'); if (im) drawSprite(ctx, im, 0, r * 0.65, r * 1.3 * im.width / im.height); }
+  else if (icon === 'tower') { const im = spr('tower_barracks_3'); if (im) drawSprite(ctx, im, 0, r * 0.7, r * 1.5); }
+  ctx.restore();
+}
+// açılan başarım bildirimi: üstten kayar, 3 sn kalır, sırayla
+function drawAchToast() {
+  const T = ACH_TOAST[0]; if (!T) return;
+  if (T.t == null) T.t = time;
+  const k = time - T.t, a = clamp(Math.min(k / 0.3, (3.2 - k) / 0.4), 0, 1);
+  if (k > 3.2) { ACH_TOAST.shift(); return; }
+  const y = -40 + 56 * easeOutBack(clamp(k / 0.4, 0, 1)) * (k > 2.8 ? a : 1);
+  ctx.save(); ctx.globalAlpha = a;
+  const w = 300, x = W / 2 - w / 2;
+  roundRect(x + 2, y + 4, w, 46, 14, 'rgba(0,0,0,0.45)');
+  roundRect(x, y, w, 46, 14, '#241a32', '#e8c86a', 2);
+  ctx.save(); ctx.translate(x + 26, y + 23); achIcon(T.a.icon, 14); ctx.restore();
+  txt('BAŞARIM: ' + T.a.name, x + 50, y + 15, 14, '#ffe27a', 'left', '400', FONT_T, false);
+  txt(T.a.desc, x + 50, y + 32, 11, '#e8e0f0', 'left', '700', FONT_B, false);
+  ctx.restore();
+}
+// başarımlar ekranı (haritadaki kupa düğmesi)
+function drawAchievements() {
+  const st = time - screenT, bg = spr('nm_title');
+  if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
+  ctx.fillStyle = 'rgba(8,4,16,0.75)'; ctx.fillRect(0, 0, W, H);
+  const rk = easeOutBack(clamp(st / 0.45, 0, 1));
+  ctx.save(); ctx.translate(W / 2, 40); ctx.scale(rk, rk); ribbon(0, 0, 300, 'BAŞARIMLAR', 'blue', 24); ctx.restore();
+  const got = ACH.filter(a => save.ach && save.ach[a.id]).length;
+  txt(`${got} / ${ACH.length}`, W / 2, 74, 15, '#ffe27a', 'center', '400', FONT_T);
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st });
+  const cols = 3, cw = 290, ch = 58, gx = 10, gy = 6, x0 = W / 2 - (cols * cw + (cols - 1) * gx) / 2, y0 = 88;
+  ACH.forEach((a, i) => {
+    const c = i % cols, r = Math.floor(i / cols), x = x0 + c * (cw + gx), y = y0 + r * (ch + gy), on = save.ach && save.ach[a.id];
+    const ap = clamp((st - 0.1 - i * 0.025) / 0.25, 0, 1); if (ap <= 0) return;
+    ctx.save(); ctx.globalAlpha = ap;
+    roundRect(x, y, cw, ch, 12, on ? '#2c2240' : 'rgba(30,24,40,0.85)', on ? '#e8c86a' : 'rgba(150,140,170,0.4)', on ? 2 : 1.2);
+    circle(x + 30, y + ch / 2, 21, on ? '#3e2e58' : '#1c1626', on ? '#e8c86a' : '#4a4058', 1.6);
+    ctx.save(); ctx.translate(x + 30, y + ch / 2); if (!on) ctx.globalAlpha *= 0.45; achIcon(a.icon, 19); ctx.restore();
+    txt(a.name, x + 60, y + 19, 15, on ? '#ffe27a' : '#b8acc8', 'left', '400', FONT_T, false);
+    txt(a.desc, x + 60, y + 36, 11, on ? '#e8e0f0' : '#8a809a', 'left', '700', FONT_B, false);
+    if (a.cnt && !on) {
+      const v = Math.min(a.need, (save.cnt && save.cnt[a.cnt]) || 0), bw = cw - 72;
+      roundRect(x + 60, y + 45, bw, 6, 3, '#120c1a');
+      if (v) roundRect(x + 60, y + 45, bw * v / a.need, 6, 3, '#8fd06a');
+      txt(`${v}/${a.need}`, x + cw - 10, y + 19, 10, '#8a809a', 'right', '800', FONT_B, false);
+    }
+    if (on) { circle(x + cw - 16, y + 16, 8, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + cw - 20, y + 16); ctx.lineTo(x + cw - 17, y + 19); ctx.lineTo(x + cw - 12, y + 13); ctx.stroke(); }
+    ctx.restore();
+  });
+  save.achNew = 0;
+}
 // ----- dokunulabilir dekor şakaları -----
 // karga: dokununca gaklayıp uçar, 20-30 sn sonra başka yere konar · mezar: dokununca topraktan iskelet eli çıkar, el sallar, laf atar;
 // üçüncü dokunuşta bir kez bahşiş fırlatır · Mortimer: balkonda dokununca çayından yudum alır (buhar, laf)
@@ -3019,7 +3133,7 @@ function tapProps(x, y) {
     if (G.teaT <= 0) {
       G.teaT = 2.2; mortSay('tea', true); sfx('pick');
       for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', x: m.x + m.h * 0.28 + rand(-2, 2), y: m.y - m.h * 0.6, vx: rand(-4, 4), vy: -rand(10, 22), col: '235,235,225', s0: rand(1.5, 2.5), s1: rand(4, 6), life: rand(0.8, 1.3), a: 0.5 });
-      G.stat = G.stat || {}; G.stat.tea = (G.stat.tea || 0) + 1;
+      cnt('tea'); G.stat = G.stat || {}; G.stat.tea = (G.stat.tea || 0) + 1;
     }
     return true;
   }
@@ -3028,14 +3142,14 @@ function tapProps(x, y) {
       o.state = 'fly'; o.t = 0; o.face = x < o.x ? 1 : -1; crowCaw();
       for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'chunk', x: o.x, y: o.y - 8, vx: rand(-30, 30), vy: -rand(20, 60), g: 120, drag: 1.5, vr: rand(-5, 5), rot: rand(0, 6), col: '#1a1420', s0: 2, s1: 1, life: 0.8 });
       if (Math.random() < 0.35) mortSay('crowtap');
-      G.stat = G.stat || {}; G.stat.crow = (G.stat.crow || 0) + 1;
+      cnt('crow'); G.stat = G.stat || {}; G.stat.crow = (G.stat.crow || 0) + 1;
       return true;
     }
     if (o.kind === 'grave' && dist(x, y, o.x, o.y - 10) < 18) {
       if (o.state !== 'hand' || o.t > 1.6) {
         o.state = 'hand'; o.t = 0; o.taps++;
         o.say = o.taps === 3 ? 'Al bakalım, bahşiş!' : GRAVE_LINES[(o.taps + G.idx) % GRAVE_LINES.length];
-        if (o.taps === 3) setTimeout(() => G && G.props && G.props.includes(o) && dropCoins(o.x, o.y - 14, 15), 900);
+        if (o.taps === 3) { setTimeout(() => G && G.props && G.props.includes(o) && dropCoins(o.x, o.y - 14, 15), 900); cnt('tip'); }
         sfx('pick');
         for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'chunk', x: o.x + rand(-6, 6), y: o.y + 2, vx: rand(-25, 25), vy: -rand(30, 70), g: 260, vr: rand(-8, 8), rot: rand(0, 6), col: '#4a3a2a', s0: 1.8, s1: 1, life: 0.5 });
         G.stat = G.stat || {}; G.stat.grave = (G.stat.grave || 0) + 1;
@@ -3621,7 +3735,8 @@ function update(dt) {
   for (const f of G.floaters) { f.t += dt; f.y -= 22 * dt; }
   G.floaters = G.floaters.filter(f => f.t < 1.1);
 
-  if (G.lives <= 0 && !overlay) { setOverlay('lose'); sfx('lose'); }
+  if (G.lives <= 0 && !overlay) { setOverlay('lose'); sfx('lose'); achLevelEnd(false); }
+  if (G.gold >= 2000) achGive('hoard');
   if (!overlay && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
     const lr = G.lives / G.maxLives;
     if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
@@ -3632,6 +3747,7 @@ function update(dt) {
     persist();
     setOverlay('win');
     sfx('win');
+    achLevelEnd(true);
   }
 }
 
@@ -7567,6 +7683,7 @@ function codexNote(type) {
   save.codex = save.codex || [];
   if (save.codex.includes(base)) return;
   save.codex.push(base); save.codexNew = save.codexNew || []; save.codexNew.push(base); persist();
+  if (CODEX_ENEMIES.every(t => save.codex.includes(t))) achGive('codex');
 }
 // eski kayıtlar: tanıtım kartı gösterilmiş düşmanlar kodekse sayılır
 if (save.seenEnemies2 && !save.codex) { save.codex = save.seenEnemies2.filter(t => CODEX_ENEMIES.includes(t)); persist(); }
@@ -8033,6 +8150,8 @@ function drawMap() {
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
   roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
+  roundBtn('ach', W - 272, 41, 19, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
+  if (save.achNew) { circle(W - 258, 27, 8, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', W - 258, 27.5, 10, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
   const total = starsTotal();
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
@@ -8963,8 +9082,10 @@ function frame(now) {
   else if (screen === 'settings') drawSettings();
   else if (screen === 'upgrades') drawUpgrades();
   else if (screen === 'codex') drawCodex();
+  else if (screen === 'ach') drawAchievements();
   else drawPlay();
   drawPartsAll(uiParts);
+  drawAchToast();
   if (trans) {
     const a = trans.t < 0.22 ? trans.t / 0.22 : 1 - (trans.t - 0.22) / 0.28;
     ctx.fillStyle = `rgba(8,5,2,${clamp(a, 0, 1)})`; ctx.fillRect(0, 0, W, H);
@@ -9026,7 +9147,7 @@ window.__game = {
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX,
+  goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt,
   learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
