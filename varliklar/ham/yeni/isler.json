@@ -1,0 +1,38 @@
+[
+ {
+  "name": "war_dog",
+  "ref": "kontext_legion_ref.png",
+  "prompt": "Replace the Roman legionary with a fierce snarling Roman war hound (a lean muscular mastiff) running forward, teeth bared, wearing a red leather harness with gold studs, a spiked gold collar and a small bronze plate on its back. Keep exactly the same detailed cartoon game art style, thick dark outlines, painted shading and the red, gold and white Solarian color scheme. Strict side profile view, facing right. Full body visible, centered. Keep the flat solid magenta background, no ground, no shadow, no text.",
+  "seeds": [
+   11,
+   23
+  ]
+ },
+ {
+  "name": "chariot",
+  "ref": "kontext_ram_ref.png",
+  "prompt": "Replace the siege ram cart with a Roman war chariot: one armored white horse with red and gold barding pulling a small gold and red two-wheeled chariot with sharp scythe blades on the wheel hubs, a charioteer in gold armor with a red cape holding the reins. Keep exactly the same detailed cartoon game art style, thick dark outlines, painted shading and the red, gold and white Solarian color scheme. Strict side profile view, facing right. Full body visible, centered. Keep the flat solid magenta background, no ground, no shadow, no text.",
+  "seeds": [
+   11,
+   23
+  ]
+ },
+ {
+  "name": "siege_tower",
+  "ref": "kontext_ram_ref.png",
+  "prompt": "Replace the siege ram cart with a tall wooden Roman siege tower on four wheels, three stories high, covered with red leather panels and gold sun emblems, a red banner on top and a closed drawbridge at the top floor. Keep exactly the same detailed cartoon game art style, thick dark outlines, painted shading and the red, gold and white Solarian color scheme. Strict side profile view, facing right. Full body visible, centered. Keep the flat solid magenta background, no ground, no shadow, no text.",
+  "seeds": [
+   11,
+   23
+  ]
+ },
+ {
+  "name": "eagle",
+  "ref": "kontext_legion_ref.png",
+  "prompt": "Replace the Roman legionary with a large imperial war eagle flying, wings spread wide, golden brown feathers, wearing a small gold helmet with a red crest and gold talon guards. Keep exactly the same detailed cartoon game art style, thick dark outlines, painted shading and the red, gold and white Solarian color scheme. Strict side profile view, facing right. Full body visible, centered. Keep the flat solid magenta background, no ground, no shadow, no text.",
+  "seeds": [
+   11,
+   23
+  ]
+ }
+]

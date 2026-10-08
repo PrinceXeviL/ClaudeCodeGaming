@@ -166,7 +166,9 @@ def process(job):
             wid.append(xs.max() - xs.min() if len(xs) else 0)
         hit = int(np.argmax(wid)); st = (hit - round(0.4 * L)) % L
         order = [(st + i) % L for i in range(L)]
-    video_isle.main(rel, job['name'], fps=16, order=order)
+    die = job['name'].endswith('_die')
+    if die: order = list(range(0, L, 2))  # ölüm: ~1 sn, yarı kare (bellek)
+    video_isle.main(rel, job['name'], fps=16, order=order, first_h=die)
 
 
 def run_modal():

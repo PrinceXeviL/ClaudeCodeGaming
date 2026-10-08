@@ -1,0 +1,58 @@
+[
+ {
+  "name": "enemy_legion_die",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_solarcher_die",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "prompt": "a cartoon roman archer with a bow is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_gladiator_die",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon gladiator with a sword and a net is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_assassin_die",
+  "ref": "ham/anim/enemy_assassin_ref.png",
+  "prompt": "a cartoon hooded assassin with daggers is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_priest_die",
+  "ref": "ham/anim/enemy_priest_ref.png",
+  "prompt": "a cartoon roman war priest with a golden scepter is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_heavy_die",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_cavalry_die",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "prompt": "a cartoon roman cavalryman with a lance riding a white horse is struck and dies: the horse rears up and collapses onto its side together with the rider, then they lie still on the ground. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

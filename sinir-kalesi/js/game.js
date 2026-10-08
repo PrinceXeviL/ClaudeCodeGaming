@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(enemy|unit)_.+_(walk|walk_on|walk_arka|atk)$/, STRIP_WAIT = new Set();
+const LAZY = {}, LAZY_RE = /^(enemy|unit)_.+_(walk|walk_on|walk_arka|atk|die)$/, STRIP_WAIT = new Set();
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -38,6 +38,7 @@ function loadStrip(name) {
 }
 function useStrips(keep) {
   for (const k in SPR) if (LAZY_RE.test(k) && !keep.has(k)) delete SPR[k];
+  for (const k in ROT) if (LAZY_RE.test(k)) delete ROT[k]; // dirilenlerin çürümüş şerit kopyaları
   for (const k of [...STRIP_WAIT]) if (!keep.has(k)) STRIP_WAIT.delete(k);
   keep.forEach(loadStrip);
 }
@@ -999,7 +1000,7 @@ function startLevel(idx, chal = null) {
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk'];
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
   useStrips(keep);
@@ -1771,7 +1772,7 @@ function corpsePhys(f, dt) {
   if (f.z > 0) return;
   f.z = 0;
   if (f.vz < -70) { f.vz = -f.vz * KNOCK.bounce; f.vx *= 0.5; f.vy *= 0.5; f.spin *= 0.35; G.effects.push({ kind: 'dust', x: f.x, y: f.y, t: 0, dur: 0.4 }); }
-  else { f.air = false; f.ang = 0; f.t = 0.32; } // yerleşti: yere yığılma pozundan devam
+  else { f.air = false; f.ang = 0; f.t = 0.32; f.flung = true; } // yerleşti: yere yığılma pozundan devam (şeritte yatan kare)
 }
 // Hasar sayıları: vurulan düşmanın üstünde küçük, kısa ömürlü sayı (büyük vuruş daha iri ve kırmızıya döner).
 // Sürekli hasar (zehir, gaz, kanama) toplanıp yarım saniyede bir gösterilir; aynı düşmana çok yakın vuruşlar birleşir.
@@ -2127,6 +2128,13 @@ function updateEnemy(e, dt) {
   if (AU) for (const o of G.enemies) {
     if (o === e || o.dead || dist(o.x, o.y, e.x, e.y) > AU.r) continue;
     if (AU.armor) o.armT = 0.3; if (AU.speed) o.drumT = 0.3;
+  }
+  // savaş arabası: yolundaki iskeletleri ezip geçer (her birine bir kez); kemik duvar durdurur
+  const TR = e.def.trample;
+  if (TR && !e.blocker) for (const s of G.soldiers) {
+    if (s.dead || s.wall || s.hero || (s.born != null && G.t < s.born) || dist(s.x, s.y, e.x, e.y) > TR.r) continue;
+    if ((e.ran || (e.ran = new Set())).has(s)) continue;
+    e.ran.add(s); damageSoldier(s, TR.dmg); s.flash = 0.15; impactFx(s.x, s.y - 8, '235,225,200', 0.9); sfx('bash');
   }
   // güneş rahibesi: belli aralıklarla çevresindeki cesetleri yakar (diriltilemez) ve dirilen ölülere ışıkla vurur
   const PU = e.def.purify;
@@ -4897,6 +4905,13 @@ function drawSoldier(s) {
       const ch = s.zh || 30 * UNIT_K;
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '110,255,140', 0.25); ctx.restore();
       if (s.born != null && G.t < s.born) return;
+      const up = s.born != null && G.t - s.born < DIE_T ? animStrip(key, s.zrig || s.zname, '_die') : null;
+      if (up) { // yerden kalkış: ölüm kareleri tersten
+        const F = ANIM_META[up], i = Math.max(0, F.n - 1 - Math.floor((G.t - s.born) / DIE_T * F.n));
+        const rg = RIG[s.zrig || s.zname] || {};
+        ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale((s.face || 1) * (rg.flip ? -1 : 1), 1); drawFrame(spr(up), F, i, ch); ctx.restore();
+        return;
+      }
       const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
       drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: s.zrig || s.zname, phase: s.anim * 7, walking, fly: 0, rise,
         atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7 });
@@ -5580,10 +5595,24 @@ function buildGear(base, lvl) {
 // Ölüm beş evre: geri sarsılma → dizler bükülür, gövde çöker → geriye devrilir → yere çarpıp seker → solar
 const CORPSE_DUR = 1.15;
 let CORPSE_BAKE = 3; // kare başına en çok bu kadar ceset önbelleğe alınır (çok ölüm aynı karede takılma yapmasın)
+// ölüm şeridi süresi (sn): kareler bu sürede oynar, ceset son karede yatar; dirilişte tersten
+const DIE_T = 0.9;
 function drawCorpse(f) {
   const im = spr(f.name);
   if (!im) return;
   const t = f.t, rig = RIG[f.rig || f.name] || { legY: 0.7 };
+  const dk = !f.air && !rig.wings && animStrip(f.name, f.rig, '_die');
+  if (dk) {
+    const F = ANIM_META[dk], i = f.flung ? F.n - 1 : Math.min(F.n - 1, Math.floor(t / DIE_T * F.n));
+    ctx.save();
+    const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78;
+    ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
+    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '110,255,140', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
+    ctx.translate(f.x, f.y + 1); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
+    drawFrame(spr(dk), F, i, f.h || CHAR_H[f.name] || 20);
+    ctx.restore();
+    return;
+  }
   const h = f.h || CHAR_H[f.name] || 20, w = h * im.width / im.height, legY = rig.legY ?? 0.7;
   const P = { rot: 0, sx: 1, sy: 1, bodyDy: 0, stepF: 0, stepB: 0, liftF: 0, liftB: 0, flap: 0, arm: 0, arm2: 0, bend: 0 };
   const arms = armsOf(f.name, f.rig || f.name, im);
@@ -7432,6 +7461,12 @@ const BOSS_LOOK = {
 function animStrip(name, rig, suf) {
   const key = name + suf;
   if (ANIM_META[key] && spr(key)) return key;
+  if (name.endsWith('_rot')) { // dirilen ölü: düşmanın şeridinin çürümüş renkli kopyası
+    const src = animStrip(name.slice(0, -4), rig === name ? null : rig, suf);
+    if (!src) return null;
+    SPR[key] = rottenOf(key, spr(src)); ANIM_META[key] = ANIM_META[src];
+    return key;
+  }
   if (!SPR[key]) { loadStrip(key); if (rig) loadStrip(rig + suf); } // bölüm dışı (harita, kodeks): ilk istekte yüklenir
   if (!rig || rig === name || !ANIM_META[rig + suf] || !spr(rig + suf)) return null;
   const type = name.slice(6), d = ENEMIES[type];

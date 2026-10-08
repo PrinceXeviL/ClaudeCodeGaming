@@ -99,9 +99,13 @@ def refs_dataset(user, jobs):
     exists = DATASET in kaggle('datasets', 'list', '--mine').stdout
     r = kaggle('datasets', 'version', '-p', d, '-m', 'refs') if exists else kaggle('datasets', 'create', '-p', d)
     print('veri seti:', (r.stdout + r.stderr).strip()[-200:], flush=True)
-    for _ in range(30):  # hazır olana kadar
-        if 'ready' in kaggle('datasets', 'status', f'{user}/{DATASET}').stdout.lower(): break
+    # yeni sürüm işlenene kadar bekle: işlerin referansları dosya listesinde görünmeli (yoksa çekirdek eski sürümü bağlar)
+    need = {os.path.basename(j['ref']) for j in jobs}
+    for _ in range(90):
+        listed = kaggle('datasets', 'files', f'{user}/{DATASET}', '--page-size', '200').stdout
+        if all(n in listed for n in need): break
         time.sleep(10)
+    else: print('UYARI: veri seti güncellenmedi', need, flush=True)
 
 
 def run(jobs, slug=SLUG):
