@@ -521,8 +521,8 @@ function deathVoice(e) {
 // Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez. Parçalar yüksek masterlandığı için kısık çalınır.
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.22, seam: true }, // The Necromancer's Parade
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.26, seam: true }, // Bones on the Battlements
+  battle: { file: 'muzik_savas.mp3', gain: 0.15, seam: true }, // The Necromancer's Parade
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.18, seam: true }, // Bones on the Battlements
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
