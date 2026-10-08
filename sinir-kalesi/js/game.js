@@ -5709,7 +5709,7 @@ function legionPose(o) {
   return pose;
 }
 const PUP_REST = {};
-let PUP_OFF = false; // test: parçalı çizimi kapatır (__game.pupOff)
+let PUP_OFF = true; // 8 Eki: kullanıcı parçalı animasyonu beğenmedi, kapalı (kod duruyor; __game.pupOff(false) ile denenir)
 // parçalı karakteri (alt-orta = zemin) yüksekliği h olacak şekilde g'ye çizer; atlas rütbe/boss rengiyle boyanabilir
 function drawPuppet(g, P, atlas, pose, h) {
   const R = PUPPET_META[P.atlas]; if (!R || !atlas) return false;

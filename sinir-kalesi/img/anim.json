@@ -5,33 +5,5 @@
   "fh": 441,
   "base": 0.011,
   "ch": 0.8617
- },
- "enemy_legion_atk": {
-  "n": 8,
-  "fw": 588,
-  "fh": 396,
-  "base": 0.0114,
-  "ch": 0.9596
- },
- "enemy_legion_walk": {
-  "n": 8,
-  "fw": 348,
-  "fh": 397,
-  "base": 0.0114,
-  "ch": 0.9572
- },
- "enemy_legion_walk_on": {
-  "n": 7,
-  "fw": 271,
-  "fh": 394,
-  "base": 0.0159,
-  "ch": 0.9645
- },
- "enemy_legion_walk_arka": {
-  "n": 7,
-  "fw": 278,
-  "fh": 389,
-  "base": 0.0116,
-  "ch": 0.9769
  }
 }

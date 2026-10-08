@@ -108,7 +108,14 @@ renk kayması, zemin çizgisi, satırlar arası boy farkı; promptta "ALL 8 fram
 Sonraki düşmanlar aynı sırayla: model sayfası → yandan yürüyüş → önden → arkadan → saldırı (kendi silahına uygun kılavuzla).
 anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor body|head|heel, --order, --norm.
 
-## Parçalı (iskeletli) animasyon (8 Eki 2026, yayın 95) — kare kare yerine bu kullanılıyor
+## Animasyon denemeleri (8 Eki 2026) — İKİSİ DE KULLANICI TARAFINDAN BEĞENİLMEDİ, KAPALI (yayın 96)
+1) Gemini kare kare şeritler (enemy_legion_walk/_on/_arka/_atk): titreşen çizim, az kare → "amatörce". anim.json'dan çıkarıldı
+   (kayıtlar varliklar/ham/anim/lejyoner_anim_kapali.json, webp'ler img/'de duruyor).
+2) Parçalı kukla (aşağıda): "berbat". PUP_OFF = true. Lejyoner yine diğer düşmanlar gibi eski ARMS/rig animasyonunu kullanıyor.
+Sonraki yol (kullanıcıya önerildi): görselden video üretimi (Veo / Kling vb.) ile yerinde yürüyen döngü → kareleri çıkar → şerit.
+Kingdom Rush: Flash/Animate'te elle (vektör parçalar + kare kare) animasyon, çok kare, tutarlı kaynak.
+
+### Parçalı (iskeletli) animasyon (kapalı)
 Kullanıcı Gemini kare kare animasyonlarını "amatörce" buldu (az kare ~10 fps, her karede çizim titriyor). Yerine Spine benzeri parçalı karakter:
 Gemini'den bir PARÇA SAYFASI (baş, gövde, etek, pelerin, üst kol/önkol x2, uyluk/baldır/ayak x2, kalkan, mızrak; magenta zemin, ayrık parçalar)
 → `python3 varliklar/kukla_isle.py ham/anim/lejyoner_parcalar.jpg enemy_legion_parts <ad listesi satır satır>` → img/<atlas>.webp + img/puppet.json.
