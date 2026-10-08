@@ -101,7 +101,8 @@ Oyun bu şeritleri drawUnit'te kendiliğinden kullanır; `base`'li türler (rüt
 kendi renkleriyle kullanır (animStrip + recolorCanvas, bölüm başında bakeNext hazırlar).
 Durum (yayın 92): `lejyoner_model.jpg` (model sayfası), `enemy_legion_atk` (8 kare, --auto --anchor heel: taşan mızrak karakterle kalır,
 arka topuk sabit), `enemy_legion_walk` (Gemini 8 kare çizdi ama 5-8'de kalkanın içi görünüyordu; 1-4 iki kez: --order 1,2,3,4,1,2,3,4,
---anchor head). Sırada: önden (`kilavuz_onarka.png` → enemy_legion_walk_on) ve arkadan (→ enemy_legion_walk_arka) yürüyüş.
+--anchor head), `enemy_legion_walk_on` (yayın 93; 6. karede mızrak ters döndüğü için 7 kare: --order 1,2,3,4,5,7,8).
+Sırada: arkadan yürüyüş (`kilavuz_onarka.png` → enemy_legion_walk_arka).
 anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor body|head|heel, --order.
 
 ## Eski oyun dosyaları (8 Eki 2026)
