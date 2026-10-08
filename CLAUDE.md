@@ -112,7 +112,11 @@ anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor
 1) Gemini kare kare şeritler (enemy_legion_walk/_on/_arka/_atk): titreşen çizim, az kare → "amatörce". anim.json'dan çıkarıldı
    (kayıtlar varliklar/ham/anim/lejyoner_anim_kapali.json, webp'ler img/'de duruyor).
 2) Parçalı kukla (aşağıda): "berbat". PUP_OFF = true. Lejyoner yine diğer düşmanlar gibi eski ARMS/rig animasyonunu kullanıyor.
-Sonraki yol (kullanıcıya önerildi): görselden video üretimi (Veo / Kling vb.) ile yerinde yürüyen döngü → kareleri çıkar → şerit.
+3) GÖRSELDEN VİDEO (kullanıcı beğendi, yayın 97, KULLANILAN YOL): Gemini "Video oluştur" (Veo) + yandan görsel
+   (`varliklar/ham/anim/lejyoner_yandan_video.png`), prompt: yerinde yürüyüş, sabit kamera, düz magenta zemin.
+   `python3 varliklar/video_isle.py ham/anim/lejyoner_yuru_video.mp4 enemy_legion_walk [--start 61 --len 31]`: 24 fps'e çevirir,
+   en iyi kapanan döngüyü bulur (lejyoner: 31 kare), magentayı siler, kareleri SABİT çerçeveyle keser → enemy_legion_walk (31 kare).
+   Önden/arkadan şerit yok → yandan şerit kullanılır. Saldırı henüz eski rig; sırada saldırı videosu (darbe karesi ATK_PREP oranına denk gelmeli).
 Kingdom Rush: Flash/Animate'te elle (vektör parçalar + kare kare) animasyon, çok kare, tutarlı kaynak.
 
 ### Parçalı (iskeletli) animasyon (kapalı)
