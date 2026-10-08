@@ -517,25 +517,57 @@ function deathVoice(e) {
   if (V.clank) sfx('clash');
 }
 
-// ----- ana tema müziği (Banquet for the Uninvited): menülerde döngüyle çalar, bölümde yavaşça susar,
-// menüye dönünce kaldığı yerden devam eder. Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez.
-// Parça yüksek masterlandığı için efektlerin altında kalacak kadar kısık çalınır.
-const MUSIC = { el: null, vol: 0, started: false };
+// ----- müzik: üç parça, aralarında yumuşak geçiş -----
+// menu: ana tema (Banquet for the Uninvited), menülerde döngü. battle: bölüm içi savaş müziği. boss: boss sahadayken.
+// Dosya yoksa (henüz üretilmediyse) o parça sessiz kalır, boss parçası yoksa savaş parçası çalar.
+// Her parça kaldığı yerden devam eder; savaş parçası her bölüm başında baştan başlar.
+// Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez. Parçalar yüksek masterlandığı için kısık çalınır.
+const MUSIC = { started: false, tracks: {
+  menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
+  battle: { file: 'muzik_savas.mp3', gain: 0.22 },
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.26 },
+} };
+function musicEl(T) {
+  if (!T.el && !T.missing) {
+    T.el = new Audio('ses/' + T.file + (window.SURUM ? '?v=' + window.SURUM : ''));
+    T.el.loop = true; T.el.volume = 0; T.vol = 0; T.el.preload = 'auto';
+    T.el.addEventListener('error', () => { T.missing = true; T.el = null; });
+  }
+  return T.el;
+}
 function startMusic() {
   if (MUSIC.started) return;
-  MUSIC.el = MUSIC.el || new Audio('ses/muzik_menu.mp3' + (window.SURUM ? '?v=' + window.SURUM : ''));
-  MUSIC.el.loop = true; MUSIC.el.volume = 0; MUSIC.started = true;
-  MUSIC.el.play().catch((e) => { if (e && e.name === 'NotAllowedError') MUSIC.started = false; }); // izin yoksa sonraki dokunuşta yeniden denenir
+  MUSIC.started = true;
+  const el = musicEl(MUSIC.tracks.menu);
+  // izin yoksa sonraki dokunuşta yeniden denenir
+  if (el) el.play().catch((e) => { if (e && e.name === 'NotAllowedError') MUSIC.started = false; });
 }
 // iOS ve bazı tarayıcılar sesi yalnız parmak kalkınca / tıklamada açar: birkaç olayda denenir
 for (const [t, o] of [['pointerup', window], ['touchend', window], ['click', window], ['keydown', window]]) o.addEventListener(t, () => startMusic(), { passive: true });
+// bölüm başında savaş parçası baştan başlar
+function musicRestartBattle() { const T = MUSIC.tracks.battle; if (T.el) { try { T.el.currentTime = 0; } catch (e) {} } }
+function musicWanted() {
+  if (screen !== 'play') return 'menu';
+  if (!G || overlay === 'win' || overlay === 'lose') return null;
+  const T = MUSIC.tracks;
+  if (G.enemies.some(e => e.def.chief && e.hp > 0) && !T.boss.missing) return 'boss';
+  return 'battle';
+}
 function updateMusic(dt) {
   if (!MUSIC.started) return;
-  const el = MUSIC.el, tgt = !muted && setting('music') && screen !== 'play' && !document.hidden ? 0.3 * setting('vol') : 0;
-  MUSIC.vol += clamp(tgt - MUSIC.vol, -dt * 0.4, dt * 0.15); // giriş ~2 sn, çıkış ~0.8 sn
-  el.volume = clamp(MUSIC.vol, 0, 1);
-  if (MUSIC.vol <= 0.002 && tgt === 0 && !el.paused) el.pause();
-  else if (tgt > 0 && el.paused) el.play().catch(() => {});
+  const want = musicWanted(), on = !muted && setting('music') && !document.hidden;
+  for (const k in MUSIC.tracks) {
+    const T = MUSIC.tracks[k];
+    let tgt = on && k === want ? T.gain * setting('vol') : 0;
+    if (tgt && overlay === 'pause') tgt *= 0.4;
+    if (!tgt && !T.el) continue;
+    const el = musicEl(T); if (!el) continue;
+    // giriş ~2 sn, çıkış ~1 sn (boss geçişi biraz daha hızlı girer)
+    T.vol += clamp(tgt - T.vol, -dt * 0.3, dt * (k === 'boss' ? 0.25 : 0.12));
+    el.volume = clamp(T.vol, 0, 1);
+    if (T.vol <= 0.002 && tgt === 0 && !el.paused) el.pause();
+    else if (tgt > 0 && el.paused) el.play().catch(() => {});
+  }
 }
 function setMuted(m) {
   muted = m;
@@ -932,7 +964,7 @@ function team() {
 }
 
 function startLevel(idx) {
-  mapSel = null;
+  mapSel = null; musicRestartBattle();
   const lv = LEVELS[idx];
   const paths = lv.paths.map(buildPath);
   G = {
@@ -965,7 +997,7 @@ function startLevel(idx) {
   });
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
-  lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
+  lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
@@ -1045,6 +1077,7 @@ function learnSkill(h, pi, want) {
 // ---------- dalgalar ----------
 function waveBonusAndStart() {
   if (!G || G.wave >= G.lv.waves.length) return;
+  G.wavePeek = null;
   const bonus = earlyBonus();
   if (bonus > 0) {
     const b = waveButtonPos(nextWavePaths()[0] || 0);
@@ -1057,7 +1090,7 @@ function waveBonusAndStart() {
     G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: grp.at || 0, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + grp.gap * (grp.n - 1));
   }
-  G.wave++; G.wavePop = time;
+  G.wave++; G.wavePop = time; G.wLives = G.lives;
   sfx('wave');
   if (G.wave === G.lv.waves.length && G.wave > 1) mortSay('last', true); else if (G.wave > 1 && Math.random() < 0.6) mortSay('wave');
   if (G.wave === G.lv.waves.length && G.wave > 1) {
@@ -1103,11 +1136,18 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
       m.leader = e; m.form = fd + (k >= ESCORT_FORM.length ? -30 : 0);
     }
   }
+  if (type === 'ram' && !G.saidRam) { G.saidRam = true; setTimeout(() => mortSay('ram', true), 1200); }
   if (def.chief) bossIntro(e);
   else {
     // (v2: zayıflık/direnç bilgisiyle her düşman kartı bir kez daha gösterilir)
     save.seenEnemies2 = save.seenEnemies2 || [];
-    if (!save.seenEnemies2.includes(type)) { save.seenEnemies2.push(type); persist(); if (!G.intro) G.intro = { type, t: 0, dur: 4.5 }; }
+    // rütbeli türler tür başına değil, rütbe başına bir kez tanıtılır (ilk kıdemli, ilk yüzbaşı)
+    const key = def.rank ? 'rank' + def.rank : type;
+    if (!save.seenEnemies2.includes(key)) {
+      save.seenEnemies2.push(key); persist();
+      if (!G.intro) G.intro = { type, t: 0, dur: 4.5, rank: def.rank };
+      if (def.rank) mortSay(def.rank === 2 ? 'captain' : 'veteran', true);
+    }
   }
   return e;
 }
@@ -1500,6 +1540,7 @@ function killEnemy(e) {
     return;
   }
   e.dead = true;
+  if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
     const r = spawnEnemy(e.def.dismount, G.paths.indexOf(e.p), e.d, e.off);
@@ -1637,6 +1678,7 @@ function damageSoldier(s, amount) {
       return;
     }
     s.dead = true; s.hp = 0;
+    if (s.hero) mortSay('heroDown');
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
@@ -1735,6 +1777,7 @@ function upgradeTower(t) {
   G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 });
   floatText(t.x, t.y - 80, t.def.levels[t.lvl].title, '#ffe27a');
   sfx('upgrade');
+  if (t.lvl === t.def.levels.length - 1 && !G.saidMax) { G.saidMax = true; mortSay('maxTower'); }
   return true;
 }
 function sellTower(t) {
@@ -2040,7 +2083,10 @@ function castleHit(e) {
   const c = G.castle, before = G.lives / G.maxLives;
   const dmg = e.def.lives;
   G.lives = Math.max(0, G.lives - dmg);
-  mortSay('leak'); comicPop(e.x, e.y - 30, 'KÜT!', true, 17);
+  if (!G.saidLeak) { G.saidLeak = true; mortSay('firstleak', true); }
+  else if (!G.saidLow && G.lives <= 5 && G.lives > 0) { G.saidLow = true; mortSay('low', true); }
+  else mortSay('leak');
+  comicPop(e.x, e.y - 30, 'KÜT!', true, 17);
   c.shake = 0.4; c.flash = 0.25; G.hurt = 0.6;
   const hx = e.x + e.face * 10, hy = e.y - 14;
   slashFx(hx, hy, e.face, '#ffb070', 1.4);
@@ -2908,7 +2954,7 @@ function updateProjectile(pr, dt) {
   if (pr.kind === 'bossthrow') {
     const t = pr.tower;
     fxExplosion(pr.tx, pr.ty + 18, 26, false);
-    if (t && G.towers.includes(t)) { t.disabledT = Math.max(t.disabledT || 0, pr.stun); t.disabledKind = 'stun'; floatText(t.x, t.y - 60, 'Sersemledi!', '#ffd08a'); }
+    if (t && G.towers.includes(t)) { t.disabledT = Math.max(t.disabledT || 0, pr.stun); t.disabledKind = 'stun'; floatText(t.x, t.y - 60, 'Sersemledi!', '#ffd08a'); if (Math.random() < 0.5) mortSay('stunned'); }
     sfx('boom');
     return;
   }
@@ -3127,6 +3173,18 @@ const MORT_LINES = {
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
   lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
+  firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Çayıma toz kaçtı. Bu kişisel oldu.'],
+  low: ['Kule sallanıyor... Kitaplarım!', 'Bu gidişle çayı bahçede içeceğim.', 'Az kaldı! Biri şu kapıyı tutsun!'],
+  veteran: ['Kıdemliler. Kemikleri daha sağlam olur.', 'Kırmızı sorguç mu? Ne kadar da şık.', 'Tecrübeli askerler. Tecrübeli iskelet olurlar.'],
+  captain: ['Yüzbaşı! Borazanı da benim olacak.', 'Altın sorguç... Rafımda tam yeri var.', 'Rütbe yükseldikçe mezar derinleşir.'],
+  bossRage: ['Sinirlendi mi? Ne tatlı.', 'Bağırmak kibarlığa sığmaz, general.', 'Öfke kalbe zararlı. Benim kalbim yok tabii.'],
+  bossDown: ['Bir general daha koleksiyonda.', 'Kartını bıraktı. Ve kafasını.', 'Rütbesi mezar taşına yazılsın.'],
+  stunned: ['Kuleme taş atmak ayıp!', 'Hey! O kule kiralık değil!', 'Taşlarını geri al, kaba adam.'],
+  maxTower: ['İşte şimdi oldu.', 'Böyle bir kulem olsun isterdim. Dur, var.', 'Mimari harikası. Biraz da ürkütücü.'],
+  heroDown: ['Kalk, uyuklama!', 'Ölmek mi? Bizde bu geçici.', 'Kısa bir mola. Hemen döner.'],
+  clean: ['Tertemiz. Tek damla çay dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
+  rich: ['Altınlar mezara gömülmez. Bir şey kur!', 'Kese dolu, kuleler boş. Garip.', 'O altınla iki kule olur. Sadece diyorum.'],
+  ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
   streak: ['Mükemmel. Yeni malzeme.', 'Hepsini kemik deposuna!', 'Bir, iki, on... yetmez.', 'İşte buna verimlilik denir.'],
 };
 function mortSay(kind, force) {
@@ -3147,6 +3205,16 @@ function updateMortSay(dt) {
   G.killLog = (G.killLog || []).filter(([t]) => G.t - t < 4);
   if (k > (G.killSeen || 0)) { for (let i = G.killSeen || 0; i < k; i++) G.killLog.push([G.t]); G.killSeen = k; }
   if (G.killLog.length >= 8) { G.killLog = []; mortSay('streak'); }
+  // dalga temizlendi ve bu dalgada kimse geçemedi
+  if (G.wave > 0 && G.wave < G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && G.cleanW !== G.wave) {
+    G.cleanW = G.wave;
+    if (G.lives === G.wLives && Math.random() < 0.5) mortSay('clean');
+  }
+  // çok altın biriktirip 25 sn bir şey yapmayan oyuncuya laf atar (bölümde en çok iki kez)
+  if (G.gold < (G.richLast ?? 0)) G.richT = 0; // altın harcandı
+  G.richLast = G.gold;
+  if (G.gold >= 500 && G.wave > 0 && (G.richN || 0) < 2) { G.richT = (G.richT || 0) + dt; if (G.richT > 25) { G.richT = -40; G.richN = (G.richN || 0) + 1; mortSay('rich'); } }
+  else if (G.gold < 500) G.richT = 0;
 }
 function drawMortSay() {
   const S = G.say; if (!S) return;
@@ -3171,7 +3239,7 @@ function drawMortSay() {
 const TUT = [
   { text: 'Yolun kenarındaki kule yerlerinden birine dokun ve bir kule kur.', done: () => G.towers.length > 0,
     at: () => { const P = G.paths[0], q = pathPos(P, P.total * 0.25); let b = null; for (const pl of G.plots) if (!pl.tower && (!b || dist(pl.x, pl.y, q.x, q.y) < dist(b.x, b.y, q.x, q.y))) b = pl; return b && worldToScreen(b.x, b.y - 10); } },
-  { text: 'Hazırsan kafatasına dokun: ilk dalga gelsin.', done: () => G.wave > 0,
+  { text: 'Kafatasına dokun: gelecek düşmanları gör. Bir daha dokun: dalga gelsin.', done: () => G.wave > 0,
     at: () => { const ps = nextWavePaths(); return ps.length && waveCallable() ? waveBtnScreen(ps[0]) : null; } },
   { text: 'Ölen düşmanların cesetleri 10 sn yerde kalır. Ölüleri Diriltme büyüsüne iki kez dokun!', when: () => G.effects.some(f => f.kind === 'corpse' && f.raisable),
     done: () => G.raiseT > 0 || G.spells.nm_raise > 0, timeout: 15, at: () => spellBtn(spellIds().indexOf('nm_raise')) },
@@ -3601,6 +3669,17 @@ function txt(s, x, y, size, col = '#fff', align = 'center', weight = '800', font
     ctx.strokeText(s, x, y);
   }
   ctx.fillStyle = col; ctx.fillText(s, x, y);
+}
+// metni verilen genişliğe sığacak satırlara böler (en çok max satır; taşan son satır '…' ile biter)
+function wrapLines(s, maxW, size, weight = '700', font = FONT_B, max = 2) {
+  ctx.font = `${weight} ${size}px ${font}`; lastFont = null;
+  const lines = [];
+  for (const w of s.split(' ')) {
+    const cur = lines[lines.length - 1];
+    if (cur != null && ctx.measureText(cur + ' ' + w).width <= maxW) lines[lines.length - 1] = cur + ' ' + w; else lines.push(w);
+  }
+  if (lines.length > max) { lines.length = max; lines[max - 1] += '…'; }
+  return lines;
 }
 function circle(x, y, r, fill, stroke, lw = 2) {
   ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -4659,6 +4738,7 @@ function drawEnemy(e) {
     });
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
+    if (d.rank === 2) drawRankStar(e.x, top - 1);
     if (d.chief && im.generated) drawCrown(e.x + e.face * dh * 0.06, top - 2, dh / 44, e.face);
     if (e.plate > 0) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -6349,7 +6429,8 @@ function drawEnemyPanel() {
   const e = G.sel && G.sel.kind === 'enemy' && G.sel.enemy;
   if (!e) return;
   if (e.dead || e.siege !== undefined) { G.sel = null; return; }
-  const d = e.def, P = ENEMY_PANEL, k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
+  const d = e.def, dl = wrapLines(d.desc || ENEMY_DESC[e.type] || '', ENEMY_PANEL.w - 82, 9.5), ex = Math.max(0, dl.length - 1) * 11;
+  const P = { x: ENEMY_PANEL.x, y: ENEMY_PANEL.y - ex, w: ENEMY_PANEL.w, h: ENEMY_PANEL.h + ex }, k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
   const eh = CHAR_H['enemy_' + e.type] || 26, fy = d.flying ? 26 : 0;
   ctx.save(); ctx.translate(P.x + P.w / 2, P.y + P.h / 2); ctx.scale(k, k); ctx.translate(-(P.x + P.w / 2), -(P.y + P.h / 2));
   roundRect(P.x + 2, P.y + 4, P.w, P.h, 14, 'rgba(0,0,0,0.3)');
@@ -6385,8 +6466,7 @@ function drawEnemyPanel() {
   };
   tag('Zayıf:', weak, '#ffd08a', 'rgba(150,60,10,0.6)');
   tag('Dirençli:', res, '#a8d8ff', 'rgba(20,60,120,0.6)');
-  const desc = d.desc || ENEMY_DESC[e.type] || '';
-  if (desc) txt(desc, x0, P.y + 79, 9.5, '#cdbb98', 'left', '700', FONT_B, false);
+  dl.forEach((l, i) => txt(l, x0, P.y + 79 + i * 11, 9.5, '#cdbb98', 'left', '700', FONT_B, false));
   ctx.restore();
 }
 
@@ -6726,6 +6806,7 @@ function drawWaveButtons() {
       ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.arc(0, 0, 17, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - G.waveCountdown / G.waveCountdownMax)); ctx.stroke();
     }
+    if (G.wavePeek && G.wavePeek.pi === pi) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 26, '255,210,90', 0.45 + Math.sin(time * 8) * 0.15); ctx.restore(); }
     ctx.rotate(ang);
     ctx.drawImage(wavePinIcon(), -24, -24, 48, 48);
     ctx.restore();
@@ -6740,6 +6821,76 @@ function drawWaveButtons() {
       ctx.restore();
     }
   }
+}
+
+// Dalga önizlemesi: dalga işaretine ilk dokunuşta, o girişten gelecek düşmanlar (simge, sayı, ad) küçük bir kutuda
+function waveComposition(wi, pi) {
+  // rütbeli türler asıl türün satırında toplanır: [tür, toplam, [er, kıdemli, yüzbaşı]]
+  const cnt = new Map();
+  for (const g of G.lv.waves[wi] || []) {
+    if ((g.p || 0) !== pi) continue;
+    for (const t of g.types || Array(g.n).fill(g.t)) {
+      const d = ENEMIES[t], base = d.rank ? d.base : t;
+      const r = cnt.get(base) || [base, 0, [0, 0, 0]];
+      r[1]++; r[2][d.rank || 0]++; cnt.set(base, r);
+    }
+  }
+  // sıralama: boss en altta, diğerleri sayıya göre
+  return [...cnt.values()].sort((a, b) => (ENEMIES[a[0]].chief ? 1 : 0) - (ENEMIES[b[0]].chief ? 1 : 0) || b[1] - a[1]);
+}
+const RANK_COL = ['#8a6a3a', '#c8463a', '#ffc93a'];
+function drawWavePeek() {
+  const P = G.wavePeek;
+  if (!P || !waveCallable() || P.w !== G.wave) { if (P) G.wavePeek = null; return; }
+  if (time - P.t > 8) { G.wavePeek = null; return; }
+  const list = waveComposition(G.wave, P.pi);
+  if (!list.length) return;
+  const b = waveBtnScreen(P.pi), k = easeOutBack(clamp((time - P.t) / 0.25, 0, 1)), fade = clamp((8 - (time - P.t)) / 0.4, 0, 1);
+  // genişlik: en uzun satıra göre (ad + rütbe rozetleri)
+  ctx.font = `800 10.5px ${FONT_B}`; lastFont = null;
+  const rowW = (r) => ctx.measureText(ENEMIES[r[0]].name).width + (r[2][1] ? 22 : 0) + (r[2][2] ? 22 : 0);
+  const rowH = 24, w = clamp(Math.max(...list.map(rowW)) + 84, 176, 280), h = 44 + list.length * rowH + 18;
+  // kutu işaretin yanında: ekranda daha çok yer olan tarafta
+  const right = b.x < W / 2, x0 = clamp(right ? b.x + 30 : b.x - 30 - w, 8, W - w - 8), y0 = clamp(b.y - h / 2, 8, H - h - 8);
+  P.box = { x: x0, y: y0, w, h };
+  ctx.save(); ctx.globalAlpha = fade;
+  const ox = right ? x0 : x0 + w, oy = clamp(b.y, y0 + 12, y0 + h - 12);
+  ctx.translate(ox, oy); ctx.scale(k, k); ctx.translate(-ox, -oy);
+  roundRect(x0 + 2, y0 + 4, w, h, 12, 'rgba(0,0,0,0.35)');
+  const g = ctx.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, 'rgba(58,40,24,0.96)'); g.addColorStop(1, 'rgba(22,12,6,0.96)');
+  roundRect(x0, y0, w, h, 12, g, '#d4ab5a', 1.6);
+  // işarete bakan küçük uç
+  ctx.beginPath(); const tx = right ? x0 : x0 + w, dir = right ? -1 : 1;
+  ctx.moveTo(tx, oy - 7); ctx.lineTo(tx + dir * 8, oy); ctx.lineTo(tx, oy + 7); ctx.closePath();
+  ctx.fillStyle = 'rgba(40,26,14,0.96)'; ctx.fill(); ctx.strokeStyle = '#d4ab5a'; ctx.lineWidth = 1.6; ctx.stroke();
+  const N = G.lv.waves.length, last = G.wave === N - 1;
+  txt(`DALGA ${G.wave + 1}/${N}`, x0 + 12, y0 + 16, 14, last ? '#ff8a6a' : '#ffd34d', 'left', '400', FONT_T);
+  const total = list.reduce((a, r) => a + r[1], 0);
+  txt(`${total} düşman`, x0 + w - 12, y0 + 16, 10.5, '#cdbb98', 'right', '800', FONT_B, false);
+  ctx.fillStyle = 'rgba(212,171,90,0.4)'; ctx.fillRect(x0 + 10, y0 + 30, w - 20, 1);
+  list.forEach(([t, n, rk], i) => {
+    const d = ENEMIES[t], cy = y0 + 44 + i * rowH, cx = x0 + 22;
+    circle(cx, cy, 10.5, '#1a120a', d.chief ? '#ff7a5a' : RANK_COL[0], 1.5);
+    const im = d.base ? enemySprite(t) : spr('enemy_' + t);
+    if (im) {
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, 9.5, 0, Math.PI * 2); ctx.clip();
+      const ih = d.chief ? 30 : 24; drawSprite(ctx, im, cx, cy + ih * 0.62, ih * im.width / im.height);
+      ctx.restore();
+    }
+    txt('×' + n, x0 + 40, cy + 0.5, 12, '#fff', 'left', '400', FONT_T);
+    txt(d.name, x0 + 68, cy + 0.5, 10.5, d.chief ? '#ff9a7a' : '#f0e2c4', 'left', '800', FONT_B, false);
+    // rütbeliler: sağda kırmızı (kıdemli) ve altın (yüzbaşı) rozet, içinde sayısı
+    let bx = x0 + w - 14;
+    for (const r of [2, 1]) {
+      if (!rk[r]) continue;
+      circle(bx, cy, 8, RANK_COL[r], '#1a0e04', 1.4);
+      if (r === 2) drawStar(bx, cy - 9.5, 3, '#ffe27a');
+      txt(rk[r] + '', bx, cy + 0.5, 9.5, r === 2 ? '#3a2004' : '#fff', 'center', '800', FONT_B, false);
+      bx -= 21;
+    }
+  });
+  txt('Çağırmak için tekrar dokun', x0 + w / 2, y0 + h - 11, 9.5, '#ffe27a', 'center', '800', FONT_B, false);
+  ctx.restore();
 }
 
 function drawHeroPortrait(h, hb, i) {
@@ -6899,6 +7050,7 @@ function drawHud() {
   });
 
   drawWaveButtons();
+  drawWavePeek();
 
   // bilgi paneli
   const info = infoText();
@@ -7350,10 +7502,11 @@ function enemySprite(type) {
   if (!base) return null;
   const c = document.createElement('canvas'); c.width = base.width; c.height = base.height;
   const g = c.getContext('2d'); g.drawImage(base, 0, 0);
-  const im = g.getImageData(0, 0, c.width, c.height), a = im.data, f = BOSS_LOOK[type];
+  const im = g.getImageData(0, 0, c.width, c.height), a = im.data, f = BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank]), cw = c.width, ch = c.height;
   if (f) for (let i = 0; i < a.length; i += 4) {
     if (a[i + 3] < 10) continue;
-    const r = f(...rgb2hsl(a[i], a[i + 1], a[i + 2]));
+    const px = i / 4;
+    const r = f(...rgb2hsl(a[i], a[i + 1], a[i + 2]), (px % cw) / cw, Math.floor(px / cw) / ch);
     if (!r) continue;
     const rgb = hsl2rgb((r[0] + 360) % 360, clamp(r[1], 0, 1), clamp(r[2], 0, 1));
     a[i] = rgb[0]; a[i + 1] = rgb[1]; a[i + 2] = rgb[2];
@@ -7362,7 +7515,34 @@ function enemySprite(type) {
   c.generated = true;
   return (SPR[name] = c);
 }
+// Rütbe renkleri (h 0-360, s, l, x, y: görseldeki yer). Solarian askerleri beyaz-altın zırh, kırmızı kumaş giyer.
+// Kıdemli: kırmızı kumaş koyu şarap kırmızısı, beyaz zırh mavimsi koyu çelik, altın süsler gümüş;
+//   lejyonerin gri sorgucu (görselin üst kısmında) kırmızı olur.
+// Yüzbaşı: kırmızı kumaş altın-turuncu, altın süsler parlak, beyaz zırh sıcak fildişi; gri sorguç altın.
+const RANK_LOOK = {
+  1: (h, s, l, x, y) => {
+    const red = (h < 16 || h > 335) && s > 0.35, gold = h > 32 && h < 62 && s > 0.4 && l > 0.3;
+    if (y < 0.24 && s < 0.18 && l > 0.35) return [356, 0.75, l * 0.62];
+    if (red) return [348, Math.min(1, s * 1.05), l * 0.62];
+    if (gold) return [215, 0.1, Math.min(0.92, l * 1.08)];
+    if (s < 0.22 && l > 0.5) return [215, 0.18, l * 0.68];
+    return null;
+  },
+  2: (h, s, l, x, y) => {
+    const red = (h < 16 || h > 335) && s > 0.35, gold = h > 32 && h < 62 && s > 0.4 && l > 0.3;
+    if (y < 0.24 && s < 0.18 && l > 0.35) return [45, 0.95, l * 0.72];
+    if (red) return [40, 0.95, Math.min(0.72, l * 1.25)];
+    if (gold) return [h, Math.min(1, s * 1.2), Math.min(0.85, l * 1.12)];
+    if (s < 0.22 && l > 0.55) return [42, 0.35, l * 0.95];
+    return null;
+  },
+};
 // başın üstünde taç
+// yüzbaşı işareti: başın üstünde küçük altın yıldız (taç yerine; boss taçlarıyla karışmasın)
+function drawRankStar(x, y) {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 7, '255,210,90', 0.35 + Math.sin(time * 4 + x) * 0.1); ctx.restore();
+  drawStar(x, y, 3.6, '#ffd34d');
+}
 function drawCrown(x, y, s, face) {
   ctx.save(); ctx.translate(x, y); ctx.scale(s * face, s); ctx.rotate(0.12);
   ctx.beginPath();
@@ -7443,7 +7623,7 @@ function bossAbilities(e, dt) {
   if (ab.regen && e.hp < e.maxHp && time - (e.hitAt || -9) > 4) e.hp = Math.min(e.maxHp, e.hp + e.maxHp * ab.regen * dt);
   // Öfke evresi (her bossta): canı yarıya inince kükrer, askerlere %25 sert vurur, yetenekleri %20 sık gelir
   if (e.def.chief && !e.enraged && e.hp < e.maxHp * 0.5) {
-    e.enraged = true; e.dmgMul = (e.dmgMul || 1) * 1.25; e.cdMul = (e.cdMul || 1) * 0.8;
+    e.enraged = true; e.dmgMul = (e.dmgMul || 1) * 1.25; e.cdMul = (e.cdMul || 1) * 0.8; mortSay('bossRage', true);
     bossCastFx(e, 'ÖFKELENDİ!', '255,60,40');
     G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: 110, t: 0, dur: 0.6 });
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 40 + i * 30, col: '255,60,40', t: -i * 0.1, dur: 0.6 });
@@ -7480,7 +7660,7 @@ function bossAbilities(e, dt) {
   if (ab.howl && ready('howl', ab.howl.cd)) {
     for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, e.x, e.y) < ab.howl.r) o.hasteT = 4;
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.howl.r * (0.5 + i * 0.25), col: '255,90,70', t: -i * 0.12, dur: 0.6 });
-    bossCastFx(e, 'Uluma!', '255,110,80'); sfx('roar');
+    bossCastFx(e, ab.howl.say || 'Uluma!', '255,110,80'); if (!ab.howl.soft) sfx('roar');
   }
   if (ab.slam && ready('slam', ab.slam.cd)) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);
@@ -7671,7 +7851,8 @@ function drawIntro() {
   if (it.t > it.dur) { G.intro = null; return; }
   const d = ENEMIES[it.type], a = clamp(Math.min(it.t / 0.3, (it.dur - it.t) / 0.4), 0, 1), e = easeOutBack(clamp(it.t / 0.4, 0, 1));
   const wk = d.wk || {}, weak = Object.keys(wk).filter(k => wk[k] > 1), res = Object.keys(wk).filter(k => wk[k] < 1);
-  const w = it.boss ? 340 : 300, h = weak.length || res.length ? 88 : 70, x0 = W / 2 - w / 2, y0 = it.boss ? 92 : 64;
+  const w = it.boss ? 360 : 320, dl = wrapLines(d.desc || ENEMY_DESC[it.type] || '', w - 84, 11.5), ex = (dl.length - 1) * 13;
+  const h = (weak.length || res.length ? 88 : 70) + ex, x0 = W / 2 - w / 2, y0 = it.boss ? 92 : 64;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, y0 + h / 2); ctx.scale(e, e); ctx.translate(-W / 2, -(y0 + h / 2));
   roundRect(x0 + 2, y0 + 5, w, h, 16, 'rgba(0,0,0,0.3)');
   const g = ctx.createLinearGradient(0, y0, 0, y0 + h);
@@ -7684,16 +7865,16 @@ function drawIntro() {
     const ih = it.boss ? 62 : 46; drawSprite(ctx, im, x0 + 36, y0 + h / 2 + ih * 0.55, ih * im.width / im.height);
     ctx.restore();
   }
-  txt(it.boss ? 'BOSS GELİYOR' : 'YENİ DÜŞMAN', x0 + 72, y0 + 16, 11, it.boss ? '#ff9a7a' : '#ffd34d', 'left', '800', FONT_B, false);
+  txt(it.boss ? 'BOSS GELİYOR' : it.rank ? 'YENİ RÜTBE: ' + (it.rank === 2 ? 'YÜZBAŞI' : 'KIDEMLİ') : 'YENİ DÜŞMAN', x0 + 72, y0 + 16, 11, it.boss ? '#ff9a7a' : '#ffd34d', 'left', '800', FONT_B, false);
   txt(d.name, x0 + 72, y0 + 34, 19, '#fff', 'left', '400', FONT_T);
-  txt(d.desc || ENEMY_DESC[it.type] || '', x0 + 72, y0 + 54, 11.5, '#f0e2c4', 'left', '700', FONT_B, false);
+  dl.forEach((l, i) => txt(l, x0 + 72, y0 + 54 + i * 13, 11.5, '#f0e2c4', 'left', '700', FONT_B, false));
   let tx = x0 + 72;
   const tag = (label, list, col, bg) => {
     if (!list.length) return;
     const s = label + ' ' + list.map(k => WK_NAME[k]).join(', ');
     ctx.font = `800 10.5px ${FONT_B}`; const tw = ctx.measureText(s).width + 14;
-    roundRect(tx, y0 + 64, tw, 16, 8, bg, col, 1);
-    txt(s, tx + tw / 2, y0 + 72.5, 10.5, col, 'center', '800', FONT_B, false);
+    roundRect(tx, y0 + 64 + ex, tw, 16, 8, bg, col, 1);
+    txt(s, tx + tw / 2, y0 + 72.5 + ex, 10.5, col, 'center', '800', FONT_B, false);
     tx += tw + 6;
   };
   tag('Zayıf:', weak, '#ffd08a', 'rgba(150,60,10,0.6)');
@@ -8828,10 +9009,22 @@ function hudTap(x, y) {
     }
   }
   // dalga butonu
+  // ilk dokunuş: o girişten gelecek düşmanları gösterir; ikinci dokunuş (8 sn içinde): dalgayı çağırır
   if (waveCallable()) {
     for (const pi of nextWavePaths()) {
       const b = waveBtnScreen(pi);
-      if (dist(b.x, b.y, x, y) < 24) { tapPop('wave' + pi); waveBonusAndStart(); return true; }
+      if (dist(b.x, b.y, x, y) < 24) {
+        tapPop('wave' + pi);
+        if (G.wavePeek && G.wavePeek.w === G.wave && time - G.wavePeek.t < 8) { G.wavePeek = null; waveBonusAndStart(); }
+        else { G.wavePeek = { pi, w: G.wave, t: time }; setSel(null); sfx('select'); }
+        return true;
+      }
+    }
+    if (G.wavePeek && G.wavePeek.pi != null) {
+      // önizleme kutusuna dokunmak da dalgayı çağırır
+      const R = G.wavePeek.box;
+      if (R && x >= R.x && x <= R.x + R.w && y >= R.y && y <= R.y + R.h) { G.wavePeek = null; waveBonusAndStart(); return true; }
+      G.wavePeek = null;
     }
   }
   // açık menü

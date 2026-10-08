@@ -41,6 +41,22 @@ grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık
 Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
 Sırada: çizgi roman panelleri, Mortimer'ın 3 büyüsü (şimdilik eski kahraman gücü sistemi), animasyon kareleri (poz kılavuzu), rütbe renkleri.
 
+## Müzik, dalga önizleme, rütbeler, Mortimer lafları (8 Eki 2026, yayın 87)
+- Müzik üç parça (game.js MUSIC.tracks): `ses/muzik_menu.mp3` menüler, `ses/muzik_savas.mp3` bölüm içi, `ses/muzik_boss.mp3` boss sahadayken.
+  Savaş ve boss parçaları henüz yok (Gemini ile üretilecek, promptlar `tasarim/muzik-promptlari.md`); dosya yoksa o parça sessiz kalır,
+  boss parçası yoksa savaş parçası çalar. Ses düzeyi parça başına `gain`.
+- Dalga işaretine ilk dokunuş o girişten gelecek düşmanları gösterir (drawWavePeek: simge, sayı, ad, rütbe rozetleri), ikinci dokunuş
+  (ya da kutuya dokunmak) dalgayı çağırır.
+- Düşman rütbeleri (data.js sonu RANKS/RANKED): `legion_k` Kıdemli (can ×1,6), `legion_y` Yüzbaşı (can ×2,5, "Borazan!" ile çevresini
+  hızlandırır, başında altın yıldız). Ayrı ENEMIES kaydıdır, `base` ile asıl görseli/iskeleti kullanır; renk game.js RANK_LOOK (konumlu HSL).
+  Dalgalara tohumlu dağıtılır: 2. bölümden kıdemli, 5. bölümde yüzbaşı; ağır piyade/süvari rütbelileri yalnız 5. bölümde (RANK_FROM).
+  Tanıtım kartı rütbe başına bir kez çıkar ("YENİ RÜTBE").
+- Necro düşmanlarının zayıflık/dirençleri (ENEMY_WK) önceden bağlanmıyordu (etkisizdi); data.js sonunda bağlanıyor. Açıklamalar ENEMY_DESC'te.
+- Mortimer'ın yeni lafları (MORT_LINES): ilk can kaybı, 5 can altı, kıdemli/yüzbaşı ilk görünüş, koçbaşı, boss öfkesi ve ölümü,
+  kule susturulması, ilk tam yükseltme, komutan ölümü, kayıpsız dalga, çok altın biriktirip harcamamak.
+- Denge (bot, 2 tur): 20/20/15–19/10–11/6–13 can. 4. bölüm hpMul 0.92, 5. bölüm 0.57.
+- `tools/akis-testi.js` yeni harita ve dalga önizlemesine göre güncellendi; sonunda "AKIŞ TAMAM" yazmalı.
+
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)
 ve eski tasarım notları silindi (git geçmişinde duruyor). data.js'teki eski LEVELS/ENEMIES verisi duruyor: NECRO bölümleri eski ilk 5 bölümün

@@ -795,7 +795,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'legion', n: 12, gap: 0.6 }, { t: 'assassin', n: 6, gap: 0.9, at: 5 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
       [{ t: 'priest', n: 3, gap: 2.5 }, { t: 'gladiator', n: 8, gap: 1, at: 3 }, { t: 'assassin', n: 8, gap: 0.8, at: 9 }, { t: 'legion', n: 10, gap: 0.6, at: 14 }],
     ] },
-    { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.95, bossT: 'cavcaptain', waves: [
+    { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.92, bossT: 'cavcaptain', waves: [
       [{ t: 'legion', n: 8, gap: 1 }, { t: 'heavy', n: 1, gap: 1, at: 8 }],
       [{ t: 'cavalry', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
       [{ t: 'heavy', n: 3, gap: 2.4 }, { t: 'priest', n: 2, gap: 3, at: 3 }, { t: 'solarcher', n: 5, gap: 1.2, at: 7 }],
@@ -805,7 +805,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'ram', n: 2, gap: 6 }, { t: 'gladiator', n: 8, gap: 0.9, at: 3 }, { t: 'cavalry', n: 4, gap: 1.5, at: 12 }],
       [{ t: 'heavy', n: 4, gap: 2 }, { t: 'cavalry', n: 6, gap: 1.4, at: 4 }, { t: 'priest', n: 3, gap: 2.5, at: 8 }, { t: 'legion', n: 12, gap: 0.6, at: 12 }],
     ] },
-    { name: "Mortimer'ın Kapısı", theme: 'necrogate', gold: 650, hpMul: 0.64, bossT: 'gloriosus', waves: [
+    { name: "Mortimer'ın Kapısı", theme: 'necrogate', gold: 650, hpMul: 0.57, bossT: 'gloriosus', waves: [
       [{ t: 'legion', n: 10, gap: 0.9 }, { t: 'solarcher', n: 4, gap: 1.4, at: 5 }],
       [{ t: 'catapult', n: 1, gap: 1 }, { t: 'heavy', n: 3, gap: 2, at: 3 }, { t: 'legion', n: 8, gap: 0.9, at: 8 }],
       [{ t: 'cavalry', n: 5, gap: 1.4 }, { t: 'assassin', n: 6, gap: 1, at: 6 }, { t: 'priest', n: 2, gap: 3, at: 10 }],
@@ -1031,6 +1031,19 @@ Object.assign(ENEMY_WK, {
   gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
 });
 
+// Necromancer seferi: düşman açıklamaları (tanıtım kartı ve dokununca açılan panel)
+Object.assign(ENEMY_DESC, {
+  legion: 'Kalkanlı piyade, kalabalık gelir. Ruh ışını kalkanını deler',
+  solarcher: 'Durup iskeletlere ok atar. Zırhsız: kemik kıymığı ve kılıç iyi işler',
+  gladiator: 'Çevik arena dövüşçüsü, iskeletleri hızla keser. Kıymık ve veba işler',
+  assassin: 'Çok hızlı, ara ara gölgeye dalıp ileri atlar. Vebanın alanından kaçamaz',
+  priest: 'Yakınındakileri iyileştirir, büyüye dirençli. Önce onu kıymıkla vur',
+  heavy: 'Kalkan duvarı: kıymıklar seker. Ruh ışını zırhını deler',
+  cavalry: 'Hızlı atlı, kuleye 2 can götürür. Veba atı ürkütür',
+  ram: 'Çok yavaş, çok canlı; kapıya varırsa 3 can götürür. Veba kazanı kullan',
+  catapult: 'Durup kulelerimize taş atar, 3 sn susturur. Önce onu durdur',
+});
+
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
   Object.assign(TOWER_TITLES, { archer: ['Kemik Dikilitaşı', 'Dikenli Dikilitaş', 'Omurga Dikilitaşı'], barracks: ['Mahzen', 'Kemik Mahzeni', 'Kara Türbe'],
@@ -1083,4 +1096,59 @@ if (NECRO) {
   U.spells.ranks[0].desc = '+%20 komutan gücü hasarı'; U.spells.ranks[1].desc = '+1 şapel iskeleti'; U.spells.ranks[2].desc = 'Güçler ve iskeletler %25 hızlı';
   U.castle.name = 'Şapel';
   Object.assign(WK_NAME, { arrow: 'Kemik', magic: 'Ruh', blast: 'Veba', melee: 'Kılıç' });
+}
+
+// ----- Necromancer: zayıflık/direnç bağlama + düşman rütbeleri -----
+// Necro düşmanlarının ENEMY_WK değerleri yukarıdaki bağlama döngüsünden sonra eklendiği için burada yeniden bağlanır.
+for (const k in ENEMY_WK) if (ENEMIES[k]) ENEMIES[k].wk = ENEMY_WK[k];
+// Rütbeler (tasarim/necromancer-gdd.md): Er (sıradan), Kıdemli (koyu çelik zırh, şarap kırmızısı kumaş, kırmızı sorguç),
+// Yüzbaşı (altın kumaş ve sorguç, biraz iri, borazanla çevresini hızlandırır). Görsel aynı resmin yeniden renklendirilmesi (game.js RANK_LOOK).
+// Rütbeli türler ayrı düşman kaydıdır: legion_k (Kıdemli Lejyoner), legion_y (Lejyoner Yüzbaşı); base ile asıl türün resmini ve iskeletini kullanır.
+const RANKS = [null,
+  { id: 'k', name: 'Kıdemli', hp: 1.6, gold: 1.5, dmg: 1.25, armor: 0.05, h: 1.05 },
+  { id: 'y', name: 'Yüzbaşı', hp: 2.5, gold: 2.3, dmg: 1.5, armor: 0.1, h: 1.13 },
+];
+const RANKED = ['legion', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry'];
+// zaten güçlü olan ağır piyade ve süvarinin rütbelileri yalnız son bölümde (bölüm sırası, 0'dan)
+const RANK_FROM = { heavy: 4, cavalry: 4 };
+if (NECRO) {
+  for (const t of RANKED) for (let r = 1; r <= 2; r++) {
+    const d = ENEMIES[t], R = RANKS[r];
+    ENEMIES[t + '_' + R.id] = Object.assign({}, d, {
+      name: r === 1 ? `Kıdemli ${d.name}` : `${d.name} Yüzbaşı`, base: t, rank: r,
+      hp: Math.round(d.hp * R.hp), gold: Math.round(d.gold * R.gold), dmg: d.dmg.map(v => Math.round(v * R.dmg)),
+      armor: Math.min(0.8, d.armor + R.armor), h: Math.round(d.h * R.h), r: d.r + r,
+      wk: d.wk, desc: r === 1 ? `Kıdemli: %60 daha canlı, daha sert vurur. ${ENEMY_DESC[t] || ''}`
+        : `Yüzbaşı: 2,5 kat canlı, borazanıyla yakındakileri hızlandırır. ${ENEMY_DESC[t] || ''}`,
+    });
+    if (r === 2) ENEMIES[t + '_y'].ab = Object.assign({}, d.ab, { howl: { cd: 11, r: 85, say: 'Borazan!', soft: true } });
+  }
+  // dalgalara rütbe dağıtımı (tohumlu, her oynanışta aynı): 2. bölümden itibaren kıdemliler, 5. bölümde yüzbaşılar.
+  // Kıdemli oranı bölüm ve dalga ilerledikçe artar; yüzbaşı her dalgada 1-3 tane.
+  LEVELS.forEach((lv, li) => {
+    if (li < 1) return;
+    let seed = ((li + 7) * 2246822519) >>> 0;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+    lv.waves.forEach((w, k) => {
+      // sırayla rütbe verilecek yerler: [grup, sıra]
+      const slots = [];
+      for (const g of w) {
+        if (ENEMIES[g.t] && ENEMIES[g.t].chief) continue;
+        if (!g.types) g.types = Array(g.n).fill(g.t);
+        g.types.forEach((t, i) => { if (RANKED.includes(t) && li >= (RANK_FROM[t] || 1)) slots.push([g, i]); });
+      }
+      if (!slots.length) return;
+      const kid = Math.round(slots.length * Math.min(0.4, 0.04 * li + 0.03 * k)), cap = li >= 4 && k >= 1 ? 1 + Math.floor(k / 3) : 0;
+      // eşit aralıklı seçim (küçük kaydırmayla): rütbeliler dalgaya yayılır
+      const pick = (n, r) => {
+        if (n <= 0) return;
+        const step = slots.length / n, off = rnd() * step;
+        for (let j = 0; j < n; j++) {
+          const [g, i] = slots[Math.min(slots.length - 1, Math.floor(off + j * step))];
+          if (!/_[ky]$/.test(g.types[i])) g.types[i] = g.types[i] + '_' + RANKS[r].id;
+        }
+      };
+      pick(cap, 2); pick(kid, 1);
+    });
+  });
 }
