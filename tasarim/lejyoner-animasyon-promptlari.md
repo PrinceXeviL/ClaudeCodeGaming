@@ -4,6 +4,11 @@ Amaç: lejyonere kare kare, akıcı yürüyüş (yandan, önden, arkadan) ve mı
 Oyun bu şeritleri zaten tanıyor (game.js drawUnit): `enemy_legion_walk`, `enemy_legion_walk_on`, `enemy_legion_walk_arka`,
 `enemy_legion_atk` varsa iskelet animasyonu yerine bunlar oynatılır. Sola yürürken yandan şerit aynalanır, önden/arkadan aynalanmaz.
 
+## Durum
+- 4) Mızrak saldırısı üretildi (Gemini) → `varliklar/ham/anim/lejyoner_saldiri.jpg` olarak kaydedilip işlenecek.
+- Sırada 1, 2, 3 (yürüyüşler). Model sayfası (0) isteğe bağlı: yoksa IMAGE 1 olarak `ref_lejyoner.png` (ya da saldırı sayfası) eklenir;
+  önden/arkadan tutarlılık için model sayfası yine de önerilir.
+
 ## Genel kurallar (her sayfada)
 - Çıktı **16:9**, mümkünse en yüksek çözünürlük (2K varsa 2K). Sayfa **4 sütun x 2 satır = 8 kare**, kareler eşit.
 - Zemin **düz magenta #FF00FF**. Gölge, zemin, yazı, numara, kılavuz çizgisi yok.
@@ -25,7 +30,7 @@ Ek: `varliklar/ham/anim/ref_lejyoner.png` (oyundaki lejyoner).
 Bu sayfa sonraki tüm sayfalarda **referans** olarak eklenir; önden ve arkadan görünüşün tutarlı olması için şart.
 
 ```
-[ortak stil]
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
 I attached an image of a Roman-style legionnaire from my game (the golden Solarian Empire).
 Draw a CHARACTER TURNAROUND MODEL SHEET of EXACTLY this character, 4 views in one row, same size, same height, standing relaxed, full body:
 1. SIDE view facing RIGHT (exactly like the attached image),
@@ -43,9 +48,9 @@ Flat solid pure magenta #FF00FF background, no ground, no shadows, no text, no l
 Ek: model sayfası + `varliklar/ham/anim/kilavuz_yuru.png`
 
 ```
-[ortak stil]
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
 I attached two images.
-IMAGE 1: a model sheet of a legionnaire from my game. Use the SIDE view (facing RIGHT) as the character reference.
+IMAGE 1: a legionnaire from my game (side view facing RIGHT), or his model sheet; use the SIDE view as the character reference.
 IMAGE 2: a POSE GUIDE: 8 stick-figure poses of a WALK CYCLE in 4 columns and 2 rows. Red = his NEAR leg and NEAR arm (closer to the viewer), blue = his FAR leg and FAR arm.
 
 TASK: Redraw the legionnaire 8 times, once in each pose of IMAGE 2, in the same 4x2 layout, as one smooth looping walk cycle facing RIGHT:
@@ -66,9 +71,9 @@ Flat solid pure magenta #FF00FF background. No stick figures, no guide lines, no
 Ek: model sayfası + `varliklar/ham/anim/kilavuz_onarka.png`
 
 ```
-[ortak stil]
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
 I attached two images.
-IMAGE 1: a model sheet of a legionnaire from my game. Use the FRONT view as the character reference.
+IMAGE 1: a legionnaire from my game (or his model sheet: then use its FRONT view). If only the side view is given, imagine him from the front with exactly the same helmet, grey crest, armor, red tunic, red cape, shield and spear.
 IMAGE 2: a POSE GUIDE: 8 stick-figure poses of a walk cycle seen FROM THE FRONT, in 4 columns and 2 rows. Red = the character's RIGHT leg and RIGHT arm (on the viewer's LEFT), blue = his LEFT leg and LEFT arm (on the viewer's right).
 
 TASK: Redraw the legionnaire 8 times, WALKING TOWARD THE VIEWER (toward the camera, coming down the screen), once in each pose of IMAGE 2, in the same 4x2 layout, as one smooth looping walk cycle.
@@ -88,9 +93,9 @@ Flat solid pure magenta #FF00FF background. No stick figures, no guide lines, no
 Ek: model sayfası + `varliklar/ham/anim/kilavuz_onarka.png`
 
 ```
-[ortak stil]
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
 I attached two images.
-IMAGE 1: a model sheet of a legionnaire from my game. Use the BACK view as the character reference.
+IMAGE 1: a legionnaire from my game (or his model sheet: then use its BACK view). If only the side view is given, imagine him from behind with exactly the same helmet, grey crest, armor, red tunic, red cape, shield and spear.
 IMAGE 2: a POSE GUIDE: 8 stick-figure poses of a walk cycle, in 4 columns and 2 rows. Red = the leg and arm on the VIEWER'S LEFT side, blue = the leg and arm on the VIEWER'S RIGHT side. Seen from behind, the viewer's left is the character's LEFT side (shield side).
 
 TASK: Redraw the legionnaire 8 times SEEN FROM BEHIND, WALKING AWAY FROM THE VIEWER (going up the screen, into the distance), once in each pose of IMAGE 2, in the same 4x2 layout, as one smooth looping walk cycle.
@@ -110,9 +115,9 @@ Ek: model sayfası + `varliklar/ham/anim/kilavuz_mizrak.png` (`python3 varliklar
 Oyunda **6. kare darbe anıdır** (iskelet o anda hasar alır); kılavuzda turuncu yıldızla işaretli.
 
 ```
-[ortak stil]
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
 I attached two images.
-IMAGE 1: a model sheet of a legionnaire from my game. Use the SIDE view (facing RIGHT) as the character reference.
+IMAGE 1: a legionnaire from my game (side view facing RIGHT), or his model sheet; use the SIDE view as the character reference.
 IMAGE 2: a POSE GUIDE: 8 stick-figure poses of a SHIELD-AND-SPEAR THRUST attack in 4 columns and 2 rows. Red = his NEAR arm holding the spear and his near (front) leg, blue = his FAR arm holding the shield and his far (back) leg. The brown line is the spear, the blue rectangle is the shield. The orange star marks the moment of impact.
 
 TASK: Redraw the legionnaire 8 times, once in each pose of IMAGE 2, in the same 4x2 layout, as one fluid attack facing RIGHT:
