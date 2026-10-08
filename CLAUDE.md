@@ -56,7 +56,12 @@ Görseller: `varliklar/ham/nm_*.jpg` (Gemini, magenta zemin) → `python3 varlik
 grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık/harita arka planı `img/nm_title.jpg` (kod dışında birleştirildi).
 Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
 Yapıldı: Mortimer'ın 3 büyüsü (Ölüleri Diriltme, Kemik Duvarı, Korku), rütbe renkleri (yayın 87), kodeks (yayın 90).
-Oyun yapım aşamasında: sistemler oturunca ~100 bölüm tasarlanacak (şimdilik 5).
+Bölgeler (eski adıyla sefer; arayüzde "sefer" yazmaz, mekân adı geçer): her bölge 15 bölüm, liste `tasarim/bolgeler.md` (6 bölge, 90 bölüm).
+1. bölge Lanetli Sınır (9 Eki, yayın 109): 15 bölüm, beş mekân (Ölü Orman, Sisli Bataklık, Unutulmuş Mezarlık, Kara Göl, Mortimer'ın Kapısı).
+Yol/arsa düzenleri eski 20 bölümlük seferlerden (data.js LEVELS, oynanış sırasıyla). Eski 5 bölümün kaydı 1/4/7/10/15'e taşınır (save.v15).
+Bölge haritası: EPISODES[].zones/nodes/labels → game.js drawRegionMap (mekân zeminleri renderBackground ile, ince yol roadK, mekân tonu REGION_TINT).
+Demir meydan okuması kaldırıldı (yalnız Kahramanlık). Büyüler tek dokunuşta. Yansıma yazıları (GÜM/ÇAT) yerine impactFx.
+Savaş sesleri `varliklar/ses_uret.py` ile sentezlenir (indirme yok): arrow, arrowhit, clash, bash, zap, splash, pain, dvoice, scream.
 Yapıldı (8 Eki, yayın 106): dekor şakaları (setupProps/tapProps/drawProps: karga, mezar eli, Mortimer'ın çayı),
 meydan okuma modları (CHAL h/i, IRON_TOWERS, save.ch, kart üstünde 3 yıldızdan sonra açılır),
 başarımlar (ACH tablosu, `cnt(k)` kalıcı sayaç save.cnt, `achGive(id)` save.ach + üstten kayan bildirim, haritada kupa düğmesi → screen 'ach').

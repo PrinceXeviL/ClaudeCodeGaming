@@ -135,6 +135,17 @@ function drawSprite(c, im, x, y, w, anchorY = 1) {
 const SAVE_KEY = 'sinirKalesi.v1';
 let save = { stars: [] };
 try { save = JSON.parse(localStorage.getItem(SAVE_KEY)) || save; } catch (e) {}
+// 15 bölüme geçiş (8 Eki): eski 5 bölümün yıldızları ve meydan okumaları yeni sıralarına (1, 4, 7, 10, 15) taşınır
+if (!save.v15) {
+  const MAP5 = [0, 3, 6, 9, 14];
+  if (save.stars && save.stars.length && save.stars.length <= 5) {
+    const st = [], ch = {};
+    save.stars.forEach((v, i) => { st[MAP5[i]] = v || 0; });
+    for (const k in save.ch || {}) ch[MAP5[k]] = save.ch[k];
+    save.stars = Array.from(st, v => v || 0); save.ch = ch;
+  }
+  save.v15 = 1;
+}
 // ----- ayarlar (kayıtta saklanır) -----
 const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto', music: true };
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
@@ -665,8 +676,9 @@ function roadShape(g, paths, w) {
 // Yol yüzeyi ayrıntısı: ayrı katmanda çizilir, yol şekline kırpılıp zemine basılır.
 // Tonal lekeler (dövülmüş toprak), çatlaklar ve yer yer gömülü yassı taş kümeleri.
 // Kendi rastgele dizisini kullanır; ağaç/kaya yerleşimi değişmesin.
+let bgRoadK = ROAD_K; // zemin çizilirken yol genişliği (bölge haritasında yol daha ince)
 function drawRoadDetail(g, c, res, paths, th, rr, painted) {
-  const R = ROAD_K;
+  const R = bgRoadK;
   const det = document.createElement('canvas'); det.width = c.width; det.height = c.height;
   const d = det.getContext('2d'); d.scale(res, res);
   const hex = (h, a) => `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;
@@ -718,6 +730,7 @@ function renderBackground(lv, paths, res = 2) {
   g.scale(res, res);
   const th = THEMES[lv.theme];
   const rnd = seeded(lv.name.length * 977 + lv.plots.length * 31);
+  bgRoadK = lv.roadK || ROAD_K;
 
   const grd = g.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, 600);
   grd.addColorStop(0, th.grass); grd.addColorStop(1, th.grass2);
@@ -750,7 +763,7 @@ function renderBackground(lv, paths, res = 2) {
   // yol katmanları, kenarları doğal dalgalanan dolu şekiller olarak çizilir (roadShape)
   const strokePath = (w, col) => { g.fillStyle = col; roadShape(g, paths, w); g.fill(); };
   g.save(); g.shadowColor = 'rgba(30,20,8,0.55)'; g.shadowBlur = 16; g.shadowOffsetY = 3;
-  const R = ROAD_K;
+  const R = bgRoadK;
   strokePath(52 * R, th.road[2]); g.restore();
   strokePath(56 * R, 'rgba(40,28,12,0.18)');
   strokePath(50 * R, th.road[2]);
@@ -7631,7 +7644,7 @@ function upgradeIcon(id, x, y) {
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
 const CODEX_ENEMIES = ['legion', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry', 'ram', 'catapult',
-  'centurion', 'champion', 'shadowmaster', 'cavcaptain', 'gloriosus'];
+  'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
   solarcher: 'Uzaktan ok atar, yakından ağlar. İskeletlerimi yanına yolla.',
@@ -7644,6 +7657,8 @@ const CODEX_NOTE = {
   catapult: 'Bahçeme taş atıyor. Komşuluk bunu gerektirmez.',
   centurion: 'Borazanı çok sesli. Çayımı içemiyorum.',
   champion: 'Kalabalığı coşturur. Kalabalık az sonra benim olacak.',
+  hierophant: 'Güneşe dua ediyor. Burada güneş öğlene kadar uyur.',
+  ironwarden: 'Zırhı o kadar ağır ki iskeletlerim onu taşımaya üşeniyor.',
   shadowmaster: 'Gölgelerin ustası. Ben de mezarların ustasıyım. Tanışırız.',
   cavcaptain: 'Hücum ederken bağırır. Neden hep bağırıyorlar?',
   gloriosus: 'Kendi heykelini sipariş etmiş. Mezar taşını ben hediye ederim.',
@@ -8000,8 +8015,7 @@ function drawTitle() {
   }
 
 // ----- bölüm seçimi: önizlemeli kartlar -----
-const DIFF = ['Kolay', 'Kolay', 'Orta', 'Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Efsane',
-  'Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Çok zor', 'Çok zor', 'Efsane', 'Efsane'];
+const DIFF = ['Kolay', 'Kolay', 'Kolay', 'Orta', 'Orta', 'Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Çok zor', 'Çok zor', 'Efsane'];
 // ----- seferler -----
 const epLevels = (ep) => LEVELS.map((lv, i) => i).filter(i => LEVELS[i].ep === ep);
 const epOf = (i) => LEVELS[i].ep || 1;
@@ -8014,6 +8028,7 @@ function epUnlocked(ep) {
 // bölüm: seferin ilk bölümü sefer açıksa, diğerleri önceki bölüm bitince açılır
 function levelUnlocked(i) {
   const first = epLevels(epOf(i))[0];
+  if ((save.stars[i] || 0) > 0) return true; // bitirilmiş bölüm hep açık (eski kayıttan taşınanlar dahil)
   return i === first ? epUnlocked(epOf(i)) : (save.stars[i - 1] || 0) > 0;
 }
 let mapEp = null;
@@ -8103,6 +8118,78 @@ function drawMapNode(i, x, y, num, last, at) {
   buttons.push({ key, x: x - 22, y: y - 40, w: 50, h: 64, fn: () => { mapSel = i; mapSelT = time; sfx('open'); } });
 }
 
+// ----- bölge haritası -----
+// Beş mekânın zemini bölüm zemin çizeriyle (renderBackground) ayrı ayrı çizilir, soldan sağa yumuşak geçişle birleşir.
+// Bölümleri tek kıvrımlı toprak yol bağlar, yolun sonunda şapel durur. Önbellekte tutulur; kare başına bir mekân hazırlanır.
+const REGION_BG = {};
+function regionRoad(E) {
+  const P = [E.start, ...E.nodes, E.end], out = [];
+  for (let i = 0; i < P.length - 1; i++) { // Catmull-Rom: noktaların hepsinden geçen yumuşak eğri
+    const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)];
+    for (let k = 0; k < 8; k++) {
+      const t = k / 8, t2 = t * t, t3 = t2 * t;
+      out.push([0, 1].map(j => 0.5 * (2 * p1[j] + (p2[j] - p0[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (3 * p1[j] - p0[j] - 3 * p2[j] + p3[j]) * t3)));
+    }
+  }
+  out.push(E.end);
+  return out;
+}
+const REGION_TINT = { cursed: 'rgba(90,110,40,0.08)', bog: 'rgba(30,120,100,0.2)', graveyard: 'rgba(110,100,140,0.2)', blacklake: 'rgba(20,40,100,0.28)', necrogate: 'rgba(120,30,90,0.2)' };
+const regionCastle = (E) => [E.end[0] + 35, E.end[1] + 5];
+function regionBg(ep) {
+  const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
+  if (R.done) return R.done;
+  if (!R.road) R.road = [buildPath(regionRoad(E))];
+  if (R.parts.length < E.zones.length) {
+    const k = R.parts.length;
+    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62 }, R.road, 2);
+    // her mekânın kendi rengi: bataklık yeşil-mavi, mezarlık kül moru, kara göl gece mavisi, kapı kızıl mor
+    const tint = REGION_TINT[E.zones[k][0]];
+    if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
+    R.parts.push(part);
+    if (R.parts.length < E.zones.length) return R.parts[0];
+  }
+  const c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2;
+  const g = c.getContext('2d'), zw = W * 2 / E.zones.length, blend = 140;
+  g.drawImage(R.parts[0], 0, 0);
+  for (let i = 1; i < R.parts.length; i++) {
+    const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
+    const tg = t.getContext('2d');
+    tg.drawImage(R.parts[i], 0, 0);
+    tg.globalCompositeOperation = 'destination-in';
+    const gr = tg.createLinearGradient(i * zw - blend, 0, i * zw + blend, 0);
+    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,1)');
+    tg.fillStyle = gr; tg.fillRect(0, 0, t.width, t.height);
+    g.drawImage(t, 0, 0);
+  }
+  R.parts = null;
+  return (R.done = c);
+}
+function drawRegionMap(E, ep, st) {
+  const bg = regionBg(ep);
+  ctx.drawImage(bg, 0, 0, W, H);
+  const im = spr('castle_1');
+  if (im) { const cs = regionCastle(E), cp = castlePlace(cs[0], cs[1], im); drawSprite(ctx, im, cp.x, cp.y, cp.w); }
+  // yavaş sürüklenen sis
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 5; i++) {
+    const x = ((i * 233 + time * (6 + i * 2)) % (W + 400)) - 200, y = 130 + i * 85 + Math.sin(time * 0.3 + i) * 12;
+    glow(ctx, x, y, 170, '150,170,190', 0.05);
+  }
+  ctx.restore();
+  // mekân adları: küçük oyma levhalar
+  E.zones.forEach(([, name], k) => {
+    const [x, y] = E.labels[k], a = clamp((st - 0.3 - k * 0.06) / 0.3, 0, 1);
+    if (a <= 0) return;
+    ctx.save(); ctx.globalAlpha = a; ctx.font = `400 14px ${FONT_T}`;
+    const w = ctx.measureText(name).width + 26;
+    roundRect(x - w / 2 + 2, y - 11, w, 24, 8, 'rgba(0,0,0,0.4)');
+    roundRect(x - w / 2, y - 13, w, 24, 8, 'rgba(26,20,32,0.86)', 'rgba(214,200,166,0.45)', 1.2);
+    txt(name, x, y - 0.5, 14, '#d8ccb0', 'center', '400', FONT_T, false);
+    ctx.restore();
+  });
+}
+
 let mapNote = null;
 function drawMap() {
   if (mapEp == null) {
@@ -8110,20 +8197,20 @@ function drawMap() {
     mapEp = first < 0 ? EPISODES.length : epOf(first);
   }
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);
-  const st = time - screenT, bg = spr(E.bg) || spr('title_bg');
-  if (bg) coverImage(bg, 1);
-  else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
+  const st = time - screenT;
+  if (E.zones) drawRegionMap(E, mapEp, st);
+  else { const bg = spr(E.bg) || spr('title_bg'); if (bg) coverImage(bg, 1); else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); } }
   // üstte başlık için koyu bant, kenarlarda hafif vinyet
   let g = ctx.createLinearGradient(0, 0, 0, 110); g.addColorStop(0, 'rgba(24,12,4,0.55)'); g.addColorStop(1, 'rgba(24,12,4,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, 110);
   g = ctx.createRadialGradient(W / 2, H / 2, H * 0.5, W / 2, H / 2, W * 0.7); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,5,0,0.35)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   const nodes = E.nodes || ids.map((_, k) => [120 + k * 80, 420 - (k % 2) * 60]);
-  drawMapTrail(nodes, ids);
+  if (!E.zones) drawMapTrail(nodes, ids);
   ids.forEach((i, k) => drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05));
 
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.translate(W / 2 + 40, 46); ctx.scale(rk, rk); ribbon(0, 0, 330, `${mapEp}. SEFER: ${E.name.toLocaleUpperCase('tr')}`, mapEp === 1 ? 'red' : 'gold', 20); ctx.restore();
+  ctx.save(); ctx.translate(W / 2 + 40, 46); ctx.scale(rk, rk); ribbon(0, 0, 300, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 22); ctx.restore();
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
   roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
@@ -8136,10 +8223,10 @@ function drawMap() {
   fancyStar(W - 129, 41, 13, true);
   txt(`${total} / ${LEVELS.length * 4}`, W - 72, 42, 20, '#ffe27a', 'center', '400', FONT_T);
   ctx.restore();
-  // sefer seçimi (sol üst): kilitli sefer kilit simgesiyle görünür
-  EPISODES.forEach((ep, k) => {
+  // bölge seçimi (sol üst, birden çok bölge varsa): kilitli bölge kilit simgesiyle görünür
+  if (EPISODES.length > 1) EPISODES.forEach((ep, k) => {
     const n = k + 1, x = 128 + k * 104, y = 40, open = epUnlocked(n), on = n === mapEp, key = 'ep' + n;
-    gameButton(key, x, y, 96, 34, n + '. SEFER', null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 13, icon: open ? null : 'lock' });
+    gameButton(key, x, y, 96, 34, ep.name.toLocaleUpperCase('tr'), null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 13, icon: open ? null : 'lock' });
     buttons.push({ key, x: x - 48, y: y - 17, w: 96, h: 34, fn: () => {
       if (!open) { sfx('error'); return; }
       if (mapEp !== n) { mapEp = n; mapSel = null; screenT = time; sfx('pick'); }
@@ -8228,7 +8315,7 @@ function drawLevelCard(i, cx, cy, at) {
     roundRect(x0, y0, w, h, 22, 'rgba(18,10,4,0.62)');
     drawIcon('lock', 0, y0 + 86, 46);
     txt('Kilitli', 0, y0 + 274, 24, '#f0e2c4', 'center', '400', FONT_T);
-    txt(num === 1 ? 'Önceki seferi tamamla' : 'Önceki bölümü tamamla', 0, y0 + 298, 13, '#cdb894', 'center', '700', FONT_B, false);
+    txt(num === 1 ? 'Önceki bölgeyi tamamla' : 'Önceki bölümü tamamla', 0, y0 + 298, 13, '#cdb894', 'center', '700', FONT_B, false);
   }
   ctx.restore();
   if (unlocked) {

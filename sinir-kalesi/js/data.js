@@ -163,11 +163,22 @@ const WEATHER = {
 // paths: önce girişler, sonra alternatif kollar; routes: { giriş: [kullanabileceği yollar] } (düşmanlar kollara sırayla dağılır).
 // Kale kendiliğinden ilk yolun bittiği yere, kapısı tam yolun ucuna gelecek şekilde konur (bütün yollar orada biter).
 // plots: kule arsaları; tools/arsa-uret.js yola göre otomatik yerleştirir.
+// 15 bölümün yol ve arsa düzeni (oynanış sırasıyla)
 const LEVELS = [
   { paths: [[[-40,300],[120,300],[230,210],[380,190],[480,280],[520,400],[650,440],[760,380],[790,290],[862,270]]], plots: [[634,360],[346,258],[88,228],[694,312],[400,312],[250,294],[856,360],[544,498],[136,372]] },
+  { paths: [[[300,-40],[300,90],[420,170],[540,230],[660,190],[770,230],[760,330],[790,400],[862,390]],[[-40,410],[120,410],[260,360],[420,290],[540,230],[660,190],[770,230],[760,330],[790,400],[862,390]]], plots: [[640,276],[364,228],[118,336],[664,342],[292,264],[532,150],[784,474],[250,156],[196,306],[520,324],[706,426],[310,420]] },
+  { paths: [[[180,-40],[180,120],[300,170],[600,150],[740,200],[700,280],[500,290],[300,300],[200,370],[300,440],[560,440],[700,420],[862,380]]], plots: [[346,372],[580,366],[244,234],[772,324],[496,372],[100,144],[742,486],[814,162],[178,276],[154,204],[826,234],[130,420],[826,468]] },
   { paths: [[[560,-40],[560,90],[420,140],[260,120],[150,200],[160,320],[300,380],[470,330],[620,380],[740,440],[860,400]],[[560,-40],[560,90],[420,140],[400,240],[470,330],[620,380],[740,440],[860,400]]], plots: [[502,252],[286,264],[736,360],[454,408],[544,192],[268,198],[586,450],[166,420],[616,150],[820,498]], routes: {"0":[0,1]} },
+  { paths: [[[-40,300],[120,300],[220,190],[400,130],[600,140],[720,220],[700,350],[560,430],[380,440],[300,360],[400,290],[560,300],[700,320],[862,310]]], plots: [[448,372],[622,234],[304,234],[766,396],[544,204],[88,222],[388,210],[706,450],[220,324],[808,222],[592,498],[112,378]] },
+  { paths: [[[-40,130],[150,130],[350,200],[500,320],[620,420],[760,430],[862,380]],[[-40,430],[150,430],[350,360],[500,250],[620,170],[760,200],[800,300],[862,380]]], plots: [[652,312],[328,282],[736,360],[454,384],[142,204],[124,360],[460,180],[682,246],[244,288],[850,474],[64,234],[508,438],[64,312],[340,450]] },
   { paths: [[[-40,200],[130,200],[260,260],[380,250],[470,320],[600,330],[720,280],[862,250]],[[440,580],[440,470],[500,390],[600,330],[720,280],[862,250]]], plots: [[406,372],[640,396],[142,288],[754,348],[550,456],[346,324],[250,174],[718,204],[526,258],[64,318],[364,432]] },
+  { paths: [[[200,-40],[200,100],[330,170],[480,140],[640,170],[730,260],[862,280]],[[200,-40],[200,100],[300,260],[460,340],[640,340],[730,290],[862,280]]], plots: [[616,264],[406,234],[148,192],[760,360],[490,258],[766,186],[196,264],[106,132],[508,420],[694,402],[262,330]], routes: {"0":[0,1]} },
+  { paths: [[[-40,250],[150,250],[300,290],[460,290],[600,300],[720,260],[862,280]],[[420,-40],[430,90],[480,190],[460,290],[600,300],[720,260],[862,280]],[[640,580],[640,460],[620,370],[600,300],[720,260],[862,280]]], plots: [[562,228],[706,348],[388,216],[142,324],[532,378],[724,414],[226,348],[364,150],[424,366],[790,342],[124,174],[550,444],[304,216]] },
   { paths: [[[-40,150],[200,140],[480,150],[640,180],[700,260],[620,320],[420,300],[260,330],[230,400],[360,460],[520,460],[700,440],[800,380],[862,330]]], plots: [[376,384],[556,234],[310,216],[502,384],[790,480],[142,216],[472,222],[778,294],[226,234],[64,246],[148,420]] },
+  { paths: [[[320,-40],[320,90],[200,170],[300,250],[480,250],[620,200],[740,250],[862,300]],[[560,580],[560,470],[420,420],[340,340],[480,250],[620,200],[740,250],[862,300]]], plots: [[466,342],[340,180],[634,282],[544,372],[724,324],[256,318],[406,138],[778,180],[412,498],[172,264],[502,156],[652,492]] },
+  { paths: [[[-40,380],[140,380],[260,300],[260,200],[380,140],[540,170],[620,260],[560,360],[660,430],[790,400],[862,330]],[[-40,380],[140,380],[260,300],[420,300],[560,360],[660,430],[790,400],[862,330]]], plots: [[484,240],[694,354],[154,276],[388,222],[292,384],[532,450],[82,312],[802,480],[472,402],[622,132]], routes: {"0":[0,1]} },
+  { paths: [[[-40,290],[150,290],[450,290],[760,300],[862,300]],[[-40,290],[150,290],[240,150],[420,130],[600,150],[700,230],[760,300],[862,300]],[[-40,290],[150,290],[240,430],[420,450],[600,430],[700,360],[760,300],[862,300]]], plots: [[112,378],[550,366],[316,216],[562,216],[292,366],[784,390],[112,204],[418,378],[796,222],[478,210],[724,444],[748,162],[634,498]], routes: {"0":[0,1,2]} },
+  { paths: [[[-40,200],[140,200],[280,140],[440,150],[560,230],[640,330],[760,350],[862,300]],[[700,-40],[700,90],[600,140],[560,230],[640,330],[760,350],[862,300]],[[-40,200],[140,200],[240,300],[400,350],[640,330],[760,350],[862,300]]], plots: [[484,270],[274,222],[688,258],[112,282],[400,252],[664,192],[622,408],[772,264],[70,342],[742,162],[340,414],[760,426],[154,342],[538,414],[844,402],[430,426]], routes: {"0":[0,2]} },
   { paths: [[[-40,270],[140,270],[260,200],[420,150],[580,170],[680,250],[760,300],[862,300]],[[-40,270],[140,270],[260,350],[420,400],[580,380],[680,320],[760,300],[862,300]]], plots: [[298,282],[592,282],[124,348],[742,378],[418,288],[508,276],[130,192],[772,222],[436,222],[346,462],[184,396],[676,420]], routes: {"0":[0,1]} },
 ];
 
@@ -280,11 +291,20 @@ Object.assign(ENEMIES, {
     desc: 'Kendini çok beğenir. Kalkan açar, lejyon çağırır, kulelere mancınık ateşi yağdırır, öfkelenince yayan saldırır',
     ab: { summon: { t: ['legion', 'heavy', 'gladiator'], n: 3, cd: 11 }, shield: { cd: 16, t: 2.5 }, howl: { cd: 12, r: 130 }, bomb: { cd: 12, stun: 3, r: 220 } } },
 });
+Object.assign(ENEMIES, {
+  hierophant:   { name: 'Başrahip Sollemnis', base: 'priest', h: 42, hp: 800, speed: 13, armor: 0.05, mr: 0.55, gold: 100, dmg: [8, 14], rate: 1.1, lives: 5, r: 14, boss: true, chief: true, hpK: 0.85,
+    desc: 'Yakındakileri iyileştirir, kısa süre kalkan açar, rahip ve lejyoner çağırır', ab: { heal: { cd: 8, amt: 60, r: 90 }, shield: { cd: 15, t: 2.5 }, summon: { t: ['priest', 'legion'], n: 2, cd: 13 } } },
+  ironwarden:   { name: 'Demir Muhafız Brutus', base: 'heavy', h: 46, hp: 1400, speed: 10, armor: 0.75, mr: 0.05, gold: 150, dmg: [18, 28], rate: 1.4, lives: 6, r: 16, boss: true, chief: true, hpK: 0.9,
+    desc: 'Kalkanıyla yeri döver (iskeletler sersemler), öfkelenince yarı hasar alır, ağır piyade çağırır', ab: { slam: { cd: 8, r: 64, stun: 1.6, dmg: 30 }, rage: { cd: 15, t: 4 }, summon: { t: 'heavy', n: 1, cd: 15 } } },
+});
+Object.assign(BOSS_ESCORT, { hierophant: [['priest', 1], ['legion', 3]], ironwarden: [['heavy', 2]] });
 Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator', 2]], shadowmaster: [['assassin', 3]], cavcaptain: [['cavalry', 2]], gloriosus: [['heavy', 2], ['legion', 4]] });
 
-// Bölümler: yol ve arsa düzeni eski ilk 5 bölümden; ortam, dalgalar ve boss yeni
+// Bölümler (Lanetli Sınır, 15 bölüm): Ölü Orman (1-3) → Sisli Bataklık (4-6) → Mezarlık (7-9) → Kara Göl (10-12) → Mortimer'ın Kapısı (13-15).
+// Yeni düşman sırası: 3 gladyatör, 6 suikastçı, 7 rahip, 9 ağır piyade, 10 süvari ve koçbaşı, 13 mancınık.
 {
-  const old = LEVELS.slice(0, 5).map(l => ({ paths: l.paths, plots: l.plots, routes: l.routes }));
+  const old = LEVELS.slice(0, 15).map(l => ({ paths: l.paths, plots: l.plots, routes: l.routes }));
+  const W_ = (t, n, gap, at) => (at == null ? { t, n, gap } : { t, n, gap, at });
   const L = [
     { name: 'Ölü Orman', theme: 'cursed', gold: 300, bossT: 'centurion', waves: [
       [{ t: 'legion', n: 5, gap: 1.6 }],
@@ -296,6 +316,26 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'legion', n: 10, gap: 0.8 }, { t: 'solarcher', n: 6, gap: 1, at: 5 }],
       [{ t: 'legion', n: 12, gap: 0.7 }, { t: 'solarcher', n: 6, gap: 1, at: 4 }, { t: 'legion', n: 8, gap: 0.6, at: 12 }],
     ] },
+    { name: 'Kuzgun Tepesi', theme: 'cursed', gold: 320, bossT: 'champion', waves: [
+      [W_('legion', 6, 1.4)],
+      [W_('legion', 6, 1.1), W_('solarcher', 3, 1.8, 4)],
+      [W_('solarcher', 4, 1.3), W_('legion', 6, 1, 5)],
+      [W_('legion', 8, 0.9), W_('solarcher', 4, 1.3, 6)],
+      [W_('legion', 8, 0.9), W_('solarcher', 5, 1.1, 5), W_('legion', 4, 0.8, 12)],
+      [W_('solarcher', 6, 1), W_('legion', 10, 0.7, 4)],
+      [W_('legion', 10, 0.8), W_('solarcher', 6, 1, 6), W_('gladiator', 2, 2, 12)],
+      [W_('legion', 12, 0.7), W_('solarcher', 6, 1, 4), W_('gladiator', 3, 1.6, 10)],
+    ] },
+    { name: 'Çürük Kökler', theme: 'cursed', gold: 350, bossT: 'centurion', waves: [
+      [W_('legion', 6, 1.3)],
+      [W_('gladiator', 2, 2), W_('legion', 6, 1, 4)],
+      [W_('legion', 8, 0.9), W_('solarcher', 4, 1.2, 5)],
+      [W_('gladiator', 4, 1.5), W_('legion', 6, 1, 5)],
+      [W_('legion', 10, 0.8), W_('solarcher', 5, 1.1, 6)],
+      [W_('gladiator', 5, 1.2), W_('legion', 8, 0.8, 5), W_('solarcher', 4, 1.2, 10)],
+      [W_('solarcher', 6, 1), W_('gladiator', 5, 1.2, 4), W_('legion', 10, 0.7, 9)],
+      [W_('legion', 12, 0.6), W_('gladiator', 6, 1, 5), W_('solarcher', 6, 1, 11)],
+    ] },
     { name: 'Sisli Bataklık', theme: 'bog', gold: 380, weather: 'rain', bossT: 'champion', waves: [
       [{ t: 'legion', n: 6, gap: 1.3 }],
       [{ t: 'gladiator', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 4 }],
@@ -305,6 +345,26 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'gladiator', n: 8, gap: 1 }, { t: 'legion', n: 10, gap: 0.7, at: 6 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
       [{ t: 'gladiator', n: 6, gap: 1.2 }, { t: 'solarcher', n: 6, gap: 1, at: 5 }, { t: 'legion', n: 10, gap: 0.7, at: 9 }],
       [{ t: 'legion', n: 12, gap: 0.6 }, { t: 'gladiator', n: 8, gap: 1, at: 5 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
+    ] },
+    { name: 'Sülük Gölcükleri', theme: 'bog', gold: 400, weather: 'rain', hpMul: 0.95, bossT: 'hierophant', waves: [
+      [W_('legion', 8, 1.1)],
+      [W_('gladiator', 4, 1.6), W_('legion', 6, 1, 5)],
+      [W_('solarcher', 5, 1.2), W_('gladiator', 4, 1.4, 5)],
+      [W_('legion', 10, 0.8), W_('solarcher', 5, 1.1, 6)],
+      [W_('gladiator', 6, 1.1), W_('legion', 8, 0.8, 5), W_('solarcher', 4, 1.2, 10)],
+      [W_('legion', 12, 0.7), W_('gladiator', 5, 1.1, 6)],
+      [W_('solarcher', 6, 1), W_('gladiator', 7, 1, 4), W_('legion', 10, 0.7, 10)],
+      [W_('gladiator', 8, 0.9), W_('legion', 12, 0.6, 5), W_('solarcher', 6, 1, 12)],
+    ] },
+    { name: 'Batık Köprü', theme: 'bog', gold: 430, weather: 'rain', hpMul: 0.92, bossT: 'centurion', waves: [
+      [W_('legion', 8, 1)],
+      [W_('assassin', 3, 1.8), W_('legion', 6, 1, 4)],
+      [W_('gladiator', 5, 1.3), W_('solarcher', 4, 1.2, 5)],
+      [W_('assassin', 5, 1.3), W_('legion', 8, 0.9, 5)],
+      [W_('legion', 10, 0.8), W_('gladiator', 5, 1.2, 5), W_('assassin', 4, 1.2, 10)],
+      [W_('solarcher', 6, 1), W_('assassin', 6, 1, 5), W_('legion', 8, 0.8, 10)],
+      [W_('gladiator', 8, 1), W_('assassin', 6, 1, 5), W_('solarcher', 5, 1.1, 11)],
+      [W_('legion', 12, 0.6), W_('assassin', 8, 0.8, 5), W_('gladiator', 6, 1, 11)],
     ] },
     { name: 'Unutulmuş Mezarlık', theme: 'graveyard', gold: 470, hpMul: 0.9, bossT: 'shadowmaster', waves: [
       [{ t: 'legion', n: 8, gap: 1.1 }],
@@ -316,6 +376,26 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'legion', n: 12, gap: 0.6 }, { t: 'assassin', n: 6, gap: 0.9, at: 5 }, { t: 'solarcher', n: 6, gap: 1, at: 12 }],
       [{ t: 'priest', n: 3, gap: 2.5 }, { t: 'gladiator', n: 8, gap: 1, at: 3 }, { t: 'assassin', n: 8, gap: 0.8, at: 9 }, { t: 'legion', n: 10, gap: 0.6, at: 14 }],
     ] },
+    { name: 'Kemik Tarlası', theme: 'graveyard', gold: 490, hpMul: 0.9, bossT: 'hierophant', waves: [
+      [W_('legion', 8, 1), W_('priest', 1, 2, 6)],
+      [W_('assassin', 5, 1.4), W_('gladiator', 4, 1.3, 5)],
+      [W_('priest', 2, 3), W_('legion', 8, 0.9, 2), W_('solarcher', 4, 1.2, 8)],
+      [W_('gladiator', 6, 1.1), W_('assassin', 6, 1, 6)],
+      [W_('legion', 10, 0.8), W_('priest', 3, 2.4, 4), W_('solarcher', 5, 1.1, 9)],
+      [W_('assassin', 8, 0.9), W_('gladiator', 6, 1, 5), W_('priest', 2, 2.5, 9)],
+      [W_('legion', 12, 0.6), W_('solarcher', 6, 1, 5), W_('assassin', 6, 0.9, 11)],
+      [W_('priest', 3, 2.4), W_('gladiator', 8, 0.9, 3), W_('legion', 12, 0.6, 9), W_('assassin', 6, 0.8, 14)],
+    ] },
+    { name: 'Yıkık Kilise', theme: 'graveyard', gold: 520, hpMul: 0.9, bossT: 'ironwarden', waves: [
+      [W_('legion', 8, 1), W_('heavy', 1, 1, 8)],
+      [W_('gladiator', 5, 1.3), W_('assassin', 4, 1.4, 4)],
+      [W_('heavy', 2, 2.6), W_('priest', 2, 3, 3), W_('legion', 8, 0.9, 6)],
+      [W_('solarcher', 6, 1.1), W_('assassin', 6, 1, 5)],
+      [W_('heavy', 3, 2.2), W_('legion', 10, 0.8, 3), W_('priest', 2, 2.5, 8)],
+      [W_('gladiator', 8, 1), W_('assassin', 6, 0.9, 5), W_('solarcher', 5, 1.1, 10)],
+      [W_('heavy', 4, 2), W_('priest', 3, 2.4, 3), W_('legion', 12, 0.6, 8)],
+      [W_('heavy', 3, 2.2), W_('gladiator', 8, 0.9, 4), W_('assassin', 8, 0.8, 9), W_('priest', 3, 2.4, 13)],
+    ] },
     { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.92, bossT: 'cavcaptain', waves: [
       [{ t: 'legion', n: 8, gap: 1 }, { t: 'heavy', n: 1, gap: 1, at: 8 }],
       [{ t: 'cavalry', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
@@ -325,6 +405,46 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'heavy', n: 4, gap: 2 }, { t: 'priest', n: 3, gap: 2.5, at: 3 }, { t: 'cavalry', n: 4, gap: 1.6, at: 10 }, { t: 'legion', n: 10, gap: 0.7, at: 14 }],
       [{ t: 'ram', n: 2, gap: 6 }, { t: 'gladiator', n: 8, gap: 0.9, at: 3 }, { t: 'cavalry', n: 4, gap: 1.5, at: 12 }],
       [{ t: 'heavy', n: 4, gap: 2 }, { t: 'cavalry', n: 6, gap: 1.4, at: 4 }, { t: 'priest', n: 3, gap: 2.5, at: 8 }, { t: 'legion', n: 12, gap: 0.6, at: 12 }],
+    ] },
+    { name: 'Boğulmuşlar İskelesi', theme: 'blacklake', gold: 600, hpMul: 0.68, bossT: 'shadowmaster', waves: [
+      [W_('legion', 10, 0.9), W_('cavalry', 2, 2, 8)],
+      [W_('heavy', 3, 2.2), W_('solarcher', 6, 1.1, 4)],
+      [W_('cavalry', 4, 1.6), W_('assassin', 6, 1, 5)],
+      [W_('ram', 1, 1), W_('legion', 10, 0.8, 2), W_('priest', 2, 3, 8)],
+      [W_('heavy', 4, 2), W_('gladiator', 6, 1, 4), W_('cavalry', 3, 1.6, 10)],
+      [W_('assassin', 8, 0.8), W_('priest', 3, 2.4, 4), W_('solarcher', 6, 1, 9)],
+      [W_('ram', 1, 1), W_('cavalry', 5, 1.4, 3), W_('heavy', 3, 2.2, 8), W_('legion', 10, 0.6, 12)],
+      [W_('heavy', 5, 1.8), W_('cavalry', 6, 1.3, 5), W_('priest', 3, 2.4, 8), W_('gladiator', 8, 0.8, 12)],
+    ] },
+    { name: 'Kara Su Değirmeni', theme: 'blacklake', gold: 600, hpMul: 0.72, bossT: 'ironwarden', waves: [
+      [W_('legion', 10, 0.9), W_('heavy', 2, 2, 7)],
+      [W_('cavalry', 4, 1.5), W_('solarcher', 6, 1, 5)],
+      [W_('ram', 1, 1), W_('heavy', 3, 2.2, 2), W_('priest', 2, 3, 6)],
+      [W_('assassin', 8, 0.9), W_('gladiator', 6, 1, 6)],
+      [W_('cavalry', 6, 1.3), W_('legion', 10, 0.7, 5), W_('priest', 3, 2.4, 10)],
+      [W_('heavy', 5, 1.8), W_('solarcher', 8, 0.9, 4), W_('assassin', 6, 0.9, 10)],
+      [W_('ram', 2, 6), W_('gladiator', 10, 0.8, 3), W_('cavalry', 5, 1.3, 11)],
+      [W_('heavy', 6, 1.6), W_('cavalry', 8, 1.1, 5), W_('priest', 4, 2, 9), W_('legion', 12, 0.6, 13)],
+    ] },
+    { name: 'Kemik Kapı', theme: 'necrogate', gold: 620, hpMul: 0.64, bossT: 'cavcaptain', waves: [
+      [W_('legion', 10, 0.9), W_('solarcher', 4, 1.4, 5)],
+      [W_('catapult', 1, 1), W_('gladiator', 6, 1.1, 3), W_('legion', 6, 1, 9)],
+      [W_('cavalry', 5, 1.4), W_('priest', 2, 3, 5), W_('assassin', 5, 1, 9)],
+      [W_('heavy', 4, 2), W_('solarcher', 8, 0.9, 4)],
+      [W_('catapult', 1, 1), W_('ram', 1, 1, 3), W_('legion', 12, 0.6, 4), W_('gladiator', 6, 1, 10)],
+      [W_('cavalry', 6, 1.2), W_('heavy', 4, 1.8, 5), W_('priest', 3, 2.4, 9)],
+      [W_('assassin', 10, 0.7), W_('gladiator', 8, 0.9, 5), W_('catapult', 1, 1, 10)],
+      [W_('heavy', 6, 1.6), W_('cavalry', 6, 1.2, 5), W_('priest', 3, 2.4, 8), W_('legion', 14, 0.6, 12)],
+    ] },
+    { name: 'Lanet Kuyusu', theme: 'necrogate', gold: 660, hpMul: 0.54, bossT: 'hierophant', waves: [
+      [W_('legion', 12, 0.8), W_('solarcher', 6, 1.1, 5)],
+      [W_('catapult', 1, 1), W_('heavy', 4, 2, 3), W_('gladiator', 6, 1, 8)],
+      [W_('cavalry', 6, 1.3), W_('assassin', 8, 0.9, 5), W_('priest', 2, 3, 10)],
+      [W_('ram', 2, 6), W_('legion', 12, 0.6, 2), W_('solarcher', 6, 1, 9)],
+      [W_('heavy', 5, 1.8), W_('priest', 3, 2.4, 4), W_('cavalry', 5, 1.3, 10)],
+      [W_('catapult', 2, 8), W_('gladiator', 10, 0.8, 3), W_('assassin', 8, 0.8, 10)],
+      [W_('ram', 2, 6), W_('heavy', 5, 1.8, 3), W_('cavalry', 6, 1.2, 9), W_('legion', 12, 0.6, 13)],
+      [W_('heavy', 6, 1.6), W_('cavalry', 8, 1.1, 5), W_('assassin', 10, 0.7, 10), W_('priest', 4, 2, 13), W_('gladiator', 8, 0.8, 16)],
     ] },
     { name: "Mortimer'ın Kapısı", theme: 'necrogate', gold: 650, hpMul: 0.57, bossT: 'gloriosus', waves: [
       [{ t: 'legion', n: 10, gap: 0.9 }, { t: 'solarcher', n: 4, gap: 1.4, at: 5 }],
@@ -339,12 +459,20 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   ];
   // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
   // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
-  const TOTAL = [118, 134, 155, 155, 250];
+  const TOTAL = [118, 124, 128, 134, 140, 146, 155, 158, 162, 155, 165, 172, 185, 205, 250];
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3 }));
   // bölüme özel mekanikler (game.js MECH)
-  [null, 'mud', 'graves', 'lake', 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
+  [null, null, null, 'mud', 'mud', null, 'graves', null, 'graves', 'lake', null, 'lake', 'sunbeam', null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
   LEVELS.splice(0, LEVELS.length, ...L);
-  EPISODES.splice(0, EPISODES.length, { name: 'Lanetli Sınır', bg: 'nm_title', nodes: [[150, 450], [300, 420], [450, 450], [600, 410], [760, 360]] });
+  // bölge (eski adıyla sefer): haritası game.js drawRegionMap ile çizilir; zones: haritada soldan sağa mekânlar
+  // nodes: bölüm işaretleri (960x540), yol bunların içinden kıvrılarak geçer: start'tan girer, end'de şapelin kapısında biter.
+  // labels: mekân adlarının yeri
+  EPISODES.splice(0, EPISODES.length, { name: 'Lanetli Sınır',
+    zones: [['cursed', 'Ölü Orman'], ['bog', 'Sisli Bataklık'], ['graveyard', 'Unutulmuş Mezarlık'], ['blacklake', 'Kara Göl'], ['necrogate', "Mortimer'ın Kapısı"]],
+    start: [-40, 470], end: [850, 240],
+    nodes: [[70, 450], [150, 372], [92, 282], [192, 194], [292, 250], [252, 352], [334, 442], [444, 392], [424, 290],
+      [504, 200], [612, 232], [592, 342], [690, 420], [782, 352], [762, 252]],
+    labels: [[66, 132], [330, 152], [520, 462], [668, 138], [872, 436]] });
 }
 // kuleler: Mortimer'ın yapıları
 Object.assign(TOWERS.archer, { name: 'Kemik Dikilitaşı', desc: 'Hızla kemik kıymığı fırlatır, havayı da vurur' });
@@ -387,7 +515,7 @@ Object.assign(CASTLE.levels[2], { title: 'Ölüm Muhafızları', perk: 'Üç ust
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
   'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];
 // boss gücü kademesi: 1. seferde bölüm sırası; 2. sefer 1. seferin sonlarından başlar, yavaşça yükselir
-LEVELS.forEach((lv, i) => { lv.ep = lv.ep || 1; lv.tier = lv.ep === 2 ? 7 + 0.5 * (i - 10) : i; });
+LEVELS.forEach((lv, i) => { lv.ep = lv.ep || 1; lv.tier = i * 4 / 14; });
 // ----- dalga düzeni -----
 // Her dalga bir öncekinden WAVE_GROW, son dalga LAST_GROW kat kalabalık. Bölümün toplam düşman sayısı
 // yaklaşık WAVE_TOTAL katında kalır (yuvarlama ve ağır birimlerle biraz artar) ve dalgalara bu oranla dağıtılır (ilk dalgalar hafifler, sonrakiler büyür).
@@ -628,7 +756,7 @@ const RANKS = [null,
 ];
 const RANKED = ['legion', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry'];
 // zaten güçlü olan ağır piyade ve süvarinin rütbelileri yalnız son bölümde (bölüm sırası, 0'dan)
-const RANK_FROM = { heavy: 4, cavalry: 4 };
+const RANK_FROM = { heavy: 3.5, cavalry: 3.5 }; // ilerleme (lp) cinsinden: 14. bölümden itibaren
 if (NECRO) {
   for (const t of RANKED) for (let r = 1; r <= 2; r++) {
     const d = ENEMIES[t], R = RANKS[r];
@@ -643,9 +771,10 @@ if (NECRO) {
   }
   // dalgalara rütbe dağıtımı (tohumlu, her oynanışta aynı): 2. bölümden itibaren kıdemliler, 5. bölümde yüzbaşılar.
   // Kıdemli oranı bölüm ve dalga ilerledikçe artar; yüzbaşı her dalgada 1-3 tane.
-  LEVELS.forEach((lv, li) => {
-    if (li < 1) return;
-    let seed = ((li + 7) * 2246822519) >>> 0;
+  LEVELS.forEach((lv, idx) => {
+    const li = idx * 4 / 14; // ilerleme: 15 bölüm eski 5 bölümlük eğriye yayılır
+    if (idx < 1) return;
+    let seed = ((idx + 7) * 2246822519) >>> 0;
     const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
     lv.waves.forEach((w, k) => {
       // sırayla rütbe verilecek yerler: [grup, sıra]
@@ -653,10 +782,10 @@ if (NECRO) {
       for (const g of w) {
         if (ENEMIES[g.t] && ENEMIES[g.t].chief) continue;
         if (!g.types) g.types = Array(g.n).fill(g.t);
-        g.types.forEach((t, i) => { if (RANKED.includes(t) && li >= (RANK_FROM[t] || 1)) slots.push([g, i]); });
+        g.types.forEach((t, i) => { if (RANKED.includes(t) && li >= (RANK_FROM[t] || 0.25)) slots.push([g, i]); });
       }
       if (!slots.length) return;
-      const kid = Math.round(slots.length * Math.min(0.4, 0.04 * li + 0.03 * k)), cap = li >= 4 && k >= 1 ? 1 + Math.floor(k / 3) : 0;
+      const kid = Math.round(slots.length * Math.min(0.4, 0.04 * li + 0.03 * k)), cap = li >= 3 && k >= 1 ? 1 + Math.floor(k / 3) : 0;
       // eşit aralıklı seçim (küçük kaydırmayla): rütbeliler dalgaya yayılır
       const pick = (n, r) => {
         if (n <= 0) return;
