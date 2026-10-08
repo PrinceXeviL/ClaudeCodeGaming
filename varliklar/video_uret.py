@@ -79,5 +79,105 @@ def main(args):
             print('durdu:', t, str(e)[:200]); break
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and '--modal' not in sys.argv:
     main(sys.argv[1:])
+
+
+# ---------------- Modal ile toplu üretim (aylık 30 $ ücretsiz kredi, kota derdi yok) ----------------
+#   <venv>/bin/python varliklar/video_uret.py --modal            # eksik bütün yürüyüş ve saldırı şeritleri
+# Görsel: img/<ad>.webp. Yürüyüş: döngülü (ilk = son kare). Saldırı: döngülü, sonra darbe karesi (silahın en uzağa
+# uzandığı kare) şeridin %40'ına kaydırılır: oyun saldırı şeridini ATK_PREP/(ATK_PREP+ATK_AFTER) = 0,4 anında vurur.
+SKEL = {
+    'unit_skel_1': 'a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet',
+    'unit_skel_2': 'a cartoon skeleton guard in chainmail with a skull shield and a long sword',
+    'unit_skel_3': 'a cartoon skeleton knight in dark armor with a green flaming sword and shield',
+    'unit_skel_4': 'a cartoon big skeleton grave warden with a coffin shield and a spiked mace',
+    'unit_skel_5': 'a cartoon skeleton death knight in purple tattered robes with two green flaming blades',
+    'unit_skel_6': 'a cartoon hooded skeleton archer with a bone bow',
+    'unit_skel_7': 'a cartoon skeleton archer in leather armor with a bone bow',
+    'unit_skel_8': 'a cartoon armored skeleton archer with a glowing green bone bow',
+}
+ENEMY = {
+    'enemy_solarcher': 'a cartoon roman archer with a bow',
+    'enemy_gladiator': 'a cartoon gladiator with a sword and a net',
+    'enemy_assassin': 'a cartoon hooded assassin with daggers',
+    'enemy_priest': 'a cartoon roman war priest with a golden scepter',
+    'enemy_heavy': 'a cartoon heavy roman infantryman with a big sun shield and a short sword',
+    'enemy_cavalry': 'a cartoon roman cavalryman with a lance riding a white horse',
+    'enemy_ram': 'a cartoon wooden siege battering ram cart with a lion head ram and soldiers inside',
+    'enemy_catapult': 'a cartoon wooden catapult cart with a soldier',
+    'enemy_gloriosus': 'a cartoon pompous roman general on a white horse',
+}
+WALK_ACT = {'enemy_ram': 'rolls forward in place, wheels turning, soldiers pushing', 'enemy_catapult': 'rolls forward in place, wheels turning',
+            'enemy_cavalry': 'the horse trots in place, legs moving in a trot cycle, rider bobbing', 'enemy_gloriosus': 'the horse trots in place proudly, legs moving in a trot cycle'}
+ATK_ACT = {
+    'enemy_solarcher': 'draws the bow and shoots one arrow to the right, then lowers the bow',
+    'enemy_gladiator': 'swings the sword forward in one strong strike',
+    'enemy_assassin': 'lunges forward and stabs with the daggers',
+    'enemy_priest': 'raises the golden scepter and casts a glowing spell forward',
+    'enemy_heavy': 'bashes forward with the big shield and stabs with the short sword',
+    'enemy_cavalry': 'thrusts the lance forward while the horse rears slightly',
+    'enemy_ram': 'swings the lion head ram forward and strikes, then swings back',
+    'enemy_catapult': 'the catapult arm swings up and throws a stone, then the arm comes back down',
+    'enemy_gloriosus': 'swings his sword forward from horseback',
+}
+for k in SKEL:
+    ATK_ACT[k] = 'draws the bone bow and shoots one arrow to the right, then lowers the bow' if k >= 'unit_skel_6' else 'swings the weapon forward in one strong strike'
+TAIL = ', then returns exactly to the starting pose. Side view facing right, ' + STYLE
+
+
+def ref_of(name):
+    im = Image.open(os.path.join(IMG, name + '.webp')).convert('RGBA')
+    W, H = 832, 480
+    bg = Image.new('RGBA', (W, H), (255, 0, 255, 255))
+    k = min(400 / im.height, 560 / im.width)
+    im = im.resize((int(im.width * k), int(im.height * k)), Image.LANCZOS)
+    bg.alpha_composite(im, ((W - im.width) // 2, H - im.height - 40))
+    os.makedirs(OUT, exist_ok=True)
+    p = os.path.join(OUT, name + '_ref.png'); bg.convert('RGB').save(p)
+    return os.path.relpath(p, os.path.join(ROOT, 'varliklar'))
+
+
+def modal_jobs(meta):
+    jobs = []
+    for name, who in list(ENEMY.items()) + list(SKEL.items()):
+        if name + '_walk' not in meta:
+            act = WALK_ACT.get(name, 'walking in place, walk cycle, legs stepping, arms swinging naturally')
+            jobs.append({'name': name + '_walk', 'ref': ref_of(name), 'prompt': f'{who} {act}. Side view facing right, ' + STYLE, 'frames': 33, 'loop': True})
+        if name + '_atk' not in meta:
+            jobs.append({'name': name + '_atk', 'ref': ref_of(name), 'prompt': f'{who} {ATK_ACT[name]}' + TAIL, 'frames': 33, 'loop': True})
+    return jobs
+
+
+def process(job):
+    import numpy as np
+    from anim_isle import remove_magenta
+    rel = os.path.join('ham', 'anim', job['name'] + '.mp4')
+    rgb = video_isle.frames_of(os.path.join(ROOT, 'varliklar', rel), 16)
+    L = len(rgb) - 1  # son kare = ilk kare
+    order = list(range(L))
+    if job['name'].endswith('_atk'):
+        wid = []
+        for a in rgb[:L]:
+            xs = np.nonzero(remove_magenta(a)[..., 3] > 128)[1]
+            wid.append(xs.max() - xs.min() if len(xs) else 0)
+        hit = int(np.argmax(wid)); st = (hit - round(0.4 * L)) % L
+        order = [(st + i) % L for i in range(L)]
+    video_isle.main(rel, job['name'], fps=16, order=order)
+
+
+def run_modal():
+    import subprocess
+    meta = json.load(open(os.path.join(IMG, 'anim.json')))
+    jobs = modal_jobs(meta)
+    print(len(jobs), 'iş:', ', '.join(j['name'] for j in jobs), flush=True)
+    if not jobs: return
+    jp = os.path.join(OUT, 'isler.json'); json.dump(jobs, open(jp, 'w'), indent=1)
+    modal_bin = os.path.join(os.path.dirname(sys.executable), 'modal')
+    subprocess.run([modal_bin, 'run', os.path.join(ROOT, 'varliklar', 'modal_wan.py'), '--jobs', jp], check=True)
+    for j in jobs:
+        if os.path.exists(os.path.join(OUT, j['name'] + '.mp4')): process(j)
+
+
+if __name__ == '__main__' and '--modal' in sys.argv:
+    run_modal()

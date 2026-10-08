@@ -36,5 +36,27 @@
   "base": 0.0145,
   "ch": 0.959,
   "idle": 8
+ },
+ "enemy_solarcher_atk": {
+  "n": 32,
+  "fw": 209,
+  "fh": 312,
+  "base": 0.0133,
+  "ch": 0.9623
+ },
+ "enemy_gladiator_atk": {
+  "n": 32,
+  "fw": 234,
+  "fh": 311,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_assassin_walk": {
+  "n": 32,
+  "fw": 286,
+  "fh": 318,
+  "base": 0.0141,
+  "ch": 0.9435,
+  "idle": 7
  }
 }

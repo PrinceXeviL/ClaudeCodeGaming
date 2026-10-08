@@ -46,13 +46,14 @@ def find_loop(rgb, lo=20, hi=40):
     return best[1], best[2]
 
 
-def main(src, name, start=None, length=None, fps=24):
+def main(src, name, start=None, length=None, fps=24, order=None):
     rgb = frames_of(os.path.join(ROOT, 'varliklar', src), fps)
-    if start is None or length is None:
+    if order is None and (start is None or length is None):
         start, length = find_loop(rgb)
         print('döngü: başlangıç', start, 'uzunluk', length)
+    picked = [rgb[i] for i in order] if order is not None else rgb[start:start + length]  # order: kare sırası (döngüyü kaydırmak için)
     cells = []
-    for a in rgb[start:start + length]:
+    for a in picked:
         rgba = remove_magenta(a)
         keep = biggest_mask(rgba[..., 3])
         rgba[..., 3] = np.where(keep | ((rgba[..., 3] > 0) & (rgba[..., 3] <= 128)), rgba[..., 3], 0)
