@@ -1,6 +1,12 @@
 """Gemini animasyon sayfasını (magenta zemin, sütun x satır kare) oyuna hazırlar.
 
     python3 varliklar/anim_isle.py ham/anim/ork_yuru.jpg enemy_orc_walk 4 2
+    python3 varliklar/anim_isle.py ham/anim/lejyoner_saldiri.jpg enemy_legion_atk 4 2 --auto --anchor heel
+
+--auto: ızgara yerine bağlı parçalara göre ayırır (mızrak/kılıç komşu kareye taşsa da karakterle birlikte kalır; scipy gerekir).
+--order 1,2,3,4,1,2,3,4: kareleri bu sırayla şeride yazar (bozuk kareleri atlamak / yarım döngüyü tekrarlamak için).
+--anchor: kareleri hizalama noktası. body (varsayılan): gövdenin üst yarısının ortası; head: başın (miğfer/sorguç) ortası,
+  yürüyüşte en sabit nokta; heel: arka topuk (en alt satırların en geri noktası), saldırıda yerinde duran arka ayak.
 
 - Magenta zemin silinir, kenardaki pembe taşma temizlenir.
 - Her kare ayrılır; ayakların en alt noktası ortak zemin çizgisine, gövdenin (üst yarının) ortası kare ortasına hizalanır
@@ -67,22 +73,81 @@ def biggest_mask(alpha):
     return keep
 
 
-def main(src, name, cols, rows, flip=False):
+def auto_cells(rgba, cols, rows):
+    """Bağlı parçalarla ayırma: en büyük cols*rows parça karakterlerdir (satır, sonra sütun sırasıyla);
+    küçük parçalar (kopuk mızrak ucu, hız çizgisi) kutusu en yakın karaktere katılır."""
+    from scipy import ndimage
+    a = rgba[..., 3]
+    lab, n = ndimage.label(a > 128, structure=np.ones((3, 3)))
+    sizes = ndimage.sum(np.ones_like(a), lab, range(1, n + 1))
+    objs = ndimage.find_objects(lab)
+    order = np.argsort(sizes)[::-1]
+    N = cols * rows
+    main_ids = [int(i) + 1 for i in order[:N]]
+    H = a.shape[0]
+    cen = {k: ((objs[k - 1][0].start + objs[k - 1][0].stop) / 2, (objs[k - 1][1].start + objs[k - 1][1].stop) / 2) for k in main_ids}
+    main_ids.sort(key=lambda k: (int(cen[k][0] // (H / rows)), cen[k][1]))
+    groups = {k: [k] for k in main_ids}
+    for i in order[N:]:
+        k = int(i) + 1
+        if sizes[i] < 30: continue
+        sy, sx = objs[k - 1]
+        best, bd = None, 1e9
+        for m in main_ids:
+            my, mx = objs[m - 1]
+            dx = max(mx.start - sx.stop, sx.start - mx.stop, 0); dy = max(my.start - sy.stop, sy.start - my.stop, 0)
+            d = dx + dy
+            if d < bd: best, bd = m, d
+        if bd < 80: groups[best].append(k)
+    cells = []
+    for m in main_ids:
+        mask = np.isin(lab, groups[m])
+        soft = (a > 0) & (a <= 128)
+        ys, xs = np.nonzero(mask)
+        y0, y1, x0, x1 = max(0, ys.min() - 4), ys.max() + 5, max(0, xs.min() - 4), xs.max() + 5
+        cell = rgba[y0:y1, x0:x1].copy()
+        # yumuşak kenar pikselleri yalnız bu karakterin yanındaysa kalır
+        grown = ndimage.binary_dilation(mask[y0:y1, x0:x1], iterations=3)
+        cell[..., 3] = np.where(mask[y0:y1, x0:x1] | (soft[y0:y1, x0:x1] & grown), cell[..., 3], 0)
+        cells.append(cell)
+    return cells
+
+
+def anchor_of(cell, how):
+    ys, xs = np.nonzero(cell[..., 3] > 128)
+    top, bot = ys.min(), ys.max(); h = bot - top
+    if how == 'head':
+        sel = ys < top + h * 0.16
+        return xs[sel].mean()
+    if how == 'heel':
+        sel = ys > bot - h * 0.06
+        return np.percentile(xs[sel], 3)
+    upper = ys < top + h * 0.45
+    return xs[upper].mean()  # gövdenin ortası
+
+
+def main(src, name, cols, rows, flip=False, auto=False, anchor='body', order=None):
     rgb = np.asarray(Image.open(os.path.join(ROOT, 'varliklar', src)).convert('RGB'))
     rgba = remove_magenta(rgb)
     H, W = rgba.shape[:2]
     cw, ch = W / cols, H / rows
     frames = []
-    for r in range(rows):
-        for c in range(cols):
-            cell = rgba[int(r * ch):int((r + 1) * ch), int(c * cw):int((c + 1) * cw)].copy()
-            keep = biggest_mask(cell[..., 3])
-            cell[..., 3] = np.where(keep | ((cell[..., 3] > 0) & (cell[..., 3] <= 128)), cell[..., 3], 0)
-            ys, xs = np.nonzero(cell[..., 3] > 128)
-            top, bot = ys.min(), ys.max()
-            upper = ys < top + (bot - top) * 0.45
-            anchor = xs[upper].mean()  # gövdenin ortası
-            frames.append((cell, top, bot, anchor))
+    if auto: raw = auto_cells(rgba, cols, rows)
+    else:
+        raw = []
+        for r in range(rows):
+            for c in range(cols):
+                cell = rgba[int(r * ch):int((r + 1) * ch), int(c * cw):int((c + 1) * cw)].copy()
+                keep = biggest_mask(cell[..., 3])
+                cell[..., 3] = np.where(keep | ((cell[..., 3] > 0) & (cell[..., 3] <= 128)), cell[..., 3], 0)
+                raw.append(cell)
+    if order: raw = [raw[i - 1] for i in order]
+    # topuk hizalamasında da kare ortası 1. karenin başına denk gelsin (yürüyüşten saldırıya geçerken karakter kaymasın)
+    shift = anchor_of(raw[0], 'head') - anchor_of(raw[0], 'heel') if anchor == 'heel' else 0
+    for cell in raw:
+        ys, xs = np.nonzero(cell[..., 3] > 128)
+        top, bot = ys.min(), ys.max()
+        frames.append((cell, top, bot, anchor_of(cell, anchor) + shift))
     heights = sorted(f[2] - f[1] for f in frames)
     chH = heights[len(heights) // 2]
     k = TARGET_H / chH
@@ -118,4 +183,6 @@ def main(src, name, cols, rows, flip=False):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), '--flip' in sys.argv)
+    an = sys.argv[sys.argv.index('--anchor') + 1] if '--anchor' in sys.argv else 'body'
+    od = [int(x) for x in sys.argv[sys.argv.index('--order') + 1].split(',')] if '--order' in sys.argv else None
+    main(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), '--flip' in sys.argv, '--auto' in sys.argv, an, od)

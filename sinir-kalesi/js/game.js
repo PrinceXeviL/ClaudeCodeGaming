@@ -1031,7 +1031,10 @@ function startLevel(idx) {
 function bakeNext() {
   const k = G.bakeQ.shift();
   let name, rigName, im;
-  if (k[0] === 'e') { const t = k.slice(2), d = ENEMIES[t]; if (!d) return; name = 'enemy_' + t; rigName = d.base ? 'enemy_' + d.base : name; im = d.base ? enemySprite(t) : spr(name); }
+  if (k[0] === 'e') {
+    const t = k.slice(2), d = ENEMIES[t]; if (!d) return; name = 'enemy_' + t; rigName = d.base ? 'enemy_' + d.base : name; im = d.base ? enemySprite(t) : spr(name);
+    if (d.base) for (const sf of ['_walk', '_walk_on', '_walk_arka', '_atk']) animStrip(name, rigName, sf);
+  }
   else { const d = HEROES[k.slice(2)]; if (!d) return; name = rigName = d.sprite; im = heroSprite(d); }
   const arms = im && armsOf(name, rigName, im);
   if (!arms) return;
@@ -5669,14 +5672,14 @@ function drawUnit(name, im, x, y, face, o) {
   // saldırı (<ad>_atk) ya da yürüyüş; yürüyüşte yöne göre önden (_walk_on), arkadan (_walk_arka) veya yandan (_walk)
   let fName = null, fi = 0;
   const atkOn = o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER;
-  if (atkOn && ANIM_META[name + '_atk'] && spr(name + '_atk')) {
+  if (atkOn && animStrip(name, o.rig, '_atk')) {
     fName = name + '_atk';
     const T = ANIM_META[fName].n === 8 ? ATK_FRAME_T : null;
     if (T) { fi = 0; for (let i = 0; i < 8; i++) if (o.atk >= T[i]) fi = i; }
     else fi = Math.min(ANIM_META[fName].n - 1, Math.floor((o.atk + ATK_PREP) / (ATK_PREP + ATK_AFTER) * ANIM_META[fName].n));
   } else if (o.walking && !rig.wings) {
     const suf = o.dir === 'on' ? '_walk_on' : o.dir === 'arka' ? '_walk_arka' : '_walk';
-    for (const n of [name + suf, name + '_walk']) if (ANIM_META[n] && spr(n)) { fName = n; break; }
+    for (const sf of [suf, '_walk']) { const n = animStrip(name, o.rig, sf); if (n) { fName = n; break; } }
     if (fName) fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * ANIM_META[fName].n) % ANIM_META[fName].n;
   }
   const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
@@ -7701,6 +7704,35 @@ const BOSS_LOOK = {
   mummy_king:   (h, s, l) => (h > 70 && h < 160 && s > 0.4) ? [h, s, l] : (h > 20 && h < 65 && l > 0.28) ? [44, Math.min(1, s * 1.6 + 0.25), l * 0.95] : null,
   golem_titan:  (h, s, l) => (h > 25 && h < 60 && s > 0.6 && l > 0.5) ? [8, 1, l] : (h > 12 && h < 55 && s > 0.12) ? [h, s * 0.25, l * 0.5] : null,
 };
+// Kare şeridi: <ad><ek> varsa o; yoksa asıl türün (rig) şeridi bu türün renkleriyle (boss/rütbe) yeniden boyanır ve saklanır.
+function animStrip(name, rig, suf) {
+  const key = name + suf;
+  if (ANIM_META[key] && spr(key)) return key;
+  if (!rig || rig === name || !ANIM_META[rig + suf] || !spr(rig + suf)) return null;
+  const type = name.slice(6), d = ENEMIES[type];
+  if (!d) return null;
+  const f = BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank]);
+  SPR[key] = f ? recolorCanvas(spr(rig + suf), f) : spr(rig + suf);
+  ANIM_META[key] = ANIM_META[rig + suf];
+  return key;
+}
+// görseli renk işleviyle (h, s, l, x, y -> yeni hsl ya da null) yeniden boyar; y görsel yüksekliğine göre (şeritte kare yüksekliği)
+function recolorCanvas(src, f) {
+  const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+  const g = c.getContext('2d'); g.drawImage(src, 0, 0);
+  const im = g.getImageData(0, 0, c.width, c.height), a = im.data, cw = c.width, ch = c.height;
+  for (let i = 0; i < a.length; i += 4) {
+    if (a[i + 3] < 10) continue;
+    const px = i / 4;
+    const r = f(...rgb2hsl(a[i], a[i + 1], a[i + 2]), (px % cw) / cw, Math.floor(px / cw) / ch);
+    if (!r) continue;
+    const rgb = hsl2rgb((r[0] + 360) % 360, clamp(r[1], 0, 1), clamp(r[2], 0, 1));
+    a[i] = rgb[0]; a[i + 1] = rgb[1]; a[i + 2] = rgb[2];
+  }
+  g.putImageData(im, 0, 0);
+  c.generated = true;
+  return c;
+}
 function enemySprite(type) {
   const name = 'enemy_' + type;
   if (SPR[name]) return SPR[name];
@@ -7868,7 +7900,7 @@ function bossAbilities(e, dt) {
   if (ab.howl && ready('howl', ab.howl.cd)) {
     for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, e.x, e.y) < ab.howl.r) o.hasteT = 4;
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.howl.r * (0.5 + i * 0.25), col: '255,90,70', t: -i * 0.12, dur: 0.6 });
-    bossCastFx(e, ab.howl.say || 'Uluma!', '255,110,80'); if (!ab.howl.soft) sfx('roar');
+    bossCastFx(e, ab.howl.say || (NECRO ? 'Borazan!' : 'Uluma!'), '255,110,80'); if (!ab.howl.soft) sfx('roar');
   }
   if (ab.slam && ready('slam', ab.slam.cd)) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);

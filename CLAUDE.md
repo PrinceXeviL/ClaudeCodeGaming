@@ -97,7 +97,12 @@ Kayıt: save.codex (görülen asıl türler; spawnEnemy → codexNote), save.cod
 Promptlar: `tasarim/lejyoner-animasyon-promptlari.md` (0 model sayfası → 1 yandan yürüyüş → 2 önden → 3 arkadan → 4 mızrak saldırısı).
 Ekler: `varliklar/ham/anim/ref_lejyoner.png`, kılavuzlar `kilavuz_yuru.png`, `kilavuz_onarka.png`, `kilavuz_mizrak.png` (poz_kilavuzu.py mizrak).
 Gemini sayfaları `varliklar/ham/anim/lejyoner_*.jpg` → `python3 varliklar/anim_isle.py ham/anim/<dosya> enemy_legion_<walk|walk_on|walk_arka|atk> 4 2`.
-Oyun bu şeritleri drawUnit'te kendiliğinden kullanır. Yapılacak: rütbeli lejyonerlerin (legion_k/_y) şeritleri RANK_LOOK ile yeniden renklendirmesi.
+Oyun bu şeritleri drawUnit'te kendiliğinden kullanır; `base`'li türler (rütbeliler, lejyoner kılığındaki boss) asıl türün şeridini
+kendi renkleriyle kullanır (animStrip + recolorCanvas, bölüm başında bakeNext hazırlar).
+Durum (yayın 92): `lejyoner_model.jpg` (model sayfası), `enemy_legion_atk` (8 kare, --auto --anchor heel: taşan mızrak karakterle kalır,
+arka topuk sabit), `enemy_legion_walk` (Gemini 8 kare çizdi ama 5-8'de kalkanın içi görünüyordu; 1-4 iki kez: --order 1,2,3,4,1,2,3,4,
+--anchor head). Sırada: önden (`kilavuz_onarka.png` → enemy_legion_walk_on) ve arkadan (→ enemy_legion_walk_arka) yürüyüş.
+anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor body|head|heel, --order.
 
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)
