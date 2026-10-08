@@ -809,10 +809,13 @@ function renderBackground(lv, paths, res = 2) {
   strokePath(14 * R, `rgba(255,244,215,${0.08 * lit})`);
   // Kavşaklar: bir yolun kenar süsleri (taş, çimen tutamı) başka bir yolun üstüne düşmesin.
   // Ortak gövdede tekerlek izlerini yalnız ilk yol çizer, öbürü onun yüzeyine iz bırakmaz.
-  const onRoad = (p, x, y, onlyBefore) => {
+  // yolun kendi üstünden geçtiği yerler (aynı yolun uzak bir parçası) de kavşak sayılır
+  const selfS = paths.map(p => { const a = []; for (let s = 0; s <= p.total; s += 4) a.push([s, pathPos(p, s)]); return a; });
+  const onRoad = (p, x, y, onlyBefore, d) => {
+    if (d != null) for (const [s, q] of selfS[paths.indexOf(p)]) if (Math.abs(s - d) > 90 && Math.hypot(q.x - x, q.y - y) < 27 * R) return true;
     for (const o of paths) {
       if (o === p) { if (onlyBefore) break; continue; }
-      if (nearestOnPaths([o], x, y).d < 19 * R) return true;
+      if (nearestOnPaths([o], x, y).d < 27 * R) return true; // öbür yolun koyu kenarı ve dalgası dahil
     }
     return false;
   };
@@ -826,7 +829,7 @@ function renderBackground(lv, paths, res = 2) {
     }
     for (let d = 0; d < p.total; d += 16 + rnd() * 30) {
       const side = rnd() < 0.5 ? -1 : 1, q = pathPos(p, d, side * (22 * R * roadVary(p, d, side) + rnd() * 3)), r = 1.8 + rnd() * 2.4;
-      if (onRoad(p, q.x, q.y)) { rnd(); continue; } // rastgele dizi kaymasın diye aynı sayıda çekilir
+      if (onRoad(p, q.x, q.y, false, d)) { rnd(); continue; } // rastgele dizi kaymasın diye aynı sayıda çekilir
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q.x + 1, q.y + 1.2, r * 1.2, r * 0.8, 0, 0, Math.PI * 2); g.fill();
       g.fillStyle = th.stone[0]; g.beginPath(); g.ellipse(q.x, q.y, r * 1.2, r * 0.85, rnd(), 0, Math.PI * 2); g.fill();
       g.fillStyle = th.stone[1]; g.beginPath(); g.ellipse(q.x - r * 0.3, q.y - r * 0.3, r * 0.55, r * 0.4, 0, 0, Math.PI * 2); g.fill();
@@ -848,7 +851,7 @@ function renderBackground(lv, paths, res = 2) {
       for (const side of [-1, 1]) {
         if (rnd() < 0.35) continue;
         const q = pathPos(p, d, side * (20 * R * roadVary(p, d, side) + rnd() * 6));
-        tuft(q.x, q.y + 2, 0.7 + rnd() * 0.5, rnd() < 0.5 ? th.tuft[0] : th.tuft[1], onRoad(p, q.x, q.y));
+        tuft(q.x, q.y + 2, 0.7 + rnd() * 0.5, rnd() < 0.5 ? th.tuft[0] : th.tuft[1], onRoad(p, q.x, q.y, false, d));
       }
     }
   }
@@ -9681,6 +9684,37 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 window.__game = {
   cut: (n) => spr(n) && ARMS[n] ? cutImage(spr(n), ARMS[n]) : null, ARMS,
+  // arsa denetimi (test): yolun çizilen şekline (koyu kenar dahil) taşan arsaları bulur, en yakın uygun yeri önerir
+  plotAudit(fix = false, rw = 62) {
+    const out = [];
+    LEVELS.forEach((lv, li) => {
+      const paths = lv.paths.map(buildPath), R = lv.roadK || ROAD_K;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      const g = c.getContext('2d'); g.fillStyle = '#000'; roadShape(g, paths, rw * R); g.fill();
+      const A = g.getImageData(0, 0, W, H).data, road = (x, y) => x >= 0 && y >= 0 && x < W && y < H && A[(Math.round(y) * W + Math.round(x)) * 4 + 3] > 20;
+      const RX = 29, RY = 17, ring = (x, y, ax, ay) => { for (let a = 0; a < 6.283; a += 0.2) if (road(x + Math.cos(a) * ax, y + 2 + Math.sin(a) * ay)) return true; return false; };
+      const hit = (x, y) => ring(x, y, RX, RY) || ring(x, y, RX * 0.6, RY * 0.6) || road(x, y + 2);
+      const near = (x, y) => ring(x, y, RX + 16, RY + 12);
+      const ui = (x, y) => { const top = y - 80; return (top < 74 && (x < 300 || x > W - 200)) || top < 40 || (y > H - 110 && x < 330) || x < 36 || x > W - 36 || y > H - 30 ||
+        (Math.abs(x - lv.castle[0]) < 95 && y > lv.castle[1] - 150 && y < lv.castle[1] + 50); };
+      const plots = lv.plots.map(p => p.slice());
+      plots.forEach((pl, k) => {
+        if (!hit(pl[0], pl[1])) return;
+        let best = null, bd = 1e9;
+        for (const S of [90, 180]) if (!best) for (let dy = -S; dy <= S; dy += 3) for (let dx = -S; dx <= S; dx += 3) {
+          const x = pl[0] + dx, y = pl[1] + dy, d = Math.hypot(dx, dy);
+          if (d >= bd || hit(x, y) || !near(x, y) || ui(x, y)) continue;
+          if (plots.some((o, j) => j !== k && Math.hypot(o[0] - x, (o[1] - y) * 1.4) < 66)) continue;
+          best = [x, y]; bd = d;
+        }
+        out.push({ level: li + 1, plot: k, from: pl.slice(), to: best });
+        if (best) plots[k] = best;
+      });
+      if (fix) lv.plots = plots;
+      out.push({ level: li + 1, plots: JSON.stringify(plots) });
+    });
+    return out;
+  },
   // kare maliyeti ölçümü (test): n kare boyunca güncelleme ve tam sahne çizimi süresini ölçer (ms; ortalama ve en kötü %5)
   perf(n = 120) {
     const U = [], D = [], { dpr, scale, ox, oy } = view;

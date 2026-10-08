@@ -1,0 +1,20 @@
+[
+ {
+  "name": "mortimer_panik",
+  "ref": "ham/anim/mortimer_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon grim reaper skeleton with a skull face, red hooded robe, a big scythe and a small tea cup panics in exaggerated comic terror: he jumps in place, frantically shakes his skull left and right, flails his free arm wildly above his head, his knees knock together, tea splashes out of the rattling cup. Very energetic, fast, exaggerated cartoon motion, the whole body keeps moving all the time. Front view, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation"
+ },
+ {
+  "name": "mortimer_panik2",
+  "ref": "ham/anim/mortimer_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 23,
+  "prompt": "a cartoon grim reaper skeleton with a skull face, red hooded robe, a big scythe and a small tea cup panics in exaggerated comic terror: he jumps in place, frantically shakes his skull left and right, flails his free arm wildly above his head, his knees knock together, tea splashes out of the rattling cup. Very energetic, fast, exaggerated cartoon motion, the whole body keeps moving all the time. Front view, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation"
+ }
+]
