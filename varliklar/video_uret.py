@@ -156,6 +156,9 @@ def process(job):
     rgb = video_isle.frames_of(os.path.join(ROOT, 'varliklar', rel), 16)
     L = len(rgb) - (1 if job.get('loop') else 0)  # döngüde son kare = ilk kare
     order = list(range(L))
+    if job['name'].endswith('_walk') and not job.get('loop'):
+        # döngüsüz üretilmiş yürüyüş: videonun içinden en iyi kapanan döngü seçilir (ilk=son kuralı bazen 'yürü-dur' yaptırıyor)
+        st, n = video_isle.find_loop(rgb, 12, 30); order = list(range(st, st + n))
     if job['name'].endswith('_atk'):
         wid = []
         for a in rgb[:L]:

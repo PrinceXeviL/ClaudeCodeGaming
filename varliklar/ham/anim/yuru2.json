@@ -1,0 +1,44 @@
+[
+ {
+  "name": "enemy_heavy_walk",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword walking forward continuously in place, steady non-stop walk cycle, legs keep stepping the whole time, legs stepping, arms swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false
+ },
+ {
+  "name": "enemy_ram_walk",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a lion head ram and soldiers inside rolls forward in place, wheels turning, soldiers pushing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false
+ },
+ {
+  "name": "enemy_catapult_walk",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart with a soldier rolls forward in place, wheels turning. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false
+ },
+ {
+  "name": "unit_skel_3_walk",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield walking forward continuously in place, steady non-stop walk cycle, legs keep stepping the whole time, legs stepping, arms swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false
+ },
+ {
+  "name": "unit_skel_4_walk",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "prompt": "a cartoon big skeleton grave warden with a coffin shield and a spiked mace walking forward continuously in place, steady non-stop walk cycle, legs keep stepping the whole time, legs stepping, arms swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false
+ },
+ {
+  "name": "unit_skel_8_walk",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow walking forward continuously in place, steady non-stop walk cycle, legs keep stepping the whole time, legs stepping, arms swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false
+ }
+]

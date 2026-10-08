@@ -1,0 +1,23 @@
+[
+ {
+  "name": "mortimer_otur",
+  "ref": "ham/anim/mortimer_ref.png",
+  "frames": 49,
+  "loop": false,
+  "prompt": "a cartoon grim reaper skeleton with a skull face, red hooded robe, a big scythe and a small tea cup calmly sits down on a small dark wooden armchair that is right behind him, leans back comfortably and holds the tea cup, then stays seated. Front view, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "mortimer_panik",
+  "ref": "ham/anim/mortimer_ref.png",
+  "frames": 33,
+  "loop": true,
+  "prompt": "a cartoon grim reaper skeleton with a skull face, red hooded robe, a big scythe and a small tea cup panics nervously: looks left and right in alarm, trembles, waves his free hand anxiously, spills a little tea. Front view, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "mortimer_buyu",
+  "ref": "ham/anim/mortimer_ref.png",
+  "frames": 33,
+  "loop": true,
+  "prompt": "a cartoon grim reaper skeleton with a skull face, red hooded robe, a big scythe and a small tea cup raises the scythe high and casts a powerful glowing green necromancy spell, green magic swirls around him, then lowers the scythe. Front view, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
