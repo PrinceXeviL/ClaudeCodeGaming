@@ -952,7 +952,7 @@ function startLevel(idx, chal = null) {
     maxLives: chal ? CHAL[chal].lives : diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
     chal,
     wave: 0, waveCountdown: null, waveCountdownMax: 1, spawners: [],
-    enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [],
+    enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [], dmgNums: [],
     parts: [], decals: [], zones: [], coins: [], traps: [], shakeT: 0, shakeAmp: 0, shakeDur: 1, ambT: 0,
     plots: lv.plots.map(([x, y]) => ({ x, y, tower: null })),
     heroes: [],
@@ -1467,7 +1467,9 @@ function damageEnemy(e, amount, type, quiet, src) {
     if (amount <= 0) return;
   }
   const red = type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) : 0; // veba: zırh yarıya iner; sancak +zırh
+  const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
+  dmgNum(e, dealt, quiet);
   if (!quiet) { e.flash = 0.1; e.hitT = 0.18; if (e.hp > 0) painVoice(e); }
   e.hitAt = time;
   if (e.hp <= 0) killEnemy(e);
@@ -1669,6 +1671,39 @@ function releaseSoldier(s) {
 }
 
 function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 }); }
+// Hasar sayıları: vurulan düşmanın üstünde küçük, kısa ömürlü sayı (büyük vuruş daha iri ve kırmızıya döner).
+// Sürekli hasar (zehir, gaz, kanama) toplanıp yarım saniyede bir gösterilir; aynı düşmana çok yakın vuruşlar birleşir.
+const DMGNUM = { life: 0.7, max: 45 };
+function dmgNum(e, v, dot) {
+  if (v < 0.5 || !G.dmgNums) return;
+  if (dot) { e.dotAcc = (e.dotAcc || 0) + v; return; } // updateDmgNums boşaltır
+  const last = e.lastNum;
+  if (last && last.t < 0.12 && G.dmgNums.includes(last)) { last.v += v; return; }
+  if (G.dmgNums.length >= DMGNUM.max) G.dmgNums.shift();
+  const n = { e, v, x: e.x + rand(-6, 6), y: e.y - (CHAR_H['enemy_' + e.type] || 22) - 4, t: 0, vx: rand(-8, 8) };
+  G.dmgNums.push(n); e.lastNum = n;
+}
+function updateDmgNums(dt) {
+  for (const e of G.enemies) {
+    if (!e.dotAcc) continue;
+    e.dotT = (e.dotT || 0) + dt;
+    if (e.dotT >= 0.5 || e.dead) { const v = e.dotAcc; e.dotAcc = 0; e.dotT = 0; if (v >= 0.5) { dmgNum(e, v, false); if (e.lastNum) e.lastNum.dot = true; } }
+  }
+  for (const n of G.dmgNums) { n.t += dt; n.y -= 16 * dt; n.x += n.vx * dt; }
+  G.dmgNums = G.dmgNums.filter(n => n.t < DMGNUM.life);
+}
+function drawDmgNums() {
+  for (const n of G.dmgNums) {
+    const v = Math.round(n.v); if (v < 1) continue;
+    const k = n.t / DMGNUM.life, big = Math.log2(1 + v);
+    const size = clamp(5.5 + big * 1.15, 6, 15), pop = 1 + 0.35 * Math.max(0, 1 - n.t / 0.12);
+    const col = n.dot ? '#9fe870' : v < 10 ? '#f2ecd8' : v < 30 ? '#ffd96a' : v < 80 ? '#ffa04a' : '#ff5a44';
+    ctx.save(); ctx.globalAlpha = k < 0.55 ? 0.95 : 0.95 * (1 - (k - 0.55) / 0.45);
+    ctx.translate(n.x, n.y); ctx.scale(pop, pop);
+    txt(v + '', 0, 0, size, col, 'center', '400', FONT_T);
+    ctx.restore();
+  }
+}
 
 // ---------- kuleler ----------
 function buildTower(plot, type) {
@@ -3783,6 +3818,7 @@ function update(dt) {
         col: th.amb || (G.lv.theme === 'forest' ? '200,255,150' : '255,245,190'), s0: rand(2, 3.4), s1: 1, life: rand(3, 5), a: 0.75, fadeIn: 0.3 });
     }
   }
+  updateDmgNums(dt);
   for (const f of G.floaters) { f.t += dt; f.y -= 22 * dt; }
   G.floaters = G.floaters.filter(f => f.t < 1.1);
 
@@ -8938,6 +8974,7 @@ function drawPlay() {
   drawPartsAll(G.parts);
   drawMechFx();
   drawProps(true);
+  drawDmgNums();
   for (const f of G.floaters) {
     const k = f.t / 1.1, pop = easeOutBack(clamp(f.t / 0.2, 0, 1));
     ctx.save(); ctx.globalAlpha = 1 - k * k; ctx.translate(f.x, f.y); ctx.scale(pop, pop);
