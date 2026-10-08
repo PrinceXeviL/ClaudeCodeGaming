@@ -73,3 +73,54 @@ Kural: isim, görsel ve bölüm düzeni Kingdom Rush'tan kopyalanmaz. Mekanik il
 - 3–4 yeni düşman (kare kare animasyon)
 - Final boss
 - Bölge kalesi
+
+---
+
+## İleride: düşman çeşitliliği havuzu (9 Eki önerileri)
+Kural: her yeni düşman ya bizim bir aracımıza karşılık olsun ya da başka bir çözüm istesin, sadece "daha güçlü asker" olmasın.
+Bölüm başına en çok 1–2 yeni tür gelsin, her bölge 3–4 yeni tür getirsin.
+**İlk paket önerisi:** savaş fili, atlı okçu, testudo, güneş rahibesi, savaş arabası, kuşatma kulesi, imparatorluk kartalları.
+
+- **Binekli**
+  - Savaş fili: sırtında okçular var; fil düşünce okçular iner.
+  - Atlı okçu: koşarken ok atar, iskeletlere takılmaz.
+  - Savaş arabası: çok hızlı, iskeletleri ezer, kemik duvarla durur.
+  - Katafrakt: hem at hem binici zırhlı.
+- **Dizilişler**
+  - Testudo bölüğü: önden ok geçmez, veba kazanı dağıtır.
+  - Mızraklı falanks: iskeletleri geri iter.
+  - Ağlı gladyatör: bir iskeleti bağlar.
+- **Necromancer'a karşı**
+  - Güneş rahibesi: cesetleri yakar, diriltme işe yaramaz.
+  - Engizitör: Mortimer'ın büyülerini geciktirir.
+  - Kutsal su taşıyıcı: iskeletlere ek hasar verir.
+- **Destek**
+  - Sancaktar: çevresine zırh verir.
+  - Davulcu: çevresindekiler hızlanır.
+  - Mühendis: koçbaşı ve kuşatma makinesini onarır.
+  - Savaş köpekleri: hızlı, sürü hâlinde gelir.
+- **Hava**
+  - İmparatorluk kartalları.
+  - Balon gözcüsü: uçarken çevresindekileri güçlendirir.
+- **Kuşatma**
+  - Kuşatma kulesi: içinde 6 asker taşır, yıkılınca dökülürler.
+  - Balista arabası: kuleleri susturur.
+  - Tünelci: yolun bir kısmını yerin altından geçer.
+- **Değiştiriciler (rütbeden ayrı)**
+  - "Kutsanmış": güneşte can yeniler.
+  - "Kalkanlı", "Hızlı" gibi rastgele ek özellikler, aynı düşmanı farklılaştırır.
+
+## İleride: komutanlar
+Karakterleri Caner önerecek. Sistem için not alınan fikirler:
+- Kadro 6 kişi olsun.
+- Komutan bölümler arasında da seviye atlasın.
+- Her komutanın 3 yeteneği ve 1 pasifi olsun.
+- Kendi lafları ve canlı portresi olsun.
+
+## İleride: animasyon (ücretsiz video yolu)
+- **Önerilen:** Wan 2.2 (Apache 2.0, ticari kullanım serbest), Hugging Face ZeroGPU üzerinden gradio_client ile.
+  - Ücretsiz hesapta günde yaklaşık 3,5–5 dakika ekran kartı süresi var; hızlı sürümlerle günde aşağı yukarı 4–6 klip (tahmin, denenmedi).
+  - Gerekenler: Caner'in açacağı ücretsiz HF hesabı ve `.env` dosyasına kendi yazacağı token.
+  - Akış: görsel → video → `varliklar/video_isle.py`.
+- **Ek seçenek:** Google Colab (ücretsiz T4), klip başı yaklaşık 10 dakika.
+- **Önerilmeyenler:** Kling, PixVerse, Hailuo. Ücretsiz sürümleri filigranlı ve çoğu ticari kullanıma kapalı.

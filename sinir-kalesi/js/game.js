@@ -8210,6 +8210,27 @@ function regionBg(ep) {
   R.parts = null;
   return (R.done = c);
 }
+// uçan karga (haritaya yukarıdan bakılır): gövde uçuş yönünde, kanatlar iki yana açılıp kapanır; yerde gölgesi
+function drawFlyingCrow(x, y, dir, ph) {
+  const c = Math.cos(ph), span = 10 * (0.45 + 0.55 * Math.abs(c)), lift = c * 2.2;
+  const wing = (sd, col) => {
+    ctx.fillStyle = col; ctx.beginPath();
+    ctx.moveTo(2.5, 0); ctx.quadraticCurveTo(1, sd * span * 0.6 - lift, -1.5, sd * span);
+    ctx.lineTo(-3.2, sd * span * 0.92); ctx.lineTo(-3.4, sd * span * 0.75); ctx.lineTo(-4.6, sd * span * 0.68); // uçta tüyler
+    ctx.quadraticCurveTo(-4, sd * span * 0.3, -2.5, 0); ctx.closePath(); ctx.fill();
+  };
+  ctx.save(); ctx.translate(x, y + 24); ctx.scale(dir, 0.55); ctx.globalAlpha *= 0.22;
+  wing(-1, '#000'); wing(1, '#000'); ctx.beginPath(); ctx.ellipse(0, 0, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1);
+  wing(-1, '#16131c'); wing(1, '#1c1824');
+  ctx.fillStyle = '#121016';
+  ctx.beginPath(); ctx.ellipse(0, 0, 5.5, 2.2, 0, 0, Math.PI * 2); ctx.fill();            // gövde
+  ctx.beginPath(); ctx.moveTo(-4.5, 0); ctx.lineTo(-9, -2.6); ctx.lineTo(-9.5, 0); ctx.lineTo(-9, 2.6); ctx.closePath(); ctx.fill(); // yelpaze kuyruk
+  ctx.beginPath(); ctx.arc(5.2, 0, 1.9, 0, Math.PI * 2); ctx.fill();                       // baş
+  ctx.fillStyle = '#4a4038'; ctx.beginPath(); ctx.moveTo(6.8, -0.7); ctx.lineTo(9.4, 0); ctx.lineTo(6.8, 0.7); ctx.closePath(); ctx.fill(); // gaga
+  ctx.restore();
+}
 // harita canlılığı: yolda yürüyen lejyon devriyesi, uçan kargalar, mezarlıkta ruh ışıkları
 const MAPFX = { patrol: [], crows: [], nextPatrol: 0, nextCrow: 2 };
 function drawRegionMap(E, ep, st) {
@@ -8247,8 +8268,19 @@ function drawRegionMap(E, ep, st) {
         const [x0, y0, x1, y1] = S.rail;
         ctx.drawImage(ch, x0 * ch.width, y0 * ch.height, (x1 - x0) * ch.width, (y1 - y0) * ch.height, cx - cw / 2 + x0 * cw, cy - chh + y0 * chh, (x1 - x0) * cw, (y1 - y0) * chh);
       }
-      // çay buharı
-      if (Math.random() < 0.08) emit(uiParts, { kind: 'glow', x: mx + mh * 0.26, y: my - mh * 0.62, vx: rand(-2, 2), vy: -rand(6, 10), col: '230,230,220', s0: 1.4, s1: 3, life: 1.4, a: 0.5 });
+      // çay buharı: fincandan kıvrılarak yükselen üç ince tel
+      const tx = mx + mh * 0.29, ty = my - mh * 0.66;
+      ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 1.3;
+      for (let i = 0; i < 3; i++) {
+        const ph = (time * 0.55 + i / 3) % 1, a = Math.sin(ph * Math.PI) * 0.75;
+        ctx.strokeStyle = `rgba(245,245,238,${Math.min(1, a * 1.25)})`; ctx.beginPath();
+        for (let k = 0; k <= 8; k++) {
+          const yy = ty - (ph * 6 + k * 1.5), xx = tx + (i - 1) * 1.6 + Math.sin(k * 0.8 + time * 3 + i * 2) * 1.6;
+          k ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
     }
   }
   // yavaş sürüklenen sis
@@ -8264,15 +8296,11 @@ function drawRegionMap(E, ep, st) {
   }
   ctx.restore();
   // kargalar: arada bir ekranı kanat çırparak geçer
-  const crow = spr('nm_crow');
-  if (crow && time > MAPFX.nextCrow) { MAPFX.nextCrow = time + rand(4, 8); const l = Math.random() < 0.5; MAPFX.crows.push({ x: l ? -30 : W + 30, y: rand(110, 380), v: (l ? 1 : -1) * rand(70, 100), ph: rand(0, 6) }); }
+  if (time > MAPFX.nextCrow) { MAPFX.nextCrow = time + rand(4, 8); const l = Math.random() < 0.5; MAPFX.crows.push({ x: l ? -30 : W + 30, y: rand(110, 380), v: (l ? 1 : -1) * rand(70, 100), ph: rand(0, 6) }); }
   MAPFX.crows = MAPFX.crows.filter(c => c.x > -60 && c.x < W + 60);
   for (const c of MAPFX.crows) {
     c.x += c.v * dt; c.y += Math.sin(time * 2 + c.ph) * 0.3;
-    if (!crow) continue;
-    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(c.v > 0 ? -1 : 1, 0.75 + 0.35 * Math.abs(Math.sin(time * 12 + c.ph)));
-    drawSprite(ctx, crow, 0, 8, 20);
-    ctx.restore();
+    drawFlyingCrow(c.x, c.y, c.v > 0 ? 1 : -1, time * 9 + c.ph);
   }
 }
 
@@ -9294,7 +9322,7 @@ window.__game = {
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt,
+  goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
