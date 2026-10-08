@@ -2235,21 +2235,25 @@ function updateEnemy(e, dt) {
   else if (b && b.hero && b.target !== e && dist(e.x, e.y, b.x, b.y) > HERO_AGGRO.r + 12) e.blocker = null;
   // menzilli düşman: menzildeki kahramana (yol dışında olsa da) durup atış yapar.
   // any: askerleri de hedefler; ammo: sınırlı atış hakkı (ork: 3 balta)
+  // hold: menzilde hedef varken durup nişan alır (okçu); önüne kesen olursa yakın dövüşe girmez, onu dibinden vurur
   const RG = e.def.ranged;
-  if (RG && !e.blocker && !e.under && (RG.ammo == null || (e.ammo ?? RG.ammo) > 0)) {
-    if (e.shootT > 0) { e.shootT -= dt; if (!RG.moving) return; }
-    e.rcd = (e.rcd ?? rand(0.5, 1.5)) - dt;
-    if (e.rcd <= 0) {
-      let tgt = null, bd = RG.r;
-      for (const h of RG.any ? G.soldiers : G.heroes) { if (h.dead || h.removed) continue; const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; } }
-      if (!tgt) e.rcd = 0.3;
-      else {
-        e.rcd = RG.rate; e.shootT = 0.45; e.face = tgt.x < e.x ? -1 : 1;
+  if (RG && (!e.blocker || RG.hold) && !e.under && (RG.ammo == null || (e.ammo ?? RG.ammo) > 0)) {
+    let tgt = e.blocker && RG.hold ? e.blocker : null, bd = tgt ? dist(e.x, e.y, tgt.x, tgt.y) : RG.r;
+    if (!tgt) for (const h of RG.any ? G.soldiers : G.heroes) {
+      if (h.dead || h.removed || h.wall || (h.born != null && G.t < h.born)) continue;
+      const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; }
+    }
+    if (e.shootT > 0) { e.shootT -= dt; if (!RG.moving) { e.inMelee = false; return; } }
+    e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt;
+    if (tgt) {
+      if (!RG.moving) e.face = tgt.x < e.x ? -1 : 1;
+      if (e.rcd <= 0) {
+        e.rcd = RG.rate; e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
-          dur: clamp(bd / 260, 0.25, 0.7), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
-        if (!RG.moving) return; // atlı okçu koşarken atar, durmaz
+          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
+      if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
     }
   }
   if (e.blocker) {
@@ -8127,7 +8131,7 @@ function speedName(v) { return v < 13 ? 'Çok yavaş' : v < 20 ? 'Yavaş' : v < 
 // düşman yetenekleri (veriden)
 function enemySkills(d) {
   const L = [], ab = d.ab || {};
-  if (d.ranged) L.push('Menzilli: durup iskeletlere ok atar');
+  if (d.ranged) L.push(d.ranged.hold ? 'Menzilli: uzakta durup iskeletlere ve komutana ok atar' : 'Menzilli: durup iskeletlere ok atar');
   if (d.heals) L.push('İyileştirir: yakındaki askerlerin canını doldurur');
   if (d.blink || ab.blink) L.push('Gölgeye dalar: ileri ışınlanır');
   if (ab.summon) L.push('Çağırır: yanına asker getirir');
