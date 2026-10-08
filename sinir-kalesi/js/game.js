@@ -8219,11 +8219,18 @@ function coverImage(im, zoom = 1, ox = 0, oy = 0) {
 // ----- Necromancer giriş ekranı: kemik rengi, mor konturlu, yeşil ışıklı başlık ve mezar taşı düğme -----
 // ----- giriş ekranı: logo ve düğmeler önbellekte (gölgeli yazılar her karede çizilmez, kasma olmaz) -----
 const TITLE_C = {};
-const fontReady = () => !document.fonts || document.fonts.check(`40px ${FONT_T}`);
+// Yazı tipi sürümü: önbellekli çizimler yalnız yazı tipi gerçekten yüklenince bir kez yenilenir (her karede değil).
+// (check() yazı tipi hiç gelmezse sonsuza dek false döner; eskiden bu, logo ve düğmelerin her karede yeniden çizilmesine yol açıyordu)
+let FONT_VER = 0;
+if (document.fonts) {
+  document.fonts.addEventListener && document.fonts.addEventListener('loadingdone', () => { FONT_VER++; });
+  document.fonts.ready.then(() => { FONT_VER++; }).catch(() => {});
+}
+const fontReady = () => true; // eski çağrılar için (önbellek sürümle yenilenir)
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
 // logo: üstte mor kurdele üstünde "DON'T MESS WITH", altta kemik beyazından zehir yeşiline "THE NECROMANCER", damlalar
 function titleLogo() {
-  if (TITLE_C.logo && (TITLE_C.logoOk || !fontReady())) return TITLE_C.logo;
+  if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER) return TITLE_C.logo;
   const LW = 780, LH = 240, [c, g] = offscreen(LW, LH), cx = LW / 2;
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
   // kurdele
@@ -8262,7 +8269,7 @@ function titleLogo() {
   }
   // parıltı maskesi: yalnız ana yazının harfleri
   const [m, mg] = offscreen(LW, LH); mg.font = g.font; mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#fff'; mg.fillText(T, cx, ty);
-  TITLE_C.logo = { c, m, w: LW, h: LH }; TITLE_C.logoOk = fontReady();
+  TITLE_C.logo = { c, m, w: LW, h: LH, ver: FONT_VER };
   return TITLE_C.logo;
 }
 function drawTitleLogo(x, y, k) {
@@ -8284,7 +8291,8 @@ function drawTitleLogo(x, y, k) {
 // Arka: yıldızlı mor gök, ay ve bulutlar, mezar taşlı tepe siluetleri; uzak sırtta meşaleli lejyon yürür.
 // Durağan katmanlar (gök, tepeler, ağaç siluetleri, levha gövdeleri) bir kez çizilir.
 function titleBackdrop() {
-  if (TITLE_C.sky && TITLE_C.skyOk) return TITLE_C.sky;
+  if (TITLE_C.sky && (TITLE_C.skyOk || time - TITLE_C.skyAt < 1)) return TITLE_C.sky;
+  TITLE_C.skyAt = time;
   const [c, g] = offscreen(W, H, 1.5), rnd = seeded(11);
   let gr = g.createLinearGradient(0, 0, 0, H);
   gr.addColorStop(0, '#07040f'); gr.addColorStop(0.45, '#1a1030'); gr.addColorStop(0.7, '#2c1b40'); gr.addColorStop(1, '#0c0812');
@@ -8331,7 +8339,7 @@ function slabBody(w, h, label, icon, primary) {
   const key = [w, h, label, primary].join('|');
   TITLE_C.slabs = TITLE_C.slabs || {};
   const S = TITLE_C.slabs[key];
-  if (S && (S.ok || !fontReady())) return S;
+  if (S && S.ver === FONT_VER) return S;
   const P = 16, [c, g] = offscreen(w + P * 2, h + P * 2), x0 = P, y0 = P;
   const shape = (o) => { g.beginPath(); g.moveTo(x0 + o, y0 + h - o); g.lineTo(x0 + o, y0 + 12); g.quadraticCurveTo(x0 + o, y0 + o, x0 + 14, y0 + o);
     g.lineTo(x0 + w - 14, y0 + o); g.quadraticCurveTo(x0 + w - o, y0 + o, x0 + w - o, y0 + 12); g.lineTo(x0 + w - o, y0 + h - o); g.closePath(); };
@@ -8357,7 +8365,7 @@ function slabBody(w, h, label, icon, primary) {
   gr = g.createLinearGradient(0, ty - fs / 2, 0, ty + fs / 2);
   if (primary) { gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#bfffb0'); } else { gr.addColorStop(0, '#f6eed8'); gr.addColorStop(1, '#c8b88e'); }
   g.fillStyle = gr; g.fillText(label, tx, ty);
-  return (TITLE_C.slabs[key] = { c, P, w, h, ok: fontReady() });
+  return (TITLE_C.slabs[key] = { c, P, w, h, ver: FONT_VER });
 }
 function menuSlab(key, x, y, w, h, label, icon, fn, appear, primary) {
   const a = clamp(appear / 0.4, 0, 1);
