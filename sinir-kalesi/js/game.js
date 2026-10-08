@@ -524,16 +524,40 @@ function deathVoice(e) {
 // Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez. Parçalar yüksek masterlandığı için kısık çalınır.
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.22 },
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.26 },
+  battle: { file: 'muzik_savas.mp3', gain: 0.22, seam: true }, // The Necromancer's Parade
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.26, seam: true }, // Bones on the Battlements
 } };
+// seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
+// boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
+function musicAudio(T) {
+  const el = new Audio('ses/' + T.file + (window.SURUM ? '?v=' + window.SURUM : ''));
+  el.loop = !T.seam; el.volume = 0; el.preload = 'auto';
+  // geçiş kaçarsa (sekme takıldı vb.) biten öğe baştan başlar
+  if (T.seam) el.addEventListener('ended', () => { if (T.el === el) { el.currentTime = 0; el.play().catch(() => {}); } });
+  return el;
+}
 function musicEl(T) {
   if (!T.el && !T.missing) {
-    T.el = new Audio('ses/' + T.file + (window.SURUM ? '?v=' + window.SURUM : ''));
-    T.el.loop = true; T.el.volume = 0; T.vol = 0; T.el.preload = 'auto';
+    T.el = musicAudio(T); T.vol = 0;
     T.el.addEventListener('error', () => { T.missing = true; T.el = null; });
+    if (T.seam) T.el2 = musicAudio(T);
   }
   return T.el;
+}
+const SEAM = 0.3;
+function musicSeam(T, dt) {
+  const el = T.el;
+  if (T.old) {
+    T.oldT += dt;
+    T.old.volume = clamp(T.oldV * (1 - T.oldT / SEAM), 0, 1);
+    if (T.oldT >= SEAM) { T.old.pause(); try { T.old.currentTime = 0; } catch (e) {} T.old = null; }
+  }
+  if (!T.old && !el.paused && el.duration > SEAM * 4 && el.currentTime > el.duration - SEAM) {
+    const nx = T.el2;
+    try { nx.currentTime = 0; } catch (e) {}
+    nx.volume = el.volume; nx.play().catch(() => {});
+    T.old = el; T.oldV = el.volume; T.oldT = 0; T.el = nx; T.el2 = el;
+  }
 }
 function startMusic() {
   if (MUSIC.started) return;
@@ -565,7 +589,8 @@ function updateMusic(dt) {
     // giriş ~2 sn, çıkış ~1 sn (boss geçişi biraz daha hızlı girer)
     T.vol += clamp(tgt - T.vol, -dt * 0.3, dt * (k === 'boss' ? 0.25 : 0.12));
     el.volume = clamp(T.vol, 0, 1);
-    if (T.vol <= 0.002 && tgt === 0 && !el.paused) el.pause();
+    if (T.seam) musicSeam(T, dt);
+    if (T.vol <= 0.002 && tgt === 0 && !el.paused) { el.pause(); if (T.old) { T.old.pause(); T.old = null; } }
     else if (tgt > 0 && el.paused) el.play().catch(() => {});
   }
 }

@@ -43,8 +43,10 @@ Sırada: çizgi roman panelleri, Mortimer'ın 3 büyüsü (şimdilik eski kahram
 
 ## Müzik, dalga önizleme, rütbeler, Mortimer lafları (8 Eki 2026, yayın 87)
 - Müzik üç parça (game.js MUSIC.tracks): `ses/muzik_menu.mp3` menüler, `ses/muzik_savas.mp3` bölüm içi, `ses/muzik_boss.mp3` boss sahadayken.
-  Savaş ve boss parçaları henüz yok (Gemini ile üretilecek, promptlar `tasarim/muzik-promptlari.md`); dosya yoksa o parça sessiz kalır,
-  boss parçası yoksa savaş parçası çalar. Ses düzeyi parça başına `gain`.
+  Savaş = "The Necromancer's Parade", boss = "Bones on the Battlements" (Gemini, promptlar `tasarim/muzik-promptlari.md`; yayın 88).
+  Dosya yoksa o parça sessiz kalır, boss parçası yoksa savaş parçası çalar. Ses düzeyi parça başına `gain`.
+  Dikişsiz döngü (`seam`): ham parçanın sönen sonu kesilip son 2 sn başın ilk 2 sn'siyle harmanlandı (ffmpeg atrim/afade/amix,
+  savaş 157.9 sn, boss 159.4 sn'de kesildi); oyunda iki ses öğesi sırayla çalar (musicSeam), MP3 loop boşluğu duyulmaz.
 - Dalga işaretine ilk dokunuş o girişten gelecek düşmanları gösterir (drawWavePeek: simge, sayı, ad, rütbe rozetleri), ikinci dokunuş
   (ya da kutuya dokunmak) dalgayı çağırır.
 - Düşman rütbeleri (data.js sonu RANKS/RANKED): `legion_k` Kıdemli (can ×1,6), `legion_y` Yüzbaşı (can ×2,5, "Borazan!" ile çevresini
