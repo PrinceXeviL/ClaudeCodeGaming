@@ -59,6 +59,12 @@ Sırada: çizgi roman panelleri, Mortimer'ın 3 büyüsü (şimdilik eski kahram
 - Denge (bot, 2 tur): 20/20/15–19/10–11/6–13 can. 4. bölüm hpMul 0.92, 5. bölüm 0.57.
 - `tools/akis-testi.js` yeni harita ve dalga önizlemesine göre güncellendi; sonunda "AKIŞ TAMAM" yazmalı.
 
+## Çamur birikintisi (8 Eki 2026, yayın 89)
+2. bölüm (Sisli Bataklık, mech 'mud') çamuru game.js drawMud: yol yönünde uzanan düzensiz birikinti (mudShape tohumlu kenar,
+yer düzlemi MUD_SQ=0.6 basık). Durağan katman önbellekte (mudBase: ıslak leke, sıçrantılar, ıslak kenar, yosun, topaklar, çubuklar),
+her karede girdap, parıltı, kabarcık (şişer/patlar), yağmur halkaları, içinden geçenlerin halkaları ve yarı gömülü kemik/kafatası (mudProp).
+Yavaşlatma alanı mudAt (döndürülmüş elips). Çamurdaki birimlerin ayağına drawWade ile çamur halkası çizilir, yürürken çamur sıçrar.
+
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)
 ve eski tasarım notları silindi (git geçmişinde duruyor). data.js'teki eski LEVELS/ENEMIES verisi duruyor: NECRO bölümleri eski ilk 5 bölümün

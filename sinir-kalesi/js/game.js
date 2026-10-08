@@ -3323,7 +3323,8 @@ function setupMech() {
   if (kind === 'mud') {
     for (const [p, f] of [[P0, 0.3], [P0, 0.56]].concat(G.paths.slice(1, 2).map(p => [p, 0.45]))) {
       const q = pathPos(p, p.total * f);
-      if (spaced(q.x, q.y, 60)) M.spots.push({ x: q.x, y: q.y, r: 32, seed: Math.random() * 9 });
+      // ang: yolun yer düzlemindeki yönü (birikinti yol boyunca uzanır); a: yol boyunca, b: yol enine yarıçap
+      if (spaced(q.x, q.y, 60)) M.spots.push({ x: q.x, y: q.y, r: 32, a: 37, b: 24, ang: Math.atan2(q.dy / MUD_SQ, q.dx), seed: Math.random() * 9 });
     }
   } else if (kind === 'graves' || kind === 'lake') {
     for (let f = 0.18; f <= 0.82 && M.spots.length < (kind === 'graves' ? 4 : 2); f += 0.06) {
@@ -3347,8 +3348,18 @@ function updateMech(dt) {
   if (M.kind === 'mud') {
     for (const e of G.enemies) {
       if (e.dead || e.def.flying || e.under) continue;
-      for (const m of M.spots) if (((e.x - m.x) / m.r) ** 2 + ((e.y - m.y) / (m.r * 0.55)) ** 2 < 1) { slowEnemy(e, 0.35, 0.25); break; }
+      const m = mudAt(e.x, e.y);
+      e.inMud = !!m;
+      if (m) {
+        slowEnemy(e, 0.35, 0.25);
+        // yürürken çamur sıçrar
+        if (Math.random() < dt * 4) {
+          const k = (CHAR_H['enemy_' + e.type] || 24) / 24;
+          for (let i = 0; i < 3; i++) emit(G.parts, { x: e.x + rand(-4, 4) * k, y: e.y - 1, vx: rand(-30, 30), vy: -rand(30, 70), g: 260, col: i ? '#3b2c17' : '#5c4526', s0: rand(1, 1.8) * k, s1: 0.6, life: rand(0.35, 0.55), floor: e.y + rand(0, 3) });
+        }
+      }
     }
+    for (const sd of G.soldiers) sd.inMud = !sd.dead && !!mudAt(sd.x, sd.y);
   }
   if (G.wave <= 0) return;
   M.timer -= dt;
@@ -3393,24 +3404,193 @@ function updateMech(dt) {
   M.fx = M.fx.filter(f => f.t < f.dur);
   for (const m of M.spots) if (m.flash > 0) m.flash -= dt;
 }
+// ----- Çamur birikintisi (Sisli Bataklık): yol üstünde, yol yönünde uzanan düzensiz birikinti -----
+// Yer düzlemi koordinatları (u: yol boyunca, v: enine) MUD_SQ ile dikeyde basıktır (3/4 bakış).
+// Durağan katman (ıslak leke, sıçrantılar, kenar, çamur, yosun, yarı gömülü kemik) bir kez önbelleğe çizilir;
+// her karede parıltı, girdap, kabarcıklar, yağmur halkaları ve içinden geçenlerin halkaları eklenir.
+const MUD_SQ = 0.6, MUD_RES = 3;
+function mudRand(m) { let x = Math.floor(m.seed * 1e6) || 1; return () => { x = (x * 16807) % 2147483647; return x / 2147483647; }; }
+// kenar çizgisi: yarıçap açıyla dalgalanır (tohumlu)
+function mudShape(m) {
+  if (m.shape) return m.shape;
+  const R = mudRand(m), waves = [2, 3, 4, 5, 7].map(k => [k, R() * 0.06 + (k > 5 ? 0.02 : 0.04), R() * 6.28]);
+  return (m.shape = (th) => 1 + waves.reduce((acc, [k, amp, ph]) => acc + amp * Math.sin(k * th + ph), 0));
+}
+function mudPath(g, m, k, n = 40) {
+  const f = mudShape(m);
+  g.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const th = i / n * Math.PI * 2, r = f(th) * k;
+    const x = Math.cos(th) * m.a * r, y = Math.sin(th) * m.b * r;
+    i ? g.lineTo(x, y) : g.moveTo(x, y);
+  }
+  g.closePath();
+}
+// yer düzlemi -> ekran (birikinti merkezine göre)
+function mudPt(m, u, v) { const c = Math.cos(m.ang), s2 = Math.sin(m.ang); return { x: m.x + u * c - v * s2, y: m.y + (u * s2 + v * c) * MUD_SQ }; }
+// nokta bir çamur birikintisinin içinde mi (kenarın biraz içi)
+function mudAt(x, y) {
+  const M = G.mech; if (!M || M.kind !== 'mud') return null;
+  for (const m of M.spots) {
+    const dx = x - m.x, dy = (y - m.y) / MUD_SQ, c = Math.cos(m.ang), s2 = Math.sin(m.ang);
+    const u = dx * c + dy * s2, v = -dx * s2 + dy * c;
+    if ((u / (m.a * 0.92)) ** 2 + (v / (m.b * 0.92)) ** 2 < 1) return m;
+  }
+  return null;
+}
+function mudBase(m) {
+  if (m.base) return m.base;
+  const ext = Math.ceil(Math.max(m.a, m.b) * 1.5 + 8), c = document.createElement('canvas');
+  c.width = c.height = ext * 2 * MUD_RES;
+  const g = c.getContext('2d'), R = mudRand(m);
+  g.scale(MUD_RES, MUD_RES); g.translate(ext, ext); g.scale(1, MUD_SQ); g.rotate(m.ang);
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  // ıslak toprak lekesi (dışta, yumuşak)
+  for (const [k, al] of [[1.42, 0.10], [1.28, 0.14], [1.16, 0.18]]) { mudPath(g, m, k); g.fillStyle = `rgba(48,34,16,${al})`; g.fill(); }
+  // etrafa sıçramış çamur damlaları
+  for (let i = 0; i < 9; i++) {
+    const th = R() * Math.PI * 2, rr = 1.08 + R() * 0.3, rad = 1.2 + R() * 2.2;
+    const x = Math.cos(th) * m.a * rr, y = Math.sin(th) * m.b * rr;
+    g.beginPath(); g.ellipse(x, y, rad * 1.3, rad, th, 0, Math.PI * 2);
+    g.fillStyle = '#7a5a30'; g.fill(); g.strokeStyle = 'rgba(36,22,10,0.85)'; g.lineWidth = 0.8; g.stroke();
+    g.beginPath(); g.ellipse(x - rad * 0.3, y - rad * 0.35, rad * 0.5, rad * 0.3, th, 0, Math.PI * 2); g.fillStyle = 'rgba(255,236,190,0.35)'; g.fill();
+  }
+  // kabarık ıslak kenar
+  mudPath(g, m, 1.04);
+  const rim = g.createLinearGradient(0, -m.b, 0, m.b); rim.addColorStop(0, '#b08a56'); rim.addColorStop(0.55, '#8c6a3c'); rim.addColorStop(1, '#6a4c26');
+  g.fillStyle = rim; g.fill(); g.strokeStyle = '#2a190b'; g.lineWidth = 1.8; g.stroke();
+  // kenarın üstünde ıslak parıltı
+  // kenarın üst yarısında ıslak parıltı (ışık yukarıdan)
+  g.save(); g.beginPath(); g.rect(-m.a * 2, -m.b * 2, m.a * 4, m.b * 1.7); g.clip();
+  mudPath(g, m, 0.95); g.strokeStyle = 'rgba(255,238,200,0.3)'; g.lineWidth = 1.4; g.stroke(); g.restore();
+  // çamur yüzeyi
+  mudPath(g, m, 0.84);
+  const mud = g.createRadialGradient(-m.a * 0.15, -m.b * 0.1, 2, 0, 0, m.a * 0.9);
+  mud.addColorStop(0, '#6e5a2e'); mud.addColorStop(0.55, '#57461f'); mud.addColorStop(1, '#3c3015');
+  g.fillStyle = mud; g.fill(); g.strokeStyle = 'rgba(30,18,8,0.85)'; g.lineWidth = 1.2; g.stroke();
+  g.save(); mudPath(g, m, 0.84); g.clip();
+  // iç kenar gölgesi (kenar yüzeye gölge düşürür)
+  g.translate(0, -2); mudPath(g, m, 0.84); g.strokeStyle = 'rgba(14,8,2,0.3)'; g.lineWidth = 4; g.stroke(); g.translate(0, 2);
+  // bataklık yosunu lekeleri
+  for (let i = 0; i < 4; i++) {
+    const x = (R() - 0.5) * m.a * 1.1, y = (R() - 0.5) * m.b * 1.0, rx = 3 + R() * 5;
+    g.beginPath(); g.ellipse(x, y, rx, rx * (0.5 + R() * 0.4), R() * 3, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(104,118,44,0.42)'; g.fill();
+    g.beginPath(); g.ellipse(x - 1, y - 0.6, rx * 0.45, rx * 0.22, 0, 0, Math.PI * 2); g.fillStyle = 'rgba(150,165,70,0.35)'; g.fill();
+  }
+  // çamur topakları
+  for (let i = 0; i < 3; i++) {
+    const x = (R() - 0.5) * m.a * 1.0, y = (R() - 0.5) * m.b * 0.9, rr = 2 + R() * 2;
+    g.beginPath(); g.ellipse(x, y, rr * 1.4, rr, 0, 0, Math.PI * 2); g.fillStyle = '#4f3d20'; g.fill();
+    g.strokeStyle = 'rgba(20,12,4,0.7)'; g.lineWidth = 0.8; g.stroke();
+  }
+  g.restore();
+  // kenara takılmış küçük çubuklar
+  for (let i = 0; i < 2; i++) {
+    const th = R() * Math.PI * 2, x = Math.cos(th) * m.a * 0.86, y = Math.sin(th) * m.b * 0.86, L = 6 + R() * 5, an = th + 1.4 + R() * 0.4;
+    g.strokeStyle = '#21140a'; g.lineWidth = 2.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(an) * L, y + Math.sin(an) * L); g.stroke();
+    g.strokeStyle = '#6e5230'; g.lineWidth = 1.2; g.stroke();
+  }
+  return (m.base = { c, ext });
+}
+// yarı gömülü kemik / kafatası: ekran düzleminde (basık değil) çizilir
+function mudProp(m) {
+  const R = mudRand(m); R(); R();
+  const kind = R() < 0.5 ? 'skull' : 'bone', p = mudPt(m, (R() - 0.5) * m.a * 0.7, (R() - 0.5) * m.b * 0.5);
+  const bob = Math.sin(time * 1.3 + m.seed) * 0.6;
+  ctx.save(); ctx.translate(p.x, p.y + bob); ctx.lineJoin = 'round';
+  if (kind === 'skull') {
+    // yarısı çamurda kafatası: yalnız üst kubbe ve göz çukurları
+    ctx.beginPath(); ctx.moveTo(-5.5, 0); ctx.bezierCurveTo(-6, -7.5, 6, -7.5, 5.5, 0); ctx.closePath();
+    ctx.fillStyle = '#e8dcbc'; ctx.fill(); ctx.strokeStyle = '#21140a'; ctx.lineWidth = 1.3; ctx.stroke();
+    ctx.fillStyle = '#21140a';
+    for (const ex of [-2.3, 2.3]) { ctx.beginPath(); ctx.ellipse(ex, -1.8, 1.4, 1.5, 0, 0, Math.PI * 2); ctx.fill(); }
+    // gözlerde soluk yeşil ışık
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const ex of [-2.3, 2.3]) glow(ctx, ex, -1.8, 2.2, '120,255,140', 0.35 + 0.25 * Math.sin(time * 2 + m.seed)); ctx.restore();
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.ellipse(-2.5, -5, 1.6, 0.8, -0.3, 0, Math.PI * 2); ctx.fill();
+  } else {
+    // çamurdan çıkan kemik ucu
+    ctx.rotate(-0.5 + R() * 0.3);
+    ctx.fillStyle = '#e8dcbc'; ctx.strokeStyle = '#21140a'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.rect(-1.4, -8, 2.8, 8); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-1.6, -8.4, 1.9, 0, Math.PI * 2); ctx.arc(1.6, -8.4, 1.9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillRect(-1.2, -8.6, 2.4, 2);
+  }
+  // çamurun kemiğe değdiği yerde koyu halka
+  ctx.restore();
+  ctx.fillStyle = 'rgba(30,20,8,0.7)'; ctx.beginPath(); ctx.ellipse(p.x, p.y + bob + 0.5, 6.5, 1.8, 0, 0, Math.PI * 2); ctx.fill();
+}
+function drawMud(m) {
+  const B = mudBase(m);
+  ctx.drawImage(B.c, m.x - B.ext, m.y - B.ext, B.ext * 2, B.ext * 2);
+  ctx.save(); ctx.translate(m.x, m.y); ctx.scale(1, MUD_SQ); ctx.rotate(m.ang);
+  mudPath(ctx, m, 0.84); ctx.clip();
+  // yavaş dönen girdap çizgileri
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    const r = (0.25 + i * 0.22), rot = time * (0.18 + i * 0.05) * (i % 2 ? -1 : 1) + m.seed + i;
+    ctx.strokeStyle = `rgba(122,98,58,${0.35 - i * 0.07})`; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(0, 0, m.a * r, m.b * r, 0, rot, rot + 1.3 + i * 0.3); ctx.stroke();
+  }
+  // ıslak parıltı: yavaşça kayar ve nabız gibi parlar
+  for (let i = 0; i < 2; i++) {
+    const ph = time * 0.25 + m.seed * 3 + i * 2.1, x = -m.a * 0.32 + Math.sin(ph) * 3 + i * m.a * 0.45, y = -m.b * 0.34 + i * m.b * 0.42 + Math.cos(ph) * 1.5;
+    ctx.fillStyle = `rgba(200,215,170,${0.13 + 0.06 * Math.sin(time * 1.7 + i * 2 + m.seed)})`;
+    ctx.beginPath(); ctx.ellipse(x, y, m.a * (0.32 - i * 0.08), m.b * 0.16, -0.15, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = `rgba(255,250,225,${0.3 + 0.15 * Math.sin(time * 1.7 + i * 2 + m.seed)})`;
+    ctx.beginPath(); ctx.ellipse(x - 2, y - 1, m.a * (0.15 - i * 0.04), m.b * 0.05, -0.15, 0, Math.PI * 2); ctx.fill();
+  }
+  // halkalar: kabarcık patlaması, yağmur damlası, içinden geçenler
+  const ring = (u, v, k, al) => { ctx.strokeStyle = `rgba(150,124,80,${al * (1 - k)})`; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.ellipse(u, v, 1.5 + k * 9, 1.5 + k * 9, 0, 0, Math.PI * 2); ctx.stroke(); };
+  const bub = [];
+  for (let i = 0; i < 4; i++) {
+    const per = 2.4 + i * 0.55, tt = time + m.seed * 5 + i * 1.7, cyc = Math.floor(tt / per), p = (tt / per) % 1;
+    const h1 = Math.sin(cyc * 12.9898 + i * 78.233 + m.seed) * 43758.5453, h2 = Math.sin(cyc * 39.346 + i * 11.135 + m.seed) * 24634.6345;
+    const u = (h1 - Math.floor(h1) - 0.5) * m.a * 1.1, v = (h2 - Math.floor(h2) - 0.5) * m.b * 0.9;
+    if (p > 0.72 && p < 1) ring(u, v, (p - 0.72) / 0.28, 0.9);
+    bub.push([u, v, p, i]);
+  }
+  if (G.weather === 'rain') for (let i = 0; i < 3; i++) {
+    const per = 0.9 + i * 0.37, tt = time + i * 0.41 + m.seed, cyc = Math.floor(tt / per), p = (tt / per) % 1;
+    const h = Math.sin(cyc * 91.7 + i * 7.3 + m.seed) * 1e4, h2 = Math.sin(cyc * 17.1 + i * 3.1) * 1e4;
+    ring((h - Math.floor(h) - 0.5) * m.a * 1.3, (h2 - Math.floor(h2) - 0.5) * m.b * 1.1, p, 0.6);
+  }
+  ctx.restore();
+  // içinden geçenlerin ayak halkaları (ekran düzleminde)
+  for (const list of [G.enemies, G.soldiers]) for (const u of list) {
+    if (!u.inMud || u.dead) continue;
+    const k = (((time * 1.6 + (u.off || u.x * 0.01)) % 1) + 1) % 1;
+    ctx.strokeStyle = `rgba(150,124,80,${0.7 * (1 - k)})`; ctx.lineWidth = 1.1;
+    ctx.beginPath(); ctx.ellipse(u.x, u.y, 5 + k * 10, (5 + k * 10) * MUD_SQ, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  mudProp(m);
+  // kabarcıklar: şişer, parlar, patlar (patlayınca çamur damlaları sıçrar)
+  for (const [u, v, p, i] of bub) {
+    const q = mudPt(m, u, v);
+    if (p < 0.7) {
+      const r = 0.5 + easeOutBack(p / 0.7) * (1.6 + (i % 2) * 0.9);
+      ctx.fillStyle = '#7a6436'; ctx.strokeStyle = 'rgba(30,18,6,0.75)'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.arc(q.x, q.y, r, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,245,215,0.65)'; ctx.beginPath(); ctx.arc(q.x - r * 0.35, q.y - r * 0.5, r * 0.25, 0, Math.PI * 2); ctx.fill();
+    } else if (p < 0.82) {
+      const k = (p - 0.7) / 0.12;
+      ctx.fillStyle = `rgba(60,44,22,${1 - k})`;
+      for (let j = 0; j < 4; j++) { const an = -0.4 - j * 0.75; ctx.beginPath(); ctx.arc(q.x + Math.cos(an) * k * 6, q.y - Math.sin(-an) * k * 5 - Math.sin(k * Math.PI) * 4, 0.9, 0, Math.PI * 2); ctx.fill(); }
+    }
+  }
+}
+// çamurdakilerin ayakları: birim çizildikten sonra ayaklarının üstüne çamur halkası (gömülmüş görünür)
+function drawWade(u) {
+  if (!u.inMud || u.dead) return;
+  const k = (ENEMIES[u.type] ? CHAR_H['enemy_' + u.type] || 26 : unitH(u)) / 30, w = 8 * k, h = 2.6 * k, y = u.y + 0.5;
+  ctx.fillStyle = '#352814'; ctx.beginPath(); ctx.ellipse(u.x, y, w, h, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#6e5430'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(u.x, y - 0.4, w * 0.9, h * 0.7, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+  ctx.strokeStyle = 'rgba(20,12,4,0.85)'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.ellipse(u.x, y, w, h, 0, 0, Math.PI); ctx.stroke();
+}
 function drawMechGround() {
   const M = G.mech; if (!M) return;
-  if (M.kind === 'mud') {
-    for (const m of M.spots) {
-      ctx.save(); ctx.translate(m.x, m.y);
-      const g = ctx.createRadialGradient(0, 0, 4, 0, 0, m.r);
-      g.addColorStop(0, 'rgba(40,46,26,0.85)'); g.addColorStop(0.75, 'rgba(58,60,34,0.7)'); g.addColorStop(1, 'rgba(58,60,34,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, m.r, m.r * 0.55, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(120,130,70,0.35)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(0, 0, m.r * 0.72, m.r * 0.38, 0, 0, Math.PI * 2); ctx.stroke();
-      // kabarcıklar
-      for (let i = 0; i < 3; i++) {
-        const ph = (time * 0.7 + i / 3 + m.seed) % 1, bx = Math.sin(m.seed * 7 + i * 2.4) * m.r * 0.5, by = Math.cos(m.seed * 3 + i * 1.7) * m.r * 0.2;
-        ctx.strokeStyle = `rgba(160,170,100,${0.6 * (1 - ph)})`; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(bx, by, 1 + ph * 3, 0, Math.PI * 2); ctx.stroke();
-      }
-      ctx.restore();
-    }
-  } else if (M.kind === 'graves') {
+  if (M.kind === 'mud') { for (const m of M.spots) drawMud(m); return; }
+  if (M.kind === 'graves') {
     for (const m of M.spots) {
       const im = spr('nm_tomb_' + m.look), soon = M.timer < 2 || m.flash > 0;
       if (soon) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, m.x, m.y - 8, 26, '120,255,140', 0.35 + Math.sin(time * 9) * 0.15); ctx.restore(); }
@@ -8738,7 +8918,7 @@ function drawPlay() {
   ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
   for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f);
-  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? drawEnemy(o) : k === 2 ? drawSoldier(o) : k === 4 ? drawCoinWorld(o) : drawCastle();
+  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : drawCastle();
   drawGasClouds();
   for (const p of G.projectiles) drawProjectile(p);
   for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
