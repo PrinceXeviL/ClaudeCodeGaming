@@ -1,4 +1,19 @@
-# Bölgeler (eski adıyla seferler)
+# Bölgeler — KARAR (9 Eki): toplam 4 bölge × 15 bölüm = 60 bölüm
+
+Her bölgede ~18 düşman türü olacak (ilk sürümdeki 9 temel türün 2 katı). Türlerin yaklaşık yarısı o bölgeye özel, kalanı önceki bölgelerden gelir.
+Bölüm başına en çok 1–2 yeni tür tanıtılır. Bütün düşmanların yürüme ve saldırı animasyonu `varliklar/video_uret.py` ile ücretsiz üretilir (aşağıda).
+
+| Bölge | Ad (harita başlığı) | Mekân | Özel düşmanlar (yeni) | Önceden gelenler |
+|-|-|-|-|-|
+| 1 | Davetsiz Misafirler | Lanetli Sınır (orman, bataklık, mezarlık, kara göl, kapı) | YAPILDI: lejyoner, okçu, gladyatör, suikastçı, rahip, ağır piyade, süvari, koçbaşı, mancınık, atlı okçu, testudo, güneş rahibesi, sancaktar, davulcu. EKLENECEK (görsel lazım): savaş köpekleri, savaş arabası, kuşatma kulesi, imparatorluk kartalları | — |
+| 2 | (ad sonra) | Gömülü Krallar Vadisi (çöl nekropolü) | deve süvarisi (ölünce yaya), savaş fili (sırtında okçular), sapancı, mezar soyguncusu (cesetleri çalar), kum tünelcisi, çöl paralı askeri, ateş testisi atan, akbabalar (uçan), vaha rahibi, kum fırtınası büyücüsü | lejyoner, okçu, ağır piyade, atlı okçu, güneş rahibesi, sancaktar, mancınık, testudo |
+| 3 | (ad sonra) | Ayaz Mezarları Geçidi (karlı dağ) | kuzey lejyoneri (kürklü, ok yemez), kızaklı ikmal arabası, kurt eğitmeni + kurtlar, savaş mamutu, buz okçusu, kalkan duvarı (falanks), çığ mühendisi, kar kartalları, kutsal su taşıyıcı, kırbaçlı tövbekâr | ağır piyade, süvari, gladyatör, suikastçı, davulcu, testudo, kuşatma kulesi, savaş köpekleri |
+| 4 | (ad sonra) | Altın Saray (Güneş Surları + başkent) | pretoryen muhafız, güneş paladini (büyüyü yansıtır), altın otomaton (diriltilemez), balista arabası, istihkâmcı (onarır), engizitör, arena aslanları, savaş arabası şampiyonu, balon gözcüsü, imparator muhafızı | hepsinden seçme, rütbeliler |
+
+Finaller: 1 General Gloriosus · 2 Prokonsül Aridus · 3 Legatus Frigidus · 4 İmparator Sol Invictus (çaydanlık geri alınır).
+Aşağıdaki 6 bölgelik eski taslak fikir havuzu olarak duruyor (Batık Manastır'ın düşmanları 3. ve 4. bölgeye dağıtıldı).
+
+# Eski taslak: 6 bölge (fikir havuzu)
 
 Her bölge bir **mekândır**, 15 bölüm sürer ve haritada kendi bölge haritası olur (beş mekân soldan sağa, tek yol, sonunda o bölgenin kalesi).
 Konsept sabit: Mortimer yalnızca huzur ve çay istiyor. Güneşe tapan Solarian İmparatorluğu ise "karanlığı temizlemek" için ordu üstüne ordu yolluyor.
@@ -117,7 +132,12 @@ Karakterleri Caner önerecek. Sistem için not alınan fikirler:
 - Her komutanın 3 yeteneği ve 1 pasifi olsun.
 - Kendi lafları ve canlı portresi olsun.
 
-## İleride: animasyon (ücretsiz video yolu)
+## Animasyon (ücretsiz video yolu) — ÇALIŞIYOR (9 Eki)
+`varliklar/video_uret.py`: Hugging Face'teki Wan 2.2 alanları, hesapsız. Önce hızlı alan (zerogpu-aoti/wan2-2-fp8da-aoti-faster), kota yetmezse ilk-son kare alanı.
+Anonim kota günde yaklaşık 3 dakika, yani 2–3 klip. Ücretsiz HF hesabının token'ı HF_TOKEN olarak verilirse biraz artar.
+Yapıldı: gladyatör ve okçu yürüyüşü. Sırada: suikastçı, rahip, ağır piyade, süvari, Gloriosus, sonra saldırı şeritleri.
+
+## (eski not) animasyon
 - **Önerilen:** Wan 2.2 (Apache 2.0, ticari kullanım serbest), Hugging Face ZeroGPU üzerinden gradio_client ile.
   - Ücretsiz hesapta günde yaklaşık 3,5–5 dakika ekran kartı süresi var; hızlı sürümlerle günde aşağı yukarı 4–6 klip (tahmin, denenmedi).
   - Gerekenler: Caner'in açacağı ücretsiz HF hesabı ve `.env` dosyasına kendi yazacağı token.

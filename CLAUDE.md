@@ -61,6 +61,8 @@ Bölgeler (eski adıyla sefer; arayüzde "sefer" yazmaz, mekân adı geçer): he
 Yol/arsa düzenleri eski 20 bölümlük seferlerden (data.js LEVELS, oynanış sırasıyla). Eski 5 bölümün kaydı 1/4/7/10/15'e taşınır (save.v15).
 Bölge haritası: EPISODES[].zones/nodes/labels → game.js drawRegionMap (mekân zeminleri renderBackground ile, ince yol roadK, mekân tonu REGION_TINT).
 Demir meydan okuması kaldırıldı (yalnız Kahramanlık). Büyüler tek dokunuşta. Yansıma yazıları (GÜM/ÇAT) yerine impactFx.
+Animasyon: `varliklar/video_uret.py` (Hugging Face Wan 2.2, ücretsiz, hesapsız; anonim kota günde 2–3 klip) → video_isle.py → img/enemy_<tür>_walk.webp.
+Venv gerekir: gradio_client imageio-ffmpeg numpy pillow scipy (ffmpeg yoksa imageio-ffmpeg'inki). Plan: 4 bölge × 15 bölüm, bölge başına ~18 düşman (tasarim/bolgeler.md).
 Savaş sesleri `varliklar/ses_uret.py` ile sentezlenir (indirme yok): arrow, arrowhit, clash, bash, zap, splash, pain, dvoice, scream.
 Yapıldı (8 Eki, yayın 106): dekor şakaları (setupProps/tapProps/drawProps: karga, mezar eli, Mortimer'ın çayı),
 meydan okuma modları (CHAL h/i, IRON_TOWERS, save.ch, kart üstünde 3 yıldızdan sonra açılır),

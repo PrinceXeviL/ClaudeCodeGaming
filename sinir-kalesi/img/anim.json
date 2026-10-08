@@ -20,5 +20,21 @@
   "fh": 314,
   "base": 0.0103,
   "ch": 0.9554
+ },
+ "enemy_solarcher_walk": {
+  "n": 29,
+  "fw": 207,
+  "fh": 316,
+  "base": 0.0141,
+  "ch": 0.9485,
+  "idle": 7
+ },
+ "enemy_gladiator_walk": {
+  "n": 32,
+  "fw": 201,
+  "fh": 313,
+  "base": 0.0145,
+  "ch": 0.959,
+  "idle": 8
  }
 }

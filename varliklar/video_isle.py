@@ -18,9 +18,16 @@ IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
 TARGET_H = 300  # şerit bellek tutmasın (oyunda karakter en çok ~150 px çizilir)
 
 
+try:  # ffmpeg sistemde yoksa pip paketi imageio-ffmpeg'in getirdiği kullanılır
+    import imageio_ffmpeg
+    FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
+except ImportError:
+    FFMPEG = 'ffmpeg'
+
+
 def frames_of(video, fps=24):
     d = tempfile.mkdtemp()
-    subprocess.run(['ffmpeg', '-v', 'error', '-i', video, '-vf', f'fps={fps}', os.path.join(d, 'f_%04d.png')], check=True)
+    subprocess.run([FFMPEG, '-v', 'error', '-i', video, '-vf', f'fps={fps}', os.path.join(d, 'f_%04d.png')], check=True)
     fs = sorted(os.listdir(d))
     return [np.asarray(Image.open(os.path.join(d, f)).convert('RGB')) for f in fs]
 
@@ -39,8 +46,8 @@ def find_loop(rgb, lo=20, hi=40):
     return best[1], best[2]
 
 
-def main(src, name, start=None, length=None):
-    rgb = frames_of(os.path.join(ROOT, 'varliklar', src))
+def main(src, name, start=None, length=None, fps=24):
+    rgb = frames_of(os.path.join(ROOT, 'varliklar', src), fps)
     if start is None or length is None:
         start, length = find_loop(rgb)
         print('döngü: başlangıç', start, 'uzunluk', length)
@@ -88,4 +95,5 @@ if __name__ == '__main__':
     a = sys.argv
     st = int(a[a.index('--start') + 1]) if '--start' in a else None
     ln = int(a[a.index('--len') + 1]) if '--len' in a else None
-    main(a[1], a[2], st, ln)
+    fps = int(a[a.index('--fps') + 1]) if '--fps' in a else 24
+    main(a[1], a[2], st, ln, fps)
