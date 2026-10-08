@@ -1674,6 +1674,8 @@ function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 })
 // Hasar sayıları: vurulan düşmanın üstünde küçük, kısa ömürlü sayı (büyük vuruş daha iri ve kırmızıya döner).
 // Sürekli hasar (zehir, gaz, kanama) toplanıp yarım saniyede bir gösterilir; aynı düşmana çok yakın vuruşlar birleşir.
 const DMGNUM = { life: 0.7, max: 45 };
+// can barı renkleri: mahzen iskeletleri mavi, komutanlar mor (düşmanlarınki yeşil-sarı-kırmızı kalır, dirilenler yeşil)
+const HP_SOLDIER = '#4aa8ff', HP_HERO = '#b57aff';
 function dmgNum(e, v, dot) {
   if (v < 0.5 || !G.dmgNums) return;
   if (dot) { e.dotAcc = (e.dotAcc || 0) + v; return; } // updateDmgNums boşaltır
@@ -3883,10 +3885,12 @@ function shadow(x, y, rx, ry) {
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
 }
 // küçük, yuvarlak uçlu (hap biçimli) can barı
+const HP_K = 0.9; // can barı ölçeği (genişlik ve kalınlık)
 function hpBar(x, y, w, frac, col = '#4cd34c') {
-  frac = clamp(frac, 0, 1);
-  const h = 3.2, r = h / 2 + 1.1;
-  roundRect(x - w / 2 - 1.1, y - 1.1, w + 2.2, h + 2.2, r, 'rgba(14,8,3,0.78)');
+  frac = clamp(frac, 0, 1); w *= HP_K;
+  const h = 3.2 * HP_K, r = h / 2 + 1.1 * HP_K;
+  const b = 1.1 * HP_K; // dış çerçeve payı
+  roundRect(x - w / 2 - b, y - b, w + 2 * b, h + 2 * b, r, 'rgba(14,8,3,0.78)');
   roundRect(x - w / 2, y, w, h, h / 2, '#5a1712');
   if (frac > 0) {
     roundRect(x - w / 2, y, Math.max(h, w * frac), h, h / 2, col);
@@ -4771,7 +4775,7 @@ function drawSoldier(s) {
       roundRect(-3, -1.6, 6, 1.6, 0.8, '#cbbf9c', '#140a06', 0.6);
       ctx.restore();
     }
-    if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, '#7ad36a');
+    if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, HP_SOLDIER);
     return;
   }
   // kışla askeri (ve paralı asker): seviyeye göre zırh/silah değişen çizim
@@ -4783,7 +4787,7 @@ function drawSoldier(s) {
     paintSoldier(ctx, { x: s.x, y: s.y }, 0.72 * UNIT_K, s.face || 1, look, walking ? s.anim : 0, fighting ? atkPhase(s.rate, s.atk) : null, (s.slot || 0) * 1.7,
       ab ? { blade: !!ab.blade, wall: !!ab.shield } : null);
     if (s.flash > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 12, 14, '255,255,255', s.flash * 6); ctx.restore(); }
-    if (s.hp < s.maxHp) hpBar(s.x, s.y - CHAR_H.soldier - 6, 11, s.hp / s.maxHp, '#4cd34c');
+    if (s.hp < s.maxHp) hpBar(s.x, s.y - CHAR_H.soldier - 6, 11, s.hp / s.maxHp, HP_SOLDIER);
     return;
   }
   let im = s.hero ? heroSprite(s.def) : spr(name), key = name, pad = 0, glowIm = null;
@@ -4798,10 +4802,10 @@ function drawSoldier(s) {
       buff: s.buffT, spin: s.spinT, cast: s.castT, aura: s.hero ? s.def.aura : null,
     });
     if (s.hero) {
-      hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, '#5ad0ff');
+      hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
       return;
     }
-    if (s.hp < s.maxHp || s.hero) hpBar(s.x, s.y - CHAR_H[s.hero ? 'hero' : s.militia ? 'militia' : 'soldier'] - 6, s.hero ? 18 : 11, s.hp / s.maxHp, s.hero ? '#5ad0ff' : '#4cd34c');
+    if (s.hp < s.maxHp || s.hero) hpBar(s.x, s.y - CHAR_H[s.hero ? 'hero' : s.militia ? 'militia' : 'soldier'] - 6, s.hero ? 18 : 11, s.hp / s.maxHp, s.hero ? HP_HERO : HP_SOLDIER);
     return;
   }
   ctx.save(); ctx.translate(s.x, s.y - bob); ctx.scale(s.face, 1);
@@ -4822,7 +4826,7 @@ function drawSoldier(s) {
   ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, s.hero ? -14 : -10); ctx.stroke();
   ctx.restore();
   ctx.restore();
-  if (s.hp < s.maxHp || s.hero) hpBar(s.x, s.y - (s.hero ? 34 : 22), s.hero ? 22 : 14, s.hp / s.maxHp, s.hero ? '#5ad0ff' : '#4cd34c');
+  if (s.hp < s.maxHp || s.hero) hpBar(s.x, s.y - (s.hero ? 34 : 22), s.hero ? 22 : 14, s.hp / s.maxHp, s.hero ? HP_HERO : HP_SOLDIER);
 }
 
 // Karakter çizimi + prosedürel animasyon:
