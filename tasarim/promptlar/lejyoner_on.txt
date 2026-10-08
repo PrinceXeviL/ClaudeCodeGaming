@@ -1,0 +1,12 @@
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
+I attached two images.
+IMAGE 1: a legionnaire from my game (or his model sheet: then use its FRONT view). If only the side view is given, imagine him from the front with exactly the same helmet, grey crest, armor, red tunic, red cape, shield and spear.
+IMAGE 2: a POSE GUIDE: 8 stick-figure poses of a walk cycle seen FROM THE FRONT, in 4 columns and 2 rows. Red = the character's RIGHT leg and RIGHT arm (on the viewer's LEFT), blue = his LEFT leg and LEFT arm (on the viewer's right).
+
+TASK: Redraw the legionnaire 8 times, WALKING TOWARD THE VIEWER (toward the camera, coming down the screen), once in each pose of IMAGE 2, in the same 4x2 layout, as one smooth looping walk cycle.
+Copy which leg is lifted and how high in each frame exactly from the guide; the lifted knee comes up toward the viewer, the body bobs slightly and sways a little from side to side.
+His LEFT arm (viewer's right) holds the big red shield with the golden sun in front of his body, angled slightly so we still see his face, helmet and legs. His RIGHT arm (viewer's left) holds the short spear pointing up and slightly forward, swinging gently with the steps.
+Face, helmet with grey crest and cheek guards clearly visible from the front.
+
+KEEP IDENTICAL to IMAGE 1 in every frame: helmet, crest, armor, red tunic, shield, spear, colors, proportions, face. Same size in every frame, fully visible, feet on the same ground line, the whole spear inside its cell.
+Flat solid pure magenta #FF00FF background. No stick figures, no guide lines, no shadows, no text, no numbers. Aspect ratio 16:9.

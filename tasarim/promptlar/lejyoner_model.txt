@@ -1,0 +1,10 @@
+Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
+I attached an image of a Roman-style legionnaire from my game (the golden Solarian Empire).
+Draw a CHARACTER TURNAROUND MODEL SHEET of EXACTLY this character, 4 views in one row, same size, same height, standing relaxed, full body:
+1. SIDE view facing RIGHT (exactly like the attached image),
+2. FRONT view (facing the viewer, walking toward the camera),
+3. BACK view (seen from behind, walking away from the camera),
+4. three-quarter view facing right and slightly toward the viewer.
+Keep IDENTICAL in all views: the steel helmet with the GREY horsehair crest running front-to-back, the cheek guards, the white-and-gold segmented plate armor, the red tunic and red cape, the leather straps and sandals, the big curved RECTANGULAR RED SHIELD with a GOLDEN SUN emblem held on his LEFT arm, the short SPEAR held in his RIGHT hand, the determined but slightly dim face.
+In the back view show the back of the shield edge and the red cape; the spear is still in the right hand.
+Flat solid pure magenta #FF00FF background, no ground, no shadows, no text, no labels. Aspect ratio 16:9.

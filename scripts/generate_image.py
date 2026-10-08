@@ -8,6 +8,10 @@ Examples:
     python3 scripts/generate_image.py "pixel art knight, side view" -o assets/knight.png
     python3 scripts/generate_image.py "same knight, attacking" --ref assets/knight.png -o assets/knight_attack.png
     python3 scripts/generate_image.py --list-models
+    python3 scripts/generate_image.py -f prompt.txt -m gemini-3-pro-image -a 16:9 -r ref.png -r guide.png -o out.png
+
+Note: image models have NO free-tier quota (limit 0); the Google AI Studio project of the key needs billing enabled,
+otherwise every call fails with "API error 429 ... free_tier ... limit: 0".
 """
 
 import argparse
@@ -102,6 +106,7 @@ def main():
     p.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"model id (default: {DEFAULT_MODEL})")
     p.add_argument("-a", "--aspect", choices=ASPECT_RATIOS, help="aspect ratio, e.g. 16:9")
     p.add_argument("-r", "--ref", action="append", default=[], help="reference image to edit or match (repeatable)")
+    p.add_argument("-f", "--prompt-file", help="read the prompt from a text file (for long prompts)")
     p.add_argument("--list-models", action="store_true", help="list image-capable models and exit")
     args = p.parse_args()
 
@@ -109,6 +114,8 @@ def main():
     if args.list_models:
         list_models(key)
         return
+    if args.prompt_file:
+        args.prompt = Path(args.prompt_file).read_text(encoding="utf-8").strip()
     if not args.prompt:
         p.error("prompt is required")
 

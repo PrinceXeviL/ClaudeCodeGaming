@@ -32,6 +32,20 @@ artırmazsan tarayıcı eski önbellek kopyasını gösterir). Başlık ekranın
 - `varliklar/` ham Gemini görselleri (`ham/`) ve işleme betikleri.
 - `scripts/generate_image.py` — Gemini görsel üretimi (anahtar `.env` içinde, repoya girmez).
 
+## GÖRSEL ÜRETİMİ: Claude kendisi üretir (kullanıcı kuralı, 8 Eki 2026)
+Görsel gerektiğinde kullanıcıya prompt verip Gemini'de çizdirmesini İSTEME; `scripts/generate_image.py` ile API'den kendin üret,
+sonucu incele (Read ile bak), gerekirse yeniden üret, işle (nm_isle.py / anim_isle.py) ve oyuna bağla. Kullanıcıya yalnız sonucu göster.
+```
+python3 scripts/generate_image.py -f tasarim/promptlar/<ad>.txt -m gemini-3-pro-image -a 16:9 -r <referans.png> -r <kılavuz.png> -o varliklar/ham/...
+python3 scripts/generate_image.py --list-models      # erişilebilir görsel modelleri
+```
+- Anahtar: repo kökündeki `.env` (GEMINI_API_KEY, git'e girmez). Evdeki bilgisayarda da `.env` olmalı.
+- Modeller: `gemini-3-pro-image` (Nano Banana Pro, tutarlılık en iyi, kare kare animasyon için tercih), `gemini-3.1-flash-image`, `gemini-2.5-flash-image`.
+- DİKKAT: görsel modellerinin ücretsiz kotası 0. Anahtarın Google AI Studio projesinde faturalandırma açık değilse her çağrı
+  "429 ... free_tier ... limit: 0" verir (8 Eki'de böyleydi). O zaman kullanıcıya bir kez söyle: aistudio.google.com → API anahtarının
+  projesi → faturalandırmayı aç (Paid tier). Açılana kadar kullanıcı Gemini uygulamasında "Görsel oluştur" ile çizip dosyayı gönderebilir.
+- Uzun promptlar `tasarim/promptlar/*.txt` içinde (-f ile okunur); tasarım notları `tasarim/*.md`.
+
 ## DON'T MESS WITH THE NECROMANCER (7 Eki 2026, aktif)
 Oyun yeniden temalandı: necromancer Mortimer kulesinde (kale), Solarian İmparatorluğu saldırıyor. Tasarım: `tasarim/necromancer-gdd.md`.
 `data.js` sonundaki NECRO bloğu: yeni düşmanlar/bosslar, 5 bölüm (eski ilk 5 bölümün yol/arsa düzeni), tek sefer "Lanetli Sınır",
