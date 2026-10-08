@@ -123,6 +123,11 @@ anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor
    Şeritler 300 px boy (TARGET_H): rütbe kopyalarıyla bellek makul kalsın. Kareler başın yerine göre hizalanır (mızrak uzasa da kaymaz).
    Veo kotası (Gemini uygulamasında günde 3 video) sınırlı: diğer düşmanlar için alternatif video kaynakları kullanıcıya önerildi.
 Kingdom Rush: Flash/Animate'te elle (vektör parçalar + kare kare) animasyon, çok kare, tutarlı kaynak.
+Çapraz yürüyüşte takılma düzeltmesi (yayın 99): yandan sapmalı (e.off) yürüyüşte pathPos örnek geçişlerinde konum <1 px geri sıçrıyordu;
+yüz yönü konum farkından hesaplandığı için her ~12 karede bir kare ters dönüyordu. Artık yüz yönü yol teğetinden (q.dx, |dx|>0,08).
+Önden/arkadan görünüş seçimi histerezisli (e.dirV: 1,5'te girer, 1,1'de çıkar). Ölçüm: drawUnit'e o.logId verilen birim için
+window.__animLog'a [id, şerit, kare, yüz, yürüyor, yön, x, y] yazılır (test aracı; scratchpad diag.js mantığı: yüz çevirme/şerit değişimi say).
+Video üretimi için kullanıcının evdeki bilgisayarı MacBook Air M4 16 GB (NVIDIA yok): Wan 2.2 yerelde zor/yavaş; Kaggle/Colab ücretsiz GPU önerildi.
 
 ### Parçalı (iskeletli) animasyon (kapalı)
 Kullanıcı Gemini kare kare animasyonlarını "amatörce" buldu (az kare ~10 fps, her karede çizim titriyor). Yerine Spine benzeri parçalı karakter:

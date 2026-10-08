@@ -2170,7 +2170,7 @@ function updateEnemy(e, dt) {
     e.inMelee = false; e.offPath = false;
     const sp = e.def.speed * G.wspd * 1.1 * (e.slowT > 0 ? 1 - e.slowK : 1);
     e.d = Math.max(0, e.d - sp * dt);
-    const q = pathPos(e.p, e.d, e.off); e.face = q.x < e.x ? -1 : 1; e.x = q.x; e.y = q.y;
+    const q = pathPos(e.p, e.d, e.off); if (Math.abs(q.dx) > 0.08) e.face = q.dx > 0 ? -1 : 1; e.x = q.x; e.y = q.y;
     if (Math.random() < dt * 4) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: aimY(e) - 8, vy: -rand(15, 30), col: '190,120,255', s0: 2.5, s1: 0.5, life: 0.6 });
     return;
   }
@@ -2331,7 +2331,9 @@ function updateEnemy(e, dt) {
     return;
   }
   const q = pathPos(e.p, e.d, e.off);
-  if (Math.abs(q.x - e.x) > 0.01) e.face = q.x < e.x ? -1 : 1;
+  // yüz yönü yolun gidiş yönünden: yandan sapmalı yürüyüşte örnek noktası geçişlerinde konum bir pikselden az geri sıçrayabiliyor,
+  // konum farkına bakılırsa karakter bir kareliğine ters döner (çapraz/virajlı yolda takılma gibi görünür). Dikey yolda yön korunur.
+  if (Math.abs(q.dx) > 0.08) e.face = q.dx < 0 ? -1 : 1;
   e.x = q.x; e.y = q.y;
 }
 
@@ -4935,7 +4937,10 @@ function drawEnemy(e) {
     if (moved) { e.hdx = lerp(e.hdx || 0, e.x - e.px, 0.2); e.hdy = lerp(e.hdy || 0, e.y - e.py, 0.2); }
     e.px = e.x; e.py = e.y;
     // yürüyüş yönü: belirgin aşağı = önden, yukarı = arkadan, yoksa yandan
-    const dir = Math.abs(e.hdy || 0) > Math.abs(e.hdx || 0) * 1.3 ? (e.hdy > 0 ? 'on' : 'arka') : null;
+    // histerezis: önden/arkadan görünüşe 1,5 oranında geçer, 1,1'in altına inince yana döner (eşikte gidip gelmesin)
+    const ax = Math.abs(e.hdx || 0), ay = Math.abs(e.hdy || 0);
+    if (e.dirV ? ay < ax * 1.1 : ay > ax * 1.5) e.dirV = !e.dirV;
+    const dir = e.dirV ? (e.hdy > 0 ? 'on' : 'arka') : null;
     if (d.chief) drawBossAura(e, dh);
     drawUnit(name, im, e.x, e.y, e.face, {
       rig: d.base ? 'enemy_' + d.base : undefined,
@@ -4945,7 +4950,7 @@ function drawEnemy(e) {
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
       atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null,
-      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir,
+      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
     });
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
@@ -5826,6 +5831,7 @@ function drawUnit(name, im, x, y, face, o) {
     if (n && ANIM_META[n].idle != null) { fName = n; fi = ANIM_META[n].idle; }
   }
   const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
+  if (window.__animLog && o.logId != null) window.__animLog.push([o.logId, fName, fi, face, !!o.walking, o.dir || '', +x.toFixed(2), +y.toFixed(2)]);
   const pup = !PUP_OFF && PUPPETS[o.rig || name];
   if (pup && PUPPET_META[pup.atlas] && spr(pup.atlas)) {
     const atlas = puppetAtlas(pup, name.slice(6));
