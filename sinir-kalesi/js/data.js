@@ -278,6 +278,15 @@ Object.assign(ENEMIES, {
   ram:       { name: 'Koçbaşı',             h: 40, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 16 },
   catapult:  { name: 'Mancınık Arabası',    h: 40, hp: 420, speed: 12, armor: 0.2,  mr: 0,    gold: 38, dmg: [2, 4],   rate: 2,   lives: 2, r: 14,
     desc: 'Durup kulelerimize taş atar, 3 sn susturur', ab: { bomb: { cd: 12, stun: 3, r: 200 } } },
+  // yeni birlikler (9 Eki): mevcut görsellerden türer (base + game.js BOSS_LOOK renkleri ve kodla çizilen eşyalar)
+  // noblock: iskeletler durduramaz (kemik duvar durdurur). ranged.moving: yürürken atar. split: ölünce dağılır.
+  // purify: çevredeki cesetleri yakar, diriltilmiş ölülere vurur. aura: çevredekilere zırh (armor) ya da hız (speed).
+  horsearcher: { name: 'Atlı Okçu', base: 'cavalry', h: 42, hp: 220, speed: 30, armor: 0.1, mr: 0, gold: 24, dmg: [4, 7], rate: 1, lives: 2, r: 13, noblock: true,
+    ranged: { r: 125, dmg: [5, 9], rate: 1.7, proj: 'harrow', any: true, moving: true } },
+  testudo:   { name: 'Testudo Bölüğü', base: 'legion', h: 30, hp: 640, speed: 12, armor: 0.75, mr: 0, gold: 36, dmg: [6, 10], rate: 1.2, lives: 2, r: 15, formation: true, split: ['legion', 3] },
+  sunpriest: { name: 'Güneş Rahibesi', base: 'priest', h: 30, hp: 170, speed: 19, armor: 0, mr: 0.55, gold: 24, dmg: [2, 4], rate: 1, lives: 1, r: 10, purify: { r: 95, every: 4, dmg: 22 } },
+  signifer:  { name: 'Sancaktar', base: 'legion', h: 31, hp: 150, speed: 21, armor: 0.2, mr: 0, gold: 18, dmg: [3, 6], rate: 1, lives: 1, r: 10, aura: { r: 85, armor: 0.25 }, prop: 'banner' },
+  drummer:   { name: 'Davulcu', base: 'legion', h: 30, hp: 110, speed: 22, armor: 0.1, mr: 0, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10, aura: { r: 85, speed: 1.3 }, prop: 'drum' },
   // bölüm sonu komutanları (rütbeli subaylar) ve sefer sonu: General Gloriosus
   centurion:    { name: 'Yüzbaşı Lucius', base: 'legion', h: 40, hp: 700, speed: 15, armor: 0.3, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true, hpK: 1,
     desc: 'Lejyoner çağırır, borusuyla çevresini hızlandırır', ab: { summon: { t: 'legion', n: 3, cd: 11 }, howl: { cd: 13, r: 110 } } },
@@ -457,6 +466,12 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'heavy', n: 6, gap: 1.6 }, { t: 'cavalry', n: 8, gap: 1.1, at: 6 }, { t: 'assassin', n: 10, gap: 0.7, at: 12 }, { t: 'priest', n: 4, gap: 2, at: 14 }],
     ] },
   ];
+  // yeni birlikler dalgalara: ilk geldikleri bölümden itibaren belli dalgalarda küçük gruplar halinde (yer kaplamasın diye geç 'at')
+  const NEWCOMERS = [['drummer', 2, [3, 5, 7], 1], ['signifer', 4, [2, 5, 7], 1], ['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2]];
+  for (const [t, from, ws, n] of NEWCOMERS) L.forEach((l, i) => {
+    if (i < from) return;
+    ws.forEach((k, j) => { const w = l.waves[k]; if (w) w.push(W_(t, n + (i >= from + 4 && j === ws.length - 1 ? 1 : 0), 3, 7 + j * 2)); });
+  });
   // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
   // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
   const TOTAL = [118, 124, 128, 134, 140, 146, 155, 158, 162, 155, 165, 172, 185, 205, 250];
@@ -681,7 +696,9 @@ const SPEC = {
 Object.assign(ENEMY_WK, {
   legion: { magic: 1.2 }, solarcher: { melee: 1.3, arrow: 1.2 }, gladiator: { arrow: 1.2, blast: 1.2 }, assassin: { blast: 1.3, melee: 0.8 },
   priest: { arrow: 1.3 }, heavy: { magic: 1.4, arrow: 0.6 }, cavalry: { melee: 0.8, blast: 1.2 }, ram: { blast: 1.4, arrow: 0.5, magic: 0.8 },
-  catapult: { blast: 1.3, melee: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
+  catapult: { blast: 1.3, melee: 1.2 },
+  horsearcher: { arrow: 1.2, magic: 1.2 }, testudo: { arrow: 0.3, blast: 1.8, magic: 1.1 }, sunpriest: { arrow: 1.3, melee: 1.2 },
+  signifer: { magic: 1.2, melee: 1.2 }, drummer: { arrow: 1.2, blast: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
   gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
 });
 
@@ -696,6 +713,11 @@ Object.assign(ENEMY_DESC, {
   cavalry: 'Hızlı atlı, kuleye 2 can götürür. Veba atı ürkütür',
   ram: 'Çok yavaş, çok canlı; kapıya varırsa 3 can götürür. Veba kazanı kullan',
   catapult: 'Durup kulelerimize taş atar, 3 sn susturur. Önce onu durdur',
+  horsearcher: 'Koşarken iskeletlere ok atar, iskeletler onu durduramaz. Kemik duvar durdurur',
+  testudo: 'Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
+  sunpriest: 'Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir',
+  signifer: 'Sancağı çevresindeki düşmanlara zırh verir. Ruh ışını ve iskeletler iyi işler',
+  drummer: 'Davulu çevresindekileri hızlandırır. Zırhsız, kıymık ve veba iyi işler',
 });
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları

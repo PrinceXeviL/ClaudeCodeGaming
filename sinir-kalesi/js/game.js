@@ -1466,7 +1466,7 @@ function damageEnemy(e, amount, type, quiet, src) {
     if (e.plate <= 0) plateBreak(e);
     if (amount <= 0) return;
   }
-  const red = type === 'magic' ? e.def.mr : type === 'phys' ? e.def.armor * (e.rotT > 0 ? 0.5 : 1) : 0; // veba: zırh yarıya iner
+  const red = type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) : 0; // veba: zırh yarıya iner; sancak +zırh
   e.hp -= amount * (1 - red);
   if (!quiet) { e.flash = 0.1; e.hitT = 0.18; if (e.hp > 0) painVoice(e); }
   e.hitAt = time;
@@ -1505,6 +1505,12 @@ function killEnemy(e) {
     return;
   }
   e.dead = true;
+  // testudo: kalkan çatısı dağılır, içinden lejyonerler çıkıp yürümeye devam eder
+  if (e.def.split && !e.leaked) {
+    const [t, n] = e.def.split, pi = G.paths.indexOf(e.p);
+    for (let k = 0; k < n; k++) { const m = spawnEnemy(t, pi, Math.max(0, e.d - 4 + k * 5), e.off + (k - 1) * 7); m.hopT = 0.4; }
+    G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 });
+  }
   if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
@@ -1975,6 +1981,29 @@ function updateEnemy(e, dt) {
   if (e.slowT > 0) { e.slowT -= dt; if (Math.random() < dt * 6) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-7, 7), y: aimY(e) + rand(-8, 8), vy: 10, col: '170,220,255', s0: 3, s1: 0.5, life: 0.6 }); }
   if (e.markT > 0) e.markT -= dt;
   if (e.hasteT > 0) e.hasteT -= dt;
+  if (e.armT > 0) e.armT -= dt;
+  if (e.drumT > 0) e.drumT -= dt;
+  // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
+  const AU = e.def.aura;
+  if (AU) for (const o of G.enemies) {
+    if (o === e || o.dead || dist(o.x, o.y, e.x, e.y) > AU.r) continue;
+    if (AU.armor) o.armT = 0.3; if (AU.speed) o.drumT = 0.3;
+  }
+  // güneş rahibesi: belli aralıklarla çevresindeki cesetleri yakar (diriltilemez) ve dirilen ölülere ışıkla vurur
+  const PU = e.def.purify;
+  if (PU) {
+    e.purT = (e.purT ?? 1.5) - dt;
+    if (e.purT <= 0) {
+      e.purT = PU.every;
+      let n = 0;
+      for (const f of G.effects) if (f.kind === 'corpse' && f.raisable && dist(f.x, f.y, e.x, e.y) < PU.r) {
+        f.raisable = false; f.dur = Math.min(f.dur, f.t + 0.7); n++;
+        for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: f.x + rand(-8, 8), y: f.y - rand(0, 6), vy: -rand(20, 50), col: i % 2 ? '255,200,90' : '255,240,180', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) });
+      }
+      for (const so of G.soldiers) if (so.zombie && !so.dead && dist(so.x, so.y, e.x, e.y) < PU.r) { damageSoldier(so, PU.dmg); n++; }
+      if (n) { G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: PU.r, col: '255,220,120', t: 0, dur: 0.6 }); sfx('magic'); }
+    }
+  }
   if (e.shieldT > 0) e.shieldT -= dt;
   if (e.rotT > 0) { e.rotT -= dt; if (Math.random() < dt * 3) emit(G.parts, { kind: 'dot', x: e.x + rand(-5, 5), y: aimY(e) + rand(-4, 6), vy: rand(10, 25), g: 80, col: '#8ae04a', s0: 1.4, s1: 0.6, life: 0.5 }); }
   // Korku (Mortimer): kavgayı bırakır, yolda geri kaçar
@@ -2061,7 +2090,7 @@ function updateEnemy(e, dt) {
   // any: askerleri de hedefler; ammo: sınırlı atış hakkı (ork: 3 balta)
   const RG = e.def.ranged;
   if (RG && !e.blocker && !e.under && (RG.ammo == null || (e.ammo ?? RG.ammo) > 0)) {
-    if (e.shootT > 0) { e.shootT -= dt; return; }
+    if (e.shootT > 0) { e.shootT -= dt; if (!RG.moving) return; }
     e.rcd = (e.rcd ?? rand(0.5, 1.5)) - dt;
     if (e.rcd <= 0) {
       let tgt = null, bd = RG.r;
@@ -2072,7 +2101,7 @@ function updateEnemy(e, dt) {
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 260, 0.25, 0.7), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
-        return;
+        if (!RG.moving) return; // atlı okçu koşarken atar, durmaz
       }
     }
   }
@@ -2108,13 +2137,13 @@ function updateEnemy(e, dt) {
   // kahramana saldırı: yanından geçerken durup kahramanla dövüşür
   if (!e.def.flying && !e.leader && !e.under) {
     for (const h of G.heroes) {
-      if (h.dead || dist(e.x, e.y, h.x, h.y) > HERO_AGGRO.r) continue;
+      if (h.dead || e.def.noblock || dist(e.x, e.y, h.x, h.y) > HERO_AGGRO.r) continue;
       let n = 0;
       for (const o of G.enemies) if (o.blocker === h && !o.dead) n++;
       if (n < HERO_AGGRO.max) { e.blocker = h; return; }
     }
   }
-  let spd = e.def.speed * G.wspd * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.under ? BU.speed : 1);
+  let spd = e.def.speed * G.wspd * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
   // muhafız: boss'un yanında dizilişini korur; boss savaşırken bekler, boss ölünce serbest kalır
   if (e.leader) {
     const L = e.leader;
@@ -2214,7 +2243,7 @@ function updateBowSoldier(s, dt) {
   // yanına kadar gelen düşmanı durdurur: düşman ona saldırır, okçu da onu yakından vurur
   if (s.melee && (s.melee.dead || s.melee.blocker !== s)) s.melee = null;
   if (!s.melee) for (const e of G.enemies) {
-    if (e.dead || e.def.flying || e.under || e.blocker || e.siege !== undefined || e.reviveT > 0) continue;
+    if (e.dead || e.def.flying || e.def.noblock || e.under || e.blocker || e.siege !== undefined || e.reviveT > 0) continue;
     if (dist(e.x, e.y, s.x, s.y) < 20) { e.blocker = s; s.melee = e; break; }
   }
   let best = s.melee, bestRemain = 1e9;
@@ -2290,7 +2319,7 @@ function updateSoldier(s, dt) {
   if (!s.target && !s.moving) {
     let best = null, bestScore = 1e9;
     for (const o of G.enemies) {
-      if (o.dead || o.def.flying || o.under || o.reviveT > 0) continue;
+      if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0) continue;
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
       const score = (o.blocker ? 1000 : 0) + (o.p.total - o.d);
@@ -4529,7 +4558,7 @@ function drawEnemy(e) {
     if (e.dirV ? ay < ax * 1.1 : ay > ax * 1.5) e.dirV = !e.dirV;
     const dir = e.dirV ? (e.hdy > 0 ? 'on' : 'arka') : null;
     if (d.chief) drawBossAura(e, dh);
-    drawUnit(name, im, e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0), e.y, e.face, {
+    const uo = {
       rig: d.base ? 'enemy_' + d.base : undefined,
       h: CHAR_H[name] || d.r * 2.6, phase: e.anim * (5 + d.speed * G.wspd / 9),
       rise: e.reviveT > 0 ? 0.25 + 0.75 * (1 - e.reviveT / 1.1) : e.emergeT > 0 ? 1 - e.emergeT / 0.35 * 0.85 : null,
@@ -4538,7 +4567,11 @@ function drawEnemy(e) {
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
       atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
-    });
+    };
+    const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
+    if (d.formation) drawFormation(e, name, im, ux, uo);
+    else drawUnit(name, im, ux, e.y, e.face, uo);
+    if (d.prop) drawEnemyProp(e, d.prop, uo.h);
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
     if (d.rank === 2) drawRankStar(e.x, top - 1);
@@ -7143,7 +7176,23 @@ function toggleHero(id) {
 // ---------- bosslar ----------
 // Boss görselleri temel düşman görselinden renk değiştirilerek üretilir (bir kez, önbelleğe alınır).
 // img/ klasörüne enemy_<boss>.png koyulursa o kullanılır.
-const BOSS_LOOK = {};
+const BOSS_LOOK = {
+  // Atlı Okçu: kırmızı kumaş koyu yeşil deri, beyaz zırh ham deri rengi, altın bronz
+  horsearcher: (h, s, l) => {
+    if ((h < 16 || h > 335) && s > 0.35) return [95, 0.35, l * 0.55];
+    if (s < 0.22 && l > 0.5) return [32, 0.32, l * 0.78];
+    if (h > 32 && h < 62 && s > 0.4) return [28, 0.6, l * 0.8];
+    return null;
+  },
+  // Güneş Rahibesi: kumaş beyaz-altın, zırh fildişi (ışıl ışıl)
+  sunpriest: (h, s, l) => {
+    if ((h < 16 || h > 335) && s > 0.35) return [44, 0.9, Math.min(0.78, l * 1.45)];
+    if (s < 0.25 && l > 0.45) return [48, 0.45, Math.min(0.95, l * 1.08)];
+    return null;
+  },
+  // Davulcu: kumaş lacivert (borazancı/sancaktar kırmızısından ayrılsın)
+  drummer: (h, s, l) => ((h < 16 || h > 335) && s > 0.35 ? [222, 0.55, l * 0.75] : null),
+};
 // Kare şeridi: <ad><ek> varsa o; yoksa asıl türün (rig) şeridi bu türün renkleriyle (boss/rütbe) yeniden boyanır ve saklanır.
 function animStrip(name, rig, suf) {
   const key = name + suf;
@@ -7194,6 +7243,54 @@ function enemySprite(type) {
   g.putImageData(im, 0, 0);
   c.generated = true;
   return (SPR[name] = c);
+}
+// Testudo: dört lejyoner sıkı düzende, kalkanlar başlarının üstünde çatı olur
+const FORMATION = [[-7, -4], [7, -4], [-7, 4], [7, 4]];
+function drawFormation(e, name, im, x, uo) {
+  const hh = 23, o = Object.assign({}, uo, { h: hh });
+  for (const [dx, dy] of FORMATION) drawUnit(name, im, x + dx * e.face, e.y + dy, e.face, Object.assign({}, o, { seed: e.off + dx + dy * 3 }));
+  // kalkan çatısı: dört kırmızı kalkan, altın kenar; vurulunca titrer
+  const sh = e.hitT > 0 ? Math.sin(time * 60) * 0.8 : 0, ry = e.y - hh * 0.92 + sh, bob = Math.abs(Math.sin(e.anim * 9)) * 0.8;
+  ctx.save(); ctx.translate(x, ry - bob);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(0, 6, 17, 4, 0, 0, Math.PI * 2); ctx.fill();
+  for (let i = 0; i < 4; i++) {
+    const cx = -11.5 + i * 7.6, cy = (i % 2) * -1.2;
+    roundRect(cx - 4, cy - 5, 8, 10, 1.8, i % 2 ? '#b82a22' : '#a3221c', '#3a0c08', 1);
+    ctx.fillStyle = '#e8c35a'; ctx.fillRect(cx - 0.8, cy - 4, 1.6, 8);
+    circle(cx, cy, 1.4, '#f2d77a', '#5a3a08', 0.6);
+  }
+  ctx.restore();
+}
+// kodla çizilen eşyalar: sancaktarın kartallı sancağı (sırtında), davulcunun davulu (belinde, tokmaklar iner kalkar)
+function drawEnemyProp(e, prop, hh) {
+  const f = e.face, bob = Math.abs(Math.sin(e.anim * 9)) * 1.2;
+  ctx.save(); ctx.lineCap = 'round';
+  if (prop === 'banner') {
+    const px = e.x - f * hh * 0.18, top = e.y - hh * 1.55 - bob, sway = Math.sin(time * 2 + e.off) * 1.2;
+    ctx.strokeStyle = '#3a2410'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(px, e.y - hh * 0.3); ctx.lineTo(px, top); ctx.stroke();
+    ctx.strokeStyle = '#8a5a2a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(px, e.y - hh * 0.3); ctx.lineTo(px, top); ctx.stroke();
+    // çapraz kol ve kırmızı bayrak (altın saçaklı)
+    ctx.strokeStyle = '#d9b04a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(px - 6, top + 6); ctx.lineTo(px + 6, top + 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px - 5.5, top + 6.5); ctx.lineTo(px + 5.5, top + 6.5); ctx.lineTo(px + 5 + sway, top + 17); ctx.lineTo(px - 5 + sway, top + 17); ctx.closePath();
+    ctx.fillStyle = '#b8261e'; ctx.fill(); ctx.strokeStyle = '#4a0c08'; ctx.lineWidth = 0.8; ctx.stroke();
+    ctx.fillStyle = '#e8c35a'; ctx.fillRect(px - 5 + sway, top + 16.2, 10, 1.6);
+    circle(px + sway * 0.5, top + 11.5, 2.2, '#f2d77a', '#5a3a08', 0.6);
+    // tepede altın güneş
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, px, top, 7, '255,210,110', 0.4); ctx.restore();
+    circle(px, top, 2.6, '#ffd96a', '#6a4408', 0.8);
+    // zırh halesi: çevresindekiler korunuyor
+    ctx.strokeStyle = `rgba(255,215,120,${0.18 + Math.sin(time * 3 + e.off) * 0.06})`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, e.def.aura.r * 0.9, e.def.aura.r * 0.4, 0, 0, Math.PI * 2); ctx.stroke();
+  } else if (prop === 'drum') {
+    const dx = e.x + f * hh * 0.16, dy = e.y - hh * 0.38 - bob, hit = Math.max(0, Math.sin(time * 9 + e.off));
+    ctx.fillStyle = '#6a3e1c'; ctx.beginPath(); ctx.ellipse(dx, dy + 2, 4.6, 3.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#e8dcc0'; ctx.beginPath(); ctx.ellipse(dx, dy - 1, 4.6, 1.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#2a160a'; ctx.lineWidth = 0.8; ctx.stroke();
+    ctx.strokeStyle = '#c8a040'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(dx - 4.4, dy + 2); ctx.lineTo(dx + 4.4, dy + 2); ctx.stroke();
+    ctx.strokeStyle = '#d8c8a0'; ctx.lineWidth = 1.1;
+    for (const sd of [-1, 1]) { const a = (sd > 0 ? hit : 1 - hit) * 0.9; ctx.beginPath(); ctx.moveTo(dx + sd * 2, dy - 1 - 1); ctx.lineTo(dx + sd * (3 + 3 * Math.cos(a)), dy - 3 - 5 * Math.sin(a)); ctx.stroke(); }
+  }
+  ctx.restore();
 }
 // Rütbe renkleri (h 0-360, s, l, x, y: görseldeki yer). Solarian askerleri beyaz-altın zırh, kırmızı kumaş giyer.
 // Kıdemli: kırmızı kumaş koyu şarap kırmızısı, beyaz zırh mavimsi koyu çelik, altın süsler gümüş;
@@ -7688,7 +7785,7 @@ function upgradeIcon(id, x, y) {
 
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
-const CODEX_ENEMIES = ['legion', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry', 'ram', 'catapult',
+const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'gladiator', 'signifer', 'assassin', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'horsearcher', 'ram', 'catapult',
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
@@ -7699,6 +7796,11 @@ const CODEX_NOTE = {
   heavy: 'Kalkanı kapımdan geniş. Kıymıklar seker, ruh ışını geçer.',
   cavalry: 'At güzel. Üstündeki fazlalık. Atı bende kalsın.',
   ram: 'Kapımı çalmanın en kaba yolu. Zil var, zil!',
+  horsearcher: 'Koşarken ok atıyor. Atı da ben olsam koşardım.',
+  testudo: 'Kaplumbağa gibi geliyorlar. Kaplumbağa çorbası severim.',
+  sunpriest: 'Cesetlerimi yakıyor! Bu israf. Ayrıca kaba.',
+  signifer: 'Sancağı çok parlak. Gözüm yok ama yine de kamaştı.',
+  drummer: 'Ritim duygusu yok. İskeletlerim daha iyi dans eder.',
   catapult: 'Bahçeme taş atıyor. Komşuluk bunu gerektirmez.',
   centurion: 'Borazanı çok sesli. Çayımı içemiyorum.',
   champion: 'Kalabalığı coşturur. Kalabalık az sonra benim olacak.',
