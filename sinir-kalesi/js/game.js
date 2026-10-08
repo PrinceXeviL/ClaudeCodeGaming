@@ -8402,9 +8402,51 @@ function drawSkullIcon(x, y, r) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); glow(ctx, r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); ctx.restore();
   ctx.restore();
 }
+// Arka plandaki iskelet grupları hareketli: Wan videoları (img/title_left.mp4, title_right.mp4) resmin aynı yerine,
+// yumuşak kenarlı maskeyle oturur. src: kaynak resimdeki kesit (px), fe: yumuşatılan yan kenar (-1 sol, 1 sağ). Video yoksa resim durağan.
+const TITLE_VID = [{ f: 'title_left', src: [0, 530, 640, 370], fe: 1 }, { f: 'title_right', src: [960, 530, 640, 370], fe: -1 }];
+function titleVideos(on) {
+  for (const V of TITLE_VID) {
+    if (!on) { if (V.v && !V.v.paused) V.v.pause(); continue; }
+    if (V.bad) continue;
+    if (!V.v) {
+      const v = V.v = document.createElement('video');
+      v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto';
+      v.onerror = () => { V.bad = true; };
+      v.src = 'img/' + V.f + '.mp4' + (window.SURUM ? '?v=' + window.SURUM : '');
+    }
+    if (V.v.paused) V.v.play().catch(() => {});
+  }
+}
+function drawTitleVideos(bg, zoom, ox, oy) {
+  const k = Math.max(W / bg.width, H / bg.height) * zoom, x0 = (W - bg.width * k) / 2 + ox, y0 = (H - bg.height * k) / 2 + oy;
+  for (const V of TITLE_VID) {
+    const v = V.v;
+    if (!v || v.readyState < 2) continue;
+    const [sx, sy, sw, sh] = V.src;
+    if (!V.c) {
+      [V.c, V.g] = offscreen(sw, sh, 1);
+      const [m, mg] = offscreen(sw, sh, 1); // kenar maskesi: üst ve iç yan yumuşak
+      let gr = mg.createLinearGradient(0, 0, 0, sh * 0.3); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, '#000');
+      mg.fillStyle = gr; mg.fillRect(0, 0, sw, sh);
+      gr = V.fe > 0 ? mg.createLinearGradient(sw, 0, sw * 0.75, 0) : mg.createLinearGradient(0, 0, sw * 0.25, 0);
+      gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, '#000');
+      mg.globalCompositeOperation = 'destination-in'; mg.fillStyle = gr; mg.fillRect(0, 0, sw, sh);
+      V.m = m;
+    }
+    if (V.ft !== v.currentTime) { // yeni kare geldiyse maskeli kopyayı yenile
+      V.ft = v.currentTime;
+      const g = V.g; g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, sw, sh);
+      g.drawImage(v, 0, 0, sw, sh); g.globalCompositeOperation = 'destination-in'; g.drawImage(V.m, 0, 0);
+    }
+    ctx.drawImage(V.c, x0 + sx * k, y0 + sy * k, sw * k, sh * k);
+  }
+}
 function drawNecroTitle(st) {
   const bg = spr('nm_title');
-  if (bg) coverImage(bg, 1.06 + Math.sin(time * 0.1) * 0.02, Math.sin(time * 0.07) * 8, Math.cos(time * 0.09) * 4);
+  const bz = 1.06 + Math.sin(time * 0.1) * 0.02, bx = Math.sin(time * 0.07) * 8, by = Math.cos(time * 0.09) * 4;
+  titleVideos(true);
+  if (bg) { coverImage(bg, bz, bx, by); drawTitleVideos(bg, bz, bx, by); }
   else { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0c0614'); g.addColorStop(1, '#141a12'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
   // ay ışığı: soğuk mor ton, aydan inen yavaş dönen huzmeler
   ctx.fillStyle = 'rgba(40,20,70,0.16)'; ctx.fillRect(0, 0, W, H);
@@ -9667,6 +9709,7 @@ function frame(now) {
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy);
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
   buttons.length = 0;
+  if (screen !== 'title') titleVideos(false);
   if (screen === 'title') drawTitle();
   else if (screen === 'map') drawMap();
   else if (screen === 'heroes') drawHeroes();

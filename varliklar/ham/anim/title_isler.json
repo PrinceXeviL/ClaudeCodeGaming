@@ -1,0 +1,20 @@
+[
+ {
+  "name": "title_left",
+  "ref": "ham/anim/title_left_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 7,
+  "raw": true,
+  "prompt": "a crowd of cartoon undead skeleton warriors with shields, swords, maces and spears standing in a dark graveyard at night. They stay in place but keep moving: they sway and shift their weight, shake and raise their weapons menacingly, turn their skulls, their glowing green eyes and green flames flicker, purple capes flutter, thin green mist drifts along the ground. Static camera, no camera movement, no zoom, the composition stays the same, 2D cartoon game illustration, smooth motion"
+ },
+ {
+  "name": "title_right",
+  "ref": "ham/anim/title_right_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 7,
+  "raw": true,
+  "prompt": "a crowd of cartoon undead skeleton warriors with shields, swords, maces and spears standing in a dark graveyard at night. They stay in place but keep moving: they sway and shift their weight, shake and raise their weapons menacingly, turn their skulls, their glowing green eyes and green flames flicker, purple capes flutter, thin green mist drifts along the ground. Static camera, no camera movement, no zoom, the composition stays the same, 2D cartoon game illustration, smooth motion"
+ }
+]

@@ -113,7 +113,12 @@ def run(jobs, slug=SLUG):
     json.dump({'id': f'{user}/{slug}', 'title': slug, 'code_file': 'kernel.py', 'language': 'python', 'kernel_type': 'script',
                'is_private': True, 'enable_gpu': True, 'enable_internet': True, 'machine_shape': 'NvidiaTeslaT4',
                'dataset_sources': [f'{user}/{DATASET}'], 'competition_sources': [], 'kernel_sources': []}, open(os.path.join(d, 'kernel-metadata.json'), 'w'))
-    r = kaggle('kernels', 'push', '-p', d); print(r.stdout.strip(), r.stderr.strip()[-300:], flush=True)
+    for _ in range(240):  # oturum sınırı (aynı anda 2 GPU) doluysa boşalana kadar dakikada bir yeniden dene
+        r = kaggle('kernels', 'push', '-p', d); out = (r.stdout + r.stderr).strip()
+        print(out[-300:], flush=True)
+        if 'successfully pushed' in out: break
+        time.sleep(60)
+    else: raise SystemExit('gönderilemedi')
     while True:
         time.sleep(60)
         st = kaggle('kernels', 'status', f'{user}/{slug}').stdout.strip()
@@ -130,6 +135,7 @@ def run(jobs, slug=SLUG):
         if not os.path.exists(src): src = os.path.join(od, j['name'] + '.mp4')
         if os.path.exists(src):
             os.replace(src, os.path.join(OUT, j['name'] + '.mp4'))
+            if j.get('raw'): print('video:', j['name'], flush=True); continue  # sahne videosu (ör. giriş ekranı): şeride çevrilmez
             video_uret.process(j); print('şerit:', j['name'], flush=True)
 
 
