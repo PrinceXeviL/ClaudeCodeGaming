@@ -15,10 +15,11 @@ const TOWERS = {
     ],
     // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
     abilities: [
-      { id: 'poison', name: 'Zehirli Oklar', desc: (r) => `Oklar 3 sn boyunca saniyede ${r.dps} zehir hasarı verir`,
-        ranks: [{ cost: 150, dps: 4 }, { cost: 200, dps: 8 }, { cost: 260, dps: 13 }] },
-      { id: 'snipe', name: 'Keskin Nişancı', desc: (r) => `${r.cd} sn'de bir en güçlü düşmana ${r.dmg} zırh delen kritik atış · menzil +${r.range}`,
-        ranks: [{ cost: 180, cd: 9, dmg: 70, range: 12 }, { cost: 240, cd: 7.5, dmg: 120, range: 22 }, { cost: 300, cd: 6, dmg: 180, range: 32 }] },
+      // Kemik Yelpazesi: her atışta yanındaki düşmanlara da kıymık · Ruh Çivisi: çivilenen ölünce cesedi uzun yatar, kendiliğinden dirilebilir
+      { id: 'fan', name: 'Kemik Yelpazesi', desc: (r) => `Her atışta ${r.n} ek kıymık yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
+        ranks: [{ cost: 150, n: 1, mult: 0.6 }, { cost: 200, n: 2, mult: 0.7 }, { cost: 260, n: 2, mult: 0.9 }] },
+      { id: 'nail', name: 'Ruh Çivisi', desc: (r) => `Vurulan 4 sn çivilenir: ölürse cesedi +4 sn yatar ve %${Math.round(r.rise * 100)} şansla kendiliğinden dirilir`,
+        ranks: [{ cost: 160, rise: 0.15 }, { cost: 220, rise: 0.25 }, { cost: 280, rise: 0.35 }] },
     ],
   },
   barracks: {
@@ -48,10 +49,11 @@ const TOWERS = {
       { cost: 240, range: 152, dmg: [42, 76], rate: 1.3, perk: 'Hızlı yükleme · zincir yıldırım: yakındaki ikinci düşmana %60 hasar' },
     ],
     abilities: [
-      { id: 'frost', name: 'Buz Küresi', desc: (r) => `Vurduğunu ${r.t} sn %${Math.round(r.k * 100)} yavaşlatır`,
-        ranks: [{ cost: 160, k: 0.45, t: 2 }, { cost: 220, k: 0.55, t: 2.5 }, { cost: 280, k: 0.65, t: 3 }] },
-      { id: 'blast', name: 'Arkan Patlama', desc: (r) => `${r.cd} sn'de bir kalabalığa ${r.dmg} alan büyü hasarı`,
-        ranks: [{ cost: 200, cd: 10, dmg: 60 }, { cost: 260, cd: 9, dmg: 100 }, { cost: 320, cd: 8, dmg: 150 }] },
+      // Ruh Emici: vuruş yakındaki iskeletleri iyileştirir · Hayalet Çağırıcı: yolda geriye süzülen hayalet, değdiğini korkutup yakar
+      { id: 'drain', name: 'Ruh Emici', desc: (r) => `Işın canı emer: hedefin yakınındaki iskeletler hasarın %${Math.round(r.heal * 100)}'i kadar iyileşir`,
+        ranks: [{ cost: 160, heal: 0.35 }, { cost: 220, heal: 0.55 }, { cost: 280, heal: 0.8 }] },
+      { id: 'ghost', name: 'Hayalet Çağırıcı', desc: (r) => `${r.cd} sn'de bir yolda düşmanlara doğru hayalet salar: değdiğine ${r.dmg} hasar, ${r.fear} sn korku`,
+        ranks: [{ cost: 200, cd: 9, dmg: 40, fear: 1.2 }, { cost: 260, cd: 8, dmg: 70, fear: 1.6 }, { cost: 320, cd: 7, dmg: 110, fear: 2 }] },
     ],
   },
   artillery: {
@@ -63,10 +65,11 @@ const TOWERS = {
       { cost: 320, range: 128, dmg: [66, 98], rate: 2.7, splash: 72, perk: 'Sarsıcı gülle: %30 şansla 0.6 sn sersemletir' },
     ],
     abilities: [
-      { id: 'napalm', name: 'Napalm', desc: (r) => `Patlama yeri 3 sn yanar: saniyede ${r.dps} ateş hasarı`,
-        ranks: [{ cost: 170, dps: 10 }, { cost: 230, dps: 18 }, { cost: 290, dps: 28 }] },
-      { id: 'double', name: 'Çifte Atış', desc: (r) => `Her atışta ikinci bir gülle (%${Math.round(r.mult * 100)} hasar)`,
-        ranks: [{ cost: 200, mult: 0.5 }, { cost: 260, mult: 0.75 }, { cost: 320, mult: 1 }] },
+      // Ceset Mancınığı: menzildeki cesedi cephane yapar · Kara Veba: vurduğu düşman ölünce veba yanındakilere bulaşır
+      { id: 'corpse', name: 'Ceset Mancınığı', desc: (r) => `Menzilde ceset varsa onu fırlatır: x${r.mult} hasar, geniş alan`,
+        ranks: [{ cost: 170, mult: 1.6 }, { cost: 230, mult: 1.9 }, { cost: 290, mult: 2.3 }] },
+      { id: 'plague', name: 'Kara Veba', desc: (r) => `Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır`,
+        ranks: [{ cost: 200, dps: 7 }, { cost: 260, dps: 12 }, { cost: 320, dps: 18 }] },
     ],
   },
 };
@@ -693,6 +696,12 @@ for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOW
 // Uzmanlık: son seviyede iki yetenekten biri seçilir (ilk alınan yetenek yolu belirler, diğeri kapanır).
 // Seçilen yol kulenin adını ve görünüşünü değiştirir: askerlerin kostümü, okçuların kıyafeti, kule süsleri.
 const SPEC = {
+  fan:    { title: 'Kemik Yelpazesi', who: 'Yelpaze gibi saçılan kemik kıymıkları' },
+  nail:   { title: 'Ruh Çivisi Dikilitaşı', who: 'Ruhu bedene çivileyen kara kıymık' },
+  drain:  { title: 'Ruh Emici Fener', who: 'Canı emip iskeletlere aktaran yeşil ışın' },
+  ghost:  { title: 'Hayalet Feneri', who: 'Yola salınan çığlık atan hayaletler' },
+  corpse: { title: 'Ceset Mancınığı', who: 'Cesetleri cephane yapan kazan' },
+  plague: { title: 'Kara Veba Kazanı', who: 'Ölümle yayılan kara veba' },
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
   blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
   bow:    { title: 'Okçu Ocağı',      who: 'Okçular: deri zırh, uzun yay' },
@@ -753,25 +762,26 @@ if (NECRO) {
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
 
-// ----- Kan Sunağı (yeni kule, 3. bölümde açılır): saldırmaz, menzilindeki kuleleri hızlandırır -----
+// ----- Lanet Kulesi (3. bölümde açılır; eski Kan Sunağı yuvası 'altar'): saldırmaz, menzilindeki düşmanları lanetler -----
+// lanetli: fazla hasar alır, yavaşlar, ölürse rise şansıyla çürümüş ölü olarak kendiliğinden dirilir
 if (NECRO) {
   TOWERS.altar = {
-    name: 'Kan Sunağı', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2,
-    desc: 'Saldırmaz: çevresindeki kulelerin atış hızını artırır',
+    name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2,
+    desc: 'Saldırmaz: menzildekileri lanetler (fazla hasar, yavaşlık, ölünce dirilme şansı)',
     levels: [
-      { cost: 90,  range: 110, buff: 0.2, title: 'Kan Sunağı', perk: 'Menzildeki kuleler %20 daha hızlı atar' },
-      { cost: 130, range: 122, buff: 0.3, title: 'Kan Kadehi', perk: 'Menzildeki kuleler %30 daha hızlı atar · +menzil' },
-      { cost: 180, range: 135, buff: 0.4, title: 'Kanlı Kalp Tapınağı', perk: 'Menzildeki kuleler %40 daha hızlı atar · geniş menzil' },
+      { cost: 90,  range: 100, curse: 0.15, slow: 0.12, rise: 0.12, title: 'Lanet Kulesi', perk: 'Lanetliler %15 fazla hasar alır, yavaşlar · ölürse %12 şansla dirilir' },
+      { cost: 130, range: 110, curse: 0.22, slow: 0.16, rise: 0.18, title: 'Lanet Sütunu', perk: 'Lanetliler %22 fazla hasar alır · ölürse %18 şansla dirilir' },
+      { cost: 180, range: 120, curse: 0.3,  slow: 0.2,  rise: 0.25, title: 'Kara Lanet Mabedi', perk: 'Lanetliler %30 fazla hasar alır · ölürse %25 şansla dirilir' },
     ],
     abilities: [
-      { id: 'rite', name: 'Kan Ayini', desc: (r) => `Güçlendirdiği kulelere +%${Math.round(r.dmg * 100)} hasar`,
-        ranks: [{ cost: 150, dmg: 0.1 }, { cost: 200, dmg: 0.18 }, { cost: 260, dmg: 0.25 }] },
-      { id: 'ward', name: 'Kan Kalkanı', desc: (r) => `Menzildeki iskeletler saniyede ${r.hps} can yeniler`,
-        ranks: [{ cost: 140, hps: 4 }, { cost: 190, hps: 8 }, { cost: 240, hps: 13 }] },
+      { id: 'rite', name: 'Kan Ayini', desc: (r) => `Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar`,
+        ranks: [{ cost: 150, rate: 0.15, dmg: 0.1 }, { cost: 200, rate: 0.25, dmg: 0.18 }, { cost: 260, rate: 0.35, dmg: 0.25 }] },
+      { id: 'blight', name: 'Kara Lanet', desc: (r) => `Lanetli ölünce lanet en yakın ${r.n} düşmana sıçrar (menzil dışında da, 4 sn)`,
+        ranks: [{ cost: 140, n: 2 }, { cost: 190, n: 3 }, { cost: 240, n: 4 }] },
     ],
   };
   TOWER_ORDER.push('altar');
-  Object.assign(SPEC, { rite: { title: 'Kan Ayini Tapınağı', who: 'Kulelere ek hasar veren kan ritüeli' }, ward: { title: 'Kan Kalkanı Tapınağı', who: 'İskeletleri iyileştiren kan halesi' } });
+  Object.assign(SPEC, { rite: { title: 'Kan Ayini Mabedi', who: 'Kulelere hız ve güç veren kan ritüeli' }, blight: { title: 'Kara Lanet Mabedi', who: 'Ölümle yayılan lanet' } });
 }
 
 // necro teması: yıldız gelişmeleri ve hasar türü adları (eski kule/kale adlarının yerine)
