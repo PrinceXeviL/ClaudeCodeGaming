@@ -241,5 +241,53 @@
   "fh": 244,
   "base": 0.0147,
   "ch": 0.8206
+ },
+ "enemy_heavy_walk": {
+  "n": 19,
+  "fw": 149,
+  "fh": 171,
+  "base": 0.0141,
+  "ch": 0.9341,
+  "idle": 2
+ },
+ "enemy_ram_walk": {
+  "n": 12,
+  "fw": 216,
+  "fh": 166,
+  "base": 0.0143,
+  "ch": 0.9642,
+  "idle": 0
+ },
+ "enemy_catapult_walk": {
+  "n": 12,
+  "fw": 183,
+  "fh": 165,
+  "base": 0.0145,
+  "ch": 0.9685,
+  "idle": 8
+ },
+ "unit_skel_3_walk": {
+  "n": 22,
+  "fw": 113,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9433,
+  "idle": 18
+ },
+ "unit_skel_4_walk": {
+  "n": 22,
+  "fw": 154,
+  "fh": 170,
+  "base": 0.0143,
+  "ch": 0.943,
+  "idle": 10
+ },
+ "unit_skel_8_walk": {
+  "n": 22,
+  "fw": 164,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952,
+  "idle": 1
  }
 }
