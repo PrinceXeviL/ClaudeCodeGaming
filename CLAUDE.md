@@ -102,8 +102,11 @@ kendi renkleriyle kullanır (animStrip + recolorCanvas, bölüm başında bakeNe
 Durum (yayın 92): `lejyoner_model.jpg` (model sayfası), `enemy_legion_atk` (8 kare, --auto --anchor heel: taşan mızrak karakterle kalır,
 arka topuk sabit), `enemy_legion_walk` (Gemini 8 kare çizdi ama 5-8'de kalkanın içi görünüyordu; 1-4 iki kez: --order 1,2,3,4,1,2,3,4,
 --anchor head), `enemy_legion_walk_on` (yayın 93; 6. karede mızrak ters döndüğü için 7 kare: --order 1,2,3,4,5,7,8).
-Sırada: arkadan yürüyüş (`kilavuz_onarka.png` → enemy_legion_walk_arka).
-anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor body|head|heel, --order.
+`enemy_legion_walk_arka` (yayın 94; Gemini zemin çizgisi çizmişti, silindi; 7. karede tunik maviydi: --order 1,2,3,4,5,6,8;
+alt sıra daha büyük çizilmişti: --norm). Lejyoner 4 yönde tamam. Gemini tuzakları: kalkanın arka yüzüne dönmesi, mızrağın ters dönmesi,
+renk kayması, zemin çizgisi, satırlar arası boy farkı; promptta "ALL 8 frames" ile açıkça yaz, kusurlu kareyi --order ile at.
+Sonraki düşmanlar aynı sırayla: model sayfası → yandan yürüyüş → önden → arkadan → saldırı (kendi silahına uygun kılavuzla).
+anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor body|head|heel, --order, --norm.
 
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)

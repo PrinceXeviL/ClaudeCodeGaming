@@ -4,6 +4,7 @@
     python3 varliklar/anim_isle.py ham/anim/lejyoner_saldiri.jpg enemy_legion_atk 4 2 --auto --anchor heel
 
 --auto: ızgara yerine bağlı parçalara göre ayırır (mızrak/kılıç komşu kareye taşsa da karakterle birlikte kalır; scipy gerekir).
+--norm: her kareyi ortanca boya ölçekler (satırlar farklı büyüklükte çizildiyse).
 --order 1,2,3,4,1,2,3,4: kareleri bu sırayla şeride yazar (bozuk kareleri atlamak / yarım döngüyü tekrarlamak için).
 --anchor: kareleri hizalama noktası. body (varsayılan): gövdenin üst yarısının ortası; head: başın (miğfer/sorguç) ortası,
   yürüyüşte en sabit nokta; heel: arka topuk (en alt satırların en geri noktası), saldırıda yerinde duran arka ayak.
@@ -126,7 +127,7 @@ def anchor_of(cell, how):
     return xs[upper].mean()  # gövdenin ortası
 
 
-def main(src, name, cols, rows, flip=False, auto=False, anchor='body', order=None):
+def main(src, name, cols, rows, flip=False, auto=False, anchor='body', order=None, norm=False):
     rgb = np.asarray(Image.open(os.path.join(ROOT, 'varliklar', src)).convert('RGB'))
     rgba = remove_magenta(rgb)
     H, W = rgba.shape[:2]
@@ -150,6 +151,14 @@ def main(src, name, cols, rows, flip=False, auto=False, anchor='body', order=Non
         frames.append((cell, top, bot, anchor_of(cell, anchor) + shift))
     heights = sorted(f[2] - f[1] for f in frames)
     chH = heights[len(heights) // 2]
+    if norm:
+        # her kare ortanca boya getirilir (Gemini satırları farklı büyüklükte çizebiliyor; karakter büyüyüp küçülmesin)
+        nf = []
+        for cell, top, bot, anc in frames:
+            q = chH / max(1, bot - top)
+            im = Image.fromarray(cell).resize((max(1, round(cell.shape[1] * q)), max(1, round(cell.shape[0] * q))), Image.LANCZOS)
+            nf.append((np.asarray(im), top * q, bot * q, anc * q))
+        frames = nf
     k = TARGET_H / chH
     left = max(f[3] - np.nonzero(f[0][..., 3] > 0)[1].min() for f in frames)
     right = max(np.nonzero(f[0][..., 3] > 0)[1].max() - f[3] for f in frames)
@@ -185,4 +194,4 @@ def main(src, name, cols, rows, flip=False, auto=False, anchor='body', order=Non
 if __name__ == '__main__':
     an = sys.argv[sys.argv.index('--anchor') + 1] if '--anchor' in sys.argv else 'body'
     od = [int(x) for x in sys.argv[sys.argv.index('--order') + 1].split(',')] if '--order' in sys.argv else None
-    main(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), '--flip' in sys.argv, '--auto' in sys.argv, an, od)
+    main(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), '--flip' in sys.argv, '--auto' in sys.argv, an, od, '--norm' in sys.argv)
