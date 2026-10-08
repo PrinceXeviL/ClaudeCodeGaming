@@ -1735,6 +1735,7 @@ function damageSoldier(s, amount) {
   // Ateş Bilgesi'nin buz zırhı aurası
   if (G.heroes.some(h => !h.dead && h.learned.frostarmor && dist(h.x, h.y, s.x, s.y) < 110)) amount *= 0.8;
   if (s.dodge && Math.random() < s.dodge) { if (Math.random() < 0.4) floatText(s.x, s.y - 30, 'Kaçtı!', '#ffe9b0'); return; }
+  if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('bash'); return; }
   s.hp -= amount * (1 - s.armor);
   s.flash = 0.1;
   if (s.hp <= 0) {
@@ -1845,15 +1846,19 @@ function buildTower(plot, type) {
   sfx('build');
   return true;
 }
-const SLOTS = [[-13, -7], [13, -7], [0, 10]];
+const SLOTS = [[-13, -7], [13, -7], [0, 10]], SLOTS4 = [[-14, -8], [14, -8], [-14, 9], [14, 9]]; // uzmanlıkta 4. iskelet katılır
 function soldierStats(t) {
   const L = TOWERS.barracks.levels[t.lvl], sh = abRank(t, 'shield'), bl = abRank(t, 'blade'), bw = abRank(t, 'bow'), ur = upgRank('barracks');
   const sp = t.spec ? SPEC_BONUS : 1; // uzmanlık seçen kışlanın askerleri daha güçlü
   const hm = (ur >= 1 ? 1.2 : 1) * sp * (bw ? 0.75 : 1), dm = (ur >= 2 ? 1.2 : 1) * (bl ? bl.mult : 1) * (bw ? bw.mult : 1) * sp;
+  // yol farkları: kalkan ağır ve yavaş vurur, darbeleri savuşturur, arada kalkanla sersemletir;
+  // kılıç hızlı vurur, vuruşu yanındaki ikinci düşmana da işler, zırhı biraz düşük; okçu uzaktan atar
+  const shR = (t.ab && t.ab.shield) || 0, blR = (t.ab && t.ab.blade) || 0;
   return {
     bow: bw ? { r: bw.r, rate: bw.rate } : null,
-    maxHp: Math.round((L.hp + (sh ? sh.hp : 0)) * hm), armor: Math.min(0.75, L.armor + (sh ? sh.armor : 0) + (ur >= 3 ? 0.15 : 0)),
-    dmg: [L.dmg[0] * dm, L.dmg[1] * dm], crit: bl ? bl.crit : 0, steal: t.lvl >= 2 ? 0.15 : 0,
+    maxHp: Math.round((L.hp + (sh ? sh.hp : 0)) * hm), armor: Math.min(0.75, Math.max(0, L.armor + (sh ? sh.armor : 0) + (ur >= 3 ? 0.15 : 0) - (bl ? 0.05 : 0))),
+    dmg: [L.dmg[0] * dm * (sh ? 1.15 : 1), L.dmg[1] * dm * (sh ? 1.15 : 1)], crit: bl ? bl.crit : 0, steal: t.lvl >= 2 ? 0.15 : 0,
+    rate: sh ? 1.3 : bl ? 0.7 : 1, block: sh ? 0.15 + 0.05 * shR : 0, bash: sh ? 0.6 + 0.2 * shR : 0, cleave: bl ? 0.4 + 0.1 * blR : 0,
   };
 }
 function applySoldierStats(t) {
@@ -1866,13 +1871,14 @@ function applySoldierStats(t) {
       G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,170', t: 0, dur: 0.6, small: true });
     }
     s.dmg = st.dmg; s.armor = st.armor; s.crit = st.crit; s.steal = st.steal; s.gear = t.lvl; s.bow = st.bow;
+    s.rate = st.rate; s.block = st.block; s.bash = st.bash; s.cleave = st.cleave;
     if (s.bow && s.target) { if (s.target.blocker === s) s.target.blocker = null; s.target = null; } // okçular yolu bırakır
   }
 }
 function makeSoldier(t, i) {
   const st = soldierStats(t);
   return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
-    gear: t.lvl, rate: 1, speed: 60, engage: 55, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
+    block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: 60, engage: 55, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
 }
 // son seviyedeki kulenin yeteneğini bir kademe geliştir
 function buyAbility(t, id) {
@@ -1885,7 +1891,14 @@ function buyAbility(t, id) {
   const first = !t.spec;
   t.spec = id;
   if (cur + 1 >= def.ranks.length) achGive('master');
-  if (t.type === 'barracks') applySoldierStats(t);
+  if (t.type === 'barracks') {
+    if (first && t.soldiers.length < 4) { // uzmanlık seçilince 4. iskelet mahzenden kalkar
+      const s4 = makeSoldier(t, 3);
+      t.soldiers.push(s4); G.soldiers.push(s4);
+      G.effects.push({ kind: 'pillar', x: t.x, y: t.y + 6, col: '140,255,140', t: 0, dur: 0.7 });
+    }
+    applySoldierStats(t);
+  }
   for (let i = 0; i < 14; i++) {
     const a = rand(0, Math.PI * 2), v = rand(30, 90);
     emit(G.parts, { kind: 'glow', add: true, x: t.x + rand(-14, 14), y: t.y - rand(10, 60), vx: Math.cos(a) * v * 0.4, vy: -rand(30, 80), drag: 1.5,
@@ -2361,7 +2374,7 @@ function updateEnemy(e, dt) {
 
 function soldierHome(s) {
   if (s.hero || s.militia) return { x: s.rx, y: s.ry };
-  const t = s.tower, o = SLOTS[s.slot];
+  const t = s.tower, o = (t.soldiers.length > 3 ? SLOTS4 : SLOTS)[s.slot];
   return { x: t.rx + o[0], y: t.ry + o[1] };
 }
 
@@ -2523,7 +2536,15 @@ function updateSoldier(s, dt) {
           s.swingT = 0.3;
           if (s.learned.bleed) { t.bleedDps = Math.max(t.bleedT > 0 ? t.bleedDps : 0, 6 + s.lvl * 2); t.bleedT = 3; }
         }
-        hitBy = s.hero ? 'hero' : s.minion ? 'minion' : 'melee'; damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee'); hitBy = null;
+        hitBy = s.hero ? 'hero' : s.minion ? 'minion' : 'melee'; damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee');
+        if (s.cleave) { // kılıç ustası: savurma yanındaki ikinci düşmana da işler
+          let o2 = null, od = 30; for (const o of G.enemies) { if (o === t || o.dead || o.def.flying || o.under) continue; const dd = dist(o.x, o.y, t.x, t.y); if (dd < od) { od = dd; o2 = o; } }
+          if (o2) { damageEnemy(o2, dmg * s.cleave, 'phys', false, 'melee'); slashFx(o2.x, o2.y - 14, s.face || 1, '#c8ffb0', 0.6); }
+        }
+        if (s.bash && (s.bashT = (s.bashT ?? 2) - s.rate) <= 0 && !t.dead) { // kalkan darbesi: sersemletir, biraz geri iter
+          s.bashT = 5; stunEnemy(t, s.bash); impactFx(t.x, t.y - 12, '200,230,255', 1.1); if (pushable(t)) knockback(t, t.maxHp, 'blast');
+        }
+        hitBy = null;
         if (s.steal) s.hp = Math.min(s.maxHp, s.hp + dmg * s.steal);
         if (crit) impactFx(t.x, t.y - 14, '255,245,220');
         slashFx(t.x, t.y - (CHAR_H['enemy_' + t.type] || 20) * 0.55, s.face, s.gear >= 2 ? '#ffe9a0' : '#ffffff', crit ? 1.5 : 1);
@@ -4962,7 +4983,9 @@ function drawSoldier(s) {
     const key = 'unit_skel_' + look, im = spr(key) || spr('unit_skel_1');
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
-    const ch = SKEL_H[look] * UNIT_K;
+    const spR = sp2 && sp2 !== 'bow' && s.tower.ab ? s.tower.ab[sp2] || 0 : 0; // kalkan/kılıç kademesi
+    const ch = SKEL_H[look] * UNIT_K * (1 + 0.05 * Math.max(0, spR - 1));
+    if (spR >= 2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.55, ch * (0.55 + 0.1 * spR), sp2 === 'shield' ? '120,200,255' : '120,255,120', 0.12 + 0.06 * spR + Math.sin(time * 4 + s.slot) * 0.04); ctx.restore(); }
     // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore();
     if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
