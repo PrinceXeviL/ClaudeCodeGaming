@@ -453,7 +453,7 @@ function voicePitch(e) {
   if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.93, 1.07) * (e.def.chief ? 0.8 : 1);
   return e.vp;
 }
-const MUTE_VOICE = (e) => ['ram', 'catapult'].includes(e.def.base || e.type); // kuşatma makinesi bağırmaz
+const MUTE_VOICE = (e) => !!e.def.machine; // kuşatma makinesi bağırmaz
 function deathVoice(e) { if (!MUTE_VOICE(e)) sfx('dvoice', voicePitch(e)); }
 // acı sesi: her düşman en çok ~1,4 sn'de bir, sürekli hasarda (zehir, gaz) çıkmaz
 function painVoice(e) {
@@ -1524,7 +1524,7 @@ function killEnemy(e) {
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
-    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief });
+    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   for (let i = 0; i < 5; i++) {
     emit(G.parts, { kind: 'glow', x: e.x + rand(-7, 7), y: e.y + rand(-6, 2), vx: rand(-14, 14), vy: rand(-22, -6), drag: 1.5,
       col: '205,195,175', s0: rand(3, 5), s1: rand(9, 13), life: rand(0.5, 0.8), a: 0.5 });
@@ -2305,9 +2305,8 @@ function updateSoldier(s, dt) {
   if (s.wall) { updateWall(s, dt); return; }
   if (s.stunT > 0) { s.stunT -= dt; return; }
   if (s.march) { marchSoldier(s, dt); return; }
-  // dirilen ceset: hedefi yokken ve yakında düşman kalmamışken yolun başına doğru yürümeyi sürdürür
-  if (s.zombie && !s.target && !s.moving && G.t - (s.fightT || 0) > 0.6 && !G.enemies.some(o => !o.dead && !o.def.flying && dist(o.x, o.y, s.x, s.y) < s.engage)) zombieMarch(s);
-  if (s.zombie && s.target) s.fightT = G.t;
+  // dirilen ceset: hedefi yokken en yakın yer düşmanına yönelir (yürüdüğü nokta düşmanla birlikte güncellenir)
+  if (s.zombie && !s.target) zombieHunt(s);
   if (s.hero && s.ranged) { updateRangedHero(s, dt); runHeroSkills(s, dt); return; }
   if (s.bow) { updateBowSoldier(s, dt); return; }
   const home = soldierHome(s);
@@ -2322,7 +2321,7 @@ function updateSoldier(s, dt) {
       if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0) continue;
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
-      const score = (o.blocker ? 1000 : 0) + (o.p.total - o.d);
+      const score = s.zombie ? d + (o.blocker ? 40 : 0) : (o.blocker ? 1000 : 0) + (o.p.total - o.d);
       if (score < bestScore) { bestScore = score; best = o; }
     }
     if (best) {
@@ -2744,11 +2743,14 @@ function castNecro(id, x, y) {
   }
 }
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
-function zombieMarch(s) {
-  const q = nearestOnPaths(G.paths, s.x, s.y);
-  if (!q.p || q.along < 8) return false;
-  s.march = { p: q.p, d: q.along, goal: 0, off: rand(-7, 7), zombie: true };
-  return true;
+function zombieHunt(s) {
+  let best = null, bd = 1e9;
+  for (const o of G.enemies) {
+    if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0) continue;
+    const d = dist(o.x, o.y, s.x, s.y);
+    if (d < bd) { bd = d; best = o; }
+  }
+  if (best) { s.rx = best.x; s.ry = best.y; } // hedef menzile girince normal dövüş seçimi devralır
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
@@ -2756,10 +2758,10 @@ function raiseMinion(e, delay = 0) {
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp, maxHp: M.hp, dmg: M.dmg, armor: M.armor,
     rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay };
-  // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), düşmanların geldiği yöne doğru yolda yürür
+  // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
     const D = ENEMIES[e.name.slice(6)];
-    s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true; zombieMarch(s);
+    s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true;
   }
   G.soldiers.push(s);
   G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '140,255,140', t: 0, dur: 0.7 });
@@ -2817,6 +2819,36 @@ function drawNecroGlyph(id, r) {
 }
 // Mortimer'ın büyü kareleri (mortimer_cast, 8 kare): 0 aura, 1 dur, 2 kaldır, 3 başın üstünde, 4 doruk, 5 tut, 6 indir, 7 aura
 const MORT_CAST_T = 1.2, MORT_CAST_SEQ = [2, 3, 3, 4, 4, 5, 5, 6, 7];
+// Mortimer'ın hâli (Wan videolarından şeritler): 'tea' oturur çay içer (mortimer_cay), düşman şapele yaklaşınca 'up' kalkar
+// (mortimer_otur tersten), 'panic' tedirgin (mortimer_panik), sakinleşince 'down' oturur; büyüde mortimer_buyu. Şerit yoksa eski kareler.
+const MORT_SIT_K = 0.8, MORT_TRANS = 0.7;
+function mortDanger() {
+  const c = G.castle;
+  return c.shake > 0 || G.enemies.some(e => !e.dead && !e.def.flying && dist(e.x, e.y, c.x, c.y) < 150);
+}
+function updateMortState(dt) {
+  const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0 });
+  M.t += dt;
+  if (mortDanger()) M.calm = 0; else M.calm += dt;
+  if (M.st === 'tea' && M.calm === 0) { M.st = 'up'; M.t = 0; }
+  else if (M.st === 'up' && M.t > MORT_TRANS) { M.st = 'panic'; M.t = 0; }
+  else if (M.st === 'panic' && M.calm > 3) { M.st = 'down'; M.t = 0; }
+  else if (M.st === 'down' && M.t > MORT_TRANS) { M.st = 'tea'; M.t = 0; }
+}
+const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : null);
+// o an çizilecek şerit, kare ve boy çarpanı (yoksa null)
+function mortAnim(p) {
+  const M = G && G.mort;
+  if (p >= 0 && mortStrip('mortimer_buyu')) return { n: 'mortimer_buyu', i: Math.min(ANIM_META.mortimer_buyu.n - 1, Math.floor(p * ANIM_META.mortimer_buyu.n)), k: 1 };
+  if (!M) return null;
+  if ((M.st === 'up' || M.st === 'down') && mortStrip('mortimer_otur')) {
+    const q = clamp(M.t / MORT_TRANS, 0, 1), N = ANIM_META.mortimer_otur.n;
+    return { n: 'mortimer_otur', i: Math.round((M.st === 'down' ? q : 1 - q) * (N - 1)), k: (1 + MORT_SIT_K) / 2 };
+  }
+  if (M.st === 'panic' && mortStrip('mortimer_panik')) return { n: 'mortimer_panik', i: Math.floor(time * 16) % ANIM_META.mortimer_panik.n, k: 1 };
+  if (mortStrip('mortimer_cay') && M.st !== 'panic') return { n: 'mortimer_cay', i: Math.floor(time * 12) % ANIM_META.mortimer_cay.n, k: MORT_SIT_K };
+  return null;
+}
 function drawMortimer() {
   const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / MORT_CAST_T, 0, 1) : -1;
   const k = p >= 0 ? Math.sin(p * Math.PI) : 0;
@@ -2828,7 +2860,9 @@ function drawMortimer() {
   glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.45, '120,255,140', 0.12 + 0.4 * k + (G.raiseT > 0 ? 0.2 : 0));
   ctx.restore();
   ctx.save(); ctx.translate(m.x, m.y);
-  if (fim) {
+  const MA = mortAnim(p);
+  if (MA) drawFrame(spr(MA.n), ANIM_META[MA.n], MA.i, hgt * 1.15 * MA.k);
+  else if (fim) {
     // boşta 1. kare hafifçe nefes alır; büyüde kareler sırayla oynar
     const i = p >= 0 ? MORT_CAST_SEQ[Math.min(MORT_CAST_SEQ.length - 1, Math.floor(p * MORT_CAST_SEQ.length))] : 1;
     if (p < 0) ctx.scale(1, 1 + Math.sin(time * 1.6) * 0.012);
@@ -3616,10 +3650,10 @@ function sendMerc(s) {
 }
 // paralı askerin yürüyüşü: yol üzerinde hedef noktaya (iki yöne de) yürür
 function marchSoldier(s, dt) {
-  const m = s.march, sp = (m.zombie ? 30 : MERCS.march) * G.wspd; // dirilenler ağır ağır yürür
+  const m = s.march, sp = MERCS.march * G.wspd;
   // toplanma yeri seçilmediyse yolda karşılaştığı ilk düşmanla orada dövüşür; seçildiyse yerine gider
   const foe = !m.rally && G.enemies.find(e => !e.dead && !e.def.flying && !e.under && dist(e.x, e.y, s.x, s.y) < 34);
-  if (foe || Math.abs(m.d - m.goal) < 1) { s.march = null; if (foe || m.zombie) { s.rx = s.x; s.ry = s.y; } else s.moving = true; return; }
+  if (foe || Math.abs(m.d - m.goal) < 1) { s.march = null; if (foe) { s.rx = s.x; s.ry = s.y; } else s.moving = true; return; }
   m.d += Math.sign(m.goal - m.d) * Math.min(sp * dt, Math.abs(m.goal - m.d));
   const q = pathPos(m.p, Math.min(m.d, m.p.total), m.off);
   s.face = q.x < s.x ? -1 : 1; s.x = q.x; s.y = q.y; s.anim += dt;
@@ -3659,6 +3693,7 @@ function update(dt) {
   for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt);
   if (G.raiseT > 0) G.raiseT -= dt;
   if (G.mortCast > 0) G.mortCast -= dt;
+  updateMortState(dt);
   updateMortSay(dt);
   updateMech(dt);
   updateProps(dt);
@@ -8365,7 +8400,9 @@ function drawRegionMap(E, ep, st) {
       glow(ctx, mx, my - mh * 0.55, mh * 1.4, '150,90,255', 0.45 + Math.sin(time * 2) * 0.1);
       glow(ctx, mx, my - mh * 0.55, mh * 0.75, '120,255,140', 0.35 + Math.sin(time * 2.6) * 0.08);
       ctx.restore();
-      drawSprite(ctx, mort, mx, my, mh * mort.width / mort.height);
+      const tea = mortStrip('mortimer_cay');
+      if (tea) { ctx.save(); ctx.translate(mx, my); drawFrame(spr(tea), ANIM_META[tea], Math.floor(time * 12) % ANIM_META[tea].n, mh * MORT_SIT_K); ctx.restore(); }
+      else drawSprite(ctx, mort, mx, my, mh * mort.width / mort.height);
       if (S.rail) { // korkuluk ayakların önünde
         const [x0, y0, x1, y1] = S.rail;
         ctx.drawImage(ch, x0 * ch.width, y0 * ch.height, (x1 - x0) * ch.width, (y1 - y0) * ch.height, cx - cw / 2 + x0 * cw, cy - chh + y0 * chh, (x1 - x0) * cw, (y1 - y0) * chh);

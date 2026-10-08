@@ -93,7 +93,8 @@ def refs_dataset(user, jobs):
     # referans görseller betiğe gömülünce Kaggle betiği reddediyor (boyut): gizli bir veri seti olarak yüklenir/güncellenir
     import shutil
     d = tempfile.mkdtemp()
-    for j in jobs: shutil.copy(os.path.join(ROOT, 'varliklar', j['ref']), d)
+    for f in os.listdir(OUT):  # bütün referanslar (eski sürümde olanlar da kalsın)
+        if f.endswith('_ref.png'): shutil.copy(os.path.join(OUT, f), d)
     json.dump({'title': DATASET, 'id': f'{user}/{DATASET}', 'licenses': [{'name': 'CC0-1.0'}]}, open(os.path.join(d, 'dataset-metadata.json'), 'w'))
     exists = DATASET in kaggle('datasets', 'list', '--mine').stdout
     r = kaggle('datasets', 'version', '-p', d, '-m', 'refs') if exists else kaggle('datasets', 'create', '-p', d)
@@ -136,8 +137,11 @@ if __name__ == '__main__':
     import video_uret
     meta = json.load(open(os.path.join(ROOT, 'sinir-kalesi', 'img', 'anim.json')))
     jobs = video_uret.modal_jobs(meta)
+    if '--isler' in sys.argv:  # hazır iş listesi (ör. Mortimer animasyonları)
+        jobs = json.load(open(sys.argv[sys.argv.index('--isler') + 1]))
     if '--dene' in sys.argv: jobs = jobs[:int(sys.argv[sys.argv.index('--dene') + 1])]
     slug = SLUG
+    if '--ad' in sys.argv: slug = f"{SLUG}-{sys.argv[sys.argv.index('--ad') + 1]}"
     if '--parca' in sys.argv:  # --parca 0/2: işlerin yarısı, ayrı Kaggle oturumunda (iki oturum aynı anda çalışır)
         i, n = map(int, sys.argv[sys.argv.index('--parca') + 1].split('/'))
         jobs = jobs[i::n]; slug = f'{SLUG}-{i}'

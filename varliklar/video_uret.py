@@ -154,7 +154,7 @@ def process(job):
     from anim_isle import remove_magenta
     rel = os.path.join('ham', 'anim', job['name'] + '.mp4')
     rgb = video_isle.frames_of(os.path.join(ROOT, 'varliklar', rel), 16)
-    L = len(rgb) - 1  # son kare = ilk kare
+    L = len(rgb) - (1 if job.get('loop') else 0)  # döngüde son kare = ilk kare
     order = list(range(L))
     if job['name'].endswith('_atk'):
         wid = []
