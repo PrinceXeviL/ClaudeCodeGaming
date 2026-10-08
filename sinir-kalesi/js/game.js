@@ -980,7 +980,7 @@ function startLevel(idx, chal = null) {
     heroes: [],
     spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
-    stars: 0, t: 0, starFx: 0,
+    stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
     castle: { x: lv.castle[0], y: lv.castle[1], shake: 0, flash: 0, smokeT: 0, lvl: 0, archers: [] },
     hurt: 0, banner: null,
     weather: lv.weather || null, wspd: (WEATHER[lv.weather] || {}).speed ?? 1,
@@ -1509,8 +1509,12 @@ function aimY(e) {
 // ---------- hasar ----------
 // type: 'phys' (zırh azaltır), 'magic' (büyü direnci azaltır), 'true' (hiçbir şey azaltmaz: zehir, ateş, delici ok)
 // src: hasar kaynağı (arrow/magic/blast/melee); düşmanın zayıflık/direnç çarpanı uygulanır
+// bölüm sonu özeti için: o an vuranın türü (kule, iskelet, dirilen, komutan); çağıran kod ayarlar
+let hitBy = null;
+const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 function damageEnemy(e, amount, type, quiet, src) {
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
+  if (hitBy || src) e.lastBy = hitBy || src;
   e.lastSrc = src || type;
   const wk = src && e.def.wk && e.def.wk[src];
   if (wk) amount *= wk;
@@ -1582,6 +1586,7 @@ function killEnemy(e) {
     r.hopT = 0.4; r.anim = 0;
   }
   G.kills = (G.kills || 0) + 1;
+  if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
   cnt('kills'); if (e.def.chief) cnt('bosses');
   dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)));
   sfx('death');
@@ -2476,7 +2481,7 @@ function updateSoldier(s, dt) {
           s.swingT = 0.3;
           if (s.learned.bleed) { t.bleedDps = Math.max(t.bleedT > 0 ? t.bleedDps : 0, 6 + s.lvl * 2); t.bleedT = 3; }
         }
-        damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee');
+        hitBy = s.hero ? 'hero' : s.minion ? 'minion' : 'melee'; damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee'); hitBy = null;
         if (s.steal) s.hp = Math.min(s.maxHp, s.hp + dmg * s.steal);
         if (crit) impactFx(t.x, t.y - 14, '255,245,220');
         slashFx(t.x, t.y - (CHAR_H['enemy_' + t.type] || 20) * 0.55, s.face, s.gear >= 2 ? '#ffe9a0' : '#ffffff', crit ? 1.5 : 1);
@@ -2510,7 +2515,8 @@ function heroSkills(h, dt) {
   if (h.castT > 0) h.castT -= dt;
   for (const p of h.def.paths) for (const sk of p.skills) {
     if (sk.passive || !h.learned[sk.id] || (h.cds[sk.id] || 0) > 0) continue;
-    if (!useSkill(h, sk.id)) { h.cds[sk.id] = 0.3; continue; }
+    hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
+    if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
       h.cds[sk.id] = sk.cd; h.castT = 0.45;
       floatText(h.x, h.y - 46, sk.name + '!', '#ffe27a');
@@ -2830,7 +2836,8 @@ function spellInfo(id) {
 }
 function castSpell(id, x, y) {
   if (NECRO_SPELLS[id]) { if (castNecro(id, x, y) === false) return; }
-  else castUlt(G.heroes[+id.slice(3)], x, y);
+  else { hitBy = 'hero'; castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; }
+  if (G.stats) G.stats.spells++;
   G.spells[id] = spellInfo(id).cd;
 }
 // ----- Mortimer'ın büyüleri -----
@@ -2885,6 +2892,7 @@ function zombieHunt(s) {
 function raiseMinion(e, delay = 0) {
   const S = NECRO_SPELLS.nm_raise, M = S.minion, up = upgRank('spells') >= 2 ? 1.25 : 1; // gelişme: dirilenler %25 dayanıklı
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
+  if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
     rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life * up, born: G.t + delay };
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
@@ -3871,7 +3879,8 @@ function update(dt) {
   for (const t of G.towers) updateTower(t, dt);
   for (const e of G.enemies) if (!e.dead) updateEnemy(e, dt);
   for (const s of G.soldiers) updateSoldier(s, dt);
-  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; updateProjectile(p, dt); }
+  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; updateProjectile(p, dt); }
+  hitBy = null;
   HERO_SKILL = false;
 
   G.enemies = G.enemies.filter(e => !e.dead);
@@ -9269,11 +9278,39 @@ const WIN_QUIPS = [
   'Mortimer\'ı rahatsız etmeyin. Etmeyin işte.',
 ];
 
+// zafer ekranı özeti: sayılar sırayla sayarak dolar; en çok öldüren vurgulanır
+const KILLER_NAME = { arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler' };
+function drawWinSummary(k, px, py, pw, cx) {
+  const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 40, w = pw - 80, y0 = py + 198;
+  roundRect(x0, y0, w, 118, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);
+  const up = (v, d) => Math.round(v * easeOutQ(clamp((k - 1.0 - d) / 0.8, 0, 1)));
+  const mm = Math.floor(G.t / 60), ss = Math.floor(G.t % 60);
+  const cell = (x, y, label, val, col) => {
+    txt(label, x, y, 12, '#a89cb8', 'left', '800', FONT_B, false);
+    txt(String(val), x + w / 2 - 34, y, 17, col || '#efe6cc', 'right', '400', FONT_T, false);
+  };
+  cell(x0 + 18, y0 + 22, 'Öldürülen düşman', up(G.kills || 0, 0));
+  cell(x0 + w / 2 + 18, y0 + 22, 'Süre', k > 1.0 ? `${mm}:${String(ss).padStart(2, '0')}` : '–');
+  cell(x0 + 18, y0 + 50, 'Diriltilen ölü', up(S.raised, 0.15), '#9dff8a');
+  cell(x0 + w / 2 + 18, y0 + 50, 'Kullanılan büyü', up(S.spells, 0.15));
+  // en çok öldüren
+  let best = null, bn = 0;
+  for (const [id, n] of Object.entries(S.by)) if (id !== 'other' && n > bn) { best = id; bn = n; }
+  if (!best || k < 1.6) return;
+  const a = easeOutBack(clamp((k - 1.6) / 0.4, 0, 1)), name = best === 'hero' ? ((G.heroes[0] && G.heroes[0].def.name) || 'Komutan') : KILLER_NAME[best] || best;
+  ctx.save(); ctx.translate(cx, y0 + 90); ctx.scale(a, a);
+  roundRect(-w / 2 + 10, -16, w - 20, 32, 9, 'rgba(60,140,70,0.25)', 'rgba(140,255,150,0.6)', 1.2);
+  drawIcon('crown', -w / 2 + 34, 0, 20);
+  txt('En çok öldüren:', -w / 2 + 52, 1, 13, '#cfe8c8', 'left', '800', FONT_B, false);
+  txt(`${name} · ${bn}`, w / 2 - 24, 1, 17, '#b8ff9a', 'right', '400', FONT_T, false);
+  ctx.restore();
+}
 function drawOverlay() {
   const k = time - overlayT, fade = clamp(k / 0.25, 0, 1);
   ctx.fillStyle = NECRO ? `rgba(8,4,16,${0.7 * fade})` : `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(0, 0, W, H);
   const big = overlay === 'skills';
-  const pw = big ? 600 : 470, ph = big ? 400 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : 18), px = cx - pw / 2, py = cy - ph / 2;
+  const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
+  const pw = big ? 600 : 470, ph = big ? 400 : sum ? 440 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
@@ -9314,9 +9351,10 @@ function drawOverlay() {
     drawIcon('heart', cx - lw / 2 - 8, py + 182, 22);
     txt(lt, cx + 12, py + 178, 21, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
     const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60);
-    txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '800', FONT_B, false);
-    if (NECRO) txt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + 228, 13, '#9fd8a0', 'center', '700', FONT_B, false);
-    const appear = k - 1.3, by = NECRO ? 10 : 0; // necro: espri satırına yer aç
+    if (sum) drawWinSummary(k, px, py, pw, cx);
+    else txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 13, '#8a6238', 'center', '800', FONT_B, false);
+    if (NECRO) txt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 336 : 228), 13, '#9fd8a0', 'center', '700', FONT_B, false);
+    const appear = k - 1.3, by = sum ? 110 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
     if (G.idx + 1 < LEVELS.length) {
       roundBtn('ov_retry', cx - 168, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear });
       txt('Tekrar', cx - 168, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
