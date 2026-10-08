@@ -39,7 +39,10 @@ kule/komutan adları (Vladrik = eski commander, Wren = eski zeynep). Eski seferl
 Görseller: `varliklar/ham/nm_*.jpg` (Gemini, magenta zemin) → `python3 varliklar/nm_isle.py` → img/ (castle_*, tower_*, unit_skel_*, enemy_*, nm_* dekor,
 grass_cursed, road_cursed; komşu nesne taşmaları ERASE ile silinir). Başlık/harita arka planı `img/nm_title.jpg` (kod dışında birleştirildi).
 Temalar game.js THEMES: cursed, bog, graveyard, blacklake, necrogate (treeSpr/rockSpr/bushSpr/pondSpr/roadTex).
-Sırada: çizgi roman panelleri, Mortimer'ın 3 büyüsü (şimdilik eski kahraman gücü sistemi), animasyon kareleri (poz kılavuzu), rütbe renkleri.
+Yapıldı: Mortimer'ın 3 büyüsü (Ölüleri Diriltme, Kemik Duvarı, Korku), rütbe renkleri (yayın 87).
+Sırada (öneri listesi, 8 Eki): dokunulabilir dekor şakaları (karga, mezar eli, Mortimer'ın çayı), meydan okuma modları
+(3 yıldızdan sonra Kahramanlık/Demir, ek yıldız), kodeks (düşman/kule kartları), başarımlar, çizgi roman panelleri
+(sefer girişi 5, boss öncesi 2-3; Gemini yazısız, balonlar kodla), Sefer 2 (çöl lejyonları / kuzey savaşçıları), animasyon kareleri (poz kılavuzu).
 
 ## Müzik, dalga önizleme, rütbeler, Mortimer lafları (8 Eki 2026, yayın 87)
 - Müzik üç parça (game.js MUSIC.tracks): `ses/muzik_menu.mp3` menüler, `ses/muzik_savas.mp3` bölüm içi, `ses/muzik_boss.mp3` boss sahadayken.
