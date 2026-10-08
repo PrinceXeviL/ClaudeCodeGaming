@@ -8306,6 +8306,8 @@ function drawRegionMap(E, ep, st) {
 
 let mapNote = null;
 function drawMap() {
+  // gelişme fiyatları arttı (9 Eki): harcanan yıldız eldekini aşıyorsa gelişmeler sıfırlanır, yıldızlar iade edilir
+  if (!save.upgFix2) { save.upgFix2 = 1; if (starsSpent() > starsTotal()) save.upg = {}; persist(); }
   if (mapEp == null) {
     const first = LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0));
     mapEp = first < 0 ? EPISODES.length : epOf(first);

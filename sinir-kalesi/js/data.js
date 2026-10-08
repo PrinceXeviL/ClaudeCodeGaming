@@ -637,13 +637,14 @@ const ENEMY_DESC = {
 
 // ----- yıldız gelişmeleri (bölüm haritasındaki GELİŞMELER ekranı) -----
 // Toplanan yıldızlarla kalıcı güçlendirmeler alınır; her satırda 3 kademe sırayla açılır. İstenince sıfırlanabilir.
+// Yıldız gelişmeleri: kademe fiyatı 2 + 3 + 5 = 10 yıldız; hepsi 60 yıldız = bölgenin bütün yıldızları (3 yıldız + Kahramanlık)
 const UPGRADES = [
-  { id: 'archer',   name: 'Okçular',   ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%10 menzil' }, { cost: 3, desc: '+%15 hasar' }] },
-  { id: 'barracks', name: 'Kışla',     ranks: [{ cost: 1, desc: '+%20 asker canı' }, { cost: 2, desc: '+%20 asker hasarı' }, { cost: 3, desc: '+%15 zırh, hızlı doğma' }] },
-  { id: 'mage',     name: 'Büyücüler', ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%10 menzil' }, { cost: 3, desc: '+%15 hasar' }] },
-  { id: 'artillery',name: 'Toplar',    ranks: [{ cost: 1, desc: '+%10 hasar' }, { cost: 2, desc: '+%15 patlama alanı' }, { cost: 3, desc: '+%15 hasar' }] },
-  { id: 'spells',   name: 'Güçler',    ranks: [{ cost: 1, desc: '+%20 kahraman gücü hasarı' }, { cost: 2, desc: '+1 paralı asker' }, { cost: 3, desc: 'Güçler ve paralı askerler %25 hızlı' }] },
-  { id: 'castle',   name: 'Kale',      ranks: [{ cost: 1, desc: '+3 can' }, { cost: 2, desc: '+60 altın' }, { cost: 3, desc: '+3 can, +60 altın' }] },
+  { id: 'archer',   name: 'Okçular',   ranks: [{ cost: 2, desc: '+%10 hasar' }, { cost: 3, desc: '+%10 menzil' }, { cost: 5, desc: '+%15 hasar' }] },
+  { id: 'barracks', name: 'Kışla',     ranks: [{ cost: 2, desc: '+%20 asker canı' }, { cost: 3, desc: '+%20 asker hasarı' }, { cost: 5, desc: '+%15 zırh, hızlı doğma' }] },
+  { id: 'mage',     name: 'Büyücüler', ranks: [{ cost: 2, desc: '+%10 hasar' }, { cost: 3, desc: '+%10 menzil' }, { cost: 5, desc: '+%15 hasar' }] },
+  { id: 'artillery',name: 'Toplar',    ranks: [{ cost: 2, desc: '+%10 hasar' }, { cost: 3, desc: '+%15 patlama alanı' }, { cost: 5, desc: '+%15 hasar' }] },
+  { id: 'spells',   name: 'Güçler',    ranks: [{ cost: 2, desc: '+%20 kahraman gücü hasarı' }, { cost: 3, desc: '+1 paralı asker' }, { cost: 5, desc: 'Güçler ve paralı askerler %25 hızlı' }] },
+  { id: 'castle',   name: 'Kale',      ranks: [{ cost: 2, desc: '+3 can' }, { cost: 3, desc: '+60 altın' }, { cost: 5, desc: '+3 can, +60 altın' }] },
 ];
 // Oyun tek, sabit zorlukta oynanır
 // gold: başlangıç altını çarpanı, bounty: düşman ödülü ve erken çağrı bonusu çarpanı (kazanç)
