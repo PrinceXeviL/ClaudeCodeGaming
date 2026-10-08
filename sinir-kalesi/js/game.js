@@ -1501,6 +1501,7 @@ function damageEnemy(e, amount, type, quiet, src) {
   const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
   dmgNum(e, dealt, quiet);
+  if (!quiet) knockback(e, dealt, src);
   if (!quiet) { e.flash = 0.1; e.hitT = 0.18; if (e.hp > 0) painVoice(e); }
   e.hitAt = time;
   if (e.hp <= 0) killEnemy(e);
@@ -1558,6 +1559,7 @@ function killEnemy(e) {
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
     dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
+  if (e.lastBig && pushable(e) && !e.leaked) launchCorpse(G.effects[G.effects.length - 1], e); // patlamayla ya da büyük vuruşla ölen savrulur
   for (let i = 0; i < 5; i++) {
     emit(G.parts, { kind: 'glow', x: e.x + rand(-7, 7), y: e.y + rand(-6, 2), vx: rand(-14, 14), vy: rand(-22, -6), drag: 1.5,
       col: '205,195,175', s0: rand(3, 5), s1: rand(9, 13), life: rand(0.5, 0.8), a: 0.5 });
@@ -1702,6 +1704,30 @@ function releaseSoldier(s) {
 }
 
 function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 }); }
+// ----- basit fizik (görsel): geri itme ve patlamada savrulan cesetler -----
+// big: canın büyük kısmını götüren vuruş ya da patlama. Boss, kuşatma makinesi, uçan ve kapıdaki düşman itilmez.
+const KNOCK = { t: 0.2, hit: 0.22, blast: 0.06, launch: 0.3, g: 560, bounce: 0.32 };
+const pushable = (e) => !e.def.chief && !e.def.machine && !e.def.flying && e.siege === undefined && !e.under;
+function knockback(e, dealt, src) {
+  const r = dealt / e.maxHp;
+  e.lastBig = src === 'blast' || r > KNOCK.launch; // bu vuruşla ölürse ceset savrulur
+  if (e.hp <= 0 || !pushable(e) || e.blocker || r < (src === 'blast' ? KNOCK.blast : KNOCK.hit)) return;
+  e.knockT = KNOCK.t; e.knockV = clamp(r * 260, 60, 160); e.hopT = Math.max(e.hopT || 0, 0.25);
+}
+// ceset havaya savrulur: yolun gerisine doğru, döne döne; yere çarpınca bir iki sekip durur, sonra ölüm pozu kaldığı yerden sürer
+function launchCorpse(f, e) {
+  const q = pathPos(e.p, e.d), back = Math.hypot(q.dx, q.dy) || 1, v = rand(50, 95);
+  f.vx = -q.dx / back * v + rand(-25, 25); f.vy = (-q.dy / back * v + rand(-20, 20)) * 0.5;
+  f.z = 0; f.vz = rand(120, 175); f.ang = 0; f.spin = rand(7, 12) * (Math.random() < 0.5 ? -1 : 1); f.air = true;
+}
+function corpsePhys(f, dt) {
+  f.t = Math.min(f.t, 0.15); // havadayken ölüm pozu 'darbe' anında bekler
+  f.x += f.vx * dt; f.y += f.vy * dt; f.vz -= KNOCK.g * dt; f.z += f.vz * dt; f.ang += f.spin * dt;
+  if (f.z > 0) return;
+  f.z = 0;
+  if (f.vz < -70) { f.vz = -f.vz * KNOCK.bounce; f.vx *= 0.5; f.vy *= 0.5; f.spin *= 0.35; G.effects.push({ kind: 'dust', x: f.x, y: f.y, t: 0, dur: 0.4 }); }
+  else { f.air = false; f.ang = 0; f.t = 0.32; } // yerleşti: yere yığılma pozundan devam
+}
 // Hasar sayıları: vurulan düşmanın üstünde küçük, kısa ömürlü sayı (büyük vuruş daha iri ve kırmızıya döner).
 // Sürekli hasar (zehir, gaz, kanama) toplanıp yarım saniyede bir gösterilir; aynı düşmana çok yakın vuruşlar birleşir.
 const DMGNUM = { life: 0.7, max: 45 };
@@ -2210,6 +2236,11 @@ function updateEnemy(e, dt) {
       for (const o of G.enemies) if (o.blocker === h && !o.dead) n++;
       if (n < HERO_AGGRO.max) { e.blocker = h; return; }
     }
+  }
+  // geri itme: sert vuruş ya da patlama düşmanı yolda kısa süre geriye savurur (hız sönerek azalır)
+  if (e.knockT > 0) {
+    e.knockT -= dt;
+    if (!e.offPath) { e.d = Math.max(0, e.d - e.knockV * dt * (0.3 + e.knockT / KNOCK.t)); const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; return; }
   }
   let spd = e.def.speed * G.wspd * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
   // muhafız: boss'un yanında dizilişini korur; boss savaşırken bekler, boss ölünce serbest kalır
@@ -3803,7 +3834,7 @@ function update(dt) {
   G.enemies = G.enemies.filter(e => !e.dead);
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.projectiles = G.projectiles.filter(p => !p.done);
-  for (const f of G.effects) f.t += dt;
+  for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); }
   G.effects = G.effects.filter(f => f.t < f.dur);
   G.parts = updateParts(G.parts, dt);
   if (G.stormT > 0) G.stormT -= dt;
@@ -5481,7 +5512,8 @@ function drawCorpse(f) {
   // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
   if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '110,255,140', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
   // ölüm pozu bitince (0.8 sn) ceset değişmez: bir kez ayrı tuvale çizilir, sonra tek resim olarak basılır (10 sn yatan cesetler ucuzlasın)
-  if (t > 0.8 && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
+  if (f.air) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 1, w * 0.4, w * 0.13, 0, 0, Math.PI * 2); ctx.fill(); }
+  if (t > 0.8 && !f.air && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
     if (!f.cache) {
       const cw = Math.ceil((w + h) * 1.7 + 8), chh = Math.ceil((w + h) * 1.5 + 8), ay = chh * 0.66, K = 2;
       const c = document.createElement('canvas'); c.width = cw * K; c.height = chh * K;
@@ -5494,7 +5526,8 @@ function drawCorpse(f) {
     ctx.restore();
     return;
   }
-  ctx.translate(f.x, f.y + 1 + oy);
+  ctx.translate(f.x, f.y + 1 + oy - (f.z || 0));
+  if (f.ang) { ctx.translate(0, -h * 0.45); ctx.rotate(f.ang); ctx.translate(0, h * 0.45); } // savrulurken gövde ortası etrafında döner
   ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
   ctx.rotate(rot);
   drawRig(im, w, h, legY, P, rig, arms);
