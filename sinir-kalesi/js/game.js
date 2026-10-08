@@ -1205,16 +1205,47 @@ function shakeScreen(amp, dur) {
 
 // Gülle / ateş yağmuru patlaması: parlama, ateş topu, şok dalgası, toprak parçaları, kıvılcım, duman ve yanık izi
 // veba sıçraması: yeşil bulamaç damlaları, gaz bulutu, birkaç kemik parçası
+// veba sıçraması: çember yok; sıvı yere çarpıp dört bir yana saçılır, düzensiz bir birikinti ve çevresine damla lekeleri kalır
 function fxPlagueSplash(x, y, r) {
   const P = G.parts;
-  emit(P, { kind: 'glow', add: true, x, y: y - 4, col: '170,255,120', s0: r * 1.1, s1: r * 1.5, life: 0.18, a: 0.8 });
-  for (let i = 0; i < 14; i++) {
-    const a = rand(0, Math.PI * 2), v = rand(30, 90);
-    emit(P, { kind: 'dot', x, y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5 - rand(40, 90), g: 260, col: i % 3 ? '#7ae04a' : '#c8ff8a', s0: rand(1.6, 2.8), s1: 1, life: rand(0.4, 0.7) });
+  for (let i = 0; i < 22; i++) { // yere yakın, yayvan saçılan damlalar
+    const a = rand(0, Math.PI * 2), v = rand(50, 150);
+    emit(P, { kind: 'dot', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? '#6cc83c' : '#b8f27a', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
   }
-  for (let i = 0; i < 6; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 8), vx: rand(-12, 12), vy: -rand(8, 20), col: '110,190,80', s0: r * 0.3, s1: r * 0.7, life: rand(0.7, 1.1), a: 0.45 });
-  for (let i = 0; i < 4; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 });
-  G.decals && G.decals.push({ kind: 'plague', x, y, r: r * 0.7, t: 0, life: 3 });
+  for (let i = 0; i < 5; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 8), vx: rand(-12, 12), vy: -rand(8, 20), col: '110,190,80', s0: r * 0.3, s1: r * 0.7, life: rand(0.7, 1.1), a: 0.4 });
+  for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 });
+  if (!G.decals) return;
+  G.decals.push({ kind: 'splat', x, y, r: r * 0.8, rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 3.2 });
+  for (let i = 0; i < 7; i++) { // damlaların düştüğü yerler: biraz gecikmeyle beliren küçük lekeler
+    const a = rand(0, Math.PI * 2), d = rand(0.8, 1.6) * r;
+    G.decals.push({ kind: 'splat', x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.45, r: rand(3, 6), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: -rand(0.25, 0.5), life: 2.6, small: true });
+  }
+}
+// birikinti dokuları (birkaç çeşit, bir kez üretilir): düzensiz gövde, uzanan kollar, uçlarda damlalar, açık iç ton ve parlak benekler
+const SPLAT_N = 4, SPLATS = [];
+function splatTex(v) {
+  if (SPLATS[v]) return SPLATS[v];
+  const S = 96, c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d'), rnd = seeded(31 + v * 17), C = S / 2;
+  const blob = (r0, col, jit) => {
+    g.fillStyle = col; g.beginPath();
+    for (let i = 0; i <= 20; i++) { const a = i / 20 * Math.PI * 2, rr = r0 * (1 + (rnd() - 0.5) * jit); i ? g.lineTo(C + Math.cos(a) * rr, C + Math.sin(a) * rr) : g.moveTo(C + Math.cos(a) * rr, C + Math.sin(a) * rr); }
+    g.closePath(); g.fill();
+  };
+  blob(S * 0.26, '#3a7a20', 0.45);
+  for (let i = 0, n = 5 + Math.floor(rnd() * 3); i < n; i++) { // kollar
+    const a = rnd() * Math.PI * 2, L = S * (0.22 + rnd() * 0.18), w = S * (0.05 + rnd() * 0.04);
+    g.save(); g.translate(C, C); g.rotate(a); g.fillStyle = '#3a7a20';
+    g.beginPath(); g.moveTo(0, -w); g.quadraticCurveTo(L * 0.6, -w * 0.5, L, 0); g.quadraticCurveTo(L * 0.6, w * 0.5, 0, w); g.closePath(); g.fill();
+    g.beginPath(); g.arc(L + w * 0.6, 0, w * 0.75, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, d = S * (0.3 + rnd() * 0.16); g.fillStyle = '#3a7a20'; g.beginPath(); g.arc(C + Math.cos(a) * d, C + Math.sin(a) * d, S * (0.012 + rnd() * 0.02), 0, Math.PI * 2); g.fill(); }
+  blob(S * 0.17, '#5aa832', 0.5);
+  blob(S * 0.08, '#86d24e', 0.6);
+  g.fillStyle = 'rgba(220,255,190,0.85)';
+  for (let i = 0; i < 4; i++) { g.beginPath(); g.ellipse(C - S * 0.08 + rnd() * S * 0.1, C - S * 0.08 + rnd() * S * 0.08, S * 0.018, S * 0.01, -0.5, 0, Math.PI * 2); g.fill(); }
+  return (SPLATS[v] = c);
 }
 function fxExplosion(x, y, r, big) {
   const P = G.parts, m = big ? 1.5 : 1;
@@ -9052,11 +9083,13 @@ function drawPlay() {
   ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
   ctx.drawImage(G.bg, 0, 0, W, H);
   for (const d of G.decals) {
-    if (d.kind === 'plague') {
-      // veba birikintisi: yerde yeşil, parlak kenarlı gölcük
-      const k = Math.min(1, (d.life - d.t) / 1);
-      ctx.globalAlpha = 0.55 * k; ctx.fillStyle = '#3e8a24'; ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r, d.r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 0.5 * k; ctx.strokeStyle = '#a8ff70'; ctx.lineWidth = 1.2; ctx.stroke();
+    if (d.kind === 'splat') {
+      // veba birikintisi: yere dökülmüş sıvı; hızla yayılır, yavaşça solar (yer düzlemine yatık)
+      if (d.t < 0) continue;
+      const k = Math.min(1, (d.life - d.t) / 1.2), grow = d.small ? 1 : 0.55 + 0.45 * Math.min(1, d.t / 0.12);
+      ctx.save(); ctx.translate(d.x, d.y); ctx.scale(1, 0.48); ctx.rotate(d.rot);
+      ctx.globalAlpha = 0.72 * k; const R = d.r * 1.7 * grow; ctx.drawImage(splatTex(d.v), -R, -R, R * 2, R * 2);
+      ctx.restore();
       continue;
     }
     ctx.globalAlpha = (d.hot ? 0.6 : 0.38) * Math.min(1, (d.life - d.t) / 2.5);
