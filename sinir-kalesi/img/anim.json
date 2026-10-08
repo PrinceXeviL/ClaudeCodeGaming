@@ -296,5 +296,54 @@
   "fh": 219,
   "base": 0.0143,
   "ch": 0.9145
+ },
+ "enemy_solarcher_die": {
+  "n": 17,
+  "fw": 205,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9523
+ },
+ "enemy_assassin_die": {
+  "n": 17,
+  "fw": 213,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9215
+ },
+ "enemy_heavy_die": {
+  "n": 17,
+  "fw": 260,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_legion_die": {
+  "n": 17,
+  "fw": 185,
+  "fh": 173,
+  "base": 0.0139,
+  "ch": 0.9258
+ },
+ "enemy_gladiator_die": {
+  "n": 17,
+  "fw": 226,
+  "fh": 175,
+  "base": 0.0137,
+  "ch": 0.913
+ },
+ "enemy_priest_die": {
+  "n": 17,
+  "fw": 263,
+  "fh": 167,
+  "base": 0.019,
+  "ch": 0.9587
+ },
+ "enemy_cavalry_die": {
+  "n": 17,
+  "fw": 227,
+  "fh": 182,
+  "base": 0.0132,
+  "ch": 0.8808
  }
 }
