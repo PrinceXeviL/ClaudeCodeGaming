@@ -256,6 +256,26 @@ def scream(k):
     return voice(dur, f0, [(0, 'a'), (0.7, 'a'), (1, 'ʌ')], amp, breath=0.02, fk=1.12)
 
 
+def warcry(k, syl):
+    """ordu çığlığı: 5-6 erkek sesi üst üste, hafif gecikme ve perde farkıyla ('HAA!' / 'HU-RAA!' / 'HEY!')"""
+    voices = []
+    for v in range(6):
+        kk = k * rng.uniform(0.85, 1.18); dl = rng.uniform(0, 0.09)
+        parts = []
+        for vw, d, rise in syl:
+            dur = d * rng.uniform(0.92, 1.08)
+            f0 = lambda u, kk=kk, rise=rise: 128 * kk * (1 + rise * np.minimum(1, u / 0.25)) * (1 - 0.18 * np.maximum(0, u - 0.55))
+            amp = lambda u: np.minimum(1, u / 0.07) * np.where(u > 0.7, (1 - u) / 0.3, 1)
+            parts.append(voice(dur, f0, [(0, vw[0]), (1, vw[1])], amp, growl=0.3, breath=0.04))
+        x = np.concatenate(parts)
+        voices.append(np.concatenate([np.zeros(int(SR * dl)), x]))
+    n = max(len(x) for x in voices); out = np.zeros(n)
+    for x in voices: out[:len(x)] += x
+    for dl, g in [(0.07, 0.3), (0.16, 0.15)]:  # açık havada kısa yankı
+        kd = int(SR * dl); out[kd:] += out[:-kd] * g
+    return lowpass(out, 3800)
+
+
 def main():
     made = []
     for i, k in enumerate([0.95, 1.0, 1.08], 1): made.append(save(f'arrow_{i}', arrow_shot(k), -22))
@@ -272,6 +292,10 @@ def main():
     for i, k in enumerate([0.75, 0.9, 1.0, 1.15, 1.3], 1): made.append(save(f'dvoice_{i}', dvoice(k), -18))
     for i, k in enumerate([0.85, 1.0, 1.15, 1.3], 1): made.append(save(f'scream_{i}', scream(k), -18))
     made.append(save('horn_1', horn(), -17))
+    CR = [[('aa', 0.42, 0.25)], [('uə', 0.16, 0.1), ('aa', 0.38, 0.3)], [('ea', 0.3, 0.35)], [('oo', 0.2, 0.05), ('aa', 0.34, 0.25)]]
+    for i, syl in enumerate(CR, 1):
+        syl = [(tuple(v.replace('a', 'a').replace('ə', 'ə')), d, r) for v, d, r in syl]
+        made.append(save(f'warcry_{i}', warcry(rng.uniform(0.95, 1.05), syl), -17))
     # manifest: eski aynı adlı türler yerine yenileri
     mp = os.path.join(OUT, 'manifest.json')
     man = json.load(open(mp))

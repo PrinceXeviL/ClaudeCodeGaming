@@ -227,7 +227,8 @@ const SOUND = {
   pain:    { vol: 0.2, gap: 0.09, max: 2 },                         // düşman acı sesi (painVoice)
   dvoice:  { vol: 0.2, gap: 0.12, max: 2 },                         // ölüm iniltisi (deathVoice)
   scream:  { vol: 0.2, gap: 0.08, max: 3, rate: [0.95, 1.08] },    // korku çığlığı
-  horn:    { vol: 0.34, gap: 1, max: 1 },                           // bölüm başı borazanı
+  horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi)
+  warcry:  { vol: 0.34, gap: 1.6, max: 2, rate: [0.94, 1.06] },     // düşman ordusunun savaş çığlığı
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
   boom:    { vol: 0.50, gap: 0.08, max: 3, rate: [0.9, 1.1] },
@@ -536,7 +537,7 @@ for (const [t, o] of [['pointerup', window], ['touchend', window], ['click', win
 function musicRestartBattle() { const T = MUSIC.tracks.battle; if (T.el) { try { T.el.currentTime = 0; } catch (e) {} } }
 function musicWanted() {
   if (screen !== 'play') return 'menu';
-  if (!G || overlay === 'win' || overlay === 'lose') return null;
+  if (!G || overlay === 'win' || overlay === 'lose' || !G.musicOn) return null;
   const T = MUSIC.tracks;
   if (G.enemies.some(e => e.def.chief && e.hp > 0) && !T.boss.missing) return 'boss';
   return 'battle';
@@ -548,6 +549,7 @@ function updateMusic(dt) {
     const T = MUSIC.tracks[k];
     let tgt = on && k === want ? T.gain * setting('vol') : 0;
     if (tgt && overlay === 'pause') tgt *= 0.4;
+    if (tgt && G && screen === 'play' && (G.heralds || []).some(h => h.state === 'blow')) tgt *= 0.2; // borazan duyulsun
     if (!tgt && !T.el) continue;
     const el = musicEl(T); if (!el) continue;
     // giriş ~2 sn, çıkış ~1 sn (boss geçişi biraz daha hızlı girer)
@@ -981,7 +983,7 @@ function startLevel(idx, chal = null) {
     heroes: [],
     spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
-    stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
+    musicOn: !NECRO, stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
     castle: { x: lv.castle[0], y: lv.castle[1], shake: 0, flash: 0, smokeT: 0, lvl: 0, archers: [] },
     hurt: 0, banner: null,
     weather: lv.weather || null, wspd: (WEATHER[lv.weather] || {}).speed ?? 1,
@@ -1109,6 +1111,7 @@ function waveBonusAndStart() {
   const def = G.lv.waves[G.wave];
   // ilk dalga: önce borazancı gelir, çalar, döner; düşmanlar sonra
   const wait = G.wave === 0 && NECRO ? (callHeralds(nextWavePaths()), heraldT(false)) : 0;
+  G.cryAt = G.t + wait + 2.2; // dalganın ilk sırası görününce çığlık
   let lastSpawn = 0;
   for (const grp of def) {
     G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
@@ -1131,6 +1134,18 @@ function waveBonusAndStart() {
   }
 }
 
+// hizalı yürüyüş: piyade 3'lü, atlı 2'li sıra; uçan, makine, boss, dizilişli ve iskelete takılmayanlar serbest
+function marchRow(D, sp) {
+  if (!D || D.flying || D.machine || D.chief || D.noblock || D.formation) return 0;
+  return D.r >= 13 ? 2 : 3;
+}
+// savaş çığlığı: dalga başında ve ilk göğüs göğüse çarpışmada (sık değil)
+const SHOUTS = ['Sol Invictus!', 'Hücum!', 'İleri!', 'Kalkanlar!', 'Güneş için!', 'Saf tutun!', 'Ölüme, ileri!'];
+function warCry(e, text = true) {
+  if (!e || e.dead || MUTE_VOICE(e) || e.def.flying) return;
+  sfx('warcry');
+  if (text) floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 10, SHOUTS[Math.floor(Math.random() * SHOUTS.length)], '#ffe2b0');
+}
 function nextWavePaths() {
   if (G.wave >= G.lv.waves.length) return [];
   const s = new Set(G.lv.waves[G.wave].map(g => g.p || 0));
@@ -2259,6 +2274,7 @@ function updateEnemy(e, dt) {
   if (e.blocker) {
     const B = e.blocker, bd = dist(e.x, e.y, B.x, B.y);
     e.inMelee = bd < 22;
+    if (e.inMelee && !e.cried && G.cryCd <= 0) { e.cried = true; G.cryCd = 5; warCry(e); } // göğüs göğüse: hücum çığlığı
     if (!e.inMelee) {
       // Kilitlendiği asker/kahraman yanına gelmiyorsa (kahraman yol dışında durur, asker başka düşmanla uğraşır)
       // düşman kısa bir bekleyişten sonra kendisi ona yürür; çok uzaklaşan hedefi bırakır.
@@ -2300,12 +2316,16 @@ function updateEnemy(e, dt) {
     if (!e.offPath) { e.d = Math.max(0, e.d - e.knockV * dt * (0.3 + e.knockT / KNOCK.t)); const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; return; }
   }
   let spd = e.def.speed * G.wspd * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
+  if (e.entryT > 0) { // boss girişi: ağır adımlar
+    e.entryT -= dt; spd *= 0.3;
+    if ((e.stompT = (e.stompT ?? 0.4) - dt) <= 0) { e.stompT = 0.8; sfx('stomp'); shakeScreen(2.6, 0.22); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 }); }
+  }
   // muhafız: boss'un yanında dizilişini korur; boss savaşırken bekler, boss ölünce serbest kalır
   if (e.leader) {
     const L = e.leader;
     if (L.dead || L.p !== e.p || L.siege != null) e.leader = null;
     else {
-      const ls = L.blocker ? 0 : L.def.speed * G.wspd * (L.spdMul || 1) * (L.slowT > 0 ? 1 - L.slowK : 1) * (L.hasteT > 0 ? 1.5 : 1);
+      const ls = L.blocker ? 0 : L.def.speed * G.wspd * (L.spdMul || 1) * (L.slowT > 0 ? 1 - L.slowK : 1) * (L.hasteT > 0 ? 1.5 : 1) * (L.entryT > 0 ? 0.3 : 1);
       spd = clamp(ls + ((L.d + e.form) - e.d) * 1.5, 0, spd * 1.3);
     }
   }
@@ -3310,7 +3330,7 @@ function updateHeralds(dt) {
     if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= HERALD.walk) { h.state = 'blow'; h.t = 0; if (h.i === 0) sfx('horn', h.long ? 0.8 : undefined); } }
     else if (h.state === 'blow') {
       if (h.long && h.i === 0 && !h.horn2 && h.t > 1.75) { h.horn2 = true; sfx('horn', 0.7); } // ikinci, daha kalın nefes
-      if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'out'; h.t = 0; }
+      if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'out'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
     }
     else h.d -= HERALD.back * dt;
   }
@@ -3900,6 +3920,11 @@ function update(dt) {
   updateMech(dt);
   updateProps(dt);
   updateHeralds(dt);
+  G.cryCd = (G.cryCd || 0) - dt;
+  if (G.cryAt != null && G.t >= G.cryAt) {
+    let lead = null; for (const e of G.enemies) if (!e.dead && !MUTE_VOICE(e) && !e.def.flying && (!lead || e.d > lead.d)) lead = e;
+    if (lead) { warCry(lead); G.cryAt = null; G.cryCd = 3; } else if (G.t > G.cryAt + 8) G.cryAt = null;
+  }
   updateTut(dt);
 
   if (G.waveCountdown != null && G.wave > 0) {
@@ -3912,14 +3937,18 @@ function update(dt) {
       const i = sp.n - sp.left, ty = sp.types ? sp.types[i] : sp.t;
       // boss sırası: önce borazancı uzun çağrısını çalıp döner, boss sonra gelir
       if (NECRO && ENEMIES[ty] && ENEMIES[ty].chief && !sp.called) { sp.called = true; callHeralds([sp.p], true); sp.timer += heraldT(true); break; }
-      // kollu girişte düşmanlar kollara sırayla (rastgele başlangıçla) dağılır
+      // kollu girişte düşmanlar kollara sırayla (rastgele başlangıçla) dağılır; bir sıra hep aynı kola
+      const R = sp.pack ? 0 : marchRow(ENEMIES[ty], sp), col = R ? i % R : 0;
       const rt = G.lv.routes && G.lv.routes[sp.p];
-      const pi = rt ? rt[(sp.rk = (sp.rk ?? Math.floor(Math.random() * rt.length)) + 1) % rt.length] : sp.p;
-      const e = spawnEnemy(sp.types ? sp.types[i] : sp.t, pi);
+      const pi = R && col ? sp.lastPi : rt ? rt[(sp.rk = (sp.rk ?? Math.floor(Math.random() * rt.length)) + 1) % rt.length] : sp.p;
+      sp.lastPi = pi;
+      const e = spawnEnemy(ty, pi, 0, R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
+      if (R) e.march = true;
       if (sp.hpK && !e.def.chief) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; }
       sp.left--;
       // paket: küme içinde sık, kümeler arasında uzun ara (ortalama sıklık aynı kalır)
       if (sp.pack) sp.timer += (i + 1) % sp.pack ? sp.gap * 0.35 : sp.gap * (sp.pack - 0.35 * (sp.pack - 1));
+      else if (R) sp.timer += col < R - 1 ? 0 : sp.gap * R * 0.8; // sıra tamamlanınca sonraki sıra
       else sp.timer += sp.gap;
     }
   }
@@ -4803,7 +4832,7 @@ function drawEnemy(e) {
     if (d.chief) drawBossAura(e, dh);
     const uo = {
       rig: d.base ? 'enemy_' + d.base : undefined,
-      h: CHAR_H[name] || d.r * 2.6, phase: e.anim * (5 + d.speed * G.wspd / 9),
+      h: CHAR_H[name] || d.r * 2.6, phase: (e.march && !(e.slowT > 0) ? G.t : e.anim) * (5 + d.speed * G.wspd / 9), // sıradakiler uygun adım
       rise: e.reviveT > 0 ? 0.25 + 0.75 * (1 - e.reviveT / 1.1) : e.emergeT > 0 ? 1 - e.emergeT / 0.35 * 0.85 : null,
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
@@ -7609,13 +7638,15 @@ function drawCrown(x, y, s, face) {
 }
 
 // Boss girişi: ekran kızıl karanlığa bürünür, boru ve davullar çalar, ekran sarsılır, kükrer
+// Boss girişi: ilk BOSS_ENTRY sn ağır ağır yürür, her adımda yer sarsılır ve toz kalkar; ekran uzun süre kızıl karanlıkta kalır
+const BOSS_ENTRY = 5;
 function bossIntro(e) {
-  G.bossT = 0;
-  G.intro = { type: e.type, t: 0, dur: 5, boss: true };
-  G.bossFx = { t: 0, dur: 3.4 };
-  shakeScreen(7, 1.1);
-  bossSting(); setTimeout(() => sfx('roar'), 900);
-  setTimeout(() => mortSay('boss', true), 1600);
+  G.bossT = 0; e.entryT = BOSS_ENTRY;
+  G.intro = { type: e.type, t: 0, dur: 6.5, boss: true };
+  G.bossFx = { t: 0, dur: 5.5 };
+  shakeScreen(4, 0.9);
+  bossSting(); setTimeout(() => sfx('roar'), 1400);
+  setTimeout(() => mortSay('boss', true), 2600);
 }
 
 // Zırh parçalanır: çelik parçaları saçılır, ekran sarsılır, boss 2. evreye geçer ve lejyonunu çağırır
