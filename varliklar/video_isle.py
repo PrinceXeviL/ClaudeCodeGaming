@@ -16,6 +16,7 @@ from anim_isle import remove_magenta, biggest_mask
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
 TARGET_H = 300  # şerit bellek tutmasın (oyunda karakter en çok ~150 px çizilir)
+UNIT_H = 160    # düşman/iskelet şeritleri: en yakın zoomda ekrandaki boy kadar (bellek ~1/4, oyunda fark edilmez)
 
 
 try:  # ffmpeg sistemde yoksa pip paketi imageio-ffmpeg'in getirdiği kullanılır
@@ -63,7 +64,7 @@ def main(src, name, start=None, length=None, fps=24, order=None):
         ys, xs = np.nonzero(c[..., 3] > 128); boxes.append((ys.min(), ys.max(), xs.min(), xs.max()))
     y0 = min(b[0] for b in boxes); y1 = max(b[1] for b in boxes); x0 = min(b[2] for b in boxes); x1 = max(b[3] for b in boxes)
     hs = sorted(b[1] - b[0] for b in boxes); chH = hs[len(hs) // 2]
-    k = TARGET_H / chH; pad = 6
+    k = (UNIT_H if name.startswith(('enemy_', 'unit_')) else TARGET_H) / chH; pad = 6
     # kare ortası: başın (miğfer/sorguç) ortalama yatay yeri (sabit; mızrak uzansa da karakter kaymaz,
     # yürüyüş ve saldırı şeritleri aynı noktaya oturur)
     def head_x(c, b):

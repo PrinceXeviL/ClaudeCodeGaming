@@ -23,11 +23,30 @@ function seeded(seed) {
 // Bir sprite yoksa o nesne kodla çizilir (yedek), böylece görseller parça parça eklenebilir.
 const SPR = {};
 const spr = (name) => SPR[name] || null;
+// Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
+// gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
+const LAZY = {}, LAZY_RE = /^(enemy|unit)_.+_(walk|walk_on|walk_arka|atk)$/, STRIP_WAIT = new Set();
+function loadStrip(name) {
+  if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
+  STRIP_WAIT.add(name);
+  const im = new Image();
+  im.src = 'img/' + LAZY[name] + (window.SURUM ? '?v=' + window.SURUM : '');
+  (im.decode ? im.decode() : new Promise((ok, no) => { im.onload = ok; im.onerror = no; }))
+    .then(() => { if (STRIP_WAIT.has(name)) { SPR[name] = im; mipsOf(im); } }) // küçük kopyalar da şimdi (ilk çizimde takılmasın)
+    .catch(() => {})
+    .finally(() => STRIP_WAIT.delete(name));
+}
+function useStrips(keep) {
+  for (const k in SPR) if (LAZY_RE.test(k) && !keep.has(k)) delete SPR[k];
+  for (const k of [...STRIP_WAIT]) if (!keep.has(k)) STRIP_WAIT.delete(k);
+  keep.forEach(loadStrip);
+}
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
   .then(r => (r.ok ? r.json() : []))
   .then(list => list.sort((a, b) => (b.startsWith('nm_title') ? 1 : 0) - (a.startsWith('nm_title') ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
     const name = file.replace(/\.(png|svg|jpg|webp)$/, '');
+    if (LAZY_RE.test(name)) { LAZY[name] = file; return; } // animasyon şeridi: bölümde gerekince yüklenir
     const im = new Image();
     im.onload = () => {
       let out = im;
@@ -976,6 +995,11 @@ function startLevel(idx, chal = null) {
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
+  [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk'];
+  types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
+  for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
+  useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
   setupProps();
@@ -988,6 +1012,7 @@ function bakeNext() {
   let name, rigName, im;
   if (k[0] === 'e') {
     const t = k.slice(2), d = ENEMIES[t]; if (!d) return; name = 'enemy_' + t; rigName = d.base ? 'enemy_' + d.base : name; im = d.base ? enemySprite(t) : spr(name);
+    if (d.base && ['_walk', '_atk'].some(sf => STRIP_WAIT.has(rigName + sf))) { G.bakeQ.push(k); return; } // şerit inince boyansın
     if (d.base) for (const sf of ['_walk', '_walk_on', '_walk_arka', '_atk']) animStrip(name, rigName, sf);
   }
   else { const d = HEROES[k.slice(2)]; if (!d) return; name = rigName = d.sprite; im = heroSprite(d); }
@@ -7336,6 +7361,7 @@ const BOSS_LOOK = {
 function animStrip(name, rig, suf) {
   const key = name + suf;
   if (ANIM_META[key] && spr(key)) return key;
+  if (!SPR[key]) { loadStrip(key); if (rig) loadStrip(rig + suf); } // bölüm dışı (harita, kodeks): ilk istekte yüklenir
   if (!rig || rig === name || !ANIM_META[rig + suf] || !spr(rig + suf)) return null;
   const type = name.slice(6), d = ENEMIES[type];
   if (!d) return null;
