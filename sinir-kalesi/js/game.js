@@ -207,6 +207,7 @@ const SOUND = {
   pain:    { vol: 0.2, gap: 0.09, max: 2 },                         // düşman acı sesi (painVoice)
   dvoice:  { vol: 0.2, gap: 0.12, max: 2 },                         // ölüm iniltisi (deathVoice)
   scream:  { vol: 0.2, gap: 0.08, max: 3, rate: [0.95, 1.08] },    // korku çığlığı
+  horn:    { vol: 0.34, gap: 1, max: 1 },                           // bölüm başı borazanı
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
   boom:    { vol: 0.50, gap: 0.08, max: 3, rate: [0.9, 1.1] },
@@ -838,24 +839,25 @@ function renderBackground(lv, paths, res = 2) {
     for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
     if (y < 52 && (x < 300 || x > 860)) return true;
     if (y > 465 && x < 230) return true;
-    if (Math.abs(x - lv.castle[0]) < 75 + pad && y > lv.castle[1] - 130 && y < lv.castle[1] + 30 + pad) return true;
+    if (Math.abs(x - lv.castle[0]) < 75 + pad && y > lv.castle[1] - 170 && y < lv.castle[1] + 38 + pad) return true;
     return false;
   };
   // vaha gölleri ve çalılar (yerde, gölgesiz)
-  for (let i = 0, n = 0; i < 300 && n < (th.ponds || 0); i++) {
+  const DK = lv.decorK || 1; // dekor yoğunluğu (bölge haritası daha dolu)
+  for (let i = 0, n = 0; i < 300 * DK && n < (th.ponds || 0) * DK; i++) {
     const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr(th.pondSpr || 's2_pond_2');
     if (blocked(x, y, 34) || !im) continue;
     n++;
     drawSprite(g, im, x, y, 60 + rnd() * 30, 0.5);
     for (let k = 0; k < 4; k++) { const b = spr(th.bushSpr ? th.bushSpr[k % th.bushSpr.length] : 's2_bush_' + (1 + (k % 2))); if (b) drawSprite(g, b, x + (rnd() - 0.5) * 80, y + 18 + rnd() * 10, 16 + rnd() * 8); }
   }
-  for (let i = 0, n = 0; i < 400 && n < (th.bushes || 0); i++) {
+  for (let i = 0, n = 0; i < 400 * DK && n < (th.bushes || 0) * DK; i++) {
     const x = rnd() * W, y = rnd() * H, b = spr(th.bushSpr ? th.bushSpr[i % th.bushSpr.length] : 's2_bush_' + (1 + (i % 2)));
     if (blocked(x, y, 6) || !b) continue;
     n++; drawSprite(g, b, x, y + 4, 12 + rnd() * 10);
   }
   // kayalar
-  for (let i = 0, n = 0; i < 400 && n < th.rocks; i++) {
+  for (let i = 0, n = 0; i < 400 * DK && n < th.rocks * DK; i++) {
     const x = rnd() * W, y = rnd() * H, s = 4 + rnd() * 9;
     if (blocked(x, y, s)) continue;
     n++;
@@ -872,7 +874,7 @@ function renderBackground(lv, paths, res = 2) {
   }
   // ağaçlar
   const trees = [];
-  for (let i = 0; i < 2000 && trees.length < th.trees; i++) {
+  for (let i = 0; i < 2000 * DK && trees.length < th.trees * DK; i++) {
     const x = rnd() * W, y = rnd() * H, s = 10 + rnd() * 9;
     if (blocked(x, y, s)) continue;
     trees.push([x, y, s]);
@@ -977,6 +979,7 @@ function startLevel(idx, chal = null) {
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
   setupProps();
+  setupHeralds();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
 }
@@ -3033,6 +3036,47 @@ function drawAchievements() {
   });
   save.achNew = 0;
 }
+// ----- bölüm başı borazancı: her girişten bir lejyoner çıkar, savaş borazanını çalar ve geri döner -----
+const HERALD = { walk: 150, speed: 34, blow: 1.9 };
+function setupHeralds() {
+  G.heralds = [];
+  for (let i = 0; i < Math.min(3, G.lv.entr || 1); i++) G.heralds.push({ p: G.paths[i], d: 0, state: 'in', t: -0.6 - i * 0.45, i });
+}
+function updateHeralds(dt) {
+  for (const h of G.heralds || []) {
+    h.t += dt;
+    if (h.t < 0) continue;
+    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= HERALD.walk) { h.state = 'blow'; h.t = 0; if (h.i === 0) sfx('horn'); } }
+    else if (h.state === 'blow') { if (h.t > HERALD.blow) { h.state = 'out'; h.t = 0; } }
+    else h.d -= HERALD.speed * 1.2 * dt;
+  }
+  if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > -10);
+}
+function drawHeralds() {
+  const im = spr('enemy_legion'); if (!im) return;
+  const hgt = CHAR_H.enemy_legion || ENEMIES.legion.h * UNIT_K;
+  for (const h of G.heralds || []) {
+    if (h.t < 0 && h.state === 'in') continue;
+    const q = pathPos(h.p, Math.max(0, h.d)), fwd = q.dx >= 0 ? 1 : -1, face = h.state === 'out' ? -fwd : fwd;
+    const blowing = h.state === 'blow';
+    drawUnit('enemy_legion', im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i });
+    if (!blowing) continue;
+    // borazan: ağzından yukarı-ileri uzanan kıvrık pirinç boru; ses halkaları
+    const k = clamp(h.t / 0.25, 0, 1) * clamp((HERALD.blow - h.t) / 0.25, 0, 1);
+    const hx = q.x + face * hgt * 0.14, hy = q.y - hgt * 0.8, u = hgt / 24;
+    ctx.save(); ctx.translate(hx, hy); ctx.scale(face * u, u); ctx.rotate(-0.18 * k);
+    // kıvrık pirinç boru: ağızdan ileri, ucunda geniş ağız
+    ctx.beginPath(); ctx.moveTo(0, -0.8); ctx.quadraticCurveTo(4, -2.2, 7.5, -3.6); ctx.lineTo(10, -6.2); ctx.lineTo(10.8, -1.2); ctx.lineTo(8, -1.8); ctx.quadraticCurveTo(4, 0.2, 0, 0.8); ctx.closePath();
+    ctx.fillStyle = '#e6b44a'; ctx.fill(); ctx.strokeStyle = '#3a2408'; ctx.lineWidth = 0.9; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,240,190,0.7)'; ctx.fillRect(2, -1.6, 4, 0.7);
+    ctx.restore();
+    if (h.i === 0) for (let r = 0; r < 3; r++) {
+      const ph = (h.t * 1.4 + r / 3) % 1;
+      ctx.strokeStyle = `rgba(255,230,160,${0.55 * (1 - ph) * k})`; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(hx + face * 11 * u, hy - 4 * u, 5 + ph * 20, face > 0 ? -0.9 : Math.PI - 0.6, face > 0 ? 0.6 : Math.PI + 0.9); ctx.stroke();
+    }
+  }
+}
 // ----- dokunulabilir dekor şakaları -----
 // karga: dokununca gaklayıp uçar, 20-30 sn sonra başka yere konar · mezar: dokununca topraktan iskelet eli çıkar, el sallar, laf atar;
 // üçüncü dokunuşta bir kez bahşiş fırlatır · Mortimer: balkonda dokununca çayından yudum alır (buhar, laf)
@@ -3589,6 +3633,7 @@ function update(dt) {
   updateMortSay(dt);
   updateMech(dt);
   updateProps(dt);
+  updateHeralds(dt);
   updateTut(dt);
 
   if (G.waveCountdown != null && G.wave > 0) {
@@ -6783,7 +6828,7 @@ function towerStats(type, L) {
 // Eski yedek görsel (kışla) ise kale noktasına ortalanır.
 function castlePlace(x, y, im) {
   if (im === spr('tower_barracks_3')) return { x, y, w: 118 * BUILD_K };
-  if (NECRO) return { x: Math.min(x + 4, 960 - 70), y: y + 30, w: 135 }; // şapel: kapı ortada, kapı eşiği yolun ucunda; ekran kenarına taşmaz
+  if (NECRO) return { x, y: y + 34, w: 135 }; // şapel: (x, y) kapı eşiği = yolun ucu; kapı görselin ortasında, eşik yüksekliğin %83'ünde
   return { x: x - 15 * BUILD_K, y: y + 10, w: 124 * BUILD_K };
 }
 
@@ -8123,7 +8168,7 @@ function drawMapNode(i, x, y, num, last, at) {
 // Bölümleri tek kıvrımlı toprak yol bağlar, yolun sonunda şapel durur. Önbellekte tutulur; kare başına bir mekân hazırlanır.
 const REGION_BG = {};
 function regionRoad(E) {
-  const P = [E.start, ...E.nodes, E.end], out = [];
+  const P = [E.start, ...E.nodes, ...gateApproach([E.nodes[E.nodes.length - 1], E.end]).slice(1)], out = [];
   for (let i = 0; i < P.length - 1; i++) { // Catmull-Rom: noktaların hepsinden geçen yumuşak eğri
     const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)];
     for (let k = 0; k < 8; k++) {
@@ -8135,14 +8180,14 @@ function regionRoad(E) {
   return out;
 }
 const REGION_TINT = { cursed: 'rgba(90,110,40,0.08)', bog: 'rgba(30,120,100,0.2)', graveyard: 'rgba(110,100,140,0.2)', blacklake: 'rgba(20,40,100,0.28)', necrogate: 'rgba(120,30,90,0.2)' };
-const regionCastle = (E) => [E.end[0] + 35, E.end[1] + 5];
+const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
   if (R.done) return R.done;
   if (!R.road) R.road = [buildPath(regionRoad(E))];
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
-    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62 }, R.road, 2);
+    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62, decorK: 1.9 }, R.road, 2);
     // her mekânın kendi rengi: bataklık yeşil-mavi, mezarlık kül moru, kara göl gece mavisi, kapı kızıl mor
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
@@ -8165,29 +8210,70 @@ function regionBg(ep) {
   R.parts = null;
   return (R.done = c);
 }
+// harita canlılığı: yolda yürüyen lejyon devriyesi, uçan kargalar, mezarlıkta ruh ışıkları
+const MAPFX = { patrol: [], crows: [], nextPatrol: 0, nextCrow: 2 };
 function drawRegionMap(E, ep, st) {
-  const bg = regionBg(ep);
+  const bg = regionBg(ep), R = REGION_BG[ep];
   ctx.drawImage(bg, 0, 0, W, H);
-  const im = spr('castle_1');
-  if (im) { const cs = regionCastle(E), cp = castlePlace(cs[0], cs[1], im); drawSprite(ctx, im, cp.x, cp.y, cp.w); }
+  const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
+  // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
+  const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
+  const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
+  if (time > MAPFX.nextPatrol) { MAPFX.nextPatrol = time + 9; for (let i = 0; i < 4; i++) MAPFX.patrol.push({ d: -i * 15, off: (i % 2 ? 4 : -4), seed: Math.random() * 9 }); }
+  const im = spr('enemy_legion');
+  MAPFX.patrol = MAPFX.patrol.filter(u => u.d < stop + 30);
+  for (const u of MAPFX.patrol) {
+    u.d += dt * 16;
+    if (u.d < 0 || !im) continue;
+    const q = pathPos(road, u.d, u.off), a = clamp(Math.min(u.d / 20, (stop + 30 - u.d) / 30), 0, 1);
+    ctx.save(); ctx.globalAlpha = a;
+    drawUnit('enemy_legion', im, q.x, q.y, q.dx >= 0 ? 1 : -1, { h: 17, phase: (time + u.seed) * 7, walking: true, fly: 0, seed: u.seed });
+    ctx.restore();
+  }
+  // şapel (haritada biraz büyük) ve balkonda kuru kafalı Mortimer: çay içer, arkasında ruh ışığı
+  const ch = spr('castle_1'), mort = spr('mortimer');
+  if (ch) {
+    const cw = 150, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh;
+    drawSprite(ctx, ch, cx, cy, cw);
+    const S = MORT_STAGE[1];
+    if (mort) {
+      const mx = cx - cw / 2 + S.at[0] * cw, my = cy - chh + S.at[1] * chh, mh = 36 + Math.sin(time * 1.6) * 0.4;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, mx, my - mh * 0.55, mh * 1.4, '150,90,255', 0.45 + Math.sin(time * 2) * 0.1);
+      glow(ctx, mx, my - mh * 0.55, mh * 0.75, '120,255,140', 0.35 + Math.sin(time * 2.6) * 0.08);
+      ctx.restore();
+      drawSprite(ctx, mort, mx, my, mh * mort.width / mort.height);
+      if (S.rail) { // korkuluk ayakların önünde
+        const [x0, y0, x1, y1] = S.rail;
+        ctx.drawImage(ch, x0 * ch.width, y0 * ch.height, (x1 - x0) * ch.width, (y1 - y0) * ch.height, cx - cw / 2 + x0 * cw, cy - chh + y0 * chh, (x1 - x0) * cw, (y1 - y0) * chh);
+      }
+      // çay buharı
+      if (Math.random() < 0.08) emit(uiParts, { kind: 'glow', x: mx + mh * 0.26, y: my - mh * 0.62, vx: rand(-2, 2), vy: -rand(6, 10), col: '230,230,220', s0: 1.4, s1: 3, life: 1.4, a: 0.5 });
+    }
+  }
   // yavaş sürüklenen sis
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (let i = 0; i < 5; i++) {
     const x = ((i * 233 + time * (6 + i * 2)) % (W + 400)) - 200, y = 130 + i * 85 + Math.sin(time * 0.3 + i) * 12;
     glow(ctx, x, y, 170, '150,170,190', 0.05);
   }
+  // mezarlıkta ve kara gölde süzülen ruh ışıkları
+  for (let i = 0; i < 9; i++) {
+    const ph = (time * 0.12 + i * 0.37) % 1, zx = i < 5 ? 400 : 580, x = zx + ((i * 71) % 170) + Math.sin(time * 0.8 + i) * 8, y = 470 - ((i * 53) % 260) - ph * 40;
+    glow(ctx, x, y, 7, i < 5 ? '140,255,170' : '140,190,255', 0.5 * Math.sin(ph * Math.PI));
+  }
   ctx.restore();
-  // mekân adları: küçük oyma levhalar
-  E.zones.forEach(([, name], k) => {
-    const [x, y] = E.labels[k], a = clamp((st - 0.3 - k * 0.06) / 0.3, 0, 1);
-    if (a <= 0) return;
-    ctx.save(); ctx.globalAlpha = a; ctx.font = `400 14px ${FONT_T}`;
-    const w = ctx.measureText(name).width + 26;
-    roundRect(x - w / 2 + 2, y - 11, w, 24, 8, 'rgba(0,0,0,0.4)');
-    roundRect(x - w / 2, y - 13, w, 24, 8, 'rgba(26,20,32,0.86)', 'rgba(214,200,166,0.45)', 1.2);
-    txt(name, x, y - 0.5, 14, '#d8ccb0', 'center', '400', FONT_T, false);
+  // kargalar: arada bir ekranı kanat çırparak geçer
+  const crow = spr('nm_crow');
+  if (crow && time > MAPFX.nextCrow) { MAPFX.nextCrow = time + rand(4, 8); const l = Math.random() < 0.5; MAPFX.crows.push({ x: l ? -30 : W + 30, y: rand(110, 380), v: (l ? 1 : -1) * rand(70, 100), ph: rand(0, 6) }); }
+  MAPFX.crows = MAPFX.crows.filter(c => c.x > -60 && c.x < W + 60);
+  for (const c of MAPFX.crows) {
+    c.x += c.v * dt; c.y += Math.sin(time * 2 + c.ph) * 0.3;
+    if (!crow) continue;
+    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(c.v > 0 ? -1 : 1, 0.75 + 0.35 * Math.abs(Math.sin(time * 12 + c.ph)));
+    drawSprite(ctx, crow, 0, 8, 20);
     ctx.restore();
-  });
+  }
 }
 
 let mapNote = null;
@@ -8648,6 +8734,7 @@ function drawPlay() {
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
   drawMechGround();
   drawProps(false);
+  drawHeralds();
   CORPSE_BAKE = 3;
   if (G.sel && G.sel.kind === 'plot') {
     const pl = G.sel.plot, k = clamp((time - G.menuT) / 0.25, 0, 1);

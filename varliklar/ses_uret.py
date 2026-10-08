@@ -12,6 +12,7 @@
   pain      düşman hasar alınca "ah / uh / ıh" (formant sentezi)
   dvoice    ölüm iniltisi "aaargh"
   scream    korku büyüsünde çığlık "aaaa!"
+  horn      bölüm başında düşman borazanı
 Hepsi aynı RMS düzeyine getirilir; oyundaki düzey SOUND (game.js) ile ayarlanır.
 """
 import json, os, wave
@@ -170,6 +171,24 @@ def splash(k):
     return lowpass(x, 5000) + lowpass(hiss, 3800)
 
 
+def horn():
+    """savaş borazanı: kısa 'tu' + uzun 'tuuu' (re -> sol), pirinç rengi formantlar, sona doğru titreşim, hafif yankı"""
+    notes = [(0.0, 0.26, 146.8), (0.34, 1.15, 196.0)]
+    dur = 1.9; n = int(SR * dur); out = np.zeros(n)
+    for at, d, f in notes:
+        t = t_axis(d); u = t / d
+        f0 = f * (1 - 0.06 * np.exp(-t / 0.04)) * (1 + 0.012 * np.sin(2 * np.pi * 5.5 * t) * np.clip((t - 0.35) / 0.3, 0, 1))
+        ph = np.cumsum(f0) / SR
+        src = sum(np.sin(2 * np.pi * k * ph) / k ** 0.9 for k in range(1, 14))  # parlak testere benzeri
+        env = np.minimum(1, t / 0.05) * np.where(u > 0.82, (1 - u) / 0.18, 1) * (0.8 + 0.2 * np.minimum(1, t / 0.3))
+        x = src * env
+        y = resonate(x, 520, 160) + 0.8 * resonate(x, 1150, 220) + 0.35 * resonate(x, 2400, 380)
+        i = int(SR * at); out[i:i + len(y)] += y
+    for dl, g in [(0.11, 0.35), (0.23, 0.2), (0.37, 0.1)]:  # basit yankı
+        k = int(SR * dl); out[k:] += out[:-k] * g
+    return lowpass(out, 4200)
+
+
 # ---------- sesler (formant sentezi) ----------
 VOW = {  # F1, F2, F3, F4 (erkek)
     'a': (730, 1090, 2440, 3400), 'ʌ': (640, 1190, 2390, 3300), 'ə': (500, 1450, 2450, 3300),
@@ -252,6 +271,7 @@ def main():
             j += 1; made.append(save(f'pain_{j}', pain(k * rng.uniform(0.95, 1.05), vw), -18))
     for i, k in enumerate([0.75, 0.9, 1.0, 1.15, 1.3], 1): made.append(save(f'dvoice_{i}', dvoice(k), -18))
     for i, k in enumerate([0.85, 1.0, 1.15, 1.3], 1): made.append(save(f'scream_{i}', scream(k), -18))
+    made.append(save('horn_1', horn(), -17))
     # manifest: eski aynı adlı türler yerine yenileri
     mp = os.path.join(OUT, 'manifest.json')
     man = json.load(open(mp))
