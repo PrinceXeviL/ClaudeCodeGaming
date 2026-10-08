@@ -993,7 +993,7 @@ function startLevel(idx, chal = null) {
     const h = makeHero(id, q.x + i * 6, q.y, i);
     G.heroes.push(h); G.soldiers.push(h);
     G.spells['ult' + i] = 0;
-    if (NECRO) { G.spells.nm_raise = 0; G.spells.nm_fear = 0; G.spells.nm_wall = 0; }
+    if (NECRO) { G.spells.nm_raise = 0; G.spells.nm_fear = 0; G.spells.nm_wall = 0; G.spells.nm_burst = 0; }
   });
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
@@ -1008,6 +1008,11 @@ function startLevel(idx, chal = null) {
   setupProps();
   setupHeralds();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
+  // yeni büyü açıldıysa ilk bölümde duyurulur
+  if (NECRO && necroSpellOn('nm_burst') && !save.burstSeen) {
+    save.burstSeen = true; persist();
+    G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_burst.name, sub: NECRO_SPELLS.nm_burst.short, t: 0, dur: 4.2 };
+  }
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
 }
 function bakeNext() {
@@ -2826,7 +2831,9 @@ function updateProjectile(pr, dt) {
 
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
-const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall'] : []).concat(G.heroes.map((h, i) => 'ult' + i));
+// büyü açık mı (unlock: o bölüm kazanılmış olmalı)
+const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return u == null || (save.stars[u] || 0) > 0; };
+const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
 const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
@@ -2876,6 +2883,25 @@ function castNecro(id, x, y) {
     // birkaç tanesi çığlık atar (hepsi atarsa kulak tırmalar)
     for (let i = 0; i < Math.min(3, nScream); i++) setTimeout(() => sfx('scream'), i * 140 + rand(0, 60));
     sfx('roar');
+  } else if (id === 'nm_burst') {
+    const bodies = G.effects.filter(f => f.kind === 'corpse' && !f.air && f.t > 0.3 && f.t < f.dur - 0.1 && dist(f.x, f.y, x, y) <= S.r);
+    if (!bodies.length) { G.mortCast = 0; floatText(x, y - 20, 'Burada ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.5 }); mortSay('burst', true); cnt('burst', bodies.length);
+    for (let i = 0; i < 16; i++) { const k = i / 15; emit(G.parts, { kind: 'glow', add: true, x: lerp(m.x, x, k) + rand(-6, 6), y: lerp(m.y - 18, y, k) + rand(-6, 6), vy: -rand(5, 20), col: S.col, s0: rand(3, 5), s1: 0.5, life: rand(0.3, 0.6) }); }
+    hitBy = 'burst';
+    for (const f of bodies) {
+      f.t = f.dur; // ceset parçalanır
+      fxPlagueSplash(f.x, f.y, S.blast);
+      impactFx(f.x, f.y - 8, S.col, 1.6);
+      for (let i = 0; i < 9; i++) emit(G.parts, { kind: 'chunk', x: f.x + rand(-6, 6), y: f.y - rand(0, 8), vx: rand(-90, 90), vy: -rand(90, 200), g: 520, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#7a3a2a', s0: rand(1.4, 2.4), s1: 1, life: rand(0.5, 0.8) });
+      for (const e of G.enemies) {
+        if (e.dead || e.under || dist(e.x, e.y, f.x, f.y) > S.blast) continue;
+        damageEnemy(e, S.dmg + e.maxHp * S.pct * (e.def.chief ? 0.5 : 1), 'magic', false, 'burst');
+        if (!e.dead) poisonEnemy(e, S.poison[0], S.poison[1]);
+      }
+    }
+    hitBy = null;
+    shakeScreen(3 + Math.min(4, bodies.length), 0.35); sfx('splash'); sfx('stomp');
   }
 }
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
@@ -2928,6 +2954,16 @@ function drawNecroGlyph(id, r) {
     ctx.strokeStyle = '#d8cfb0'; ctx.lineWidth = 2;
     for (const yy of [0, r * 0.22]) { ctx.beginPath(); ctx.moveTo(-r * 0.62, yy); ctx.quadraticCurveTo(0, yy - 4, r * 0.62, yy); ctx.stroke(); }
     drawSkullIcon(0, -r * 0.42, r * 0.28);
+    return;
+  }
+  if (id === 'nm_burst') {
+    // ortada çatlak kafatası, çevresinde yeşil patlama dişleri
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 0.95, '170,255,90', 0.35 + Math.sin(time * 6) * 0.1); ctx.restore();
+    ctx.fillStyle = '#b8ff6a'; ctx.strokeStyle = '#1a3008'; ctx.lineWidth = 1.2; ctx.beginPath();
+    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, rr = r * (i % 2 ? 0.48 : 0.78); ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    drawSkullIcon(0, r * 0.05, r * 0.42);
+    ctx.strokeStyle = '#140c18'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-r * 0.05, -r * 0.32); ctx.lineTo(r * 0.06, -r * 0.18); ctx.lineTo(-r * 0.02, -r * 0.06); ctx.stroke();
     return;
   }
   if (id === 'nm_raise') {
@@ -3023,6 +3059,7 @@ const MORT_LINES = {
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
   lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'],
+  burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
   firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Çayıma toz kaçtı. Bu kişisel oldu.'],
   low: ['Kule sallanıyor... Kitaplarım!', 'Bu gidişle çayı bahçede içeceğim.', 'Az kaldı! Biri şu kapıyı tutsun!'],
@@ -9279,7 +9316,7 @@ const WIN_QUIPS = [
 ];
 
 // zafer ekranı özeti: sayılar sırayla sayarak dolar; en çok öldüren vurgulanır
-const KILLER_NAME = { arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler' };
+const KILLER_NAME = { arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 40, w = pw - 80, y0 = py + 198;
   roundRect(x0, y0, w, 118, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);

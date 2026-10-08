@@ -521,6 +521,10 @@ const NECRO_SPELLS = {
     desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 6 sn durdurur, vurularak kırılabilir',
     short: 'Yola kemik duvar diker: düşmanlar 6 sn takılır (kırılabilir)' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar', short: 'Seçtiğin alandaki düşmanlar 3,5 sn geri kaçar' },
+  // 4. büyü: 1. bölge bitince (son bölüm kazanılınca) açılır. Cesedi diriltmek ya da patlatmak arasında seçim.
+  nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 14,
+    desc: 'Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
+    short: 'Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir' },
 };
 Object.assign(CASTLE.levels[0], { title: 'Şapel Okçuları', perk: 'Şapel bir iskelet okçuyla kendini savunur' });
 Object.assign(CASTLE.levels[1], { title: 'Kemik Nişancılar', perk: 'İki iskelet okçu, daha sert kemik oklar' });
