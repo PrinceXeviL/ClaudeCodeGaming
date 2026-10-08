@@ -72,6 +72,7 @@ def main(src, name, start=None, length=None, fps=24, order=None):
     cx = np.mean([head_x(c, b) for c, b in zip(cells, boxes)])
     half = max(cx - x0, x1 - cx) + pad
     X0 = int(cx - half); X1 = int(cx + half); Y0 = y0 - pad; Y1 = y1 + pad
+    k = min(k, 16000 / ((X1 - X0) * len(cells)))  # WebP en çok 16383 px genişlik: geniş saldırı karelerinde şerit küçülür
     FW = int(round((X1 - X0) * k)); FH = int(round((Y1 - Y0) * k))
     out = Image.new('RGBA', (FW * len(cells), FH), (0, 0, 0, 0))
     for i, c in enumerate(cells):
