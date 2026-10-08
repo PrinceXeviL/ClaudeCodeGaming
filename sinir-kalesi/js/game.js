@@ -985,16 +985,31 @@ function team() {
   return t.length ? t : ['commander'];
 }
 
-function startLevel(idx) {
+// Meydan okuma modları (bölümde 3 yıldızdan sonra): 'h' Kahramanlık (aynı dalgalar, düşman canı +%20, 3 can),
+// 'i' Demir (son iki dalga tek dev dalga, bölüme özgü 2 kule türü, 3 can, iki kat altın). Her biri 1 ek yıldız (save.ch).
+const CHAL = {
+  h: { name: 'KAHRAMANLIK', short: 'Kahramanlık', hp: 1.2, lives: 3, desc: '3 can · düşmanlar %20 daha dayanıklı' },
+  i: { name: 'DEMİR', short: 'Demir', hp: 1.1, lives: 3, desc: '3 can · tek dev dalga · yalnız 2 kule türü' },
+};
+const IRON_TOWERS = [['archer', 'barracks'], ['mage', 'barracks'], ['artillery', 'archer'], ['mage', 'artillery'], ['archer', 'mage']];
+function chalStars() { let n = 0; for (const k in save.ch || {}) n += (save.ch[k].h ? 1 : 0) + (save.ch[k].i ? 1 : 0); return n; }
+function ironLevel(lv) {
+  // son iki dalga tek dalgada: ikincisi birincinin bitişinden 4 sn sonra başlar
+  const W7 = lv.waves[lv.waves.length - 2], W8 = lv.waves[lv.waves.length - 1];
+  const end7 = Math.max(...W7.map(g => (g.at || 0) + g.gap * (g.n - 1)));
+  return Object.assign({}, lv, { waves: [W7.map(g => Object.assign({}, g)).concat(W8.map(g => Object.assign({}, g, { at: (g.at || 0) + end7 + 4 })))] });
+}
+function startLevel(idx, chal = null) {
   mapSel = null; musicRestartBattle();
-  const lv = LEVELS[idx];
+  const lv = chal === 'i' ? ironLevel(LEVELS[idx]) : LEVELS[idx];
   const paths = lv.paths.map(buildPath);
   G = {
     idx, lv, paths,
     bg: renderBackground(lv, paths, bgRes()),
-    gold: Math.round(lv.gold * diff().gold) + (upgRank('castle') >= 2 ? 60 : 0) + (upgRank('castle') >= 3 ? 60 : 0),
-    lives: diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
-    maxLives: diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
+    gold: (Math.round(lv.gold * diff().gold) + (upgRank('castle') >= 2 ? 60 : 0) + (upgRank('castle') >= 3 ? 60 : 0)) * (chal === 'i' ? 2 : 1),
+    lives: chal ? CHAL[chal].lives : diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
+    maxLives: chal ? CHAL[chal].lives : diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
+    chal,
     wave: 0, waveCountdown: null, waveCountdownMax: 1, spawners: [],
     enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [],
     parts: [], decals: [], zones: [], coins: [], traps: [], shakeT: 0, shakeAmp: 0, shakeDur: 1, ambT: 0,
@@ -1149,7 +1164,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * ROAD_K);
   const q = pathPos(p, d0, off);
   const tier = G.lv.tier ?? G.idx; // boss gücü kademesi (2. sefer 1. seferin sonlarından başlar)
-  const hp = def.chief ? (650 + 400 * tier) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp;
+  const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1);
   const e = { type, def, p, d: d0, off, x: q.x, y: q.y, hp, maxHp: hp, blocker: null, atk: 0, dead: false, anim: rand(0, 10), face: 1, healT: 3 };
   G.enemies.push(e);
   if (def.chief) { e.dmgMul = 1 + 0.08 * tier; e.cdMul = 1 - 0.025 * tier; } // boss gücü bölümle artar: hasar ve yetenek sıklığı
@@ -3609,8 +3624,11 @@ function update(dt) {
   if (G.lives <= 0 && !overlay) { setOverlay('lose'); sfx('lose'); }
   if (!overlay && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
     const lr = G.lives / G.maxLives;
-    G.stars = lr >= 0.9 ? 3 : lr >= 0.3 ? 2 : 1;
-    save.stars[G.idx] = Math.max(save.stars[G.idx] || 0, G.stars);
+    if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
+    else {
+      G.stars = lr >= 0.9 ? 3 : lr >= 0.3 ? 2 : 1;
+      save.stars[G.idx] = Math.max(save.stars[G.idx] || 0, G.stars);
+    }
     persist();
     setOverlay('win');
     sfx('win');
@@ -5901,7 +5919,7 @@ function drawIcon(name, x, y, s, col = '#fff') {
 const MENU_R = 25;
 function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; return u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
-  const types = TOWER_ORDER.filter(towerUnlocked);
+  const types = TOWER_ORDER.filter(towerUnlocked).filter(t => G.chal !== 'i' || IRON_TOWERS[G.idx % IRON_TOWERS.length].includes(t));
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
   return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0], y: pl.y - 16 + offs[i][1], cost: TOWERS[type].levels[0].cost }));
 }
@@ -7422,7 +7440,7 @@ function drawIncoming() {
 
 // ----- yıldız gelişmeleri -----
 function upgRank(id) { return (save.upg && save.upg[id]) || 0; }
-function starsTotal() { return save.stars.reduce((a, b) => a + (b || 0), 0); }
+function starsTotal() { return save.stars.reduce((a, b) => a + (b || 0), 0) + chalStars(); }
 function starsSpent() { return UPGRADES.reduce((a, u) => a + u.ranks.slice(0, upgRank(u.id)).reduce((b, r) => b + r.cost, 0), 0); }
 function diff() { return GAME_DIFF; } // zorluk sabit
 // gelişmelerle güçlenmiş kule seviyesi değerleri
@@ -7991,6 +8009,7 @@ function drawMapNode(i, x, y, num, last, at) {
   buttons.push({ key, x: x - 22, y: y - 40, w: 50, h: 64, fn: () => { mapSel = i; mapSelT = time; sfx('open'); } });
 }
 
+let mapNote = null;
 function drawMap() {
   if (mapEp == null) {
     const first = LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0));
@@ -8015,11 +8034,11 @@ function drawMap() {
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
   roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
   if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
-  const total = save.stars.reduce((a, b) => a + (b || 0), 0);
+  const total = starsTotal();
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
   roundRect(W - 150, 22, 132, 38, 19, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
   fancyStar(W - 129, 41, 13, true);
-  txt(`${total} / ${LEVELS.length * 3}`, W - 72, 42, 20, '#ffe27a', 'center', '400', FONT_T);
+  txt(`${total} / ${LEVELS.length * 5}`, W - 72, 42, 20, '#ffe27a', 'center', '400', FONT_T);
   ctx.restore();
   // sefer seçimi (sol üst): kilitli sefer kilit simgesiyle görünür
   EPISODES.forEach((ep, k) => {
@@ -8051,6 +8070,15 @@ function drawMap() {
     buttons.push({ key: 'map_close', x: 0, y: 0, w: W, h: H, fn: () => { mapSel = null; } });
     drawLevelCard(mapSel, W / 2, H / 2 + 6, time - mapSelT);
     roundBtn('card_x', W / 2 + 122, H / 2 - 158, 17, 'close', () => { mapSel = null; }, { appear: time - mapSelT - 0.15 });
+  }
+  // kısa harita uyarısı (ör. kilitli meydan okuma)
+  if (mapNote && time - mapNote.t < 2.2) {
+    const a = clamp(Math.min((time - mapNote.t) / 0.2, (2.2 - (time - mapNote.t)) / 0.4), 0, 1);
+    ctx.save(); ctx.globalAlpha = a; ctx.font = `700 15px ${FONT_B}`;
+    const w = ctx.measureText(mapNote.text).width + 36;
+    roundRect(W / 2 - w / 2, 70, w, 30, 15, 'rgba(14,8,20,0.92)', '#c9b6ea', 1.6);
+    txt(mapNote.text, W / 2, 85.5, 15, '#f2ecd8', 'center', '700', FONT_B, false);
+    ctx.restore();
   }
 }
 
@@ -8110,9 +8138,31 @@ function drawLevelCard(i, cx, cy, at) {
   if (unlocked) {
     const by = fy + (y0 + 290) * sc;
     ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
-    gameButton(key, cx, by, 176, 46, st ? 'TEKRAR OYNA' : 'OYNA', null, st ? 'gold' : 'green', { icon: st ? 'restart' : 'play', shine: current, size: 19 });
+    gameButton(key, cx, by, st ? 132 : 176, 46, st ? 'TEKRAR' : 'OYNA', null, st ? 'gold' : 'green', { icon: st ? 'restart' : 'play', shine: current, size: 19 });
     ctx.restore();
     buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => go(() => startLevel(i)) });
+    // meydan okumalar: 3 yıldızdan sonra açılır; tamamlanan tikli
+    if (st) for (const [c, dx] of [['h', -96], ['i', 96]]) {
+      const open = st >= 3, done = save.ch && save.ch[i] && save.ch[i][c], bx = cx + dx * sc, k2 = 'ch' + c + i;
+      ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(bx, by); const s2 = pressScale(k2) * sc; ctx.scale(s2, s2);
+      if (open && !done) glow(ctx, 0, 0, 34, c === 'h' ? '255,90,70' : '170,190,220', 0.35 + Math.sin(time * 3) * 0.1);
+      hudFrame(-21, -21, 42, 42, 9, c === 'h' ? '#5a1a20' : '#2a3040');
+      if (c === 'h') { // kalkan
+        ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(9, -7); ctx.lineTo(8, 3); ctx.quadraticCurveTo(5, 9, 0, 12); ctx.quadraticCurveTo(-5, 9, -8, 3); ctx.lineTo(-9, -7); ctx.closePath();
+        ctx.fillStyle = '#e04a3a'; ctx.fill(); ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2; ctx.stroke(); drawSkullIcon(0, -1, 4.5);
+      } else { // örs
+        ctx.fillStyle = '#9aa6b8'; ctx.strokeStyle = '#10141c'; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(-11, -6); ctx.lineTo(9, -6); ctx.quadraticCurveTo(12, -5, 13, -2); ctx.lineTo(4, -1); ctx.lineTo(3, 4); ctx.lineTo(7, 9); ctx.lineTo(-7, 9); ctx.lineTo(-3, 4); ctx.lineTo(-4, -1); ctx.lineTo(-11, -1); ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      if (!open) { ctx.fillStyle = 'rgba(10,6,14,0.6)'; ctx.fillRect(-17, -17, 34, 34); drawIcon('lock', 0, 0, 18); }
+      if (done) { circle(13, -13, 7, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, -13); ctx.lineTo(12.5, -10.5); ctx.lineTo(16.5, -15.5); ctx.stroke(); }
+      txt(CHAL[c].short, 0, 30, 10, open ? '#f2ecd8' : '#a89a80', 'center', '800', FONT_B);
+      ctx.restore();
+      buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => {
+        if (!open) { mapNote = { text: '3 yıldız al: ' + CHAL[c].short + ' açılır', t: time }; sfx('error'); return; }
+        go(() => startLevel(i, c));
+      } });
+    }
   }
 }
 
@@ -8523,12 +8573,13 @@ function drawOverlay() {
   } else if (overlay === 'pause') {
     ribbon(cx, py + 4, 290, 'DURAKLATILDI', 'blue', 26);
     gameButton('ov_resume', cx, py + 104, 270, 52, 'DEVAM ET', () => setOverlay(null), 'green', { icon: 'play', shine: true, appear: k - 0.15 });
-    gameButton('ov_restart', cx, py + 176, 270, 52, 'YENİDEN BAŞLA', () => go(() => startLevel(G.idx)), 'gold', { icon: 'restart', appear: k - 0.22 });
+    gameButton('ov_restart', cx, py + 176, 270, 52, 'YENİDEN BAŞLA', () => go(() => startLevel(G.idx, G.chal)), 'gold', { icon: 'restart', appear: k - 0.22 });
     gameButton('ov_map', cx, py + 248, 270, 52, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.29 });
     roundBtn('ov_snd', px + pw - 46, py + ph - 46, 19, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: k - 0.35 });
   } else if (overlay === 'win') {
-    ribbon(cx, py + 4, 260, 'ZAFER!', 'green', 32);
+    ribbon(cx, py + 4, G.chal ? 300 : 260, G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', 'green', 32);
     for (let s = 0; s < 3; s++) {
+      if (G.chal && s !== 1) continue; // meydan okuma: ortada tek yıldız
       const sx = cx + (s - 1) * 82, sy = py + 112 - (s === 1 ? 14 : 0), r = s === 1 ? 38 : 31;
       fancyStar(sx, sy, r, false);
       if (s >= G.stars) continue;
@@ -8555,7 +8606,7 @@ function drawOverlay() {
     if (NECRO) txt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + 228, 13, '#3e6a34', 'center', '700', FONT_B, false);
     const appear = k - 1.3, by = NECRO ? 10 : 0; // necro: espri satırına yer aç
     if (G.idx + 1 < LEVELS.length) {
-      roundBtn('ov_retry', cx - 168, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx)), { appear });
+      roundBtn('ov_retry', cx - 168, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear });
       txt('Tekrar', cx - 168, py + 302 + by, 12, '#6a4420', 'center', '800', FONT_B, false);
       roundBtn('ov_map', cx - 104, py + 262 + by, 25, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
       txt('Harita', cx - 104, py + 302 + by, 12, '#6a4420', 'center', '800', FONT_B, false);
@@ -8563,7 +8614,7 @@ function drawOverlay() {
         { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 22, glow: '140,255,120' });
     } else {
       if (!NECRO) txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
-      gameButton('ov_retry', cx - 100, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx)), 'wood', { icon: 'restart', appear });
+      gameButton('ov_retry', cx - 100, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear });
       gameButton('ov_map', cx + 100, py + 278, 170, 50, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'green', { icon: 'map', appear: appear - 0.06, shine: true });
     }
   } else if (overlay === 'lose') {
@@ -8572,7 +8623,7 @@ function drawOverlay() {
     drawIcon('skull', 0, 0, 64); ctx.restore();
     txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, '#5a3410', 'center', '400', FONT_T, false);
     txt(TIPS[(G.idx + G.wave) % TIPS.length], cx, py + 192, 13, '#8a6238', 'center', '700', FONT_B, false);
-    gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
+    gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
     gameButton('ov_map', cx, py + 304, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
   }
   ctx.restore();
@@ -8975,7 +9026,7 @@ window.__game = {
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX,
+  goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX,
   learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
