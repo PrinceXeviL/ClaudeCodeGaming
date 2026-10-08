@@ -1022,6 +1022,7 @@ function startLevel(idx) {
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
+  setupProps();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
 }
@@ -2842,6 +2843,8 @@ function drawMortimer() {
 }
 // Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
 const MORT_LINES = {
+  tea: ['Earl Grey. Ölüleri bile diriltir.', 'Şşş. Çay saati.', 'Şekersiz. Ben zaten yeterince tatlıyım.', 'Bir yudum daha, sonra kıyamet.', 'Soğumuş. Tıpkı düşmanlarım gibi.'],
+  crowtap: ['Kargalarıma dokunma! Dedikodu taşıyorlar.', 'O karga bana borçlu, bilesin.'],
   start: ['Yine mi misafir? Çayımı yeni demlemiştim.', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
   wave: ['Bir dalga daha. Ne azimliler.', 'Sıraya girin. Mezarlıkta herkese yer var.', 'Yeni gönüllüler! İskeletim azalmıştı.', 'Kalabalık geldiler. Çayı tazeleyeyim.', 'İmparator hiç mi ders almaz?'],
   last: ['Son dalga mı? Sonunda biraz sessizlik.', 'Hepsi bu mu? Kalanlar da gelsin!'],
@@ -2958,6 +2961,128 @@ function drawTut() {
     ctx.restore();
   }
   ctx.restore();
+}
+// ----- dokunulabilir dekor şakaları -----
+// karga: dokununca gaklayıp uçar, 20-30 sn sonra başka yere konar · mezar: dokununca topraktan iskelet eli çıkar, el sallar, laf atar;
+// üçüncü dokunuşta bir kez bahşiş fırlatır · Mortimer: balkonda dokununca çayından yudum alır (buhar, laf)
+const GRAVE_LINES = ['Selam!', 'Rahatsız etmeyin, uyuyoruz.', 'Ön sıra dolu mu?', 'Bir kahve alırım.', 'Mortimer kira istiyor mu hâlâ?', 'Toprak üşütüyor.', 'Bir daha dokunursan bahşiş veririm. Belki.'];
+function propSpot(rnd, pad) {
+  for (let k = 0; k < 80; k++) {
+    const x = 60 + rnd() * (W - 120), y = 110 + rnd() * (H - 170);
+    if (nearestOnPaths(G.paths, x, y).d < 42 + pad) continue;
+    if (G.plots.some(p => dist(p.x, p.y, x, y) < 40 + pad)) continue;
+    if (dist(x, y, G.castle.x, G.castle.y - 40) < 110) continue;
+    if ((G.props || []).some(o => dist(o.x, o.y, x, y) < 70)) continue;
+    if (x < 300 && y > H - 100) continue; // sol alt arayüz
+    return { x, y };
+  }
+  return null;
+}
+function setupProps() {
+  let seed = (G.idx + 7) * 7919;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  G.props = []; G.propRnd = rnd;
+  for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
+  const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
+  G.teaT = 0;
+}
+function updateProps(dt) {
+  if (G.teaT > 0) G.teaT -= dt;
+  for (const o of G.props || []) {
+    o.t += dt;
+    if (o.kind === 'crow') {
+      if (o.state === 'fly' && o.t > 1.6) { o.state = 'gone'; o.t = 0; o.wait = 20 + G.propRnd() * 10; }
+      else if (o.state === 'gone' && o.t > o.wait) { const q = propSpot(G.propRnd, 6); if (q) { o.x = q.x; o.y = q.y; } o.state = 'land'; o.t = 0; }
+      else if (o.state === 'land' && o.t > 0.8) { o.state = 'idle'; o.t = 0; }
+    } else if (o.kind === 'grave' && o.state === 'hand' && o.t > 2.4) { o.state = 'idle'; o.t = 0; }
+  }
+}
+function tapProps(x, y) {
+  // Mortimer: balkondaki figürün üstü
+  const m = mortimerPoint();
+  if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
+    if (G.teaT <= 0) {
+      G.teaT = 2.2; mortSay('tea', true); sfx('pick');
+      for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', x: m.x + m.h * 0.28 + rand(-2, 2), y: m.y - m.h * 0.6, vx: rand(-4, 4), vy: -rand(10, 22), col: '235,235,225', s0: rand(1.5, 2.5), s1: rand(4, 6), life: rand(0.8, 1.3), a: 0.5 });
+      G.stat = G.stat || {}; G.stat.tea = (G.stat.tea || 0) + 1;
+    }
+    return true;
+  }
+  for (const o of G.props || []) {
+    if (o.kind === 'crow' && (o.state === 'idle' || o.state === 'land') && dist(x, y, o.x, o.y - 10) < 18) {
+      o.state = 'fly'; o.t = 0; o.face = x < o.x ? 1 : -1; crowCaw();
+      for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'chunk', x: o.x, y: o.y - 8, vx: rand(-30, 30), vy: -rand(20, 60), g: 120, drag: 1.5, vr: rand(-5, 5), rot: rand(0, 6), col: '#1a1420', s0: 2, s1: 1, life: 0.8 });
+      if (Math.random() < 0.35) mortSay('crowtap');
+      G.stat = G.stat || {}; G.stat.crow = (G.stat.crow || 0) + 1;
+      return true;
+    }
+    if (o.kind === 'grave' && dist(x, y, o.x, o.y - 10) < 18) {
+      if (o.state !== 'hand' || o.t > 1.6) {
+        o.state = 'hand'; o.t = 0; o.taps++;
+        o.say = o.taps === 3 ? 'Al bakalım, bahşiş!' : GRAVE_LINES[(o.taps + G.idx) % GRAVE_LINES.length];
+        if (o.taps === 3) setTimeout(() => G && G.props && G.props.includes(o) && dropCoins(o.x, o.y - 14, 15), 900);
+        sfx('pick');
+        for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'chunk', x: o.x + rand(-6, 6), y: o.y + 2, vx: rand(-25, 25), vy: -rand(30, 70), g: 260, vr: rand(-8, 8), rot: rand(0, 6), col: '#4a3a2a', s0: 1.8, s1: 1, life: 0.5 });
+        G.stat = G.stat || {}; G.stat.grave = (G.stat.grave || 0) + 1;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+// karga gaklaması: iki kısa, kaba, inen ses (testere dalga + bant geçiren)
+function crowCaw() {
+  if (muted || !actx || !master) return;
+  const t0 = actx.currentTime;
+  for (let i = 0; i < 2; i++) {
+    const t = t0 + i * 0.19, o = actx.createOscillator(), bp = actx.createBiquadFilter(), g = actx.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(620, t); o.frequency.exponentialRampToValueAtTime(420, t + 0.13);
+    bp.type = 'bandpass'; bp.frequency.value = 1300; bp.Q.value = 2.5;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+    o.connect(bp); bp.connect(g); g.connect(master); o.start(t); o.stop(t + 0.17);
+  }
+}
+function drawProps(air) {
+  for (const o of G.props || []) {
+    if (o.kind === 'crow') {
+      const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
+      const flying = o.state === 'fly' || o.state === 'land';
+      if (flying !== air) continue;
+      let x = o.x, y = o.y, s = 1, rot = 0, flap = 0;
+      if (o.state === 'fly') { const k = o.t / 1.6; x += o.face * k * k * 260; y -= k * 220; s = 1 - k * 0.3; rot = o.face * -0.3; flap = Math.sin(o.t * 40); }
+      else if (o.state === 'land') { const k = 1 - o.t / 0.8; x -= k * 60; y -= k * k * 120; flap = Math.sin(o.t * 30) * k; }
+      else { y -= Math.max(0, Math.sin(o.t * 2.2 + 1)) > 0.92 ? 2 : 0; } // arada bir gagalar/sıçrar
+      if (!flying) shadow(x, y + 1, 7, 2.5);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(o.face * s, s * (1 - Math.abs(flap) * 0.15));
+      drawSprite(ctx, im, 0, 0, 24 * im.width / im.height);
+      ctx.restore();
+    } else if (o.kind === 'grave' && !air) {
+      const im = spr('nm_tomb_' + o.look);
+      shadow(o.x, o.y + 2, 11, 4);
+      if (im) drawSprite(ctx, im, o.x, o.y + 3, 20);
+      if (o.state === 'hand') {
+        // topraktan çıkan iskelet eli: yükselir, sallanır, iner
+        const k = o.t < 0.3 ? o.t / 0.3 : o.t > 2.0 ? Math.max(0, 1 - (o.t - 2.0) / 0.4) : 1, wave = Math.sin(o.t * 9) * 0.35 * (o.t > 0.3 && o.t < 2 ? 1 : 0);
+        const hx = o.x + 14, hy = o.y + 4;
+        ctx.save(); ctx.beginPath(); ctx.rect(hx - 20, hy - 50, 40, 50); ctx.clip();
+        ctx.translate(hx, hy + (1 - k) * 34); ctx.rotate(wave); ctx.scale(1.5, 1.5);
+        ctx.strokeStyle = '#1a120c'; ctx.lineCap = 'round';
+        const bone = (x0, y0, x1, y1, w) => { ctx.lineWidth = w + 1.6; ctx.strokeStyle = '#1a120c'; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.lineWidth = w; ctx.strokeStyle = '#efe6cc'; ctx.stroke(); };
+        bone(0, 0, 0, -12, 2.6);            // bilek kemiği
+        roundRect(-3.2, -16, 6.4, 5, 2, '#efe6cc', '#1a120c', 0.8); // avuç
+        for (let f = 0; f < 4; f++) bone(-2.4 + f * 1.6, -16, -3.6 + f * 2.4, -22 - (f === 1 || f === 2 ? 2 : 0), 1.2);
+        bone(3, -13, 6, -17, 1.2);          // başparmak
+        ctx.restore();
+        // toprak öbeği
+        ctx.fillStyle = '#3a2c1e'; ctx.beginPath(); ctx.ellipse(hx, hy, 7, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+        if (o.say && o.t > 0.25 && o.t < 2.2) {
+          ctx.save(); ctx.font = `700 9.5px ${FONT_B}`; const tw = ctx.measureText(o.say).width + 12, bx = clamp(hx - tw / 2, 4, W - tw - 4), by = hy - 56;
+          roundRect(bx, by, tw, 15, 6, '#f2ecd8', '#1a1024', 1.4); txt(o.say, bx + tw / 2, by + 7.5, 9.5, '#2a1838', 'center', '800', FONT_B, false);
+          ctx.restore();
+        }
+      }
+    }
+  }
 }
 // ----- bölüme özel mekanikler (lv.mech) -----
 // mud: yoldaki çamur düşmanı yavaşlatır · graves: yol kenarı mezarlardan arada bir bizim tarafa ölü kalkar
@@ -3392,6 +3517,7 @@ function update(dt) {
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortSay(dt);
   updateMech(dt);
+  updateProps(dt);
   updateTut(dt);
 
   if (G.waveCountdown != null && G.wave > 0) {
@@ -8292,6 +8418,7 @@ function drawPlay() {
   drawGround();
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
   drawMechGround();
+  drawProps(false);
   CORPSE_BAKE = 3;
   if (G.sel && G.sel.kind === 'plot') {
     const pl = G.sel.plot, k = clamp((time - G.menuT) / 0.25, 0, 1);
@@ -8325,6 +8452,7 @@ function drawPlay() {
   for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
   drawPartsAll(G.parts);
   drawMechFx();
+  drawProps(true);
   for (const f of G.floaters) {
     const k = f.t / 1.1, pop = easeOutBack(clamp(f.t / 0.2, 0, 1));
     ctx.save(); ctx.globalAlpha = 1 - k * k; ctx.translate(f.x, f.y); ctx.scale(pop, pop);
@@ -8718,6 +8846,8 @@ function worldTap(x, y) {
     }
     if (best) { setSel(G.sel && G.sel.enemy === best ? null : { kind: 'enemy', enemy: best }); sfx('select'); return; }
   }
+  // dekor şakaları: Mortimer'ın çayı, karga, mezardan el
+  if (tapProps(x, y)) return;
   // kale: dokununca okçu yükseltme menüsü
   {
     const c = G.castle;
