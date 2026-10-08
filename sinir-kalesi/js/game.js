@@ -5820,6 +5820,11 @@ function drawUnit(name, im, x, y, face, o) {
     for (const sf of [suf, '_walk']) { const n = animStrip(name, o.rig, sf); if (n) { fName = n; break; } }
     if (fName) fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * ANIM_META[fName].n) % ANIM_META[fName].n;
   }
+  else if (!rig.wings && !(o.rise != null)) {
+    // dururken: yürüyüş şeridinin ayakları kapalı karesi (anim.json "idle"); tek resme dönüp tasarım değişmesin
+    const n = animStrip(name, o.rig, '_walk');
+    if (n && ANIM_META[n].idle != null) { fName = n; fi = ANIM_META[n].idle; }
+  }
   const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
   const pup = !PUP_OFF && PUPPETS[o.rig || name];
   if (pup && PUPPET_META[pup.atlas] && spr(pup.atlas)) {

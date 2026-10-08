@@ -15,7 +15,7 @@ from anim_isle import remove_magenta, biggest_mask
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
-TARGET_H = 380
+TARGET_H = 300  # şerit bellek tutmasın (oyunda karakter en çok ~150 px çizilir)
 
 
 def frames_of(video, fps=24):
@@ -56,8 +56,12 @@ def main(src, name, start=None, length=None):
     y0 = min(b[0] for b in boxes); y1 = max(b[1] for b in boxes); x0 = min(b[2] for b in boxes); x1 = max(b[3] for b in boxes)
     hs = sorted(b[1] - b[0] for b in boxes); chH = hs[len(hs) // 2]
     k = TARGET_H / chH; pad = 6
-    # kare ortası: karakterin ortalama yatay merkezi (sabit; kayma yok)
-    cx = np.mean([(b[2] + b[3]) / 2 for b in boxes])
+    # kare ortası: başın (miğfer/sorguç) ortalama yatay yeri (sabit; mızrak uzansa da karakter kaymaz,
+    # yürüyüş ve saldırı şeritleri aynı noktaya oturur)
+    def head_x(c, b):
+        ys, xs = np.nonzero(c[..., 3] > 128); sel = ys < b[0] + (b[1] - b[0]) * 0.16
+        return xs[sel].mean()
+    cx = np.mean([head_x(c, b) for c, b in zip(cells, boxes)])
     half = max(cx - x0, x1 - cx) + pad
     X0 = int(cx - half); X1 = int(cx + half); Y0 = y0 - pad; Y1 = y1 + pad
     FW = int(round((X1 - X0) * k)); FH = int(round((Y1 - Y0) * k))
@@ -69,6 +73,11 @@ def main(src, name, start=None, length=None):
     meta_p = os.path.join(IMG, 'anim.json')
     meta = json.load(open(meta_p)) if os.path.exists(meta_p) else {}
     meta[name] = {'n': len(cells), 'fw': FW, 'fh': FH, 'base': round((Y1 - y1) / (Y1 - Y0), 4), 'ch': round(chH / (Y1 - Y0), 4)}
+    if name.endswith('_walk'):
+        # duruş karesi: ayakların en kapalı olduğu kare (oyunda dururken bu gösterilir)
+        def legw(c):
+            a = c[int(c.shape[0] * 0.75):, :, 3] > 128; xs = np.nonzero(a)[1]; return xs.max() - xs.min() if len(xs) else 1e9
+        meta[name]['idle'] = int(np.argmin([legw(c) for c in cells]))
     json.dump(meta, open(meta_p, 'w'), indent=1)
     man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
     if name + '.webp' not in man: json.dump(sorted(man + [name + '.webp']), open(man_p, 'w'), indent=0)

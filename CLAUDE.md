@@ -116,7 +116,12 @@ anim_isle.py seçenekleri: --auto (bağlı parçalarla ayırma, scipy), --anchor
    (`varliklar/ham/anim/lejyoner_yandan_video.png`), prompt: yerinde yürüyüş, sabit kamera, düz magenta zemin.
    `python3 varliklar/video_isle.py ham/anim/lejyoner_yuru_video.mp4 enemy_legion_walk [--start 61 --len 31]`: 24 fps'e çevirir,
    en iyi kapanan döngüyü bulur (lejyoner: 31 kare), magentayı siler, kareleri SABİT çerçeveyle keser → enemy_legion_walk (31 kare).
-   Önden/arkadan şerit yok → yandan şerit kullanılır. Saldırı henüz eski rig; sırada saldırı videosu (darbe karesi ATK_PREP oranına denk gelmeli).
+   Önden/arkadan şerit yok → yandan şerit kullanılır.
+   Saldırı (yayın 98): `lejyoner_saldiri_video.mp4` → `video_isle.py ... enemy_legion_atk --start 31 --len 31` (videoda tek net saplama;
+   darbe karesi = başlangıç + round(n * ATK_PREP/(ATK_PREP+ATK_AFTER)) = 0,4*n; lejyonerde video karesi 44).
+   Dururken yürüyüş şeridinin "idle" karesi gösterilir (ayaklar en kapalı; video_isle yazar) → tek resme dönüp tasarım değişmez.
+   Şeritler 300 px boy (TARGET_H): rütbe kopyalarıyla bellek makul kalsın. Kareler başın yerine göre hizalanır (mızrak uzasa da kaymaz).
+   Veo kotası (Gemini uygulamasında günde 3 video) sınırlı: diğer düşmanlar için alternatif video kaynakları kullanıcıya önerildi.
 Kingdom Rush: Flash/Animate'te elle (vektör parçalar + kare kare) animasyon, çok kare, tutarlı kaynak.
 
 ### Parçalı (iskeletli) animasyon (kapalı)
