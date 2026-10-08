@@ -129,7 +129,7 @@ yüz yönü konum farkından hesaplandığı için her ~12 karede bir kare ters 
 window.__animLog'a [id, şerit, kare, yüz, yürüyor, yön, x, y] yazılır (test aracı; scratchpad diag.js mantığı: yüz çevirme/şerit değişimi say).
 Video üretimi için kullanıcının evdeki bilgisayarı MacBook Air M4 16 GB (NVIDIA yok): Wan 2.2 yerelde zor/yavaş; Kaggle/Colab ücretsiz GPU önerildi.
 
-### Parçalı (iskeletli) animasyon (kapalı)
+### Parçalı (iskeletli) animasyon (KALDIRILDI 9 Eki; kod ve dosyalar git geçmişinde)
 Kullanıcı Gemini kare kare animasyonlarını "amatörce" buldu (az kare ~10 fps, her karede çizim titriyor). Yerine Spine benzeri parçalı karakter:
 Gemini'den bir PARÇA SAYFASI (baş, gövde, etek, pelerin, üst kol/önkol x2, uyluk/baldır/ayak x2, kalkan, mızrak; magenta zemin, ayrık parçalar)
 → `python3 varliklar/kukla_isle.py ham/anim/lejyoner_parcalar.jpg enemy_legion_parts <ad listesi satır satır>` → img/<atlas>.webp + img/puppet.json.
@@ -150,7 +150,10 @@ yol ve arsa düzenini kullanıyor. Görsel işleme artık yalnız `varliklar/nm_
 - Görseller WebP (`varliklar/webp_cevir.py`; nm_isle.py ve anim_isle.py artık doğrudan WebP yazar). img/ ~3.5 MB.
 - Kare maliyeti: `__game.perf(n)` (güncelleme + tam sahne çizimi, ms). 80 düşman + 60 ceset + 17 gaz bulutu: çizim ort. ~3.3 ms (masaüstü).
 - Cesetler ölüm pozundan sonra önbelleğe alınır (kare başına en çok 3); gaz/buhar öbekleri hazır görselle çizilir.
-- NPC sistemi kaldırıldı. Eski seferlere ait ama çalışmayan kod hâlâ var (eski kahraman güçleri, çöl düşman yetenekleri, eski okçu/asker çizimleri, eski temalar).
+- Eski kod temizliği (9 Eki): eski okçu kulesi/top/büyücü küresi çizimleri, eski başlık, eski kahramanlar (Caner, Tarçın, Bilge) ve 19 yeteneği,
+  kukla (parçalı) animasyon sistemi ve dosyaları, eski düşmanların kodla yedek çizimi, eski RIG/ARMS/boss renk kayıtları, data.js'te eski
+  20 bölümün dalgaları (yalnız ilk 5'in yol/arsa/kol düzeni kaldı) silindi. game.js 9916 -> ~8850, data.js 1154 -> ~670 satır.
+  Ölü fonksiyon taraması: hiç çağrılmayan fonksiyon/sabitleri bulup silen betik mantığı (adı dosyada bir kez geçenler) tur tur uygulandı.
 
 ## Son durum (eski oyun, tarihçe)
 2 sefer (EPISODES): 1. Ardan Krallığı (bölüm 1–10), 2. Kızılkum Sultanlığı (11–20, çöl; LEVELS'ta ep: 2).
