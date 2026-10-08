@@ -3309,7 +3309,7 @@ function drawTut() {
 // mud: yoldaki çamur düşmanı yavaşlatır · graves: yol kenarı mezarlardan arada bir bizim tarafa ölü kalkar
 // lake: göldeki yaratık yoldaki bir düşmanı suya çeker · sunbeam: Solarian güneş ışını bir kuleyi kısa süre susturur
 const MECH = {
-  mud: { title: 'ÇAMURLU YOL', sub: 'Çamur birikintileri düşmanları yavaşlatır' },
+  mud: { title: 'ÇAMURLU YOL', sub: 'Çamur birikintileri düşmanları neredeyse yarı hıza düşürür' },
   graves: { title: 'MEZARLAR UYANIYOR', sub: 'Arada bir mezarlardan senin için ölüler kalkar', every: 18 },
   lake: { title: 'GÖLDE BİR ŞEY VAR', sub: 'Göl yaratığı yoldaki düşmanları suya çeker', every: 30 },
   sunbeam: { title: 'GÜNEŞ IŞINI', sub: 'Solarian rahipleri arada bir kulelerinden birini susturur', every: 30, warn: 2, off: 4 },
@@ -3352,7 +3352,7 @@ function updateMech(dt) {
       const m = mudAt(e.x, e.y);
       e.inMud = !!m;
       if (m) {
-        slowEnemy(e, 0.35, 0.25);
+        slowEnemy(e, MUD_SLOW, 0.25);
         // yürürken çamur sıçrar
         if (Math.random() < dt * 4) {
           const k = (CHAR_H['enemy_' + e.type] || 24) / 24;
@@ -3410,6 +3410,8 @@ function updateMech(dt) {
 // Durağan katman (ıslak leke, sıçrantılar, kenar, çamur, yosun, yarı gömülü kemik) bir kez önbelleğe çizilir;
 // her karede parıltı, girdap, kabarcıklar, yağmur halkaları ve içinden geçenlerin halkaları eklenir.
 const MUD_SQ = 0.6, MUD_RES = 3;
+// çamurda yavaşlama: hız %52'ye düşer (önce %65'ti, 8 Eki'de %20 daha yavaşlatıldı)
+const MUD_SLOW = 1 - 0.65 * 0.8;
 function mudRand(m) { let x = Math.floor(m.seed * 1e6) || 1; return () => { x = (x * 16807) % 2147483647; return x / 2147483647; }; }
 // kenar çizgisi: yarıçap açıyla dalgalanır (tohumlu)
 function mudShape(m) {

@@ -67,7 +67,7 @@ Sırada (öneri listesi, 8 Eki): dokunulabilir dekor şakaları (karga, mezar el
 2. bölüm (Sisli Bataklık, mech 'mud') çamuru game.js drawMud: yol yönünde uzanan düzensiz birikinti (mudShape tohumlu kenar,
 yer düzlemi MUD_SQ=0.6 basık). Durağan katman önbellekte (mudBase: ıslak leke, sıçrantılar, ıslak kenar, yosun, topaklar, çubuklar),
 her karede girdap, parıltı, kabarcık (şişer/patlar), yağmur halkaları, içinden geçenlerin halkaları ve yarı gömülü kemik/kafatası (mudProp).
-Yavaşlatma alanı mudAt (döndürülmüş elips). Çamurdaki birimlerin ayağına drawWade ile çamur halkası çizilir, yürürken çamur sıçrar.
+Yavaşlatma alanı mudAt (döndürülmüş elips), çamurda hız %52 (MUD_SLOW, yayın 91). Çamurdaki birimlerin ayağına drawWade ile çamur halkası çizilir, yürürken çamur sıçrar.
 
 ## Kodeks (8 Eki 2026, yayın 90)
 Haritada ayarların solundaki kitap düğmesi (yeni kayıt sayısı rozetli) → `screen = 'codex'` (game.js drawCodex).
@@ -76,6 +76,12 @@ Ayrıntı kartı: kaidede yürüyen canlı karakter (drawUnit), Er/Kıdemli/Yüz
 can/zırh/büyü direnci/hız/hasar/can kaybı/altın, zayıf/dirençli rozetleri, yetenekler (enemySkills: veriden), açıklama, "Mortimer'ın notu"
 (CODEX_NOTE, yeni düşman/kule eklenince buraya esprili not ekle). Kulelerde 1-3. seviye seçimi, değerler, uzmanlıklar.
 Kayıt: save.codex (görülen asıl türler; spawnEnemy → codexNote), save.codexNew (bakılmamış yeniler). Yeni düşman eklenince CODEX_ENEMIES'e ekle.
+
+## Kare kare düşman animasyonu (lejyonerle başlıyor)
+Promptlar: `tasarim/lejyoner-animasyon-promptlari.md` (0 model sayfası → 1 yandan yürüyüş → 2 önden → 3 arkadan → 4 mızrak saldırısı).
+Ekler: `varliklar/ham/anim/ref_lejyoner.png`, kılavuzlar `kilavuz_yuru.png`, `kilavuz_onarka.png`, `kilavuz_mizrak.png` (poz_kilavuzu.py mizrak).
+Gemini sayfaları `varliklar/ham/anim/lejyoner_*.jpg` → `python3 varliklar/anim_isle.py ham/anim/<dosya> enemy_legion_<walk|walk_on|walk_arka|atk> 4 2`.
+Oyun bu şeritleri drawUnit'te kendiliğinden kullanır. Yapılacak: rütbeli lejyonerlerin (legion_k/_y) şeritleri RANK_LOOK ile yeniden renklendirmesi.
 
 ## Eski oyun dosyaları (8 Eki 2026)
 Eski seferlerin (Ardan, Kızılkum) görselleri, ham Gemini sayfaları, işleme betikleri (gorsel_isle, sprite_uret, doku_uret, sefer2_isle)

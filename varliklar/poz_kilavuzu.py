@@ -2,6 +2,7 @@
 Kullanım: python3 varliklar/poz_kilavuzu.py yuru  ->  varliklar/ham/anim/kilavuz_yuru.png
           python3 varliklar/poz_kilavuzu.py onarka  ->  önden/arkadan yürüyüş (kırmızı = karakterin sağ bacağı/kolu, mavi = sol)
           python3 varliklar/poz_kilavuzu.py saldiri ->  yandan kılıç saldırısı (kırmızı = kılıç kolu, dirsek eklemi belirgin; mavi = kalkan kolu)
+          python3 varliklar/poz_kilavuzu.py mizrak  ->  yandan kalkanlı mızrak saplama (lejyoner; kırmızı = mızrak kolu, mavi = kalkan kolu)
 """
 import math, os, sys
 from PIL import Image, ImageDraw
@@ -146,8 +147,54 @@ def saldiri():
         d.ellipse([hd[0] - 11, hd[1] - 11, hd[0] + 11, hd[1] + 11], fill=(150, 20, 20))
     return im
 
+# yandan kalkanlı mızrak saplama (sağa bakar). Oyunda 6. kare darbe anıdır (ATK_FRAME_T).
+# (mızrak kolu omuz açısı, dirsek bükümü, mızrak açısı, gövde eğimi, ön ayak adımı, kalkan öne itme)
+# mızrak açısı: 90 = yatay öne, 120 = ucu hafif aşağı; omuz açısı 0 = aşağı sarkık, 90 = öne yatay
+MIZRAK = [
+    (40, 60, 95, 0, 0, 0),      # 1 hazır: mızrak bel hizasında yatay, kalkan önde
+    (5, 75, 96, -5, 0, -2),     # 2 ağırlık geriye: mızrak geri çekilmeye başlar
+    (-60, 70, 94, -12, -6, -4), # 3 geri çek: el kalçanın arkasında, mızrak ucu kalkana kadar geri
+    (-45, 150, 104, -8, 6, -6), # 4 kurulma: el omuz hizasına kalkar (üstten tutuş), uç hafif aşağı, gövde çömelir
+    (45, 70, 100, 6, 30, 10),   # 5 atılış: ön ayak öne adım atar, kol öne gelmeye başlar
+    (88, 4, 92, 14, 52, 16),    # 6 DARBE: kol tam uzanır, mızrak kalkanın önünden ileri saplanır, gövde öne yüklenir
+    (70, 25, 96, 10, 46, 10),   # 7 devam: mızrak hâlâ önde, hafifçe geri çekilmeye başlar
+    (40, 60, 95, 2, 15, 2),     # 8 toparlan: hazır duruşa döner
+]
+
+def mizrak():
+    im = Image.new('RGB', (W, H), (255, 255, 255)); d = ImageDraw.Draw(im)
+    L1, L2, TOR = 70, 70, 100
+    for i, (ua, eb, sa, lean, step, push) in enumerate(MIZRAK):
+        cx, cy = (i % COLS) * CW + CW // 2, (i // COLS) * CH
+        ground = cy + CH - 36
+        hip = (cx - 50 + step * 0.5, ground - 128 + (6 if i in (3, 5) else 0))
+        top = pt(hip, 180 - lean, TOR)
+        d.line([(cx - 150, ground), (cx + 150, ground)], fill=(190, 190, 190), width=3)
+        leg(d, hip, -20, 8, L1, L2, BLUE, 20)                                    # arka bacak
+        # kalkan kolu (uzak): büyük dikdörtgen kalkan göğsün önünde, darbede öne itilir
+        sh2 = (top[0] - 2, top[1] + 14)
+        e2 = pt(sh2, 60, 44); h2 = pt(e2, 100, 36)
+        h2 = (h2[0] + push, h2[1])
+        d.line([sh2, e2, h2], fill=BLUE, width=16, joint='curve')
+        d.rectangle([h2[0] - 6, h2[1] - 78, h2[0] + 20, h2[1] + 66], outline=BLUE, width=8)
+        d.line([hip, top], fill=BODY, width=40)
+        d.ellipse([top[0] - 26, top[1] - 58, top[0] + 26, top[1] - 6], fill=HEAD)
+        leg(d, hip, 18 + step * 0.6, 10 + step * 0.3, L1, L2, RED, 22)           # ön bacak (adım atar)
+        # mızrak kolu (yakın): omuz -> dirsek -> el; mızrak elden iki yana uzanır (sap arkada, uç önde)
+        sh = (top[0] + 4, top[1] + 18)
+        el = pt(sh, ua, 46); hd = pt(el, ua + eb, 42)
+        tip = pt(hd, sa, 150); butt = pt(hd, sa + 180, 70)
+        d.line([butt, tip], fill=(120, 90, 40), width=9)                          # sap
+        d.polygon([tip, pt(tip, sa + 160, 26), pt(tip, sa - 160, 26)], fill=(150, 150, 150))  # uç
+        d.line([sh, el, hd], fill=RED, width=18, joint='curve')
+        for q in (sh, el): d.ellipse([q[0] - 13, q[1] - 13, q[0] + 13, q[1] + 13], fill=RED)
+        d.ellipse([hd[0] - 11, hd[1] - 11, hd[0] + 11, hd[1] + 11], fill=(150, 20, 20))
+        if i == 5:  # darbe karesi: küçük işaret yıldızı (yalnız kılavuz)
+            for a in range(0, 360, 45): d.line([tip, pt(tip, a, 22)], fill=(255, 170, 0), width=4)
+    return im
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     kind = sys.argv[1] if len(sys.argv) > 1 else 'yuru'
-    im = {'yuru': walk, 'onarka': onarka, 'saldiri': saldiri}[kind]()
+    im = {'yuru': walk, 'onarka': onarka, 'saldiri': saldiri, 'mizrak': mizrak}[kind]()
     p = os.path.join(OUT, 'kilavuz_%s.png' % kind); im.save(p); print(p)
