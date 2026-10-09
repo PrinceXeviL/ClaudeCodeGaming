@@ -1,0 +1,9 @@
+Using the attached reference image (our two elite crimson ghost-skeleton archers), redraw the SAME character for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly shading, same chunky cartoon proportions, same colors, same crimson hooded cloak, bone pauldrons with small skulls, glowing red eyes, crimson spectral mist at the feet.
+
+Change ONLY the weapon: instead of the longbow he now carries a heavy black bone CROSSBOW (a stock carved from dark bone, short thick bow limbs made of curved ribs, a glowing red string, a skull ornament at the front, a short red-glowing bone bolt loaded on it). Remove the quiver of arrows; give him a small belt pouch of red-fletched bone bolts instead.
+
+Draw 2 separate poses with lots of empty space between them, both side view facing RIGHT, full body, same size:
+1. Standing ready: crossbow held in both hands at the hip, pointing forward and slightly down.
+2. Aiming: crossbow raised to the shoulder, stock against the cheek, aiming straight forward, body leaning slightly forward, a glowing red bolt loaded.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
