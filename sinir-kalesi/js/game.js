@@ -839,32 +839,52 @@ function renderBackground(lv, paths, res = 2) {
       g.fillStyle = th.stone[1]; g.beginPath(); g.ellipse(q.x - r * 0.3, q.y - r * 0.3, r * 0.55, r * 0.4, 0, 0, Math.PI * 2); g.fill();
     }
   }
-  // yol kenarı: düzenli aralıkla, kenarı izleyen ot öbekleri (sivri, uçları açık yapraklar; altında yola düşen hafif gölge).
-  // Önce gölgeler, sonra öbekler: komşu öbekler birbirinin gölgesini örtmesin.
+  // yol kenarı (doğal): kenar boyunca yoğunluğu dalgalanan ot öbekleri — yer yer gür ve yola taşan, yer yer seyrek,
+  // aralarda çıplak toprak ve ufalanmış kenar; öbeklerin boyu, yaprak sayısı ve eğimi hep farklı.
   const tc = (h, k) => { const n = parseInt(h.slice(1), 16), f = (v) => Math.round(clamp(v * k, 0, 255)); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; };
-  const clumps = [];
+  const clumps = [], crumbs = [];
   for (const p of paths) {
-    for (let d = 2; d < p.total - 6; d += 6.5) {
-      for (const side of [-1, 1]) {
-        const q = pathPos(p, d, side * (20.6 * R * roadVary(p, d, side))), s = 0.75 + rnd() * 0.45, ph = rnd();
-        if (onRoad(p, q.x, q.y, false, d)) continue;
-        const o = pathPos(p, d, side * (20.6 * R * roadVary(p, d, side) + 4)); // dışa doğru yön
-        clumps.push([q.x, q.y, s, ph, Math.atan2(o.y - q.y, o.x - q.x)]);
+    const ph = [rnd() * 6.3, rnd() * 6.3, rnd() * 6.3, rnd() * 6.3];
+    for (const side of [-1, 1]) {
+      const o = side > 0 ? 0 : 2;
+      for (let d = 2 + rnd() * 4; d < p.total - 6;) {
+        // yoğunluk 0..1: uzun ve kısa iki dalganın toplamı (gür kuşaklar, seyrek boşluklar)
+        const dens = clamp(0.55 + 0.4 * Math.sin(d * 0.021 + ph[o]) + 0.3 * Math.sin(d * 0.067 + ph[o + 1]), 0, 1);
+        d += 3 + (1 - dens) * 12 + rnd() * 5;
+        const e = 20.6 * R * roadVary(p, d, side), q0 = pathPos(p, d, side * e);
+        if (onRoad(p, q0.x, q0.y, false, d)) continue;
+        if (rnd() > 0.4 + dens * 0.6) { // boşluk: çıplak kenarda ufalanmış toprak ve çakıl
+          if (rnd() < 0.6) crumbs.push(pathPos(p, d, side * (e - 2 - rnd() * 4)));
+          continue;
+        }
+        const big = dens > 0.7 && rnd() < 0.5, inset = big ? 2 + rnd() * 4 : rnd() * 3 - 1; // gür yerde ot yola taşar
+        const q = pathPos(p, d, side * (e - inset)), out = pathPos(p, d, side * (e + 4));
+        clumps.push([q.x, q.y, (big ? 0.95 : 0.55) + rnd() * 0.5, rnd(), Math.atan2(out.y - q.y, out.x - q.x), 3 + Math.floor(rnd() * (big ? 5 : 3))]);
+        if (big && rnd() < 0.6) { const q2 = pathPos(p, d + 2, side * (e + 3 + rnd() * 4)); clumps.push([q2.x, q2.y, 0.6 + rnd() * 0.5, rnd(), Math.atan2(out.y - q.y, out.x - q.x), 3 + Math.floor(rnd() * 3)]); }
       }
     }
   }
-  g.fillStyle = 'rgba(30,22,10,0.22)';
-  for (const [x, y, s] of clumps) { g.beginPath(); g.ellipse(x, y + 1.6 * s, 5.2 * s, 2 * s, 0, 0, Math.PI * 2); g.fill(); }
-  const dark = tc(th.tuft[0], 0.7), mid = th.tuft[0], light = th.tuft[1], tip = tc(th.tuft[1], 1.25);
-  for (const [x, y, s, ph, out] of clumps) {
-    const lean = Math.cos(out) * 0.35; // yolun sağındaki öbek sağa, solundaki sola hafif yatar
-    for (let k = 0; k < 5; k++) {
-      const a = -Math.PI / 2 + (k - 2) * 0.33 + lean + (ph - 0.5) * 0.2, len = (5.5 + ((k * 7 + ph * 10) % 4)) * s * (k === 2 ? 1.25 : 1);
-      const bx = x + (k - 2) * 1.5 * s, tx = bx + Math.cos(a) * len, ty = y + Math.sin(a) * len, nx = -Math.sin(a) * 1.25 * s, ny = Math.cos(a) * 1.25 * s;
-      const gr = g.createLinearGradient(bx, y, tx, ty); gr.addColorStop(0, dark); gr.addColorStop(0.45, k % 2 ? mid : light); gr.addColorStop(1, tip);
+  // ufalanmış kenar: toprak rengi küçük topaklar, gölgeli
+  for (const q of crumbs) {
+    const r = 1 + rnd() * 1.6;
+    g.fillStyle = 'rgba(20,14,6,0.3)'; g.beginPath(); g.ellipse(q.x + 0.6, q.y + 0.8, r * 1.2, r * 0.8, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rnd() < 0.5 ? th.road[2] : th.stone[0]; g.beginPath(); g.ellipse(q.x, q.y, r * 1.2, r * 0.85, rnd() * 3, 0, Math.PI * 2); g.fill();
+  }
+  // öbek gölgeleri yola düşer (önce hepsi), sonra öbekler yukarıdan aşağı sırayla (önde olan arkadakini örter)
+  for (const [x, y, s] of clumps) { g.fillStyle = 'rgba(25,18,8,0.2)'; g.beginPath(); g.ellipse(x + 1, y + 1.8 * s, 6 * s, 2.2 * s, 0, 0, Math.PI * 2); g.fill(); }
+  clumps.sort((a, b) => a[1] - b[1]);
+  for (const [x, y, s, ph, out, nb] of clumps) {
+    const lean = Math.cos(out) * 0.45, tone = 0.8 + ph * 0.35;
+    const dark = tc(th.tuft[0], 0.62 * tone), mid = tc(th.tuft[0], tone), light = tc(th.tuft[1], tone), tip = tc(th.tuft[1], 1.2 * tone);
+    for (let k = 0; k < nb; k++) {
+      const u = nb > 1 ? k / (nb - 1) - 0.5 : 0, j = Math.sin(ph * 40 + k * 2.7);
+      const a = -Math.PI / 2 + u * 1.5 + lean + j * 0.22, len = (4.5 + 3.5 * Math.abs(Math.sin(ph * 17 + k * 1.9))) * s * (1 - Math.abs(u) * 0.35);
+      const bx = x + u * 6 * s, tx = bx + Math.cos(a) * len, ty = y + Math.sin(a) * len, wd = (1.1 + 0.5 * Math.abs(j)) * s;
+      const nx = -Math.sin(a) * wd, ny = Math.cos(a) * wd, bend = j * 1.6 * s;
+      const gr = g.createLinearGradient(bx, y, tx, ty); gr.addColorStop(0, dark); gr.addColorStop(0.5, k % 2 ? mid : light); gr.addColorStop(1, tip);
       g.fillStyle = gr; g.beginPath(); g.moveTo(bx - nx, y - ny);
-      g.quadraticCurveTo(bx + Math.cos(a) * len * 0.55 - nx * 0.5 + lean * 2, y + Math.sin(a) * len * 0.55 - ny * 0.5, tx, ty);
-      g.quadraticCurveTo(bx + Math.cos(a) * len * 0.55 + nx * 0.5 + lean * 2, y + Math.sin(a) * len * 0.55 + ny * 0.5, bx + nx, y + ny);
+      g.quadraticCurveTo(bx + Math.cos(a) * len * 0.55 - nx * 0.4 + bend, y + Math.sin(a) * len * 0.55 - ny * 0.4, tx + bend * 0.6, ty);
+      g.quadraticCurveTo(bx + Math.cos(a) * len * 0.55 + nx * 0.4 + bend, y + Math.sin(a) * len * 0.55 + ny * 0.4, bx + nx, y + ny);
       g.closePath(); g.fill();
     }
   }
@@ -8674,48 +8694,100 @@ if (document.fonts) {
   document.fonts.ready.then(() => { FONT_VER++; }).catch(() => {});
 }
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
-// logo: üstte mor kurdele üstünde "DON'T MESS WITH", altta kemik beyazından zehir yeşiline "THE NECROMANCER", damlalar
+// logo: üstte koyu kızıl, altın çerçeveli kurdelede "DON'T MESS WITH" (arayüz yazı tipi, kemik beyazı),
+// altta Creepster ile kan kırmızısı "THE NECROMANCER"; yazı tipinin sarkıtları parlak kan rengine boyanır, uçlarına kan damlası konur
 function titleLogo() {
   if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER) return TITLE_C.logo;
-  const LW = 780, LH = 240, [c, g] = offscreen(LW, LH), cx = LW / 2;
+  const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), cx = LW / 2;
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  // kurdele
-  const ry = 52, rw = 330, rh = 44;
+  // kurdele: iki yanda katlanmış uçlar, ortada gövde
+  const ry = 50, rw = 430, rh = 56;
   for (const sd of [-1, 1]) {
-    g.fillStyle = '#2a0e3e'; g.beginPath();
-    g.moveTo(cx + sd * (rw / 2 - 6), ry - rh / 2 + 10); g.lineTo(cx + sd * (rw / 2 + 46), ry - rh / 2 + 10);
-    g.lineTo(cx + sd * (rw / 2 + 28), ry + 8); g.lineTo(cx + sd * (rw / 2 + 46), ry + rh / 2 + 10); g.lineTo(cx + sd * (rw / 2 - 6), ry + rh / 2 + 10); g.closePath();
-    g.fillStyle = '#1a0614'; g.fill(); g.strokeStyle = '#0a0410'; g.lineWidth = 3; g.stroke();
+    g.beginPath();
+    g.moveTo(cx + sd * (rw / 2 - 10), ry - rh / 2 + 12); g.lineTo(cx + sd * (rw / 2 + 52), ry - rh / 2 + 12);
+    g.lineTo(cx + sd * (rw / 2 + 32), ry + 12); g.lineTo(cx + sd * (rw / 2 + 52), ry + rh / 2 + 12); g.lineTo(cx + sd * (rw / 2 - 10), ry + rh / 2 + 12); g.closePath();
+    g.fillStyle = '#3a060c'; g.fill(); g.strokeStyle = '#0c0204'; g.lineWidth = 3.5; g.stroke();
+    g.beginPath(); g.moveTo(cx + sd * (rw / 2), ry + rh / 2); g.lineTo(cx + sd * (rw / 2 - 10), ry + rh / 2 + 12); g.lineTo(cx + sd * (rw / 2 - 10), ry + rh / 2); g.closePath();
+    g.fillStyle = '#12020a'; g.fill(); // katlanma gölgesi
   }
-  let gr = g.createLinearGradient(0, ry - rh / 2, 0, ry + rh / 2); gr.addColorStop(0, '#3a1030'); gr.addColorStop(0.5, '#24081e'); gr.addColorStop(1, '#140410');
-  g.beginPath(); g.roundRect(cx - rw / 2, ry - rh / 2, rw, rh, 6); g.fillStyle = gr; g.fill(); g.strokeStyle = '#0a0410'; g.lineWidth = 3.5; g.stroke();
-  g.beginPath(); g.roundRect(cx - rw / 2 + 5, ry - rh / 2 + 5, rw - 10, rh - 10, 4); g.strokeStyle = 'rgba(232,214,160,0.55)'; g.lineWidth = 1.5; g.stroke();
-  g.font = `32px ${FONT_LOGO}`;
-  g.strokeStyle = '#0a0410'; g.lineWidth = 7; g.strokeText("DON'T MESS WITH", cx, ry + 2);
-  gr = g.createLinearGradient(0, ry - 14, 0, ry + 14); gr.addColorStop(0, '#fff8e2'); gr.addColorStop(1, '#d8c48a');
-  g.fillStyle = gr; g.fillText("DON'T MESS WITH", cx, ry + 2);
+  let gr = g.createLinearGradient(0, ry - rh / 2, 0, ry + rh / 2); gr.addColorStop(0, '#f6e7b4'); gr.addColorStop(0.5, '#c9a35a'); gr.addColorStop(1, '#8a6428');
+  g.beginPath(); g.roundRect(cx - rw / 2, ry - rh / 2, rw, rh, 8); g.fillStyle = gr; g.fill(); g.strokeStyle = '#0c0204'; g.lineWidth = 3.5; g.stroke();
+  gr = g.createLinearGradient(0, ry - rh / 2, 0, ry + rh / 2); gr.addColorStop(0, '#7e121a'); gr.addColorStop(0.55, '#4e0a10'); gr.addColorStop(1, '#2a0408');
+  g.beginPath(); g.roundRect(cx - rw / 2 + 4, ry - rh / 2 + 4, rw - 8, rh - 8, 5); g.fillStyle = gr; g.fill();
+  gr = g.createLinearGradient(0, ry - rh / 2, 0, ry); gr.addColorStop(0, 'rgba(255,220,200,0.22)'); gr.addColorStop(1, 'rgba(255,220,200,0)');
+  g.fillStyle = gr; g.fillRect(cx - rw / 2 + 4, ry - rh / 2 + 4, rw - 8, rh / 2 - 4);
+  g.font = `38px ${FONT_T}`;
+  if ('letterSpacing' in g) g.letterSpacing = '3px';
+  const DM = "DON'T MESS WITH", dx = ('letterSpacing' in g) ? 1.5 : 0;
+  g.strokeStyle = '#0c0204'; g.lineWidth = 8; g.strokeText(DM, cx + dx, ry + 3);
+  gr = g.createLinearGradient(0, ry - 16, 0, ry + 18); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.55, '#fbf1d6'); gr.addColorStop(1, '#e2cc93');
+  g.fillStyle = gr; g.fillText(DM, cx + dx, ry + 2);
+  if ('letterSpacing' in g) g.letterSpacing = '0px';
   // ana yazı
-  const ty = 150, sz = 96, T = 'THE NECROMANCER';
-  g.font = `${sz}px ${FONT_LOGO}`;
-  while (g.measureText(T).width > LW - 40) { g.font = `${Math.round(parseFloat(g.font) - 4)}px ${FONT_LOGO}`; } // geniş yazı tipinde taşmasın
-  g.save(); g.shadowColor = 'rgba(255,40,30,0.75)'; g.shadowBlur = 30; g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.22; g.strokeText(T, cx, ty); g.restore();
-  g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.22; g.strokeText(T, cx, ty + 5);
-  g.strokeStyle = '#3a0610'; g.lineWidth = sz * 0.1; g.strokeText(T, cx, ty);
-  gr = g.createLinearGradient(0, ty - sz / 2, 0, ty + sz / 2);
-  gr.addColorStop(0, '#ffd9c8'); gr.addColorStop(0.3, '#ff5a3c'); gr.addColorStop(0.62, '#d3121c'); gr.addColorStop(1, '#6a0410');
+  const ty = 150, T = 'THE NECROMANCER';
+  let sz = 100; g.font = `${sz}px ${FONT_LOGO}`;
+  while (g.measureText(T).width > LW - 40) { sz -= 4; g.font = `${sz}px ${FONT_LOGO}`; } // geniş yazı tipinde taşmasın
+  const tw = g.measureText(T).width;
+  // harf maskesi (2x): sarkıtların ve damla uçlarının yerini bulmak için
+  const [m, mg] = offscreen(LW, LH); mg.font = g.font; mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#fff'; mg.fillText(T, cx, ty);
+  const MD = mg.getImageData(0, 0, LW * 2, LH * 2).data, at = (x, y) => MD[((y | 0) * LW * 2 + (x | 0)) * 4 + 3] > 100;
+  // harf gövdesinin alt sınırı: satır doluluğu birden düştüğü yer; altı sarkıt
+  let base = ty + sz * 0.3;
+  { const rows = [];
+    for (let y = Math.round((ty) * 2); y < Math.round((ty + sz * 0.6) * 2); y++) { let n = 0; for (let x = (cx - tw / 2) * 2; x < (cx + tw / 2) * 2; x += 2) if (at(x, y)) n++; rows.push([y, n]); }
+    const full = Math.max(...rows.slice(0, 8).map(r => r[1])); // harf ortasındaki doluluk
+    for (const [y, n] of rows) if (n < full * 0.55) { base = y / 2; break; } }
+  // sarkıt uçları: tabanın altında harf pikseli olan sütun grupları, her grubun en alt noktası
+  const tips = [];
+  { let run = null;
+    for (let x = Math.round((cx - tw / 2) * 2); x <= Math.round((cx + tw / 2) * 2); x++) {
+      let low = 0; for (let y = Math.round(base * 2 + 4); y < LH * 2 - 2; y++) if (at(x, y)) low = y;
+      if (low) { if (!run) run = { x0: x, best: low, bx: x }; else if (low > run.best) { run.best = low; run.bx = x; } run.x1 = x; }
+      else if (run) { tips.push(run); run = null; }
+    }
+    if (run) tips.push(run); }
+  // kan sarkıtları: yazı tipinin harf altındaki kıvrımlarından (tips) seçilenlerden aşağı süzülen, ucu yuvarlak damla olan akıntılar
+  const rnd = seeded(11), drips = [];
+  tips.forEach((t, k) => {
+    if (rnd() < 0.25) return; // hepsinden akmasın
+    const w0 = clamp((t.x1 - t.x0) / 2 * 1.3, 7, 11), L = 12 + rnd() * 22 + (k % 3 === 1 ? 10 : 0);
+    drips.push({ x: t.bx / 2, top: base - 3, w0, L, r: w0 * 0.68 });
+  });
+  const dripPath = (d, o) => {
+    const { x, top, w0, L, r } = d, neck = w0 * 0.42 + o, y1 = top + L;
+    g.beginPath(); g.moveTo(x - w0 / 2 - o, top);
+    g.bezierCurveTo(x - w0 / 2 - o, top + L * 0.4, x - neck, y1 - r * 1.6, x - neck, y1 - r * 0.6);
+    g.arc(x, y1, r + o, Math.PI * 1.15, Math.PI * 1.85 + Math.PI * 2, true);
+    g.bezierCurveTo(x + neck, y1 - r * 1.6, x + w0 / 2 + o, top + L * 0.4, x + w0 / 2 + o, top); g.closePath();
+  };
+  // gölge, kalın koyu kontur (yazı ve sarkıtlar birlikte), iç koyu kızıl kontur
+  g.save(); g.shadowColor = 'rgba(255,30,20,0.7)'; g.shadowBlur = 28; g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.2; g.strokeText(T, cx, ty); g.restore();
+  g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.2; g.strokeText(T, cx, ty + 5);
+  g.fillStyle = '#0c0204'; for (const d of drips) { dripPath(d, 3); g.fill(); }
+  g.strokeStyle = '#3a0610'; g.lineWidth = sz * 0.09; g.strokeText(T, cx, ty);
+  // dolgu: üstte açık, ortada kan kırmızısı, altta koyu kan
+  gr = g.createLinearGradient(0, ty - sz / 2, 0, ty + sz * 0.45);
+  gr.addColorStop(0, '#ffd9c8'); gr.addColorStop(0.28, '#ff4a32'); gr.addColorStop(0.6, '#d0101a'); gr.addColorStop(1, '#9a0812');
   g.fillStyle = gr; g.fillText(T, cx, ty);
   gr = g.createLinearGradient(0, ty - sz / 2, 0, ty); gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = gr; g.fillText(T, cx, ty - 2);
-  // yeşil damlalar (harflerin altından süzülen veba)
-  const tw = g.measureText(T).width, rnd = seeded(7);
-  for (let i = 0; i < 9; i++) {
-    const x = cx - tw / 2 + tw * (0.06 + 0.88 * (i + rnd() * 0.6) / 9), y = ty + sz * 0.33, L = 8 + rnd() * 18, r = 2.6 + rnd() * 2;
-    g.beginPath(); g.moveTo(x - r, y); g.quadraticCurveTo(x - r * 0.6, y + L * 0.6, x - r, y + L); g.arc(x, y + L, r, Math.PI, 0, true); g.quadraticCurveTo(x + r * 0.6, y + L * 0.6, x + r, y); g.closePath();
-    g.fillStyle = '#b0101a'; g.fill(); g.strokeStyle = '#0c0204'; g.lineWidth = 2.2; g.stroke();
-    g.fillStyle = 'rgba(255,200,190,0.6)'; g.beginPath(); g.arc(x - r * 0.35, y + L - r * 0.2, r * 0.35, 0, Math.PI * 2); g.fill();
+  // sarkıt dolgusu: harfin alt rengiyle başlar, uçtaki damla ıslak ve parlak
+  for (const d of drips) {
+    const dg = g.createLinearGradient(0, d.top, 0, d.top + d.L + d.r);
+    dg.addColorStop(0, '#9a0812'); dg.addColorStop(0.5, '#b80c16'); dg.addColorStop(1, '#d81822');
+    dripPath(d, 0); g.fillStyle = dg; g.fill();
+    g.strokeStyle = 'rgba(255,170,160,0.5)'; g.lineWidth = 1.2; g.lineCap = 'round'; // akıntı boyunca ince parlaklık
+    g.beginPath(); g.moveTo(d.x - d.w0 * 0.2, d.top + 5); g.quadraticCurveTo(d.x - d.w0 * 0.22, d.top + d.L * 0.6, d.x - d.r * 0.45, d.top + d.L - d.r * 0.5); g.stroke();
+    g.fillStyle = 'rgba(255,240,235,0.9)'; g.beginPath(); g.ellipse(d.x - d.r * 0.35, d.top + d.L - d.r * 0.15, d.r * 0.26, d.r * 0.18, -0.6, 0, Math.PI * 2); g.fill();
+  }
+  // en uzun iki sarkıtın altında kopmuş küçük damla
+  for (const d of [...drips].sort((p, q) => q.L - p.L).slice(0, 2)) {
+    const r = d.r * 0.6, x = d.x, yy = d.top + d.L + d.r + 9 + r;
+    g.beginPath(); g.moveTo(x, yy - r * 2.3); g.quadraticCurveTo(x + r * 1.15, yy - r * 0.3, x, yy + r); g.quadraticCurveTo(x - r * 1.15, yy - r * 0.3, x, yy - r * 2.3); g.closePath();
+    g.strokeStyle = '#0c0204'; g.lineWidth = 2; g.stroke(); g.fillStyle = '#d0141e'; g.fill();
+    g.fillStyle = 'rgba(255,240,235,0.85)'; g.beginPath(); g.arc(x - r * 0.3, yy - r * 0.1, r * 0.28, 0, Math.PI * 2); g.fill();
   }
   // parıltı maskesi: yalnız ana yazının harfleri
-  const [m, mg] = offscreen(LW, LH); mg.font = g.font; mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#fff'; mg.fillText(T, cx, ty);
   TITLE_C.logo = { c, m, w: LW, h: LH, ver: FONT_VER };
   return TITLE_C.logo;
 }
@@ -8805,8 +8877,9 @@ const KEY_FX = {
   win: [[0.325, 0.26], [0.352, 0.263], [0.365, 0.164], [0.392, 0.228], [0.375, 0.355], [0.425, 0.254], [0.445, 0.178], [0.445, 0.276], [0.445, 0.362]],
   flame: [[0.042, 0.583, 70, '110,255,120'], [0.05, 0.72, 50, '190,120,255'], [0.333, 0.507, 46, '110,255,120'], [0.381, 0.645, 50, '190,120,255']],
   // görselin kendisi dalgalandırılan bölgeler [x0, y0, x1, y1, genlik(kaynak px), sıklık, hız]: tahtın yanındaki büyü alevleri, çay buharı
-  warp: [[0.0, 0.40, 0.075, 0.70, 5, 0.05, 5], [0.025, 0.62, 0.105, 0.80, 4, 0.06, 4.5], [0.305, 0.43, 0.36, 0.525, 4, 0.07, 5.5],
-    [0.365, 0.42, 0.425, 0.64, 5, 0.05, 4.6], [0.322, 0.28, 0.362, 0.372, 3.5, 0.13, 3]],
+  // tür: 'fire' yalnız yeşil/mor alev pikselleri, 'steam' yalnız açık renkli buhar pikselleri kıpırdar (kol, cübbe, fincan yerinde kalır)
+  warp: [[0.0, 0.40, 0.075, 0.70, 5, 0.05, 5, 'fire'], [0.025, 0.62, 0.105, 0.80, 4, 0.06, 4.5, 'fire'], [0.305, 0.43, 0.36, 0.525, 4, 0.07, 5.5, 'fire'],
+    [0.365, 0.42, 0.425, 0.64, 5, 0.05, 4.6, 'fire'], [0.33, 0.28, 0.36, 0.352, 3, 0.13, 3, 'steam']],
   // yürüyüş yerinde dönen uzak kargalar: yalnız göğün sağ yarısında, küçük, uzaklaşıp kaybolur
   crowSky: [0.5, 0.97, 0.06, 0.24],
 };
@@ -8819,10 +8892,31 @@ function keyWarp(bg, ox, oy, iw, ih, r, i) {
   if (!o || o.w !== sw) {
     const c = document.createElement('canvas'); c.width = sw; c.height = sh;
     const m = document.createElement('canvas'); m.width = sw; m.height = sh;
-    const mg = m.getContext('2d'), gr = mg.createRadialGradient(sw / 2, sh / 2, 0, sw / 2, sh / 2, Math.max(sw, sh) / 2);
-    gr.addColorStop(0, '#000'); gr.addColorStop(0.6, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    mg.setTransform(sw / Math.max(sw, sh), 0, 0, sh / Math.max(sw, sh), sw / 2 * (1 - sw / Math.max(sw, sh)), sh / 2 * (1 - sh / Math.max(sw, sh)));
-    mg.fillStyle = gr; mg.fillRect(0, 0, sw * 2, sh * 2);
+    const mg = m.getContext('2d'); mg.drawImage(bg, sx, sy, sw, sh, 0, 0, sw, sh);
+    const D = mg.getImageData(0, 0, sw, sh), px = D.data, key = new Uint8Array(sw * sh), E = Math.ceil(r[4]) + 1;
+    for (let j = 0, q = 0; j < sw * sh; j++, q += 4) { // renk anahtarı: bu piksel alev/buhar mı
+      const R = px[q], Gc = px[q + 1], B = px[q + 2], mx = Math.max(R, Gc, B), mn = Math.min(R, Gc, B);
+      key[j] = r[7] === 'steam' ? (mn > 120 && mx - mn < 70 ? 1 : 0)
+        : ((Gc > 110 && Gc - R > 35 && Gc - B > 10) || (B > 120 && B - Gc > 45 && R - Gc > 10)) ? 1 : 0;
+    }
+    // yatayda E px aşındır: kayan şerit alevin dışından (kol, cübbe) piksel getirmesin
+    const er = new Float32Array(sw * sh);
+    for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
+      let ok = 1; for (let k = -E; k <= E && ok; k++) { const xx = x + k; if (xx < 0 || xx >= sw || !key[y * sw + xx]) ok = 0; }
+      er[y * sw + x] = ok;
+    }
+    for (let pass = 0; pass < 2; pass++) { // kenarı yumuşat (3x3 kutu bulanıklığı)
+      const t = er.slice();
+      for (let y = 1; y < sh - 1; y++) for (let x = 1; x < sw - 1; x++) {
+        let a = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) a += t[(y + dy) * sw + x + dx];
+        er[y * sw + x] = a / 9;
+      }
+    }
+    for (let j = 0, q = 0; j < sw * sh; j++, q += 4) {
+      const x = j % sw, y = (j / sw) | 0, edge = Math.min(1, x / 6, (sw - 1 - x) / 6, y / 6, (sh - 1 - y) / 6); // bölge kenarında sıfıra iner
+      px[q] = px[q + 1] = px[q + 2] = 0; px[q + 3] = Math.round(255 * er[j] * Math.max(0, edge));
+    }
+    mg.putImageData(D, 0, 0);
     o = C[i] = { c, g: c.getContext('2d'), m, w: sw };
   }
   const g = o.g, A = r[4], F = r[5], S = r[6], st = 3;
@@ -8834,14 +8928,9 @@ function keyWarp(bg, ox, oy, iw, ih, r, i) {
   g.globalCompositeOperation = 'destination-in'; g.drawImage(o.m, 0, 0);
   ctx.drawImage(o.c, ox + r[0] * iw, oy + r[1] * ih, (r[2] - r[0]) * iw, (r[3] - r[1]) * ih);
 }
-// meşale alevi: dar kaynak dikdörtgeni yukarı doğru titreyerek uzayıp kısalır, üstüne turuncu dil
+// meşale alevi: görselin alevi üstünde titreyen turuncu dil (görsel bozulmaz, yalnız ışık eklenir)
 function keyTorch(bg, ox, oy, iw, ih, f, i) {
-  const k = 0.5 + 0.5 * Math.sin(time * 13 + i * 2.1) * Math.sin(time * 7.7 + i), sw = 0.016, sh = 0.05;
-  const sx = (f[0] - sw / 2) * bg.width, sy = (f[1] - sh * 0.75) * bg.height, w = sw * iw, h = sh * ih;
-  const x = ox + (f[0] - sw / 2) * iw, yb = oy + (f[1] + sh * 0.25) * ih, hh = h * (0.92 + 0.16 * k), lean = Math.sin(time * 5 + i) * w * 0.12;
-  ctx.save(); ctx.translate(x + w / 2, yb); ctx.transform(1, 0, lean / hh, 1, 0, 0);
-  ctx.drawImage(bg, sx, sy, sw * bg.width, sh * bg.height, -w / 2, -hh, w, hh);
-  ctx.restore();
+  const k = 0.5 + 0.5 * Math.sin(time * 13 + i * 2.1) * Math.sin(time * 7.7 + i), lean = Math.sin(time * 5 + i) * 0.016 * iw * 0.12;
   const s = iw / W, fx = ox + f[0] * iw + lean, fy = oy + f[1] * ih;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const fh = (9 + 5 * k) * s, fw = 3.4 * s, gr = ctx.createLinearGradient(0, fy + 2 * s, 0, fy - fh);
@@ -8968,7 +9057,7 @@ function drawNecroTitle(st) {
   // logo: düşerek gelir, sonra hafifçe süzülür
   const e = easeOutBack(clamp(st / 0.8, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.3, 0, 1);
-  if (key) drawTitleLogo(W * 0.66, 96 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.62 * (0.85 + 0.15 * e));
+  if (key) drawTitleLogo(W * 0.66, 100 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.64 * (0.85 + 0.15 * e));
   else drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
   ctx.restore();
   necroPlayButton('play', W / 2, 452, 230, 56, 'OYNA', () => go(() => { screen = 'map'; }), st - 0.6);
@@ -10553,6 +10642,7 @@ window.__game = {
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
+  logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
     const D = [], { dpr, scale, ox, oy } = view;
     for (let i = 0; i < n; i++) { const t0 = performance.now(); ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawNecroTitle(5 + i / 60); drawPartsAll(uiParts); ctx.restore(); D.push(performance.now() - t0); time += 1 / 60; }
