@@ -700,6 +700,23 @@ const THEMES = {
     treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_4'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow'], treeK: 0.9, rockK: 1.15, pondSpr: 'nm_pond', ponds: 7, bushSpr: ['nm_bush'], bushes: 8 },
   necrogate: { tex: 'cursed', tint: 'rgba(60,20,70,0.22)', grass: '#36302e', grass2: '#1e1a1c', patch: ['#36302e', '#1e1a1c'], trees: 20, rocks: 22, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5048', '#a8968a', '#2a201a'], tuft: ['#4a4a30', '#6a6a3a'], stone: ['#665e66', '#9a909a'], light: 'rgba(180,255,170,0.1)', amb: '170,255,150', flowers: 0,
     treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3'], rockSpr: ['nm_tomb_3', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 12 },
+  // Sefer 2 (Cadı Avı): Kuzgun Ormanı, Veba Köyü, Batık Manastır, Kemik Katedrali, Kızıl Ay Tepesi.
+  // ruinSpr/ruinK: yol dışındaki büyük yapılar (harabe yerleşimiyle), ruinN: kaç tane
+  ravenwood: { tex: 'cursed', tint: 'rgba(30,20,40,0.28)', grass: '#30362a', grass2: '#1a1e16', patch: ['#30362a', '#1a1e16'], trees: 28, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a4c3e', '#9e8c76', '#2a2016'], tuft: ['#3a4a2a', '#56663a'], stone: ['#605e5a', '#908c84'], light: 'rgba(200,170,120,0.06)', amb: '160,200,140', flowers: 0,
+    treeSpr: ['nm_tree_1', 'nm_tree_3', 'nm_tree_4', 'nm2_ravtree'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow', 'nm2_stake'], treeK: 0.95, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 8,
+    ruinSpr: ['nm2_gallows', 'nm2_stake', 'nm2_ravtree'], ruinK: 0.2, ruinN: 3 },
+  plague:    { tex: 'village', tint: 'rgba(40,30,20,0.15)', grass: '#4a3a2a', grass2: '#2a2018', patch: ['#4a3a2a', '#2a2018'], trees: 10, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5e5446', '#a89a84', '#2c241a'], tuft: ['#4a4a2a', '#66663a'], stone: ['#6a645a', '#9c968a'], light: 'rgba(255,190,120,0.06)', amb: '220,200,150', flowers: 0,
+    treeSpr: ['nm_tree_1', 'nm_tree_4', 'nm_tree_3'], rockSpr: ['nm2_qfence', 'nm_bones', 'nm_rock_2', 'nm2_stake', 'nm_crow'], treeK: 0.9, rockK: 1.15, bushSpr: ['nm_shroom'], bushes: 6,
+    ruinSpr: ['nm2_cottage', 'nm2_well', 'nm2_cottage', 'nm2_gallows'], ruinK: 0.22, ruinN: 4, weather: 'rain' },
+  monastery: { tex: 'marsh', tint: 'rgba(20,50,50,0.2)', grass: '#22322c', grass2: '#121c18', patch: ['#22322c', '#121c18'], trees: 12, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a564c', '#a29c8c', '#28241c'], tuft: ['#2a4a34', '#3a6a44'], stone: ['#5a6662', '#8a9692'], light: 'rgba(160,255,200,0.1)', amb: '170,255,190', flowers: 0,
+    treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_2'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_tomb_3', 'nm_crow'], treeK: 0.9, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 10,
+    ruinSpr: ['nm_ruin_1', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_2'], ruinN: 3 },
+  ossuary:   { tex: 'bone', tint: 'rgba(40,20,50,0.25)', grass: '#3a3440', grass2: '#1e1a22', patch: ['#3a3440', '#1e1a22'], trees: 4, rocks: 26, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5450', '#a89e96', '#2a2420'], tuft: ['#4a4a40', '#5e5e50'], stone: ['#6a6270', '#9c94a2'], light: 'rgba(190,160,255,0.08)', amb: '200,180,255', flowers: 0,
+    treeSpr: ['nm_tree_4', 'nm_tree_1'], rockSpr: ['nm_bones', 'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_rock_1'], treeK: 0.85, rockK: 1.2, bushSpr: ['nm_shroom'], bushes: 6,
+    ruinSpr: ['nm_ruin_3', 'nm_ruin_5', 'nm_ruin_6', 'nm_ruin_2'], ruinN: 4 },
+  bloodmoon: { tex: 'cursed', tint: 'rgba(110,10,20,0.26)', grass: '#3a2a26', grass2: '#1e1414', patch: ['#3a2a26', '#1e1414'], trees: 22, rocks: 16, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c4a44', '#a8908a', '#2a1c18'], tuft: ['#4a3a2a', '#6a4a3a'], stone: ['#665a5a', '#9a8a8a'], light: 'rgba(255,90,80,0.1)', amb: '255,140,130', flowers: 0,
+    treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm2_ravtree'], rockSpr: ['nm_tomb_1', 'nm_bones', 'nm2_stake', 'nm_tomb_3', 'nm_rock_1'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 10,
+    ruinSpr: ['nm_ruin_1', 'nm2_gallows', 'nm_ruin_6', 'nm2_ravtree'], ruinK: 0.2, ruinN: 3 },
   rocky:  { grass: '#a3ad6e', grass2: '#7f8c52', patch: ['#a0a878', '#5f6a40'], trees: 12, rocks: 22, treeCol: ['#3a5a2a', '#4d7236', '#628a44'], road: ['#6a6058', '#b0a690', '#4a4239'], tuft: ['#6f7a40', '#8f9a55'], stone: ['#8d877c', '#bdb6a6'], light: 'rgba(255,214,150,0.18)' },
 };
 
@@ -1043,12 +1060,12 @@ function renderBackground(lv, paths, res = 2) {
   // ağaçlardan önce yerleşir (ağaçlar bunlara binmez)
   const props = [];
   if (NECRO && !lv.decorK) {
-    const ruins = [1, 2, 3, 4, 5, 6].map(n => 'nm_ruin_' + n).filter(n => spr(n));
-    const nR = ruins.length ? (th === THEMES.graveyard || th === THEMES.necrogate ? 3 : 2) : 0, nG = th === THEMES.graveyard ? 5 : 3;
+    const ruins = (th.ruinSpr || [1, 2, 3, 4, 5, 6].map(n => 'nm_ruin_' + n)).filter(n => spr(n));
+    const nR = ruins.length ? th.ruinN || (th === THEMES.graveyard || th === THEMES.necrogate ? 3 : 2) : 0, nG = th === THEMES.graveyard ? 5 : 3;
     const place = (pad) => { for (let k = 0; k < 300; k++) { const x = 40 + rnd() * (W - 80), y = 90 + rnd() * (H - 130); if (!blocked(x, y, pad) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < pad + o[2])) return [x, y]; } return null; };
     for (let i = 0; i < nR; i++) {
       const name = ruins[(i + Math.floor(rnd() * 9)) % ruins.length], im = spr(name), M = SPR_META[name] || [300, 300];
-      const w = M[0] * RUIN_K * (0.85 + rnd() * 0.3), h = w * M[1] / M[0];
+      const w = M[0] * (name.startsWith('nm_ruin') ? RUIN_K : th.ruinK || RUIN_K) * (0.85 + rnd() * 0.3), h = w * M[1] / M[0];
       // görsel ayak noktasından yukarı uzar: gövdesinin üst ve yan noktaları da yola/arsaya binmesin
       let q = null;
       for (let k = 0; k < 40 && !q; k++) {
@@ -1192,8 +1209,8 @@ function startLevel(idx, chal = null) {
     idx, lv, paths,
     bg: renderBackground(lv, paths, bgRes()),
     gold: (Math.round(lv.gold * diff().gold) + (upgRank('castle') >= 2 ? 60 : 0) + (upgRank('castle') >= 3 ? 60 : 0)),
-    lives: chal ? CHAL[chal].lives : diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
-    maxLives: chal ? CHAL[chal].lives : diff().lives + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
+    lives: chal ? CHAL[chal].lives : diff().lives - (lv.ep === 2 ? 5 : 0) + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
+    maxLives: chal ? CHAL[chal].lives : diff().lives - (lv.ep === 2 ? 5 : 0) + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
     chal,
     wave: 0, waveCountdown: null, waveCountdownMax: 1, spawners: [],
     enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [], dmgNums: [],
@@ -1773,6 +1790,7 @@ function damageEnemy(e, amount, type, quiet, src) {
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
   if (hitBy || src) e.lastBy = hitBy || src;
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
+  if (src === 'melee' && NECRO) { const L = lightAt(e.x, e.y); if (L) amount *= L.k; } // fener ışığında iskeletler zayıf
   e.lastSrc = src || type;
   let wk = src && e.def.wk && e.def.wk[src];
   if (wk && wk < 1 && e.curseT > 0) wk += (1 - wk) * (e.curseRes || 0); // lanet: dirençli olduğu saldırı türüne direnci erir
@@ -1853,7 +1871,7 @@ function killEnemy(e) {
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
-    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
+    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
   const dn = 'enemy_' + (e.def.base || e.type) + '_die', noDie = !LAZY[dn] && !SPR[dn];
@@ -2635,7 +2653,7 @@ function updateEnemy(e, dt) {
       if (e.rcd <= 0) {
         e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
-        G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
+        G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
@@ -2691,7 +2709,7 @@ function updateEnemy(e, dt) {
     e.knockT -= dt;
     if (!e.offPath) { e.d = Math.max(0, e.d - e.knockV * dt * (0.3 + e.knockT / KNOCK.t)); const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; return; }
   }
-  let spd = e.def.speed * G.wspd * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
+  let spd = e.def.speed * G.wspd * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.spd * (1 - e.hp / e.maxHp) : 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
     if ((e.stompT = (e.stompT ?? 0.4) - dt) <= 0) { e.stompT = 0.8; sfx('stomp'); shakeScreen(2.6, 0.22); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 }); }
@@ -3096,6 +3114,12 @@ function updateProjectile(pr, dt) {
     if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'hex' ? 'magic' : pr.kind === 'axe' ? 'whirl' : 'arrow'); }
     if (pr.t < pr.dur) return;
     pr.done = true;
+    if (pr.splash) { // kutsal su şişesi: isabet yerindeki bütün askerlere alan hasarı, mavi sıçrama
+      for (const s2 of G.soldiers) if (s2 !== h && !s2.dead && !s2.wall && dist(s2.x, s2.y, pr.tx, pr.ty + 12) < pr.splash) damageSoldier(s2, pr.edmg * 0.7, pr.from);
+      G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty + 12, r: pr.splash, col: '120,200,255', t: 0, dur: 0.4 });
+      for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-6, 6), y: pr.ty + rand(-4, 6), vx: rand(-70, 70), vy: rand(-90, -10), g: 220, col: i % 2 ? '140,210,255' : '220,245,255', s0: 3, s1: 0.5, life: rand(0.35, 0.6) });
+      sfx('splash');
+    }
     if (h && !h.dead && !h.removed) {
       damageSoldier(h, pr.edmg, pr.from);
       if (pr.kind === 'axe') sfx('clash');
@@ -6452,6 +6476,11 @@ function drawProjectile(p) {
     ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(5.5, -6.5, 6, -1.5); ctx.quadraticCurveTo(3, -2.4, 0, -1.6); ctx.closePath();
     ctx.fillStyle = '#c8ced8'; ctx.fill(); ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7; ctx.stroke();
     ctx.restore();
+  } else if (p.kind === 'flask') { // kutsal su şişesi: dönen mavi cam
+    ctx.save(); ctx.translate(x, y); ctx.rotate(time * 12);
+    circle(0, 1, 3.2, '#6ac8ff', '#1a3050', 0.8); roundRect(-1, -4.5, 2, 3, 0.6, '#cfe8ff', '#1a3050', 0.6); roundRect(-1.2, -5.6, 2.4, 1.3, 0.5, '#8a5a2a');
+    ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 8, '140,210,255', 0.5); ctx.restore();
   } else if (p.kind === 'knife') {
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 20);
     ctx.fillStyle = '#e8ecf4'; ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7;
@@ -8749,12 +8778,17 @@ function bossAbilities(e, dt) {
     if (!hitAny) e.abT.slam = 1;
     else {
       for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg * (e.dmgMul || 1), e); s.stunT = ab.slam.stun; }
+      if (ab.slam.bell) { // çan: altın ses halkaları, toprak sıçramaz
+        for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y - 10, r: ab.slam.r * (0.45 + i * 0.28), col: '255,215,120', t: -i * 0.12, dur: 0.6 });
+        bossCastFx(e, ab.slam.say || 'Çan!', '255,215,120'); sfx('horn'); if (e.def.chief) shakeScreen(4, 0.35);
+      } else {
       G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: ab.slam.r * 1.3, t: 0, dur: 0.45 });
       G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: ab.slam.r, t: 0, dur: 0.4 });
       G.decals.push({ x: e.x, y: e.y, r: ab.slam.r * 0.6, t: 0, life: 6 });
       for (let i = 0; i < 18; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-20, 20), y: e.y, vx: rand(-110, 110), vy: -rand(70, 170), g: 420, col: '#6a5040', s0: 3, s1: 2, life: 0.8, vr: rand(-10, 10), floor: e.y + rand(-6, 8) });
-      bossCastFx(e, 'Yer Sarsıntısı!', '255,190,110');
+      bossCastFx(e, ab.slam.say || 'Yer Sarsıntısı!', '255,190,110');
       shakeScreen(5, 0.35); sfx('boom');
+      }
     }
   }
   if (ab.storm && ready('storm', ab.storm.cd)) {
@@ -8815,11 +8849,12 @@ function bossAbilities(e, dt) {
       else {
         e.abT.hex = ab.hex.cd * (e.cdMul || 1);
         const ts = towerSprite(t), ty = ts ? ts.bottom - ts.h * 0.8 : t.y - 40;
-        G.effects.push({ kind: 'zap', x0: t.x + rand(-30, 30), y0: ty - 230, x1: t.x, y1: ty, t: 0, dur: 0.45, w: 1.6, col: 'rgb(170,70,255)', seed: rand(0, 99) });
+        const hc = ab.hex.col || '170,70,255';
+        G.effects.push({ kind: 'zap', x0: t.x + rand(-30, 30), y0: ty - 230, x1: t.x, y1: ty, t: 0, dur: 0.45, w: 1.6, col: `rgb(${hc})`, seed: rand(0, 99) });
         G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - (e.def.h || 40), x1: e.x, y1: e.y - (e.def.h || 40) - 60, t: 0, dur: 0.3, w: 0.8, col: 'rgb(170,70,255)', seed: rand(0, 99) });
         G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 40, col: '190,110,255', t: 0, dur: 0.5 });
         t.disabledT = Math.max(t.disabledT || 0, ab.hex.t); t.disabledKind = 'hex';
-        bossCastFx(e, 'Lanet!', '190,110,255'); sfx('zap');
+        bossCastFx(e, ab.hex.say || 'Lanet!', ab.hex.col || '190,110,255'); sfx('zap');
       }
     }
   }
@@ -9038,8 +9073,13 @@ function altarBuff(t) {
   }
   return buff || dmg ? { buff, dmg } : null;
 }
-// lanetli düşmanın motivasyonu düşer: daha az vurur, daha seyrek saldırır
-const foeDmgMul = (e) => (e.dmgMul || 1) * (e.curseT > 0 ? 1 - (e.curseWeak || 0) : 1);
+// lanetli düşmanın motivasyonu düşer: daha az vurur, daha seyrek saldırır; tövbekâr (frenzy) canı azaldıkça sertleşir
+const foeDmgMul = (e) => (e.dmgMul || 1) * (e.curseT > 0 ? 1 - (e.curseWeak || 0) : 1) * (e.def.frenzy ? 1 + e.def.frenzy.dmg * (1 - e.hp / e.maxHp) : 1);
+// Engizisyon feneri (def.light): ışık dairesinde iskelet hasarı azalır, ceset diriltilemez, lanet tutmaz
+function lightAt(x, y) {
+  for (const o of G.enemies) { const L = o.def.light; if (L && !o.dead && Math.hypot(o.x - x, (o.y - y) * 1.3) < L.r) return L; }
+  return null;
+}
 const curseSlowAtk = (e) => (e.curseT > 0 ? 1 + (e.curseWeak || 0) : 1);
 function updateAltar(t, dt) {
   const L = effLevel(t), bl = abRank(t, 'blight');
@@ -9058,6 +9098,7 @@ function updateAltar(t, dt) {
   }
   for (const e of G.enemies) {
     if (e.dead || e.under || dist(e.x, e.y, t.x, t.y) > L.range) continue;
+    if (e.def.nocurse || lightAt(e.x, e.y)) continue; // taş heykel ve fener ışığındakiler lanet tutmaz
     e.curseT = Math.max(e.curseT || 0, 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise);
     e.curseRes = Math.max(e.curseRes || 0, L.res || 0); e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0);
     e.drumT = 0; e.armT = 0; // davul ve sancak coşkusu söner
@@ -9138,7 +9179,10 @@ function upgradeIcon(id, x, y) {
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
 const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower', 'vulture', 'elephant',
-  'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus'];
+  'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus',
+  // 2. sefer: Engizisyon
+  'hunter', 'hound', 'torch', 'holywater', 'flagellant', 'lantern', 'bellpriest', 'paladin', 'inquisitor', 'saint',
+  'malleus', 'campanus', 'ignis', 'colossus', 'cathedral', 'severus'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
   solarcher: 'Uzaktan ok atar, yakından ağlar. İskeletlerimi yanına yolla.',
@@ -9153,6 +9197,22 @@ const CODEX_NOTE = {
   chariot: 'Tekerlekli kibir. Duvara toslayınca hepsi aynı.',
   siegetower: 'Yürüyen bir apartman. Kirayı içindekiler ödüyor.',
   vulture: 'Cesetlerimi yiyorlar. Bu bir hırsızlık. Kemikleri bari geri bıraksınlar.',
+  hunter: 'Cadı avlıyormuş. Ben cadı değilim. Cadılar kibar olur.',
+  hound: 'Beyaz köpekler. Kemik kokusunu alıyorlar, maalesef haklılar.',
+  torch: 'Her şeyi yakıyor. Cesetleri de. İsrafa bak.',
+  holywater: 'Kutsal su atıyor. Çayımı demlerdim o suyla.',
+  flagellant: 'Kendini kırbaçlıyor. Bana bırakmıyor bile.',
+  lantern: 'Bir fener. Gece benim, ışığını başka yere tut.',
+  bellpriest: 'Çan çalıyor. Kemiklerim titriyor, ben değil.',
+  paladin: 'Parlıyor. Gözlerimi alıyor. Kalkanı da çok büyük.',
+  inquisitor: 'Kulelerimi sorguya çekiyor. Kuleler konuşmaz.',
+  saint: 'Taş bir aziz. Laneti üstüne yapışmıyor, çok kaygan.',
+  malleus: 'Avcıların başı. İki arbalet. Biri yetmiyormuş.',
+  campanus: 'Sırtında çan taşıyor. Sırt ağrısı ondan.',
+  ignis: 'Ateşli bir rahibe. Cesetlerimi kül etti, affetmem.',
+  colossus: 'Bir katedral heykeli yürüyor. Mimarlara söylemek lazım.',
+  cathedral: 'Tekerlekli kilise. Çanını sevmedim.',
+  severus: 'Çaydanlığım onda. Konu kapanmıştır.',
   elephant: 'Fil getirmişler. Kemiklerinden bir kale yaparım, kapısı hortum.',
   eagle: 'İmparatorun kuşları. Kargalarım hiç sevmedi.',
   testudo: 'Kaplumbağa gibi geliyorlar. Kaplumbağa çorbası severim.',
@@ -9827,6 +9887,7 @@ function drawTitle() {
 
 // ----- bölüm seçimi: önizlemeli kartlar -----
 const DIFF = ['Kolay', 'Kolay', 'Kolay', 'Orta', 'Orta', 'Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Çok zor', 'Çok zor', 'Efsane'];
+const DIFF2 = ['Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Çok zor', 'Çok zor', 'Çok zor', 'Efsane', 'Efsane', 'Efsane', 'Efsane', 'Kâbus'];
 // ----- seferler -----
 const epLevels = (ep) => LEVELS.map((lv, i) => i).filter(i => LEVELS[i].ep === ep);
 const epOf = (i) => LEVELS[i].ep || 1;
@@ -9945,7 +10006,7 @@ function regionRoad(E) {
   out.push(E.end);
   return out;
 }
-const REGION_TINT = { cursed: 'rgba(90,110,40,0.08)', bog: 'rgba(30,120,100,0.2)', graveyard: 'rgba(110,100,140,0.2)', blacklake: 'rgba(20,40,100,0.28)', necrogate: 'rgba(120,30,90,0.2)' };
+const REGION_TINT = { ravenwood: 'rgba(40,30,60,0.2)', plague: 'rgba(90,60,30,0.2)', monastery: 'rgba(20,80,80,0.22)', ossuary: 'rgba(90,60,120,0.22)', bloodmoon: 'rgba(150,20,30,0.25)', cursed: 'rgba(90,110,40,0.08)', bog: 'rgba(30,120,100,0.2)', graveyard: 'rgba(110,100,140,0.2)', blacklake: 'rgba(20,40,100,0.28)', necrogate: 'rgba(120,30,90,0.2)' };
 const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
@@ -10120,7 +10181,7 @@ function drawMap() {
   // bölge seçimi (sol üst, birden çok bölge varsa): kilitli bölge kilit simgesiyle görünür
   if (EPISODES.length > 1) EPISODES.forEach((ep, k) => {
     const n = k + 1, x = 128 + k * 104, y = 40, open = epUnlocked(n), on = n === mapEp, key = 'ep' + n;
-    gameButton(key, x, y, 96, 34, ep.name.toLocaleUpperCase('tr'), null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 13, icon: open ? null : 'lock' });
+    gameButton(key, x, y, 96, 34, n + '. SEFER', null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 13, icon: open ? null : 'lock' });
     buttons.push({ key, x: x - 48, y: y - 17, w: 96, h: 34, fn: () => {
       if (!open) { sfx('error'); return; }
       if (mapEp !== n) { mapEp = n; mapSel = null; screenT = time; sfx('pick'); }
@@ -10203,7 +10264,7 @@ function drawLevelCard(i, cx, cy, at) {
   circle(x0 + 26, y0 + 26, 16.5, mb);
   txt(num + '', x0 + 26, y0 + 27, 21, '#fff', 'center', '400', FONT_T);
   txt(lv.name, 0, y0 + 180, 24, '#4a2a0e', 'center', '400', FONT_T, false);
-  txt(`${lv.waves.length} dalga  ·  ${DIFF[i] || 'Zor'}`, 0, y0 + 204, 14, '#8a6238', 'center', '800', FONT_B, false);
+  txt(`${lv.waves.length} dalga  ·  ${(lv.ep === 2 ? DIFF2 : DIFF)[epLevels(lv.ep || 1).indexOf(i)] || 'Zor'}`, 0, y0 + 204, 14, '#8a6238', 'center', '800', FONT_B, false);
   for (let s = 0; s < 3; s++) fancyStar((s - 1) * 40, y0 + 238 - (s === 1 ? 4 : 0), s === 1 ? 17 : 15, s < st);
   if (!unlocked) {
     roundRect(x0, y0, w, h, 22, 'rgba(18,10,4,0.62)');
@@ -10530,6 +10591,20 @@ function drawGround() {
   }
 }
 
+// fener ışığı: yerde altın, kenarı yumuşak, hafif titreyen bir daire (lightAt ile aynı elips)
+function drawHolyLights() {
+  for (const e of G.enemies) {
+    const L = e.def.light; if (!L || e.dead) continue;
+    const k = 0.9 + Math.sin(time * 7 + e.anim) * 0.05;
+    ctx.save(); ctx.translate(e.x, e.y); ctx.scale(1, 1 / 1.3); ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, L.r * 0.2, 0, 0, L.r * k);
+    g.addColorStop(0, 'rgba(255,220,130,0.32)'); g.addColorStop(0.75, 'rgba(255,200,100,0.16)'); g.addColorStop(1, 'rgba(255,190,90,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, L.r * k, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,215,120,0.35)'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]); ctx.lineDashOffset = -time * 12;
+    ctx.beginPath(); ctx.arc(0, 0, L.r * 0.97, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+  }
+}
 function drawPlay() {
   if (G.bakeQ && G.bakeQ.length) bakeNext();
   const sh = G.shakeT > 0 ? G.shakeAmp * (G.shakeT / G.shakeDur) : 0;
@@ -10557,6 +10632,7 @@ function drawPlay() {
   }
   ctx.globalAlpha = 1;
   drawGround();
+  drawHolyLights();
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
   drawMechGround();
   drawProps(false);

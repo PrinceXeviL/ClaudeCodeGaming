@@ -185,6 +185,25 @@ const LEVELS = [
   { paths: [[[-40,240],[120,240],[230,170],[380,150],[520,190],[600,280],[700,360],[770,370],[862,290]],[[640,-40],[640,80],[560,130],[520,190],[600,280],[700,360],[770,370],[862,290]],[[420,580],[420,480],[520,440],[620,430],[700,360],[770,370],[862,290]],[[-40,240],[120,240],[230,320],[360,360],[480,340],[600,280],[700,360],[770,370],[862,290]]], plots: [[580,366],[274,252],[469,261],[691,249],[124,342],[634,198],[337,426],[388,240],[724,438],[112,138],[652,492],[808,432],[202,384]], routes: {"0":[0,3]} },
 ];
 
+// Sefer 2 (Cadı Avı) yol ve arsa düzeni: aynı biçim; data.js sonunda LEVELS'a eklenir (arsa-uret.js sırayla yazar)
+const LEVELS2_GEO = [
+  { paths: [[[-40,300],[120,300],[220,210],[360,180],[460,240],[450,340],[540,420],[680,410],[760,340],[862,310]]], plots: [[322,252],[586,354],[778,426],[100,198],[364,312],[556,492],[250,288],[772,270],[106,402],[538,294],[718,474],[436,132]] },
+  { paths: [[[300,-40],[300,80],[180,150],[150,260],[260,330],[400,300],[520,220],[640,240],[660,340],[580,430],[690,470],[790,400],[862,320]]], plots: [[562,336],[286,222],[742,342],[478,336],[796,492],[184,378],[352,174],[544,498],[742,270],[94,144],[274,402],[574,150]] },
+  { paths: [[[-40,180],[130,180],[250,250],[380,230],[500,300],[620,330],[740,330],[862,300]],[[-40,430],[130,430],[250,370],[380,390],[500,300],[620,330],[740,330],[862,300]]], plots: [[340,306],[538,384],[88,312],[742,402],[202,312],[508,222],[760,264],[466,426],[268,180],[658,402],[340,462],[826,420]] },
+  { paths: [[[-40,430],[100,430],[200,340],[180,230],[280,150],[420,150],[520,230],[480,330],[580,410],[720,410],[790,340],[862,300]]], plots: [[622,348],[292,222],[88,324],[424,234],[808,432],[274,288],[592,282],[712,306],[382,294],[238,420],[616,486],[166,132]] },
+  { paths: [[[-40,150],[140,150],[250,220],[400,220],[520,160],[650,190],[700,280],[780,330],[862,300]],[[-40,390],[140,390],[260,330],[400,350],[520,430],[640,420],[700,350],[780,330],[862,300]]], plots: [[556,312],[202,276],[754,402],[430,288],[100,276],[766,240],[502,252],[268,402],[514,498],[304,156],[598,252],[712,462]] },
+  { paths: [[[480,-40],[480,70],[360,120],[240,180],[200,290],[300,360],[460,330],[580,250],[700,230],[760,320],[700,420],[790,440],[862,340]]], plots: [[340,252],[652,342],[472,198],[832,498],[538,156],[244,414],[424,258],[694,498],[178,132],[772,192],[886,438],[172,378]] },
+  { paths: [[[-40,240],[90,240],[160,140],[300,110],[420,170],[400,280],[300,350],[350,440],[500,460],[620,390],[640,280],[740,250],[862,300]]], plots: [[280,216],[712,330],[442,396],[730,396],[202,258],[502,348],[112,336],[490,138],[232,414],[598,498],[724,180],[820,420]] },
+  { paths: [[[260,-40],[260,90],[380,170],[520,170],[640,250],[750,310],[862,300]],[[260,580],[260,470],[380,400],[520,400],[640,330],[750,310],[862,300]]], plots: [[568,288],[724,378],[388,492],[478,282],[328,228],[772,240],[178,144],[376,306],[646,408],[178,420],[232,204],[796,414]] },
+  { paths: [[[-40,330],[120,330],[200,240],[320,180],[460,200],[540,290],[460,380],[560,460],[700,440],[760,360],[862,310]],[[-40,330],[120,330],[200,240],[320,180],[460,200],[600,170],[700,240],[760,360],[862,310]]], plots: [[604,348],[418,264],[808,432],[292,270],[616,264],[88,234],[394,330],[754,492],[238,324],[472,498],[688,132],[154,420]], routes: {"0":[0,1]} },
+  { paths: [[[-40,140],[150,140],[260,200],[250,300],[140,380],[220,460],[380,450],[470,370],[580,300],[700,330],[780,330],[862,300]]], plots: [[286,390],[130,234],[586,372],[754,396],[364,360],[736,258],[526,420],[298,132],[70,282],[70,420],[670,396],[442,498]] },
+  { paths: [[[-40,200],[140,200],[260,260],[400,260],[540,300],[680,330],[862,300]],[[400,-40],[400,90],[460,180],[540,300],[680,330],[862,300]],[[-40,440],[140,440],[300,410],[440,400],[540,300],[680,330],[862,300]]], plots: [[400,330],[568,384],[154,330],[346,192],[730,270],[70,324],[298,342],[580,228],[304,132],[754,414],[514,438],[340,480]] },
+  { paths: [[[620,-40],[620,70],[500,110],[360,110],[230,170],[200,270],[300,340],[440,330],[560,380],[660,450],[760,400],[862,320]]], plots: [[334,228],[670,372],[484,216],[790,468],[460,414],[640,174],[388,174],[208,378],[532,450],[742,330],[154,144],[706,132]] },
+  { paths: [[[-40,260],[100,260],[180,180],[300,140],[400,200],[380,300],[260,350],[300,450],[450,470],[560,400],[600,300],[700,250],[790,280],[862,310]]], plots: [[262,258],[712,324],[406,390],[682,390],[190,318],[478,354],[82,144],[442,132],[766,408],[562,498],[190,420],[124,360]] },
+  { paths: [[[-40,160],[120,160],[240,100],[380,120],[480,200],[600,250],[720,320],[862,300]],[[200,580],[200,470],[320,420],[460,400],[600,360],[720,320],[862,300]]], plots: [[538,306],[724,396],[298,168],[340,498],[454,312],[742,252],[226,204],[124,258],[370,204],[310,348],[640,420],[118,420]] },
+  { paths: [[[-40,300],[110,300],[220,260],[340,280],[460,300],[600,300],[740,310],[862,300]],[[300,-40],[300,90],[400,180],[460,300],[600,300],[740,310],[862,300]],[[300,580],[300,460],[400,400],[460,300],[600,300],[740,310],[862,300]]], plots: [[502,378],[304,342],[502,222],[742,390],[256,192],[220,396],[766,246],[76,402],[586,372],[208,132],[418,498],[478,156]] },
+];
+
 // ----- seferler -----
 // Bölümler seferlere ayrılır; her sefer bir ülkede geçer ve haritada kendi sayfası olur.
 // Bir sefer, bir önceki seferin son bölümü bitince açılır. bg: harita arka planı.
@@ -509,6 +528,98 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
     nodes: [[70, 450], [150, 372], [92, 282], [192, 194], [292, 250], [252, 352], [334, 442], [444, 392], [424, 290],
       [504, 200], [612, 232], [592, 342], [690, 420], [782, 352], [742, 262]] });
 }
+
+// =====================================================================================
+// SEFER 2: CADI AVI (tasarim/sefer2.md). Kutsal Engizisyon: ölü avcıları. 15 bölüm, 15 can, daha zor.
+// Özellikler: light (fener ışığı: içindeki düşmana iskelet hasarı azalır, ceset diriltilemez, lanet tutmaz),
+// frenzy (canı azaldıkça hızlanır ve sertleşir), elite (dalga ölçeklenirken çoğalmaz), ranged.splash (şişe: isabet yerindeki askerlere alan hasarı),
+// nocurse (lanet işlemez), ab.slam.say / ab.hex.say: yetenek yazısı (çan, sorgu, tuzak...).
+// =====================================================================================
+if (NECRO) {
+  Object.assign(ENEMIES, {
+    hunter:     { name: 'Cadı Avcısı', h: 31, hp: 110, speed: 24, armor: 0.15, mr: 0, gold: 12, dmg: [3, 6], rate: 1, lives: 1, r: 9,
+      ranged: { r: 140, dmg: [9, 14], rate: 2, proj: 'harrow', any: true, hold: true } },
+    torch:      { name: 'Meşaleci', h: 31, hp: 130, speed: 22, armor: 0.1, mr: 0.1, gold: 13, dmg: [5, 9], rate: 1, lives: 1, r: 10, purify: { r: 80, every: 3, dmg: 18, fire: true } },
+    hound:      { name: 'Ak Tazı', h: 17, hp: 85, speed: 48, armor: 0, mr: 0, gold: 7, dmg: [4, 7], rate: 0.7, lives: 1, r: 9 },
+    holywater:  { name: 'Kutsal Su Taşıyıcı', h: 32, hp: 160, speed: 18, armor: 0, mr: 0.3, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10,
+      ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30 } },
+    flagellant: { name: 'Kırbaçlı Tövbekâr', h: 31, hp: 220, speed: 22, armor: 0, mr: 0, gold: 16, dmg: [6, 10], rate: 0.8, lives: 1, r: 10, frenzy: { spd: 0.9, dmg: 1.2 } },
+    lantern:    { name: 'Fener Arabası', h: 40, hp: 650, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 } },
+    bellpriest: { name: 'Çan Rahibi', h: 32, hp: 170, speed: 18, armor: 0, mr: 0.4, gold: 18, dmg: [2, 4], rate: 1, lives: 1, r: 10,
+      ab: { slam: { cd: 7, r: 80, stun: 1.4, dmg: 4, say: 'Çan!', bell: true } } },
+    paladin:    { name: 'Paladin', h: 36, hp: 520, speed: 13, armor: 0.5, mr: 0.45, gold: 36, dmg: [10, 16], rate: 1.2, lives: 2, r: 12, elite: true },
+    inquisitor: { name: 'Engizitör', h: 34, hp: 300, elite: true, speed: 16, armor: 0.1, mr: 0.45, gold: 30, dmg: [5, 9], rate: 1, lives: 1, r: 10,
+      ab: { hex: { cd: 11, r: 180, t: 4, say: 'Sorgu!', col: '255,210,110' } } },
+    saint:      { name: 'Aziz Heykeli', h: 40, hp: 900, speed: 9, armor: 0.6, mr: 0.2, gold: 50, dmg: [12, 18], rate: 1.6, lives: 3, r: 15, nocurse: true },
+    // bölüm sonu komutanları ve final
+    malleus:  { name: 'Avcıbaşı Malleus', h: 46, hp: 1000, speed: 15, armor: 0.2, mr: 0.2, gold: 120, dmg: [12, 18], rate: 1, lives: 5, r: 14, boss: true, chief: true, hpK: 0.9,
+      desc: 'İki arbaletle iskeletleri avlar, tuzak kurar, tazı salar',
+      ranged: { r: 150, dmg: [14, 20], rate: 1.6, proj: 'harrow', any: true, hold: true }, ab: { summon: { t: 'hound', n: 2, cd: 12 }, slam: { cd: 9, r: 60, stun: 2, dmg: 10, say: 'Tuzak!' } } },
+    campanus: { name: 'Çan Ustası Campanus', h: 50, hp: 1200, speed: 11, armor: 0.35, mr: 0.2, gold: 150, dmg: [16, 24], rate: 1.4, lives: 6, r: 16, boss: true, chief: true, hpK: 1,
+      desc: 'Dev çanını çalar: çevresindeki bütün iskeletler sersemler. Çan rahibi çağırır',
+      ab: { slam: { cd: 8, r: 130, stun: 2, dmg: 14, say: 'ÇAN!', bell: true }, summon: { t: 'bellpriest', n: 1, cd: 14 } } },
+    ignis:    { name: 'Rahibe Ignis', h: 46, hp: 1100, speed: 14, armor: 0.1, mr: 0.4, gold: 160, dmg: [14, 20], rate: 1, lives: 6, r: 14, boss: true, chief: true, hpK: 0.9,
+      desc: 'Alev saçar: yerdeki bütün cesetleri yakar, çevresindeki iskeletleri tutuşturur. Meşaleci çağırır',
+      purify: { r: 130, every: 4, dmg: 30, fire: true }, ab: { slam: { cd: 7, r: 75, stun: 0.8, dmg: 22, say: 'Alev!' }, summon: { t: 'torch', n: 2, cd: 13 } } },
+    colossus: { name: 'Aziz Kolos', h: 66, hp: 2400, speed: 8, armor: 0.6, mr: 0.2, gold: 220, dmg: [24, 36], rate: 1.6, lives: 10, r: 20, boss: true, chief: true, hpK: 1.4,
+      desc: 'Canlanan katedral heykeli: iskeletleri ezip geçer, lanet tutmaz. Adımlarıyla yeri sarsar',
+      nocurse: true, noblock: true, trample: { dmg: 50, r: 24 }, ab: { slam: { cd: 9, r: 100, stun: 1.5, dmg: 20, say: 'Taş Adım!' } } },
+    severus:  { name: 'Büyük Engizitör Severus', h: 50, hp: 2000, speed: 12, armor: 0.3, mr: 0.5, gold: 300, dmg: [20, 30], rate: 1.2, lives: 15, r: 15, boss: true, chief: true, hpK: 1.1,
+      desc: 'Çaydanlığı elinde. Kuleleri sorguya çeker, dostlarını iyileştirir, kalkan açar, paladin ve tövbekâr çağırır',
+      ab: { hex: { cd: 9, r: 200, t: 4, say: 'Sorgu!', col: '255,210,110' }, heal: { cd: 8, amt: 120, r: 100 }, shield: { cd: 15, t: 2.5 }, summon: { t: ['paladin', 'flagellant'], n: 2, cd: 13 } } },
+    cathedral:{ name: 'Yürüyen Katedral', h: 80, hp: 3000, speed: 6, armor: 0.5, mr: 0.3, gold: 300, dmg: [4, 6], rate: 2, lives: 10, r: 26, boss: true, chief: true, hpK: 1.3,
+      desc: 'Rahiplerin ittiği dev kuşatma katedrali. Çanı iskeletleri sersemletir, içinden asker döker. Yıkılınca Severus iner',
+      machine: true, noblock: true, split: ['severus', 1], light: { r: 110, k: 0.7 },
+      ab: { summon: { t: ['paladin', 'inquisitor', 'hunter'], n: 3, cd: 14 }, slam: { cd: 10, r: 140, stun: 2, dmg: 10, say: 'Katedral Çanı!', bell: true } } },
+  });
+  Object.assign(BOSS_ESCORT, { malleus: [['hunter', 2], ['hound', 2]], campanus: [['bellpriest', 1], ['legion', 4]], ignis: [['torch', 2], ['flagellant', 2]],
+    colossus: [['saint', 1], ['paladin', 1]], cathedral: [['paladin', 2], ['inquisitor', 1]] });
+  const W_ = (t, n, gap, at) => (at == null ? { t, n, gap } : { t, n, gap, at });
+  // dalga üretici: pool (bölümün temel düşmanları) her dalgada döner, intro (yeni ve öne çıkan türler) 2. dalgadan itibaren eklenir,
+  // geç dalgalarda üçüncü ve dördüncü grup gelir; sayıları shapeWaves bölümün toplamına göre ölçekler
+  const mk = (pool, intro, extra = []) => {
+    const waves = [];
+    for (let k = 0; k < 8; k++) {
+      const w = [], a = pool[k % pool.length];
+      w.push(W_(a[0], a[1], a[2]));
+      if (k >= 1) { const b = intro[k % intro.length]; w.push(W_(b[0], b[1], b[2], 3 + k % 3)); }
+      if (k >= 4) { const c = pool[(k + 2) % pool.length]; w.push(W_(c[0], c[1], c[2], 7 + k % 4)); }
+      if (k >= 5 && extra.length) { const d = extra[k % extra.length]; w.push(W_(d[0], d[1], d[2], 10)); }
+      waves.push(w);
+    }
+    return waves;
+  };
+  const L2 = [
+    { name: 'Darağacı Yolu', theme: 'ravenwood', gold: 320, waves: mk([['legion', 8, 1], ['solarcher', 4, 1.3]], [['hunter', 3, 1.6]]) },
+    { name: 'Yanık Kazıklar', theme: 'ravenwood', gold: 340, waves: mk([['legion', 8, 0.9], ['hunter', 4, 1.4], ['gladiator', 5, 1]], [['torch', 2, 2.4]]) },
+    { name: 'Kuzgun Tepesi', theme: 'ravenwood', gold: 380, bossT: 'malleus', waves: mk([['legion', 8, 0.9], ['hunter', 4, 1.3]], [['hound', 5, 0.7], ['torch', 3, 2]], [['heavy', 2, 2.4]]) },
+    { name: 'Karantina Kapısı', theme: 'plague', gold: 420, weather: 'rain', waves: mk([['legion', 10, 0.8], ['torch', 3, 2], ['hunter', 4, 1.3]], [['holywater', 2, 2.6]], [['heavy', 2, 2.4]]) },
+    { name: 'Boş Pazar', theme: 'plague', gold: 440, waves: mk([['gladiator', 6, 1], ['hunter', 5, 1.2], ['hound', 6, 0.7]], [['flagellant', 3, 1.6], ['holywater', 2, 2.4]], [['heavy', 3, 2.2]]) },
+    { name: 'Ölüler Kuyusu', theme: 'plague', gold: 480, bossT: 'campanus', weather: 'rain', waves: mk([['legion', 10, 0.8], ['flagellant', 3, 1.6], ['hunter', 5, 1.2]], [['lantern', 1, 1], ['torch', 3, 2]], [['heavy', 3, 2.2], ['holywater', 3, 2]]) },
+    { name: 'Sazlık Şapel', theme: 'monastery', gold: 500, waves: mk([['legion', 10, 0.8], ['holywater', 3, 2], ['hound', 6, 0.7]], [['bellpriest', 2, 2.6], ['lantern', 1, 1]], [['heavy', 3, 2.2]]) },
+    { name: 'Su Basmış Avlu', theme: 'monastery', gold: 520, waves: mk([['hunter', 6, 1.1], ['flagellant', 4, 1.4], ['legion', 10, 0.8]], [['paladin', 2, 2.6], ['bellpriest', 2, 2.4]], [['torch', 3, 2]]) },
+    { name: 'Çan Kulesi', theme: 'monastery', gold: 560, bossT: 'ignis', waves: mk([['hunter', 6, 1.1], ['paladin', 2, 2.6], ['holywater', 3, 2]], [['inquisitor', 1, 1], ['bellpriest', 2, 2.4]], [['lantern', 1, 1], ['flagellant', 4, 1.3]]) },
+    { name: 'Kafatası Kapısı', theme: 'ossuary', gold: 580, waves: mk([['flagellant', 5, 1.3], ['hunter', 6, 1], ['paladin', 3, 2.4]], [['saint', 1, 1], ['inquisitor', 1, 1]], [['lantern', 1, 1], ['torch', 3, 2]]) },
+    { name: 'Kemik Avize Salonu', theme: 'ossuary', gold: 600, waves: mk([['legion', 12, 0.7], ['hound', 8, 0.6], ['holywater', 4, 1.8], ['paladin', 3, 2.4]], [['saint', 1, 1], ['bellpriest', 2, 2.2], ['inquisitor', 1, 1]], [['lantern', 1, 1], ['flagellant', 5, 1.2]]) },
+    { name: 'Kripta', theme: 'ossuary', gold: 640, bossT: 'colossus', waves: mk([['paladin', 3, 2.2], ['hunter', 6, 1], ['flagellant', 5, 1.2]], [['saint', 2, 4], ['inquisitor', 2, 3]], [['lantern', 1, 1], ['torch', 4, 1.8]]) },
+    { name: 'Sis Yolu', theme: 'bloodmoon', gold: 660, waves: mk([['legion', 12, 0.7], ['cavalry', 5, 1.3], ['hunter', 6, 1], ['heavy', 3, 2]], [['paladin', 3, 2.2], ['flagellant', 5, 1.2], ['holywater', 4, 1.8]], [['saint', 1, 1], ['lantern', 1, 1]]) },
+    { name: 'Yıkık Kule', theme: 'bloodmoon', gold: 680, waves: mk([['hound', 10, 0.5], ['hunter', 8, 0.9], ['paladin', 3, 2.2], ['torch', 4, 1.6]], [['lantern', 2, 5], ['inquisitor', 2, 3], ['bellpriest', 3, 2]], [['saint', 1, 1], ['siegetower', 1, 1]]) },
+    { name: 'Ay Sunağı', theme: 'bloodmoon', gold: 720, bossT: 'cathedral', waves: mk([['legion', 14, 0.6], ['paladin', 4, 2], ['flagellant', 6, 1.1], ['hunter', 8, 0.9]], [['lantern', 1, 1], ['saint', 1, 1], ['inquisitor', 2, 3], ['holywater', 4, 1.8]], [['heavy', 4, 2], ['bellpriest', 3, 2]]) },
+  ];
+  // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
+  const TOTAL2 = [110, 118, 124, 130, 136, 140, 140, 144, 148, 150, 155, 155, 160, 165, 175];
+  const HPMUL2 = [1, 1.05, 0.88, 0.95, 0.75, 1.1, 1, 0.85, 0.9, 0.85, 0.8, 0.6, 0.5, 0.45, 0.4]; // 10 Eki: botla 4 tur (sonuçlar oynak; elle yumuşatıldı)
+  // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
+  const BOSS2 = ['centurion', 'shadowmaster', 'malleus', 'hierophant', 'champion', 'campanus', 'malleus', 'ironwarden', 'ignis',
+    'campanus', 'cavcaptain', 'colossus', 'ignis', 'severus', 'cathedral'];
+  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, LEVELS2_GEO[i], { lives: 15, ep: 2, total: TOTAL2[i], grow: 1.3, hpMul: HPMUL2[i] }); if (!l.weather) delete l.weather; });
+  LEVELS.push(...L2);
+  EPISODES.push({ name: 'Cadı Avı',
+    zones: [['ravenwood', 'Kuzgun Ormanı'], ['plague', 'Veba Köyü'], ['monastery', 'Batık Manastır'], ['ossuary', 'Kemik Katedrali'], ['bloodmoon', 'Kızıl Ay Tepesi']],
+    start: [-40, 110], end: [852, 276],
+    nodes: [[70, 130], [150, 208], [92, 298], [192, 386], [292, 330], [252, 228], [334, 138], [444, 188], [424, 290],
+      [504, 380], [612, 348], [592, 238], [690, 160], [782, 228], [742, 318]] });
+}
 // kuleler: Mortimer'ın yapıları
 Object.assign(TOWERS.archer, { name: 'Kemik Dikilitaşı', desc: 'Hızla kemik kıymığı fırlatır, havayı da vurur' });
 Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'İskelet savaşçılar yolu keser' });
@@ -556,7 +667,8 @@ Object.assign(CASTLE.levels[2], { title: 'Ölüm Muhafızları', perk: 'Üç ust
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
   'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];
 // boss gücü kademesi: 1. seferde bölüm sırası; 2. sefer 1. seferin sonlarından başlar, yavaşça yükselir
-LEVELS.forEach((lv, i) => { lv.ep = lv.ep || 1; lv.tier = i * 4 / 14; });
+// 2. sefer 1. seferin sonlarından (kademe 3) başlar, 6'ya çıkar
+LEVELS.forEach((lv, i) => { lv.ep = lv.ep || 1; const k = LEVELS.filter((o, j) => j < i && o.ep === lv.ep).length; lv.tier = lv.ep === 2 ? 3 + k * 3 / 14 : k * 4 / 14; });
 // ----- dalga düzeni -----
 // Her dalga bir öncekinden WAVE_GROW, son dalga LAST_GROW kat kalabalık. Bölümün toplam düşman sayısı
 // yaklaşık WAVE_TOTAL katında kalır (yuvarlama ve ağır birimlerle biraz artar) ve dalgalara bu oranla dağıtılır (ilk dalgalar hafifler, sonrakiler büyür).
@@ -568,7 +680,7 @@ const WAVE_GROW = 1.2, LAST_GROW = 1.3, WAVE_TOTAL = 0.85, DENSITY = 0.8, HEAVY_
 function shapeWaves(lv, li) {
   let seed = ((li + 1) * 2654435761) >>> 0;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  const heavy = (g) => ENEMIES[g.t].hp >= HEAVY_HP;
+  const heavy = (g) => ENEMIES[g.t].hp >= HEAVY_HP || ENEMIES[g.t].elite; // seçkinler (paladin, engizitör) dalga büyüdükçe çoğalmaz
   const count = (w) => w.reduce((a, g) => a + g.n, 0);
   const N = lv.waves.length, orig = lv.waves.map(count);
   // lv.total + lv.grow (necro bölümleri): toplam düşman sayısı ve dalga büyümesi doğrudan verilir
@@ -780,6 +892,27 @@ Object.assign(ENEMY_DESC, {
   elephant: 'Dev ve zırhlı: iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar. Kemik duvar durdurur, ruh ışını iyi işler',
   drummer: 'Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, kıymık ve veba iyi işler',
 });
+// Sefer 2 düşmanlarının zayıflıkları ve açıklamaları (tanımlar yukarıda, SEFER 2 bölümünde)
+if (NECRO) {
+  Object.assign(ENEMY_WK, {
+    hunter: { melee: 1.3, arrow: 1.2 }, torch: { arrow: 1.2, blast: 1.2 }, hound: { blast: 1.4, melee: 1.2 }, holywater: { arrow: 1.3, melee: 1.2 },
+    flagellant: { magic: 1.3, arrow: 1.1 }, lantern: { blast: 1.3, magic: 1.2, arrow: 0.6 }, bellpriest: { arrow: 1.3 }, paladin: { arrow: 0.7, blast: 1.2, melee: 0.8 },
+    inquisitor: { melee: 1.3, arrow: 1.2 }, saint: { arrow: 0.4, blast: 1.4, magic: 1.1 },
+    malleus: { melee: 1.2 }, campanus: { arrow: 1.2 }, ignis: { arrow: 1.2 }, colossus: { arrow: 0.5, blast: 1.3 }, severus: { melee: 1.2 }, cathedral: { blast: 1.3, arrow: 0.5 },
+  });
+  Object.assign(ENEMY_DESC, {
+    hunter: 'Gümüş arbaletle iskeletleri uzaktan avlar. Zırhı ince: iskeletlerle üstüne bas',
+    torch: 'Geçtiği yerdeki cesetleri yakar (diriltilemez), dirilen ölüleri ateşe verir. Önce onu indir',
+    hound: 'Sürüyle ve çok hızlı koşar, canı azdır. Veba kazanı sürüyü dağıtır',
+    holywater: 'Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Kıymıkla erken vur',
+    flagellant: 'Canı azaldıkça hızlanır ve sertleşir. Ruh ışınıyla tek seferde bitir',
+    lantern: 'Fenerin ışığında iskeletler zayıflar, ceset diriltilemez, lanet tutmaz. Önce feneri söndür',
+    bellpriest: 'Çanını çalar: çevresindeki iskeletler sersemler. Menzilden vur',
+    paladin: 'Ağır zırh, büyüye dirençli, kalkanıyla iskeletleri durdurur. Kazan ve lanet iyi işler',
+    inquisitor: 'Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve kıymık iyi işler',
+    saint: 'Canlanan taş heykel: oklar seker, lanet tutmaz. Veba kazanı ve büyüler işler',
+  });
+}
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
