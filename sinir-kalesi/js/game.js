@@ -1301,7 +1301,7 @@ function startLevel(idx, chal = null) {
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
   if (NECRO) {
-    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.boss;
+    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.ep === 2 && idx === LEVELS.findIndex(l => l.ep === 2) ? 'intro2' : lv.boss;
     if (COMICS[key] && !seen[key]) startComic(key);
   }
 }
@@ -11474,6 +11474,55 @@ const COMICS = {
     { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Çaydanlığımı ancak cesedimden alırsın. Bir dakika... ben zaten ölüyüm.', x: 0.3, y: 0.08, to: [0.5, 0.36] }] },
     { bg: 'mezar', act: [{ s: 'k:4', x: 0.18, y: 0.93, h: 0.5, rise: 1 }, { s: 'k:3', x: 0.4, y: 0.94, h: 0.52, rise: 1, d: 0.25 }, { s: 'k:8', x: 0.62, y: 0.93, h: 0.5, rise: 1, d: 0.5 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
       say: [{ who: 'Mortimer', text: 'Herkes yerine! Bu sefer misafir ağırlamıyoruz.', x: 0.45, y: 0.08, to: [0.86, 0.4] }] },
+  ],
+  // ---- 2. sefer: Cadı Avı ----
+  intro2: [
+    { bg: 'karanlik', cap: 'Lejyon yenildi. İmparator bu kez başka birini çağırdı.',
+      act: [{ s: 'e:paladin', x: 0.2, y: 0.92, h: 0.46 }, { s: 'e:severus', x: 0.56, y: 0.95, h: 0.66 }, { s: 'e:inquisitor', x: 0.84, y: 0.92, h: 0.46, f: -1 }],
+      say: [{ who: 'Büyük Engizitör Severus', text: 'Ölülere kılıç işlemez, majesteleri. Ama ateş işler.', x: 0.42, y: 0.17, to: [0.56, 0.36] }] },
+    { bg: 'karanlik', act: [{ s: 'e:severus', x: 0.5, y: 0.96, h: 0.8 }],
+      say: [{ who: 'Severus', text: 'Lanetli eşya: bir çaydanlık. Sahibinin gözü önünde yakacağız.', x: 0.5, y: 0.06, to: [0.5, 0.3] }] },
+    { bg: 'gece', cap: 'Gece yarısı, Kuzgun Ormanı...',
+      act: [{ s: 'e:hound', x: 0.16, y: 0.92, h: 0.32, walk: 1 }, { s: 'e:torch', x: 0.4, y: 0.92, h: 0.46, walk: 1 }, { s: 'e:hunter', x: 0.64, y: 0.92, h: 0.46, walk: 1 }, { s: 'e:torch', x: 0.86, y: 0.92, h: 0.44, walk: 1 }],
+      say: [{ who: 'Cadı Avcısı', text: 'Meşaleleri yakın! Cadı avı başladı!', x: 0.5, y: 0.19, to: [0.64, 0.42] }] },
+    { bg: 'balkon', mort: 'stand',
+      say: [{ who: 'Mortimer', text: 'Cadı mı? Ben cadı değilim. Cadılar kibar olur.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+    { bg: 'mezar', act: [{ s: 'k:5', x: 0.18, y: 0.93, h: 0.5, rise: 1 }, { s: 'k:7', x: 0.42, y: 0.94, h: 0.52, rise: 1, d: 0.3 }, { s: 'k:2', x: 0.64, y: 0.93, h: 0.5, rise: 1, d: 0.6 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
+      say: [{ who: 'Mortimer', text: 'Çaydanlığıma dokunan... yanar.', x: 0.45, y: 0.08, to: [0.86, 0.4] }],
+      title: 'CADI AVI' },
+  ],
+  malleus: [
+    { bg: 'gece', act: [{ s: 'e:hound', x: 0.24, y: 0.92, h: 0.34 }, { s: 'e:malleus', x: 0.62, y: 0.95, h: 0.64 }],
+      say: [{ who: 'Avcıbaşı Malleus', text: 'Tazılarım kemik kokusu aldı, necromancer. Av başladı!', x: 0.45, y: 0.08, to: [0.62, 0.34] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Kemik mi istiyorlar? Bir mezarlık dolusu var.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  campanus: [
+    { bg: 'gece', act: [{ s: 'e:bellpriest', x: 0.22, y: 0.92, h: 0.44 }, { s: 'e:campanus', x: 0.62, y: 0.95, h: 0.66 }],
+      say: [{ who: 'Çan Ustası Campanus', text: 'Bu çan çaldığında bütün ölüler diz çöker!', x: 0.42, y: 0.08, to: [0.62, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Benim ölülerim kulaksız. Kendileri tercih etti.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  ignis: [
+    { bg: 'karanlik', act: [{ s: 'e:ignis', x: 0.5, y: 0.95, h: 0.68 }],
+      say: [{ who: 'Rahibe Ignis', text: 'Ateş arındırır. Önce cesetlerini, sonra seni.', x: 0.5, y: 0.08, to: [0.5, 0.34] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Güzel. Çay suyumu ısıtacak biri lazımdı.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  colossus: [
+    { bg: 'gece', act: [{ s: 'e:saint', x: 0.2, y: 0.92, h: 0.46 }, { s: 'e:colossus', x: 0.6, y: 0.97, h: 0.84 }],
+      say: [{ who: 'Aziz Kolos', text: 'TAŞ... UNUTMAZ...', x: 0.42, y: 0.06, to: [0.6, 0.26] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Ben de unutmam. Hele kırılan vazolarımı.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  severus: [
+    { bg: 'karanlik', act: [{ s: 'e:paladin', x: 0.18, y: 0.92, h: 0.44 }, { s: 'e:severus', x: 0.56, y: 0.95, h: 0.68 }],
+      say: [{ who: 'Büyük Engizitör Severus', text: 'Sonunda yüz yüzeyiz. Çaydanlığını özledin mi?', x: 0.42, y: 0.08, to: [0.56, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', shake: 1, say: [{ who: 'Mortimer', text: 'BIRAK. ONU. YERE.', x: 0.5, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  cathedral: [
+    { bg: 'gece', cap: 'Kızıl Ay Tepesi. Ay Sunağı.', act: [{ s: 'e:paladin', x: 0.14, y: 0.92, h: 0.36 }, { s: 'e:cathedral', x: 0.55, y: 0.97, h: 0.9 }],
+      say: [{ who: 'Severus', text: 'Katedral yürüyor, necromancer! Göklerin gazabı seninle!', x: 0.42, y: 0.15, to: [0.55, 0.2] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Yürüyen kilise mi? Bu çağda her şey var.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+    { bg: 'mezar', act: [{ s: 'k:8', x: 0.18, y: 0.93, h: 0.52, rise: 1 }, { s: 'k:6', x: 0.42, y: 0.94, h: 0.52, rise: 1, d: 0.25 }, { s: 'k:4', x: 0.64, y: 0.93, h: 0.5, rise: 1, d: 0.5 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
+      say: [{ who: 'Mortimer', text: 'Kalkın! Bu gece çaydanlığı eve getiriyoruz.', x: 0.45, y: 0.08, to: [0.86, 0.4] }],
+      title: 'AY SUNAĞI' },
   ],
 };
 // sayfa düzeni: panel sayısına göre ızgara
