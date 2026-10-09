@@ -8166,18 +8166,30 @@ function drawHud() {
   const info = infoText();
   if (info) {
     // sol alttaki portre ve büyü düğmeleriyle sağ kenar arasına sığar; uzun açıklama satırlara bölünür (ekrandan taşmasın)
-    const left = 120 + spellIds().length * 58, maxW = W - left - 10;
+    const left = 120 + spellIds().length * 58, maxW = W - left - 10, chips = info[2] || null;
     ctx.font = `700 13px ${FONT_B}`;
-    const lines = wrapLines(info[1], maxW - 30, 13, '700', FONT_B, 3);
+    const lines = info[1] ? wrapLines(info[1], maxW - 30, chips ? 12 : 13, '700', FONT_B, chips ? 2 : 3) : [];
     let tw = 0; for (const l of lines) tw = Math.max(tw, ctx.measureText(l).width);
     ctx.font = `400 16px ${FONT_T}`; tw = Math.max(tw, ctx.measureText(info[0]).width);
-    const w = clamp(tw + 40, 290, maxW), ph = 32 + lines.length * 16, y0 = H - 10 - ph;
+    ctx.font = `800 12px ${FONT_B}`; const cw = chips ? chips.map(c => ctx.measureText(String(c[1])).width + 22) : []; const chipsW = cw.reduce((a, b) => a + b + 8, 0);
+    tw = Math.max(tw, chipsW);
+    const w = clamp(tw + 40, 260, maxW), ph = 30 + (chips ? 20 : 0) + lines.length * (chips ? 14 : 16), y0 = H - 10 - ph;
     const x0 = clamp(W / 2 - w / 2, left, W - w - 10), cxp = x0 + w / 2;
     roundRect(x0 + 2, y0 + 5, w, ph, 15, 'rgba(0,0,0,0.3)');
     const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
     roundRect(x0, y0, w, ph, 15, g, '#d4ab5a', 2);
     txt(info[0], cxp, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
-    lines.forEach((l, i) => txt(l, cxp, y0 + 34 + i * 16, 13, '#f2e8d4', 'center', '700', FONT_B, false));
+    let ly = y0 + 34;
+    if (chips) { // simgeli değerler: koyu kapsüller içinde, ortalı
+      let cx = cxp - chipsW / 2 + 4;
+      chips.forEach((c, i) => {
+        roundRect(cx, ly - 8, cw[i], 16, 8, 'rgba(0,0,0,0.35)', 'rgba(212,171,90,0.45)', 1);
+        statGlyph(c[0], cx + 9, ly); txt(String(c[1]), cx + 17, ly + 0.5, 12, '#f8eed8', 'left', '800', FONT_B, false);
+        cx += cw[i] + 8;
+      });
+      ly += 19;
+    }
+    lines.forEach((l, i) => txt(l, cxp, ly + i * (chips ? 14 : 16), chips ? 12 : 13, chips ? '#d8ccb4' : '#f2e8d4', 'center', '700', FONT_B, false));
   }
   const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
@@ -8246,13 +8258,13 @@ function infoText() {
   }
   if (G.preview && G.preview.id === 'build') {
     const T = TOWERS[G.preview.type], L = T.levels[0];
-    return [`${T.name} — ${L.cost} altın`, towerStats(G.preview.type, L)];
+    return [`${T.name} — ${L.cost} altın`, T.desc || '', towerChips(G.preview.type, L)];
   }
   if (G.sel && G.sel.kind === 'tower') {
     const t = G.sel.tower;
     if (G.preview && G.preview.id === 'upgrade') {
       const L = t.def.levels[t.lvl + 1];
-      return [`Yükselt → ${L.title} — ${L.cost} altın`, `${towerStats(t.type, L)} · Yeni: ${L.perk}`];
+      return [`Yükselt → ${L.title} — ${L.cost} altın`, `Yeni: ${L.perk}`, towerChips(t.type, L)];
     }
     if (G.preview && G.preview.id === 'sell') return ['Sat', `${Math.floor(t.spent * SELL_RATIO)} altın geri al`];
     if (G.preview && G.preview.id === 'ability') {
@@ -8262,9 +8274,10 @@ function infoText() {
       return [`${a.name} ${r + 1}/${a.ranks.length} — ${a.ranks[r].cost} altın`, a.desc(a.ranks[r])];
     }
     const L = t.def.levels[t.lvl];
-    if (t.spec) return [`${SPEC[t.spec].title} — Seviye ${t.lvl + 1}`, `${L.perk} · ${SPEC[t.spec].who}`];
-    if (t.lvl >= t.def.levels.length - 1) return [`${L.title} — Seviye ${t.lvl + 1} (son)`, `${L.perk} · Bir uzmanlık seç: yukarıdaki ${t.def.abilities.length === 3 ? 'üç' : 'iki'} düğmeden biri`];
-    return [`${L.title} — Seviye ${t.lvl + 1}`, `${towerStats(t.type, L)} · ${L.perk}`];
+    const C = towerChips(t.type, effLevel(t));
+    if (t.spec) return [`${SPEC[t.spec].title}`, SPEC[t.spec].who, C];
+    if (t.lvl >= t.def.levels.length - 1) return [`${L.title} — Seviye ${t.lvl + 1} (son)`, `Uzmanlık seç: yukarıdaki ${t.def.abilities.length === 3 ? 'üç' : 'iki'} düğmeden biri`, C];
+    return [`${L.title} — Seviye ${t.lvl + 1}`, L.perk, C];
   }
   return null;
 }
@@ -8275,6 +8288,33 @@ function towerStats(type, L) {
   if (L.splash) s += ' · Alan';
   if (type === 'mage') s += ' · Büyü';
   return s;
+}
+// Kingdom Rush tarzı kısa değerler (10 Eki): simge + kısa söz; alt panelde uzun cümle yerine
+const RATE_WORD = (r) => (r < 0.6 ? 'Çok hızlı' : r < 1 ? 'Hızlı' : r < 1.6 ? 'Orta' : 'Yavaş');
+const RANGE_WORD = (r) => (r > 185 ? 'Çok uzun' : r > 150 ? 'Uzun' : r > 115 ? 'Orta' : 'Kısa');
+function towerChips(type, L) {
+  if (type === 'altar') return [['target', RANGE_WORD(L.range)], ['skull', `Direnç -%${Math.round(L.res * 100)}`], ['clock', `%${Math.round(L.slow * 100)} yavaş`]];
+  if (type === 'barracks') return [['heart', L.hp], ['sword', `${L.dmg[0]}-${L.dmg[1]}`], ['shield', `%${Math.round(L.armor * 100)}`]];
+  const c = [['sword', `${Math.round(L.dmg[0])}-${Math.round(L.dmg[1])}`], ['clock', RATE_WORD(L.rate)], ['target', RANGE_WORD(L.range)]];
+  if (L.splash) c.push(['blast', 'Alan']);
+  if (type === 'mage') c.push(['magic', 'Büyü']);
+  if (TOWERS[type] && TOWERS[type].air) c.push(['wing', 'Uçan']);
+  return c;
+}
+// küçük değer simgeleri (panel için, ~12 px)
+function statGlyph(k, x, y) {
+  ctx.save(); ctx.translate(x, y); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const st = (c, w) => { ctx.strokeStyle = 'rgba(20,10,4,0.9)'; ctx.lineWidth = w + 2; ctx.stroke(); ctx.strokeStyle = c; ctx.lineWidth = w; ctx.stroke(); };
+  ctx.beginPath();
+  if (k === 'sword') { ctx.moveTo(-4, 4); ctx.lineTo(4, -4); st('#e8e8f0', 1.8); ctx.beginPath(); ctx.moveTo(-5, 1); ctx.lineTo(-1, 5); st('#d8a040', 1.6); }
+  else if (k === 'clock') { ctx.arc(0, 0, 4.5, 0, Math.PI * 2); st('#f0e2c4', 1.4); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -3); ctx.moveTo(0, 0); ctx.lineTo(2.2, 1); st('#f0e2c4', 1.2); }
+  else if (k === 'target') { ctx.arc(0, 0, 4.8, 0, Math.PI * 2); st('#ff8a6a', 1.3); ctx.beginPath(); ctx.arc(0, 0, 1.6, 0, Math.PI * 2); st('#ff8a6a', 1.3); }
+  else if (k === 'shield') { ctx.moveTo(0, -5); ctx.lineTo(4.5, -3); ctx.lineTo(3.5, 2); ctx.lineTo(0, 5); ctx.lineTo(-3.5, 2); ctx.lineTo(-4.5, -3); ctx.closePath(); st('#9fd0ff', 1.4); }
+  else if (k === 'blast') { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 2.4 : 5; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); st('#ffb060', 1.3); }
+  else if (k === 'magic') { ctx.moveTo(0, -5); ctx.lineTo(1.4, -1.4); ctx.lineTo(5, 0); ctx.lineTo(1.4, 1.4); ctx.lineTo(0, 5); ctx.lineTo(-1.4, 1.4); ctx.lineTo(-5, 0); ctx.lineTo(-1.4, -1.4); ctx.closePath(); st('#c8a0ff', 1.3); }
+  else if (k === 'wing') { ctx.moveTo(-5, 2); ctx.quadraticCurveTo(-1, -5, 5, -3); ctx.quadraticCurveTo(1, -1, 2, 3); ctx.quadraticCurveTo(-1, 1, -5, 2); st('#b8f0c8', 1.2); }
+  else if (k === 'heart' || k === 'skull') { ctx.restore(); drawIcon(k, x, y, 11, k === 'heart' ? '#ff6a6a' : '#d8c0ff'); return; }
+  ctx.restore();
 }
 
 
