@@ -5273,7 +5273,7 @@ const TOWER_FORM = {
   // 10 Eki denge: dönüşümler 3. kademenin ~1,3 katı (önce ~2,4 kattı, tek kule bölüm geçiyordu)
   archer_nail: { noAnim: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, pierceK: 0.45, flip: true },
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
-  archer_fan: { noAnim: true, w: 1.3, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, bows: { L: [0.2, 0.19], R: [0.76, 0.18] }, archers: true },
+  archer_fan: { noAnim: true, w: 1.12, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, bows: { L: [0.2, 0.19], R: [0.76, 0.18] }, archers: true },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
@@ -5296,7 +5296,7 @@ const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(`to
 const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
 // dönüşmüş kulede görsel üzerindeki bir noktanın dünya konumu (balista hedefe dönükse aynalanır)
 // Hayalet Okçular kulesinin tepesindeki iki okçu: platformda gezer, hedefe döner, yayı gerip atar; Wan şeritleri gelince onlar oynar
-const GHOST_ARCH = { x: [0.3, 0.7], y: [0.215, 0.262], h: 0.225, speed: 0.22, gap: 0.17, draw: 0.5, tip: [0.97, 0.25], rel: 0.55,
+const GHOST_ARCH = { x: [0.3, 0.7], y: [0.215, 0.262], h: 0.157, speed: 0.22, gap: 0.17, draw: 0.5, tip: [0.97, 0.25], rel: 0.55,
   clip: [[0, 0.215], [0.5, 0.276], [1, 0.215]] }; // clip: ön korkuluk çizgisi (ayaklar arkasında kalır)
 function ghostArchers(t) {
   if (!t.ga) t.ga = [0, 1].map(i => ({ x: i ? 0.62 : 0.38, d: rand(0.2, 0.8), tx: null, face: i ? 1 : -1, drawT: 0, moveT: rand(1, 3), anim: rand(0, 5) }));
@@ -7247,10 +7247,13 @@ function drawProjectile(p) {
     const pv = projPos(p, k - 0.12), a = Math.atan2(y - pv.y, x - pv.x);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     ctx.strokeStyle = `rgba(${p.col},0.45)`; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(pv.x, pv.y); ctx.lineTo(x, y); ctx.stroke();
-    ctx.translate(x, y); ctx.rotate(a);
-    ctx.strokeStyle = `rgba(${p.col},0.95)`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(4, 0); ctx.stroke();
-    ctx.fillStyle = `rgb(${p.col})`; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2); ctx.lineTo(3, 2); ctx.closePath(); ctx.fill();
-    glow(ctx, 3, 0, 6, p.col, 0.6);
+    ctx.translate(x, y); ctx.rotate(a); glow(ctx, 2, 0, 7, p.col, 0.5); ctx.globalCompositeOperation = 'source-over';
+    // kemik ok: koyu çizgili fildişi şaft, sivri kemik uç, kızıl tüy
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(5, 0); ctx.stroke();
+    ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(5, 0); ctx.stroke();
+    ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 0.6;
+    ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(4.5, -2); ctx.lineTo(5.5, 0); ctx.lineTo(4.5, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = `rgb(${p.col})`; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-12, -2.4); ctx.lineTo(-10.5, 0); ctx.lineTo(-12, 2.4); ctx.closePath(); ctx.fill();
     ctx.restore();
   } else if (p.kind === 'net') { // dönen ağ: halka ve ağ örgüsü, uçtukça açılır
     const k = clamp(p.t / p.dur, 0, 1), R = 3 + 6 * k;
