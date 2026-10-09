@@ -2377,24 +2377,25 @@ function updateObeliskForm(t, dt, L, ts, F) {
   if (!e) { t.cd = 0.1; return; }
   t.cd = L.rate; t.shotAnim = 0.3;
   const nl = abRank(t, 'nail'), fa = abRank(t, 'fan'), crit = Math.random() < 0.15;
-  const TA = towerAnim(t), rel = TA ? TA.M.rel * TA.dur : 0; // atış animasyonu varsa ok/mızrak fırlatma karesinde çıkar
-  if (TA) t.animT = 0;
+  const TA = towerAnim(t), loopA = TA && F.loopAnim, rel = TA && !loopA ? TA.M.rel * TA.dur : 0; // atış animasyonu varsa ok/mızrak fırlatma karesinde çıkar
+  if (TA && !loopA) t.animT = 0;
+  if (loopA) t.engageT = 1.2; // hızlı atan kule: animasyon hedef olduğu sürece döngüde oynar
   if (F.tip) {
     t.face = e.x < t.x ? -1 : 1;
     const o = formPoint(t, ts, F.tip), n = formPoint(t, ts, F.nock);
     G.projectiles.push({ kind: 'bspear', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: -rel, dur: clamp(dist(o.x, o.y, e.x, e.y) / 620, 0.12, 0.45),
-      dmg: roll(L.dmg) * (crit ? 1.6 : 1), dtype: 'true', arc: 3, crit, pierceLine: F.pierce, nail: nl ? nl.rise : 0, src: 'arrow' });
+      dmg: roll(L.dmg) * (crit ? 1.6 : 1), dtype: 'true', arc: 3, crit, pierceLine: F.pierce, pierceK: F.pierceK, nail: nl ? nl.rise : 0, src: 'arrow' });
     G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: 14, col: '255,90,90', t: 0, dur: 0.25 });
     for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-40, 40) + (e.x - o.x) * 0.3, vy: rand(-40, 20), drag: 3, col: i % 2 ? '255,80,80' : '255,190,120', s0: 3.5, s1: 0.5, life: 0.35 });
     t.snap = { x: n.x, y: n.y, t: 0.18 }; sfx('cannon');
   } else {
-    const side = e.x < t.x ? 'L' : 'R', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '255,90,90' : '255,70,130';
+    const side = t.shotSide === 'L' ? 'R' : 'L', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '255,90,90' : '255,70,130'; // iki okçu sırayla atar
     t.shotSide = side;
     const shot = (tg, dmg) => G.projectiles.push({ kind: 'ghostarrow', col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: -rel, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 700, 0.1, 0.4),
       dmg: dmg * (tg.def.flying ? F.fly : 1), dtype: 'phys', arc: 4, crit, nail: nl ? nl.rise : 0, src: 'arrow' });
     shot(e, roll(L.dmg) * (crit ? 2 : 1));
     if (fa) G.enemies.filter(x => x !== e && !x.dead && !x.under && dist(t.x, t.y - 10, x.x, x.y) <= L.range)
-      .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y)).slice(0, fa.n).forEach(x => shot(x, roll(L.dmg) * fa.mult));
+      .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y)).slice(0, fa.n).forEach(x => shot(x, roll(L.dmg) * fa.mult * (F.fanK || 1)));
     for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-25, 25), vy: rand(-25, 10), drag: 3, col, s0: 3, s1: 0.5, life: 0.3 });
     sfx('arrow');
   }
@@ -2402,6 +2403,7 @@ function updateObeliskForm(t, dt, L, ts, F) {
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
   if (t.animT != null) t.animT += dt;
+  if (t.engageT > 0) { t.engageT -= dt; const A = towerAnim(t); if (A) { if (t.animT == null || t.animT >= A.dur) t.animT = 0; } } // döngü
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
   if (t.type === 'barracks') return;
   if (t.type === 'altar') { updateAltar(t, dt); return; }
@@ -3379,7 +3381,7 @@ function updateProjectile(pr, dt) {
       const L0 = Math.hypot(pr.tx - pr.sx, pr.ty - pr.sy) || 1, ux = (pr.tx - pr.sx) / L0, uy = (pr.ty - pr.sy) / L0;
       G.enemies.filter(o => o !== e && !o.dead && !o.under).map(o => { const ax = o.x - e.x, ay = aimY(o) - pr.ty, along = ax * ux + ay * uy; return { o, along, off: Math.abs(ax * uy - ay * ux) }; })
         .filter(q => q.along > 0 && q.along < 110 && q.off < 18).sort((a, b) => a.along - b.along).slice(0, pr.pierceLine)
-        .forEach(q => { damageEnemy(q.o, pr.dmg * 0.6, 'true', false, pr.src); impactFx(q.o.x, aimY(q.o), '255,120,110', 0.9); });
+        .forEach(q => { damageEnemy(q.o, pr.dmg * (pr.pierceK || 0.6), 'true', false, pr.src); impactFx(q.o.x, aimY(q.o), '255,120,110', 0.9); });
     }
     if (pr.drain) for (const s of G.soldiers) { // ruh emici: hedefin yakınındaki iskeletler iyileşir
       if (s.dead || s.wall || s.hp >= s.maxHp || dist(s.x, s.y, e.x, e.y) > 75) continue;
@@ -4893,12 +4895,13 @@ function drawTowerShape(type, x, y, lvl, s = 1, t = null) {
 // Ruh Feneri: drain (Ruh Emici) -> kristalli kule: ışın kristalden, aynı hedefe art arda vurdukça güçlenir (ramp);
 // ghost (Hayalet Çağırıcı) -> Ruh Kafesi: ışın kızıl gözden, hayaletler kafesten çıkar, ara ara en güçlü düşmanı kafese kapatır.
 const TOWER_FORM = {
-  archer_nail: { w: 1.55, rate: 2.1, dmg: 2.7, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, flip: true },
-  archer_fan: { w: 1.12, rate: 0.48, dmg: 0.62, range: 1.05, fly: 1.5, bows: { L: [0.14, 0.215], R: [0.85, 0.205] } },
-  mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.8, ramp: 0.15, rampMax: 0.9, col: 'rgb(190,140,255)' },
+  // 10 Eki denge: dönüşümler 3. kademenin ~1,3 katı (önce ~2,4 kattı, tek kule bölüm geçiyordu)
+  archer_nail: { w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, pierceK: 0.45, flip: true },
+  archer_fan: { w: 1.12, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, loopAnim: true, bows: { L: [0.2, 0.19], R: [0.76, 0.18] } },
+  mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
-  artillery_corpse: { w: 1.3, src: [0.87, 0.08], flip: true, range: 1.2, dmg: 1.25 },
+  artillery_corpse: { w: 1.3, src: [0.87, 0.08], flip: true, range: 1.2, dmg: 1 },
   artillery_plague: { w: 1.15, src: [0.5, 0.24], dmg: 1.05, gas: 1.6 },
 };
 // kule atış animasyonu (kule_anim_isle.py): <görsel>_atk şeridi; box: görsele göre çerçeve, rel: fırlatma anı, relPt: o anda fırlayan parça

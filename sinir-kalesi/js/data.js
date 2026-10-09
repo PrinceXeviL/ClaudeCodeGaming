@@ -16,7 +16,7 @@ const TOWERS = {
     // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
     abilities: [
       // Kemik Yelpazesi: her atışta yanındaki düşmanlara da kıymık · Ruh Çivisi: çivilenen ölünce cesedi uzun yatar, kendiliğinden dirilebilir
-      { id: 'fan', name: 'Hayalet Okçular', desc: (r) => `Kule Hayalet Okçulara dönüşür: çok hızlı atış, uçanlara +%50 · her atışta ${r.n} ek kıymık yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
+      { id: 'fan', name: 'Hayalet Okçular', desc: (r) => `Kule Hayalet Okçulara dönüşür: iki okçu sırayla atar, uçanlara +%30 · her atışta ${r.n} ek kıymık yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
         ranks: [{ cost: 150, n: 1, mult: 0.6 }, { cost: 200, n: 2, mult: 0.7 }, { cost: 260, n: 2, mult: 0.9 }] },
       { id: 'nail', name: 'Kemik Balistası', desc: (r) => `Kule Kemik Balistasına dönüşür: yavaş ama ağır, sıradaki 2 düşmanı deler · vurulan 4 sn çivilenir: ölürse cesedi +4 sn yatar ve %${Math.round(r.rise * 100)} şansla kendiliğinden dirilir`,
         ranks: [{ cost: 160, rise: 0.15 }, { cost: 220, rise: 0.25 }, { cost: 280, rise: 0.35 }] },
@@ -50,7 +50,7 @@ const TOWERS = {
     ],
     abilities: [
       // Ruh Emici: vuruş yakındaki iskeletleri iyileştirir · Hayalet Çağırıcı: yolda geriye süzülen hayalet, değdiğini korkutup yakar
-      { id: 'drain', name: 'Ruh Emici', desc: (r) => `Kule Ruh Emiciye dönüşür: ışın aynı hedefe art arda vurdukça %90'a kadar güçlenir · Işın canı emer: hedefin yakınındaki iskeletler hasarın %${Math.round(r.heal * 100)}'i kadar iyileşir`,
+      { id: 'drain', name: 'Ruh Emici', desc: (r) => `kule Ruh Emiciye dönüşür: ışın aynı hedefe art arda vurdukça %60'a kadar güçlenir · Işın canı emer: hedefin yakınındaki iskeletler hasarın %${Math.round(r.heal * 100)}'i kadar iyileşir`,
         ranks: [{ cost: 160, heal: 0.35 }, { cost: 220, heal: 0.55 }, { cost: 280, heal: 0.8 }] },
       { id: 'ghost', name: 'Ruh Kafesi', desc: (r) => `Kule Ruh Kafesine dönüşür: 8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır · ${r.cd} sn'de bir yolda düşmanlara doğru hayalet salar: değdiğine ${r.dmg} hasar, ${r.fear} sn korku`,
         ranks: [{ cost: 200, cd: 9, dmg: 40, fear: 1.2 }, { cost: 260, cd: 8, dmg: 70, fear: 1.6 }, { cost: 320, cd: 7, dmg: 110, fear: 2 }] },
@@ -511,7 +511,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
   // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
   // 10 Eki: yollar v2 sonrası denge (tarayıcı botu): geç bölümlerde düşman sayısı azaltıldı (çok kalabalık, çok zayıf yerine)
-  const TOTAL = [118, 124, 128, 134, 140, 146, 150, 132, 150, 155, 155, 135, 135, 170, 180];
+  const TOTAL = [153, 161, 166, 174, 182, 190, 195, 172, 195, 202, 202, 176, 176, 221, 234]; // 10 Eki: %30 kalabalık (kuleler güçlü kaldı, Caner'in kararı); önceki: [118, 124, 128, 134, 140, 146, 150, 132, 150, 155, 155, 135, 135, 170, 180]
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
   const HPMUL = [1, 1.15, 1.25, 1, 1.49, 1.18, 0.53, 0.465, 0.64, 1.16, 0.83, 0.39, 0.215, 0.52, 0.3];
@@ -607,7 +607,7 @@ if (NECRO) {
     { name: 'Ay Sunağı', theme: 'bloodmoon', gold: 720, bossT: 'cathedral', waves: mk([['legion', 14, 0.6], ['paladin', 4, 2], ['flagellant', 6, 1.1], ['hunter', 8, 0.9]], [['lantern', 1, 1], ['saint', 1, 1], ['inquisitor', 2, 3], ['holywater', 4, 1.8]], [['heavy', 4, 2], ['bellpriest', 3, 2]]) },
   ];
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
-  const TOTAL2 = [110, 118, 124, 130, 136, 140, 140, 144, 148, 150, 155, 155, 160, 165, 175];
+  const TOTAL2 = [143, 153, 161, 169, 177, 182, 182, 187, 192, 195, 202, 202, 208, 214, 228]; // 10 Eki: %30 kalabalık (kuleler güçlü kaldı, Caner'in kararı); önceki: [110, 118, 124, 130, 136, 140, 140, 144, 148, 150, 155, 155, 160, 165, 175]
   const HPMUL2 = [1, 1.05, 0.88, 0.95, 0.75, 1.1, 1, 0.85, 0.9, 0.85, 0.8, 0.6, 0.5, 0.45, 0.4]; // 10 Eki: botla 4 tur (sonuçlar oynak; elle yumuşatıldı)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'malleus', 'hierophant', 'champion', 'campanus', 'malleus', 'ironwarden', 'ignis',
@@ -841,7 +841,7 @@ for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOW
 // Uzmanlık: son seviyede iki yetenekten biri seçilir (ilk alınan yetenek yolu belirler, diğeri kapanır).
 // Seçilen yol kulenin adını ve görünüşünü değiştirir: askerlerin kostümü, okçuların kıyafeti, kule süsleri.
 const SPEC = {
-  fan:    { title: 'Hayalet Okçular', who: 'İki hayalet okçu: çok hızlı atış, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
+  fan:    { title: 'Hayalet Okçular', who: 'İki hayalet okçu sırayla atar, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
   nail:   { title: 'Kemik Balistası', who: 'Dev kemik mızrak: ağır vurur, sıradakileri deler, çiviler' },
   drain:  { title: 'Ruh Emici', who: 'Kristalden ışın: aynı hedefe güçlenir, canı iskeletlere aktarır' }, // 10 Eki: 4. kademe
   ghost:  { title: 'Ruh Kafesi', who: 'En güçlüyü kafese kapatır, kafesten hayaletler salar' },
