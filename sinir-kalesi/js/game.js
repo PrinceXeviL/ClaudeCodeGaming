@@ -3192,9 +3192,9 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // Heybetli kale (10 Eki, Gemini): kafatası çenesi kapı, önde balkon. gate = kapı eşiği (yolun ucu), at = Mortimer'ın ayağı,
 // rail = Mortimer'ın önüne yeniden çizilen korkuluk bandı, px = Mortimer boyu (görsel pikseli), w = oyundaki genişlik
 const KEEP = { w: 178, gate: [0.45, 0.85], at: [0.487, 0.556], rail: [0.36, 0.525, 0.61, 0.6], px: 118 };
-const isKeep = (im) => im && im === spr('castle_keep_1');
+const isKeep = (im) => im && [1, 2, 3].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
-  if (NECRO && spr('castle_keep_1') && !avluOn()) return spr('castle_keep_1');
+  if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
   if (avluOn()) return spr(G.gate && G.gate.hp <= 0 ? 'castle_avlu_2' : 'castle_avlu_1') || spr('castle_avlu_1');
   return spr('castle_' + castleStage()) || spr('castle_1') || spr('tower_barracks_3');
 }
