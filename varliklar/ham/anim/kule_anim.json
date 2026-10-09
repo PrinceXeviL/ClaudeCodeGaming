@@ -1,0 +1,20 @@
+[
+ {
+  "name": "tower_artillery_corpse_atk",
+  "ref": "ham/anim/tower_artillery_corpse_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "prompt": "a cartoon siege catapult made of wood and bones on a round stone tower: the long spine throwing arm swings forward and up very fast, flinging the bucket of corpses and skulls high into the sky to the right, the arm bounces against the frame, then the arm is slowly cranked back down to its starting position and the bucket is full again. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_artillery_plague_atk",
+  "ref": "ham/anim/tower_artillery_plague_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "prompt": "a huge black iron witch cauldron on a stone tower boils violently, purple and toxic green plague liquid bubbling and swirling, the crimson fire under it flares up, then a big glowing purple-green blob of plague bursts up out of the cauldron and flies away upward to the right, then the cauldron settles back to a gentle boil, ghostly green fumes swirling. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ }
+]

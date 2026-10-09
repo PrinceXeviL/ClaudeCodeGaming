@@ -2399,6 +2399,7 @@ function updateObeliskForm(t, dt, L, ts, F) {
 }
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
+  if (t.animT != null) t.animT += dt;
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
   if (t.type === 'barracks') return;
   if (t.type === 'altar') { updateAltar(t, dt); return; }
@@ -2476,17 +2477,27 @@ function updateTower(t, dt) {
     let tx = e.x, ty = e.y;
     if (!e.blocker) { const f = pathPos(e.p, e.d + e.def.speed * G.wspd * dur, e.off); tx = f.x; ty = f.y; }
     const cr = abRank(t, 'corpse'), pl = abRank(t, 'plague');
-    // ceset mancınığı: menzildeki bir cesedi cephane yapar
-    const body = cr && G.effects.find(f => f.kind === 'corpse' && !f.air && f.t > 0.4 && f.t < f.dur - 0.2 && dist(f.x, f.y, t.x, t.y) <= L.range);
+    const AF = towerForm(t), AA = AF && towerAnim(t);
+    if (AF) { // dönüşmüş kazan: hedefe döner, atış animasyonu oynar, mermi fırlatma anında kovadan / ağızdan çıkar
+      if (AF.flip) t.face = e.x < t.x ? -1 : 1;
+      const ats = towerSprite(t), o = formPoint(t, ats, AA ? AA.M.relPt : AF.src); sx = o.x; sy = o.y;
+      if (AA) t.animT = 0;
+    }
+    const rel = AA ? AA.M.rel * AA.dur : 0; // fırlatma gecikmesi: hedefin o ana kadarki ilerleyişi de hesaba katılır
+    // ceset mancınığı: menzildeki bir cesedi cephane yapar; dönüşmüş mancınık ceset yoksa kendi ceset yığınını atar
+    let body = cr && G.effects.find(f => f.kind === 'corpse' && !f.air && f.t > 0.4 && f.t < f.dur - 0.2 && dist(f.x, f.y, t.x, t.y) <= L.range);
     if (body) body.t = body.dur;
+    else if (AF && t.spec === 'corpse') body = { name: 'enemy_legion', rig: null, h: 24, face: t.face || 1, pile: true };
     {
       // buhar jeti: kazandan hedefe alçak kavisle yeşil buhar püskürür; değdiği yerde yolu kaplayan gaz bulutu kalır
       const fire = (x2, y2, dmg, delay, path, along) => G.projectiles.push({ kind: 'vapor', src: 'blast', sx, sy, gy: t.y, target: null, tx: x2, ty: y2, t: delay, dur: body ? 0.6 : 0.42,
-        dmg, dtype: 'phys', arc: body ? 60 : 26, splash: L.splash * (body ? 1.3 : 1), stun: t.lvl >= 2 ? 0.3 : 0, gas: (L.dmg[0] + L.dmg[1]) * 0.09, big: !!body, path, along,
+        dmg, dtype: 'phys', arc: body ? 60 : 26, splash: L.splash * (body ? 1.3 : 1), stun: t.lvl >= 2 ? 0.3 : 0, gas: (L.dmg[0] + L.dmg[1]) * 0.09 * (AF && AF.gas || 1), big: !!body, path, along,
+        black: AF && t.spec === 'plague',
         plague: pl ? pl.dps : 0, body: body ? { name: body.name, rig: body.rig, h: body.h, face: body.face } : null });
-      const tp = e.blocker ? null : e.p, ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * 0.42;
+      const tp = e.blocker ? null : e.p, ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * (0.42 + rel);
       if (!e.blocker) { const f = pathPos(e.p, ta, e.off); tx = f.x; ty = f.y; }
-      fire(tx, ty, roll(L.dmg) * (body ? cr.mult : 1), 0, tp, ta);
+      fire(tx, ty, roll(L.dmg) * (body ? (body.pile ? 1.3 : cr.mult) : 1) * (AF && AF.dmg || 1), -rel, tp, ta);
+      if (rel) { t.aimX = tx; t.aimY = ty; sfx('whirl'); return; } // duman ve ses fırlatma anında (aşağıda değil)
       t.aimX = tx; t.aimY = ty;
       for (let i = 0; i < 10; i++) {
         const a = Math.atan2(ty - sy, tx - sx) + rand(-0.5, 0.5), v = rand(40, 110);
@@ -4883,7 +4894,19 @@ const TOWER_FORM = {
   archer_fan: { w: 1.12, rate: 0.48, dmg: 0.62, range: 1.05, fly: 1.5, bows: { L: [0.14, 0.215], R: [0.85, 0.205] } },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.8, ramp: 0.15, rampMax: 0.9, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
+  // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
+  artillery_corpse: { w: 1.3, src: [0.87, 0.08], flip: true, range: 1.2, dmg: 1.25 },
+  artillery_plague: { w: 1.15, src: [0.5, 0.24], dmg: 1.05, gas: 1.6 },
 };
+// kule atış animasyonu (kule_anim_isle.py): <görsel>_atk şeridi; box: görsele göre çerçeve, rel: fırlatma anı, relPt: o anda fırlayan parça
+const TOWER_ANIM_FPS = 16;
+function towerAnim(t) {
+  const F = towerForm(t); if (!F) return null;
+  const n = `tower_${t.type}_${t.spec}_atk`, M = ANIM_META[n];
+  if (!M || !M.tower) return null;
+  const im = spr(n); if (!im) { loadStrip(n); return null; }
+  return { im, M, n, dur: M.n / TOWER_ANIM_FPS };
+}
 const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(`tower_${t.type}_${t.spec}`) ? TOWER_FORM[t.type + '_' + t.spec] : null);
 const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
 // dönüşmüş kulede görsel üzerindeki bir noktanın dünya konumu (balista hedefe dönükse aynalanır)
@@ -5503,6 +5526,20 @@ function drawNecroTowerFx(t, ts) {
       glow(ctx, qx, qy, 5 * s, '255,60,70', 0.9);
       glow(ctx, ux, u.y, 18 * s, '255,40,50', 0.25 + 0.2 * beat);
     }
+  } else if (t.type === 'artillery' && towerForm(t)) {
+    const AF = towerForm(t), TA = towerAnim(t), busy = TA && t.animT != null && t.animT < TA.dur;
+    ctx.globalCompositeOperation = 'lighter';
+    if (t.spec === 'plague') { // kara veba: ağızda mor-yeşil kaynama, altında kızıl ateş
+      const m = formPoint(t, ts, AF.src), f = formPoint(t, ts, [0.5, 0.62]);
+      glow(ctx, m.x, m.y, 16 * s, '180,90,255', 0.25 + Math.sin(time * 4 + t.x) * 0.08);
+      glow(ctx, f.x, f.y, 12 * s, '255,60,60', 0.35 + Math.sin(time * 9) * 0.1 + Math.sin(time * 23) * 0.05);
+      if (!busy && Math.random() < 0.12) emit(G.parts, { kind: 'glow', add: true, x: m.x + rand(-8, 8) * s, y: m.y, vy: -rand(15, 35), col: Math.random() < 0.5 ? '180,100,255' : '140,255,110', s0: 3, s1: 0.5, life: 0.7 });
+    } else { // mancınık: yanındaki küçük kazan fokurdar, runlar mor parlar
+      const c = formPoint(t, ts, [0.8, 0.72]), r = formPoint(t, ts, [0.45, 0.72]);
+      glow(ctx, c.x, c.y, 8 * s, '140,255,110', 0.3 + Math.sin(time * 5 + t.x) * 0.1);
+      glow(ctx, r.x, r.y, 14 * s, '170,90,255', 0.14 + Math.sin(time * 1.7) * 0.05);
+    }
+    ctx.globalCompositeOperation = 'source-over';
   } else if (t.type === 'artillery') {
     // kazan: kaynayan kabarcıklar, atışta yükselen bulamaç, üstte yeşil buhar ışığı
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, (12 + 3 * t.lvl) * s, '120,255,90', 0.3 + Math.sin(time * 2.5 + t.x) * 0.08 + 0.3 * sh); ctx.restore();
@@ -5540,7 +5577,7 @@ const TOWER_LIT = { a: 1, reach: 0.7, mode: 'soft-light', pool: 0.1, shade: 0.42
   cols: { barracks: ['255,70,90', '170,90,255'], archer: ['110,255,160', '170,90,255'], mage: ['170,90,255', '110,255,190'],
     artillery: ['130,255,110', '255,80,110'], altar: ['255,60,120', '160,80,255'] }, col: ['120,255,160', '170,90,255'] };
 const LIT_CACHE = new Map();
-function litOf(im, cols) {
+function litOf(im, cols, strip) {
   const key = im.src + '|' + cols.join('|');
   if (LIT_CACHE.has(key)) return LIT_CACHE.get(key);
   // görsel tamamen çözülmeden hazırlanırsa boş/beyaz çıkar: çözülmeyi bekle, bu arada özgün görsel çizilir
@@ -5553,11 +5590,18 @@ function litOf(im, cols) {
       const g = c.getContext('2d'), A = TOWER_LIT.a;
       g.drawImage(im, 0, 0);
       g.globalCompositeOperation = TOWER_LIT.mode;
-      // iki projektör: sol alt ve sağ alt köşeden yukarı, birbirine karışarak
-      for (const [k, col] of [[0, cols[0]], [1, cols[1]]]) {
-        const x = iw * (k ? 0.82 : 0.18), gr = g.createRadialGradient(x, ih * 1.02, iw * 0.05, x, ih * 0.95, ih * TOWER_LIT.reach);
-        gr.addColorStop(0, `rgba(${col},${A})`); gr.addColorStop(0.45, `rgba(${col},${A * 0.5})`); gr.addColorStop(1, `rgba(${col},0)`);
-        g.fillStyle = gr; g.fillRect(0, 0, iw, ih);
+      // iki projektör: sol alt ve sağ alt köşeden yukarı, birbirine karışarak (şeritte her karenin görsel dikdörtgenine göre)
+      const frames = strip ? strip.n : 1;
+      for (let f = 0; f < frames; f++) {
+        const b = strip ? strip.box : [0, 0, 1, 1], fw = iw / frames, sw = fw / (b[2] - b[0]), shh = ih / (b[3] - b[1]);
+        const ox = f * fw - b[0] * sw, oy = -b[1] * shh; // görsel dikdörtgeninin bu karedeki yeri
+        g.save(); g.beginPath(); g.rect(f * fw, 0, fw, ih); g.clip();
+        for (const [k, col] of [[0, cols[0]], [1, cols[1]]]) {
+          const x = ox + sw * (k ? 0.82 : 0.18), gr = g.createRadialGradient(x, oy + shh * 1.02, sw * 0.05, x, oy + shh * 0.95, shh * TOWER_LIT.reach);
+          gr.addColorStop(0, `rgba(${col},${A})`); gr.addColorStop(0.45, `rgba(${col},${A * 0.5})`); gr.addColorStop(1, `rgba(${col},0)`);
+          g.fillStyle = gr; g.fillRect(f * fw, 0, fw, ih);
+        }
+        g.restore();
       }
       g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0); // saydam yerler saydam kalsın
       LIT_CACHE.set(key, c);
@@ -5587,8 +5631,14 @@ function drawTowerBody(t) {
     const OF = towerForm(t), fl = OF && OF.flip && t.face === -1 ? -1 : 1;
     const recoil = OF && OF.tip && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
     ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
-    const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
-    drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
+    const TA = towerAnim(t);
+    if (TA && t.animT != null && t.animT < TA.dur) { // atış animasyonu: şeridin karesi, görselle aynı yere oturur
+      const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * TOWER_ANIM_FPS)), b = M.box, lim = litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
+      ctx.drawImage(lim, i * M.fw, 0, M.fw, M.fh, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
+    } else {
+      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
+      drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
+    }
     ctx.restore();
     drawNecroTowerFx(t, ts);
     if (t.ab) {
@@ -6771,9 +6821,11 @@ function drawProjectile(p) {
       const q = projPos(p, kk), f = 1 - i / 15, r = (5 + 10 * f) * (0.75 + 0.25 * Math.sin(time * 18 + i * 1.7));
       q.x += Math.sin(time * 9 + i) * 2 * (1 - f); q.y += Math.cos(time * 7 + i) * 2 * (1 - f);
       ctx.globalAlpha = 0.14 + 0.5 * f;
-      ctx.drawImage(gasBlob(f > 0.8), q.x - r, q.y - r, r * 2, r * 2);
+      if (p.black && i % 2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, q.x, q.y, r * 1.1, '180,90,255', 0.35 * f); ctx.restore(); } // kara veba: mor-yeşil
+      else ctx.drawImage(gasBlob(f > 0.8), q.x - r, q.y - r, r * 2, r * 2);
     }
     ctx.restore();
+    if (p.black) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 12, '190,100,255', 0.6); glow(ctx, x, y, 6, '150,255,120', 0.6); ctx.restore(); }
   } else if (p.kind === 'shell') {
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k), hgt = 1 - Math.sin(k * Math.PI);
     ctx.fillStyle = `rgba(0,0,0,${0.18 + 0.15 * hgt})`;
@@ -9431,6 +9483,7 @@ function updateAltar(t, dt) {
 }
 function effLevel(t) {
   let L = t.def.levels[t.lvl];
+  { const F = t.type !== 'archer' && towerForm(t); if (F && F.range) L = Object.assign({}, L, { range: L.range * F.range }); } // dönüşmüş kulenin menzili
   if (t.type === 'altar') return L;
   const ab = t.type !== 'barracks' && altarBuff(t);
   if (ab) L = Object.assign({}, L, { rate: L.rate / (1 + ab.buff), dmg: [L.dmg[0] * (1 + ab.dmg), L.dmg[1] * (1 + ab.dmg)] });

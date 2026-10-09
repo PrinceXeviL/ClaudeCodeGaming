@@ -66,9 +66,9 @@ const TOWERS = {
     ],
     abilities: [
       // Ceset Mancınığı: menzildeki cesedi cephane yapar · Kara Veba: vurduğu düşman ölünce veba yanındakilere bulaşır
-      { id: 'corpse', name: 'Ceset Mancınığı', desc: (r) => `Menzilde ceset varsa onu fırlatır: x${r.mult} hasar, geniş alan`,
+      { id: 'corpse', name: 'Ceset Mancınığı', desc: (r) => `Kule Ceset Mancınığına dönüşür: uzun menzil, hep ceset yığını fırlatır · Menzilde ceset varsa onu fırlatır: x${r.mult} hasar, geniş alan`,
         ranks: [{ cost: 170, mult: 1.6 }, { cost: 230, mult: 1.9 }, { cost: 290, mult: 2.3 }] },
-      { id: 'plague', name: 'Kara Veba', desc: (r) => `Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır`,
+      { id: 'plague', name: 'Kara Veba', desc: (r) => `Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır`,
         ranks: [{ cost: 200, dps: 7 }, { cost: 260, dps: 12 }, { cost: 320, dps: 18 }] },
     ],
   },

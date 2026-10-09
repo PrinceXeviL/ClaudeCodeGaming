@@ -19,6 +19,7 @@ TOWER_BASE = 0.13  # kule: arsa merkezinin görselin altından uzaklığı (geni
 # sayfa, adlar (sıralı), tür, ek
 SHEETS = [
     ('nm_sapel.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),  # Mortimer'ın kara şapeli, boş balkon (eski kule: nm_kule.jpg)
+    ('nm_kazan_4.jpg', ['tower_artillery_corpse', 'tower_artillery_plague'], 'decor'),  # 4. kademe: Ceset Mancınığı, Kara Veba Kazanı
     ('nm_fener_4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'decor'),  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
     ('nm_dikilitas_4.jpg', ['tower_archer_nail', 'tower_archer_fan'], 'decor'),  # 4. kademe: Kemik Balistası (Ruh Çivisi), Hayalet Okçular (Kemik Yelpazesi)
     ('nm_mezarlik.jpg', ['tower_barracks_1', 'tower_barracks_2', 'tower_barracks_3'], 'tower'),  # 10 Eki: Savaşçı Mezarlığı (eski: nm_mahzen.jpg)
