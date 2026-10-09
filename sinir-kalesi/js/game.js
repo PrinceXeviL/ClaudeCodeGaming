@@ -3189,11 +3189,16 @@ function avluPt(f) {
   return { x: cp.x - cp.w / 2 + f[0] * cp.w, y: cp.y - h + f[1] * h };
 }
 function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r > 0.3 ? 2 : 3; }
+// Heybetli kale (10 Eki, Gemini): kafatası çenesi kapı, önde balkon. gate = kapı eşiği (yolun ucu), at = Mortimer'ın ayağı,
+// rail = Mortimer'ın önüne yeniden çizilen korkuluk bandı, px = Mortimer boyu (görsel pikseli), w = oyundaki genişlik
+const KEEP = { w: 178, gate: [0.45, 0.85], at: [0.487, 0.556], rail: [0.36, 0.525, 0.61, 0.6], px: 118 };
+const isKeep = (im) => im && im === spr('castle_keep_1');
 function castleStageSprite() {
+  if (NECRO && spr('castle_keep_1') && !avluOn()) return spr('castle_keep_1');
   if (avluOn()) return spr(G.gate && G.gate.hp <= 0 ? 'castle_avlu_2' : 'castle_avlu_1') || spr('castle_avlu_1');
   return spr('castle_' + castleStage()) || spr('castle_1') || spr('tower_barracks_3');
 }
-const mortStage = (im) => (isAvlu(im) ? AVLU : MORT_STAGE[castleStage()] || MORT_STAGE[1]);
+const mortStage = (im) => (isKeep(im) ? KEEP : isAvlu(im) ? AVLU : MORT_STAGE[castleStage()] || MORT_STAGE[1]);
 function mortimerPoint() {
   const c = G.castle, im = castleStageSprite();
   if (!im) return { x: c.x, y: c.y - 60, h: 30 };
@@ -7580,6 +7585,7 @@ function towerStats(type, L) {
 // Eski yedek görsel (kışla) ise kale noktasına ortalanır.
 function castlePlace(x, y, im) {
   if (im === spr('tower_barracks_3')) return { x, y, w: 118 * BUILD_K };
+  if (isKeep(im)) { const w = KEEP.w, h = w * im.height / im.width; return { x: x + (0.5 - KEEP.gate[0]) * w, y: y + (1 - KEEP.gate[1]) * h, w }; } // kapı eşiği = yolun ucu
   if (isAvlu(im)) { const w = AVLU.w, h = w * im.height / im.width; return { x: x + (0.5 - AVLU.gate[0]) * w, y: y + (1 - AVLU.gate[1]) * h, w }; } // kapı eşiği = yolun ucu
   if (NECRO) return { x, y: y + 34, w: 135 }; // şapel: (x, y) kapı eşiği = yolun ucu; kapı görselin ortasında, eşik yüksekliğin %83'ünde
   return { x: x - 15 * BUILD_K, y: y + 10, w: 124 * BUILD_K };
@@ -7597,6 +7603,7 @@ function drawCastle() {
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     drawCastleArchers();
+    if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh);
     if (NECRO) {
       drawMortimer();
       const h = cp.w * im.height / im.width, R = mortStage(im).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
@@ -7647,6 +7654,28 @@ function avluFlame(x, y, hgt, wd, k, ph, col0, col1) {
   ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x - wd, y + wd * 0.6);
   ctx.quadraticCurveTo(x - wd * 1.15, y - hgt * 0.45, x + sway, y - hgt * (0.9 + 0.2 * k));
   ctx.quadraticCurveTo(x + wd * 1.15, y - hgt * 0.45, x + wd, y + wd * 0.6); ctx.closePath(); ctx.fill();
+}
+// heybetli kalenin ışıkları: iki mangalda yeşil ruh ateşi, pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
+const KEEP_FX = {
+  fire: [[0.255, 0.715], [0.6, 0.765]], eyes: [[0.405, 0.665], [0.505, 0.665]],
+  win: [[0.505, 0.355, 2.2], [0.5, 0.245, 0.8], [0.63, 0.245, 0.8], [0.265, 0.455, 1], [0.36, 0.485, 0.8], [0.4, 0.485, 0.8],
+    [0.72, 0.495, 1], [0.8, 0.5, 0.8], [0.625, 0.515, 0.8]],
+};
+function drawKeepLights(cp, h, sh) {
+  const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [i, f] of KEEP_FX.win.entries()) {
+    const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
+    glow(ctx, x, y, 22 * s * f[2], '120,255,140', 0.15 * k + 0.05);
+  }
+  for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '120,255,140', 0.3 + 0.2 * Math.sin(time * 2)); }
+  for (const [i, f] of KEEP_FX.fire.entries()) {
+    const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 9 + i * 2) * Math.sin(time * 5.3 + i);
+    glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, '110,255,130', 0.32 + 0.12 * k);
+    for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, '235,255,225', '90,255,110');
+    if (Math.random() < 0.05 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-4, 4), y: y - 24 * s, vx: rand(-6, 6), vy: rand(-30, -16), col: '120,255,140', s0: rand(1, 1.8), s1: 0.2, life: rand(0.6, 1.1), a: 0.9 });
+  }
+  ctx.restore();
 }
 function drawAvluLights(cp, h, sh, gateOk) {
   const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
@@ -9377,7 +9406,7 @@ function thumbOf(i) {
   const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
   g.scale(480 / W, 270 / H);
   g.drawImage(pickMip(g, bg, W), 0, 0, W, H);
-  const im = spr('castle_1') || spr('tower_barracks_3');
+  const im = spr('castle_keep_1') || spr('castle_1') || spr('tower_barracks_3');
   if (im) { const cp = castlePlace(lv.castle[0], lv.castle[1], im); drawSprite(g, im, cp.x, cp.y, cp.w); }
   return (THUMB[i] = c);
 }
@@ -10848,7 +10877,7 @@ window.__game = {
       }
       const entry = (x, y) => EZ.some(q => Math.hypot(q.x - x, q.y - y) < PLOT_ENTRY.r);
       // şapel görselinin kutusu: arsa üstüne binmesin, arsanın kulesi (80 px yukarı uzanır) şapeli örtmesin
-      const cim = spr('castle_avlu_1') || spr('castle_1'), cp = cim ? castlePlace(lv.castle[0], lv.castle[1], cim) : { x: lv.castle[0], y: lv.castle[1], w: 120 };
+      const cim = spr('castle_keep_1') || spr('castle_1'), cp = cim ? castlePlace(lv.castle[0], lv.castle[1], cim) : { x: lv.castle[0], y: lv.castle[1], w: 120 };
       const cTop = cp.y - cp.w * (cim ? cim.height / cim.width : 1.2), cHalf = cp.w / 2;
       const onCastle = (x, y) => Math.abs(x - cp.x) < cHalf + RX + 4 && y > cTop - RY - 6 && y < cp.y + 80;
       const ui = (x, y) => { const top = y - 80; return (top < 74 && (x < 300 || x > W - 200)) || top < 40 || (y > H - 110 && x < 330) || x < 36 || x > W - 36 || y > H - 30 || onCastle(x, y); };
