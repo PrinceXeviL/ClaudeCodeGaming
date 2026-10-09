@@ -2421,7 +2421,7 @@ function updateObelisk(t, dt, L) {
 function updateObeliskForm(t, dt, L, ts, F) {
   t.cd -= dt;
   if (t.cd > 0) return;
-  const e = findTarget(t, L.range, true);
+  let e = findTarget(t, L.range, true);
   if (!e) { t.cd = 0.1; return; }
   t.cd = L.rate; t.shotAnim = 0.3;
   const nl = abRank(t, 'nail'), fa = abRank(t, 'fan'), crit = Math.random() < 0.15;
@@ -2439,6 +2439,11 @@ function updateObeliskForm(t, dt, L, ts, F) {
   } else {
     const side = t.shotSide === 'L' ? 'R' : 'L', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '255,90,90' : '255,70,130'; // iki okçu sırayla atar
     t.shotSide = side;
+    if (side === 'R') { // ikinci okçu ilkinin vurmadığı en öndeki düşmanı seçer (menzilde başka yoksa aynısı)
+      let e2 = null, br = 1e9;
+      for (const x of G.enemies) if (x !== e && !x.dead && !x.under && dist(t.x, t.y - 10, x.x, x.y) <= L.range && x.p.total - x.d < br) { br = x.p.total - x.d; e2 = x; }
+      if (e2) e = e2;
+    }
     const shot = (tg, dmg) => G.projectiles.push({ kind: 'ghostarrow', col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: -rel, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 700, 0.1, 0.4),
       dmg: dmg * (tg.def.flying ? F.fly : 1), dtype: 'phys', arc: 4, crit, nail: nl ? nl.rise : 0, src: 'arrow' });
     shot(e, roll(L.dmg) * (crit ? 2 : 1));
@@ -2968,9 +2973,11 @@ function updateBowSoldier(s, dt) {
   let best = s.melee, bestRemain = 1e9;
   if (!best) for (const e of G.enemies) {
     if (e.dead || e.under || e.reviveT > 0 || dist(s.x, s.y - 10, e.x, e.y) > s.bow.r) continue;
-    const remain = e.p.total - e.d;
+    // başka okçunun nişan aldığı düşman 90 px "uzakmış" sayılır: okçular ayrı hedeflere dağılır
+    const remain = e.p.total - e.d + G.soldiers.reduce((n, x) => n + (x !== s && x.bow && !x.dead && x.aim === e ? 90 : 0), 0);
     if (remain < bestRemain) { bestRemain = remain; best = e; }
   }
+  s.aim = best;
   s.atk -= dt;
   if (!best) { if (s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt); s.atk = Math.max(s.atk, 0.15 * (s.slot || 0)); return; }
   s.face = best.x < s.x ? -1 : 1;
@@ -3049,13 +3056,20 @@ function updateSoldier(s, dt) {
     if (e.blocker === s) e.blocker = null;
     s.target = null;
   }
+  // yardımcı (düşmanı başkası durdurmuş): menzilde kimsenin durdurmadığı düşman varsa ona geçer; her iskelet ayrı birini tutsun
+  if (s.target && !s.moving && s.target.blocker && s.target.blocker !== s && !s.hero && (s.retgT = (s.retgT || 0) - dt) <= 0) {
+    s.retgT = 0.4;
+    const free = G.enemies.find(o => !o.dead && !o.blocker && !o.def.flying && !o.def.noblock && !o.under && !(o.reviveT > 0) && o.siege === undefined && dist(o.x, o.y, home.x, home.y) <= s.engage);
+    if (free) { s.target = free; free.blocker = s; }
+  }
   if (!s.target && !s.moving) {
     let best = null, bestScore = 1e9;
     for (const o of G.enemies) {
       if (o.dead || o.def.flying || o.under || o.reviveT > 0) continue; // uçmayan her şeye saldırır (araba gibi durdurulamayanlar dahil)
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
-      const score = s.zombie || s.aggro ? dist(o.x, o.y, s.x, s.y) + (o.blocker ? 40 : 0) : (o.blocker ? 1000 : 0) + (o.p.total - o.d);
+      const busy = G.soldiers.reduce((n, x) => n + (x !== s && !x.dead && x.target === o ? 1 : 0), 0); // ona zaten saldıranlar
+      const score = s.zombie || s.aggro ? dist(o.x, o.y, s.x, s.y) + (o.blocker ? 40 : 0) + busy * 30 : (o.blocker ? 1000 : 0) + busy * 400 + (o.p.total - o.d);
       if (score < bestScore) { bestScore = score; best = o; }
     }
     if (best) {
