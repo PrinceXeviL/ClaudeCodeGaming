@@ -8476,9 +8476,16 @@ function drawBossAura(e, dh) {
 // ekranın üstünde boss can barı
 // Ekranın üstünde boss barı: altın çerçeve, solda kuru kafa madalyonu, ad şeridi; zırhlı bosslarda iki bar
 // (üstte çelik zırh, altta can). Hasar yiyince bar önce beyaz iz bırakır, iz yavaşça erir.
+// boss can barı ekranın üstünde, %60 boyutunda (çok yer kaplamasın); üst kenara yaslı ölçeklenir
+const BOSS_BAR_K = 0.6;
 function drawBossBar() {
   const b = G.enemies.find(e => e.def.chief && !e.dead);
   if (!b) return;
+  ctx.save(); ctx.translate(W / 2, 40); ctx.scale(BOSS_BAR_K, BOSS_BAR_K); ctx.translate(-W / 2, -40);
+  drawBossBarAt(b);
+  ctx.restore();
+}
+function drawBossBarAt(b) {
   const armored = b.maxPlate > 0, w = armored ? 330 : 300, x = W / 2 - w / 2 + 12, y = 60;
   const fr = clamp(b.hp / b.maxHp, 0, 1), pf = armored ? clamp(b.plate / b.maxPlate, 0, 1) : 0;
   b.shownHp = b.shownHp == null ? fr : Math.max(fr, b.shownHp - 0.25 * (1 / 60));
