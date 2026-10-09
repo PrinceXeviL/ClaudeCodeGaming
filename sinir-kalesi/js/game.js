@@ -227,6 +227,8 @@ const SOUND = {
   pain:    { vol: 0.14, gap: 0.12, max: 2 },                         // düşman acı sesi (painVoice)
   dvoice:  { vol: 0.15, gap: 0.15, max: 2 },                         // ölüm iniltisi (deathVoice)
   scream:  { vol: 0.13, gap: 0.12, max: 2, rate: [0.95, 1.08] },    // korku çığlığı
+  mvoices: { vol: 0.5, gap: 0.4, max: 1 },  mvoicem: { vol: 0.5, gap: 0.4, max: 1 },  mvoicel: { vol: 0.5, gap: 0.4, max: 1 }, // Mortimer konuşması
+  mlaugh:  { vol: 0.45, gap: 1, max: 1 },                           // Mortimer'ın sinsi kahkahası
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
   horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi)
   bonefall: { vol: 0.13, gap: 0.2, max: 1, rate: [0.92, 1.1] },       // iskelet ölünce kemikleri saçılır (arka planda kalsın)
@@ -346,8 +348,17 @@ function uiSound(kind) {
   return true;
 }
 // Mortimer konuşurken: kısa, anlamsız, boğuk hece mırıltısı (kare dalga + ağız formantı) ve arada kemik takırtısı
-function mortMumble(text) {
+// Mortimer'ın sesi: sentezlenmiş anlamsız konuşma (varliklar/ses_uret.py mort_babble), yazının uzunluğuna göre kısa/orta/uzun;
+// alaycı laflarda arkasından kahkaha. Ses dosyaları yoksa eski osilatör mırıltısı.
+const MORT_LAUGH = ['fear', 'raise', 'burst', 'bossDown', 'streak', 'wall', 'bossRage'];
+function mortMumble(text, kind) {
   if (muted || !actx || !master) return;
+  const grp = text.length < 22 ? 'mvoices' : text.length < 38 ? 'mvoicem' : 'mvoicel';
+  if (SND[grp] && SND[grp].length) {
+    sfx(grp, rand(0.96, 1.05));
+    if (MORT_LAUGH.includes(kind) && Math.random() < 0.6) setTimeout(() => sfx('mlaugh', rand(0.97, 1.04)), 300 + text.length * 22);
+    return;
+  }
   const now = actx.currentTime, n = clamp(Math.round(text.length / 4), 4, 12), base = 112 + Math.random() * 24;
   const out = actx.createBiquadFilter(); out.type = 'lowpass'; out.frequency.value = 1700; out.connect(master);
   let t = now + 0.02;
@@ -3397,7 +3408,7 @@ function mortSay(kind, force) {
   let text = L[Math.floor(Math.random() * L.length)];
   if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
   G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
-  mortMumble(text);
+  mortMumble(text, kind);
 }
 function updateMortSay(dt) {
   if (!NECRO) return;

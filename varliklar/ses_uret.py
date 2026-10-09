@@ -271,6 +271,44 @@ def voice(dur, f0_fn, vow_path, amp_fn, growl=0.0, breath=0.04, fk=1.0):
     return highpass(out, 70)
 
 
+def mort_babble(k, nsyl, seed):
+    """Mortimer'ın 'konuşması': anlamsız ama karakterli heceler (Simlish benzeri) — alçak, hırıltılı, kurumlu bir ses;
+    her hece ünsüz patlaması + ünlü, perde cümle boyunca iner, sonda sinsi bir yükselme. Dil bağımsız (İngilizcede de çalışır)."""
+    r = np.random.default_rng(seed)
+    vows = ['a', 'o', 'ʌ', 'e', 'ı', 'u', 'ə']
+    out = []
+    for i in range(nsyl):
+        d = r.uniform(0.09, 0.15) * (1.6 if i == nsyl - 1 else 1)
+        v1, v2 = r.choice(vows), r.choice(vows)
+        base = 92 * k * (1.12 - 0.22 * i / max(1, nsyl - 1)) * r.uniform(0.95, 1.06)
+        last = i == nsyl - 1
+        f0 = lambda u, b=base, l=last: b * (1 + (0.18 * u if l else 0.06 * np.sin(np.pi * u)))
+        amp = lambda u: np.minimum(1, u / 0.12) * np.where(u > 0.7, (1 - u) / 0.3, 1)
+        syl = voice(d, f0, [(0, v1), (1, v2)], amp, growl=0.22, breath=0.0, fk=0.92)
+        # ünsüz: kısa gürültü patlaması (k/t/s/ş benzeri), hecenin başında
+        cn = int(SR * r.uniform(0.012, 0.03)); cons = resonate(noise(cn), r.uniform(1800, 4200), 900) * np.linspace(1, 0, cn) * 0.25
+        syl[:cn] += cons[:len(syl)]
+        out.append(syl); out.append(np.zeros(int(SR * r.uniform(0.01, 0.04))))
+    x = np.concatenate(out)
+    for dl, g in [(0.06, 0.18), (0.13, 0.08)]:  # balkondan hafif yankı
+        j = int(SR * dl); x[j:] += x[:-j] * g
+    return lowpass(x, 5200)
+
+
+def mort_laugh(k, n, seed):
+    """sinsi kahkaha: 'heh-heh-heh' — her vuruşta perde biraz iner, nefesli"""
+    r = np.random.default_rng(seed); out = []
+    for i in range(n):
+        d = 0.11; base = 120 * k * (1 - 0.06 * i)
+        f0 = lambda u, b=base: b * (1 - 0.15 * u)
+        amp = lambda u: np.minimum(1, u / 0.08) * np.where(u > 0.5, (1 - u) / 0.5, 1)
+        out.append(voice(d, f0, [(0, 'e'), (1, 'ə')], amp, growl=0.3, breath=0.04, fk=0.95)); out.append(np.zeros(int(SR * 0.05)))
+    x = np.concatenate(out)
+    for dl, g in [(0.06, 0.18), (0.13, 0.08)]:
+        j = int(SR * dl); x[j:] += x[:-j] * g
+    return lowpass(x, 5000)
+
+
 def pain(k, vw):
     dur = rng.uniform(0.17, 0.3)
     base = 190 * k
@@ -322,6 +360,10 @@ def main():
     for i, k in enumerate([0.92, 1.0, 1.1], 1): made.append(save(f'zap_{i}', dark_zap(k), -19))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'splash_{i}', splash(k), -19))
     # pain, dvoice, scream, warcry artık gerçek kayıtlardan: ses_kayit_isle.py
+    # Mortimer konuşması: kısa (s), orta (m), uzun (l) cümleler için ayrı gruplar (oyun yazının uzunluğuna göre seçer)
+    for grp, specs in (('s', [(3, 1), (4, 2), (4, 7)]), ('m', [(5, 3), (6, 4), (6, 8)]), ('l', [(7, 5), (8, 6), (9, 9)])):
+        for i, (ns, sd) in enumerate(specs, 1): made.append(save(f'mvoice{grp}_{i}', mort_babble(1.0, ns, sd), -19))
+    for i, (n, sd) in enumerate([(3, 1), (4, 2)], 1): made.append(save(f'mlaugh_{i}', mort_laugh(1.0, n, sd), -19))
     made.append(save('horn_1', horn(), -17))
     for i, k in enumerate([0.95, 1.0, 1.06], 1): made.append(save(f'drum_{i}', war_drum(k), -18))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'bonefall_{i}', bone_fall(k), -19))
