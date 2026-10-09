@@ -1,0 +1,102 @@
+[
+ {
+  "name": "hero_vladrik_walk",
+  "ref": "ham/anim/hero_vladrik_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon undead vampire count in a long black and crimson cape with a sword walks in place with confident heroic strides, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_vladrik_atk",
+  "ref": "ham/anim/hero_vladrik_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon undead vampire count in a long black and crimson cape with a sword swings the sword forward in one fast elegant slash, cape flaring, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_vladrik_die",
+  "ref": "ham/anim/hero_vladrik_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a cartoon undead vampire count in a long black and crimson cape with a sword is struck down: he staggers, the cape wraps around him and he crumbles into a pile of dust and bats. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_wren_walk",
+  "ref": "ham/anim/hero_wren_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon ghostly banshee woman with long floating pale green hair and a torn white dress walks in place with confident heroic strides, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_wren_atk",
+  "ref": "ham/anim/hero_wren_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon ghostly banshee woman with long floating pale green hair and a torn white dress leans forward and lets out a powerful ghostly wail, a green sound wave bursting from her mouth, hair blowing back, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_wren_die",
+  "ref": "ham/anim/hero_wren_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a cartoon ghostly banshee woman with long floating pale green hair and a torn white dress fades and dissolves: she spins slowly upward and vanishes into green mist. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_spartacus_walk",
+  "ref": "ham/anim/hero_spartacus_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists walks in place with confident heroic strides, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_spartacus_atk",
+  "ref": "ham/anim/hero_spartacus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists swings the sword in a powerful slash and whips the chain forward, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_spartacus_die",
+  "ref": "ham/anim/hero_spartacus_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists falls to his knees, drops the sword and collapses forward onto the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_leonidas_walk",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear walks in place with confident heroic strides, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_leonidas_atk",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear thrusts the spear forward from behind the shield in one powerful strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_leonidas_die",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear staggers back, drops the spear and shield and falls backward onto the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]

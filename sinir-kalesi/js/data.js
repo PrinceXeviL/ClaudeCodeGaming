@@ -874,6 +874,17 @@ const TOWER_TITLES = {'archer': ['Okçu Kulesi', 'Nişancı Kulesi', 'Keskin Ni�
 for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
 // Uzmanlık: son seviyede iki yetenekten biri seçilir (ilk alınan yetenek yolu belirler, diğeri kapanır).
 // Seçilen yol kulenin adını ve görünüşünü değiştirir: askerlerin kostümü, okçuların kıyafeti, kule süsleri.
+// 4. kademe dönüşümlerinin ikinci gücü (10 Eki): uzmanlık seçildikten sonra tek seferlik alınır, bekleme süresiyle kendiliğinden çalışır
+const TOWER_EXTRA = {
+  fan:    { name: 'Hayalet Yaylım',   cost: 220, cd: 12, desc: 'İki okçu menzildeki 8 düşmana birden ok yağdırır' },
+  nail:   { name: 'Kazık Yağmuru',    cost: 240, cd: 10, desc: 'En kalabalık yere 5 kemik kazık düşer: ağır hasar, %50 yavaşlatma' },
+  drain:  { name: 'Ruh Dalgası',      cost: 230, cd: 8,  desc: 'En güçlü düşmanın çevresinde ruh patlar; yakındaki iskeletler iyileşir' },
+  ghost:  { name: 'Hayalet Zincirler', cost: 240, cd: 9, desc: '4 düşmanı hayalet zincirleriyle bağlar: 1,6 sn sersemletir' },
+  corpse: { name: 'Ceset Yağmuru',    cost: 250, cd: 11, desc: '3 ek ceset yığını fırlatır, her biri çevresine de vurur' },
+  plague: { name: 'Veba Sisi',        cost: 230, cd: 10, desc: 'Kalabalığın üstüne veba sisi çöker: 5 sn güçlü zehir' },
+  rite:   { name: 'Kan Ayini',        cost: 220, cd: 14, desc: 'Menzildeki iskeletler %40 iyileşir, 6 sn %50 sert vurur' },
+  blight: { name: 'Çürük Dokunuş',    cost: 240, cd: 9,  desc: 'Menzildeki herkes 5 sn ağır lanetlenir ve zehirlenir' },
+};
 const SPEC = {
   fan:    { title: 'Hayalet Okçular', who: 'İki hayalet okçu sırayla atar, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
   nail:   { title: 'Kemik Balistası', who: 'Dev kemik mızrak: ağır vurur, sıradakileri deler, çiviler' },

@@ -1278,6 +1278,7 @@ function startLevel(idx, chal = null) {
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
+  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
@@ -2475,11 +2476,80 @@ function updateObeliskForm(t, dt, L, ts, F) {
     sfx('arrow');
   }
 }
+// ----- 4. kademe ikinci güçleri -----
+function buyExtra(t) {
+  const E = t && t.spec && TOWER_EXTRA[t.spec];
+  if (!E || t.extra || G.gold < E.cost) return false;
+  G.gold -= E.cost; t.spent += E.cost; t.extra = true; t.exT = 1.5;
+  floatText(t.x, t.y - 80, E.name + '!', '#ffe27a'); sfx('upgrade');
+  G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: '255,215,100', t: 0, dur: 0.5 });
+  return true;
+}
+function densestOf(list, r) { let best = null, bn = 0; for (const e of list) { const n = list.filter(o => dist(o.x, o.y, e.x, e.y) < r).length; if (n > bn) { bn = n; best = e; } } return best; }
+function updateExtra(t, dt) {
+  if ((t.exT = (t.exT ?? 1.5) - dt) > 0) return;
+  const E = TOWER_EXTRA[t.spec], L = effLevel(t), R = (L.range || 140) * 1.05, eye = towerEye(t);
+  const near = G.enemies.filter(e => !e.dead && !e.under && dist(t.x, t.y - 10, e.x, e.y) <= R && (t.type === 'archer' || !e.def.flying));
+  const avg = L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 20;
+  if (t.spec === 'rite') { // iskeletleri güçlendirir: menzilde savaşan iskelet yoksa bekler
+    const sol = G.soldiers.filter(s => !s.dead && !s.wall && dist(s.x, s.y, t.x, t.y) <= R && s.target);
+    if (!sol.length) { t.exT = 0.5; return; }
+    for (const s of sol) { s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.4); s.buffT = 6; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,60,70', t: 0, dur: 0.6, small: true }); }
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.5, col: '255,60,70', t: 0, dur: 0.6 }); sfx('portal'); t.exT = E.cd; return;
+  }
+  if (!near.length) { t.exT = 0.3; return; }
+  t.exT = E.cd; t.shotAnim = 0.3;
+  if (t.spec === 'fan') {
+    near.sort((a, b) => (a.p.total - a.d) - (b.p.total - b.d)).slice(0, 8).forEach((e, i) => G.projectiles.push({ kind: 'ghostarrow', col: i % 2 ? '255,70,130' : '255,90,90', sx: eye.x + (i % 2 ? 8 : -8), sy: eye.y,
+      target: e, tx: e.x, ty: aimY(e), t: -i * 0.05, dur: clamp(dist(eye.x, eye.y, e.x, e.y) / 650, 0.12, 0.4), dmg: avg * 0.9, dtype: 'phys', arc: 6, src: 'arrow' }));
+    sfx('arrow');
+  } else if (t.spec === 'nail' || t.spec === 'plague') {
+    const c = densestOf(near, 45);
+    for (let k = 0; k < (t.spec === 'nail' ? 5 : 1); k++) {
+      const x = c.x + (k ? rand(-28, 28) : 0), y = c.y + (k ? rand(-14, 14) : 0);
+      if (t.spec === 'nail') {
+        impactFx(x, y - 6, '240,230,200', 1.2); G.effects.push({ kind: 'dust', x, y, t: 0, dur: 0.6 });
+        for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'chunk', x, y: y - 4, vx: rand(-50, 50), vy: -rand(60, 120), g: 480, vr: rand(-12, 12), rot: rand(0, 6), col: '#efe6cc', s0: rand(1.5, 2.5), s1: 1, life: 0.6 });
+        for (const e of near) if (!e.dead && dist(e.x, e.y, x, y) < 26) { damageEnemy(e, 45, 'true', false, 'arrow'); slowEnemy(e, 0.5, 2.5); }
+      } else {
+        for (let i = 0; i < 30; i++) emit(G.parts, { kind: 'glow', x: x + rand(-50, 50), y: y + rand(-20, 20), vx: rand(-10, 10), vy: -rand(2, 10), col: i % 3 ? '120,230,90' : '160,90,220', s0: rand(10, 18), s1: rand(14, 24), life: rand(2.5, 4), a: 0.35 });
+        for (const e of near) if (dist(e.x, e.y, x, y) < 60) poisonEnemy(e, 14, 5);
+      }
+    }
+    shakeScreen(t.spec === 'nail' ? 2.5 : 0.8, 0.25); sfx(t.spec === 'nail' ? 'stomp' : 'splash');
+  } else if (t.spec === 'drain') {
+    const c = near.reduce((a, e) => (e.hp > a.hp ? e : a), near[0]);
+    G.effects.push({ kind: 'ring', x: c.x, y: c.y, r: 60, col: '190,140,255', t: 0, dur: 0.5 }); impactFx(c.x, c.y - 12, '190,140,255', 1.6);
+    for (const e of near) if (dist(e.x, e.y, c.x, c.y) < 60) damageEnemy(e, 55, 'magic', false, 'magic');
+    for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, c.x, c.y) < 90) s.hp = Math.min(s.maxHp, s.hp + 30);
+    sfx('zap');
+  } else if (t.spec === 'ghost') {
+    near.sort((a, b) => dist(a.x, a.y, t.x, t.y) - dist(b.x, b.y, t.x, t.y)).slice(0, 4).forEach(e => {
+      stunEnemy(e, 1.6); damageEnemy(e, 25, 'magic', false, 'magic');
+      G.effects.push({ kind: 'zap', x0: eye.x, y0: eye.y, x1: e.x, y1: e.y - 12, t: 0, dur: 0.45, w: 1, col: 'rgb(255,80,80)', seed: rand(0, 9) });
+    });
+    sfx('zap');
+  } else if (t.spec === 'corpse') {
+    for (let k = 0; k < 3; k++) {
+      const e = near[Math.floor(Math.random() * near.length)];
+      { if (e.dead) continue;
+        impactFx(e.x, e.y - 6, '200,120,90', 1.3); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.7 });
+        for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'chunk', x: e.x, y: e.y - 4, vx: rand(-60, 60), vy: -rand(70, 140), g: 480, vr: rand(-12, 12), rot: rand(0, 6), col: i % 2 ? '#7a4a3a' : '#cbbf9c', s0: rand(1.5, 2.5), s1: 1, life: 0.6 });
+        for (const o of G.enemies) if (!o.dead && !o.def.flying && dist(o.x, o.y, e.x, e.y) < 35) damageEnemy(o, avg * (o === e ? 1.2 : 0.6), 'phys', false, 'blast');
+        sfx('boom'); }
+    }
+  } else if (t.spec === 'blight') {
+    for (const e of near) { if (e.def.nocurse) continue; e.curseT = Math.max(e.curseT || 0, 5); e.curseK = Math.max(e.curseK || 0, 0.3); poisonEnemy(e, 8, 5);
+      for (let i = 0; i < 4; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(15, 35), col: '140,60,200', s0: 3, s1: 0.5, life: 0.6 }); }
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '140,60,200', t: 0, dur: 0.6 }); sfx('portal');
+  }
+}
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
   if (t.animT != null) t.animT += dt;
   if (t.engageT > 0) { t.engageT -= dt; const A = towerAnim(t); if (A) { if (t.animT == null || t.animT >= A.dur) t.animT = 0; } } // döngü
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
+  if (t.extra) updateExtra(t, dt);
   if (t.type === 'barracks') return;
   if (t.type === 'altar') { updateAltar(t, dt); return; }
   const L = effLevel(t);
@@ -6285,6 +6355,15 @@ function drawSoldier(s) {
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
     const ch = s.hero ? s.def.h * UNIT_K : CHAR_H[name];
+    // komutan: Wan şeritleri geldiyse onlar oynar (saldırı kareleri vuruş döngüsüne bağlı)
+    const hsk = s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || (walking && animStrip(name, null, '_walk')));
+    if (hsk) {
+      const F = ANIM_META[hsk], i = hsk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
+      ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
+      hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
+      return;
+    }
     drawUnit(key, im, s.x, s.y, s.face, {
       h: ch, rig: name, pad, glow: glowIm, phase: s.anim * 9, walking, fly: 0,
       atk: fighting || s.shooting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7,
@@ -7755,6 +7834,8 @@ function towerMenuItems(t) {
       items.push({ id: 'ability', type: a.id, ab: a, rank: r, x: t.spec ? t.x : t.x + ox, y: t.spec ? t.y - 76 : t.y + oy, cost: r < a.ranks.length ? a.ranks[r].cost : null });
     });
   }
+  const EX = t.spec && TOWER_EXTRA[t.spec];
+  if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 64, y: t.y - 34, cost: t.extra ? null : EX.cost, owned: !!t.extra });
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: Math.floor(t.spent * SELL_RATIO) });
   if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
@@ -7946,6 +8027,8 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     drawIcon('coin', -4, 3, 17); drawIcon('coin', 4, -3, 19);
   } else if (it.id === 'spellup') {
     ctx.save(); ctx.scale(0.72, 0.72); drawNecroGlyph(it.type, 22); ctx.restore();
+  } else if (it.id === 'extra') {
+    glow(ctx, 0, 0, 20, '255,215,110', 0.3 + Math.sin(time * 4) * 0.08); drawAbilityIcon(it.type, 0, -1, 0.85); fancyStar(9, -10, 5, true);
   } else if (it.id === 'ghoul') {
     glow(ctx, 0, 2, 20, '140,255,120', 0.35); drawSkullIcon(0, 1, 15);
   } else if (it.id === 'rally') {
@@ -7956,6 +8039,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   }
   ctx.restore();
   ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.beginPath(); ctx.ellipse(0, -R * 0.5, R * 0.62, R * 0.32, 0, 0, Math.PI * 2); ctx.fill();
+  if (it.id === 'extra' && it.owned) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#e8bb4a', 1.6); txt('VAR', 0, R + 9.5, 12, '#ffe27a', 'center', '400', FONT_T); }
   if (it.id === 'spellup') {
     for (let i = 0; i < 2; i++) circle((i - 0.5) * 9, -R - 2, 3.6, i < it.rank ? '#b8ff8a' : '#3a2a1a', '#1a0e04', 1.2);
     if (it.cost == null) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#9dff8a', 1.6); txt('MAX', 0, R + 9.5, 12, '#c8ffb0', 'center', '400', FONT_T); }
@@ -8615,6 +8699,10 @@ function infoText() {
   if (pk) {
     const I = spellInfo(pk), cd = G.spells[pk];
     return [I.name, `${I.U.short || I.U.desc} · ${cd > 0 ? Math.ceil(cd) + ' sn sonra hazır' : 'Haritada hedefe dokun'}`];
+  }
+  if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'extra') {
+    const E = TOWER_EXTRA[G.preview.type], t = G.sel.tower;
+    return [t.extra ? `${E.name} (alındı)` : `${E.name} — ${E.cost} altın`, `${E.desc} · ${E.cd} sn'de bir`];
   }
   if (G.sel && G.sel.kind === 'hatch') {
     const C = HATCH.ghoul;
@@ -12156,6 +12244,7 @@ function hudTap(x, y) {
         if (!same) { G.preview = it; sfx('pick'); return true; }
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
         else if (it.id === 'ghoul') { if (openHatch(G.sel.hatch)) setSel(null); else sfx('error'); }
+        else if (it.id === 'extra') { if (it.cost != null && buyExtra(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
         else if (it.id === 'spellup') { if (it.cost != null && buySpellUp(it.type)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade' && it.type === 'castle') { if (upgradeCastle()) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade') { if (upgradeTower(G.sel.tower)) { G.preview = null; G.menuT = time; } else sfx('error'); }
