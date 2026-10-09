@@ -7295,7 +7295,7 @@ function infoText() {
   return null;
 }
 function towerStats(type, L) {
-  if (type === 'altar') return `Menzil ${L.range} · lanetliler +%${Math.round(L.curse * 100)} hasar alır · %${Math.round(L.rise * 100)} dirilme`;
+  if (type === 'altar') return `Menzil ${L.range} · lanet dalgası ${L.pulse} hasar · lanetliler +%${Math.round(L.curse * 100)} hasar alır · %${Math.round(L.rise * 100)} dirilme`;
   if (type === 'barracks') return `3 asker · Can ${L.hp} · Hasar ${L.dmg[0]}-${L.dmg[1]} · Zırh %${Math.round(L.armor * 100)}`;
   let s = `Hasar ${L.dmg[0]}-${L.dmg[1]} · Menzil ${L.range} · Atış ${L.rate}sn`;
   if (L.splash) s += ' · Alan';
@@ -8196,7 +8196,22 @@ function altarBuff(t) {
   return buff || dmg ? { buff, dmg } : null;
 }
 function updateAltar(t, dt) {
-  const L = t.def.levels[t.lvl], bl = abRank(t, 'blight');
+  const L = effLevel(t), bl = abRank(t, 'blight');
+  // lanet dalgası: kuleden yayılan mor halka, menzildeki herkese doğrudan hasar
+  t.pulseCd = (t.pulseCd ?? 0.6) - dt;
+  if (t.pulseCd <= 0) {
+    const near = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= L.range);
+    if (near.length) {
+      t.pulseCd = L.every; t.shotAnim = 0.35;
+      G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, col: '190,90,255', t: 0, dur: 0.55 });
+      hitBy = 'curse';
+      for (const e of near) {
+        damageEnemy(e, L.pulse, 'magic', false, 'curse');
+        for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(4, 24), vy: -rand(15, 40), col: i % 2 ? '190,90,255' : '120,255,140', s0: rand(2.5, 4), s1: 0.4, life: rand(0.4, 0.7) });
+      }
+      hitBy = null; sfx('zap');
+    } else t.pulseCd = 0.3;
+  }
   for (const e of G.enemies) {
     if (e.dead || e.under || dist(e.x, e.y, t.x, t.y) > L.range) continue;
     e.curseT = Math.max(e.curseT || 0, 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise);
@@ -8532,7 +8547,7 @@ function drawCodexTower(id, px, py, pw, ph) {
   txt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 70, 10, '#a898b8', 'left', '700', FONT_B, false);
   const stats = [['Maliyet', L.cost + ' altın'], ['Menzil', L.range + '']];
   if (id === 'barracks') stats.push(['İskelet canı', L.hp + ''], ['İsk. hasarı', `${L.dmg[0]}–${L.dmg[1]}`], ['İsk. zırhı', `%${Math.round(L.armor * 100)}`], ['Doğma süresi', L.respawn + ' sn']);
-  else if (id === 'altar') stats.push(['Lanet', `+%${Math.round(L.curse * 100)}`], ['Dirilme', `%${Math.round(L.rise * 100)}`]);
+  else if (id === 'altar') stats.push(['Dalga hasarı', `${L.pulse}`], ['Lanet', `+%${Math.round(L.curse * 100)}`], ['Dirilme', `%${Math.round(L.rise * 100)}`]);
   else { stats.push(['Hasar', `${L.dmg[0]}–${L.dmg[1]}`], ['Atış arası', L.rate + ' sn']); if (L.splash) stats.push(['Alan', L.splash + '']); }
   let y = codexStats(stats, x0, py + 92) + 4;
   wrapLines(L.perk || T.desc, pw - 236, 11, '700', FONT_B, 3).forEach(l => { txt(l, x0, y, 11, '#f0e2c4', 'left', '700', FONT_B, false); y += 15; });
@@ -9799,7 +9814,7 @@ function drawComic() {
   gameButton('comic_skip', W - 70, 16, 96, 26, 'Geç ›', () => endComic(), 'wood', { size: 13 });
 }
 // zafer ekranı özeti: sayılar sırayla sayarak dolar; en çok öldüren vurgulanır
-const KILLER_NAME = { arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
+const KILLER_NAME = { curse: 'Lanet Kuleleri', arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 40, w = pw - 80, y0 = py + 198;
   roundRect(x0, y0, w, 118, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);

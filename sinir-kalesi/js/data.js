@@ -772,11 +772,11 @@ if (NECRO) {
 if (NECRO) {
   TOWERS.altar = {
     name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2,
-    desc: 'Saldırmaz: menzildekileri lanetler (fazla hasar, yavaşlık, ölünce dirilme şansı)',
+    desc: 'Lanet dalgası yayar: menzildekilere hasar, fazla hasar alma, yavaşlık, ölünce dirilme şansı',
     levels: [
-      { cost: 90,  range: 100, curse: 0.15, slow: 0.12, rise: 0.12, title: 'Lanet Kulesi', perk: 'Lanetliler %15 fazla hasar alır, yavaşlar · ölürse %12 şansla dirilir' },
-      { cost: 130, range: 110, curse: 0.22, slow: 0.16, rise: 0.18, title: 'Lanet Sütunu', perk: 'Lanetliler %22 fazla hasar alır · ölürse %18 şansla dirilir' },
-      { cost: 180, range: 120, curse: 0.3,  slow: 0.2,  rise: 0.25, title: 'Kara Lanet Mabedi', perk: 'Lanetliler %30 fazla hasar alır · ölürse %25 şansla dirilir' },
+      { cost: 90,  range: 100, pulse: 9,  every: 1.2, curse: 0.15, slow: 0.12, rise: 0.12, title: 'Lanet Kulesi', perk: 'Lanet dalgası: menzildekilere 1,2 sn\'de bir 9 hasar · lanetliler %15 fazla hasar alır · ölürse %12 dirilir' },
+      { cost: 130, range: 110, pulse: 18, every: 1.2, curse: 0.22, slow: 0.16, rise: 0.18, title: 'Lanet Sütunu', perk: 'Lanet dalgası 18 hasar · lanetliler %22 fazla hasar alır · ölürse %18 dirilir' },
+      { cost: 180, range: 120, pulse: 30, every: 1.2, curse: 0.3,  slow: 0.2,  rise: 0.25, title: 'Kara Lanet Mabedi', perk: 'Lanet dalgası 30 hasar · lanetliler %30 fazla hasar alır · ölürse %25 dirilir' },
     ],
     abilities: [
       { id: 'rite', name: 'Kan Ayini', desc: (r) => `Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar`,
