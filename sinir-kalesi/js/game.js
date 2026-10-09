@@ -8044,8 +8044,6 @@ const BOSS_LOOK = {
     if (s < 0.25 && l > 0.45) return [48, 0.45, Math.min(0.95, l * 1.08)];
     return null;
   },
-  // Davulcu: kumaş lacivert (borazancı/sancaktar kırmızısından ayrılsın)
-  drummer: (h, s, l) => ((h < 16 || h > 335) && s > 0.35 ? [222, 0.55, l * 0.75] : null),
 };
 // Kare şeridi: <ad><ek> varsa o; yoksa asıl türün (rig) şeridi bu türün renkleriyle (boss/rütbe) yeniden boyanır ve saklanır.
 function animStrip(name, rig, suf) {
@@ -8145,6 +8143,10 @@ function drawEnemyProp(e, prop, hh) {
     // zırh halesi: çevresindekiler korunuyor
     ctx.strokeStyle = `rgba(255,215,120,${0.16 + Math.sin(time * 3 + e.off) * 0.05})`; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, e.def.aura.r * 0.9, e.def.aura.r * 0.4, 0, 0, Math.PI * 2); ctx.stroke();
+  } else if (prop === 'drum' && spr('enemy_drummer')) {
+    // davul görselde: yalnız vuruşta derinin parlaması (tokmak hareketi animasyon şeridinde)
+    const since = G.t - (e.hitAt ?? -9), pulse = since < 0.14 ? 1 - since / 0.14 : 0;
+    if (pulse > 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x + f * hh * 0.17, e.y - hh * 0.45 - bob, 11, '255,190,110', 0.55 * pulse); }
   } else if (prop === 'drum') {
     // önde, belden asılı savaş davulu: kırmızı gövde, altın çemberler, çapraz germe ipleri; iki tokmak sırayla iner
     const dx = e.x + f * hh * 0.2, dy = e.y - hh * 0.36 - bob, R = 6.4, D = 5.2, since = G.t - (e.hitAt ?? -9);

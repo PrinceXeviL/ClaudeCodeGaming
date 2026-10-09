@@ -1,0 +1,19 @@
+[
+ {
+  "name": "enemy_drummer_walk",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon roman war drummer in white and gold armor with a bear pelt hood marches in place while beating the big red drum at his waist: a full walking cycle, legs stepping forward and back, and the two drumsticks strike the drum head alternately, left hand then right hand, in a steady marching rhythm. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_drummer_atk",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon roman war drummer with a bear pelt hood stands in place and pounds the big red drum at his waist hard and fast with both drumsticks, alternating left and right hands, his shoulders bouncing with each beat, then returns to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
