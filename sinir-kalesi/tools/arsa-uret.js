@@ -7,7 +7,7 @@ const fs = require('fs');
 const file = process.argv[2], only = (process.argv[3] && process.argv[3] !== '--dry') ? process.argv[3].split(',').map(n => +n - 1) : null, dry = process.argv.includes('--dry');
 eval(fs.readFileSync(file, 'utf8') + ';global.LEVELS=LEVELS;');
 const W = 960, H = 540;
-const ROAD_HALF = 51, CLEAR = 5, PLOT_RX = 28, PLOT_RY = 16, SPACING = 84, RANGE = 150;
+const ROAD_HALF = 46, CLEAR = 5, PLOT_RX = 28, PLOT_RY = 16, SPACING = 84, RANGE = 150;
 const dist = (a, b, c, d) => Math.hypot(a - c, b - d);
 const src = fs.readFileSync(__dirname + '/arsa-denetim.js', 'utf8');
 eval(src.slice(src.indexOf('function smoothPts'), src.indexOf('function cum(')));
@@ -22,6 +22,9 @@ const result = LEVELS.map((lv, li) => {
   const ps = lv.paths.map(p => smoothPts(p)), E = lv.entr || lv.paths.length;
   const btns = ps.slice(0, E).map(waveBtn), cx = lv.castle[0], cy = lv.castle[1];
   const dRoad = (x, y) => Math.min(...ps.map(p => dseg(x, y, p)));
+  // yol ağzı: düşmanların ekrana girdiği yerden ilk 150 px boyunca yanına arsa konmaz (game.js PLOT_ENTRY ile aynı)
+  const EZ = [];
+  for (const p of ps.slice(0, E)) { const c = cum(p), T = c[c.length - 1]; let d0 = 0; while (d0 < T) { const q = at(p, c, d0); if (q[0] > 0 && q[1] > 0 && q[0] < W && q[1] < H) break; d0 += 4; } for (let d = d0; d < Math.min(T, d0 + 150); d += 6) EZ.push(at(p, c, d)); }
   // yol örnekleri (kapsama hesabı için), ekran içindekiler
   const S = [];
   for (const p of ps) { const c = cum(p), T = c[c.length - 1]; for (let d = 0; d < T; d += 8) { const q = at(p, c, d); if (q[0] > 0 && q[0] < W && q[1] > 0 && q[1] < H && !S.some(s => dist(s.x, s.y, q[0], q[1]) < 6)) S.push({ x: q[0], y: q[1], w: 1 }); } }
@@ -31,6 +34,7 @@ const result = LEVELS.map((lv, li) => {
     if (x > W - 190 && y < 160) return false;                                 // sağ üst düğmeler
     if (Math.abs(x - cx) < 88 && y > cy - 150 && y < cy + 48) return false;   // kale
     for (const b of btns) if (dist(x, y, b[0], b[1]) < 72 || dist(x, y - 40, b[0], b[1]) < 60) return false;
+    for (const q of EZ) if (dist(x, y, q[0], q[1]) < 96) return false;
     for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; if (dRoad(x + Math.cos(a) * PLOT_RX, y + Math.sin(a) * PLOT_RY) < ROAD_HALF + CLEAR) return false; }
     return true;
   };
@@ -55,6 +59,6 @@ if (!dry) {
   let text = fs.readFileSync(file, 'utf8'), n = 0;
   const start = text.indexOf('const LEVELS = [');
   let head = text.slice(0, start), body = text.slice(start);
-  body = body.replace(/plots: \[\[[^\n]*?\]\],/g, () => { const P = result[n++]; return 'plots: ' + JSON.stringify(P).replace(/,\[/g, ', [').replace(/(\d),(\d)/g, '$1, $2') + ','; });
+  body = body.replace(/plots: \[\[[^\n]*?\]\](?=[ ,])/g, () => { const P = result[n++]; return 'plots: ' + JSON.stringify(P); });
   fs.writeFileSync(file, head + body); console.log(n + ' bölüm yazıldı');
 }
