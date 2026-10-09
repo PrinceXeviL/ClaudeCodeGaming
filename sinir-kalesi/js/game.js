@@ -1443,6 +1443,7 @@ function nextWavePaths() {
 const ESCORT_FORM = [[18, -11], [18, 11], [0, -17], [0, 17], [-16, -10], [-16, 10], [34, 0]];
 function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const def = ENEMIES[type];
+  if (type === 'lantern' && !G.saidLight) { G.saidLight = true; setTimeout(() => G && mortSay('light', true), 2500); }
   const p = G.paths[pi] || G.paths[0];
   const esc = def.chief && BOSS_ESCORT[type];
   if (esc && d0 === 0) d0 = 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
@@ -3773,6 +3774,12 @@ function drawMortimer() {
 }
 // Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
 const MORT_LINES = {
+  // 2. sefer (Cadı Avı)
+  start2: ['Cadı avı mı? Yanlış kapıyı çaldınız.', 'Meşaleler, çanlar... Ne kadar gürültücü bir din.', 'Çaydanlığımı geri alana kadar kimse uyumuyor.'],
+  hatch: ['Mahzen açık! Bubu\'nun kuzeni geldi.', 'Gulyabani, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
+  sealed: ['Kapağımı mühürledi! Terbiyesiz.', 'O mahzenin kirasını kim ödeyecek?'],
+  blood: ['Ay kızardı. Benden utandı herhalde.', 'Kızıl Ay! Kalkın çocuklar, gece bizim.', 'Dua edin bakalım. Ben de güleyim.'],
+  light: ['Fener mi? Söndürün şunu, gözüm kamaştı!', 'Işık arabası. Ne kadar da kaba.'],
   tea: ['Earl Grey. Ölüleri bile diriltir.', 'Şşş. Çay saati.', 'Şekersiz. Ben zaten yeterince tatlıyım.', 'Bir yudum daha, sonra kıyamet.', 'Soğumuş. Tıpkı düşmanlarım gibi.'],
   crowtap: ['Kargalarıma dokunma! Dedikodu taşıyorlar.', 'O karga bana borçlu, bilesin.'],
   start: ['Yine mi misafir? Çayımı yeni demlemiştim.', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
@@ -3806,7 +3813,7 @@ const MORT_TALK_SKIP = 0.2;
 function mortSay(kind, force) {
   if (!NECRO || !G || (!force && G.sayCd > 0)) return;
   const L = MORT_LINES[kind]; if (!L) return;
-  if (kind !== 'start' && Math.random() < MORT_TALK_SKIP) return; // 10 Eki: Caner daha az konuşsun istedi (%20 seyrek)
+  if (kind !== 'start' && kind !== 'start2' && Math.random() < MORT_TALK_SKIP) return; // 10 Eki: Caner daha az konuşsun istedi (%20 seyrek)
   let text = L[Math.floor(Math.random() * L.length)];
   if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
   G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
@@ -3816,7 +3823,7 @@ function updateMortSay(dt) {
   if (!NECRO) return;
   G.sayCd = (G.sayCd || 0) - dt;
   if (G.say && (G.say.t += dt) > G.say.dur) G.say = null;
-  if (!G.saidStart && G.t > 1.2) { G.saidStart = true; mortSay('start', true); }
+  if (!G.saidStart && G.t > 1.2) { G.saidStart = true; mortSay(G.lv.ep === 2 && Math.random() < 0.6 ? 'start2' : 'start', true); }
   // seri öldürme: 4 sn içinde 8 düşman
   const k = G.kills || 0;
   G.killLog = (G.killLog || []).filter(([t]) => G.t - t < 4);
@@ -4621,7 +4628,7 @@ function updateMercs(dt) {
 function startBloodMoon() {
   G.bloodT = BLOOD.dur;
   G.banner = { title: 'KIZIL AY', sub: 'Ölüler azgın, büyüler hızlı dolar, düşen düşman ölü olarak kalkar. Engizisyon dua ediyor!', t: 0, dur: 3.6 };
-  shakeScreen(3, 0.4); sfx('portal'); sfx('mlaugh');
+  shakeScreen(3, 0.4); sfx('portal'); mortSay('blood', true);
 }
 function drawBloodMoon() {
   if (!(G.bloodT > 0)) return;
@@ -4648,7 +4655,7 @@ function openHatch(h) {
     rate: C.rate, speed: C.speed, engage: C.engage, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t,
     zname: C.look, zrig: C.look, zh: (CHAR_H[C.look] || 26) * C.hK };
   h.ghoul = s; G.soldiers.push(s);
-  ghoulRiseFx(h); sfx('raise'); mortSay('raise', true);
+  ghoulRiseFx(h); sfx('raise'); mortSay('hatch', true);
   return true;
 }
 function ghoulRiseFx(h) {
@@ -4669,7 +4676,7 @@ function updateHatches(dt) {
       if (Math.random() < dt * 22) emit(G.parts, { kind: 'glow', add: true, x: h.x + rand(-14, 14), y: h.y - rand(0, 10), vy: -rand(20, 50), col: '255,150,60', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.7) });
       if (h.sealT >= HATCH.seal) {
         h.state = 'sealed';
-        floatText(h.x, h.y - 34, 'Mühürlendi!', '#ffb070'); sfx('splash');
+        floatText(h.x, h.y - 34, 'Mühürlendi!', '#ffb070'); sfx('splash'); mortSay('sealed', true);
         G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 30, col: '255,150,60', t: 0, dur: 0.5 });
         if (G.sel && G.sel.hatch === h) setSel(null);
       }
