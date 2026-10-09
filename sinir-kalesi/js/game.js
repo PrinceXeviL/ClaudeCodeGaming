@@ -734,6 +734,79 @@ function roadShape(g, paths, w) {
   }
 }
 
+// Yumuşatılmış yol maskesi (10 Eki): yol şekli düşük çözünürlükte çizilir, üç kat kutu bulanıklığıyla yayılır ve yeniden
+// eşiklenir. Böylece kavşaklardaki ve keskin dönüşlerdeki sivri uçlar (içte ve dışta) yuvarlanır. Eşik, yavaş değişen bir
+// gürültüyle oynatılır: kenar düzensiz, doğal kıvrılır (çizgi gibi değil). Eşik bandı yumuşak: kenar 2-3 px'te çimene karışır.
+// Bütün yol katmanları aynı gürültüyü kullanır, iç içe kalırlar.
+const ROAD_SMOOTH = { scale: 1, blur: 6, ramp: 0.08, noise: 0.14 };
+let roadMaskCache = null, roadNoiseCache = null, roadTmp = null;
+function roadNoise(w, h, S) {
+  const n = new Float32Array(w * h), r = seeded(9137), ph = [0, 1, 2, 3, 4].map(() => r() * 6.283);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const X = x / S, Y = y / S;
+    n[y * w + x] = 0.45 * Math.sin(X * 0.061 + Y * 0.023 + ph[0]) + 0.3 * Math.sin(X * 0.117 - Y * 0.094 + ph[1])
+      + 0.2 * Math.sin(-X * 0.19 + Y * 0.173 + ph[2]) + 0.12 * Math.sin(X * 0.31 + Y * 0.27 + ph[3]) + 0.08 * Math.sin(-X * 0.43 - Y * 0.39 + ph[4]);
+  }
+  return n;
+}
+function boxBlur(a, w, h, r) {
+  const t = new Float32Array(a.length), k = 1 / (2 * r + 1);
+  for (let pass = 0; pass < 3; pass++) {
+    for (let y = 0; y < h; y++) { // yatay
+      const o = y * w; let sum = 0;
+      for (let x = -r; x <= r; x++) sum += a[o + clamp(x, 0, w - 1)];
+      for (let x = 0; x < w; x++) { t[o + x] = sum * k; sum += a[o + Math.min(w - 1, x + r + 1)] - a[o + Math.max(0, x - r)]; }
+    }
+    for (let x = 0; x < w; x++) { // dikey
+      let sum = 0;
+      for (let y = -r; y <= r; y++) sum += t[clamp(y, 0, h - 1) * w + x];
+      for (let y = 0; y < h; y++) { a[y * w + x] = sum * k; sum += t[Math.min(h - 1, y + r + 1) * w + x] - t[Math.max(0, y - r) * w + x]; }
+    }
+  }
+  return a;
+}
+function roadMask(paths, w) {
+  const key = Math.round(w * 10);
+  if (!roadMaskCache || roadMaskCache.paths !== paths) roadMaskCache = { paths, m: {} };
+  if (roadMaskCache.m[key]) return roadMaskCache.m[key];
+  const S = ROAD_SMOOTH.scale, cw = Math.ceil(W * S), ch = Math.ceil(H * S);
+  const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.scale(S, S); g.fillStyle = '#000'; roadShape(g, paths, w); g.fill();
+  const im = g.getImageData(0, 0, cw, ch), d = im.data, n = cw * ch, a = new Float32Array(n);
+  for (let i = 0; i < n; i++) a[i] = d[i * 4 + 3] / 255;
+  boxBlur(a, cw, ch, Math.max(1, Math.round(ROAD_SMOOTH.blur * S)));
+  if (!roadNoiseCache || roadNoiseCache.length !== n) roadNoiseCache = roadNoise(cw, ch, S); // gürültü bir kez hesaplanır
+  const N = roadNoiseCache, R = ROAD_SMOOTH.ramp;
+  for (let i = 0; i < n; i++) {
+    const t = 0.5 + N[i] * ROAD_SMOOTH.noise, v = clamp((a[i] - t + R) / (2 * R), 0, 1);
+    d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 0; d[i * 4 + 3] = Math.round(v * v * (3 - 2 * v) * 255);
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(im, 0, 0);
+  return (roadMaskCache.m[key] = c);
+}
+// düz renkli katmanlar maske çözünürlüğünde üst üste boyanır, sonra tek seferde büyütülür (her katmanı tam çözünürlükte
+// ayrı maskelemek bölüm açılışını ~1 sn yavaşlatıyordu); kenarlar zaten yumuşak, büyütme fark edilmez
+function roadLayers(paths, list) {
+  const S = ROAD_SMOOTH.scale, cw = Math.ceil(W * S), ch = Math.ceil(H * S);
+  const acc = document.createElement('canvas'); acc.width = cw; acc.height = ch;
+  const a = acc.getContext('2d'), t = document.createElement('canvas'); t.width = cw; t.height = ch;
+  const tg = t.getContext('2d');
+  for (const [w, col] of list) {
+    tg.globalCompositeOperation = 'copy'; tg.drawImage(roadMask(paths, w), 0, 0);
+    tg.globalCompositeOperation = 'source-in'; tg.fillStyle = col; tg.fillRect(0, 0, cw, ch);
+    a.drawImage(t, 0, 0);
+  }
+  return acc;
+}
+// maskeli dolgu: col (renk ya da desen) yalnız yumuşatılmış yol şekline boyanır; g'nin o anki gölge/karışım ayarı korunur
+function fillRoad(g, paths, w, col, res) {
+  const m = roadMask(paths, w), t = roadTmp || (roadTmp = document.createElement('canvas')); // ara tuval yeniden kullanılır
+  if (t.width !== W * res || t.height !== H * res) { t.width = W * res; t.height = H * res; }
+  const tg = t.getContext('2d'); tg.setTransform(1, 0, 0, 1, 0, 0); tg.globalCompositeOperation = 'copy'; tg.drawImage(m, 0, 0, t.width, t.height);
+  tg.globalCompositeOperation = 'source-in'; tg.scale(res, res); tg.fillStyle = col; tg.fillRect(0, 0, W, H);
+  g.drawImage(t, 0, 0, W, H);
+}
+
 // Yol yüzeyi ayrıntısı: ayrı katmanda çizilir, yol şekline kırpılıp zemine basılır.
 // Tonal lekeler (dövülmüş toprak), çatlaklar ve yer yer gömülü yassı taş kümeleri.
 // Kendi rastgele dizisini kullanır; ağaç/kaya yerleşimi değişmesin.
@@ -780,7 +853,7 @@ function drawRoadDetail(g, c, res, paths, th, rr, painted) {
   }
   // yol şekline kırp
   d.globalCompositeOperation = 'destination-in';
-  d.fillStyle = '#000'; roadShape(d, paths, 40 * R); d.fill();
+  d.setTransform(1, 0, 0, 1, 0, 0); d.drawImage(roadMask(paths, 40 * R), 0, 0, det.width, det.height);
   g.drawImage(det, 0, 0, W, H);
 }
 
@@ -824,13 +897,12 @@ function renderBackground(lv, paths, res = 2) {
   // yol: yumuşak gölge → koyu toprak kenar → doku → ortada açık aşınma izi → tekerlek izleri
   g.lineJoin = 'round'; g.lineCap = 'round';
   // yol katmanları, kenarları doğal dalgalanan dolu şekiller olarak çizilir (roadShape)
-  const strokePath = (w, col) => { g.fillStyle = col; roadShape(g, paths, w); g.fill(); };
-  g.save(); g.shadowColor = 'rgba(30,20,8,0.55)'; g.shadowBlur = 16; g.shadowOffsetY = 3;
+  const strokePath = (w, col) => fillRoad(g, paths, w, col, res); // yumuşatılmış, doğal kenarlı yol katmanı
+  const layers = (list) => g.drawImage(roadLayers(paths, list), 0, 0, W, H);
   const R = bgRoadK;
-  strokePath(52 * R, th.road[2]); g.restore();
-  strokePath(56 * R, 'rgba(40,28,12,0.18)');
-  strokePath(50 * R, th.road[2]);
-  strokePath(46 * R, th.road[0]);
+  g.save(); g.shadowColor = 'rgba(30,20,8,0.55)'; g.shadowBlur = 16; g.shadowOffsetY = 3;
+  layers([[52 * R, th.road[2]]]); g.restore();
+  layers([[56 * R, 'rgba(40,28,12,0.18)'], [50 * R, th.road[2]], [46 * R, th.road[0]]]);
   // Boyalı yol dokusu (Gemini): çölde taş döşemeli kum, diğer temalarda toprak. Yoksa eski üretilmiş doku.
   const desert = th.tex === 'desert';
   const painted = spr(th.roadTex || (desert ? 'road_sand' : 'road_dirt'));
@@ -842,14 +914,13 @@ function renderBackground(lv, paths, res = 2) {
     if (painted) {
       // doku tonu temaya uyar: rengi temanın yol renginden, açıklık/ayrıntı dokudan gelir
       g.save(); g.globalCompositeOperation = 'color'; g.globalAlpha = desert ? 0.15 : 0.55;
-      strokePath(42 * R, th.road[1]); g.restore();
-    } else if (th.roadTint) strokePath(42 * R, th.roadTint); // çölde yol kum rengine boyanır
-  } else strokePath(42 * R, th.road[1]);
+      layers([[42 * R, th.road[1]]]); g.restore();
+    } else if (th.roadTint) layers([[42 * R, th.roadTint]]); // çölde yol kum rengine boyanır
+  } else layers([[42 * R, th.road[1]]]);
   // kenara doğru koyulaşan iç gölge: kenar yumuşak bir eğimle çimene karışır
   // (boyalı dokuda hafif tutulur, yoksa doku ayrıntısı soluklaşır)
   const lit = painted ? 0.35 : 1;
-  for (let k = 0; k < 4; k++) strokePath((42 - k * 6) * R, `rgba(255,240,205,${(0.035 + k * 0.012) * lit})`);
-  strokePath(14 * R, `rgba(255,244,215,${0.08 * lit})`);
+  layers([0, 1, 2, 3].map(k => [(42 - k * 6) * R, `rgba(255,240,205,${(0.035 + k * 0.012) * lit})`]).concat([[14 * R, `rgba(255,244,215,${0.08 * lit})`]]));
   // Kavşaklar: bir yolun kenar süsleri (taş, çimen tutamı) başka bir yolun üstüne düşmesin.
   // Ortak gövdede tekerlek izlerini yalnız ilk yol çizer, öbürü onun yüzeyine iz bırakmaz.
   // yolun kendi üstünden geçtiği yerler (aynı yolun uzak bir parçası) de kavşak sayılır
