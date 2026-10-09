@@ -5787,9 +5787,17 @@ function drawProjectile(p) {
       ctx.restore();
       return;
     }
-    ctx.strokeStyle = p.poison ? 'rgba(140,255,80,0.6)' : bone ? 'rgba(150,255,160,0.45)' : 'rgba(255,250,230,0.35)'; ctx.lineWidth = p.poison ? 1.8 : 1.2; ctx.lineCap = 'round';
+    ctx.strokeStyle = p.poison ? 'rgba(140,255,80,0.6)' : bone ? 'rgba(150,255,160,0.45)' : 'rgba(255,250,230,0.3)'; ctx.lineWidth = p.poison ? 1.8 : p.foe ? 0.7 : 1.2; ctx.lineCap = 'round';
     if (p.poison) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 6, '140,255,80', 0.6); ctx.restore(); }
     ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke();
+    if (p.foe) { // düşman oku: ince uzun şaft, küçük demir uç, dar tüy
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.lineCap = 'round';
+      ctx.strokeStyle = '#4a3018'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(5, 0); ctx.stroke();
+      ctx.fillStyle = '#e8e2d2'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-12, -1.4); ctx.lineTo(-8, 0); ctx.lineTo(-12, 1.4); ctx.fill();
+      ctx.fillStyle = '#c8ccd6'; ctx.beginPath(); ctx.moveTo(7.5, 0); ctx.lineTo(4.5, -1.3); ctx.lineTo(4.5, 1.3); ctx.fill();
+      ctx.restore();
+      return;
+    }
     ctx.save(); ctx.translate(x, y); ctx.rotate(a);
     ctx.strokeStyle = bone ? '#3a3024' : '#5a3a1a'; ctx.lineWidth = bone ? 2.6 : 1.8; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke();
     if (bone) { ctx.strokeStyle = '#ece4cc'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke(); ctx.fillStyle = '#ece4cc'; ctx.beginPath(); ctx.arc(-8.5, -1, 1.3, 0, 7); ctx.arc(-8.5, 1, 1.3, 0, 7); ctx.fill(); }
