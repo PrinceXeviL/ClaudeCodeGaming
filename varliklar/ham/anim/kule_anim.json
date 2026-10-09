@@ -52,5 +52,25 @@
   "seed": 3,
   "kule": true,
   "prompt": "a gothic tower topped with a black iron and bone birdcage holding a swirling glowing ghost: the crimson eye lantern on the front opens wide and glows bright red, the ghost inside the cage swirls and pushes against the bars, purple and green wisps burst out between the bars, then everything calms down. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_altar_rite_atk",
+  "ref": "ham/anim/tower_altar_rite_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "loopAnim": true,
+  "prompt": "a dark stone blood temple: the big stone bowl on top overflows with glowing crimson blood that pours down the carved channels, the ring of red runes floating above slowly rotates and pulses, candle flames flicker, crimson banners sway. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_altar_blight_atk",
+  "ref": "ham/anim/tower_altar_blight_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "loopAnim": true,
+  "prompt": "a black obsidian spire with glowing red and purple cracks: the floating purple skull orb on top pulses with dark light, the chains around it slowly spin and orbit, small green ghosts circle around, the cracks in the spire glow brighter and dimmer. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
  }
 ]
