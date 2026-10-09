@@ -8007,10 +8007,29 @@ function drawBossBar() {
 }
 
 // yeni düşman / boss tanıtım kartı
+// yeni düşman / rütbe: sol üstte dalga göstergesinin altından kayan küçük bildirim (oyunu örtmez)
+function drawIntroToast(it) {
+  const d = ENEMIES[it.type], wk = d.wk || {}, weak = Object.keys(wk).filter(k => wk[k] > 1).map(k => WK_NAME[k]);
+  const k = clamp(Math.min(it.t / 0.3, (it.dur - it.t) / 0.4), 0, 1), slide = easeOutBack(clamp(it.t / 0.35, 0, 1));
+  const label = it.rank ? 'YENİ RÜTBE' : 'YENİ DÜŞMAN', name = it.rank ? (it.rank === 2 ? 'Yüzbaşı' : 'Kıdemli') + ' · ' + d.name : d.name;
+  const sub = weak.length ? 'Zayıf: ' + weak.join(', ') : '';
+  ctx.font = `400 13px ${FONT_T}`; const nw = ctx.measureText(name).width; ctx.font = `800 9.5px ${FONT_B}`;
+  const w = Math.max(nw, ctx.measureText(sub).width, 70) + 46, h = sub ? 40 : 30, x0 = 8 - (1 - slide) * (w + 12), y0 = 62;
+  ctx.save(); ctx.globalAlpha = k;
+  roundRect(x0, y0, w, h, 9, 'rgba(14,8,20,0.82)', '#d4ab5a', 1.2);
+  circle(x0 + 17, y0 + h / 2, 12, '#1a120a', '#c9a35a', 1.2);
+  const im = enemySprite(it.type) || spr('enemy_' + it.type);
+  if (im) { ctx.save(); ctx.beginPath(); ctx.arc(x0 + 17, y0 + h / 2, 11, 0, Math.PI * 2); ctx.clip(); drawSprite(ctx, im, x0 + 17, y0 + h / 2 + 12, 22 * im.width / im.height); ctx.restore(); }
+  txt(label, x0 + 35, y0 + 9, 8.5, '#ffd34d', 'left', '800', FONT_B, false);
+  txt(name, x0 + 35, y0 + 21, 13, '#fff', 'left', '400', FONT_T, false);
+  if (sub) txt(sub, x0 + 35, y0 + 33, 9.5, '#ffd08a', 'left', '800', FONT_B, false);
+  ctx.restore();
+}
 function drawIntro() {
   const it = G.intro;
   if (!it) return;
   if (it.t > it.dur) { G.intro = null; return; }
+  if (!it.boss) { drawIntroToast(it); return; }
   const d = ENEMIES[it.type], a = clamp(Math.min(it.t / 0.3, (it.dur - it.t) / 0.4), 0, 1), e = easeOutBack(clamp(it.t / 0.4, 0, 1));
   const wk = d.wk || {}, weak = Object.keys(wk).filter(k => wk[k] > 1), res = Object.keys(wk).filter(k => wk[k] < 1);
   const w = it.boss ? 360 : 320, dl = wrapLines(d.desc || ENEMY_DESC[it.type] || '', w - 84, 11.5), ex = (dl.length - 1) * 13;
