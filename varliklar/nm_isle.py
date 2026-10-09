@@ -35,7 +35,8 @@ SHEETS = [
     ('nm_komutanlar.jpg', ['hero_vladrik', None, None, None], 'unit'),  # eski Mortimer (4.) artık kullanılmıyor
     ('nm_mortimer.jpg', ['mortimer', None], 'unit'),  # azrail Mortimer: önden görünüş (balkondan ekrana/aşağı bakar)
     ('nm_banshee.jpg', ['hero_wren'], 'unit'),
-    ('nm_komutanlar_2.jpg', ['hero_spartacus', 'hero_leonidas'], 'unit'),  # 10 Eki: düellolarda yenilip Mortimer'a katılan komutanlar
+    ('nm_komutanlar_2.jpg', ['hero_spartacus', 'hero_leonidas'], 'unit'),
+    ('nm_golemler.jpg', ['unit_bonegiant', 'unit_corpsegolem'], 'unit'),  # 10 Eki: Kemik Devi (Mezarlık 4. kademe), Ceset Golemi (5. büyü)  # 10 Eki: düellolarda yenilip Mortimer'a katılan komutanlar
     ('nm_iskelet_okcu.jpg', ['unit_skel_6', 'unit_skel_7', 'unit_skel_8'], 'unit'),  # Mahzen okçu yolu, kademe 1-3
     ('nm_dekor.jpg', ['nm_tree_1', 'nm_tree_2', 'nm_tree_3', 'nm_tree_4',
                       'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_shroom', 'nm_bush',

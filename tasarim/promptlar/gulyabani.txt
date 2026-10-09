@@ -1,0 +1,16 @@
+Using the attached reference sheet, draw 1 NEW creature for the same 2D tower defense game, in EXACTLY the same art style as the reference: same thick dark-brown outlines, same painterly shading with soft gradients and bright rim highlights, same chunky stylized cartoon proportions, same level of detail.
+
+The creature is a "Gulyabani", a folklore crypt ghoul that serves the necromancer:
+- Very TALL and lanky, about 1.6 times the height of a normal soldier, slightly hunched forward, very long thin arms hanging down to the knees, long bony fingers with dirty yellow claws.
+- Big bald head with pale yellowish-grey wrinkled skin covered in dirt spots, huge round bulging staring eyes, heavy brows, long crooked nose, small open mouth, comical but creepy.
+- An enormous long matted grey-beige beard and long stringy hair falling from the sides of the head down to the feet, covering most of the body like a hairy cloak.
+- Old cobwebs stretched across the head, shoulders and beard, a few dust specks and tiny spiders.
+- Torn pale burial shroud rags under the hair, bare bony feet with long toenails.
+- A faint green and purple necromantic glow in the eyes only.
+
+Draw it twice, side by side with lots of empty space between them:
+1. Standing / walking pose.
+2. Attack pose: lunging forward, both clawed hands raised to grab.
+
+Both in strict side view facing RIGHT, full body visible.
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.

@@ -739,5 +739,68 @@
   "fh": 170,
   "base": 0.0142,
   "ch": 0.9433
+ },
+ "enemy_gladiator_skill": {
+  "n": 32,
+  "fw": 220,
+  "fh": 167,
+  "base": 0.0143,
+  "ch": 0.957
+ },
+ "enemy_cavalry_skill": {
+  "n": 32,
+  "fw": 149,
+  "fh": 173,
+  "base": 0.0133,
+  "ch": 0.9246
+ },
+ "enemy_heavy_skill": {
+  "n": 32,
+  "fw": 172,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_gloriosus_skill": {
+  "n": 32,
+  "fw": 117,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_torch_skill": {
+  "n": 32,
+  "fw": 193,
+  "fh": 170,
+  "base": 0.0141,
+  "ch": 0.9391
+ },
+ "enemy_paladin_skill": {
+  "n": 32,
+  "fw": 199,
+  "fh": 166,
+  "base": 0.0147,
+  "ch": 0.9633
+ },
+ "enemy_saint_skill": {
+  "n": 32,
+  "fw": 235,
+  "fh": 181,
+  "base": 0.0136,
+  "ch": 0.8824
+ },
+ "enemy_campanus_skill": {
+  "n": 32,
+  "fw": 190,
+  "fh": 176,
+  "base": 0.0141,
+  "ch": 0.9106
+ },
+ "enemy_colossus_skill": {
+  "n": 32,
+  "fw": 181,
+  "fh": 175,
+  "base": 0.0138,
+  "ch": 0.9126
  }
 }
