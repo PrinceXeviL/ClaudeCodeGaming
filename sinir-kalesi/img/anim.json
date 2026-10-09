@@ -1093,5 +1093,27 @@
   "fh": 170,
   "base": 0.0141,
   "ch": 0.9388
+ },
+ "unit_gulyabani_walk": {
+  "n": 29,
+  "fw": 165,
+  "fh": 171,
+  "base": 0.0143,
+  "ch": 0.9382,
+  "idle": 0
+ },
+ "unit_gulyabani_atk": {
+  "n": 32,
+  "fw": 190,
+  "fh": 169,
+  "base": 0.0146,
+  "ch": 0.944
+ },
+ "unit_gulyabani_die": {
+  "n": 33,
+  "fw": 233,
+  "fh": 175,
+  "base": 0.0138,
+  "ch": 0.9126
  }
 }
