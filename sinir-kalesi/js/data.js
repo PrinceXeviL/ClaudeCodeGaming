@@ -294,7 +294,7 @@ Object.assign(ENEMIES, {
   chariot:   { name: 'Savaş Arabası', h: 36, hp: 360, speed: 34, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 2, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
   siegetower:{ name: 'Kuşatma Kulesi', h: 62, hp: 1100, speed: 8, armor: 0.45, mr: 0.1, gold: 60, dmg: [2, 4], rate: 2, lives: 3, r: 20, machine: true, noblock: true, split: ['legion', 6] },
   eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true },
-  drummer:   { name: 'Davulcu', base: 'legion', h: 30, hp: 110, speed: 22, armor: 0.1, mr: 0, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10, aura: { r: 85, speed: 1.3 }, prop: 'drum' },
+  drummer:   { name: 'Davulcu', base: 'legion', h: 30, hp: 110, speed: 22, armor: 0.1, mr: 0, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10, aura: { r: 85, speed: 1.25 }, prop: 'drum' },
   // bölüm sonu komutanları (rütbeli subaylar) ve sefer sonu: General Gloriosus
   centurion:    { name: 'Yüzbaşı Lucius', base: 'legion', h: 40, hp: 700, speed: 15, armor: 0.3, mr: 0.1, gold: 80, dmg: [10, 18], rate: 1.2, lives: 5, r: 14, boss: true, chief: true, hpK: 1,
     desc: 'Lejyoner çağırır, borusuyla çevresini hızlandırır', ab: { summon: { t: 'legion', n: 3, cd: 11 }, howl: { cd: 13, r: 110 } } },
@@ -743,7 +743,7 @@ Object.assign(ENEMY_DESC, {
   testudo: 'Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
   sunpriest: 'Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir',
   signifer: 'Sancağı çevresindeki düşmanlara zırh verir. Ruh ışını ve iskeletler iyi işler',
-  drummer: 'Davulu çevresindekileri hızlandırır. Zırhsız, kıymık ve veba iyi işler',
+  drummer: 'Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, kıymık ve veba iyi işler',
 });
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları

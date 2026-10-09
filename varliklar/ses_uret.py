@@ -193,6 +193,17 @@ def splash(k):
     return lowpass(x, 5000) + lowpass(hiss, 3800)
 
 
+def war_drum(k):
+    """savaş davulu: gergin deri "dum" — perdesi hızla düşen alçak gövde + tokmağın kuru vuruşu + kısa gövde tınısı"""
+    dur = 0.42; n = int(SR * dur); t = t_axis(dur)
+    f = 92 * k * (1 + 0.55 * np.exp(-t / 0.018))
+    body = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.13)
+    over = np.sin(2 * np.pi * np.cumsum(f * 2.3) / SR) * np.exp(-t / 0.05) * 0.3
+    k0 = int(SR * 0.006); snap = np.zeros(n); snap[:k0] = lowpass(noise(k0), 2500) * np.linspace(1, 0, k0) * 0.6
+    shell = resonate(noise(n) * np.exp(-t / 0.02), 420 * k, 120) * 0.25
+    return lowpass(body + over + snap + shell, 3000)
+
+
 def horn():
     """savaş borazanı (Roma cornu'su gibi): kısa-kısa-uzun üç nota (sol -> re -> sol), iki borazancı birlikte (hafif akort farkı),
     ataklarda kaba "hırıltı", uzun notada güç artışı ve titreşim, pirinç formantları, açık alanda uzun yankı"""
@@ -312,6 +323,7 @@ def main():
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'splash_{i}', splash(k), -19))
     # pain, dvoice, scream, warcry artık gerçek kayıtlardan: ses_kayit_isle.py
     made.append(save('horn_1', horn(), -17))
+    for i, k in enumerate([0.95, 1.0, 1.06], 1): made.append(save(f'drum_{i}', war_drum(k), -18))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'bonefall_{i}', bone_fall(k), -19))
     # manifest: eski aynı adlı türler yerine yenileri
     mp = os.path.join(OUT, 'manifest.json')

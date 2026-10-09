@@ -227,6 +227,7 @@ const SOUND = {
   pain:    { vol: 0.14, gap: 0.12, max: 2 },                         // düşman acı sesi (painVoice)
   dvoice:  { vol: 0.15, gap: 0.15, max: 2 },                         // ölüm iniltisi (deathVoice)
   scream:  { vol: 0.13, gap: 0.12, max: 2, rate: [0.95, 1.08] },    // korku çığlığı
+  drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
   horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi)
   bonefall: { vol: 0.13, gap: 0.2, max: 1, rate: [0.92, 1.1] },       // iskelet ölünce kemikleri saçılır (arka planda kalsın)
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
@@ -2295,6 +2296,14 @@ function updateEnemy(e, dt) {
     if (o === e || o.dead || dist(o.x, o.y, e.x, e.y) > AU.r) continue;
     if (AU.armor) o.armT = 0.3; if (AU.speed) o.drumT = 0.3;
   }
+  // davulcu: iki tokmakla sırayla vurur (güm-güm), her ikinci vuruşta davul sesi ve yerde dalga
+  if (e.def.prop === 'drum') {
+    e.beatT = (e.beatT ?? rand(0, DRUM.beat)) - dt;
+    if (e.beatT <= 0) {
+      e.beatT += DRUM.beat; e.hand = 1 - (e.hand || 0); e.hitAt = G.t; e.beatN = (e.beatN || 0) + 1;
+      if (e.beatN % 2 === 0) { sfx('drum'); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: (AU && AU.r) || 80, col: '255,150,80', t: 0, dur: 0.45 }); }
+    }
+  }
   // savaş arabası: yolundaki iskeletleri ezip geçer (her birine bir kez); kemik duvar durdurur
   const TR = e.def.trample;
   if (TR && !e.blocker) for (const s of G.soldiers) {
@@ -2417,7 +2426,7 @@ function updateEnemy(e, dt) {
         e.rcd = RG.rate; e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, from: e, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
-          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
+          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
     }
@@ -2451,7 +2460,7 @@ function updateEnemy(e, dt) {
         e.atk = e.def.rate; e.atkV = Math.floor(Math.random() * 3);
         const victim = e.blocker;
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
-        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
+        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
         sfx('clash');
       }
     }
@@ -3171,7 +3180,8 @@ const MORT_PX = 125;
 // Avlulu şapel (Gemini, castle_avlu_1 kapı sağlam / _2 kapı kırık): cesetlerden duvar, kemik kapı, bahçede iki muhafız.
 // Oranlar görsele göre: kapı eşiği (gate), balkon (at, rail, px: Mortimer boyu görsel pikseliyle), şapel kapısı (door), muhafız yerleri (guards)
 const AVLU = { w: 270, gate: [0.506, 0.959], door: [0.5, 0.57], at: [0.498, 0.383], rail: [0.444, 0.352, 0.554, 0.402], px: 100, guards: [[0.455, 0.7], [0.556, 0.7]], front: 0.8 };
-const avluOn = () => NECRO && !!spr('castle_avlu_1');
+const AVLU_ON = false; // 10 Eki: Caner duvarlı avluyu istemedi; yeni heybetli kale gelene kadar şapel (castle_1..3)
+const avluOn = () => AVLU_ON && NECRO && !!spr('castle_avlu_1');
 const isAvlu = (im) => im && (im === spr('castle_avlu_1') || im === spr('castle_avlu_2'));
 // avlu görselinde oranlı noktayı dünya koordinatına çevirir
 function avluPt(f) {
@@ -3566,6 +3576,8 @@ function drawAchievements() {
 // boss gelmeden de çıkar: aynı çağrıyı daha kalın ve uzun (yavaş) çalar (long)
 // Borazancı baştan yolun dışından, yolun yanındaki çimenlikten gelir; ekran sınırından iki adım girip çalar, aynı yoldan geri döner.
 // step: ekrana girdiği yerden yürüdüğü yol, off: yol kenarından çimene açıklık
+// davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
+const DRUM = { beat: 0.3, dmg: 1.2 };
 const HERALD = { step: 16, off: 18, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 }; // step: sınırdan iki adım
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
@@ -3604,24 +3616,45 @@ function drawHeralds() {
     if (h.t < 0 && h.state === 'in') continue;
     const q = pathPos(h.p, Math.max(0, h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun yanındaki çimenlikten yürür
     const face = h.state === 'out' ? -fwd : fwd; // çalarken düşmanın yürüyeceği yöne bakar
-    const blowing = h.state === 'blow';
+    const blowing = h.state === 'blow', dur = h.long ? HERALD.blowLong : HERALD.blow;
+    // kaldırma: borazan 0,3 sn'de omuzdan ağza kalkar, çalarken gövde geriye yaslanır ve nefesle kabarır, sonunda iner
+    const k = blowing ? easeInOut(clamp(h.t / 0.3, 0, 1)) * easeInOut(clamp((dur - h.t) / 0.3, 0, 1)) : 0;
+    const breath = blowing ? Math.sin(h.t * 7) * 0.5 + 0.5 : 0;
+    ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y);
+    ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); // boru askerin arkasında: gövdeyi sarar
     drawUnit('enemy_legion', im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i });
-    if (!blowing) continue;
-    // borazan: ağzından yukarı-ileri uzanan kıvrık pirinç boru; ses halkaları
-    const k = clamp(h.t / 0.25, 0, 1) * clamp(((h.long ? HERALD.blowLong : HERALD.blow) - h.t) / 0.25, 0, 1);
-    const hx = q.x + face * hgt * 0.14, hy = q.y - hgt * 0.8, u = hgt / 24;
-    ctx.save(); ctx.translate(hx, hy); ctx.scale(face * u, u); ctx.rotate(-0.18 * k);
-    // kıvrık pirinç boru: ağızdan ileri, ucunda geniş ağız
-    ctx.beginPath(); ctx.moveTo(0, -0.8); ctx.quadraticCurveTo(4, -2.2, 7.5, -3.6); ctx.lineTo(10, -6.2); ctx.lineTo(10.8, -1.2); ctx.lineTo(8, -1.8); ctx.quadraticCurveTo(4, 0.2, 0, 0.8); ctx.closePath();
-    ctx.fillStyle = '#e6b44a'; ctx.fill(); ctx.strokeStyle = '#3a2408'; ctx.lineWidth = 0.9; ctx.stroke();
-    ctx.fillStyle = 'rgba(255,240,190,0.7)'; ctx.fillRect(2, -1.6, 4, 0.7);
     ctx.restore();
-    if (h.i === 0) for (let r = 0; r < 3; r++) {
-      const ph = (h.t * 1.4 + r / 3) % 1;
-      ctx.strokeStyle = `rgba(255,230,160,${0.55 * (1 - ph) * k})`; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(hx + face * 11 * u, hy - 4 * u, 5 + ph * 20, face > 0 ? -0.9 : Math.PI - 0.6, face > 0 ? 0.6 : Math.PI + 0.9); ctx.stroke();
+    if (!blowing || h.i !== 0) continue;
+    // ses dalgaları borazanın ağzından ileri yayılır
+    const u = hgt / 24, bx = q.x + face * hgt * (0.1 + 0.55 * k), by = q.y - hgt * (1.02 + 0.12 * k);
+    for (let r = 0; r < 4; r++) {
+      const ph = (h.t * 1.6 + r / 4) % 1;
+      ctx.strokeStyle = `rgba(255,228,150,${0.6 * (1 - ph) * k})`; ctx.lineWidth = 1.6 * (1 - ph * 0.5);
+      ctx.beginPath(); ctx.arc(bx, by, 4 * u + ph * 26 * u, face > 0 ? -0.8 : Math.PI - 0.7, face > 0 ? 0.7 : Math.PI + 0.8); ctx.stroke();
     }
   }
+}
+// Roma cornu'su: gövdeyi saran büyük G biçimli pirinç boru, ortasında tutma çubuğu, ağzı başın üstünden ileri açılır.
+// k=0 yürürken omuzda yatık, k=1 ağızda kalkık
+function drawCornu(face, hgt, k, breath) {
+  const u = hgt / 24;
+  ctx.save(); ctx.translate(-face * 0.5 * u, -hgt * 0.66 - 1.5 * u * k); ctx.scale(face * u, u); ctx.rotate(-0.9 + 0.7 * k);
+  const R = 6.6, tube = (w, col) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.arc(0, 0, R, 0.35, Math.PI * 2 - 0.25); ctx.stroke(); };
+  tube(3.4, '#2a1806'); // koyu dış çizgi
+  const gr = ctx.createLinearGradient(-R, -R, R, R); gr.addColorStop(0, '#fff0b0'); gr.addColorStop(0.45, '#e2ae46'); gr.addColorStop(1, '#8a5a18');
+  tube(2.1, gr);
+  ctx.strokeStyle = 'rgba(255,250,220,0.7)'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(0, 0, R - 0.5, 3.6, 5.2); ctx.stroke(); // parlaklık
+  // tutma çubuğu (çaprazına)
+  ctx.strokeStyle = '#2a1806'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-R * 0.7, R * 0.55); ctx.lineTo(R * 0.6, -R * 0.6); ctx.stroke();
+  ctx.strokeStyle = '#7a4a1a'; ctx.lineWidth = 1; ctx.stroke();
+  // ağız (çan): borunun ucunda genişleyen huni
+  ctx.save(); ctx.rotate(-0.25); ctx.translate(R, 0);
+  const fl = 1 + 0.06 * breath * k;
+  ctx.beginPath(); ctx.moveTo(-0.5, -1.2); ctx.lineTo(4.5 * fl, -3.6 * fl); ctx.lineTo(4.8 * fl, 3.6 * fl); ctx.lineTo(-0.5, 1.2); ctx.closePath();
+  ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = '#2a1806'; ctx.lineWidth = 0.9; ctx.stroke();
+  ctx.fillStyle = '#5a3810'; ctx.beginPath(); ctx.ellipse(4.7 * fl, 0, 0.9, 3.4 * fl, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.restore();
 }
 // ----- dokunulabilir dekor şakaları -----
 // karga: dokununca gaklayıp uçar, 20-30 sn sonra başka yere konar · mezar: dokununca topraktan iskelet eli çıkar, el sallar, laf atar;
@@ -5128,6 +5161,12 @@ function drawEnemy(e) {
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);
+    if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: ayağında ritimle atan kızıl ışık, yukarı uçuşan kıvılcım
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, e.x, e.y - 2, 12, '255,120,60', 0.18 + 0.12 * Math.max(0, Math.sin(G.t * Math.PI / DRUM.beat)));
+      ctx.restore();
+      if (Math.random() < 0.03) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-5, 5), y: e.y - rand(6, 20), vy: -rand(18, 34), col: '255,140,70', s0: 1.4, s1: 0.3, life: 0.6, a: 0.9 });
+    }
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
     if (d.rank === 2) drawRankStar(e.x, top - 1);
@@ -8068,13 +8107,27 @@ function drawEnemyProp(e, prop, hh) {
     ctx.strokeStyle = `rgba(255,215,120,${0.16 + Math.sin(time * 3 + e.off) * 0.05})`; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, e.def.aura.r * 0.9, e.def.aura.r * 0.4, 0, 0, Math.PI * 2); ctx.stroke();
   } else if (prop === 'drum') {
-    const dx = e.x + f * hh * 0.16, dy = e.y - hh * 0.38 - bob, hit = Math.max(0, Math.sin(time * 9 + e.off));
-    ctx.fillStyle = '#6a3e1c'; ctx.beginPath(); ctx.ellipse(dx, dy + 2, 4.6, 3.6, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#e8dcc0'; ctx.beginPath(); ctx.ellipse(dx, dy - 1, 4.6, 1.8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#2a160a'; ctx.lineWidth = 0.8; ctx.stroke();
-    ctx.strokeStyle = '#c8a040'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(dx - 4.4, dy + 2); ctx.lineTo(dx + 4.4, dy + 2); ctx.stroke();
-    ctx.strokeStyle = '#d8c8a0'; ctx.lineWidth = 1.1;
-    for (const sd of [-1, 1]) { const a = (sd > 0 ? hit : 1 - hit) * 0.9; ctx.beginPath(); ctx.moveTo(dx + sd * 2, dy - 1 - 1); ctx.lineTo(dx + sd * (3 + 3 * Math.cos(a)), dy - 3 - 5 * Math.sin(a)); ctx.stroke(); }
+    // önde, belden asılı savaş davulu: kırmızı gövde, altın çemberler, çapraz germe ipleri; iki tokmak sırayla iner
+    const dx = e.x + f * hh * 0.2, dy = e.y - hh * 0.36 - bob, R = 6.4, D = 5.2, since = G.t - (e.hitAt ?? -9);
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(dx, dy + D + 1.5, R, 2, 0, 0, Math.PI * 2); ctx.fill();
+    const gr = ctx.createLinearGradient(dx - R, 0, dx + R, 0); gr.addColorStop(0, '#5a0e0a'); gr.addColorStop(0.45, '#b8261e'); gr.addColorStop(1, '#4a0a08');
+    ctx.fillStyle = gr; ctx.fillRect(dx - R, dy, R * 2, D); ctx.beginPath(); ctx.ellipse(dx, dy + D, R, 2.3, 0, 0, Math.PI); ctx.fill();
+    ctx.strokeStyle = '#2a0a06'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(dx - R, dy); ctx.lineTo(dx - R, dy + D); ctx.ellipse(dx, dy + D, R, 2.3, 0, Math.PI, 0, true); ctx.lineTo(dx + R, dy); ctx.stroke();
+    ctx.strokeStyle = '#e8c35a'; ctx.lineWidth = 0.7; ctx.beginPath(); // germe ipleri (zikzak)
+    for (let j = 0; j <= 6; j++) { const x = dx - R + j * R / 3; ctx[j ? 'lineTo' : 'moveTo'](x, j % 2 ? dy + D + 1.5 : dy + 0.5); } ctx.stroke();
+    const pulse = since < 0.12 ? 1 - since / 0.12 : 0; // vuruşta deri titrer, parlar
+    ctx.fillStyle = '#efe2c4'; ctx.beginPath(); ctx.ellipse(dx, dy, R, 2.3 + pulse * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#c8a040'; ctx.lineWidth = 1.2; ctx.stroke();
+    if (pulse > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, dx, dy, 10, '255,190,110', 0.5 * pulse); ctx.restore(); }
+    // tokmaklar: vuran el aşağı iner (0,1 sn), sonra yeniden kalkar; öbür el havada bekler
+    for (const sd of [-1, 1]) {
+      const mine = (e.hand ?? 0) === (sd > 0 ? 1 : 0), u = mine ? clamp(since / 0.1, 0, 1) : 1;
+      const up = mine ? (u < 1 ? 1 - u : clamp((since - 0.1) / (DRUM.beat * 0.9), 0, 1)) : 1; // 1 = havada
+      const hx = dx + sd * 2.6, hy = dy - 6 - 3 * up, a = -sd * (0.35 + 0.9 * up) * f;
+      ctx.strokeStyle = '#3a2410'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.sin(a) * 7, hy + Math.cos(a) * 7 * (up > 0.5 ? -0.2 : 1)); ctx.stroke();
+      const tx = hx + Math.sin(a) * 7, ty = hy + Math.cos(a) * 7 * (up > 0.5 ? -0.2 : 1);
+      circle(tx, ty, 1.6, '#e8dcc0', '#3a2410', 0.6);
+    }
   }
   ctx.restore();
 }
