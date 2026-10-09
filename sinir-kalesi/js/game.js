@@ -228,7 +228,7 @@ const SOUND = {
   dvoice:  { vol: 0.2, gap: 0.12, max: 2 },                         // ölüm iniltisi (deathVoice)
   scream:  { vol: 0.2, gap: 0.08, max: 3, rate: [0.95, 1.08] },    // korku çığlığı
   horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi)
-  bonefall: { vol: 0.42, gap: 0.12, max: 2, rate: [0.92, 1.1] },      // iskelet ölünce kemikleri saçılır
+  bonefall: { vol: 0.13, gap: 0.2, max: 1, rate: [0.92, 1.1] },       // iskelet ölünce kemikleri saçılır (arka planda kalsın)
   warcry:  { vol: 0.34, gap: 1.6, max: 2, rate: [0.94, 1.06] },     // düşman ordusunun savaş çığlığı
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
@@ -1768,8 +1768,9 @@ function damageSoldier(s, amount) {
     if (s.hero) mortSay('heroDown');
     else if (NECRO && !s.wall) { // iskelet dağılır: kemikler ve kafatası saçılır
       sfx('bonefall');
-      for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: s.x + rand(-6, 6), y: s.y - rand(4, 20), vx: rand(-70, 70), vy: -rand(60, 170), g: 520, vr: rand(-14, 14), rot: rand(0, 6), col: i % 4 ? '#efe6cc' : '#cbbf9c', s0: rand(1.2, 2.4), s1: 1, life: rand(0.6, 1) });
-      emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 10, col: '120,255,140', s0: 10, s1: 22, life: 0.35, a: 0.5 });
+      boneCollapse(s);
+      for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'chunk', x: s.x + rand(-6, 6), y: s.y - rand(4, 20), vx: rand(-55, 55), vy: -rand(50, 130), g: 520, vr: rand(-14, 14), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#cbbf9c', s0: rand(1, 2), s1: 1, life: rand(0.5, 0.8) });
+      emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 10, col: '120,255,140', s0: 10, s1: 22, life: 0.35, a: 0.4 });
     }
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
@@ -1777,6 +1778,44 @@ function damageSoldier(s, amount) {
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
   }
+}
+// iskelet çöker: görsel yatay dilimlere bölünür, dilimler yere düşüp kemik yığını olur, kafatası yuvarlanır; yığın bir süre durup söner
+const BONES = { n: 5, g: 760, stay: 3.2, fade: 0.6 };
+function boneCollapse(s) {
+  const key = s.skelKey || 'unit_skel_1', im = spr(key);
+  if (!im) return;
+  const look = +key.slice(10) || 1, h = (SKEL_H[look] || 30) * UNIT_K, w = h * im.width / im.height, bh = h / BONES.n, face = s.face || 1;
+  const parts = [];
+  for (let k = 0; k < BONES.n; k++) {
+    const head = k === 0, lvl = BONES.n - 1 - k; // alttan yığılma sırası: bacaklar en altta, kafatası en üstte
+    parts.push({ k, x: s.x, y: s.y - h + (k + 0.5) * bh, vx: (head ? rand(18, 34) * (Math.random() < 0.5 ? -1 : 1) : rand(-16, 16)), vy: -rand(0, 40),
+      rot: 0, vr: head ? rand(-7, 7) : rand(-2.2, 2.2), rest: false, floor: s.y - bh * 0.4 - lvl * bh * 0.16 + rand(-1.5, 1.5), delay: lvl * 0.035 });
+  }
+  G.effects.push({ kind: 'bones', key, x: s.x, y: s.y, w, h, bh, face, parts, t: 0, dur: BONES.stay + BONES.fade });
+}
+function bonePhys(f, dt) {
+  for (const p of f.parts) {
+    if (p.rest || f.t < p.delay) continue;
+    p.vy += BONES.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+    if (p.y >= p.floor) {
+      p.y = p.floor;
+      if (p.vy > 70) { p.vy *= -0.28; p.vx *= 0.55; p.vr *= 0.5; if (p.k === 0 && p.vy < -20) p.vr = p.vx * 0.12; }
+      else { p.rest = true; if (p.k) p.rot = clamp(p.rot, -0.6, 0.6); }
+    }
+  }
+}
+function drawBones(f) {
+  const im = spr(f.key);
+  if (!im) return;
+  ctx.save();
+  ctx.globalAlpha = 1 - clamp((f.t - BONES.stay) / BONES.fade, 0, 1);
+  const sh = im.height / BONES.n;
+  for (const p of f.parts) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot * f.face); ctx.scale(f.face, p.rest ? 0.86 : 1);
+    ctx.drawImage(im, 0, p.k * sh, im.width, sh + 0.5, -f.w / 2, -f.bh / 2, f.w, f.bh + 0.3);
+    ctx.restore();
+  }
+  ctx.restore();
 }
 function wallCrumble(s) {
   for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'chunk', x: s.x + rand(-24, 24), y: s.y - rand(0, 16), vx: rand(-60, 60), vy: -rand(40, 120), g: 420, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#c9bd98', s0: rand(1.8, 3), s1: 1, life: rand(0.4, 0.8) });
@@ -4071,7 +4110,7 @@ function update(dt) {
   G.enemies = G.enemies.filter(e => !e.dead);
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.projectiles = G.projectiles.filter(p => !p.done);
-  for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); }
+  for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); else if (f.kind === 'bones') bonePhys(f, dt); }
   G.effects = G.effects.filter(f => f.t < f.dur);
   G.parts = updateParts(G.parts, dt);
   if (G.stormT > 0) G.stormT -= dt;
@@ -5087,6 +5126,7 @@ function drawSoldier(s) {
     let look = s.merc || s.militia ? 1 : sp2 === 'shield' ? 4 : sp2 === 'blade' ? 5 : sp2 === 'bow' ? 5 + Math.max(1, (s.tower.ab && s.tower.ab.bow) || 1) : Math.min(3, (s.gear || 0) + 1);
     if (look >= 6 && !spr('unit_skel_' + look)) look = spr('unit_skel_6') ? 6 : 2; // okçu görseli gelene kadar
     const key = 'unit_skel_' + look, im = spr(key) || spr('unit_skel_1');
+    s.skelKey = spr(key) ? key : 'unit_skel_1'; // ölünce kemik yığını bu görselden kesilir
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
     const spR = sp2 && sp2 !== 'bow' && s.tower.ab ? s.tower.ab[sp2] || 0 : 0; // kalkan/kılıç kademesi
@@ -9584,7 +9624,7 @@ function drawPlay() {
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f);
+  for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f); else if (f.kind === 'bones') drawBones(f);
   for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : drawCastle();
   drawGasClouds();
   for (const p of G.projectiles) drawProjectile(p);
@@ -10410,7 +10450,7 @@ window.__game = {
     for (let i = 0; i < n; i++) { const t0 = performance.now(); ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawNecroTitle(5 + i / 60); drawPartsAll(uiParts); ctx.restore(); D.push(performance.now() - t0); time += 1 / 60; }
     D.sort((a, b) => a - b); return { ort: +(D.reduce((a, b) => a + b) / n).toFixed(2), p95: +D[Math.floor(n * 0.95)].toFixed(2), max: +D[n - 1].toFixed(2) };
   },
-  learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
+  learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
 })();
