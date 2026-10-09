@@ -31,7 +31,8 @@ def process(job):
     diff = [(a & ~al[0]).sum() for a in al]; rel = int(np.argmax(diff))
     my, mx = np.nonzero(al[rel] & ~al[0])
     rp = [((mx.mean() if len(mx) else (x0 + x1) / 2) - sx0) / sw, ((my.mean() if len(my) else y0) - sy0) / sh]
-    s = min(1, FH_MAX / (y1 - y0)); fw, fh = max(1, round((x1 - x0) * s)), max(1, round((y1 - y0) * s))
+    # WebP genişlik sınırı 16383 px: şerit en çok 16000 px
+    s = min(1, FH_MAX / (y1 - y0), 16000 / ((x1 - x0) * L)); fw, fh = max(1, round((x1 - x0) * s)), max(1, round((y1 - y0) * s))
     strip = Image.new('RGBA', (fw * L, fh))
     for i, f in enumerate(fr):
         strip.paste(Image.fromarray(f[y0:y1, x0:x1]).resize((fw, fh), Image.LANCZOS), (i * fw, 0))
