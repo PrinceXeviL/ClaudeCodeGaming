@@ -468,14 +468,14 @@ function sfx(kind, rate) {
   src.start();
 }
 
-// Düşman sesleri (ses/pain_*, dvoice_*: varliklar/ses_uret.py formant sentezi). Perde düşmana göre: ağır/boss kalın, hafif ince.
+// Düşman sesleri (ses/pain_*, dvoice_*, scream_*, warcry_*: gerçek kayıtlar, varliklar/ses_kayit_isle.py). Perde düşmana göre: ağır/boss kalın, hafif ince.
 // Her düşmanın kendi perdesi vardır (e.vp) ki kalabalıkta aynı adam bağırıyor gibi olmasın.
 const VOICE_P = { heavy: 0.95, gladiator: 0.97, cavalry: 0.98, priest: 1.1, assassin: 1.08, solarcher: 1.05 };
 function voicePitch(e) {
   if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.94, 1.08) * (e.def.chief ? 0.9 : 1);
   return e.vp;
 }
-const MUTE_VOICE = (e) => !!e.def.machine; // kuşatma makinesi bağırmaz
+const MUTE_VOICE = (e) => !!e.def.machine || e.type === 'wardog' || e.type === 'eagle'; // makineler ve hayvanlar insan sesiyle bağırmaz
 function deathVoice(e) { if (!MUTE_VOICE(e)) sfx('dvoice', voicePitch(e)); }
 // acı sesi: her düşman en çok ~1,4 sn'de bir, sürekli hasarda (zehir, gaz) çıkmaz
 function painVoice(e) {

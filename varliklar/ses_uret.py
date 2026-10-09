@@ -298,19 +298,9 @@ def main():
     for i, k in enumerate([0.9, 1.0, 1.1], 1): made.append(save(f'bash_{i}', bash(k), -18))
     for i, k in enumerate([0.92, 1.0, 1.1], 1): made.append(save(f'zap_{i}', dark_zap(k), -19))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'splash_{i}', splash(k), -19))
-    pv = [('ʌ', 'ə'), ('a', 'ʌ'), ('ʌ', 'u'), ('ı', 'ə'), ('e', 'ə'), ('o', 'u')]
-    j = 0
-    for k in (0.8, 1.0, 1.25):
-        for vw in pv:
-            j += 1; made.append(save(f'pain_{j}', pain(k * rng.uniform(0.95, 1.05), vw), -18))
-    for i, k in enumerate([0.75, 0.9, 1.0, 1.15, 1.3], 1): made.append(save(f'dvoice_{i}', dvoice(k), -18))
-    for i, k in enumerate([0.85, 1.0, 1.15, 1.3], 1): made.append(save(f'scream_{i}', scream(k), -18))
+    # pain, dvoice, scream, warcry artık gerçek kayıtlardan: ses_kayit_isle.py
     made.append(save('horn_1', horn(), -17))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'bonefall_{i}', bone_fall(k), -19))
-    CR = [[('aa', 0.42, 0.25)], [('uə', 0.16, 0.1), ('aa', 0.38, 0.3)], [('ea', 0.3, 0.35)], [('oo', 0.2, 0.05), ('aa', 0.34, 0.25)]]
-    for i, syl in enumerate(CR, 1):
-        syl = [(tuple(v.replace('a', 'a').replace('ə', 'ə')), d, r) for v, d, r in syl]
-        made.append(save(f'warcry_{i}', warcry(rng.uniform(0.95, 1.05), syl), -17))
     # manifest: eski aynı adlı türler yerine yenileri
     mp = os.path.join(OUT, 'manifest.json')
     man = json.load(open(mp))

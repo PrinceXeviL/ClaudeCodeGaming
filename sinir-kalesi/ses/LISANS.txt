@@ -1,2 +1,6 @@
 Ses efektleri: Kenney (www.kenney.nl) — Impact Sounds, RPG Audio, Interface Sounds,
 Sci-Fi Sounds, Music Jingles. Lisans: Creative Commons CC0 (kamu malı, ticari kullanım serbest).
+
+Düşman asker sesleri (pain, dvoice, scream, warcry; varliklar/ses_kayit_isle.py ile işlendi), Creative Commons BY 3.0:
+- Michel Baradari, "11 male human pain/death sounds" — https://opengameart.org/content/11-male-human-paindeath-sounds
+- spookymodem, "Battlecry" — https://opengameart.org/content/battlecry
