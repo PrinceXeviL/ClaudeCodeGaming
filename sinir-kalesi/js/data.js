@@ -511,7 +511,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
   // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
   // 10 Eki: yollar v2 sonrası denge (tarayıcı botu): geç bölümlerde düşman sayısı azaltıldı (çok kalabalık, çok zayıf yerine)
-  const TOTAL = [153, 161, 166, 174, 182, 190, 195, 172, 195, 202, 202, 176, 176, 221, 234]; // 10 Eki: %30 kalabalık (kuleler güçlü kaldı, Caner'in kararı); önceki: [118, 124, 128, 134, 140, 146, 150, 132, 150, 155, 155, 135, 135, 170, 180]
+  const TOTAL = [184, 193, 199, 209, 218, 228, 234, 206, 234, 242, 242, 211, 211, 265, 281]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
   const HPMUL = [1, 1.15, 1.25, 1, 1.49, 1.18, 0.53, 0.465, 0.64, 1.16, 0.83, 0.39, 0.215, 0.52, 0.3];
@@ -607,7 +607,7 @@ if (NECRO) {
     { name: 'Ay Sunağı', theme: 'bloodmoon', gold: 720, bossT: 'cathedral', waves: mk([['legion', 14, 0.6], ['paladin', 4, 2], ['flagellant', 6, 1.1], ['hunter', 8, 0.9]], [['lantern', 1, 1], ['saint', 1, 1], ['inquisitor', 2, 3], ['holywater', 4, 1.8]], [['heavy', 4, 2], ['bellpriest', 3, 2]]) },
   ];
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
-  const TOTAL2 = [143, 153, 161, 169, 177, 182, 182, 187, 192, 195, 202, 202, 208, 214, 228]; // 10 Eki: %30 kalabalık (kuleler güçlü kaldı, Caner'in kararı); önceki: [110, 118, 124, 130, 136, 140, 140, 144, 148, 150, 155, 155, 160, 165, 175]
+  const TOTAL2 = [172, 184, 193, 203, 212, 218, 218, 224, 230, 234, 242, 242, 250, 257, 274]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   const HPMUL2 = [1, 1.05, 0.88, 0.95, 0.75, 1.1, 1, 0.85, 0.9, 0.85, 0.8, 0.6, 0.5, 0.45, 0.4]; // 10 Eki: botla 4 tur (sonuçlar oynak; elle yumuşatıldı)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'malleus', 'hierophant', 'champion', 'campanus', 'malleus', 'ironwarden', 'ignis',
