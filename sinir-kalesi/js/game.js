@@ -759,6 +759,7 @@ function drawRoadDetail(g, c, res, paths, th, rr, painted) {
 }
 
 const TREE_MUL = 2; // bölüm zeminindeki ağaç sayısı çarpanı (tema trees değerine)
+const RUIN_K = 0.22; // harabe görsellerinin ölçeği (görsel pikseli -> dünya)
 function renderBackground(lv, paths, res = 2) {
   const c = document.createElement('canvas');
   c.width = W * res; c.height = H * res;
@@ -941,8 +942,38 @@ function renderBackground(lv, paths, res = 2) {
   }
   // ağaçlar
   // bölümde yol dışı boş kalmasın: tema sayısının ~2 katı ağaç, yarısı küçük kümeler halinde (koru gibi)
+  // harabeler (yıkık kilise duvarı, kırık sütunlar, mahzen girişi... nm_ruin_*) ve mezarlık kümeleri: yol dışındaki boşluklara,
+  // ağaçlardan önce yerleşir (ağaçlar bunlara binmez)
+  const props = [];
+  if (NECRO && !lv.decorK) {
+    const ruins = [1, 2, 3, 4, 5, 6].map(n => 'nm_ruin_' + n).filter(n => spr(n));
+    const nR = ruins.length ? (th === THEMES.graveyard || th === THEMES.necrogate ? 3 : 2) : 0, nG = th === THEMES.graveyard ? 5 : 3;
+    const place = (pad) => { for (let k = 0; k < 300; k++) { const x = 40 + rnd() * (W - 80), y = 90 + rnd() * (H - 130); if (!blocked(x, y, pad) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < pad + o[2])) return [x, y]; } return null; };
+    for (let i = 0; i < nR; i++) {
+      const q = place(46); if (!q) continue;
+      const name = ruins[(i + Math.floor(rnd() * 9)) % ruins.length], im = spr(name), w = (SPR_META[name] ? SPR_META[name][0] : 300) * RUIN_K * (0.85 + rnd() * 0.3);
+      props.push([q[0], q[1], w * 0.45]);
+      g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q[0] + 4, q[1] + 2, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); g.fill();
+      drawSprite(g, im, q[0], q[1] + 4, w);
+    }
+    const tombs = ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3'].filter(n => spr(n));
+    for (let i = 0; tombs.length && i < nG; i++) {
+      const q = place(34); if (!q) continue;
+      props.push([q[0], q[1], 30]);
+      const graves = [], n = 3 + Math.floor(rnd() * 3);
+      for (let j = 0; j < n; j++) graves.push([q[0] + (j % 3 - 1) * 17 + (rnd() - 0.5) * 5, q[1] + Math.floor(j / 3) * 13 + (rnd() - 0.5) * 4]);
+      graves.sort((a, b) => a[1] - b[1]);
+      for (const [x, y] of graves) {
+        const im = spr(tombs[Math.floor(rnd() * tombs.length)]), w = 13 + rnd() * 5;
+        g.fillStyle = 'rgba(52,36,22,0.75)'; g.beginPath(); g.ellipse(x, y + 4, w * 0.5, w * 0.2, 0, 0, Math.PI * 2); g.fill(); // toprak höyüğü
+        g.fillStyle = 'rgba(90,66,40,0.5)'; g.beginPath(); g.ellipse(x - 1, y + 3, w * 0.4, w * 0.12, 0, 0, Math.PI * 2); g.fill();
+        drawSprite(g, im, x, y + 1, w);
+        if (rnd() < 0.25) { g.fillStyle = '#e8e0c8'; g.fillRect(x + w * 0.35, y - 2, 1.6, 4); g.fillStyle = 'rgba(140,255,150,0.8)'; g.beginPath(); g.ellipse(x + w * 0.35 + 0.8, y - 3.5, 1.2, 2, 0, 0, Math.PI * 2); g.fill(); } // yeşil alevli mum
+      }
+    }
+  }
   const trees = [], TN = th.trees * DK * (lv.decorK ? 1 : TREE_MUL);
-  const treeOk = (x, y, s) => x > -10 && x < W + 10 && y > 20 && y < H + 10 && !blocked(x, y, s) && !trees.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.5) < 18);
+  const treeOk = (x, y, s) => x > -10 && x < W + 10 && y > 20 && y < H + 10 && !blocked(x, y, s) && !trees.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.5) < 18) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < o[2] + 12);
   for (let i = 0; i < 3000 * DK && trees.length < TN; i++) {
     const x = rnd() * W, y = rnd() * H, s = 10 + rnd() * 9;
     if (!treeOk(x, y, s)) continue;
