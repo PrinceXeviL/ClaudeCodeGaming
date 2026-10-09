@@ -554,7 +554,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 196, 199, 209, 218, 223, 228, 234, 206, 220, 234, 242, 242, 226, 211, 211, 265, 273, 281]; // 20 bölüm (10 Eki): yeni bölümler komşularının arası // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1, 1.3, 1.08, 1.4, 1, 1.45, 0.7, 1.02, 0.34, 0.49, 0.66, 0.36, 1.45, 0.85, 0.48, 0.38, 0.19, 0.68, 0.23, 0.26]; // 10 Eki gece 2. tur: bot şapel devi, ikinci güç ve büyü geliştirmeyi de kullanır
+  const HPMUL = [1, 1.3, 1.08, 1.4, 0.84, 1.25, 0.58, 0.98, 0.33, 0.49, 0.66, 0.31, 1.3, 0.81, 0.41, 0.38, 0.22, 0.7, 0.24, 0.28]; // 11 Eki: Arbaletçi Kulesi ve iki yollu mezarlıkla bot ayarı (2 tur)
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -660,7 +660,7 @@ if (NECRO) {
   [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1.25, 1.5, 0.76, 1.05, 1.5, 1.1, 0.85, 1.6, 1.85, 1.25, 2.2, 1.8, 1.15, 1.33, 1.04, 1.42, 0.8, 1.8, 0.98, 0.36]; // 10 Eki gece 2. tur (oynak; elle yumuşatıldı)
+  const HPMUL2 = [1.25, 1.46, 0.76, 1.05, 1.5, 0.8, 0.74, 1.6, 1.95, 1.25, 2.31, 1.8, 1.08, 1.11, 1.04, 1.38, 0.78, 1.75, 0.97, 0.32]; // 11 Eki: Arbaletçi Kulesi ile bot ayarı (2 tur)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];

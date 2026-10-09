@@ -46,6 +46,6 @@ window.__tune2 = function (from, to, k = 3) {
     let s = 0; for (let j = 0; j < k; j++) s += window.__score(window.__bot(i));
     const avg = s / k, d = avg - window.__T[i], lv = LEVELS[i], f = lv.hpMul || 1; let nf = f;
     if (d > 1.5) nf = f * (1 + Math.min(0.12, d * 0.012)); else if (d < -1.5) nf = f * (1 - Math.min(0.15, -d * 0.015));
-    lv.hpMul = +Math.min(i < 3 ? 1.25 : 1.4, nf).toFixed(3); res.push((i + 1) + ':' + avg.toFixed(1) + '→' + lv.hpMul);
+    lv.hpMul = +Math.min(i < 3 ? 1.3 : 2.5, nf).toFixed(3); res.push((i + 1) + ':' + avg.toFixed(1) + '→' + lv.hpMul);
   } return res.join(' ');
 };
