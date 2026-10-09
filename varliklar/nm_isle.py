@@ -40,8 +40,13 @@ SHEETS = [
     # Sefer 2 (Cadı Avı): Engizisyon. 2x2 ızgara sayfaları 'unitgrid' (nesneler satır satır bulunur, birim gibi ölçeklenir)
     ('nm_engizisyon_A.jpg', ['enemy_hunter', 'enemy_torch', 'enemy_holywater', 'enemy_flagellant'], 'unitgrid'),
     ('nm_engizisyon_B.jpg', ['enemy_lantern', 'enemy_bellpriest', 'enemy_paladin', 'enemy_inquisitor'], 'unitgrid'),
+    ('nm_engizisyon_C.jpg', ['enemy_saint', 'enemy_hound', 'enemy_malleus', 'enemy_campanus'], 'unitgrid'),  # aziz heykeli, ak tazı, 2 boss
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
+# satırlara düzgün oturmayan sayfalar: her nesnenin kaba kutusu (x0, y0, x1, y1), kutudaki opak pikseller o nesnedir
+BOXES = {
+    'nm_engizisyon_C.jpg': [(0, 0, 1000, 700), (1000, 0, 2000, 560), (0, 690, 1060, 1493), (1060, 540, 2000, 1493)],
+}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
@@ -158,7 +163,13 @@ def main():
     for fname, names, kind in SHEETS:
         if only and fname not in only: continue
         rgba = remove_magenta(np.asarray(Image.open(os.path.join(HAM, fname)).convert('RGB')))
-        if kind in ('decor', 'unitgrid'):
+        if fname in BOXES:
+            H, W = rgba.shape[:2]; big = np.zeros((H, W), np.int32); objs = []
+            for k, (x0, y0, x1, y1) in enumerate(BOXES[fname], 1):
+                sub = rgba[y0:y1, x0:x1, 3] > 100; big[y0:y1, x0:x1][sub] = k
+                ys, xs = np.nonzero(sub)
+                objs.append({'k': k, 'x0': x0 + xs.min(), 'x1': x0 + xs.max() + 1, 'y0': y0 + ys.min(), 'y1': y0 + ys.max() + 1})
+        elif kind in ('decor', 'unitgrid'):
             objs, big = objects(rgba, len(names), rows=True)
         else:
             # sütunlar sadece sahipliği belirler: her şeridin en çok pikselini tutan bileşen o nesnedir (şeridi aşsa da bütün alınır);
@@ -217,7 +228,7 @@ def main():
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if kind in ('unit', 'unitgrid') and im.height > UNIT_H * 1.05:
                 k = UNIT_H / im.height
-                if name in ('enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant'): k *= 1.35  # büyükler daha çok çözünürlük
+                if name in ('enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant', 'enemy_malleus', 'enemy_campanus'): k *= 1.35  # büyükler daha çok çözünürlük
                 im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
             elif im.width > 700:
                 k = 700 / im.width; im = im.resize((700, round(im.height * k)), Image.LANCZOS)

@@ -1,0 +1,10 @@
+Using the attached reference sheet, draw 4 NEW BOSS units for the same 2D tower defense game, in EXACTLY the same art style as the reference: same thick dark-brown outlines, same painterly shading with soft gradients and bright rim highlights, same chunky stylized cartoon proportions, same level of detail. Holy Inquisition of the Solarian Empire: black and dark-crimson robes, gold sun emblems, silver, candles and holy symbols. Dark gothic but colorful and cartoony like the reference.
+
+Draw these 4 bosses, each one complete and fully separated from the others, arranged in a 2x2 grid with lots of empty space between them:
+1. Sister Ignis: a fierce tall nun in a black and crimson habit with a gold sun wimple, carrying a brass flamethrower shaped like a sun censer on a chain, small flames dripping from it, burning eyes.
+2. The Saint Colossus: a gigantic walking cathedral statue of a robed saint made of cracked white marble and gold, a huge stone halo, a stone greatsword, stained-glass windows glowing gold in its chest, moss and broken stone pieces falling. Much bigger and heavier than the others.
+3. Grand Inquisitor Severus: an old tall imposing man in a magnificent crimson and gold robe with a huge high collar and a tall gold mitre, a long gold sun staff in one hand and an ornate black iron teapot held high in the other hand, cold smile.
+4. The Walking Cathedral: a huge siege tower built like a small gothic cathedral on big wooden wheels, pushed from behind by monks, with a bell tower, stained-glass windows glowing gold, gold sun on the spire, banners, candles and a balcony at the top. Much bigger than the others.
+
+All units in strict side view facing RIGHT, full body visible.
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
