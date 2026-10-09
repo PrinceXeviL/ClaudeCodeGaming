@@ -2205,7 +2205,7 @@ function buildTower(plot, type) {
     const n = nearestOnPaths(G.paths, t.x, t.y);
     t.rx = n.x; t.ry = n.y;
     for (let i = 0; i < 3; i++) {
-      const s = makeSoldier(t, i);
+      const s = makeSoldier(t, i); riseFromGrave(s);
       t.soldiers.push(s); G.soldiers.push(s);
     }
   }
@@ -2251,6 +2251,20 @@ const SKEL_STANCE = {
   guard: { engage: 74, leash: 20, speed: 56, aggro: false },
   attack: { engage: 140, leash: 60, speed: 80, aggro: true },
 };
+// Savaşçı Mezarlığı (10 Eki): iskeletler binadaki açık mezarlardan (3. kademede türbe kapısından da) toprağı yararak kalkar.
+// Noktalar görsele göre: [yatay pay (genişliğin oranı, merkezden), alttan yükseklik (boyun oranı)], kademe sırasıyla.
+const GRAVE_SPOTS = [[[0.07, 0.4]], [[-0.26, 0.42], [0.19, 0.375]], [[0.26, 0.24], [-0.085, 0.45]]];
+function graveSpot(t, i) {
+  const ts = towerSprite(t), L = GRAVE_SPOTS[t.lvl] || GRAVE_SPOTS[0], g = L[i % L.length];
+  return ts ? { x: t.x + g[0] * ts.w, y: ts.bottom - g[1] * ts.h } : { x: t.x, y: t.y + 6 };
+}
+function riseFromGrave(s) {
+  if (!NECRO || !s.tower) return;
+  const q = graveSpot(s.tower, s.slot || 0);
+  s.x = q.x; s.y = q.y; s.born = G.t;
+  for (let k = 0; k < 7; k++) emit(G.parts, { kind: 'chunk', x: q.x + rand(-4, 4), y: q.y, vx: rand(-40, 40), vy: -rand(60, 130), g: 420, vr: rand(-10, 10), rot: rand(0, 6), col: k % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.2, 2.2), s1: 1, life: rand(0.35, 0.6) });
+  G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 12, col: Math.random() < 0.5 ? '190,120,255' : '120,255,150', t: 0, dur: 0.5 });
+}
 function makeSoldier(t, i) {
   const st = soldierStats(t);
   return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
@@ -2873,7 +2887,7 @@ function updateSoldier(s, dt) {
       s.dead = false; s.hp = s.maxHp;
       if (s.hero) G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,190', t: 0, dur: 0.8 }); // olduğu yerde, ışık sütunuyla dirilir
       else if (s.guard) { s.x = s.rx; s.y = s.ry; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '140,255,140', t: 0, dur: 0.6 }); }
-      else { s.x = s.tower.x; s.y = s.tower.y + 6; }
+      else { s.x = s.tower.x; s.y = s.tower.y + 6; riseFromGrave(s); }
     }
     return;
   }
@@ -5316,6 +5330,25 @@ function drawNecroTowerFx(t, ts) {
       ctx.restore();
     }
     if (sh > 0) ctx.restore();
+  } else if (t.type === 'barracks' && NECRO) {
+    // Savaşçı Mezarlığı: mezarlar arasında süzülen yeşil-mor sis; 1. kademede fener, 2.'de kafatası gözleri, 3.'de türbe kapısı ve mumlar
+    const P = (dx, up) => ({ x: t.x + dx * ts.w, y: ts.bottom - up * ts.h });
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 4; i++) {
+      const a = time * 0.5 + i * 1.7 + t.x * 0.01, q = P(Math.sin(a) * 0.28, 0.2 + 0.08 * Math.cos(a * 1.3 + i));
+      glow(ctx, q.x, q.y, ts.w * (0.16 + 0.04 * Math.sin(a * 2)), i % 2 ? '190,120,255' : '120,255,150', 0.1 + 0.05 * Math.sin(a * 1.7));
+    }
+    const fl = 0.8 + Math.sin(time * 9 + t.x) * 0.1 + Math.sin(time * 23 + t.y) * 0.06;
+    if (t.lvl === 0) { const q = P(-0.07, 0.42); glow(ctx, q.x, q.y, 7 * s, '120,255,150', 0.7 * fl); }
+    else if (t.lvl === 1) { const q = P(0.035, 0.9); for (const e of [-1, 1]) glow(ctx, q.x + e * 2.2 * s, q.y, 2.6 * s, '200,120,255', 0.9 * fl); glow(ctx, q.x, q.y, 9 * s, '170,90,255', 0.3 * fl); }
+    else {
+      const d = P(-0.085, 0.52); glow(ctx, d.x, d.y, 14 * s, '180,110,255', 0.35 + 0.15 * Math.sin(time * 2.2)); glow(ctx, d.x, d.y + 4 * s, 9 * s, '120,255,170', 0.3 + 0.1 * Math.sin(time * 3.1));
+      for (const [dx, up, k] of [[-0.34, 0.33, 0], [-0.39, 0.29, 1], [0.15, 0.36, 2], [0.19, 0.35, 3], [-0.01, 0.24, 4], [-0.06, 0.15, 5], [0.26, 0.3, 6]]) {
+        const q = P(dx, up), f = 0.75 + Math.sin(time * 11 + k * 2.3) * 0.15 + Math.sin(time * 27 + k) * 0.08;
+        glow(ctx, q.x, q.y, 3.4 * s, '255,200,110', 0.75 * f);
+      }
+      const b = P(0.38, 0.75); glow(ctx, b.x, b.y, 10 * s, '255,60,80', 0.12 + 0.06 * Math.sin(time * 1.5)); // kızıl sancaklar
+    }
   } else if (t.type === 'mage') {
     // fenerdeki ruh: nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
     const pulse = 0.5 + Math.sin(time * 3.2 + t.x) * 0.15 + 0.4 * sh;
@@ -5375,35 +5408,51 @@ function drawTowerDisabled(t) {
   }
   ctx.restore();
 }
-// Kulelerin koyu zeminde seçilmesi (10 Eki): arkada soluk ruh-yeşili dış ışık (görselin bulanık silueti; görsel başına bir kez
-// hazırlanır) ve ayağında hafif ışık havuzu. TOWER_RIM.a dış ışığın gücü, .pool yer ışığının.
-// Necromancer renkleri: ruh yeşili, mor, kızıl; kule türüne göre
-const TOWER_RIM = { col: '185,255,200', blur: 0.05, a: 0.95, pool: 0.22,
-  cols: { barracks: '255,95,95', archer: '170,255,180', mage: '195,145,255', artillery: '170,255,120', altar: '235,80,170' } };
-const RIM_CACHE = new Map();
-function rimOf(im, col = TOWER_RIM.col) {
-  const key = im.src + '|' + col;
-  if (RIM_CACHE.has(key)) return RIM_CACHE.get(key);
-  if (!(im.naturalWidth || im.width)) return null; // görsel henüz yüklenmedi: sonra yeniden denenir
-  let r = null;
-  try {
-    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, k = Math.min(1, 320 / iw), w = Math.round(iw * k), h = Math.round(ih * k);
-    const b = Math.max(4, Math.round(w * TOWER_RIM.blur)), pad = b * 3, c = document.createElement('canvas');
-    c.width = w + pad * 2; c.height = h + pad * 2;
-    const g = c.getContext('2d');
-    g.shadowColor = `rgba(${col},1)`; g.shadowBlur = b; g.shadowOffsetX = c.width; // gölge görselin yerine düşer, görselin kendisi tuval dışında kalır
-    g.drawImage(im, pad - c.width, pad, w, h); // geniş yumuşak ışık
-    g.shadowBlur = Math.max(2, b / 3); g.drawImage(im, pad - c.width, pad, w, h); g.drawImage(im, pad - c.width, pad, w, h); // ince keskin kenar
-    r = { c, pad: pad / k, sc: 1 / k };
-  } catch (e) { r = null; }
-  RIM_CACHE.set(key, r); return r;
+// Kulelerin koyu zeminde seçilmesi (10 Eki, 3. deneme): cephe aydınlatması gibi. Binanın ayağından yukarı vuran iki renkli ışık
+// (sol ve sağ köşeden farklı renk, yukarı doğru söner); görsel başına bir kez hazırlanır. Altına yumuşak temas gölgesi,
+// ayağına soluk ışık havuzu. Renkler Necromancer ailesinden (kızıl, yeşil, mor), kule türüne göre çift. a: gücü (göze batmasın).
+const TOWER_LIT = { a: 1, reach: 0.7, mode: 'soft-light', pool: 0.1, shade: 0.42, // soft-light: koyuluklar korunur, renk yüzeye işler
+  cols: { barracks: ['255,70,90', '170,90,255'], archer: ['110,255,160', '170,90,255'], mage: ['170,90,255', '110,255,190'],
+    artillery: ['130,255,110', '255,80,110'], altar: ['255,60,120', '160,80,255'] }, col: ['120,255,160', '170,90,255'] };
+const LIT_CACHE = new Map();
+function litOf(im, cols) {
+  const key = im.src + '|' + cols.join('|');
+  if (LIT_CACHE.has(key)) return LIT_CACHE.get(key);
+  // görsel tamamen çözülmeden hazırlanırsa boş/beyaz çıkar: çözülmeyi bekle, bu arada özgün görsel çizilir
+  LIT_CACHE.set(key, null);
+  const build = () => {
+    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+    if (!iw) { LIT_CACHE.delete(key); return; }
+    try {
+      const c = document.createElement('canvas'); c.width = iw; c.height = ih;
+      const g = c.getContext('2d'), A = TOWER_LIT.a;
+      g.drawImage(im, 0, 0);
+      g.globalCompositeOperation = TOWER_LIT.mode;
+      // iki projektör: sol alt ve sağ alt köşeden yukarı, birbirine karışarak
+      for (const [k, col] of [[0, cols[0]], [1, cols[1]]]) {
+        const x = iw * (k ? 0.82 : 0.18), gr = g.createRadialGradient(x, ih * 1.02, iw * 0.05, x, ih * 0.95, ih * TOWER_LIT.reach);
+        gr.addColorStop(0, `rgba(${col},${A})`); gr.addColorStop(0.45, `rgba(${col},${A * 0.5})`); gr.addColorStop(1, `rgba(${col},0)`);
+        g.fillStyle = gr; g.fillRect(0, 0, iw, ih);
+      }
+      g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0); // saydam yerler saydam kalsın
+      LIT_CACHE.set(key, c);
+    } catch (e) { /* özgün görselle devam */ }
+  };
+  if (im.decode) im.decode().then(build, () => LIT_CACHE.delete(key)); else build();
+  return null;
 }
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
-    { // ayağındaki ışık havuzu ve arkadaki dış ışık
+    if (NECRO) { // temas gölgesi (binayı zemine oturtur) ve ayağındaki soluk ışık havuzu
+      const sh = ctx.createRadialGradient(t.x, ts.bottom - 2, 2, t.x, ts.bottom - 2, ts.w * 0.62);
+      sh.addColorStop(0, `rgba(8,4,12,${TOWER_LIT.shade})`); sh.addColorStop(1, 'rgba(8,4,12,0)');
+      ctx.save(); ctx.translate(t.x, ts.bottom - 2); ctx.scale(1, 0.42); ctx.translate(-t.x, -(ts.bottom - 2));
+      ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(t.x, ts.bottom - 2, ts.w * 0.62, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      glow(ctx, t.x, t.y - 2, ts.w * 0.62, TOWER_RIM.cols[t.type] || TOWER_RIM.col, TOWER_RIM.pool * (0.9 + Math.sin(time * 1.6 + t.x) * 0.1));
+      const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col;
+      glow(ctx, t.x - ts.w * 0.22, ts.bottom - 3, ts.w * 0.4, lc[0], TOWER_LIT.pool * (0.9 + Math.sin(time * 1.6 + t.x) * 0.1));
+      glow(ctx, t.x + ts.w * 0.22, ts.bottom - 3, ts.w * 0.4, lc[1], TOWER_LIT.pool * (0.9 + Math.sin(time * 1.3 + t.y) * 0.1));
       ctx.restore();
     }
     const age = G.t - (t.born ?? -9);
@@ -5411,12 +5460,8 @@ function drawTowerBody(t) {
     // top ateşlediğinde kule hafifçe sarsılır (top kendi içinde geri teper)
     const ksy = t.type === 'artillery' && t.shotAnim > 0.2 ? 1 - (t.shotAnim - 0.2) * 0.25 : 1;
     ctx.save(); ctx.translate(t.x, ts.bottom); ctx.scale(pop, pop * ksy);
-    const rim = NECRO && rimOf(ts.im, TOWER_RIM.cols[t.type] || TOWER_RIM.col);
-    if (rim) { // dış ışık: görselle aynı ölçekte, kenarlarından taşan pay kadar büyük
-      const k = ts.w / (ts.im.naturalWidth || ts.im.width), h = ts.w * ts.im.height / ts.im.width, P = rim.pad * k;
-      ctx.globalAlpha = TOWER_RIM.a; ctx.drawImage(rim.c, -ts.w / 2 - P, -h - P, ts.w + P * 2, h + P * 2); ctx.globalAlpha = 1;
-    }
-    drawSprite(ctx, ts.im, 0, 0, ts.w);
+    const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
+    drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
     ctx.restore();
     drawNecroTowerFx(t, ts);
     if (t.ab) {
@@ -10754,7 +10799,7 @@ function drawPlay() {
 }
 
 const TIPS = NECRO ? [
-  'İpucu: Mahzen iskeletleri düşmanı yolda durdurur, dikilitaşlar arkadan vurur.',
+  'İpucu: Mezarlıktan kalkan iskeletler düşmanı yolda durdurur, dikilitaşlar arkadan vurur.',
   'İpucu: Ölüleri kaldırmak için yerde ceset olmalı; cesetler 10 saniye bekler.',
   'İpucu: Veba Kazanı\'nın gazı zırhı çürütür; ağır zırhlılara karşı iyidir.',
   'İpucu: Korkuyla kaçan düşmanlar kulelerinin menzilinde daha uzun kalır.',
@@ -10989,7 +11034,7 @@ function drawComic() {
   gameButton('comic_skip', W - 70, 16, 96, 26, 'Geç ›', () => endComic(), 'wood', { size: 13 });
 }
 // zafer ekranı özeti: sayılar sırayla sayarak dolar; en çok öldüren vurgulanır
-const KILLER_NAME = { curse: 'Lanet Kuleleri', arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
+const KILLER_NAME = { curse: 'Lanet Kuleleri', arrow: 'Dikilitaşlar', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mezarlık İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 40, w = pw - 80, y0 = py + 198;
   roundRect(x0, y0, w, 118, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);
