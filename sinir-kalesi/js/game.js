@@ -3198,7 +3198,7 @@ function avluPt(f) {
 function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r > 0.3 ? 2 : 3; }
 // Heybetli kale (10 Eki, Gemini): kafatası çenesi kapı, önde balkon. gate = kapı eşiği (yolun ucu), at = Mortimer'ın ayağı,
 // rail = Mortimer'ın önüne yeniden çizilen korkuluk bandı, px = Mortimer boyu (görsel pikseli), w = oyundaki genişlik
-const KEEP = { w: 178, gate: [0.45, 0.85], at: [0.487, 0.556], rail: [0.36, 0.525, 0.61, 0.6], px: 118 };
+const KEEP = { w: 178, gate: [0.45, 0.85], at: [0.478, 0.57], rail: [0.36, 0.525, 0.61, 0.6], px: 130 }; // Mortimer balkonun ortasında, önde
 const isKeep = (im) => im && [1, 2, 3].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
   if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
@@ -3332,10 +3332,20 @@ function drawMortimer() {
   const k = p >= 0 ? Math.sin(p * Math.PI) : 0;
   const F = ANIM_META.mortimer_cast, fim = F && spr('mortimer_cast'), im = spr('mortimer');
   if (!fim && !im) return;
-  // arkasında mor-yeşil büyü halesi: büyüde parlar
+  // arkasında hafif parlayan hale: mor, yeşil ve kızıl yavaşça birbirine karışır; büyüde ışık sütunu, dönen rün çemberi ve kıvılcımlar
+  const cx = m.x, cy = m.y - hgt * 0.5, mix = (Math.sin(time * 0.7) + 1) / 2;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.75, '150,90,255', 0.22 + 0.3 * k + Math.sin(time * 2) * 0.05);
-  glow(ctx, m.x, m.y - hgt * 0.5, hgt * 0.45, '120,255,140', 0.12 + 0.4 * k + (G.raiseT > 0 ? 0.2 : 0));
+  glow(ctx, cx, cy, hgt * 0.95, '160,70,255', 0.26 + 0.35 * k + Math.sin(time * 2) * 0.06);
+  glow(ctx, cx, cy, hgt * 0.6, mix > 0.5 ? '110,255,140' : '255,70,70', 0.12 + 0.08 * Math.abs(mix - 0.5) * 2 + 0.45 * k + (G.raiseT > 0 ? 0.2 : 0));
+  if (k > 0) {
+    const pg = ctx.createLinearGradient(0, m.y, 0, m.y - hgt * 3.2);
+    pg.addColorStop(0, `rgba(170,110,255,${0.5 * k})`); pg.addColorStop(0.5, `rgba(120,255,150,${0.25 * k})`); pg.addColorStop(1, 'rgba(120,255,150,0)');
+    ctx.fillStyle = pg; ctx.beginPath(); ctx.moveTo(cx - hgt * 0.3, m.y); ctx.lineTo(cx - hgt * 0.12, m.y - hgt * 3.2); ctx.lineTo(cx + hgt * 0.12, m.y - hgt * 3.2); ctx.lineTo(cx + hgt * 0.3, m.y); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = `rgba(190,140,255,${0.8 * k})`; ctx.lineWidth = 1.2; // dönen rün çemberi (ayak hizasında)
+    for (let j = 0; j < 12; j++) { const a0 = time * 2 + j * Math.PI / 6; ctx.beginPath(); ctx.ellipse(cx, m.y - 1, hgt * 0.62, hgt * 0.2, 0, a0, a0 + 0.32); ctx.stroke(); }
+    ctx.strokeStyle = `rgba(120,255,150,${0.6 * k})`; ctx.beginPath(); ctx.ellipse(cx, m.y - 1, hgt * 0.45 * (1 + 0.2 * k), hgt * 0.14, 0, 0, Math.PI * 2); ctx.stroke();
+    if (Math.random() < 0.5 * k) emit(G.parts, { kind: 'glow', add: true, x: cx + rand(-hgt * 0.4, hgt * 0.4), y: m.y - rand(0, hgt * 0.6), vx: rand(-8, 8), vy: -rand(30, 60), col: Math.random() < 0.5 ? '190,130,255' : '120,255,150', s0: rand(1.5, 3), s1: 0.3, life: rand(0.6, 1.1), a: 0.9 });
+  }
   ctx.restore();
   ctx.save(); ctx.translate(m.x, m.y);
   const MA = mortAnim(p);
