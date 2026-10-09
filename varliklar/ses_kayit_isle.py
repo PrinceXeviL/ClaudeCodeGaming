@@ -28,6 +28,19 @@ def load(name):
     return trim(x)
 
 
+FF = '/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/imageio_ffmpeg/binaries/ffmpeg-macos-aarch64-v7.1'
+
+
+def load_mp3(name):
+    """ElevenLabs efekt kaydı (ham/ses/eleven/<ad>.mp3) -> mono, oyunun örnekleme hızında"""
+    import subprocess, tempfile
+    t = tempfile.NamedTemporaryFile(suffix='.wav', delete=False).name
+    subprocess.run([FF, '-y', '-loglevel', 'error', '-i', os.path.join(HAM, 'eleven', name + '.mp3'), '-ac', '1', '-ar', str(SR), t], check=True)
+    with wave.open(t) as w: x = np.frombuffer(w.readframes(w.getnframes()), '<i2').astype(float) / 32768
+    os.remove(t)
+    return trim(x)
+
+
 def trim(x, th=0.02):
     """baştaki/sondaki sessizliği at (RMS normalleştirmesi sessizlikle şaşmasın)"""
     a = np.abs(x); idx = np.where(a > th * a.max())[0]
@@ -79,6 +92,10 @@ def main():
         c = bone_click(0.95, 0.07) * 0.18; x[:len(c)] += c
         th = thud(130, 0.09, 0.02) * 0.12; x[:len(th)] += th
         made.append(save(f'clash_{i}', x, -25))
+    # ElevenLabs efektleri (ücretsiz plan, jenerikte elevenlabs.io): yeni birimler ve büyüler; savaş borusu sentezin yerine
+    for n, cnt, db in [('elephant', 2, -19), ('vulture', 2, -23), ('bonewall', 1, -20), ('raise', 1, -22), ('fear', 1, -22), ('bats', 1, -24), ('horn', 1, -19)]:
+        for i in range(1, cnt + 1):
+            made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.005, 0.25), db))
     mp = os.path.join(OUT, 'manifest.json')
     man = json.load(open(mp))
     kinds = {m.rsplit('_', 1)[0] for m in made}

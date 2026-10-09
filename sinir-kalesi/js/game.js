@@ -230,7 +230,14 @@ const SOUND = {
   mvoices: { vol: 0.5, gap: 0.4, max: 1 },  mvoicem: { vol: 0.5, gap: 0.4, max: 1 },  mvoicel: { vol: 0.5, gap: 0.4, max: 1 }, // Mortimer konuşması
   mlaugh:  { vol: 0.45, gap: 1, max: 1 },                           // Mortimer'ın sinsi kahkahası
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
-  horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi)
+  horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi) — ElevenLabs savaş borusu
+  // ElevenLabs efektleri (varliklar/elevenlabs_efekt.py): yeni birimler ve Mortimer'ın büyüleri
+  elephant: { vol: 0.5, gap: 3, max: 1, rate: [0.95, 1.05] },     // savaş fili böğürmesi (gelişte, ezerken)
+  vulture:  { vol: 0.32, gap: 2.5, max: 1, rate: [0.92, 1.1] },   // akbaba çığlığı (gelişte, ceset yerken)
+  bonewall: { vol: 0.6, gap: 0.5, max: 1 },                       // kemik duvar topraktan fışkırır
+  raise:    { vol: 0.5, gap: 1, max: 1 },                         // ölüler kalkar
+  fear:     { vol: 0.5, gap: 1, max: 1 },                         // korku ruhları uğuldar
+  bats:     { vol: 0.45, gap: 1, max: 1 },                        // yarasa sürüsü
   bonefall: { vol: 0.13, gap: 0.2, max: 1, rate: [0.92, 1.1] },       // iskelet ölünce kemikleri saçılır (arka planda kalsın)
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
@@ -361,7 +368,7 @@ function mortVoice(text) {
   if (!f || muted || !actx || !master) return false;
   const play = (buf) => {
     const src = actx.createBufferSource(), g = actx.createGain();
-    g.gain.value = 0.95; src.buffer = buf; src.connect(g); g.connect(master); src.start();
+    g.gain.value = 0.76; src.buffer = buf; src.connect(g); g.connect(master); src.start(); // 10 Eki: %20 kısıldı (0.95 -> 0.76)
     mortVoiceUntil = time + buf.duration + 0.2;
   };
   if (MORT_VO_BUF[f]) { play(MORT_VO_BUF[f]); return true; }
@@ -1314,6 +1321,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1) * (G.mod && G.mod.hp || 1);
   const e = { type, def, p, d: d0, off, x: q.x, y: q.y, hp, maxHp: hp, blocker: null, atk: 0, dead: false, anim: rand(0, 10), face: 1, healT: 3 };
   G.enemies.push(e);
+  if (type === 'elephant') sfx('elephant'); else if (type === 'vulture' && Math.random() < 0.4) sfx('vulture');
   if (def.chief) { e.dmgMul = 1 + 0.08 * tier; e.cdMul = 1 - 0.025 * tier; } // boss gücü bölümle artar: hasar ve yetenek sıklığı
   if (def.plate) { e.plate = e.maxPlate = def.plate; e.spdMul = 1; }
   if (esc) {
@@ -2419,7 +2427,7 @@ function updateEnemy(e, dt) {
   if (TR && !e.blocker) for (const s of G.soldiers) {
     if (s.dead || s.wall || s.hero || (s.born != null && G.t < s.born) || dist(s.x, s.y, e.x, e.y) > TR.r) continue;
     if ((e.ran || (e.ran = new Set())).has(s)) continue;
-    e.ran.add(s); damageSoldier(s, TR.dmg); s.flash = 0.15; impactFx(s.x, s.y - 8, '235,225,200', 0.9); sfx('bash');
+    e.ran.add(s); damageSoldier(s, TR.dmg); s.flash = 0.15; impactFx(s.x, s.y - 8, '235,225,200', 0.9); sfx('bash'); if (e.type === 'elephant') sfx('elephant');
   }
   // güneş rahibesi: belli aralıklarla çevresindeki cesetleri yakar (diriltilemez) ve dirilen ölülere ışıkla vurur
   const PU = e.def.purify;
@@ -2445,7 +2453,7 @@ function updateEnemy(e, dt) {
       const f = G.effects.find(f => f.kind === 'corpse' && f.raisable && !f.eaten && dist(f.x, f.y, e.x, e.y) < SC.r);
       if (f) {
         e.scT = SC.every; f.raisable = false; f.eaten = true; f.dur = Math.min(f.dur, f.t + 0.6);
-        e.hp = Math.min(e.maxHp, e.hp + SC.heal);
+        e.hp = Math.min(e.maxHp, e.hp + SC.heal); sfx('vulture');
         for (let i = 0; i < 7; i++) emit(G.parts, { kind: 'dot', x: f.x + rand(-6, 6), y: f.y - rand(0, 6), vx: rand(-30, 30), vy: -rand(20, 60), g: 160, col: i % 3 ? '#8a1c1c' : '#e8dcc0', s0: rand(1.4, 2.4), s1: 0.6, life: rand(0.4, 0.7) });
       }
     }
@@ -3218,7 +3226,7 @@ function castNecro(id, x, y) {
     G.raiseT = 1.2; mortSay('raise', true);
     bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); cnt('raise', bodies.length);
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
-    sfx('portal');
+    sfx('portal'); sfx('raise');
   } else if (id === 'nm_wall') {
     // yolun en yakın noktasına, yola dik kemik duvar
     const q = nearestOnPaths(G.paths, x, y);
@@ -3229,7 +3237,7 @@ function castNecro(id, x, y) {
       engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: S.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
     G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.9 });
     G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 52, col: '110,255,130', t: 0, dur: 0.5 });
-    impactFx(q.x, q.y - 10, '200,255,200', 1.2); shakeScreen(4, 0.35); sfx('bash'); setTimeout(() => sfx('bonefall'), 120); mortSay('wall', true);
+    impactFx(q.x, q.y - 10, '200,255,200', 1.2); shakeScreen(4, 0.35); sfx('bonewall'); mortSay('wall', true);
   } else if (id === 'nm_fear') {
     G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 }); mortSay('fear', true);
     // Mortimer'dan hedefe uzanan mor ruh dalgası
@@ -3247,7 +3255,7 @@ function castNecro(id, x, y) {
     }
     // birkaç tanesi çığlık atar (hepsi atarsa kulak tırmalar)
     for (let i = 0; i < Math.min(3, nScream); i++) setTimeout(() => sfx('scream'), i * 140 + rand(0, 60));
-    sfx('roar');
+    sfx('roar'); sfx('fear');
   } else if (id === 'nm_burst') {
     const bodies = G.effects.filter(f => f.kind === 'corpse' && !f.air && f.t > 0.3 && f.t < f.dur - 0.1 && dist(f.x, f.y, x, y) <= S.r);
     if (!bodies.length) { G.mortCast = 0; floatText(x, y - 20, 'Burada ceset yok!', '#c8c8c8'); sfx('error'); return false; }
@@ -3517,9 +3525,11 @@ const MORT_LINES = {
   ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
   streak: ['Mükemmel. Yeni malzeme.', 'Hepsini kemik deposuna!', 'Bir, iki, on... yetmez.', 'İşte buna verimlilik denir.'],
 };
+const MORT_TALK_SKIP = 0.2;
 function mortSay(kind, force) {
   if (!NECRO || !G || (!force && G.sayCd > 0)) return;
   const L = MORT_LINES[kind]; if (!L) return;
+  if (kind !== 'start' && Math.random() < MORT_TALK_SKIP) return; // 10 Eki: Caner daha az konuşsun istedi (%20 seyrek)
   let text = L[Math.floor(Math.random() * L.length)];
   if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
   G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
@@ -4366,7 +4376,7 @@ function castUlt(h, x, y) {
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
   if (h.id === 'commander' && U.bats) {
     // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
-    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) });
+    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) }); sfx('bats');
     sfx('whirl'); setTimeout(() => sfx('scream', 1.8), 250);
   } else if (h.id === 'zeynep') {
     // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
@@ -8258,7 +8268,7 @@ const CREDITS = [
   ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
     ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
-    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Diğer sesler', 'oyunda sentezlendi']]],
+    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü ve boru efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
   ['YAZI TİPİ', [['Creepster · Lilita One · Baloo 2', 'SIL Open Font License']]],
 ];
 function drawCredits() {
