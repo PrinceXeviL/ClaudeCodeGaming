@@ -1921,6 +1921,7 @@ function soldierStats(t) {
     maxHp: Math.round((L.hp + (sh ? sh.hp : 0)) * hm), armor: Math.min(0.75, Math.max(0, L.armor + (sh ? sh.armor : 0) + (ur >= 3 ? 0.15 : 0) - (bl ? 0.05 : 0))),
     dmg: [L.dmg[0] * dm * (sh ? 1.15 : 1), L.dmg[1] * dm * (sh ? 1.15 : 1)], crit: bl ? bl.crit : 0, steal: t.lvl >= 2 ? 0.15 : 0,
     rate: sh ? 1.3 : bl ? 0.7 : 1, block: sh ? 0.15 + 0.05 * shR : 0, bash: sh ? 0.6 + 0.2 * shR : 0, cleave: bl ? 0.4 + 0.1 * blR : 0,
+    ...(bl ? SKEL_STANCE.attack : sh ? SKEL_STANCE.guard : SKEL_STANCE.base),
   };
 }
 function applySoldierStats(t) {
@@ -1934,14 +1935,21 @@ function applySoldierStats(t) {
     }
     s.dmg = st.dmg; s.armor = st.armor; s.crit = st.crit; s.steal = st.steal; s.gear = t.lvl; s.bow = st.bow;
     s.rate = st.rate; s.block = st.block; s.bash = st.bash; s.cleave = st.cleave;
+    s.speed = st.speed; s.engage = st.engage; s.leash = st.leash; s.aggro = st.aggro;
     if (s.bow && s.target) { if (s.target.blocker === s) s.target.blocker = null; s.target = null; } // okçular yolu bırakır
   }
 }
-// engage 82: yoldan geçen düşmana saldırır (yol geniş, düşman sıraları yayılarak yürür)
+// iskeletlerin duruşu: engage = bayrağa bu uzaklıktaki düşmana yürür, leash = hedef bundan da uzaklaşınca bırakıp döner.
+// Savunmacı (temel, kalkan) yerinden az ayrılır, yaklaşanı karşılar; saldırgan (kılıç) gördüğü en yakın düşmanın üstüne koşar.
+const SKEL_STANCE = {
+  base: { engage: 82, leash: 28, speed: 60, aggro: false },
+  guard: { engage: 74, leash: 20, speed: 56, aggro: false },
+  attack: { engage: 140, leash: 60, speed: 80, aggro: true },
+};
 function makeSoldier(t, i) {
   const st = soldierStats(t);
   return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
-    block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: 60, engage: 82, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
+    block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: st.speed, engage: st.engage, leash: st.leash, aggro: st.aggro, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
 }
 // son seviyedeki kulenin yeteneğini bir kademe geliştir
 function buyAbility(t, id) {
@@ -2549,27 +2557,27 @@ function updateSoldier(s, dt) {
   if (s.bow) { updateBowSoldier(s, dt); return; }
   const home = soldierHome(s);
   const e = s.target;
-  if (e && (e.dead || e.under || e.reviveT > 0 || dist(e.x, e.y, home.x, home.y) > s.engage + 40 || s.moving)) {
+  if (e && (e.dead || e.under || e.reviveT > 0 || dist(e.x, e.y, home.x, home.y) > s.engage + (s.leash ?? 40) || s.moving)) {
     if (e.blocker === s) e.blocker = null;
     s.target = null;
   }
   if (!s.target && !s.moving) {
     let best = null, bestScore = 1e9;
     for (const o of G.enemies) {
-      if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0) continue;
+      if (o.dead || o.def.flying || o.under || o.reviveT > 0) continue; // uçmayan her şeye saldırır (araba gibi durdurulamayanlar dahil)
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
-      const score = s.zombie ? d + (o.blocker ? 40 : 0) : (o.blocker ? 1000 : 0) + (o.p.total - o.d);
+      const score = s.zombie || s.aggro ? dist(o.x, o.y, s.x, s.y) + (o.blocker ? 40 : 0) : (o.blocker ? 1000 : 0) + (o.p.total - o.d);
       if (score < bestScore) { bestScore = score; best = o; }
     }
     if (best) {
       s.target = best;
-      if (!best.blocker) best.blocker = s;
+      if (!best.blocker && !best.def.noblock) best.blocker = s;
     }
   }
   if (s.target) {
     const t = s.target;
-    if (!t.blocker || t.blocker.dead) t.blocker = s;
+    if ((!t.blocker || t.blocker.dead) && !t.def.noblock) t.blocker = s;
     const side = s.x < t.x ? -1 : 1;
     const spot = t.blocker === s ? { x: t.x + side * 13, y: t.y } : { x: t.x + side * 12, y: t.y + (s.slot === 2 ? 7 : -7) };
     const arrived = moveToward(s, spot.x, spot.y, dt);
