@@ -41,11 +41,14 @@ SHEETS = [
     ('nm_engizisyon_A.jpg', ['enemy_hunter', 'enemy_torch', 'enemy_holywater', 'enemy_flagellant'], 'unitgrid'),
     ('nm_engizisyon_B.jpg', ['enemy_lantern', 'enemy_bellpriest', 'enemy_paladin', 'enemy_inquisitor'], 'unitgrid'),
     ('nm_engizisyon_C.jpg', ['enemy_saint', 'enemy_hound', 'enemy_malleus', 'enemy_campanus'], 'unitgrid'),  # aziz heykeli, ak tazı, 2 boss
+    ('nm_engizisyon_D.jpg', ['enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'], 'unitgrid'),  # bosslar ve final
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
 # satırlara düzgün oturmayan sayfalar: her nesnenin kaba kutusu (x0, y0, x1, y1), kutudaki opak pikseller o nesnedir
 BOXES = {
     'nm_engizisyon_C.jpg': [(0, 0, 1000, 700), (1000, 0, 2000, 560), (0, 690, 1060, 1493), (1060, 540, 2000, 1493)],
+    # bir nesne birden çok kutudan oluşabilir (katedral: sağdaki gövde + soldaki itici rahipler, kolosun altında)
+    'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
 }
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}
@@ -165,10 +168,13 @@ def main():
         rgba = remove_magenta(np.asarray(Image.open(os.path.join(HAM, fname)).convert('RGB')))
         if fname in BOXES:
             H, W = rgba.shape[:2]; big = np.zeros((H, W), np.int32); objs = []
-            for k, (x0, y0, x1, y1) in enumerate(BOXES[fname], 1):
-                sub = rgba[y0:y1, x0:x1, 3] > 100; big[y0:y1, x0:x1][sub] = k
-                ys, xs = np.nonzero(sub)
-                objs.append({'k': k, 'x0': x0 + xs.min(), 'x1': x0 + xs.max() + 1, 'y0': y0 + ys.min(), 'y1': y0 + ys.max() + 1})
+            for k, bx in enumerate(BOXES[fname], 1):
+                X0 = Y0 = 1 << 30; X1 = Y1 = 0
+                for x0, y0, x1, y1 in (bx if isinstance(bx, list) else [bx]):
+                    sub = rgba[y0:y1, x0:x1, 3] > 100; big[y0:y1, x0:x1][sub] = k
+                    ys, xs = np.nonzero(sub)
+                    if len(xs): X0, X1, Y0, Y1 = min(X0, x0 + xs.min()), max(X1, x0 + xs.max() + 1), min(Y0, y0 + ys.min()), max(Y1, y0 + ys.max() + 1)
+                objs.append({'k': k, 'x0': X0, 'x1': X1, 'y0': Y0, 'y1': Y1})
         elif kind in ('decor', 'unitgrid'):
             objs, big = objects(rgba, len(names), rows=True)
         else:
@@ -228,7 +234,7 @@ def main():
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if kind in ('unit', 'unitgrid') and im.height > UNIT_H * 1.05:
                 k = UNIT_H / im.height
-                if name in ('enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant', 'enemy_malleus', 'enemy_campanus'): k *= 1.35  # büyükler daha çok çözünürlük
+                if name in ('enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant', 'enemy_malleus', 'enemy_campanus', 'enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'): k *= 1.35  # büyükler daha çok çözünürlük
                 im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
             elif im.width > 700:
                 k = 700 / im.width; im = im.resize((700, round(im.height * k)), Image.LANCZOS)

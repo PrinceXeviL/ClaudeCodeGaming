@@ -1,0 +1,14 @@
+Using the attached reference sheet, draw a sheet of 9 map decoration props for the same 2D tower defense game, in EXACTLY the same art style as the reference: same thick dark outlines, same painterly shading, same dark gothic necromancer color palette (dark purple-grey stone, dead brown wood, mossy green, small green magic glows), seen from the same slightly top-down 3/4 game view, each prop standing on a small patch of dark ground.
+
+Arrange them in a 3x3 grid, each prop complete and fully separated from the others with lots of empty space:
+1. A wooden gallows with an empty noose and a crow sitting on top.
+2. A burned witch-hunter stake: charred wooden post on a pile of black ashes and burnt logs, thin smoke.
+3. A broken quarantine fence: crooked wooden planks with a red painted sun warning sign and rope.
+4. A ruined plague-village cottage: half-collapsed timber house with a caved-in roof, boarded windows.
+5. An old stone well with a broken wooden roof and a bucket.
+6. A crypt hatch in the ground, CLOSED: heavy round stone lid with an iron ring and a carved skull, in a small stone frame.
+7. The same crypt hatch, OPEN: lid pushed aside, dark hole with green ghostly light rising out.
+8. The same crypt hatch, SEALED by the Inquisition: lid covered with gold chains, a gold sun seal and burning candles.
+9. A dead tree full of ravens with a hanging iron cage.
+
+Background: flat solid magenta (#FF00FF) everywhere, no shadows outside the ground patches, no text, no labels, no frames.
