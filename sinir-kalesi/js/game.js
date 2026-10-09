@@ -5297,17 +5297,25 @@ const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
 // dönüşmüş kulede görsel üzerindeki bir noktanın dünya konumu (balista hedefe dönükse aynalanır)
 // Arbaletçi kulesi (11 Eki, Caner): tepedeki platformda kademeye göre 1/2/3 yeşil kemik arbaletçi; Hayalet Arbaletçiler (fan) 3 kızıl hayalet.
 // Her biri ayrı hedef seçer, platformda gezer; atarken arbaleti omzuna kaldırır (aim), cıvatayı bırakınca geri teper (kick), sonra indirip kurar.
-const XBOW = { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.181, speed: 0.22, gap: 0.13, aim: 0.3, kick: 0.16, hold: 0.55,
-  tip: [0.99, 0.24], clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]], lvW: [0.8, 0.9, 1], slots: [[0.5], [0.38, 0.62], [0.32, 0.5, 0.68]] };
+const XBOW = { speed: 0.22, gap: 0.13, aim: 0.3, kick: 0.16, hold: 0.55, tip: [0.99, 0.24], lvW: [0.8, 0.9, 1] };
+// platform ölçüleri kule görseline göre (görsel kesirleri): x gezinme aralığı, y ayak derinliği, h arbaletçi boyu (hepsinde aynı mutlak boy), clip ön korkuluk
+const XBOW_T = {
+  tower_xbow_1: { x: [0.47, 0.47], y: [0.19, 0.22], h: 0.1995, clip: null },
+  tower_xbow_2: { x: [0.37, 0.63], y: [0.17, 0.22], h: 0.191, clip: [[0, 0.08], [0.11, 0.08], [0.5, 0.2], [0.85, 0.09], [1, 0.09]] },
+  tower_xbow_3: { x: [0.3, 0.6], y: [0.21, 0.27], h: 0.166, clip: [[0, 0.17], [0.04, 0.17], [0.43, 0.3], [0.84, 0.16], [1, 0.16]] },
+  tower_archer_fan: { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.181, clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]] },
+};
+const xbowCfg = (t) => XBOW_T[t.spec === 'fan' ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
 const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec === 'fan' ? 3 : t.spec ? 0 : t.lvl + 1);
 function xbowMen(t) {
   const n = xbowCount(t); if (!t.ga) t.ga = [];
   if (t.ga.length > n) t.ga.length = n;
-  while (t.ga.length < n) t.ga.push({ x: XBOW.slots[n - 1][t.ga.length], d: rand(0.2, 0.8), tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null });
+  const C = xbowCfg(t);
+  while (t.ga.length < n) t.ga.push({ x: n === 1 ? (C.x[0] + C.x[1]) / 2 : lerp(C.x[0], C.x[1], t.ga.length / (n - 1)), d: rand(0.2, 0.8), tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null });
   return t.ga;
 }
 function updateXbowMen(t, dt) {
-  const A = xbowMen(t), X = XBOW;
+  const A = xbowMen(t), X = Object.assign({}, XBOW, xbowCfg(t));
   A.forEach((a, i) => {
     a.anim += dt; if (a.aimT > 0) a.aimT -= dt; if (a.kickT > -XBOW.hold) a.kickT -= dt;
     const busy = a.aimT > 0 || a.kickT > -XBOW.hold;
@@ -5323,9 +5331,9 @@ function updateXbowMen(t, dt) {
     } else a.walking = false;
   });
 }
-function xbowFoot(t, ts, a) { return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(XBOW.y[0], XBOW.y[1], a.d) * ts.h }; }
+function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
 function xbowTip(t, ts, a) { // omuza kaldırılmış arbaletin cıvata ucu (dünya koordinatı)
-  const f = xbowFoot(t, ts, a), im = spr('unit_xbow_aim'), h = ts.h * XBOW.h, w = im ? h * im.width / im.height : h * 0.89;
+  const f = xbowFoot(t, ts, a), im = spr('unit_xbow_aim'), h = ts.h * xbowCfg(t).h, w = im ? h * im.width / im.height : h * 0.89;
   return { x: f.x + (XBOW.tip[0] - 0.5) * w * a.face, y: f.y - (1 - XBOW.tip[1]) * h };
 }
 // bir arbaletçi atar: ötekilerin hedeflemediği en öndeki düşmanı seçer (yoksa verilen hedef), döner, nişan alır; cıvata nişan bitince çıkar
@@ -5354,7 +5362,7 @@ function updateXbowRelease(t, dt) {
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
 function drawXbowMen(t, ts, redraw) {
-  const A = xbowMen(t), h = ts.h * XBOW.h, ghost = t.spec === 'fan', pre = ghost ? 'unit_ghostxbow' : 'unit_xbow';
+  const A = xbowMen(t), h = ts.h * xbowCfg(t).h, ghost = t.spec === 'fan', pre = ghost ? 'unit_ghostxbow' : 'unit_xbow';
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
     const f = xbowFoot(t, ts, a), up = a.kickT > -XBOW.hold;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
@@ -6182,7 +6190,8 @@ function drawTowerBody(t) {
     }
     ctx.restore();
     if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
-      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = XBOW.clip;
+      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = xbowCfg(t).clip;
+      if (!C) return; // ön korkuluk yok (1. kademe): ayaklar platformun üstünde görünür
       ctx.save(); ctx.translate(t.x, ts.bottom); ctx.beginPath();
       ctx.moveTo(-ts.w / 2, (C[0][1] - 1) * ts.h); for (const [cx, cy] of C) ctx.lineTo((cx - 0.5) * ts.w, (cy - 1) * ts.h);
       ctx.lineTo(ts.w / 2, 0); ctx.lineTo(-ts.w / 2, 0); ctx.closePath(); ctx.clip();
