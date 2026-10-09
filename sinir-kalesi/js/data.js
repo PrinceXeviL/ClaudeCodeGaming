@@ -802,16 +802,19 @@ if (NECRO) {
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
 
-// ----- Lanet Kulesi (3. bölümde açılır; eski Kan Sunağı yuvası 'altar'): saldırmaz, menzilindeki düşmanları lanetler -----
-// lanetli: fazla hasar alır, yavaşlar, ölürse rise şansıyla çürümüş ölü olarak kendiliğinden dirilir
+// ----- Lanet Kulesi (3. bölümde açılır; eski Kan Sunağı yuvası 'altar'): saldırmaz, hasar vermez; menzilindeki düşmanları lanetler -----
+// 10 Eki (Caner): asıl işi dirençleri kırmak. Lanetli düşman:
+//   curse: her kaynaktan fazla hasar alır · res: zırhı ve büyü direnci bu oranda kırılır, dirençli olduğu saldırı türlerine
+//   (ör. kalkanlının kemik kıymığına) direnci de bu oranda erir · weak: motivasyonu düşer (daha az vurur, daha seyrek saldırır,
+//   davul ve sancak onu coşturamaz) · slow: yavaşlar · rise: ölürse çürümüş ölü olarak dirilme şansı
 if (NECRO) {
   TOWERS.altar = {
     name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2,
-    desc: 'Lanet dalgası yayar: menzildekilere hasar, fazla hasar alma, yavaşlık, ölünce dirilme şansı',
+    desc: 'Hasar vermez: menzildeki düşmanların direncini kırar, onları yavaşlatır ve motivasyonunu düşürür',
     levels: [
-      { cost: 90,  range: 100, pulse: 9,  every: 1.2, curse: 0.15, slow: 0.12, rise: 0.12, title: 'Lanet Kulesi', perk: 'Lanet dalgası: menzildekilere 1,2 sn\'de bir 9 hasar · lanetliler %15 fazla hasar alır · ölürse %12 dirilir' },
-      { cost: 130, range: 110, pulse: 18, every: 1.2, curse: 0.22, slow: 0.16, rise: 0.18, title: 'Lanet Sütunu', perk: 'Lanet dalgası 18 hasar · lanetliler %22 fazla hasar alır · ölürse %18 dirilir' },
-      { cost: 180, range: 120, pulse: 30, every: 1.2, curse: 0.3,  slow: 0.2,  rise: 0.25, title: 'Kara Lanet Mabedi', perk: 'Lanet dalgası 30 hasar · lanetliler %30 fazla hasar alır · ölürse %25 dirilir' },
+      { cost: 90,  range: 100, every: 1.2, curse: 0.12, res: 0.4,  weak: 0.15, slow: 0.15, rise: 0.12, title: 'Lanet Kulesi', perk: 'Lanetliler: zırh ve dirençleri %40 kırılır · %12 fazla hasar alır · %15 yavaş, %15 güçsüz · ölürse %12 dirilir' },
+      { cost: 130, range: 110, every: 1.2, curse: 0.18, res: 0.55, weak: 0.22, slow: 0.2,  rise: 0.18, title: 'Lanet Sütunu', perk: 'Dirençler %55 kırılır · %18 fazla hasar · %20 yavaş, %22 güçsüz · davul ve sancak işlemez · ölürse %18 dirilir' },
+      { cost: 180, range: 120, every: 1.2, curse: 0.25, res: 0.7,  weak: 0.3,  slow: 0.25, rise: 0.25, title: 'Kara Lanet Mabedi', perk: 'Dirençler %70 kırılır · %25 fazla hasar · %25 yavaş, %30 güçsüz · ölürse %25 dirilir' },
     ],
     abilities: [
       { id: 'rite', name: 'Kan Ayini', desc: (r) => `Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar`,

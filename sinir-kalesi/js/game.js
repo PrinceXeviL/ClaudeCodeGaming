@@ -1700,7 +1700,8 @@ function damageEnemy(e, amount, type, quiet, src) {
   if (hitBy || src) e.lastBy = hitBy || src;
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
   e.lastSrc = src || type;
-  const wk = src && e.def.wk && e.def.wk[src];
+  let wk = src && e.def.wk && e.def.wk[src];
+  if (wk && wk < 1 && e.curseT > 0) wk += (1 - wk) * (e.curseRes || 0); // lanet: dirençli olduğu saldırı türüne direnci erir
   if (wk) amount *= wk;
   if (e.rageT > 0) amount *= 0.5; // boss öfkesi
   if (HERO_SKILL) amount *= HERO_POWER; // kahraman yetenek hasarı
@@ -1715,7 +1716,8 @@ function damageEnemy(e, amount, type, quiet, src) {
     if (e.plate <= 0) plateBreak(e);
     if (amount <= 0) return;
   }
-  const red = type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) : 0; // veba: zırh yarıya iner; sancak +zırh
+  const red = (type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) : 0) // veba: zırh yarıya iner; sancak +zırh
+    * (e.curseT > 0 ? 1 - (e.curseRes || 0) : 1); // lanet: zırh ve büyü direnci kırılır
   const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
   dmgNum(e, dealt, quiet);
@@ -1796,7 +1798,7 @@ function killEnemy(e) {
   }
   if (e.curseT > 0 && e.blightN) { // kara lanet: en yakınlara sıçrar
     G.enemies.filter(o => !o.dead && o !== e && !(o.curseT > 0.5) && dist(o.x, o.y, e.x, e.y) < 90).sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))
-      .slice(0, e.blightN).forEach(o => { o.curseT = 4; o.curseK = e.curseK; o.curseRise = e.curseRise; o.blightN = e.blightN;
+      .slice(0, e.blightN).forEach(o => { o.curseT = 4; o.curseK = e.curseK; o.curseRise = e.curseRise; o.curseRes = e.curseRes; o.curseWeak = e.curseWeak; o.blightN = e.blightN;
         G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - 14, target: o, x1: o.x, y1: aimY(o), t: 0, dur: 0.3, w: 0.7, seed: rand(0, 99), col: 'rgb(190,90,255)' }); });
   }
   for (let i = 0; i < 5; i++) {
@@ -2411,7 +2413,7 @@ function updateEnemy(e, dt) {
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
   if (AU) for (const o of G.enemies) {
-    if (o === e || o.dead || dist(o.x, o.y, e.x, e.y) > AU.r) continue;
+    if (o === e || o.dead || o.curseT > 0 || dist(o.x, o.y, e.x, e.y) > AU.r) continue; // lanetli coşmaz
     if (AU.armor) o.armT = 0.3; if (AU.speed) o.drumT = 0.3;
   }
   // davulcu: iki tokmakla sırayla vurur (güm-güm), her ikinci vuruşta davul sesi ve yerde dalga
@@ -2557,10 +2559,10 @@ function updateEnemy(e, dt) {
     if (tgt) {
       if (!RG.moving) e.face = tgt.x < e.x ? -1 : 1;
       if (e.rcd <= 0) {
-        e.rcd = RG.rate; e.shootT = 0.45;
+        e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
-          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
+          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
     }
@@ -2568,7 +2570,7 @@ function updateEnemy(e, dt) {
   if (e.atGate && !e.blocker) { // kapıya vuruyor
     if (!G.gate || G.gate.hp <= 0) { e.atGate = false; e.inMelee = false; e.p = G.inner || e.p; e.d = 0; return; }
     e.inMelee = true; e.atk = (e.atk ?? 0.3) - dt;
-    if (e.atk <= 0) { e.atk = e.def.rate; gateHit(e, roll(e.def.dmg) * (e.dmgMul || 1) * (e.def.machine ? GATE.machine : 1) * (e.def.chief ? 3 : 1)); }
+    if (e.atk <= 0) { e.atk = e.def.rate * curseSlowAtk(e); gateHit(e, roll(e.def.dmg) * foeDmgMul(e) * (e.def.machine ? GATE.machine : 1) * (e.def.chief ? 3 : 1)); }
     return;
   }
   if (e.blocker) {
@@ -2591,10 +2593,10 @@ function updateEnemy(e, dt) {
       e.face = e.blocker.x < e.x ? -1 : 1;
       e.atk -= dt;
       if (e.atk <= 0) {
-        e.atk = e.def.rate; e.atkV = Math.floor(Math.random() * 3);
+        e.atk = e.def.rate * curseSlowAtk(e); e.atkV = Math.floor(Math.random() * 3);
         const victim = e.blocker;
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
-        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
+        damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
         sfx('clash');
       }
     }
@@ -7857,7 +7859,7 @@ function infoText() {
   return null;
 }
 function towerStats(type, L) {
-  if (type === 'altar') return `Menzil ${L.range} · lanet dalgası ${L.pulse} hasar · lanetliler +%${Math.round(L.curse * 100)} hasar alır · %${Math.round(L.rise * 100)} dirilme`;
+  if (type === 'altar') return `Menzil ${L.range} · dirençler -%${Math.round(L.res * 100)} · +%${Math.round(L.curse * 100)} hasar alır · %${Math.round(L.slow * 100)} yavaş · %${Math.round(L.weak * 100)} güçsüz`;
   if (type === 'barracks') return `3 asker · Can ${L.hp} · Hasar ${L.dmg[0]}-${L.dmg[1]} · Zırh %${Math.round(L.armor * 100)}`;
   let s = `Hasar ${L.dmg[0]}-${L.dmg[1]} · Menzil ${L.range} · Atış ${L.rate}sn`;
   if (L.splash) s += ' · Alan';
@@ -8962,26 +8964,29 @@ function altarBuff(t) {
   }
   return buff || dmg ? { buff, dmg } : null;
 }
+// lanetli düşmanın motivasyonu düşer: daha az vurur, daha seyrek saldırır
+const foeDmgMul = (e) => (e.dmgMul || 1) * (e.curseT > 0 ? 1 - (e.curseWeak || 0) : 1);
+const curseSlowAtk = (e) => (e.curseT > 0 ? 1 + (e.curseWeak || 0) : 1);
 function updateAltar(t, dt) {
   const L = effLevel(t), bl = abRank(t, 'blight');
-  // lanet dalgası: kuleden yayılan mor halka, menzildeki herkese doğrudan hasar
+  // lanet dalgası: kuleden yayılan mor halka (hasar vermez, yalnız laneti tazeler ve gösterir)
   t.pulseCd = (t.pulseCd ?? 0.6) - dt;
   if (t.pulseCd <= 0) {
     const near = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= L.range);
     if (near.length) {
       t.pulseCd = L.every; t.shotAnim = 0.35;
       G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, col: '190,90,255', t: 0, dur: 0.55 });
-      hitBy = 'curse';
       for (const e of near) {
-        damageEnemy(e, L.pulse, 'magic', false, 'curse');
         for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(4, 24), vy: -rand(15, 40), col: i % 2 ? '190,90,255' : '120,255,140', s0: rand(2.5, 4), s1: 0.4, life: rand(0.4, 0.7) });
       }
-      hitBy = null; sfx('zap');
+      sfx('zap');
     } else t.pulseCd = 0.3;
   }
   for (const e of G.enemies) {
     if (e.dead || e.under || dist(e.x, e.y, t.x, t.y) > L.range) continue;
     e.curseT = Math.max(e.curseT || 0, 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise);
+    e.curseRes = Math.max(e.curseRes || 0, L.res || 0); e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0);
+    e.drumT = 0; e.armT = 0; // davul ve sancak coşkusu söner
     if (bl) e.blightN = Math.max(e.blightN || 0, bl.n);
     slowEnemy(e, L.slow, 0.4);
   }
@@ -9316,7 +9321,7 @@ function drawCodexTower(id, px, py, pw, ph) {
   txt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 70, 10, '#a898b8', 'left', '700', FONT_B, false);
   const stats = [['Maliyet', L.cost + ' altın'], ['Menzil', L.range + '']];
   if (id === 'barracks') stats.push(['İskelet canı', L.hp + ''], ['İsk. hasarı', `${L.dmg[0]}–${L.dmg[1]}`], ['İsk. zırhı', `%${Math.round(L.armor * 100)}`], ['Doğma süresi', L.respawn + ' sn']);
-  else if (id === 'altar') stats.push(['Dalga hasarı', `${L.pulse}`], ['Lanet', `+%${Math.round(L.curse * 100)}`], ['Dirilme', `%${Math.round(L.rise * 100)}`]);
+  else if (id === 'altar') stats.push(['Direnç kırma', `%${Math.round(L.res * 100)}`], ['Fazla hasar', `+%${Math.round(L.curse * 100)}`], ['Yavaşlık', `%${Math.round(L.slow * 100)}`], ['Güçsüzlük', `%${Math.round(L.weak * 100)}`], ['Dirilme', `%${Math.round(L.rise * 100)}`]);
   else { stats.push(['Hasar', `${L.dmg[0]}–${L.dmg[1]}`], ['Atış arası', L.rate + ' sn']); if (L.splash) stats.push(['Alan', L.splash + '']); }
   let y = codexStats(stats, x0, py + 92) + 4;
   wrapLines(L.perk || T.desc, pw - 236, 11, '700', FONT_B, 3).forEach(l => { txt(l, x0, y, 11, '#f0e2c4', 'left', '700', FONT_B, false); y += 15; });
