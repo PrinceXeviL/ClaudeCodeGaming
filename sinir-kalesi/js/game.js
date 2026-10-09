@@ -2617,7 +2617,7 @@ function updateBowSoldier(s, dt) {
 function updateWall(s, dt) {
   for (const e of G.enemies) {
     if (e.dead || e.def.flying || e.under || e.blocker || e.siege !== undefined || e.reviveT > 0) continue;
-    if (dist(e.x, e.y, s.x, s.y) < 24) e.blocker = s;
+    if (dist(e.x, e.y, s.x, s.y) < 28) e.blocker = s;
   }
 }
 function updateSoldier(s, dt) {
@@ -3091,9 +3091,9 @@ function castNecro(id, x, y) {
     const dir = pathPos(q.p, q.along);
     G.soldiers.push({ militia: true, wall: true, x: q.x, y: q.y, rx: q.x, ry: q.y, hp: S.hp, maxHp: S.hp, dmg: [0, 0], armor: 0.3, rate: 99, speed: 0,
       engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: S.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
-    G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.6 });
-    for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: q.x + rand(-22, 22), y: q.y + rand(-6, 6), vx: rand(-40, 40), vy: -rand(60, 140), g: 420, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#efe6cc' : '#6a5a48', s0: rand(1.6, 2.6), s1: 1, life: rand(0.4, 0.7) });
-    impactFx(q.x, q.y - 14, '235,225,200', 1.4); shakeScreen(2, 0.2); sfx('build'); mortSay('wall', true);
+    G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.9 });
+    G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 52, col: '110,255,130', t: 0, dur: 0.5 });
+    impactFx(q.x, q.y - 10, '200,255,200', 1.2); shakeScreen(4, 0.35); sfx('bash'); setTimeout(() => sfx('bonefall'), 120); mortSay('wall', true);
   } else if (id === 'nm_fear') {
     G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 }); mortSay('fear', true);
     // Mortimer'dan hedefe uzanan mor ruh dalgası
@@ -5183,31 +5183,86 @@ function drawEnemy(e) {
 }
 
 // Kemik Duvarı çizimi: yola dik dizilmiş kemik kazıklar, aralarında kaburgalar, tepelerde kafatası; yerden yükselir, hasar aldıkça çatlar
+// Kemik Duvarı: önce yol toprağı yarılır (çatlaklardan yeşil ışık sızar), sonra kaburga, diş ve uyluk kemikleri ortadan dışa doğru
+// sırayla topraktan fışkırır (her biri çıkarken toprak parçaları saçar), ortada yeşil gözlü büyük kafatası; süre bitince toprağa geri gömülür.
+const BWALL = { span: 66, cols: 13, crackT: 0.12, rise: 0.26, stagger: 0.035, sink: 0.45 };
+function boneWallGeom(s) {
+  if (s.geo) return s.geo;
+  const r = seeded(Math.floor(s.seed * 9973) + 7), cr = [];
+  for (let k = 0; k < 7; k++) { // çatlaklar: duvar çizgisinden iki yana zikzak
+    const u = (r() - 0.5) * BWALL.span * 0.9, side = k % 2 ? 1 : -1, pts = [[u, 0]];
+    let x = u, y = 0; for (let j = 0; j < 4; j++) { x += (r() - 0.5) * 9; y += side * (4 + r() * 6); pts.push([x, y]); }
+    cr.push(pts);
+  }
+  const cols = [];
+  for (let i = 0; i < BWALL.cols; i++) {
+    const kind = i === (BWALL.cols >> 1) ? 'skull' : (i % 3 === 0 ? 'femur' : 'rib');
+    cols.push({ kind, h: 22 + r() * 13 - Math.abs(i - (BWALL.cols - 1) / 2) * 1.2, lean: (r() - 0.5) * 0.35 + (i < BWALL.cols / 2 ? -0.08 : 0.08), bend: (r() < 0.5 ? -1 : 1) * (0.25 + r() * 0.2), w: 5 + r() * 2 });
+  }
+  return (s.geo = { cr, cols });
+}
 function drawBoneWall(s) {
-  const age = G.t - s.born, rise = easeOutBack(clamp(age / 0.35, 0, 1)), endA = clamp(s.life / 0.4, 0, 1), dmg = 1 - s.hp / s.maxHp;
-  const nx = -s.dy, ny = s.dx * 0.5; // yola dik yön (perspektifte basık)
-  ctx.save(); ctx.globalAlpha = endA;
-  shadow(s.x, s.y + 2, 30, 8);
-  const N = 9;
-  for (let i = 0; i < N; i++) {
-    const u = (i / (N - 1) - 0.5) * 52, x = s.x + nx * u, y = s.y + ny * u, hh = (16 + ((i * 7 + s.seed * 3) % 5) * 2.2) * rise * (1 - dmg * 0.25 * ((i % 3) / 2));
-    const lean = Math.sin(i * 1.9 + s.seed) * 0.12 + (s.flash > 0 ? rand(-0.08, 0.08) : 0);
-    ctx.save(); ctx.translate(x, y); ctx.rotate(lean);
-    roundRect(-2.3, -hh, 4.6, hh, 2, '#efe6cc', '#2a1c10', 1.2);
-    circle(-1.6, -hh, 2.4, '#efe6cc', '#2a1c10', 1); circle(1.6, -hh, 2.4, '#efe6cc', '#2a1c10', 1); // kemik başı
+  const age = G.t - s.born, dmg = 1 - s.hp / s.maxHp, G0 = boneWallGeom(s);
+  const nx = -s.dy, ny = s.dx; // yola dik yön: duvar yolun bir kenarından öbürüne uzanır
+  const sink = s.life < BWALL.sink ? 1 - Math.max(0, s.life) / BWALL.sink : 0; // süre bitince gömülür
+  const P = (u, v = 0) => [s.x + nx * u + s.dx * v, s.y + ny * u + s.dy * v];
+  ctx.save();
+  // yarılan toprak: koyu çatlaklar, içinden yeşil ışık
+  const ck = clamp(age / BWALL.crackT, 0, 1) * (1 - sink);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const pts of G0.cr) {
+    const n = Math.max(2, Math.ceil(pts.length * ck));
+    ctx.beginPath(); pts.slice(0, n).forEach(([u, v], j) => { const [x, y] = P(u, v); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.strokeStyle = 'rgba(20,12,6,0.85)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(110,255,130,${(0.35 + 0.25 * Math.sin(time * 6 + s.seed)) * ck})`; ctx.lineWidth = 1.2; ctx.stroke(); ctx.restore();
+  }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 4, 38, '110,255,130', 0.22 * ck + (s.flash > 0 ? s.flash * 3 : 0)); ctx.restore();
+  // toprak yığını: duvar çizgisi boyunca kabarmış topaklar
+  shadow(s.x, s.y + 3, 18 + Math.abs(nx) * BWALL.span * 0.5, 8 + Math.abs(ny) * BWALL.span * 0.5);
+  for (let i = 0; i < 12; i++) { const [x, y] = P((i / 11 - 0.5) * BWALL.span * 1.08, (i % 2 ? 6 : -6)); circle(x, y + 1, (3.4 + (i % 3)) * ck, '#4a3624', '#22160c', 1); }
+  // kemikler: ortadan dışa sırayla fışkırır
+  const mid = (BWALL.cols - 1) / 2;
+  s.popped = s.popped || [];
+  const order = G0.cols.map((c, i) => [i, P((i / (BWALL.cols - 1) - 0.5) * BWALL.span, i % 2 ? 4 : -4)[1]]).sort((a, b) => a[1] - b[1]).map(o => o[0]); // arkadaki önce
+  order.forEach((i) => {
+    const c = G0.cols[i];
+    const t0 = BWALL.crackT * 0.6 + Math.abs(i - mid) * BWALL.stagger, k = clamp((age - t0) / BWALL.rise, 0, 1);
+    if (k > 0 && !s.popped[i]) { // çıkış anı: toprak ve kemik parçaları
+      s.popped[i] = true; const [x, y] = P((i / (BWALL.cols - 1) - 0.5) * BWALL.span);
+      for (let j = 0; j < 4; j++) emit(G.parts, { kind: 'chunk', x: x + rand(-3, 3), y, vx: rand(-45, 45), vy: -rand(70, 160), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: j % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.4, 2.4), s1: 1, life: rand(0.4, 0.7) });
+    }
+    if (k <= 0) return;
+    const rise = easeOutBack(k) * (1 - sink), [x, y] = P((i / (BWALL.cols - 1) - 0.5) * BWALL.span, i % 2 ? 4 : -4); // iki sıra: duvar kalın görünsün
+    const hh = c.h * rise * (1 - dmg * 0.3 * (i % 3) / 2), shake = s.flash > 0 ? rand(-0.06, 0.06) : 0;
+    // uçlar düşmanın geldiği yöne eğik (dikenli barikat); yol dikeyse yalnız hafif yalpa
+    const toward = -Math.sign(s.dx) * Math.min(1, Math.abs(s.dx)) * (0.38 + 0.2 * ((i * 5) % 3) / 2) * (c.kind === 'skull' ? 0.2 : 1);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(c.lean * 0.6 + toward + shake);
+    if (c.kind === 'skull') {
+      roundRect(-3, -hh * 0.8, 6, hh * 0.8, 2.5, '#e9dfc4', '#22160c', 1.2); // omurga gövdesi
+      for (let v = 0.2; v < 0.8; v += 0.18) { ctx.strokeStyle = '#22160c'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-3, -hh * v); ctx.lineTo(3, -hh * v); ctx.stroke(); }
+      ctx.restore();
+      drawSkullIcon(x, y - hh * 0.8 - 6, 8 * Math.min(1, rise));
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - hh * 0.8 - 7, 14, '120,255,140', 0.35 + 0.2 * Math.sin(time * 5)); ctx.restore();
+      return;
+    }
+    if (c.kind === 'femur') {
+      roundRect(-c.w / 2, -hh, c.w, hh, c.w / 2, '#efe6cc', '#22160c', 1.2);
+      circle(-c.w * 0.4, -hh, c.w * 0.55, '#efe6cc', '#22160c', 1); circle(c.w * 0.4, -hh, c.w * 0.55, '#efe6cc', '#22160c', 1);
+    } else { // kaburga / diş: kıvrık, ucu sivri
+      const tipX = c.bend * hh * 0.45;
+      ctx.beginPath(); ctx.moveTo(-c.w / 2, 0); ctx.quadraticCurveTo(-c.w / 2 + tipX * 0.2, -hh * 0.6, tipX, -hh);
+      ctx.quadraticCurveTo(c.w / 2 + tipX * 0.3, -hh * 0.55, c.w / 2, 0); ctx.closePath();
+      const gr = ctx.createLinearGradient(0, 0, 0, -hh); gr.addColorStop(0, '#b8ab88'); gr.addColorStop(0.5, '#efe6cc'); gr.addColorStop(1, '#fff8e6');
+      ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = '#22160c'; ctx.lineWidth = 1.2; ctx.stroke();
+    }
     if (dmg > 0.4 && i % 2) { ctx.strokeStyle = '#5a4630'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-1.5, -hh * 0.6); ctx.lineTo(1.2, -hh * 0.45); ctx.lineTo(-0.8, -hh * 0.3); ctx.stroke(); }
     ctx.restore();
-    if (i % 4 === 0 && i < N - 1) drawSkullIcon(x, y - hh - 4, 4.2);
-  }
-  // kaburga kuşakları
-  for (const k of [0.45, 0.75]) {
-    ctx.strokeStyle = '#2a1c10'; ctx.lineWidth = 3; ctx.beginPath();
-    ctx.moveTo(s.x - nx * 26, s.y - ny * 26 - 16 * k * rise); ctx.quadraticCurveTo(s.x, s.y - 16 * k * rise - 4, s.x + nx * 26, s.y + ny * 26 - 16 * k * rise); ctx.stroke();
-    ctx.strokeStyle = '#d8cfb0'; ctx.lineWidth = 1.6; ctx.stroke();
-  }
-  if (s.flash > 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 10, 26, '255,255,255', s.flash * 4); }
+  });
+  // tabanda topraktan yarı çıkmış kafatasları (önde)
+  const sk = clamp((age - BWALL.crackT - 0.25) / 0.25, 0, 1) * (1 - sink);
+  if (sk > 0) for (let j = 0; j < 4; j++) { const [x, y] = P(((j + 0.5) / 4 - 0.5) * BWALL.span * 0.85, 7); drawSkullIcon(x, y - 2 * sk, 4.6 * sk); }
   ctx.restore();
-  if (s.hp < s.maxHp) hpBar(s.x, s.y - 34, 18, s.hp / s.maxHp, '#e8dcb8');
+  if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 46, 22, s.hp / s.maxHp, '#e8dcb8');
 }
 function drawSoldier(s) {
   if (s.wall) { drawBoneWall(s); return; }
