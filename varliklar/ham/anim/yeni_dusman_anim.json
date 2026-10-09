@@ -1,0 +1,86 @@
+[
+ {
+  "name": "enemy_wardog_walk",
+  "ref": "ham/anim/enemy_wardog_ref.png",
+  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness trots in place, all four legs stepping in a natural dog walk cycle, tail swaying. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_wardog_atk",
+  "ref": "ham/anim/enemy_wardog_ref.png",
+  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness lunges forward and bites hard with its jaws, then steps back, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_wardog_die",
+  "ref": "ham/anim/enemy_wardog_ref.png",
+  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness is struck and dies: it yelps, stumbles and falls onto its side, then lies still on the ground. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_chariot_walk",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it gallops in place: the horse runs with all four legs moving, the chariot wheels turn, the charioteer sways with the motion. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_chariot_atk",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it the charioteer thrusts his spear forward in one strong strike while the horse rears slightly, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_chariot_die",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it is struck and destroyed: the horse collapses, the chariot tips over onto its side and the charioteer falls out, then everything lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_siegetower_walk",
+  "ref": "ham/anim/enemy_siegetower_ref.png",
+  "prompt": "a cartoon tall wooden roman siege tower on four wooden wheels with red panels and gold sun emblems rolls forward in place: the wooden wheels turn, the tower sways and creaks slightly, the banner flutters. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_siegetower_die",
+  "ref": "ham/anim/enemy_siegetower_ref.png",
+  "prompt": "a cartoon tall wooden roman siege tower on four wooden wheels with red panels and gold sun emblems is destroyed: the wooden tower cracks, leans and collapses into a pile of broken planks and wheels, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_eagle_walk",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest flies in place: it flaps its wings up and down in a steady flight cycle, hovering. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_eagle_atk",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest dives forward and strikes with its talons, then flaps back up, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ }
+]
