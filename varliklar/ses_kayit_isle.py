@@ -2,10 +2,9 @@
 
 Kaynaklar (varliklar/ham/ses/, CC-BY 3.0 — ses/LISANS.txt'te adları yazılı):
   baradari_*.wav     Michel Baradari, "11 male human pain/death sounds" (OpenGameArt)
-  spookymodem_*.wav  spookymodem, "Battlecry" (OpenGameArt)
 
-Çıktı sinir-kalesi/ses/: pain_1..8 (acı), dvoice_1..5 (ölüm iniltisi), scream_1..4 (korku çığlığı),
-warcry_1..4 (savaş çığlığı; 2-4 birkaç sesin üst üste bindiği bölük bağırışı). Manifesti günceller.
+Çıktı sinir-kalesi/ses/: pain_1..8 (acı), dvoice_1..5 (ölüm iniltisi), scream_1..4 (korku çığlığı). Manifesti günceller.
+Savaş çığlığı sesi yok (beğenilmedi; dalga başında yalnız yazı balonu çıkar).
 Çalıştır: python3 varliklar/ses_kayit_isle.py
 """
 import json
@@ -48,15 +47,6 @@ def shelf(x, k=0.35):
     return y
 
 
-def layer(parts):
-    """[(ses, gecikme sn, kazanç)] üst üste bindir (bölük bağırışı)"""
-    n = max(len(s) + int(d * SR) for s, d, _ in parts)
-    out = np.zeros(n)
-    for s, d, g in parts:
-        i = int(d * SR); out[i:i + len(s)] += s * g
-    return out
-
-
 def save(name, x, rms_db):
     x = norm(fade(x.copy(), 0.003, 0.04), rms_db)
     with wave.open(os.path.join(OUT, name + '.wav'), 'wb') as w:
@@ -77,11 +67,6 @@ def main():
     # korku: aynı kayıtlar biraz daha ince (paniğe kapılmış asker)
     for i, (n, k) in enumerate([('painh', 1.1), ('paino', 1.12), ('die1', 1.14), ('pain4', 1.1)], 1):
         made.append(save(f'scream_{i}', pitch(B(n), k), -20))
-    cry = shelf(load('spookymodem_battlecry'), 0.6)
-    made.append(save('warcry_1', cry, -19))
-    made.append(save('warcry_2', layer([(pitch(cry, 1.0), 0, 1), (pitch(cry, 1.06), 0.05, 0.8), (pitch(cry, 0.95), 0.11, 0.7)]), -19))
-    made.append(save('warcry_3', layer([(pitch(cry, 1.04), 0, 1), (pitch(cry, 0.97), 0.07, 0.8), (pitch(cry, 1.1), 0.13, 0.6)]), -19))
-    made.append(save('warcry_4', layer([(pitch(cry, 0.98), 0, 1), (pitch(cry, 1.08), 0.04, 0.75), (pitch(cry, 1.02), 0.1, 0.7), (pitch(cry, 0.93), 0.16, 0.6)]), -19))
     mp = os.path.join(OUT, 'manifest.json')
     man = json.load(open(mp))
     kinds = {m.rsplit('_', 1)[0] for m in made}
