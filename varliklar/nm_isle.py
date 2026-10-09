@@ -22,7 +22,8 @@ SHEETS = [
     ('nm_sunak_4.jpg', ['tower_altar_rite', 'tower_altar_blight'], 'decor'),  # 4. kademe: Kan Mabedi, Kara Lanet Mabedi
     ('nm_kazan_4.jpg', ['tower_artillery_corpse', 'tower_artillery_plague'], 'decor'),  # 4. kademe: Ceset Mancınığı, Kara Veba Kazanı
     ('nm_fener_4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'decor'),  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
-    ('nm_dikilitas_4.jpg', ['tower_archer_nail', 'tower_archer_fan'], 'decor'),  # 4. kademe: Kemik Balistası (Ruh Çivisi), Hayalet Okçular (Kemik Yelpazesi)
+    ('nm_dikilitas_4.jpg', ['tower_archer_nail', None], 'decor'),  # 4. kademe: Kemik Balistası (Hayalet Okçular artık nm_hayalet_okcular.jpg'den)
+    ('nm_hayalet_okcular.jpg', ['unit_ghostarcher', 'unit_ghostarcher_draw', 'tower_archer_fan'], 'decor'),  # 10 Eki: tepesi boş kule + üstünde gezen 2 elit okçu (duruş, gerilmiş yay)
     ('nm_mezarlik.jpg', ['tower_barracks_1', 'tower_barracks_2', 'tower_barracks_3'], 'tower'),  # 10 Eki: Savaşçı Mezarlığı (eski: nm_mahzen.jpg)
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
     ('nm_fener.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # Ruh Feneri
@@ -65,7 +66,7 @@ BOXES = {
 BOX_EDGE_DROP = {'nm2_dekor_A.jpg'}
 # renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
 # (10 Eki: Caner hayalet okçuları kırmızı istedi)
-HUE_TOP = {'tower_archer_fan': (0.45, 356)}
+HUE_TOP = {}  # (eski Hayalet Okçular kulesindeki okçuların rengi; yeni kulede okçular ayrı çiziliyor)
 # magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
 GLOW_FIX = {'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir

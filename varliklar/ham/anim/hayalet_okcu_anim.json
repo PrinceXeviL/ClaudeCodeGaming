@@ -1,0 +1,19 @@
+[
+ {
+  "name": "unit_ghostarcher_walk",
+  "ref": "ham/anim/unit_ghostarcher_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "an elite cartoon skeleton archer with glowing red eyes, a tattered dark crimson hooded cloak, bone pauldrons with small skulls, a large curved black bone longbow with a glowing red string and a quiver of red arrows walks in place with slow stalking steps, a full walk cycle, cloak swaying. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_ghostarcher_atk",
+  "ref": "ham/anim/unit_ghostarcher_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "an elite cartoon skeleton archer with glowing red eyes, a tattered dark crimson hooded cloak, bone pauldrons with small skulls, a large curved black bone longbow with a glowing red string and a quiver of red arrows raises the bow, draws a glowing red arrow, aims and releases it to the right with a red flash, then lowers the bow back exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]

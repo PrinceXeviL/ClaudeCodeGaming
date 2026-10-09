@@ -1,0 +1,11 @@
+Using the attached reference image (our "Ghost Archers" bone obelisk tower), draw for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly shading, same chunky cartoon proportions, same colors.
+
+Draw 3 separate things with lots of empty space between them:
+
+1. The SAME tower as the reference, but with the top platform EMPTY: no archers on it, only the flat stone/bone platform with its railing of bones, so characters can stand on it. Same size, same angle, same details otherwise.
+
+2. An elite crimson ghost-skeleton archer, standing, side view facing RIGHT: taller and more menacing than a normal skeleton, glowing red eyes, tattered dark crimson hooded cloak, bone pauldrons with small skull ornaments, a large curved black bone longbow with a glowing red string, a quiver of red-fletched arrows, faint crimson spectral mist around the feet.
+
+3. The same elite archer in a full-draw shooting pose, side view facing RIGHT: bow raised and fully drawn, a glowing red arrow nocked, body leaning forward.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
