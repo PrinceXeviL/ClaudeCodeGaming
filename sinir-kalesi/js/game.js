@@ -228,6 +228,7 @@ const SOUND = {
   dvoice:  { vol: 0.2, gap: 0.12, max: 2 },                         // ölüm iniltisi (deathVoice)
   scream:  { vol: 0.2, gap: 0.08, max: 3, rate: [0.95, 1.08] },    // korku çığlığı
   horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi)
+  bonefall: { vol: 0.42, gap: 0.12, max: 2, rate: [0.92, 1.1] },      // iskelet ölünce kemikleri saçılır
   warcry:  { vol: 0.34, gap: 1.6, max: 2, rate: [0.94, 1.06] },     // düşman ordusunun savaş çığlığı
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
@@ -469,9 +470,9 @@ function sfx(kind, rate) {
 
 // Düşman sesleri (ses/pain_*, dvoice_*: varliklar/ses_uret.py formant sentezi). Perde düşmana göre: ağır/boss kalın, hafif ince.
 // Her düşmanın kendi perdesi vardır (e.vp) ki kalabalıkta aynı adam bağırıyor gibi olmasın.
-const VOICE_P = { heavy: 0.86, gladiator: 0.9, cavalry: 0.95, priest: 1.12, assassin: 1.08, solarcher: 1.04 };
+const VOICE_P = { heavy: 0.95, gladiator: 0.97, cavalry: 0.98, priest: 1.1, assassin: 1.08, solarcher: 1.05 };
 function voicePitch(e) {
-  if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.93, 1.07) * (e.def.chief ? 0.8 : 1);
+  if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.94, 1.08) * (e.def.chief ? 0.9 : 1);
   return e.vp;
 }
 const MUTE_VOICE = (e) => !!e.def.machine; // kuşatma makinesi bağırmaz
@@ -1765,6 +1766,11 @@ function damageSoldier(s, amount) {
     }
     s.dead = true; s.hp = 0;
     if (s.hero) mortSay('heroDown');
+    else if (NECRO && !s.wall) { // iskelet dağılır: kemikler ve kafatası saçılır
+      sfx('bonefall');
+      for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: s.x + rand(-6, 6), y: s.y - rand(4, 20), vx: rand(-70, 70), vy: -rand(60, 170), g: 520, vr: rand(-14, 14), rot: rand(0, 6), col: i % 4 ? '#efe6cc' : '#cbbf9c', s0: rand(1.2, 2.4), s1: 1, life: rand(0.6, 1) });
+      emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 10, col: '120,255,140', s0: 10, s1: 22, life: 0.35, a: 0.5 });
+    }
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });

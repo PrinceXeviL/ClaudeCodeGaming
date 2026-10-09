@@ -107,6 +107,20 @@ def bone_click(scale=1.0, dur=0.09):
     return body
 
 
+def bone_fall(k):
+    """iskelet dağılması: kafatası ve kemikler yere saçılır; ilk kuru çatırtı, sonra seken irili ufaklı kemik tıkırtıları (zamanla seyrelir)"""
+    dur = 0.9; n = int(SR * dur); out = np.zeros(n)
+    c = bone_click(0.85 * k, 0.12) * 1.3; out[:len(c)] += c                      # ilk kırılma
+    t = 0.035
+    for i in range(int(rng.integers(9, 13))):
+        sc = rng.uniform(0.8, 1.45) * k; c = bone_click(sc, 0.08) * rng.uniform(0.25, 0.8) * (1 - t / dur) ** 0.7
+        j = int(SR * t); out[j:j + len(c)] += c[:max(0, n - j)]
+        t += rng.uniform(0.02, 0.09) * (1 + i * 0.12)
+        if t > dur - 0.1: break
+    th = thud(120 * k, 0.15, 0.04) * 0.35; out[:len(th)] += th                   # gövde yere değer
+    return out
+
+
 def thud(f0=150, dur=0.12, tau=0.035):
     t = t_axis(dur)
     f = f0 * (1 + 0.6 * np.exp(-t / 0.01))
@@ -236,17 +250,17 @@ def voice(dur, f0_fn, vow_path, amp_fn, growl=0.0, breath=0.04, fk=1.0):
 
 def pain(k, vw):
     dur = rng.uniform(0.17, 0.3)
-    base = 150 * k
-    f0 = lambda u: base * (1 + 0.25 * np.exp(-((u - 0.12) / 0.1) ** 2)) * (1 - 0.32 * u)
-    amp = lambda u: np.minimum(1, u / 0.06) * np.where(u > 0.7, (1 - u) / 0.3, 1)
-    return voice(dur, f0, [(0, vw[0]), (1, vw[1])], amp, growl=0.15 if k < 1 else 0, breath=0.03)
+    base = 190 * k
+    f0 = lambda u: base * (1 + 0.22 * np.exp(-((u - 0.12) / 0.1) ** 2)) * (1 - 0.28 * u)
+    amp = lambda u: np.minimum(1, u / 0.05) * np.where(u > 0.65, (1 - u) / 0.35, 1)
+    return voice(dur, f0, [(0, vw[0]), (1, vw[1])], amp, growl=0, breath=0.05, fk=1.07)
 
 
 def dvoice(k):
     dur = rng.uniform(0.5, 0.75)
-    f0 = lambda u: 175 * k * (1 + 0.15 * np.exp(-((u - 0.1) / 0.08) ** 2)) * (1 - 0.5 * u)
+    f0 = lambda u: 215 * k * (1 + 0.18 * np.exp(-((u - 0.1) / 0.08) ** 2)) * (1 - 0.42 * u)
     amp = lambda u: np.minimum(1, u / 0.05) * np.where(u > 0.55, ((1 - u) / 0.45) ** 1.5, 1)
-    return voice(dur, f0, [(0, 'a'), (0.5, 'ʌ'), (1, 'ə')], amp, growl=0.35, breath=0.05)
+    return voice(dur, f0, [(0, 'a'), (0.5, 'ʌ'), (1, 'ə')], amp, growl=0.05, breath=0.06, fk=1.06)
 
 
 def scream(k):
@@ -264,9 +278,9 @@ def warcry(k, syl):
         parts = []
         for vw, d, rise in syl:
             dur = d * rng.uniform(0.92, 1.08)
-            f0 = lambda u, kk=kk, rise=rise: 128 * kk * (1 + rise * np.minimum(1, u / 0.25)) * (1 - 0.18 * np.maximum(0, u - 0.55))
+            f0 = lambda u, kk=kk, rise=rise: 165 * kk * (1 + rise * np.minimum(1, u / 0.25)) * (1 - 0.18 * np.maximum(0, u - 0.55))
             amp = lambda u: np.minimum(1, u / 0.07) * np.where(u > 0.7, (1 - u) / 0.3, 1)
-            parts.append(voice(dur, f0, [(0, vw[0]), (1, vw[1])], amp, growl=0.3, breath=0.04))
+            parts.append(voice(dur, f0, [(0, vw[0]), (1, vw[1])], amp, growl=0.08, breath=0.05, fk=1.05))
         x = np.concatenate(parts)
         voices.append(np.concatenate([np.zeros(int(SR * dl)), x]))
     n = max(len(x) for x in voices); out = np.zeros(n)
@@ -292,6 +306,7 @@ def main():
     for i, k in enumerate([0.75, 0.9, 1.0, 1.15, 1.3], 1): made.append(save(f'dvoice_{i}', dvoice(k), -18))
     for i, k in enumerate([0.85, 1.0, 1.15, 1.3], 1): made.append(save(f'scream_{i}', scream(k), -18))
     made.append(save('horn_1', horn(), -17))
+    for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'bonefall_{i}', bone_fall(k), -19))
     CR = [[('aa', 0.42, 0.25)], [('uə', 0.16, 0.1), ('aa', 0.38, 0.3)], [('ea', 0.3, 0.35)], [('oo', 0.2, 0.05), ('aa', 0.34, 0.25)]]
     for i, syl in enumerate(CR, 1):
         syl = [(tuple(v.replace('a', 'a').replace('ə', 'ə')), d, r) for v, d, r in syl]
