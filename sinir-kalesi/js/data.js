@@ -294,6 +294,8 @@ Object.assign(ENEMIES, {
   chariot:   { name: 'Savaş Arabası', h: 36, hp: 360, speed: 34, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 2, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
   siegetower:{ name: 'Kuşatma Kulesi', h: 62, hp: 1100, speed: 8, armor: 0.45, mr: 0.1, gold: 60, dmg: [2, 4], rate: 2, lives: 3, r: 20, machine: true, noblock: true, split: ['legion', 6] },
   eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true },
+  // leş akbabası: sürüyle uçar; altındaki cesetleri yer (diriltilemez olur) ve kendini iyileştirir
+  vulture:   { name: 'Leş Akbabası', h: 33, hp: 120, speed: 27, armor: 0, mr: 0, gold: 11, dmg: [0, 0], rate: 1, lives: 1, r: 11, flying: true, scavenge: { r: 60, every: 2.5, heal: 35 } },
   // savaş fili (mini boss): iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar (ranged.top: okun çıktığı yükseklik, boy oranı)
   elephant:  { name: 'Savaş Fili', h: 70, hp: 1500, speed: 11, armor: 0.35, mr: 0.15, gold: 75, dmg: [14, 22], rate: 1.5, lives: 4, r: 20, noblock: true, noraise: true,
     trample: { dmg: 40, r: 22 }, ranged: { r: 140, dmg: [6, 10], rate: 1.5, proj: 'harrow', any: true, moving: true, top: 0.92 } },
@@ -482,7 +484,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const NEW_ART_WAIT = [];
   // davulcu ve sancaktar burada değil: yalnız kalabalık piyade bölüklerinin içinde yürürler (aşağıda SUPPORT)
   const NEWCOMERS = [['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2],
-    ['wardog', 3, [1, 4, 6], 5], ['eagle', 5, [2, 5, 7], 3], ['chariot', 9, [3, 6], 1], ['siegetower', 12, [5, 7], 1], ['elephant', 11, [6], 1]].filter(([t]) => !NEW_ART_WAIT.includes(t));
+    ['wardog', 3, [1, 4, 6], 5], ['eagle', 5, [2, 5, 7], 3], ['chariot', 9, [3, 6], 1], ['siegetower', 12, [5, 7], 1], ['elephant', 11, [6], 1], ['vulture', 6, [3, 6], 4]].filter(([t]) => !NEW_ART_WAIT.includes(t));
   for (const [t, from, ws, n] of NEWCOMERS) L.forEach((l, i) => {
     if (i < from) return;
     ws.forEach((k, j) => { const w = l.waves[k]; if (w) w.push(W_(t, n + (i >= from + 4 && j === ws.length - 1 ? 1 : 0), 3, 7 + j * 2)); });
@@ -748,7 +750,7 @@ Object.assign(ENEMY_WK, {
   legion: { magic: 1.2 }, solarcher: { melee: 1.3, arrow: 1.2 }, gladiator: { arrow: 1.2, blast: 1.2 }, assassin: { blast: 1.3, melee: 0.8 },
   priest: { arrow: 1.3 }, heavy: { magic: 1.4, arrow: 0.6 }, cavalry: { melee: 0.8, blast: 1.2 }, ram: { blast: 1.4, arrow: 0.5, magic: 0.8 },
   catapult: { blast: 1.3, melee: 1.2 },
-  wardog: { blast: 1.4, melee: 1.2 }, chariot: { magic: 1.3, melee: 0.6 }, siegetower: { blast: 1.3, arrow: 0.5 }, eagle: { arrow: 1.4, magic: 1.1 }, elephant: { magic: 1.3, arrow: 0.7, melee: 0.8 },
+  wardog: { blast: 1.4, melee: 1.2 }, chariot: { magic: 1.3, melee: 0.6 }, siegetower: { blast: 1.3, arrow: 0.5 }, eagle: { arrow: 1.4, magic: 1.1 }, vulture: { arrow: 1.4, magic: 1.1 }, elephant: { magic: 1.3, arrow: 0.7, melee: 0.8 },
   horsearcher: { arrow: 1.2, magic: 1.2 }, testudo: { arrow: 0.3, blast: 1.8, magic: 1.1 }, sunpriest: { arrow: 1.3, melee: 1.2 },
   signifer: { magic: 1.2, melee: 1.2 }, drummer: { arrow: 1.2, blast: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
   gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
@@ -773,6 +775,7 @@ Object.assign(ENEMY_DESC, {
   testudo: 'Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
   sunpriest: 'Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir',
   signifer: 'Sancağı çevresindeki düşmanlara zırh verir. Ruh ışını ve iskeletler iyi işler',
+  vulture: 'Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Dikilitaş ve Ruh Feneri vurur',
   elephant: 'Dev ve zırhlı: iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar. Kemik duvar durdurur, ruh ışını iyi işler',
   drummer: 'Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, kıymık ve veba iyi işler',
 });

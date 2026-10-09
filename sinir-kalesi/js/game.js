@@ -504,7 +504,7 @@ function voicePitch(e) {
   if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.94, 1.08) * (e.def.chief ? 0.9 : 1);
   return e.vp;
 }
-const MUTE_VOICE = (e) => !!e.def.machine || e.type === 'wardog' || e.type === 'eagle' || e.type === 'elephant'; // makineler ve hayvanlar insan sesiyle bağırmaz
+const MUTE_VOICE = (e) => !!e.def.machine || ['wardog', 'eagle', 'elephant', 'vulture'].includes(e.type); // makineler ve hayvanlar insan sesiyle bağırmaz
 function deathVoice(e) { if (!MUTE_VOICE(e)) sfx('dvoice', voicePitch(e)); }
 // acı sesi: her düşman en çok ~1,4 sn'de bir, sürekli hasarda (zehir, gaz) çıkmaz
 function painVoice(e) {
@@ -2434,6 +2434,20 @@ function updateEnemy(e, dt) {
       }
       for (const so of G.soldiers) if (so.zombie && !so.dead && dist(so.x, so.y, e.x, e.y) < PU.r) { damageSoldier(so, PU.dmg); n++; }
       if (n) { G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: PU.r, col: '255,220,120', t: 0, dur: 0.6 }); sfx('magic'); }
+    }
+  }
+  // leş akbabası: yakındaki diriltilebilir cesedi yer (Mortimer diriltemez), canı dolar
+  const SC = e.def.scavenge;
+  if (SC && !(e.fearT > 0)) {
+    e.scT = (e.scT ?? rand(0.5, 1.5)) - dt;
+    if (e.scT <= 0) {
+      e.scT = 0.4;
+      const f = G.effects.find(f => f.kind === 'corpse' && f.raisable && !f.eaten && dist(f.x, f.y, e.x, e.y) < SC.r);
+      if (f) {
+        e.scT = SC.every; f.raisable = false; f.eaten = true; f.dur = Math.min(f.dur, f.t + 0.6);
+        e.hp = Math.min(e.maxHp, e.hp + SC.heal);
+        for (let i = 0; i < 7; i++) emit(G.parts, { kind: 'dot', x: f.x + rand(-6, 6), y: f.y - rand(0, 6), vx: rand(-30, 30), vy: -rand(20, 60), g: 160, col: i % 3 ? '#8a1c1c' : '#e8dcc0', s0: rand(1.4, 2.4), s1: 0.6, life: rand(0.4, 0.7) });
+      }
     }
   }
   if (e.shieldT > 0) e.shieldT -= dt;
@@ -8989,7 +9003,7 @@ function upgradeIcon(id, x, y) {
 
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
-const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower', 'elephant',
+const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower', 'vulture', 'elephant',
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
@@ -9004,6 +9018,7 @@ const CODEX_NOTE = {
   wardog: 'Köpekler. Kemiklerime fazla ilgi gösteriyorlar.',
   chariot: 'Tekerlekli kibir. Duvara toslayınca hepsi aynı.',
   siegetower: 'Yürüyen bir apartman. Kirayı içindekiler ödüyor.',
+  vulture: 'Cesetlerimi yiyorlar. Bu bir hırsızlık. Kemikleri bari geri bıraksınlar.',
   elephant: 'Fil getirmişler. Kemiklerinden bir kale yaparım, kapısı hortum.',
   eagle: 'İmparatorun kuşları. Kargalarım hiç sevmedi.',
   testudo: 'Kaplumbağa gibi geliyorlar. Kaplumbağa çorbası severim.',
