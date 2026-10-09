@@ -80,7 +80,7 @@ const CHAR_H = { soldier: 21, militia: 21 };
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 // Ortak ölçekler: UNIT_K tüm birimler (asker, kahraman, düşman), BUILD_K binalar (kule, kale, arsa),
 // ROAD_K yol genişliği. ZOOM_MAX: en yakın zoom (arka plan dokusunun keskin kaldığı sınır).
-const UNIT_K = 0.8, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5;
+const UNIT_K = 0.72, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5;
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
 const TOWER_K = 0.12 * BUILD_K, TREE_K = 0.105, ROCK_K = 0.075;
 const TOWER_TOP = { archer: 0.86, barracks: 0.7, mage: 0.92, artillery: 0.74 }; // mermi çıkış yüksekliği
