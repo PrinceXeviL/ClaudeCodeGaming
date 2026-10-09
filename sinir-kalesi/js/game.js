@@ -2983,7 +2983,13 @@ function zombieHunt(s) {
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
-  if (best) { s.rx = best.x; s.ry = best.y; } // hedef menzile girince normal dövüş seçimi devralır
+  if (!best) return;
+  // yoldan yürür: önce en yakın yol noktasına çıkar, sonra yol boyunca düşmana doğru adım adım ilerler (yol dışına kesmez);
+  // hedef menzile girince normal dövüş seçimi devralır
+  const me = nearestOnPaths(G.paths, s.x, s.y);
+  if (me.d > 8) { s.rx = me.x; s.ry = me.y; return; }
+  const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, me.along + clamp(tg.along - me.along, -30, 30));
+  s.rx = q.x; s.ry = q.y;
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
