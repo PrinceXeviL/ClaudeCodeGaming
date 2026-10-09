@@ -17,6 +17,12 @@ window.__bot = function (lvl) {
       if (free >= 0) { const t = order[G.towers.length % order.length]; opts.push({ c: { archer: 70, barracks: 70, mage: 100, artillery: 125 }[t] * 1.6, f: () => g.build(free, t) }); }
       for (let i = 0; i < G.plots.length; i++) { const t = G.plots[i].tower; if (t && t.lvl < 2) opts.push({ c: t.def.levels[t.lvl + 1].cost, f: () => g.upgrade(i) }); }
       if (free < 0) for (const t of G.towers) if (t.lvl === 2) for (const a of (t.def.abilities || [])) { const r = (t.ab && t.ab[a.id]) || 0; if (r < 3 && a.ranks && a.ranks[r]) opts.push({ c: a.ranks[r].cost, f: () => g.buy(t, a.id) }); }
+      // yeni sistemler (10 Eki): şapel devi, 4. kademe ikinci güç, büyü geliştirme (oyuncu bunları da alır)
+      if (free < 0) {
+        if (G.castle.lvl < 2) opts.push({ c: [0, 200, 300][G.castle.lvl + 1] * 1.2, f: () => g.upgradeCastle() });
+        for (const t of G.towers) { const E = t.spec && TOWER_EXTRA[t.spec]; if (E && !t.extra) opts.push({ c: E.cost, f: () => (G.gold >= E.cost ? (G.gold -= E.cost, t.extra = true, t.exT = 1.5, true) : false) }); }
+        for (const id of ['nm_raise', 'nm_wall', 'nm_fear', 'nm_burst']) { const r = (G.spellUp && G.spellUp[id]) || 0, c = [120, 200][r]; if (c && G.spells[id] != null) opts.push({ c: c * 1.5, f: () => (G.gold >= c ? (G.gold -= c, G.spellUp = G.spellUp || {}, G.spellUp[id] = r + 1, true) : false) }); }
+      }
       opts.sort((a, b) => a.c - b.c); const o = opts[0]; if (!o || !o.f()) break;
     }
     for (const id of ['ult0']) if (G.spells[id] != null && G.spells[id] <= 0) { const [e, n] = dens(); if (e && n >= 4) g.cast(id, e.x, e.y); }

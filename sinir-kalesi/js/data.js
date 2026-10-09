@@ -514,7 +514,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 199, 209, 218, 228, 234, 206, 234, 242, 242, 211, 211, 265, 281]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1, 1.2, 1.25, 1.03, 1.4, 1.05, 0.4, 0.48, 0.42, 1.35, 0.83, 0.4, 0.2, 0.62, 0.27]; // 10 Eki gece: hızlılar yarı oranda, bot duvar+patlama kullanır
+  const HPMUL = [1, 1.3, 1.4, 1, 1.45, 1.02, 0.34, 0.49, 0.36, 1.45, 0.85, 0.38, 0.19, 0.68, 0.26]; // 10 Eki gece 2. tur: bot şapel devi, ikinci güç ve büyü geliştirmeyi de kullanır
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, 'mud', 'mud', null, 'graves', null, 'graves', 'lake', null, 'lake', 'sunbeam', null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -567,7 +567,7 @@ if (NECRO) {
     severus:  { name: 'Büyük Engizitör Severus', h: 50, hp: 2000, speed: 12, armor: 0.3, mr: 0.5, gold: 300, dmg: [20, 30], rate: 1.2, lives: 15, r: 15, boss: true, chief: true, hpK: 1.1,
       desc: 'Çaydanlığı elinde. Kuleleri sorguya çeker, dostlarını iyileştirir, kalkan açar, paladin ve tövbekâr çağırır',
       ab: { hex: { cd: 9, r: 200, t: 4, say: 'Sorgu!', col: '255,210,110' }, heal: { cd: 8, amt: 120, r: 100 }, shield: { cd: 15, t: 2.5 }, summon: { t: ['paladin', 'flagellant'], n: 2, cd: 13 } } },
-    cathedral:{ name: 'Yürüyen Katedral', h: 80, hp: 3000, speed: 6, armor: 0.5, mr: 0.3, gold: 300, dmg: [4, 6], rate: 2, lives: 10, r: 26, boss: true, chief: true, hpK: 1.3,
+    cathedral:{ name: 'Yürüyen Katedral', h: 80, hp: 3000, speed: 6, armor: 0.5, mr: 0.3, gold: 300, dmg: [4, 6], rate: 2, lives: 10, r: 26, boss: true, chief: true, hpK: 1.15,
       desc: 'Rahiplerin ittiği dev kuşatma katedrali. Çanı iskeletleri sersemletir, içinden asker döker. Yıkılınca Severus iner',
       machine: true, noblock: true, split: ['severus', 1], light: { r: 110, k: 0.7 },
       ab: { summon: { t: ['paladin', 'inquisitor', 'hunter'], n: 3, cd: 14 }, slam: { cd: 10, r: 140, stun: 2, dmg: 10, say: 'Katedral Çanı!', bell: true } } },
@@ -608,7 +608,7 @@ if (NECRO) {
   ];
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 193, 203, 212, 218, 218, 224, 230, 234, 242, 242, 250, 257, 274]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1.15, 1.35, 0.97, 1.3, 1, 1.55, 1.55, 1.13, 1.5, 1, 1.15, 1.1, 0.7, 1.4, 0.42]; // 10 Eki gece: botla 5 tur (oynak; elle yumuşatıldı)
+  const HPMUL2 = [1.25, 1.5, 1.05, 1.5, 1.1, 1.6, 1.85, 1.25, 1.8, 1.15, 1.33, 1.42, 0.8, 1.8, 0.36]; // 10 Eki gece 2. tur (oynak; elle yumuşatıldı)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'malleus', 'hierophant', 'champion', 'campanus', 'malleus', 'ironwarden', 'ignis',
     'campanus', 'cavcaptain', 'colossus', 'ignis', 'severus', 'cathedral'];
