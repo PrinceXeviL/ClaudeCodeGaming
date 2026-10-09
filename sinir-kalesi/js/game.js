@@ -1010,6 +1010,7 @@ function startLevel(idx, chal = null) {
   setupMech();
   setupProps();
   setupHeralds();
+  setupGate();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
   // yeni büyü açıldıysa ilk bölümde duyurulur
   if (NECRO && necroSpellOn('nm_burst') && !save.burstSeen) {
@@ -1112,6 +1113,7 @@ function waveBonusAndStart() {
   // ilk dalga: önce borazancı gelir, çalar, döner; düşmanlar sonra
   const wait = G.wave === 0 && NECRO ? (callHeralds(nextWavePaths()), heraldT(false)) : 0;
   G.cryAt = G.t + wait + 2.2; // dalganın ilk sırası görününce çığlık
+  repairGate(); // Mortimer her dalgada kapıyı onarır
   let lastSpawn = 0;
   for (const grp of def) {
     G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
@@ -1766,7 +1768,7 @@ function damageSoldier(s, amount) {
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
-    s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : 0;
+    s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
   }
 }
@@ -2274,6 +2276,12 @@ function updateEnemy(e, dt) {
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
     }
   }
+  if (e.atGate && !e.blocker) { // kapıya vuruyor
+    if (!G.gate || G.gate.hp <= 0) { e.atGate = false; e.inMelee = false; e.p = G.inner || e.p; e.d = 0; return; }
+    e.inMelee = true; e.atk = (e.atk ?? 0.3) - dt;
+    if (e.atk <= 0) { e.atk = e.def.rate; gateHit(e, roll(e.def.dmg) * (e.dmgMul || 1) * (e.def.machine ? GATE.machine : 1) * (e.def.chief ? 3 : 1)); }
+    return;
+  }
   if (e.blocker) {
     const B = e.blocker, bd = dist(e.x, e.y, B.x, B.y);
     e.inMelee = bd < 22;
@@ -2350,6 +2358,10 @@ function updateEnemy(e, dt) {
   }
   if (e.d >= e.p.total) {
     e.d = e.p.total;
+    if (G.gate && e.p !== G.inner && !e.def.flying) { // kemik kapı: sağlamsa vurur, kırıksa avluya dalar
+      if (G.gate.hp > 0) { e.atGate = true; e.face = G.castle.x < e.x ? -1 : 1; return; }
+      e.p = G.inner; e.d = 0; return;
+    }
     e.siege = 0; // kalenin kapısına vardı: saldırıya hazırlanır
     if (e.under) { e.under = false; e.emergeT = 0.35; }
     e.face = G.castle.x < e.x ? -1 : 1;
@@ -2363,7 +2375,7 @@ function updateEnemy(e, dt) {
 }
 
 function soldierHome(s) {
-  if (s.hero || s.militia) return { x: s.rx, y: s.ry };
+  if (s.hero || s.militia || s.guard) return { x: s.rx, y: s.ry };
   const t = s.tower, o = (t.soldiers.length > 3 ? SLOTS4 : SLOTS)[s.slot];
   return { x: t.rx + o[0], y: t.ry + o[1] };
 }
@@ -2477,6 +2489,7 @@ function updateSoldier(s, dt) {
     if (s.respawnT <= 0) {
       s.dead = false; s.hp = s.maxHp;
       if (s.hero) G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,190', t: 0, dur: 0.8 }); // olduğu yerde, ışık sütunuyla dirilir
+      else if (s.guard) { s.x = s.rx; s.y = s.ry; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '140,255,140', t: 0, dur: 0.6 }); }
       else { s.x = s.tower.x; s.y = s.tower.y + 6; }
     }
     return;
@@ -2996,13 +3009,66 @@ const MORT_STAGE = [null,
   { at: [0.454, 0.562], rail: [0.29, 0.551, 0.625, 0.6] },
   { at: [0.515, 0.558], rail: null }];
 const MORT_PX = 125;
+// Avlulu şapel (Gemini, castle_avlu_1 kapı sağlam / _2 kapı kırık): cesetlerden duvar, kemik kapı, bahçede iki muhafız.
+// Oranlar görsele göre: kapı eşiği (gate), balkon (at, rail, px: Mortimer boyu görsel pikseliyle), şapel kapısı (door), muhafız yerleri (guards)
+const AVLU = { w: 270, gate: [0.506, 0.959], door: [0.5, 0.57], at: [0.498, 0.383], rail: [0.444, 0.352, 0.554, 0.402], px: 100, guards: [[0.455, 0.7], [0.556, 0.7]], front: 0.8 };
+const avluOn = () => NECRO && !!spr('castle_avlu_1');
+const isAvlu = (im) => im && (im === spr('castle_avlu_1') || im === spr('castle_avlu_2'));
+// avlu görselinde oranlı noktayı dünya koordinatına çevirir
+function avluPt(f) {
+  const c = G.castle, im = spr('castle_avlu_1'), cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width;
+  return { x: cp.x - cp.w / 2 + f[0] * cp.w, y: cp.y - h + f[1] * h };
+}
 function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r > 0.3 ? 2 : 3; }
-function castleStageSprite() { return spr('castle_' + castleStage()) || spr('castle_1') || spr('tower_barracks_3'); }
+function castleStageSprite() {
+  if (avluOn()) return spr(G.gate && G.gate.hp <= 0 ? 'castle_avlu_2' : 'castle_avlu_1') || spr('castle_avlu_1');
+  return spr('castle_' + castleStage()) || spr('castle_1') || spr('tower_barracks_3');
+}
+const mortStage = (im) => (isAvlu(im) ? AVLU : MORT_STAGE[castleStage()] || MORT_STAGE[1]);
 function mortimerPoint() {
   const c = G.castle, im = castleStageSprite();
   if (!im) return { x: c.x, y: c.y - 60, h: 30 };
-  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, S = MORT_STAGE[castleStage()] || MORT_STAGE[1];
-  return { x: cp.x - cp.w / 2 + S.at[0] * cp.w, y: cp.y - h + S.at[1] * h, h: MORT_PX * cp.w / im.width };
+  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, S = mortStage(im);
+  return { x: cp.x - cp.w / 2 + S.at[0] * cp.w, y: cp.y - h + S.at[1] * h, h: (S.px || MORT_PX) * cp.w / im.width };
+}
+// ----- kemik kapı: düşmanlar önce kapıyı kırmalı; kırılınca avluya dalıp şapel kapısına yürürler, muhafızlar karşılar -----
+const GATE = { hp: 260, perLvl: 30, machine: 8, guard: { hp: 140, dmg: [5, 9], armor: 0.25, respawn: 14 } };
+function setupGate() {
+  G.gate = null; G.inner = null;
+  if (!avluOn()) return;
+  const max = GATE.hp + GATE.perLvl * G.idx, c = G.castle, d = avluPt(AVLU.door);
+  G.gate = { hp: max, max, hitT: 0, sndT: 0 };
+  G.inner = buildPath([[c.x, c.y], [c.x, c.y - 14], [d.x, d.y]]);
+  AVLU.guards.forEach((f, i) => {
+    const q = avluPt(f);
+    G.soldiers.push({ guard: true, militia: false, x: q.x, y: q.y, rx: q.x, ry: q.y, hp: GATE.guard.hp, maxHp: GATE.guard.hp, dmg: GATE.guard.dmg, armor: GATE.guard.armor,
+      rate: 1.1, speed: 50, engage: 52, atk: 0, target: null, dead: false, respawnT: 0, face: i ? -1 : 1, anim: rand(0, 5), gear: 2, slot: i });
+  });
+}
+function gateHit(e, dmg) {
+  const g = G.gate; if (!g || g.hp <= 0) return;
+  g.hp -= dmg; g.hitT = 0.15;
+  const c = G.castle;
+  if ((g.sndT -= 1) <= 0) { g.sndT = 3; sfx('bash'); }
+  for (let i = 0; i < 2; i++) emit(G.parts, { kind: 'chunk', x: c.x + rand(-12, 12), y: c.y - rand(6, 22), vx: rand(-40, 40), vy: -rand(40, 100), g: 420, vr: rand(-10, 10), rot: rand(0, 6), col: '#efe6cc', s0: rand(1, 1.8), s1: 0.8, life: rand(0.3, 0.5) });
+  if (g.hp <= 0) { // kırıldı
+    g.hp = 0; shakeScreen(5, 0.45); sfx('boom'); mortSay('gatebreak', true);
+    floatText(c.x, c.y - 50, 'Kapı kırıldı!', '#ff9a8a');
+    for (let i = 0; i < 18; i++) emit(G.parts, { kind: 'chunk', x: c.x + rand(-20, 20), y: c.y - rand(0, 30), vx: rand(-110, 110), vy: -rand(80, 220), g: 480, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#8a7a5a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9) });
+    G.effects.push({ kind: 'dust', x: c.x, y: c.y, t: 0, dur: 0.8 });
+  }
+}
+function repairGate() {
+  const g = G.gate; if (!g || g.hp >= g.max) return;
+  const was = g.hp <= 0; g.hp = g.max;
+  const c = G.castle;
+  if (was) { floatText(c.x, c.y - 50, 'Kapı onarıldı', '#9dff8a'); G.effects.push({ kind: 'pillar', x: c.x, y: c.y, col: '140,255,140', t: 0, dur: 0.7 }); sfx('build'); }
+}
+function drawGateBar() {
+  const g = G.gate; if (!g || g.hp >= g.max || g.hp <= 0) return;
+  const c = G.castle, w = 40, x = c.x - w / 2, y = c.y - 46;
+  roundRect(x - 2, y - 2, w + 4, 7, 3, 'rgba(20,14,10,0.85)', '#cfc4a8', 1);
+  ctx.fillStyle = g.hitT > 0 ? '#fff' : '#e8dcc0'; ctx.fillRect(x, y, w * g.hp / g.max, 3);
 }
 // büyü düğmesi simgeleri: diriltme = yerden kalkan iskelet, korku = çığlık atan hayalet
 function drawNecroGlyph(id, r) {
@@ -3117,6 +3183,7 @@ const MORT_LINES = {
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
   lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'],
+  gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
   firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Çayıma toz kaçtı. Bu kişisel oldu.'],
@@ -3942,6 +4009,7 @@ function update(dt) {
   updateProps(dt);
   updateHeralds(dt);
   G.cryCd = (G.cryCd || 0) - dt;
+  if (G.gate && G.gate.hitT > 0) G.gate.hitT -= dt;
   if (G.cryAt != null && G.t >= G.cryAt) {
     let lead = null; for (const e of G.enemies) if (!e.dead && !MUTE_VOICE(e) && !e.def.flying && (!lead || e.d > lead.d)) lead = e;
     if (lead) { warCry(lead); G.cryAt = null; G.cryCd = 3; } else if (G.t > G.cryAt + 8) G.cryAt = null;
@@ -7240,6 +7308,7 @@ function towerStats(type, L) {
 // Eski yedek görsel (kışla) ise kale noktasına ortalanır.
 function castlePlace(x, y, im) {
   if (im === spr('tower_barracks_3')) return { x, y, w: 118 * BUILD_K };
+  if (isAvlu(im)) { const w = AVLU.w, h = w * im.height / im.width; return { x: x + (0.5 - AVLU.gate[0]) * w, y: y + (1 - AVLU.gate[1]) * h, w }; } // kapı eşiği = yolun ucu
   if (NECRO) return { x, y: y + 34, w: 135 }; // şapel: (x, y) kapı eşiği = yolun ucu; kapı görselin ortasında, eşik yüksekliğin %83'ünde
   return { x: x - 15 * BUILD_K, y: y + 10, w: 124 * BUILD_K };
 }
@@ -7258,7 +7327,7 @@ function drawCastle() {
     drawCastleArchers();
     if (NECRO) {
       drawMortimer();
-      const h = cp.w * im.height / im.width, R = (MORT_STAGE[stage] || {}).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
+      const h = cp.w * im.height / im.width, R = mortStage(im).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
       if (R) {
         ctx.save(); ctx.beginPath(); ctx.rect(x0 + R[0] * cp.w, y0 + R[1] * h, (R[2] - R[0]) * cp.w, (R[3] - R[1]) * h); ctx.clip();
         ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
@@ -7282,6 +7351,13 @@ function drawCastle() {
   }
 }
 
+// avlunun ön duvarı (alt bant): avluya girenleri örter; kapı canı barı
+function drawAvluFront() {
+  const c = G.castle, im = castleStageSprite(), cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, sh = c.shake > 0 ? Math.sin(c.shake * 70) * c.shake * 8 : 0;
+  ctx.save(); ctx.beginPath(); ctx.rect(cp.x - cp.w / 2 + sh - 2, cp.y - h + AVLU.front * h, cp.w + 4, h); ctx.clip();
+  ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
+  drawGateBar();
+}
 // ----- kale okçuları -----
 function castleSprite() { return spr('castle_1') || spr('tower_barracks_3'); }
 // okçunun ayak noktası (kale görselindeki kule tepesi)
@@ -9434,10 +9510,11 @@ function drawPlay() {
   for (const e of G.enemies) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]);
   for (const s of G.soldiers) ents.push([s.y, 2, s]);
   for (const c of G.coins) if (c.state !== 'fly') ents.push([c.y, 4, c]);
-  ents.push([G.castle.y - 30, 3, G.castle]);
+  if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
+  else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
   for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f);
-  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : drawCastle();
+  for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : drawCastle();
   drawGasClouds();
   for (const p of G.projectiles) drawProjectile(p);
   for (const g of G.ghosts) { // hayaletler
@@ -10189,7 +10266,7 @@ window.__game = {
       const hit = (x, y) => ring(x, y, RX, RY) || ring(x, y, RX * 0.6, RY * 0.6) || road(x, y + 2);
       const near = (x, y) => ring(x, y, RX + 16, RY + 12);
       // şapel görselinin kutusu: arsa üstüne binmesin, arsanın kulesi (80 px yukarı uzanır) şapeli örtmesin
-      const cim = spr('castle_1'), cp = cim ? castlePlace(lv.castle[0], lv.castle[1], cim) : { x: lv.castle[0], y: lv.castle[1], w: 120 };
+      const cim = spr('castle_avlu_1') || spr('castle_1'), cp = cim ? castlePlace(lv.castle[0], lv.castle[1], cim) : { x: lv.castle[0], y: lv.castle[1], w: 120 };
       const cTop = cp.y - cp.w * (cim ? cim.height / cim.width : 1.2), cHalf = cp.w / 2;
       const onCastle = (x, y) => Math.abs(x - cp.x) < cHalf + RX + 4 && y > cTop - RY - 6 && y < cp.y + 80;
       const ui = (x, y) => { const top = y - 80; return (top < 74 && (x < 300 || x > W - 200)) || top < 40 || (y > H - 110 && x < 330) || x < 36 || x > W - 36 || y > H - 30 || onCastle(x, y); };
