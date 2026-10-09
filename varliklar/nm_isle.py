@@ -58,6 +58,9 @@ BOXES = {
     'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
 }
 BOX_EDGE_DROP = {'nm2_dekor_A.jpg'}
+# renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
+# (10 Eki: Caner hayalet okçuları kırmızı istedi)
+HUE_TOP = {'tower_archer_fan': (0.45, 356)}
 # magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
 GLOW_FIX = {'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
@@ -253,6 +256,18 @@ def main():
                 col = GLOW_FIX[name]; lum = np.maximum(r, b) / 255
                 for ch in range(3): f[..., ch] = f[..., ch] * (1 - k) + ((col[ch] * lum) if col else (0.55 * lum * 255)) * k
                 c = np.dstack([f[..., :3].clip(0, 255).astype(np.uint8), c[..., 3]])
+            if name in HUE_TOP:
+                top, hue = HUE_TOP[name]
+                rgbf = c[..., :3].astype(np.float32) / 255; mx = rgbf.max(-1); mn = rgbf.min(-1); sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+                r_, g_, b_ = rgbf[..., 0], rgbf[..., 1], rgbf[..., 2]
+                ghost = (sat > 0.22) & ((g_ > r_ + 0.08) | ((b_ > g_ + 0.08) & (r_ > g_))) # yeşil ya da mor
+                ghost[int(c.shape[0] * top):] = False
+                # yeni ton: aynı parlaklık ve doygunlukla kırmızı (hue derece)
+                hh = hue / 60.0; v = mx; ss = sat; i = np.floor(hh) % 6; f = hh - np.floor(hh)
+                pp = v * (1 - ss); qq = v * (1 - ss * f); tt = v * (1 - ss * (1 - f))
+                lut = {0: (v, tt, pp), 1: (qq, v, pp), 2: (pp, v, tt), 3: (pp, qq, v), 4: (tt, pp, v), 5: (v, pp, qq)}[int(i)]
+                for ch in range(3): rgbf[..., ch] = np.where(ghost, lut[ch], rgbf[..., ch])
+                c = np.dstack([(rgbf * 255).clip(0, 255).astype(np.uint8), c[..., 3]])
             im = Image.fromarray(c)
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if kind in ('unit', 'unitgrid') and im.height > UNIT_H * 1.05:

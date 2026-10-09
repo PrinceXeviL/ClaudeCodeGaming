@@ -2388,7 +2388,7 @@ function updateObeliskForm(t, dt, L, ts, F) {
     for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-40, 40) + (e.x - o.x) * 0.3, vy: rand(-40, 20), drag: 3, col: i % 2 ? '255,80,80' : '255,190,120', s0: 3.5, s1: 0.5, life: 0.35 });
     t.snap = { x: n.x, y: n.y, t: 0.18 }; sfx('cannon');
   } else {
-    const side = e.x < t.x ? 'L' : 'R', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '130,255,170' : '200,140,255';
+    const side = e.x < t.x ? 'L' : 'R', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '255,90,90' : '255,70,130';
     t.shotSide = side;
     const shot = (tg, dmg) => G.projectiles.push({ kind: 'ghostarrow', col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: -rel, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 700, 0.1, 0.4),
       dmg: dmg * (tg.def.flying ? F.fly : 1), dtype: 'phys', arc: 4, crit, nail: nl ? nl.rise : 0, src: 'arrow' });
@@ -5446,7 +5446,7 @@ function drawNecroTowerFx(t, ts) {
       }
     } else { // hayalet okçular: iki okçu yeşil ve mor nabız gibi parlar, atan okçu parlar
       for (const side of ['L', 'R']) {
-        const o = formPoint(t, ts, OF.bows[side]), col = side === 'L' ? '130,255,170' : '200,140,255', fire = t.shotSide === side ? t.shotAnim / 0.3 : 0;
+        const o = formPoint(t, ts, OF.bows[side]), col = side === 'L' ? '255,90,90' : '255,70,130', fire = t.shotSide === side ? t.shotAnim / 0.3 : 0;
         glow(ctx, o.x + (side === 'L' ? 6 : -6) * s, o.y + 2 * s, (10 + 8 * fire) * s, col, 0.25 + Math.sin(time * 3 + (side === 'L' ? 0 : 2)) * 0.08 + 0.5 * fire);
       }
     }
