@@ -1089,7 +1089,10 @@ function renderBackground(lv, paths, res = 2) {
   }
   trees.sort((a, b) => a[1] - b[1]);
   for (const [x, y, s] of trees) {
-    const treeName = th.treeSpr ? th.treeSpr[Math.floor(x * 7 + y * 13) % th.treeSpr.length] : 'tree_' + (1 + Math.floor((x * 7 + y * 13) % 3)), treeIm = spr(treeName);
+    let treeName = th.treeSpr ? th.treeSpr[Math.floor(x * 7 + y * 13) % th.treeSpr.length] : 'tree_' + (1 + Math.floor((x * 7 + y * 13) % 3));
+    // fenerli ağaç (nm_tree_2) çok sık çıkıyordu: yarısı fenersiz ağaca döner (konuma bağlı, rastgele dizi kaymaz)
+    if (treeName === 'nm_tree_2' && Math.floor(x * 3 + y * 5) % 2) { const alt = th.treeSpr.filter(n => n !== 'nm_tree_2'); if (alt.length) treeName = alt[Math.floor(x + y) % alt.length]; }
+    const treeIm = spr(treeName);
     if (treeIm) {
       const m = SPR_META[treeName], w = m ? m[0] * TREE_K * (th.treeK || 1) * (0.75 + (s - 10) / 9 * 0.4) : s * 3.4;
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(x + 5, y + 3, w * 0.36, w * 0.11, 0, 0, Math.PI * 2); g.fill();
