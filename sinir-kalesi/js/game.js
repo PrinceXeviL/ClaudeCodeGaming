@@ -3416,7 +3416,7 @@ function spellInfo(id) {
 function castSpell(id, x, y) {
   if (NECRO_SPELLS[id] && G.mod && G.mod.nospell) { floatText(x, y - 20, 'Bu gece büyü yok!', '#d8a8ff'); sfx('error'); return; }
   if (NECRO_SPELLS[id]) { if (castNecro(id, x, y) === false) return; }
-  else { hitBy = 'hero'; castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; }
+  else { hitBy = 'hero'; const ok = castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; if (ok === false) return; } // yanlış yere: bekleme başlamaz
   if (G.stats) G.stats.spells++;
   G.spells[id] = spellInfo(id).cd;
 }
@@ -4583,6 +4583,19 @@ function castUlt(h, x, y) {
     // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) }); sfx('bats');
     sfx('whirl'); setTimeout(() => sfx('scream', 1.8), 250);
+  } else if (U.chains) {
+    // Spartaküs'ün zincir fırtınası: alanda kırık zincirler döner, değdiğine vurur ve yavaşlatır
+    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'chains', slow: U.slow, seed: rand(0, 9) });
+    shakeScreen(3, 0.3); sfx('whirl'); setTimeout(() => sfx('clash'), 150); setTimeout(() => sfx('clash'), 450);
+  } else if (U.phalanx) {
+    // Leonidas'ın falanksı: yola dik, kalkanlı üç iskelet hoplit; kemik duvar gibi yolu tutar, vurularak kırılabilir
+    const q = nearestOnPaths(G.paths, x, y);
+    if (q.d > 50) { floatText(x, y - 20, 'Yolun üstüne koy!', '#c8c8c8'); sfx('error'); return false; }
+    const dir = pathPos(q.p, q.along);
+    G.soldiers.push({ militia: true, wall: true, phalanx: true, x: q.x, y: q.y, rx: q.x, ry: q.y, hp: U.hp * k, maxHp: U.hp * k, dmg: [0, 0], armor: 0.5, rate: 99, speed: 0,
+      engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: U.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
+    G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.9 }); G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 50, col: '200,150,255', t: 0, dur: 0.5 });
+    floatText(q.x, q.y - 40, 'Bu Sparta!', '#ffd34d'); shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200);
   } else if (h.id === 'zeynep') {
     // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
@@ -4682,12 +4695,14 @@ function update(dt) {
     const bats = z.kind === 'bats', live = !bats || z.t > 0.35; // yarasalar önce uçup gelir
     if (live) for (const e of G.enemies) if (!e.dead && (bats || !e.def.flying) && dist(e.x, e.y, z.x, z.y) <= z.r) {
       const hp0 = e.hp; damageEnemy(e, z.dps * dt, z.dtype || 'true', true, z.src);
+      if (z.kind === 'chains') { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); }
       if (bats) { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); if (z.hero && !z.hero.dead) z.hero.hp = Math.min(z.hero.maxHp, z.hero.hp + (hp0 - Math.max(0, e.hp)) * z.heal); }
     }
     HERO_SKILL = false;
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
+      if (z.kind === 'chains') { z.fxT = 0.1; emit(G.parts, { kind: 'chunk', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-40, 40), vy: -rand(40, 90), g: 420, col: '#6a5a4a', s0: 1.6, s1: 1, life: 0.4, vr: rand(-8, 8) }); continue; }
       if (bats) { z.fxT = 0.12; if (live) emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5 - 6, vy: rand(10, 30), g: 140, col: '#b01020', s0: 1.4, s1: 0.5, life: 0.4 }); continue; }
       if (z.kind === 'plague') {
         z.fxT = z.gas ? 0.22 : 0.07;
@@ -5794,7 +5809,25 @@ function boneWallGeom(s) {
   }
   return (s.geo = { cr, cols });
 }
+// Leonidas'ın falanksı: yola dik sıralı üç kalkanlı iskelet hoplit; topraktan yükselir, süre bitince gömülür
+function drawPhalanx(s) {
+  const age = G.t - s.born, nx = -s.dy, ny = s.dx, k = clamp(age / 0.35, 0, 1), sink = s.life < 0.4 ? 1 - Math.max(0, s.life) / 0.4 : 0;
+  const im = spr('unit_skel_2') || spr('unit_skel_1'); if (!im) return;
+  const h = 30 * UNIT_K * 1.35 * easeOutBack(k) * (1 - sink), face = -Math.sign(s.dx || 1);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 8, 40, '200,150,255', 0.2 * (1 - sink)); ctx.restore();
+  const pts = [-1, 0, 1].map(i => ({ x: s.x + nx * i * 17 * ROAD_K * 0.6, y: s.y + ny * i * 17 * ROAD_K * 0.6 })).sort((a, b) => a.y - b.y);
+  for (const p of pts) {
+    shadow(p.x, p.y + 2, 9, 3.5);
+    if (h > 1) drawUnit('unit_skel_2', im, p.x, p.y, face, { h, rig: 'unit_skel_2', phase: 0, walking: false, fly: 0, flash: s.flash, seed: p.x });
+    // bronz kalkan önde (Sparta lambdası)
+    const sx = p.x + face * 6, sy = p.y - h * 0.38, R = h * 0.22; // kalkan önde, iskeleti örtmeyecek kadar
+    if (h > 4) { circle(sx, sy, R, '#b0863a', '#3a2408', 1.2); circle(sx, sy, R * 0.72, null, 'rgba(255,230,160,0.5)', 0.8);
+      ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(sx - R * 0.35, sy + R * 0.4); ctx.lineTo(sx, sy - R * 0.45); ctx.lineTo(sx + R * 0.35, sy + R * 0.4); ctx.stroke(); }
+  }
+  if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 42, 26, s.hp / s.maxHp, '#d8b0ff');
+}
 function drawBoneWall(s) {
+  if (s.phalanx) { drawPhalanx(s); return; }
   const age = G.t - s.born, dmg = 1 - s.hp / s.maxHp, G0 = boneWallGeom(s);
   const nx = -s.dy, ny = s.dx; // yola dik yön: duvar yolun bir kenarından öbürüne uzanır
   const sink = s.life < BWALL.sink ? 1 - Math.max(0, s.life) / BWALL.sink : 0; // süre bitince gömülür
@@ -8018,6 +8051,13 @@ function drawHeroPortrait(h, hb, i) {
 function drawUltGlyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   if (id === 'commander') { drawBat(-6, -2, 1.1, 1, time * 9, 1); drawBat(7, 4, 0.8, -1, time * 9 + 2, 1); drawBat(1, 9, 0.7, 1, time * 9 + 4, 1); }
+  else if (id === 'spartacus') { // dönen zincir halkası
+    for (let k = 0; k < 8; k++) { const a = time * 3 + k * Math.PI / 4; ctx.save(); ctx.translate(Math.cos(a) * r * 0.42, Math.sin(a) * r * 0.42); ctx.rotate(a + (k % 2 ? 0 : Math.PI / 2));
+      ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, r * 0.13, r * 0.075, 0, 0, Math.PI * 2); ctx.stroke(); ctx.strokeStyle = '#d8ccb8'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
+  } else if (id === 'leonidas') { // bronz hoplit kalkanı ve lambda
+    circle(0, 0, r * 0.55, '#b0863a', '#3a2408', 2); circle(0, 0, r * 0.42, null, 'rgba(255,230,160,0.55)', 1.2);
+    ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(-r * 0.2, r * 0.24); ctx.lineTo(0, -r * 0.26); ctx.lineTo(r * 0.2, r * 0.24); ctx.stroke();
+  }
   ctx.restore();
 }
 // yarasa: kanatları çırpan küçük siluet, kızıl gözler
@@ -8063,6 +8103,23 @@ function drawSpecter(x, y, s, face, ph, a) {
 }
 function drawBatSwarms() {
   for (const z of G.zones) {
+    if (z.kind === 'chains') { // dönen zincirler: üç kırık zincir kolu, halka halka, kızıl kıvılcımlı
+      const a0 = Math.min(1, z.t / 0.25, (z.life - z.t) / 0.4);
+      ctx.save(); ctx.globalAlpha = a0;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y - 6, z.r * 0.8, '255,80,70', 0.18); ctx.restore();
+      for (let arm = 0; arm < 3; arm++) {
+        const base = z.seed + z.t * 7 + arm * Math.PI * 2 / 3;
+        for (let k = 1; k <= 9; k++) {
+          const rr = z.r * k / 9, a = base - k * 0.09, x = z.x + Math.cos(a) * rr, y = z.y - 8 + Math.sin(a) * rr * 0.45;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(a + (k % 2 ? 0 : Math.PI / 2));
+          ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.ellipse(0, 0, 3.2, 1.8, 0, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = '#a89a88'; ctx.lineWidth = 1.3; ctx.stroke();
+          ctx.restore();
+        }
+      }
+      ctx.restore();
+      continue;
+    }
     if (z.kind !== 'bats') continue;
     const a = Math.min(1, (z.life - z.t) / 0.4);
     if (z.t < 0.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y - 8, z.r * 0.9, '180,20,40', 0.15 * (1 - z.t / 0.5)); ctx.restore(); }

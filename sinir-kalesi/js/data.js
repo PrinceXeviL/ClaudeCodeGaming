@@ -637,7 +637,31 @@ for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.i
 // komutanlar (tek seçilir): Kont Vladrik (eski komutanın yetenekleri), Wailing Wren (eski okçunun yetenekleri)
 Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep');
+// 10 Eki: Mortimer'a düelloda yenilip onun komutanı olan ünlü savaşçılar (tasarim/komutanlar-golemler.md).
+// unlock: bitirilmesi gereken bölüm (15: 1. seferin sonu; 21: Cadı Avı'nın 6. bölümü)
+Object.assign(HEROES, {
+  spartacus: { name: 'Spartaküs', role: 'Zincirsiz · Yakın dövüş', sprite: 'hero_spartacus', h: 32, aura: '255,90,80',
+    hp: 360, dmg: [16, 24], armor: 0.2, rate: 0.9, speed: 82, respawn: 15, regen: 10, engage: 75, unlock: 15,
+    paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
+      { id: 'whirl', name: 'Zincir Savurma', cd: 9, desc: 'Zincirlerini savurur: çevresindeki bütün düşmanlara hasar' },
+      { id: 'bash', name: 'Gladyatör Ağı', cd: 8, desc: 'Hedefine ağ atar: 2 sn kımıldayamaz, ek hasar alır' },
+      { id: 'charge', name: 'Arena Hamlesi', cd: 16, desc: 'Kaleye en yakın düşmana atılıp ağır darbe vurur' },
+    ] }] },
+  leonidas: { name: 'Leonidas', role: 'Kemik Kalkan · Tank', sprite: 'hero_leonidas', h: 33, aura: '200,150,255',
+    hp: 480, dmg: [12, 18], armor: 0.5, rate: 1.1, speed: 72, respawn: 16, regen: 12, engage: 70, unlock: 21,
+    paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
+      { id: 'bash', name: 'Sparta Tekmesi', cd: 7, desc: '"Bu Sparta!": hedefi tekmeyle sersemletir, ek hasar verir' },
+      { id: 'cry', name: 'Sparta Narası', cd: 15, desc: 'Yakındaki iskeletleri iyileştirir, 6 sn hasarlarını %50 artırır' },
+      { id: 'iron', name: 'Bronz Kalkan', passive: true, desc: 'Kalıcı: +%25 zırh ve iki kat can yenilenmesi' },
+    ] }] },
+});
+Object.assign(HERO_ULT, {
+  spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
+    desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },
+  leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
+    desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
+});
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep', 'spartacus', 'leonidas');
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
   desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Vladrik ısırıklarla iyileşir',
   short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Vladrik iyileşir' });
@@ -830,6 +854,7 @@ const HERO_SKILLS = {
   commander: ['bash', 'whirl', 'cry'],
   zeynep: ['volley', 'multishot', 'blastarrow'],
 };
+// (spartacus ve leonidas yollarını kendileri tanımlar: aynı yetenek kimlikleri, kendi adları)
 for (const id in HERO_SKILLS) {
   const all = HEROES[id].paths.flatMap(p => p.skills);
   HEROES[id].paths = [{ name: 'Yetenekler', col: '#ffd34d', skills: HERO_SKILLS[id].map(k => all.find(s => s.id === k)) }];
