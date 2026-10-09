@@ -2092,7 +2092,7 @@ function damageSoldier(s, amount, src) {
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     if (!s.ghoul && !s.big) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
-    s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.guard ? GATE.guard.respawn : 0;
+    s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.chapel ? s.giant.respawn : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
   }
 }
@@ -2267,12 +2267,6 @@ function buildTower(plot, type) {
 }
 const SLOTS = [[-13, -7], [13, -7], [0, 10]], SLOTS4 = [[-14, -8], [14, -8], [-14, 9], [14, 9]]; // uzmanlıkta 4. iskelet katılır
 function soldierStats(t) {
-  const gi = abRank(t, 'giant');
-  if (gi) { // Kemik Devi: tek dev, ağır ve yavaş, alan vuruşu, birkaç düşmanı birden durdurur
-    const ur = upgRank('barracks'), hm = (ur >= 1 ? 1.2 : 1) * SPEC_BONUS, dm = (ur >= 2 ? 1.2 : 1) * SPEC_BONUS;
-    return { bow: null, maxHp: Math.round(gi.hp * hm), armor: Math.min(0.75, gi.armor + (ur >= 3 ? 0.1 : 0)), dmg: [gi.dmg[0] * dm, gi.dmg[1] * dm], crit: 0, steal: 0.1,
-      rate: 1.5, block: 0, bash: 0, cleave: 0, giant: gi, ...SKEL_STANCE.guard, speed: 32 };
-  }
   const L = TOWERS.barracks.levels[t.lvl], sh = abRank(t, 'shield'), bl = abRank(t, 'blade'), bw = abRank(t, 'bow'), ur = upgRank('barracks');
   const sp = t.spec ? SPEC_BONUS : 1; // uzmanlık seçen kışlanın askerleri daha güçlü
   const hm = (ur >= 1 ? 1.2 : 1) * sp * (bw ? 0.75 : 1), dm = (ur >= 2 ? 1.2 : 1) * (bl ? bl.mult : 1) * (bw ? bw.mult : 1) * sp;
@@ -2298,7 +2292,7 @@ function applySoldierStats(t) {
     }
     s.dmg = st.dmg; s.armor = st.armor; s.crit = st.crit; s.steal = st.steal; s.gear = t.lvl; s.bow = st.bow;
     s.rate = st.rate; s.block = st.block; s.bash = st.bash; s.cleave = st.cleave;
-    s.speed = st.speed; s.engage = st.engage; s.leash = st.leash; s.aggro = st.aggro; s.giant = st.giant || null;
+    s.speed = st.speed; s.engage = st.engage; s.leash = st.leash; s.aggro = st.aggro;
     if (s.bow && s.target) { if (s.target.blocker === s) s.target.blocker = null; s.target = null; } // okçular yolu bırakır
   }
 }
@@ -2327,7 +2321,7 @@ function makeSoldier(t, i) {
   const st = soldierStats(t);
   return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
     block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: st.speed, engage: st.engage, leash: st.leash, aggro: st.aggro, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5),
-    ...(st.giant ? { giant: st.giant, big: 'unit_bonegiant', bh: BIG_H.giant, aoe: 0.6 } : {}) };
+ };
 }
 // iri birimler (Kemik Devi, Ceset Golemi, gulyabani): boy, alan vuruşu, birden çok düşmanı durdurma
 const BIG_H = { giant: 21 * 2.4 * UNIT_K, golem: 21 * 2.1 * UNIT_K };
@@ -2356,15 +2350,7 @@ function buyAbility(t, id) {
   const first = !t.spec;
   t.spec = id;
   if (cur + 1 >= def.ranks.length) achGive('master');
-  if (t.type === 'barracks' && id === 'giant') {
-    if (first) {
-      for (const o of t.soldiers) { releaseSoldier(o); o.removed = true; }
-      const g = makeSoldier(t, 0); t.soldiers = [g]; G.soldiers.push(g);
-      g.x = t.x; g.y = t.y + 6; g.born = G.t; shakeScreen(4, 0.4); sfx('bonewall');
-      G.effects.push({ kind: 'dust', x: t.x, y: t.y + 6, t: 0, dur: 0.9 });
-    }
-    applySoldierStats(t);
-  } else if (t.type === 'barracks') {
+  if (t.type === 'barracks') {
     if (first && t.soldiers.length < 4) { // uzmanlık seçilince 4. iskelet mahzenden kalkar
       const s4 = makeSoldier(t, 3);
       t.soldiers.push(s4); G.soldiers.push(s4);
@@ -3515,6 +3501,32 @@ function updateProjectile(pr, dt) {
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
 // büyü açık mı (unlock: o bölüm kazanılmış olmalı)
+// şapelde büyü geliştirme (bölüm içi, altınla): her büyü 2 kademe; her kademe beklemeyi %10 kısaltır
+const SPELL_UP = { cost: [120, 200],
+  nm_raise: ['+3 dirilen, dirilenler %25 dayanıklı', 'Dirilenler %40 sert vurur, +10 sn kalır'],
+  nm_fear: ['Korku alanı %25 geniş', 'Korku +1,5 sn sürer'],
+  nm_wall: ['Duvar %50 dayanıklı', 'Duvar +3 sn kalır'],
+  nm_burst: ['Patlama hasarı +%35', 'Patlama alanı %25 geniş'],
+  nm_golem: ['Golem +8 sn yaşar', 'Golem %40 daha canlı'] };
+const spellRank = (id) => (G && G.spellUp && G.spellUp[id]) || 0;
+function spellStats(id) { // kademelere göre büyünün o anki değerleri
+  const S = NECRO_SPELLS[id], r = spellRank(id); if (!r) return S;
+  const o = Object.assign({}, S);
+  if (id === 'nm_raise') { o.max = S.max + 3; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * 1.25 }); if (r >= 2) Object.assign(o.minion, { dmg: S.minion.dmg.map(v => v * 1.4), life: S.minion.life + 10 }); }
+  if (id === 'nm_fear') { o.r = S.r * 1.25; if (r >= 2) o.t = S.t + 1.5; }
+  if (id === 'nm_wall') { o.hp = S.hp * 1.5; if (r >= 2) o.life = S.life + 3; }
+  if (id === 'nm_burst') { o.dmg = S.dmg * 1.35; if (r >= 2) o.r = S.r * 1.25; }
+  if (id === 'nm_golem') { o.life = S.life + 8; if (r >= 2) { o.hp = S.hp * 1.4; o.hpPer = S.hpPer * 1.4; } }
+  return o;
+}
+function buySpellUp(id) {
+  const r = spellRank(id), cost = SPELL_UP.cost[r];
+  if (cost == null || G.gold < cost) return false;
+  G.gold -= cost; G.spellUp = G.spellUp || {}; G.spellUp[id] = r + 1;
+  const c = G.castle; floatText(c.x, c.y - 90, NECRO_SPELLS[id].name + ' ' + (r + 1) + '!', '#c8ffb0'); sfx('upgrade');
+  G.effects.push({ kind: 'ring', x: c.x, y: c.y - 20, r: 50, col: NECRO_SPELLS[id].col, t: 0, dur: 0.5 });
+  return true;
+}
 const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return u == null || (save.stars[u] || 0) > 0; };
 const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
 const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
@@ -3522,7 +3534,7 @@ const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
 const hudLeft = () => 120 + spellIds().length * 58;
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
-  if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast, necro: S, U: S }; }
+  if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast * (1 - 0.1 * spellRank(id)), necro: S, U: S }; }
   const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
   return { name: U.name, cd: U.cd * fast, hero: h, U };
 }
@@ -3535,7 +3547,7 @@ function castSpell(id, x, y) {
 }
 // ----- Mortimer'ın büyüleri -----
 function castNecro(id, x, y) {
-  const S = NECRO_SPELLS[id], c = G.castle, m = mortimerPoint();
+  const S = spellStats(id), c = G.castle, m = mortimerPoint();
   G.mortCast = MORT_CAST_T; // balkonda tırpanını kaldırır (büyü kareleri)
   if (id === 'nm_raise') {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length;
@@ -3630,7 +3642,7 @@ function zombieHunt(s) {
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
-  const S = NECRO_SPELLS.nm_raise, M = S.minion, up = upgRank('spells') >= 2 ? 1.25 : 1; // gelişme: dirilenler %25 dayanıklı
+  const S = spellStats('nm_raise'), M = S.minion, up = upgRank('spells') >= 2 ? 1.25 : 1; // gelişme: dirilenler %25 dayanıklı
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
@@ -4768,6 +4780,29 @@ function drawHatches() {
     }
   }
 }
+// ----- şapel ağacı: Kemik Devi kapıyı tutar (son kademe Kemik Kolos: daha iri, yeri döver) -----
+function chapelGate() { // devin bekleyeceği yer: bayrak seçildiyse orası, yoksa kaleye giren yolun kapıdan biraz önü
+  if (G.castle.rally) return G.castle.rally;
+  const P = G.paths.reduce((a, p) => (dist(p.pts[p.pts.length - 1][0], p.pts[p.pts.length - 1][1], G.castle.x, G.castle.y) < dist(a.pts[a.pts.length - 1][0], a.pts[a.pts.length - 1][1], G.castle.x, G.castle.y) ? p : a), G.paths[0]);
+  return pathPos(P, P.total - 70);
+}
+function updateChapel(dt) {
+  const c = G.castle, L = CASTLE.levels[c.lvl];
+  if (L.giant) {
+    let g = G.chapelGiant;
+    if (!g) {
+      const q = chapelGate();
+      g = G.chapelGiant = { guard: true, chapel: true, militia: false, x: c.x, y: c.y, rx: q.x, ry: q.y, hp: L.giant.hp, maxHp: L.giant.hp, dmg: L.giant.dmg, armor: L.giant.armor,
+        rate: 1.5, speed: 32, engage: 70, atk: 0, target: null, dead: false, respawnT: 0, face: -1, anim: 0, slot: 0, born: G.t, moving: true,
+        big: 'unit_bonegiant', bh: BIG_H.giant, aoe: 0.6, giant: L.giant, steal: 0.1 };
+      G.soldiers.push(g); shakeScreen(4, 0.4); sfx('bonewall'); mortSay('raise', true);
+      G.effects.push({ kind: 'pillar', x: c.x, y: c.y, col: '190,110,255', t: 0, dur: 0.9 });
+    } else if (g.giant !== L.giant) { // yükseltme: dev güçlenir
+      g.maxHp = L.giant.hp; g.hp = g.dead ? 0 : g.maxHp; g.dmg = L.giant.dmg; g.armor = L.giant.armor; g.giant = L.giant; g.bh = BIG_H.giant * (L.giant.k || 1);
+      if (!g.dead) G.effects.push({ kind: 'pillar', x: g.x, y: g.y, col: '255,240,170', t: 0, dur: 0.6 });
+    }
+  }
+}
 // Sahadaki paralı askeri yeni toplanma yerine gönderir: yolun üstündeyse yol boyunca, değilse dümdüz yürür
 function sendMerc(s) {
   const R = G.castle.rally, i = s.slot || 0;
@@ -4902,7 +4937,7 @@ function update(dt) {
   if (G.intro) { G.intro.t += dt; if (G.intro.t > G.intro.dur) G.intro = null; }
   for (const f of G.effects) if (f.riseAt != null && f.kind === 'corpse' && f.t >= f.riseAt) { // çivili/lanetli ceset kendiliğinden dirilir
     f.riseAt = null;
-    if (G.soldiers.filter(s => s.minion && !s.dead).length < NECRO_SPELLS.nm_raise.max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#9dff8a'); }
+    if (G.soldiers.filter(s => s.minion && !s.dead).length < spellStats('nm_raise').max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#9dff8a'); }
   }
   for (const g of G.ghosts) { // hayalet: yolda geriye süzülür, değdiğini yakar ve korkutur
     g.t += dt; g.d -= 85 * dt;
@@ -7709,12 +7744,12 @@ function towerMenuItems(t) {
     t.def.abilities.forEach((a, i) => {
       if (t.spec && t.spec !== a.id) return;
       const r = (t.ab && t.ab[a.id]) || 0;
-      const n = t.def.abilities.length, ox = n === 4 ? [-74, -26, 26, 74][i] : n === 3 ? [-58, 0, 58][i] : (i ? 44 : -44), oy = n === 4 ? [-50, -92, -92, -50][i] : n === 3 && i === 1 ? -92 : -76;
+      const n = t.def.abilities.length, ox = n === 3 ? [-58, 0, 58][i] : (i ? 44 : -44), oy = n === 3 && i === 1 ? -92 : -76;
       items.push({ id: 'ability', type: a.id, ab: a, rank: r, x: t.spec ? t.x : t.x + ox, y: t.spec ? t.y - 76 : t.y + oy, cost: r < a.ranks.length ? a.ranks[r].cost : null });
     });
   }
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: Math.floor(t.spent * SELL_RATIO) });
-  if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + (t.spec ? 62 : 72), y: t.y + (t.spec ? -20 : 18) }); // yol düğmeleriyle çakışmasın
+  if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
 }
 // menüyü ekran içinde tutmak için kaydırma
@@ -7727,8 +7762,14 @@ function menuLayout(sel = G.sel) {
   } else
   if (sel.kind === 'castle') {
     const c = G.castle, q = worldToScreen(c.x - 10, c.y - 40), N = CASTLE.levels[c.lvl + 1];
-    items = [N ? { id: 'upgrade', type: 'castle', x: q.x, y: q.y - 74, cost: N.cost } : { id: 'max', x: q.x, y: q.y - 74 },
-      { id: 'rally', type: 'castle', x: q.x - 66, y: q.y - 20 }];
+    items = [N ? { id: 'upgrade', type: 'castle', x: q.x, y: q.y - 74, cost: N.cost } : { id: 'max', x: q.x, y: q.y - 74 }];
+    if (NECRO) {
+      const ids = spellIds().filter(i => NECRO_SPELLS[i]), n = ids.length;
+      // iki sütunlu zikzak: komşu düğmelerin fiyat hapları birbirine binmesin
+      ids.forEach((id, i) => { const r = spellRank(id);
+        items.push({ id: 'spellup', type: id, x: q.x - (i % 2 ? 150 : 90), y: q.y - 8 + (i - (n - 1) / 2) * 48, rank: r, cost: SPELL_UP.cost[r] ?? null }); });
+      if (c.lvl) items.push({ id: 'rally', type: 'castle', x: q.x + 12, y: q.y + 58 });
+    } else items.push({ id: 'rally', type: 'castle', x: q.x - 66, y: q.y - 20 });
     cx = q.x; cy = q.y;
   } else
   // halka menü ekran koordinatında kurulur: seçilen yerin ekrandaki konumu merkez alınır
@@ -7896,6 +7937,8 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     txt('MAX', 0, 12, 10, '#fff', 'center', '400', FONT_T);
   } else if (it.id === 'sell') {
     drawIcon('coin', -4, 3, 17); drawIcon('coin', 4, -3, 19);
+  } else if (it.id === 'spellup') {
+    ctx.save(); ctx.scale(0.72, 0.72); drawNecroGlyph(it.type, 22); ctx.restore();
   } else if (it.id === 'ghoul') {
     glow(ctx, 0, 2, 20, '140,255,120', 0.35); drawSkullIcon(0, 1, 15);
   } else if (it.id === 'rally') {
@@ -7906,6 +7949,10 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   }
   ctx.restore();
   ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.beginPath(); ctx.ellipse(0, -R * 0.5, R * 0.62, R * 0.32, 0, 0, Math.PI * 2); ctx.fill();
+  if (it.id === 'spellup') {
+    for (let i = 0; i < 2; i++) circle((i - 0.5) * 9, -R - 2, 3.6, i < it.rank ? '#b8ff8a' : '#3a2a1a', '#1a0e04', 1.2);
+    if (it.cost == null) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#9dff8a', 1.6); txt('MAX', 0, R + 9.5, 12, '#c8ffb0', 'center', '400', FONT_T); }
+  }
   if (it.id === 'ability') {
     for (let i = 0; i < it.ab.ranks.length; i++) {
       const px = (i - 1) * 9, py = -R - 2;
@@ -7930,12 +7977,6 @@ function drawMenuItem(it, x, y, sc, a, preview) {
 function drawAbilityIcon(id, x, y, s) {
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const dark = 'rgba(20,10,4,0.9)';
-  if (id === 'giant') { // Kemik Devi: görselin üst yarısı (kafatası yığını ve göğüs)
-    const im = spr('unit_bonegiant');
-    if (im) { ctx.save(); ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.clip(); drawSprite(ctx, im, 1, 20, 40 * im.width / im.height); ctx.restore(); }
-    else drawSkullIcon(0, 0, 12);
-    ctx.restore(); return;
-  }
   if (id === 'poison') {
     ctx.beginPath(); ctx.moveTo(0, -12); ctx.bezierCurveTo(8, -2, 9, 4, 0, 10); ctx.bezierCurveTo(-9, 4, -8, -2, 0, -12);
     ctx.strokeStyle = dark; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#7be04a'; ctx.fill();
@@ -8574,6 +8615,15 @@ function infoText() {
   }
   if (G.sel && G.sel.kind === 'castle') {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
+    if (NECRO) { // şapel ağacı: Kara Şapel → Kemik Devi → Kemik Kolos
+      const P = G.preview;
+      if (P && P.id === 'spellup') {
+        const S = NECRO_SPELLS[P.type], r = spellRank(P.type), L2 = SPELL_UP[P.type];
+        return r >= 2 ? [`${S.name} — son kademe`, L2.join(' · ')] : [`${S.name} ${r + 1}. kademe — ${SPELL_UP.cost[r]} altın`, `${L2[r]} · bekleme %10 kısa`];
+      }
+      if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, N.perk];
+      return [`${L.title}${N ? '' : ' (son)'}`, `${L.perk}${N ? ` · Sonraki: ${N.title}` : ''}${c.lvl ? ' · Bayrak: devi gönder' : ''}`];
+    }
     const st = (X) => `${X.archers} okçu · Hasar ${X.dmg[0]}-${X.dmg[1]} · Menzil ${CASTLE.range} · Atış ${X.rate}sn`;
     if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, `${st(N)} · ${N.perk}`];
     return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Ok: yükselt' : L.perk} · Bayrak: ${NECRO ? 'ölüleri' : 'paralı askerleri'} gönder`];
@@ -8781,7 +8831,7 @@ function castleArcherPoint(i) {
 }
 const CASTLE_ARCHER_S = 0.5;
 function updateCastleArchers(dt) {
-  if (NECRO) return; // şapelde yalnız Mortimer var
+  if (NECRO) { updateChapel(dt); return; } // şapelde okçu yok: kapıda Kemik Devi (Mortimer savaşmaz)
   const c = G.castle, L = CASTLE.levels[c.lvl];
   while (c.archers.length < L.archers) c.archers.push({ ang: Math.PI - 0.3, draw: 0, fx: 0, walk: 0, seed: rand(0, 9), cd: rand(0.2, 1) });
   if (G.lives <= 0) return;
@@ -12099,6 +12149,7 @@ function hudTap(x, y) {
         if (!same) { G.preview = it; sfx('pick'); return true; }
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
         else if (it.id === 'ghoul') { if (openHatch(G.sel.hatch)) setSel(null); else sfx('error'); }
+        else if (it.id === 'spellup') { if (it.cost != null && buySpellUp(it.type)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade' && it.type === 'castle') { if (upgradeCastle()) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade') { if (upgradeTower(G.sel.tower)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'ability') { if (it.cost != null && buyAbility(G.sel.tower, it.type)) G.preview = null; else sfx('error'); }
@@ -12131,6 +12182,7 @@ function worldTap(x, y) {
       const px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
       G.castle.rally = { x: clamp(px, 12, W - 12), y: clamp(py, 60, H - 12) };
       for (const s of G.soldiers) if (s.merc && !s.dead) sendMerc(s);
+      const cg = G.chapelGiant; if (cg) { cg.rx = G.castle.rally.x; cg.ry = G.castle.rally.y; if (!cg.dead) { releaseSoldier(cg); cg.moving = true; } }
       G.effects.push({ kind: 'ring', x: px, y: py, r: 22, col: '216,160,64', t: 0, dur: 0.4 });
       sfx('click');
     } else if (m.kind === 'rally') {

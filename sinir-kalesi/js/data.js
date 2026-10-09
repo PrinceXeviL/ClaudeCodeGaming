@@ -38,9 +38,6 @@ const TOWERS = {
       // okçu yolu: askerler yolu kesmez, toplanma yerinden ok atar (uçanları da vurur); canları %25 düşük
       { id: 'bow', name: 'Okçular', desc: (r) => `${r.r} menzilden ok atarlar, havayı da vururlar · hasar x${r.mult} · canları düşük · 4. iskelet`,
         ranks: [{ cost: 150, r: 115, mult: 1.1, rate: 1.1 }, { cost: 200, r: 130, mult: 1.4, rate: 1 }, { cost: 260, r: 145, mult: 1.75, rate: 0.85 }] },
-      // dev yolu (10 Eki): iskeletler yerine tek Kemik Devi; çok canlı, alan vuruşu, birkaç düşmanı birden durdurur
-      { id: 'giant', name: 'Kemik Devi', desc: (r) => `Tek dev golem: ${r.hp} can, alan vuruşu · ${r.block} düşmanı birden durdurur${r.stomp ? ' · yeri döverek sersemletir' : ''}`,
-        ranks: [{ cost: 180, hp: 700, dmg: [20, 30], armor: 0.4, block: 3 }, { cost: 230, hp: 950, dmg: [28, 42], armor: 0.45, block: 4 }, { cost: 290, hp: 1300, dmg: [38, 56], armor: 0.5, block: 5, stomp: true }] },
     ],
   },
   mage: {
@@ -691,9 +688,12 @@ const NECRO_SPELLS = {
     desc: 'Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
     short: 'Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir' },
 };
-Object.assign(CASTLE.levels[0], { title: 'Şapel Okçuları', perk: 'Şapel bir iskelet okçuyla kendini savunur' });
-Object.assign(CASTLE.levels[1], { title: 'Kemik Nişancılar', perk: 'İki iskelet okçu, daha sert kemik oklar' });
-Object.assign(CASTLE.levels[2], { title: 'Ölüm Muhafızları', perk: 'Üç usta iskelet okçu, %15 kritik vuruş' });
+// şapel ağacı (10 Eki): okçular yerine kapıyı tutan Kemik Devi; son kademede Kemik Kolos
+Object.assign(CASTLE.levels[0], { title: 'Kara Şapel', perk: 'Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi', archers: 0 });
+Object.assign(CASTLE.levels[1], { title: 'Kemik Devi', cost: 200, perk: 'Kapıyı Kemik Devi korur: alan vuruşu, 3 düşmanı birden durdurur; ölürse 30 sn sonra kalkar', archers: 0,
+  giant: { hp: 900, dmg: [22, 34], armor: 0.45, block: 3, respawn: 30 } });
+Object.assign(CASTLE.levels[2], { title: 'Kemik Kolos', cost: 300, perk: 'Dev büyür: daha çok can ve hasar, 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn\'de kalkar', archers: 0,
+  giant: { hp: 1300, dmg: [32, 48], armor: 0.5, block: 4, stomp: true, k: 1.18, respawn: 15 } }); // Mortimer saldırmaz (Caner: ana karakter)
 
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
   'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];
@@ -884,7 +884,6 @@ const SPEC = {
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
   blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
   bow:    { title: 'Okçu Ocağı',      who: 'Okçular: deri zırh, uzun yay' },
-  giant:  { title: 'Kemik Devi',      who: 'Kemik ve kafataslarından örülmüş tek dev: yolu tek başına tıkar' },
   poison: { title: 'Zehir Avcıları',  who: 'Maskeli avcılar, yeşil zehirli oklar' },
   snipe:  { title: 'Kartal Göz Kalesi', who: 'Şapkalı nişancılar, uzun kara yay' },
   frost:  { title: 'Ayaz Kulesi',     who: 'Buz kristalleri, mavi küre' },

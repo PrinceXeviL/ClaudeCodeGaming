@@ -1,0 +1,52 @@
+[
+ {
+  "name": "unit_bonegiant_walk",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club walks in place with slow heavy stomping strides, a full walk cycle, arms swinging, body swaying with weight. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_bonegiant_atk",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club raises its arms and smashes down in one powerful ground-shaking strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_bonegiant_die",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club is destroyed: it staggers, falls apart and collapses into a pile on the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_corpsegolem_walk",
+  "ref": "ham/anim/unit_corpsegolem_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a huge cartoon stitched corpse golem with grey rotting skin, green slime dripping, chains across its chest, a second zombie head on its shoulder walks in place with slow heavy stomping strides, a full walk cycle, arms swinging, body swaying with weight. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_corpsegolem_atk",
+  "ref": "ham/anim/unit_corpsegolem_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a huge cartoon stitched corpse golem with grey rotting skin, green slime dripping, chains across its chest, a second zombie head on its shoulder raises its arms and smashes down in one powerful ground-shaking strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_corpsegolem_die",
+  "ref": "ham/anim/unit_corpsegolem_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a huge cartoon stitched corpse golem with grey rotting skin, green slime dripping, chains across its chest, a second zombie head on its shoulder is destroyed: it staggers, falls apart and collapses into a pile on the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
