@@ -41,6 +41,8 @@ SHEETS = [
     ('nm_engizisyon_A.jpg', ['enemy_hunter', 'enemy_torch', 'enemy_holywater', 'enemy_flagellant'], 'unitgrid'),
     ('nm_engizisyon_B.jpg', ['enemy_lantern', 'enemy_bellpriest', 'enemy_paladin', 'enemy_inquisitor'], 'unitgrid'),
     ('nm_engizisyon_C.jpg', ['enemy_saint', 'enemy_hound', 'enemy_malleus', 'enemy_campanus'], 'unitgrid'),  # aziz heykeli, ak tazı, 2 boss
+    ('nm2_dekor_A.jpg', ['nm2_gallows', 'nm2_stake', 'nm2_qfence', 'nm2_cottage', 'nm2_well',
+                         'nm2_hatch', 'nm2_hatch_open', 'nm2_hatch_sealed', 'nm2_ravtree'], 'decor'),  # Sefer 2 dekor: orman ve köy, mahzen kapağı 3 hali
     ('nm_engizisyon_D.jpg', ['enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'], 'unitgrid'),  # bosslar ve final
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
@@ -48,8 +50,12 @@ SHEETS = [
 BOXES = {
     'nm_engizisyon_C.jpg': [(0, 0, 1000, 700), (1000, 0, 2000, 560), (0, 690, 1060, 1493), (1060, 540, 2000, 1493)],
     # bir nesne birden çok kutudan oluşabilir (katedral: sağdaki gövde + soldaki itici rahipler, kolosun altında)
+    'nm2_dekor_A.jpg': [(c * 341 + 2, r * 341 + 2, c * 341 + 339, r * 341 + 339) for r in range(3) for c in range(3)],  # 3x3 ızgara
     'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
 }
+BOX_EDGE_DROP = {'nm2_dekor_A.jpg'}
+# magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
+GLOW_FIX = {'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
@@ -171,7 +177,14 @@ def main():
             for k, bx in enumerate(BOXES[fname], 1):
                 X0 = Y0 = 1 << 30; X1 = Y1 = 0
                 for x0, y0, x1, y1 in (bx if isinstance(bx, list) else [bx]):
-                    sub = rgba[y0:y1, x0:x1, 3] > 100; big[y0:y1, x0:x1][sub] = k
+                    sub = rgba[y0:y1, x0:x1, 3] > 100
+                    if fname in BOX_EDGE_DROP:  # kutu kenarına değen parçalar komşu çizimdendir: atılır
+                        lab, n = label(sub)
+                        edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+                        cnt = np.bincount(lab.ravel()); cnt[0] = 0
+                        edge = [e for e in edge if cnt[e] < cnt.max() * 0.2]  # asıl nesne kenara değse de kalır
+                        sub = sub & ~np.isin(lab, edge)
+                    big[y0:y1, x0:x1][sub] = k
                     ys, xs = np.nonzero(sub)
                     if len(xs): X0, X1, Y0, Y1 = min(X0, x0 + xs.min()), max(X1, x0 + xs.max() + 1), min(Y0, y0 + ys.min()), max(Y1, y0 + ys.max() + 1)
                 objs.append({'k': k, 'x0': X0, 'x1': X1, 'y0': Y0, 'y1': Y1})
@@ -230,6 +243,12 @@ def main():
                 for ch in range(3): rgb[..., ch] = np.where(m, gray * (1.0, 0.97, 0.95)[ch], rgb[..., ch])
                 al = c[..., 3].astype(np.float32) * np.where(pur > 30, 1 - np.clip((pur - 30) / 110, 0, 0.85), 1)
                 c = np.dstack([rgb.clip(0, 255).astype(np.uint8), al.astype(np.uint8)])
+            if name in GLOW_FIX:
+                f = c.astype(np.float32); r, g, b = f[..., 0], f[..., 1], f[..., 2]
+                pur = (r + b) / 2 - g; k = np.clip((pur - 12) / 45, 0, 1)
+                col = GLOW_FIX[name]; lum = np.maximum(r, b) / 255
+                for ch in range(3): f[..., ch] = f[..., ch] * (1 - k) + ((col[ch] * lum) if col else (0.55 * lum * 255)) * k
+                c = np.dstack([f[..., :3].clip(0, 255).astype(np.uint8), c[..., 3]])
             im = Image.fromarray(c)
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if kind in ('unit', 'unitgrid') and im.height > UNIT_H * 1.05:

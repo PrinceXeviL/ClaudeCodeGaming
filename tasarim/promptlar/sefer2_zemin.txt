@@ -1,0 +1,5 @@
+Using the attached ground texture as the style reference, paint 3 NEW seamless tileable top-down ground textures for the same 2D tower defense game, same painterly cartoon style, same scale of details, same dark gothic necromancer mood. Each texture is a separate perfect square image, flat top-down view, no objects, no perspective, edges must tile seamlessly:
+1. Plague village mud: dark brown wet mud with puddles reflecting a dim sky, scattered straw, old broken cobblestones, a few ash patches.
+2. Drowned monastery marsh: very shallow dark green-black water over mud, lily pads, reeds tufts, floating candle wax drops, faint green glow.
+3. Bone cathedral floor: old cracked dark grey-purple flagstones with small bones and skull fragments in the gaps, dust and moss.
+No text, no labels, no frames.
