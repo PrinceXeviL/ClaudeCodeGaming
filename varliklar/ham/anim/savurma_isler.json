@@ -1,0 +1,123 @@
+[
+ {
+  "name": "enemy_wardog_walk",
+  "ref": "ham/anim/enemy_wardog_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness runs fast in place: a full galloping dog run cycle, front and back legs stretching far forward and back, body bouncing, ears flapping. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_gladiator_atk2",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon gladiator with a sword and a net raises the sword high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_gladiator_atk3",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon gladiator with a sword and a net swings the sword horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_heavy_atk2",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword raises the short sword high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_heavy_atk3",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword swings the short sword horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_1_atk2",
+  "ref": "ham/anim/unit_skel_1_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet raises the sword high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_1_atk3",
+  "ref": "ham/anim/unit_skel_1_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet swings the sword horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_2_atk2",
+  "ref": "ham/anim/unit_skel_2_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton guard in chainmail with a skull shield and a long sword raises the sword high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_2_atk3",
+  "ref": "ham/anim/unit_skel_2_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton guard in chainmail with a skull shield and a long sword swings the sword horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_3_atk2",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield raises the sword high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_3_atk3",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield swings the sword horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_4_atk2",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon big skeleton grave warden with a coffin shield and a spiked mace raises the spiked mace high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_4_atk3",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon big skeleton grave warden with a coffin shield and a spiked mace swings the spiked mace horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_5_atk2",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton death knight in purple tattered robes with two green flaming blades raises the two blades high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_skel_5_atk3",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon skeleton death knight in purple tattered robes with two green flaming blades swings the two blades horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]

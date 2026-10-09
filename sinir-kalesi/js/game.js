@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(enemy|unit)_.+_(walk|walk_on|walk_arka|atk|die)$/, STRIP_WAIT = new Set();
+const LAZY = {}, LAZY_RE = /^(enemy|unit)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|die)$/, STRIP_WAIT = new Set();
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -1002,7 +1002,7 @@ function startLevel(idx, chal = null) {
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_die'];
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
   useStrips(keep);
@@ -2302,7 +2302,7 @@ function updateEnemy(e, dt) {
       e.face = e.blocker.x < e.x ? -1 : 1;
       e.atk -= dt;
       if (e.atk <= 0) {
-        e.atk = e.def.rate;
+        e.atk = e.def.rate; e.atkV = Math.floor(Math.random() * 3);
         const victim = e.blocker;
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
         damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (victim.hero ? HERO_AGGRO.dmg : 1));
@@ -2532,7 +2532,7 @@ function updateSoldier(s, dt) {
       s.atk -= dt;
       s.anim += dt;
       if (s.atk <= 0) {
-        s.atk = s.rate;
+        s.atk = s.rate; s.atkV = Math.floor(Math.random() * 3);
         const crit = s.crit && Math.random() < s.crit;
         const dmg = roll(s.dmg) * (s.buffT > 0 ? 1.5 : 1) * (crit ? 2 : 1);
         if (s.hero) {
@@ -4945,7 +4945,7 @@ function drawEnemy(e) {
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
-      atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null,
+      atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
@@ -5061,7 +5061,7 @@ function drawSoldier(s) {
       }
       const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
       drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: s.zrig || s.zname, phase: s.anim * 7, walking, fly: 0, rise,
-        atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7 });
+        atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       // başının üstünde soluk yeşil ruh alevi: bizim tarafta olduğu belli olsun
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch - 3, 5 + Math.sin(time * 6 + s.slot) * 1, '120,255,140', 0.55); ctx.restore();
       if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#7ad36a');
@@ -5084,7 +5084,7 @@ function drawSoldier(s) {
     if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
     const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0, rise,
-      atk: fighting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
+      atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
     if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
       // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur
       const sw = s.shootT > 0 ? Math.sin(clamp(1 - s.shootT / 0.25, 0, 1) * Math.PI) : 0;
@@ -5593,8 +5593,9 @@ function drawUnit(name, im, x, y, face, o) {
   // saldırı (<ad>_atk) ya da yürüyüş; yürüyüşte yöne göre önden (_walk_on), arkadan (_walk_arka) veya yandan (_walk)
   let fName = null, fi = 0;
   const atkOn = o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER;
-  if (atkOn && animStrip(name, o.rig, '_atk')) {
-    fName = name + '_atk';
+  const atkKey = atkOn && ((o.atkVar && animStrip(name, o.rig, ['_atk', '_atk2', '_atk3'][o.atkVar % 3])) || animStrip(name, o.rig, '_atk'));
+  if (atkKey) {
+    fName = atkKey;
     const T = ANIM_META[fName].n === 8 ? ATK_FRAME_T : null;
     if (T) { fi = 0; for (let i = 0; i < 8; i++) if (o.atk >= T[i]) fi = i; }
     else fi = Math.min(ANIM_META[fName].n - 1, Math.floor((o.atk + ATK_PREP) / (ATK_PREP + ATK_AFTER) * ANIM_META[fName].n));
