@@ -5605,7 +5605,7 @@ function drawEnemy(e) {
 // Kemik Duvarı: önce yol toprağı yarılır (çatlaklardan yeşil ışık sızar), sonra kaburga, diş ve uyluk kemikleri ortadan dışa doğru
 // sırayla topraktan fışkırır (her biri çıkarken toprak parçaları saçar), ortada yeşil gözlü büyük kafatası; süre bitince toprağa geri gömülür.
 // 10 Eki: Caner daha sık ve ince kemik istedi: 13 kalın sütun yerine 3 sıra halinde 27 ince kemik
-const BWALL = { imgW: 89, imgSY: 0.75, imgBase: 15, sideW: 0.5, // sideW: yandan görünüşün genişliği (önden görünüşe oranla, dar ve uzun) // 10 Eki: %20 geniş (74 -> 89), boy %10 kısa (0.9 / 1.2 = 0.75)
+const BWALL = { imgW: 89, imgSY: 0.75, imgBase: 15, sideW: 0.55, // sideW: yandan görünüşün genişliği (önden görünüşe oranla, dar ve uzun) // 10 Eki: %20 geniş (74 -> 89), boy %10 kısa (0.9 / 1.2 = 0.75)
   span: 66, cols: 27, rows: [-5, 0, 5], crackT: 0.12, rise: 0.24, stagger: 0.016, sink: 0.45 };
 function boneWallGeom(s) {
   if (s.geo) return s.geo;
@@ -5645,7 +5645,8 @@ function drawBoneWall(s) {
   const front = Math.abs(ny) < 0.55, side = !front && Math.abs(ny) > 0.88 && spr('nm_bwall_4');
   const bwIm = spr(front ? (dmg > 0.5 && spr('nm_bwall_2') ? 'nm_bwall_2' : 'nm_bwall_1') : side ? (dmg > 0.5 && spr('nm_bwall_5') ? 'nm_bwall_5' : 'nm_bwall_4') : 'nm_bwall_3');
   if (bwIm) {
-    const w = BWALL.imgW * (front ? 1 : side ? BWALL.sideW : 0.9), h = w * bwIm.height / bwIm.width * BWALL.imgSY, gy = s.y + BWALL.imgBase;
+    const sy = side ? 1 : BWALL.imgSY, w = BWALL.imgW * (front ? 1 : side ? BWALL.sideW : 0.9), h = w * bwIm.height / bwIm.width * sy;
+    const gy = side ? s.y + h * 0.42 : s.y + BWALL.imgBase; // yandan görünüş yolun ortasına oturur (uzunluğu yolun enini kapatır)
     const k = clamp((age - BWALL.crackT * 0.6) / BWALL.rise, 0, 1), rise = easeOutBack(k) * (1 - sink);
     if (k > 0 && !s.burst) {
       s.burst = true;
@@ -5655,7 +5656,7 @@ function drawBoneWall(s) {
     if (rise > 0) {
       ctx.save(); ctx.beginPath(); ctx.rect(s.x - w, gy - h * 1.6, w * 2, h * 1.6); ctx.clip();
       ctx.translate(s.x + (s.flash > 0 ? rand(-1.2, 1.2) : 0), gy + (1 - rise) * h * 0.9);
-      ctx.scale(!front && !side && nx * ny > 0 ? -1 : 1, BWALL.imgSY);
+      ctx.scale(!front && !side && nx * ny > 0 ? -1 : 1, sy);
       drawSprite(ctx, bwIm, 0, 0, w);
       if (s.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(0.5, s.flash * 3); drawSprite(ctx, bwIm, 0, 0, w); }
       ctx.restore();

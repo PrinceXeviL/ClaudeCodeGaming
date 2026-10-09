@@ -44,7 +44,8 @@ SHEETS = [
     ('nm2_dekor_A.jpg', ['nm2_gallows', 'nm2_stake', 'nm2_qfence', 'nm2_cottage', 'nm2_well',
                          'nm2_hatch', 'nm2_hatch_open', 'nm2_hatch_sealed', 'nm2_ravtree'], 'decor'),  # Sefer 2 dekor: orman ve köy, mahzen kapağı 3 hali
     ('nm_engizisyon_D.jpg', ['enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'], 'unitgrid'),  # bosslar ve final
-    ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
+    ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),
+    ('nm_kemik_duvar_yan.jpg', ['nm_bwall_4', 'nm_bwall_5'], 'decor'),  # yandan görünüş (dikine duran duvar): sağlam, hasarlı  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
 # satırlara düzgün oturmayan sayfalar: her nesnenin kaba kutusu (x0, y0, x1, y1), kutudaki opak pikseller o nesnedir
 BOXES = {
@@ -55,7 +56,7 @@ BOXES = {
 }
 BOX_EDGE_DROP = {'nm2_dekor_A.jpg'}
 # magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
-GLOW_FIX = {'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
+GLOW_FIX = {'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
