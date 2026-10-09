@@ -36,7 +36,8 @@ SHEETS = [
                       'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_shroom', 'nm_bush',
                       'nm_rock_1', 'nm_rock_2', 'nm_pond', 'nm_fence', 'nm_crow'], 'decor'),
     ('nm_harabeler.jpg', ['nm_ruin_1', 'nm_ruin_2', 'nm_ruin_3', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_6'], 'decor'),  # kilise duvarı, sütunlar, mahzen, kemer, melek, çitli mezar
-    ('nm_fil.jpg', ['enemy_elephant'], 'unit'),  # savaş fili (sırtında okçu), mini boss
+    ('nm_fil.jpg', ['enemy_elephant'], 'unit'),
+    ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}

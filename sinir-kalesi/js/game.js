@@ -5401,7 +5401,7 @@ function drawEnemy(e) {
 // Kemik Duvarı: önce yol toprağı yarılır (çatlaklardan yeşil ışık sızar), sonra kaburga, diş ve uyluk kemikleri ortadan dışa doğru
 // sırayla topraktan fışkırır (her biri çıkarken toprak parçaları saçar), ortada yeşil gözlü büyük kafatası; süre bitince toprağa geri gömülür.
 // 10 Eki: Caner daha sık ve ince kemik istedi: 13 kalın sütun yerine 3 sıra halinde 27 ince kemik
-const BWALL = { span: 66, cols: 27, rows: [-5, 0, 5], crackT: 0.12, rise: 0.24, stagger: 0.016, sink: 0.45 };
+const BWALL = { imgW: 74, imgBase: 15, span: 66, cols: 27, rows: [-5, 0, 5], crackT: 0.12, rise: 0.24, stagger: 0.016, sink: 0.45 };
 function boneWallGeom(s) {
   if (s.geo) return s.geo;
   const r = seeded(Math.floor(s.seed * 9973) + 7), cr = [];
@@ -5427,13 +5427,36 @@ function drawBoneWall(s) {
   // yarılan toprak: koyu çatlaklar, içinden yeşil ışık
   const ck = clamp(age / BWALL.crackT, 0, 1) * (1 - sink);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  for (const pts of G0.cr) {
+  if (!spr('nm_bwall_1')) for (const pts of G0.cr) { // çizimli duvarda çatlak çizgileri yok (görselin kendi yeşil ışığı var)
     const n = Math.max(2, Math.ceil(pts.length * ck));
     ctx.beginPath(); pts.slice(0, n).forEach(([u, v], j) => { const [x, y] = P(u, v); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
     ctx.strokeStyle = 'rgba(20,12,6,0.85)'; ctx.lineWidth = 3; ctx.stroke();
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(110,255,130,${(0.35 + 0.25 * Math.sin(time * 6 + s.seed)) * ck})`; ctx.lineWidth = 1.2; ctx.stroke(); ctx.restore();
   }
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 4, 38, '110,255,130', 0.22 * ck + (s.flash > 0 ? s.flash * 3 : 0)); ctx.restore();
+  // Gemini çizimi (nm_bwall_*): duvar ekranda yataysa önden (yarı canın altında hasarlı), değilse çapraz görünüş (yönüne göre aynalı);
+  // topraktan yükselir (zemin çizgisinin altı kırpılır), süre bitince geri gömülür
+  const front = Math.abs(ny) < 0.55, bwIm = spr(front ? (dmg > 0.5 && spr('nm_bwall_2') ? 'nm_bwall_2' : 'nm_bwall_1') : 'nm_bwall_3');
+  if (bwIm) {
+    const w = BWALL.imgW * (front ? 1 : 0.9), h = w * bwIm.height / bwIm.width, gy = s.y + BWALL.imgBase;
+    const k = clamp((age - BWALL.crackT * 0.6) / BWALL.rise, 0, 1), rise = easeOutBack(k) * (1 - sink);
+    if (k > 0 && !s.burst) {
+      s.burst = true;
+      for (let j = 0; j < 14; j++) { const [x, y] = P((j / 13 - 0.5) * BWALL.span); emit(G.parts, { kind: 'chunk', x: x + rand(-3, 3), y, vx: rand(-45, 45), vy: -rand(70, 170), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: j % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.4, 0.8) }); }
+    }
+    shadow(s.x, s.y + 3, w * 0.5, w * 0.16);
+    if (rise > 0) {
+      ctx.save(); ctx.beginPath(); ctx.rect(s.x - w, gy - h * 1.6, w * 2, h * 1.6); ctx.clip();
+      ctx.translate(s.x + (s.flash > 0 ? rand(-1.2, 1.2) : 0), gy + (1 - rise) * h * 0.9);
+      if (!front && nx * ny > 0) ctx.scale(-1, 1);
+      drawSprite(ctx, bwIm, 0, 0, w);
+      if (s.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(0.5, s.flash * 3); drawSprite(ctx, bwIm, 0, 0, w); }
+      ctx.restore();
+    }
+    ctx.restore();
+    if (s.hp < s.maxHp && !sink) hpBar(s.x, gy - h * rise - 4, 22, s.hp / s.maxHp, '#e8dcb8');
+    return;
+  }
   // toprak yığını: duvar çizgisi boyunca kabarmış topaklar
   shadow(s.x, s.y + 3, 18 + Math.abs(nx) * BWALL.span * 0.5, 8 + Math.abs(ny) * BWALL.span * 0.5);
   for (let i = 0; i < 12; i++) { const [x, y] = P((i / 11 - 0.5) * BWALL.span * 1.08, (i % 2 ? 6 : -6)); circle(x, y + 1, (3.4 + (i % 3)) * ck, '#4a3624', '#22160c', 1); }
