@@ -345,5 +345,72 @@
   "fh": 182,
   "base": 0.0132,
   "ch": 0.8808
+ },
+ "enemy_wardog_walk": {
+  "n": 23,
+  "fw": 365,
+  "fh": 170,
+  "base": 0.0154,
+  "ch": 0.9434,
+  "idle": 9
+ },
+ "enemy_wardog_die": {
+  "n": 17,
+  "fw": 329,
+  "fh": 174,
+  "base": 0.0144,
+  "ch": 0.9185
+ },
+ "enemy_chariot_atk": {
+  "n": 32,
+  "fw": 269,
+  "fh": 166,
+  "base": 0.0151,
+  "ch": 0.9623
+ },
+ "enemy_siegetower_walk": {
+  "n": 12,
+  "fw": 144,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9612,
+  "idle": 3
+ },
+ "enemy_eagle_walk": {
+  "n": 18,
+  "fw": 318,
+  "fh": 251,
+  "base": 0.014,
+  "ch": 0.6364,
+  "idle": 6
+ },
+ "enemy_wardog_atk": {
+  "n": 32,
+  "fw": 348,
+  "fh": 176,
+  "base": 0.0152,
+  "ch": 0.9114
+ },
+ "enemy_chariot_walk": {
+  "n": 17,
+  "fw": 253,
+  "fh": 170,
+  "base": 0.0151,
+  "ch": 0.9422,
+  "idle": 16
+ },
+ "enemy_chariot_die": {
+  "n": 17,
+  "fw": 303,
+  "fh": 186,
+  "base": 0.0134,
+  "ch": 0.8619
+ },
+ "enemy_eagle_atk": {
+  "n": 32,
+  "fw": 281,
+  "fh": 215,
+  "base": 0.015,
+  "ch": 0.7456
  }
 }

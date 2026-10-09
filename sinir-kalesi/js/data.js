@@ -476,7 +476,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   ];
   // yeni birlikler dalgalara: ilk geldikleri bölümden itibaren belli dalgalarda küçük gruplar halinde (yer kaplamasın diye geç 'at')
   // görseli henüz hazır olmayan yeni türler dalgalara girmez
-  const NEW_ART_WAIT = ['wardog', 'eagle', 'chariot', 'siegetower']; // Gemini görselleri gelene kadar kapalı
+  const NEW_ART_WAIT = [];
   const NEWCOMERS = [['drummer', 2, [3, 5, 7], 1], ['signifer', 4, [2, 5, 7], 1], ['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2],
     ['wardog', 3, [1, 4, 6], 5], ['eagle', 5, [2, 5, 7], 3], ['chariot', 9, [3, 6], 1], ['siegetower', 12, [5, 7], 1]].filter(([t]) => !NEW_ART_WAIT.includes(t));
   for (const [t, from, ws, n] of NEWCOMERS) L.forEach((l, i) => {
