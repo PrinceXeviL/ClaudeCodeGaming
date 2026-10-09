@@ -26,9 +26,9 @@ const TOWERS = {
     name: 'Kışla', icon: 'barracks', dmgType: 'phys', air: false,
     desc: 'Askerler yolu keser',
     levels: [
-      { cost: 70,  range: 120, hp: 50,  dmg: [1, 3],  armor: 0,    respawn: 10, perk: 'Deri zırhlı 3 asker yolu keser' },
-      { cost: 110, range: 130, hp: 100, dmg: [3, 5],  armor: 0.15, respawn: 9,  perk: 'Çelik zırh, sorguçlu miğfer, keskin kılıç' },
-      { cost: 150, range: 140, hp: 150, dmg: [6, 10], armor: 0.3,  respawn: 8,  perk: 'Altın şövalye zırhı · vuruşlar %15 can çalar' },
+      { cost: 70,  range: 120, hp: 50,  dmg: [3, 5],  armor: 0,    respawn: 10, perk: 'Deri zırhlı 3 asker yolu keser' },
+      { cost: 110, range: 130, hp: 100, dmg: [5, 8],  armor: 0.15, respawn: 9,  perk: 'Çelik zırh, sorguçlu miğfer, keskin kılıç' },
+      { cost: 150, range: 140, hp: 150, dmg: [8, 13], armor: 0.3,  respawn: 8,  perk: 'Altın şövalye zırhı · vuruşlar %15 can çalar' },
     ],
     abilities: [
       { id: 'shield', name: 'Kalkan Duvarı', desc: (r) => `+%${Math.round(r.armor * 100)} zırh, +${r.hp} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet`,

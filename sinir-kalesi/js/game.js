@@ -1892,10 +1892,11 @@ function applySoldierStats(t) {
     if (s.bow && s.target) { if (s.target.blocker === s) s.target.blocker = null; s.target = null; } // okçular yolu bırakır
   }
 }
+// engage 82: yoldan geçen düşmana saldırır (yol geniş, düşman sıraları yayılarak yürür)
 function makeSoldier(t, i) {
   const st = soldierStats(t);
   return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
-    block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: 60, engage: 55, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
+    block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: 60, engage: 82, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5) };
 }
 // son seviyedeki kulenin yeteneğini bir kademe geliştir
 function buyAbility(t, id) {
