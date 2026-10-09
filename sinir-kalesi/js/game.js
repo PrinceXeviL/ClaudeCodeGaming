@@ -3411,6 +3411,7 @@ function drawMortimer() {
     drawFrame(fim, F, i, hgt * 0.97);
   } else drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
   ctx.restore();
+  if (isPremium()) drawCrown(m.x, m.y - hgt * 1.04 + Math.sin(time * 2) * 1, 0.55, 1); // Hazine sahibine altın taç
 }
 // Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
 const MORT_LINES = {
@@ -4438,7 +4439,7 @@ function update(dt) {
 
   if (G.lives <= 0 && !overlay) {
     if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); }
-    setOverlay('lose'); sfx('lose'); achLevelEnd(false);
+    setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd();
   }
   if (G.gold >= 2000) achGive('hoard');
   if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
@@ -4452,7 +4453,7 @@ function update(dt) {
     persist();
     setOverlay('win');
     sfx('win');
-    achLevelEnd(true);
+    achLevelEnd(true); levelEndAd();
   }
 }
 
@@ -8067,6 +8068,72 @@ function drawSettings() {
   if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
   gameButton('credits', W - 112, H - 34, 190, 38, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
 }
+// ---------- reklam ve tek seferlik satın alma ----------
+// Gelir modeli (10 Eki): ödüllü reklam (isteğe bağlı: kaybedince 5 canla devam, bölüme +150 altınla başla) + 3 bölümde bir
+// ara reklam; tek seferlik "Mortimer'ın Hazinesi" (MONET.price) ara reklamları kaldırır, ödüllü reklam ödüllerini reklamsız verir.
+// Tarayıcı sürümünde reklamlar DENEME ekranıdır; mağaza sürümünde Capacitor AdMob + uygulama içi satın alma buraya bağlanacak
+// (window.NativeAds?.showRewarded / showInterstitial, window.NativeIAP?.buy('mortimer_hazine')).
+const MONET = { interEvery: 3, interMinSec: 120, price: '₺149,99', priceUsd: '$4.99', product: 'mortimer_hazine', boostGold: 150 };
+let AD = null, lastInterAd = -1e9; // AD: { kind: 'rew' | 'int', t0, dur, cb }
+const isPremium = () => !!save.premium;
+function showRewardedAd(cb) {
+  if (isPremium()) { cb(); return; }
+  if (window.NativeAds && window.NativeAds.showRewarded) { window.NativeAds.showRewarded().then(ok => ok && cb()).catch(() => {}); return; }
+  AD = { kind: 'rew', t0: time, dur: 3, cb };
+}
+function levelEndAd() {
+  if (isPremium()) return;
+  save.levelsEnded = (save.levelsEnded || 0) + 1; persist();
+  if (save.levelsEnded % MONET.interEvery !== 0 || time - lastInterAd < MONET.interMinSec) return;
+  lastInterAd = time;
+  setTimeout(() => {
+    if (window.NativeAds && window.NativeAds.showInterstitial) { window.NativeAds.showInterstitial().catch(() => {}); return; }
+    AD = { kind: 'int', t0: time, dur: 2.5 };
+  }, 1600); // zafer/yenilgi ekranı önce görünsün
+}
+function buyPremium() {
+  if (window.NativeIAP && window.NativeIAP.buy) { window.NativeIAP.buy(MONET.product).then(ok => { if (ok) { save.premium = true; persist(); sfx('levelup'); } }).catch(() => {}); return; }
+  save.premium = true; persist(); sfx('levelup'); // tarayıcı: deneme satın alma
+  mapNote = { text: 'Deneme satın alma: gerçek ödeme mağaza sürümünde', t: time };
+}
+function drawAd() {
+  if (!AD) return;
+  const k = time - AD.t0, left = Math.max(0, AD.dur - k);
+  buttons.length = 0; // reklam sürerken alttaki düğmeler çalışmaz
+  ctx.fillStyle = 'rgba(6,4,10,0.94)'; ctx.fillRect(0, 0, W, H);
+  roundRect(W / 2 - 220, H / 2 - 120, 440, 240, 18, '#1a1424', '#5a4a7a', 2);
+  txt(AD.kind === 'rew' ? 'ÖDÜLLÜ REKLAM' : 'REKLAM', W / 2, H / 2 - 82, 22, '#e8dcc0', 'center', '400', FONT_T, false);
+  txt('(deneme — mağaza sürümünde gerçek reklam gösterilir)', W / 2, H / 2 - 56, 12, '#9a8cb0', 'center', '700', FONT_B, false);
+  ctx.save(); ctx.translate(W / 2, H / 2 + 6); ctx.rotate(Math.sin(time * 3) * 0.08); drawIcon('skull', 0, 0, 56); ctx.restore();
+  if (left > 0) txt(Math.ceil(left) + '', W / 2, H / 2 + 80, 20, '#ffe27a', 'center', '400', FONT_T, false);
+  else gameButton('ad_close', W / 2, H / 2 + 82, 200, 44, AD.kind === 'rew' ? 'ÖDÜLÜ AL' : 'KAPAT', () => { const cb = AD.cb; AD = null; if (cb) cb(); }, 'green', { size: 16 });
+}
+function drawShop() {
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
+  if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
+  else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
+  ctx.fillStyle = 'rgba(14,8,2,0.7)'; ctx.fillRect(0, 0, W, H);
+  const rk = easeOutBack(clamp(st / 0.45, 0, 1));
+  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, 'DÜKKÂN', 'gold', 26); ctx.restore();
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack || 'map'; screenT = time; }), { appear: st - 0.1 });
+  const pw = 520, ph = 360, px = W / 2 - pw / 2, py = 108, pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
+  ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
+  glow(ctx, W / 2, py + 90, 200, '255,200,90', 0.18 + Math.sin(time * 2) * 0.05);
+  roundRect(px + 5, py + 10, pw, ph, 22, 'rgba(0,0,0,0.45)');
+  const fr = ctx.createLinearGradient(0, py, 0, py + ph); fr.addColorStop(0, '#6a1a20'); fr.addColorStop(1, '#2a0608');
+  roundRect(px, py, pw, ph, 22, fr, '#e8bb52', 3);
+  ctx.restore();
+  if (pk < 0.9) return;
+  ctx.save(); ctx.translate(W / 2, py + 72); drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); ctx.restore();
+  txt("MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
+  txt('Tek seferlik satın alma · abonelik yok', W / 2, py + 154, 13, '#e0c8a8', 'center', '700', FONT_B, false);
+  const rows = ['Bölüm aralarındaki reklamlar tamamen kalkar', 'Reklam ödülleri (5 canla devam, altınla başla) reklam izlemeden', 'Mortimer\'a altın taç', 'Bir necromancer\'ı mutlu edersin'];
+  rows.forEach((r, i) => { circle(px + 74, py + 186 + i * 26, 6, '#3cbf3c', '#0a2a0a', 1.2); txt(r, px + 90, py + 187 + i * 26, 14, '#f2ecd8', 'left', '700', FONT_B, false); });
+  if (isPremium()) txt('SATIN ALINDI — teşekkürler!', W / 2, py + ph - 38, 18, '#a8f0a0', 'center', '400', FONT_T, false);
+  else gameButton('buy', W / 2, py + ph - 40, 280, 52, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 17 });
+  txt('Satın alımları geri yükle', W / 2, H - 22, 12, '#cdb894', 'center', '700', FONT_B, false);
+  buttons.push({ key: 'restore', x: W / 2 - 90, y: H - 34, w: 180, h: 24, fn: () => { if (window.NativeIAP && window.NativeIAP.restore) window.NativeIAP.restore().then(ok => { if (ok) { save.premium = true; persist(); } }); else mapNote = { text: 'Geri yükleme mağaza sürümünde', t: time }; } });
+}
 // Emeği geçenler: kaynaklar ve lisanslar (CC-BY sesler adın gösterilmesini şart koşar; yeni kaynak eklenince buraya yaz)
 const CREDITS = [
   ['OYUN', [['Tasarım ve yapım', 'Caner'], ['Programlama yardımı', 'Claude (Anthropic)']]],
@@ -9831,6 +9898,7 @@ function drawMap() {
       if (done) { ctx.strokeStyle = '#3cbf3c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-5, 2); ctx.lineTo(-1, 6); ctx.lineTo(7, -4); ctx.stroke(); }
     }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3 });
   }
+  roundBtn('shop', W - 364, 41, 19, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35 });
   roundBtn('ach', W - 272, 41, 19, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
   if (save.achNew) { circle(W - 258, 27, 8, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', W - 258, 27.5, 10, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
@@ -9941,6 +10009,9 @@ function drawLevelCard(i, cx, cy, at) {
     gameButton(key, cx, by, st ? 132 : 176, 46, st ? 'TEKRAR' : 'OYNA', null, st ? 'gold' : 'green', { icon: st ? 'restart' : 'play', shine: current, size: 19 });
     ctx.restore();
     buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => go(() => startLevel(i)) });
+    // ödüllü reklam: +150 altınla başla (bölüm kartının altında küçük düğme)
+    { const kb = 'boost' + i, yb = by + 46 * sc;
+      gameButton(kb, cx, yb, 196 * sc, 30 * sc, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA', () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 11 * sc }); }
     // sonsuz gece: bölümü bir kez bitirince açılır; rekor altında yazar
     if (st) {
       const bx = cx - 96 * sc, k2 = 'end' + i, best = (save.endless || {})[i] || 0;
@@ -10696,8 +10767,18 @@ function drawOverlay() {
       txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
       txt(TIPS[(G.idx + G.wave) % TIPS.length], cx, py + 192, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false);
     }
-    gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
-    gameButton('ov_map', cx, py + 304, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
+    if (!G.revived && !G.endless) { // ödüllü reklam: bölüm başına bir kez, 5 canla kaldığın yerden devam
+      gameButton('ov_revive', cx, py + 236, 300, 50, isPremium() ? '5 CANLA DEVAM ET' : '▶ REKLAM İZLE · 5 CANLA DEVAM', () => showRewardedAd(() => {
+        G.revived = true; G.lives = 5; G.maxLives = Math.max(G.maxLives, 5);
+        for (const e of G.enemies) if (dist(e.x, e.y, G.castle.x, G.castle.y) < 90) damageEnemy(e, 1e9, 'true'); // kapıdakiler dağılır
+        setOverlay(null); sfx('levelup');
+      }), 'blue', { appear: k - 0.25, size: 15 });
+      gameButton('ov_retry', cx - 72, py + 296, 136, 44, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', appear: k - 0.3 });
+      gameButton('ov_map', cx + 72, py + 296, 136, 44, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
+    } else {
+      gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
+      gameButton('ov_map', cx, py + 304, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
+    }
   }
   ctx.restore();
 }
@@ -11010,7 +11091,7 @@ function frame(now) {
     if (G) G.bg = renderBackground(G.lv, G.paths, bgRes());
     for (const k in THUMB) delete THUMB[k];
   }
-  if (screen === 'play' && !overlay && !trans) {
+  if (screen === 'play' && !overlay && !trans && !AD) {
     for (let i = 0; i < speed; i++) update(real);
   }
   if (screen === 'play' && G) { updateCamera(real); weatherVisuals(real); }
@@ -11037,9 +11118,11 @@ function frame(now) {
   else if (screen === 'upgrades') drawUpgrades();
   else if (screen === 'codex') drawCodex();
   else if (screen === 'ach') drawAchievements();
+  else if (screen === 'shop') drawShop();
   else drawPlay();
   drawPartsAll(uiParts);
   drawAchToast();
+  drawAd();
   if (trans) {
     const a = trans.t < 0.22 ? trans.t / 0.22 : 1 - (trans.t - 0.22) / 0.28;
     ctx.fillStyle = `rgba(8,5,2,${clamp(a, 0, 1)})`; ctx.fillRect(0, 0, W, H);
