@@ -2345,7 +2345,8 @@ function towerEye(t, ts) {
 }
 // Kemik Dikilitaşı: tepesinde dönen kıymıklardan biri hedefe fırlar (tek hedef, hızlı, uçanları vurur)
 function updateObelisk(t, dt, L) {
-  const ts = towerSprite(t);
+  const ts = towerSprite(t), F = obeliskForm(t);
+  if (F) { L = Object.assign({}, L, { rate: L.rate * F.rate, dmg: [L.dmg[0] * F.dmg, L.dmg[1] * F.dmg], range: L.range * F.range }); return updateObeliskForm(t, dt, L, ts, F); }
   t.cd -= dt;
   // hazırlık: ateşten hemen önce kıymıklar göze toplanır (yalnız hedef varken)
   t.charge = t.hasFoe ? clamp(1 - t.cd / Math.min(0.35, L.rate * 0.6), 0, 1) : 0;
@@ -2365,6 +2366,35 @@ function updateObelisk(t, dt, L) {
       for (let i = 0; i < 4; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-30, 30), vy: rand(-30, 10), drag: 3, col: '150,255,150', s0: 3, s1: 0.5, life: 0.3 });
       sfx('arrow');
     } else t.cd = 0.1;
+  }
+}
+// Kemik Balistası: dev kemik mızrak ucundan fırlar (geri tepme, kiriş şaklar), hedefin arkasındakileri de deler.
+// Hayalet Okçular: hedef soldaysa yeşil, sağdaysa mor okçu atar; çok hızlı, uçanlara ek hasar.
+function updateObeliskForm(t, dt, L, ts, F) {
+  t.cd -= dt;
+  if (t.cd > 0) return;
+  const e = findTarget(t, L.range, true);
+  if (!e) { t.cd = 0.1; return; }
+  t.cd = L.rate; t.shotAnim = 0.3;
+  const nl = abRank(t, 'nail'), fa = abRank(t, 'fan'), crit = Math.random() < 0.15;
+  if (F.tip) {
+    t.face = e.x < t.x ? -1 : 1;
+    const o = formPoint(t, ts, F.tip), n = formPoint(t, ts, F.nock);
+    G.projectiles.push({ kind: 'bspear', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(dist(o.x, o.y, e.x, e.y) / 620, 0.12, 0.45),
+      dmg: roll(L.dmg) * (crit ? 1.6 : 1), dtype: 'true', arc: 3, crit, pierceLine: F.pierce, nail: nl ? nl.rise : 0, src: 'arrow' });
+    G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: 14, col: '255,90,90', t: 0, dur: 0.25 });
+    for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-40, 40) + (e.x - o.x) * 0.3, vy: rand(-40, 20), drag: 3, col: i % 2 ? '255,80,80' : '255,190,120', s0: 3.5, s1: 0.5, life: 0.35 });
+    t.snap = { x: n.x, y: n.y, t: 0.18 }; sfx('cannon');
+  } else {
+    const side = e.x < t.x ? 'L' : 'R', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '130,255,170' : '200,140,255';
+    t.shotSide = side;
+    const shot = (tg, dmg) => G.projectiles.push({ kind: 'ghostarrow', col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: 0, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 700, 0.1, 0.4),
+      dmg: dmg * (tg.def.flying ? F.fly : 1), dtype: 'phys', arc: 4, crit, nail: nl ? nl.rise : 0, src: 'arrow' });
+    shot(e, roll(L.dmg) * (crit ? 2 : 1));
+    if (fa) G.enemies.filter(x => x !== e && !x.dead && !x.under && dist(t.x, t.y - 10, x.x, x.y) <= L.range)
+      .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y)).slice(0, fa.n).forEach(x => shot(x, roll(L.dmg) * fa.mult));
+    for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-25, 25), vy: rand(-25, 10), drag: 3, col, s0: 3, s1: 0.5, life: 0.3 });
+    sfx('arrow');
   }
 }
 function updateTower(t, dt) {
@@ -3307,6 +3337,12 @@ function updateProjectile(pr, dt) {
     if (pr.slow) slowEnemy(e, pr.slow.k, pr.slow.t);
     if (pr.nail) { e.nailT = 4; e.nailK = pr.nail; } // ruh çivisi
     damageEnemy(e, pr.dmg, pr.dtype, false, pr.src);
+    if (pr.pierceLine) { // balista mızrağı: hedefin arkasında aynı doğrultudaki düşmanları da deler
+      const L0 = Math.hypot(pr.tx - pr.sx, pr.ty - pr.sy) || 1, ux = (pr.tx - pr.sx) / L0, uy = (pr.ty - pr.sy) / L0;
+      G.enemies.filter(o => o !== e && !o.dead && !o.under).map(o => { const ax = o.x - e.x, ay = aimY(o) - pr.ty, along = ax * ux + ay * uy; return { o, along, off: Math.abs(ax * uy - ay * ux) }; })
+        .filter(q => q.along > 0 && q.along < 110 && q.off < 18).sort((a, b) => a.along - b.along).slice(0, pr.pierceLine)
+        .forEach(q => { damageEnemy(q.o, pr.dmg * 0.6, 'true', false, pr.src); impactFx(q.o.x, aimY(q.o), '255,120,110', 0.9); });
+    }
     if (pr.drain) for (const s of G.soldiers) { // ruh emici: hedefin yakınındaki iskeletler iyileşir
       if (s.dead || s.wall || s.hp >= s.maxHp || dist(s.x, s.y, e.x, e.y) > 75) continue;
       s.hp = Math.min(s.maxHp, s.hp + pr.dmg * pr.drain);
@@ -4813,11 +4849,25 @@ function drawTowerShape(type, x, y, lvl, s = 1, t = null) {
 }
 
 // Kulenin sprite'ı ve ekrandaki ölçüsü; taban elipsinin ortası arsanın merkezine oturur.
+// Dikilitaşın 4. kademe dönüşümleri (10 Eki): uzmanlık seçilince kule değişir. nail (Ruh Çivisi) -> Kemik Balistası,
+// fan (Kemik Yelpazesi) -> Hayalet Okçular. w: genişlik çarpanı, rate/dmg/range: saldırı çarpanları,
+// tip/nock: mızrağın ucu ve kirişi, bows: okçuların ok uçları (görselin sol üstünden oran; L sola, R sağa nişan alır)
+const OBELISK_FORM = {
+  nail: { w: 1.55, rate: 2.1, dmg: 2.7, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, flip: true },
+  fan: { w: 1.12, rate: 0.48, dmg: 0.62, range: 1.05, fly: 1.5, bows: { L: [0.14, 0.215], R: [0.85, 0.205] } },
+};
+const obeliskForm = (t) => (t.type === 'archer' && t.spec && OBELISK_FORM[t.spec] && spr('tower_archer_' + t.spec) ? OBELISK_FORM[t.spec] : null);
+// dönüşmüş kulede görsel üzerindeki bir noktanın dünya konumu (balista hedefe dönükse aynalanır)
+function formPoint(t, ts, p) {
+  const fl = obeliskForm(t) && obeliskForm(t).flip && t.face === -1 ? -1 : 1;
+  return { x: t.x + (p[0] - 0.5) * ts.w * fl, y: ts.bottom - ts.h + p[1] * ts.h };
+}
 function towerSprite(t) {
-  const name = `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
+  const F = obeliskForm(t);
+  const name = F ? 'tower_archer_' + t.spec : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
-  const w = m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K, h = w * im.height / im.width; // ince dikilitaş biraz büyük
+  const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : 1), h = w * im.height / im.width; // ince dikilitaş biraz büyük
   return { im, w, h, bottom: t.y + (m ? w * (m[2] ?? 0.24) : 10) };
 }
 
@@ -5328,7 +5378,25 @@ function drawTower(t) {
 function drawNecroTowerFx(t, ts) {
   const o = towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
-  if (t.type === 'archer') {
+  const OF = obeliskForm(t);
+  if (OF) {
+    ctx.globalCompositeOperation = 'lighter';
+    if (OF.tip) { // balista: mızrak ucunda kızıl alev, atışta kiriş şaklar
+      const o = formPoint(t, ts, OF.tip), ready = t.shotAnim > 0 ? 0.3 : 1;
+      glow(ctx, o.x, o.y, 9 * s, '255,70,70', (0.45 + Math.sin(time * 9 + t.x) * 0.12) * ready);
+      if (t.snap && (t.snap.t -= 0.016) > 0) {
+        const n = t.snap, k = n.t / 0.18;
+        ctx.strokeStyle = `rgba(255,230,200,${0.8 * k})`; ctx.lineWidth = 1.2;
+        for (const dy of [-6, 6]) { ctx.beginPath(); ctx.moveTo(n.x, n.y + dy * s * (1 - k * 0.5)); ctx.quadraticCurveTo(n.x - (t.face || 1) * 4 * k * s, n.y, n.x, n.y - dy * s); ctx.stroke(); }
+      }
+    } else { // hayalet okçular: iki okçu yeşil ve mor nabız gibi parlar, atan okçu parlar
+      for (const side of ['L', 'R']) {
+        const o = formPoint(t, ts, OF.bows[side]), col = side === 'L' ? '130,255,170' : '200,140,255', fire = t.shotSide === side ? t.shotAnim / 0.3 : 0;
+        glow(ctx, o.x + (side === 'L' ? 6 : -6) * s, o.y + 2 * s, (10 + 8 * fire) * s, col, 0.25 + Math.sin(time * 3 + (side === 'L' ? 0 : 2)) * 0.08 + 0.5 * fire);
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  } else if (t.type === 'archer') {
     // tepede dönen kemik kıymıkları (ön yarısı kulenin önünde, arka yarısı arkasında görünür gibi soluk)
     const ch = t.charge || 0, n = 3 + t.lvl - (sh > 0.4 ? 1 : 0), R = (8 + t.lvl * 3) * s * (1 - 0.65 * ch);
     t.spin = (t.spin || 0) + (1.6 + t.lvl * 0.3 + ch * 9) * 0.016;
@@ -5474,7 +5542,9 @@ function drawTowerBody(t) {
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
     // top ateşlediğinde kule hafifçe sarsılır (top kendi içinde geri teper)
     const ksy = t.type === 'artillery' && t.shotAnim > 0.2 ? 1 - (t.shotAnim - 0.2) * 0.25 : 1;
-    ctx.save(); ctx.translate(t.x, ts.bottom); ctx.scale(pop, pop * ksy);
+    const OF = obeliskForm(t), fl = OF && OF.flip && t.face === -1 ? -1 : 1;
+    const recoil = OF && OF.tip && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
+    ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
     const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
     drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
     ctx.restore();
@@ -6580,6 +6650,27 @@ function drawProjectile(p) {
     ctx.strokeStyle = '#8a5a2a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(0, -5); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(5.5, -6.5, 6, -1.5); ctx.quadraticCurveTo(3, -2.4, 0, -1.6); ctx.closePath();
     ctx.fillStyle = '#c8ced8'; ctx.fill(); ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7; ctx.stroke();
+    ctx.restore();
+  } else if (p.kind === 'bspear') { // balistanın dev kemik mızrağı: kemik şaft, kızıl alevli uç, iz
+    const pv = projPos(p, k - 0.06), a = Math.atan2(y - pv.y, x - pv.x);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 1; i <= 4; i++) { const q = projPos(p, k - i * 0.05); glow(ctx, q.x, q.y, 6 - i, '255,90,80', 0.35 - i * 0.06); }
+    ctx.restore();
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1a10'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(4, 0); ctx.stroke();
+    ctx.strokeStyle = '#efe2c2'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-21, 0); ctx.lineTo(3, 0); ctx.stroke();
+    circle(-22, -1.5, 2, '#efe2c2', '#2a1a10', 0.8); circle(-22, 1.5, 2, '#efe2c2', '#2a1a10', 0.8);
+    ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(2, -3.6); ctx.lineTo(4, 0); ctx.lineTo(2, 3.6); ctx.closePath(); ctx.fillStyle = '#ff6a5a'; ctx.fill(); ctx.strokeStyle = '#3a0a08'; ctx.lineWidth = 0.8; ctx.stroke();
+    ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + Math.cos(a) * 8, y + Math.sin(a) * 8, 7, '255,80,70', 0.7); ctx.restore();
+  } else if (p.kind === 'ghostarrow') { // hayalet ok: okçunun renginde ışıklı ince ok ve iz
+    const pv = projPos(p, k - 0.12), a = Math.atan2(y - pv.y, x - pv.x);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = `rgba(${p.col},0.45)`; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(pv.x, pv.y); ctx.lineTo(x, y); ctx.stroke();
+    ctx.translate(x, y); ctx.rotate(a);
+    ctx.strokeStyle = `rgba(${p.col},0.95)`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(4, 0); ctx.stroke();
+    ctx.fillStyle = `rgb(${p.col})`; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2); ctx.lineTo(3, 2); ctx.closePath(); ctx.fill();
+    glow(ctx, 3, 0, 6, p.col, 0.6);
     ctx.restore();
   } else if (p.kind === 'net') { // dönen ağ: halka ve ağ örgüsü, uçtukça açılır
     const k = clamp(p.t / p.dur, 0, 1), R = 3 + 6 * k;

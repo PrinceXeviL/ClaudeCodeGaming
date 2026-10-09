@@ -16,9 +16,9 @@ const TOWERS = {
     // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
     abilities: [
       // Kemik Yelpazesi: her atışta yanındaki düşmanlara da kıymık · Ruh Çivisi: çivilenen ölünce cesedi uzun yatar, kendiliğinden dirilebilir
-      { id: 'fan', name: 'Kemik Yelpazesi', desc: (r) => `Her atışta ${r.n} ek kıymık yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
+      { id: 'fan', name: 'Hayalet Okçular', desc: (r) => `Kule Hayalet Okçulara dönüşür: çok hızlı atış, uçanlara +%50 · her atışta ${r.n} ek kıymık yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
         ranks: [{ cost: 150, n: 1, mult: 0.6 }, { cost: 200, n: 2, mult: 0.7 }, { cost: 260, n: 2, mult: 0.9 }] },
-      { id: 'nail', name: 'Ruh Çivisi', desc: (r) => `Vurulan 4 sn çivilenir: ölürse cesedi +4 sn yatar ve %${Math.round(r.rise * 100)} şansla kendiliğinden dirilir`,
+      { id: 'nail', name: 'Kemik Balistası', desc: (r) => `Kule Kemik Balistasına dönüşür: yavaş ama ağır, sıradaki 2 düşmanı deler · vurulan 4 sn çivilenir: ölürse cesedi +4 sn yatar ve %${Math.round(r.rise * 100)} şansla kendiliğinden dirilir`,
         ranks: [{ cost: 160, rise: 0.15 }, { cost: 220, rise: 0.25 }, { cost: 280, rise: 0.35 }] },
     ],
   },
@@ -841,8 +841,8 @@ for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOW
 // Uzmanlık: son seviyede iki yetenekten biri seçilir (ilk alınan yetenek yolu belirler, diğeri kapanır).
 // Seçilen yol kulenin adını ve görünüşünü değiştirir: askerlerin kostümü, okçuların kıyafeti, kule süsleri.
 const SPEC = {
-  fan:    { title: 'Kemik Yelpazesi', who: 'Yelpaze gibi saçılan kemik kıymıkları' },
-  nail:   { title: 'Ruh Çivisi Dikilitaşı', who: 'Ruhu bedene çivileyen kara kıymık' },
+  fan:    { title: 'Hayalet Okçular', who: 'İki hayalet okçu: çok hızlı atış, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
+  nail:   { title: 'Kemik Balistası', who: 'Dev kemik mızrak: ağır vurur, sıradakileri deler, çiviler' },
   drain:  { title: 'Ruh Emici Fener', who: 'Canı emip iskeletlere aktaran yeşil ışın' },
   ghost:  { title: 'Hayalet Feneri', who: 'Yola salınan çığlık atan hayaletler' },
   corpse: { title: 'Ceset Mancınığı', who: 'Cesetleri cephane yapan kazan' },
