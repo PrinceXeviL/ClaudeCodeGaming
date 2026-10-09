@@ -3564,9 +3564,9 @@ function drawAchievements() {
 // ----- borazancı: ilk dalga çağrılınca o dalganın girişlerinden birer lejyoner çıkar, savaş borazanını çalar, geri döner;
 // düşmanlar o dönünce gelir (heraldT sn gecikme) -----
 // boss gelmeden de çıkar: aynı çağrıyı daha kalın ve uzun (yavaş) çalar (long)
-// Borazancı yol ağzından birkaç adım girer, yoldan yana çimenliğe çıkar, orada çalar, yola dönüp geldiği yere gider.
-// step: ekrana girdiği yerden yürüdüğü yol, off: yol kenarından çimene açıldığı mesafe, side: yana çıkma süresi (sn)
-const HERALD = { step: 55, off: 18, side: 0.55, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 };
+// Borazancı baştan yolun dışından, yolun yanındaki çimenlikten gelir; yol ağzının birkaç adım ilerisinde durup çalar, aynı yoldan geri döner.
+// step: ekrana girdiği yerden yürüdüğü yol, off: yol kenarından çimene açıklık
+const HERALD = { step: 55, off: 18, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 };
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
   let d0 = 0; while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > 20 && q.y > 20 && q.x < W - 20 && q.y < H - 20) break; d0 += 4; }
@@ -3575,26 +3575,24 @@ function heraldSpot(p) {
   for (const sd of [1, -1]) {
     const g = pathPos(p, d, sd * half), inside = g.x > 24 && g.x < W - 24 && g.y > 80 && g.y < H - 20;
     const score = (inside ? 1000 : 0) + nearestOnPaths(G.paths, g.x, g.y).d;
-    if (!best || score > best.score) best = { score, x: g.x, y: g.y };
+    if (!best || score > best.score) best = { score, sd };
   }
-  return { dW: d, rx: q.x, ry: q.y, gx: best.x, gy: best.y };
+  return { dW: d, sd: best.sd, half };
 }
 function callHeralds(paths, long = false) {
-  paths.slice(0, 3).forEach((pi, i) => G.heralds.push({ p: G.paths[pi], d: 0, u: 0, state: 'in', t: -i * 0.15, i, long, ...heraldSpot(G.paths[pi]) }));
+  paths.slice(0, 3).forEach((pi, i) => G.heralds.push({ p: G.paths[pi], d: 0, state: 'in', t: -i * 0.15, i, long, ...heraldSpot(G.paths[pi]) }));
 }
 // düşmanlar borazancı(lar) geri dönünce yola çıkar
 const heraldT = (long) => 0.3 + Math.max(0, ...(G.heralds || []).filter(h => h.state === 'in').map(h =>
-  h.i * 0.15 + h.dW / HERALD.speed + HERALD.side * 2 + (long ? HERALD.blowLong : HERALD.blow) + h.dW / HERALD.back));
+  h.i * 0.15 + h.dW / HERALD.speed + (long ? HERALD.blowLong : HERALD.blow) + h.dW / HERALD.back));
 function updateHeralds(dt) {
   for (const h of G.heralds || []) {
     h.t += dt;
     if (h.t < 0) continue;
-    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'side'; h.t = 0; } }
-    else if (h.state === 'side') { h.u = Math.min(1, h.t / HERALD.side); if (h.u >= 1) { h.state = 'blow'; h.t = 0; if (h.i === 0) sfx('horn', h.long ? 0.8 : undefined); } }
+    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'blow'; h.t = 0; if (h.i === 0) sfx('horn', h.long ? 0.8 : undefined); } }
     else if (h.state === 'blow') {
-      if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'back'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
+      if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'out'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
     }
-    else if (h.state === 'back') { h.u = Math.max(0, 1 - h.t / HERALD.side); if (h.u <= 0) { h.state = 'out'; h.t = 0; } }
     else h.d -= HERALD.back * dt;
   }
   if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > -10);
@@ -3604,12 +3602,9 @@ function drawHeralds() {
   const hgt = CHAR_H.enemy_legion || ENEMIES.legion.h * UNIT_K;
   for (const h of G.heralds || []) {
     if (h.t < 0 && h.state === 'in') continue;
-    const q = pathPos(h.p, Math.max(0, h.d)), fwd = q.dx >= 0 ? 1 : -1, off = h.state === 'side' || h.state === 'blow' || h.state === 'back';
-    const e = easeInOut(h.u || 0), px = off ? lerp(h.rx, h.gx, e) : q.x, py = off ? lerp(h.ry, h.gy, e) : q.y;
-    const sideF = h.gx >= h.rx ? 1 : -1;
-    const face = h.state === 'out' ? -fwd : h.state === 'side' ? sideF : h.state === 'back' ? -sideF : fwd; // çalarken düşmanın yürüyeceği yöne bakar
+    const q = pathPos(h.p, Math.max(0, h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun yanındaki çimenlikten yürür
+    const face = h.state === 'out' ? -fwd : fwd; // çalarken düşmanın yürüyeceği yöne bakar
     const blowing = h.state === 'blow';
-    q.x = px; q.y = py;
     drawUnit('enemy_legion', im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i });
     if (!blowing) continue;
     // borazan: ağzından yukarı-ileri uzanan kıvrık pirinç boru; ses halkaları
