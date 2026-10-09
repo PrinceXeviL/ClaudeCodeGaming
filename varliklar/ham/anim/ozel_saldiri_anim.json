@@ -1,0 +1,154 @@
+[
+ {
+  "name": "enemy_legion_skill",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon roman legionary with a big red shield raises a javelin over his shoulder and hurls it forward to the right, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_gladiator_skill",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon arena gladiator swings a weighted fishing net around once and throws it forward to the right, the net spreading open, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_assassin_skill",
+  "ref": "ham/anim/enemy_assassin_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon hooded assassin quickly stabs forward with a dagger dripping green poison, then flicks the dagger, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_cavalry_skill",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon armored roman cavalryman on a horse rears the horse up and charges forward, the horse kicking with its front legs, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_priest_skill",
+  "ref": "ham/anim/enemy_priest_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon roman sun priest raises both arms high to the sky calling down golden holy light, glowing hands, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_heavy_skill",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon heavy roman infantryman with a huge tower shield slams the shield forward hard in a powerful shield bash, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_solarcher_skill",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon roman archer draws the bow, the arrow tip bursts into flame, and he shoots the flaming arrow forward to the right, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_gloriosus_skill",
+  "ref": "ham/anim/enemy_gloriosus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon pompous roman general points his sword forward and shouts a command, cape flowing, very dramatic pose, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_hunter_skill",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat raises his silver crossbow and fires a spreading silver net forward to the right, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_torch_skill",
+  "ref": "ham/anim/enemy_torch_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon hooded zealot monk swings his burning torch in a big arc forward, a burst of fire and sparks, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_flagellant_skill",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon bare-chested hooded fanatic spins around once lashing his knotted whip in a full circle around himself, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_paladin_skill",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon armored paladin knight slams his glowing sun tower shield forward in a powerful shield bash, golden flash, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_hound_skill",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a lean white wolfhound crouches and leaps forward in a big pouncing jump, jaws open, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_saint_skill",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a walking cracked marble saint statue raises its stone sword high with both hands and slams it down hard, stone dust, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_malleus_skill",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a towering cartoon witch hunter general raises both silver crossbows and fires two spreading silver nets forward to the right, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_campanus_skill",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a huge cartoon monk carrying a giant bronze bell on his back spins around once swinging his big hammer in a full circle, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_ignis_skill",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a fierce cartoon nun raises her brass sun flamethrower censer and spins, spraying a ring of fire all around her, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_colossus_skill",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a gigantic cracked marble statue knight lowers its shoulder and charges forward heavily, stone pieces flying, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_severus_skill",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "an old cartoon grand inquisitor in a crimson and gold robe raises his gold sun staff high, a beam of golden light shoots up from it, the black teapot held in his other hand, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
