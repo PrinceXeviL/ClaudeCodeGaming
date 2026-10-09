@@ -45,7 +45,7 @@ function useStrips(keep) {
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
   .then(r => (r.ok ? r.json() : []))
-  .then(list => list.sort((a, b) => (b.startsWith('nm_title') ? 1 : 0) - (a.startsWith('nm_title') ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
+  .then(list => list.sort((a, b) => (/^nm_(title|key)/.test(b) ? 1 : 0) - (/^nm_(title|key)/.test(a) ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
     const name = file.replace(/\.(png|svg|jpg|webp)$/, '');
     if (LAZY_RE.test(name)) { LAZY[name] = file; return; } // animasyon şeridi: bölümde gerekince yüklenir
     const im = new Image();
@@ -8738,12 +8738,52 @@ function drawSkullIcon(x, y, r) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); glow(ctx, r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); ctx.restore();
   ctx.restore();
 }
+// yeni giriş görseli (Mortimer tahtında çay içiyor, lejyon geliyor): ışıklar görseldeki yerlerine (0..1) bağlı canlandırılır
+const KEY_FX = {
+  eyes: [[0.187, 0.307], [0.208, 0.309]], skull: [[0.175, 0.11], [0.198, 0.112]], cup: [0.334, 0.375], moon: [0.915, 0.122],
+  torch: [[0.48, 0.517], [0.549, 0.491], [0.635, 0.487], [0.695, 0.463], [0.735, 0.564], [0.755, 0.457], [0.78, 0.469], [0.781, 0.664],
+    [0.844, 0.666], [0.885, 0.451], [0.905, 0.683], [0.93, 0.472], [0.931, 0.562], [0.968, 0.51]],
+  win: [[0.325, 0.26], [0.352, 0.263], [0.365, 0.164], [0.392, 0.228], [0.375, 0.355], [0.425, 0.254], [0.445, 0.178], [0.445, 0.276], [0.445, 0.362]],
+  flame: [[0.042, 0.583, 70, '110,255,120'], [0.05, 0.72, 50, '190,120,255'], [0.333, 0.507, 46, '110,255,120'], [0.381, 0.645, 50, '190,120,255']],
+};
+function drawKeyArt(bg) {
+  const z = 1.035 + Math.sin(time * 0.1) * 0.012, k = Math.max(W / bg.width, H / bg.height) * z, iw = bg.width * k, ih = bg.height * k;
+  const ox = (W - iw) / 2 + Math.sin(time * 0.07) * 6, oy = (H - ih) / 2 + Math.cos(time * 0.09) * 3, s = iw / W;
+  ctx.drawImage(bg.width > iw * 1.5 ? pickMip(ctx, bg, iw) : bg, ox, oy, iw, ih);
+  const P = (f) => [ox + f[0] * iw, oy + f[1] * ih];
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const [mx, my] = P(KEY_FX.moon);
+  glow(ctx, mx, my, 120 * s, '210,240,255', 0.2 + Math.sin(time * 0.8) * 0.04);
+  // büyü alevleri ve kule pencereleri: yavaş nabız
+  for (const [i, f] of KEY_FX.flame.entries()) { const [x, y] = P(f); glow(ctx, x, y - Math.sin(time * 3 + i) * 4, f[2] * s * (1 + Math.sin(time * 4.3 + i * 2) * 0.12), f[3], 0.22 + Math.sin(time * 5.1 + i) * 0.07); }
+  for (const [i, f] of KEY_FX.win.entries()) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '120,255,140', 0.18 + Math.sin(time * 1.3 + i * 0.8) * 0.12); }
+  // meşaleler titrer
+  for (const [i, f] of KEY_FX.torch.entries()) {
+    const [x, y] = P(f), fl = Math.sin(time * 11 + i * 1.7) * 0.5 + Math.sin(time * 17.3 + i) * 0.5;
+    glow(ctx, x, y, (16 + fl * 3) * s, '255,170,70', 0.32 + fl * 0.1);
+    if (Math.random() < 0.025) emit(uiParts, { kind: 'glow', add: true, x, y: y - 6 * s, vx: rand(-5, 5), vy: rand(-28, -16), col: '255,170,70', s0: rand(1, 2), s1: 0.3, life: rand(0.8, 1.5), a: 0.9 });
+  }
+  // Mortimer'ın gözleri ve tahttaki kafatası: kızıl parıltı, ara ara göz kırpar
+  const blink = (time % 6.3) < 0.12 ? 0.15 : 1;
+  for (const f of KEY_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 11 * s, '255,40,30', (0.55 + Math.sin(time * 2.2) * 0.2) * blink); }
+  for (const f of KEY_FX.skull) { const [x, y] = P(f); glow(ctx, x, y, 9 * s, '255,40,30', 0.4 + Math.sin(time * 1.7 + 1) * 0.2); }
+  // çay buharı
+  const [cx, cy] = P(KEY_FX.cup);
+  for (let i = 0; i < 6; i++) {
+    const t = (time * 0.35 + i / 6) % 1, x = cx + Math.sin(t * 7 + i * 2) * 5 * s * t, y = cy - t * 46 * s;
+    glow(ctx, x, y, (5 + t * 9) * s, '235,240,255', Math.sin(Math.PI * t) * 0.16);
+  }
+  ctx.restore();
+}
 function drawNecroTitle(st) {
-  const bg = spr('nm_title');
+  const key = spr('nm_key');
+  if (key) drawKeyArt(key);
+  const bg = key ? null : spr('nm_title');
   const bz = 1.06 + Math.sin(time * 0.1) * 0.02, bx = Math.sin(time * 0.07) * 8, by = Math.cos(time * 0.09) * 4;
   if (bg) coverImage(bg, bz, bx, by);
-  else { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0c0614'); g.addColorStop(1, '#141a12'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
-  // ay ışığı: soğuk mor ton, aydan inen yavaş dönen huzmeler
+  else if (!key) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0c0614'); g.addColorStop(1, '#141a12'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  // ay ışığı (eski görsel): soğuk mor ton, aydan inen yavaş dönen huzmeler
+  if (!key) {
   ctx.fillStyle = 'rgba(40,20,70,0.16)'; ctx.fillRect(0, 0, W, H);
   const mx = W * 0.77, my = H * 0.16;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -8756,6 +8796,7 @@ function drawNecroTitle(st) {
     ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, len, a - wd, a + wd); ctx.closePath(); ctx.fill();
   }
   ctx.restore();
+  }
   // sürüklenen yeşil sis
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (let i = 0; i < 6; i++) {
@@ -8787,7 +8828,8 @@ function drawNecroTitle(st) {
   // logo: düşerek gelir, sonra hafifçe süzülür
   const e = easeOutBack(clamp(st / 0.8, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.3, 0, 1);
-  drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
+  if (key) drawTitleLogo(W * 0.66, 96 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.62 * (0.85 + 0.15 * e));
+  else drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
   ctx.restore();
   necroPlayButton('play', W / 2, 448, 270, 64, 'OYNA', () => go(() => { screen = 'map'; }), st - 0.6);
   // yükselen yeşil ruh kıvılcımları
