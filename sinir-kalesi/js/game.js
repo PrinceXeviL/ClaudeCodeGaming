@@ -2108,7 +2108,8 @@ function damageSoldier(s, amount, src) {
       emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 10, col: '120,255,140', s0: 10, s1: 22, life: 0.35, a: 0.4 });
     }
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
-    if (!s.ghoul && !s.big) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
+    if (s.big && ANIM_META[s.big + '_die']) G.effects.push({ kind: 'corpse', name: s.big, rig: s.big, h: s.bh, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: 3 }); // iri birim: Wan çöküş şeridi
+    else if (!s.ghoul && !s.big) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.chapel ? s.giant.respawn : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
@@ -5260,8 +5261,8 @@ function drawTowerShape(type, x, y, lvl, s = 1, t = null) {
 // ghost (Hayalet Çağırıcı) -> Ruh Kafesi: ışın kızıl gözden, hayaletler kafesten çıkar, ara ara en güçlü düşmanı kafese kapatır.
 const TOWER_FORM = {
   // 10 Eki denge: dönüşümler 3. kademenin ~1,3 katı (önce ~2,4 kattı, tek kule bölüm geçiyordu)
-  archer_nail: { w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, pierceK: 0.45, flip: true },
-  archer_fan: { w: 1.12, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, loopAnim: true, bows: { L: [0.2, 0.19], R: [0.76, 0.18] } },
+  archer_nail: { noAnim: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, pierceK: 0.45, flip: true },
+  archer_fan: { noAnim: true, w: 1.12, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, loopAnim: true, bows: { L: [0.2, 0.19], R: [0.76, 0.18] } },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
@@ -5274,7 +5275,7 @@ const TOWER_FORM = {
 // kule atış animasyonu (kule_anim_isle.py): <görsel>_atk şeridi; box: görsele göre çerçeve, rel: fırlatma anı, relPt: o anda fırlayan parça
 const TOWER_ANIM_FPS = 16;
 function towerAnim(t) {
-  const F = towerForm(t); if (!F) return null;
+  const F = towerForm(t); if (!F || F.noAnim) return null; // noAnim: Wan şeridi beğenilmedi, kapalı
   const n = `tower_${t.type}_${t.spec}_atk`, M = ANIM_META[n];
   if (!M || !M.tower) return null;
   const im = spr(n); if (!im) { loadStrip(n); return null; }

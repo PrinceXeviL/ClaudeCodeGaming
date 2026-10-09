@@ -1049,5 +1049,49 @@
   "fh": 165,
   "base": 0.0146,
   "ch": 0.9708
+ },
+ "unit_bonegiant_walk": {
+  "n": 25,
+  "fw": 187,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9475,
+  "idle": 1
+ },
+ "unit_bonegiant_atk": {
+  "n": 32,
+  "fw": 206,
+  "fh": 181,
+  "base": 0.0133,
+  "ch": 0.8847
+ },
+ "unit_bonegiant_die": {
+  "n": 33,
+  "fw": 234,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9433
+ },
+ "unit_corpsegolem_walk": {
+  "n": 26,
+  "fw": 189,
+  "fh": 172,
+  "base": 0.014,
+  "ch": 0.9279,
+  "idle": 0
+ },
+ "unit_corpsegolem_atk": {
+  "n": 32,
+  "fw": 220,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
+ },
+ "unit_corpsegolem_die": {
+  "n": 33,
+  "fw": 228,
+  "fh": 170,
+  "base": 0.0141,
+  "ch": 0.9388
  }
 }
