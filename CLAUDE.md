@@ -205,3 +205,11 @@ metin kodlayıcı fp16 bir kez, dönüştürücü fp32 hesap, 768 px → görsel
 video_isle.biggest_mask ile kes, img/'e WebP; meta.json [w, h] (kulede [w, h, 0.13]). Kontext çıktıları ticari kullanılabilir (FLUX dev lisansı).
 Bu yolla yapılanlar: enemy_wardog, enemy_chariot (yatay çevrildi), enemy_siegetower, enemy_eagle, tower_altar_1..3 (Lanet Kulesi).
 Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener); veri seti sürümü işlenmeden çekirdek gönderilmez (refs_dataset bekler).
+
+## 9 Eki 2026 akşam (yayın 160–170)
+- Giriş ekranı: Gemini anahtar görseli `img/nm_key.jpg` (ham: varliklar/ham/nm_title_mortimer.jpg). game.js KEY_FX: ışık noktaları, `keyWarp` (yalnız renk anahtarlı alev/buhar pikselleri dalgalanır; kol/cübbe sabit), meşale dilleri, uzak kargalar (drawSkyCrows). Logo titleLogo (kurdele + Creepster, sarkıt uçları maskeden bulunur, kan damlası).
+- Yollar v2 (yayın 169): 15 bölüm KR esinli, zorlukla karmaşıklaşır (önizleme tasarim/yollar-v2-onizleme.jpg). ROAD_K 1.57. Arsalar: `node tools/arsa-uret.js js/data.js` (yol ağzı 150 px arsasız) sonra tarayıcıda `__game.plotAudit(true)` (avlu çakışması) ve sonucu data.js'e yaz.
+- Avlu canlı ışıklar: drawAvluLights / AVLU_FX (mumlar, pencereler, kapı alevi, ruh zerreleri). Kaggle Wan avlu videoları KULLANILMADI: model binayı her karede yeniden çiziyor, bütün duvar titriyor.
+- Ölümler: iskelet → kemik yığını (boneCollapse), ölüm şeridi olmayan makine → machineWreck, uçan → skyFall.
+- Sesler: düşman acı/ölüm/korku sesleri gerçek kayıt (varliklar/ses_kayit_isle.py, Michel Baradari CC-BY 3.0). Savaş çığlığı sesi yok (beğenilmedi). Emeği geçenler ekranı: game.js CREDITS (yeni kaynak eklenince yaz).
+- Dalga sayacı sahada düşman varken durur (WAVE_REST 20 sn). İskelet duruşları SKEL_STANCE (kılıç saldırgan, kalkan/temel savunmacı).

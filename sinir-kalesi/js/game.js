@@ -1660,6 +1660,12 @@ function killEnemy(e) {
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
     dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
+  // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
+  const dn = 'enemy_' + (e.def.base || e.type) + '_die', noDie = !LAZY[dn] && !SPR[dn];
+  if (noDie && (e.def.machine || e.def.flying) && !e.leaked) {
+    body.dur = 0.01;
+    if (e.def.machine) machineWreck(e); else skyFall(e);
+  }
   if (e.lastBig && pushable(e) && !e.leaked) launchCorpse(body, e); // patlamayla ya da büyük vuruşla ölen savrulur
   if (e.nailT > 0) body.dur += 4; // ruh çivisi: ceset uzun yatar
   const riseK = Math.max(e.nailT > 0 ? e.nailK || 0 : 0, e.curseT > 0 ? e.curseRise || 0 : 0);
@@ -1840,16 +1846,56 @@ function bonePhys(f, dt) {
   }
 }
 function drawBones(f) {
-  const im = spr(f.key);
+  const im = f.img || spr(f.key);
   if (!im) return;
   ctx.save();
   ctx.globalAlpha = 1 - clamp((f.t - BONES.stay) / BONES.fade, 0, 1);
-  const sh = im.height / BONES.n;
+  const sh = im.height / (f.n || BONES.n);
   for (const p of f.parts) {
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot * f.face); ctx.scale(f.face, p.rest ? 0.86 : 1);
     ctx.drawImage(im, 0, p.k * sh, im.width, sh + 0.5, -f.w / 2, -f.bh / 2, f.w, f.bh + 0.3);
     ctx.restore();
   }
+  ctx.restore();
+}
+// kuşatma makinesi yıkılır: görsel yatay dilimlere bölünür, dilimler yana savrulup devrilerek yere yığılır; tahta kıymıkları ve toz
+function machineWreck(e) {
+  const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
+  if (!im) return;
+  const h = CHAR_H[name] || 40, w = h * im.width / im.height, n = 6, bh = h / n, face = e.face || 1;
+  const parts = [];
+  for (let k = 0; k < n; k++) {
+    const lvl = n - 1 - k;
+    parts.push({ k, x: e.x, y: e.y - h + (k + 0.5) * bh, vx: rand(-40, 40) + (k - n / 2) * 6 * face, vy: -rand(20, 90) * (k < 2 ? 1.4 : 0.6),
+      rot: 0, vr: rand(-4, 4), rest: false, floor: e.y - bh * 0.35 - lvl * bh * 0.1 + rand(-2, 2), delay: lvl * 0.05 });
+  }
+  G.effects.push({ kind: 'bones', key: name, img: im, x: e.x, y: e.y, w, h, bh, face, parts, n, t: 0, dur: BONES.stay + BONES.fade });
+  for (let i = 0; i < 18; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-w * 0.3, w * 0.3), y: e.y - rand(4, h * 0.8), vx: rand(-90, 90), vy: -rand(60, 200), g: 560, vr: rand(-16, 16), rot: rand(0, 6), col: i % 3 ? '#7a5230' : '#a8784a', s0: rand(1.4, 3), s1: 1, life: rand(0.7, 1.2) });
+  G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.8 });
+  impactFx(e.x, e.y - h * 0.4, '230,200,150', 1.2); shakeScreen(2, 0.25); sfx('castlehit');
+}
+// uçan düşman vurulunca kanatları kapanır, dönerek düşer, tüyler saçılır, yerde bir süre yatıp söner
+function skyFall(e) {
+  const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
+  if (!im) return;
+  const h = CHAR_H[name] || 24;
+  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: 2.6 });
+  for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-6, 6), y: e.y - 26 - rand(0, 10), vx: rand(-60, 60), vy: rand(-80, 10), g: 120, vr: rand(-6, 6), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#7a4a22', s0: rand(1.2, 2.2), s1: 0.8, life: rand(0.9, 1.6) });
+}
+function skyFallPhys(f, dt) {
+  if (f.rest) return;
+  f.vy += 520 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.vr * dt;
+  if (f.y >= f.floor) {
+    f.y = f.floor;
+    if (f.vy > 60) { f.vy *= -0.25; f.vr *= 0.3; f.vx *= 0.5; G.effects.push({ kind: 'dust', x: f.x, y: f.y, t: 0, dur: 0.4 }); }
+    else { f.rest = true; f.rot = Math.round(f.rot / Math.PI) * Math.PI + (f.face > 0 ? 1.2 : -1.2); } // yan yatar
+  }
+}
+function drawSkyFall(f) {
+  const w = f.h * f.img.width / f.img.height;
+  ctx.save(); ctx.globalAlpha = 1 - clamp((f.t - (f.dur - 0.6)) / 0.6, 0, 1);
+  ctx.translate(f.x, f.y - f.h * 0.35); ctx.rotate(f.rot); ctx.scale(f.face, 1);
+  ctx.drawImage(pickMip(ctx, f.img, w), -w / 2, -f.h / 2, w, f.h);
   ctx.restore();
 }
 function wallCrumble(s) {
@@ -4155,7 +4201,7 @@ function update(dt) {
   G.enemies = G.enemies.filter(e => !e.dead);
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.projectiles = G.projectiles.filter(p => !p.done);
-  for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); else if (f.kind === 'bones') bonePhys(f, dt); }
+  for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); else if (f.kind === 'bones') bonePhys(f, dt); else if (f.kind === 'skyfall') skyFallPhys(f, dt); }
   G.effects = G.effects.filter(f => f.t < f.dur);
   G.parts = updateParts(G.parts, dt);
   if (G.stormT > 0) G.stormT -= dt;
@@ -7455,7 +7501,53 @@ function drawAvluFront() {
   const c = G.castle, im = castleStageSprite(), cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, sh = c.shake > 0 ? Math.sin(c.shake * 70) * c.shake * 8 : 0;
   ctx.save(); ctx.beginPath(); ctx.rect(cp.x - cp.w / 2 + sh - 2, cp.y - h + AVLU.front * h, cp.w + 4, h); ctx.clip();
   ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
+  drawAvluLights(cp, h, sh, im === spr('castle_avlu_1'));
   drawGateBar();
+}
+// Avlunun canlı ışıkları (görsel bozulmaz, üstüne ışık eklenir): duvardaki yeşil mumlar titrer, şapel pencereleri ve fenerler
+// nabız gibi parlar, kapıdaki kafatasının alevi yanar, avluda ruh zerreleri süzülür. Noktalar castle_avlu görselinde oran (0..1).
+const AVLU_FX = {
+  candle: [[0.33, 0.155], [0.368, 0.15], [0.738, 0.18], [0.798, 0.183], [0.201, 0.225], [0.942, 0.3], [0.036, 0.42], [0.135, 0.545],
+    [0.852, 0.52], [0.754, 0.63], [0.295, 0.658], [0.624, 0.7], [0.392, 0.71]],
+  win: [[0.5, 0.214, 2], [0.418, 0.197, 1], [0.577, 0.213, 1], [0.607, 0.209, 0.7], [0.629, 0.294, 0.7], [0.463, 0.309, 1], [0.538, 0.323, 1],
+    [0.42, 0.341, 1], [0.608, 0.346, 0.8], [0.576, 0.359, 1], [0.42, 0.474, 1], [0.576, 0.491, 1]],
+  lamp: [[0.451, 0.434], [0.537, 0.445]], gate: [0.503, 0.66], eyes: [[0.485, 0.725], [0.515, 0.73]],
+};
+function avluFlame(x, y, hgt, wd, k, ph, col0, col1) {
+  const gr = ctx.createLinearGradient(0, y + wd, 0, y - hgt);
+  gr.addColorStop(0, `rgba(${col0},0.75)`); gr.addColorStop(0.55, `rgba(${col1},0.45)`); gr.addColorStop(1, `rgba(${col1},0)`);
+  const sway = Math.sin(time * 6 + ph) * wd * 0.5;
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x - wd, y + wd * 0.6);
+  ctx.quadraticCurveTo(x - wd * 1.15, y - hgt * 0.45, x + sway, y - hgt * (0.9 + 0.2 * k));
+  ctx.quadraticCurveTo(x + wd * 1.15, y - hgt * 0.45, x + wd, y + wd * 0.6); ctx.closePath(); ctx.fill();
+}
+function drawAvluLights(cp, h, sh, gateOk) {
+  const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [i, f] of AVLU_FX.win.entries()) {
+    const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.1 + i * 0.7) + 0.15 * Math.sin(time * 5.3 + i * 2.1) * Math.sin(time * 1.7 + i);
+    glow(ctx, x, y, 26 * s * f[2], '120,255,140', 0.16 * k + 0.06);
+  }
+  for (const [i, f] of AVLU_FX.lamp.entries()) { const [x, y] = P(f); glow(ctx, x, y, 22 * s, '140,255,150', 0.3 + 0.12 * Math.sin(time * 9 + i * 3) * Math.sin(time * 4.1 + i)); }
+  for (const [i, f] of AVLU_FX.candle.entries()) {
+    const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 12 + i * 2.3) * Math.sin(time * 7.1 + i * 1.3);
+    glow(ctx, x, y, (20 + 5 * k) * s, '120,255,140', 0.3 + 0.15 * k);
+    avluFlame(x, y + 6 * s, (20 + 6 * k) * s, 4.5 * s, k, i, '230,255,220', '110,255,120');
+    if (Math.random() < 0.012 * speed) emit(G.parts, { kind: 'glow', add: true, x, y: y - 14 * s, vx: rand(-4, 4), vy: rand(-22, -12), col: '120,255,140', s0: rand(0.8, 1.4), s1: 0.2, life: rand(0.6, 1.2), a: 0.9 });
+  }
+  if (gateOk) { // kapının üstündeki boynuzlu kafatası: iri yeşil alev, gözler yanar
+    const [x, y] = P(AVLU_FX.gate), k = 0.5 + 0.5 * Math.sin(time * 9) * Math.sin(time * 5.3);
+    glow(ctx, x, y, (60 + 10 * k) * s, '110,255,130', 0.32 + 0.12 * k);
+    for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 18 * s, (44 + 14 * Math.sin(time * 7 + j * 2)) * s * (j === 1 ? 1.25 : 0.85), 10 * s, k, j * 2, '235,255,225', '90,255,110');
+    for (const f of AVLU_FX.eyes) { const [ex, ey] = P(f); glow(ctx, ex, ey, 9 * s, '140,255,150', 0.5 + 0.3 * Math.sin(time * 2.5)); }
+  }
+  // avluda süzülen ruh zerreleri
+  for (let i = 0; i < 7; i++) {
+    const u = (time * 0.12 + i / 7) % 1, fx = 0.28 + 0.44 * ((i * 0.37) % 1) + Math.sin(time * 0.7 + i) * 0.03, fy = 0.6 - u * 0.25;
+    const [x, y] = P([fx, fy]);
+    glow(ctx, x, y, 7 * s * (1 - u * 0.5), '160,255,190', Math.sin(Math.PI * u) * 0.35);
+  }
+  ctx.restore();
 }
 // ----- kale okçuları -----
 function castleSprite() { return spr('castle_1') || spr('tower_barracks_3'); }
@@ -7655,6 +7747,46 @@ function drawSettings() {
     gameButton('set' + i, px + pw - 140, y, 190, 40, val, fn, style, { appear: st - 0.25 - i * 0.04, size: 15 });
   });
   if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
+  gameButton('credits', W - 112, H - 34, 190, 38, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
+}
+// Emeği geçenler: kaynaklar ve lisanslar (CC-BY sesler adın gösterilmesini şart koşar; yeni kaynak eklenince buraya yaz)
+const CREDITS = [
+  ['OYUN', [['Tasarım ve yapım', 'Caner'], ['Programlama yardımı', 'Claude (Anthropic)']]],
+  ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
+    ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
+  ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
+    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Diğer sesler', 'oyunda sentezlendi']]],
+  ['YAZI TİPİ', [['Creepster · Lilita One · Baloo 2', 'SIL Open Font License']]],
+];
+function drawCredits() {
+  const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
+  if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
+  else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(0, 0, W, H); }
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, 'rgba(24,12,4,0.6)'); g.addColorStop(1, 'rgba(14,8,2,0.85)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const rk = easeOutBack(clamp(st / 0.45, 0, 1));
+  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 340, 'EMEĞİ GEÇENLER', 'gold', 24); ctx.restore();
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'settings'; screenT = time; }), { appear: st - 0.1 });
+  const pw = 640, ph = 410, px = W / 2 - pw / 2, py = 100;
+  const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
+  ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
+  roundRect(px + 5, py + 10, pw, ph, 22, 'rgba(0,0,0,0.45)');
+  const fr = ctx.createLinearGradient(0, py, 0, py + ph); fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
+  roundRect(px, py, pw, ph, 22, fr, '#22120a', 3);
+  const pg = ctx.createLinearGradient(0, py + 10, 0, py + ph - 10); pg.addColorStop(0, '#f8ebcc'); pg.addColorStop(1, '#dcc089');
+  roundRect(px + 10, py + 10, pw - 20, ph - 20, 15, pg, 'rgba(92,58,22,0.6)', 1.5);
+  ctx.restore();
+  if (pk < 0.9) return;
+  let y = py + 40;
+  for (const [head, rows] of CREDITS) {
+    txt(head, px + 40, y, 17, '#8a1a14', 'left', '400', FONT_T, false); y += 24;
+    for (const [a, b] of rows) {
+      if (a) txt(a, px + 52, y, 13, '#4a2a0e', 'left', '800', FONT_B, false);
+      txt(b, px + pw - 40, y, 13, '#5a3a1a', 'right', '700', FONT_B, false); y += 20;
+    }
+    y += 8;
+  }
 }
 
 function drawHeroes() {
@@ -9057,7 +9189,7 @@ function drawNecroTitle(st) {
   // logo: düşerek gelir, sonra hafifçe süzülür
   const e = easeOutBack(clamp(st / 0.8, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.3, 0, 1);
-  if (key) drawTitleLogo(W * 0.66, 100 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.64 * (0.85 + 0.15 * e));
+  if (key) drawTitleLogo(W * 0.6, 114 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.64 * (0.85 + 0.15 * e)); // sağ üst düğmelerin altında kalsın
   else drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
   ctx.restore();
   necroPlayButton('play', W / 2, 452, 230, 56, 'OYNA', () => go(() => { screen = 'map'; }), st - 0.6);
@@ -9813,7 +9945,7 @@ function drawPlay() {
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f); else if (f.kind === 'bones') drawBones(f);
+  for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : drawCastle();
   drawGasClouds();
   for (const p of G.projectiles) drawProjectile(p);
@@ -10531,6 +10663,7 @@ function frame(now) {
   else if (screen === 'map') drawMap();
   else if (screen === 'heroes') drawHeroes();
   else if (screen === 'settings') drawSettings();
+  else if (screen === 'credits') drawCredits();
   else if (screen === 'upgrades') drawUpgrades();
   else if (screen === 'codex') drawCodex();
   else if (screen === 'ach') drawAchievements();
