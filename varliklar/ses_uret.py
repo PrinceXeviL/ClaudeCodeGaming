@@ -194,21 +194,25 @@ def splash(k):
 
 
 def horn():
-    """savaş borazanı: kısa 'tu' + uzun 'tuuu' (re -> sol), pirinç rengi formantlar, sona doğru titreşim, hafif yankı"""
-    notes = [(0.0, 0.26, 146.8), (0.34, 1.15, 196.0)]
-    dur = 1.9; n = int(SR * dur); out = np.zeros(n)
-    for at, d, f in notes:
+    """savaş borazanı (Roma cornu'su gibi): kısa-kısa-uzun üç nota (sol -> re -> sol), iki borazancı birlikte (hafif akort farkı),
+    ataklarda kaba "hırıltı", uzun notada güç artışı ve titreşim, pirinç formantları, açık alanda uzun yankı"""
+    notes = [(0.0, 0.24, 98.0, 0.8), (0.3, 0.24, 146.8, 0.9), (0.6, 1.45, 196.0, 1.0)]
+    dur = 2.9; n = int(SR * dur); out = np.zeros(n)
+    for at, d, f, amp in notes:
         t = t_axis(d); u = t / d
-        f0 = f * (1 - 0.06 * np.exp(-t / 0.04)) * (1 + 0.012 * np.sin(2 * np.pi * 5.5 * t) * np.clip((t - 0.35) / 0.3, 0, 1))
-        ph = np.cumsum(f0) / SR
-        src = sum(np.sin(2 * np.pi * k * ph) / k ** 0.9 for k in range(1, 14))  # parlak testere benzeri
-        env = np.minimum(1, t / 0.05) * np.where(u > 0.82, (1 - u) / 0.18, 1) * (0.8 + 0.2 * np.minimum(1, t / 0.3))
-        x = src * env
-        y = resonate(x, 520, 160) + 0.8 * resonate(x, 1150, 220) + 0.35 * resonate(x, 2400, 380)
-        i = int(SR * at); out[i:i + len(y)] += y
-    for dl, g in [(0.11, 0.35), (0.23, 0.2), (0.37, 0.1)]:  # basit yankı
+        for det, g in [(1.0, 1.0), (1.004, 0.7), (0.5, 0.35)]:  # ikinci borazan + bir oktav altta kalın destek
+            f0 = f * det * (1 - 0.07 * np.exp(-t / 0.035)) * (1 + 0.014 * np.sin(2 * np.pi * 5.2 * t) * np.clip((t - 0.4) / 0.4, 0, 1))
+            ph = np.cumsum(f0) / SR
+            src = sum(np.sin(2 * np.pi * k * ph) / k ** 0.8 for k in range(1, 16))
+            growl = 1 + 0.35 * np.sin(2 * np.pi * 31 * t) * np.exp(-t / 0.08)       # atakta pirincin kaba titreşimi
+            swell = 0.75 + 0.25 * np.minimum(1, t / 0.6) if d > 1 else 1               # uzun notada güç artar
+            env = np.minimum(1, t / 0.04) * np.where(u > 0.85, (1 - u) / 0.15, 1) * swell * growl
+            x = src * env * g * amp
+            y = resonate(x, 480, 150) + 0.9 * resonate(x, 1100, 220) + 0.4 * resonate(x, 2300, 380)
+            i = int(SR * at); out[i:i + len(y)] += y[:n - i]
+    for dl, g in [(0.09, 0.32), (0.19, 0.22), (0.33, 0.14), (0.52, 0.08)]:  # açık alan yankısı
         k = int(SR * dl); out[k:] += out[:-k] * g
-    return lowpass(out, 4200)
+    return lowpass(out, 4600)
 
 
 # ---------- sesler (formant sentezi) ----------
