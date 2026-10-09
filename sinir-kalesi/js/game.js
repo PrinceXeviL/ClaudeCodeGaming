@@ -1011,7 +1011,40 @@ function team() {
 // Meydan okuma (bölümde 3 yıldızdan sonra): 'h' Kahramanlık (aynı dalgalar, düşman canı +%20, 3 can). 1 ek yıldız (save.ch).
 const CHAL = {
   h: { name: 'KAHRAMANLIK', short: 'Kahramanlık', hp: 1.2, lives: 3, desc: '3 can · düşmanlar %20 daha dayanıklı' },
+  // Sonsuz: bölümün dalgaları döngüyle sonsuza dek gelir, her turda daha kalabalık ve dayanıklı; skor = dayanılan dalga
+  e: { name: 'SONSUZ GECE', short: 'Sonsuz', hp: 1, lives: 20, endless: true, desc: 'Dalgalar bitmez, her turda güçlenir · rekorunu kır' },
+  // Günün meydan okuması: her gün tarihe göre seçilen bölüm + bir zorlaştırıcı (DAILY_MODS)
+  d: { name: 'GÜNÜN SINAVI', short: 'Günlük', hp: 1, lives: 20, daily: true },
 };
+// sonsuz mod: dalga k, bölümün (k mod N). dalgasından kopyalanır; her tur (N dalga) +%18 can, +%12 kalabalık
+const ENDLESS = { hp: 0.18, n: 0.12 };
+function endlessExtend() {
+  if (!G || !G.endless) return;
+  const base = G.baseWaves, N = base.length;
+  while (G.lv.waves.length < G.wave + 2) {
+    const k = G.lv.waves.length, cyc = Math.floor(k / N), w = JSON.parse(JSON.stringify(base[k % N]));
+    for (const g of w) {
+      g.hpK = (g.hpK || 1) * (1 + ENDLESS.hp * cyc);
+      if (!ENEMIES[g.t] || !ENEMIES[g.t].chief) g.n = Math.max(1, Math.round(g.n * (1 + ENDLESS.n * cyc)));
+      if (g.types) { const T = g.types; g.types = Array.from({ length: g.n }, (_, j) => T[j % T.length]); } // karışık bölük: tür sırası uzar
+    }
+    G.lv.waves.push(w);
+  }
+}
+// günün sınavı: tarihten tohumlanan bölüm (açılmış olanlardan) ve zorlaştırıcı
+const DAILY_MODS = [
+  { id: 'fast', name: 'Hızlı Lejyon', desc: 'Düşmanlar %30 hızlı', speed: 1.3 },
+  { id: 'tough', name: 'Demir Deri', desc: 'Düşmanlar %35 dayanıklı', hp: 1.35 },
+  { id: 'poor', name: 'Kıtlık', desc: 'Başlangıç altını %40 az', gold: 0.6 },
+  { id: 'nospell', name: 'Büyüsüz Gece', desc: 'Mortimer büyü yapamaz', nospell: true },
+];
+const todayKey = () => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+function dailyPick() {
+  const key = todayKey(); let h = 0; for (const c of key) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const open = LEVELS.map((_, i) => i).filter(i => (save.stars[i] || 0) > 0);
+  const pool = open.length ? open : [0];
+  return { key, idx: pool[h % pool.length], mod: DAILY_MODS[(h >> 4) % DAILY_MODS.length] };
+}
 function chalStars() { let n = 0; for (const k in save.ch || {}) n += save.ch[k].h ? 1 : 0; return n; }
 function startLevel(idx, chal = null) {
   mapSel = null; musicRestartBattle();
@@ -1064,6 +1097,12 @@ function startLevel(idx, chal = null) {
   if (NECRO && necroSpellOn('nm_burst') && !save.burstSeen) {
     save.burstSeen = true; persist();
     G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_burst.name, sub: NECRO_SPELLS.nm_burst.short, t: 0, dur: 4.2 };
+  }
+  if (chal === 'e') { G.endless = true; G.baseWaves = lv.waves; G.lv = Object.assign({}, lv, { waves: lv.waves.map(w => JSON.parse(JSON.stringify(w))) }); endlessExtend(); }
+  if (chal === 'd') { // günün sınavı: zorlaştırıcı
+    const D = dailyPick(); G.daily = D; G.mod = D.mod;
+    if (D.mod.gold) G.gold = Math.round(G.gold * D.mod.gold);
+    G.banner = { title: 'GÜNÜN SINAVI: ' + D.mod.name, sub: D.mod.desc, t: 0, dur: 4 };
   }
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
@@ -1150,6 +1189,7 @@ function learnSkill(h, pi, want) {
 // ---------- dalgalar ----------
 const WAVE_REST = 20; // iki dalga arası dinlenme (sn); oyuncu dalgayı erken çağırıp altın kazanabilir
 function waveBonusAndStart() {
+  endlessExtend();
   if (!G || G.wave >= G.lv.waves.length) return;
   G.wavePeek = null;
   const bonus = earlyBonus();
@@ -1212,7 +1252,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * ROAD_K);
   const q = pathPos(p, d0, off);
   const tier = G.lv.tier ?? G.idx; // boss gücü kademesi (2. sefer 1. seferin sonlarından başlar)
-  const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1);
+  const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1) * (G.mod && G.mod.hp || 1);
   const e = { type, def, p, d: d0, off, x: q.x, y: q.y, hp, maxHp: hp, blocker: null, atk: 0, dead: false, anim: rand(0, 10), face: 1, healT: 3 };
   G.enemies.push(e);
   if (def.chief) { e.dmgMul = 1 + 0.08 * tier; e.cdMul = 1 - 0.025 * tier; } // boss gücü bölümle artar: hasar ve yetenek sıklığı
@@ -2494,7 +2534,7 @@ function updateEnemy(e, dt) {
     e.knockT -= dt;
     if (!e.offPath) { e.d = Math.max(0, e.d - e.knockV * dt * (0.3 + e.knockT / KNOCK.t)); const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; return; }
   }
-  let spd = e.def.speed * G.wspd * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
+  let spd = e.def.speed * G.wspd * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
     if ((e.stompT = (e.stompT ?? 0.4) - dt) <= 0) { e.stompT = 0.8; sfx('stomp'); shakeScreen(2.6, 0.22); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 }); }
@@ -3088,6 +3128,7 @@ function spellInfo(id) {
   return { name: U.name, cd: U.cd * fast, hero: h, U };
 }
 function castSpell(id, x, y) {
+  if (NECRO_SPELLS[id] && G.mod && G.mod.nospell) { floatText(x, y - 20, 'Bu gece büyü yok!', '#d8a8ff'); sfx('error'); return; }
   if (NECRO_SPELLS[id]) { if (castNecro(id, x, y) === false) return; }
   else { hitBy = 'hero'; castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; }
   if (G.stats) G.stats.spells++;
@@ -4395,11 +4436,15 @@ function update(dt) {
   for (const f of G.floaters) { f.t += dt; f.y -= 22 * dt; }
   G.floaters = G.floaters.filter(f => f.t < 1.1);
 
-  if (G.lives <= 0 && !overlay) { setOverlay('lose'); sfx('lose'); achLevelEnd(false); }
+  if (G.lives <= 0 && !overlay) {
+    if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); }
+    setOverlay('lose'); sfx('lose'); achLevelEnd(false);
+  }
   if (G.gold >= 2000) achGive('hoard');
-  if (!overlay && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
+  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
     const lr = G.lives / G.maxLives;
-    if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
+    if (G.chal === 'd') { save.daily = { key: G.daily.key, done: true, n: ((save.daily && save.daily.n) || 0) + 1 }; G.stars = 1; }
+    else if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
     else {
       G.stars = lr >= 0.9 ? 3 : lr >= 0.3 ? 2 : 1;
       save.stars[G.idx] = Math.max(save.stars[G.idx] || 0, G.stars);
@@ -7215,7 +7260,7 @@ const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 }
 // küçük bilgi hapı: solda ikon, sağda değer
 // Dalga göstergesinin rengi dalgaya göre ısınır: yeşil → sarı → turuncu; son dalga yanıp sönen kırmızı
 function waveTint() {
-  const n = G.lv.waves.length, w = G.wave;
+  const n = G.endless ? 8 : G.lv.waves.length, w = G.endless ? (G.wave - 1) % 8 + 1 : G.wave;
   if (w <= 0) return null;
   if (w >= n) return ['rgba(190,30,20,0.96)', 'rgba(80,6,4,0.96)', '#ff9a7a', '255,60,30'];
   const k = (w - 1) / Math.max(1, n - 2); // 0 ilk dalga, 1 sondan bir önceki
@@ -7525,7 +7570,7 @@ function drawHud() {
   ctx.save(); ctx.translate(34, 20); ctx.scale(pop(G.livesPop), pop(G.livesPop)); hudNum(G.lives + '', 0, 0, 14, G.lives <= 5 ? '#ff8a7a' : '#fff'); ctx.restore();
   drawIcon('coin', 76, 19, 16);
   ctx.save(); ctx.translate(88, 20); ctx.scale(pop(G.goldPop), pop(G.goldPop)); hudNum(Math.floor(G.gold) + '', 0, 0, 14, '#ffe27a'); ctx.restore();
-  const n = G.lv.waves.length, last = G.wave >= n && G.wave > 0, wk = clamp(G.wave / n, 0, 1);
+  const n = G.endless ? 8 : G.lv.waves.length, last = !G.endless && G.wave >= n && G.wave > 0, wk = G.endless ? ((G.wave - 1) % 8 + 1) / 8 * (G.wave > 0) : clamp(G.wave / n, 0, 1);
   hudBar(8, 34, 96, 20);
   // dolum: dalga ilerledikçe yeşilden kırmızıya, son dalgada tamamen dolu ve nabız gibi
   if (wk > 0) {
@@ -7537,7 +7582,7 @@ function drawHud() {
     roundRect(12, 38, fw - 2, 4, 2, 'rgba(255,255,255,0.18)');
   }
   drawIcon('skull', 21, 44, 14);
-  ctx.save(); ctx.translate(58, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(`${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
+  ctx.save(); ctx.translate(58, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(G.endless ? `${G.wave} ∞` : `${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
 
   // sağ üst: duraklat, hız, ses
   roundBtn('hud_pause', HUD.pause.x, HUD.pause.y, HUD.pause.r, 'pause', null);
@@ -9777,6 +9822,15 @@ function drawMap() {
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
   roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
+  { // günün sınavı: takvim düğmesi, bugün yapılmadıysa parlar
+    const done = save.daily && save.daily.key === todayKey() && save.daily.done;
+    if (!done) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, W - 318, 41, 26, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1); ctx.restore(); }
+    roundBtn('daily', W - 318, 41, 19, (r) => {
+      roundRect(-9, -8, 18, 17, 3, '#f2ead6', '#2a1608', 1.4); ctx.fillStyle = '#c8322a'; ctx.fillRect(-9, -8, 18, 5);
+      txt(new Date().getDate() + '', 0, 3.5, 9, '#2a1608', 'center', '400', FONT_T, false);
+      if (done) { ctx.strokeStyle = '#3cbf3c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-5, 2); ctx.lineTo(-1, 6); ctx.lineTo(7, -4); ctx.stroke(); }
+    }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3 });
+  }
   roundBtn('ach', W - 272, 41, 19, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
   if (save.achNew) { circle(W - 258, 27, 8, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', W - 258, 27.5, 10, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
@@ -9887,6 +9941,19 @@ function drawLevelCard(i, cx, cy, at) {
     gameButton(key, cx, by, st ? 132 : 176, 46, st ? 'TEKRAR' : 'OYNA', null, st ? 'gold' : 'green', { icon: st ? 'restart' : 'play', shine: current, size: 19 });
     ctx.restore();
     buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => go(() => startLevel(i)) });
+    // sonsuz gece: bölümü bir kez bitirince açılır; rekor altında yazar
+    if (st) {
+      const bx = cx - 96 * sc, k2 = 'end' + i, best = (save.endless || {})[i] || 0;
+      ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(bx, by); const s2 = pressScale(k2) * sc; ctx.scale(s2, s2);
+      glow(ctx, 0, 0, 30, '150,90,255', 0.25 + Math.sin(time * 2.5) * 0.08);
+      hudFrame(-21, -21, 42, 42, 9, '#2a1440');
+      ctx.strokeStyle = '#d8b0ff'; ctx.lineWidth = 3.2; ctx.beginPath(); // sonsuzluk işareti
+      for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) { const d = 1 + Math.sin(a) ** 2, X = 11 * Math.cos(a) / d, Y = 11 * Math.sin(a) * Math.cos(a) / d; a ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
+      ctx.stroke();
+      txt(best ? 'Rekor ' + best : 'Sonsuz', 0, 30, 10, '#f2ecd8', 'center', '800', FONT_B);
+      ctx.restore();
+      buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => go(() => startLevel(i, 'e')) });
+    }
     // meydan okumalar: 3 yıldızdan sonra açılır; tamamlanan tikli
     if (st) for (const [c, dx] of [['h', 96]]) {
       const open = st >= 3, done = save.ch && save.ch[i] && save.ch[i][c], bx = cx + dx * sc, k2 = 'ch' + c + i;
@@ -10619,11 +10686,16 @@ function drawOverlay() {
       gameButton('ov_map', cx + 100, py + 278, 170, 50, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'green', { icon: 'map', appear: appear - 0.06, shine: true });
     }
   } else if (overlay === 'lose') {
-    if (NECRO) plaqueTitle(cx, py + 46, 'ŞAPEL DÜŞTÜ', '#ff9a8a', 28); else ribbon(cx, py + 4, 280, 'KALE DÜŞTÜ', 'red', 28);
+    if (NECRO) plaqueTitle(cx, py + 46, G.endless ? 'SONSUZ GECE BİTTİ' : 'KALE DÜŞTÜ', '#ff9a8a', 28); else ribbon(cx, py + 4, 280, 'KALE DÜŞTÜ', 'red', 28);
     ctx.save(); ctx.translate(cx, py + 110); ctx.rotate(Math.sin(time * 2) * 0.05);
     drawIcon('skull', 0, 0, 64); ctx.restore();
-    txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
-    txt(TIPS[(G.idx + G.wave) % TIPS.length], cx, py + 192, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false);
+    if (G.endless) {
+      txt(`${G.wave} dalga dayandın`, cx, py + 164, 22, '#e8dcc0', 'center', '400', FONT_T, false);
+      txt(G.endNew ? 'YENİ REKOR!' : `Rekor: ${G.endBest} dalga`, cx, py + 192, 15, G.endNew ? '#ffe27a' : '#a89cb8', 'center', '400', FONT_T, false);
+    } else {
+      txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
+      txt(TIPS[(G.idx + G.wave) % TIPS.length], cx, py + 192, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false);
+    }
     gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
     gameButton('ov_map', cx, py + 304, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
   }
