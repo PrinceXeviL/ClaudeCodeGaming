@@ -2336,6 +2336,8 @@ function updateEnemy(e, dt) {
     // panik: ilk anlarda daha hızlı koşar, arada zıplar, ter damlaları saçar
     const sp = e.def.speed * G.wspd * (1.25 + 0.6 * clamp(e.fearT / 2, 0, 1)) * (e.slowT > 0 ? 1 - e.slowK : 1);
     e.d = Math.max(0, e.d - sp * dt); e.anim += dt * 0.8;
+    e.off = clamp(e.off + Math.sin(G.t * 5 + e.d * 0.05) * dt * 26, -16, 16); // panik: yolda sağa sola savrularak kaçar
+    if (e.fearGhost) e.fearGhost.t += dt;
     const q = pathPos(e.p, e.d, e.off); if (Math.abs(q.dx) > 0.08) e.face = q.dx > 0 ? -1 : 1; e.x = q.x; e.y = q.y;
     if (e.hopT > 0) e.hopT -= dt; else if (Math.random() < dt * 0.9) e.hopT = 0.4;
     if (Math.random() < dt * 5) emit(G.parts, { kind: 'dot', x: e.x + rand(-5, 5), y: aimY(e) - 10, vx: rand(-40, 40), vy: -rand(40, 80), g: 260, col: '#9fd8ff', s0: 1.8, s1: 0.8, life: 0.45 });
@@ -3107,10 +3109,15 @@ function castNecro(id, x, y) {
     G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.6 }); mortSay('fear', true);
     // Mortimer'dan hedefe uzanan mor ruh dalgası
     for (let i = 0; i < 18; i++) { const k = i / 17; emit(G.parts, { kind: 'glow', add: true, x: lerp(m.x, x, k) + rand(-6, 6), y: lerp(m.y - 18, y, k) + rand(-6, 6), vy: -rand(5, 20), col: S.col, s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.8) }); }
-    let nScream = 0;
+    let nScream = 0, nGhost = 0;
     for (const e of G.enemies) {
       if (e.dead || e.siege !== undefined || dist(e.x, e.y, x, y) > S.r) continue;
-      e.fearT = e.def.chief ? S.t * 0.5 : S.t; cnt('fear'); e.hopT = 0.4;
+      if (e.def.machine) continue; // makine korkmaz
+      // büyü direnci korkuyu kısaltır; bosslar çok az etkilenir
+      const k = e.def.chief ? 0.22 : clamp(1 - 0.8 * (e.def.mr || 0), 0.3, 1), t = S.t * k;
+      if (t < 0.9) { floatText(e.x, e.y - 30, 'Direndi!', '#c8c8e8'); e.fearT = Math.max(e.fearT || 0, t); continue; }
+      e.fearT = t; cnt('fear'); e.hopT = 0.4; e.fearMax = t;
+      if (nGhost < (S.ghosts || 10)) { e.fearGhost = { ph: rand(0, 6), t: 0 }; nGhost++; } // peşinden ruh gelir
       floatText(e.x, e.y - 30, '!', '#d8a8ff'); nScream++;
     }
     // birkaç tanesi çığlık atar (hepsi atarsa kulak tırmalar)
@@ -4221,12 +4228,10 @@ function castUlt(h, x, y) {
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
   h.castT = 0.45;
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
-  if (h.id === 'commander') {
-    for (let i = 0; i < U.n; i++) {
-      const [tx, ty] = i ? spot(U.r) : [x, y];
-      G.projectiles.push({ kind: 'ultsword', sx: tx, sy: ty - 300, tx, ty, t: -i * 0.09, dur: 0.32, arc: 0, dmg: dmg(), splash: 28, stun: U.stun });
-    }
-    sfx('whirl');
+  if (h.id === 'commander' && U.bats) {
+    // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
+    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) });
+    sfx('whirl'); setTimeout(() => sfx('scream', 1.8), 250);
   } else if (h.id === 'zeynep') {
     // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
@@ -4323,11 +4328,16 @@ function update(dt) {
   for (const z of G.zones) {
     z.t += dt; z.fxT -= dt;
     HERO_SKILL = !!z.heroSkill;
-    for (const e of G.enemies) if (!e.dead && !e.def.flying && dist(e.x, e.y, z.x, z.y) <= z.r) damageEnemy(e, z.dps * dt, z.dtype || 'true', true, z.src);
+    const bats = z.kind === 'bats', live = !bats || z.t > 0.35; // yarasalar önce uçup gelir
+    if (live) for (const e of G.enemies) if (!e.dead && (bats || !e.def.flying) && dist(e.x, e.y, z.x, z.y) <= z.r) {
+      const hp0 = e.hp; damageEnemy(e, z.dps * dt, z.dtype || 'true', true, z.src);
+      if (bats) { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); if (z.hero && !z.hero.dead) z.hero.hp = Math.min(z.hero.maxHp, z.hero.hp + (hp0 - Math.max(0, e.hp)) * z.heal); }
+    }
     HERO_SKILL = false;
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
+      if (bats) { z.fxT = 0.12; if (live) emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5 - 6, vy: rand(10, 30), g: 140, col: '#b01020', s0: 1.4, s1: 0.5, life: 0.4 }); continue; }
       if (z.kind === 'plague') {
         z.fxT = z.gas ? 0.22 : 0.07;
         emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-6, 6), vy: -rand(6, 16), col: Math.random() < 0.5 ? '120,200,80' : '150,230,100', s0: rand(5, 8), s1: rand(10, 14), life: rand(0.8, 1.2), a: 0.35 });
@@ -7400,10 +7410,64 @@ function drawHeroPortrait(h, hb, i) {
 // kahraman gücü düğmesinin simgesi
 function drawUltGlyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  if (id === 'commander') {
-    for (const [dx, rot] of [[-7, -0.25], [0, 0], [7, 0.25]]) { ctx.save(); ctx.translate(dx, 12); ctx.rotate(rot); ctx.scale(0.62, 0.62); drawUltSword(0, 0, 1, 0.6); ctx.restore(); }
-  }
+  if (id === 'commander') { drawBat(-6, -2, 1.1, 1, time * 9, 1); drawBat(7, 4, 0.8, -1, time * 9 + 2, 1); drawBat(1, 9, 0.7, 1, time * 9 + 4, 1); }
   ctx.restore();
+}
+// yarasa: kanatları çırpan küçük siluet, kızıl gözler
+function drawBat(x, y, s, face, ph, a = 1) {
+  const f = Math.sin(ph), span = 9 * s;
+  ctx.save(); ctx.translate(x, y); ctx.scale(face, 1); ctx.globalAlpha *= a;
+  ctx.fillStyle = '#1c0c16'; ctx.strokeStyle = '#05020a'; ctx.lineWidth = 0.7 * s;
+  for (const sd of [-1, 1]) {
+    ctx.beginPath(); ctx.moveTo(0, -1 * s);
+    ctx.quadraticCurveTo(sd * span * 0.5, -6 * s * f - 3 * s, sd * span, -4 * s * f);
+    ctx.lineTo(sd * span * 0.75, 0.5 * s - 2 * s * f); ctx.lineTo(sd * span * 0.5, 1.5 * s - 2.5 * s * f); ctx.lineTo(sd * span * 0.25, 1 * s - 1 * s * f);
+    ctx.lineTo(0, 1.5 * s); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.ellipse(0, 0, 2 * s, 2.6 * s, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-1.6 * s, -2 * s); ctx.lineTo(-1 * s, -3.6 * s); ctx.lineTo(-0.3 * s, -2.2 * s); ctx.moveTo(1.6 * s, -2 * s); ctx.lineTo(1 * s, -3.6 * s); ctx.lineTo(0.3 * s, -2.2 * s); ctx.fill();
+  ctx.fillStyle = '#ff3a3a'; ctx.fillRect(-1.2 * s, -1.3 * s, 0.8 * s, 0.7 * s); ctx.fillRect(0.4 * s, -1.3 * s, 0.8 * s, 0.7 * s);
+  ctx.restore();
+}
+// Korku ruhları: korkan düşmanın arkasından (kale yönünden) uçarak kovalar, uluyarak üstüne atılır
+function drawFearGhosts() {
+  for (const e of G.enemies) {
+    const g = e.fearGhost;
+    if (!g || e.dead) continue;
+    if (!(e.fearT > 0)) { e.fearGhost = null; continue; }
+    const a = Math.min(1, g.t / 0.3, e.fearT / 0.5), lunge = Math.max(0, Math.sin(G.t * 4 + g.ph)) * 6;
+    const q = pathPos(e.p, e.d + 22 - lunge, e.off + Math.sin(G.t * 3 + g.ph) * 8), gx = q.x, gy = q.y - 22 - Math.sin(G.t * 5 + g.ph) * 3;
+    drawSpecter(gx, gy, 1, e.x < gx ? -1 : 1, G.t * 6 + g.ph, a * 0.9);
+  }
+}
+function drawSpecter(x, y, s, face, ph, a) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(face * s, s); ctx.globalAlpha *= a;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 22, '170,110,255', 0.35); ctx.restore();
+  const gr = ctx.createLinearGradient(0, -10, -16, 10); gr.addColorStop(0, 'rgba(238,228,255,0.92)'); gr.addColorStop(1, 'rgba(150,90,255,0)');
+  ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(6, -6);
+  ctx.bezierCurveTo(6, -14, -6, -14, -6, -6); // baş
+  ctx.quadraticCurveTo(-10, 0, -18, 4 + Math.sin(ph) * 3); ctx.quadraticCurveTo(-10, 4, -12, 9 + Math.sin(ph + 1) * 3); // dalgalı kuyruk
+  ctx.quadraticCurveTo(-4, 4, 2, 6); ctx.quadraticCurveTo(7, 2, 6, -6); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(225,210,255,0.7)'; ctx.lineWidth = 1.2; ctx.beginPath(); // öne uzanan pençeli kollar
+  ctx.moveTo(3, -1); ctx.quadraticCurveTo(10, -3 + Math.sin(ph) * 2, 14, 0 + Math.sin(ph) * 2); ctx.moveTo(2, 2); ctx.quadraticCurveTo(9, 3, 13, 5 + Math.cos(ph) * 2); ctx.stroke();
+  ctx.fillStyle = '#1a0628'; ctx.beginPath(); ctx.ellipse(-1, -8, 1.3, 1.8, 0, 0, Math.PI * 2); ctx.ellipse(3, -8, 1.3, 1.8, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(1.5, -3.5, 1.4, 2.2 + Math.sin(ph * 1.3) * 0.6, 0, 0, Math.PI * 2); ctx.fill(); // uluyan ağız
+  ctx.restore();
+}
+function drawBatSwarms() {
+  for (const z of G.zones) {
+    if (z.kind !== 'bats') continue;
+    const a = Math.min(1, (z.life - z.t) / 0.4);
+    if (z.t < 0.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y - 8, z.r * 0.9, '180,20,40', 0.15 * (1 - z.t / 0.5)); ctx.restore(); }
+    for (let i = 0; i < z.n; i++) {
+      const ph = z.seed + i * 2.399, sp = (i % 2 ? 1 : -1) * (2.2 + (i % 3) * 0.5), rr = z.r * (0.35 + 0.55 * ((i * 0.37) % 1));
+      const ox = z.x + Math.cos(ph + z.t * sp) * rr, oy = z.y - 14 + Math.sin(ph + z.t * sp) * rr * 0.45 + Math.sin(z.t * 7 + i) * 4;
+      const fly = clamp((z.t - i * 0.015) / 0.35, 0, 1), e = easeInOut(fly); // kahramandan uçup gelir
+      const x = lerp(z.hx, ox, e), y = lerp(z.hy, oy, e) - Math.sin(Math.PI * e) * 30;
+      const out = z.t > z.life - 0.4 ? (z.t - (z.life - 0.4)) / 0.4 : 0; // sonda dağılıp uçar
+      drawBat(x + Math.cos(ph) * out * 60, y - out * 50, 0.8 + 0.25 * ((i * 0.53) % 1), Math.cos(ph + z.t * sp) * sp > 0 ? -1 : 1, time * 22 + i, a);
+    }
+  }
 }
 
 // metal-taş çerçeveli kutu (kare düğme, portre, büyü kartı)
@@ -10159,6 +10223,8 @@ function drawPlay() {
   for (const f of G.effects) if (f.kind === 'corpse') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) k === 0 ? drawTower(o) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : drawCastle();
   drawGasClouds();
+  drawBatSwarms();
+  drawFearGhosts();
   for (const p of G.projectiles) drawProjectile(p);
   for (const g of G.ghosts) { // hayaletler
     const a = Math.min(1, g.t / 0.25, (g.d - g.end) / 30);

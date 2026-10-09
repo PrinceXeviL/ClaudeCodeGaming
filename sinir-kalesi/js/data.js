@@ -518,7 +518,9 @@ for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.i
 Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
 HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep');
-Object.assign(HERO_ULT.commander, { name: 'Kan Kılıçları', short: 'Seçtiğin yere 9 kan kılıcı saplanır, düşmanlar sersemler' });
+Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
+  desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Vladrik ısırıklarla iyileşir',
+  short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Vladrik iyileşir' });
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
@@ -532,7 +534,7 @@ const NECRO_SPELLS = {
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 6, col: '235,225,200',
     desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 6 sn durdurur, vurularak kırılabilir',
     short: 'Yola kemik duvar diker: düşmanlar 6 sn takılır (kırılabilir)' },
-  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', desc: 'Seçilen alandaki düşmanlar korkuyla 3,5 sn geri kaçar', short: 'Seçtiğin alandaki düşmanlar 3,5 sn geri kaçar' },
+  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', ghosts: 10, desc: 'Ruhlar alandaki düşmanların peşine düşer: korkudan 3,5 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz', short: 'Ruhlar düşmanları kovalar: 3,5 sn panikle geri kaçarlar' },
   // 4. büyü: 1. bölge bitince (son bölüm kazanılınca) açılır. Cesedi diriltmek ya da patlatmak arasında seçim.
   nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 14,
     desc: 'Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
