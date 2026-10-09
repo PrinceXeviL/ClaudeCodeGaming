@@ -687,6 +687,15 @@ function hatchSpots(lv, paths) {
   return (lv._hatch = out);
 }
 
+// ----- Kızıl Ay (2. sefer): işaretli dalgada gök kızarır. İskeletler sert vurur, büyüler hızlı dolar,
+// ölen düşman kendiliğinden ölü olarak kalkar; Engizisyon dua eder (yavaşlar) -----
+const BLOOD = { dur: 20, dmg: 1.3, cd: 2, slow: 0.75, rise: 0.8 };
+function bloodWaves(lv) { // 0 tabanlı dalga sırası; 2. seferin 3. bölümünden başlar, son üç bölümde iki kez
+  const li = LEVELS.indexOf(lv) - 15, N = lv.waves.length;
+  if (lv.ep !== 2 || !NECRO || li < 2) return [];
+  return li >= 12 ? [Math.floor(N / 2) - 1, N - 2] : [Math.floor(N / 2) + (li % 2)];
+}
+
 // ---------- arka plan (önceden çizilir) ----------
 const THEMES = {
   meadow: { grass: '#8cc25a', grass2: '#6a9e46', patch: ['#8cc15a', '#5a8a3a'], trees: 17, rocks: 6, treeCol: ['#2f6b2a', '#3f8a35', '#56a446'], road: ['#7a5a32', '#cfa96b', '#5a3f1f'], tuft: ['#4f8a2e', '#6ea83e'], stone: ['#a49c8a', '#cfc7b4'], light: 'rgba(255,226,160,0.16)' },
@@ -1393,6 +1402,7 @@ function waveBonusAndStart() {
     G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + wait + grp.gap * (grp.n - 1));
   }
+  if (!G.endless && bloodWaves(G.lv).includes(G.wave)) startBloodMoon();
   G.wave++; G.wavePop = time; G.wLives = G.lives;
   sfx('wave');
   if (G.wave === G.lv.waves.length && G.wave > 1) mortSay('last', true); else if (G.wave > 1 && Math.random() < 0.6) mortSay('wave');
@@ -1821,6 +1831,7 @@ function damageEnemy(e, amount, type, quiet, src) {
   if (hitBy || src) e.lastBy = hitBy || src;
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
   if (src === 'melee' && NECRO) { const L = lightAt(e.x, e.y); if (L) amount *= L.k; } // fener ışığında iskeletler zayıf
+  if (src === 'melee' && G.bloodT > 0) amount *= BLOOD.dmg; // Kızıl Ay: ölüler azgın
   e.lastSrc = src || type;
   let wk = src && e.def.wk && e.def.wk[src];
   if (wk && wk < 1 && e.curseT > 0) wk += (1 - wk) * (e.curseRes || 0); // lanet: dirençli olduğu saldırı türüne direnci erir
@@ -1903,6 +1914,7 @@ function killEnemy(e) {
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
     dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
+  if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
   // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
   const dn = 'enemy_' + (e.def.base || e.type) + '_die', noDie = !LAZY[dn] && !SPR[dn];
   if (noDie && (e.def.machine || e.def.flying) && !e.leaked) {
@@ -2842,7 +2854,7 @@ function updateEnemy(e, dt) {
     if (!e.offPath) { e.d = Math.max(0, e.d - e.knockV * dt * (0.3 + e.knockT / KNOCK.t)); const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; return; }
   }
   if (e.skillT > 0 && !e.def.machine) return; // özel saldırı / büyü anında durur
-  let spd = e.def.speed * G.wspd * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.spd * (1 - e.hp / e.maxHp) : 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
+  let spd = e.def.speed * G.wspd * (G.bloodT > 0 ? BLOOD.slow : 1) * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.spd * (1 - e.hp / e.maxHp) : 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
     if ((e.stompT = (e.stompT ?? 0.4) - dt) <= 0) { e.stompT = 0.8; sfx('stomp'); shakeScreen(2.6, 0.22); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 }); }
@@ -4591,6 +4603,29 @@ function updateMercs(dt) {
   G.mercT -= dt;
   if (G.mercT <= 0) { spawnMercs(); G.mercT = MERCS.every * (upgRank('spells') >= 3 ? 0.75 : 1); }
 }
+// ----- Kızıl Ay -----
+function startBloodMoon() {
+  G.bloodT = BLOOD.dur;
+  G.banner = { title: 'KIZIL AY', sub: 'Ölüler azgın, büyüler hızlı dolar, düşen düşman ölü olarak kalkar. Engizisyon dua ediyor!', t: 0, dur: 3.6 };
+  shakeScreen(3, 0.4); sfx('portal'); sfx('mlaugh');
+}
+function drawBloodMoon() {
+  if (!(G.bloodT > 0)) return;
+  const k = Math.min(1, (BLOOD.dur - G.bloodT) / 1.5, G.bloodT / 1.5), p = 0.85 + Math.sin(time * 1.6) * 0.15;
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgba(255,${Math.round(255 - 95 * k)},${Math.round(255 - 115 * k)},1)`; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'source-over';
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, W * 0.7);
+  g.addColorStop(0, 'rgba(90,0,10,0)'); g.addColorStop(1, `rgba(90,0,10,${0.45 * k * p})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // gökte kızıl ay (üst orta, boss barının altında kalmasın diye biraz sağda)
+  const mx = W * 0.62, my = 70;
+  ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, mx, my, 70, '255,40,30', 0.35 * k * p);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = k; circle(mx, my, 17, '#c21a12', 'rgba(255,120,90,0.8)', 1.5);
+  ctx.fillStyle = 'rgba(90,0,0,0.45)'; ctx.beginPath(); ctx.arc(mx - 5, my - 3, 4.5, 0, Math.PI * 2); ctx.arc(mx + 6, my + 5, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
 // ----- mahzen kapağı -----
 function openHatch(h) {
   if (!h || h.state !== 'closed' || G.gold < HATCH.cost) return false;
@@ -4711,7 +4746,8 @@ function castUlt(h, x, y) {
 // ---------- ana güncelleme ----------
 function update(dt) {
   G.t += dt;
-  for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt);
+  if (G.bloodT > 0) G.bloodT -= dt;
+  for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt * (G.bloodT > 0 ? BLOOD.cd : 1));
   if (G.raiseT > 0) G.raiseT -= dt;
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortState(dt);
@@ -11341,6 +11377,7 @@ function drawPlay() {
   drawEnemyRing();
   ctx.restore();
   drawWeather();
+  drawBloodMoon();
   if (G.bossFx) {
     // boss girişi: ekran kenarları kızıl karanlığa bürünür, nabız gibi atar, sonra açılır
     const B = G.bossFx, k = Math.min(1, B.t / 0.4) * (1 - clamp((B.t - B.dur + 1) / 1, 0, 1)), p = 0.75 + Math.sin(B.t * 7) * 0.25;
