@@ -1,0 +1,8 @@
+Using the attached reference image (our bone obelisk towers, levels 1-3, and on the far right our tall bone watchtower with an empty spiked railing platform), draw for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly shading, same chunky cartoon proportions, same colors (dark stone, ivory bones, glowing green runes, round stone base ring).
+
+Draw 3 separate CROSSBOW WATCHTOWERS for skeleton crossbowmen, level 1, 2 and 3, side by side with lots of empty space between them, same 3/4 view and same camera angle as the reference. Each tower has a FLAT, EMPTY square platform on top with a low bone railing at the front, so small characters can stand on it (no characters, nothing on the platform).
+1. Level 1: short, simple squat tower of dark cracked stone wrapped with bones and rope, small platform, a few green runes, round stone base with scattered bones.
+2. Level 2: a bit taller and sturdier, iron bands and chains, skull ornaments, bigger platform with a spiked bone railing, more glowing green runes.
+3. Level 3: tallest and most impressive (but shorter and wider than the far-right reference tower), a large platform with horned skull corners and a spiked bone railing, spine ribs along the front, glowing green runes, skulls piled around the base.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
