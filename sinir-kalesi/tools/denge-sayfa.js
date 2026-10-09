@@ -36,8 +36,8 @@ window.__bot = function (lvl) {
   return { lvl: lvl + 1, result: g.overlay, lives: G.lives, wave: G.wave, n: G.lv.waves.length, t: Math.round(time) };
 };
 window.__score = (r) => r.result === 'win' ? r.lives : -(r.n - r.wave + 1) * 3;
-window.__T = [19, 18, 17, 16, 15, 15, 14, 13, 12, 12, 11, 10, 9, 8, 7, // hedef: kalan can (1. bölüm kolay, 15. zor)
-  13, 12, 12, 11, 10, 10, 9, 9, 8, 8, 7, 6, 6, 5, 4]; // 2. sefer (15 canla başlar): daha zor
+window.__T = [19, 18, 18, 17, 16, 16, 15, 15, 14, 13, 13, 12, 11, 11, 10, 10, 9, 8, 8, 7, // hedef: kalan can (1. bölüm kolay, 20. zor)
+  13, 13, 12, 12, 11, 11, 10, 10, 9, 9, 8, 8, 7, 7, 6, 6, 5, 5, 4, 4]; // 2. sefer (15 canla başlar): daha zor
 window.__measure = function (from, to, k = 2) {
   const res = []; for (let i = from; i < to; i++) { let s = 0; for (let j = 0; j < k; j++) s += window.__score(window.__bot(i)); res.push((i + 1) + ':' + (s / k).toFixed(1) + '/' + window.__T[i]); } return res.join(' ');
 };

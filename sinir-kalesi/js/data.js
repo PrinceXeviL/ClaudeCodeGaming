@@ -204,6 +204,23 @@ const LEVELS2_GEO = [
   { paths: [[[-40,300],[110,300],[220,260],[340,280],[460,300],[600,300],[740,310],[862,300]],[[300,-40],[300,90],[400,180],[460,300],[600,300],[740,310],[862,300]],[[435,580],[435,460],[435,400],[460,300],[600,300],[740,310],[862,300]]], plots: [[532,378],[256,192],[502,222],[742,390],[346,354],[94,204],[532,450],[766,246],[208,132],[118,396],[616,372],[250,330]] },
 ];
 
+// 10 Eki: her sefer 20 bölüm. Her bölgenin finalinden önce eklenen yeni bölümlerin yol ve arsa düzeni
+// (arsalar arsa-uret.js algoritmasıyla bir kez hesaplandı; arsa-uret.js metin sırasıyla yazdığı için bunları atlamaz, dikkat)
+const LEVELS_EK1_GEO = [
+  { paths: [[[-40,180],[130,180],[250,250],[390,220],[520,150],[650,170],[700,260],[620,350],[480,380],[470,450],[600,480],[740,430],[862,320]]], plots: [[556,270],[268,180],[772,300],[478,300],[766,498],[112,276],[412,498],[394,294],[832,456],[718,132],[190,306],[394,372]] },
+  { paths: [[[-40,330],[110,330],[220,280],[340,320],[460,380],[600,360],[700,300],[770,320],[862,300]],[[340,-40],[340,80],[440,130],[540,120],[640,170],[700,240],[700,300],[770,320],[862,300]]], plots: [[616,258],[244,354],[508,264],[730,384],[352,204],[100,228],[772,210],[424,252],[274,162],[562,204],[496,450],[148,420]] },
+  { paths: [[[-40,240],[120,240],[230,180],[360,200],[440,280],[560,300],[680,350],[770,360],[862,290]],[[420,-40],[420,80],[330,130],[230,180],[360,200],[440,280],[560,300],[680,350],[770,360],[862,290]]], plots: [[304,258],[712,288],[454,180],[226,288],[568,378],[100,144],[790,426],[484,360],[514,132],[94,342],[358,312],[706,426]] },
+  { paths: [[[-40,150],[140,150],[260,210],[400,190],[520,240],[600,330],[700,380],[780,370],[862,300]],[[560,580],[560,480],[520,400],[600,330],[700,380],[780,370],[862,300]]], plots: [[652,438],[448,288],[178,252],[712,306],[364,264],[94,246],[640,264],[460,498],[796,438],[268,138],[430,354],[868,396]] },
+  { paths: [[[-40,280],[120,280],[240,220],[380,210],[500,260],[600,320],[700,370],[780,360],[862,300]],[[460,-40],[460,80],[400,150],[380,210],[500,260],[600,320],[700,370],[780,360],[862,300]],[[680,580],[680,480],[700,370],[780,360],[862,300]]], plots: [[508,180],[784,438],[316,276],[700,294],[94,186],[400,300],[586,402],[316,138],[124,378],[508,348],[856,402],[568,132]] },
+];
+const LEVELS_EK2_GEO = [
+  { paths: [[[-40,260],[120,260],[220,330],[360,350],[470,280],[560,200],[680,210],[740,300],[862,300]],[[300,-40],[300,90],[420,170],[560,200],[680,210],[740,300],[862,300]]], plots: [[586,270],[364,264],[118,366],[646,318],[292,228],[772,204],[532,324],[232,168],[340,420],[88,156],[790,378],[196,396]] },
+  { paths: [[[-40,200],[100,200],[200,280],[330,330],[470,320],[560,250],[640,180],[730,220],[760,310],[862,300]],[[620,580],[620,470],[700,400],[760,310],[862,300]]], plots: [[658,318],[358,264],[106,318],[802,384],[586,366],[256,228],[532,420],[730,132],[772,450],[364,402],[202,150],[526,174]] },
+  { paths: [[[-40,330],[130,330],[230,260],[340,170],[480,140],[600,190],[640,290],[560,370],[600,450],[720,430],[862,330]]], plots: [[682,360],[514,228],[154,228],[394,222],[748,318],[70,240],[520,300],[334,270],[742,498],[532,492],[274,318],[826,450]] },
+  { paths: [[[-40,170],[140,170],[260,240],[380,300],[520,310],[620,250],[720,300],[862,300]],[[420,-40],[420,90],[500,170],[620,250],[720,300],[862,300]],[[540,580],[540,470],[600,400],[720,300],[862,300]]], plots: [[478,246],[736,372],[166,270],[478,384],[724,222],[388,204],[82,264],[688,432],[334,150],[652,186],[640,498],[820,372]] },
+  { paths: [[[-40,240],[120,240],[240,300],[380,330],[500,280],[560,190],[680,160],[740,240],[760,330],[862,310]],[[300,-40],[300,90],[420,150],[560,190],[680,160],[740,240],[760,330],[862,310]],[[660,580],[660,470],[700,400],[760,330],[862,310]]], plots: [[658,294],[394,228],[274,222],[796,402],[118,342],[574,312],[772,468],[232,162],[766,132],[394,396],[76,138],[880,378]] },
+];
+
 // ----- seferler -----
 // Bölümler seferlere ayrılır; her sefer bir ülkede geçer ve haritada kendi sayfası olur.
 // Bir sefer, bir önceki seferin son bölümü bitince açılır. bg: harita arka planı.
@@ -498,6 +515,31 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'heavy', n: 6, gap: 1.6 }, { t: 'cavalry', n: 8, gap: 1.1, at: 6 }, { t: 'assassin', n: 10, gap: 0.7, at: 12 }, { t: 'priest', n: 4, gap: 2, at: 14 }],
     ] },
   ];
+  // 10 Eki: her sefer 20 bölüm. Her bölgenin finalinden önce bir yeni bölüm (bölge başına 4 bölüm, finaller yerinde)
+  const EK1 = [
+    { name: 'Dikenli Patika', theme: 'cursed', gold: 330, bossT: 'centurion', comic: 'patika', waves: [
+      [W_('legion', 8, 1)], [W_('legion', 6, 1), W_('solarcher', 3, 1.8, 5)], [W_('gladiator', 3, 1.4), W_('legion', 6, 1, 4)],
+      [W_('legion', 10, 0.8), W_('solarcher', 4, 1.4, 6)], [W_('gladiator', 5, 1.1), W_('legion', 8, 0.9, 5)], [W_('solarcher', 6, 1), W_('legion', 10, 0.8, 4)],
+      [W_('gladiator', 6, 1), W_('solarcher', 5, 1.2, 5), W_('legion', 8, 0.8, 9)], [W_('legion', 12, 0.7), W_('gladiator', 6, 1, 5), W_('solarcher', 6, 1, 9)] ] },
+    { name: 'Kurbağa Adası', theme: 'bog', gold: 420, bossT: 'champion', comic: 'kurbaga', waves: [
+      [W_('legion', 8, 1), W_('assassin', 2, 1.5, 6)], [W_('gladiator', 5, 1.1), W_('solarcher', 4, 1.4, 4)], [W_('assassin', 5, 1), W_('legion', 8, 0.9, 4)],
+      [W_('legion', 10, 0.8), W_('gladiator', 4, 1.2, 6)], [W_('assassin', 6, 0.9), W_('solarcher', 6, 1, 5)], [W_('gladiator', 6, 1), W_('legion', 10, 0.8, 5)],
+      [W_('assassin', 8, 0.8), W_('solarcher', 6, 1, 6), W_('legion', 8, 0.8, 10)], [W_('legion', 12, 0.7), W_('gladiator', 8, 0.9, 5), W_('assassin', 8, 0.8, 10)] ] },
+    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, bossT: 'shadowmaster', comic: 'bekci', waves: [
+      [W_('legion', 10, 0.9), W_('priest', 1, 1, 6)], [W_('heavy', 2, 2.4), W_('solarcher', 5, 1.2, 4)], [W_('assassin', 6, 1), W_('gladiator', 5, 1.1, 5)],
+      [W_('priest', 2, 3), W_('legion', 10, 0.8, 3)], [W_('heavy', 3, 2.2), W_('assassin', 6, 0.9, 6)], [W_('gladiator', 8, 0.9), W_('priest', 2, 3, 6)],
+      [W_('heavy', 4, 2), W_('solarcher', 8, 0.9, 4), W_('legion', 10, 0.7, 10)], [W_('assassin', 10, 0.7), W_('heavy', 4, 2, 5), W_('priest', 3, 2.4, 9), W_('gladiator', 8, 0.8, 12)] ] },
+    { name: 'Sazlık Kıyı', theme: 'blacklake', gold: 580, bossT: 'cavcaptain', comic: 'sazlik', waves: [
+      [W_('legion', 10, 0.9), W_('cavalry', 2, 2, 7)], [W_('heavy', 3, 2.2), W_('solarcher', 6, 1.1, 4)], [W_('cavalry', 4, 1.6), W_('assassin', 6, 1, 5)],
+      [W_('ram', 1, 1), W_('legion', 10, 0.8, 2), W_('priest', 2, 3, 8)], [W_('gladiator', 8, 0.9), W_('cavalry', 4, 1.5, 6)], [W_('heavy', 4, 2), W_('priest', 3, 2.4, 4), W_('assassin', 6, 0.9, 9)],
+      [W_('ram', 1, 1), W_('cavalry', 5, 1.4, 3), W_('legion', 12, 0.6, 8)], [W_('heavy', 5, 1.8), W_('cavalry', 6, 1.3, 5), W_('priest', 3, 2.4, 8), W_('gladiator', 8, 0.8, 12)] ] },
+    { name: 'Kemik Köprü', theme: 'necrogate', gold: 640, bossT: 'ironwarden', comic: 'kopru', waves: [
+      [W_('legion', 12, 0.8), W_('solarcher', 6, 1.1, 5)], [W_('catapult', 1, 1), W_('gladiator', 8, 0.9, 3)], [W_('cavalry', 6, 1.3), W_('priest', 2, 3, 6)],
+      [W_('heavy', 5, 1.8), W_('assassin', 8, 0.9, 5)], [W_('ram', 2, 6), W_('legion', 14, 0.6, 2), W_('solarcher', 6, 1, 9)], [W_('catapult', 2, 8), W_('heavy', 5, 1.8, 3), W_('cavalry', 6, 1.2, 9)],
+      [W_('assassin', 10, 0.7), W_('gladiator', 10, 0.8, 5), W_('priest', 3, 2.4, 10)], [W_('heavy', 6, 1.6), W_('cavalry', 8, 1.1, 5), W_('legion', 14, 0.6, 10), W_('priest', 4, 2, 14)] ] },
+  ];
+  [14, 11, 8, 5, 2].forEach((at, k) => { L.splice(at, 0, EK1[4 - k]); old.splice(at, 0, LEVELS_EK1_GEO[4 - k]); });
+  const M1 = (i) => 4 * Math.floor(i / 3) + (i % 3 < 2 ? i % 3 : 3); // eski 15'lik sıradan yeni 20'lik sıraya
   // yeni birlikler dalgalara: ilk geldikleri bölümden itibaren belli dalgalarda küçük gruplar halinde (yer kaplamasın diye geç 'at')
   // görseli henüz hazır olmayan yeni türler dalgalara girmez
   const NEW_ART_WAIT = [];
@@ -505,19 +547,19 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const NEWCOMERS = [['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2],
     ['wardog', 3, [1, 4, 6], 5], ['eagle', 5, [2, 5, 7], 3], ['chariot', 9, [3, 6], 1], ['siegetower', 12, [5, 7], 1], ['elephant', 11, [6], 1], ['vulture', 6, [3, 6], 4]].filter(([t]) => !NEW_ART_WAIT.includes(t));
   for (const [t, from, ws, n] of NEWCOMERS) L.forEach((l, i) => {
-    if (i < from) return;
-    ws.forEach((k, j) => { const w = l.waves[k]; if (w) w.push(W_(t, n + (i >= from + 4 && j === ws.length - 1 ? 1 : 0), 3, 7 + j * 2)); });
+    if (i < M1(from)) return;
+    ws.forEach((k, j) => { const w = l.waves[k]; if (w) w.push(W_(t, n + (i >= M1(from) + 5 && j === ws.length - 1 ? 1 : 0), 3, 7 + j * 2)); });
   });
   // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
   // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
   // 10 Eki: yollar v2 sonrası denge (tarayıcı botu): geç bölümlerde düşman sayısı azaltıldı (çok kalabalık, çok zayıf yerine)
-  const TOTAL = [184, 193, 199, 209, 218, 228, 234, 206, 234, 242, 242, 211, 211, 265, 281]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
+  const TOTAL = [184, 193, 196, 199, 209, 218, 223, 228, 234, 206, 220, 234, 242, 242, 226, 211, 211, 265, 273, 281]; // 20 bölüm (10 Eki): yeni bölümler komşularının arası // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1, 1.3, 1.4, 1, 1.45, 1.02, 0.34, 0.49, 0.36, 1.45, 0.85, 0.38, 0.19, 0.68, 0.26]; // 10 Eki gece 2. tur: bot şapel devi, ikinci güç ve büyü geliştirmeyi de kullanır
+  const HPMUL = [1, 1.3, 1.08, 1.4, 1, 1.45, 0.7, 1.02, 0.34, 0.49, 0.66, 0.36, 1.45, 0.85, 0.48, 0.38, 0.19, 0.68, 0.23, 0.26]; // 10 Eki gece 2. tur: bot şapel devi, ikinci güç ve büyü geliştirmeyi de kullanır
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
-  [null, null, null, 'mud', 'mud', null, 'graves', null, 'graves', 'lake', null, 'lake', 'sunbeam', null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
+  [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
   LEVELS.splice(0, LEVELS.length, ...L);
   // bölge (eski adıyla sefer): haritası game.js drawRegionMap ile çizilir; zones: haritada soldan sağa mekânlar
   // name: bölgenin (episode) adı, haritanın başlığı. zones: soldan sağa mekânlar (zemin teması).
@@ -526,7 +568,9 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
     zones: [['cursed', 'Ölü Orman'], ['bog', 'Sisli Bataklık'], ['graveyard', 'Unutulmuş Mezarlık'], ['blacklake', 'Kara Göl'], ['necrogate', "Mortimer'ın Kapısı"]],
     start: [-40, 470], end: [852, 264],
     nodes: [[70, 450], [150, 372], [92, 282], [192, 194], [292, 250], [252, 352], [334, 442], [444, 392], [424, 290],
-      [504, 200], [612, 232], [592, 342], [690, 420], [782, 352], [742, 262]] });
+      [504, 200], [612, 232], [592, 342], [690, 420], [782, 352], [742, 262]].reduce((a, n, i, all) => { // 20 bölüm: her bölgenin 3. işareti öncesine ara işaret
+      if (i % 3 === 2) { const p = all[i - 1]; a.push([Math.round((p[0] + n[0]) / 2 + (n[1] - p[1]) * 0.18), Math.round((p[1] + n[1]) / 2 - (n[0] - p[0]) * 0.18)]); }
+      a.push(n); return a; }, []) });
 }
 
 // =====================================================================================
@@ -606,19 +650,31 @@ if (NECRO) {
     { name: 'Yıkık Kule', theme: 'bloodmoon', gold: 680, waves: mk([['hound', 10, 0.5], ['hunter', 8, 0.9], ['paladin', 3, 2.2], ['torch', 4, 1.6]], [['lantern', 2, 5], ['inquisitor', 2, 3], ['bellpriest', 3, 2]], [['saint', 1, 1], ['siegetower', 1, 1]]) },
     { name: 'Ay Sunağı', theme: 'bloodmoon', gold: 720, bossT: 'cathedral', waves: mk([['legion', 14, 0.6], ['paladin', 4, 2], ['flagellant', 6, 1.1], ['hunter', 8, 0.9]], [['lantern', 1, 1], ['saint', 1, 1], ['inquisitor', 2, 3], ['holywater', 4, 1.8]], [['heavy', 4, 2], ['bellpriest', 3, 2]]) },
   ];
+  // 10 Eki: 20 bölüm. Her bölgenin finalinden önce yeni bir bölüm
+  const EK2 = [
+    { name: 'Avcı Kampı', theme: 'ravenwood', gold: 360, comic: 'kamp', waves: mk([['legion', 8, 0.9], ['hunter', 4, 1.3], ['gladiator', 4, 1.1]], [['hound', 5, 0.7], ['torch', 2, 2.2]], [['heavy', 2, 2.4]]) },
+    { name: 'Veba Hendeği', theme: 'plague', gold: 460, weather: 'rain', comic: 'hendek', waves: mk([['legion', 10, 0.8], ['holywater', 3, 2], ['flagellant', 3, 1.5]], [['hound', 6, 0.7], ['lantern', 1, 1]], [['heavy', 3, 2.2], ['torch', 3, 2]]) },
+    { name: 'Mum Işığı Koridoru', theme: 'monastery', gold: 540, comic: 'koridor', waves: mk([['hunter', 6, 1.1], ['bellpriest', 2, 2.4], ['legion', 10, 0.8]], [['paladin', 2, 2.6], ['lantern', 1, 1]], [['flagellant', 4, 1.3], ['holywater', 3, 2]]) },
+    { name: 'Kemik Mahzeni', theme: 'ossuary', gold: 620, comic: 'mahzen', waves: mk([['paladin', 3, 2.2], ['flagellant', 5, 1.2], ['hunter', 6, 1]], [['saint', 1, 1], ['inquisitor', 1, 1], ['bellpriest', 2, 2.2]], [['lantern', 1, 1], ['torch', 4, 1.8]]) },
+    { name: 'Kızıl Sur', theme: 'bloodmoon', gold: 700, comic: 'sur', waves: mk([['legion', 14, 0.6], ['paladin', 3, 2], ['hound', 8, 0.5]], [['saint', 1, 1], ['inquisitor', 2, 3], ['lantern', 1, 1]], [['cavalry', 5, 1.3], ['flagellant', 6, 1.1], ['holywater', 4, 1.8]]) },
+  ];
+  const GEO2 = LEVELS2_GEO.slice();
+  [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
-  const TOTAL2 = [172, 184, 193, 203, 212, 218, 218, 224, 230, 234, 242, 242, 250, 257, 274]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1.25, 1.5, 1.05, 1.5, 1.1, 1.6, 1.85, 1.25, 1.8, 1.15, 1.33, 1.42, 0.8, 1.8, 0.36]; // 10 Eki gece 2. tur (oynak; elle yumuşatıldı)
+  const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
+  const HPMUL2 = [1.25, 1.5, 0.76, 1.05, 1.5, 1.1, 0.85, 1.6, 1.85, 1.25, 2.2, 1.8, 1.15, 1.33, 1.04, 1.42, 0.8, 1.8, 0.98, 0.36]; // 10 Eki gece 2. tur (oynak; elle yumuşatıldı)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
-  const BOSS2 = ['centurion', 'shadowmaster', 'malleus', 'hierophant', 'champion', 'campanus', 'malleus', 'ironwarden', 'ignis',
-    'campanus', 'cavcaptain', 'colossus', 'ignis', 'severus', 'cathedral'];
-  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, LEVELS2_GEO[i], { lives: 15, ep: 2, total: TOTAL2[i], grow: 1.3, hpMul: HPMUL2[i] }); if (!l.weather) delete l.weather; });
+  const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
+    'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
+  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, GEO2[i], { lives: 15, ep: 2, total: TOTAL2[i], grow: 1.3, hpMul: HPMUL2[i] }); if (!l.weather) delete l.weather; });
   LEVELS.push(...L2);
   EPISODES.push({ name: 'Cadı Avı',
     zones: [['ravenwood', 'Kuzgun Ormanı'], ['plague', 'Veba Köyü'], ['monastery', 'Batık Manastır'], ['ossuary', 'Kemik Katedrali'], ['bloodmoon', 'Kızıl Ay Tepesi']],
     start: [-40, 110], end: [852, 276],
     nodes: [[70, 130], [150, 208], [92, 298], [192, 386], [292, 330], [252, 228], [334, 138], [444, 188], [424, 290],
-      [504, 380], [612, 348], [592, 238], [690, 160], [782, 228], [742, 318]] });
+      [504, 380], [612, 348], [592, 238], [690, 160], [782, 228], [742, 318]].reduce((a, n, i, all) => { // 20 bölüm: ara işaretler
+      if (i % 3 === 2) { const p = all[i - 1]; a.push([Math.round((p[0] + n[0]) / 2 + (n[1] - p[1]) * 0.18), Math.round((p[1] + n[1]) / 2 - (n[0] - p[0]) * 0.18)]); }
+      a.push(n); return a; }, []) });
 }
 // kuleler: Mortimer'ın yapıları
 Object.assign(TOWERS.archer, { name: 'Kemik Dikilitaşı', desc: 'Hızla kemik kıymığı fırlatır, havayı da vurur' });
@@ -641,14 +697,14 @@ Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menz
 // unlock: bitirilmesi gereken bölüm (15: 1. seferin sonu; 21: Cadı Avı'nın 6. bölümü)
 Object.assign(HEROES, {
   spartacus: { name: 'Spartaküs', role: 'Zincirsiz · Yakın dövüş', sprite: 'hero_spartacus', h: 32, aura: '255,90,80',
-    hp: 360, dmg: [16, 24], armor: 0.2, rate: 0.9, speed: 82, respawn: 15, regen: 10, engage: 75, unlock: 15,
+    hp: 360, dmg: [16, 24], armor: 0.2, rate: 0.9, speed: 82, respawn: 15, regen: 10, engage: 75, unlock: 20,
     paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
       { id: 'whirl', name: 'Zincir Savurma', cd: 9, desc: 'Zincirlerini savurur: çevresindeki bütün düşmanlara hasar' },
       { id: 'bash', name: 'Gladyatör Ağı', cd: 8, desc: 'Hedefine ağ atar: 2 sn kımıldayamaz, ek hasar alır' },
       { id: 'charge', name: 'Arena Hamlesi', cd: 16, desc: 'Kaleye en yakın düşmana atılıp ağır darbe vurur' },
     ] }] },
   leonidas: { name: 'Leonidas', role: 'Kemik Kalkan · Tank', sprite: 'hero_leonidas', h: 33, aura: '200,150,255',
-    hp: 480, dmg: [12, 18], armor: 0.5, rate: 1.1, speed: 72, respawn: 16, regen: 12, engage: 70, unlock: 21,
+    hp: 480, dmg: [12, 18], armor: 0.5, rate: 1.1, speed: 72, respawn: 16, regen: 12, engage: 70, unlock: 28,
     paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
       { id: 'bash', name: 'Sparta Tekmesi', cd: 7, desc: '"Bu Sparta!": hedefi tekmeyle sersemletir, ek hasar verir' },
       { id: 'cry', name: 'Sparta Narası', cd: 15, desc: 'Yakındaki iskeletleri iyileştirir, 6 sn hasarlarını %50 artırır' },
@@ -680,11 +736,11 @@ const NECRO_SPELLS = {
     short: 'Yola kemik duvar diker: düşmanlar 7 sn takılır (kırılabilir)' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', ghosts: 10, desc: 'Ruhlar alandaki düşmanların peşine düşer: korkudan 3,5 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz', short: 'Ruhlar düşmanları kovalar: 3,5 sn panikle geri kaçarlar' },
   // 5. büyü (10 Eki): 2. seferin 9. bölümü kazanılınca (Kemik Katedrali) açılır. Sahadaki bütün cesetler tek golemde birleşir
-  nm_golem: { name: 'Ceset Golemi', cd: 55, min: 3, max: 14, life: 20, hp: 220, hpPer: 85, dmg: [14, 22], dmgPer: 0.06, col: '150,255,110', unlock: 23,
+  nm_golem: { name: 'Ceset Golemi', cd: 55, min: 3, max: 14, life: 20, hp: 220, hpPer: 85, dmg: [14, 22], dmgPer: 0.06, col: '150,255,110', unlock: 31,
     desc: 'Sahadaki bütün cesetler seçtiğin yerde tek bir golemde birleşir: ceset ne kadar çoksa o kadar iri ve güçlü. 20 sn düşmanın üstüne yürür, alan vuruşu yapar',
     short: 'Cesetler birleşip golem olur (en az 3 ceset): 20 sn savaşır' },
   // 4. büyü: 1. bölge bitince (son bölüm kazanılınca) açılır. Cesedi diriltmek ya da patlatmak arasında seçim.
-  nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 14,
+  nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 19,
     desc: 'Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
     short: 'Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir' },
 };

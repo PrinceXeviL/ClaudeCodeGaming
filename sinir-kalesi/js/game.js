@@ -166,6 +166,17 @@ if (!save.v15) {
   }
   save.v15 = 1;
 }
+// 10 Eki: seferler 15'ten 20 bölüme çıktı (her bölgenin finalinden önce yeni bölüm): eski kayıttaki bölüm dizinleri taşınır
+if (NECRO && !save.lv20 && save.stars && save.stars.length) {
+  const M = (i) => { const ep = i >= 15 ? 1 : 0, j = i - 15 * ep; return 20 * ep + 4 * Math.floor(j / 3) + (j % 3 < 2 ? j % 3 : 3); };
+  for (const k of ['stars', 'ch', 'endless']) {
+    const o = save[k]; if (!o || typeof o !== 'object') continue;
+    const n = Array.isArray(o) ? [] : {};
+    for (const i of Object.keys(o)) if (/^\d+$/.test(i)) n[M(+i)] = o[i]; else n[i] = o[i];
+    save[k] = n;
+  }
+}
+save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
 const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto', music: true };
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
@@ -670,13 +681,14 @@ function nearestOnPaths(paths, x, y) {
 // gulyabani ölürse respawn sn sonra kapaktan yeniden çıkar; meşaleci kapağın yanında seal sn kalırsa kapağı mühürler (artık çıkmaz)
 const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
   ghoul: { hp: 520, dmg: [10, 16], armor: 0.35, rate: 1.1, speed: 40, engage: 80 } };
+const epRel = (lv) => LEVELS.indexOf(lv) - LEVELS.findIndex(l => l.ep === lv.ep); // seferin içindeki sıra (0..19)
 function hatchSpots(lv, paths) {
   if (lv.ep !== 2 || !NECRO) return [];
   if (lv._hatch) return lv._hatch;
   const li = LEVELS.indexOf(lv);
   let seed = ((li + 7) * 2246822519) >>> 0;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  const n = li >= 22 ? 3 : 2, out = [], R = lv.roadK || ROAD_K;
+  const n = epRel(lv) >= 9 ? 3 : 2, out = [], R = lv.roadK || ROAD_K;
   for (let k = 0; k < 600 && out.length < n; k++) {
     const P = paths[Math.floor(rnd() * paths.length)], q = pathPos(P, P.total * (0.15 + rnd() * 0.62));
     const side = rnd() < 0.5 ? -1 : 1, off = 40 + 14 * R, x = q.x - q.dy * off * side, y = q.y + q.dx * off * side;
@@ -695,9 +707,9 @@ function hatchSpots(lv, paths) {
 // ölen düşman kendiliğinden ölü olarak kalkar; Engizisyon dua eder (yavaşlar) -----
 const BLOOD = { dur: 20, dmg: 1.3, cd: 2, slow: 0.75, rise: 0.8 };
 function bloodWaves(lv) { // 0 tabanlı dalga sırası; 2. seferin 3. bölümünden başlar, son üç bölümde iki kez
-  const li = LEVELS.indexOf(lv) - 15, N = lv.waves.length;
-  if (lv.ep !== 2 || !NECRO || li < 2) return [];
-  return li >= 12 ? [Math.floor(N / 2) - 1, N - 2] : [Math.floor(N / 2) + (li % 2)];
+  const li = epRel(lv), N = lv.waves.length;
+  if (lv.ep !== 2 || !NECRO || li < 3) return [];
+  return li >= 16 ? [Math.floor(N / 2) - 1, N - 2] : [Math.floor(N / 2) + (li % 2)];
 }
 
 // ---------- arka plan (önceden çizilir) ----------
@@ -1310,7 +1322,7 @@ function startLevel(idx, chal = null) {
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
   if (NECRO) {
-    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.ep === 2 && idx === LEVELS.findIndex(l => l.ep === 2) ? 'intro2' : lv.boss;
+    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.ep === 2 && idx === LEVELS.findIndex(l => l.ep === 2) ? 'intro2' : lv.comic && COMICS[lv.comic] && !seen[lv.comic] ? lv.comic : lv.boss;
     if (COMICS[key] && !seen[key]) startComic(key);
   }
 }
@@ -11730,6 +11742,57 @@ const COMICS = {
     { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Çaydanlığımı ancak cesedimden alırsın. Bir dakika... ben zaten ölüyüm.', x: 0.3, y: 0.08, to: [0.5, 0.36] }] },
     { bg: 'mezar', act: [{ s: 'k:4', x: 0.18, y: 0.93, h: 0.5, rise: 1 }, { s: 'k:3', x: 0.4, y: 0.94, h: 0.52, rise: 1, d: 0.25 }, { s: 'k:8', x: 0.62, y: 0.93, h: 0.5, rise: 1, d: 0.5 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
       say: [{ who: 'Mortimer', text: 'Herkes yerine! Bu sefer misafir ağırlamıyoruz.', x: 0.45, y: 0.08, to: [0.86, 0.4] }] },
+  ],
+  // ---- 20 bölüme çıkınca eklenen bölümlerin girişleri (10 Eki) ----
+  patika: [
+    { bg: 'gun', cap: 'Dikenli Patika. Kestirme yol, dediler.', act: [{ s: 'e:legion', x: 0.22, y: 0.92, h: 0.44, walk: 1 }, { s: 'e:gladiator', x: 0.5, y: 0.92, h: 0.46, walk: 1 }, { s: 'e:centurion', x: 0.78, y: 0.93, h: 0.56, walk: 1 }],
+      say: [{ who: 'Yüzbaşı Lucius', text: 'Dikenler mi? Lejyon dikenden korkmaz! ...Ay.', x: 0.45, y: 0.19, to: [0.76, 0.42] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'O dikenleri ben ektim. Sulamayı da unutmadım.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  kurbaga: [
+    { bg: 'gece', cap: 'Kurbağa Adası. Bataklığın tam ortası.', act: [{ s: 'e:assassin', x: 0.3, y: 0.92, h: 0.46 }, { s: 'e:champion', x: 0.66, y: 0.94, h: 0.6 }],
+      say: [{ who: 'Arena Şampiyonu Maximus', text: 'Çamur, kurbağa, sivrisinek... Arenayı özledim.', x: 0.45, y: 0.19, to: [0.64, 0.36] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Kurbağalar benim dostum. Seni çok sevecekler. Yemek olarak.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  bekci: [
+    { bg: 'mezar', cap: 'Fener Bekçisinin Mezarı. Bekçi hâlâ nöbette.', act: [{ s: 'k:3', x: 0.25, y: 0.93, h: 0.5, rise: 1 }, { s: 'e:shadowmaster', x: 0.68, y: 0.94, h: 0.58, fade: 1 }],
+      say: [{ who: 'Gölge Usta', text: 'Fener sönük. Gölgeler bana yol gösterecek.', x: 0.5, y: 0.19, to: [0.66, 0.36] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Bekçi fenerini sana tutacak. Biraz yakından.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  sazlik: [
+    { bg: 'gece', cap: 'Sazlık Kıyı. Kara Göl\'ün sığ ucu.', act: [{ s: 'e:cavalry', x: 0.28, y: 0.92, h: 0.5, walk: 1 }, { s: 'e:cavcaptain', x: 0.68, y: 0.95, h: 0.64, walk: 1 }],
+      say: [{ who: 'Süvari Kaptanı Aurelius', text: 'Atlar suya girmez mi? Girecekler!', x: 0.45, y: 0.19, to: [0.66, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Bubu sabahtan beri aç. Tam vaktinde geldiniz.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  kopru: [
+    { bg: 'gun', cap: 'Kemik Köprü. Şapele son geçit.', act: [{ s: 'e:heavy', x: 0.22, y: 0.92, h: 0.44, walk: 1 }, { s: 'e:ironwarden', x: 0.62, y: 0.95, h: 0.64, walk: 1 }],
+      say: [{ who: 'Demir Muhafız Brutus', text: 'Bu köprü kemikten mi? Benim zırhım daha sağlam.', x: 0.42, y: 0.19, to: [0.6, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Köprüyü eski misafirlerimden yaptım. Sen de güzel bir korkuluk olursun.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  kamp: [
+    { bg: 'gece', cap: 'Avcı Kampı. Tuzaklar kuruldu.', act: [{ s: 'e:hound', x: 0.2, y: 0.92, h: 0.32 }, { s: 'e:hunter', x: 0.46, y: 0.92, h: 0.46 }, { s: 'e:torch', x: 0.74, y: 0.92, h: 0.46 }],
+      say: [{ who: 'Cadı Avcısı', text: 'Kemik kokusu! Tuzakları kontrol edin!', x: 0.5, y: 0.19, to: [0.46, 0.42] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Tuzaklarına iskelet koydum. Yanlış tarafı yakalasınlar.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  hendek: [
+    { bg: 'gece', cap: 'Veba Hendeği. Kimse girmek istemez.', act: [{ s: 'e:holywater', x: 0.26, y: 0.92, h: 0.46 }, { s: 'e:flagellant', x: 0.64, y: 0.92, h: 0.46 }],
+      say: [{ who: 'Kutsal Su Taşıyıcı', text: 'Kutsal su her şeyi temizler. Hendeği bile!', x: 0.42, y: 0.19, to: [0.26, 0.42] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'O hendeği yüz yıldır temizletmiyorum. Bırakın kalsın.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  koridor: [
+    { bg: 'karanlik', cap: 'Mum Işığı Koridoru. Batık manastırın kalbi.', act: [{ s: 'e:bellpriest', x: 0.24, y: 0.92, h: 0.46 }, { s: 'e:paladin', x: 0.62, y: 0.93, h: 0.5 }],
+      say: [{ who: 'Paladin', text: 'Mumlar yandıkça karanlık geri çekilir!', x: 0.45, y: 0.19, to: [0.62, 0.4] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Mumlar erir. Ben kalırım. Basit matematik.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  mahzen: [
+    { bg: 'mezar', cap: 'Kemik Mahzeni. Katedralin altında, kemikten raflar.', act: [{ s: 'e:inquisitor', x: 0.26, y: 0.92, h: 0.48 }, { s: 'e:saint', x: 0.66, y: 0.94, h: 0.56 }],
+      say: [{ who: 'Engizitör', text: 'Bu kemikleri sorguya çekeceğiz. Hepsini.', x: 0.42, y: 0.19, to: [0.26, 0.4] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Kemiklerim konuşmaz. Ama ısırır.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  sur: [
+    { bg: 'gece', cap: 'Kızıl Sur. Ay Sunağı\'na giden son duvar.', act: [{ s: 'e:paladin', x: 0.2, y: 0.92, h: 0.44, walk: 1 }, { s: 'e:colossus', x: 0.6, y: 0.97, h: 0.82, walk: 1 }],
+      say: [{ who: 'Aziz Kolos', text: 'DUVAR... DÜŞECEK...', x: 0.42, y: 0.12, to: [0.6, 0.26] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Duvar düşerse arkasında ben varım. Ve çok kızgınım.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
   ],
   // ---- 2. sefer: Cadı Avı ----
   intro2: [
