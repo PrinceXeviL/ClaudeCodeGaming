@@ -528,6 +528,9 @@ const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
   battle: { file: 'muzik_savas.mp3', gain: 0.15, seam: true }, // The Necromancer's Parade
   boss:   { file: 'muzik_boss.mp3',  gain: 0.18, seam: true }, // Bones on the Battlements
+  // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
+  battle2: { file: 'muzik_savas2.mp3', gain: 0.15, seam: true },
+  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.18, seam: true },
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
@@ -571,13 +574,14 @@ function startMusic() {
 // iOS ve bazı tarayıcılar sesi yalnız parmak kalkınca / tıklamada açar: birkaç olayda denenir
 for (const [t, o] of [['pointerup', window], ['touchend', window], ['click', window], ['keydown', window]]) o.addEventListener(t, () => startMusic(), { passive: true });
 // bölüm başında savaş parçası baştan başlar
-function musicRestartBattle() { const T = MUSIC.tracks.battle; if (T.el) { try { T.el.currentTime = 0; } catch (e) {} } }
+function musicRestartBattle() { for (const k of ['battle', 'battle2']) { const T = MUSIC.tracks[k]; if (T.el) { try { T.el.currentTime = 0; } catch (e) {} } } }
 function musicWanted() {
   if (screen !== 'play') return 'menu';
   if (!G || overlay === 'win' || overlay === 'lose' || !G.musicOn) return null;
   const T = MUSIC.tracks;
-  if (G.enemies.some(e => e.def.chief && e.hp > 0) && !T.boss.missing) return 'boss';
-  return 'battle';
+  const ep2 = G.lv.ep === 2;
+  if (G.enemies.some(e => e.def.chief && e.hp > 0)) { if (ep2 && !T.boss2.missing) return 'boss2'; if (!T.boss.missing) return 'boss'; }
+  return ep2 && !T.battle2.missing ? 'battle2' : 'battle';
 }
 function updateMusic(dt) {
   if (!MUSIC.started) return;
@@ -591,7 +595,7 @@ function updateMusic(dt) {
     if (!tgt && !T.el) continue;
     const el = musicEl(T); if (!el) continue;
     // giriş ~2 sn, çıkış ~1 sn (boss geçişi biraz daha hızlı girer)
-    T.vol += clamp(tgt - T.vol, -dt * 0.3, dt * (k === 'boss' ? 0.25 : 0.12));
+    T.vol += clamp(tgt - T.vol, -dt * 0.3, dt * (k.startsWith('boss') ? 0.25 : 0.12));
     el.volume = clamp(T.vol, 0, 1);
     if (T.seam) musicSeam(T, dt);
     if (T.vol <= 0.002 && tgt === 0 && !el.paused) { el.pause(); if (T.old) { T.old.pause(); T.old = null; } }

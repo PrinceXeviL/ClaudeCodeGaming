@@ -42,3 +42,28 @@ Smooth seamless loop: the ending flows naturally back into the beginning, no fad
 - Parça kısa çıkarsa (ör. 30 sn) sorun değil, döngüyle çalar; 1,5–3 dk ideal.
 - MP3 değilse (WAV vb.) bana gönder ya da `ffmpeg -i girdi.wav -b:a 160k muzik_savas.mp3` ile çevir.
 - Ses düzeyleri kodda ayarlı (`game.js` MUSIC.tracks `gain`); çok yüksek/kısık gelirse oradan değiştirilir.
+
+## Sefer 2 "Cadı Avı" (10 Eki)
+Dosyalar: `ses/muzik_savas2.mp3` (bölüm içi), `ses/muzik_boss2.mp3` (boss). Yoksa 1. seferin parçaları çalar.
+Ham dosyayı bana gönder: başını/sonunu dikişsiz döngü için ben harmanlarım.
+
+### Savaş (`muzik_savas2.mp3`)
+```
+Instrumental loopable background music for a cartoon dark-fantasy tower defense game, in the style of Kingdom Rush and Danny Elfman.
+Mood: a grumpy old necromancer defends his haunted lands at night against a fanatical holy inquisition of witch hunters with torches, lanterns and church bells.
+Spooky, mischievous and tense, with a gothic cathedral atmosphere. Tempo 115 BPM, minor key, steady marching pulse.
+Instruments: pipe organ playing a sneaky minor-key melody, tolling church bells, a dark wordless monk choir humming low,
+pizzicato strings and harpsichord, bassoon and tuba bass line, snare drum and timpani march, bone-like marimba accents, celesta sparkles.
+Leave space for sound effects. No vocals with lyrics.
+Smooth seamless loop: the ending flows naturally back into the beginning, no fade out, no big final hit.
+```
+
+### Boss (`muzik_boss2.mp3`)
+```
+Instrumental loopable boss battle music for a cartoon dark-fantasy tower defense game, in the style of Kingdom Rush boss themes and Danny Elfman.
+A fanatical Grand Inquisitor arrives on a giant walking cathedral to burn the necromancer's teapot: epic, frantic and a little comically pompous.
+Tempo 140 BPM, minor key, driving. Instruments: thundering full pipe organ, massive church bells, a powerful Latin-style choir chanting wordless syllables,
+pounding taiko and timpani, low brass riff, racing staccato strings, cymbal crashes.
+Big and intense but leaving room for sound effects. No vocals with lyrics.
+Smooth seamless loop: the ending flows naturally back into the beginning, no fade out.
+```
