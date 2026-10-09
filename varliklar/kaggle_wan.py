@@ -110,6 +110,15 @@ def refs_dataset(user, jobs):
 
 def run(jobs, slug=SLUG):
     user = [l for l in kaggle('config', 'view').stdout.splitlines() if 'username' in l][0].split(':')[1].strip()
+    if '--surum' in sys.argv:  # --surum 7: göndermeden, o sürümün çıktısını bekleyip indir (durum sorgusu hep son sürümü verir)
+        ref = f"{user}/{slug}/{sys.argv[sys.argv.index('--surum') + 1]}"
+        while True:
+            od = tempfile.mkdtemp(); kaggle('kernels', 'output', ref, '-p', od)
+            got = [f for _, _, fs in os.walk(od) for f in fs]
+            print(time.strftime('%H:%M'), ref, len(got), 'dosya', flush=True)
+            if any(f.endswith('.log') or f.endswith('.mp4') for f in got): break
+            time.sleep(120)
+        return process_output(od, jobs)
     if '--veri-yok' not in sys.argv: refs_dataset(user, jobs)  # veri seti zaten güncelse atla
     d = tempfile.mkdtemp()
     code = KERNEL.replace('__JOBS__', base64.b64encode(json.dumps(jobs).encode()).decode())
@@ -130,6 +139,10 @@ def run(jobs, slug=SLUG):
         if any(w in st.lower() for w in ('complete', 'error', 'cancel')): break
     od = tempfile.mkdtemp()
     kaggle('kernels', 'output', f'{user}/{slug}', '-p', od)
+    process_output(od, jobs)
+
+
+def process_output(od, jobs):
     log = [f for f in os.listdir(od) if f.endswith('.log')]
     if log: print(open(os.path.join(od, log[0])).read()[-3000:])
     import fcntl, video_uret
@@ -157,6 +170,6 @@ if __name__ == '__main__':
     if '--ad' in sys.argv: slug = f"{SLUG}-{sys.argv[sys.argv.index('--ad') + 1]}"
     if '--parca' in sys.argv:  # --parca 0/2: işlerin yarısı, ayrı Kaggle oturumunda (iki oturum aynı anda çalışır)
         i, n = map(int, sys.argv[sys.argv.index('--parca') + 1].split('/'))
-        jobs = jobs[i::n]; slug = f'{SLUG}-{i}'
+        jobs = jobs[i::n]; slug = f'{slug}-{i}'  # --ad ile birlikte: nm-wan-anim-<ad>-<i> (ayrı işler aynı defteri ezmesin)
     print(len(jobs), 'iş:', ', '.join(j['name'] for j in jobs), flush=True)
     run(jobs, slug)
