@@ -5375,14 +5375,47 @@ function drawTowerDisabled(t) {
   }
   ctx.restore();
 }
+// Kulelerin koyu zeminde seçilmesi (10 Eki): arkada soluk ruh-yeşili dış ışık (görselin bulanık silueti; görsel başına bir kez
+// hazırlanır) ve ayağında hafif ışık havuzu. TOWER_RIM.a dış ışığın gücü, .pool yer ışığının.
+// Necromancer renkleri: ruh yeşili, mor, kızıl; kule türüne göre
+const TOWER_RIM = { col: '185,255,200', blur: 0.05, a: 0.95, pool: 0.22,
+  cols: { barracks: '255,95,95', archer: '170,255,180', mage: '195,145,255', artillery: '170,255,120', altar: '235,80,170' } };
+const RIM_CACHE = new Map();
+function rimOf(im, col = TOWER_RIM.col) {
+  const key = im.src + '|' + col;
+  if (RIM_CACHE.has(key)) return RIM_CACHE.get(key);
+  if (!(im.naturalWidth || im.width)) return null; // görsel henüz yüklenmedi: sonra yeniden denenir
+  let r = null;
+  try {
+    const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, k = Math.min(1, 320 / iw), w = Math.round(iw * k), h = Math.round(ih * k);
+    const b = Math.max(4, Math.round(w * TOWER_RIM.blur)), pad = b * 3, c = document.createElement('canvas');
+    c.width = w + pad * 2; c.height = h + pad * 2;
+    const g = c.getContext('2d');
+    g.shadowColor = `rgba(${col},1)`; g.shadowBlur = b; g.shadowOffsetX = c.width; // gölge görselin yerine düşer, görselin kendisi tuval dışında kalır
+    g.drawImage(im, pad - c.width, pad, w, h); // geniş yumuşak ışık
+    g.shadowBlur = Math.max(2, b / 3); g.drawImage(im, pad - c.width, pad, w, h); g.drawImage(im, pad - c.width, pad, w, h); // ince keskin kenar
+    r = { c, pad: pad / k, sc: 1 / k };
+  } catch (e) { r = null; }
+  RIM_CACHE.set(key, r); return r;
+}
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
+    { // ayağındaki ışık havuzu ve arkadaki dış ışık
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, t.x, t.y - 2, ts.w * 0.62, TOWER_RIM.cols[t.type] || TOWER_RIM.col, TOWER_RIM.pool * (0.9 + Math.sin(time * 1.6 + t.x) * 0.1));
+      ctx.restore();
+    }
     const age = G.t - (t.born ?? -9);
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
     // top ateşlediğinde kule hafifçe sarsılır (top kendi içinde geri teper)
     const ksy = t.type === 'artillery' && t.shotAnim > 0.2 ? 1 - (t.shotAnim - 0.2) * 0.25 : 1;
     ctx.save(); ctx.translate(t.x, ts.bottom); ctx.scale(pop, pop * ksy);
+    const rim = NECRO && rimOf(ts.im, TOWER_RIM.cols[t.type] || TOWER_RIM.col);
+    if (rim) { // dış ışık: görselle aynı ölçekte, kenarlarından taşan pay kadar büyük
+      const k = ts.w / (ts.im.naturalWidth || ts.im.width), h = ts.w * ts.im.height / ts.im.width, P = rim.pad * k;
+      ctx.globalAlpha = TOWER_RIM.a; ctx.drawImage(rim.c, -ts.w / 2 - P, -h - P, ts.w + P * 2, h + P * 2); ctx.globalAlpha = 1;
+    }
     drawSprite(ctx, ts.im, 0, 0, ts.w);
     ctx.restore();
     drawNecroTowerFx(t, ts);
@@ -5511,7 +5544,8 @@ function drawEnemy(e) {
 // Kemik Duvarı: önce yol toprağı yarılır (çatlaklardan yeşil ışık sızar), sonra kaburga, diş ve uyluk kemikleri ortadan dışa doğru
 // sırayla topraktan fışkırır (her biri çıkarken toprak parçaları saçar), ortada yeşil gözlü büyük kafatası; süre bitince toprağa geri gömülür.
 // 10 Eki: Caner daha sık ve ince kemik istedi: 13 kalın sütun yerine 3 sıra halinde 27 ince kemik
-const BWALL = { imgW: 74, imgBase: 15, span: 66, cols: 27, rows: [-5, 0, 5], crackT: 0.12, rise: 0.24, stagger: 0.016, sink: 0.45 };
+const BWALL = { imgW: 89, imgSY: 0.75, imgBase: 15, // 10 Eki: %20 geniş (74 -> 89), boy %10 kısa (0.9 / 1.2 = 0.75)
+  span: 66, cols: 27, rows: [-5, 0, 5], crackT: 0.12, rise: 0.24, stagger: 0.016, sink: 0.45 };
 function boneWallGeom(s) {
   if (s.geo) return s.geo;
   const r = seeded(Math.floor(s.seed * 9973) + 7), cr = [];
@@ -5548,7 +5582,7 @@ function drawBoneWall(s) {
   // topraktan yükselir (zemin çizgisinin altı kırpılır), süre bitince geri gömülür
   const front = Math.abs(ny) < 0.55, bwIm = spr(front ? (dmg > 0.5 && spr('nm_bwall_2') ? 'nm_bwall_2' : 'nm_bwall_1') : 'nm_bwall_3');
   if (bwIm) {
-    const w = BWALL.imgW * (front ? 1 : 0.9), h = w * bwIm.height / bwIm.width, gy = s.y + BWALL.imgBase;
+    const w = BWALL.imgW * (front ? 1 : 0.9), h = w * bwIm.height / bwIm.width * BWALL.imgSY, gy = s.y + BWALL.imgBase;
     const k = clamp((age - BWALL.crackT * 0.6) / BWALL.rise, 0, 1), rise = easeOutBack(k) * (1 - sink);
     if (k > 0 && !s.burst) {
       s.burst = true;
@@ -5558,7 +5592,7 @@ function drawBoneWall(s) {
     if (rise > 0) {
       ctx.save(); ctx.beginPath(); ctx.rect(s.x - w, gy - h * 1.6, w * 2, h * 1.6); ctx.clip();
       ctx.translate(s.x + (s.flash > 0 ? rand(-1.2, 1.2) : 0), gy + (1 - rise) * h * 0.9);
-      if (!front && nx * ny > 0) ctx.scale(-1, 1);
+      ctx.scale(!front && nx * ny > 0 ? -1 : 1, BWALL.imgSY);
       drawSprite(ctx, bwIm, 0, 0, w);
       if (s.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(0.5, s.flash * 3); drawSprite(ctx, bwIm, 0, 0, w); }
       ctx.restore();
@@ -7006,7 +7040,8 @@ function ribbon(cx, cy, w, text, col = 'red', size = 26) {
   ctx.beginPath(); ctx.moveTo(cx - w / 2 + 6, cy - h / 2 + 5); ctx.lineTo(cx + w / 2 - 6, cy - h / 2 + 5);
   ctx.moveTo(cx - w / 2 + 6, cy + h / 2 - 5); ctx.lineTo(cx + w / 2 - 6, cy + h / 2 - 5); ctx.stroke(); ctx.restore();
   ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.fillRect(cx - w / 2 + 3, cy - h / 2 + 3, w - 6, h * 0.35);
-  txt(text, cx, cy + 1, size, '#fff', 'center', '400', FONT_T);
+  ctx.font = `400 ${size}px ${FONT_T}`; const tw = ctx.measureText(text).width; // uzun ad şeride sığsın diye küçülür
+  txt(text, cx, cy + 1, tw > w - 14 ? size * (w - 14) / tw : size, '#fff', 'center', '400', FONT_T);
 }
 
 // yüzey üzerinde altın yıldız (boşsa koyu yuva)
@@ -10155,7 +10190,9 @@ function drawMap() {
   ids.forEach((i, k) => drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05));
 
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.translate(W / 2 + 40, 46); ctx.scale(rk, rk); ribbon(0, 0, 300, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 22); ctx.restore();
+  // sefer adı: sekmelerle sağ üst düğmeler arasındaki boşluğa sığar (sekme varsa sağa kayar, şerit biraz küçük)
+  { const x0 = EPISODES.length > 1 ? 290 : 70, x1 = W - 392, cx = (x0 + x1) / 2, rw = Math.min(250, x1 - x0 - 60); // şeridin kuyrukları iki yana ~25 px taşar
+    ctx.save(); ctx.translate(cx, 44); ctx.scale(rk, rk); ribbon(0, 0, rw, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 19); ctx.restore(); }
   roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
   roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
   roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });

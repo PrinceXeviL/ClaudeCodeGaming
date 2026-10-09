@@ -1,0 +1,258 @@
+[
+ {
+  "name": "enemy_hunter_walk",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow walks in place with long determined strides, a full walk cycle, legs stepping, the crossbow held ready. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_hunter_atk",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow raises the silver crossbow, aims to the right and shoots one bolt, the crossbow kicks back, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_torch_walk",
+  "ref": "ham/anim/enemy_torch_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon hooded zealot monk in a dark crimson robe holding a big burning torch high walks in place angrily, a full walk cycle, legs stepping, the torch flame flickering and swaying. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_torch_atk",
+  "ref": "ham/anim/enemy_torch_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon hooded zealot monk in a dark crimson robe holding a big burning torch high swings the burning torch forward in a wide strike, sparks flying, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_hound_walk",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar runs in place, a full gallop cycle, legs reaching and pushing, ears back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_hound_atk",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar lunges forward and snaps its jaws in a vicious bite, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_holywater_walk",
+  "ref": "ham/anim/enemy_holywater_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a chubby cartoon friar in a cream and gold robe carrying a basket of glowing blue glass flasks on his back waddles in place, a full walk cycle, legs stepping, the flasks clinking in the basket. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_holywater_atk",
+  "ref": "ham/anim/enemy_holywater_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a chubby cartoon friar in a cream and gold robe carrying a basket of glowing blue glass flasks on his back throws a glowing blue glass flask forward overhand to the right, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_flagellant_walk",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a bare-chested hooded cartoon fanatic with a crimson hood and rope belt holding a knotted whip stalks forward in place hunched, a full walk cycle, legs stepping, the whip dragging and swaying. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_flagellant_atk",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a bare-chested hooded cartoon fanatic with a crimson hood and rope belt holding a knotted whip lashes the knotted whip forward hard, the whip cracking, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_lantern_walk",
+  "ref": "ham/anim/enemy_lantern_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a hooded cartoon monk pushing a heavy wooden two-wheeled cart that carries a huge brass lantern with golden fire inside pushes the cart forward in place, the monk stepping, the cart wheels turning, the lantern fire flickering. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_bellpriest_walk",
+  "ref": "ham/anim/enemy_bellpriest_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a thin old cartoon priest in a black and gold robe holding a big bronze hand bell high walks in place chanting, a full walk cycle, legs stepping, the bell swinging and ringing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_bellpriest_atk",
+  "ref": "ham/anim/enemy_bellpriest_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a thin old cartoon priest in a black and gold robe holding a big bronze hand bell high rings the big bronze bell hard high above his head, shaking it with both effort and anger, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_paladin_walk",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace marches in place heavily, a full walk cycle, armored legs stepping, the shield held in front. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_paladin_atk",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace swings the mace forward over the shield in one strong strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_inquisitor_walk",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe with a high collar and red skullcap, holding a glowing holy book walks in place slowly and sternly, a full walk cycle, legs stepping, the robe swaying, the book glowing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_inquisitor_atk",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe with a high collar and red skullcap, holding a glowing holy book raises the glowing book and points forward accusingly, the book flares with golden light, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_saint_walk",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a walking cracked white marble statue of a robed saint with a stone halo and a stone sword walks in place with slow heavy stone steps, a full walk cycle, small stone dust falling. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_saint_atk",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a walking cracked white marble statue of a robed saint with a stone halo and a stone sword swings the stone sword forward in a slow crushing strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_malleus_walk",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows strides in place, a full walk cycle, legs stepping, the coat flapping, both crossbows held low. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_malleus_atk",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows raises both silver crossbows and fires them forward to the right one after the other, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_campanus_walk",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a huge cartoon monk in black and gold robes carrying an enormous bronze church bell on his back with chains and holding a big hammer trudges in place heavily, a full walk cycle, legs stepping, the huge bell swaying on his back. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_campanus_atk",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a huge cartoon monk in black and gold robes carrying an enormous bronze church bell on his back with chains and holding a big hammer swings the big hammer back over his shoulder and strikes the bell on his back hard, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_ignis_walk",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer marches in place, a full walk cycle, legs stepping, small flames dripping from the censer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_ignis_atk",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer points the brass flamethrower forward and sprays a burst of fire to the right, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_colossus_walk",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo and a stone greatsword stomps in place with heavy slow steps, a full walk cycle, stone pieces falling. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_colossus_atk",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo and a stone greatsword raises the stone greatsword high and slams it down forward, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_severus_walk",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot walks in place proudly and slowly, a full walk cycle, legs stepping, the robe swaying, the teapot held high. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_severus_atk",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot raises the gold sun staff forward and casts a burst of golden holy light, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_cathedral_walk",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels pushed by hooded monks rolls forward in place, the big wheels turning, the monks pushing and stepping, the bell in the tower swinging, banners waving. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
