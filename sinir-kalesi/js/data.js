@@ -38,6 +38,9 @@ const TOWERS = {
       // okçu yolu: askerler yolu kesmez, toplanma yerinden ok atar (uçanları da vurur); canları %25 düşük
       { id: 'bow', name: 'Okçular', desc: (r) => `${r.r} menzilden ok atarlar, havayı da vururlar · hasar x${r.mult} · canları düşük · 4. iskelet`,
         ranks: [{ cost: 150, r: 115, mult: 1.1, rate: 1.1 }, { cost: 200, r: 130, mult: 1.4, rate: 1 }, { cost: 260, r: 145, mult: 1.75, rate: 0.85 }] },
+      // dev yolu (10 Eki): iskeletler yerine tek Kemik Devi; çok canlı, alan vuruşu, birkaç düşmanı birden durdurur
+      { id: 'giant', name: 'Kemik Devi', desc: (r) => `Tek dev golem: ${r.hp} can, alan vuruşu · ${r.block} düşmanı birden durdurur${r.stomp ? ' · yeri döverek sersemletir' : ''}`,
+        ranks: [{ cost: 180, hp: 700, dmg: [20, 30], armor: 0.4, block: 3 }, { cost: 230, hp: 950, dmg: [28, 42], armor: 0.45, block: 4 }, { cost: 290, hp: 1300, dmg: [38, 56], armor: 0.5, block: 5, stomp: true }] },
     ],
   },
   mage: {
@@ -679,6 +682,10 @@ const NECRO_SPELLS = {
     desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 7 sn durdurur, vurularak kırılabilir',
     short: 'Yola kemik duvar diker: düşmanlar 7 sn takılır (kırılabilir)' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', ghosts: 10, desc: 'Ruhlar alandaki düşmanların peşine düşer: korkudan 3,5 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz', short: 'Ruhlar düşmanları kovalar: 3,5 sn panikle geri kaçarlar' },
+  // 5. büyü (10 Eki): 2. seferin 9. bölümü kazanılınca (Kemik Katedrali) açılır. Sahadaki bütün cesetler tek golemde birleşir
+  nm_golem: { name: 'Ceset Golemi', cd: 55, min: 3, max: 14, life: 20, hp: 220, hpPer: 85, dmg: [14, 22], dmgPer: 0.06, col: '150,255,110', unlock: 23,
+    desc: 'Sahadaki bütün cesetler seçtiğin yerde tek bir golemde birleşir: ceset ne kadar çoksa o kadar iri ve güçlü. 20 sn düşmanın üstüne yürür, alan vuruşu yapar',
+    short: 'Cesetler birleşip golem olur (en az 3 ceset): 20 sn savaşır' },
   // 4. büyü: 1. bölge bitince (son bölüm kazanılınca) açılır. Cesedi diriltmek ya da patlatmak arasında seçim.
   nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 14,
     desc: 'Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
@@ -877,6 +884,7 @@ const SPEC = {
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
   blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
   bow:    { title: 'Okçu Ocağı',      who: 'Okçular: deri zırh, uzun yay' },
+  giant:  { title: 'Kemik Devi',      who: 'Kemik ve kafataslarından örülmüş tek dev: yolu tek başına tıkar' },
   poison: { title: 'Zehir Avcıları',  who: 'Maskeli avcılar, yeşil zehirli oklar' },
   snipe:  { title: 'Kartal Göz Kalesi', who: 'Şapkalı nişancılar, uzun kara yay' },
   frost:  { title: 'Ayaz Kulesi',     who: 'Buz kristalleri, mavi küre' },
