@@ -8999,7 +8999,10 @@ const BOSS_BAR_K = 0.6;
 function drawBossBar() {
   const b = G.enemies.find(e => e.def.chief && !e.dead);
   if (!b) return;
-  ctx.save(); ctx.translate(W / 2, 40); ctx.scale(BOSS_BAR_K, BOSS_BAR_K); ctx.translate(-W / 2, -40);
+  // ekranın en üst ortasına yaslı (içeriğin üstü y=34 -> 4 px); altından düşman geçiyorsa yarı saydam (yol görünsün)
+  const under = G.enemies.some(e => !e.dead && Math.abs((e.x - cam.x) * cam.z - W / 2) < 130 && (e.y - cam.y) * cam.z < 52);
+  G.bossBarA = (G.bossBarA ?? 1) + ((under ? 0.45 : 1) - (G.bossBarA ?? 1)) * 0.12;
+  ctx.save(); ctx.globalAlpha = G.bossBarA; ctx.translate(W / 2, 4); ctx.scale(BOSS_BAR_K, BOSS_BAR_K); ctx.translate(-W / 2, -34);
   drawBossBarAt(b);
   ctx.restore();
 }
@@ -9059,7 +9062,7 @@ function drawIntroToast(it) {
   const sub = weak.length ? 'Zayıf: ' + weak.join(', ') : '';
   ctx.font = `400 13px ${FONT_T}`; const nw = ctx.measureText(name).width; ctx.font = `800 9.5px ${FONT_B}`;
   const w = Math.max(nw, ctx.measureText(sub).width, 70) + 46, h = sub ? 40 : 30, x0 = 8 - (1 - slide) * (w + 12), y0 = 62;
-  ctx.save(); ctx.globalAlpha = k;
+  ctx.save(); ctx.globalAlpha *= k;
   roundRect(x0, y0, w, h, 9, 'rgba(14,8,20,0.82)', '#d4ab5a', 1.2);
   circle(x0 + 17, y0 + h / 2, 12, '#1a120a', '#c9a35a', 1.2);
   const im = enemySprite(it.type) || spr('enemy_' + it.type);
