@@ -365,7 +365,7 @@ const MORT_VO_BUF = {};
 fetch('ses/mort/index.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { MORT_VO = j; }).catch(() => {});
 function mortVoice(text) {
   const f = MORT_VO && MORT_VO[text];
-  if (!f || muted || !actx || !master) return false;
+  if (!f || muted || !actx || !master || window.LANG === 'en') return false; // kayıtlar Türkçe: İngilizcede mırıltı çalar
   const play = (buf) => {
     const src = actx.createBufferSource(), g = actx.createGain();
     g.gain.value = 0.76; src.buffer = buf; src.connect(g); g.connect(master); src.start(); // 10 Eki: %20 kısıldı (0.95 -> 0.76)
@@ -3994,7 +3994,7 @@ function drawMortSay() {
   const S = G.say; if (!S) return;
   const m = mortimerPoint(), a = Math.min(1, S.t / 0.15, (S.dur - S.t) / 0.3), pop = easeOutBack(clamp(S.t / 0.25, 0, 1));
   ctx.save(); ctx.font = `700 11px ${FONT_B}`;
-  const tw = Math.min(170, ctx.measureText(S.text).width), words = S.text.split(' '), lines = [];
+  const tw = Math.min(170, ctx.measureText(S.text).width), words = TR(S.text).split(' '), lines = [];
   for (const w of words) { const cur = lines[lines.length - 1]; if (cur && ctx.measureText(cur + ' ' + w).width <= 170) lines[lines.length - 1] = cur + ' ' + w; else lines.push(w); }
   const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 18, bh = lines.length * 13 + 10;
   // balon: Mortimer'ın başının üstünde, ekran içinde kalır
@@ -5115,7 +5115,9 @@ function txt(s, x, y, size, col = '#fff', align = 'center', weight = '800', font
   ctx.fillStyle = col; ctx.fillText(s, x, y);
 }
 // metni verilen genişliğe sığacak satırlara böler (en çok max satır; taşan son satır '…' ile biter)
+const TR = (s) => (window.tr ? window.tr(s) : s); // dil katmanı (js/dil.js): satıra bölmeden / kısaltmadan önce bütün metin çevrilir
 function wrapLines(s, maxW, size, weight = '700', font = FONT_B, max = 2) {
+  s = TR(s);
   ctx.font = `${weight} ${size}px ${font}`; lastFont = null;
   const lines = [];
   for (const w of s.split(' ')) {
@@ -9099,6 +9101,7 @@ function drawSettings() {
   const cyc = (list, cur) => list[(list.findIndex(v => v[0] === cur) + 1) % list.length][0];
   const hero = HEROES[team()[0]];
   const rows = [
+    ['Dil / Language', window.LANG === 'en' ? 'ENGLISH' : 'TÜRKÇE', () => window.setLang(window.LANG === 'en' ? 'tr' : 'en'), 'blue'],
     ['Ses efektleri', muted ? 'KAPALI' : 'AÇIK', () => setMuted(!muted), muted ? 'dark' : 'green'],
     ['Müzik', setting('music') ? 'AÇIK' : 'KAPALI', () => setSetting('music', !setting('music')), setting('music') ? 'green' : 'dark'],
     ['Ses düzeyi', (VOL.find(v => v[0] === setting('vol')) || VOL[2])[1], () => setSetting('vol', cyc(VOL, setting('vol'))), 'wood'],
@@ -9111,7 +9114,7 @@ function drawSettings() {
     }, 'red'],
   ];
   rows.forEach(([label, val, fn, style], i) => {
-    const y = py + 46 + i * 50;
+    const y = py + 40 + i * 44;
     if (i) { ctx.fillStyle = 'rgba(92,58,22,0.18)'; ctx.fillRect(px + 34, y - 25, pw - 68, 1.5); }
     txt(label, px + 44, y + 2, 20, '#4a2a0e', 'left', '400', FONT_T, false);
     gameButton('set' + i, px + pw - 140, y, 190, 40, val, fn, style, { appear: st - 0.25 - i * 0.04, size: 15 });
@@ -10196,6 +10199,7 @@ function codexBookIcon(r) {
   ctx.restore();
 }
 function fitTxt(s, x, y, maxW, size, col, align = 'left', weight = '800', font = FONT_B, stroke = false, min = 7.5) {
+  s = TR(s);
   let sz = size; ctx.font = `${weight} ${sz}px ${font}`; lastFont = null;
   while (sz > min && ctx.measureText(s).width > maxW) { sz -= 0.5; ctx.font = `${weight} ${sz}px ${font}`; }
   if (ctx.measureText(s).width > maxW) { while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1); s += '…'; }
