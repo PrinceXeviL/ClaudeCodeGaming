@@ -225,3 +225,14 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
   Tarayıcıda deneme reklam ekranı (drawAd); mağaza sürümünde window.NativeAds / window.NativeIAP bağlanacak. Dükkân ekranı screen 'shop'.
 - Denge: tarayıcı botu `sinir-kalesi/tools/denge-sayfa.js` (sayfada eval: __measure(a,b,k), __tune2) — data.js HPMUL ve TOTAL. Bot gürültülü (±4 can): bölüm başına 3-4 tur. Hedef: bot 1. bölümü ~20, 15. bölümü ~7 canla bitirir.
   Boss çağrıları en çok 8, önder dövüşe tutulunca muhafızlar yürümeye devam eder (sonsuz yığılma hatası düzeldi).
+
+## 10 Eki gece: Sefer 2 "Cadı Avı" (yayın 207)
+- Tasarım: `tasarim/sefer2.md`. Kod: data.js "SEFER 2" bölümü (ENEMIES, L2 + mk dalga üretici, BOSS2, TOTAL2, HPMUL2, EPISODES[1]);
+  yollar `LEVELS2_GEO` (LEVELS dizisinin hemen ardında; `node tools/arsa-uret.js js/data.js 16,...,30` arsaları yazar).
+- Temalar (game.js THEMES): ravenwood, plague (grass_village), monastery (grass_marsh), ossuary (grass_bone), bloodmoon. ruinSpr/ruinK/ruinN.
+- Yeni özellikler: def.light (fener: lightAt; iskelet hasarı ×k, ceset diriltilmez, lanet tutmaz; drawHolyLights), def.frenzy,
+  ranged.splash + proj 'flask', def.nocurse, def.elite (shapeWaves çoğaltmaz), ab.slam.say/bell, ab.hex.say/col.
+- 2. sefer 5 can eksik başlar (startLevel lives). Kademe (tier) 3→6. Her bölüm bir komutanla biter (dalga kodu bunu varsayar).
+- Görseller: varliklar/ham/nm_engizisyon_A..D.jpg, nm2_dekor_A.jpg (nm_isle.py BOXES ile kutu kutu kesim), nm2_zeminler.jpg (zemin2_isle.py).
+- Eksikler: yeni düşmanların yürüme/saldırı şeritleri (Kaggle), mahzen kapakları (nm2_hatch*) mekaniği, Kızıl Ay olayı, hikâye panelleri,
+  2. sefer müziği/replikleri. Denge: bot hepsini kazanıyor, 20., 27. ve 30. bölüm hedeften zor; oynanışla ayarla.
