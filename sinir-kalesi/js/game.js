@@ -9518,7 +9518,7 @@ function updateAltar(t, dt) {
   if (t.pulseCd <= 0) {
     const near = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= L.range);
     if (near.length) {
-      t.pulseCd = L.every; t.shotAnim = 0.35;
+      t.pulseCd = L.every; t.shotAnim = 0.35; t.engageT = 2; // mabet animasyonu (varsa) düşman varken döngüde
       G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, col: '190,90,255', t: 0, dur: 0.55 });
       for (const e of near) {
         for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(4, 24), vy: -rand(15, 40), col: i % 2 ? '190,90,255' : '120,255,140', s0: rand(2.5, 4), s1: 0.4, life: rand(0.4, 0.7) });
