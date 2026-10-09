@@ -665,7 +665,7 @@ function nearestOnPaths(paths, x, y) {
 // ----- mahzen kapakları (2. sefer): yol kenarında; altınla açılır, içinden gulyabani çıkıp yolu tutar -----
 // gulyabani ölürse respawn sn sonra kapaktan yeniden çıkar; meşaleci kapağın yanında seal sn kalırsa kapağı mühürler (artık çıkmaz)
 const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
-  ghoul: { hp: 520, dmg: [10, 16], armor: 0.35, rate: 1.1, speed: 40, engage: 80, hK: 1.3, look: 'enemy_heavy' } };
+  ghoul: { hp: 520, dmg: [10, 16], armor: 0.35, rate: 1.1, speed: 40, engage: 80 } };
 function hatchSpots(lv, paths) {
   if (lv.ep !== 2 || !NECRO) return [];
   if (lv._hatch) return lv._hatch;
@@ -1277,6 +1277,7 @@ function startLevel(idx, chal = null) {
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
+  for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
@@ -2324,7 +2325,7 @@ function makeSoldier(t, i) {
  };
 }
 // iri birimler (Kemik Devi, Ceset Golemi, gulyabani): boy, alan vuruşu, birden çok düşmanı durdurma
-const BIG_H = { giant: 21 * 2.4 * UNIT_K, golem: 21 * 2.1 * UNIT_K };
+const BIG_H = { giant: 21 * 2.4 * UNIT_K, golem: 21 * 2.1 * UNIT_K, ghoul: 21 * 2 * UNIT_K };
 function bigHold(s, dt, n) { // çevresindeki serbest düşmanları da durdurur (en çok n)
   if ((s.holdT = (s.holdT || 0) - dt) > 0) return; s.holdT = 0.25;
   let k = G.enemies.filter(e => e.blocker === s && !e.dead).length;
@@ -4728,7 +4729,7 @@ function openHatch(h) {
   G.gold -= HATCH.cost; h.state = 'open'; h.openT = G.t;
   const C = HATCH.ghoul, s = { guard: true, ghoul: h, militia: false, x: h.x, y: h.y, rx: h.rx, ry: h.ry, hp: C.hp, maxHp: C.hp, dmg: C.dmg, armor: C.armor,
     rate: C.rate, speed: C.speed, engage: C.engage, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t,
-    zname: C.look, zrig: C.look, zh: (CHAR_H[C.look] || 26) * C.hK };
+    big: 'unit_gulyabani', bigAtk: 'unit_gulyabani_lunge', bh: BIG_H.ghoul };
   h.ghoul = s; G.soldiers.push(s);
   ghoulRiseFx(h); sfx('raise'); mortSay('hatch', true);
   return true;
@@ -6192,11 +6193,17 @@ function drawSoldier(s) {
   // iri birimler kendi görselleriyle (çürük tonu yok)
   if (NECRO && s.big && spr(s.big)) {
     if (s.born != null && G.t < s.born) return;
-    const im = spr(s.big), walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
+    const lunge = s.bigAtk && fighting && s.atk < s.rate * 0.45 && spr(s.bigAtk); // vuruş anında saldırı pozu
+    const im = lunge || spr(s.big), walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
     const ch = s.bh, rise = s.born != null && G.t - s.born < 0.7 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.7, 0, 1)) : null;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.55, s.golem ? '150,255,110' : '170,120,255', 0.2); ctx.restore();
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, ch * 0.32, ch * 0.09, 0, 0, Math.PI * 2); ctx.fill();
-    drawUnit(s.big, im, s.x, s.y, s.face || 1, { h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
+    // Wan şeritleri geldiyse onlar oynar (saldırı: vuruş döngüsüne bağlı kare, yürüyüş: 16 fps); yoksa çizimden hareket
+    const sk = rise == null && ((fighting && animStrip(s.big, null, '_atk')) || (walking && animStrip(s.big, null, '_walk')));
+    if (sk) {
+      const F = ANIM_META[sk], i = sk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
+      ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(sk), F, i, ch); ctx.restore();
+    } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: 0.7 });
     if (s.golem && s.life < 4) { ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 10); glow(ctx, s.x, s.y - ch * 0.5, ch * 0.5, '150,255,110', 0.3); ctx.restore(); } // dağılmak üzere
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 22, s.hp / s.maxHp, s.golem ? '#9dff6a' : '#d8c8a8');

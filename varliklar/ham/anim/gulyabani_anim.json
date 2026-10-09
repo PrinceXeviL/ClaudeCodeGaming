@@ -1,0 +1,27 @@
+[
+ {
+  "name": "unit_gulyabani_walk",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers shambles in place with a creepy hunched walk, a full walk cycle, long arms swaying, beard and hair swinging. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_gulyabani_atk",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers lunges forward and slashes with both clawed hands, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_gulyabani_die",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers is destroyed: it shrieks, crumbles and collapses into a pile of hair, rags and dust on the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
