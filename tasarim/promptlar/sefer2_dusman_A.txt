@@ -1,10 +1,10 @@
-Using the attached reference sheet, draw 4 NEW enemy units for the same 2D tower defense game, in EXACTLY the same art style as the reference: same thick dark-brown outlines, same painterly shading with soft gradients and bright rim highlights, same chunky stylized cartoon proportions, same level of detail. These are desert troops of the same Solarian Empire: keep the red, gold and cream empire colors but add sand-colored cloth, turbans and sun-bleached leather.
+Using the attached reference sheet, draw 4 NEW enemy units for the same 2D tower defense game, in EXACTLY the same art style as the reference: same thick dark-brown outlines, same painterly shading with soft gradients and bright rim highlights, same chunky stylized cartoon proportions, same level of detail. These are the Holy Inquisition of the same Solarian Empire, undead hunters: black and dark-crimson robes and leather, gold sun emblems, silver buckles, wide-brimmed hats and hoods, candles and holy symbols. Dark gothic but still colorful and cartoony like the reference.
 
 Draw these 4 units, each one complete and fully separated from the others, arranged in a 2x2 grid with lots of empty space between them:
-1. A desert mercenary: lean swordsman with a curved scimitar and a small round shield, sand-colored turban with a red sash, light leather armor with a gold sun buckle, running forward.
-2. A slinger: young soldier swinging a leather sling over his head, a pouch of stones at his belt, sand-colored tunic, red headband, bare arms.
-3. A camel rider: a tall armored camel with red and gold saddle cloth and tassels, a rider in a gold helmet with a red plume and a long spear.
-4. A tomb robber: a sneaky hunched thief in dark sand-colored rags and a face scarf, carrying a big bulging sack of gold over his shoulder and a shovel, tiptoeing.
+1. A witch hunter: tall grim man in a black wide-brimmed hat with a gold sun buckle, long dark leather coat, aiming a silver crossbow, bandolier of silver bolts.
+2. A torchbearer zealot: hooded monk in a dark crimson robe holding a big burning torch high, a jug of oil on his belt, angry face.
+3. A holy water carrier: chubby friar in a cream and gold robe carrying a basket of glowing blue glass flasks, about to throw one.
+4. A flagellant penitent: bare-chested hooded fanatic with a crimson hood and rope belt, swinging a knotted whip, wild eyes.
 
 All units in strict side view facing RIGHT, full body visible.
 Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.

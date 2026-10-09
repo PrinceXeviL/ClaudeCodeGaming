@@ -1,82 +1,89 @@
-# Sefer 2 — "Çaydanlık Avı" (Gömülü Krallar Vadisi) · taslak 10 Eki 2026
+# Sefer 2 — "Cadı Avı" · taslak 10 Eki 2026 (çöl fikri bırakıldı: Necromancer havasına uymuyor)
 
-Harita başlığı: **Çaydanlık Avı** · alt yazı: *Gömülü Krallar Vadisi*. İngilizce: **The Teapot Heist**.
-15 bölüm, 1. seferden belirgin zor. Eski düşmanlar geri döner, 10 yeni tür + 5 bölüm sonu komutanı + final.
+Harita başlığı: **Cadı Avı** · İngilizce: **The Witch Hunt**. 15 bölüm, 1. seferden belirgin zor.
+Mortimer: "Ben cadı değilim. Cadılar kibar olur."
 
-## Neden dikkat çekici (1. seferden farkı)
-1. **Hikâyenin derdi kişisel ve komik:** Gloriosus kaçarken Mortimer'ın büyükannesinin çaydanlığını çalmış, Prokonsül Aridus'a
-   haraç olarak yollamış. Aridus da çölde Gömülü Krallar Vadisi'ni kazdırıyor (altın arıyor). Mortimer çaydanlığın peşinde.
-2. **Haritada uyuyan krallar:** her bölümde 2-3 **lahit** var. Mortimer bir lahde büyü (ya da altın) harcarsa içinden
-   **mumya muhafız** kalkar ve yolu tutar. Düşmanın **mezar soyguncuları** da lahitlere koşar: soyulan lahit kullanılamaz olur.
-   Yani oyuncu hem yolu savunur hem lahitleri korur (yeni karar katmanı).
-3. **Kum fırtınası:** belli dalgalarda ekranı soldan sağa bir fırtına süpürür: kulelerin menzili %25 düşer, uçanlar savrulur.
-   Fırtına geçerken Mortimer'ın büyüleri hızlı dolar (Mortimer kumdan hoşlanır: "Her yer toz. Evimdeki gibi.").
-4. **Yer altından gelenler:** kum tünelcileri yolun ortasından çıkar; ön savunmayı atlar. Oyuncu kuleleri yalnız girişe yığamaz.
-5. **Zorluk:** 15 can (1. seferde 20), düşman canı 1. seferin sonundan başlar, iyileştiren/kalkan veren destek düşmanları
-   Lanet Kulesi'ne karşı oynar (vaha rahibi laneti siler).
+## Mantık
+Lejyon Mortimer'a yenildi. İmparator anladı ki ölülere kılıç işlemez: **Kutsal Engizisyon**'u yolladı. Bunlar asker değil,
+**ölü avcıları**: kutsal su, çan, ateş ve ışıkla gelirler. Necromancer'ın her silahına bir karşılıkları var. Üstelik Gloriosus'un
+kaçarken çaldığı **büyükannenin çaydanlığı** "lanetli eşya" diye Engizisyon'a teslim edilmiş; Büyük Engizitör onu Mortimer'ın
+gözü önünde yakmak için getiriyor. Mortimer bu kez kendi topraklarının derinlerinde savunuyor: orman, köy, manastır, kemik
+katedrali ve en sonunda Kızıl Ay Tepesi.
 
-## Hikâye panelleri (yazısız çizilir, balonlar kodda)
-1. Aridus'un çöl sarayı: altın yığınları, köleler kazıyor, masada çaydanlık parlıyor.
-2. Aridus çaydanlıktan çay koyar, Gloriosus'un mektubunu okuyup güler.
-3. Mortimer'ın kulesi: rafta çaydanlığın boş yeri, toz izi. Mortimer donup kalmış.
-4. Mortimer pelerinini giyer, çantasına bir paket bisküvi koyar. İskeletler sırt çantalarıyla dizilmiş.
-5. Çölde kum tepesinde Mortimer, uzakta yarı gömülü dev heykeller ve Aridus'un altın kazı kampı. "Çaydanlığım."
+## Neden dikkat çekici
+1. **Işık ve karanlık savaşı:** Engizisyon **fener arabaları** getirir. Fenerin ışığı yere altın bir daire düşürür: içinde iskeletler
+   %30 zayıflar, ceset diriltilemez, Lanet Kulesi işlemez. Oyuncu önce fenerleri söndürür. Haritada ışık ve gölge kavga eder.
+2. **Kızıl Ay:** bazı dalgalarda gökyüzü kızarır (20 sn): iskeletler güçlenir, büyüler iki kat hızlı dolar, ölen her düşmandan
+   kendiliğinden bir ölü kalkar. Engizisyon bu sırada dua eder (yavaşlar). Görsel olarak çok güçlü bir an.
+3. **Rakip, necromancer'ın aynası:** her düşman bir oyuncu silahını hedefler: çan iskeletleri sersemletir, kutsal su cesetleri yıkar,
+   meşaleci ölüleri yakar, engizitör kuleyi "sorguya çeker" (susturur). Oyuncu her bölümde yeni bir karşı hamle öğrenir.
+4. **Mahzen kapakları (harita nesnesi):** her bölümde 2-3 tane. 120 altın: içinden **gulyabani** çıkar ve yolu tutar.
+   Meşaleciler kapakları mühürlemeye koşar (mühürlü kapak kullanılamaz). Yol dışında ikinci bir savunma hattı.
+5. **Zorluk:** 15 can, düşman canı 1. seferin sonundan başlar, iyileştiren ve kalkan veren destekler.
+
+## Hikâye panelleri (yazısız, balonlar kodda)
+1. Altın taht odası: İmparator, önünde kırık lejyon miğferleri. Kapıdan kara cübbeli Büyük Engizitör Severus girer.
+2. Severus kadife bir kutuyu açar: içinde Mortimer'ın çaydanlığı. "Lanetli eşya, majesteleri. Gerisini bize bırakın."
+3. Gece, yüzlerce meşale ve fener; çanlar çalan bir alay ormana girer.
+4. Mortimer kulesinde boş rafa bakıyor. Penceresinden uzakta meşaleler görünüyor.
+5. Mortimer gökyüzüne asasını kaldırır, ay kızarmaya başlar. "Çaydanlığıma dokunan... yanar."
 
 ## Mekânlar ve bölümler
 | # | Mekân | Bölüm | Yenilik | Not |
 |-|-|-|-|-|
-| 1 | Kum Tepeleri | Kervan Yolu | Çöl Paralı Askeri | lahit tanıtımı (1 lahit, bedava) |
-| 2 | | Kemik Kuyusu | Sapancı | kum çukurları (yavaşlatır) |
-| 3 | | Serap | Deve Süvarisi · **Boss: Kervanbaşı Hamilcar** | ilk kum fırtınası |
-| 4 | Kervan Mezarlığı | Kayıp Kervan | Mezar Soyguncusu | lahitleri korumak gerekir |
-| 5 | | Tuz Yolu | Akbaba sürüsü | cesetler çabuk kaybolur |
-| 6 | | Kemik Pazarı | Naft Atıcı · **Boss: Hırsızbaşı Kasım** | yanan zemin |
-| 7 | Yarı Gömülü Tapınak | Kum Merdiveni | Kum Tünelcisi | yer altı çıkış noktaları |
-| 8 | | Sütunlu Avlu | Vaha Rahibi | lanet silen destek |
-| 9 | | Güneş Mihrabı | Kum Büyücüsü · **Boss: Kum Cadısı Serapia** | büyücü fırtına çağırır |
-| 10 | Akrep Kanyonu | Dar Geçit | Ayna Kalkanlı | Ruh Feneri ışınını yansıtır |
-| 11 | | Akrep Yuvası | Savaş Fili (yeniden, çift) | iki yollu |
-| 12 | | Kızıl Kaya | karışık · **Boss: Fil Komutanı Hannon** | dev fil, sırtında mancınık |
-| 13 | Gömülü Krallar Kapısı | Kral Yolu | Altın Muhafız (Aridus'un korumaları) | 3 giriş |
-| 14 | | Lahitler Salonu | hepsi | 6 lahit, soyguncu akını |
-| 15 | | Kazı Kampı | **Final: Prokonsül Aridus + Güneş Tunç Devi** | iki evreli final |
+| 1 | Kuzgun Ormanı | Darağacı Yolu | Cadı Avcısı | mahzen kapağı tanıtımı |
+| 2 | | Yanık Kazıklar | Meşaleci | cesetleri yakar |
+| 3 | | Kuzgun Tepesi | Ak Tazılar · **Boss: Avcıbaşı Malleus** | ilk Kızıl Ay |
+| 4 | Veba Köyü | Karantina Kapısı | Kutsal Su Taşıyıcı | yağmur |
+| 5 | | Boş Pazar | Kırbaçlı Tövbekâr | dar sokaklar, iki yol |
+| 6 | | Ölüler Kuyusu | Fener Arabası · **Boss: Çan Ustası Campanus** | ilk ışık daireleri |
+| 7 | Batık Manastır | Sazlık Şapel | Çan Rahibi | su üstünde yüzen mumlar |
+| 8 | | Su Basmış Avlu | Paladin | büyüyü kalkanla keser |
+| 9 | | Çan Kulesi | Engizitör · **Boss: Rahibe Ignis** | ateş rahibesi, cesetleri yakar |
+| 10 | Kemik Katedrali | Kafatası Kapısı | Aziz Heykeli (canlanan taş heykel) | Mortimer'ın tapınağı: ölüler hızlı kalkar |
+| 11 | | Kemik Avize Salonu | karışık | 3 giriş |
+| 12 | | Kripta | karışık · **Boss: Aziz Kolos** | yürüyen dev heykel |
+| 13 | Kızıl Ay Tepesi | Sis Yolu | hepsi + lejyon | Kızıl Ay sık gelir |
+| 14 | | Yıkık Kule | fener arabası akını | ışık-karanlık savaşı |
+| 15 | | Ay Sunağı | **Final: Büyük Engizitör Severus + Yürüyen Katedral** | iki evreli final |
 
 ## Yeni düşmanlar (10)
-| Tür | Rol | Mekanik | Zayıf / güçlü |
+| Tür | Rol | Mekanik | Karşı hamle |
 |-|-|-|-|
-| Çöl Paralı Askeri | ucuz, hızlı piyade | 5-8'lik sürüler | kazan iyi işler |
-| Sapancı | menzilli | taş: iskeleti 1 sn sersemletir | iskelet, kıymık |
-| Deve Süvarisi | hızlı atlı | ölünce binicisi yaya devam eder (split) | ruh ışını |
-| Mezar Soyguncusu | hırsız | yoldan çıkıp lahde koşar, soyar; cesetleri de çalar (diriltme yok). Kapıya varırsa 25 altın götürür | hızlı ama canı az |
-| Kum Tünelcisi | atlatıcı | kuma dalar (vurulamaz), 120 px ileride çıkar | çıkarken sersem: kazan |
-| Naft Atıcı | alan hasarı | ateş testisi: yere yanan alan, iskeletleri yakar | kıymık |
-| Vaha Rahibi | destek | su kalkanı: yakındakilerden laneti/zehri siler, 3 sn bağışıklık | önce o |
-| Kum Büyücüsü | destek | yerel kum fırtınası: çevresindeki kulelerin menzili -%30 | ruh ışını |
-| Ayna Kalkanlı | tank | Ruh Feneri ışınını en yakın iskelete yansıtır | kıymık, kazan, lanet |
-| Altın Muhafız | ağır elit | çok zırhlı, ölünce altın düşürür (+gold) | lanet + ruh ışını |
-| (hazır) Savaş Fili, Leş Akbabası | | 1. seferde tanıtıldı, burada ağırlık merkezi | |
+| Cadı Avcısı | menzilli | gümüş arbalet: iskeletlere +%50 hasar | iskeletle bas, kıymık |
+| Meşaleci | destek | yolda geçtiği cesetleri yakar (diriltme yok), mahzen kapaklarını mühürler | önce o, hızlı öldür |
+| Ak Tazı | sürü | çok hızlı, avcının önünden koşar | kazan |
+| Kutsal Su Taşıyıcı | alan | şişe atar: iskeletlere alan hasarı | kıymık |
+| Kırbaçlı Tövbekâr | çılgın | canı azaldıkça hızlanır ve sertleşir | tek seferde öldür: ruh ışını |
+| Fener Arabası | makine | ışık dairesi: iskelet -%30, diriltme ve lanet yok | önce o: kazan, ruh ışını |
+| Çan Rahibi | destek | çan: çevresindeki iskeletleri 1,5 sn sersemletir | menzilden vur |
+| Paladin | tank | kalkanı büyü hasarını yarıya indirir, yakınındakileri iyileştirir | kıymık, kazan, lanet |
+| Engizitör | elit | bir kuleyi 4 sn "sorgular" (susturur) | iskelet ve büyü |
+| Aziz Heykeli | ağır | taş: oklar seker, laneti silkip atar | kazan, Mortimer büyüleri |
 
-Geri dönenler: lejyoner, okçu, ağır piyade, testudo, atlı okçu, güneş rahibesi, sancaktar, davulcu, mancınık, koçbaşı,
-kuşatma kulesi, savaş köpekleri (bölge rengiyle: kum rengi pelerin).
+Geri dönenler (lejyon): lejyoner, okçu, ağır piyade, testudo, güneş rahibesi, sancaktar, davulcu, mancınık, koçbaşı,
+kuşatma kulesi, savaş köpekleri, kartal. (Fil ve akbaba 1. seferde kalır.)
 
 ## Bölüm sonu komutanları
-- **Kervanbaşı Hamilcar** (3): devesinin üstünde; paralı asker çağırır, altın saçıp hızlandırır.
-- **Hırsızbaşı Kasım** (6): bir kuleyi 5 sn "soyar" (susturur), duman bombasıyla görünmez olur.
-- **Kum Cadısı Serapia** (9): kumdan kuma ışınlanır, fırtına çağırır, akrep sürüsü çıkarır.
-- **Fil Komutanı Hannon** (12): dev zırhlı fil, sırtında küçük mancınık; kemik duvarı tek vuruşta kırar.
-- **Prokonsül Aridus** (15): altın arabasıyla gelir; araba yıkılınca **Güneş Tunç Devi** (Talos'tan esinli tunç dev) uyanır.
-  Final ödülü: çaydanlık. Son panel: Mortimer çayını koyar; çaydanlıktan küçük bir akrep çıkar. Sefer 3 kancası.
+- **Avcıbaşı Malleus** (3): geniş şapka, iki arbalet; tuzak kurar (iskeleti yakalar), tazı çağırır.
+- **Çan Ustası Campanus** (6): sırtında dev çan; vurduğunda bütün iskeletler sersemler, ekran sarsılır.
+- **Rahibe Ignis** (9): alev kustu; yerdeki bütün cesetleri yakar, ateş halkası.
+- **Aziz Kolos** (12): katedral heykeli canlanmış dev; yürüdükçe zemin çatlar, kemik duvarı tek adımda kırar.
+- **Büyük Engizitör Severus** (15): **Yürüyen Katedral**'in (çanlı, fenerli dev kuşatma kulesi) tepesinde gelir. Katedral yıkılınca
+  Severus yere iner, çaydanlığı havaya kaldırıp savaşır. Final: Mortimer çaydanlığı alır, ay normale döner, çay koyar.
+  Son panelde İmparator'un altın maskesi karanlıkta parlar: Sefer 3 kancası.
 
 ## Bizim yeni şeylerimiz
-- **Lahit (harita nesnesi):** dokun → 120 altın: mumya muhafız kalkar (tank, sargıyla yavaşlatır), ölünce 30 sn sonra yeniden kalkar.
-- **Komutan: Leonidas** (tasarim/komutanlar-golemler.md) bu seferde açılır (7. bölüm).
-- **5. büyü: Ceset Golemi** 10. bölümde açılır (cesetler çoğaldıkça büyük golem).
-- Kule v2 dönüşümleri (tasarim/kuleler-v2.md) bu seferle birlikte gelir.
+- **Mahzen kapağı (harita nesnesi):** 120 altın → gulyabani (tank, ölünce 30 sn sonra yeniden çıkar).
+- **Kızıl Ay olayı** (bölüm dalgalarında işaretli).
+- **Komutan: Leonidas** 7. bölümde açılır (tasarim/komutanlar-golemler.md).
+- **5. büyü: Ceset Golemi** 10. bölümde (Kemik Katedrali) açılır.
+- Kule v2 dönüşümleri (tasarim/kuleler-v2.md) bu seferle gelir.
 
 ## Uygulama sırası
-1. Görseller (Gemini): düşman sayfası A ve B, bosslar, çöl zemin/yol dokusu, dekor sayfası (yarı gömülü heykel, lahit, dikilitaş,
-   kuru palmiye, kum çukuru, kazı iskelesi), bölge haritası, 5 çizgi roman paneli.
-2. Kod: sefer yapısı (CAMPAIGNS: her seferin LEVELS'ı, harita ekranı, kayıt), çöl temaları (eski 'desert' temaları var, Necro tarzına uyarlanır).
-3. Yeni mekanikler: lahit, kum fırtınası olayı, tünel çıkış noktaları, soyguncu davranışı.
-4. 15 bölümün yolları (tools/arsa-uret.js) + dalgalar + denge botu (hedef: 1. bölüm ~13 can, 15. bölüm ~4 can, 15 canla).
-5. Hikâye panelleri, Mortimer replikleri (ElevenLabs Callum), müzik.
+1. Görseller (Gemini): düşman sayfası A (avcı, meşaleci, kutsal su, tövbekâr) ve B (fener arabası, çan rahibi, paladin, engizitör,
+   aziz heykeli, ak tazı), bosslar, dekor (darağacı, yanık kazık, karantina çiti, batık şapel, kemik avize, mahzen kapağı),
+   zemin ve yol dokuları (yanık orman, çamurlu köy, sığ su, kemik taş), sefer haritası, 5 panel.
+2. Kod: sefer yapısı (CAMPAIGNS; harita, kayıt, kart), yeni temalar, Kızıl Ay ve ışık daireleri, mahzen kapakları.
+3. 15 bölümün yolları (tools/arsa-uret.js) + dalgalar + denge botu (hedef: 1. bölüm ~13 can, 15. bölüm ~4 can).
+4. Paneller, Mortimer replikleri (ElevenLabs Callum), müzik.
