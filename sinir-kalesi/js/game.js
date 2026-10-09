@@ -3564,12 +3564,12 @@ function drawAchievements() {
 // ----- borazancı: ilk dalga çağrılınca o dalganın girişlerinden birer lejyoner çıkar, savaş borazanını çalar, geri döner;
 // düşmanlar o dönünce gelir (heraldT sn gecikme) -----
 // boss gelmeden de çıkar: aynı çağrıyı daha kalın ve uzun (yavaş) çalar (long)
-// Borazancı baştan yolun dışından, yolun yanındaki çimenlikten gelir; yol ağzının birkaç adım ilerisinde durup çalar, aynı yoldan geri döner.
+// Borazancı baştan yolun dışından, yolun yanındaki çimenlikten gelir; ekran sınırından iki adım girip çalar, aynı yoldan geri döner.
 // step: ekrana girdiği yerden yürüdüğü yol, off: yol kenarından çimene açıklık
-const HERALD = { step: 55, off: 18, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 };
+const HERALD = { step: 16, off: 18, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 }; // step: sınırdan iki adım
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
-  let d0 = 0; while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > 20 && q.y > 20 && q.x < W - 20 && q.y < H - 20) break; d0 += 4; }
+  let d0 = 0; while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > 14 && q.y > 30 && q.x < W - 14 && q.y < H - 8) break; d0 += 4; }
   const d = Math.min(p.total * 0.5, d0 + HERALD.step), q = pathPos(p, d), half = 22 * ROAD_K * 1.1 + HERALD.off;
   let best = null;
   for (const sd of [1, -1]) {
