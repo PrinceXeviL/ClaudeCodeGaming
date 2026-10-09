@@ -351,8 +351,26 @@ function uiSound(kind) {
 // Mortimer'ın sesi: sentezlenmiş anlamsız konuşma (varliklar/ses_uret.py mort_babble), yazının uzunluğuna göre kısa/orta/uzun;
 // alaycı laflarda arkasından kahkaha. Ses dosyaları yoksa eski osilatör mırıltısı.
 const MORT_LAUGH = ['fear', 'raise', 'burst', 'bossDown', 'streak', 'wall', 'bossRage'];
+// Mortimer'ın seslendirilmiş replikleri (ElevenLabs, varliklar/elevenlabs_seslendir.py): ses/mort/index.json yazı -> mp3.
+// Dosyası olan replik birebir seslendirilir; olmayanlar aşağıdaki sentez mırıltıya düşer.
+let MORT_VO = null, mortVoiceUntil = 0;
+const MORT_VO_BUF = {};
+fetch('ses/mort/index.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { MORT_VO = j; }).catch(() => {});
+function mortVoice(text) {
+  const f = MORT_VO && MORT_VO[text];
+  if (!f || muted || !actx || !master) return false;
+  const play = (buf) => {
+    const src = actx.createBufferSource(), g = actx.createGain();
+    g.gain.value = 0.95; src.buffer = buf; src.connect(g); g.connect(master); src.start();
+    mortVoiceUntil = time + buf.duration + 0.2;
+  };
+  if (MORT_VO_BUF[f]) { play(MORT_VO_BUF[f]); return true; }
+  fetch('ses/mort/' + f).then(r => r.arrayBuffer()).then(a => actx.decodeAudioData(a)).then(b => { MORT_VO_BUF[f] = b; play(b); }).catch(() => {});
+  return true;
+}
 function mortMumble(text, kind) {
   if (muted || !actx || !master) return;
+  if (mortVoice(text)) return;
   const grp = text.length < 22 ? 'mvoices' : text.length < 38 ? 'mvoicem' : 'mvoicel';
   if (SND[grp] && SND[grp].length) {
     sfx(grp, rand(0.96, 1.05));
@@ -562,6 +580,7 @@ function updateMusic(dt) {
     let tgt = on && k === want ? T.gain * setting('vol') : 0;
     if (tgt && overlay === 'pause') tgt *= 0.4;
     if (tgt && G && screen === 'play' && (G.heralds || []).some(h => h.state === 'blow')) tgt *= 0.2; // borazan duyulsun
+    if (tgt && time < mortVoiceUntil) tgt *= 0.45; // Mortimer konuşurken müzik kısılır
     if (!tgt && !T.el) continue;
     const el = musicEl(T); if (!el) continue;
     // giriş ~2 sn, çıkış ~1 sn (boss geçişi biraz daha hızlı girer)
