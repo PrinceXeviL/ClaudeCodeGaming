@@ -110,28 +110,21 @@ def refs_dataset(user, jobs):
 
 def run(jobs, slug=SLUG):
     user = [l for l in kaggle('config', 'view').stdout.splitlines() if 'username' in l][0].split(':')[1].strip()
-    if '--surum' in sys.argv:  # --surum 7: göndermeden, o sürümün çıktısını bekleyip indir (durum sorgusu hep son sürümü verir)
-        ref = f"{user}/{slug}/{sys.argv[sys.argv.index('--surum') + 1]}"
-        while True:
-            od = tempfile.mkdtemp(); kaggle('kernels', 'output', ref, '-p', od)
-            got = [f for _, _, fs in os.walk(od) for f in fs]
-            print(time.strftime('%H:%M'), ref, len(got), 'dosya', flush=True)
-            if any(f.endswith('.log') or f.endswith('.mp4') for f in got): break
-            time.sleep(120)
-        return process_output(od, jobs)
-    if '--veri-yok' not in sys.argv: refs_dataset(user, jobs)  # veri seti zaten güncelse atla
+    if '--veri-yok' not in sys.argv and '--bekle' not in sys.argv: refs_dataset(user, jobs)  # veri seti zaten güncelse atla
     d = tempfile.mkdtemp()
     code = KERNEL.replace('__JOBS__', base64.b64encode(json.dumps(jobs).encode()).decode())
     open(os.path.join(d, 'kernel.py'), 'w').write(code)
     json.dump({'id': f'{user}/{slug}', 'title': slug, 'code_file': 'kernel.py', 'language': 'python', 'kernel_type': 'script',
                'is_private': True, 'enable_gpu': True, 'enable_internet': True, 'machine_shape': 'NvidiaTeslaT4',
                'dataset_sources': [f'{user}/{DATASET}'], 'competition_sources': [], 'kernel_sources': []}, open(os.path.join(d, 'kernel-metadata.json'), 'w'))
-    for _ in range(240):  # oturum sınırı (aynı anda 2 GPU) doluysa boşalana kadar dakikada bir yeniden dene
+    bekle = '--bekle' in sys.argv  # göndermeden, defterin son sürümünü bekleyip indir (CLI eski sürümün çıktısını vermez)
+    for _ in range(0 if bekle else 240):  # oturum sınırı (aynı anda 2 GPU) doluysa boşalana kadar dakikada bir yeniden dene
         r = kaggle('kernels', 'push', '-p', d); out = (r.stdout + r.stderr).strip()
         print(out[-300:], flush=True)
         if 'successfully pushed' in out: break
         time.sleep(60)
-    else: raise SystemExit('gönderilemedi')
+    else:
+        if not bekle: raise SystemExit('gönderilemedi')
     while True:
         time.sleep(60)
         st = kaggle('kernels', 'status', f'{user}/{slug}').stdout.strip()
