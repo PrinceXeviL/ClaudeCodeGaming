@@ -9341,7 +9341,7 @@ function drawNecroTitle(st) {
     gr = g.createLinearGradient(0, H - 190, 0, H); gr.addColorStop(0, 'rgba(4,2,8,0)'); gr.addColorStop(1, 'rgba(4,2,8,0.85)'); g.fillStyle = gr; g.fillRect(0, H - 190, W, 190);
     TITLE_C.vig = c;
   }
-  ctx.drawImage(TITLE_C.vig, 0, 0, W, H);
+  if (!key) ctx.drawImage(TITLE_C.vig, 0, 0, W, H); // yeni kapak görselinde karartma yok (Caner istemedi)
   // uzakta ara ara şimşek
   TITLE_C.bolt = TITLE_C.bolt ?? time + 5;
   if (time > TITLE_C.bolt) { TITLE_C.bolt = time + rand(7, 13); TITLE_C.flash = time; }
