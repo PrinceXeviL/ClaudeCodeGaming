@@ -167,7 +167,7 @@ def process(job):
         hit = int(np.argmax(wid)); st = (hit - round(0.4 * L)) % L
         order = [(st + i) % L for i in range(L)]
     die = job['name'].endswith('_die')
-    if die: order = list(range(0, L, 2))  # ölüm: ~1 sn, yarı kare (bellek)
+    if die: order = list(range(L))  # ölüm: bütün kareler (10 Eki: Caner akıcı istedi; önceden yarı kare)
     video_isle.main(rel, job['name'], fps=16, order=order, first_h=die)
 
 

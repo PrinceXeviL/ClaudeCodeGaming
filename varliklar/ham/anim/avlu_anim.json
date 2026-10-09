@@ -1,0 +1,20 @@
+[
+ {
+  "name": "castle_avlu_1_idle",
+  "ref": "ham/anim/castle_avlu_1_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 7,
+  "raw": true,
+  "prompt": "a cartoon gothic necromancer chapel inside a round courtyard wall made of skulls, bones and mummies, with a bone gate. Subtle looping idle animation: the green candle flames on the wall flicker, the two dead trees sway gently in the wind, the mummies and skeletons built into the wall twitch and shift slightly, the green glow of the chapel windows and of the skull above the gate pulses softly. The chapel, the walls and the gate stay perfectly still in place. Static camera, no camera movement, no zoom, flat solid magenta background, 2D cartoon game art, smooth subtle motion"
+ },
+ {
+  "name": "castle_avlu_2_idle",
+  "ref": "ham/anim/castle_avlu_2_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 7,
+  "raw": true,
+  "prompt": "a cartoon gothic necromancer chapel inside a round courtyard wall made of skulls, bones and mummies, with a bone gate. Subtle looping idle animation: the green candle flames on the wall flicker, the two dead trees sway gently in the wind, the mummies and skeletons built into the wall twitch and shift slightly, the green glow of the chapel windows and of the skull above the gate pulses softly. The chapel, the walls and the gate stay perfectly still in place. Static camera, no camera movement, no zoom, flat solid magenta background, 2D cartoon game art, smooth subtle motion"
+ }
+]

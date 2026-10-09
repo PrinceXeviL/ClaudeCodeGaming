@@ -16,5 +16,41 @@
   "seed": 3,
   "kule": true,
   "prompt": "a huge black iron witch cauldron on a stone tower boils violently, purple and toxic green plague liquid bubbling and swirling, the crimson fire under it flares up, then a big glowing purple-green blob of plague bursts up out of the cauldron and flies away upward to the right, then the cauldron settles back to a gentle boil, ghostly green fumes swirling. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_archer_nail_atk",
+  "ref": "ham/anim/tower_archer_nail_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "prompt": "a giant ballista made of bones and black iron on a stone tower: the bowstring snaps forward and the huge bone spear with a burning crimson tip shoots away to the right out of frame, the rib bow arms flex and vibrate, then skeletal hands crank the string back and a new bone spear slides into place, ready to fire again. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_archer_fan_atk",
+  "ref": "ham/anim/tower_archer_fan_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "prompt": "on top of a dark stone tower two translucent glowing ghost skeleton archers, one green and one purple, draw their glowing bows and release arrows of light, the left archer shoots to the left and the right archer shoots to the right, the spirit mist swirls and bone shards orbit, then they nock new arrows. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_mage_drain_atk",
+  "ref": "ham/anim/tower_mage_drain_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "prompt": "a dark stone spire topped with a big floating purple soul crystal held by bone claws: the crystal spins and pulses with bright purple and green light, the swirling spirit streams around the tower speed up and flare, then calm down again. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
+ },
+ {
+  "name": "tower_mage_ghost_atk",
+  "ref": "ham/anim/tower_mage_ghost_ref.png",
+  "frames": 49,
+  "loop": true,
+  "seed": 3,
+  "kule": true,
+  "prompt": "a gothic tower topped with a black iron and bone birdcage holding a swirling glowing ghost: the crimson eye lantern on the front opens wide and glows bright red, the ghost inside the cage swirls and pushes against the bars, purple and green wisps burst out between the bars, then everything calms down. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion"
  }
 ]

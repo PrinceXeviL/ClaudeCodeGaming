@@ -2377,10 +2377,12 @@ function updateObeliskForm(t, dt, L, ts, F) {
   if (!e) { t.cd = 0.1; return; }
   t.cd = L.rate; t.shotAnim = 0.3;
   const nl = abRank(t, 'nail'), fa = abRank(t, 'fan'), crit = Math.random() < 0.15;
+  const TA = towerAnim(t), rel = TA ? TA.M.rel * TA.dur : 0; // atış animasyonu varsa ok/mızrak fırlatma karesinde çıkar
+  if (TA) t.animT = 0;
   if (F.tip) {
     t.face = e.x < t.x ? -1 : 1;
     const o = formPoint(t, ts, F.tip), n = formPoint(t, ts, F.nock);
-    G.projectiles.push({ kind: 'bspear', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(dist(o.x, o.y, e.x, e.y) / 620, 0.12, 0.45),
+    G.projectiles.push({ kind: 'bspear', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: -rel, dur: clamp(dist(o.x, o.y, e.x, e.y) / 620, 0.12, 0.45),
       dmg: roll(L.dmg) * (crit ? 1.6 : 1), dtype: 'true', arc: 3, crit, pierceLine: F.pierce, nail: nl ? nl.rise : 0, src: 'arrow' });
     G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: 14, col: '255,90,90', t: 0, dur: 0.25 });
     for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-40, 40) + (e.x - o.x) * 0.3, vy: rand(-40, 20), drag: 3, col: i % 2 ? '255,80,80' : '255,190,120', s0: 3.5, s1: 0.5, life: 0.35 });
@@ -2388,7 +2390,7 @@ function updateObeliskForm(t, dt, L, ts, F) {
   } else {
     const side = e.x < t.x ? 'L' : 'R', o = formPoint(t, ts, F.bows[side]), col = side === 'L' ? '130,255,170' : '200,140,255';
     t.shotSide = side;
-    const shot = (tg, dmg) => G.projectiles.push({ kind: 'ghostarrow', col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: 0, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 700, 0.1, 0.4),
+    const shot = (tg, dmg) => G.projectiles.push({ kind: 'ghostarrow', col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: -rel, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 700, 0.1, 0.4),
       dmg: dmg * (tg.def.flying ? F.fly : 1), dtype: 'phys', arc: 4, crit, nail: nl ? nl.rise : 0, src: 'arrow' });
     shot(e, roll(L.dmg) * (crit ? 2 : 1));
     if (fa) G.enemies.filter(x => x !== e && !x.dead && !x.under && dist(t.x, t.y - 10, x.x, x.y) <= L.range)
@@ -2464,6 +2466,7 @@ function updateTower(t, dt) {
     const dr = abRank(t, 'drain');
     let mul = 1;
     if (MF && MF.ramp) { t.ramp = t.lastHit === e ? Math.min(MF.rampMax, (t.ramp || 0) + MF.ramp) : 0; t.lastHit = e; mul = 1 + t.ramp; t.cd *= MF.rate; } // Ruh Emici: aynı hedefe güçlenir
+    if (MF) { const MA = towerAnim(t); if (MA && !(t.animT != null && t.animT < MA.dur)) t.animT = 0; } // ışın anında; kule animasyonu sürüyorsa baştan başlamaz
     // ruh ışını: kuleden hedefe neredeyse anında çakar; Ruh Emici'de yeşil, canı iskeletlere aktarır
     G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: 0.07, dmg: roll(L.dmg) * mul, dtype: 'magic', arc: 0, src: 'magic',
       slow: t.lvl >= 1 ? { k: 0.3, t: 1 } : null, chain: t.lvl >= 2, drain: dr ? dr.heal : 0 });
