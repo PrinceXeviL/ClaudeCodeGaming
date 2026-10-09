@@ -1042,6 +1042,7 @@ function startLevel(idx, chal = null) {
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
+  SUF.forEach(sf => keep.add('enemy_herald' + sf)); // borazancı her bölümde çıkar
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
@@ -3615,8 +3616,9 @@ function updateHeralds(dt) {
   if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > -10);
 }
 function drawHeralds() {
-  const im = spr('enemy_legion'); if (!im) return;
-  const hgt = CHAR_H.enemy_legion || ENEMIES.legion.h * UNIT_K;
+  // Gemini borazancısı (enemy_herald: kurt postlu, sırtında cornu) varsa o çizilir; yoksa lejyoner + kodla çizilen borazan
+  const hr = spr('enemy_herald'), im = hr || spr('enemy_legion'); if (!im) return;
+  const name = hr ? 'enemy_herald' : 'enemy_legion', hgt = (CHAR_H.enemy_legion || ENEMIES.legion.h * UNIT_K) * (hr ? 1.3 : 1);
   for (const h of G.heralds || []) {
     if (h.t < 0 && h.state === 'in') continue;
     const q = pathPos(h.p, Math.max(0, h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun kenarına yakın yürür
@@ -3626,12 +3628,14 @@ function drawHeralds() {
     const k = blowing ? easeInOut(clamp(h.t / 0.3, 0, 1)) * easeInOut(clamp((dur - h.t) / 0.3, 0, 1)) : 0;
     const breath = blowing ? Math.sin(h.t * 7) * 0.5 + 0.5 : 0;
     ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y);
-    ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); // boru askerin arkasında: gövdeyi sarar
-    drawUnit('enemy_legion', im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i });
+    if (!hr) { ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); } // boru askerin arkasında: gövdeyi sarar
+    // çalarken çalma şeridi (enemy_herald_atk) döngüde oynar: atk -ATK_PREP..ATK_AFTER aralığında akar
+    const blowAtk = blowing && hr ? -ATK_PREP + ((h.t * 0.9) % 1) * (ATK_PREP + ATK_AFTER) : null;
+    drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i, atk: blowAtk });
     ctx.restore();
     if (!blowing || h.i !== 0) continue;
     // ses dalgaları borazanın ağzından ileri yayılır
-    const u = hgt / 24, bx = q.x + face * hgt * (0.1 + 0.55 * k), by = q.y - hgt * (1.02 + 0.12 * k);
+    const u = hgt / 24, bx = q.x + face * hgt * (hr ? 0.27 : 0.1 + 0.55 * k), by = q.y - hgt * (hr ? 0.86 : 1.02 + 0.12 * k); // borazanın ağzı
     for (let r = 0; r < 4; r++) {
       const ph = (h.t * 1.6 + r / 4) % 1;
       ctx.strokeStyle = `rgba(255,228,150,${0.6 * (1 - ph) * k})`; ctx.lineWidth = 1.6 * (1 - ph * 0.5);

@@ -1,0 +1,19 @@
+[
+ {
+  "name": "enemy_herald_walk",
+  "ref": "ham/anim/enemy_herald_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon roman horn blower soldier in white and gold armor with a wolf pelt hood, carrying a big round brass cornu horn on his shoulder, marches proudly in place: a full walking cycle, legs stepping forward and back, arms holding the horn steady, slight body bounce. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "enemy_herald_atk",
+  "ref": "ham/anim/enemy_herald_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon roman horn blower soldier with a wolf pelt hood takes a deep breath, leans back slightly and blows hard into the big round brass cornu horn: his cheeks puff out, his chest swells, the horn bell tilts up, then he relaxes back to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]
