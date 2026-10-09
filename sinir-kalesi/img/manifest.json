@@ -146,10 +146,6 @@
 "hero_vladrik_atk.webp",
 "hero_vladrik_die.webp",
 "hero_vladrik_walk.webp",
-"hero_wren.webp",
-"hero_wren_atk.webp",
-"hero_wren_die.webp",
-"hero_wren_walk.webp",
 "mortimer.webp",
 "mortimer_buyu.webp",
 "mortimer_cast.webp",
@@ -237,8 +233,8 @@
 "unit_corpsegolem_atk.webp",
 "unit_corpsegolem_die.webp",
 "unit_corpsegolem_walk.webp",
-"unit_ghostarcher.webp",
-"unit_ghostarcher_draw.webp",
+"unit_ghostxbow.webp",
+"unit_ghostxbow_aim.webp",
 "unit_gulyabani.webp",
 "unit_gulyabani_atk.webp",
 "unit_gulyabani_die.webp",
@@ -277,5 +273,7 @@
 "unit_skel_7_walk.webp",
 "unit_skel_8.webp",
 "unit_skel_8_atk.webp",
-"unit_skel_8_walk.webp"
+"unit_skel_8_walk.webp",
+"unit_xbow.webp",
+"unit_xbow_aim.webp"
 ]

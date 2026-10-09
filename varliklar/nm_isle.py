@@ -23,6 +23,7 @@ SHEETS = [
     ('nm_kazan_4.jpg', ['tower_artillery_corpse', 'tower_artillery_plague'], 'decor'),  # 4. kademe: Ceset Mancınığı, Kara Veba Kazanı
     ('nm_fener_4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'decor'),  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
     ('nm_dikilitas_4.jpg', ['tower_archer_nail', None], 'decor'),  # 4. kademe: Kemik Balistası (Hayalet Okçular artık nm_hayalet_okcular.jpg'den)
+    ('nm_hayalet_arbaletciler.jpg', ['unit_ghostxbow', 'unit_ghostxbow_aim'], 'decor'),  # 11 Eki: arbaletçi kulesinin iskeletleri (hazır, nişan)
     ('nm_hayalet_okcular.jpg', ['unit_ghostarcher', 'unit_ghostarcher_draw', 'tower_archer_fan'], 'decor'),  # 10 Eki: tepesi boş kule + üstünde gezen 2 elit okçu (duruş, gerilmiş yay)
     ('nm_mezarlik.jpg', ['tower_barracks_1', 'tower_barracks_2', 'tower_barracks_3'], 'tower'),  # 10 Eki: Savaşçı Mezarlığı (eski: nm_mahzen.jpg)
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı

@@ -16,7 +16,7 @@ const TOWERS = {
     // Son seviyede açılan, ayrı ayrı geliştirilen yetenekler (her biri 3 kademe)
     abilities: [
       // Kemik Yelpazesi: her atışta yanındaki düşmanlara da kıymık · Ruh Çivisi: çivilenen ölünce cesedi uzun yatar, kendiliğinden dirilebilir
-      { id: 'fan', name: 'Hayalet Okçular', desc: (r) => `Kule Hayalet Okçulara dönüşür: iki okçu sırayla atar, uçanlara +%30 · her atışta ${r.n} ek kıymık yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
+      { id: 'fan', name: 'Hayalet Arbaletçiler', desc: (r) => `Kule Hayalet Arbaletçilere dönüşür: 3 kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara +%30 · her atışta ${r.n} ek cıvata yakındaki düşmanlara (%${Math.round(r.mult * 100)} hasar) · kalabalığa iyi`,
         ranks: [{ cost: 150, n: 1, mult: 0.6 }, { cost: 200, n: 2, mult: 0.7 }, { cost: 260, n: 2, mult: 0.9 }] },
       { id: 'nail', name: 'Kemik Balistası', desc: (r) => `Kule Kemik Balistasına dönüşür: yavaş ama ağır, sıradaki 2 düşmanı deler · vurulan 4 sn çivilenir: ölürse cesedi +4 sn yatar ve %${Math.round(r.rise * 100)} şansla kendiliğinden dirilir`,
         ranks: [{ cost: 160, rise: 0.15 }, { cost: 220, rise: 0.25 }, { cost: 280, rise: 0.35 }] },
@@ -35,9 +35,7 @@ const TOWERS = {
         ranks: [{ cost: 140, armor: 0.1, hp: 30 }, { cost: 190, armor: 0.18, hp: 60 }, { cost: 240, armor: 0.25, hp: 100 }] },
       { id: 'blade', name: 'Kılıç Ustası', desc: (r) => `Hasar x${r.mult} · %${Math.round(r.crit * 100)} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet`,
         ranks: [{ cost: 160, mult: 1.3, crit: 0.1 }, { cost: 220, mult: 1.6, crit: 0.15 }, { cost: 280, mult: 2, crit: 0.2 }] },
-      // okçu yolu: askerler yolu kesmez, toplanma yerinden ok atar (uçanları da vurur); canları %25 düşük
-      { id: 'bow', name: 'Okçular', desc: (r) => `${r.r} menzilden ok atarlar, havayı da vururlar · hasar x${r.mult} · canları düşük · 4. iskelet`,
-        ranks: [{ cost: 150, r: 115, mult: 1.1, rate: 1.1 }, { cost: 200, r: 130, mult: 1.4, rate: 1 }, { cost: 260, r: 145, mult: 1.75, rate: 0.85 }] },
+      // okçu yolu kaldırıldı (11 Eki): okçuluk artık Arbaletçi Kulesinin işi
     ],
   },
   mage: {
@@ -677,7 +675,7 @@ if (NECRO) {
       a.push(n); return a; }, []) });
 }
 // kuleler: Mortimer'ın yapıları
-Object.assign(TOWERS.archer, { name: 'Kemik Dikilitaşı', desc: 'Hızla kemik kıymığı fırlatır, havayı da vurur' });
+Object.assign(TOWERS.archer, { name: 'Arbaletçi Kulesi', desc: 'Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur' });
 Object.assign(TOWERS.barracks, { name: 'Savaşçı Mezarlığı', desc: 'Mezarlardan kalkan iskelet savaşçılar yolu keser' }); // 10 Eki: eski adı Mahzen
 Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır' });
 Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: alan hasarı, zehirli gaz, zırhı çürütür' });
@@ -690,8 +688,8 @@ TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
 const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', bow: 'Kemik Okçular', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
-// komutanlar (tek seçilir): Kont Vladrik (eski komutanın yetenekleri), Wailing Wren (eski okçunun yetenekleri)
-Object.assign(HEROES.commander, { name: 'Kont Vladrik', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
+// komutanlar (tek seçilir): Kont Drakula (eski komutanın yetenekleri; 11 Eki Vladrik'in yerine). Wailing Wren 11 Eki'de çıkarıldı (HERO_ORDER'da yok)
+Object.assign(HEROES.commander, { name: 'Kont Drakula', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
 // 10 Eki: Mortimer'a düelloda yenilip onun komutanı olan ünlü savaşçılar (tasarim/komutanlar-golemler.md).
 // unlock: bitirilmesi gereken bölüm (15: 1. seferin sonu; 21: Cadı Avı'nın 6. bölümü)
@@ -717,10 +715,10 @@ Object.assign(HERO_ULT, {
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'zeynep', 'spartacus', 'leonidas');
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas');
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
-  desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Vladrik ısırıklarla iyileşir',
-  short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Vladrik iyileşir' });
+  desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
+  short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
@@ -932,7 +930,7 @@ for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOW
 // Seçilen yol kulenin adını ve görünüşünü değiştirir: askerlerin kostümü, okçuların kıyafeti, kule süsleri.
 // 4. kademe dönüşümlerinin ikinci gücü (10 Eki): uzmanlık seçildikten sonra tek seferlik alınır, bekleme süresiyle kendiliğinden çalışır
 const TOWER_EXTRA = {
-  fan:    { name: 'Hayalet Yaylım',   cost: 220, cd: 12, desc: 'İki okçu menzildeki 8 düşmana birden ok yağdırır' },
+  fan:    { name: 'Cıvata Yağmuru',   cost: 220, cd: 12, desc: 'Üç arbaletçi menzildeki 8 düşmana birden cıvata yağdırır' },
   nail:   { name: 'Kazık Yağmuru',    cost: 240, cd: 10, desc: 'En kalabalık yere 5 kemik kazık düşer: ağır hasar, %50 yavaşlatma' },
   drain:  { name: 'Ruh Dalgası',      cost: 230, cd: 8,  desc: 'En güçlü düşmanın çevresinde ruh patlar; yakındaki iskeletler iyileşir' },
   ghost:  { name: 'Hayalet Zincirler', cost: 240, cd: 9, desc: '4 düşmanı hayalet zincirleriyle bağlar: 1,6 sn sersemletir' },
@@ -942,7 +940,7 @@ const TOWER_EXTRA = {
   blight: { name: 'Çürük Dokunuş',    cost: 240, cd: 9,  desc: 'Menzildeki herkes 5 sn ağır lanetlenir ve zehirlenir' },
 };
 const SPEC = {
-  fan:    { title: 'Hayalet Okçular', who: 'İki hayalet okçu sırayla atar, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
+  fan:    { title: 'Hayalet Arbaletçiler', who: 'Üç kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
   nail:   { title: 'Kemik Balistası', who: 'Dev kemik mızrak: ağır vurur, sıradakileri deler, çiviler' },
   drain:  { title: 'Ruh Emici', who: 'Kristalden ışın: aynı hedefe güçlenir, canı iskeletlere aktarır' }, // 10 Eki: 4. kademe
   ghost:  { title: 'Ruh Kafesi', who: 'En güçlüyü kafese kapatır, kafesten hayaletler salar' },
@@ -984,12 +982,12 @@ Object.assign(ENEMY_DESC, {
   wardog: 'Sürüyle gelir, çok hızlıdır ama canı azdır. Veba kazanı sürüyü dağıtır',
   chariot: 'Çok hızlı; iskeletleri ezip geçer, durduramazlar. Kemik duvar durdurur',
   siegetower: 'Ağır ve yavaş; yıkılınca içinden 6 lejyoner dökülür. Yolun başında yık',
-  eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Dikilitaş ve Ruh Feneri vurur',
+  eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Arbaletçiler ve Ruh Feneri vurur',
   horsearcher: 'Koşarken iskeletlere ok atar, iskeletler onu durduramaz. Kemik duvar durdurur',
   testudo: 'Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
   sunpriest: 'Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir',
   signifer: 'Sancağı çevresindeki düşmanlara zırh verir. Ruh ışını ve iskeletler iyi işler',
-  vulture: 'Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Dikilitaş ve Ruh Feneri vurur',
+  vulture: 'Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Arbaletçiler ve Ruh Feneri vurur',
   elephant: 'Dev ve zırhlı: iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar. Kemik duvar durdurur, ruh ışını iyi işler',
   drummer: 'Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, kıymık ve veba iyi işler',
 });
@@ -1050,7 +1048,7 @@ if (NECRO) {
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
-  Object.assign(TOWER_TITLES, { archer: ['Kemik Dikilitaşı', 'Dikenli Dikilitaş', 'Omurga Dikilitaşı'], barracks: ['Savaşçı Mezarlığı', 'Kemik Mezarlığı', 'Kara Türbe'],
+  Object.assign(TOWER_TITLES, { archer: ['Arbaletçi Kulesi', 'Kemik Nişancılar', 'Ölüm Nişancıları'], barracks: ['Savaşçı Mezarlığı', 'Kemik Mezarlığı', 'Kara Türbe'],
     mage: ['Ruh Feneri', 'Ruh Kafesi', 'Ruhlar Feneri'], artillery: ['Veba Kazanı', 'Kaynayan Veba Kazanı', 'Büyük Veba Kazanı'] });
   for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
   Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
@@ -1062,9 +1060,9 @@ if (NECRO) {
   Object.assign(SPEC.blast, { title: 'Ruh Fırtınası', who: 'Kalabalığa patlayan ruh dalgası' });
   Object.assign(SPEC.napalm, { title: 'Çürüme Bulutu', who: 'Daha büyük, uzun süren gaz' });
   Object.assign(SPEC.double, { title: 'Çifte Kazan', who: 'Her atışta ikinci veba' });
-  TOWERS.archer.levels[0].perk = 'Hızla kemik kıymığı fırlatır · uçanları da vurur';
-  TOWERS.archer.levels[1].perk = 'Daha hızlı · delici kıymık: %25 şansla zırhı yok sayar · +menzil';
-  TOWERS.archer.levels[2].perk = 'Çok hızlı kıymık yağmuru · %15 kritik vuruş · çok daha uzun menzil';
+  TOWERS.archer.levels[0].perk = '1 iskelet arbaletçi kemik cıvata atar · uçanları da vurur';
+  TOWERS.archer.levels[1].perk = '2 arbaletçi, ayrı hedeflere · delici cıvata: %25 şansla zırhı yok sayar · +menzil';
+  TOWERS.archer.levels[2].perk = '3 arbaletçi, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil';
   TOWERS.mage.levels[1].perk = 'Daha hızlı yükleme · ruh soğuğu: vurduğunu 1 sn %30 yavaşlatır';
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
@@ -1097,7 +1095,7 @@ if (NECRO) {
 // necro teması: yıldız gelişmeleri ve hasar türü adları (eski kule/kale adlarının yerine)
 if (NECRO) {
   const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
-  U.archer.name = 'Dikilitaşlar'; U.barracks.name = 'Savaşçı Mezarlıkları'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
+  U.archer.name = 'Arbaletçiler'; U.barracks.name = 'Savaşçı Mezarlıkları'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
   U.barracks.ranks[0].desc = '+%20 iskelet canı'; U.barracks.ranks[1].desc = '+%20 iskelet hasarı';
   U.artillery.ranks[1].desc = '+%15 veba alanı';
   U.spells.name = 'Büyüler';
