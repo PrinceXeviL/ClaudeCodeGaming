@@ -1275,9 +1275,11 @@ function waveBonusAndStart() {
   }
 }
 
-// hizalı yürüyüş: piyade 3'lü, atlı 2'li sıra; uçan, makine, boss, dizilişli ve iskelete takılmayanlar serbest
+// hizalı yürüyüş: piyade 3'lü, atlı 2'li sıra; uçan, makine, boss, dizilişli ve iskelete takılmayanlar serbest.
+// 10 Eki: Caner yan yana sıraları istemedi; kapalı (askerler eskisi gibi yolda karışık, tek tek gelir)
+const MARCH_ON = false;
 function marchRow(D, sp) {
-  if (!D || D.flying || D.machine || D.chief || D.noblock || D.formation) return 0;
+  if (!MARCH_ON || !D || D.flying || D.machine || D.chief || D.noblock || D.formation) return 0;
   return D.r >= 13 ? 2 : 3;
 }
 // savaş çığlığı: dalga başında ve ilk göğüs göğüse çarpışmada (sık değil); sessiz, yalnız yazı balonu
