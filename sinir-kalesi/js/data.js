@@ -477,7 +477,8 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // yeni birlikler dalgalara: ilk geldikleri bölümden itibaren belli dalgalarda küçük gruplar halinde (yer kaplamasın diye geç 'at')
   // görseli henüz hazır olmayan yeni türler dalgalara girmez
   const NEW_ART_WAIT = [];
-  const NEWCOMERS = [['drummer', 2, [3, 5, 7], 1], ['signifer', 4, [2, 5, 7], 1], ['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2],
+  // davulcu ve sancaktar burada değil: yalnız kalabalık piyade bölüklerinin içinde yürürler (aşağıda SUPPORT)
+  const NEWCOMERS = [['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2],
     ['wardog', 3, [1, 4, 6], 5], ['eagle', 5, [2, 5, 7], 3], ['chariot', 9, [3, 6], 1], ['siegetower', 12, [5, 7], 1]].filter(([t]) => !NEW_ART_WAIT.includes(t));
   for (const [t, from, ws, n] of NEWCOMERS) L.forEach((l, i) => {
     if (i < from) return;
@@ -619,6 +620,27 @@ LEVELS.forEach((lv) => {
   lv.waves.forEach((w, k) => w.forEach((g, j) => { g.p = lv.entr > 1 ? (g.p != null ? g.p % lv.entr : (k + j) % lv.entr) : 0; }));
 });
 LEVELS.forEach((lv, i) => shapeWaves(lv, i));
+// Destek birlikleri (davulcu, sancaktar) tek başına gelmez: yalnız kalabalık piyade bölüğünün (en az SUPPORT.min kişi) ortasında,
+// bölükle aynı yoldan ve aynı anda yürür. Bölük büyükse (2 x min) ikisi birden; tür sırası bölükten bölüğe değişir.
+const SUPPORT = { min: 10, inf: ['legion', 'legion_k', 'legion_y', 'heavy', 'gladiator'], units: [['drummer', 2], ['signifer', 4]] };
+LEVELS.forEach((lv, li) => {
+  if (!lv.ep || lv.ep !== 1) return;
+  const avail = SUPPORT.units.filter(([, from]) => li >= from).map(([t]) => t);
+  if (!avail.length) return;
+  let turn = li;
+  lv.waves.forEach((w) => {
+    for (const g of w.slice()) {
+      const kinds = g.types || [g.t], inf = kinds.filter(t => SUPPORT.inf.includes(t)).length;
+      if (g.n < SUPPORT.min || inf < kinds.length * 0.6) continue; // kalabalık ve çoğu piyade olan bölük
+      const m = Math.min(avail.length, g.n >= SUPPORT.min * 2 ? 2 : 1);
+      for (let j = 0; j < m; j++) {
+        const t = avail[(turn + j) % avail.length];
+        w.push({ t, n: 1, gap: 1, at: (g.at || 0) + g.gap * g.n * (0.35 + 0.3 * j), p: g.p, hpK: g.hpK, escort: true });
+      }
+      turn++;
+    }
+  });
+});
 LEVELS.forEach((lv, i) => {
   lv.boss = lv.bossT || LEVEL_BOSS[i];
   const w = lv.waves[lv.waves.length - 1];

@@ -1042,7 +1042,6 @@ function startLevel(idx, chal = null) {
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
-  SUF.forEach(sf => keep.add('enemy_herald' + sf)); // borazancı her bölümde çıkar
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
@@ -3627,11 +3626,10 @@ function drawHeralds() {
     // kaldırma: borazan 0,3 sn'de omuzdan ağza kalkar, çalarken gövde geriye yaslanır ve nefesle kabarır, sonunda iner
     const k = blowing ? easeInOut(clamp(h.t / 0.3, 0, 1)) * easeInOut(clamp((dur - h.t) / 0.3, 0, 1)) : 0;
     const breath = blowing ? Math.sin(h.t * 7) * 0.5 + 0.5 : 0;
-    ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y);
+    ctx.save(); if (!hr) { ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y); } // Gemini borazancısında gövde sabit
     if (!hr) { ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); } // boru askerin arkasında: gövdeyi sarar
-    // çalarken çalma şeridi (enemy_herald_atk) döngüde oynar: atk -ATK_PREP..ATK_AFTER aralığında akar
-    const blowAtk = blowing && hr ? -ATK_PREP + ((h.t * 0.9) % 1) * (ATK_PREP + ATK_AFTER) : null;
-    drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i, atk: blowAtk });
+    if (blowing && hr) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath); // gövde sabit, yalnız borazan ve el oynar
+    else drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i });
     ctx.restore();
     if (!blowing || h.i !== 0) continue;
     // ses dalgaları borazanın ağzından ileri yayılır
@@ -3642,6 +3640,30 @@ function drawHeralds() {
       ctx.beginPath(); ctx.arc(bx, by, 4 * u + ph * 26 * u, face > 0 ? -0.8 : Math.PI - 0.7, face > 0 ? 0.7 : Math.PI + 0.8); ctx.stroke();
     }
   }
+}
+// Çalan borazancı: gövde durağan görsel olarak çizilir; borazanın ağzı (görselin sağ üstü) ağızlıktan dönerek hafifçe kalkar
+// ve nefesle kabarır, borazanı tutan el ritimle azıcık iner kalkar. Parçalar büyütülerek çizilir ki alttaki asıl hali görünmesin.
+const HERALD_PART = { bell: [0.67, 0, 1, 0.285], bellPivot: [0.7, 0.27], hand: [0.79, 0.4, 0.97, 0.5] };
+function heraldPart(im, r) {
+  const key = r.join(','), C = heraldPart.c || (heraldPart.c = {});
+  if (C[key] && C[key].im === im) return C[key];
+  const sx = Math.round(r[0] * im.width), sy = Math.round(r[1] * im.height), sw = Math.round((r[2] - r[0]) * im.width), sh = Math.round((r[3] - r[1]) * im.height);
+  const c = document.createElement('canvas'); c.width = sw; c.height = sh; c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, sw, sh);
+  return (C[key] = { im, c, sx, sy, sw, sh });
+}
+function drawHeraldBlow(im, x, y, face, hgt, k, breath) {
+  const w = hgt * im.width / im.height, S = w / im.width; // görsel pikseli -> dünya
+  ctx.save(); ctx.translate(x, y); ctx.scale(face, 1);
+  shadow(0, 0, w * 0.32, w * 0.1);
+  ctx.drawImage(pickMip(ctx, im, w), -w / 2, -hgt, w, hgt);
+  const B = heraldPart(im, HERALD_PART.bell), px = -w / 2 + HERALD_PART.bellPivot[0] * w, py = -hgt + HERALD_PART.bellPivot[1] * hgt;
+  const ang = -0.1 * k - 0.025 * breath, sc = 1 + 0.03 * k + 0.035 * breath; // kalkar, nefesle kabarır
+  ctx.save(); ctx.translate(px, py); ctx.rotate(ang); ctx.scale(sc, sc);
+  ctx.drawImage(B.c, (B.sx - HERALD_PART.bellPivot[0] * im.width) * S, (B.sy - HERALD_PART.bellPivot[1] * im.height) * S, B.sw * S, B.sh * S);
+  ctx.restore();
+  const Hd = heraldPart(im, HERALD_PART.hand), dy = -1.2 * S * im.height / 100 * breath * k;
+  ctx.drawImage(Hd.c, -w / 2 + Hd.sx * S - 0.3, -hgt + Hd.sy * S + dy - 0.3, Hd.sw * S * 1.03, Hd.sh * S * 1.03);
+  ctx.restore();
 }
 // Roma cornu'su: gövdeyi saran büyük G biçimli pirinç boru, ortasında tutma çubuğu, ağzı başın üstünden ileri açılır.
 // k=0 yürürken omuzda yatık, k=1 ağızda kalkık
