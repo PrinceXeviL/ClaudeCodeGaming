@@ -494,7 +494,8 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // 10 Eki: yollar v2 sonrası denge (tarayıcı botu): geç bölümlerde düşman sayısı azaltıldı (çok kalabalık, çok zayıf yerine)
   const TOTAL = [118, 124, 128, 134, 140, 146, 150, 132, 150, 155, 155, 135, 135, 170, 180];
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
-  const HPMUL = [1, 1.15, 1.25, 1, 1.4, 1.1, 0.59, 0.49, 0.71, 1.26, 0.82, 0.43, 0.23, 0.54, 0.26];
+  // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
+  const HPMUL = [1, 1.15, 1.25, 1, 1.49, 1.18, 0.53, 0.465, 0.64, 1.16, 0.83, 0.39, 0.215, 0.52, 0.3];
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, 'mud', 'mud', null, 'graves', null, 'graves', 'lake', null, 'lake', 'sunbeam', null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -539,9 +540,9 @@ const NECRO_SPELLS = {
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '120,255,140', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
     desc: 'Yerde yatan düşman cesetleri (ölümden sonra 10 sn) çürümüş ölüler olarak kalkar, düşmanın geldiği yöne yürüyüp senin için savaşır · 30 sn yaşarlar',
     short: 'Yerdeki cesetler çürümüş ölüler olarak kalkar, düşmana yürüyüp 30 sn senin için savaşır' },
-  nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 6, col: '235,225,200',
-    desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 6 sn durdurur, vurularak kırılabilir',
-    short: 'Yola kemik duvar diker: düşmanlar 6 sn takılır (kırılabilir)' },
+  nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
+    desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 7 sn durdurur, vurularak kırılabilir',
+    short: 'Yola kemik duvar diker: düşmanlar 7 sn takılır (kırılabilir)' },
   nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', ghosts: 10, desc: 'Ruhlar alandaki düşmanların peşine düşer: korkudan 3,5 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz', short: 'Ruhlar düşmanları kovalar: 3,5 sn panikle geri kaçarlar' },
   // 4. büyü: 1. bölge bitince (son bölüm kazanılınca) açılır. Cesedi diriltmek ya da patlatmak arasında seçim.
   nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 14,

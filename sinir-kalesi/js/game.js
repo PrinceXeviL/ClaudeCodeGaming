@@ -5400,7 +5400,8 @@ function drawEnemy(e) {
 // Kemik Duvarı çizimi: yola dik dizilmiş kemik kazıklar, aralarında kaburgalar, tepelerde kafatası; yerden yükselir, hasar aldıkça çatlar
 // Kemik Duvarı: önce yol toprağı yarılır (çatlaklardan yeşil ışık sızar), sonra kaburga, diş ve uyluk kemikleri ortadan dışa doğru
 // sırayla topraktan fışkırır (her biri çıkarken toprak parçaları saçar), ortada yeşil gözlü büyük kafatası; süre bitince toprağa geri gömülür.
-const BWALL = { span: 66, cols: 13, crackT: 0.12, rise: 0.26, stagger: 0.035, sink: 0.45 };
+// 10 Eki: Caner daha sık ve ince kemik istedi: 13 kalın sütun yerine 3 sıra halinde 27 ince kemik
+const BWALL = { span: 66, cols: 27, rows: [-5, 0, 5], crackT: 0.12, rise: 0.24, stagger: 0.016, sink: 0.45 };
 function boneWallGeom(s) {
   if (s.geo) return s.geo;
   const r = seeded(Math.floor(s.seed * 9973) + 7), cr = [];
@@ -5411,8 +5412,9 @@ function boneWallGeom(s) {
   }
   const cols = [];
   for (let i = 0; i < BWALL.cols; i++) {
-    const kind = i === (BWALL.cols >> 1) ? 'skull' : (i % 3 === 0 ? 'femur' : 'rib');
-    cols.push({ kind, h: 22 + r() * 13 - Math.abs(i - (BWALL.cols - 1) / 2) * 1.2, lean: (r() - 0.5) * 0.35 + (i < BWALL.cols / 2 ? -0.08 : 0.08), bend: (r() < 0.5 ? -1 : 1) * (0.25 + r() * 0.2), w: 5 + r() * 2 });
+    const kind = i === (BWALL.cols >> 1) ? 'skull' : (i % 5 === 2 ? 'femur' : 'rib');
+    cols.push({ kind, h: 20 + r() * 14 - Math.abs(i - (BWALL.cols - 1) / 2) * 0.6, lean: (r() - 0.5) * 0.4 + (i < BWALL.cols / 2 ? -0.08 : 0.08), bend: (r() < 0.5 ? -1 : 1) * (0.2 + r() * 0.25),
+      w: kind === 'femur' ? 3 + r() * 0.8 : 2.1 + r() * 1, row: BWALL.rows[i % 3] + (r() - 0.5) * 2 });
   }
   return (s.geo = { cr, cols });
 }
@@ -5438,19 +5440,19 @@ function drawBoneWall(s) {
   // kemikler: ortadan dışa sırayla fışkırır
   const mid = (BWALL.cols - 1) / 2;
   s.popped = s.popped || [];
-  const order = G0.cols.map((c, i) => [i, P((i / (BWALL.cols - 1) - 0.5) * BWALL.span, i % 2 ? 4 : -4)[1]]).sort((a, b) => a[1] - b[1]).map(o => o[0]); // arkadaki önce
+  const order = G0.cols.map((c, i) => [i, P((i / (BWALL.cols - 1) - 0.5) * BWALL.span, c.row)[1]]).sort((a, b) => a[1] - b[1]).map(o => o[0]); // arkadaki önce
   order.forEach((i) => {
     const c = G0.cols[i];
     const t0 = BWALL.crackT * 0.6 + Math.abs(i - mid) * BWALL.stagger, k = clamp((age - t0) / BWALL.rise, 0, 1);
     if (k > 0 && !s.popped[i]) { // çıkış anı: toprak ve kemik parçaları
       s.popped[i] = true; const [x, y] = P((i / (BWALL.cols - 1) - 0.5) * BWALL.span);
-      for (let j = 0; j < 4; j++) emit(G.parts, { kind: 'chunk', x: x + rand(-3, 3), y, vx: rand(-45, 45), vy: -rand(70, 160), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: j % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.4, 2.4), s1: 1, life: rand(0.4, 0.7) });
+      for (let j = 0; j < 2; j++) emit(G.parts, { kind: 'chunk', x: x + rand(-3, 3), y, vx: rand(-45, 45), vy: -rand(70, 160), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: j % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.4, 2.4), s1: 1, life: rand(0.4, 0.7) });
     }
     if (k <= 0) return;
-    const rise = easeOutBack(k) * (1 - sink), [x, y] = P((i / (BWALL.cols - 1) - 0.5) * BWALL.span, i % 2 ? 4 : -4); // iki sıra: duvar kalın görünsün
+    const rise = easeOutBack(k) * (1 - sink), [x, y] = P((i / (BWALL.cols - 1) - 0.5) * BWALL.span, c.row); // üç sıra: duvar sık ve kalın görünsün
     const hh = c.h * rise * (1 - dmg * 0.3 * (i % 3) / 2), shake = s.flash > 0 ? rand(-0.06, 0.06) : 0;
     // uçlar düşmanın geldiği yöne eğik (dikenli barikat); yol dikeyse yalnız hafif yalpa
-    const toward = -Math.sign(s.dx) * Math.min(1, Math.abs(s.dx)) * (0.38 + 0.2 * ((i * 5) % 3) / 2) * (c.kind === 'skull' ? 0.2 : 1);
+    const toward = -Math.sign(s.dx) * Math.min(1, Math.abs(s.dx)) * (0.14 + 0.12 * ((i * 5) % 3) / 2) * (c.kind === 'skull' ? 0.2 : 1); // ince kemikler: hafif eğik, sık çit gibi
     ctx.save(); ctx.translate(x, y); ctx.rotate(c.lean * 0.6 + toward + shake);
     if (c.kind === 'skull') {
       roundRect(-3, -hh * 0.8, 6, hh * 0.8, 2.5, '#e9dfc4', '#22160c', 1.2); // omurga gövdesi
@@ -5461,14 +5463,14 @@ function drawBoneWall(s) {
       return;
     }
     if (c.kind === 'femur') {
-      roundRect(-c.w / 2, -hh, c.w, hh, c.w / 2, '#efe6cc', '#22160c', 1.2);
-      circle(-c.w * 0.4, -hh, c.w * 0.55, '#efe6cc', '#22160c', 1); circle(c.w * 0.4, -hh, c.w * 0.55, '#efe6cc', '#22160c', 1);
+      roundRect(-c.w / 2, -hh, c.w, hh, c.w / 2, '#efe6cc', '#22160c', 0.8);
+      circle(-c.w * 0.4, -hh, c.w * 0.55, '#efe6cc', '#22160c', 0.8); circle(c.w * 0.4, -hh, c.w * 0.55, '#efe6cc', '#22160c', 0.8);
     } else { // kaburga / diş: kıvrık, ucu sivri
       const tipX = c.bend * hh * 0.45;
       ctx.beginPath(); ctx.moveTo(-c.w / 2, 0); ctx.quadraticCurveTo(-c.w / 2 + tipX * 0.2, -hh * 0.6, tipX, -hh);
       ctx.quadraticCurveTo(c.w / 2 + tipX * 0.3, -hh * 0.55, c.w / 2, 0); ctx.closePath();
       const gr = ctx.createLinearGradient(0, 0, 0, -hh); gr.addColorStop(0, '#b8ab88'); gr.addColorStop(0.5, '#efe6cc'); gr.addColorStop(1, '#fff8e6');
-      ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = '#22160c'; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = '#22160c'; ctx.lineWidth = 0.8; ctx.stroke(); // ince kemik: kontur da ince
     }
     if (dmg > 0.4 && i % 2) { ctx.strokeStyle = '#5a4630'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(-1.5, -hh * 0.6); ctx.lineTo(1.2, -hh * 0.45); ctx.lineTo(-0.8, -hh * 0.3); ctx.stroke(); }
     ctx.restore();
@@ -7507,6 +7509,26 @@ function drawWavePeek() {
   ctx.restore();
 }
 
+// portre kadrajı: görselin tepesinden (kafa) kare bir parça; kafa bandındaki piksellerin ortasına ortalanır (bir kez hesaplanır)
+const HEAD_CROP = new Map();
+function headCrop(im) {
+  if (HEAD_CROP.has(im)) return HEAD_CROP.get(im);
+  let c = null;
+  try {
+    const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, k = Math.min(1, 200 / H);
+    const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(W * k)); cv.height = Math.max(1, Math.round(H * k));
+    const g = cv.getContext('2d'); g.drawImage(im, 0, 0, cv.width, cv.height);
+    const d = g.getImageData(0, 0, cv.width, cv.height).data, w = cv.width, h = cv.height;
+    let y0 = -1; for (let y = 0; y < h && y0 < 0; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 60) { y0 = y; break; }
+    if (y0 >= 0) {
+      const s = h * 0.34; let sx = 0, n = 0;
+      for (let y = y0; y < Math.min(h, y0 + s * 0.6); y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 60) { sx += x; n++; }
+      const cx = n ? sx / n : w / 2;
+      c = { x: (cx - s / 2) / k, y: (y0 - s * 0.06) / k, s: s / k };
+    }
+  } catch (e) { c = null; }
+  HEAD_CROP.set(im, c); return c;
+}
 function drawHeroPortrait(h, hb, i) {
   const selHero = G.sel && G.sel.kind === 'hero' && G.sel.hero === h, pts = heroPoints(h);
   ctx.save(); ctx.translate(hb.x, hb.y); const hs = pressScale('hud_hero' + i); ctx.scale(hs, hs);
@@ -7530,7 +7552,7 @@ function drawHeroPortrait(h, hb, i) {
   ctx.save(); ctx.beginPath(); ctx.arc(0, 0, hb.r - 1, 0, Math.PI * 2); ctx.clip();
   ctx.globalAlpha = h.dead ? 0.35 : 1;
   const im = heroSprite(h.def);
-  if (im) { const ph = hb.r * 3.6; drawSprite(ctx, im, 3, hb.r * 2.35, ph * im.width / im.height); }
+  if (im) { const c = headCrop(im); if (c) ctx.drawImage(im, c.x, c.y, c.s, c.s, -hb.r, -hb.r, hb.r * 2, hb.r * 2); else { const ph = hb.r * 3.6; drawSprite(ctx, im, 3, hb.r * 2.35, ph * im.width / im.height); } }
   ctx.restore();
   if (h.dead) { circle(0, 0, hb.r, 'rgba(0,0,0,0.45)'); txt(Math.ceil(h.respawnT) + '', 0, 1, 20, '#fff', 'center', '400', FONT_T); }
   ctx.restore();

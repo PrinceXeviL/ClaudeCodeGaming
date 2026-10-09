@@ -223,5 +223,5 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
 - Sonsuz Gece (CHAL.e, endlessExtend, save.endless rekor) ve Günün Sınavı (CHAL.d, DAILY_MODS, save.daily). Kart: ∞ düğmesi; harita: takvim.
 - Gelir: MONET (ödüllü reklam: 5 canla devam, +150 altınla başla; 3 bölümde bir ara reklam; tek seferlik "Mortimer'ın Hazinesi" save.premium).
   Tarayıcıda deneme reklam ekranı (drawAd); mağaza sürümünde window.NativeAds / window.NativeIAP bağlanacak. Dükkân ekranı screen 'shop'.
-- Denge: tarayıcı botu (Playwright'sız; __game ile sayfa içinde) — data.js HPMUL ve TOTAL. Hedef: bot 1. bölümü ~20, 15. bölümü ~7 canla bitirir.
+- Denge: tarayıcı botu `sinir-kalesi/tools/denge-sayfa.js` (sayfada eval: __measure(a,b,k), __tune2) — data.js HPMUL ve TOTAL. Bot gürültülü (±4 can): bölüm başına 3-4 tur. Hedef: bot 1. bölümü ~20, 15. bölümü ~7 canla bitirir.
   Boss çağrıları en çok 8, önder dövüşe tutulunca muhafızlar yürümeye devam eder (sonsuz yığılma hatası düzeldi).
