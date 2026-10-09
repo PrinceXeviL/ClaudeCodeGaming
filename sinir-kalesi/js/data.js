@@ -50,9 +50,9 @@ const TOWERS = {
     ],
     abilities: [
       // Ruh Emici: vuruş yakındaki iskeletleri iyileştirir · Hayalet Çağırıcı: yolda geriye süzülen hayalet, değdiğini korkutup yakar
-      { id: 'drain', name: 'Ruh Emici', desc: (r) => `Işın canı emer: hedefin yakınındaki iskeletler hasarın %${Math.round(r.heal * 100)}'i kadar iyileşir`,
+      { id: 'drain', name: 'Ruh Emici', desc: (r) => `Kule Ruh Emiciye dönüşür: ışın aynı hedefe art arda vurdukça %90'a kadar güçlenir · Işın canı emer: hedefin yakınındaki iskeletler hasarın %${Math.round(r.heal * 100)}'i kadar iyileşir`,
         ranks: [{ cost: 160, heal: 0.35 }, { cost: 220, heal: 0.55 }, { cost: 280, heal: 0.8 }] },
-      { id: 'ghost', name: 'Hayalet Çağırıcı', desc: (r) => `${r.cd} sn'de bir yolda düşmanlara doğru hayalet salar: değdiğine ${r.dmg} hasar, ${r.fear} sn korku`,
+      { id: 'ghost', name: 'Ruh Kafesi', desc: (r) => `Kule Ruh Kafesine dönüşür: 8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır · ${r.cd} sn'de bir yolda düşmanlara doğru hayalet salar: değdiğine ${r.dmg} hasar, ${r.fear} sn korku`,
         ranks: [{ cost: 200, cd: 9, dmg: 40, fear: 1.2 }, { cost: 260, cd: 8, dmg: 70, fear: 1.6 }, { cost: 320, cd: 7, dmg: 110, fear: 2 }] },
     ],
   },
@@ -843,8 +843,8 @@ for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOW
 const SPEC = {
   fan:    { title: 'Hayalet Okçular', who: 'İki hayalet okçu: çok hızlı atış, uçanlara ek hasar' }, // 10 Eki: 4. kademe dönüşümü
   nail:   { title: 'Kemik Balistası', who: 'Dev kemik mızrak: ağır vurur, sıradakileri deler, çiviler' },
-  drain:  { title: 'Ruh Emici Fener', who: 'Canı emip iskeletlere aktaran yeşil ışın' },
-  ghost:  { title: 'Hayalet Feneri', who: 'Yola salınan çığlık atan hayaletler' },
+  drain:  { title: 'Ruh Emici', who: 'Kristalden ışın: aynı hedefe güçlenir, canı iskeletlere aktarır' }, // 10 Eki: 4. kademe
+  ghost:  { title: 'Ruh Kafesi', who: 'En güçlüyü kafese kapatır, kafesten hayaletler salar' },
   corpse: { title: 'Ceset Mancınığı', who: 'Cesetleri cephane yapan kazan' },
   plague: { title: 'Kara Veba Kazanı', who: 'Ölümle yayılan kara veba' },
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
