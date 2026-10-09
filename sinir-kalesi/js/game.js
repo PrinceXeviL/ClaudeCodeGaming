@@ -2471,7 +2471,13 @@ function updateObeliskForm(t, dt, L, ts, F) {
   if (F.tip) {
     t.face = e.x < t.x ? -1 : 1;
     const o = formPoint(t, ts, F.tip), n = formPoint(t, ts, F.nock);
-    G.projectiles.push({ kind: 'bspear', sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: -rel, dur: clamp(dist(o.x, o.y, e.x, e.y) / 620, 0.12, 0.45),
+    t.balT = G.t; t.balRate = L.rate;
+    if (F.layers) { // kiriş şaklar: kurma yerinden kıvılcım, kaidede toz
+      const m = formPoint(t, ts, [(F.armUp[0] + F.armLo[0]) / 2, (F.armUp[1] + F.armLo[1]) / 2]);
+      for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: lerp(n.x, m.x, 0.5), y: lerp(n.y, m.y, 0.5), vx: rand(-50, 50), vy: rand(-60, 10), drag: 4, col: i % 3 ? '255,235,200' : '200,120,255', s0: 2.2, s1: 0.3, life: 0.3 });
+      G.effects.push({ kind: 'dust', x: t.x, y: ts.bottom - 2, t: 0, dur: 0.5 });
+    }
+    G.projectiles.push({ kind: 'bspear', sc: F.layers ? clamp(dist(o.x, o.y, n.x, n.y) / 44, 1, 2) : 1, sx: o.x, sy: o.y, target: e, tx: e.x, ty: aimY(e), t: -rel, dur: clamp(dist(o.x, o.y, e.x, e.y) / 620, 0.12, 0.45),
       dmg: roll(L.dmg) * (crit ? 1.6 : 1), dtype: 'true', arc: 3, crit, pierceLine: F.pierce, pierceK: F.pierceK, nail: nl ? nl.rise : 0, src: 'arrow' });
     G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: 14, col: '255,90,90', t: 0, dur: 0.25 });
     for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-40, 40) + (e.x - o.x) * 0.3, vy: rand(-40, 20), drag: 3, col: i % 2 ? '255,80,80' : '255,190,120', s0: 3.5, s1: 0.5, life: 0.35 });
@@ -5271,7 +5277,7 @@ function drawTowerShape(type, x, y, lvl, s = 1, t = null) {
 // ghost (Hayalet Çağırıcı) -> Ruh Kafesi: ışın kızıl gözden, hayaletler kafesten çıkar, ara ara en güçlü düşmanı kafese kapatır.
 const TOWER_FORM = {
   // 10 Eki denge: dönüşümler 3. kademenin ~1,3 katı (önce ~2,4 kattı, tek kule bölüm geçiyordu)
-  archer_nail: { noAnim: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.974, 0.326], nock: [0.27, 0.138], pierce: 2, pierceK: 0.45, flip: true },
+  archer_nail: { noAnim: true, layers: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.9857, 0.3389], nock: [0.3057, 0.1216], armUp: [0.7314, 0.0556], armLo: [0.1086, 0.2574], pierce: 2, pierceK: 0.45, flip: true },
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
   archer_fan: { noAnim: true, w: 1.12, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, bows: { L: [0.2, 0.19], R: [0.76, 0.18] }, archers: true },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
@@ -5344,6 +5350,49 @@ function drawGhostArchers(t, ts, redraw) {
     ctx.restore();
   }
   redraw(); // ön korkuluk ve gövde okçuların ayaklarının önüne
+}
+// Kemik Balistası (katmanlı, kodla canlı): gövde + ayrı mızrak katmanı, kirişler kodla çizilir.
+// Atıştan sonra (s sn): kiriş şaklayıp titrer → kurma kolu kirişi geri çeker → yeni mızrak kızıl-yeşil sisle belirip oluğa kayar.
+// Süreler atış aralığıyla ölçeklenir (BAL x k, k = aralık / 2.4).
+const balIO = (x) => x * x * (3 - 2 * x);
+const BAL = { launch: 0.07, vib: 0.32, pull: [0.32, 1.0], spear: [0.95, 1.55], slide: 0.2 };
+function balState(t) {
+  const k = clamp((t.balRate || 2.4) / 2.4, 0.3, 1.2), s = t.balT == null ? 99 : (G.t - t.balT) / k;
+  const pull = s < BAL.pull[0] ? 0 : balIO(clamp((s - BAL.pull[0]) / (BAL.pull[1] - BAL.pull[0]), 0, 1));
+  const load = s < BAL.spear[0] ? 0 : clamp((s - BAL.spear[0]) / (BAL.spear[1] - BAL.spear[0]), 0, 1);
+  return { s, pull, load, vib: s < BAL.vib ? Math.exp(-s * 11) * Math.sin(s * 75) : 0, launch: s < BAL.launch ? s / BAL.launch : -1 };
+}
+function drawBallista(t, ts, F) { // yerel koordinat: (0,0) tabanın ortası, görsel [-w/2, w/2] x [-h, 0]
+  const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col, base = spr(`tower_${t.type}_${t.spec}_base`), sp = spr(`tower_${t.type}_${t.spec}_spear`);
+  const P = (p) => ({ x: (p[0] - 0.5) * ts.w, y: (p[1] - 1) * ts.h }), st = balState(t), sc = ts.w / 93;
+  drawSprite(ctx, (NECRO && litOf(base, lc)) || base, 0, 0, ts.w);
+  const U = P(F.armUp), D = P(F.armLo), N = P(F.nock), T = P(F.tip);
+  // kirişin orta noktası: dinlenirken iki kol ucunu birleştiren çizgide, kurulunca gezde; şaklayınca ileri taşıp söner
+  const ux = D.x - U.x, uy = D.y - U.y, q = ((N.x - U.x) * ux + (N.y - U.y) * uy) / (ux * ux + uy * uy), R = { x: U.x + ux * q, y: U.y + uy * q };
+  const M = { x: lerp(R.x, N.x, st.pull) - (N.x - R.x) * st.vib * 0.45, y: lerp(R.y, N.y, st.pull) - (N.y - R.y) * st.vib * 0.45 };
+  if (st.pull > 0 && st.pull < 1) { M.x += Math.sin(G.t * 60) * 0.25 * sc; } // kurma çarkı tık tık çeker
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const str = (w, col) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(U.x, U.y); ctx.lineTo(M.x, M.y); ctx.lineTo(D.x, D.y); ctx.stroke(); };
+  str(1.9 * sc, '#24160e'); str(0.8 * sc, '#cdb88e');
+  if (st.load >= 1) { ctx.globalCompositeOperation = 'lighter'; str(1.6 * sc, `rgba(255,70,90,${0.1 + 0.07 * Math.sin(time * 5 + t.x)})`); } // gergin kirişte kızıl titreşim
+  ctx.restore();
+  // mızrak: fırlarken ileri kayıp söner, sonra arkadan belirip oluğa oturur
+  let a = 0, off = 0;
+  if (st.launch >= 0) { a = 1 - st.launch; off = st.launch * 0.55; }
+  else if (st.load > 0) { a = Math.pow(st.load, 0.7); off = -(1 - easeOutQ(st.load)) * BAL.slide; }
+  if (sp && a > 0) {
+    ctx.save(); ctx.globalAlpha = a; ctx.translate((T.x - N.x) * off, (T.y - N.y) * off);
+    drawSprite(ctx, (NECRO && litOf(sp, lc)) || sp, 0, 0, ts.w); ctx.restore();
+  }
+  if (st.load > 0 && st.load < 1) { // beliriş sisi: şaft boyunca yeşil, mor, kızıl zerreler
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const cols = ['120,255,140', '190,110,255', '255,80,90'], fade = Math.sin(st.load * Math.PI);
+    for (let i = 0; i < 9; i++) {
+      const f = i / 8, w = Math.sin(time * 7 + i * 1.7) * 2.5 * sc;
+      glow(ctx, lerp(N.x, T.x, f) + w, lerp(N.y, T.y, f) - Math.abs(w) - (1 - st.load) * 6 * sc * ((i % 3) - 1), (3 + 2 * fade) * sc, cols[i % 3], 0.55 * fade);
+    }
+    ctx.restore();
+  }
 }
 function formPoint(t, ts, p) {
   const fl = towerForm(t) && towerForm(t).flip && t.face === -1 ? -1 : 1;
@@ -5869,9 +5918,9 @@ function drawNecroTowerFx(t, ts) {
   if (OF) {
     ctx.globalCompositeOperation = 'lighter';
     if (OF.tip) { // balista: mızrak ucunda kızıl alev, atışta kiriş şaklar
-      const o = formPoint(t, ts, OF.tip), ready = t.shotAnim > 0 ? 0.3 : 1;
+      const lay = OF.layers && spr(`tower_${t.type}_${t.spec}_base`), o = formPoint(t, ts, OF.tip), ready = lay ? balState(t).load : t.shotAnim > 0 ? 0.3 : 1;
       glow(ctx, o.x, o.y, 9 * s, '255,70,70', (0.45 + Math.sin(time * 9 + t.x) * 0.12) * ready);
-      if (t.snap && (t.snap.t -= 0.016) > 0) {
+      if (!lay && t.snap && (t.snap.t -= 0.016) > 0) {
         const n = t.snap, k = n.t / 0.18;
         ctx.strokeStyle = `rgba(255,230,200,${0.8 * k})`; ctx.lineWidth = 1.2;
         for (const dy of [-6, 6]) { ctx.beginPath(); ctx.moveTo(n.x, n.y + dy * s * (1 - k * 0.5)); ctx.quadraticCurveTo(n.x - (t.face || 1) * 4 * k * s, n.y, n.x, n.y - dy * s); ctx.stroke(); }
@@ -6070,7 +6119,8 @@ function drawTowerBody(t) {
     if (TA && t.animT != null && t.animT < TA.dur) { // atış animasyonu: şeridin karesi, görselle aynı yere oturur
       const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * TOWER_ANIM_FPS)), b = M.box, lim = litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
       ctx.drawImage(lim, i * M.fw, 0, M.fw, M.fh, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
-    } else {
+    } else if (OF && OF.layers && spr(`tower_${t.type}_${t.spec}_base`)) drawBallista(t, ts, OF);
+    else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
       drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
     }
@@ -7236,7 +7286,7 @@ function drawProjectile(p) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = 1; i <= 4; i++) { const q = projPos(p, k - i * 0.05); glow(ctx, q.x, q.y, 6 - i, '255,90,80', 0.35 - i * 0.06); }
     ctx.restore();
-    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a); if (p.sc) ctx.scale(p.sc, p.sc); // katmanlı balistada mızrak kendi boyunda uçar
     ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1a10'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(4, 0); ctx.stroke();
     ctx.strokeStyle = '#efe2c2'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-21, 0); ctx.lineTo(3, 0); ctx.stroke();
     circle(-22, -1.5, 2, '#efe2c2', '#2a1a10', 0.8); circle(-22, 1.5, 2, '#efe2c2', '#2a1a10', 0.8);
