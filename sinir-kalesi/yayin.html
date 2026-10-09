@@ -5,7 +5,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Creepster&family=Lilita+One&display=swap" rel="stylesheet">
 <style>
   /* Tek görünümlü oyun ekranı: koyu çerçeve içinde tam ekran tuval. */
-  :root { --frame: #1d1a14; color-scheme: dark; }
+  :root { --frame: #06030a; color-scheme: dark; }
   html, body { height: 100%; margin: 0; background: var(--frame); overflow: hidden; }
   body { touch-action: none; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   canvas { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
@@ -13,7 +13,7 @@
 <canvas id="game" aria-label="Sınır Kalesi oyun alanı"></canvas>
 <script>
   // Sürüm damgası: her yayında artırılır; tarayıcı eski önbellek kopyasını kullanmaz (js ve görseller).
-  window.SURUM = '267';
+  window.SURUM = '268';
   // dil: kayıtlı seçim ya da cihaz dili; tr/en dışındakiler için çeviri sözlüğü dil.js'ten önce yüklenir
   window.__dilYukle = (function () {
     var l = null; try { l = localStorage.getItem('sinirKalesi.lang'); } catch (e) {}

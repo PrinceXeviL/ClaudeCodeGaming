@@ -45,7 +45,7 @@ function useStrips(keep) {
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
   .then(r => (r.ok ? r.json() : []))
-  .then(list => list.sort((a, b) => (/^nm_(title|key)/.test(b) ? 1 : 0) - (/^nm_(title|key)/.test(a) ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
+  .then(list => list.sort((a, b) => (/^nm_key/.test(b) ? 1 : 0) - (/^nm_key/.test(a) ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
     const name = file.replace(/\.(png|svg|jpg|webp)$/, '');
     if (LAZY_RE.test(name)) { LAZY[name] = file; return; } // animasyon şeridi: bölümde gerekince yüklenir
     const im = new Image();
@@ -10914,7 +10914,12 @@ function drawSkyCrows() {
 }
 function drawNecroTitle(st) {
   const key = spr('nm_key');
+  // kapak görseli yüklenene kadar düz karanlık (eski başlık görseli ya da ara zeminler görünüp değişmesin); gelince karanlıktan belirir
+  if (!key && time < 5) { ctx.fillStyle = '#06030a'; ctx.fillRect(0, 0, W, H); return; } // 5 sn'de gelmezse eski zemine düşer
+  TITLE_C.keyT = TITLE_C.keyT ?? time;
   if (key) drawKeyArt(key);
+  const fadeIn = clamp(1 - (time - TITLE_C.keyT) / 0.6, 0, 1);
+  if (fadeIn > 0) { ctx.fillStyle = `rgba(6,3,10,${fadeIn})`; ctx.fillRect(0, 0, W, H); }
   const bg = key ? null : spr('nm_title');
   const bz = 1.06 + Math.sin(time * 0.1) * 0.02, bx = Math.sin(time * 0.07) * 8, by = Math.cos(time * 0.09) * 4;
   if (bg) coverImage(bg, bz, bx, by);
@@ -12647,7 +12652,7 @@ function frame(now) {
   // çizim
   const { dpr, scale, ox, oy } = view;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = '#1d1a14'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#06030a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy);
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
   buttons.length = 0;
