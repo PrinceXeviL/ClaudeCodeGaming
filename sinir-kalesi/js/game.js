@@ -7603,7 +7603,7 @@ function drawCastle() {
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     drawCastleArchers();
-    if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh);
+    if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh, im === spr('castle_keep_3'));
     if (NECRO) {
       drawMortimer();
       const h = cp.w * im.height / im.width, R = mortStage(im).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
@@ -7657,11 +7657,11 @@ function avluFlame(x, y, hgt, wd, k, ph, col0, col1) {
 }
 // heybetli kalenin ışıkları: iki mangalda yeşil ruh ateşi, pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
 const KEEP_FX = {
-  fire: [[0.255, 0.715], [0.6, 0.765]], eyes: [[0.405, 0.665], [0.505, 0.665]],
+  fire: [[0.255, 0.715], [0.6, 0.765]], roof: [[0.276, 0.275], [0.8, 0.345]], eyes: [[0.405, 0.665], [0.505, 0.665]],
   win: [[0.505, 0.355, 2.2], [0.5, 0.245, 0.8], [0.63, 0.245, 0.8], [0.265, 0.455, 1], [0.36, 0.485, 0.8], [0.4, 0.485, 0.8],
     [0.72, 0.495, 1], [0.8, 0.5, 0.8], [0.625, 0.515, 0.8]],
 };
-function drawKeepLights(cp, h, sh) {
+function drawKeepLights(cp, h, sh, burning) {
   const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const [i, f] of KEEP_FX.win.entries()) {
@@ -7674,6 +7674,12 @@ function drawKeepLights(cp, h, sh) {
     glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, '110,255,130', 0.32 + 0.12 * k);
     for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, '235,255,225', '90,255,110');
     if (Math.random() < 0.05 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-4, 4), y: y - 24 * s, vx: rand(-6, 6), vy: rand(-30, -16), col: '120,255,140', s0: rand(1, 1.8), s1: 0.2, life: rand(0.6, 1.1), a: 0.9 });
+  }
+  if (burning) for (const [i, f] of KEEP_FX.roof.entries()) { // ağır hasar: çatılarda yangın
+    const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 11 + i * 3) * Math.sin(time * 6.1 + i);
+    glow(ctx, x, y, (50 + 10 * k) * s, '255,140,50', 0.3 + 0.12 * k);
+    for (let j = 0; j < 2; j++) avluFlame(x + (j - 0.5) * 10 * s, y + 8 * s, (30 + 10 * Math.sin(time * 8 + j * 2 + i)) * s, 8 * s, k, j * 3 + i, '255,240,180', '255,120,30');
+    if (Math.random() < 0.06 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-5, 5), y: y - 14 * s, vx: rand(-8, 8), vy: rand(-36, -20), col: '255,160,60', s0: rand(1, 1.8), s1: 0.2, life: rand(0.5, 1), a: 0.9 });
   }
   ctx.restore();
 }

@@ -25,6 +25,13 @@ for n, name in [(1, 'nm_kale_heybetli.jpg'), (2, 'nm_kale_heybetli_2.jpg'), (3, 
     if not os.path.exists(p): continue
     rgba = base if n == 1 else cut(p)
     crop = Image.fromarray(rgba).crop(box)
+    if n == 3:  # duman kutunun üstüne ve sağına taşar: kesik görünmesin diye üst bantta ve sağ kenarın üst yarısında soldur
+        c = np.asarray(crop).copy(); h, w = c.shape[:2]; al = c[..., 3].astype(np.float32)
+        top = np.clip(np.arange(h) / 70.0, 0, 1)[:, None]
+        right = np.clip((w - 1 - np.arange(w)) / 60.0, 0, 1)[None, :]
+        upper = (np.arange(h) < h * 0.45)[:, None]
+        al = al * top * np.where(upper, right, 1.0)
+        c[..., 3] = al.astype(np.uint8); crop = Image.fromarray(c)
     out = crop.resize((W_OUT, round(crop.height * W_OUT / crop.width)), Image.LANCZOS)
     out.save(os.path.join(IMG, f'castle_keep_{n}.webp'), quality=88, method=6)
     meta[f'castle_keep_{n}'] = list(out.size)
