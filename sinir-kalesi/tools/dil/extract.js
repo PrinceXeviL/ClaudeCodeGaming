@@ -54,7 +54,7 @@ const exact = new Set(), tpl = new Map();
 for (const f of process.argv.slice(2)) {
   for (const tk of scan(fs.readFileSync(f, 'utf8'))) {
     if (tk.t === 'str') { if (looksText(tk.v)) exact.add(tk.v); }
-    else { const joined = tk.v.join('{}'); if (TR.test(joined) || tk.v.some(p => /[a-zA-Z]{3,} [a-zA-Z]{2,}/.test(p))) tpl.set(joined, tk.v.length - 1); }
+    else { const joined = tk.v.join('{}'); if (TR.test(joined) || tk.v.some(p => /[a-zA-Z]{2,}/.test(p) && !/px|rgba?\(|#|\/|\.(webp|png|mp3|json)|sans|serif|Lilita|Baloo|Creepster|^_|_$|^[a-z]+_|deg|Math/.test(p))) tpl.set(joined, tk.v.length - 1); }
   }
 }
 console.log(JSON.stringify({ exact: [...exact], tpl: [...tpl.keys()] }, null, 0));

@@ -1,0 +1,213 @@
+{
+ "exact": {
+  "Yükselt": "Upgrade",
+  "Sat": "Sell",
+  "altın": "gold",
+  "dalga": "waves",
+  "sn": "s",
+  "Er": "Private",
+  "ER": "PRIVATE"
+ },
+ "tpl": [
+  [
+   "{} göndereceğin yeri seç (haritanın her yeri)",
+   "Choose where to send {} (anywhere on the map)"
+  ],
+  [
+   "{} sn sonra hazır",
+   "ready in {} s"
+  ],
+  [
+   "{} sn",
+   "{} s"
+  ],
+  [
+   "{} sn'de kalkar",
+   "rises in {} s"
+  ],
+  [
+   "{} sn'de bir",
+   "every {} s"
+  ],
+  [
+   "YENİ BÜYÜ: {}",
+   "NEW SPELL: {}"
+  ],
+  [
+   "GÜNÜN SINAVI: {}",
+   "DAILY TRIAL: {}"
+  ],
+  [
+   "BAŞARIM: {}",
+   "ACHIEVEMENT: {}"
+  ],
+  [
+   "YENİ RÜTBE: {}",
+   "NEW RANK: {}"
+  ],
+  [
+   "{} açıldı!",
+   "{} unlocked!"
+  ],
+  [
+   "{} altın",
+   "{} gold"
+  ],
+  [
+   "+{} altın",
+   "+{} gold"
+  ],
+  [
+   "SATIN AL · {}",
+   "BUY · {}"
+  ],
+  [
+   "Rekor {}",
+   "Record {}"
+  ],
+  [
+   "{} ALTINLA BAŞLA",
+   "{} GOLD START"
+  ],
+  [
+   "▶ +{} ALTINLA BAŞLA",
+   "▶ +{} GOLD START"
+  ],
+  [
+   "{}. bölümle açılır",
+   "unlocks at level {}"
+  ],
+  [
+   "{} · yayın {}",
+   "{} · build {}"
+  ],
+  [
+   "Güç: {}",
+   "Power: {}"
+  ],
+  [
+   "Zayıf: {}",
+   "Weak: {}"
+  ],
+  [
+   "Dirençli: {}",
+   "Resistant: {}"
+  ],
+  [
+   "{} ceset!",
+   "{} corpses!"
+  ],
+  [
+   "{}. dalga",
+   "wave {}"
+  ],
+  [
+   "Dalga {}/{}",
+   "Wave {}/{}"
+  ],
+  [
+   "DALGA {}/{}",
+   "WAVE {}/{}"
+  ],
+  [
+   "{}. BÖLÜM",
+   "LEVEL {}"
+  ],
+  [
+   "{}. SEFER",
+   "CAMPAIGN {}"
+  ],
+  [
+   "Bölüm {}",
+   "Level {}"
+  ],
+  [
+   "+%{} hasar",
+   "+{}% damage"
+  ],
+  [
+   "+%{} menzil",
+   "+{}% range"
+  ],
+  [
+   "+{} can",
+   "+{} lives"
+  ],
+  [
+   "{} dalga",
+   "{} waves"
+  ],
+  [
+   "+%{} hız",
+   "+{}% speed"
+  ],
+  [
+   "-%{} hasar",
+   "-{}% damage"
+  ],
+  [
+   "%{} hasar",
+   "{}% damage"
+  ],
+  [
+   "{} yıldız",
+   "{} stars"
+  ],
+  [
+   "{} sn kalır",
+   "lasts {} s"
+  ],
+  [
+   "Seviye {}!",
+   "Level {}!"
+  ],
+  [
+   "{} Sv.{} · {}",
+   "{} Lv.{} · {}"
+  ],
+  [
+   "{} seviye {}",
+   "{} level {}"
+  ],
+  [
+   "{} · {} sn'de bir",
+   "{} · every {} s"
+  ],
+  [
+   " · Sonraki: {}",
+   " · Next: {}"
+  ],
+  [
+   "{} — Seviye {}{}",
+   "{} — Level {}{}"
+  ],
+  [
+   "Yeni: {}",
+   "New: {}"
+  ],
+  [
+   "{} — Seviye {} (son)",
+   "{} — Level {} (max)"
+  ],
+  [
+   "{} — Seviye {}",
+   "{} — Level {}"
+  ],
+  [
+   "{} sn bekleme",
+   "{} s cooldown"
+  ],
+  [
+   "{} dalga  ·  {}",
+   "{} waves  ·  {}"
+  ],
+  [
+   "Rekor: {} dalga",
+   "Record: {} waves"
+  ],
+  [
+   "Sonraki: {}",
+   "Next: {}"
+  ]
+ ]
+}
