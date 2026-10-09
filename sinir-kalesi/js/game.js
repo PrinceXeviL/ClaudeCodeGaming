@@ -1238,7 +1238,7 @@ function startLevel(idx, chal = null) {
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_die'];
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
   useStrips(keep);
@@ -2516,6 +2516,7 @@ function updateEnemy(e, dt) {
   if (e.hasteT > 0) e.hasteT -= dt;
   if (e.armT > 0) e.armT -= dt;
   if (e.drumT > 0) e.drumT -= dt;
+  if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
   if (AU) for (const o of G.enemies) {
@@ -2667,7 +2668,10 @@ function updateEnemy(e, dt) {
       if (e.rcd <= 0) {
         e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
-        G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
+        const AR = e.def.alt && e.def.alt.ranged && (e.altT ??= e.def.alt.cd * 0.4) <= 0 ? e.def.alt : null; // özel atış: ağ ya da ateşli ok
+        if (AR) { e.altT = AR.cd; playSkill(e); }
+        if (AR && AR.kind === 'net') throwNet(e, tgt, AR.stun); else
+        G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
@@ -2700,7 +2704,8 @@ function updateEnemy(e, dt) {
       e.atk -= dt;
       if (e.atk <= 0) {
         e.atk = e.def.rate * curseSlowAtk(e); e.atkV = Math.floor(Math.random() * 3);
-        const victim = e.blocker;
+        const victim = e.blocker, A = e.def.alt;
+        if (A && !A.ranged && (e.altT ??= A.cd * 0.4) <= 0) { e.altT = A.cd; playSkill(e); doAlt(e, A, victim); return; } // özel saldırı
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
         damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
         sfx('clash');
@@ -2723,6 +2728,7 @@ function updateEnemy(e, dt) {
     e.knockT -= dt;
     if (!e.offPath) { e.d = Math.max(0, e.d - e.knockV * dt * (0.3 + e.knockT / KNOCK.t)); const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; return; }
   }
+  if (e.skillT > 0 && !e.def.machine) return; // özel saldırı / büyü anında durur
   let spd = e.def.speed * G.wspd * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.spd * (1 - e.hp / e.maxHp) : 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
@@ -2892,6 +2898,12 @@ function updateSoldier(s, dt) {
     return;
   }
   if (s.wall) { updateWall(s, dt); return; }
+  if (s.netT > 0) s.netT -= dt;
+  if (s.dotT > 0) { // yanma / zehir: yarım saniyede bir hasar, üstünden kıvılcım ya da zehir kabarcığı
+    s.dotT -= dt; s.dotAcc = (s.dotAcc || 0) + s.dotDps * dt;
+    if (Math.random() < dt * 8) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-5, 5), y: s.y - rand(4, 18), vy: -rand(15, 35), col: s.dotCol || '255,140,60', s0: 3, s1: 0.5, life: 0.5 });
+    if (s.dotAcc >= 3 || s.dotT <= 0) { const a = s.dotAcc; s.dotAcc = 0; damageSoldier(s, a); if (s.dead) return; }
+  }
   if (s.stunT > 0) { s.stunT -= dt; return; }
   if (s.march) { marchSoldier(s, dt); return; }
   // dirilen ceset: hedefi yokken en yakın yer düşmanına yönelir (yürüdüğü nokta düşmanla birlikte güncellenir)
@@ -3134,6 +3146,9 @@ function updateProjectile(pr, dt) {
       for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-6, 6), y: pr.ty + rand(-4, 6), vx: rand(-70, 70), vy: rand(-90, -10), g: 220, col: i % 2 ? '140,210,255' : '220,245,255', s0: 3, s1: 0.5, life: rand(0.35, 0.6) });
       sfx('splash');
     }
+    if (pr.net && h && !h.dead) { netSoldier(h, pr.net); sfx('bash'); return; } // ağ isabet etti
+    if (pr.burn && h && !h.dead) soldierDot(h, pr.burn.dps, pr.burn.t, '255,140,60');
+    if (pr.stunHit && h && !h.dead && !h.wall) h.stunT = Math.max(h.stunT || 0, pr.stunHit);
     if (h && !h.dead && !h.removed) {
       damageSoldier(h, pr.edmg, pr.from);
       if (pr.kind === 'axe') sfx('clash');
@@ -5525,6 +5540,7 @@ function drawEnemy(e) {
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
       atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
+      skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
     if (d.formation) drawFormation(e, name, im, ux, uo);
@@ -6262,7 +6278,10 @@ function drawUnit(name, im, x, y, face, o) {
   let fName = null, fi = 0;
   const atkOn = o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER;
   const atkKey = atkOn && ((o.atkVar && animStrip(name, o.rig, ['_atk', '_atk2', '_atk3'][o.atkVar % 3])) || animStrip(name, o.rig, '_atk'));
-  if (atkKey) {
+  // özel saldırı / büyü anı: <ad>_skill şeridi (yoksa saldırı şeridi) baştan sona bir kez oynar
+  const skillKey = o.skill != null && (animStrip(name, o.rig, '_skill') || animStrip(name, o.rig, '_atk'));
+  if (skillKey) { fName = skillKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.skill * ANIM_META[fName].n)); }
+  else if (atkKey) {
     fName = atkKey;
     const T = ANIM_META[fName].n === 8 ? ATK_FRAME_T : null;
     if (T) { fi = 0; for (let i = 0; i < 8; i++) if (o.atk >= T[i]) fi = i; }
@@ -6283,6 +6302,10 @@ function drawUnit(name, im, x, y, face, o) {
   ctx.translate(x + (frontBack ? 0 : ox * face), y + 1 + oy);
   ctx.scale(frontBack ? 1 : face * (rig.flip ? -1 : 1), 1);
   if (o.rise != null) ctx.scale(1, o.rise); // kumdan çıkış
+  if (o.skill != null && !fName) { // şeridi olmayan birimde özel saldırı: geri gerilip ileri atılır
+    const k = o.skill, lean = k < 0.45 ? -Math.sin(k / 0.45 * Math.PI / 2) * 0.14 : -0.14 + (k - 0.45) / 0.55 * 0.3 * Math.sin((k - 0.45) / 0.55 * Math.PI);
+    ctx.rotate(lean); ctx.scale(1 + (k > 0.45 ? 0.06 * Math.sin((k - 0.45) / 0.55 * Math.PI) : 0), 1);
+  }
   if (fName) {
     const F = ANIM_META[fName], fImg = spr(fName);
     drawFrame(fImg, F, fi, o.h);
@@ -6556,6 +6579,13 @@ function drawProjectile(p) {
     ctx.strokeStyle = '#8a5a2a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(0, -5); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, -5); ctx.quadraticCurveTo(5.5, -6.5, 6, -1.5); ctx.quadraticCurveTo(3, -2.4, 0, -1.6); ctx.closePath();
     ctx.fillStyle = '#c8ced8'; ctx.fill(); ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.7; ctx.stroke();
+    ctx.restore();
+  } else if (p.kind === 'net') { // dönen ağ: halka ve ağ örgüsü, uçtukça açılır
+    const k = clamp(p.t / p.dur, 0, 1), R = 3 + 6 * k;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(time * 9); ctx.scale(1, 0.7);
+    ctx.strokeStyle = '#d8ccaa'; ctx.lineWidth = 0.8;
+    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(i * R / 2.5, -R); ctx.lineTo(i * R / 2.5, R); ctx.moveTo(-R, i * R / 2.5); ctx.lineTo(R, i * R / 2.5); ctx.stroke(); }
+    ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   } else if (p.kind === 'flask') { // kutsal su şişesi: dönen mavi cam
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 12);
@@ -8791,7 +8821,38 @@ function summonLegion(e) {
 
 // boss yetenekleri
 // Boss yeteneği kullanırken: adı belirir, boss parlar ve etrafına kıvılcım saçılır
+// ---- Özel saldırılar (10 Eki): orta güçteki düşmanların alternatif saldırısı (def.alt) ve bossların ek yetenekleri ----
+// Hepsi kısa bir "büyü anı" oynatır (e.skillT): düşman durur, varsa <ad>_skill şeridi, yoksa saldırı şeridi oynar.
+// kind: net (ağ: kımıldayamaz), bash (kalkan darbesi), burn/poison (süreli hasar), whirl (çevresine savurma), charge (geri savurma)
+const ALT_DUR = 0.65;
+function playSkill(e, dur = ALT_DUR) { if (!(e.skillT > 0)) e.skillT = e.skillDur = dur; }
+function soldierDot(s, dps, t, col) { s.dotT = Math.max(s.dotT || 0, t); s.dotDps = Math.max(s.dotT > t ? s.dotDps || 0 : 0, dps); s.dotCol = col; }
+function netSoldier(s, t) { if (s.wall) return; s.stunT = Math.max(s.stunT || 0, t); s.netT = Math.max(s.netT || 0, t); }
+function throwNet(e, s, stun) {
+  G.projectiles.push({ kind: 'net', foe: true, hero: s, from: e, sx: e.x + e.face * 6, sy: aimY(e), tx: s.x, ty: s.y - 12, t: 0, dur: clamp(dist(e.x, e.y, s.x, s.y) / 260, 0.2, 0.5), arc: 22, edmg: 0, net: stun });
+}
+function doAlt(e, A, v) {
+  const m = foeDmgMul(e), base = roll(e.def.dmg) * m, hy = v ? v.y - unitH(v) * 0.55 : e.y;
+  if (A.kind === 'net') { throwNet(e, v, A.stun); sfx('whirl'); }
+  else if (A.kind === 'bash') {
+    damageSoldier(v, base * (A.mul || 1.3), e); if (!v.wall) v.stunT = Math.max(v.stunT || 0, A.stun || 1);
+    impactFx(v.x, hy, '255,230,180', 1.3); G.effects.push({ kind: 'ring', x: v.x, y: v.y, r: 16, col: '255,220,150', t: 0, dur: 0.35 }); sfx('bash');
+  } else if (A.kind === 'burn' || A.kind === 'poison') {
+    const col = A.kind === 'burn' ? '255,140,60' : '140,255,80';
+    damageSoldier(v, base * 0.6, e); soldierDot(v, A.dps, A.t, col);
+    for (let i = 0; i < 10; i++) emit(G.parts, { kind: 'glow', add: true, x: v.x + rand(-6, 6), y: hy + rand(-6, 6), vx: rand(-30, 30), vy: -rand(20, 60), col, s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.7) });
+    sfx(A.kind === 'burn' ? 'meteor' : 'splash');
+  } else if (A.kind === 'whirl') {
+    for (const o of G.soldiers) if (!o.dead && !o.wall && dist(o.x, o.y, e.x, e.y) < A.r) { damageSoldier(o, base * (A.mul || 0.8), e); slashFx(o.x, o.y - unitH(o) * 0.55, o.x < e.x ? -1 : 1, '#ffd0a0', 0.8); }
+    G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: A.r, col: '255,200,150', t: 0, dur: 0.4 }); sfx('whirl');
+  } else if (A.kind === 'charge') {
+    damageSoldier(v, base * (A.mul || 1.2), e);
+    if (!v.wall && !v.hero) { v.x += e.face * A.d; v.stunT = Math.max(v.stunT || 0, A.stun || 0.8); }
+    G.effects.push({ kind: 'dust', x: v.x, y: v.y, t: 0, dur: 0.5 }); impactFx(v.x, hy, '235,225,200', 1.2); sfx('bash');
+  }
+}
 function bossCastFx(e, name, col) {
+  playSkill(e, e.def.chief ? 0.8 : ALT_DUR);
   floatText(e.x, e.y - (e.def.h || 40) - 18, name, `rgb(${col})`);
   emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - (e.def.h || 40) * 0.5, col, s0: (e.def.h || 40) * 1.4, s1: (e.def.h || 40) * 0.6, life: 0.35 });
   for (let i = 0; i < 14; i++) {
@@ -8871,6 +8932,49 @@ function bossAbilities(e, dt) {
       bossCastFx(e, ab.slam.say || 'Yer Sarsıntısı!', '255,190,110');
       shakeScreen(5, 0.35); sfx('boom');
       }
+    }
+  }
+  // --- ek boss yetenekleri (10 Eki) ---
+  const near = (r) => G.soldiers.filter(o => !o.dead && !o.wall && dist(o.x, o.y, e.x, e.y) < r);
+  if (ab.net && ready('net', ab.net.cd)) { // ağ: en yakın birkaç iskelete ağ fırlatır
+    const vs = near(ab.net.r).sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y)).slice(0, ab.net.n);
+    if (!vs.length) e.abT.net = 1; else { vs.forEach(v => throwNet(e, v, ab.net.stun)); bossCastFx(e, ab.net.say || 'Ağ!', '230,220,180'); sfx('whirl'); }
+  }
+  if (ab.volley && ready('volley', ab.volley.cd)) { // mızrak/ok yağmuru: rastgele iskeletlere, isabet eden sersemler
+    const vs = near(ab.volley.r).sort(() => Math.random() - 0.5).slice(0, ab.volley.n);
+    if (!vs.length) e.abT.volley = 1;
+    else {
+      vs.forEach((v, i) => G.projectiles.push({ kind: 'harrow', foe: true, hero: v, from: e, sx: e.x, sy: aimY(e) - 8, tx: v.x, ty: v.y - 12, t: -i * 0.08, dur: 0.45, arc: 40, edmg: ab.volley.dmg * (e.dmgMul || 1), stunHit: ab.volley.stun }));
+      bossCastFx(e, ab.volley.say || 'Mızrak Yağmuru!', '255,210,140');
+    }
+  }
+  if (ab.whirl && ready('whirl', ab.whirl.cd)) { // savurma: çevresindeki bütün iskeletlere
+    if (!near(ab.whirl.r).length) e.abT.whirl = 1;
+    else { doAlt(e, { kind: 'whirl', r: ab.whirl.r, mul: 0 }, null); for (const o of near(ab.whirl.r)) damageSoldier(o, ab.whirl.dmg * (e.dmgMul || 1), e); bossCastFx(e, ab.whirl.say || 'Savurma!', '255,180,120'); }
+  }
+  if (ab.charge && e.blocker && ready('charge', ab.charge.cd)) { // hücum: önündeki iskeleti savurup ilerler
+    const v = e.blocker; doAlt(e, { kind: 'charge', d: ab.charge.d, stun: ab.charge.stun, mul: 0 }, v); damageSoldier(v, ab.charge.dmg * (e.dmgMul || 1), e);
+    for (const o of near(40)) if (o !== v && !o.hero) { o.x += e.face * ab.charge.d * 0.6; o.stunT = Math.max(o.stunT || 0, ab.charge.stun * 0.6); }
+    bossCastFx(e, ab.charge.say || 'Hücum!', '255,200,120'); shakeScreen(4, 0.3);
+  }
+  if (ab.burn && ready('burn', ab.burn.cd)) { // ateş/zehir halkası: alandaki iskeletler yanar
+    const vs = near(ab.burn.r), col = ab.burn.poison ? '140,255,80' : '255,140,60';
+    if (!vs.length) e.abT.burn = 1;
+    else {
+      vs.forEach(v => soldierDot(v, ab.burn.dps, ab.burn.t, col));
+      G.effects.push({ kind: ab.burn.poison ? 'ring' : 'firering', x: e.x, y: e.y, r: ab.burn.r, col, t: 0, dur: 0.5 });
+      for (let i = 0; i < 26; i++) { const a = rand(0, Math.PI * 2), v = rand(50, 120); emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5, drag: 2.5, col, s0: 6, s1: 12, life: 0.6, a: 0.5 }); }
+      bossCastFx(e, ab.burn.say || (ab.burn.poison ? 'Zehir Bulutu!' : 'Alev Halkası!'), col); sfx(ab.burn.poison ? 'splash' : 'meteor');
+    }
+  }
+  if (ab.smite && ready('smite', ab.smite.cd)) { // ilahi yıldırım: en güçlü iskelete gökten altın ışın
+    const vs = near(ab.smite.r).sort((a, b) => b.hp - a.hp);
+    if (!vs.length) e.abT.smite = 1;
+    else {
+      const v = vs[0];
+      G.effects.push({ kind: 'zap', x0: v.x + rand(-20, 20), y0: v.y - 240, x1: v.x, y1: v.y - 6, t: 0, dur: 0.45, w: 2, col: 'rgb(255,220,120)', seed: rand(0, 99) });
+      G.effects.push({ kind: 'ring', x: v.x, y: v.y, r: 26, col: '255,220,120', t: 0, dur: 0.5 });
+      damageSoldier(v, ab.smite.dmg * (e.dmgMul || 1), e); bossCastFx(e, ab.smite.say || 'İlahi Ceza!', '255,220,120'); sfx('zap');
     }
   }
   if (ab.storm && ready('storm', ab.storm.cd)) {
@@ -10678,6 +10782,21 @@ function drawGround() {
   }
 }
 
+// ağa yakalanmış askerin üstünde ağ örgüsü (kalan süreye göre solar), altında kıpırdanma tozu
+function drawNets() {
+  for (const s of G.soldiers) {
+    if (!(s.netT > 0) || s.dead) continue;
+    const h = unitH(s), a = clamp(s.netT / 0.4, 0, 1), cx = s.x, cy = s.y - h * 0.5, R = h * 0.62;
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, cy); ctx.rotate(Math.sin(time * 6 + s.x) * 0.05);
+    ctx.beginPath(); ctx.ellipse(0, 0, R * 0.75, R, 0, 0, Math.PI * 2); ctx.save(); ctx.clip();
+    ctx.strokeStyle = 'rgba(225,210,170,0.9)'; ctx.lineWidth = 0.8;
+    for (let i = -4; i <= 4; i++) { ctx.beginPath(); ctx.moveTo(i * R / 4 - R, -R); ctx.lineTo(i * R / 4 + R, R); ctx.moveTo(i * R / 4 + R, -R); ctx.lineTo(i * R / 4 - R, R); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(120,90,50,0.95)'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.ellipse(0, 0, R * 0.75, R, 0, 0, Math.PI * 2); ctx.stroke();
+    for (const [x, y] of [[-R * 0.6, R * 0.7], [R * 0.6, R * 0.7], [0, -R]]) circle(x, y, 1.3, '#6a5034');
+    ctx.restore();
+  }
+}
 // fener ışığı: yerde altın, kenarı yumuşak, hafif titreyen bir daire (lightAt ile aynı elips)
 function drawHolyLights() {
   for (const e of G.enemies) {
@@ -10768,6 +10887,7 @@ function drawPlay() {
   drawMechFx();
   drawProps(true);
   drawDmgNums();
+  drawNets();
   for (const f of G.floaters) {
     const k = f.t / 1.1, pop = easeOutBack(clamp(f.t / 0.2, 0, 1));
     ctx.save(); ctx.globalAlpha = 1 - k * k; ctx.translate(f.x, f.y); ctx.scale(pop, pop);

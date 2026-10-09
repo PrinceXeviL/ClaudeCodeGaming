@@ -913,6 +913,39 @@ if (NECRO) {
     saint: 'Canlanan taş heykel: oklar seker, lanet tutmaz. Veba kazanı ve büyüler işler',
   });
 }
+// Özel saldırılar (10 Eki): orta güçteki düşmanların alternatif saldırısı (alt) ve bossların ek yetenekleri (ab).
+// game.js doAlt / bossAbilities. Rütbeli kopyalar (kıdemli, yüzbaşı) bunları devralır (aşağıda kopyalanırlar).
+if (NECRO) {
+  const ALT = {
+    gladiator: { kind: 'net', cd: 9, stun: 2.5, note: 'Ara ara iskelete ağ atar (2,5 sn kımıldayamaz)' },
+    heavy: { kind: 'bash', cd: 7, stun: 1.2, mul: 1.3, note: 'Kalkan darbesiyle iskeleti sersemletir' },
+    assassin: { kind: 'poison', cd: 8, dps: 6, t: 4, note: 'Zehirli hançer: iskelet bir süre zehirlenir' },
+    cavalry: { kind: 'charge', cd: 8, d: 26, stun: 0.9, mul: 1.2, note: 'Hücumla iskeleti geri savurur' },
+    solarcher: { kind: 'burn', ranged: true, cd: 7, dps: 5, t: 3, note: 'Ateşli ok atar: iskelet yanar' },
+    hunter: { kind: 'net', ranged: true, cd: 10, stun: 1.8, note: 'Gümüş ağ fırlatır' },
+    torch: { kind: 'burn', cd: 6, dps: 7, t: 3, note: 'Meşalesiyle iskeleti tutuşturur' },
+    flagellant: { kind: 'whirl', cd: 7, r: 34, mul: 0.8, note: 'Kırbacını savurur: çevresindeki bütün iskeletlere vurur' },
+    paladin: { kind: 'bash', cd: 6, stun: 1.4, mul: 1.2, note: 'Kalkan darbesiyle sersemletir' },
+    hound: { kind: 'charge', cd: 6, d: 16, stun: 0.6, mul: 1, note: 'Atılıp iskeleti devirir' },
+    saint: { kind: 'bash', cd: 8, stun: 1.5, mul: 1.5, note: 'Taş kılıcıyla ezer, sersemletir' },
+  };
+  for (const t in ALT) { const { note, ...a } = ALT[t]; ENEMIES[t].alt = a; if (ENEMY_DESC[t]) ENEMY_DESC[t] += '. ' + note; }
+  const AB = {
+    centurion: { volley: { cd: 10, n: 3, dmg: 14, stun: 0.8, r: 150, say: 'Pilum!' } },
+    champion: { net: { cd: 9, n: 2, stun: 3, r: 120, say: 'Arena Ağı!' } },
+    shadowmaster: { burn: { cd: 11, r: 70, dps: 8, t: 4, poison: true, say: 'Zehir Bulutu!' } },
+    cavcaptain: { charge: { cd: 9, d: 30, dmg: 25, stun: 1.2, say: 'Süvari Hücumu!' } },
+    hierophant: { smite: { cd: 9, r: 160, dmg: 45, say: 'İlahi Ceza!' } },
+    ironwarden: { whirl: { cd: 8, r: 50, dmg: 28, say: 'Kalkan Fırtınası!' } },
+    gloriosus: { volley: { cd: 9, n: 5, dmg: 18, stun: 1, r: 170, say: 'Lejyon, Atış!' } },
+    malleus: { net: { cd: 10, n: 2, stun: 2.5, r: 140, say: 'Gümüş Ağ!' } },
+    campanus: { whirl: { cd: 9, r: 55, dmg: 30, say: 'Çekiç Savurma!' } },
+    ignis: { burn: { cd: 9, r: 80, dps: 10, t: 4, say: 'Arınma Ateşi!' } },
+    colossus: { charge: { cd: 10, d: 34, dmg: 40, stun: 1.5, say: 'Taş Hücum!' } },
+    severus: { smite: { cd: 8, r: 200, dmg: 55, say: 'Hüküm!' } },
+  };
+  for (const t in AB) ENEMIES[t].ab = Object.assign({}, ENEMIES[t].ab, AB[t]);
+}
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
