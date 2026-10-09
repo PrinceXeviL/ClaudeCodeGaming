@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(enemy|unit)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|die)$/, STRIP_WAIT = new Set();
+const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|die)$/, STRIP_WAIT = new Set();
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);

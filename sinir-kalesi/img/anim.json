@@ -1115,5 +1115,49 @@
   "fh": 175,
   "base": 0.0138,
   "ch": 0.9126
+ },
+ "hero_vladrik_atk": {
+  "n": 32,
+  "fw": 326,
+  "fh": 309,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "hero_wren_walk": {
+  "n": 17,
+  "fw": 285,
+  "fh": 327,
+  "base": 0.0147,
+  "ch": 0.9169,
+  "idle": 0
+ },
+ "hero_wren_die": {
+  "n": 33,
+  "fw": 304,
+  "fh": 354,
+  "base": 0.0127,
+  "ch": 0.8471
+ },
+ "hero_spartacus_atk": {
+  "n": 32,
+  "fw": 327,
+  "fh": 311,
+  "base": 0.0147,
+  "ch": 0.9658
+ },
+ "hero_leonidas_walk": {
+  "n": 19,
+  "fw": 362,
+  "fh": 316,
+  "base": 0.0143,
+  "ch": 0.9501,
+  "idle": 10
+ },
+ "hero_leonidas_die": {
+  "n": 33,
+  "fw": 390,
+  "fh": 315,
+  "base": 0.0143,
+  "ch": 0.9523
  }
 }
