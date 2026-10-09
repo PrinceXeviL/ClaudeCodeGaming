@@ -3,3 +3,5 @@ Sci-Fi Sounds, Music Jingles. Lisans: Creative Commons CC0 (kamu malı, ticari k
 
 Düşman asker sesleri (pain, dvoice, scream; varliklar/ses_kayit_isle.py ile işlendi), Creative Commons BY 3.0:
 - Michel Baradari, "11 male human pain/death sounds" — https://opengameart.org/content/11-male-human-paindeath-sounds
+
+Kılıç çarpışma sesleri (clash): StarNinjas, "20 Sword Sound Effects (Attacks and Clashes)" — https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — CC0

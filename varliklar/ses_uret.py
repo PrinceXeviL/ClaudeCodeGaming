@@ -306,7 +306,7 @@ def main():
     made = []
     for i, k in enumerate([0.95, 1.0, 1.08], 1): made.append(save(f'arrow_{i}', arrow_shot(k), -22))
     for i, k in enumerate([0.9, 1.0, 1.1, 1.2], 1): made.append(save(f'arrowhit_{i}', arrow_hit(k), -20))
-    for i, k in enumerate([0.9, 0.96, 1.0, 1.06, 1.13], 1): made.append(save(f'clash_{i}', clash(k), -22))
+    # clash artık gerçek kayıttan: ses_kayit_isle.py
     for i, k in enumerate([0.9, 1.0, 1.1], 1): made.append(save(f'bash_{i}', bash(k), -18))
     for i, k in enumerate([0.92, 1.0, 1.1], 1): made.append(save(f'zap_{i}', dark_zap(k), -19))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'splash_{i}', splash(k), -19))

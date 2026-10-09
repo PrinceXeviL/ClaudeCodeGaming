@@ -2,6 +2,7 @@
 
 Kaynaklar (varliklar/ham/ses/, CC-BY 3.0 — ses/LISANS.txt'te adları yazılı):
   baradari_*.wav     Michel Baradari, "11 male human pain/death sounds" (OpenGameArt)
+  starninjas_clash_* StarNinjas, "20 Sword Sound Effects (Attacks and Clashes)" (OpenGameArt, CC0)
 
 Çıktı sinir-kalesi/ses/: pain_1..8 (acı), dvoice_1..5 (ölüm iniltisi), scream_1..4 (korku çığlığı). Manifesti günceller.
 Savaş çığlığı sesi yok (beğenilmedi; dalga başında yalnız yazı balonu çıkar).
@@ -13,7 +14,7 @@ import wave
 
 import numpy as np
 
-from ses_uret import OUT, SR, fade, norm
+from ses_uret import OUT, SR, fade, norm, lowpass, bone_click, thud
 
 HAM = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ham', 'ses')
 
@@ -67,6 +68,17 @@ def main():
     # korku: aynı kayıtlar biraz daha ince (paniğe kapılmış asker)
     for i, (n, k) in enumerate([('painh', 1.1), ('paino', 1.12), ('die1', 1.14), ('pain4', 1.1)], 1):
         made.append(save(f'scream_{i}', pitch(B(n), k), -20))
+    # kılıç: gerçek çarpışma kaydı (bıçakla kaydedilmiş, çok tiz) — çarpma anından kısa kesilir, biraz kalınlaştırılır (kılıç boyu),
+    # tizleri yumuşatılır, altına hafif boğuk vuruş ve kemik tıkırtısı (iskelet) eklenir; ses düzeyi düşük
+    for i, (n, k) in enumerate([(2, 0.84), (4, 0.8), (5, 0.86), (7, 0.82), (8, 0.88), (10, 0.8)], 1):
+        x = load(f'starninjas_clash_{n}')
+        a0 = int(np.argmax(np.abs(x) > 0.3 * np.abs(x).max())); x = x[max(0, a0 - int(SR * 0.004)):]
+        x = pitch(x, k)[:int(SR * 0.34)]
+        x = x * np.minimum(1, np.linspace(1, 0, len(x)) * 3)          # son üçte birde söner
+        x = lowpass(lowpass(x, 4200), 4200) * 0.92 + x * 0.08      # iki kat yumuşatma: cam tınısı kalmasın
+        c = bone_click(0.95, 0.07) * 0.18; x[:len(c)] += c
+        th = thud(130, 0.09, 0.02) * 0.12; x[:len(th)] += th
+        made.append(save(f'clash_{i}', x, -25))
     mp = os.path.join(OUT, 'manifest.json')
     man = json.load(open(mp))
     kinds = {m.rsplit('_', 1)[0] for m in made}

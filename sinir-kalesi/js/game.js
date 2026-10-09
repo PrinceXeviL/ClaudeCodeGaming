@@ -233,7 +233,7 @@ const SOUND = {
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
   boom:    { vol: 0.50, gap: 0.08, max: 3, rate: [0.9, 1.1] },
   meteor:  { vol: 0.70, gap: 0.15, max: 2, rate: [0.85, 1.0] },
-  clash:   { vol: 0.24, gap: 0.09, max: 2, rate: [0.92, 1.1] },     // kılıç çarpışması (çelik tınısı + kemik tıkırtısı)
+  clash:   { vol: 0.17, gap: 0.1, max: 2, rate: [0.94, 1.06] },     // kılıç çarpışması (gerçek kayıt, StarNinjas CC0; hafif)
   death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
   coin:    { vol: 0.22, gap: 0.09, max: 2, rate: [0.95, 1.15] },
   coins:   { vol: 0.45, gap: 0.25, max: 1 },
@@ -7793,7 +7793,7 @@ const CREDITS = [
   ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
     ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
-    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Diğer sesler', 'oyunda sentezlendi']]],
+    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Diğer sesler', 'oyunda sentezlendi']]],
   ['YAZI TİPİ', [['Creepster · Lilita One · Baloo 2', 'SIL Open Font License']]],
 ];
 function drawCredits() {
@@ -7816,14 +7816,14 @@ function drawCredits() {
   roundRect(px + 10, py + 10, pw - 20, ph - 20, 15, pg, 'rgba(92,58,22,0.6)', 1.5);
   ctx.restore();
   if (pk < 0.9) return;
-  let y = py + 40;
+  let y = py + 36;
   for (const [head, rows] of CREDITS) {
-    txt(head, px + 40, y, 17, '#8a1a14', 'left', '400', FONT_T, false); y += 24;
+    txt(head, px + 40, y, 17, '#8a1a14', 'left', '400', FONT_T, false); y += 22;
     for (const [a, b] of rows) {
       if (a) txt(a, px + 52, y, 13, '#4a2a0e', 'left', '800', FONT_B, false);
-      txt(b, px + pw - 40, y, 13, '#5a3a1a', 'right', '700', FONT_B, false); y += 20;
+      txt(b, px + pw - 40, y, 13, '#5a3a1a', 'right', '700', FONT_B, false); y += 19;
     }
-    y += 8;
+    y += 7;
   }
 }
 
