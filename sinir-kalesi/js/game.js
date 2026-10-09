@@ -233,7 +233,7 @@ const SOUND = {
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
   boom:    { vol: 0.50, gap: 0.08, max: 3, rate: [0.9, 1.1] },
   meteor:  { vol: 0.70, gap: 0.15, max: 2, rate: [0.85, 1.0] },
-  clash:   { vol: 0.24, gap: 0.09, max: 2, rate: [0.92, 1.1] },     // kemik kalkana çarpar
+  clash:   { vol: 0.24, gap: 0.09, max: 2, rate: [0.92, 1.1] },     // kılıç çarpışması (çelik tınısı + kemik tıkırtısı)
   death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
   coin:    { vol: 0.22, gap: 0.09, max: 2, rate: [0.95, 1.15] },
   coins:   { vol: 0.45, gap: 0.25, max: 1 },
@@ -1784,8 +1784,19 @@ function drawCoinsFlying() {
     drawCoin(p.x, p.y, 3 + p.k * 2, c.spin);
   }
 }
-function damageSoldier(s, amount) {
+// Karşılık: hasar alan iskelet (ve aynı mahzenin boştaki iskeletleri) vuranın üstüne yürür; PROVOKE.r bayraktan en uzak kovalama
+const PROVOKE = { t: 5, r: 175 };
+function provoke(s, src) {
+  if (!src || src.dead || src.def.flying || src.under || s.hero || s.wall || s.bow || s.march) return;
+  const mates = s.tower ? s.tower.soldiers || [] : [s];
+  for (const m of mates.includes(s) ? mates : [s, ...mates]) {
+    if (m.dead || m.bow || (m !== s && m.target)) continue;
+    m.provoker = src; m.provokeT = PROVOKE.t;
+  }
+}
+function damageSoldier(s, amount, src) {
   if (s.dead) return;
+  if (src) provoke(s, src);
   if (s.wall) {
     s.hp -= amount * (1 - s.armor); s.flash = 0.08;
     if (s.hp <= 0) { s.dead = true; s.hp = 0; s.life = 0; wallCrumble(s); releaseSoldier(s); }
@@ -2405,7 +2416,7 @@ function updateEnemy(e, dt) {
       if (e.rcd <= 0) {
         e.rcd = RG.rate; e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
-        G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
+        G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, from: e, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
@@ -2440,7 +2451,7 @@ function updateEnemy(e, dt) {
         e.atk = e.def.rate; e.atkV = Math.floor(Math.random() * 3);
         const victim = e.blocker;
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
-        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (victim.hero ? HERO_AGGRO.dmg : 1));
+        damageSoldier(victim, roll(e.def.dmg) * (e.dmgMul || 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
         sfx('clash');
       }
     }
@@ -2637,8 +2648,15 @@ function updateSoldier(s, dt) {
   if (s.hero && s.ranged) { updateRangedHero(s, dt); runHeroSkills(s, dt); return; }
   if (s.bow) { updateBowSoldier(s, dt); return; }
   const home = soldierHome(s);
-  const e = s.target;
-  if (e && (e.dead || e.under || e.reviveT > 0 || dist(e.x, e.y, home.x, home.y) > s.engage + (s.leash ?? 40) || s.moving)) {
+  if (s.provokeT > 0) { s.provokeT -= dt; if (s.provokeT <= 0 || !s.provoker || s.provoker.dead || s.provoker.under) s.provoker = null; }
+  // vuran düşman: elindeki hedef göğüs göğüse değilse bırakıp ona döner
+  const pv = s.provoker;
+  if (pv && !s.moving && s.target !== pv && dist(pv.x, pv.y, home.x, home.y) <= PROVOKE.r && (!s.target || dist(s.x, s.y, s.target.x, s.target.y) > 26)) {
+    if (s.target && s.target.blocker === s) s.target.blocker = null;
+    s.target = pv; if (!pv.blocker && !pv.def.noblock) pv.blocker = s;
+  }
+  const e = s.target, lim = e && e === s.provoker ? PROVOKE.r + 20 : s.engage + (s.leash ?? 40);
+  if (e && (e.dead || e.under || e.reviveT > 0 || dist(e.x, e.y, home.x, home.y) > lim || s.moving)) {
     if (e.blocker === s) e.blocker = null;
     s.target = null;
   }
@@ -2860,7 +2878,7 @@ function updateProjectile(pr, dt) {
     if (pr.t < pr.dur) return;
     pr.done = true;
     if (h && !h.dead && !h.removed) {
-      damageSoldier(h, pr.edmg);
+      damageSoldier(h, pr.edmg, pr.from);
       if (pr.kind === 'axe') sfx('clash');
       for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-4, 4), y: pr.ty + rand(-4, 4), vx: rand(-40, 40), vy: rand(-50, 10), drag: 3,
         col: pr.kind === 'hex' ? '140,255,110' : '255,230,190', s0: 3, s1: 0.5, life: 0.35 });
@@ -8112,7 +8130,7 @@ function bossAbilities(e, dt) {
     if (!vs.length) e.abT.venom = 1;
     else {
       for (const s2 of vs) {
-        damageSoldier(s2, ab.venom.dmg * (e.dmgMul || 1)); s2.stunT = Math.max(s2.stunT || 0, ab.venom.stun);
+        damageSoldier(s2, ab.venom.dmg * (e.dmgMul || 1), e); s2.stunT = Math.max(s2.stunT || 0, ab.venom.stun);
         for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: s2.x + rand(-6, 6), y: s2.y - rand(4, 18), vy: -rand(10, 30), col: k % 2 ? '140,255,80' : '90,200,60', s0: 4, s1: 0.5, life: 0.7 });
       }
       for (let k = 0; k < 24; k++) { const a = rand(0, Math.PI * 2), v = rand(60, 140); emit(G.parts, { kind: 'glow', x: e.x, y: e.y - 14, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5, drag: 2.5, col: '120,220,70', s0: 6, s1: 14, life: 0.7, a: 0.55 }); }
@@ -8143,7 +8161,7 @@ function bossAbilities(e, dt) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);
     if (!hitAny) e.abT.slam = 1;
     else {
-      for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg * (e.dmgMul || 1)); s.stunT = ab.slam.stun; }
+      for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg * (e.dmgMul || 1), e); s.stunT = ab.slam.stun; }
       G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: ab.slam.r * 1.3, t: 0, dur: 0.45 });
       G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: ab.slam.r, t: 0, dur: 0.4 });
       G.decals.push({ x: e.x, y: e.y, r: ab.slam.r * 0.6, t: 0, life: 6 });
@@ -8224,7 +8242,7 @@ function bossAbilities(e, dt) {
     if (!vs.length) e.abT.drain = 1;
     else {
       for (const s2 of vs) {
-        damageSoldier(s2, ab.drain.dmg * (e.dmgMul || 1)); e.hp = Math.min(e.maxHp, e.hp + ab.drain.dmg * 1.5);
+        damageSoldier(s2, ab.drain.dmg * (e.dmgMul || 1), e); e.hp = Math.min(e.maxHp, e.hp + ab.drain.dmg * 1.5);
         G.effects.push({ kind: 'zap', x0: s2.x, y0: s2.y - 14, x1: e.x, y1: e.y - (e.def.h || 40) * 0.5, t: 0, dur: 0.5, w: 0.7, col: 'rgb(80,230,110)', seed: rand(0, 99) });
       }
       bossCastFx(e, 'Can Emme!', '110,255,140'); sfx('magic');

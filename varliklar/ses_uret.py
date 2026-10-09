@@ -142,13 +142,21 @@ def arrow_hit(k):
 
 
 def clash(k):
-    dur = 0.32
-    x = np.zeros(int(SR * dur))
-    c = bone_click(0.9 * k, dur); x += c
-    # boğuk kalkan/zırh: uyumsuz kısmiler, tizleri kısılmış
-    x += modes(dur, [430, 1130, 1790, 2650], [0.09, 0.06, 0.045, 0.03], [0.5, 0.35, 0.22, 0.12], k) * 0.6
-    x += thud(120 * k, dur, 0.04)
-    return lowpass(x, 4200)
+    """kılıç çarpışması: keskin metal "çın" + çeliğin uyumsuz tınlaması (iki bıçak, hafif dalgalanan) + kısa sürtünme;
+    altında küçük kemik tıkırtısı ve boğuk vuruş (iskelet kolu, konsept bozulmasın)"""
+    dur = 0.55; n = int(SR * dur); t = t_axis(dur)
+    x = np.zeros(n)
+    k0 = int(SR * 0.004); x[:k0] += highpass(noise(k0), 3000) * np.linspace(1, 0, k0) * 0.9           # çın: ilk temas
+    f0 = 640 * k
+    for r, tau, a in [(1, 0.32, 0.45), (2.76, 0.24, 0.75), (5.40, 0.16, 0.55), (8.93, 0.09, 0.3), (12.2, 0.05, 0.18)]:
+        for det in (1.0, 1.007):                                                                      # iki bıçak: hafif vuru
+            x += a * 0.5 * np.sin(2 * np.pi * f0 * r * det * t + rng.uniform(0, 6)) * np.exp(-t / tau) * (1 - np.exp(-t / 0.0015))
+    sc = int(SR * 0.13); fc = np.linspace(3600, 1900, sc) * k                                            # sürtünme: bıçak bıçağın üstünden kayar
+    scrape = resonate(noise(sc), fc, 700) * np.sin(np.linspace(0, np.pi, sc)) * 0.22
+    j = int(SR * 0.012); x[j:j + sc] += scrape[:n - j]
+    c = bone_click(1.0 * k, 0.08) * 0.35; x[:len(c)] += c
+    th = thud(150 * k, 0.1, 0.025) * 0.35; x[:len(th)] += th
+    return lowpass(x, 9000)
 
 
 def bash(k):
@@ -294,7 +302,7 @@ def main():
     made = []
     for i, k in enumerate([0.95, 1.0, 1.08], 1): made.append(save(f'arrow_{i}', arrow_shot(k), -22))
     for i, k in enumerate([0.9, 1.0, 1.1, 1.2], 1): made.append(save(f'arrowhit_{i}', arrow_hit(k), -20))
-    for i, k in enumerate([0.88, 0.95, 1.0, 1.07, 1.15], 1): made.append(save(f'clash_{i}', clash(k), -19))
+    for i, k in enumerate([0.9, 0.96, 1.0, 1.06, 1.13], 1): made.append(save(f'clash_{i}', clash(k), -22))
     for i, k in enumerate([0.9, 1.0, 1.1], 1): made.append(save(f'bash_{i}', bash(k), -18))
     for i, k in enumerate([0.92, 1.0, 1.1], 1): made.append(save(f'zap_{i}', dark_zap(k), -19))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'splash_{i}', splash(k), -19))
