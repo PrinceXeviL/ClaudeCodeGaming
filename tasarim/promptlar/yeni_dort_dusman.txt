@@ -1,0 +1,10 @@
+Using the attached reference sheet, draw 4 NEW enemy units for the same 2D tower defense game, in EXACTLY the same art style as the reference: same thick dark-brown outlines, same painterly shading with soft gradients and bright rim highlights, same warm red, gold and cream Solarian Empire color palette, same chunky stylized cartoon proportions, same level of detail (rivets, wood grain, metal shine, cloth folds).
+
+Draw these 4 units, each one complete and fully separated from the others, arranged in a 2x2 grid with lots of empty space between them:
+1. A Roman war hound: a muscular mastiff running forward, snarling with bared teeth, wearing a red leather harness with gold studs, a spiked gold collar and a small bronze plate on its back.
+2. A Roman war chariot: one armored white horse with red and gold barding pulling a small red and gold two-wheeled chariot with scythe blades on the wheel hubs, a charioteer in gold armor and a red cape holding the reins.
+3. A Roman siege tower: a tall, heavy wooden siege tower on four big wheels, three stories high, covered with red leather panels and gold sun emblems, iron bands and rivets, a closed drawbridge at the top, a red banner on top. Same chunky wooden construction detail as the battering ram in the reference.
+4. An imperial war eagle flying with wings spread wide, golden brown feathers, wearing a small gold helmet with a red crest and gold talon guards.
+
+All units in strict side view facing RIGHT, full body visible.
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
