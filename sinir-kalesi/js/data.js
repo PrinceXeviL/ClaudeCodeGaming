@@ -486,8 +486,11 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   });
   // dalga düzeni (8 Eki): her bölüm 8 dalga, her dalga öncekinden %30 kalabalık; total = bölümün boss hariç düşman sayısı
   // (önceki düzenin ~2,1 katı: 56, 64, 74, 74, 119 -> aşağıdakiler)
-  const TOTAL = [118, 124, 128, 134, 140, 146, 155, 158, 162, 155, 165, 172, 185, 205, 250];
-  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3 }));
+  // 10 Eki: yollar v2 sonrası denge (tarayıcı botu): geç bölümlerde düşman sayısı azaltıldı (çok kalabalık, çok zayıf yerine)
+  const TOTAL = [118, 124, 128, 134, 140, 146, 150, 132, 150, 155, 155, 135, 135, 170, 180];
+  // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
+  const HPMUL = [1, 1.15, 1.25, 1, 1.4, 1.1, 0.59, 0.49, 0.71, 1.26, 0.82, 0.43, 0.23, 0.54, 0.26];
+  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, 'mud', 'mud', null, 'graves', null, 'graves', 'lake', null, 'lake', 'sunbeam', null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
   LEVELS.splice(0, LEVELS.length, ...L);

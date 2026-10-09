@@ -2542,7 +2542,7 @@ function updateEnemy(e, dt) {
   // muhafız: boss'un yanında dizilişini korur; boss savaşırken bekler, boss ölünce serbest kalır
   if (e.leader) {
     const L = e.leader;
-    if (L.dead || L.p !== e.p || L.siege != null) e.leader = null;
+    if (L.dead || L.p !== e.p || L.siege != null || (L.blocker && L.d - e.d < 60)) e.leader = null; // önder dövüşe tutuldu: muhafız düzeni bozar, yürümeye devam eder
     else {
       const ls = L.blocker ? 0 : L.def.speed * G.wspd * (L.spdMul || 1) * (L.slowT > 0 ? 1 - L.slowK : 1) * (L.hasteT > 0 ? 1.5 : 1) * (L.entryT > 0 ? 0.3 : 1);
       spd = clamp(ls + ((L.d + e.form) - e.d) * 1.5, 0, spd * 1.3);
@@ -8524,13 +8524,13 @@ function bossAbilities(e, dt) {
   // sefer sonu bossu: canı yarıya inince ikinci lejyon
   if (e.def.legion && e.phase2 && !e.legion2 && e.hp < e.maxHp * 0.5) { e.legion2 = true; bossCastFx(e, 'Son Çağrı!', '255,90,70'); summonLegion(e); shakeScreen(5, 0.4); }
   // Muhafız çağırma: boss'un arkasında açılan geçitten minyonlar çıkar ve onunla yürür
-  if (ab.summon && e.siege === undefined && ready('summon', ab.summon.cd)) {
+  if (ab.summon && e.siege === undefined && ready('summon', ab.summon.cd) && G.enemies.filter(o => !o.dead && o.summonedBy === e).length < 8) { // en çok 8 çağrılmış asker
     const pi = G.paths.indexOf(e.p), d0 = Math.max(0, e.d - 24), q = pathPos(e.p, d0);
     G.effects.push({ kind: 'portal', x: q.x, y: q.y, t: 0, dur: 1.2, col: e.def.base === 'knight' || e.type === 'dark_shaman' ? '170,90,255' : '120,230,90' });
     for (let i = 0; i < ab.summon.n; i++) {
       const st = Array.isArray(ab.summon.t) ? ab.summon.t[i % ab.summon.t.length] : ab.summon.t;
       const m = spawnEnemy(st, pi, Math.max(0, d0 - i * 10), i % 2 ? 10 : -10);
-      m.leader = e; m.form = -22 - i * 12;
+      m.leader = e; m.form = -22 - i * 12; m.summonedBy = e;
       for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: m.x + rand(-8, 8), y: m.y - rand(0, 20), vy: -rand(20, 50), col: '200,160,255', s0: 4, s1: 0.5, life: 0.6 });
     }
     bossCastFx(e, 'Çağrı!', '200,140,255'); sfx('portal');

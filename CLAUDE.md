@@ -213,3 +213,15 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
 - Ölümler: iskelet → kemik yığını (boneCollapse), ölüm şeridi olmayan makine → machineWreck, uçan → skyFall.
 - Sesler: düşman acı/ölüm/korku sesleri gerçek kayıt (varliklar/ses_kayit_isle.py, Michel Baradari CC-BY 3.0). Savaş çığlığı sesi yok (beğenilmedi). Emeği geçenler ekranı: game.js CREDITS (yeni kaynak eklenince yaz).
 - Dalga sayacı sahada düşman varken durur (WAVE_REST 20 sn). İskelet duruşları SKEL_STANCE (kılıç saldırgan, kalkan/temel savunmacı).
+
+## 10 Eki 2026 (yayın 171–194)
+- Kale: `img/castle_keep_1..3` (Gemini, hasar evreleri; `varliklar/kale_isle.py` aynı kutuyla keser). game.js KEEP (kapı, balkon, Mortimer), KEEP_FX ışıklar. Duvarlı avlu kapalı (AVLU_ON=false).
+- Borazancı `img/enemy_herald.webp` (Gemini; gövde sabit, drawHeraldBlow yalnız borazan ağzını ve eli oynatır). Davulcu `enemy_drummer` + Kaggle şeritleri.
+  Davulcu ve sancaktar yalnız ≥10 kişilik piyade bölüklerinin ortasında (data.js SUPPORT).
+- Korku: ruhlar kovalar (drawFearGhosts), mr ve boss azaltır, makine bağışık. Vladrik özel gücü Yarasa Sürüsü (zone kind 'bats').
+- Mortimer sesi: ses_uret.py mort_babble/mort_laugh → mvoices/m/l, mlaugh; mortMumble yazının uzunluğuna göre seçer.
+- Sonsuz Gece (CHAL.e, endlessExtend, save.endless rekor) ve Günün Sınavı (CHAL.d, DAILY_MODS, save.daily). Kart: ∞ düğmesi; harita: takvim.
+- Gelir: MONET (ödüllü reklam: 5 canla devam, +150 altınla başla; 3 bölümde bir ara reklam; tek seferlik "Mortimer'ın Hazinesi" save.premium).
+  Tarayıcıda deneme reklam ekranı (drawAd); mağaza sürümünde window.NativeAds / window.NativeIAP bağlanacak. Dükkân ekranı screen 'shop'.
+- Denge: tarayıcı botu (Playwright'sız; __game ile sayfa içinde) — data.js HPMUL ve TOTAL. Hedef: bot 1. bölümü ~20, 15. bölümü ~7 canla bitirir.
+  Boss çağrıları en çok 8, önder dövüşe tutulunca muhafızlar yürümeye devam eder (sonsuz yığılma hatası düzeldi).
