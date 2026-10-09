@@ -3407,6 +3407,8 @@ function updateProjectile(pr, dt) {
 const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return u == null || (save.stars[u] || 0) > 0; };
 const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
 const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
+// sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
+const hudLeft = () => 120 + spellIds().length * 58;
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
   if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast, necro: S, U: S }; }
@@ -7495,7 +7497,11 @@ function menuLayout(sel = G.sel) {
   const xs = items.map(i => i.x), ys = items.map(i => i.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
   const dx = minX < 32 ? 32 - minX : maxX > W - 32 ? W - 32 - maxX : 0;
-  const dy = minY < 32 ? 32 - minY : maxY > H - 48 ? H - 48 - maxY : 0;
+  let dy = minY < 32 ? 32 - minY : maxY > H - 48 ? H - 48 - maxY : 0;
+  // sol alttaki portre ve büyü düğmelerinin üstüne binmesin: düğme (r≈22) + fiyat hapı oraya giriyorsa menü yukarı kayar
+  let up = 0;
+  for (const it of items) if (it.x + dx - 22 < hudLeft() - 4) up = Math.max(up, it.y + dy + 34 - (it.x + dx - 22 < 150 ? H - 96 : H - 66));
+  dy -= up;
   for (const it of items) { it.x += dx; it.y += dy; }
   return { items, cx: cx + dx, cy: cy + dy };
 }
@@ -7517,8 +7523,15 @@ function drawEnemyPanel() {
   const e = G.sel && G.sel.kind === 'enemy' && G.sel.enemy;
   if (!e) return;
   if (e.dead || e.siege !== undefined) { G.sel = null; return; }
-  const d = e.def, dl = wrapLines(d.desc || ENEMY_DESC[e.type] || '', ENEMY_PANEL.w - 82, 9.5, '700', FONT_B, 3), ex = Math.max(0, dl.length - 1) * 11;
-  const P = { x: ENEMY_PANEL.x, y: ENEMY_PANEL.y - ex, w: ENEMY_PANEL.w, h: ENEMY_PANEL.h + ex }, k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
+  G.enemyPanelR = null;
+  if (infoText()) return; // büyü/kule açıklaması aynı alt şeridi kullanır: o açıkken kart çekilir
+  const d = e.def, dl = wrapLines(d.desc || ENEMY_DESC[e.type] || '', ENEMY_PANEL.w - 82, 9.5, '700', FONT_B, 4);
+  // zayıflık / direnç etiketleri: ikisi bir satıra sığmazsa direnç alt satıra iner
+  const wk = d.wk || {}, tagS = [['Zayıf:', Object.keys(wk).filter(q => wk[q] > 1)], ['Dirençli:', Object.keys(wk).filter(q => wk[q] < 1)]]
+    .map(([label, list]) => label + ' ' + (list.length ? list.map(q => `${WK_NAME[q]} ${wk[q] > 1 ? '+' : '−'}%${Math.round(Math.abs(wk[q] - 1) * 100)}`).join(', ') : 'yok'));
+  ctx.font = `800 9.5px ${FONT_B}`; const tagW = tagS.map(t => ctx.measureText(t).width + 12);
+  const tagRows = tagW[0] + 5 + tagW[1] <= ENEMY_PANEL.w - 82 ? 1 : 2, ex = Math.max(0, dl.length - 1) * 11 + (tagRows - 1) * 18;
+  const P = { x: clamp(W / 2 - ENEMY_PANEL.w / 2, hudLeft(), W - ENEMY_PANEL.w - 10), y: ENEMY_PANEL.y - ex, w: ENEMY_PANEL.w, h: ENEMY_PANEL.h + ex }; G.enemyPanelR = P; const k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
   const eh = CHAR_H['enemy_' + e.type] || 26, fy = d.flying ? 26 : 0;
   ctx.save(); ctx.translate(P.x + P.w / 2, P.y + P.h / 2); ctx.scale(k, k); ctx.translate(-(P.x + P.w / 2), -(P.y + P.h / 2));
   roundRect(P.x + 2, P.y + 4, P.w, P.h, 14, 'rgba(0,0,0,0.3)');
@@ -7542,19 +7555,13 @@ function drawEnemyPanel() {
   const st = [`Zırh %${Math.round(d.armor * 100)}`, `Büyü dir. %${Math.round(d.mr * 100)}`, `Hız ${d.speed}`, `Can kaybı ${d.lives}`];
   if (d.flying) st.push('Uçar');
   txt(st.join(' · '), x0, P.y + 44, 9.5, '#f0e2c4', 'left', '700', FONT_B, false);
-  // zayıflık / direnç
-  const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
-  let tx = x0;
-  const tag = (label, list, col, bg) => {
-    const s2 = label + ' ' + (list.length ? list.map(q => `${WK_NAME[q]} ${wk[q] > 1 ? '+' : '−'}%${Math.round(Math.abs(wk[q] - 1) * 100)}`).join(', ') : 'yok');
-    ctx.font = `800 9.5px ${FONT_B}`; const tw = ctx.measureText(s2).width + 12;
-    roundRect(tx, P.y + 52, tw, 15, 7.5, bg, col, 1);
-    txt(s2, tx + tw / 2, P.y + 60, 9.5, col, 'center', '800', FONT_B, false);
-    tx += tw + 5;
-  };
-  tag('Zayıf:', weak, '#ffd08a', 'rgba(150,60,10,0.6)');
-  tag('Dirençli:', res, '#a8d8ff', 'rgba(20,60,120,0.6)');
-  dl.forEach((l, i) => txt(l, x0, P.y + 79 + i * 11, 9.5, '#cdbb98', 'left', '700', FONT_B, false));
+  [['#ffd08a', 'rgba(150,60,10,0.6)'], ['#a8d8ff', 'rgba(20,60,120,0.6)']].forEach(([col, bg], i) => {
+    const tx = i && tagRows === 1 ? x0 + tagW[0] + 5 : x0, ty = P.y + 52 + (i && tagRows === 2 ? 18 : 0);
+    roundRect(tx, ty, tagW[i], 15, 7.5, bg, col, 1);
+    txt(tagS[i], tx + tagW[i] / 2, ty + 8, 9.5, col, 'center', '800', FONT_B, false);
+  });
+  const dy = P.y + 79 + (tagRows - 1) * 18;
+  dl.forEach((l, i) => txt(l, x0, dy + i * 11, 9.5, '#cdbb98', 'left', '700', FONT_B, false));
   ctx.restore();
 }
 
@@ -8229,7 +8236,7 @@ function drawHud() {
   const info = infoText();
   if (info) {
     // sol alttaki portre ve büyü düğmeleriyle sağ kenar arasına sığar; uzun açıklama satırlara bölünür (ekrandan taşmasın)
-    const left = 120 + spellIds().length * 58, maxW = W - left - 10, chips = info[2] || null;
+    const left = hudLeft(), maxW = W - left - 10, chips = info[2] || null;
     ctx.font = `700 13px ${FONT_B}`;
     const lines = info[1] ? wrapLines(info[1], maxW - 30, chips ? 12 : 13, '700', FONT_B, chips ? 2 : 3) : [];
     let tw = 0; for (const l of lines) tw = Math.max(tw, ctx.measureText(l).width);
@@ -11792,7 +11799,7 @@ function hudTap(x, y) {
     }
   }
   // açık düşman paneline dokunmak paneli kapatmaz
-  if (G.sel && G.sel.kind === 'enemy' && hit(ENEMY_PANEL, x, y)) return true;
+  if (G.sel && G.sel.kind === 'enemy' && G.enemyPanelR && hit(G.enemyPanelR, x, y)) return true;
   return false;
 }
 
