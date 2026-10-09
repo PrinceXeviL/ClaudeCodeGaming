@@ -662,6 +662,31 @@ function nearestOnPaths(paths, x, y) {
   return best;
 }
 
+// ----- mahzen kapakları (2. sefer): yol kenarında; altınla açılır, içinden gulyabani çıkıp yolu tutar -----
+// gulyabani ölürse respawn sn sonra kapaktan yeniden çıkar; meşaleci kapağın yanında seal sn kalırsa kapağı mühürler (artık çıkmaz)
+const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
+  ghoul: { hp: 520, dmg: [10, 16], armor: 0.35, rate: 1.1, speed: 40, engage: 80, hK: 1.3, look: 'enemy_heavy' } };
+function hatchSpots(lv, paths) {
+  if (lv.ep !== 2 || !NECRO) return [];
+  if (lv._hatch) return lv._hatch;
+  const li = LEVELS.indexOf(lv);
+  let seed = ((li + 7) * 2246822519) >>> 0;
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const n = li >= 22 ? 3 : 2, out = [], R = lv.roadK || ROAD_K;
+  for (let k = 0; k < 600 && out.length < n; k++) {
+    const P = paths[Math.floor(rnd() * paths.length)], q = pathPos(P, P.total * (0.15 + rnd() * 0.62));
+    const side = rnd() < 0.5 ? -1 : 1, off = 40 + 14 * R, x = q.x - q.dy * off * side, y = q.y + q.dx * off * side;
+    if (x < 50 || x > W - 50 || y < 80 || y > H - 40) continue;
+    if (y > H - 90 && x < 440) continue; // sol alttaki düğmelerin altı
+    if (nearestOnPaths(paths, x, y).d < off - 4) continue; // başka yolun üstüne düşmesin
+    if (lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < 56)) continue;
+    if (dist(x, y, lv.castle[0], lv.castle[1]) < 160) continue;
+    if (out.some(o => dist(x, y, o[0], o[1]) < 170)) continue;
+    out.push([x, y, q.x, q.y]);
+  }
+  return (lv._hatch = out);
+}
+
 // ---------- arka plan (önceden çizilir) ----------
 const THEMES = {
   meadow: { grass: '#8cc25a', grass2: '#6a9e46', patch: ['#8cc15a', '#5a8a3a'], trees: 17, rocks: 6, treeCol: ['#2f6b2a', '#3f8a35', '#56a446'], road: ['#7a5a32', '#cfa96b', '#5a3f1f'], tuft: ['#4f8a2e', '#6ea83e'], stone: ['#a49c8a', '#cfc7b4'], light: 'rgba(255,226,160,0.16)' },
@@ -1019,6 +1044,7 @@ function renderBackground(lv, paths, res = 2) {
   const blocked = (x, y, pad) => {
     if (nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad) return true; // dalgalı kenar payı dahil
     for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
+    for (const hq of hatchSpots(lv, paths)) if (dist(x, y, hq[0], hq[1]) < 30 + pad) return true;
     if (y < 52 && (x < 300 || x > 860)) return true;
     if (y > 465 && x < 230) return true;
     if (Math.abs(x - lv.castle[0]) < 75 + pad && y > lv.castle[1] - 170 && y < lv.castle[1] + 38 + pad) return true;
@@ -1216,6 +1242,7 @@ function startLevel(idx, chal = null) {
     enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [], dmgNums: [],
     parts: [], decals: [], zones: [], coins: [], traps: [], shakeT: 0, shakeAmp: 0, shakeDur: 1, ambT: 0,
     plots: lv.plots.map(([x, y]) => ({ x, y, tower: null })),
+    hatches: hatchSpots(lv, paths).map(([x, y, rx, ry]) => ({ x, y, rx, ry, state: 'closed', sealT: 0, ghoul: null })),
     heroes: [],
     spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
@@ -1249,7 +1276,10 @@ function startLevel(idx, chal = null) {
   setupGate();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
   // yeni büyü açıldıysa ilk bölümde duyurulur
-  if (NECRO && necroSpellOn('nm_burst') && !save.burstSeen) {
+  if (G.hatches.length && !save.hatchSeen) {
+    save.hatchSeen = true; persist();
+    G.banner = { title: 'YENİ: MAHZEN KAPAĞI', sub: `Kapağa dokun: ${HATCH.cost} altına gulyabani çıkar, yolu tutar. Meşaleciler kapağı mühürler!`, t: 0, dur: 5 };
+  } else if (NECRO && necroSpellOn('nm_burst') && !save.burstSeen) {
     save.burstSeen = true; persist();
     G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_burst.name, sub: NECRO_SPELLS.nm_burst.short, t: 0, dur: 4.2 };
   }
@@ -2031,6 +2061,12 @@ function damageSoldier(s, amount, src) {
     }
     s.dead = true; s.hp = 0;
     if (s.hero) mortSay('heroDown');
+    else if (s.ghoul) { // gulyabani çürük bir toz bulutuyla yere çöker
+      sfx('bonefall');
+      for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-10, 10), y: s.y - rand(2, 26), vx: rand(-30, 30), vy: -rand(10, 40), drag: 2,
+        col: i % 3 ? '120,230,110' : '190,110,255', s0: rand(3, 6), s1: 0.5, life: rand(0.5, 0.9) });
+      G.effects.push({ kind: 'puff', x: s.x, y: s.y - 6, t: 0, dur: 0.6, r: 9 });
+    }
     else if (NECRO && !s.wall) { // iskelet dağılır: kemikler ve kafatası saçılır
       sfx('bonefall');
       boneCollapse(s);
@@ -2038,9 +2074,9 @@ function damageSoldier(s, amount, src) {
       emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 10, col: '120,255,140', s0: 10, s1: 22, life: 0.35, a: 0.4 });
     }
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
-    G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
+    if (!s.ghoul) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
-    s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : s.guard ? GATE.guard.respawn : 0;
+    s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0) : s.ghoul ? HATCH.respawn : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
   }
 }
@@ -2964,11 +3000,12 @@ function updateSoldier(s, dt) {
     if (s.life <= 0 && !s.dead) { s.dead = true; releaseSoldier(s); }
   }
   if (s.dead) {
-    if (s.militia) { s.removed = true; return; }
+    if (s.militia || (s.ghoul && s.ghoul.state === 'sealed')) { s.removed = true; return; }
     s.respawnT -= dt;
     if (s.respawnT <= 0) {
       s.dead = false; s.hp = s.maxHp;
       if (s.hero) G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,190', t: 0, dur: 0.8 }); // olduğu yerde, ışık sütunuyla dirilir
+      else if (s.ghoul) { s.x = s.ghoul.x; s.y = s.ghoul.y; s.born = G.t; ghoulRiseFx(s.ghoul); }
       else if (s.guard) { s.x = s.rx; s.y = s.ry; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '140,255,140', t: 0, dur: 0.6 }); }
       else { s.x = s.tower.x; s.y = s.tower.y + 6; riseFromGrave(s); }
     }
@@ -4554,6 +4591,64 @@ function updateMercs(dt) {
   G.mercT -= dt;
   if (G.mercT <= 0) { spawnMercs(); G.mercT = MERCS.every * (upgRank('spells') >= 3 ? 0.75 : 1); }
 }
+// ----- mahzen kapağı -----
+function openHatch(h) {
+  if (!h || h.state !== 'closed' || G.gold < HATCH.cost) return false;
+  G.gold -= HATCH.cost; h.state = 'open'; h.openT = G.t;
+  const C = HATCH.ghoul, s = { guard: true, ghoul: h, militia: false, x: h.x, y: h.y, rx: h.rx, ry: h.ry, hp: C.hp, maxHp: C.hp, dmg: C.dmg, armor: C.armor,
+    rate: C.rate, speed: C.speed, engage: C.engage, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t,
+    zname: C.look, zrig: C.look, zh: (CHAR_H[C.look] || 26) * C.hK };
+  h.ghoul = s; G.soldiers.push(s);
+  ghoulRiseFx(h); sfx('raise'); mortSay('raise', true);
+  return true;
+}
+function ghoulRiseFx(h) {
+  G.effects.push({ kind: 'pillar', x: h.x, y: h.y, col: '150,255,130', t: 0, dur: 0.8 });
+  G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 34, col: '190,110,255', t: 0, dur: 0.5 });
+  G.effects.push({ kind: 'dust', x: h.x, y: h.y, t: 0, dur: 0.7 });
+  for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', add: true, x: h.x + rand(-12, 12), y: h.y - rand(0, 14), vy: -rand(25, 60), drag: 1.5,
+    col: i % 3 ? '130,255,120' : '200,110,255', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) });
+}
+function updateHatches(dt) {
+  for (const h of G.hatches) {
+    if (h.state === 'sealed') continue;
+    // meşaleci yanından geçerken (gulyabani nöbette değilse) kapağı mühürler
+    const guard = h.ghoul && !h.ghoul.dead && dist(h.ghoul.x, h.ghoul.y, h.x, h.y) < HATCH.sealR * 1.6;
+    const torch = !guard && G.enemies.find(e => !e.dead && e.type === 'torch' && e.siege === undefined && dist(e.x, e.y, h.x, h.y) < HATCH.sealR);
+    if (torch) {
+      h.sealT += dt;
+      if (Math.random() < dt * 22) emit(G.parts, { kind: 'glow', add: true, x: h.x + rand(-14, 14), y: h.y - rand(0, 10), vy: -rand(20, 50), col: '255,150,60', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.7) });
+      if (h.sealT >= HATCH.seal) {
+        h.state = 'sealed';
+        floatText(h.x, h.y - 34, 'Mühürlendi!', '#ffb070'); sfx('splash');
+        G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 30, col: '255,150,60', t: 0, dur: 0.5 });
+        if (G.sel && G.sel.hatch === h) setSel(null);
+      }
+    } else h.sealT = Math.max(0, h.sealT - dt * 0.5);
+  }
+}
+function drawHatches() {
+  for (const h of G.hatches) {
+    const name = h.state === 'sealed' ? 'nm2_hatch_sealed' : h.state === 'open' ? 'nm2_hatch_open' : 'nm2_hatch', im = spr(name);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(h.x + 2, h.y + 2, HATCH.w * 0.52, HATCH.w * 0.17, 0, 0, Math.PI * 2); ctx.fill();
+    // kapalı kapak: aralıktan sızan yeşil-mor ışık (dokunulabilir olduğu belli olsun)
+    if (h.state === 'closed') glow(ctx, h.x, h.y - 4, 26, (Math.sin(time * 1.3 + h.x) > 0 ? '150,255,130' : '190,110,255'), 0.18 + Math.sin(time * 3 + h.y) * 0.06);
+    if (h.state === 'open') glow(ctx, h.x, h.y - 6, 30, '130,255,120', 0.28);
+    if (im) drawSprite(ctx, im, h.x, h.y + HATCH.w * 0.22, HATCH.w * (h.state === 'closed' ? 1 : 1.02));
+    else { ctx.fillStyle = '#3a2a1a'; ctx.beginPath(); ctx.ellipse(h.x, h.y, HATCH.w * 0.45, HATCH.w * 0.25, 0, 0, Math.PI * 2); ctx.fill(); }
+    if (h.sealT > 0 && h.state !== 'sealed') { // mühürleme ilerlemesi
+      const k = h.sealT / HATCH.seal;
+      ctx.strokeStyle = 'rgba(255,150,60,0.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(h.x, h.y - 26, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+    }
+    const g = h.ghoul;
+    if (g && g.dead && h.state === 'open') { // yeniden çıkış sayacı
+      const k = 1 - g.respawnT / HATCH.respawn;
+      circle(h.x, h.y - 26, 9, 'rgba(20,12,24,0.75)', 'rgba(150,255,130,0.5)', 1.2);
+      ctx.strokeStyle = '#96ff82'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(h.x, h.y - 26, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+      drawSkullIcon(h.x, h.y - 26, 5);
+    }
+  }
+}
 // Sahadaki paralı askeri yeni toplanma yerine gönderir: yolun üstündeyse yol boyunca, değilse dümdüz yürür
 function sendMerc(s) {
   const R = G.castle.rally, i = s.slot || 0;
@@ -4664,6 +4759,7 @@ function update(dt) {
   castleAmbient(dt);
   updateCastleArchers(dt);
   updateMercs(dt);
+  updateHatches(dt);
   if (G.bossFx && (G.bossFx.t += dt) > G.bossFx.dur) G.bossFx = null;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
   for (const t of G.towers) updateTower(t, dt);
@@ -7490,8 +7586,12 @@ function towerMenuItems(t) {
 }
 // menüyü ekran içinde tutmak için kaydırma
 function menuLayout(sel = G.sel) {
-  if (!sel || (sel.kind !== 'plot' && sel.kind !== 'tower' && sel.kind !== 'castle')) return { items: [], cx: 0, cy: 0 };
+  if (!sel || (sel.kind !== 'plot' && sel.kind !== 'tower' && sel.kind !== 'castle' && sel.kind !== 'hatch')) return { items: [], cx: 0, cy: 0 };
   let items, cx, cy;
+  if (sel.kind === 'hatch') {
+    const q = worldToScreen(sel.hatch.x, sel.hatch.y);
+    items = [{ id: 'ghoul', x: q.x, y: q.y - 66, cost: HATCH.cost }]; cx = q.x; cy = q.y - 10;
+  } else
   if (sel.kind === 'castle') {
     const c = G.castle, q = worldToScreen(c.x - 10, c.y - 40), N = CASTLE.levels[c.lvl + 1];
     items = [N ? { id: 'upgrade', type: 'castle', x: q.x, y: q.y - 74, cost: N.cost } : { id: 'max', x: q.x, y: q.y - 74 },
@@ -7576,7 +7676,7 @@ function setSel(sel) {
   const old = G.sel;
   const same = old && sel && old.kind === sel.kind && old.plot === sel.plot && old.tower === sel.tower && old.hero === sel.hero && old.enemy === sel.enemy;
   if (same) return;
-  if (old && (old.kind === 'plot' || old.kind === 'tower' || old.kind === 'castle')) G.menuClose = { layout: menuLayout(old), t: time, preview: G.preview };
+  if (old && (old.kind === 'plot' || old.kind === 'tower' || old.kind === 'castle' || old.kind === 'hatch')) G.menuClose = { layout: menuLayout(old), t: time, preview: G.preview };
   G.sel = sel; G.preview = null; G.menuT = time;
 }
 
@@ -7587,7 +7687,7 @@ function drawMenu() {
     else drawMenuLayout(G.menuClose.layout, 1 - k, true, G.menuClose.preview);
   }
   if (!G.sel) return;
-  if (G.sel.kind !== 'plot' && G.sel.kind !== 'tower' && G.sel.kind !== 'castle') return;
+  if (G.sel.kind !== 'plot' && G.sel.kind !== 'tower' && G.sel.kind !== 'castle' && G.sel.kind !== 'hatch') return;
   drawMenuLayout(menuLayout(), time - G.menuT, false, G.preview);
 }
 
@@ -7663,6 +7763,8 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     txt('MAX', 0, 12, 10, '#fff', 'center', '400', FONT_T);
   } else if (it.id === 'sell') {
     drawIcon('coin', -4, 3, 17); drawIcon('coin', 4, -3, 19);
+  } else if (it.id === 'ghoul') {
+    glow(ctx, 0, 2, 20, '140,255,120', 0.35); drawSkullIcon(0, 1, 15);
   } else if (it.id === 'rally') {
     ctx.strokeStyle = '#2a1a0a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-5, 13); ctx.lineTo(-5, -12); ctx.stroke();
     const w = Math.sin(time * 6) * 2;
@@ -8326,6 +8428,10 @@ function infoText() {
   if (pk) {
     const I = spellInfo(pk), cd = G.spells[pk];
     return [I.name, `${I.U.short || I.U.desc} · ${cd > 0 ? Math.ceil(cd) + ' sn sonra hazır' : 'Haritada hedefe dokun'}`];
+  }
+  if (G.sel && G.sel.kind === 'hatch') {
+    const C = HATCH.ghoul;
+    return [`Mahzen Kapağı — ${HATCH.cost} altın`, `Gulyabani çıkar (Can ${C.hp} · Hasar ${C.dmg[0]}-${C.dmg[1]} · Zırh %${Math.round(C.armor * 100)}), yolu tutar; ölürse ${HATCH.respawn} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!`];
   }
   if (G.sel && G.sel.kind === 'castle') {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
@@ -11170,10 +11276,16 @@ function drawPlay() {
   drawGround();
   drawHolyLights();
   for (const pl of G.plots) if (!pl.tower) drawPlot(pl);
+  drawHatches();
   drawMechGround();
   drawProps(false);
   drawHeralds();
   CORPSE_BAKE = 3;
+  if (G.sel && G.sel.kind === 'hatch') {
+    const h = G.sel.hatch;
+    ctx.strokeStyle = `rgba(160,255,140,${0.9 * clamp((time - G.menuT) / 0.25, 0, 1)})`; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.ellipse(h.x, h.y + 2, 30 + Math.sin(time * 6) * 1.5, 13, 0, 0, Math.PI * 2); ctx.stroke();
+  }
   if (G.sel && G.sel.kind === 'plot') {
     const pl = G.sel.plot, k = clamp((time - G.menuT) / 0.25, 0, 1);
     ctx.strokeStyle = `rgba(255,230,160,${0.9 * k})`; ctx.lineWidth = 2.5;
@@ -11788,7 +11900,7 @@ function hudTap(x, y) {
     }
   }
   // açık menü
-  if (!G.mode && G.sel && (G.sel.kind === 'plot' || G.sel.kind === 'tower' || G.sel.kind === 'castle')) {
+  if (!G.mode && G.sel && (G.sel.kind === 'plot' || G.sel.kind === 'tower' || G.sel.kind === 'castle' || G.sel.kind === 'hatch')) {
     for (const it of currentMenu()) {
       if (dist(it.x, it.y, x, y) <= MENU_R + 8) {
         const same = G.preview && G.preview.id === it.id && G.preview.type === it.type;
@@ -11797,6 +11909,7 @@ function hudTap(x, y) {
         if (it.id === 'max') return true;
         if (!same) { G.preview = it; sfx('pick'); return true; }
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
+        else if (it.id === 'ghoul') { if (openHatch(G.sel.hatch)) setSel(null); else sfx('error'); }
         else if (it.id === 'upgrade' && it.type === 'castle') { if (upgradeCastle()) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade') { if (upgradeTower(G.sel.tower)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'ability') { if (it.cost != null && buyAbility(G.sel.tower, it.type)) G.preview = null; else sfx('error'); }
@@ -11886,6 +11999,15 @@ function worldTap(x, y) {
     if (Math.abs(x - t.x) < 32 * BUILD_K && y < t.y + 20 && y > t.y - 88 * BUILD_K) {
       if (G.sel && G.sel.tower === t) { setSel(null); return; }
       setSel({ kind: 'tower', tower: t }); sfx('select'); return;
+    }
+  }
+  // mahzen kapağı
+  for (const h of G.hatches) {
+    if (dist(h.x, h.y - 6, x, y) < 26) {
+      if (h.state === 'sealed') { floatText(h.x, h.y - 30, 'Mühürlü!', '#ffb070'); sfx('error'); setSel(null); return; }
+      if (h.state === 'open') { floatText(h.x, h.y - 30, h.ghoul && h.ghoul.dead ? `${Math.ceil(h.ghoul.respawnT)} sn` : 'Gulyabani nöbette', '#c8ffb0'); setSel(null); return; }
+      if (G.sel && G.sel.hatch === h) { setSel(null); return; }
+      setSel({ kind: 'hatch', hatch: h }); sfx('select'); return;
     }
   }
   // boş arsa
