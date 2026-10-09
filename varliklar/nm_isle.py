@@ -39,6 +39,7 @@ SHEETS = [
     ('nm_fil.jpg', ['enemy_elephant'], 'unit'),
     # Sefer 2 (Cadı Avı): Engizisyon. 2x2 ızgara sayfaları 'unitgrid' (nesneler satır satır bulunur, birim gibi ölçeklenir)
     ('nm_engizisyon_A.jpg', ['enemy_hunter', 'enemy_torch', 'enemy_holywater', 'enemy_flagellant'], 'unitgrid'),
+    ('nm_engizisyon_B.jpg', ['enemy_lantern', 'enemy_bellpriest', 'enemy_paladin', 'enemy_inquisitor'], 'unitgrid'),
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
