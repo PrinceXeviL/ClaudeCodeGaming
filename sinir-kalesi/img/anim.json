@@ -669,5 +669,75 @@
   "base": 0.0144,
   "ch": 0.9665,
   "idle": 3
+ },
+ "enemy_legion_skill": {
+  "n": 32,
+  "fw": 173,
+  "fh": 169,
+  "base": 0.0142,
+  "ch": 0.948
+ },
+ "enemy_assassin_skill": {
+  "n": 32,
+  "fw": 172,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9477
+ },
+ "enemy_priest_skill": {
+  "n": 32,
+  "fw": 132,
+  "fh": 202,
+  "base": 0.0157,
+  "ch": 0.7927
+ },
+ "enemy_solarcher_skill": {
+  "n": 32,
+  "fw": 313,
+  "fh": 171,
+  "base": 0.0133,
+  "ch": 0.9379
+ },
+ "enemy_hunter_skill": {
+  "n": 32,
+  "fw": 409,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9684
+ },
+ "enemy_flagellant_skill": {
+  "n": 32,
+  "fw": 208,
+  "fh": 174,
+  "base": 0.0143,
+  "ch": 0.9192
+ },
+ "enemy_hound_skill": {
+  "n": 32,
+  "fw": 423,
+  "fh": 237,
+  "base": 0.0143,
+  "ch": 0.6754
+ },
+ "enemy_malleus_skill": {
+  "n": 32,
+  "fw": 374,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9614
+ },
+ "enemy_ignis_skill": {
+  "n": 32,
+  "fw": 342,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
+ },
+ "enemy_severus_skill": {
+  "n": 32,
+  "fw": 336,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9433
  }
 }
