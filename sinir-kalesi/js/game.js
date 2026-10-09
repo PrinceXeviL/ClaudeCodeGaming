@@ -504,7 +504,7 @@ function voicePitch(e) {
   if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.94, 1.08) * (e.def.chief ? 0.9 : 1);
   return e.vp;
 }
-const MUTE_VOICE = (e) => !!e.def.machine || e.type === 'wardog' || e.type === 'eagle'; // makineler ve hayvanlar insan sesiyle bağırmaz
+const MUTE_VOICE = (e) => !!e.def.machine || e.type === 'wardog' || e.type === 'eagle' || e.type === 'elephant'; // makineler ve hayvanlar insan sesiyle bağırmaz
 function deathVoice(e) { if (!MUTE_VOICE(e)) sfx('dvoice', voicePitch(e)); }
 // acı sesi: her düşman en çok ~1,4 sn'de bir, sürekli hasarda (zehir, gaz) çıkmaz
 function painVoice(e) {
@@ -778,7 +778,7 @@ function drawRoadDetail(g, c, res, paths, th, rr, painted) {
 }
 
 const TREE_MUL = 2; // bölüm zeminindeki ağaç sayısı çarpanı (tema trees değerine)
-const RUIN_K = 0.22; // harabe görsellerinin ölçeği (görsel pikseli -> dünya)
+const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dünya)
 function renderBackground(lv, paths, res = 2) {
   const c = document.createElement('canvas');
   c.width = W * res; c.height = H * res;
@@ -969,9 +969,16 @@ function renderBackground(lv, paths, res = 2) {
     const nR = ruins.length ? (th === THEMES.graveyard || th === THEMES.necrogate ? 3 : 2) : 0, nG = th === THEMES.graveyard ? 5 : 3;
     const place = (pad) => { for (let k = 0; k < 300; k++) { const x = 40 + rnd() * (W - 80), y = 90 + rnd() * (H - 130); if (!blocked(x, y, pad) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < pad + o[2])) return [x, y]; } return null; };
     for (let i = 0; i < nR; i++) {
-      const q = place(46); if (!q) continue;
-      const name = ruins[(i + Math.floor(rnd() * 9)) % ruins.length], im = spr(name), w = (SPR_META[name] ? SPR_META[name][0] : 300) * RUIN_K * (0.85 + rnd() * 0.3);
-      props.push([q[0], q[1], w * 0.45]);
+      const name = ruins[(i + Math.floor(rnd() * 9)) % ruins.length], im = spr(name), M = SPR_META[name] || [300, 300];
+      const w = M[0] * RUIN_K * (0.85 + rnd() * 0.3), h = w * M[1] / M[0];
+      // görsel ayak noktasından yukarı uzar: gövdesinin üst ve yan noktaları da yola/arsaya binmesin
+      let q = null;
+      for (let k = 0; k < 40 && !q; k++) {
+        const c = place(w * 0.42); if (!c) break;
+        if (![[0, -h * 0.5], [0, -h * 0.85], [-w * 0.4, -h * 0.3], [w * 0.4, -h * 0.3]].some(([dx, dy]) => blocked(c[0] + dx, c[1] + dy, 14))) q = c;
+      }
+      if (!q) continue;
+      props.push([q[0], q[1], w * 0.45], [q[0], q[1] - h * 0.5, w * 0.4]);
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q[0] + 4, q[1] + 2, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); g.fill();
       drawSprite(g, im, q[0], q[1] + 4, w);
     }
@@ -1762,7 +1769,7 @@ function killEnemy(e) {
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
-    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
+    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
   const dn = 'enemy_' + (e.def.base || e.type) + '_die', noDie = !LAZY[dn] && !SPR[dn];
@@ -2530,7 +2537,7 @@ function updateEnemy(e, dt) {
       if (e.rcd <= 0) {
         e.rcd = RG.rate; e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
-        G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, from: e, sx: e.x + e.face * 6, sy: aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
+        G.projectiles.push({ kind: RG.proj, foe: true, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * (e.dmgMul || 1) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
@@ -8982,7 +8989,7 @@ function upgradeIcon(id, x, y) {
 
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
-const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower',
+const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower', 'elephant',
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
@@ -8997,6 +9004,7 @@ const CODEX_NOTE = {
   wardog: 'Köpekler. Kemiklerime fazla ilgi gösteriyorlar.',
   chariot: 'Tekerlekli kibir. Duvara toslayınca hepsi aynı.',
   siegetower: 'Yürüyen bir apartman. Kirayı içindekiler ödüyor.',
+  elephant: 'Fil getirmişler. Kemiklerinden bir kale yaparım, kapısı hortum.',
   eagle: 'İmparatorun kuşları. Kargalarım hiç sevmedi.',
   testudo: 'Kaplumbağa gibi geliyorlar. Kaplumbağa çorbası severim.',
   sunpriest: 'Cesetlerimi yakıyor! Bu israf. Ayrıca kaba.',
