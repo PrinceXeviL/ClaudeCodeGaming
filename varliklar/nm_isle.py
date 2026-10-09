@@ -37,6 +37,8 @@ SHEETS = [
                       'nm_rock_1', 'nm_rock_2', 'nm_pond', 'nm_fence', 'nm_crow'], 'decor'),
     ('nm_harabeler.jpg', ['nm_ruin_1', 'nm_ruin_2', 'nm_ruin_3', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_6'], 'decor'),  # kilise duvarı, sütunlar, mahzen, kemer, melek, çitli mezar
     ('nm_fil.jpg', ['enemy_elephant'], 'unit'),
+    # Sefer 2 (Cadı Avı): Engizisyon. 2x2 ızgara sayfaları 'unitgrid' (nesneler satır satır bulunur, birim gibi ölçeklenir)
+    ('nm_engizisyon_A.jpg', ['enemy_hunter', 'enemy_torch', 'enemy_holywater', 'enemy_flagellant'], 'unitgrid'),
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
@@ -155,7 +157,7 @@ def main():
     for fname, names, kind in SHEETS:
         if only and fname not in only: continue
         rgba = remove_magenta(np.asarray(Image.open(os.path.join(HAM, fname)).convert('RGB')))
-        if kind == 'decor':
+        if kind in ('decor', 'unitgrid'):
             objs, big = objects(rgba, len(names), rows=True)
         else:
             # sütunlar sadece sahipliği belirler: her şeridin en çok pikselini tutan bileşen o nesnedir (şeridi aşsa da bütün alınır);
@@ -212,7 +214,7 @@ def main():
                 c = np.dstack([rgb.clip(0, 255).astype(np.uint8), al.astype(np.uint8)])
             im = Image.fromarray(c)
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
-            if kind == 'unit' and im.height > UNIT_H * 1.05:
+            if kind in ('unit', 'unitgrid') and im.height > UNIT_H * 1.05:
                 k = UNIT_H / im.height
                 if name in ('enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant'): k *= 1.35  # büyükler daha çok çözünürlük
                 im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
