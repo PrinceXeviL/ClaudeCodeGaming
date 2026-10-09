@@ -514,7 +514,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 199, 209, 218, 228, 234, 206, 234, 242, 242, 211, 211, 265, 281]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1, 1.15, 1.25, 1, 1.49, 1.18, 0.53, 0.465, 0.64, 1.16, 0.83, 0.39, 0.215, 0.52, 0.3];
+  const HPMUL = [1, 1.2, 1.25, 1.03, 1.4, 1.05, 0.4, 0.48, 0.42, 1.35, 0.83, 0.4, 0.2, 0.62, 0.27]; // 10 Eki gece: hızlılar yarı oranda, bot duvar+patlama kullanır
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, 'mud', 'mud', null, 'graves', null, 'graves', 'lake', null, 'lake', 'sunbeam', null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -608,7 +608,7 @@ if (NECRO) {
   ];
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 193, 203, 212, 218, 218, 224, 230, 234, 242, 242, 250, 257, 274]; // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1, 1.05, 0.88, 0.95, 0.75, 1.1, 1, 0.85, 0.9, 0.85, 0.8, 0.6, 0.5, 0.45, 0.4]; // 10 Eki: botla 4 tur (sonuçlar oynak; elle yumuşatıldı)
+  const HPMUL2 = [1.15, 1.35, 0.97, 1.3, 1, 1.55, 1.55, 1.13, 1.5, 1, 1.15, 1.1, 0.7, 1.4, 0.42]; // 10 Eki gece: botla 5 tur (oynak; elle yumuşatıldı)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'malleus', 'hierophant', 'champion', 'campanus', 'malleus', 'ironwarden', 'ignis',
     'campanus', 'cavcaptain', 'colossus', 'ignis', 'severus', 'cathedral'];
@@ -706,6 +706,8 @@ function shapeWaves(lv, li) {
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   const heavy = (g) => ENEMIES[g.t].hp >= HEAVY_HP || ENEMIES[g.t].elite; // seçkinler (paladin, engizitör) dalga büyüdükçe çoğalmaz
   const count = (w) => w.reduce((a, g) => a + g.n, 0);
+  // hızlılar (süvari, köpek, suikastçı, tazı) kalabalıklaşan dalgada yarı oranda çoğalır: hızlı sürü kaleyi bir anda eritmesin
+  const fast = (g) => ENEMIES[g.t].speed >= 34;
   const N = lv.waves.length, orig = lv.waves.map(count);
   // lv.total + lv.grow (necro bölümleri): toplam düşman sayısı ve dalga büyümesi doğrudan verilir
   const GROW = lv.grow || WAVE_GROW, LGROW = lv.grow || LAST_GROW, DENS = lv.total ? 1 : DENSITY;
@@ -720,10 +722,10 @@ function shapeWaves(lv, li) {
     if (lc) {
       const f = Math.max(0.15, (target - hc) / lc);
       // aralık kısmen kısalır: kalabalık dalga daha sık gelir ama süresi de uzar (kuleler bir anda boğulmasın)
-      for (const g of light) { const n2 = Math.max(1, Math.round(g.n * f)); g.gap = Math.max(0.4, g.gap * Math.sqrt(g.n / n2)); g.n = n2; }
+      for (const g of light) { const fg = fast(g) && f > 1 ? 1 + (f - 1) * 0.5 : f, n2 = Math.max(1, Math.round(g.n * fg)); g.gap = Math.max(0.4, g.gap * Math.sqrt(g.n / n2)); g.n = n2; }
       let diff = target - count(w);
-      const big = light.reduce((a, g) => (g.n > a.n ? g : a), light[0]);
-      big.n = Math.max(1, big.n + diff);
+      const slow = light.filter(g => !fast(g)), big = (slow.length ? slow : light).reduce((a, g) => (g.n > a.n ? g : a), (slow.length ? slow : light)[0]);
+      if (slow.length || diff < 0) big.n = Math.max(1, big.n + diff); // yalnız hızlılardan oluşan dalga küçük kalır
       // kalabalıklaşan dalgada hafif düşmanlar biraz zayıflar, seyrelen dalgada güçlenir (karekök oranında):
       // iki kat kalabalık dalga her biri %30 daha az canlı, toplamda yine %40 daha güçlü
       const r = (count(w) - hc) / lc;

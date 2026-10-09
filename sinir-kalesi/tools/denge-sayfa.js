@@ -11,7 +11,9 @@ window.__bot = function (lvl) {
     const ov = g.overlay; if (ov === 'win' || ov === 'lose') break; if (ov) g.setOverlay(null);
     G.heroes.forEach((h, i) => { for (let k = 0; k < 3; k++) g.learn(i, (h.lvl + k) % 2) || g.learn(i, (h.lvl + k + 1) % 2); });
     for (let guard = 0; guard < 6; guard++) {
-      const opts = []; const free = G.plots.findIndex(p => !p.tower);
+      // yolu neredeyse hiç görmeyen arsa atlanır (oyuncu oraya kurmaz); 110 px içinde en az 20 yol noktası
+      const cov = (p) => p._cov ?? (p._cov = G.paths.reduce((a, P) => a + P.pts.filter(q => Math.hypot((q.x ?? q[0]) - p.x, (q.y ?? q[1]) - p.y) < 110).length, 0));
+      const opts = []; let free = G.plots.findIndex(p => !p.tower && cov(p) >= 20); if (free < 0) free = G.plots.findIndex(p => !p.tower);
       if (free >= 0) { const t = order[G.towers.length % order.length]; opts.push({ c: { archer: 70, barracks: 70, mage: 100, artillery: 125 }[t] * 1.6, f: () => g.build(free, t) }); }
       for (let i = 0; i < G.plots.length; i++) { const t = G.plots[i].tower; if (t && t.lvl < 2) opts.push({ c: t.def.levels[t.lvl + 1].cost, f: () => g.upgrade(i) }); }
       if (free < 0) for (const t of G.towers) if (t.lvl === 2) for (const a of (t.def.abilities || [])) { const r = (t.ab && t.ab[a.id]) || 0; if (r < 3 && a.ranks && a.ranks[r]) opts.push({ c: a.ranks[r].cost, f: () => g.buy(t, a.id) }); }
@@ -19,6 +21,9 @@ window.__bot = function (lvl) {
     }
     for (const id of ['ult0']) if (G.spells[id] != null && G.spells[id] <= 0) { const [e, n] = dens(); if (e && n >= 4) g.cast(id, e.x, e.y); }
     if (G.spells.nm_fear != null && G.spells.nm_fear <= 0) { const [e, n] = dens(); if (e && n >= 5) g.cast('nm_fear', e.x, e.y); }
+    // kemik duvar: kaleye en yakın düşmanın önüne; patlama (15. bölüm kazanılınca açılır): en kalabalık kümeye
+    if (G.spells.nm_wall != null && G.spells.nm_wall <= 0) { const c = G.castle, lead = G.enemies.filter(e => !e.dead && !e.def.flying).sort((a, b) => Math.hypot(a.x - c.x, a.y - c.y) - Math.hypot(b.x - c.x, b.y - c.y))[0]; if (lead && Math.hypot(lead.x - c.x, lead.y - c.y) < 380) g.cast('nm_wall', lead.x, lead.y); }
+    if (lvl >= 15 && G.spells.nm_burst != null && G.spells.nm_burst <= 0) { const [e, n] = dens(); if (e && n >= 4) g.cast('nm_burst', e.x, e.y); }
     if (G.spells.nm_raise != null && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 3) g.cast('nm_raise', 0, 0);
     g.sim(0.5); time += 0.5;
   }

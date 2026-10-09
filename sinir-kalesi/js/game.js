@@ -2530,6 +2530,7 @@ function updateSiege(e, dt) {
   }
 }
 
+const HOLD = { max: 6, walk: 3 }; // menzilli düşmanın nişan alıp durma sınırı (sn)
 function castleHit(e) {
   const c = G.castle, before = G.lives / G.maxLives;
   const dmg = e.def.lives;
@@ -2744,8 +2745,14 @@ function updateEnemy(e, dt) {
         G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
-      if (RG.hold) { e.inMelee = false; return; } // durur: yürümez, kılıç sallamaz
-    }
+      // durur: yürümez, kılıç sallamaz. Kimse önünü kesmiyorsa en çok HOLD.max sn durur, sonra HOLD.walk sn atış yaparak yürür
+      // (kule menzili dışından iyileşen iskeletlere sonsuza dek ateş edip bölümü kilitlemesin)
+      if (RG.hold) {
+        e.holdT = e.blocker ? 0 : (e.holdT || 0) + dt;
+        if (e.holdT > HOLD.max + HOLD.walk) e.holdT = 0;
+        if (e.holdT <= HOLD.max) { e.inMelee = false; return; }
+      }
+    } else e.holdT = 0;
   }
   if (e.atGate && !e.blocker) { // kapıya vuruyor
     if (!G.gate || G.gate.hp <= 0) { e.atGate = false; e.inMelee = false; e.p = G.inner || e.p; e.d = 0; return; }
