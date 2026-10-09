@@ -3579,15 +3579,15 @@ function drawAchievements() {
 // ----- borazancı: ilk dalga çağrılınca o dalganın girişlerinden birer lejyoner çıkar, savaş borazanını çalar, geri döner;
 // düşmanlar o dönünce gelir (heraldT sn gecikme) -----
 // boss gelmeden de çıkar: aynı çağrıyı daha kalın ve uzun (yavaş) çalar (long)
-// Borazancı baştan yolun dışından, yolun yanındaki çimenlikten gelir; ekran sınırından iki adım girip çalar, aynı yoldan geri döner.
-// step: ekrana girdiği yerden yürüdüğü yol, off: yol kenarından çimene açıklık
+// Borazancı yolun üstünden, ortasından değil bir kenarına yakın yürür; ekran sınırından iki adım girip çalar, aynı yoldan geri döner.
+// step: ekrana girdiği yerden yürüdüğü yol, side: yol ortasından kenara uzaklığı (yarı genişliğin oranı)
 // davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
 const DRUM = { beat: 0.3, dmg: 1.2 };
-const HERALD = { step: 16, off: 18, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 }; // step: sınırdan iki adım
+const HERALD = { step: 16, side: 0.6, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 }; // step: sınırdan iki adım
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
   let d0 = 0; while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > 14 && q.y > 30 && q.x < W - 14 && q.y < H - 8) break; d0 += 4; }
-  const d = Math.min(p.total * 0.5, d0 + HERALD.step), q = pathPos(p, d), half = 22 * ROAD_K * 1.1 + HERALD.off;
+  const d = Math.min(p.total * 0.5, d0 + HERALD.step), q = pathPos(p, d), half = 22 * ROAD_K * HERALD.side;
   let best = null;
   for (const sd of [1, -1]) {
     const g = pathPos(p, d, sd * half), inside = g.x > 24 && g.x < W - 24 && g.y > 80 && g.y < H - 20;
@@ -3619,7 +3619,7 @@ function drawHeralds() {
   const hgt = CHAR_H.enemy_legion || ENEMIES.legion.h * UNIT_K;
   for (const h of G.heralds || []) {
     if (h.t < 0 && h.state === 'in') continue;
-    const q = pathPos(h.p, Math.max(0, h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun yanındaki çimenlikten yürür
+    const q = pathPos(h.p, Math.max(0, h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun kenarına yakın yürür
     const face = h.state === 'out' ? -fwd : fwd; // çalarken düşmanın yürüyeceği yöne bakar
     const blowing = h.state === 'blow', dur = h.long ? HERALD.blowLong : HERALD.blow;
     // kaldırma: borazan 0,3 sn'de omuzdan ağza kalkar, çalarken gövde geriye yaslanır ve nefesle kabarır, sonunda iner
