@@ -476,7 +476,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   ];
   // yeni birlikler dalgalara: ilk geldikleri bölümden itibaren belli dalgalarda küçük gruplar halinde (yer kaplamasın diye geç 'at')
   // görseli henüz hazır olmayan yeni türler dalgalara girmez
-  const NEW_ART_WAIT = ['wardog', 'eagle', 'chariot', 'siegetower'];
+  const NEW_ART_WAIT = [];
   const NEWCOMERS = [['drummer', 2, [3, 5, 7], 1], ['signifer', 4, [2, 5, 7], 1], ['testudo', 7, [3, 6], 1], ['sunpriest', 8, [4, 7], 1], ['horsearcher', 10, [2, 5, 7], 2],
     ['wardog', 3, [1, 4, 6], 5], ['eagle', 5, [2, 5, 7], 3], ['chariot', 9, [3, 6], 1], ['siegetower', 12, [5, 7], 1]].filter(([t]) => !NEW_ART_WAIT.includes(t));
   for (const [t, from, ws, n] of NEWCOMERS) L.forEach((l, i) => {
@@ -718,6 +718,7 @@ Object.assign(ENEMY_WK, {
   legion: { magic: 1.2 }, solarcher: { melee: 1.3, arrow: 1.2 }, gladiator: { arrow: 1.2, blast: 1.2 }, assassin: { blast: 1.3, melee: 0.8 },
   priest: { arrow: 1.3 }, heavy: { magic: 1.4, arrow: 0.6 }, cavalry: { melee: 0.8, blast: 1.2 }, ram: { blast: 1.4, arrow: 0.5, magic: 0.8 },
   catapult: { blast: 1.3, melee: 1.2 },
+  wardog: { blast: 1.4, melee: 1.2 }, chariot: { magic: 1.3, melee: 0.6 }, siegetower: { blast: 1.3, arrow: 0.5 }, eagle: { arrow: 1.4, magic: 1.1 },
   horsearcher: { arrow: 1.2, magic: 1.2 }, testudo: { arrow: 0.3, blast: 1.8, magic: 1.1 }, sunpriest: { arrow: 1.3, melee: 1.2 },
   signifer: { magic: 1.2, melee: 1.2 }, drummer: { arrow: 1.2, blast: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
   gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
@@ -734,6 +735,10 @@ Object.assign(ENEMY_DESC, {
   cavalry: 'Hızlı atlı, kuleye 2 can götürür. Veba atı ürkütür',
   ram: 'Çok yavaş, çok canlı; kapıya varırsa 3 can götürür. Veba kazanı kullan',
   catapult: 'Durup kulelerimize taş atar, 3 sn susturur. Önce onu durdur',
+  wardog: 'Sürüyle gelir, çok hızlıdır ama canı azdır. Veba kazanı sürüyü dağıtır',
+  chariot: 'Çok hızlı; iskeletleri ezip geçer, durduramazlar. Kemik duvar durdurur',
+  siegetower: 'Ağır ve yavaş; yıkılınca içinden 6 lejyoner dökülür. Yolun başında yık',
+  eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Dikilitaş ve Ruh Feneri vurur',
   horsearcher: 'Koşarken iskeletlere ok atar, iskeletler onu durduramaz. Kemik duvar durdurur',
   testudo: 'Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
   sunpriest: 'Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir',

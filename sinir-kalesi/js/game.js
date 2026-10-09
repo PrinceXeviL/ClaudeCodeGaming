@@ -8173,7 +8173,7 @@ function upgradeIcon(id, x, y) {
 
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
-const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'gladiator', 'signifer', 'assassin', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'horsearcher', 'ram', 'catapult',
+const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower',
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
@@ -8185,6 +8185,10 @@ const CODEX_NOTE = {
   cavalry: 'At güzel. Üstündeki fazlalık. Atı bende kalsın.',
   ram: 'Kapımı çalmanın en kaba yolu. Zil var, zil!',
   horsearcher: 'Koşarken ok atıyor. Atı da ben olsam koşardım.',
+  wardog: 'Köpekler. Kemiklerime fazla ilgi gösteriyorlar.',
+  chariot: 'Tekerlekli kibir. Duvara toslayınca hepsi aynı.',
+  siegetower: 'Yürüyen bir apartman. Kirayı içindekiler ödüyor.',
+  eagle: 'İmparatorun kuşları. Kargalarım hiç sevmedi.',
   testudo: 'Kaplumbağa gibi geliyorlar. Kaplumbağa çorbası severim.',
   sunpriest: 'Cesetlerimi yakıyor! Bu israf. Ayrıca kaba.',
   signifer: 'Sancağı çok parlak. Gözüm yok ama yine de kamaştı.',
