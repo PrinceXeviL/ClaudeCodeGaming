@@ -4903,6 +4903,9 @@ const TOWER_FORM = {
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
   artillery_corpse: { w: 1.3, src: [0.87, 0.08], flip: true, range: 1.2, dmg: 1 },
   artillery_plague: { w: 1.15, src: [0.5, 0.24], dmg: 1.05, gas: 1.6 },
+  // Lanet Kulesi: rite -> Kan Mabedi (kızıl bağlar kâseden çıkar), blight -> Kara Lanet Mabedi (lanet küreden, ölenlerin kalkma şansı +%10)
+  altar_rite: { w: 1.02, src: [0.48, 0.12] },
+  altar_blight: { w: 1, src: [0.48, 0.14], rise: 0.1 },
 };
 // kule atış animasyonu (kule_anim_isle.py): <görsel>_atk şeridi; box: görsele göre çerçeve, rel: fırlatma anı, relPt: o anda fırlayan parça
 const TOWER_ANIM_FPS = 16;
@@ -5434,7 +5437,7 @@ function drawTower(t) {
 // susturulan kule: üstünde dönen yıldızlar (sersemleme) ya da mor lanet halkası
 // Necromancer kulelerinin canlı kısımları (kodla): dikilitaş kıymıkları, fener ruhu, kazan köpüğü
 function drawNecroTowerFx(t, ts) {
-  const o = towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
+  const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
   const OF = obeliskForm(t);
   if (OF) {
@@ -9526,7 +9529,8 @@ function updateAltar(t, dt) {
   for (const e of G.enemies) {
     if (e.dead || e.under || dist(e.x, e.y, t.x, t.y) > L.range) continue;
     if (e.def.nocurse || lightAt(e.x, e.y)) continue; // taş heykel ve fener ışığındakiler lanet tutmaz
-    e.curseT = Math.max(e.curseT || 0, 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise);
+    const BF = towerForm(t);
+    e.curseT = Math.max(e.curseT || 0, 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise + (BF && BF.rise || 0));
     e.curseRes = Math.max(e.curseRes || 0, L.res || 0); e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0);
     e.drumT = 0; e.armT = 0; // davul ve sancak coşkusu söner
     if (bl) e.blightN = Math.max(e.blightN || 0, bl.n);

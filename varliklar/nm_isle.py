@@ -19,6 +19,7 @@ TOWER_BASE = 0.13  # kule: arsa merkezinin görselin altından uzaklığı (geni
 # sayfa, adlar (sıralı), tür, ek
 SHEETS = [
     ('nm_sapel.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),  # Mortimer'ın kara şapeli, boş balkon (eski kule: nm_kule.jpg)
+    ('nm_sunak_4.jpg', ['tower_altar_rite', 'tower_altar_blight'], 'decor'),  # 4. kademe: Kan Mabedi, Kara Lanet Mabedi
     ('nm_kazan_4.jpg', ['tower_artillery_corpse', 'tower_artillery_plague'], 'decor'),  # 4. kademe: Ceset Mancınığı, Kara Veba Kazanı
     ('nm_fener_4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'decor'),  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
     ('nm_dikilitas_4.jpg', ['tower_archer_nail', 'tower_archer_fan'], 'decor'),  # 4. kademe: Kemik Balistası (Ruh Çivisi), Hayalet Okçular (Kemik Yelpazesi)
@@ -54,6 +55,7 @@ SHEETS = [
 BOXES = {
     'nm_engizisyon_C.jpg': [(0, 0, 1000, 700), (1000, 0, 2000, 560), (0, 690, 1060, 1493), (1060, 540, 2000, 1493)],
     # bir nesne birden çok kutudan oluşabilir (katedral: sağdaki gövde + soldaki itici rahipler, kolosun altında)
+    'nm_sunak_4.jpg': [(0, 80, 1010, 1116), (1010, 0, 2000, 1116)],  # rün halkası kopuk parçalar: kutuyla
     'nm2_dekor_A.jpg': [(c * 341 + 2, r * 341 + 2, c * 341 + 339, r * 341 + 339) for r in range(3) for c in range(3)],  # 3x3 ızgara
     'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
 }
