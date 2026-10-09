@@ -7478,7 +7478,7 @@ function drawEnemyPanel() {
   const e = G.sel && G.sel.kind === 'enemy' && G.sel.enemy;
   if (!e) return;
   if (e.dead || e.siege !== undefined) { G.sel = null; return; }
-  const d = e.def, dl = wrapLines(d.desc || ENEMY_DESC[e.type] || '', ENEMY_PANEL.w - 82, 9.5), ex = Math.max(0, dl.length - 1) * 11;
+  const d = e.def, dl = wrapLines(d.desc || ENEMY_DESC[e.type] || '', ENEMY_PANEL.w - 82, 9.5, '700', FONT_B, 3), ex = Math.max(0, dl.length - 1) * 11;
   const P = { x: ENEMY_PANEL.x, y: ENEMY_PANEL.y - ex, w: ENEMY_PANEL.w, h: ENEMY_PANEL.h + ex }, k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
   const eh = CHAR_H['enemy_' + e.type] || 26, fy = d.flying ? 26 : 0;
   ctx.save(); ctx.translate(P.x + P.w / 2, P.y + P.h / 2); ctx.scale(k, k); ctx.translate(-(P.x + P.w / 2), -(P.y + P.h / 2));
@@ -8165,14 +8165,19 @@ function drawHud() {
   // bilgi paneli
   const info = infoText();
   if (info) {
+    // sol alttaki portre ve büyü düğmeleriyle sağ kenar arasına sığar; uzun açıklama satırlara bölünür (ekrandan taşmasın)
+    const left = 120 + spellIds().length * 58, maxW = W - left - 10;
     ctx.font = `700 13px ${FONT_B}`;
-    const w = Math.max(290, ctx.measureText(info[1]).width + 44), y0 = H - 58;
-    const x0 = clamp(W / 2 - w / 2, 120 + spellIds().length * 58, W - w - 10), cxp = x0 + w / 2; // sol alttaki portre ve büyü düğmelerinin sağında kalır
-    roundRect(x0 + 2, y0 + 5, w, 48, 15, 'rgba(0,0,0,0.3)');
-    const g = ctx.createLinearGradient(0, y0, 0, y0 + 48); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
-    roundRect(x0, y0, w, 48, 15, g, '#d4ab5a', 2);
+    const lines = wrapLines(info[1], maxW - 30, 13, '700', FONT_B, 3);
+    let tw = 0; for (const l of lines) tw = Math.max(tw, ctx.measureText(l).width);
+    ctx.font = `400 16px ${FONT_T}`; tw = Math.max(tw, ctx.measureText(info[0]).width);
+    const w = clamp(tw + 40, 290, maxW), ph = 32 + lines.length * 16, y0 = H - 10 - ph;
+    const x0 = clamp(W / 2 - w / 2, left, W - w - 10), cxp = x0 + w / 2;
+    roundRect(x0 + 2, y0 + 5, w, ph, 15, 'rgba(0,0,0,0.3)');
+    const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
+    roundRect(x0, y0, w, ph, 15, g, '#d4ab5a', 2);
     txt(info[0], cxp, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
-    txt(info[1], cxp, y0 + 34, 13, '#f2e8d4', 'center', '700', FONT_B, false);
+    lines.forEach((l, i) => txt(l, cxp, y0 + 34 + i * 16, 13, '#f2e8d4', 'center', '700', FONT_B, false));
   }
   const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
@@ -8193,25 +8198,26 @@ function drawBanner() {
     // kahraman seviye bildirimi: üstte ince bir şerit
     ctx.save(); ctx.globalAlpha = a * 0.95; ctx.translate(W / 2, (G.enemies.some(o => o.def.chief && !o.dead) ? 120 : 78) - (1 - e) * 8);
     ctx.font = `700 10px ${FONT_B}`;
-    const w = Math.max(170, ctx.measureText(b.sub).width + 28);
+    const sw = ctx.measureText(b.sub).width, w = Math.min(W - 30, Math.max(170, sw + 28)), fs = sw + 28 > w ? 9.5 * (w - 28) / sw : 9.5; // ekrana sığar
     roundRect(-w / 2, -15, w, 30, 10, 'rgba(24,16,8,0.82)', 'rgba(255,211,77,0.7)', 1.2);
     txt(b.title, 0, -4.5, 11.5, '#ffd34d', 'center', '400', FONT_T, false);
-    txt(b.sub, 0, 8, 9.5, '#e8dcc4', 'center', '700', FONT_B, false);
+    txt(b.sub, 0, 8, fs, '#e8dcc4', 'center', '700', FONT_B, false);
     ctx.restore();
     return;
   }
   const by = G.intro ? 200 : G.enemies.some(o => o.def.chief && !o.dead) ? 140 : 112; // tanıtım kartı / boss barı açıkken altına iner
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, by); ctx.scale(0.7 + 0.3 * e, 0.7 + 0.3 * e);
   if (b.red) { const k = 1 + Math.sin(time * 10) * 0.04; ctx.scale(k, k); }
-  ctx.font = `700 13px ${FONT_B}`;
-  const w = Math.max(320, ctx.measureText(b.sub).width + 48);
-  roundRect(-w / 2 + 2, -24 + 5, w, 52, 14, 'rgba(0,0,0,0.3)');
+  const sl = wrapLines(b.sub, W - 120, 13, '700', FONT_B, 2); // uzun alt yazı iki satıra bölünür, ekrandan taşmaz
+  ctx.font = `700 13px ${FONT_B}`; let sw = 0; for (const l of sl) sw = Math.max(sw, ctx.measureText(l).width);
+  const w = Math.min(W - 60, Math.max(320, sw + 48)), bh = 52 + (sl.length - 1) * 15;
+  roundRect(-w / 2 + 2, -24 + 5, w, bh, 14, 'rgba(0,0,0,0.3)');
   const g = ctx.createLinearGradient(0, -24, 0, 28);
   g.addColorStop(0, b.red ? 'rgba(150,24,16,0.97)' : 'rgba(62,44,26,0.96)'); g.addColorStop(1, b.red ? 'rgba(60,6,4,0.97)' : 'rgba(24,16,8,0.96)');
   if (b.red) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, w * 0.6, '255,60,30', 0.25 + Math.sin(time * 10) * 0.08); ctx.restore(); }
-  roundRect(-w / 2, -24, w, 52, 14, g, b.red ? '#ff8a6a' : '#ffd34d', 2);
+  roundRect(-w / 2, -24, w, bh, 14, g, b.red ? '#ff8a6a' : '#ffd34d', 2);
   txt(b.title, 0, -7, b.red ? 21 : 18, b.red ? '#fff0c0' : '#ffd34d', 'center', '400', FONT_T);
-  txt(b.sub, 0, 13, 13, '#f2e8d4', 'center', '700', FONT_B, false);
+  sl.forEach((l, i) => txt(l, 0, 13 + i * 15, 13, '#f2e8d4', 'center', '700', FONT_B, false));
   ctx.restore();
 }
 
