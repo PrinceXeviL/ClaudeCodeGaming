@@ -364,7 +364,8 @@ def main():
     for grp, specs in (('s', [(3, 1), (4, 2), (4, 7)]), ('m', [(5, 3), (6, 4), (6, 8)]), ('l', [(7, 5), (8, 6), (9, 9)])):
         for i, (ns, sd) in enumerate(specs, 1): made.append(save(f'mvoice{grp}_{i}', mort_babble(1.0, ns, sd), -19))
     for i, (n, sd) in enumerate([(3, 1), (4, 2)], 1): made.append(save(f'mlaugh_{i}', mort_laugh(1.0, n, sd), -19))
-    made.append(save('horn_1', horn(), -17))
+    # horn_1 artık ham/ses/horn_ilk.wav (ses_kayit_isle.py kopyalar); üç notalı sentez beğenilmedi
+    # made.append(save('horn_1', horn(), -17))
     for i, k in enumerate([0.95, 1.0, 1.06], 1): made.append(save(f'drum_{i}', war_drum(k), -18))
     for i, k in enumerate([0.9, 1.0, 1.12], 1): made.append(save(f'bonefall_{i}', bone_fall(k), -19))
     # manifest: eski aynı adlı türler yerine yenileri

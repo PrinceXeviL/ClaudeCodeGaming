@@ -17,7 +17,6 @@ SFX = {
     'raise': ('undead rising from graves, eerie ghostly whoosh with rattling bones and low zombie groan, dark magic, short, no music', 1.8, 1),
     'fear': ('chorus of wailing ghosts swooping past, spooky whoosh, short, no music', 1.8, 1),
     'bats': ('swarm of bats flapping wings and squeaking, flying past, short, no music', 2.0, 1),
-    'horn': ('ancient roman war horn cornu blast, deep brass call to battle, single long note, no music', 2.2, 1),
 }
 
 

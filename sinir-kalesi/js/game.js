@@ -230,7 +230,7 @@ const SOUND = {
   mvoices: { vol: 0.5, gap: 0.4, max: 1 },  mvoicem: { vol: 0.5, gap: 0.4, max: 1 },  mvoicel: { vol: 0.5, gap: 0.4, max: 1 }, // Mortimer konuşması
   mlaugh:  { vol: 0.45, gap: 1, max: 1 },                           // Mortimer'ın sinsi kahkahası
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
-  horn:    { vol: 0.7, gap: 1, max: 1 },                            // borazancı (ilk dalga, boss öncesi) — ElevenLabs savaş borusu
+  horn:    { vol: 0.34, gap: 1, max: 1 },                           // borazancı (ilk dalga, boss öncesi) — 8 Eki'deki ilk boru sesi (Caner tercihi)
   // ElevenLabs efektleri (varliklar/elevenlabs_efekt.py): yeni birimler ve Mortimer'ın büyüleri
   elephant: { vol: 0.5, gap: 3, max: 1, rate: [0.95, 1.05] },     // savaş fili böğürmesi (gelişte, ezerken)
   vulture:  { vol: 0.32, gap: 2.5, max: 1, rate: [0.92, 1.1] },   // akbaba çığlığı (gelişte, ceset yerken)
@@ -8268,7 +8268,7 @@ const CREDITS = [
   ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
     ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
-    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü ve boru efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
+    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba ve büyü efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
   ['YAZI TİPİ', [['Creepster · Lilita One · Baloo 2', 'SIL Open Font License']]],
 ];
 function drawCredits() {

@@ -92,8 +92,10 @@ def main():
         c = bone_click(0.95, 0.07) * 0.18; x[:len(c)] += c
         th = thud(130, 0.09, 0.02) * 0.12; x[:len(th)] += th
         made.append(save(f'clash_{i}', x, -25))
-    # ElevenLabs efektleri (ücretsiz plan, jenerikte elevenlabs.io): yeni birimler ve büyüler; savaş borusu sentezin yerine
-    for n, cnt, db in [('elephant', 2, -19), ('vulture', 2, -23), ('bonewall', 1, -20), ('raise', 1, -22), ('fear', 1, -22), ('bats', 1, -24), ('horn', 1, -19)]:
+    # ElevenLabs efektleri (ücretsiz plan, jenerikte elevenlabs.io): yeni birimler ve büyüler.
+    # Savaş borusu: Caner ilk sürümü (8 Eki) istedi; ham/ses/horn_ilk.wav olduğu gibi kopyalanır (üç notalı ve ElevenLabs sürümleri beğenilmedi)
+    import shutil; shutil.copy(os.path.join(HAM, 'horn_ilk.wav'), os.path.join(OUT, 'horn_1.wav')); made.append('horn_1')
+    for n, cnt, db in [('elephant', 2, -19), ('vulture', 2, -23), ('bonewall', 1, -20), ('raise', 1, -22), ('fear', 1, -22), ('bats', 1, -24)]:
         for i in range(1, cnt + 1):
             made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.005, 0.25), db))
     mp = os.path.join(OUT, 'manifest.json')
