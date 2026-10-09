@@ -1,5 +1,6 @@
 """Kemik Balistası görselini katmanlara ayırır (kodla animasyon için):
-  tower_archer_nail_base.webp  : mızrak ve iki kiriş silinmiş, boşluğu çevreden yayılarak doldurulmuş gövde
+  tower_archer_nail_top.webp   : dönen yay (mızrak ve kirişler silinmiş, boşluk doldurulmuş)
+  tower_archer_nail_ped.webp   : kaide (kesim çizgisinin altı)
   tower_archer_nail_spear.webp : yalnız mızrak (tüy + şaft + alevli uç), aynı tuval boyutunda (konum korunur)
   balista.json                  : kiriş uçları, gez noktası, mızrak ekseni (görsele göre 0..1)
 Noktalar görselin piksel ölçüsüyle (700x773) elle ölçüldü."""
@@ -79,7 +80,14 @@ out[np.isin(lab, [i + 1 for i in range(n) if sz[i] < 400])] = 0
 r2, g2, b2 = out[..., 0], out[..., 1], out[..., 2]
 pink = hole & (r2 > 150) & (b2 > 90) & (g2 < 90)
 out[pink, :3] = [70, 50, 80]
-Image.fromarray(out.astype(np.uint8)).save(os.path.join(IMG, 'tower_archer_nail_base.webp'), 'WEBP', quality=92)
+# yay (dönen kısım) ve kaide ayrılır: kesim çizgisinin üstü yay; kaidenin üst yüzünü oyunda döner tabla (kod) örter
+CUT = [(0, 340), (200, 329), (395, 326), (445, 312), (487, 300), (490, 246), (700, 246)]
+cx = np.array([c[0] for c in CUT], float); cy = np.array([c[1] for c in CUT], float)
+cut = np.interp(np.arange(W), cx, cy)[None, :]
+top = out.copy(); top[yy >= cut] = 0
+ped = out.copy(); ped[yy < cut] = 0
+Image.fromarray(top.astype(np.uint8)).save(os.path.join(IMG, 'tower_archer_nail_top.webp'), 'WEBP', quality=92)
+Image.fromarray(ped.astype(np.uint8)).save(os.path.join(IMG, 'tower_archer_nail_ped.webp'), 'WEBP', quality=92)
 f = lambda p: [round(p[0] / W, 4), round(p[1] / H, 4)]
 json.dump({'nock': f(NOCK), 'tip': f(TIP), 'armUp': f(ARM_UP), 'armLo': f(ARM_LO)}, open(os.path.join(IMG, 'balista.json'), 'w'))
 print('ok', W, H, int(spear.sum()), int(strings.sum()))

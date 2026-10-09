@@ -2459,21 +2459,23 @@ function updateObelisk(t, dt, L) {
 // Kemik Balistası: dev kemik mızrak ucundan fırlar (geri tepme, kiriş şaklar), hedefin arkasındakileri de deler.
 // Hayalet Okçular: hedef soldaysa yeşil, sağdaysa mor okçu atar; çok hızlı, uçanlara ek hasar.
 function updateObeliskForm(t, dt, L, ts, F) {
+  if (F.layers) balTrack(t, dt, L, ts, F);
   t.cd -= dt;
   if (t.cd > 0) return;
   let e = findTarget(t, L.range, true);
   if (!e) { t.cd = 0.1; return; }
+  if (F.layers && Math.abs((t.balRotT || 0) - (t.balRot || 0)) > 0.3) { t.cd = 0.05; return; } // balista önce hedefe döner
   t.cd = L.rate; t.shotAnim = 0.3;
   const nl = abRank(t, 'nail'), fa = abRank(t, 'fan'), crit = Math.random() < 0.15;
   const TA = towerAnim(t), loopA = TA && F.loopAnim, rel = TA && !loopA ? TA.M.rel * TA.dur : 0; // atış animasyonu varsa ok/mızrak fırlatma karesinde çıkar
   if (TA && !loopA) t.animT = 0;
   if (loopA) t.engageT = 1.2; // hızlı atan kule: animasyon hedef olduğu sürece döngüde oynar
   if (F.tip) {
-    t.face = e.x < t.x ? -1 : 1;
-    const o = formPoint(t, ts, F.tip), n = formPoint(t, ts, F.nock);
+    if (!F.layers) t.face = e.x < t.x ? -1 : 1;
+    const lay = balLay(t), o = lay ? balPoint(t, ts, F, F.tip) : formPoint(t, ts, F.tip), n = lay ? balPoint(t, ts, F, F.nock) : formPoint(t, ts, F.nock);
     t.balT = G.t; t.balRate = L.rate;
     if (F.layers) { // kiriş şaklar: kurma yerinden kıvılcım, kaidede toz
-      const m = formPoint(t, ts, [(F.armUp[0] + F.armLo[0]) / 2, (F.armUp[1] + F.armLo[1]) / 2]);
+      const m = balPoint(t, ts, F, [(F.armUp[0] + F.armLo[0]) / 2, (F.armUp[1] + F.armLo[1]) / 2]);
       for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: lerp(n.x, m.x, 0.5), y: lerp(n.y, m.y, 0.5), vx: rand(-50, 50), vy: rand(-60, 10), drag: 4, col: i % 3 ? '255,235,200' : '200,120,255', s0: 2.2, s1: 0.3, life: 0.3 });
       G.effects.push({ kind: 'dust', x: t.x, y: ts.bottom - 2, t: 0, dur: 0.5 });
     }
@@ -5277,9 +5279,9 @@ function drawTowerShape(type, x, y, lvl, s = 1, t = null) {
 // ghost (Hayalet Çağırıcı) -> Ruh Kafesi: ışın kızıl gözden, hayaletler kafesten çıkar, ara ara en güçlü düşmanı kafese kapatır.
 const TOWER_FORM = {
   // 10 Eki denge: dönüşümler 3. kademenin ~1,3 katı (önce ~2,4 kattı, tek kule bölüm geçiyordu)
-  archer_nail: { noAnim: true, layers: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.9857, 0.3389], nock: [0.3057, 0.1216], armUp: [0.7314, 0.0556], armLo: [0.1086, 0.2574], pierce: 2, pierceK: 0.45, flip: true },
+  archer_nail: { noAnim: true, layers: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.9857, 0.3389], nock: [0.3057, 0.1216], armUp: [0.7314, 0.0556], armLo: [0.1086, 0.2574], pivot: [0.4714, 0.3622], rotMax: [-1.05, 1.2], pierce: 2, pierceK: 0.45, flip: true },
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
-  archer_fan: { noAnim: true, w: 1.12, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, bows: { L: [0.2, 0.19], R: [0.76, 0.18] }, archers: true },
+  archer_fan: { noAnim: true, w: 1.0, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, bows: { L: [0.2, 0.2174], R: [0.76, 0.206] }, archers: true },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
@@ -5302,8 +5304,8 @@ const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(`to
 const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
 // dönüşmüş kulede görsel üzerindeki bir noktanın dünya konumu (balista hedefe dönükse aynalanır)
 // Hayalet Okçular kulesinin tepesindeki iki okçu: platformda gezer, hedefe döner, yayı gerip atar; Wan şeritleri gelince onlar oynar
-const GHOST_ARCH = { x: [0.3, 0.7], y: [0.215, 0.262], h: 0.157, speed: 0.22, gap: 0.17, draw: 0.5, tip: [0.97, 0.25], rel: 0.55,
-  clip: [[0, 0.215], [0.5, 0.276], [1, 0.215]] }; // clip: ön korkuluk çizgisi (ayaklar arkasında kalır)
+const GHOST_ARCH = { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.181, speed: 0.22, gap: 0.17, draw: 0.5, tip: [0.97, 0.25], rel: 0.55,
+  clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]] }; // görsel kısaltıldı (kule_kisalt.py 545-685): kesirler 972 px boya göre // clip: ön korkuluk çizgisi (ayaklar arkasında kalır)
 function ghostArchers(t) {
   if (!t.ga) t.ga = [0, 1].map(i => ({ x: i ? 0.62 : 0.38, d: rand(0.2, 0.8), tx: null, face: i ? 1 : -1, drawT: 0, moveT: rand(1, 3), anim: rand(0, 5) }));
   return t.ga;
@@ -5362,10 +5364,48 @@ function balState(t) {
   const load = s < BAL.spear[0] ? 0 : clamp((s - BAL.spear[0]) / (BAL.spear[1] - BAL.spear[0]), 0, 1);
   return { s, pull, load, vib: s < BAL.vib ? Math.exp(-s * 11) * Math.sin(s * 75) : 0, launch: s < BAL.launch ? s / BAL.launch : -1 };
 }
+const balLay = (t) => { const F = towerForm(t); return !!(F && F.layers && spr(`tower_${t.type}_${t.spec}_top`)); };
+// balista hedefe döner: yön kulenin sağ/soluna göre aynalanır (eşikli), yay mızrak ekseni hedefe bakacak açıyla pivot çevresinde döner
+function balTrack(t, dt, L, ts, F) {
+  const e = findTarget(t, L.range, true);
+  if (e) {
+    if (e.x < t.x - 6) t.face = -1; else if (e.x > t.x + 6) t.face = 1;
+    const fl = t.face === -1 ? -1 : 1, px = t.x + (F.pivot[0] - 0.5) * ts.w * fl, py = ts.bottom - ts.h + F.pivot[1] * ts.h;
+    const a0 = Math.atan2((F.tip[1] - F.nock[1]) * ts.h, (F.tip[0] - F.nock[0]) * ts.w);
+    t.balRotT = clamp(Math.atan2(aimY(e) - py, (e.x - px) * fl) - a0, F.rotMax[0], F.rotMax[1]);
+  } else t.balRotT = 0;
+  const r = t.balRot || 0, sp = (e ? 5 : 1.2) * dt;
+  t.balRot = r + clamp(t.balRotT - r, -sp, sp);
+}
+// yaydaki bir noktanın (görsel kesri) dünya konumu: pivot çevresinde döndürülür, sonra aynalanır
+function balPoint(t, ts, F, p) {
+  const fl = t.face === -1 ? -1 : 1, r = t.balRot || 0, c = Math.cos(r), s = Math.sin(r);
+  const vx = (p[0] - F.pivot[0]) * ts.w, vy = (p[1] - F.pivot[1]) * ts.h;
+  return { x: t.x + ((F.pivot[0] - 0.5) * ts.w + vx * c - vy * s) * fl, y: ts.bottom - ts.h + F.pivot[1] * ts.h + vx * s + vy * c };
+}
 function drawBallista(t, ts, F) { // yerel koordinat: (0,0) tabanın ortası, görsel [-w/2, w/2] x [-h, 0]
-  const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col, base = spr(`tower_${t.type}_${t.spec}_base`), sp = spr(`tower_${t.type}_${t.spec}_spear`);
-  const P = (p) => ({ x: (p[0] - 0.5) * ts.w, y: (p[1] - 1) * ts.h }), st = balState(t), sc = ts.w / 93;
-  drawSprite(ctx, (NECRO && litOf(base, lc)) || base, 0, 0, ts.w);
+  const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col, top = spr(`tower_${t.type}_${t.spec}_top`), ped = spr(`tower_${t.type}_${t.spec}_ped`), sp = spr(`tower_${t.type}_${t.spec}_spear`);
+  const P = (p) => ({ x: (p[0] - 0.5) * ts.w, y: (p[1] - 1) * ts.h }), st = balState(t), sc = ts.w / 93, rot = t.balRot || 0;
+  if (ped) drawSprite(ctx, (NECRO && litOf(ped, lc)) || ped, 0, 0, ts.w);
+  // döner tabla: kaidenin üstünde demir disk, perçinleri yayla birlikte döner
+  const C = P([0.4857, 0.4204]), rx = ts.w * 0.21, ry = rx * 0.3;
+  ctx.save();
+  ctx.fillStyle = '#140d14'; ctx.beginPath(); ctx.ellipse(C.x, C.y + 3.2 * sc, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+  const tg = ctx.createLinearGradient(0, C.y - ry, 0, C.y + ry); tg.addColorStop(0, '#4a3e52'); tg.addColorStop(1, '#241c2a');
+  ctx.fillStyle = tg; ctx.strokeStyle = '#0e080e'; ctx.lineWidth = 0.9 * sc; ctx.beginPath(); ctx.ellipse(C.x, C.y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(150,120,170,0.45)'; ctx.lineWidth = 0.6 * sc; ctx.beginPath(); ctx.ellipse(C.x, C.y, rx * 0.8, ry * 0.8, 0, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 10; i++) { const a = rot + i * Math.PI / 5; circle(C.x + Math.cos(a) * rx * 0.8, C.y + Math.sin(a) * ry * 0.8, 0.9 * sc, '#b8a890', '#1a1018', 0.4 * sc); }
+  const Pv = P(F.pivot), pw = ts.w * 0.045; // tabladan yaya yükselen demir mil
+  ctx.fillStyle = '#2a2230'; ctx.strokeStyle = '#0e080e'; ctx.lineWidth = 0.8 * sc;
+  ctx.beginPath(); ctx.rect(C.x - pw, Pv.y, pw * 2, C.y - Pv.y); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(160,130,180,0.35)'; ctx.fillRect(C.x - pw * 0.5, Pv.y, pw * 0.35, C.y - Pv.y);
+  ctx.globalCompositeOperation = 'lighter'; glow(ctx, C.x, C.y, rx * 0.7, '120,255,140', 0.08 + 0.04 * Math.sin(time * 2 + t.x)); // tablanın altından sızan ruh ışığı
+  ctx.restore();
+  ctx.save();
+  const Na = P(F.nock), Ta = P(F.tip), al = Math.hypot(Ta.x - Na.x, Ta.y - Na.y);
+  const rc = t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * sc : 0; // geri tepme mızrak ekseni boyunca
+  ctx.translate(Pv.x, Pv.y); ctx.rotate(rot); ctx.translate(-Pv.x + (Ta.x - Na.x) / al * rc, -Pv.y + (Ta.y - Na.y) / al * rc);
+  drawSprite(ctx, (NECRO && litOf(top, lc)) || top, 0, 0, ts.w);
   const U = P(F.armUp), D = P(F.armLo), N = P(F.nock), T = P(F.tip);
   // kirişin orta noktası: dinlenirken iki kol ucunu birleştiren çizgide, kurulunca gezde; şaklayınca ileri taşıp söner
   const ux = D.x - U.x, uy = D.y - U.y, q = ((N.x - U.x) * ux + (N.y - U.y) * uy) / (ux * ux + uy * uy), R = { x: U.x + ux * q, y: U.y + uy * q };
@@ -5393,6 +5433,7 @@ function drawBallista(t, ts, F) { // yerel koordinat: (0,0) tabanın ortası, g�
     }
     ctx.restore();
   }
+  ctx.restore();
 }
 function formPoint(t, ts, p) {
   const fl = towerForm(t) && towerForm(t).flip && t.face === -1 ? -1 : 1;
@@ -5918,7 +5959,7 @@ function drawNecroTowerFx(t, ts) {
   if (OF) {
     ctx.globalCompositeOperation = 'lighter';
     if (OF.tip) { // balista: mızrak ucunda kızıl alev, atışta kiriş şaklar
-      const lay = OF.layers && spr(`tower_${t.type}_${t.spec}_base`), o = formPoint(t, ts, OF.tip), ready = lay ? balState(t).load : t.shotAnim > 0 ? 0.3 : 1;
+      const lay = balLay(t), o = lay ? balPoint(t, ts, OF, OF.tip) : formPoint(t, ts, OF.tip), ready = lay ? balState(t).load : t.shotAnim > 0 ? 0.3 : 1;
       glow(ctx, o.x, o.y, 9 * s, '255,70,70', (0.45 + Math.sin(time * 9 + t.x) * 0.12) * ready);
       if (!lay && t.snap && (t.snap.t -= 0.016) > 0) {
         const n = t.snap, k = n.t / 0.18;
@@ -6113,13 +6154,13 @@ function drawTowerBody(t) {
     // top ateşlediğinde kule hafifçe sarsılır (top kendi içinde geri teper)
     const ksy = t.type === 'artillery' && t.shotAnim > 0.2 ? 1 - (t.shotAnim - 0.2) * 0.25 : 1;
     const OF = towerForm(t), fl = OF && OF.flip && t.face === -1 ? -1 : 1;
-    const recoil = OF && OF.tip && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
+    const recoil = OF && OF.tip && !balLay(t) && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
     ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
     const TA = towerAnim(t);
     if (TA && t.animT != null && t.animT < TA.dur) { // atış animasyonu: şeridin karesi, görselle aynı yere oturur
       const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * TOWER_ANIM_FPS)), b = M.box, lim = litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
       ctx.drawImage(lim, i * M.fw, 0, M.fw, M.fh, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
-    } else if (OF && OF.layers && spr(`tower_${t.type}_${t.spec}_base`)) drawBallista(t, ts, OF);
+    } else if (balLay(t)) drawBallista(t, ts, OF);
     else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
       drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
