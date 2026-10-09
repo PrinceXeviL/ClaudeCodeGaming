@@ -196,3 +196,12 @@ Kural: düşman/iskelet şeritleri karakter boyu 160 px (video_isle.py UNIT_H; e
 game.js: `/^(enemy|unit)_..._(walk|atk)$/` şeritleri manifestte olsa da açılışta yüklenmez (LAZY); startLevel bölümün düşman türleri
 (+ base, split, summon) ve iskeletler için useStrips(keep) çağırır, gerekmeyenleri bellekten atar; bölüm dışında ilk istekte yüklenir (loadStrip).
 Yeni ağır görsel eklerken çözülmüş boyu (genişlik × yükseklik × 4) hesapla.
+
+## Ücretsiz görsel üretimi: Kaggle + FLUX Kontext (9 Eki 2026, yayın 147)
+Gemini görsel kotası 0, HF ZeroGPU anonim kotası 1 görselde bitiyor. Kalıcı yol: `varliklar/kaggle_kontext.py varliklar/ham/yeni/isler.json`
+(işler: name, ref = varliklar/ham/anim/*_ref.png magenta zeminli referans, prompt "Replace the X with ... keep same art style", seeds).
+Model: QuantStack/FLUX.1-Kontext-dev-GGUF Q4 + ostris/Flex.1-alpha (VAE/metin kodlayıcı, Apache, hesapsız). T4'te fp16 SİYAH resim verir:
+metin kodlayıcı fp16 bir kez, dönüştürücü fp32 hesap, 768 px → görsel başına ~14 dk. Çıktı magenta zeminli PNG → anim_isle.remove_magenta +
+video_isle.biggest_mask ile kes, img/'e WebP; meta.json [w, h] (kulede [w, h, 0.13]). Kontext çıktıları ticari kullanılabilir (FLUX dev lisansı).
+Bu yolla yapılanlar: enemy_wardog, enemy_chariot (yatay çevrildi), enemy_siegetower, enemy_eagle, tower_altar_1..3 (Lanet Kulesi).
+Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener); veri seti sürümü işlenmeden çekirdek gönderilmez (refs_dataset bekler).
