@@ -9299,9 +9299,10 @@ function drawSettings() {
   if (pk < 0.9) return;
   const VOL = [[0.4, 'DÜŞÜK'], [0.7, 'ORTA'], [1, 'YÜKSEK']], GFX = [['auto', 'OTOMATİK'], ['high', 'YÜKSEK'], ['low', 'DÜŞÜK']];
   const cyc = (list, cur) => list[(list.findIndex(v => v[0] === cur) + 1) % list.length][0];
+  const LANGS = [['tr', 'TÜRKÇE'], ['en', 'ENGLISH'], ['es', 'ESPAÑOL'], ['de', 'DEUTSCH'], ['fr', 'FRANÇAIS'], ['ru', 'РУССКИЙ'], ['zh', '中文']];
   const hero = HEROES[team()[0]];
   const rows = [
-    ['Dil / Language', window.LANG === 'en' ? 'ENGLISH' : 'TÜRKÇE', () => window.setLang(window.LANG === 'en' ? 'tr' : 'en'), 'blue'],
+    ['Dil / Language', (LANGS.find(v => v[0] === window.LANG) || LANGS[0])[1], () => window.setLang(cyc(LANGS, window.LANG)), 'blue'],
     ['Ses efektleri', muted ? 'KAPALI' : 'AÇIK', () => setMuted(!muted), muted ? 'dark' : 'green'],
     ['Müzik', setting('music') ? 'AÇIK' : 'KAPALI', () => setSetting('music', !setting('music')), setting('music') ? 'green' : 'dark'],
     ['Ses düzeyi', (VOL.find(v => v[0] === setting('vol')) || VOL[2])[1], () => setSetting('vol', cyc(VOL, setting('vol'))), 'wood'],

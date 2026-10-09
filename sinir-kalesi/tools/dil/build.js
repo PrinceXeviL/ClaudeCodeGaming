@@ -15,3 +15,22 @@ const tplSrc = fs.readFileSync(path.join(D, 'dil.tpl.js'), 'utf8');
 const out = tplSrc.replace('__EX__', JSON.stringify(EX)).replace('__TPL__', JSON.stringify(TPL));
 fs.writeFileSync(path.join(D, '..', '..', 'js', 'dil.js'), out);
 console.log('dil.js:', Object.keys(EX).length, 'metin,', TPL.length, 'şablon');
+
+// öteki diller: kaynak.json (tr, en, tpl) sırasıyla <dil>_0..3.json çevirileri -> js/dil/<dil>.js (window.DIL)
+const K = J('kaynak.json'), OUT = path.join(D, '..', '..', 'js', 'dil');
+if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
+for (const L of ['es', 'de', 'fr', 'ru', 'zh']) {
+  const parts = [0, 1, 2, 3].filter(i => fs.existsSync(path.join(D, `${L}_${i}.json`))).flatMap(i => J(`${L}_${i}.json`));
+  if (parts.length !== K.length) console.log(L, 'eksik:', K.length - parts.length, '(İngilizceye düşer)');
+  const ex = {}, tpl = [];
+  K.forEach((k, i) => {
+    const v = parts[i]; if (v == null) return;
+    if (k.tpl) tpl.push([k.tr, v]);
+    else {
+      ex[k.tr] = v;
+      const ku = k.tr.toLocaleUpperCase('tr'); if (ku !== k.tr && !(ku in ex)) ex[ku] = v.toLocaleUpperCase(L);
+    }
+  });
+  fs.writeFileSync(path.join(OUT, L + '.js'), `// üretildi: node tools/dil/build.js — elle düzenleme\nwindow.DIL = ${JSON.stringify({ lang: L, EX: ex, TPL: tpl })};\n`);
+  console.log(L + '.js:', Object.keys(ex).length, 'metin,', tpl.length, 'şablon');
+}

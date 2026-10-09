@@ -13,8 +13,14 @@
 <canvas id="game" aria-label="Sınır Kalesi oyun alanı"></canvas>
 <script>
   // Sürüm damgası: her yayında artırılır; tarayıcı eski önbellek kopyasını kullanmaz (js ve görseller).
-  window.SURUM = '266';
-  for (const f of ['js/dil.js', 'js/data.js', 'js/game.js']) document.write('<script src="' + f + '?v=' + window.SURUM + '"><\/script>');
+  window.SURUM = '267';
+  // dil: kayıtlı seçim ya da cihaz dili; tr/en dışındakiler için çeviri sözlüğü dil.js'ten önce yüklenir
+  window.__dilYukle = (function () {
+    var l = null; try { l = localStorage.getItem('sinirKalesi.lang'); } catch (e) {}
+    if (!l) l = (navigator.language || '').slice(0, 2).toLowerCase();
+    return ['es', 'de', 'fr', 'ru', 'zh'].indexOf(l) >= 0 ? ['js/dil/' + l + '.js'] : [];
+  })();
+  for (const f of window.__dilYukle.concat(['js/dil.js', 'js/data.js', 'js/game.js'])) document.write('<script src="' + f + '?v=' + window.SURUM + '"><\/script>');
 </script>
 
 </body></html>
