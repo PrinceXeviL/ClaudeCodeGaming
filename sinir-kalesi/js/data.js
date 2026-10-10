@@ -689,7 +689,7 @@ TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
 const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', bow: 'Kemik Okçular', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
 // komutanlar (tek seçilir): Kont Drakula (eski komutanın yetenekleri; 11 Eki Vladrik'in yerine). Wailing Wren 11 Eki'de çıkarıldı (HERO_ORDER'da yok)
-Object.assign(HEROES.commander, { name: 'Kont Drakula', role: 'Vampir · Yakın dövüş', sprite: 'hero_vladrik', h: 31, aura: '220,40,60' });
+Object.assign(HEROES.commander, { name: 'Kont Drakula', role: 'Vampir · Yakın dövüş', sprite: 'hero_drakula', h: 31, aura: '220,40,60' });
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
 // 10 Eki: Mortimer'a düelloda yenilip onun komutanı olan ünlü savaşçılar (tasarim/komutanlar-golemler.md).
 // unlock: bitirilmesi gereken bölüm (15: 1. seferin sonu; 21: Cadı Avı'nın 6. bölümü)

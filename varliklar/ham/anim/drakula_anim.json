@@ -1,0 +1,35 @@
+[
+ {
+  "name": "hero_drakula_walk",
+  "ref": "ham/anim/hero_drakula_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 11,
+  "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier walks in place with confident elegant strides, cape flowing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_drakula_atk",
+  "ref": "ham/anim/hero_drakula_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 7,
+  "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier lunges forward with a fast fencing thrust of the rapier, cape flaring, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_drakula_die",
+  "ref": "ham/anim/hero_drakula_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 7,
+  "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier is struck down: he staggers, wraps himself in his cape and crumbles into a cloud of dust and small black bats that fly away. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "hero_drakula_skill",
+  "ref": "ham/anim/hero_drakula_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 5,
+  "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier spreads his cape wide like bat wings and a swarm of small black bats bursts out of it and flies forward, then he closes the cape and returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]

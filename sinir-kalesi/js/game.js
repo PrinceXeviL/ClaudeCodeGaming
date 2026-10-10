@@ -6778,7 +6778,7 @@ Object.assign(RIG, {
   enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
   enemy_priest: { legY: 0.82, stride: 0.5 }, enemy_heavy: { legY: 0.74, stride: 0.8 }, enemy_cavalry: { legY: 0.62, stride: 1.2 },
   enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' },
-  hero_vladrik: { legY: 0.72 }, hero_wren: { solid: 'float' },
+  hero_drakula: { legY: 0.66 },
 });
 
 // ----- silah kolu ve gövde iskeleti -----
