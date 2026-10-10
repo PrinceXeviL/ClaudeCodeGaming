@@ -231,7 +231,8 @@ function adaptQuality(real) {
 }
 function resize() {
   const dpr = quality;
-  const cw = window.innerWidth, ch = window.innerHeight;
+  // gizli/sıfır boyutlu pencere (ör. arka plandaki sekme): ölçek 0 olur, her şey NaN'a döner; önceki ölçüyle devam
+  const cw = window.innerWidth || (view && view.cw) || W, ch = window.innerHeight || (view && view.ch) || H;
   canvas.width = Math.round(cw * dpr);
   canvas.height = Math.round(ch * dpr);
   const cs = getComputedStyle(safeProbe), px = (v) => parseFloat(v) || 0;
@@ -2450,12 +2451,36 @@ const SKEL_STANCE = {
 // 11 Eki: yeni Mahzen (nm_mahzen_v2.jpg); iskeletler kapının merdiveninin dibinden çıkar. DOOR_GLOW: kapı ağzının ortası (ışık)
 const GRAVE_SPOTS = [[[-0.04, 0.2]], [[-0.2, 0.17]], [[-0.17, 0.12]]];
 const DOOR_GLOW = [[-0.05, 0.42], [-0.21, 0.4], [-0.14, 0.44]];
+// Yönlü mahzen (10 Eki, Caner: kapı yola dönük olsun, iskeletler gerçekten kapıdan çıkıp yola gitsin). Kademe başına iki görsel:
+// önden (kapı aşağı bakar) ve _side (kapı sağ öne bakar; aynalanınca sol öne). Yol hangi yandaysa o görsel seçilir.
+// Noktalar [merkezden yatay pay (genişlik oranı), alttan yükseklik (boy oranı)]: door kapı eşiği (iskelet karanlıktan burada belirir),
+// stair merdivenin dibi (buradan bayrağa yürür), glow kapı ağzının ışığı, fire titreyen alevler ('c' mum, 'l' fener).
+const MAHZEN_V = {
+  0: { front: { door: [0, 0.42], stair: [0, 0.15], glow: [0, 0.56], fire: [[-0.29, 0.33, 'c'], [-0.24, 0.32, 'c'], [0.25, 0.32, 'c'], [0.3, 0.3, 'c'], [0.43, 0.6, 'l']] },
+       side: { door: [0.3, 0.42], stair: [0.37, 0.2], glow: [0.33, 0.56], fire: [[-0.25, 0.83, 'c'], [-0.19, 0.82, 'c'], [-0.03, 0.24, 'c'], [0.03, 0.24, 'c'], [0.45, 0.39, 'c'], [0.41, 0.69, 'l']] } },
+};
+function mahzenView(t) {
+  const V = NECRO && t.type === 'barracks' && MAHZEN_V[t.lvl];
+  if (!V || !spr(`tower_barracks_${t.lvl + 1}`)) return null;
+  const dx = (t.rx ?? t.x) - t.x, dy = (t.ry ?? t.y) - t.y, side = !!spr(`tower_barracks_${t.lvl + 1}_side`) && (Math.abs(dx) > Math.max(dy, 0) * 0.9 + 8 || dy < -10); // yol arkadaysa yandan çıkıp binanın yanından dolanır
+  return { side, fl: side && dx < 0 ? -1 : 1, P: side ? V.side : V.front };
+}
+const mahzenPt = (t, ts, MV, q) => ({ x: t.x + q[0] * MV.fl * ts.w, y: ts.bottom - q[1] * ts.h });
 function graveSpot(t, i) {
   const ts = towerSprite(t), L = GRAVE_SPOTS[t.lvl] || GRAVE_SPOTS[0], g = L[i % L.length];
   return ts ? { x: t.x + g[0] * ts.w, y: ts.bottom - g[1] * ts.h } : { x: t.x, y: t.y + 6 };
 }
 function riseFromGrave(s) {
   if (!NECRO || !s.tower) return;
+  const t = s.tower, MV = mahzenView(t), ts = MV && towerSprite(t);
+  if (ts) { // kapının karanlığından belirir, merdivenden iner, sonra bayrağa yürür
+    const d = mahzenPt(t, ts, MV, MV.P.door), st = mahzenPt(t, ts, MV, MV.P.stair), j = ((s.slot || 0) - 1) * ts.w * 0.04;
+    s.x = d.x + j; s.y = d.y; s.born = G.t; s.door = true; s.exit = { x: st.x + j, y: st.y };
+    if ((t.ry ?? t.y) < t.y - 10) s.exit.then = { x: t.x + MV.fl * ts.w * 0.62 + j, y: t.y - 4 }; // bayrak arkada: önce binanın yanına
+    for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', x: d.x + rand(-5, 5), y: d.y - rand(0, 8), vx: rand(-8, 8), vy: -rand(4, 12), col: k % 2 ? '150,230,170' : '180,160,220', s0: 4, s1: 10, life: rand(0.6, 1), a: 0.35 });
+    return;
+  }
+  s.door = false; s.exit = null;
   const q = graveSpot(s.tower, s.slot || 0);
   s.x = q.x; s.y = q.y; s.born = G.t;
   for (let k = 0; k < 7; k++) emit(G.parts, { kind: 'chunk', x: q.x + rand(-4, 4), y: q.y, vx: rand(-40, 40), vy: -rand(60, 130), g: 420, vr: rand(-10, 10), rot: rand(0, 6), col: k % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.2, 2.2), s1: 1, life: rand(0.35, 0.6) });
@@ -3290,6 +3315,10 @@ function updateSoldier(s, dt) {
     return;
   }
   if (s.wall) { updateWall(s, dt); return; }
+  if (s.exit) { // mahzenden çıkış: önce merdivenin dibine iner (dövüşe karışmaz)
+    if (moveToward(s, s.exit.x, s.exit.y, dt * 26 / s.speed) || G.t - s.born > 4) s.exit = s.exit.then && G.t - s.born <= 4 ? s.exit.then : null; // ~26 px/sn, ağır adımlarla
+    return;
+  }
   if (s.giant) { bigHold(s, dt, s.giant.block); if (s.giant.stomp && s.target && (s.stompT = (s.stompT ?? 3) - dt) <= 0) { s.stompT = 6; bigStomp(s); } }
   else if (s.golem) bigHold(s, dt, 3);
   if (s.netT > 0) s.netT -= dt;
@@ -5723,7 +5752,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
+  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -6291,7 +6320,13 @@ function drawNecroTowerFx(t, ts) {
       const a = time * 0.5 + i * 2.1 + t.x * 0.01, q = P(Math.sin(a) * 0.3, 0.06 + 0.04 * Math.cos(a * 1.3 + i));
       glow(ctx, q.x, q.y, ts.w * (0.15 + 0.04 * Math.sin(a * 2)), i % 2 ? '190,120,255' : '120,255,150', 0.08 + 0.04 * Math.sin(a * 1.7));
     }
-    const d = P(g[0], g[1]); glow(ctx, d.x, d.y, 13 * s, '120,255,160', 0.22 + 0.1 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 4 * s, 8 * s, '170,100,255', 0.18 + 0.08 * Math.sin(time * 3.1));
+    const MV = mahzenView(t), d = MV ? mahzenPt(t, ts, MV, MV.P.glow) : P(g[0], g[1]);
+    glow(ctx, d.x, d.y, 13 * s, '120,255,160', 0.22 + 0.1 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 4 * s, 8 * s, '170,100,255', 0.18 + 0.08 * Math.sin(time * 3.1));
+    if (MV) for (const [i, f] of MV.P.fire.entries()) { // mum ve fener alevleri titrer
+      const q = mahzenPt(t, ts, MV, f), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.3) + 0.1 * Math.sin(time * 23 + i);
+      if (f[2] === 'l') glow(ctx, q.x, q.y, 7 * s * fk, '120,255,150', 0.45 * fk);
+      else { glow(ctx, q.x, q.y - 1.5 * s, 4.5 * s * fk, '255,190,90', 0.5 * fk); glow(ctx, q.x, q.y - 1.5 * s, 1.6 * s, '255,245,200', 0.6 * fk); }
+    }
   } else if (t.type === 'mage') {
     // fenerdeki ruh: nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
     const pulse = 0.5 + Math.sin(time * 3.2 + t.x) * 0.15 + 0.4 * sh;
@@ -6424,7 +6459,7 @@ function drawTowerBody(t) {
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
     // top ateşlediğinde kule hafifçe sarsılır (top kendi içinde geri teper)
     const ksy = t.type === 'artillery' && t.shotAnim > 0.2 ? 1 - (t.shotAnim - 0.2) * 0.25 : 1;
-    const OF = towerForm(t), fl = OF && OF.flip && t.face === -1 ? -1 : 1;
+    const OF = towerForm(t), MV = mahzenView(t), fl = MV ? MV.fl : OF && OF.flip && t.face === -1 ? -1 : 1;
     const recoil = OF && OF.tip && !balLay(t) && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
     ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
     const TA = towerAnim(t);
@@ -6778,9 +6813,12 @@ function drawSoldier(s) {
     // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore();
     if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
-    const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
-    drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking, fly: 0, rise,
+    const rise = !s.door && s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
+    const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir
+    if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
+    drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking: walking || !!s.exit, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
+    if (fade < 1) ctx.restore();
     if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
       // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur
       const sw = s.shootT > 0 ? Math.sin(clamp(1 - s.shootT / 0.25, 0, 1) * Math.PI) : 0;
@@ -12149,7 +12187,7 @@ function drawPlay() {
   const ents = [];
   for (const t of G.towers) ents.push([t.y, 0, t]);
   for (const e of G.enemies) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]);
-  for (const s of G.soldiers) ents.push([s.y, 2, s]);
+  for (const s of G.soldiers) ents.push([s.exit && s.tower ? s.tower.y + 0.5 : s.y, 2, s]); // kapıdan çıkan iskelet binanın önünde
   for (const c of G.coins) if (c.state !== 'fly') ents.push([c.y, 4, c]);
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
