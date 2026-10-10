@@ -4207,7 +4207,7 @@ function drawNecroGlyph(id, r) {
     const im = spr('unit_skel_1');
     ctx.fillStyle = 'rgba(30,16,8,0.7)'; ctx.beginPath(); ctx.ellipse(0, r * 0.62, r * 0.75, r * 0.2, 0, 0, Math.PI * 2); ctx.fill();
     if (im) drawSprite(ctx, im, 0, r * 0.75, r * 1.5 * im.width / im.height);
-    if (G.raiseT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r, '120,255,140', 0.4 + Math.sin(time * 8) * 0.15); ctx.restore(); }
+    if (G && G.raiseT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r, '120,255,140', 0.4 + Math.sin(time * 8) * 0.15); ctx.restore(); }
     return;
   }
   const w = Math.sin(time * 4) * 1.5;
@@ -11254,7 +11254,7 @@ function drawUpgrades() {
     if (NECRO) velvetCard(70, y - 22, 820, 46, 23); else roundRect(70, y - 22, 820, 46, 23, 'rgba(30,18,8,0.75)', 'rgba(212,171,90,0.5)', 1.5);
     circle(98, y + 1, 19, '#2a1c10', '#c9a35a', 2);
     upgradeIcon(u.id, 98, y + 1);
-    txt(u.name, 128, y + 1, 18, '#ffe9b0', 'left', '400', FONT_T);
+    fitTxt(u.name, 128, y + 1, 124, 18, '#ffe9b0', 'left', '400', FONT_T, true); // uzun adlar (Kemik Kuleleri) düğmeye taşmasın
     u.ranks.forEach((rk2, j) => {
       const x = 262 + j * 208, bought = j < r, next = j === r, can = next && free >= rk2.cost;
       const key = 'up' + u.id + j, sc = pressScale(key);
@@ -11262,7 +11262,7 @@ function drawUpgrades() {
       const fill = bought ? '#3c7a24' : can ? (NECRO ? '#7a1434' : '#6a4a1c') : NECRO ? 'rgba(26,8,24,0.85)' : 'rgba(60,44,28,0.85)';
       roundRect(-95, -17, 190, 34, 17, fill, bought ? '#9be06a' : can ? '#ffd34d' : 'rgba(212,171,90,0.35)', bought || can ? 2 : 1.2);
       if (can) glow(ctx, 0, 0, 90, '255,210,90', 0.12 + Math.sin(time * 4) * 0.05);
-      txt(rk2.desc, -12, 1, 12, bought ? '#eaffd8' : next ? '#fff3d0' : '#a89878', 'center', '700', FONT_B, false);
+      fitTxt(rk2.desc, -14, 1, 138, 12, bought ? '#eaffd8' : next ? '#fff3d0' : '#a89878', 'center', '700', FONT_B, false); // düğmeye sığsın
       if (bought) { circle(78, 0, 9, '#3cbf3c', '#fff', 1.5); drawIcon('check', 78, 0, 11); }
       else { fancyStar(72, 0, 8, true); txt(rk2.cost + '', 84, 1, 12, '#ffe27a', 'center', '400', FONT_T); }
       ctx.restore();
@@ -11280,7 +11280,7 @@ function upgradeIcon(id, x, y) {
   if (['archer', 'barracks', 'mage', 'artillery'].includes(id)) {
     const im = towerIcon(id, 2);
     if (im) { ctx.save(); ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.clip(); drawSprite(ctx, im, x, y + 19, 36 * im.width / im.height); ctx.restore(); }
-  } else if (id === 'spells') { ctx.save(); ctx.translate(x, y); ctx.scale(0.9, 0.9); drawUltGlyph('zeynep', 20); ctx.restore(); }
+  } else if (id === 'spells') { ctx.save(); ctx.translate(x, y); ctx.scale(0.9, 0.9); if (NECRO) drawNecroGlyph('nm_raise', 20); else drawUltGlyph('zeynep', 20); ctx.restore(); } // büyüler: diriltme simgesi
   else drawIcon('heart', x, y, 20);
 }
 
@@ -12398,7 +12398,7 @@ function drawLevelCard(i, cx, cy, at) {
     ctx.restore();
     buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => go(() => startLevel(i)) });
     // ödüllü reklam: +150 altınla başla (bölüm kartının altında küçük düğme)
-    { const kb = 'boost' + i, yb = by + 46 * sc;
+    { const kb = 'boost' + i, yb = by + (st ? 60 : 46) * sc; // yan düğmelerin yazılarının altında kalsın
       gameButton(kb, cx, yb, 196 * sc, 30 * sc, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA', () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 11 * sc }); }
     // sonsuz gece: bölümü bir kez bitirince açılır; rekor altında yazar
     if (st) {
@@ -12409,7 +12409,7 @@ function drawLevelCard(i, cx, cy, at) {
       ctx.strokeStyle = '#d8b0ff'; ctx.lineWidth = 3.2; ctx.beginPath(); // sonsuzluk işareti
       for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) { const d = 1 + Math.sin(a) ** 2, X = 11 * Math.cos(a) / d, Y = 11 * Math.sin(a) * Math.cos(a) / d; a ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
       ctx.stroke();
-      txt(best ? 'Rekor ' + best : 'Sonsuz', 0, 30, 10, '#f2ecd8', 'center', '800', FONT_B);
+      fitTxt(best ? 'Rekor ' + best : 'Sonsuz', 0, 30, 60, 10, '#f2ecd8', 'center', '800', FONT_B, true); // kartın dışına taşmasın
       ctx.restore();
       buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => go(() => startLevel(i, 'e')) });
     }
@@ -12424,7 +12424,7 @@ function drawLevelCard(i, cx, cy, at) {
       ctx.fillStyle = '#e04a3a'; ctx.fill(); ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2; ctx.stroke(); drawSkullIcon(0, -1, 4.5);
       if (!open) { ctx.fillStyle = 'rgba(10,6,14,0.6)'; ctx.fillRect(-17, -17, 34, 34); drawIcon('lock', 0, 0, 18); }
       if (done) { circle(13, -13, 7, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, -13); ctx.lineTo(12.5, -10.5); ctx.lineTo(16.5, -15.5); ctx.stroke(); }
-      txt(CHAL[c].short, 0, 30, 10, open ? '#f2ecd8' : '#a89a80', 'center', '800', FONT_B);
+      fitTxt(CHAL[c].short, 0, 30, 60, 10, open ? '#f2ecd8' : '#a89a80', 'center', '800', FONT_B, true);
       ctx.restore();
       buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => {
         if (!open) { mapNote = { text: '3 yıldız al: ' + CHAL[c].short + ' açılır', t: time }; sfx('error'); return; }
