@@ -1389,7 +1389,7 @@ function startLevel(idx, chal = null) {
     heroes: [],
     spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
-    musicOn: !NECRO, ghosts: [], stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
+    musicOn: !NECRO, ghosts: [], souls: [], stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
     castle: { x: lv.castle[0], y: lv.castle[1], shake: 0, flash: 0, smokeT: 0, lvl: 0, archers: [] },
     hurt: 0, banner: null,
     weather: lv.weather || null, wspd: (WEATHER[lv.weather] || {}).speed ?? 1,
@@ -2108,6 +2108,49 @@ function updateCaptain(e, dt) {
   e.cmdCd = CAPTAIN.cd; G.cryCd = Math.max(G.cryCd || 0, 2);
   floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, cmd, '#ffd890');
 }
+// Ruh Hasadı (10 Eki, Caner: "ruh feneri düşmanların ruhlarını çalsın, necromancer büyülerini onunla yapsın"): Ruh Feneri'nin menzilinde ölen
+// düşmanın ruhu fenere uçar; varınca Mortimer'ın bütün büyülerinin beklemesi kısalır. cd: fener seviyesine göre ruh başına sn,
+// iri düşman (rütbeli/çok canlı) elite kat, komutan/boss boss kat. Makinelerin ruhu yok.
+const SOUL = { cd: [0.5, 0.7, 0.9], elite: 2.5, boss: 6, fly: 0.75 };
+function harvestSoul(e) {
+  if (!NECRO || e.def.machine || !G.souls) return;
+  let best = null, bd = 1e9;
+  for (const t of G.towers) { if (t.type !== 'mage' || t.disabledT > 0) continue; const d = dist(t.x, t.y, e.x, e.y); if (d <= effLevel(t).range && d < bd) { bd = d; best = t; } }
+  if (!best) return;
+  const k = e.def.chief || e.def.boss ? SOUL.boss : e.def.base || e.def.elite || e.maxHp >= 400 ? SOUL.elite : 1;
+  G.souls.push({ x0: e.x, y0: aimY(e), t: 0, tower: best, amt: k * SOUL.cd[best.lvl] * (1 + 0.1 * ((best.ab && Object.values(best.ab)[0]) || 0)), big: k > 1, seed: rand(0, 9) });
+}
+function updateSouls(dt) {
+  for (const o of G.souls) {
+    o.t += dt;
+    if (o.t >= SOUL.fly && !o.done) {
+      o.done = true; const t = o.tower; if (!G.towers.includes(t)) continue;
+      for (const id of spellIds()) if (NECRO_SPELLS[id] && G.spells[id] > 0) G.spells[id] = Math.max(0, G.spells[id] - o.amt);
+      t.soulT = 0.45; G.soulFlash = time;
+      const c = towerEye(t); for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: c.x + rand(-5, 5), y: c.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-30, 5), col: i % 2 ? '150,255,220' : '190,140,255', s0: 3, s1: 0.5, life: 0.5 });
+    }
+  }
+  G.souls = G.souls.filter(o => !o.done);
+  for (const t of G.towers) if (t.soulT > 0) t.soulT -= dt;
+}
+// uçan ruh: cesetten yükselip kavis çizerek fenerin ağzına süzülen soluk yeşil-mor alev; arkasında iz
+function drawSouls() {
+  if (!G.souls || !G.souls.length) { drawSoulPulses(); return; }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const o of G.souls) {
+    const t = o.tower, c = towerEye(t), k = easeInOut(clamp(o.t / SOUL.fly, 0, 1));
+    const P = (kk) => ({ x: lerp(o.x0, c.x, kk) + Math.sin(kk * 9 + o.seed) * 6 * (1 - kk), y: lerp(o.y0, c.y, kk) - Math.sin(kk * Math.PI) * 40 });
+    for (let i = 5; i >= 0; i--) { const q = P(Math.max(0, k - i * 0.04)); glow(ctx, q.x, q.y, (o.big ? 9 : 6) * (1 - i * 0.12), i ? '120,255,200' : '220,255,240', 0.5 - i * 0.07); }
+    const q = P(k); glow(ctx, q.x, q.y, o.big ? 16 : 11, '170,120,255', 0.3);
+  }
+  ctx.restore();
+  drawSoulPulses();
+}
+function drawSoulPulses() { // ruh fenere varınca fener parlar
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const t of G.towers) if (t.soulT > 0) { const c = towerEye(t); glow(ctx, c.x, c.y, 22 + 18 * (1 - t.soulT / 0.45), '140,255,210', t.soulT * 1.4); }
+  ctx.restore();
+}
 function killEnemy(e) {
   // mumya: bir kez yarı canla dirilir; patlama (top, göktaşı, napalm) ile ölürse dirilmez
   if (e.def.revive && !e.revived && e.lastSrc !== 'blast') {
@@ -2119,6 +2162,7 @@ function killEnemy(e) {
     return;
   }
   e.dead = true;
+  harvestSoul(e);
   // testudo: kalkan çatısı dağılır, içinden lejyonerler çıkıp yürümeye devam eder
   if (e.def.split && !e.leaked) {
     const [t, n] = e.def.split, pi = G.paths.indexOf(e.p);
@@ -5421,6 +5465,7 @@ function update(dt) {
     }
   }
   G.ghosts = G.ghosts.filter(g => g.d > g.end && g.d > 0);
+  updateSouls(dt);
   for (const z of G.zones) {
     z.t += dt; z.fxT -= dt;
     HERO_SKILL = !!z.heroSkill;
@@ -9632,6 +9677,7 @@ function drawHud() {
     if (active) glow(ctx, 0, 0, b.r * 2.3, '255,220,120', 0.7 + Math.sin(time * 8) * 0.2);
     else if (peek) glow(ctx, 0, 0, b.r * 2.2, '255,240,200', 0.5 + Math.sin(time * 6) * 0.15);
     else if (ready) glow(ctx, 0, 0, b.r * 1.9, col, 0.25 + Math.sin(time * 3) * 0.1);
+    if (info.necro && time - (G.soulFlash ?? -9) < 0.5) glow(ctx, 0, 0, b.r * 2, '140,255,210', 0.6 * (1 - (time - G.soulFlash) / 0.5)); // ruh geldi: bekleme kısaldı
     circle(0, 5, b.r + 4, 'rgba(0,0,0,0.45)');
     const rm = ctx.createLinearGradient(0, -b.r, 0, b.r);
     rm.addColorStop(0, ready ? '#d8d2e8' : '#8a8494'); rm.addColorStop(0.5, ready ? '#6e6886' : '#4a4452'); rm.addColorStop(1, '#2c2640');
@@ -12840,6 +12886,7 @@ function drawPlay() {
   drawBatSwarms();
   drawFearGhosts();
   for (const p of G.projectiles) drawProjectile(p);
+  drawSouls();
   for (const g of G.ghosts) { // hayaletler
     const a = Math.min(1, g.t / 0.25, (g.d - g.end) / 30);
     ctx.save(); ctx.globalAlpha = 0.85 * a; ctx.translate(g.x, g.y - 18 + Math.sin(time * 6 + g.end) * 2);

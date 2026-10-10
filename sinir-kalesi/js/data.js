@@ -678,7 +678,7 @@ if (NECRO) {
 // kuleler: Mortimer'ın yapıları
 Object.assign(TOWERS.archer, { name: 'Kemik Kulesi', desc: 'Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin' });
 Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'Mahzenin kapısından çıkan iskelet savaşçılar yolu keser' }); // 11 Eki: Savaşçı Mezarlığı'ndan yeniden Mahzen'e (Caner)
-Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır' });
+Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır · menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar' }); // Ruh Hasadı: game.js SOUL
 Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: alan hasarı, zehirli gaz, zırhı çürütür' });
 TOWERS.barracks.levels[0].perk = 'Tencere miğferli 3 iskelet acemi yolu keser';
 TOWERS.barracks.levels[1].perk = 'İskelet muhafızlar: zincir zırh, kalkan, uzun kılıç';

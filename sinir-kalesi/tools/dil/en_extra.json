@@ -169,7 +169,8 @@
   "Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer": "Enemies take 10% more damage, lose 30% defense, attack 12% slower · 6% fear · +10% damage for skeletons and archers · the curse lasts 10 s",
   "%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh": "+14% damage taken · defense −40% · attacks 16% slower · 9% fear · +14% damage for skeletons and archers, +12% armor for skeletons",
   "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death",
-  "Dondu!": "Frozen!"
+  "Dondu!": "Frozen!",
+  "menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar": "harvests the souls of enemies dying in range, spells recharge faster"
  },
  "tpl": [
   [

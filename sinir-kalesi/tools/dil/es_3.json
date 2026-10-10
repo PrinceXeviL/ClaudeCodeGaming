@@ -110,5 +110,6 @@
 "Los enemigos reciben un 10% más de daño, pierden un 30% de defensa y atacan un 12% más lento · 6% de miedo · +10% de daño para esqueletos y arqueros · la maldición dura 10 s",
 "+14% de daño recibido · defensa −40% · ataques un 16% más lentos · 9% de miedo · +14% de daño para esqueletos y arqueros, +12% de armadura para esqueletos",
 "+18% de daño recibido · defensa −50% · ataques un 20% más lentos · 12% de miedo · +18% de daño para esqueletos y arqueros, +15% de armadura para esqueletos · 16% se alzan al morir",
-"¡Congelado!"
+"¡Congelado!",
+"cosecha las almas de los enemigos que mueren en su alcance, los hechizos se recargan antes"
 ]
