@@ -2594,11 +2594,17 @@ const MAHZEN_V = {
   2: { front: { door: [0, 0.35], stair: [0, 0.12], glow: [0, 0.42], fire: [[-0.26, 0.33, 'b'], [0.23, 0.33, 'b']] }, // Kara Türbe: kafatasının ağzı
        side: { dir: -1, door: [-0.13, 0.33], stair: [-0.27, 0.15], glow: [-0.13, 0.43], fire: [[-0.39, 0.34, 'b'], [-0.03, 0.24, 'b']] } },
 };
+// 4. kademe uzmanlık görselleri (11 Eki, Caner'in görselleri): tower_barracks_<uzmanlık>(_side). col: kapı ışığının rengi; 'r' ateşi: parlayan run
+const MAHZEN_SPEC = {
+  shield: { front: { door: [0, 0.31], stair: [0, 0.12], glow: [0, 0.36], col: '140,200,255', fire: [[-0.25, 0.61, 'r'], [0.25, 0.61, 'r'], [0, 0.79, 'r'], [-0.25, 0.52, 'r'], [0.25, 0.52, 'r']] }, // Mezar Bekçileri
+            side: { door: [0.16, 0.34], stair: [0.28, 0.14], glow: [0.15, 0.4], col: '140,200,255', fire: [[0.15, 0.77, 'r'], [0.33, 0.65, 'r'], [-0.03, 0.56, 'r'], [-0.04, 0.45, 'r'], [0.32, 0.52, 'r']] } },
+};
 function mahzenView(t) {
-  const V = NECRO && t.type === 'barracks' && MAHZEN_V[t.lvl];
-  if (!V || !spr(`tower_barracks_${t.lvl + 1}`)) return null;
-  const dx = (t.rx ?? t.x) - t.x, dy = (t.ry ?? t.y) - t.y, side = !!spr(`tower_barracks_${t.lvl + 1}_side`) && (Math.abs(dx) > Math.max(dy, 0) * 0.9 + 8 || dy < -10); // yol arkadaysa yandan çıkıp binanın yanından dolanır
-  return { side, fl: side ? (dx < 0 ? -1 : 1) * (V.side.dir || 1) : 1, P: side ? V.side : V.front };
+  if (!NECRO || t.type !== 'barracks') return null;
+  const sp = t.spec && MAHZEN_SPEC[t.spec] && spr(`tower_barracks_${t.spec}`) ? t.spec : null, V = sp ? MAHZEN_SPEC[sp] : MAHZEN_V[t.lvl], base = sp ? `tower_barracks_${sp}` : `tower_barracks_${t.lvl + 1}`;
+  if (!V || !spr(base)) return null;
+  const dx = (t.rx ?? t.x) - t.x, dy = (t.ry ?? t.y) - t.y, side = !!spr(base + '_side') && (Math.abs(dx) > Math.max(dy, 0) * 0.9 + 8 || dy < -10); // yol arkadaysa yandan çıkıp binanın yanından dolanır
+  return { side, fl: side ? (dx < 0 ? -1 : 1) * (V.side.dir || 1) : 1, P: side ? V.side : V.front, name: base + (side ? '_side' : '') };
 }
 const mahzenPt = (t, ts, MV, q) => ({ x: t.x + q[0] * MV.fl * ts.w, y: ts.bottom - q[1] * ts.h });
 function graveSpot(t, i) {
@@ -5972,7 +5978,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
+  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.17 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -6862,10 +6868,11 @@ function drawNecroTowerFx(t, ts) {
       glow(ctx, q.x, q.y, ts.w * (0.15 + 0.04 * Math.sin(a * 2)), i % 2 ? '190,120,255' : '120,255,150', 0.08 + 0.04 * Math.sin(a * 1.7));
     }
     const MV = mahzenView(t), d = MV ? mahzenPt(t, ts, MV, MV.P.glow) : P(g[0], g[1]);
-    glow(ctx, d.x, d.y, 13 * s, '120,255,160', 0.22 + 0.1 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 4 * s, 8 * s, '170,100,255', 0.18 + 0.08 * Math.sin(time * 3.1));
+    glow(ctx, d.x, d.y, 13 * s, (MV && MV.P.col) || '120,255,160', 0.22 + 0.1 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 4 * s, 8 * s, '170,100,255', 0.18 + 0.08 * Math.sin(time * 3.1));
     if (MV) for (const [i, f] of MV.P.fire.entries()) { // mum ve fener alevleri titrer
       const q = mahzenPt(t, ts, MV, f), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.3) + 0.1 * Math.sin(time * 23 + i);
       if (f[2] === 'l') glow(ctx, q.x, q.y, 7 * s * fk, '120,255,150', 0.45 * fk);
+      else if (f[2] === 'r') glow(ctx, q.x, q.y, 4 * s, MV.P.col || '120,255,150', 0.3 + 0.25 * Math.sin(time * 2 + i * 1.3)); // run nabız gibi parlar
       else if (f[2] === 'b') { glow(ctx, q.x, q.y - 3 * s, 11 * s * fk, '110,255,140', 0.4 * fk); glow(ctx, q.x, q.y - 2 * s, 4 * s, '220,255,220', 0.5 * fk); } // mangal: yeşil ateş
       else { glow(ctx, q.x, q.y - 1.5 * s, 4.5 * s * fk, '255,190,90', 0.5 * fk); glow(ctx, q.x, q.y - 1.5 * s, 1.6 * s, '255,245,200', 0.6 * fk); }
     }

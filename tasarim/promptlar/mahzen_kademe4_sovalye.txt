@@ -1,0 +1,11 @@
+The attached image shows our level 3 crypt barracks "Black Mausoleum" drawn from two viewing directions (A: entrance facing the viewer, B: entrance on its right-front side). Draw its level-4 upgrade "Death Knights" in EXACTLY the same art style, camera, scale and base: thick dark-brown outlines, painterly cartoon shading, chunky proportions, dark cracked stone, ivory bones, glowing runes, round stone base ring.
+
+Keep the same building shape, the same giant skull-shaped gate with its open jaw as the doorway and the same wide steps, so it is clearly the same mausoleum, but turn it into a war-shrine of undead champions: two GIANT crossed bone swords burning with green flames mounted above the skull gate, broken swords and spears stuck into the stone like a graveyard of blades, weapon racks of bone swords beside the steps, spiked black-iron armor plates on the walls, braziers with green fire, green-flame runes, crimson banners with a sword-and-skull sign, the doorway glowing bright green from inside. Even more aggressive and impressive than level 3.
+
+This is a barracks: skeleton warriors walk OUT of the doorway and down the steps, so the doorway must stay a wide OPEN dark archway glowing from inside (nothing blocking it).
+
+Draw THE SAME building TWO times, side by side with lots of empty space between them, exactly like the two views in the attached image (keep every detail identical, only the viewing direction changes):
+A) entrance facing the viewer (front, bottom center), steps going straight down
+B) building turned so the entrance is on its RIGHT-FRONT side, facing down-right, the steps going down to the right; the left side shows its plain side wall
+
+No characters walking around, no text, no labels, no frames, no ground, no shadows. Background: flat solid magenta (#FF00FF) everywhere.
