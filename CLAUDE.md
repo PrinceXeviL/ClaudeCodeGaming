@@ -236,3 +236,16 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
 - Görseller: varliklar/ham/nm_engizisyon_A..D.jpg, nm2_dekor_A.jpg (nm_isle.py BOXES ile kutu kutu kesim), nm2_zeminler.jpg (zemin2_isle.py).
 - Eksikler: yeni düşmanların yürüme/saldırı şeritleri (Kaggle), mahzen kapakları (nm2_hatch*) mekaniği, Kızıl Ay olayı, hikâye panelleri,
   2. sefer müziği/replikleri. Denge: bot hepsini kazanıyor, 20., 27. ve 30. bölüm hedeften zor; oynanışla ayarla.
+
+## 10 Eki gece: hasar türleri, Kemik Kulesi yolları, silah büyüleri (yayın 305)
+- Hasar türü × zırh sınıfı (data.js ARMOR_CLASS, CLASS_OF): src 'arrow' Delici, 'melee'/'minion'/komutan Kesici, 'magic' Ruh, 'blast' Veba/Ateş.
+  Her düşmanın `acl`'si var, `wk` çarpanları bu tablodan (eski düşmana özel ENEMY_WK yalnız necro dışı). Kuşatma zehir ve kanamaya bağışık (immuneTo).
+- Süreli hasarlar damageEnemy(..., raw=true) ile çağrılır (sınıf çarpanı iki kez uygulanmasın): yanma burnEnemy (iyileşmeyi engeller, blast sütunuyla),
+  kanama bleedEnemy (yürürken tam, dururken 1/3), zehir poisonEnemy. Lanet bitince curseK/Res sıfırlanır.
+- Kemik Kulesi: 1. kademe iskelet okçu (MEN.arch, geçici hayalet okçu görseli). 2. kademeye yükseltirken yol seçilir (menü 'path', buyPath; ARCHER_PATH):
+  okçu (sık, hafif, uçana +%25, 4. kademe Hayalet Okçular) / arbaletçi (seyrek, ağır, %30 zırh deler, 4. kademe Ağır Arbaletçiler). Unvan towerTitle(t).
+  Okçu yolunun 1-3. kademe kendi iskelet okçu çizimi henüz yok (Gemini poz sayfaları gerekecek).
+- Silah büyüsü (IMBUE, IMBUE_ORDER): kemik kulesi ve mahzende uzmanlık 3. kademeye gelince 'imbue' düğmesi → alt menü (G.sel.sub='imbue', 5 büyü, buyImbue).
+  Ok/cıvata (pr.imbue) ve iskelet kılıcı/oku her vuruşta applyImbue. Görsel: renkli mermi izi, kılıç parıltısı, kule rozeti.
+- Denge: tools/denge-sayfa.js yol ve büyü de alır; 40 bölüm __tune2 ile ayarlandı (HPMUL, HPMUL2). Bot tek turda çok oynak, ince ayar oynanışla.
+- Test kancaları: __game.path(i, 'bow'|'xbow'), __game.imbue(i, tür).
