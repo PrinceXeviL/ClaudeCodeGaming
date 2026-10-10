@@ -214,9 +214,9 @@ const safeProbe = document.createElement('div');
 safeProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
   'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
 document.body.appendChild(safeProbe);
-// Çizim çözünürlüğü: ekranın piksel yoğunluğu en fazla 1.5'e sınırlanır (fark gözle seçilmez, çizim yükü yarıya iner).
+// Çizim çözünürlüğü: ekranın gerçek piksel yoğunluğu (en çok 3). 1.5 sınırı yakınlaşınca her şeyi bulanıklaştırıyordu (Caner, 10 Eki).
 // Kare hızı düşerse çözünürlük kademeli olarak azaltılır, toparlanınca geri yükseltilir.
-const QMAX = Math.min(window.devicePixelRatio || 1, 1.5);
+const QMAX = Math.min(window.devicePixelRatio || 1, 3);
 let quality = setting('gfx') === 'low' ? 0.75 : QMAX;
 const perf = { acc: 0, n: 0, t: 0, good: 0 };
 function adaptQuality(real) {
@@ -225,8 +225,8 @@ function adaptQuality(real) {
   if (perf.t < 2) return;
   const avg = perf.acc / perf.n;
   perf.acc = perf.n = perf.t = 0;
-  if (avg > 1 / 42 && quality > 0.85) { quality = Math.max(0.85, quality - 0.2); perf.good = 0; resize(); }
-  else if (avg < 1 / 57 && quality < QMAX) { if (++perf.good >= 3) { quality = Math.min(QMAX, quality + 0.15); perf.good = 0; resize(); } }
+  if (avg > 1 / 42 && quality > 0.85) { quality = Math.max(0.85, quality * 0.82); perf.good = 0; resize(); }
+  else if (avg < 1 / 57 && quality < QMAX) { if (++perf.good >= 3) { quality = Math.min(QMAX, quality * 1.12); perf.good = 0; resize(); } }
   else perf.good = 0;
 }
 function resize() {
@@ -1607,6 +1607,37 @@ function glowTex(col) {
     GLOW[col] = c;
   }
   return GLOW[col];
+}
+// Sis öbeği dokusu: üst üste binmiş yumuşak lekeler (düzensiz kenarlı bulut); 3 çeşit, renk başına önbellekli
+const FOG_TEX = {};
+function fogTex(col, v) {
+  const key = col + '|' + v;
+  if (!FOG_TEX[key]) {
+    const c = document.createElement('canvas'); c.width = 128; c.height = 64;
+    const g = c.getContext('2d'), r = seeded(17 + v * 31);
+    for (let i = 0; i < 9; i++) {
+      const x = 24 + r() * 80, y = 26 + r() * 14, R = 12 + r() * 16, gr = g.createRadialGradient(x, y, 0, x, y, R);
+      gr.addColorStop(0, `rgba(${col},0.55)`); gr.addColorStop(0.5, `rgba(${col},0.25)`); gr.addColorStop(1, `rgba(${col},0)`);
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 64);
+    }
+    FOG_TEX[key] = c;
+  }
+  return FOG_TEX[key];
+}
+// Kulenin ayağında dönerek süzülen sis (Caner, 10 Eki: kuleler hareketli olsun, çevresindeki sis hareket etsin).
+// front=false: binanın arkasında kalan yarı (binadan önce çizilir), true: önündeki yarı (soluk, binayı örtmesin).
+const TOWER_FOG = { archer: { n: 8, a: 0.85, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
+function drawTowerFog(t, ts, front) {
+  const F = NECRO && TOWER_FOG[t.type]; if (!F) return;
+  const s = ts.w / 50, R = ts.w * 0.56, cy = ts.bottom - 3 * s;
+  for (let i = 0; i < F.n; i++) {
+    const sp = 0.07 + (i % 3) * 0.025, a = time * sp * (i % 2 ? 1 : -1) + i * 2.399 + t.x * 0.013, sn = Math.sin(a);
+    if ((sn > 0) !== front) continue;
+    const rr = R * (0.8 + 0.25 * Math.sin(time * 0.31 + i)), x = t.x + Math.cos(a) * rr, y = cy + sn * rr * 0.26 - (i % 2) * 2 * s;
+    const w = ts.w * (0.62 + 0.14 * Math.sin(time * 0.43 + i * 1.7)), al = F.a * (0.55 + 0.45 * Math.sin(time * 0.37 + i * 2.1)) * (front ? 0.55 : 1);
+    ctx.globalAlpha = Math.max(0, al) * 0.8; ctx.drawImage(fogTex(F.col[i % 2], i % 3), x - w / 2, y - w * 0.25, w, w * 0.5);
+  }
+  ctx.globalAlpha = 1;
 }
 function glow(c, x, y, r, col, a = 1) {
   if (a <= 0 || r <= 0) return;
@@ -6334,12 +6365,11 @@ function drawTowerDisabled(t) {
   }
   ctx.restore();
 }
-// Kulelerin koyu zeminde seçilmesi (10 Eki, 3. deneme): cephe aydınlatması gibi. Binanın ayağından yukarı vuran iki renkli ışık
-// (sol ve sağ köşeden farklı renk, yukarı doğru söner); görsel başına bir kez hazırlanır. Altına yumuşak temas gölgesi,
-// ayağına soluk ışık havuzu. Renkler Necromancer ailesinden (kızıl, yeşil, mor), kule türüne göre çift. a: gücü (göze batmasın).
-const TOWER_LIT = { a: 1, reach: 0.7, mode: 'soft-light', pool: 0.1, shade: 0.42, // soft-light: koyuluklar korunur, renk yüzeye işler
-  cols: { barracks: ['255,70,90', '170,90,255'], archer: ['110,255,160', '170,90,255'], mage: ['170,90,255', '110,255,190'],
-    artillery: ['130,255,110', '255,80,110'], altar: ['255,60,120', '160,80,255'] }, col: ['120,255,160', '170,90,255'] };
+// Kulelerin koyu zeminde seçilmesi (10 Eki, 4. deneme; Caner: renklendirme olmasın): binanın arkasından ve ayağından çok hafif
+// sıcak beyaz-sarı ışık. Fark edilmeyecek kadar soluk; amaç binayı zeminden ayırmak. Görsel başına bir kez hazırlanır.
+// back: binanın arkasındaki ışık (sprite'tan önce çizilir), pool: ayağındaki ışık havuzu, a: yüzeye vuran ışığın gücü.
+const TOWER_LIT = { a: 0.28, reach: 0.75, mode: 'soft-light', pool: 0.05, back: 0.09, shade: 0.42,
+  cols: {}, col: ['255,238,205', '255,228,175'] };
 const LIT_CACHE = new Map();
 function litOf(im, cols, strip) {
   const key = im.src + '|' + cols.join('|');
@@ -6384,9 +6414,11 @@ function drawTowerBody(t) {
       ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(t.x, ts.bottom - 2, ts.w * 0.62, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col;
-      glow(ctx, t.x - ts.w * 0.22, ts.bottom - 3, ts.w * 0.4, lc[0], TOWER_LIT.pool * (0.9 + Math.sin(time * 1.6 + t.x) * 0.1));
-      glow(ctx, t.x + ts.w * 0.22, ts.bottom - 3, ts.w * 0.4, lc[1], TOWER_LIT.pool * (0.9 + Math.sin(time * 1.3 + t.y) * 0.1));
+      glow(ctx, t.x, ts.bottom - ts.h * 0.32, ts.w * 0.78, lc[0], TOWER_LIT.back); // arkadan: siluet zeminden ayrılır
+      glow(ctx, t.x - ts.w * 0.2, ts.bottom - 3, ts.w * 0.42, lc[0], TOWER_LIT.pool);
+      glow(ctx, t.x + ts.w * 0.2, ts.bottom - 3, ts.w * 0.42, lc[1], TOWER_LIT.pool);
       ctx.restore();
+      drawTowerFog(t, ts, false);
     }
     const age = G.t - (t.born ?? -9);
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
@@ -6414,6 +6446,7 @@ function drawTowerBody(t) {
       drawSprite(ctx, lit || ts.im, 0, 0, ts.w); ctx.restore();
     });
     drawNecroTowerFx(t, ts);
+    drawTowerFog(t, ts, true);
     if (t.ab) {
       const ids = t.def.abilities.filter(a => t.ab[a.id]);
       ids.forEach((a, i) => {

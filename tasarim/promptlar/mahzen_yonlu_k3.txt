@@ -1,0 +1,13 @@
+The first attached image is our current crypt sheet (levels 1-3) and the second is our tower style reference. Redraw ONE of these crypts as an EVEN MORE impressive, more detailed version, in EXACTLY the same art style: thick dark-brown outlines, painterly cartoon shading, chunky proportions, dark cracked stone, ivory bones, glowing green runes, purple and crimson accents, round stone base ring, same top-down 3/4 camera.
+
+This is a barracks: skeleton warriors walk OUT of its entrance and down the steps to the road. The entrance must be a wide OPEN archway (no door leaves, nothing blocking it) with a pitch-black interior lit faintly by green light from deep inside, and 3-4 wide stone steps descending from the doorway to the base ring.
+
+Draw THE SAME building THREE times, side by side with lots of empty space between them, rotated so the entrance faces a different direction (like a game sprite turned on a turntable; keep every detail identical, only the viewing direction changes):
+A) entrance facing the viewer (front, bottom center)
+B) building turned 90 degrees: entrance on the LEFT side, facing left, the steps go down to the left
+C) building turned 135 degrees: entrance on the upper-left side, facing up-left and away from the viewer, the archway and steps still partly visible
+
+No characters, no skeletons, no text, no labels, no frames, no ground, no shadows. Background: flat solid magenta (#FF00FF) everywhere.
+
+THE BUILDING:
+Level 3 "Black Mausoleum": a grand black-stone mausoleum whose archway is a GIANT SKULL-SHAPED GATE (the open jaw is the doorway), a ribcage arch above it, gothic spires with green flames, spiked iron fence posts, two braziers with green fire beside the steps, crimson banners, glowing runes, skulls and old weapons piled around the base, thick green fog pouring from the jaw. The most impressive of the three levels.
