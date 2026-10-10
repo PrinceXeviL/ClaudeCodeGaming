@@ -5,8 +5,8 @@ Oyun üç parça çalar (`sinir-kalesi/ses/`):
 | Dosya | Ne zaman | Durum |
 |---|---|---|
 | `muzik_menu.mp3` | başlık, harita, menüler | var (Banquet for the Uninvited) |
-| `muzik_savas.mp3` | bölüm içi | **üretilecek** |
-| `muzik_boss.mp3` | boss sahadayken (yoksa savaş parçası çalar) | **üretilecek** |
+| `muzik_savas.mp3` | bölüm içi | var (The Gates Tremble; albüm: `varliklar/muzik_albumu/`) |
+| `muzik_boss.mp3` | boss sahadayken (yoksa savaş parçası çalar) | var (Bones on the Battlements) |
 
 Dosyayı bu adla `ses/` klasörüne koymak yeterli; kod kendisi bulur, yoksa sessiz kalır.
 Parçalar döngüyle çalar: başı ve sonu yumuşak / birbirine bağlanabilir olmalı. Sözsüz (enstrümantal) olmalı,

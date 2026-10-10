@@ -592,7 +592,7 @@ function painVoice(e) {
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.07, seam: true }, // The Necromancer's Parade
+  battle: { file: 'muzik_savas.mp3', gain: 0.07, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
   boss:   { file: 'muzik_boss.mp3',  gain: 0.12, seam: true }, // Bones on the Battlements
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
   battle2: { file: 'muzik_savas2.mp3', gain: 0.07, seam: true },
