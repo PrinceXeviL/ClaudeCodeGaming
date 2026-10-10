@@ -1,13 +1,12 @@
-The first attached image is our current crypt sheet (levels 1-3) and the second is our tower style reference. Redraw ONE of these crypts as an EVEN MORE impressive, more detailed version, in EXACTLY the same art style: thick dark-brown outlines, painterly cartoon shading, chunky proportions, dark cracked stone, ivory bones, glowing green runes, purple and crimson accents, round stone base ring, same top-down 3/4 camera.
+The first attached image is our current crypt sheet (levels 1-3), the second shows our new level-1 crypt drawn from two viewing directions, the third is our tower style reference. Redraw the level 2 crypt of the first image as an EVEN MORE impressive, more detailed version, in EXACTLY the same art style as the second image: thick dark-brown outlines, painterly cartoon shading, chunky proportions, dark cracked stone, ivory bones, glowing green runes, purple and crimson accents, round stone base ring, same top-down 3/4 camera, same size relation (it is the next, bigger level).
 
-This is a barracks: skeleton warriors walk OUT of its entrance and down the steps to the road. The entrance must be a wide OPEN archway (no door leaves, nothing blocking it) with a pitch-black interior lit faintly by green light from deep inside, and 3-4 wide stone steps descending from the doorway to the base ring.
+This is a barracks: skeleton warriors walk OUT of its entrance and down the steps to the road. The entrance must be a wide OPEN archway (no door leaves, nothing blocking it) glowing with green light from inside, with 3-4 wide stone steps descending from the doorway to the base ring.
 
-Draw THE SAME building THREE times, side by side with lots of empty space between them, rotated so the entrance faces a different direction (like a game sprite turned on a turntable; keep every detail identical, only the viewing direction changes):
-A) entrance facing the viewer (front, bottom center)
-B) building turned 90 degrees: entrance on the LEFT side, facing left, the steps go down to the left
-C) building turned 135 degrees: entrance on the upper-left side, facing up-left and away from the viewer, the archway and steps still partly visible
+Draw THE SAME building TWO times, side by side with lots of empty space between them, exactly like the two views in the second image (keep every detail identical, only the viewing direction changes):
+A) entrance facing the viewer (front, bottom center), steps going straight down
+B) building turned so the entrance is on its RIGHT-FRONT side, facing down-right, the steps going down to the right; the left side of the building shows its plain side wall
 
 No characters, no skeletons, no text, no labels, no frames, no ground, no shadows. Background: flat solid magenta (#FF00FF) everywhere.
 
 THE BUILDING:
-Level 2 "Bone Crypt": a larger crypt with a bone-decorated facade, a raised spiked iron portcullis above the glowing archway, two stone skeleton-warrior statues holding swords flanking the entrance, glowing green runes, tattered purple banners, piles of skulls, green fog spilling down the steps.
+Level 2 "Bone Crypt": a larger crypt with a bone-decorated facade, a raised spiked iron portcullis above the glowing archway, two stone skeleton-warrior statues holding swords flanking the entrance, glowing green runes, tattered purple banners, piles of skulls, an iron lantern with green flame, a few melted candles, green fog spilling down the steps.
