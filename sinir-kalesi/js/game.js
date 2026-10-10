@@ -42,6 +42,7 @@ function useStrips(keep) {
   for (const k of [...STRIP_WAIT]) if (!keep.has(k)) STRIP_WAIT.delete(k);
   keep.forEach(loadStrip);
 }
+let IMG_READY = false; // açılışta yüklenen bütün görseller geldi (harita zemini ancak o zaman önceden hazırlanır)
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
   .then(r => (r.ok ? r.json() : []))
@@ -66,7 +67,8 @@ fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopy
       im.src = 'img/' + file + (window.SURUM ? '?v=' + window.SURUM : '');
     };
     const isKey = (f) => /^nm_key/.test(f), rest = list.filter(f => !isKey(f));
-    let started = false; const go = () => { if (!started) { started = true; rest.forEach(f => load(f)); } };
+    let started = false, left = 0; const tick = () => { if (--left <= 0) IMG_READY = true; };
+    const go = () => { if (!started) { started = true; const eager = rest.filter(f => !LAZY_RE.test(f.replace(/\.(png|svg|jpg|webp)$/, ''))); left = eager.length; rest.forEach(f => load(f, LAZY_RE.test(f.replace(/\.(png|svg|jpg|webp)$/, '')) ? null : tick)); if (!left) IMG_READY = true; } };
     const key = list.filter(isKey); key.forEach(f => load(f, go)); if (!key.length) go();
     setTimeout(go, 2500); // kapak gelmezse yine de devam
   })
@@ -391,6 +393,12 @@ function uiSound(kind) {
     n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.Q.value = 2; bp.frequency.setValueAtTime(450, now); bp.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
     g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.09, now + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
     n.connect(bp); bp.connect(g); g.connect(out); n.start(now); n.stop(now + 0.17);
+  } else if (kind === 'whoosh') { // geçiş: yükselip alçalan hava hışırtısı ve altta boğuk bir gümleme
+    const n = actx.createBufferSource(), bp = actx.createBiquadFilter(), g = actx.createGain();
+    n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.Q.value = 1.4; bp.frequency.setValueAtTime(320, now); bp.frequency.exponentialRampToValueAtTime(1700, now + 0.22); bp.frequency.exponentialRampToValueAtTime(500, now + 0.5);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.16, now + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+    n.connect(bp); bp.connect(g); g.connect(master); n.start(now); n.stop(now + 0.6);
+    uiPop(now + 0.24, 120, 55, 0.22, 0.35, out);
   } else return false;
   return true;
 }
@@ -524,7 +532,7 @@ const SYNTH_SFX = { portal: portalSound, roar: roarSound, stomp: stompSound };
 function sfx(kind, rate) {
   if (muted || !actx) return;
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
-  if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open') && uiSound(kind)) return;
+  if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open' || kind === 'whoosh') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
   const synth = SYNTH_SFX[kind];
   if (!def || (!synth && (!list || !list.length))) return;
@@ -1377,6 +1385,7 @@ function startLevel(idx, chal = null) {
   for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
+  for (const k in MEN) keep.add(MEN[k].pre + '_walk'); // kuledeki iskeletlerin yürüyüşü
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
@@ -5505,6 +5514,11 @@ function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   g.drawImage(im, R, R); c.pad = R; OUTL.set(im, c);
   return c;
 }
+// konturlu şerit karesi (drawFrame gibi; kontur şeridin tamamına bir kez çizilir, kare komşu karenin kontur payını da alır)
+function drawFrameOutlined(img, F, i, h) {
+  const O = outlined(img, Math.max(3, Math.round(7 * F.fh / 300))), p = O.pad, k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
+  ctx.drawImage(O, i * F.fw, 0, F.fw + 2 * p, F.fh + 2 * p, -dw / 2 - p * k, -dh * (1 - F.base) - p * k, dw + 2 * p * k, dh + 2 * p * k);
+}
 function xbowTip(t, ts, a) { // atış pozunda okun / cıvatanın çıktığı nokta (dünya koordinatı)
   const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = ts.h * xbowCfg(t).h * MEN_K, w = im ? h * im.width / im.height : h * 0.89;
   return { x: f.x + (M.tip[0] - 0.5) * w * a.face, y: f.y - (1 - M.tip[1]) * h };
@@ -5566,7 +5580,9 @@ function drawXbowMen(t, ts, redraw) {
     if (M.heavy && up && kk > 0) back = h * 0.05 * kk; // ağır arbalet sert teper (poz zaten geri tepmiş)
     if (pose === '_load') back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
-    const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2);
+    const wk = a.walking && !up && animStrip(pre, null, '_walk'); // platformda yer değiştirirken yürüme şeridi (Kaggle Wan, 49 kare)
+    if (wk) drawFrameOutlined(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h);
+    else { const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2); }
     ctx.restore();
     const o = xbowTip(t, ts, a);
     if (M.bow && a.aimT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * 0.1 * rise, M.col, 0.45 * rise); ctx.restore(); } // gerilen okun ucunda kızıl ışık
@@ -7932,9 +7948,12 @@ const tapPop = (key) => { pops[key] = time; };
 
 // Ekran geçişi: kısa bir kararma, ortasında ekran değişir
 let trans = null;
+// ekran geçişi (Caner, 11 Eki): hışırtı sesi, ekran kenarlardan ortaya doğru kararır (göz kapanır gibi), yeni ekran ortadan açılır
+const TRANS = { in: 0.3, out: 0.38 };
 function go(fn) {
   if (trans) return;
   trans = { t: 0, fn, fired: false };
+  sfx('whoosh');
 }
 
 // renk takımları: [üst, alt, dudak, dış çizgi]
@@ -11259,12 +11278,31 @@ function levelUnlocked(i) {
   return i === first ? epUnlocked(epOf(i)) : (save.stars[i - 1] || 0) > 0;
 }
 let mapEp = null;
+function ensureMapEp() {
+  if (mapEp == null) {
+    const first = LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0));
+    mapEp = first < 0 ? EPISODES.length : epOf(first);
+  }
+  return mapEp;
+}
+// Harita zemini (5 mekân, her biri tam bölüm zemini) ilk açılışta karelere bölünse de telefonda takılıyordu (Caner, 11 Eki):
+// giriş ekranındayken, görseller yüklendikten sonra parça parça önceden hazırlanır; çözünürlük ekrana göre (telefonda ~1,3x)
+const mapRes = () => clamp(view.scale * view.dpr * 1.25, 1.2, 2);
+let warmT = 0;
+function warmMap() {
+  if (!IMG_READY || time - warmT < 0.25) return;
+  warmT = time;
+  const ep = ensureMapEp(), E = EPISODES[ep - 1], R = REGION_BG[ep];
+  if (E && E.zones && !(R && R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y)) { regionBg(ep); return; }
+  const cur = LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)); // sıradaki bölümün kart önizlemesi de hazır olsun
+  if (cur >= 0 && !THUMB[cur]) thumbOf(cur);
+}
 const THUMB = {};
 function thumbOf(i) {
   if (THUMB[i]) return THUMB[i];
   if (thumbOf.at === time) return null; // kare başına en çok bir önizleme hazırlanır (takılma olmasın)
   thumbOf.at = time;
-  const lv = LEVELS[i], bg = renderBackground(lv, lv.paths.map(buildPath));
+  const lv = LEVELS[i], bg = renderBackground(lv, lv.paths.map(buildPath), 0.75); // 480 px önizleme için düşük çözünürlük yeter (2x'te kart açılışı takılıyordu)
   const c = document.createElement('canvas'); c.width = 480; c.height = 270;
   const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
   g.scale(480 / W, 270 / H);
@@ -11366,11 +11404,11 @@ const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
   if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
-  if (R.done) { R.done = null; R.parts = []; } // ekran genişledi: taşma payıyla yeniden
+  if (R.done) { R.done = null; R.parts = []; R.res = 0; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
-    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62, decorK: 1.9 }, R.road, 2, BLEED);
+    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62, decorK: 1.9 }, R.road, R.res || (R.res = mapRes()), BLEED);
     // her mekânın kendi rengi: bataklık yeşil-mavi, mezarlık kül moru, kara göl gece mavisi, kapı kızıl mor
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
@@ -11378,7 +11416,7 @@ function regionBg(ep) {
     if (R.parts.length < E.zones.length) return R.parts[0];
   }
   const m = R.parts[0].m, c = document.createElement('canvas'); c.width = R.parts[0].width; c.height = R.parts[0].height; c.m = m;
-  const g = c.getContext('2d'), zw = W * 2 / E.zones.length, blend = 140, x0 = m.x * 2; // mekânlar çerçeveye göre bölünür, uçtakiler taşma payına uzar
+  const rs = R.res || 2, g = c.getContext('2d'), zw = W * rs / E.zones.length, blend = 70 * rs, x0 = m.x * rs; // mekânlar çerçeveye göre bölünür, uçtakiler taşma payına uzar
   g.drawImage(R.parts[0], 0, 0);
   for (let i = 1; i < R.parts.length; i++) {
     const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
@@ -11493,10 +11531,7 @@ let mapNote = null;
 function drawMap() {
   // gelişme fiyatları arttı (9 Eki): harcanan yıldız eldekini aşıyorsa gelişmeler sıfırlanır, yıldızlar iade edilir
   if (!save.upgFix2) { save.upgFix2 = 1; if (starsSpent() > starsTotal()) save.upg = {}; persist(); }
-  if (mapEp == null) {
-    const first = LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0));
-    mapEp = first < 0 ? EPISODES.length : epOf(first);
-  }
+  ensureMapEp();
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);
   const st = time - screenT;
   if (E.zones) drawRegionMap(E, mapEp, st);
@@ -11511,49 +11546,56 @@ function drawMap() {
   ids.forEach((i, k) => drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05));
 
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  // sefer adı: sekmelerle sağ üst düğmeler arasındaki boşluğa sığar (sekme varsa sağa kayar, şerit biraz küçük)
-  { const x0 = EPISODES.length > 1 ? 290 : 70, x1 = W - 392, cx = (x0 + x1) / 2, rw = Math.min(250, x1 - x0 - 60); // şeridin kuyrukları iki yana ~25 px taşar
-    ctx.save(); ctx.translate(cx, 44); ctx.scale(rk, rk); ribbon(0, 0, rw, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 19); ctx.restore(); }
-  roundBtn('back', 40, 40, 22, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
-  roundBtn('settings', W - 178, 41, 19, 'gear', () => openSettings('map'), { appear: st - 0.15 });
-  roundBtn('codex', W - 226, 41, 19, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
-  { // günün sınavı: takvim düğmesi, bugün yapılmadıysa parlar
-    const done = save.daily && save.daily.key === todayKey() && save.daily.done;
-    if (!done) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, W - 318, 41, 26, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1); ctx.restore(); }
-    roundBtn('daily', W - 318, 41, 19, (r) => {
-      roundRect(-9, -8, 18, 17, 3, '#f2ead6', '#2a1608', 1.4); ctx.fillStyle = '#c8322a'; ctx.fillRect(-9, -8, 18, 5);
-      txt(new Date().getDate() + '', 0, 3.5, 9, '#2a1608', 'center', '400', FONT_T, false);
-      if (done) { ctx.strokeStyle = '#3cbf3c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-5, 2); ctx.lineTo(-1, 6); ctx.lineTo(7, -4); ctx.stroke(); }
-    }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3 });
-  }
-  roundBtn('shop', W - 364, 41, 19, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35 });
-  roundBtn('ach', W - 272, 41, 19, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
-  if (save.achNew) { circle(W - 258, 27, 8, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', W - 258, 27.5, 10, '#fff', 'center', '400', FONT_T, false); }
-  if ((save.codexNew || []).length) { const bx = W - 210, by = 26 + Math.sin(time * 5) * 1.5; circle(bx, by, 8, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', bx, by + 0.5, 9.5, '#fff', 'center', '400', FONT_T); }
-  const total = starsTotal();
-  ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
-  roundRect(W - 150, 22, 132, 38, 19, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
-  fancyStar(W - 129, 41, 13, true);
-  txt(`${total} / ${LEVELS.length * 4}`, W - 72, 42, 20, '#ffe27a', 'center', '400', FONT_T);
-  ctx.restore();
-  // bölge seçimi (sol üst, birden çok bölge varsa): kilitli bölge kilit simgesiyle görünür
+  // üst çubuk (Caner, 11 Eki: mobilde dokunmaya göre büyütüldü, ekran kenarlarına yaslı): solda geri + sefer sekmeleri,
+  // sağda yıldız sayacı ve 5 yuvarlak düğme (ayarlar, kodeks, başarımlar, günün sınavı, dükkân), aradaki boşlukta sefer adı
+  const TY = EDGE.t + 42, RB = 25, RS = 60, L0 = EDGE.l, R0 = EDGE.r;
+  roundBtn('back', L0 + 42, TY, 27, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
+  const tabX = (k) => L0 + 142 + k * 120;
   if (EPISODES.length > 1) EPISODES.forEach((ep, k) => {
-    const n = k + 1, x = 128 + k * 104, y = 40, open = epUnlocked(n), on = n === mapEp, key = 'ep' + n;
-    gameButton(key, x, y, 96, 34, n + '. SEFER', null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 13, icon: open ? null : 'lock' });
-    buttons.push({ key, x: x - 48, y: y - 17, w: 96, h: 34, fn: () => {
+    const n = k + 1, x = tabX(k), open = epUnlocked(n), on = n === mapEp, key = 'ep' + n;
+    gameButton(key, x, TY, 112, 46, n + '. SEFER', null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 16, icon: open ? null : 'lock' });
+    buttons.push({ key, x: x - 56, y: TY - 26, w: 112, h: 56, fn: () => {
       if (!open) { sfx('error'); return; }
       if (mapEp !== n) { mapEp = n; mapSel = null; screenT = time; sfx('pick'); }
     } });
   });
-  // kahramanlar ve gelişmeler (sağ alt)
-  const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id));
-  gameButton('heroes', W - 340, H - 32, 200, 42, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 });
+  const total = starsTotal(), pw = 142, px = R0 - 16 - pw;
+  ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
+  roundRect(px, TY - 23, pw, 46, 23, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
+  fancyStar(px + 24, TY, 15, true);
+  txt(`${total} / ${LEVELS.length * 4}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
+  ctx.restore();
+  const bx = (i) => px - 14 - RB - i * RS;
+  roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15 });
+  roundBtn('codex', bx(1), TY, RB, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
+  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
+  { // günün sınavı: takvim düğmesi, bugün yapılmadıysa parlar
+    const done = save.daily && save.daily.key === todayKey() && save.daily.done, k = RB / 19;
+    if (!done) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx(3), TY, 34, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1); ctx.restore(); }
+    roundBtn('daily', bx(3), TY, RB, (r) => {
+      ctx.save(); ctx.scale(k, k);
+      roundRect(-9, -8, 18, 17, 3, '#f2ead6', '#2a1608', 1.4); ctx.fillStyle = '#c8322a'; ctx.fillRect(-9, -8, 18, 5);
+      txt(new Date().getDate() + '', 0, 3.5, 9, '#2a1608', 'center', '400', FONT_T, false);
+      if (done) { ctx.strokeStyle = '#3cbf3c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-5, 2); ctx.lineTo(-1, 6); ctx.lineTo(7, -4); ctx.stroke(); }
+      ctx.restore();
+    }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3 });
+  }
+  roundBtn('shop', bx(4), TY, RB, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35 });
+  if (save.achNew) { circle(bx(2) + 18, TY - 18, 9, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', bx(2) + 18, TY - 17.5, 11, '#fff', 'center', '400', FONT_T, false); }
+  if ((save.codexNew || []).length) { const cx = bx(1) + 18, cy = TY - 18 + Math.sin(time * 5) * 1.5; circle(cx, cy, 9, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', cx, cy + 0.5, 10.5, '#fff', 'center', '400', FONT_T); }
+  // sefer adı: sekmelerle sağ düğmeler arasındaki boşlukta (dar ekranda küçülür, sığmazsa ikinci satıra iner)
+  { const x0 = EPISODES.length > 1 ? tabX(EPISODES.length - 1) + 62 : L0 + 80, x1 = bx(4) - RB - 10, room = x1 - x0;
+    const two = room < 190, cx = two ? (L0 + R0) / 2 : (x0 + x1) / 2, cy = two ? TY + 58 : TY, rw = two ? 240 : Math.min(250, room - 60);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(rk, rk); ribbon(0, 0, rw, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 19); ctx.restore(); }
+  // kahramanlar ve gelişmeler (sağ alt, ekran köşesine yaslı)
+  const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id)), BY = EDGE.b - 40;
+  gameButton('heroes', R0 - 392, BY, 234, 52, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 19, shine: fresh.length > 0 });
   const freeStars = starsTotal() - starsSpent();
-  gameButton('upgrades', W - 122, H - 32, 200, 42, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
-  if (freeStars > 0) { const bx = W - 30, by = H - 52 + Math.sin(time * 5) * 2; circle(bx, by, 11, '#e8434b', '#fff', 1.5); txt(freeStars + '', bx, by + 1, 12, '#fff', 'center', '400', FONT_T); }
+  gameButton('upgrades', R0 - 140, BY, 234, 52, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 19, shine: freeStars > 0 });
+  if (freeStars > 0) { const ex = R0 - 30, ey = BY - 24 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#e8434b', '#fff', 1.5); txt(freeStars + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
   if (fresh.length) {
-    const bx = W - 250, by = H - 52 + Math.sin(time * 5) * 2;
-    roundRect(bx - 22, by - 10, 44, 20, 10, '#e8434b', '#fff', 1.5); txt('YENİ', bx, by + 1, 11, '#fff', 'center', '400', FONT_T);
+    const ex = R0 - 300, ey = BY - 24 + Math.sin(time * 5) * 2;
+    roundRect(ex - 24, ey - 11, 48, 22, 11, '#e8434b', '#fff', 1.5); txt('YENİ', ex, ey + 1, 12, '#fff', 'center', '400', FONT_T);
   }
   if (Math.random() < 0.12) {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.4, H), vx: rand(-6, 6), vy: rand(-14, -5),
@@ -11565,7 +11607,7 @@ function drawMap() {
     ctx.fillStyle = `rgba(10,5,0,${0.55 * k})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
     buttons.push({ key: 'map_close', x: 0, y: 0, w: W, h: H, fn: () => { mapSel = null; } });
     drawLevelCard(mapSel, W / 2, H / 2 + 6, time - mapSelT);
-    roundBtn('card_x', W / 2 + 122, H / 2 - 158, 17, 'close', () => { mapSel = null; }, { appear: time - mapSelT - 0.15 });
+    roundBtn('card_x', W / 2 + 122, H / 2 - 158, 22, 'close', () => { mapSel = null; }, { appear: time - mapSelT - 0.15 });
   }
   // kısa harita uyarısı (ör. kilitli meydan okuma)
   if (mapNote && time - mapNote.t < 2.2) {
@@ -12904,12 +12946,13 @@ function frame(now) {
     for (let i = 0; i < speed; i++) update(real);
   }
   if (screen === 'play' && G) { updateCamera(real); weatherVisuals(real); }
+  if (screen === 'title' && !trans) warmMap(); // haritanın zemini önceden hazırlanır
   weatherAudio();
   updateMusic(real);
   if (trans) {
     trans.t += real;
-    if (!trans.fired && trans.t >= 0.22) { trans.fired = true; uiParts = []; trans.fn(); screenT = time; }
-    if (trans.t >= 0.5) trans = null;
+    if (!trans.fired && trans.t >= TRANS.in) { trans.fired = true; uiParts = []; trans.fn(); screenT = time; }
+    if (trans.t >= TRANS.in + TRANS.out) trans = null;
   }
   uiParts = updateParts(uiParts, real);
   // çizim
@@ -12933,8 +12976,11 @@ function frame(now) {
   drawAchToast();
   drawAd();
   if (trans) {
-    const a = trans.t < 0.22 ? trans.t / 0.22 : 1 - (trans.t - 0.22) / 0.28;
-    ctx.fillStyle = `rgba(8,5,2,${clamp(a, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    const a = clamp(trans.t < TRANS.in ? trans.t / TRANS.in : 1 - (trans.t - TRANS.in) / TRANS.out, 0, 1), e = a * a * (3 - 2 * a);
+    const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2, R = Math.hypot(VIS.w, VIS.h) / 2 * 1.15 * (1 - e);
+    if (e > 0.995) ctx.fillStyle = '#06030a';
+    else { const g = ctx.createRadialGradient(cx, cy, Math.max(0, R - 120), cx, cy, R + 1); g.addColorStop(0, `rgba(6,3,10,${0.25 * e})`); g.addColorStop(1, 'rgba(6,3,10,1)'); ctx.fillStyle = g; }
+    ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
   ctx.restore();
   if (view.ch > view.cw * 1.1) {
@@ -13035,6 +13081,8 @@ window.__game = {
   music: MUSIC,
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
+  warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
+  mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
