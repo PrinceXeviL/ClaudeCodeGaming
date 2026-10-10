@@ -1060,12 +1060,12 @@
 "en": "Fear"
 },
 {
-"tr": "Ruhlar alandaki düşmanların peşine düşer: korkudan 3,5 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz",
-"en": "Spirits chase the enemies in the area: they flee back in terror for 3.5 s. Magic-resistant foes and bosses fear less, machines don't"
+"tr": "Ruhlar alandaki düşmanların peşine düşer: korkudan 4 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz",
+"en": "Spirits chase the enemies in the area: they flee back in terror for 4 s. Magic-resistant foes and bosses fear less, machines don't"
 },
 {
-"tr": "Ruhlar düşmanları kovalar: 3,5 sn panikle geri kaçarlar",
-"en": "Spirits chase enemies: they panic and flee back for 3.5 s"
+"tr": "Ruhlar düşmanları kovalar: 4 sn panikle geri kaçarlar",
+"en": "Spirits chase enemies: they panic and flee back for 4 s"
 },
 {
 "tr": "Ceset Golemi",

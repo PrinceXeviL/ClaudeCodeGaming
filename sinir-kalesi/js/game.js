@@ -248,6 +248,7 @@ function resize() {
   const L = (x) => (x - view.ox) / scale, T = (y) => (y - view.oy) / scale;
   VIS = { l: L(0), t: T(0), r: L(cw), b: T(ch) }; VIS.w = VIS.r - VIS.l; VIS.h = VIS.b - VIS.t;
   EDGE = { l: Math.min(0, L(sl)), t: Math.min(0, T(st)), r: Math.max(W, L(cw - sr)), b: Math.max(H, T(ch - sb)) };
+  try { if (G) G.waveBtn = {}; } catch (e) {} // dalga düğmesinin yeri görünen kenarlara göre yeniden hesaplanır (ilk çağrıda G henüz tanımsız)
   const bx = Math.min(BLEED_MAX.x, Math.ceil(Math.max(0, -VIS.l, VIS.r - W) / 16) * 16), by = Math.min(BLEED_MAX.y, Math.ceil(Math.max(0, -VIS.t, VIS.b - H) / 16) * 16); // güvenli pay tek yandaysa çerçeve kayar: iki yanın büyüğü
   if (bx > BLEED.x || by > BLEED.y) { BLEED = { x: Math.max(bx, BLEED.x), y: Math.max(by, BLEED.y) }; try { if (G) bgDirty = Math.max(time, 0.001); } catch (e) {} } // ilk çağrıda G henüz tanımsız
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; // tuval boyutu değişince sıfırlanır
@@ -8064,9 +8065,55 @@ if (NECRO) Object.assign(STYLES, {
   blue: ['#c9a6ff', '#7446c8', '#3e2380', '#1a0c40'], // ruh moru
 });
 
+// Necromancer arayüzü (Caner, 10 Eki: menülerde Necromancer tasarımı ağır bassın): düğmeler parlak şeker yerine kara taş levha,
+// kemik çerçeve, köşelerde kemik perçin, rengi yalnız kenardaki ruh ışığında (yeşil devam, mor ayar, kemik, kızıl). Karolar mezar taşı biçiminde.
+const NECRO_AC = { green: '130,255,150', blue: '190,140,255', gold: '235,215,170', wood: '175,155,215', red: '255,95,85', dark: '180,160,140' };
+function necroButton(key, x, y, w, h, label, fn, style, o, appear) {
+  const c = STYLES[style] || STYLES.wood, ac = NECRO_AC[style] || NECRO_AC.wood, down = press.key === key;
+  const sc = pressScale(key) * appear * (o.breathe ? 1 + Math.sin(time * 3.2) * 0.025 : 1);
+  const lip = 5, dy = down ? lip - 2 : 0, r = Math.min(14, h / 2.6), rise = o.tile ? Math.min(20, h * 0.16) : 0;
+  const shape = (ox, oy, ww, hh, rr) => { if (o.tile) tombPath(ox, oy, ww, hh, rise); else { ctx.beginPath(); ctx.roundRect(ox, oy, ww, hh, rr); } };
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, dy, w * 0.68, ac, (o.glow ? 0.28 : 0.1) + Math.sin(time * 2.4 + x * 0.013) * 0.035); ctx.restore();
+  shape(-w / 2 + 2, -h / 2 + lip + 5, w - 4, h, r); ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fill();
+  shape(-w / 2 - 3, -h / 2 - 3, w + 6, h + lip + 6, r + 3); ctx.fillStyle = '#07050b'; ctx.fill();
+  shape(-w / 2, -h / 2 + lip, w, h, r); ctx.fillStyle = c[3]; ctx.fill();
+  const g = ctx.createLinearGradient(0, -h / 2 + dy, 0, h / 2 + dy);
+  g.addColorStop(0, '#2e2738'); g.addColorStop(1, '#14101b');
+  shape(-w / 2, -h / 2 + dy, w, h, r); ctx.fillStyle = g; ctx.fill();
+  ctx.save(); shape(-w / 2, -h / 2 + dy, w, h, r); ctx.clip();
+  const tg = ctx.createLinearGradient(0, h / 2 + dy, 0, -h / 2 + dy); // alttan yükselen ruh ışığı (düğmenin rengi)
+  tg.addColorStop(0, `rgba(${ac},0.34)`); tg.addColorStop(0.7, `rgba(${ac},0.05)`); tg.addColorStop(1, `rgba(${ac},0)`);
+  ctx.fillStyle = tg; ctx.fillRect(-w / 2, -h / 2 + dy, w, h);
+  ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(-w / 2, -h / 2 + dy, w, h * 0.32);
+  if (o.shine) { const ph = (time * 0.35) % 1.8; if (ph < 1) { const sx = -w / 2 - 40 + ph * (w + 80), sg = ctx.createLinearGradient(sx - 30, 0, sx + 30, 0);
+    sg.addColorStop(0, `rgba(${ac},0)`); sg.addColorStop(0.5, `rgba(${ac},0.28)`); sg.addColorStop(1, `rgba(${ac},0)`); ctx.fillStyle = sg; ctx.fillRect(-w / 2, -h / 2 + dy, w, h); } }
+  ctx.restore();
+  shape(-w / 2 + 3.5, -h / 2 + dy + 3.5, w - 7, h - 7, r - 3); ctx.lineWidth = 1.6; ctx.strokeStyle = `rgba(${ac},${0.5 + Math.sin(time * 3 + x * 0.02) * 0.1})`; ctx.stroke();
+  shape(-w / 2, -h / 2 + dy, w, h, r); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(214,200,166,0.55)'; ctx.stroke();
+  const rv = (px, py) => { circle(px, py, 2.6, '#d8cba8', '#07050b', 1); circle(px - 0.7, py - 0.7, 0.9, 'rgba(255,255,255,0.6)'); };
+  if (h >= 30) { const ix = w / 2 - 8, iy = h / 2 - 8; if (!o.tile) { rv(-ix, -iy + dy); rv(ix, -iy + dy); } rv(-ix, iy + dy); rv(ix, iy + dy); }
+  if (o.tile) drawSkullIcon(0, -h / 2 + dy + rise * 0.5, Math.min(7, h * 0.055));
+  const size = o.size || Math.round(h * 0.44), lc = '#efe6cc';
+  const icoGlow = (ix, iy, rr) => { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, ix, iy, rr, ac, 0.32); ctx.restore(); };
+  if (o.tile) {
+    icoGlow(0, dy - h * 0.1, h * 0.36); drawIcon(o.icon, 0, dy - h * 0.1, h * 0.34);
+    ctx.font = `${size}px ${FONT_T}`; const tw = ctx.measureText(TR(label)).width, fs = Math.min(size, size * (w - 18) / Math.max(1, tw));
+    txt(label, 0, dy + h * 0.29, fs, lc, 'center', '400', FONT_T);
+  } else if (o.icon) {
+    const iw = h * 0.5;
+    ctx.font = `${size}px ${FONT_T}`;
+    const tw = label ? ctx.measureText(label).width : 0, gap = label ? 9 : 0, total = iw + gap + tw;
+    icoGlow(-total / 2 + iw / 2, dy, iw * 0.9); drawIcon(o.icon, -total / 2 + iw / 2, dy, iw);
+    if (label) txt(label, -total / 2 + iw + gap + tw / 2, dy + 1, size, lc, 'center', '400', FONT_T);
+  } else txt(label, 0, dy + 1, size, lc, 'center', '400', FONT_T);
+  ctx.restore();
+  if (fn && o.reg !== false) buttons.push({ key, x: x - w / 2, y: y - h / 2, w, h: h + lip, fn });
+}
 function gameButton(key, x, y, w, h, label, fn, style = 'gold', o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
   if (appear <= 0.01) return;
+  if (NECRO) return necroButton(key, x, y, w, h, label, fn, style, o, appear);
   const c = STYLES[style], down = press.key === key;
   const sc = pressScale(key) * appear * (o.breathe ? 1 + Math.sin(time * 3.2) * 0.025 : 1);
   const lip = 6, dy = down ? lip - 2 : 0, r = Math.min(18, h / 2.4);
@@ -8119,6 +8166,18 @@ function roundBtn(key, x, y, r, icon, fn, o = {}) {
   const c = STYLES[o.style || 'wood'];
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
+  if (NECRO) { // kara taş madalyon, kemik çerçeve, ruh ışığı halkası
+    const ac = NECRO_AC[o.style || 'wood'] || NECRO_AC.wood;
+    circle(0, 4, r + 3, 'rgba(0,0,0,0.4)'); circle(0, 0, r + 3, '#07050b');
+    const g = ctx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, '#332b3e'); g.addColorStop(1, '#14101b'); circle(0, 0, r, g);
+    const rg = ctx.createRadialGradient(0, r * 0.6, 1, 0, r * 0.6, r * 1.2); rg.addColorStop(0, `rgba(${ac},0.3)`); rg.addColorStop(1, `rgba(${ac},0)`); circle(0, 0, r, rg);
+    circle(0, 0, r - 2.5, null, `rgba(${ac},${0.45 + Math.sin(time * 3 + x * 0.02) * 0.1})`, 1.4);
+    circle(0, 0, r, null, 'rgba(214,200,166,0.6)', 1.8);
+    if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, 0, r * 1.05);
+    ctx.restore();
+    if (fn) buttons.push({ key, x: x - r - 6, y: y - r - 6, w: 2 * r + 12, h: 2 * r + 12, fn });
+    return;
+  }
   circle(0, 5, r + 3, 'rgba(0,0,0,0.35)');
   circle(0, 0, r + 3, c[3]);
   circle(0, 3, r, c[2]);
@@ -8230,7 +8289,31 @@ function plaqueTitle(cx, y, text, col = '#e8dcc0', size = 26) {
 }
 const RIBBON = { red: ['#ef5b4c', '#a92a1f', '#6a140b'], green: ['#76d050', '#3b8c26', '#1d5011'], blue: ['#5fb2ff', '#2f6fc8', '#173f7a'], gold: ['#ffd968', '#d6921f', '#7a4a0a'] };
 if (NECRO) Object.assign(RIBBON, { red: ['#c8443c', '#7c1616', '#3c0606'], green: ['#86e88e', '#2e8a4a', '#113e22'], blue: ['#a888ff', '#5a34b0', '#26125e'] });
+function necroBanner(cx, cy, w, text, col, size) {
+  const c = RIBBON[col] || RIBBON.red, h = size * 1.7, t = h * 0.95;
+  for (const sd of [-1, 1]) { // levhanın arkasından sarkan yırtık flama
+    const ix = cx + sd * (w / 2 - 10), ex = cx + sd * (w / 2 + t);
+    ctx.beginPath(); ctx.moveTo(ix, cy - h / 2 + 8); ctx.lineTo(ex, cy - h / 2 + 8);
+    for (let k = 0; k <= 4; k++) ctx.lineTo(ex - sd * (k % 2 ? t * 0.32 : t * 0.08 * k), cy - h / 2 + 8 + (h + 6) * k / 4);
+    ctx.lineTo(ix, cy + h / 2 + 10); ctx.closePath();
+    const g = ctx.createLinearGradient(0, cy - h / 2, 0, cy + h / 2 + 10); g.addColorStop(0, c[1]); g.addColorStop(1, c[2]);
+    ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#07050b'; ctx.stroke();
+  }
+  const g = ctx.createLinearGradient(0, cy - h / 2, 0, cy + h / 2); g.addColorStop(0, '#332b3e'); g.addColorStop(1, '#16121d');
+  roundRect(cx - w / 2, cy - h / 2, w, h, 7, g, '#07050b', 3);
+  roundRect(cx - w / 2 + 4, cy - h / 2 + 4, w - 8, h - 8, 5, null, 'rgba(214,200,166,0.5)', 1.5);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const sd of [-1, 1]) glow(ctx, cx + sd * (w / 2 - 16), cy, 9, '130,255,150', 0.45 + Math.sin(time * 3 + sd) * 0.12); // iki yanda ruh feneri
+  ctx.restore();
+  for (const sd of [-1, 1]) circle(cx + sd * (w / 2 - 16), cy, 3, '#bfffc8', '#07050b', 1);
+  ctx.save(); ctx.translate(cx, cy - h / 2); // kafatası kilit taşı
+  ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(13, 3); ctx.lineTo(0, 15); ctx.lineTo(-13, 3); ctx.closePath();
+  ctx.fillStyle = '#2a2333'; ctx.fill(); ctx.strokeStyle = '#07050b'; ctx.lineWidth = 2.5; ctx.stroke(); drawSkullIcon(0, 2, 6.5); ctx.restore();
+  ctx.font = `400 ${size}px ${FONT_T}`; const tw = ctx.measureText(text).width, mw = w - 50;
+  txt(text, cx, cy + 2, tw > mw ? size * mw / tw : size, '#efe6cc', 'center', '400', FONT_T);
+}
 function ribbon(cx, cy, w, text, col = 'red', size = 26) {
+  if (NECRO) return necroBanner(cx, cy, w, text, col, size);
   const c = RIBBON[col], h = size * 1.75, t = h * 0.7;
   for (const sd of [-1, 1]) {
     const ex = cx + sd * (w / 2 + t), ix = cx + sd * (w / 2 - 6);
@@ -8768,12 +8851,12 @@ function waveTint() {
 function waveButtonPos(pi) {
   if (G.waveBtn[pi]) return G.waveBtn[pi];
   const p = G.paths[pi];
-  // HUD'a çarpmayan güvenli bölge
-  const blocked = (x, y) => x < 26 || x > W - 26 || y < 26 || y > H - 26 ||
-    (x < 300 && y < 80) || (x > W - 180 && y < 74) || (x < 290 && y > H - 96);
-  let d = 0, q = pathPos(p, 0);
+  // HUD'a çarpmayan güvenli bölge (tam ekranda görünen kenarlara göre). Caner (10 Eki): düğme biraz daha geride, yolun ağzında dursun:
+  // yolun ekran dışından gelen uzantısından başlar, kenara ve HUD'a değmeyen ilk noktaya oturur
+  const E = EDGE, m = 32, blocked = (x, y) => x < E.l + m || x > E.r - m || y < E.t + m || y > E.b - m ||
+    (x < E.l + 300 && y < E.t + 84) || (x > E.r - 190 && y < E.t + 80) || (x < E.l + 290 && y > E.b - 100);
+  let d = -entryLead(p), q = pathPos(p, d);
   while (d < p.total - 40 && blocked(q.x, q.y)) { d += 3; q = pathPos(p, d); }
-  d += 8; q = pathPos(p, d);
   return (G.waveBtn[pi] = { x: q.x, y: q.y, dx: q.dx, dy: q.dy });
 }
 
@@ -8822,8 +8905,9 @@ function wavePinIcon() {
 }
 function waveBtnScreen(pi) {
   const b = waveButtonPos(pi), q = worldToScreen(b.x, b.y);
-  return { x: clamp(q.x, 26, W - 26), y: clamp(q.y, 26, H - 26), dx: b.dx, dy: b.dy };
+  return { x: clamp(q.x, EDGE.l + 30, EDGE.r - 30), y: clamp(q.y, EDGE.t + 30, EDGE.b - 30), dx: b.dx, dy: b.dy };
 }
+const WAVE_BTN_K = 1.22; // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük)
 function drawWaveButtons() {
   const show = waveCallable();
   if (show && G.waveShowT == null) G.waveShowT = time;
@@ -8837,9 +8921,9 @@ function drawWaveButtons() {
     for (let j = 0; j < 2; j++) {
       const ph = (time * 0.8 + j * 0.5) % 1;
       ctx.strokeStyle = `rgba(255,${190 - ph * 80},90,${(1 - ph) * 0.7})`; ctx.lineWidth = 2 * (1 - ph) + 0.5;
-      ctx.beginPath(); ctx.arc(0, 0, 14 + ph * 16, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, (14 + ph * 16) * WAVE_BTN_K, 0, Math.PI * 2); ctx.stroke();
     }
-    const s = appear * pressScale('wave' + pi) * (1 + Math.sin(time * 5) * 0.04);
+    const s = WAVE_BTN_K * appear * pressScale('wave' + pi) * (1 + Math.sin(time * 5) * 0.04);
     ctx.scale(s, s);
     if (G.wave > 0 && G.waveCountdown != null) {
       ctx.strokeStyle = 'rgba(20,8,2,0.65)'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
@@ -8852,7 +8936,7 @@ function drawWaveButtons() {
     ctx.restore();
     // erken çağrı ödülü: işaretin altında minik hap
     if (bonus > 0) {
-      const bx = clamp(b.x, 30, W - 30), by = b.y + 33 > H ? b.y - 25 : b.y + 25;
+      const bx = clamp(b.x, EDGE.l + 30, EDGE.r - 30), by = b.y + 38 > EDGE.b ? b.y - 30 : b.y + 30;
       ctx.save(); ctx.globalAlpha = appear;
       ctx.font = `400 10.5px ${FONT_T}`; const tw = ctx.measureText('+' + bonus).width + 22;
       roundRect(bx - tw / 2, by - 8, tw, 16, 8, 'rgba(24,12,4,0.85)', '#e8bb4a', 1.2);
@@ -12614,10 +12698,32 @@ function drawWinSummary(k, px, py, pw, cx) {
   txt(`${name} · ${bn}`, w / 2 - 24, 1, 17, '#b8ff9a', 'right', '400', FONT_T, false);
   ctx.restore();
 }
+// duraklatma: panelin solunda Mortimer, elinde ruh ışığı; yerde süzülen sis (Necromancer havası)
+function drawPauseMortimer(px, py, ph, k) {
+  const im = spr('mortimer'); if (!im) return;
+  const a = clamp((k - 0.1) / 0.35, 0, 1), h = 240, w = h * im.width / im.height, x = px - w * 0.42, by = Math.min(py + ph + 6, VIS.b - 6) + (1 - a) * 30 + Math.sin(time * 1.4) * 2;
+  ctx.save(); ctx.globalAlpha *= a;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, x, by - h * 0.45, h * 0.6, '150,100,255', 0.16 + Math.sin(time * 1.7) * 0.04);
+  ctx.restore();
+  drawSprite(ctx, im, x, by, w);
+  ctx.restore();
+}
+function drawOverlayFog(fade) {
+  ctx.save();
+  for (let i = 0; i < 9; i++) {
+    const sp = 9 + (i % 4) * 5, x = VIS.l + (((time * sp * (i % 2 ? 1 : -1) + i * 173) % (VIS.w + 300)) + VIS.w + 300) % (VIS.w + 300) - 150;
+    const y = VIS.b - 30 - (i % 3) * 34 + Math.sin(time * 0.5 + i) * 8, w = 260 + (i % 3) * 70;
+    ctx.globalAlpha = fade * (0.16 + 0.07 * Math.sin(time * 0.6 + i * 1.3));
+    ctx.drawImage(fogTex(i % 2 ? '170,230,190' : '180,160,230', i % 3), x - w / 2, y - w * 0.25, w, w * 0.5);
+  }
+  ctx.restore();
+}
 function drawOverlay() {
   if (overlay === 'comic') { drawComic(); return; }
   const k = time - overlayT, fade = clamp(k / 0.25, 0, 1);
   ctx.fillStyle = NECRO ? `rgba(8,4,16,${0.7 * fade})` : `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  if (NECRO) drawOverlayFog(fade);
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
@@ -12626,6 +12732,7 @@ function drawOverlay() {
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
   if (overlay === 'win') sunburst(cx, py + 110, 300, NECRO ? '140,255,150' : '255,220,120');
+  if (NECRO && (pz || overlay === 'psettings')) drawPauseMortimer(px, py, ph, k);
   panel(px, py, pw, ph);
   if (overlay === 'skills') {
     drawSkillsPanel(k, px, py, pw, ph, cx);
@@ -12881,7 +12988,7 @@ function hudTap(x, y) {
   if (waveCallable()) {
     for (const pi of nextWavePaths()) {
       const b = waveBtnScreen(pi);
-      if (dist(b.x, b.y, x, y) < 24) {
+      if (dist(b.x, b.y, x, y) < 24 * WAVE_BTN_K + 4) {
         tapPop('wave' + pi);
         if (G.wavePeek && G.wavePeek.w === G.wave && time - G.wavePeek.t < 8) { G.wavePeek = null; waveBonusAndStart(); }
         else { G.wavePeek = { pi, w: G.wave, t: time }; setSel(null); sfx('select'); }

@@ -732,7 +732,7 @@ const NECRO_SPELLS = {
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
     desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 7 sn durdurur, vurularak kırılabilir',
     short: 'Yola kemik duvar diker: düşmanlar 7 sn takılır (kırılabilir)' },
-  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 3.5, col: '190,120,255', ghosts: 10, desc: 'Ruhlar alandaki düşmanların peşine düşer: korkudan 3,5 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz', short: 'Ruhlar düşmanları kovalar: 3,5 sn panikle geri kaçarlar' },
+  nm_fear:  { name: 'Korku', cd: 40, r: 120, t: 4, col: '190,120,255', ghosts: 10, desc: 'Ruhlar alandaki düşmanların peşine düşer: korkudan 4 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz', short: 'Ruhlar düşmanları kovalar: 4 sn panikle geri kaçarlar' },
   // 5. büyü (10 Eki): 2. seferin 9. bölümü kazanılınca (Kemik Katedrali) açılır. Sahadaki bütün cesetler tek golemde birleşir
   nm_golem: { name: 'Ceset Golemi', cd: 55, min: 3, max: 14, life: 20, hp: 220, hpPer: 85, dmg: [14, 22], dmgPer: 0.06, col: '150,255,110', unlock: 31,
     desc: 'Sahadaki bütün cesetler seçtiğin yerde tek bir golemde birleşir: ceset ne kadar çoksa o kadar iri ve güçlü. 20 sn düşmanın üstüne yürür, alan vuruşu yapar',
