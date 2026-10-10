@@ -1,8 +1,6 @@
 <!-- claude.ai artifact yayın sayfası: index.html gövdesiyle aynı (iskeleti yayın servisi ekler). -->
 <title>Don't Mess with the Necromancer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Creepster&family=Lilita+One&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><!-- yazı tipleri oyunu bekletmesin (telefonda açılış) -->
+<link href="fonts/fonts.css" rel="stylesheet"><!-- gömülü yazı tipleri: Rubik, Russo One, Creepster (internet gerekmez) -->
 <style>
   /* Tek görünümlü oyun ekranı: koyu çerçeve içinde tam ekran tuval. */
   :root { --frame: #06030a; color-scheme: dark; }
@@ -13,7 +11,7 @@
 <canvas id="game" aria-label="Sınır Kalesi oyun alanı"></canvas>
 <script>
   // Sürüm damgası: her yayında artırılır; tarayıcı eski önbellek kopyasını kullanmaz (js ve görseller).
-  window.SURUM = '272';
+  window.SURUM = '273';
   // dil: kayıtlı seçim ya da cihaz dili; tr/en dışındakiler için çeviri sözlüğü dil.js'ten önce yüklenir
   window.__dilYukle = (function () {
     var l = null; try { l = localStorage.getItem('sinirKalesi.lang'); } catch (e) {}

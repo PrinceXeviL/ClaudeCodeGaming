@@ -5133,9 +5133,9 @@ function update(dt) {
 }
 
 // ================= ÇİZİM =================
-// Başlıklar ve butonlar için tok bir oyun yazı tipi (Lilita One), metinler için yuvarlak hatlı Baloo 2.
-const FONT_T = '"Lilita One", "Arial Black", system-ui, sans-serif';
-const FONT_B = '"Baloo 2", system-ui, -apple-system, "Segoe UI", sans-serif';
+// Başlıklar ve butonlar için sert, oyunvari Russo One; metinler için kalın, yuvarlak Rubik (ikisi de Türkçe + Kiril; fonts/ içinde gömülü).
+const FONT_T = '"Russo One", "Arial Black", system-ui, sans-serif';
+const FONT_B = '"Rubik", system-ui, -apple-system, "Segoe UI", sans-serif';
 if (document.fonts && document.fonts.load) {
   document.fonts.load(`40px ${FONT_T}`).catch(() => {});
   document.fonts.load(`800 20px ${FONT_B}`).catch(() => {});
@@ -9413,7 +9413,7 @@ const CREDITS = [
     ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
     ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba ve büyü efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
-  ['YAZI TİPİ', [['Creepster · Lilita One · Baloo 2', 'SIL Open Font License']]],
+  ['YAZI TİPİ', [['Creepster · Russo One · Rubik', 'SIL Open Font License']]],
 ];
 function drawCredits() {
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
@@ -10616,7 +10616,7 @@ function coverImage(im, zoom = 1, ox = 0, oy = 0) {
 // ----- giriş ekranı: logo ve düğmeler önbellekte (gölgeli yazılar her karede çizilmez, kasma olmaz) -----
 const TITLE_C = {};
 // logo yazı tipi (cadılar bayramı havası, damlalı harfler); önbellekler yalnız yazı tipi yüklenince bir kez yenilenir
-const FONT_LOGO = '"Creepster", "Lilita One", "Arial Black", sans-serif';
+const FONT_LOGO = '"Creepster", "Russo One", "Arial Black", sans-serif';
 let FONT_VER = 0;
 if (document.fonts) {
   document.fonts.load('80px "Creepster"').then(() => { FONT_VER++; }).catch(() => {});
@@ -10624,7 +10624,7 @@ if (document.fonts) {
   if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { FONT_VER++; }); // yazı tipleri sonradan gelirse önbellekli yazılar yenilenir
   // yazı tipi sayfası beklemeden yüklendiği için (index.html media=print) yüzler sonradan tanımlanır: gelene kadar yarım saniyede bir dene
   const fontPoll = setInterval(() => {
-    Promise.all(['80px "Creepster"', '40px "Lilita One"', '800 20px "Baloo 2"'].map(f => document.fonts.load(f))).then(r => {
+    Promise.all(['80px "Creepster"', '40px "Russo One"', '800 20px "Rubik"'].map(f => document.fonts.load(f))).then(r => {
       if (r.every(x => x.length)) { clearInterval(fontPoll); FONT_VER++; }
     }).catch(() => {});
   }, 500);
