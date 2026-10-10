@@ -6,3 +6,9 @@ varliklar/cikti/
 .DS_Store
 varliklar/ham/anim/.isle.lock
 varliklar/ses_deneme/
+
+# Capacitor
+node_modules/
+ios/App/Pods/
+ios/App/App/public/
+ios/DerivedData/
