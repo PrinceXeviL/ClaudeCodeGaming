@@ -1,0 +1,47 @@
+[
+ {
+  "name": "unit_xbow1_walk",
+  "ref": "ham/anim/unit_xbow1_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 21,
+  "prompt": "a cartoon skeleton recruit with a rusty iron pot helmet and a grey loincloth, bare bones clearly visible, holding a small wooden crossbow at the hip walks in place with steady marching strides, a full walk cycle, weapon held still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_xbow2_walk",
+  "ref": "ham/anim/unit_xbow2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 22,
+  "prompt": "a cartoon skeleton marksman in studded brown leather armor with a chain-mail coif, an iron nose-guard helmet and leather boots, holding a wooden crossbow at the hip walks in place with steady marching strides, a full walk cycle, weapon held still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_xbow3_walk",
+  "ref": "ham/anim/unit_xbow3_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 23,
+  "prompt": "a cartoon armored skeleton in black spiked plate armor with glowing green runes, a horned skull helmet and a tattered green cape, holding a black bone crossbow at the hip walks in place with steady marching strides, a full walk cycle, weapon held still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_ghostarcher_walk",
+  "ref": "ham/anim/unit_ghostarcher_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 24,
+  "prompt": "a cartoon crimson-hooded skeleton archer with bone pauldrons, holding a black longbow low in one hand, crimson mist at the feet walks in place with steady marching strides, a full walk cycle, weapon held still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ },
+ {
+  "name": "unit_ghostxbow_walk",
+  "ref": "ham/anim/unit_ghostxbow_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 25,
+  "prompt": "a cartoon crimson-hooded skeleton with horned skull pauldrons, holding a heavy black crossbow at the hip, crimson mist at the feet walks in place with steady marching strides, a full walk cycle, weapon held still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
+ }
+]

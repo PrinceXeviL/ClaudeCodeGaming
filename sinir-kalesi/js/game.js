@@ -5514,6 +5514,18 @@ function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   g.drawImage(im, R, R); c.pad = R; OUTL.set(im, c);
   return c;
 }
+// görseldeki karakterin dolu yüksekliğinin tuval yüksekliğine oranı (poz tuvallerinde başın üstünde boşluk olabilir); bir kez ölçülür
+const BODY_R = new Map();
+function bodyRatio(im) {
+  if (!im) return 1;
+  let r = BODY_R.get(im); if (r) return r;
+  const c = document.createElement('canvas'); c.width = Math.max(1, im.width >> 2); c.height = Math.max(1, im.height >> 2);
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, c.width, c.height);
+  const d = g.getImageData(0, 0, c.width, c.height).data; let top = c.height;
+  for (let y = 0; y < c.height && top === c.height; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { top = y; break; }
+  r = clamp(1 - top / c.height, 0.5, 1); BODY_R.set(im, r);
+  return r;
+}
 // konturlu şerit karesi (drawFrame gibi; kontur şeridin tamamına bir kez çizilir, kare komşu karenin kontur payını da alır)
 function drawFrameOutlined(img, F, i, h) {
   const O = outlined(img, Math.max(3, Math.round(7 * F.fh / 300))), p = O.pad, k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
@@ -5581,7 +5593,7 @@ function drawXbowMen(t, ts, redraw) {
     if (pose === '_load') back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = a.walking && !up && animStrip(pre, null, '_walk'); // platformda yer değiştirirken yürüme şeridi (Kaggle Wan, 49 kare)
-    if (wk) drawFrameOutlined(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h);
+    if (wk) drawFrameOutlined(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
     else { const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2); }
     ctx.restore();
     const o = xbowTip(t, ts, a);
