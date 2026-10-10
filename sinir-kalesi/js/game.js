@@ -5711,8 +5711,8 @@ const TOWER_FORM = {
   archer_nail: { noAnim: true, layers: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.9857, 0.3389], nock: [0.3057, 0.1216], armUp: [0.7314, 0.0556], armLo: [0.1086, 0.2574], pivot: [0.4714, 0.3622], rotMax: [-1.05, 1.2], pierce: 2, pierceK: 0.45, flip: true },
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
   // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
-  archer_fan: { noAnim: true, w: 1.14, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
-  archer_bow: { noAnim: true, img: 'tower_archer_fan', w: 1.14, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
+  archer_fan: { noAnim: true, w: 1.25, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
+  archer_bow: { noAnim: true, w: 1.35, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
   mage_drain: { noAnim: true, w: 1, src: [0.73, 0.24], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { noAnim: true, w: 1, src: [0.73, 0.33], cageAt: [0.73, 0.33], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
@@ -5740,7 +5740,8 @@ const XBOW_T = {
   tower_xbow_1: { x: [0.47, 0.47], y: [0.19, 0.22], h: 0.1995, clip: null },
   tower_xbow_2: { x: [0.37, 0.63], y: [0.17, 0.22], h: 0.191, clip: [[0, 0.08], [0.11, 0.08], [0.5, 0.2], [0.85, 0.09], [1, 0.09]] },
   tower_xbow_3: { x: [0.3, 0.6], y: [0.21, 0.27], h: 0.166, clip: [[0, 0.17], [0.04, 0.17], [0.43, 0.3], [0.84, 0.16], [1, 0.16]] },
-  tower_archer_fan: { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.1588, clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]] },
+  tower_archer_fan: { x: [0.34, 0.66], y: [0.16, 0.23], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
+  tower_archer_bow: { x: [0.34, 0.66], y: [0.16, 0.22], h: 0.149, clip: [[0, 0.19], [0.22, 0.19], [0.5, 0.28], [0.78, 0.19], [1, 0.19]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini)
 };
 // kuledeki iskeletler: 1-3. kademe yeşil arbaletçiler; 4. kademede ya 2 kızıl ağır arbaletçi (fan) ya da 3 kızıl hayalet okçu (bow).
 // aim: nişan / yay germe süresi (ok bu sürenin sonunda çıkar), kick: bırakınca geri tepme, hold: atıştan sonra silahı indirmeden bekleme,
@@ -5765,7 +5766,7 @@ const menOf = (t) => {
 };
 // kulenin o anki unvanı: Kemik Kulesi yolunda yola göre (ör. Kemik Okçular / Kemik Arbaletçiler)
 const towerTitle = (t, lvl = t.lvl) => (t.path && ARCHER_PATH[t.path] && ARCHER_PATH[t.path].titles[lvl]) || t.def.levels[lvl].title;
-const xbowCfg = (t) => XBOW_T[t.spec ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
+const xbowCfg = (t) => XBOW_T[t.spec ? formImg(t) : xbowTowerName(t.lvl)] || XBOW_T.tower_archer_fan;
 const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
 function xbowMen(t) {
   const n = xbowCount(t); if (!t.ga) t.ga = [];
@@ -6757,7 +6758,8 @@ const BONE_FX = {
   tower_xbow_1: { runes: [[0.33, 0.6, 0.72, '110,255,140'], [0.61, 0.6, 0.72, '110,255,140']], top: [0.52, 0.1, 0.32] },
   tower_xbow_2: { runes: [[0.38, 0.38, 0.66, '110,255,140'], [0.62, 0.38, 0.66, '110,255,140']], flames: [[0.1, 0.55, '170,90,255'], [0.92, 0.32, '200,110,255']], eyes: [[0.13, 0.17], [0.85, 0.17], [0.5, 0.3]], top: [0.5, 0.13, 0.36] },
   tower_xbow_3: { runes: [[0.36, 0.42, 0.66, '110,255,140'], [0.66, 0.42, 0.66, '110,255,140']], flames: [[0.06, 0.47, '120,255,150'], [0.95, 0.36, '190,110,255']], eyes: [[0.48, 0.275], [0.53, 0.275], [0.12, 0.2], [0.88, 0.2]], top: [0.5, 0.14, 0.4] },
-  tower_archer_fan: { runes: [[0.39, 0.45, 0.6, '170,110,255'], [0.64, 0.45, 0.6, '170,110,255']], flames: [[0.08, 0.27, '200,110,255'], [0.93, 0.3, '150,255,200']], eyes: [[0.5, 0.33], [0.2, 0.24], [0.83, 0.24]], top: [0.5, 0.18, 0.4] },
+  tower_archer_fan: { runes: [[0.34, 0.47, 0.6, '230,90,210'], [0.66, 0.47, 0.6, '230,90,210']], top: [0.5, 0.17, 0.38] }, // Ağır Arbaletçiler burcu
+  tower_archer_bow: { runes: [[0.37, 0.46, 0.62, '110,255,170'], [0.63, 0.46, 0.62, '110,255,170']], flames: [[0.5, 0.05, '120,255,220'], [0.22, 0.13, '120,255,220'], [0.78, 0.13, '120,255,220'], [0.5, 0.25, '120,255,220'], [0.09, 0.42, '120,255,230'], [0.9, 0.4, '120,255,230']], eyes: [[0.49, 0.33], [0.52, 0.33]], top: [0.5, 0.17, 0.36] }, // Hayalet Okçular: hayalet alevler ve fenerler
 };
 // Ruh Feneri (10 Eki, 3. tasarım, Caner'in görseli): fener (1. kademe) / feneri tutan kol (2-3. kademe) ayrı katman (tower_mage_N_arm,
 // varliklar/ruh_feneri_isle.py), pivot [%x, %y] çevresinde döner. Boşta hafifçe sallanır (swing, f); savaşırken ya da ruh çekerken

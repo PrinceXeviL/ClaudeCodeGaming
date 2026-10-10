@@ -26,7 +26,8 @@ SHEETS = [
     ('nm_fener_4.jpg', [None, None], 'decor'),  # eski 4. kademe fenerler  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
     ('nm_dikilitas_4.jpg', ['tower_archer_nail', None], 'decor'),  # 4. kademe: Kemik Balistası (Hayalet Okçular artık nm_hayalet_okcular.jpg'den)
     ('nm_hayalet_arbaletciler.jpg', ['unit_ghostxbow', 'unit_ghostxbow_aim'], 'decor'),  # 11 Eki: arbaletçi kulesinin iskeletleri (hazır, nişan)
-    ('nm_hayalet_okcular.jpg', ['unit_ghostarcher', 'unit_ghostarcher_draw', 'tower_archer_fan'], 'decor'),  # 10 Eki: tepesi boş kule + üstünde gezen 2 elit okçu (duruş, gerilmiş yay)
+    ('nm_kemik_kulesi_k4.jpg', ['tower_archer_bow', 'tower_archer_fan'], 'tower'),  # 11 Eki: Kemik Kulesi 4. kademe (Hayalet Okçular / Ağır Arbaletçiler; platform boş, okçular kodla)
+    ('nm_hayalet_okcular.jpg', ['unit_ghostarcher', 'unit_ghostarcher_draw', None], 'decor'),  # 3. parça (eski 4. kademe kulesi) artık nm_kemik_kulesi_k4.jpg'den  # 10 Eki: tepesi boş kule + üstünde gezen 2 elit okçu (duruş, gerilmiş yay)
     ('nm_mahzen_v2.jpg', [None, None, None], 'tower'),  # 11 Eki: yeni Mahzen (yarı gömülü mahzen, kemik mahzeni, kafatası kapılı kara türbe; eski: nm_mezarlik.jpg, nm_mahzen.jpg)
     ('nm_mahzen_k4_sovalye.jpg', ['tower_barracks_blade', 'tower_barracks_blade_side'], 'tower'),  # 11 Eki: Mahzen 4. kademe Ölüm Şövalyeleri (yeşil alevli çapraz kemikler)
     ('nm_mahzen_k4_bekci.jpg', ['tower_barracks_shield', 'tower_barracks_shield_side'], 'tower'),  # 11 Eki: Mahzen 4. kademe Mezar Bekçileri (önden, yanda kapı sağ önde)
