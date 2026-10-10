@@ -1076,11 +1076,11 @@ if (NECRO) {
     name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2, unique: true,
     desc: 'Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir',
     levels: [
-      { cost: 110, range: 100, every: 1.2, linger: 10, curse: 0.1,  res: 0.3,  weak: 0.12, slow: 0.12, fear: 0.06, ally: 0.1,  allyArm: 0.08, rise: 0.08, title: 'Lanet Kulesi',
+      { cost: 110, range: 130, every: 1.2, linger: 10, curse: 0.1,  res: 0.3,  weak: 0.12, slow: 0.12, fear: 0.06, ally: 0.1,  allyArm: 0.08, rise: 0.08, title: 'Lanet Kulesi',
         perk: 'Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer' },
-      { cost: 150, range: 110, every: 1.2, linger: 10, curse: 0.14, res: 0.4,  weak: 0.16, slow: 0.15, fear: 0.09, ally: 0.14, allyArm: 0.12, rise: 0.12, title: 'Lanet Sütunu',
+      { cost: 150, range: 150, every: 1.2, linger: 10, curse: 0.14, res: 0.4,  weak: 0.16, slow: 0.15, fear: 0.09, ally: 0.14, allyArm: 0.12, rise: 0.12, title: 'Lanet Sütunu',
         perk: '%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh' },
-      { cost: 200, range: 120, every: 1.2, linger: 10, curse: 0.18, res: 0.5,  weak: 0.2,  slow: 0.18, fear: 0.12, ally: 0.18, allyArm: 0.15, rise: 0.16, title: 'Kara Lanet Mabedi',
+      { cost: 200, range: 170, every: 1.2, linger: 10, curse: 0.18, res: 0.5,  weak: 0.2,  slow: 0.18, fear: 0.12, ally: 0.18, allyArm: 0.15, rise: 0.16, title: 'Kara Lanet Mabedi',
         perk: '%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir' },
     ],
     abilities: [
@@ -1102,7 +1102,7 @@ if (NECRO) {
   U.artillery.ranks[1].desc = '+%15 veba alanı';
   U.spells.name = 'Büyüler';
   U.spells.ranks[0].desc = '+%20 komutan gücü hasarı'; U.spells.ranks[1].desc = 'Dirilen ölüler %25 dayanıklı'; U.spells.ranks[2].desc = 'Büyüler %25 hızlı dolar';
-  U.castle.name = 'Şapel';
+  UPGRADES.splice(UPGRADES.indexOf(U.castle), 1); // şapel yükseltilmez (Caner, 10 Eki): yıldızları iade olur
   Object.assign(WK_NAME, { arrow: 'Delici', magic: 'Ruh', blast: 'Veba/Ateş', melee: 'Kesici' }); // hasar türleri (10 Eki)
 }
 

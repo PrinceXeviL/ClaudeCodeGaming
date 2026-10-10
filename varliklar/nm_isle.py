@@ -31,7 +31,7 @@ SHEETS = [
     ('nm_mahzen_k1.jpg', ['tower_barracks_1', 'tower_barracks_1_side', None], 'tower'),  # 10 Eki: yönlü mahzen 1. kademe (önden, kapısı sağ öne bakan; aynası sol)
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
     ('nm_fener.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # Ruh Feneri
-    ('nm_veba_tareti.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_3', 'turret_artillery_1', 'turret_artillery_2', 'turret_artillery_3'], 'decor'),  # 10 Eki: Veba Tareti (üstte kaideler, altta yandan döner iskelet topçu; eski: nm_kazan.jpg)
+    ('nm_veba_kazani.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_3'], 'tower'),  # 10 Eki: Veba Kazanı 2. tasarım (kemik üçayaklı kazan, kaburga ocağı, tepesi kazan olan dev boynuzlu kafatası; eski: nm_veba_tareti.jpg, nm_kazan.jpg)
     ('nm_lanet_kulesi.jpg', ['tower_altar_1', 'tower_altar_2', 'tower_altar_3'], 'tower'),  # 10 Eki: Lanet Kulesi 2. tasarım (gözlü dikilitaş, uçan kitaplı sütun, dev gözlü kara mabet; eski: nm_sunak.jpg)
     ('nm_iskeletler.jpg', ['unit_skel_1', 'unit_skel_2', 'unit_skel_3', 'unit_skel_4', 'unit_skel_5'], 'unit'),
     ('nm_dusman_1.jpg', ['enemy_legion', 'enemy_solarcher', 'enemy_gladiator', 'enemy_assassin'], 'unit'),
