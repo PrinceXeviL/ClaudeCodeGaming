@@ -1656,7 +1656,7 @@ function fogTex(col, v) {
 }
 // Kulenin ayağında dönerek süzülen sis (Caner, 10 Eki: kuleler hareketli olsun, çevresindeki sis hareket etsin).
 // front=false: binanın arkasında kalan yarı (binadan önce çizilir), true: önündeki yarı (soluk, binayı örtmesin).
-const TOWER_FOG = { altar: { n: 9, a: 0.9, col: ['150,110,200', '120,70,170'] }, archer: { n: 8, a: 0.85, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
+const TOWER_FOG = { altar: { n: 9, a: 0.9, col: ['150,110,200', '120,70,170'] }, archer: { n: 11, a: 1, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
 function drawTowerFog(t, ts, front) {
   const F = NECRO && TOWER_FOG[t.type]; if (!F) return;
   const s = ts.w / 50, R = ts.w * 0.56, cy = ts.bottom - 3 * s;
@@ -6698,7 +6698,42 @@ function drawPlagueCauldron(t, ts) {
   if (C.mouth && Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: m.x + rand(-0.6, 0.6) * rx, y: m.y, vx: rand(-4, 4), vy: -rand(8, 18), col: Math.random() < 0.6 ? '150,230,110' : '170,110,230', s0: 2 * s, s1: 7 * s, life: 1.4, a: 0.22 });
 }
 // Necromancer kulelerinin canlı kısımları (kodla): dikilitaş kıymıkları, fener ruhu, kazan köpüğü
+// Kemik Kulesi canlı kısımları (10 Eki, Caner: "kule sabit duruyor, akıcı animasyon olsun"): görsel adına göre noktalar [x soldan, y üstten].
+// runes: [x, üst y, alt y, renk] aşağıdan yukarı akan run ışığı; flames: yandaki ruh alevleri (titrer, kıvılcım savurur);
+// eyes: kafatası gözleri; top: tepedeki kafes (çevresinde dönen ruh zerreleri) [x, y, yarıçap]
+const BONE_FX = {
+  tower_xbow_1: { runes: [[0.33, 0.6, 0.72, '110,255,140'], [0.61, 0.6, 0.72, '110,255,140']], top: [0.52, 0.1, 0.32] },
+  tower_xbow_2: { runes: [[0.38, 0.38, 0.66, '110,255,140'], [0.62, 0.38, 0.66, '110,255,140']], flames: [[0.1, 0.55, '170,90,255'], [0.92, 0.32, '200,110,255']], eyes: [[0.13, 0.17], [0.85, 0.17], [0.5, 0.3]], top: [0.5, 0.13, 0.36] },
+  tower_xbow_3: { runes: [[0.36, 0.42, 0.66, '110,255,140'], [0.66, 0.42, 0.66, '110,255,140']], flames: [[0.06, 0.47, '120,255,150'], [0.95, 0.36, '190,110,255']], eyes: [[0.48, 0.275], [0.53, 0.275], [0.12, 0.2], [0.88, 0.2]], top: [0.5, 0.14, 0.4] },
+  tower_archer_fan: { runes: [[0.39, 0.45, 0.6, '170,110,255'], [0.64, 0.45, 0.6, '170,110,255']], flames: [[0.08, 0.27, '200,110,255'], [0.93, 0.3, '150,255,200']], eyes: [[0.5, 0.33], [0.2, 0.24], [0.83, 0.24]], top: [0.5, 0.18, 0.4] },
+};
+function drawBoneTowerFx(t, ts) {
+  const F = BONE_FX[ts.name]; if (!F) return;
+  const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h }), sd = t.x * 0.013;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const [i, r] of (F.runes || []).entries()) { // run ışığı aşağıdan yukarı akar, sütun nabız gibi atar
+    const beat = 0.5 + 0.5 * Math.sin(time * 2.2 + i * 1.3 + sd), q0 = P([r[0], (r[1] + r[2]) / 2]);
+    glow(ctx, q0.x, q0.y, (r[2] - r[1]) * ts.h * 0.7, r[3], 0.12 + 0.12 * beat);
+    for (let j = 0; j < 2; j++) { const k = (time * 0.5 + j / 2 + i * 0.3 + sd) % 1, q = P([r[0], lerp(r[2], r[1], k)]); glow(ctx, q.x, q.y, 4.5 * s, r[3], 0.55 * Math.sin(k * Math.PI)); }
+  }
+  for (const [i, f] of (F.flames || []).entries()) { // ruh alevi titrer, yukarı kıvılcım savurur
+    const q = P(f), fk = 0.7 + 0.18 * Math.sin(time * 9 + i * 2.3 + sd) + 0.12 * Math.sin(time * 21 + i);
+    glow(ctx, q.x, q.y, 9 * s * fk, f[2], 0.4 * fk);
+    if (Math.random() < 0.1) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
+  }
+  for (const [i, e] of (F.eyes || []).entries()) { const q = P(e); glow(ctx, q.x, q.y, 2.2 * s, '120,255,140', 0.45 + 0.3 * Math.sin(time * 3.1 + i * 1.9 + sd)); } // kafatası gözlerinde yeşil kor
+  if (F.top) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
+    const c = P(F.top), R = F.top[2] * ts.w;
+    for (let i = 0; i < 3; i++) {
+      const a = time * (0.9 + i * 0.15) + i * 2.09 + sd, x = c.x + Math.cos(a) * R, y = c.y + Math.sin(a) * R * 0.32 - Math.sin(time * 1.7 + i) * 3 * s, fr = Math.sin(a) > 0 ? 1 : 0.45;
+      glow(ctx, x, y, 5 * s, '150,255,200', 0.55 * fr); glow(ctx, x, y, 2 * s, '235,255,245', 0.7 * fr);
+      if (Math.random() < 0.15) emit(G.parts, { kind: 'glow', add: true, x, y, vx: rand(-5, 5), vy: rand(-8, 2), col: '140,255,200', s0: 2.2 * s, s1: 0.3, life: 0.5 });
+    }
+  }
+  ctx.restore();
+}
 function drawNecroTowerFx(t, ts) {
+  if (t.type === 'archer') drawBoneTowerFx(t, ts); // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
   const OF = obeliskForm(t);
