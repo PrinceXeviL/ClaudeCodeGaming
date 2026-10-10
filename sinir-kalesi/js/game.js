@@ -1520,7 +1520,7 @@ function waveBonusAndStart() {
   const def = G.lv.waves[G.wave];
   // ilk dalga: önce borazancı gelir, çalar, döner; düşmanlar sonra
   const wait = G.wave === 0 && NECRO ? (callHeralds(nextWavePaths()), heraldT(false)) : 0;
-  G.cryAt = G.t + wait + 2.2; // dalganın ilk sırası görününce çığlık
+  G.cryAt = G.t + wait + 3.2; // dalganın ilk sırası ekrana girip biraz yürüyünce çığlık
   repairGate(); // Mortimer her dalgada kapıyı onarır
   let lastSpawn = 0;
   G.waveN = def.reduce((a, grp) => a + grp.n, 0); // dalganın asker sayısı (erken çağrı eşiği için)
@@ -1555,6 +1555,8 @@ function marchRow(D, sp) {
 }
 // savaş çığlığı: dalga başında ve ilk göğüs göğüse çarpışmada (sık değil); sessiz, yalnız yazı balonu
 const SHOUTS = ['Sol Invictus!', 'Hücum!', 'İleri!', 'Kalkanlar!', 'Güneş için!', 'Saf tutun!', 'Ölüme, ileri!'];
+// düşman ekranın içinde mi (kamera yakınlaşmasıyla birlikte): yazı balonu yarım görünmesin
+const onScreen = (e, m = 40) => { const q = worldToScreen(e.x, e.y); return q.x > VIS.l + m && q.x < VIS.r - m && q.y > VIS.t + 50 && q.y < VIS.b - 10; };
 function warCry(e, text = true) {
   if (!e || e.dead || MUTE_VOICE(e) || e.def.flying) return;
   if (text) floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 10, SHOUTS[Math.floor(Math.random() * SHOUTS.length)], '#ffe2b0');
@@ -1987,6 +1989,7 @@ const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'bla
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
   if (hitBy || src) e.lastBy = hitBy || src;
+  e.hitG = G.t; // komutan 'Kalkanlar!' için (oyun zamanı)
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
   if (src === 'melee' && NECRO) { const L = lightAt(e.x, e.y); if (L) amount *= L.k; } // fener ışığında iskeletler zayıf
   if (src === 'melee' && G.bloodT > 0) amount *= BLOOD.dmg; // Kızıl Ay: ölüler azgın
@@ -2053,6 +2056,22 @@ function abRank(t, id) {
   const r = t.ab && t.ab[id];
   if (!r) return null;
   return t.def.abilities.find(a => a.id === id).ranks[r - 1];
+}
+// Lejyoner komutanı (kıdemli): yanındaki lejyonerlere +%10 hasar ve +%5 hız; o ölünce güç kalmaz. Komutlar ekrandayken, en çok 12 sn'de bir:
+// girişte "Saf tutun!", dövüşe girince "Hücum!" (3 sn koşar), bölük vurulunca "Kalkanlar!" (2,5 sn zırh)
+const CAPTAIN = { r: 80, cd: 12, dmg: 1.1, spd: 1.05, rush: 1.15 };
+function updateCaptain(e, dt) {
+  const near = [];
+  for (const o of G.enemies) if (o !== e && !o.dead && (o.def.base || o.type) === 'legion' && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r) { near.push(o); if (!(o.curseT > 0)) o.capT = 0.6; }
+  e.cmdCd = (e.cmdCd ?? 2.5) - dt;
+  if (e.cmdCd > 0 || e.d < 0 || !onScreen(e, 60) || MUTE_VOICE(e)) return;
+  let cmd = null;
+  if (!e.saidIn) { e.saidIn = true; cmd = 'Saf tutun!'; }
+  else if (e.inMelee || near.some(o => o.inMelee)) { cmd = 'Hücum!'; for (const o of near.concat(e)) o.capRushT = 3; }
+  else if ([e, ...near].some(o => G.t - (o.hitG ?? -9) < 0.4)) { cmd = 'Kalkanlar!'; for (const o of near.concat(e)) o.armT = Math.max(o.armT || 0, 2.5); }
+  if (!cmd) return;
+  e.cmdCd = CAPTAIN.cd; G.cryCd = Math.max(G.cryCd || 0, 2);
+  floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, cmd, '#ffd890');
 }
 function killEnemy(e) {
   // mumya: bir kez yarı canla dirilir; patlama (top, göktaşı, napalm) ile ölürse dirilmez
@@ -2975,6 +2994,8 @@ function updateEnemy(e, dt) {
   if (e.hasteT > 0) e.hasteT -= dt;
   if (e.armT > 0) e.armT -= dt;
   if (e.drumT > 0) e.drumT -= dt;
+  if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt;
+  if (e.captain) updateCaptain(e, dt);
   if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.cageT > 0) e.cageT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
@@ -3201,6 +3222,7 @@ function updateEnemy(e, dt) {
   }
   if (e.skillT > 0 && !e.def.machine) return; // özel saldırı / büyü anında durur
   let spd = e.def.speed * G.wspd * (G.bloodT > 0 ? BLOOD.slow : 1) * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.spd * (1 - e.hp / e.maxHp) : 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
+  if (e.capT > 0) spd *= CAPTAIN.spd; if (e.capRushT > 0) spd *= CAPTAIN.rush; // komutanın yanında biraz hızlı, "Hücum!" ile koşar
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
     if ((e.stompT = (e.stompT ?? 0.4) - dt) <= 0) { e.stompT = 0.8; sfx('stomp'); shakeScreen(2.6, 0.22); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 }); }
@@ -5250,8 +5272,9 @@ function update(dt) {
   G.cryCd = (G.cryCd || 0) - dt;
   if (G.gate && G.gate.hitT > 0) G.gate.hitT -= dt;
   if (G.cryAt != null && G.t >= G.cryAt) {
-    let lead = null; for (const e of G.enemies) if (!e.dead && !MUTE_VOICE(e) && !e.def.flying && (!lead || e.d > lead.d)) lead = e;
-    if (lead) { warCry(lead); G.cryAt = null; G.cryCd = 3; } else if (G.t > G.cryAt + 8) G.cryAt = null;
+    // Caner (10 Eki): ekrana girmeden bağırıyorlardı, yazının yarısı görünmüyordu: ekranda görünen en öndeki bağırır
+    let lead = null; for (const e of G.enemies) if (!e.dead && !MUTE_VOICE(e) && !e.def.flying && e.d > 0 && onScreen(e, 60) && (!lead || e.d > lead.d)) lead = e;
+    if (lead) { warCry(lead); G.cryAt = null; G.cryCd = 3; } else if (G.t > G.cryAt + 15) G.cryAt = null;
   }
   updateTut(dt);
 
@@ -5272,7 +5295,10 @@ function update(dt) {
       const rt = G.lv.routes && G.lv.routes[sp.p];
       const pi = R && col ? sp.lastPi : rt ? rt[(sp.rk = (sp.rk ?? Math.floor(Math.random() * rt.length)) + 1) % rt.length] : sp.p;
       sp.lastPi = pi;
-      const e = spawnEnemy(ty, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
+      // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
+      const cap = NECRO && i === 0 && sp.n >= 4 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
+      const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
+      if (cap) e.captain = true;
       if (R) e.march = true;
       if (sp.hpK && !e.def.chief) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; }
       sp.left--;
@@ -6389,29 +6415,53 @@ function drawAltarFx(t, ts) {
   if (F.book) { // kitabın sayfalarından yükselen run kıvılcımları
     const q = P([0.48, 0.88]); if (Math.random() < 0.2) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-8, 8) * s, y: q.y, vx: rand(-5, 5), vy: -rand(12, 28), col: Math.random() < 0.5 ? '200,150,255' : '150,110,255', s0: 2, s1: 0.4, life: rand(0.8, 1.3) });
     glow(ctx, q.x, q.y, 14 * s, '180,110,255', 0.22 + 0.15 * beat);
+    if (t.gaze) { ctx.restore(); drawGazeBeam(t, q, s); ctx.save(); ctx.globalCompositeOperation = 'lighter'; } // kitap da kurbanına bakar
   }
   ctx.restore();
   if (F.eye) drawCurseEye(t, ts, F.eye, P, L);
+}
+// bakış ışını: gözden (ya da kitaptan) kurbana titreyen mor ip, bakış uzadıkça kalınlaşır
+function drawGazeBeam(t, c, s) {
+  const G0 = t.gaze; if (!G0 || G0.dead) return;
+  const k = t.gazeT / GAZE.t[t.lvl], ex = G0.x, ey = aimY(G0);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+  for (const [w, a] of [[5 * s * (0.4 + k), 0.12 + 0.18 * k], [1.6 * s, 0.35 + 0.4 * k]]) {
+    ctx.strokeStyle = `rgba(200,90,255,${a})`; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(c.x, c.y);
+    const mx = (c.x + ex) / 2 + Math.sin(time * 17) * 4 * s, my = (c.y + ey) / 2 - 10 * s + Math.cos(time * 13) * 3 * s; ctx.quadraticCurveTo(mx, my, ex, ey); ctx.stroke();
+  }
+  glow(ctx, ex, ey, (8 + 8 * k) * s, '200,80,255', 0.35 + 0.4 * k);
+  ctx.restore();
 }
 // canlı lanet gözü: boyalı gözün üstüne iris + yarık bebek; bebek en yakın düşmana döner, ara ara göz kırpar, korkutunca kızarır
 function drawCurseEye(t, ts, E, P, L) {
   const c = P(E), rx = E[2] * ts.w, ry = E[3] * ts.h, s = ts.w / 50;
   let tx = Math.sin(time * 0.7 + t.x) * 0.6, ty = Math.sin(time * 0.53) * 0.3, best = 1e9;
-  for (const e of G.enemies) { if (e.dead || e.under) continue; const d = dist(e.x, e.y, t.x, t.y); if (d < L.range * 1.6 && d < best) { best = d; tx = clamp((e.x - c.x) / 90, -1, 1); ty = clamp((e.y - 10 - c.y) / 90, -1, 1); } }
+  const G0 = t.gaze && !t.gaze.dead ? t.gaze : null; // kilitlendiği kurban
+  if (G0) { tx = clamp((G0.x - c.x) / 70, -1, 1); ty = clamp((aimY(G0) - c.y) / 70, -1, 1); }
+  else for (const e of G.enemies) { if (e.dead || e.under) continue; const d = dist(e.x, e.y, t.x, t.y); if (d < L.range * 1.6 && d < best) { best = d; tx = clamp((e.x - c.x) / 90, -1, 1); ty = clamp((e.y - 10 - c.y) / 90, -1, 1); } }
+  t.rage = lerp(t.rage || 0, G0 ? clamp(0.4 + t.gazeT / GAZE.t[t.lvl] * 0.6, 0, 1) : 0, 0.15); // öfke: bakış sürdükçe artar
   t.eyeX = lerp(t.eyeX || 0, tx, 0.12); t.eyeY = lerp(t.eyeY || 0, ty, 0.12);
   if ((t.blinkAt ?? (t.blinkAt = time + rand(2, 6))) < time - 0.22) t.blinkAt = time + rand(3, 7);
-  const bk = time >= t.blinkAt ? Math.sin(clamp((time - t.blinkAt) / 0.22, 0, 1) * Math.PI) : 0, red = clamp((t.scareT || 0) - time, 0, 1);
+  const rg = t.rage || 0, bk = rg > 0.3 ? 0 : time >= t.blinkAt ? Math.sin(clamp((time - t.blinkAt) / 0.22, 0, 1) * Math.PI) : 0; // öfkeliyken kırpmaz
+  const red = Math.max(clamp((t.scareT || 0) - time, 0, 1), rg * 0.55, clamp(1 - (time - (t.gazeHit ?? -9)) / 0.5, 0, 1));
   const beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
+  if (G0) drawGazeBeam(t, c, s);
   ctx.save();
+  if (rg > 0) { ctx.translate(c.x, c.y); ctx.scale(1 + 0.22 * rg, 1 + 0.22 * rg); ctx.translate(-c.x, -c.y); } // öfkeyle büyür
   ctx.beginPath(); ctx.ellipse(c.x, c.y, rx * 0.9, ry * 0.9, 0, 0, Math.PI * 2); ctx.clip();
   const g = ctx.createRadialGradient(c.x + t.eyeX * rx * 0.25, c.y + t.eyeY * ry * 0.2, 1, c.x, c.y, rx);
   g.addColorStop(0, red ? '#ffb0b0' : '#f0c8ff'); g.addColorStop(0.45, red ? '#ff3040' : '#a24dff'); g.addColorStop(1, red ? '#5a0610' : '#2a0850');
   ctx.fillStyle = g; ctx.fillRect(c.x - rx, c.y - ry, rx * 2, ry * 2);
-  const px = c.x + t.eyeX * rx * 0.42, py = c.y + t.eyeY * ry * 0.3, pw = rx * (0.13 + 0.12 * beat), ph = ry * 0.78; // atışta bebek açılır
+  const px = c.x + t.eyeX * rx * 0.42, py = c.y + t.eyeY * ry * 0.3, pw = rx * (0.13 + 0.12 * beat) * (1 - 0.45 * rg), ph = ry * 0.78; // atışta açılır, öfkede incelir
   ctx.beginPath(); ctx.moveTo(px, py - ph); ctx.quadraticCurveTo(px + pw * 1.6, py, px, py + ph); ctx.quadraticCurveTo(px - pw * 1.6, py, px, py - ph); ctx.fillStyle = '#12041c'; ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.ellipse(c.x - rx * 0.32, c.y - ry * 0.38, rx * 0.12, ry * 0.12, 0, 0, Math.PI * 2); ctx.fill();
   if (bk > 0) { // göz kapakları: koyu taş renginde yukarıdan ve aşağıdan kapanır
     ctx.fillStyle = '#1e1426'; ctx.fillRect(c.x - rx, c.y - ry, rx * 2, ry * bk * 1.02); ctx.fillRect(c.x - rx, c.y + ry - ry * bk * 1.02, rx * 2, ry * bk * 1.02);
+  }
+  if (rg > 0.05) { // öfke: üst kapak içe doğru çatılır (kaş gibi eğik), alt kapak hafif kalkar
+    ctx.fillStyle = '#1e1426'; ctx.beginPath(); ctx.moveTo(c.x - rx, c.y - ry); ctx.lineTo(c.x + rx, c.y - ry);
+    ctx.lineTo(c.x + rx, c.y - ry + ry * 0.5 * rg); ctx.lineTo(c.x - rx, c.y - ry + ry * 1.05 * rg); ctx.closePath(); ctx.fill();
+    ctx.fillRect(c.x - rx, c.y + ry - ry * 0.25 * rg, rx * 2, ry * 0.25 * rg);
   }
   ctx.restore();
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -6710,6 +6760,7 @@ function drawEnemy0(e) {
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);
+    if (e.captain) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - 2, 15, '255,200,90', 0.24 + Math.sin(time * 3 + e.off) * 0.05); ctx.restore(); } // bölük komutanı
     if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: ayağında ritimle atan kızıl ışık, yukarı uçuşan kıvılcım
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       glow(ctx, e.x, e.y - 2, 12, '255,120,60', 0.18 + 0.12 * Math.max(0, Math.sin(G.t * Math.PI / DRUM.beat)));
@@ -10837,7 +10888,7 @@ function altarBuff(t) {
   return buff || dmg ? { buff, dmg } : null;
 }
 // tövbekâr (frenzy) canı azaldıkça sertleşir (lanet artık vuruş gücünü değil, saldırı hızını düşürür: curseSlowAtk)
-const foeDmgMul = (e) => (e.dmgMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.dmg * (1 - e.hp / e.maxHp) : 1);
+const foeDmgMul = (e) => (e.dmgMul || 1) * (e.capT > 0 ? CAPTAIN.dmg : 1) * (e.def.frenzy ? 1 + e.def.frenzy.dmg * (1 - e.hp / e.maxHp) : 1);
 // Lanet Kulesi aurası (haritada tek): menzildeki iskeletler (mahzen askeri, dirilen ölü) daha sert vurur ve daha az hasar alır
 function curseAura(x, y) {
   if (!G || !TOWERS.altar) return null;
@@ -10851,8 +10902,32 @@ function lightAt(x, y) {
   return null;
 }
 const curseSlowAtk = (e) => (e.curseT > 0 ? 1 + (e.curseWeak || 0) : 1);
+// Lanet bakışı (10 Eki, Caner): göz (2. kademede kitap) bir düşmana kilitlenir, öfkeyle büyüyüp bakar; GAZE sn sonra laneti ona bulaştırır
+// (menzilin biraz dışındakine de), sonra lanetsiz bir başkasına döner. Lanet alandaki gibi 10 sn sürer.
+const GAZE = { t: [1.5, 1.25, 1.0], reach: 1.35 };
+function updateGaze(t, L, dt) {
+  const R = L.range * GAZE.reach, ok = (e) => e && !e.dead && !e.under && !e.def.nocurse && dist(e.x, e.y, t.x, t.y) <= R;
+  if (!ok(t.gaze)) {
+    t.gaze = null; t.gazeT = 0; let best = null, bs = -1e9;
+    for (const e of G.enemies) { if (!ok(e)) continue; const sc = (e.curseT > 1 ? -1000 : 0) + e.d + (e.def.chief ? 200 : 0); if (sc > bs) { bs = sc; best = e; } }
+    t.gaze = best;
+  }
+  if (!t.gaze) return;
+  t.gazeT += dt;
+  if (t.gazeT >= GAZE.t[t.lvl]) {
+    const e = t.gaze;
+    e.curseT = Math.max(e.curseT || 0, L.linger || 3); e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRes = Math.max(e.curseRes || 0, L.res || 0);
+    e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0); e.curseRise = Math.max(e.curseRise || 0, L.rise || 0);
+    const o = towerEye(t);
+    for (let i = 0; i < 12; i++) { const k = i / 11; emit(G.parts, { kind: 'glow', add: true, x: lerp(o.x, e.x, k) + rand(-3, 3), y: lerp(o.y, aimY(e), k) + rand(-3, 3), vy: -rand(5, 15), col: i % 3 ? '190,90,255' : '255,80,120', s0: 3, s1: 0.5, life: rand(0.3, 0.5) }); }
+    G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 18, col: '190,90,255', t: 0, dur: 0.4 });
+    floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 8, 'Lanet!', '#d8a8ff');
+    t.gazeHit = time; t.gaze = null; t.gazeT = 0; // sonraki kurbana
+  }
+}
 function updateAltar(t, dt) {
   const L = effLevel(t), bl = abRank(t, 'blight');
+  if (!(t.disabledT > 0)) updateGaze(t, L, dt);
   // lanet dalgası: kuleden yayılan mor halka (hasar vermez, yalnız laneti tazeler ve gösterir)
   t.pulseCd = (t.pulseCd ?? 0.6) - dt;
   if (t.pulseCd <= 0) {
