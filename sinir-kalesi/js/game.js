@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|die)$/, STRIP_WAIT = new Set();
+const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die)$/, STRIP_WAIT = new Set();
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -398,21 +398,22 @@ function uiSound(kind) {
 // Mortimer'ın sesi: sentezlenmiş anlamsız konuşma (varliklar/ses_uret.py mort_babble), yazının uzunluğuna göre kısa/orta/uzun;
 // alaycı laflarda arkasından kahkaha. Ses dosyaları yoksa eski osilatör mırıltısı.
 const MORT_LAUGH = ['fear', 'raise', 'burst', 'bossDown', 'streak', 'wall', 'bossRage'];
-// Mortimer'ın seslendirilmiş replikleri (ElevenLabs, varliklar/elevenlabs_seslendir.py): ses/mort/index.json yazı -> mp3.
+// Mortimer'ın seslendirilmiş replikleri (ElevenLabs, varliklar/elevenlabs_seslendir.py). Hepsi tek dosyada (ses ızgarası,
+// varliklar/mort_sprite.py): ses/mort/mort_all.mp3 + sprite.json {yazı: [başlangıç, süre]}; ilk replikte bir kez çözülür.
 // Dosyası olan replik birebir seslendirilir; olmayanlar aşağıdaki sentez mırıltıya düşer.
-let MORT_VO = null, mortVoiceUntil = 0;
-const MORT_VO_BUF = {};
-fetch('ses/mort/index.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { MORT_VO = j; }).catch(() => {});
+let MORT_VO = null, mortVoiceUntil = 0, MORT_ALL = null, MORT_ALL_P = null;
+fetch('ses/mort/sprite.json?v=' + (window.SURUM || ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { MORT_VO = j; }).catch(() => {});
 function mortVoice(text) {
-  const f = MORT_VO && MORT_VO[text];
-  if (!f || muted || !actx || !master || window.LANG === 'en') return false; // kayıtlar Türkçe: İngilizcede mırıltı çalar
+  const sp = MORT_VO && MORT_VO[text];
+  if (!sp || muted || !actx || !master || window.LANG === 'en') return false; // kayıtlar Türkçe: İngilizcede mırıltı çalar
   const play = (buf) => {
     const src = actx.createBufferSource(), g = actx.createGain();
-    g.gain.value = 0.76; src.buffer = buf; src.connect(g); g.connect(master); src.start(); // 10 Eki: %20 kısıldı (0.95 -> 0.76)
-    mortVoiceUntil = time + buf.duration + 0.2;
+    g.gain.value = 0.76; src.buffer = buf; src.connect(g); g.connect(master); src.start(0, sp[0], sp[1] + 0.06); // 10 Eki: %20 kısıldı (0.95 -> 0.76)
+    mortVoiceUntil = time + sp[1] + 0.2;
   };
-  if (MORT_VO_BUF[f]) { play(MORT_VO_BUF[f]); return true; }
-  fetch('ses/mort/' + f).then(r => r.arrayBuffer()).then(a => actx.decodeAudioData(a)).then(b => { MORT_VO_BUF[f] = b; play(b); }).catch(() => {});
+  if (MORT_ALL) { play(MORT_ALL); return true; }
+  if (!MORT_ALL_P) MORT_ALL_P = fetch('ses/mort/mort_all.mp3?v=' + (window.SURUM || '')).then(r => r.arrayBuffer()).then(a => actx.decodeAudioData(a)).then(b => (MORT_ALL = b)).catch(() => { MORT_ALL_P = null; });
+  MORT_ALL_P.then(b => b && play(b));
   return true;
 }
 function mortMumble(text, kind) {
@@ -11668,10 +11669,14 @@ function drawSandstorm(k) {
 // Gece: ekran karanlık; kuleler, kale, kahramanlar ve askerler çevrelerini aydınlatır (meşale titremesi)
 let NIGHT = null;
 function drawNight() {
-  if (!NIGHT) { NIGHT = document.createElement('canvas'); NIGHT.width = 480; NIGHT.height = 270; }
-  const n = NIGHT.getContext('2d'), k = 480 / W;
-  n.globalCompositeOperation = 'source-over'; n.clearRect(0, 0, 480, 270);
-  n.fillStyle = 'rgba(6,10,30,0.66)'; n.fillRect(0, 0, 480, 270);
+  // karanlık katmanı ekranın tamamını (VIS, tam ekranda çerçevenin yanları dahil) kaplar
+  const k = 480 / VIS.w, nh = Math.round(VIS.h * k);
+  if (!NIGHT) NIGHT = document.createElement('canvas');
+  if (NIGHT.width !== 480 || NIGHT.height !== nh) { NIGHT.width = 480; NIGHT.height = nh; }
+  const n = NIGHT.getContext('2d');
+  n.setTransform(1, 0, 0, 1, 0, 0); n.globalCompositeOperation = 'source-over'; n.clearRect(0, 0, 480, nh);
+  n.fillStyle = 'rgba(6,10,30,0.66)'; n.fillRect(0, 0, 480, nh);
+  n.translate(-VIS.l * k, -VIS.t * k);
   n.globalCompositeOperation = 'destination-out';
   const hole = (wx, wy, r, a = 1) => {
     const q = worldToScreen(wx, wy), R = r * cam.z * k * (1 + Math.sin(time * 9 + wx) * 0.03);
@@ -11684,7 +11689,7 @@ function drawNight() {
   for (const s of G.soldiers) if (!s.dead) hole(s.x, s.y - 10, s.hero ? 60 : 26, s.hero ? 1 : 0.6);
   for (const p of G.projectiles) if (p.kind === 'meteor' || p.kind === 'fireball' || p.kind === 'shell') { const q = projPos(p, p.t / p.dur); hole(q.x, q.y, 40, 0.8); }
   for (const z of G.zones) hole(z.x, z.y, z.r * 1.6, 0.8);
-  ctx.drawImage(NIGHT, 0, 0, W, H);
+  ctx.drawImage(NIGHT, VIS.l, VIS.t, VIS.w, VIS.h);
   // meşale ışığı: kulelerin çevresinde sıcak parıltı
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const t of G.towers) { const q = worldToScreen(t.x, t.y - 26); glow(ctx, q.x, q.y, 34 * cam.z, '255,170,80', 0.16 + Math.sin(time * 8 + t.x) * 0.03); }

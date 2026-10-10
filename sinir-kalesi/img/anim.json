@@ -1324,5 +1324,89 @@
   "fh": 309,
   "base": 0.0133,
   "ch": 0.9712
+ },
+ "enemy_torch_die": {
+  "n": 33,
+  "fw": 279,
+  "fh": 180,
+  "base": 0.0136,
+  "ch": 0.8866
+ },
+ "enemy_holywater_die": {
+  "n": 33,
+  "fw": 229,
+  "fh": 175,
+  "base": 0.0137,
+  "ch": 0.913
+ },
+ "enemy_bellpriest_die": {
+  "n": 33,
+  "fw": 228,
+  "fh": 173,
+  "base": 0.014,
+  "ch": 0.9254
+ },
+ "enemy_inquisitor_die": {
+  "n": 33,
+  "fw": 184,
+  "fh": 173,
+  "base": 0.014,
+  "ch": 0.9254
+ },
+ "enemy_campanus_die": {
+  "n": 33,
+  "fw": 233,
+  "fh": 167,
+  "base": 0.0148,
+  "ch": 0.9556
+ },
+ "enemy_severus_die": {
+  "n": 33,
+  "fw": 269,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9215
+ },
+ "enemy_gloriosus_die": {
+  "n": 33,
+  "fw": 167,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_colossus_die": {
+  "n": 33,
+  "fw": 248,
+  "fh": 175,
+  "base": 0.0141,
+  "ch": 0.9155
+ },
+ "enemy_bellpriest_skill": {
+  "n": 32,
+  "fw": 167,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9385
+ },
+ "enemy_cathedral_skill": {
+  "n": 32,
+  "fw": 168,
+  "fh": 165,
+  "base": 0.0147,
+  "ch": 0.9707
+ },
+ "enemy_elephant_atk": {
+  "n": 32,
+  "fw": 280,
+  "fh": 170,
+  "base": 0.0135,
+  "ch": 0.9395
+ },
+ "hero_spartacus_skill": {
+  "n": 32,
+  "fw": 390,
+  "fh": 329,
+  "base": 0.0137,
+  "ch": 0.913
  }
 }

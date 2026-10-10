@@ -5,7 +5,7 @@
     python3 varliklar/elevenlabs_seslendir.py --yeniden  # hepsini baştan üretir
 
 Anahtar: repo kökündeki .env -> ELEVENLABS_API_KEY=... (git'e girmez; anahtarı kullanıcı kendisi ekler).
-Replikler game.js MORT_LINES'tan okunur. Çıktı: sinir-kalesi/ses/mort/<kısa-özet>.mp3 + index.json (yazı -> dosya).
+Replikler game.js MORT_LINES'tan okunur. Çıktı: varliklar/ham/mort/<kısa-özet>.mp3 + index.json (yazı -> dosya); sonra varliklar/mort_sprite.py oyuna tek dosya yazar.
 Oyun (game.js mortVoice) balondaki yazının dosyası varsa onu çalar, yoksa sentez mırıltıya düşer.
 LİSANS: ücretsiz planda üretilen ses ticari kullanılamaz; mağaza sürümü için Starter (veya üstü) planla yeniden üret.
 """
@@ -13,7 +13,7 @@ import hashlib, json, os, re, ssl, subprocess, sys, time, urllib.request, urllib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GAME = os.path.join(ROOT, 'sinir-kalesi', 'js', 'game.js')
-OUT = os.path.join(ROOT, 'sinir-kalesi', 'ses', 'mort')
+OUT = os.path.join(ROOT, 'varliklar', 'ham', 'mort')
 API = 'https://api.elevenlabs.io/v1'
 VOICE_SEARCH = 'Callum'  # --ses AD ile değiştirilir (Mordred ücretli plan ister; ücretsizde ör. 'Altinsoy' ya da 'Callum')
 MODEL = 'eleven_multilingual_v2'
