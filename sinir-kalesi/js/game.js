@@ -10687,9 +10687,10 @@ function blurOf(name, im) {
   }
   return BLUR[name];
 }
+// menü arka planları ekranın tamamını (VIS, geniş telefonda çerçevenin yanları dahil) kaplar
 function coverImage(im, zoom = 1, ox = 0, oy = 0) {
-  const k = Math.max(W / im.width, H / im.height) * zoom, w = im.width * k, h = im.height * k;
-  ctx.drawImage(im.width > w * 1.5 ? pickMip(ctx, im, w) : im, (W - w) / 2 + ox, (H - h) / 2 + oy, w, h);
+  const k = Math.max(VIS.w / im.width, VIS.h / im.height) * zoom, w = im.width * k, h = im.height * k;
+  ctx.drawImage(im.width > w * 1.5 ? pickMip(ctx, im, w) : im, VIS.l + (VIS.w - w) / 2 + ox, VIS.t + (VIS.h - h) / 2 + oy, w, h);
 }
 
 // ----- Necromancer giriş ekranı: kemik rengi, mor konturlu, yeşil ışıklı başlık ve mezar taşı düğme -----
@@ -10712,7 +10713,7 @@ if (document.fonts) {
 }
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
 // logo: üstte koyu kızıl, altın çerçeveli kurdelede "DON'T MESS WITH" (arayüz yazı tipi, kemik beyazı),
-// altta Metal Mania ile kan kırmızısı "THE NECROMANCER"; yazı tipinin sarkıtları parlak kan rengine boyanır, uçlarına kan damlası konur
+// altta Metal Mania ile kan kırmızısı "THE NECROMANCER"
 function titleLogo() {
   if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER) return TITLE_C.logo;
   const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), cx = LW / 2;
@@ -10745,42 +10746,11 @@ function titleLogo() {
   let sz = 100; g.font = `${sz}px ${FONT_LOGO}`;
   while (g.measureText(T).width > LW - 40) { sz -= 4; g.font = `${sz}px ${FONT_LOGO}`; } // geniş yazı tipinde taşmasın
   const tw = g.measureText(T).width;
-  // harf maskesi (2x): sarkıtların ve damla uçlarının yerini bulmak için
+  // harf maskesi (2x): üzerinden geçen ışık yalnız harflere düşsün
   const [m, mg] = offscreen(LW, LH); mg.font = g.font; mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#fff'; mg.fillText(T, cx, ty);
-  const MD = mg.getImageData(0, 0, LW * 2, LH * 2).data, at = (x, y) => MD[((y | 0) * LW * 2 + (x | 0)) * 4 + 3] > 100;
-  // harf gövdesinin alt sınırı: satır doluluğu birden düştüğü yer; altı sarkıt
-  let base = ty + sz * 0.3;
-  { const rows = [];
-    for (let y = Math.round((ty) * 2); y < Math.round((ty + sz * 0.6) * 2); y++) { let n = 0; for (let x = (cx - tw / 2) * 2; x < (cx + tw / 2) * 2; x += 2) if (at(x, y)) n++; rows.push([y, n]); }
-    const full = Math.max(...rows.slice(0, 8).map(r => r[1])); // harf ortasındaki doluluk
-    for (const [y, n] of rows) if (n < full * 0.55) { base = y / 2; break; } }
-  // sarkıt uçları: tabanın altında harf pikseli olan sütun grupları, her grubun en alt noktası
-  const tips = [];
-  { let run = null;
-    for (let x = Math.round((cx - tw / 2) * 2); x <= Math.round((cx + tw / 2) * 2); x++) {
-      let low = 0; for (let y = Math.round(base * 2 + 4); y < LH * 2 - 2; y++) if (at(x, y)) low = y;
-      if (low) { if (!run) run = { x0: x, best: low, bx: x }; else if (low > run.best) { run.best = low; run.bx = x; } run.x1 = x; }
-      else if (run) { tips.push(run); run = null; }
-    }
-    if (run) tips.push(run); }
-  // kan sarkıtları: yazı tipinin harf altındaki kıvrımlarından (tips) seçilenlerden aşağı süzülen, ucu yuvarlak damla olan akıntılar
-  const rnd = seeded(11), drips = [];
-  tips.forEach((t, k) => {
-    if (rnd() < 0.25) return; // hepsinden akmasın
-    const w0 = clamp((t.x1 - t.x0) / 2 * 1.3, 7, 11), L = 12 + rnd() * 22 + (k % 3 === 1 ? 10 : 0);
-    drips.push({ x: t.bx / 2, top: base - 3, w0, L, r: w0 * 0.68 });
-  });
-  const dripPath = (d, o) => {
-    const { x, top, w0, L, r } = d, neck = w0 * 0.42 + o, y1 = top + L;
-    g.beginPath(); g.moveTo(x - w0 / 2 - o, top);
-    g.bezierCurveTo(x - w0 / 2 - o, top + L * 0.4, x - neck, y1 - r * 1.6, x - neck, y1 - r * 0.6);
-    g.arc(x, y1, r + o, Math.PI * 1.15, Math.PI * 1.85 + Math.PI * 2, true);
-    g.bezierCurveTo(x + neck, y1 - r * 1.6, x + w0 / 2 + o, top + L * 0.4, x + w0 / 2 + o, top); g.closePath();
-  };
-  // gölge, kalın koyu kontur (yazı ve sarkıtlar birlikte), iç koyu kızıl kontur
+  // gölge, kalın koyu kontur, iç koyu kızıl kontur (kan damlaları 10 Eki'de kaldırıldı, Caner)
   g.save(); g.shadowColor = 'rgba(255,30,20,0.7)'; g.shadowBlur = 28; g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.2; g.strokeText(T, cx, ty); g.restore();
   g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.2; g.strokeText(T, cx, ty + 5);
-  g.fillStyle = '#0c0204'; for (const d of drips) { dripPath(d, 3); g.fill(); }
   g.strokeStyle = '#3a0610'; g.lineWidth = sz * 0.09; g.strokeText(T, cx, ty);
   // dolgu: üstte açık, ortada kan kırmızısı, altta koyu kan
   gr = g.createLinearGradient(0, ty - sz / 2, 0, ty + sz * 0.45);
@@ -10788,22 +10758,6 @@ function titleLogo() {
   g.fillStyle = gr; g.fillText(T, cx, ty);
   gr = g.createLinearGradient(0, ty - sz / 2, 0, ty); gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = gr; g.fillText(T, cx, ty - 2);
-  // sarkıt dolgusu: harfin alt rengiyle başlar, uçtaki damla ıslak ve parlak
-  for (const d of drips) {
-    const dg = g.createLinearGradient(0, d.top, 0, d.top + d.L + d.r);
-    dg.addColorStop(0, '#9a0812'); dg.addColorStop(0.5, '#b80c16'); dg.addColorStop(1, '#d81822');
-    dripPath(d, 0); g.fillStyle = dg; g.fill();
-    g.strokeStyle = 'rgba(255,170,160,0.5)'; g.lineWidth = 1.2; g.lineCap = 'round'; // akıntı boyunca ince parlaklık
-    g.beginPath(); g.moveTo(d.x - d.w0 * 0.2, d.top + 5); g.quadraticCurveTo(d.x - d.w0 * 0.22, d.top + d.L * 0.6, d.x - d.r * 0.45, d.top + d.L - d.r * 0.5); g.stroke();
-    g.fillStyle = 'rgba(255,240,235,0.9)'; g.beginPath(); g.ellipse(d.x - d.r * 0.35, d.top + d.L - d.r * 0.15, d.r * 0.26, d.r * 0.18, -0.6, 0, Math.PI * 2); g.fill();
-  }
-  // en uzun iki sarkıtın altında kopmuş küçük damla
-  for (const d of [...drips].sort((p, q) => q.L - p.L).slice(0, 2)) {
-    const r = d.r * 0.6, x = d.x, yy = d.top + d.L + d.r + 9 + r;
-    g.beginPath(); g.moveTo(x, yy - r * 2.3); g.quadraticCurveTo(x + r * 1.15, yy - r * 0.3, x, yy + r); g.quadraticCurveTo(x - r * 1.15, yy - r * 0.3, x, yy - r * 2.3); g.closePath();
-    g.strokeStyle = '#0c0204'; g.lineWidth = 2; g.stroke(); g.fillStyle = '#d0141e'; g.fill();
-    g.fillStyle = 'rgba(255,240,235,0.85)'; g.beginPath(); g.arc(x - r * 0.3, yy - r * 0.1, r * 0.28, 0, Math.PI * 2); g.fill();
-  }
   // parıltı maskesi: yalnız ana yazının harfleri
   TITLE_C.logo = { c, m, w: LW, h: LH, ver: FONT_VER };
   return TITLE_C.logo;
@@ -10958,8 +10912,9 @@ function keyTorch(bg, ox, oy, iw, ih, f, i) {
   ctx.restore();
 }
 function drawKeyArt(bg) {
-  const z = 1.035 + Math.sin(time * 0.1) * 0.012, k = Math.max(W / bg.width, H / bg.height) * z, iw = bg.width * k, ih = bg.height * k;
-  const ox = (W - iw) / 2 + Math.sin(time * 0.07) * 6, oy = (H - ih) / 2 + Math.cos(time * 0.09) * 3, s = iw / W;
+  // kapak görseli ekranın tamamını kaplar (geniş telefonda üstten/alttan biraz kırpılır, yanlarda boşluk kalmaz)
+  const z = 1.035 + Math.sin(time * 0.1) * 0.012, k = Math.max(VIS.w / bg.width, VIS.h / bg.height) * z, iw = bg.width * k, ih = bg.height * k;
+  const ox = VIS.l + (VIS.w - iw) / 2 + Math.sin(time * 0.07) * 6, oy = VIS.t + (VIS.h - ih) / 2 + Math.cos(time * 0.09) * 3, s = iw / W;
   ctx.drawImage(bg.width > iw * 1.5 ? pickMip(ctx, bg, iw) : bg, ox, oy, iw, ih);
   const P = (f) => [ox + f[0] * iw, oy + f[1] * ih];
   for (const [i, r] of KEY_FX.warp.entries()) keyWarp(bg, ox, oy, iw, ih, r, i);
@@ -11227,26 +11182,27 @@ const REGION_TINT = { ravenwood: 'rgba(40,30,60,0.2)', plague: 'rgba(90,60,30,0.
 const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
-  if (R.done) return R.done;
+  if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
+  if (R.done) { R.done = null; R.parts = []; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
-    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62, decorK: 1.9 }, R.road, 2);
+    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62, decorK: 1.9 }, R.road, 2, BLEED);
     // her mekânın kendi rengi: bataklık yeşil-mavi, mezarlık kül moru, kara göl gece mavisi, kapı kızıl mor
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
     R.parts.push(part);
     if (R.parts.length < E.zones.length) return R.parts[0];
   }
-  const c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2;
-  const g = c.getContext('2d'), zw = W * 2 / E.zones.length, blend = 140;
+  const m = R.parts[0].m, c = document.createElement('canvas'); c.width = R.parts[0].width; c.height = R.parts[0].height; c.m = m;
+  const g = c.getContext('2d'), zw = W * 2 / E.zones.length, blend = 140, x0 = m.x * 2; // mekânlar çerçeveye göre bölünür, uçtakiler taşma payına uzar
   g.drawImage(R.parts[0], 0, 0);
   for (let i = 1; i < R.parts.length; i++) {
     const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
     const tg = t.getContext('2d');
     tg.drawImage(R.parts[i], 0, 0);
     tg.globalCompositeOperation = 'destination-in';
-    const gr = tg.createLinearGradient(i * zw - blend, 0, i * zw + blend, 0);
+    const gr = tg.createLinearGradient(x0 + i * zw - blend, 0, x0 + i * zw + blend, 0);
     gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,1)');
     tg.fillStyle = gr; tg.fillRect(0, 0, t.width, t.height);
     g.drawImage(t, 0, 0);
@@ -11278,8 +11234,8 @@ function drawFlyingCrow(x, y, dir, ph) {
 // harita canlılığı: yolda yürüyen lejyon devriyesi, uçan kargalar, mezarlıkta ruh ışıkları
 const MAPFX = { patrol: [], crows: [], nextPatrol: 0, nextCrow: 2 };
 function drawRegionMap(E, ep, st) {
-  const bg = regionBg(ep), R = REGION_BG[ep];
-  ctx.drawImage(bg, 0, 0, W, H);
+  const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
+  ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
@@ -11364,7 +11320,7 @@ function drawMap() {
   else { const bg = spr(E.bg) || spr('title_bg'); if (bg) coverImage(bg, 1); else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); } }
   // üstte başlık için koyu bant, kenarlarda hafif vinyet
   let g = ctx.createLinearGradient(0, 0, 0, 110); g.addColorStop(0, 'rgba(24,12,4,0.55)'); g.addColorStop(1, 'rgba(24,12,4,0)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, 110);
+  ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, 110 - VIS.t);
   g = ctx.createRadialGradient(W / 2, H / 2, H * 0.5, W / 2, H / 2, W * 0.7); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,5,0,0.35)');
   ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   const nodes = E.nodes || ids.map((_, k) => [120 + k * 80, 420 - (k % 2) * 60]);
@@ -12745,27 +12701,6 @@ document.addEventListener('visibilitychange', () => {
 
 // ---------- döngü ----------
 let last = performance.now();
-// Menülerde çerçeve dışı (geniş ekranın yanları): ekranın kendisinin küçültülüp büyütülmüş (bulanık) ve karartılmış kopyası
-let bleedC = null;
-function drawBleedBackdrop() {
-  if (VIS.l > -0.5 && VIS.t > -0.5 && VIS.r < W + 0.5 && VIS.b < H + 0.5) return;
-  const { dpr, scale, ox, oy } = view, k = dpr * scale;
-  if (!bleedC) { bleedC = document.createElement('canvas'); bleedC.width = 48; bleedC.height = 27; }
-  const b = bleedC.getContext('2d');
-  b.drawImage(canvas, ox * dpr, oy * dpr, W * k, H * k, 0, 0, 48, 27);
-  ctx.save();
-  ctx.beginPath(); ctx.rect(VIS.l, VIS.t, VIS.w, VIS.h); ctx.rect(0, 0, W, H); ctx.clip('evenodd');
-  const f = Math.max(VIS.w / W, VIS.h / H) * 1.06, cx = W / 2, cy = H / 2;
-  ctx.imageSmoothingEnabled = true; ctx.drawImage(bleedC, cx - W * f / 2, cy - H * f / 2, W * f, H * f);
-  ctx.fillStyle = 'rgba(6,3,10,0.5)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
-  // çerçeveye yakın kısım daha açık, dış kenara doğru kararır
-  for (const [x0, x1] of [[0, VIS.l], [W, VIS.r]]) {
-    if (Math.abs(x1 - x0) < 1) continue;
-    const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, 'rgba(6,3,10,0)'); g.addColorStop(1, 'rgba(6,3,10,0.55)');
-    ctx.fillStyle = g; ctx.fillRect(Math.min(x0, x1), VIS.t, Math.abs(x1 - x0), VIS.h);
-  }
-  ctx.restore();
-}
 function frame(now) {
   const real = Math.min(0.05, (now - last) / 1000);
   last = now; time += real;
@@ -12811,7 +12746,6 @@ function frame(now) {
     const a = trans.t < 0.22 ? trans.t / 0.22 : 1 - (trans.t - 0.22) / 0.28;
     ctx.fillStyle = `rgba(8,5,2,${clamp(a, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
-  if (screen !== 'play') drawBleedBackdrop();
   ctx.restore();
   if (view.ch > view.cw * 1.1) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

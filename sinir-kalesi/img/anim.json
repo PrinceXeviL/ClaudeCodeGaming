@@ -1203,5 +1203,97 @@
   "fh": 311,
   "base": 0.0145,
   "ch": 0.9638
+ },
+ "enemy_hunter_die": {
+  "n": 33,
+  "fw": 249,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.9544
+ },
+ "enemy_hound_die": {
+  "n": 33,
+  "fw": 373,
+  "fh": 171,
+  "base": 0.0198,
+  "ch": 0.934
+ },
+ "enemy_flagellant_die": {
+  "n": 33,
+  "fw": 273,
+  "fh": 173,
+  "base": 0.0139,
+  "ch": 0.9258
+ },
+ "enemy_paladin_die": {
+  "n": 33,
+  "fw": 306,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9475
+ },
+ "enemy_malleus_die": {
+  "n": 33,
+  "fw": 300,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9385
+ },
+ "enemy_ignis_die": {
+  "n": 33,
+  "fw": 271,
+  "fh": 175,
+  "base": 0.0137,
+  "ch": 0.913
+ },
+ "enemy_drummer_die": {
+  "n": 33,
+  "fw": 198,
+  "fh": 168,
+  "base": 0.0163,
+  "ch": 0.9512
+ },
+ "enemy_saint_die": {
+  "n": 33,
+  "fw": 258,
+  "fh": 176,
+  "base": 0.0139,
+  "ch": 0.9072
+ },
+ "enemy_cathedral_die": {
+  "n": 33,
+  "fw": 290,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9385
+ },
+ "enemy_inquisitor_skill": {
+  "n": 32,
+  "fw": 145,
+  "fh": 165,
+  "base": 0.0147,
+  "ch": 0.9707
+ },
+ "enemy_elephant_walk": {
+  "n": 30,
+  "fw": 304,
+  "fh": 168,
+  "base": 0.0137,
+  "ch": 0.9521,
+  "idle": 0
+ },
+ "enemy_elephant_die": {
+  "n": 33,
+  "fw": 325,
+  "fh": 165,
+  "base": 0.0139,
+  "ch": 0.9699
+ },
+ "hero_leonidas_skill": {
+  "n": 32,
+  "fw": 360,
+  "fh": 324,
+  "base": 0.0137,
+  "ch": 0.9271
  }
 }
