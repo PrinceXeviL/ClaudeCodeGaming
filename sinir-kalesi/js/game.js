@@ -2807,6 +2807,7 @@ function updateExtra(t, dt) {
 }
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
+  if (t.gushT > 0) t.gushT -= dt; // veba kazanı: ağızdan fışkıran sıvı sütunu
   if (t.animT != null) t.animT += dt;
   if (t.engageT > 0) { t.engageT -= dt; const A = towerAnim(t); if (A) { if (t.animT == null || t.animT >= A.dur) t.animT = 0; } } // döngü
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
@@ -2886,6 +2887,18 @@ function updateTower(t, dt) {
       if (AA) t.animT = 0;
     }
     const rel = AA ? AA.M.rel * AA.dur : 0; // fırlatma gecikmesi: hedefin o ana kadarki ilerleyişi de hesaba katılır
+    if (NECRO && t.spec === 'corpse' && cr) { // Ceset Mancınığı: bir seferde 2-3 zombi cesedi; çarptığını savurur, sonra veba saçan zombi olarak kalkar
+      const foes = G.enemies.filter(o => !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, t.x, t.y) <= L.range);
+      for (let i = 0; i < (cr.n || 2); i++) {
+        const o = i === 0 ? e : foes[Math.floor(Math.random() * foes.length)] || e;
+        const ta = o.blocker ? 0 : o.d + o.def.speed * G.wspd * 0.75 + (i ? rand(-22, 22) : 0), f = o.blocker ? o : pathPos(o.p, ta, clamp(o.off + rand(-6, 6), -14, 14));
+        G.projectiles.push({ kind: 'vapor', src: 'blast', sx, sy: sy - 6, gy: t.y, target: null, tx: f.x, ty: f.y, t: -0.1 - i * 0.14, dur: 0.75 + i * 0.05, dmg: roll(L.dmg) * CORPSE.dmg, dtype: 'phys',
+          arc: 80 + i * 14, splash: L.splash * 0.8, stun: 0, gas: (L.dmg[0] + L.dmg[1]) * 0.05, big: true, path: o.blocker ? null : o.p, along: ta,
+          body: { name: CORPSE.bodies[Math.floor(Math.random() * CORPSE.bodies.length)], rig: null, h: 24, face: Math.random() < 0.5 ? -1 : 1 }, zombie: cr, tower: t });
+      }
+      t.cd = L.rate * CORPSE.rate; t.gushT = GUSH; t.aimX = e.x; t.aimY = e.y; sfx('whirl');
+      return;
+    }
     // ceset mancınığı: menzildeki bir cesedi cephane yapar; dönüşmüş mancınık ceset yoksa kendi ceset yığınını atar
     let body = cr && G.effects.find(f => f.kind === 'corpse' && !f.air && f.t > 0.4 && f.t < f.dur - 0.2 && dist(f.x, f.y, t.x, t.y) <= L.range);
     if (body) body.t = body.dur;
@@ -2897,11 +2910,11 @@ function updateTower(t, dt) {
     if (lob) {
       const ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * LOB.dur;
       if (!e.blocker) { const f = pathPos(e.p, ta, e.off); tx = f.x; ty = f.y; }
-      G.projectiles.push({ kind: 'vapor', lob: true, src: 'blast', sx, sy, gy: t.y, target: null, tx, ty, t: 0, dur: LOB.dur, dmg: roll(L.dmg) * LOB.dmg * (AF && AF.dmg || 1), dtype: 'phys',
+      G.projectiles.push({ kind: 'vapor', lob: true, src: 'blast', sx, sy: sy - 8, gy: t.y, target: null, tx, ty, t: -0.12, dur: LOB.dur, dmg: roll(L.dmg) * LOB.dmg * (AF && AF.dmg || 1), dtype: 'phys',
         arc: LOB.arc, splash: L.splash * LOB.splash, stun: t.lvl >= 2 ? 0.3 : 0, gas: (L.dmg[0] + L.dmg[1]) * 0.09 * (AF && AF.gas || 1), path: e.blocker ? null : e.p, along: ta,
         black: t.spec === 'plague', plague: pl ? pl.dps : 0, body: null, spin: rand(0, 6) });
-      t.cd = L.rate * LOB.rate; t.aimX = tx; t.aimY = ty;
-      for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: sx + rand(-6, 6), y: sy, vx: rand(-50, 50), vy: -rand(60, 150), g: 420, col: i % 3 ? '#8cff5a' : '#c6ff9a', s0: rand(1.4, 2.4), s1: 1, life: rand(0.4, 0.7), vr: 0 });
+      t.cd = L.rate * LOB.rate; t.aimX = tx; t.aimY = ty; t.gushT = GUSH;
+      for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'dot', x: sx + rand(-5, 5), y: sy - rand(0, 8), vx: rand(-45, 45), vy: -rand(70, 170), g: 460, col: i % 3 ? '#8cff5a' : '#c6ff9a', s0: rand(1, 1.8), s1: 0.8, life: rand(0.4, 0.7), floor: sy + rand(2, 8) });
       sfx('whirl');
       return;
     }
@@ -2916,6 +2929,7 @@ function updateTower(t, dt) {
       fire(tx, ty, roll(L.dmg) * (body ? (body.pile ? 1.3 : cr.mult) : 1) * (AF && AF.dmg || 1), -rel, tp, ta);
       if (rel) { t.aimX = tx; t.aimY = ty; sfx('whirl'); return; } // duman ve ses fırlatma anında (aşağıda değil)
       t.aimX = tx; t.aimY = ty;
+      t.cd = L.rate * SPRAY_RATE; t.gushT = GUSH * 0.8;
       for (let i = 0; i < 16; i++) { // püskürtme: kazandan hedefe doğru fışkıran yeşil-mor buhar
         const a = Math.atan2(ty - sy, tx - sx) + rand(-1, 1) * 0.35, v = rand(80, 220);
         emit(G.parts, { kind: 'glow', x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, drag: 2.8, col: i % 3 === 0 ? '200,255,150' : i % 3 === 1 ? '150,230,100' : '170,120,230', s0: rand(3, 5), s1: rand(10, 18), life: rand(0.35, 0.65), a: 0.5 });
@@ -3388,6 +3402,7 @@ function updateSoldier(s, dt) {
     if (s.life <= 0 && !s.dead) { s.dead = true; releaseSoldier(s); }
   }
   if (s.dead) {
+    if (s.plagueZ && !s.burst) { s.burst = true; G.zones.push({ x: s.x, y: s.y, r: 26, dps: s.plagueZ, t: 0, life: 2, fxT: 0, src: 'blast', kind: 'plague', gas: true, seed: rand(0, 9) }); fxPlagueSplash(s.x, s.y, 26); } // çürüyüp veba saçarak dağılır
     if (s.militia || (s.ghoul && s.ghoul.state === 'sealed')) { s.removed = true; return; }
     s.respawnT -= dt;
     if (s.respawnT <= 0) {
@@ -3472,6 +3487,7 @@ function updateSoldier(s, dt) {
         }
         hitBy = s.hero ? 'hero' : s.minion ? 'minion' : 'melee'; damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee');
         if (s.tower && s.tower.imbue && !s.hero) applyImbue(t, s.tower.imbue, 'melee'); // silah büyüsü
+        if (s.plagueZ && !t.dead) poisonEnemy(t, s.plagueZ, 3); // veba zombisi: vuruşu zehirler
         if (s.aoe) { // iri birim: savurması çevresindeki herkese işler
           for (const o of G.enemies) if (o !== t && !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, t.x, t.y) < 34) damageEnemy(o, dmg * s.aoe, 'phys', false, 'melee');
           impactFx(t.x, t.y - 8, '230,220,190', 1.1); shakeScreen(1.2, 0.08);
@@ -3819,6 +3835,7 @@ function updateProjectile(pr, dt) {
     if (pr.path) for (const k of [-1, 1]) { const q = pathPos(pr.path, pr.along + k * R * 1.1); spots.push([q.x, q.y]); }
     for (const [x, y] of spots) G.zones.push({ x, y, r: R, dps: pr.gas, t: 0, life: 2, fxT: 0, src: 'blast', kind: 'plague', gas: true, seed: rand(0, 9) });
     fxPlagueSplash(pr.tx, pr.ty, pr.splash);
+    if (pr.zombie) { scatterFoes(pr.tx, pr.ty, pr.splash, 0.6); raisePlagueZombie(pr); }
     if (pr.body) { for (let i = 0; i < 10; i++) emit(G.parts, { kind: 'chunk', x: pr.tx + rand(-6, 6), y: pr.ty - rand(0, 6), vx: rand(-90, 90), vy: -rand(80, 180), g: 520, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#7a3a2a', s0: rand(1.4, 2.4), s1: 1, life: rand(0.5, 0.8) }); shakeScreen(2.5, 0.2); sfx('bash'); }
     return;
   }
@@ -6472,7 +6489,30 @@ const CAULDRON = [
     braziers: [[0.115, 0.6], [0.885, 0.6]], runes: [[0.6, 0.335, 0.2], [0.33, 0.56, 0.05]] },
 ];
 // veba bombası: dur uçuş süresi, arc kavis yüksekliği, dmg/splash çarpanı, rate bekleme çarpanı, poison zehir çarpanı (gaz değerine), pool zehir gölü süresi, down yere düşme (sn)
-const LOB = { dur: 0.85, arc: 95, dmg: 1.3, splash: 1.15, rate: 1.3, poison: 1.2, pool: 4, down: 1 };
+const LOB = { dur: 0.85, arc: 95, dmg: 1.3, splash: 1.15, rate: 1.75, poison: 1.2, pool: 3, down: 1 };
+const SPRAY_RATE = 1.35, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
+// Ceset Mancınığı (4. kademe): rate bekleme çarpanı, dmg cesedin çarpma hasarı çarpanı, max kule başına ayaktaki zombi, bodies fırlatılan cesetler
+const CORPSE = { rate: 1.6, dmg: 0.6, max: 6, bodies: ['enemy_legion', 'enemy_heavy', 'enemy_gladiator'] };
+// çarpma/patlama: düşmanlar yolda geriye ve yana savrulur; merkeze yakınlar bir an yere düşer (down sn)
+function scatterFoes(x, y, r, down) {
+  for (const e of G.enemies) {
+    if (e.dead || e.def.flying || !pushable(e) || e.blocker) continue;
+    const d = dist(e.x, e.y, x, y); if (d > r) continue;
+    const k = 1 - d / r;
+    e.knockT = KNOCK.t * 1.6; e.knockV = 60 + 110 * k; e.hopT = Math.max(e.hopT || 0, 0.35 + 0.25 * k);
+    e.off = clamp(e.off + (e.x < x ? -1 : 1) * rand(3, 8) * (0.5 + k), -16, 16);
+    if (k > 0.35) stunEnemy(e, down * k);
+  }
+}
+// fırlatılan ceset düştüğü yerde veba saçan zombi olarak kalkar: düşmana yürür, vuruşları zehirler, ölünce veba bulutu bırakır
+function raisePlagueZombie(pr) {
+  const Z = pr.zombie, t = pr.tower, mine = G.soldiers.filter(o => o.plagueZ && !o.dead && o.byTower === t);
+  if (mine.length >= CORPSE.max) mine.sort((a, b) => a.life - b.life)[0].life = 0; // en eskisi çürüyüp dağılır
+  const s = { militia: true, merc: true, zombie: true, plagueZ: Z.dps, byTower: t, x: pr.tx, y: pr.ty, rx: pr.tx, ry: pr.ty, hp: Z.hp, maxHp: Z.hp, dmg: Z.zdmg, armor: 0.1,
+    rate: 1.1, speed: 34, engage: 60, atk: 0, target: null, dead: false, face: pr.body.face, anim: 0, slot: G.soldiers.length % 4, life: Z.life, born: G.t + 0.05,
+    zname: pr.body.name, zrig: null, zh: CHAR_H[pr.body.name] || 26 };
+  G.soldiers.push(s);
+}
 const ARTI_SPEC = { corpse: { range: 1.2, dmg: 1 }, plague: { dmg: 1.05, gas: 1.6 } }; // 4. kademe değerleri (eski dönüşüm görsellerinden)
 const cauldronPt = (t, ts, q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h });
 // bomba düştü: alan hasarı, düşmanlar patlamadan uzağa savrulur (yakındakiler bir an yere düşer), yerde bulaşıcı zehir gölü kalır
@@ -6484,14 +6524,13 @@ function plagueBomb(pr) {
     damageEnemy(e, pr.dmg * (0.6 + 0.4 * k), 'phys', false, pr.src); e.rotT = 4;
     if (!e.dead) poisonEnemy(e, pr.gas * LOB.poison, 3);
     if (pr.plague && !e.dead) { poisonEnemy(e, pr.plague, 4); e.plagueT = 4; e.plagueDps = pr.plague; } // kara veba
-    if (e.dead || !pushable(e) || e.blocker) continue;
-    e.knockT = KNOCK.t * 1.6; e.knockV = 60 + 110 * k; e.hopT = Math.max(e.hopT || 0, 0.35 + 0.25 * k);
-    e.off = clamp(e.off + (e.x < pr.tx ? -1 : 1) * rand(3, 8) * (0.5 + k), -16, 16); // yana dağılır
-    if (k > 0.35) stunEnemy(e, LOB.down * k);
   }
+  scatterFoes(pr.tx, pr.ty, pr.splash, LOB.down);
   G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6, infect: pr.gas * LOB.poison, t: 0, life: LOB.pool, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) });
   fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2);
-  for (let i = 0; i < 16; i++) { const a = rand(-Math.PI, 0), v = rand(70, 190); emit(G.parts, { kind: 'chunk', x: pr.tx, y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 480, vr: 0, rot: 0, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.6, 2.8), s1: 1, life: rand(0.4, 0.75) }); }
+  // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
+  for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
+  for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: LOB.pool * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('boom'); sfx('splash');
 }
@@ -6540,6 +6579,15 @@ function drawPlagueCauldron(t, ts) {
     ctx.globalAlpha = 1;
   }
   if (C.drip) { const a0 = cauldronPt(t, ts, C.drip[0]), a1 = cauldronPt(t, ts, C.drip[1]), ph = (time * 1.6 + sd) % 1; ctx.globalAlpha = 1 - ph * 0.5; circle(lerp(a0.x, a1.x, ph), lerp(a0.y, a1.y, ph * ph), 0.8 * s, '#b6ff7c', '#2a6a14', 0.3 * s); ctx.globalAlpha = 1; }
+  if (t.gushT > 0) { // fışkırma: ağızdan hedefe doğru eğilen sıvı sütunu yükselip çöker, tepesinden damlalar kopar
+    const k = 1 - t.gushT / GUSH, hh = Math.sin(Math.min(1, k * 1.6) * Math.PI) * 26 * s * C.mouth[2] / 0.19 + 2, lean = clamp(((t.aimX ?? m.x) - m.x) / 200, -1, 1) * hh * 0.5, w = rx * 0.55 * (1 - 0.4 * k);
+    const g = ctx.createLinearGradient(0, m.y, 0, m.y - hh); g.addColorStop(0, 'rgba(70,170,40,0.95)'); g.addColorStop(0.6, 'rgba(140,240,90,0.95)'); g.addColorStop(1, 'rgba(210,255,170,0.9)');
+    ctx.fillStyle = g; ctx.strokeStyle = 'rgba(14,42,8,0.7)'; ctx.lineWidth = 0.6 * s; ctx.beginPath(); ctx.moveTo(m.x - w, m.y);
+    ctx.quadraticCurveTo(m.x - w * 0.5 + lean * 0.3, m.y - hh * 0.6, m.x + lean - w * 0.35, m.y - hh); ctx.arc(m.x + lean, m.y - hh, w * 0.38 + Math.sin(time * 30) * 0.3 * s, Math.PI, 0);
+    ctx.quadraticCurveTo(m.x + w * 0.5 + lean * 0.3, m.y - hh * 0.6, m.x + w, m.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, m.x + lean * 0.5, m.y - hh * 0.5, hh * 0.7 + 4, '140,255,90', 0.35 * (1 - k)); ctx.restore();
+    if (Math.random() < 0.5) emit(G.parts, { kind: 'dot', x: m.x + lean + rand(-w, w) * 0.4, y: m.y - hh, vx: rand(-30, 30) + lean, vy: -rand(10, 60), g: 420, col: Math.random() < 0.7 ? '#8cff5a' : '#d8ffb0', s0: rand(0.8, 1.6) * s, s1: 0.6, life: rand(0.3, 0.5), floor: m.y + rand(0, 3) });
+  }
   for (let i = 0; i < 7; i++) { // ağızdaki kabarcıklar: şişer, patlar, başka yerde yeniden çıkar
     const sp = 0.5 + ((i * 37) % 10) / 20, u = time * sp + i * 0.31 + sd, ph = u % 1, cyc = Math.floor(u);
     const a = (i * 2.4 + cyc * 1.7) % (Math.PI * 2), rr = 0.25 + 0.6 * (((i * 13 + cyc * 7) % 10) / 10);
@@ -8000,17 +8048,22 @@ function drawProjectile(p) {
       ctx.restore();
     }
   } else if (p.kind === 'vapor' && p.lob) {
-    // veba bombası: titreşen iri yeşil damla, yerde büyüyen gölgesi ve arkasında damlacıklar
+    // veba damlası (top değil): uçuş yönünde uzayan, kenarları dalgalanan dağınık sıvı öbeği; çevresinde kopuk damlacıklar, arkasından damlar
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k);
     ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.2 * k})`; ctx.beginPath(); ctx.ellipse(gx, gy, 4 + 5 * k, 2 + 2.2 * k, 0, 0, Math.PI * 2); ctx.fill();
-    for (let i = 1; i <= 4; i++) { if (k - i * 0.035 < 0) break; const q = projPos(p, k - i * 0.035); ctx.globalAlpha = 0.5 - i * 0.1; circle(q.x, q.y, 3.2 - i * 0.5, p.black ? '#b07ae8' : '#9cff6a'); }
+    const C = p.black ? ['#e0c8ff', '#9a5ae0', '#3a1a68'] : ['#e2ffb0', '#6ad83a', '#1e5a14'];
+    for (let i = 1; i <= 6; i++) { if (k - i * 0.03 < 0) break; const q = projPos(p, k - i * 0.03); ctx.globalAlpha = 0.75 - i * 0.1; circle(q.x + Math.sin(i * 2.3 + p.spin) * 2, q.y + i * i * 0.35, 2 - i * 0.22, C[1]); }
     ctx.globalAlpha = 1;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 16, p.black ? '180,90,255' : '120,255,90', 0.6); ctx.restore();
-    const wob = Math.sin(time * 26 + p.spin) * 0.9, g = ctx.createRadialGradient(x - 2, y - 2.5, 0.5, x, y, 8);
-    g.addColorStop(0, '#e2ffb0'); g.addColorStop(0.5, p.black ? '#8a4ad8' : '#6ad83a'); g.addColorStop(1, p.black ? '#2a1250' : '#1e5a14');
-    ctx.fillStyle = g; ctx.strokeStyle = '#0e2a08'; ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.ellipse(x, y, 7 + wob, 6.2 - wob, p.spin + time * 3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    circle(x - 2, y - 2.4, 1.6, 'rgba(255,255,230,0.8)');
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 15, p.black ? '180,90,255' : '120,255,90', 0.5); ctx.restore();
+    const q2 = projPos(p, Math.min(1, k + 0.02)), ang = Math.atan2(q2.y - y, q2.x - x) || 0, st = 1.2 + 0.15 * Math.sin(time * 20 + p.spin);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+    const gr = ctx.createRadialGradient(1.5, -2, 0.5, 0, 0, 8); gr.addColorStop(0, C[0]); gr.addColorStop(0.55, C[1]); gr.addColorStop(1, C[2]);
+    ctx.fillStyle = gr; ctx.strokeStyle = 'rgba(14,42,8,0.75)'; ctx.lineWidth = 0.9; ctx.beginPath();
+    for (let i = 0; i <= 28; i++) { const a = i / 28 * Math.PI * 2, r = 5.6 + 1.4 * Math.sin(a * 3 + time * 14 + p.spin) + 0.9 * Math.sin(a * 5 - time * 11) + (Math.cos(a) < -0.3 ? 1.4 * -Math.cos(a) : 0); ctx.lineTo(Math.cos(a) * r * st, Math.sin(a) * r / st); }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,235,0.75)'; ctx.beginPath(); ctx.ellipse(2, -2.2, 2.2, 1.1, 0, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 4; i++) { const a = Math.PI + (i - 1.5) * 0.55 + Math.sin(time * 9 + i) * 0.25, d = 9.5 + 2.5 * Math.sin(time * 12 + i * 2); circle(Math.cos(a) * d * st, Math.sin(a) * d, 1.3 + (i % 2) * 0.7, C[1], 'rgba(14,42,8,0.6)', 0.5); }
+    ctx.restore();
   } else if (p.kind === 'vapor' && p.body) {
     const im = spr(p.body.name) || enemySprite(p.body.name.slice(6)), q = projPos(p, k);
     if (im) { const h = (p.body.h || 26) * 0.9; ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(k * 9 * (p.body.face || 1)); drawSprite(ctx, rottenOf(p.body.name, im), 0, h * 0.5, h * im.width / im.height); ctx.restore(); }

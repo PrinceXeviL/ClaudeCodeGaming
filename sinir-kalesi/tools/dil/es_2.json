@@ -268,7 +268,7 @@
 "Disparan desde {} de alcance, también a voladores · daño x{} · poca vida · 4.º esqueleto",
 "La torre se convierte en un Sifón de Almas: el rayo se fortalece hasta un 60% en el mismo objetivo · el rayo drena vida: los esqueletos cerca del objetivo curan el {}% del daño",
 "La torre se convierte en una Jaula de Almas: cada 8 s enjaula 2 s al enemigo más fuerte · cada {} s suelta un fantasma por el camino: {} de daño al tocar, {} s de miedo",
-"La torre se convierte en una Catapulta de Cadáveres: largo alcance, siempre lanza montones de cadáveres · si hay un cadáver al alcance lo lanza: daño x{}, área amplia",
+"La torre se convierte en una Catapulta de Cadáveres: en lugar de peste lanza {} cadáveres de zombi a la vez · los cadáveres derriban a los enemigos, luego se levantan y luchan {} s, sus golpes contagian la peste",
 "La torre se convierte en un Caldero de Peste Negra: peste morada y verde, nube de gas mayor · los objetivos quedan apestados ({} de veneno por segundo): si uno muere, la peste pasa a sus vecinos",
 "La torre se convierte en un Templo de Sangre: lazos carmesí desde el cáliz · las torres al alcance obtienen +{}% de cadencia y +{}% de daño",
 "La torre se convierte en un Templo de la Maldición Negra: los malditos tienen +10% de probabilidad de alzarse al morir · cuando muere un maldito, la maldición salta a los {} enemigos más cercanos (incluso fuera de alcance, 4 s)",

@@ -64,8 +64,9 @@ const TOWERS = {
     ],
     abilities: [
       // Ceset Mancınığı: menzildeki cesedi cephane yapar · Kara Veba: vurduğu düşman ölünce veba yanındakilere bulaşır
-      { id: 'corpse', name: 'Ceset Mancınığı', desc: (r) => `Kule Ceset Mancınığına dönüşür: uzun menzil, hep ceset yığını fırlatır · Menzilde ceset varsa onu fırlatır: x${r.mult} hasar, geniş alan`,
-        ranks: [{ cost: 170, mult: 1.6 }, { cost: 230, mult: 1.9 }, { cost: 290, mult: 2.3 }] },
+      // necro (10 Eki, Caner): bir seferde n zombi cesedi atar; cesetler çarptığını savurur, sonra veba saçan zombi olarak kalkar (hp, zdmg, dps vuruş zehri, life sn)
+      { id: 'corpse', name: 'Ceset Mancınığı', desc: (r) => `Kule Ceset Mancınığına dönüşür: veba yerine bir seferde ${r.n} zombi cesedi fırlatır · Cesetler çarptığı düşmanları savurur, sonra ayağa kalkıp ${r.life} sn savaşır, vuruşları veba bulaştırır`,
+        ranks: [{ cost: 170, mult: 1.6, n: 2, hp: 70, zdmg: [5, 9], dps: 4, life: 10 }, { cost: 230, mult: 1.9, n: 3, hp: 90, zdmg: [7, 11], dps: 6, life: 12 }, { cost: 290, mult: 2.3, n: 3, hp: 120, zdmg: [9, 14], dps: 8, life: 15 }] },
       { id: 'plague', name: 'Kara Veba', desc: (r) => `Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır`,
         ranks: [{ cost: 200, dps: 7 }, { cost: 260, dps: 12 }, { cost: 320, dps: 18 }] },
     ],

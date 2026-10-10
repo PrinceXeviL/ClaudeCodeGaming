@@ -4203,8 +4203,8 @@
 "tpl": 1
 },
 {
-"tr": "Kule Ceset Mancınığına dönüşür: uzun menzil, hep ceset yığını fırlatır · Menzilde ceset varsa onu fırlatır: x{} hasar, geniş alan",
-"en": "The tower becomes a Corpse Catapult: long range, always hurls corpse piles · if a corpse is in range it throws it: x{} damage, wide area",
+"tr": "Kule Ceset Mancınığına dönüşür: veba yerine bir seferde {} zombi cesedi fırlatır · Cesetler çarptığı düşmanları savurur, sonra ayağa kalkıp {} sn savaşır, vuruşları veba bulaştırır",
+"en": "The tower becomes a Corpse Catapult: instead of plague it hurls {} zombie corpses at once · corpses knock enemies flying, then rise and fight for {} s, their blows spread plague",
 "tpl": 1
 },
 {
