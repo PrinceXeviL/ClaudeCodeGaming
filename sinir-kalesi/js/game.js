@@ -366,6 +366,7 @@ function initAudio() {
   master.gain.value = sfxGain();
   master.connect(comp); comp.connect(actx.destination);
   Object.keys(rawSnd).forEach(decodeOne);
+  for (const el of MUSIC_ELS) setMusicVol(el, el._v || 0); // açık müzik öğeleri de kazanca bağlanır
 }
 
 // Arayüz sesleri: ince/tiz dosyalar yerine sentezlenmiş dolgun "pop" sesleri
@@ -592,17 +593,27 @@ function painVoice(e) {
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.07, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.12, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
+  battle: { file: 'muzik_savas.mp3', gain: 0.056, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.096, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
-  battle2: { file: 'muzik_savas2.mp3', gain: 0.07, seam: true },
-  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.12, seam: true },
+  battle2: { file: 'muzik_savas2.mp3', gain: 0.056, seam: true },
+  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.096, seam: true },
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
+// iOS'ta <audio>.volume koddan değişmez (hep tam ses): ses açılınca (initAudio) her müzik öğesi WebAudio kazancından geçer,
+// düzey oradan verilir; WebAudio yoksa .volume kullanılır. Caner (10 Eki): telefonda müzik sesi ayarı çalışmıyordu.
+const MUSIC_ELS = [];
+function musicNode(el) {
+  if (el._g || el._gFail || !actx) return el._g || null;
+  try { const src = actx.createMediaElementSource(el), g = actx.createGain(); g.gain.value = el._v || 0; src.connect(g); g.connect(actx.destination); el._g = g; el.volume = 1; }
+  catch (e) { el._gFail = true; }
+  return el._g || null;
+}
+function setMusicVol(el, v) { el._v = v; const g = musicNode(el); if (g) g.gain.value = v; else el.volume = v; }
 function musicAudio(T) {
   const el = new Audio('ses/' + T.file + (window.SURUM ? '?v=' + window.SURUM : ''));
-  el.loop = !T.seam; el.volume = 0; el.preload = 'auto';
+  el.loop = !T.seam; el.volume = 0; el._v = 0; el.preload = 'auto'; MUSIC_ELS.push(el);
   // geçiş kaçarsa (sekme takıldı vb.) biten öğe baştan başlar
   if (T.seam) el.addEventListener('ended', () => { if (T.el === el) { el.currentTime = 0; el.play().catch(() => {}); } });
   return el;
@@ -620,14 +631,14 @@ function musicSeam(T, dt) {
   const el = T.el;
   if (T.old) {
     T.oldT += dt;
-    T.old.volume = clamp(T.oldV * (1 - T.oldT / SEAM), 0, 1);
+    setMusicVol(T.old, clamp(T.oldV * (1 - T.oldT / SEAM), 0, 1));
     if (T.oldT >= SEAM) { T.old.pause(); try { T.old.currentTime = 0; } catch (e) {} T.old = null; }
   }
   if (!T.old && !el.paused && el.duration > SEAM * 4 && el.currentTime > el.duration - SEAM) {
     const nx = T.el2;
     try { nx.currentTime = 0; } catch (e) {}
-    nx.volume = el.volume; nx.play().catch(() => {});
-    T.old = el; T.oldV = el.volume; T.oldT = 0; T.el = nx; T.el2 = el;
+    setMusicVol(nx, el._v || 0); nx.play().catch(() => {});
+    T.old = el; T.oldV = el._v || 0; T.oldT = 0; T.el = nx; T.el2 = el;
   }
 }
 function startMusic() {
@@ -680,7 +691,7 @@ function updateMusic(dt) {
     if (T.fromStart && tgt > 0 && T.lin < 0.05 && el.paused) { try { el.currentTime = 0; } catch (e) {} } // boss parçası her seferinde baştan, kısıktan girer
     T.lin = clamp(T.lin + clamp(Math.sqrt(tgt / full) - T.lin, -dt * 2, dt / (T.fade || (k.startsWith('boss') ? 2.5 : 5))), 0, 1);
     T.vol = full * T.lin * T.lin;
-    el.volume = clamp(T.vol, 0, 1);
+    setMusicVol(el, clamp(T.vol, 0, 1));
     if (T.seam) musicSeam(T, dt);
     if (T.vol <= 0.002 && tgt === 0 && !el.paused) { el.pause(); if (T.old) { T.old.pause(); T.old = null; } }
     else if (tgt > 0 && el.paused) el.play().catch(() => {});
@@ -8781,8 +8792,8 @@ function plotMenuItems(pl) {
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
   return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15, y: pl.y - 16 + offs[i][1] * 1.15, cost: TOWERS[type].levels[0].cost }));
 }
-// silah büyüsü: kemik kulesi ve mahzende uzmanlık son kademesine gelince açılır (kule başına bir büyü)
-const imbueOpen = (t) => { if (!NECRO || (t.type !== 'archer' && t.type !== 'barracks') || !t.spec) return false; const a = t.def.abilities.find(q => q.id === t.spec); return !!a && ((t.ab && t.ab[t.spec]) || 0) >= a.ranks.length; };
+// silah büyüsü: kemik kulesi ve mahzen 3. seviyeye gelince açılır (Caner, 10 Eki: uzmanlığı son kademeye çıkarmak gerekmez; kule başına bir büyü)
+const imbueOpen = (t) => NECRO && (t.type === 'archer' || t.type === 'barracks') && t.lvl >= t.def.levels.length - 1;
 function towerMenuItems(t) {
   const items = [];
   if (G.sel && G.sel.sub === 'imbue' && imbueOpen(t) && !t.imbue) { // büyü seçimi: beş büyü kulenin üstünde yay çizer, geri düğmesi altta
@@ -8806,7 +8817,7 @@ function towerMenuItems(t) {
   }
   const EX = t.spec && TOWER_EXTRA[t.spec];
   if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 64, y: t.y - 34, cost: t.extra ? null : EX.cost, owned: !!t.extra });
-  if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -64), y: t.y - 34, owned: !!t.imbue });
+  if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -62), y: t.y + (t.type === 'archer' ? -34 : 12), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: Math.floor(t.spent * SELL_RATIO) });
   if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
@@ -10155,8 +10166,6 @@ function drawSettings() {
 }
 // Ayar satırları (ana menüdeki ayarlar ekranı ve oyun içi duraklatma menüsü ortak). Kolay anlaşılsın diye (Caner, 10 Eki):
 // her satırda solda simge + ad, sağda seçenekler yan yana; seçili olan yeşil yanar, tek dokunuşla değişir (sırayla gezme yok).
-const SET_LEVELS = [[0, 'KAPALI'], [0.4, 'KISIK'], [0.7, 'ORTA'], [1, 'YÜKSEK']];
-const levelOf = (on, v) => (!on ? 0 : SET_LEVELS.slice(1).reduce((b, o) => (Math.abs(o[0] - v) < Math.abs(b[0] - v) ? o : b))[0]);
 function segmented(key, x, y, w, h, opts, cur, pick, appear) {
   const a = clamp(appear / 0.2, 0, 1); if (a <= 0) return;
   ctx.save(); ctx.globalAlpha *= a;
@@ -10181,12 +10190,29 @@ function segmented(key, x, y, w, h, opts, cur, pick, appear) {
 const LANGS = [['tr', 'TÜRKÇE'], ['en', 'ENGLISH'], ['es', 'ESPAÑOL'], ['de', 'DEUTSCH'], ['fr', 'FRANÇAIS'], ['ru', 'РУССКИЙ'], ['zh', '中文']];
 let langMenu = null; // açık dil listesi: { t0 } (Caner, 10 Eki: dokununca liste açılır, seçince dil sayfa yenilenmeden değişir, menü açık kalır)
 window.addEventListener('langchange', () => { for (const k in THUMB) delete THUMB[k]; });
+// ses çubuğu: dolu kısım kızıl, altın düğme; sağında 0-100 değeri. Dokunulan yere atlar, sürüklenince izler (buttons[].drag).
+function volSlider(key, x, y, w, h, v, set, appear) {
+  const a = clamp(appear / 0.2, 0, 1); if (a <= 0) return;
+  const nw = 46, tx = x + 14, tw = w - nw - 28, f = clamp(v, 0, 1), kx = tx + tw * f, th = 10;
+  ctx.save(); ctx.globalAlpha *= a;
+  roundRect(x, y - h / 2, w, h, h / 2, NECRO ? '#1a0814' : '#5a3a1c', NECRO ? '#c9a865' : '#2a160a', NECRO ? 1.6 : 2);
+  roundRect(tx, y - th / 2, tw, th, th / 2, 'rgba(0,0,0,0.45)');
+  if (f > 0) { const g = ctx.createLinearGradient(0, y - th / 2, 0, y + th / 2); g.addColorStop(0, NECRO ? '#d8385a' : '#8fe06a'); g.addColorStop(1, NECRO ? '#6a0a28' : '#2f8a2a'); roundRect(tx, y - th / 2, Math.max(th, tw * f), th, th / 2, g); }
+  const on = slide && slide.key === key;
+  circle(kx, y, on ? 11 : 9.5, NECRO ? '#3a0a1c' : '#f3e3c0', NECRO ? '#f2d58a' : '#5a3a1c', 2.5);
+  circle(kx, y, 3.5, NECRO ? '#f2d58a' : '#8a5a2a');
+  txt(String(Math.round(f * 100)), x + w - nw / 2 - 8, y + 1, 15, f > 0 ? '#fff' : 'rgba(255,236,200,0.5)', 'center', '400', FONT_T, false);
+  ctx.restore();
+  const pick = (px) => set(Math.round(clamp((px - tx) / tw, 0, 1) * 100) / 100);
+  buttons.push({ key, x, y: y - h / 2 - 6, w, h: h + 12, fn: () => {}, drag: pick });
+}
+let slide = null; // sürüklenen ses çubuğu { key, b, id }
 function settingsRows(x0, y0, w, st, inGame) {
   const lang = (LANGS.find(v => v[0] === window.LANG) || LANGS[0]);
-  const vol = (onK, volK) => (v) => { setMuted(false); if (v === 0) setSetting(onK, false); else { setSetting(onK, true); setSetting(volK, v); } };
-  const rows = [
-    ['sound', 'Müzik', SET_LEVELS, levelOf(!muted && setting('music'), setting('mvol')), vol('music', 'mvol')],
-    ['sound', 'Ses efektleri', SET_LEVELS, levelOf(!muted && setting('sfx'), setting('vol')), vol('sfx', 'vol')],
+  const vol = (onK, volK) => (v) => { setMuted(false); if (v <= 0.005) setSetting(onK, false); else { setSetting(onK, true); setSetting(volK, v); } };
+  const rows = [ // ses düzeyleri 0-100 çubuk (Caner, 10 Eki): sürükleyerek ya da dokunarak
+    ['sound', 'Müzik', 'slider', !muted && setting('music') ? setting('mvol') : 0, vol('music', 'mvol')],
+    ['sound', 'Ses efektleri', 'slider', !muted && setting('sfx') ? setting('vol') : 0, vol('sfx', 'vol')],
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTOMATİK'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
@@ -10196,7 +10222,8 @@ function settingsRows(x0, y0, w, st, inGame) {
     if (i) { ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y - step / 2, w - 40, 1.5); }
     drawIcon(icon, lx + 12, y, 22, '#f2d58a');
     txt(label, lx + 32, y + 1, LS, LC, 'left', '400', FONT_T, false);
-    segmented('seg' + i + '_', cx, y, cw, sh, opts, cur, pick, ap);
+    if (opts === 'slider') volSlider('vol' + i, cx, y, cw, sh, cur, pick, ap);
+    else segmented('seg' + i + '_', cx, y, cw, sh, opts, cur, pick, ap);
   });
   // dil: dokununca dil listesi açılır (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
   const y = y0 + 30 + rows.length * step;
@@ -13609,6 +13636,7 @@ canvas.addEventListener('pointerdown', (ev) => {
     const b = buttons[i];
     if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
       press.key = b.key; press.t = time; press.b = b; press.id = ev.pointerId;
+      if (b.drag) { slide = { key: b.key, b, id: ev.pointerId }; b.drag(p.x); } // ses çubuğu: basılan yere atlar
       sfx('click'); ptr.hud = true;
       return;
     }
@@ -13621,6 +13649,7 @@ canvas.addEventListener('pointermove', (ev) => {
   if (!ptr) return;
   const p = toLogical(ev), dx = p.x - ptr.x, dy = p.y - ptr.y;
   ptr.x = p.x; ptr.y = p.y;
+  if (slide && slide.id === ev.pointerId) { slide.b.drag(p.x); return; }
   const playing = screen === 'play' && !overlay && !trans;
   if (pinch && pointers.size >= 2) {
     const [a, b] = [...pointers.values()];
@@ -13667,6 +13696,7 @@ window.addEventListener('keydown', (ev) => {
 });
 // buton işlevi parmak kalkınca çalışır; parmak butondan kayıp gittiyse iptal olur
 function release(ev, cancel) {
+  if (slide && slide.id === ev.pointerId) { slide = null; sfx('click'); }
   if (swipe && !cancel && screen === 'map') {
     const p = toLogical(ev), dx = p.x - swipe.x;
     swipe = null;
