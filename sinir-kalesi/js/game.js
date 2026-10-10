@@ -5461,7 +5461,9 @@ const MEN = {
   bow:  { pre: 'unit_ghostarcher', pose: '_draw', aim: 0.42, kick: 0.12, hold: 0.32, tip: [0.98, 0.237], n: () => 3, col: '255,90,130', spd: 420, arc: 0.26, bow: true,
     seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']], rel: 0.26 }, // yay germe kareleri (Gemini 5 poz, varliklar/okcu_poz_isle.py): ok takma → yarım → tam germe; bırakınca _rel
 };
-const menOf = (t) => MEN[t.spec === 'fan' || t.spec === 'bow' ? t.spec : 'base'];
+// 1-3. kademe: her kademenin kendi iskelet arbaletçisi (Gemini 4 poz, poz_ayir.py: unit_xbowN, _aim, _kick, _load); görseli yoksa eski yeşil arbaletçi
+for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: 0.5, hold: 0.9, tip: [0.99, 0.186] });
+const menOf = (t) => { if (t.spec === 'fan' || t.spec === 'bow') return MEN[t.spec]; const k = MEN['k' + (t.lvl + 1)]; return k && spr(k.pre) ? k : MEN.base; };
 const xbowCfg = (t) => XBOW_T[t.spec ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
 const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
 function xbowMen(t) {
