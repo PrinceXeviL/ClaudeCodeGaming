@@ -166,6 +166,8 @@ function drawSprite(c, im, x, y, w, anchorY = 1) {
 const SAVE_KEY = 'sinirKalesi.v1';
 let save = { stars: [] };
 try { save = JSON.parse(localStorage.getItem(SAVE_KEY)) || save; } catch (e) {}
+// müzik düzeyi (10 Eki): varsayılan YÜKSEK yerine ORTA; kayıtta dokunulmamış YÜKSEK (1) varsa bir kez ORTA (0.7) yapılır
+if (!save.mvol07) { if (save.settings && save.settings.mvol === 1) save.settings.mvol = 0.7; save.mvol07 = true; }
 // 15 bölüme geçiş (8 Eki): eski 5 bölümün yıldızları ve meydan okumaları yeni sıralarına (1, 4, 7, 10, 15) taşınır
 if (!save.v15) {
   const MAP5 = [0, 3, 6, 9, 14];
@@ -189,7 +191,7 @@ if (NECRO && !save.lv20 && save.stars && save.stars.length) {
 }
 save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto', music: true, mvol: 1, sfx: true }; // vol: efekt düzeyi, mvol: müzik düzeyi
+const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 function setSetting(k, v) {
@@ -278,7 +280,12 @@ const SOUND = {
   mvoices: { vol: 0.5, gap: 0.4, max: 1 },  mvoicem: { vol: 0.5, gap: 0.4, max: 1 },  mvoicel: { vol: 0.5, gap: 0.4, max: 1 }, // Mortimer konuşması
   mlaugh:  { vol: 0.45, gap: 1, max: 1 },                           // Mortimer'ın sinsi kahkahası
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
-  horn:    { vol: 0.34, gap: 1, max: 1 },                           // borazancı (ilk dalga, boss öncesi) — 8 Eki'deki ilk boru sesi (Caner tercihi)
+  horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
+  hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
+  xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
+  xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
+  armorhit: { vol: 0.2, gap: 0.08, max: 2, rate: [0.9, 1.12] },     // cıvata zırha çarpar (metal tınlaması)
+  rattle:  { vol: 0.2, gap: 0.25, max: 1, rate: [0.92, 1.1] },      // iskelet mahzenden çıkarken kemik takırtısı
   // ElevenLabs efektleri (varliklar/elevenlabs_efekt.py): yeni birimler ve Mortimer'ın büyüleri
   elephant: { vol: 0.5, gap: 3, max: 1, rate: [0.95, 1.05] },     // savaş fili böğürmesi (gelişte, ezerken)
   vulture:  { vol: 0.32, gap: 2.5, max: 1, rate: [0.92, 1.1] },   // akbaba çığlığı (gelişte, ceset yerken)
@@ -2484,7 +2491,7 @@ function riseFromGrave(s) {
   const t = s.tower, MV = mahzenView(t), ts = MV && towerSprite(t);
   if (ts) { // kapının karanlığından belirir, merdivenden iner, sonra bayrağa yürür
     const d = mahzenPt(t, ts, MV, MV.P.door), st = mahzenPt(t, ts, MV, MV.P.stair), j = ((s.slot || 0) - 1) * ts.w * 0.04;
-    s.x = d.x + j; s.y = d.y; s.born = G.t; s.door = true; s.exit = { x: st.x + j, y: st.y };
+    s.x = d.x + j; s.y = d.y; s.born = G.t; s.door = true; s.exit = { x: st.x + j, y: st.y }; sfx('rattle');
     if ((t.ry ?? t.y) < t.y - 10) s.exit.then = { x: t.x + (Math.sign(MV.P.door[0] * MV.fl) || 1) * ts.w * 0.62 + j, y: t.y - 4 }; // bayrak arkada: önce binanın yanına
     for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', x: d.x + rand(-5, 5), y: d.y - rand(0, 8), vx: rand(-8, 8), vy: -rand(4, 12), col: k % 2 ? '150,230,170' : '180,160,220', s0: 4, s1: 10, life: rand(0.6, 1), a: 0.35 });
     return;
@@ -3769,7 +3776,7 @@ function updateProjectile(pr, dt) {
     else if (pr.kind === 'fireball') fxFireHit(pr.tx, pr.ty, pr.inferno);
     else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
-    if (pr.kind === 'arrow') sfx('arrowhit');
+    if (pr.kind === 'arrow') sfx(e.def.armor >= 0.5 ? 'armorhit' : 'arrowhit'); // zırhlıya saplanan cıvata metal tınlar
     if (pr.inferno) for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.inferno) damageEnemy(o, pr.dmg * 0.5, 'magic');
     if (pr.splash) {
       for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.splash) damageEnemy(o, pr.dmg * 0.55, pr.dtype, false, pr.src);
@@ -4439,7 +4446,7 @@ function updateHeralds(dt) {
   for (const h of G.heralds || []) {
     h.t += dt;
     if (h.t < 0) continue;
-    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'blow'; h.t = 0; if (h.i === 0) sfx('horn', h.long ? 0.8 : undefined); } }
+    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'blow'; h.t = 0; if (h.i === 0) sfx(h.long ? 'hornboss' : 'horn'); } }
     else if (h.state === 'blow') {
       if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'out'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
     }
@@ -5646,7 +5653,7 @@ function updateXbowRelease(t, dt) {
   if (!t.relQ || !t.relQ.length) return;
   for (const r of t.relQ) if ((r.t -= dt) <= 0) {
     for (let i = 0; i < (r.heavy ? 9 : 5); i++) emit(G.parts, { kind: 'glow', add: true, x: r.x, y: r.y, vx: rand(-30, 30), vy: rand(-30, 10), drag: 3, col: r.col, s0: r.heavy ? 3.4 : 2.6, s1: 0.4, life: 0.28 });
-    sfx(r.heavy ? 'cannon' : 'arrow', r.heavy ? 1.5 : r.bow ? rand(1.05, 1.2) : undefined);
+    sfx(r.heavy ? 'xbowh' : r.bow ? 'arrow' : 'xbow', r.bow ? rand(1.05, 1.2) : undefined); // hayalet okçular yay, ötekiler arbalet
   }
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
@@ -9826,7 +9833,7 @@ const CREDITS = [
   ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
     ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
-    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba ve büyü efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
+    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü, borazan ve arbalet efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
   ['YAZI TİPİ', [['Metal Mania · Russo One · Rubik', 'SIL Open Font License']]],
 ];
 function drawCredits() {

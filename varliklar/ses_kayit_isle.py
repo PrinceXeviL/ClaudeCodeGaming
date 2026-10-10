@@ -93,8 +93,15 @@ def main():
         th = thud(130, 0.09, 0.02) * 0.12; x[:len(th)] += th
         made.append(save(f'clash_{i}', x, -25))
     # ElevenLabs efektleri (ücretsiz plan, jenerikte elevenlabs.io): yeni birimler ve büyüler.
-    # Savaş borusu: Caner ilk sürümü (8 Eki) istedi; ham/ses/horn_ilk.wav olduğu gibi kopyalanır (üç notalı ve ElevenLabs sürümleri beğenilmedi)
-    import shutil; shutil.copy(os.path.join(HAM, 'horn_ilk.wav'), os.path.join(OUT, 'horn_1.wav')); made.append('horn_1')
+    # Savaş borusu (10 Eki, Caner: daha gerçekçi olsun, boss gelirken farklı borazan çalsın): ElevenLabs adaylarından ölçerek seçildi.
+    # horn: hornw_3 (tek, uzun, derin ~72 Hz, sabit perde, doğal sönüş). hornboss: hornb_1 (iki uzun üfleme) %15 kalınlaştırılmış.
+    # Eski 8 Eki sürümü ham/ses/horn_ilk.wav'da duruyor (geri dönmek için shutil.copy ile horn_1.wav yap).
+    made.append(save('horn_1', fade(load_mp3('hornw_3'), 0.01, 0.4), -18))
+    made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
+    # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
+    for n, cnt, db in [('xbow', 3, -23), ('xbowh', 2, -20), ('armorhit', 3, -25), ('rattle', 2, -25)]:
+        for i in range(1, cnt + 1):
+            made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.002, 0.08), db))
     for n, cnt, db in [('elephant', 2, -19), ('vulture', 2, -23), ('bonewall', 1, -20), ('raise', 1, -22), ('fear', 1, -22), ('bats', 1, -24)]:
         for i in range(1, cnt + 1):
             made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.005, 0.25), db))

@@ -17,6 +17,13 @@ SFX = {
     'raise': ('undead rising from graves, eerie ghostly whoosh with rattling bones and low zombie groan, dark magic, short, no music', 1.8, 1),
     'fear': ('chorus of wailing ghosts swooping past, spooky whoosh, short, no music', 1.8, 1),
     'bats': ('swarm of bats flapping wings and squeaking, flying past, short, no music', 2.0, 1),
+    # 10 Eki (Caner): daha gerçekçi borazan, boss için ayrı borazan; eksik savaş efektleri
+    'hornw': ('realistic recording of a single medieval war horn blown by an army on an open battlefield, long deep brass note that swells and fades, natural outdoor echo, no music, no drums', 3.0, 3),
+    'hornb': ('realistic recording of a huge ancient war horn, two long ominous very low blasts, a giant warlord arriving, deep rumbling brass, distant echo across a valley, no music', 4.0, 3),
+    'xbow': ('crossbow firing, sharp taut string twang and bolt release, wooden stock clack, short close recording, no music', 0.6, 3),
+    'xbowh': ('heavy siege crossbow firing, loud thick string thump, heavy mechanism clunk, bolt whooshing away, short, no music', 0.9, 2),
+    'armorhit': ('crossbow bolt striking steel plate armor, short sharp metallic clang and ricochet ping, no music', 0.5, 3),
+    'rattle': ('skeleton warrior stepping out of a stone crypt, dry bones rattling and clattering, short, no music', 0.9, 2),
 }
 
 
