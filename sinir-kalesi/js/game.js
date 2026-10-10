@@ -5455,7 +5455,8 @@ const XBOW_T = {
 const MEN = {
   base: { pre: 'unit_xbow', pose: '_aim', aim: 0.3, kick: 0.16, hold: 0.55, tip: [0.99, 0.24], n: (t) => t.lvl + 1, col: '140,255,150', spd: 720, arc: 0.06 },
   fan:  { pre: 'unit_ghostxbow', pose: '_aim', aim: 0.46, kick: 0.3, hold: 0.85, tip: [0.99, 0.24], n: () => 2, col: '255,80,90', spd: 820, arc: 0.035, heavy: true },
-  bow:  { pre: 'unit_ghostarcher', pose: '_draw', aim: 0.4, kick: 0.12, hold: 0.32, tip: [0.95, 0.27], n: () => 3, col: '255,90,130', spd: 420, arc: 0.26, bow: true },
+  bow:  { pre: 'unit_ghostarcher', pose: '_draw', aim: 0.42, kick: 0.12, hold: 0.32, tip: [0.98, 0.237], n: () => 3, col: '255,90,130', spd: 420, arc: 0.26, bow: true,
+    seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']], rel: 0.26 }, // yay germe kareleri (Gemini 5 poz, varliklar/okcu_poz_isle.py): ok takma → yarım → tam germe; bırakınca _rel
 };
 const menOf = (t) => MEN[t.spec === 'fan' || t.spec === 'bow' ? t.spec : 'base'];
 const xbowCfg = (t) => XBOW_T[t.spec ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
@@ -5530,15 +5531,17 @@ function drawXbowMen(t, ts, redraw) {
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
     const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
-    const im = spr(up ? pre + M.pose : pre); if (!im) continue;
+    const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
+    let pose = up ? M.pose : '';
+    if (M.seq && up) pose = a.aimT > 0 ? M.seq.find(q => rise <= q[0])[1] : M.kick - a.kickT < M.rel ? '_rel' : ''; // okçu: germe sırası, bırakınca kısa bir an _rel, sonra yay iner
+    const im = spr(pre + pose) || spr(up ? pre + M.pose : pre); if (!im) continue;
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1);
     const bob = a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012; // yürürken sekme, dururken nefes
-    const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
     const kk = a.aimT <= 0 && a.kickT > 0 ? a.kickT / M.kick : 0; // bırakınca geri tepme (geri ve yukarı)
     let lean = a.walking ? Math.sin(a.anim * 9) * 0.04 : up ? (1 - rise) * 0.12 - kk * 0.1 : 0, sx = 1, sy = 1, back = 0;
-    if (M.bow && up) { // okçu: yay gerilirken gövde geriye yaslanır ve hafifçe gerilir, bırakınca ileri sekip yerine oturur
-      const tense = a.aimT > 0 ? rise * rise : 0;
-      lean = (1 - rise) * 0.1 - tense * 0.05 + kk * 0.06; back = tense * h * 0.025 - kk * h * 0.03; sx = 1 - tense * 0.025; sy = 1 + tense * 0.015;
+    if (M.bow && up) { // okçu: pozlar germeyi gösterir; üstüne tam gerilimde hafif titreme, bırakınca küçük ileri sekme
+      const tense = a.aimT > 0 ? Math.max(0, rise - 0.62) / 0.38 : 0;
+      lean = -tense * 0.02 + kk * 0.03; back = Math.sin(a.anim * 40) * tense * h * 0.004 - kk * h * 0.02;
     }
     if (M.heavy && up && kk > 0) back = h * 0.11 * kk; // ağır arbalet sert teper
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy); drawSprite(ctx, im, 0, 0, h * im.width / im.height);
