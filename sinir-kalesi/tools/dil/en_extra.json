@@ -144,11 +144,7 @@
   "Ölüm Okçuları": "Death Archers",
   "Kemik Arbaletçiler": "Bone Crossbowmen",
   "Ölüm Arbaletçileri": "Death Crossbowmen",
-  "Hızlı ve hafif: sık ok, uçanlara +%25 · 4. kademede Hayalet Okçular": "Fast and light: frequent arrows, +25% vs flyers · Ghost Archers at level 4",
-  "Yavaş ve ağır: sert cıvata, zırhın %30 kadarını deler · 4. kademede Ağır Arbaletçiler": "Slow and heavy: hard-hitting bolts, pierce 30% of armor · Heavy Crossbowmen at level 4",
-  "2 iskelet okçu, sık atış · uçanlara +%25 · +menzil": "2 skeleton archers, frequent shots · +25% vs flyers · +range",
   "3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil": "3 archers, very frequent shots · 15% crit · much longer range",
-  "2 iskelet arbaletçi, ağır cıvata · zırhın %30 kadarını deler · +menzil": "2 skeleton crossbowmen, heavy bolts · pierce 30% of armor · +range",
   "3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil": "3 crossbowmen, heavy shots · 15% crit · much longer range",
   "Yükseltirken yolunu seç": "Choose your path when upgrading",
   "okçular ya da arbaletçiler": "archers or crossbowmen",
@@ -162,7 +158,17 @@
   "Kanatan Oklar!": "Bleeding Arrows!",
   "Kanatan Kılıçlar!": "Bleeding Swords!",
   "Lanetli Oklar!": "Cursed Arrows!",
-  "Lanetli Kılıçlar!": "Cursed Swords!"
+  "Lanetli Kılıçlar!": "Cursed Swords!",
+  "Hızlı ve hafif: sık ok, uçanlara +%30 · 4. kademede Hayalet Okçular": "Fast and light: frequent arrows, +30% vs flyers · Ghost Archers at level 4",
+  "Yavaş ve ağır: sert cıvata, zırhın %35 kadarını deler · 4. kademede Ağır Arbaletçiler": "Slow and heavy: hard-hitting bolts, pierce 35% of armor · Heavy Crossbowmen at level 4",
+  "2 iskelet okçu, sık atış · uçanlara +%30 · +menzil": "2 skeleton archers, frequent shots · +30% vs flyers · +range",
+  "2 iskelet arbaletçi, ağır cıvata · zırhın %35 kadarını deler · +menzil": "2 skeleton crossbowmen, heavy bolts · pierce 35% of armor · +range",
+  "alev, zehir ya da buz": "fire, poison or frost",
+  "Haritada yalnız bir Lanet Kulesi kurulabilir": "Only one Curse Tower can be built per map",
+  "Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir": "Only one per map. Curses enemies (they take more damage, lose defense, attack slower and may panic) and empowers skeletons and archers",
+  "Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer": "Enemies take 10% more damage, lose 30% defense, attack 12% slower · 6% fear · +10% damage for skeletons and archers · the curse lasts 10 s",
+  "%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh": "+14% damage taken · defense −40% · attacks 16% slower · 9% fear · +14% damage for skeletons and archers, +12% armor for skeletons",
+  "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death"
  },
  "tpl": [
   [

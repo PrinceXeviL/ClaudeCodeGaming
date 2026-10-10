@@ -85,11 +85,11 @@
 "Archers de la mort",
 "Arbalétriers d'os",
 "Arbalétriers de la mort",
-"Rapides et légers : flèches fréquentes, +25 % contre les volants · Archers fantômes au niveau 4",
-"Lents et lourds : carreaux puissants, percent 30 % de l'armure · Arbalétriers lourds au niveau 4",
-"2 archers squelettes, tirs fréquents · +25 % contre les volants · +portée",
+"Rapides et légers : flèches fréquentes, +30 % contre les volants · Archers fantômes au niveau 4",
+"Lents et lourds : carreaux puissants, percent 35 % de l'armure · Arbalétriers lourds au niveau 4",
+"2 archers squelettes, tirs fréquents · +30 % contre les volants · +portée",
 "3 archers, tirs très fréquents · 15 % de critique · portée bien plus longue",
-"2 arbalétriers squelettes, carreaux lourds · percent 30 % de l'armure · +portée",
+"2 arbalétriers squelettes, carreaux lourds · percent 35 % de l'armure · +portée",
 "3 arbalétriers, tirs lourds · 15 % de critique · portée bien plus longue",
 "Choisis ta voie en améliorant",
 "archers ou arbalétriers",
@@ -104,5 +104,10 @@
 "Flèches sanglantes!",
 "Épées sanglantes!",
 "Flèches maudites!",
-"Épées maudites!"
+"Épées maudites!",
+"feu, poison ou givre",
+"Une seule Tour maudite peut être construite par carte",
+"Les ennemis subissent 10 % de dégâts en plus, perdent 30 % de défense, attaquent 12 % plus lentement · 6 % de peur · +10 % de dégâts pour squelettes et archers · la malédiction dure 10 s",
+"+14 % de dégâts subis · défense −40 % · attaques 16 % plus lentes · 9 % de peur · +14 % de dégâts pour squelettes et archers, +12 % d'armure pour les squelettes",
+"+18 % de dégâts subis · défense −50 % · attaques 20 % plus lentes · 12 % de peur · +18 % de dégâts pour squelettes et archers, +15 % d'armure pour les squelettes · 16 % se relèvent à leur mort"
 ]

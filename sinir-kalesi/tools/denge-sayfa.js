@@ -20,7 +20,7 @@ window.__bot = function (lvl) {
       // yeni sistemler (10 Eki): şapel devi, 4. kademe ikinci güç, büyü geliştirme (oyuncu bunları da alır)
       if (free < 0) {
         if (G.castle.lvl < 2) opts.push({ c: [0, 200, 300][G.castle.lvl + 1] * 1.2, f: () => g.upgradeCastle() });
-        for (const t of G.towers) { const pi = G.plots.indexOf(t.plot); if (g.imbue && t.spec && !t.imbue && (t.type === 'archer' || t.type === 'barracks') && ((t.ab && t.ab[t.spec]) || 0) >= 3) opts.push({ c: 220, f: () => g.imbue(pi, IMBUE_ORDER[pi % 5]) }); } // silah büyüsü
+        for (const t of G.towers) { const pi = G.plots.indexOf(t.plot); if (g.imbue && t.spec && !t.imbue && (t.type === 'archer' || t.type === 'barracks') && ((t.ab && t.ab[t.spec]) || 0) >= 3) opts.push({ c: 220, f: () => g.imbue(pi, IMBUE_ORDER[pi % IMBUE_ORDER.length]) }); } // silah büyüsü
         for (const t of G.towers) { const E = t.spec && TOWER_EXTRA[t.spec]; if (E && !t.extra) opts.push({ c: E.cost, f: () => (G.gold >= E.cost ? (G.gold -= E.cost, t.extra = true, t.exT = 1.5, true) : false) }); }
         for (const id of ['nm_raise', 'nm_wall', 'nm_fear', 'nm_burst']) { const r = (G.spellUp && G.spellUp[id]) || 0, c = [120, 200][r]; if (c && G.spells[id] != null) opts.push({ c: c * 1.5, f: () => (G.gold >= c ? (G.gold -= c, G.spellUp = G.spellUp || {}, G.spellUp[id] = r + 1, true) : false) }); }
       }

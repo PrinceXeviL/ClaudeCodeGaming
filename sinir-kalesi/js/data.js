@@ -1065,19 +1065,23 @@ if (NECRO) {
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
 
-// ----- Lanet Kulesi (3. bölümde açılır; eski Kan Sunağı yuvası 'altar'): saldırmaz, hasar vermez; menzilindeki düşmanları lanetler -----
-// 10 Eki (Caner): asıl işi dirençleri kırmak. Lanetli düşman:
-//   curse: her kaynaktan fazla hasar alır · res: zırhı ve büyü direnci bu oranda kırılır, dirençli olduğu saldırı türlerine
-//   (ör. kalkanlının kemik kıymığına) direnci de bu oranda erir · weak: motivasyonu düşer (daha az vurur, daha seyrek saldırır,
-//   davul ve sancak onu coşturamaz) · slow: yavaşlar · rise: ölürse çürümüş ölü olarak dirilme şansı
+// ----- Lanet Kulesi (3. bölümde açılır; eski Kan Sunağı yuvası 'altar'): saldırmaz; haritada YALNIZ BİR tane kurulur -----
+// 10 Eki (Caner, 2. tasarım): menzilindeki
+//   düşmanlar: lanetlenir (curse: her kaynaktan fazla hasar · res: zırh ve dirençler kırılır · weak: saldırıları yavaşlar),
+//     yürürken yavaşlar (slow), girişte belli bir şansla korkuya kapılıp geri kaçar (fear). Alandan çıkınca lanet 10 sn daha sürer (linger).
+//   iskeletler (mahzen askerleri, dirilen ölüler): daha sert vurur (ally), daha az hasar alır (allyArm);
+//   menzildeki Kemik Kuleleri: okçu/arbaletçiler daha sert vurur (ally). rise: lanetli ölürse çürümüş ölü olarak dirilme şansı.
 if (NECRO) {
   TOWERS.altar = {
-    name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2,
-    desc: 'Hasar vermez: menzildeki düşmanların direncini kırar, onları yavaşlatır ve motivasyonunu düşürür',
+    name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2, unique: true,
+    desc: 'Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir',
     levels: [
-      { cost: 90,  range: 100, every: 1.2, curse: 0.12, res: 0.4,  weak: 0.15, slow: 0.15, rise: 0.12, title: 'Lanet Kulesi', perk: 'Lanetliler: zırh ve dirençleri %40 kırılır · %12 fazla hasar alır · %15 yavaş, %15 güçsüz · ölürse %12 dirilir' },
-      { cost: 130, range: 110, every: 1.2, curse: 0.18, res: 0.55, weak: 0.22, slow: 0.2,  rise: 0.18, title: 'Lanet Sütunu', perk: 'Dirençler %55 kırılır · %18 fazla hasar · %20 yavaş, %22 güçsüz · davul ve sancak işlemez · ölürse %18 dirilir' },
-      { cost: 180, range: 120, every: 1.2, curse: 0.25, res: 0.7,  weak: 0.3,  slow: 0.25, rise: 0.25, title: 'Kara Lanet Mabedi', perk: 'Dirençler %70 kırılır · %25 fazla hasar · %25 yavaş, %30 güçsüz · ölürse %25 dirilir' },
+      { cost: 110, range: 100, every: 1.2, linger: 10, curse: 0.1,  res: 0.3,  weak: 0.12, slow: 0.12, fear: 0.06, ally: 0.1,  allyArm: 0.08, rise: 0.08, title: 'Lanet Kulesi',
+        perk: 'Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer' },
+      { cost: 150, range: 110, every: 1.2, linger: 10, curse: 0.14, res: 0.4,  weak: 0.16, slow: 0.15, fear: 0.09, ally: 0.14, allyArm: 0.12, rise: 0.12, title: 'Lanet Sütunu',
+        perk: '%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh' },
+      { cost: 200, range: 120, every: 1.2, linger: 10, curse: 0.18, res: 0.5,  weak: 0.2,  slow: 0.18, fear: 0.12, ally: 0.18, allyArm: 0.15, rise: 0.16, title: 'Kara Lanet Mabedi',
+        perk: '%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir' },
     ],
     abilities: [
       { id: 'rite', name: 'Kan Ayini', desc: (r) => `Kule Kan Mabedine dönüşür: kâseden kızıl bağlar · Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar`,
@@ -1130,7 +1134,7 @@ if (NECRO) for (const k in ENEMIES) {
   d.wk = Object.assign({}, ARMOR_CLASS[d.acl].mult);
 }
 // ----- Silah büyüleri (10 Eki): kemik kulesi ve mahzen son kademede tek bir büyü seçer; her vuruş düşmana durum etkisi bırakır -----
-const IMBUE_ORDER = ['fire', 'poison', 'frost', 'bleed', 'curse'];
+const IMBUE_ORDER = ['fire', 'poison', 'frost']; // 10 Eki (Caner): lanet büyüsü yok (Lanet Kulesi var), kanama yok
 const IMBUE = {
   fire:   { name: 'Alev',  arrow: 'Alevli Oklar',   melee: 'Alevli Kılıçlar',   col: '255,140,50',  cost: 220, dps: 12, t: 3,
     desc: 'Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50' },
@@ -1138,20 +1142,16 @@ const IMBUE = {
     desc: 'Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez' },
   frost:  { name: 'Buz',   arrow: 'Buzlu Oklar',    melee: 'Buzlu Kılıçlar',    col: '150,215,255', cost: 220, slow: 0.35, t: 1.6,
     desc: 'Vurduğu düşman 1,6 sn %35 yavaşlar (bosslar daha az)' },
-  bleed:  { name: 'Kan',   arrow: 'Kanatan Oklar',  melee: 'Kanatan Kılıçlar',  col: '230,40,50',   cost: 220, dps: 10, t: 4,
-    desc: 'Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz' },
-  curse:  { name: 'Lanet', arrow: 'Lanetli Oklar',  melee: 'Lanetli Kılıçlar',  col: '190,100,255', cost: 220, k: 0.2, res: 0.3, t: 3,
-    desc: 'Vurduğu düşman 3 sn lanetlenir: her kaynaktan %20 fazla hasar alır, zırhı ve direnci %30 erir · kutsallarda yarı süre' },
 };
 // ----- Kemik Kulesi yolları (10 Eki, Caner: A seçeneği): 1. kademe iskelet okçu; 2. kademeye yükseltirken okçu ya da arbaletçi yolu seçilir.
 // Yol 4. kademe uzmanlığını da belirler (okçu -> Hayalet Okçular, arbaletçi -> Ağır Arbaletçiler). rate/dmg: kademe değerlerine çarpan.
 const ARCHER_PATH = {
-  bow:  { name: 'Okçu Yolu',      spec: 'bow', rate: 0.72, dmg: 0.7, fly: 1.25, titles: ['Kemik Kulesi', 'Kemik Okçular', 'Ölüm Okçuları'],
-    desc: 'Hızlı ve hafif: sık ok, uçanlara +%25 · 4. kademede Hayalet Okçular',
-    perks: [null, '2 iskelet okçu, sık atış · uçanlara +%25 · +menzil', '3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil'] },
-  xbow: { name: 'Arbaletçi Yolu', spec: 'fan', rate: 1.3, dmg: 1.45, pen: 0.3, titles: ['Kemik Kulesi', 'Kemik Arbaletçiler', 'Ölüm Arbaletçileri'],
-    desc: 'Yavaş ve ağır: sert cıvata, zırhın %30 kadarını deler · 4. kademede Ağır Arbaletçiler',
-    perks: [null, '2 iskelet arbaletçi, ağır cıvata · zırhın %30 kadarını deler · +menzil', '3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil'] },
+  bow:  { name: 'Okçu Yolu',      spec: 'bow', rate: 0.65, dmg: 0.68, fly: 1.3, titles: ['Kemik Kulesi', 'Kemik Okçular', 'Ölüm Okçuları'],
+    desc: 'Hızlı ve hafif: sık ok, uçanlara +%30 · 4. kademede Hayalet Okçular',
+    perks: [null, '2 iskelet okçu, sık atış · uçanlara +%30 · +menzil', '3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil'] },
+  xbow: { name: 'Arbaletçi Yolu', spec: 'fan', rate: 1.45, dmg: 1.5, pen: 0.35, titles: ['Kemik Kulesi', 'Kemik Arbaletçiler', 'Ölüm Arbaletçileri'],
+    desc: 'Yavaş ve ağır: sert cıvata, zırhın %35 kadarını deler · 4. kademede Ağır Arbaletçiler',
+    perks: [null, '2 iskelet arbaletçi, ağır cıvata · zırhın %35 kadarını deler · +menzil', '3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil'] },
 };
 // Rütbeler (tasarim/necromancer-gdd.md): Er (sıradan), Kıdemli (koyu çelik zırh, şarap kırmızısı kumaş, kırmızı sorguç),
 // Yüzbaşı (altın kumaş ve sorguç, biraz iri, borazanla çevresini hızlandırır). Görsel aynı resmin yeniden renklendirilmesi (game.js RANK_LOOK).

@@ -85,11 +85,11 @@
 "Arqueros de la Muerte",
 "Ballesteros de Hueso",
 "Ballesteros de la Muerte",
-"Rápidos y ligeros: flechas frecuentes, +25% contra voladores · Arqueros fantasma en el nivel 4",
-"Lentos y pesados: virotes contundentes que atraviesan el 30% de la armadura · Ballesteros Pesados en el nivel 4",
-"2 arqueros esqueleto, disparos frecuentes · +25% contra voladores · +alcance",
+"Rápidos y ligeros: flechas frecuentes, +30% contra voladores · Arqueros fantasma en el nivel 4",
+"Lentos y pesados: virotes contundentes que atraviesan el 35% de la armadura · Ballesteros Pesados en el nivel 4",
+"2 arqueros esqueleto, disparos frecuentes · +30% contra voladores · +alcance",
 "3 arqueros, disparos muy frecuentes · 15% de crítico · alcance mucho mayor",
-"2 ballesteros esqueleto, virotes pesados · atraviesan el 30% de la armadura · +alcance",
+"2 ballesteros esqueleto, virotes pesados · atraviesan el 35% de la armadura · +alcance",
 "3 ballesteros, disparos pesados · 15% de crítico · alcance mucho mayor",
 "Elige tu vía al mejorar",
 "arqueros o ballesteros",
@@ -104,5 +104,10 @@
 "Flechas sangrantes!",
 "Espadas sangrantes!",
 "Flechas malditas!",
-"Espadas malditas!"
+"Espadas malditas!",
+"fuego, veneno o escarcha",
+"Solo se puede construir una Torre de maldición por mapa",
+"Los enemigos reciben un 10% más de daño, pierden un 30% de defensa y atacan un 12% más lento · 6% de miedo · +10% de daño para esqueletos y arqueros · la maldición dura 10 s",
+"+14% de daño recibido · defensa −40% · ataques un 16% más lentos · 9% de miedo · +14% de daño para esqueletos y arqueros, +12% de armadura para esqueletos",
+"+18% de daño recibido · defensa −50% · ataques un 20% más lentos · 12% de miedo · +18% de daño para esqueletos y arqueros, +15% de armadura para esqueletos · 16% se alzan al morir"
 ]
