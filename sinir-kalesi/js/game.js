@@ -10141,10 +10141,11 @@ function drawHeroCard(id, cx, cy, at, tm) {
     roundRect(x0 + 70, by - 3.5, 82, 7, 3.5, NECRO ? 'rgba(0,0,0,0.45)' : 'rgba(60,40,20,0.25)');
     roundRect(x0 + 70, by - 3.5, 82 * clamp(v, 0.08, 1), 7, 3.5, col);
   });
-  if (!unlocked) { /* kilitliyken rozet yok */ }
-  else if (d.ranged) { roundRect(-34, y0 + 290, 68, 16, 8, '#2a5fb8'); txt('MENZİLLİ', 0, y0 + 298, 9, '#fff', 'center', '800', FONT_B, false); }
-  else { roundRect(-44, y0 + 290, 88, 16, 8, '#8a3a1a'); txt('YAKIN DÖVÜŞ', 0, y0 + 298, 9, '#fff', 'center', '800', FONT_B, false); }
-  if (unlocked) txt('Güç: ' + HERO_ULT[id].name, 0, y0 + 315, 9.5, '#5a3410', 'center', '800', FONT_B, false);
+  const by2 = NECRO ? -7 : 0; // necro: kart çerçevesinin süslerine değmesin
+  if (!unlocked) { /* rozet yok */ }
+  else if (d.ranged) { roundRect(-34, y0 + 290 + by2, 68, 16, 8, '#2a5fb8'); txt('MENZİLLİ', 0, y0 + 298 + by2, 9, '#fff', 'center', '800', FONT_B, false); }
+  else { roundRect(-44, y0 + 290 + by2, 88, 16, 8, '#8a3a1a'); txt('YAKIN DÖVÜŞ', 0, y0 + 298 + by2, 9, '#fff', 'center', '800', FONT_B, false); }
+  if (unlocked) txt('Güç: ' + HERO_ULT[id].name, 0, y0 + 315 + by2 * 1.6, 9.5, '#5a3410', 'center', '800', FONT_B, false);
   if (sel) { circle(w / 2 - 20, y0 + 22, 13, '#3cbf3c', '#fff', 2); drawIcon('check', w / 2 - 20, y0 + 22, 16); }
   if (unlocked && !(save.seenHeroes || ['commander']).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
   if (!unlocked) {
@@ -12054,8 +12055,8 @@ function drawLevelCard(i, cx, cy, at) {
   mb.addColorStop(0, '#f05a4a'); mb.addColorStop(1, '#7a140e');
   circle(x0 + 26, y0 + 26, 16.5, mb);
   txt(num + '', x0 + 26, y0 + 27, 21, '#fff', 'center', '400', FONT_T);
-  txt(lv.name, 0, y0 + 180, 24, '#4a2a0e', 'center', '400', FONT_T, false);
-  txt(`${lv.waves.length} dalga  ·  ${(lv.ep === 2 ? DIFF2 : DIFF)[epLevels(lv.ep || 1).indexOf(i)] || 'Zor'}`, 0, y0 + 204, 14, '#8a6238', 'center', '800', FONT_B, false);
+  if (NECRO) crimsonRibbon(0, y0 + 182, lv.name, 20, w - 70); else txt(lv.name, 0, y0 + 180, 24, '#4a2a0e', 'center', '400', FONT_T, false);
+  txt(`${lv.waves.length} dalga  ·  ${(lv.ep === 2 ? DIFF2 : DIFF)[epLevels(lv.ep || 1).indexOf(i)] || 'Zor'}`, 0, y0 + (NECRO ? 212 : 204), 14, '#8a6238', 'center', '800', FONT_B, false);
   for (let s = 0; s < 3; s++) fancyStar((s - 1) * 40, y0 + 238 - (s === 1 ? 4 : 0), s === 1 ? 17 : 15, s < st);
   if (!unlocked) {
     roundRect(x0, y0, w, h, 22, 'rgba(18,10,4,0.62)');
@@ -12916,9 +12917,17 @@ function drawWinSummary(k, px, py, pw, cx) {
 // ---- Necromancer menü kiti (duraklatma menüsünün tasarımı bütün oyuna; Caner, 10 Eki: "çok güzel olmuş, tüm oyuna uyarla") ----
 // velvetCard: kızıl-mor kadife, soluk desen, kenar karartması, altın çerçeve. o.border: seçili çerçeve rengi, o.ac: alttan ruh ışığı
 function velvetCard(x, y, w, h, r = 14, o = {}) {
+  // büyük kartlar duraklatma menüsünün panelinin aynısı (kalın kara çerçeve, kızıl-mor kadife, çift altın çizgi, köşelerde altın kıvrım ve yakut);
+  // küçük kartlarda (kodeks kutusu, başarım satırı) süsler sığmaz: aynı kadife ve altın çerçeve
+  if (w >= 120 && h >= 90) {
+    pauseFrame(x, y, w, h, 0);
+    if (o.ac) { ctx.save(); ctx.beginPath(); ctx.roundRect(x + 12, y + 12, w - 24, h - 24, 12); ctx.clip(); const tg = ctx.createLinearGradient(0, y + h, 0, y); tg.addColorStop(0, `rgba(${o.ac},0.3)`); tg.addColorStop(0.6, `rgba(${o.ac},0)`); ctx.fillStyle = tg; ctx.fillRect(x, y, w, h); ctx.restore(); }
+    if (o.border) roundRect(x + 1, y + 1, w - 2, h - 2, 14, null, o.border, 3);
+    return;
+  }
   roundRect(x + 3, y + 8, w, h, r, 'rgba(0,0,0,0.45)');
-  roundRect(x - 3, y - 3, w + 6, h + 6, r + 3, '#120610', '#050206', 2);
-  const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, o.top || '#44102a'); g.addColorStop(0.6, '#2c0f2a'); g.addColorStop(1, '#190a20');
+  roundRect(x - 3, y - 3, w + 6, h + 6, r + 3, '#140810', '#050206', 2);
+  const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, o.top || '#4c0f24'); g.addColorStop(0.55, '#33102e'); g.addColorStop(1, '#1e0b26');
   roundRect(x, y, w, h, r, g);
   ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.clip();
   ctx.globalAlpha = 0.07; ctx.fillStyle = ctx.createPattern(pausePattern(), 'repeat'); ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
