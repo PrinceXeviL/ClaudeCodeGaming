@@ -3637,9 +3637,13 @@ function buySpellUp(id) {
 }
 const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return u == null || (save.stars[u] || 0) > 0; };
 const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
-const spellBtn = (i) => ({ x: 114 + i * 58, y: H - 38, r: 24 });
+// Oyun içi arayüz ölçüsü (Caner, 10 Eki: telefonda parmakla dokunmak için küçüktü): düğmeler %25 büyük, aralıklar %10 açık,
+// dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
+const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
+const SPELL_R = 24 * UI_K, SPELL_STEP = 2 * SPELL_R + 10 * UI_GAP;
+const spellBtn = (i) => ({ x: 18 + 2 * 28 * UI_K + 16 * UI_GAP + SPELL_R + i * SPELL_STEP, y: H - 14 - SPELL_R, r: SPELL_R });
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
-const hudLeft = () => 120 + spellIds().length * 58;
+const hudLeft = () => spellBtn(spellIds().length - 1).x + SPELL_R + 8;
 function spellInfo(id) {
   const fast = upgRank('spells') >= 3 ? 0.75 : 1;
   if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast * (1 - 0.1 * spellRank(id)), necro: S, U: S }; }
@@ -8407,13 +8411,13 @@ function drawRally(x, y) {
 // ---------- HUD ----------
 // Arayüz yerleşimi (KR düzeninden esinli): sol üst can/altın + dalga, sağ üst kare düğmeler,
 // sol alt çerçeveli komutan portresi (altında seviye ve can plakası), yanında kare büyü kartları
-const HUD = {
-  pause: { x: W - 30, y: 30, r: 19 },
-  speed: { x: W - 78, y: 30, r: 19 },
-  mute:  { x: W - 122, y: 30, r: 16 },
-  heroes: [{ x: 46, y: H - 62, r: 28 }, { x: 112, y: H - 62, r: 24 }],
-};
-const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 });
+const HUD = (() => { // sağ üst düğmeler ve sol alt portre (UI_K ile büyütülmüş; kenar boşlukları eskisi gibi)
+  const rb = 19 * UI_K, rm = 16 * UI_K, gap = 10 * UI_GAP, y = 11 + rb;
+  const pause = { x: W - 11 - rb, y, r: rb }, speed = { x: pause.x - 2 * rb - gap, y, r: rb }, mute = { x: speed.x - rb - rm - gap, y, r: rm };
+  const hr = 28 * UI_K;
+  return { pause, speed, mute, heroes: [{ x: 18 + hr, y: H - 34 - hr, r: hr }, { x: 18 + 3 * hr + 10, y: H - 34 - hr, r: 24 * UI_K }] };
+})();
+const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 * UI_K });
 
 // küçük bilgi hapı: solda ikon, sağda değer
 // Dalga göstergesinin rengi dalgaya göre ısınır: yeşil → sarı → turuncu; son dalga yanıp sönen kırmızı
@@ -8766,7 +8770,8 @@ function drawHud() {
   if (G.goldShown !== Math.floor(G.gold)) { if (G.goldShown != null) G.goldPop = time; G.goldShown = Math.floor(G.gold); }
   if (G.livesShown !== G.lives) { if (G.livesShown != null) G.livesPop = time; G.livesShown = G.lives; }
   const pop = (t) => (t != null ? 1 + Math.max(0, 1 - (time - t) / 0.35) * 0.3 : 1);
-  // sol üst: küçük can + altın şeridi, altında dolan dalga çubuğu
+  // sol üst: küçük can + altın şeridi, altında dolan dalga çubuğu (%20 büyük, sol üst köşeye yaslı)
+  ctx.save(); ctx.scale(1.2, 1.2);
   hudBar(8, 7, 136, 24);
   drawIcon('heart', 22, 19, 16);
   ctx.save(); ctx.translate(34, 20); ctx.scale(pop(G.livesPop), pop(G.livesPop)); hudNum(G.lives + '', 0, 0, 14, G.lives <= 5 ? '#ff8a7a' : '#fff'); ctx.restore();
@@ -8785,6 +8790,7 @@ function drawHud() {
   }
   drawIcon('skull', 21, 44, 14);
   ctx.save(); ctx.translate(58, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(G.endless ? `${G.wave} ∞` : `${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
+  ctx.restore();
 
   // sağ üst: duraklat, hız, ses
   roundBtn('hud_pause', HUD.pause.x, HUD.pause.y, HUD.pause.r, 'pause', null);
@@ -10021,7 +10027,7 @@ function drawBossAura(e, dh) {
 // Ekranın üstünde boss barı: altın çerçeve, solda kuru kafa madalyonu, ad şeridi; zırhlı bosslarda iki bar
 // (üstte çelik zırh, altta can). Hasar yiyince bar önce beyaz iz bırakır, iz yavaşça erir.
 // boss can barı ekranın üstünde, %60 boyutunda (çok yer kaplamasın); üst kenara yaslı ölçeklenir
-const BOSS_BAR_K = 0.6;
+const BOSS_BAR_K = 0.6 * 1.3; // Caner: boss canı okunmuyordu, %30 büyük
 function drawBossBar() {
   const b = G.enemies.find(e => e.def.chief && !e.dead);
   if (!b) return;
@@ -12478,13 +12484,14 @@ const hit = (b, x, y, pad = 6) => dist(b.x, b.y, x, y) <= b.r + pad;
 // Parmak değdiği an çalışır; dokunuş bunlardan birine denk geldiyse true döner.
 function hudTap(x, y) {
   G.spellPeek = null; // büyü seçimi: başka yere dokununca kalkar
-  if (hit(HUD.pause, x, y)) { tapPop('hud_pause'); sfx('click'); setOverlay('pause'); return true; }
-  if (hit(HUD.speed, x, y)) { tapPop('hud_speed'); sfx('click'); speed = speed >= 3 ? 1 : speed + 1; return true; }
-  if (hit(HUD.mute, x, y)) { tapPop('hud_mute'); setMuted(!muted); sfx('click'); return true; }
+  const hitU = (b) => hit(b, x, y, b.r * UI_HIT); // arayüz düğmeleri: görünenden geniş dokunma alanı
+  if (hitU(HUD.pause)) { tapPop('hud_pause'); sfx('click'); setOverlay('pause'); return true; }
+  if (hitU(HUD.speed)) { tapPop('hud_speed'); sfx('click'); speed = speed >= 3 ? 1 : speed + 1; return true; }
+  if (hitU(HUD.mute)) { tapPop('hud_mute'); setMuted(!muted); sfx('click'); return true; }
   for (let i = 0; i < G.heroes.length; i++) {
     const h = G.heroes[i], hb = HUD.heroes[i], bd = heroBadge(hb);
     if (dist(bd.x, bd.y, x, y) <= bd.r + 6) { tapPop('hb' + i); openSkills(h); return true; }
-    if (hit(hb, x, y)) {
+    if (hitU(hb)) {
       tapPop('hud_hero' + i); G.mode = null;
       setSel((G.sel && G.sel.hero === h) || h.dead ? null : { kind: 'hero', hero: h });
       sfx('select');
@@ -12492,7 +12499,7 @@ function hudTap(x, y) {
     }
   }
   for (const [i, id] of spellIds().entries()) {
-    if (hit(spellBtn(i), x, y)) {
+    if (hitU(spellBtn(i))) {
       tapPop('hud_' + id);
       setSel(null);
       // tek dokunuş: hazırsa seçer (diriltme hemen çalışır), alt panelde ne yaptığını yazar; seçiliyken dokunmak bırakır
