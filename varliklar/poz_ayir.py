@@ -34,8 +34,9 @@ for i in range(N):
     main = l2 == (int(np.argmax(s2)) + 1); near = ndimage.binary_dilation(main, iterations=3)
     keep = np.isin(l2, [k + 1 for k in range(n2) if (near & (l2 == k + 1)).any() or s2[k] > 400]); P[~ndimage.binary_dilation(keep, iterations=2), 3] = 0
     ys, xs = np.nonzero(P[..., 3] > 40); y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
-    feet = (P[y1 - 30:y1, :, 3] > 100) & (P[y1 - 30:y1, :, :3].mean(-1) > 110); fx = np.nonzero(feet.any(0))[0]
-    foot = (fx.min() + fx.max()) / 2 if len(fx) else (x0 + x1) / 2
+    # hiza noktası: bacak bölgesinin (boyun %78-92'si) kütle ortası; silah, pelerin ucu ve sis tek bir ayak kolonunu kaydırmasın
+    band = P[y0 + int((y1 - y0) * 0.78):y0 + int((y1 - y0) * 0.92), :, 3] > 100; cols = band.sum(0)
+    foot = float((np.arange(Ww) * cols).sum() / max(1, cols.sum())) if cols.sum() else (x0 + x1) / 2
     polys.append(P); boxes.append((x0, y0, x1, y1, foot))
 S = TH / max(b[3] - b[1] for b in boxes); half = max(max(b[4] - b[0], b[2] - b[4]) for b in boxes)
 cw, ch = int(np.ceil(2 * half * S)) + 4, TH

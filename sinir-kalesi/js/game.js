@@ -5462,7 +5462,9 @@ const MEN = {
     seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']], rel: 0.26 }, // yay germe kareleri (Gemini 5 poz, varliklar/okcu_poz_isle.py): ok takma → yarım → tam germe; bırakınca _rel
 };
 // 1-3. kademe: her kademenin kendi iskelet arbaletçisi (Gemini 4 poz, poz_ayir.py: unit_xbowN, _aim, _kick, _load); görseli yoksa eski yeşil arbaletçi
-for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: 0.5, hold: 0.9, tip: [0.99, 0.186] });
+const XBOW_TIP = [[0.99, 0.186], [0.99, 0.192], [0.916, 0.253]]; // kademe görsellerinde nişan pozunun cıvata ucu (poz_ayir.py yazar)
+for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: 0.5, hold: 0.9, tip: XBOW_TIP[k - 1] });
+// 3. kademe sayfasının geri tepme pozu arbalet yerine yay çizilmişti: _kick nişan pozunun kopyası, tepme kodla
 const menOf = (t) => { if (t.spec === 'fan' || t.spec === 'bow') return MEN[t.spec]; const k = MEN['k' + (t.lvl + 1)]; return k && spr(k.pre) ? k : MEN.base; };
 const xbowCfg = (t) => XBOW_T[t.spec ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
 const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
