@@ -1,5 +1,18 @@
 {
   "appId": "com.princexevil.necromancer",
   "appName": "Necromancer",
-  "webDir": "sinir-kalesi"
+  "webDir": "sinir-kalesi",
+  "backgroundColor": "#06030a",
+  "ios": {
+    "backgroundColor": "#06030a",
+    "contentInset": "never"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "launchFadeOutDuration": 400,
+      "backgroundColor": "#06030a",
+      "showSpinner": false
+    }
+  }
 }

@@ -45,22 +45,31 @@ function useStrips(keep) {
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
   .then(r => (r.ok ? r.json() : []))
-  .then(list => list.sort((a, b) => (/^nm_key/.test(b) ? 1 : 0) - (/^nm_key/.test(a) ? 1 : 0)).forEach(file => { // giriş ekranı arka planı önce yüklenir
-    const name = file.replace(/\.(png|svg|jpg|webp)$/, '');
-    if (LAZY_RE.test(name)) { LAZY[name] = file; return; } // animasyon şeridi: bölümde gerekince yüklenir
-    const im = new Image();
-    im.onload = () => {
-      let out = im;
-      if (file.endsWith('.svg')) {
-        out = document.createElement('canvas');
-        out.width = im.naturalWidth * 2; out.height = im.naturalHeight * 2;
-        out.getContext('2d').drawImage(im, 0, 0, out.width, out.height);
-      }
-      SPR[name] = out;
-      if (/^(grass_|road|tree_|rock_|castle|s2_)/.test(name)) bgDirty = Math.max(time, 0.001);
+  .then(list => {
+    // kapak görseli tek başına önce yüklenir (diğer ~200 görsel onunla yarışmasın: telefonda açılış siyah ekranı kısalır), sonra kalanlar
+    const load = (file, done) => {
+      const name = file.replace(/\.(png|svg|jpg|webp)$/, '');
+      if (LAZY_RE.test(name)) { LAZY[name] = file; return; } // animasyon şeridi: bölümde gerekince yüklenir
+      const im = new Image();
+      im.onload = () => {
+        let out = im;
+        if (file.endsWith('.svg')) {
+          out = document.createElement('canvas');
+          out.width = im.naturalWidth * 2; out.height = im.naturalHeight * 2;
+          out.getContext('2d').drawImage(im, 0, 0, out.width, out.height);
+        }
+        SPR[name] = out;
+        if (/^(grass_|road|tree_|rock_|castle|s2_)/.test(name)) bgDirty = Math.max(time, 0.001);
+        if (done) done();
+      };
+      if (done) im.onerror = done;
+      im.src = 'img/' + file + (window.SURUM ? '?v=' + window.SURUM : '');
     };
-    im.src = 'img/' + file + (window.SURUM ? '?v=' + window.SURUM : '');
-  }))
+    const isKey = (f) => /^nm_key/.test(f), rest = list.filter(f => !isKey(f));
+    let started = false; const go = () => { if (!started) { started = true; rest.forEach(f => load(f)); } };
+    const key = list.filter(isKey); key.forEach(f => load(f, go)); if (!key.length) go();
+    setTimeout(go, 2500); // kapak gelmezse yine de devam
+  })
   .catch(() => {});
 // Kare kare animasyon şeritleri (img/anim.json): ad -> { n: kare sayısı, fw/fh: kare boyu (px), base: ayak çizgisinin
 // alttan oranı, ch: karakter boyunun kare boyuna oranı }. Şerit varsa o hareket bu karelerle çizilir (ör. enemy_orc_walk).
@@ -10603,6 +10612,14 @@ let FONT_VER = 0;
 if (document.fonts) {
   document.fonts.load('80px "Creepster"').then(() => { FONT_VER++; }).catch(() => {});
   document.fonts.ready.then(() => { FONT_VER++; }).catch(() => {});
+  if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { FONT_VER++; }); // yazı tipleri sonradan gelirse önbellekli yazılar yenilenir
+  // yazı tipi sayfası beklemeden yüklendiği için (index.html media=print) yüzler sonradan tanımlanır: gelene kadar yarım saniyede bir dene
+  const fontPoll = setInterval(() => {
+    Promise.all(['80px "Creepster"', '40px "Lilita One"', '800 20px "Baloo 2"'].map(f => document.fonts.load(f))).then(r => {
+      if (r.every(x => x.length)) { clearInterval(fontPoll); FONT_VER++; }
+    }).catch(() => {});
+  }, 500);
+  setTimeout(() => clearInterval(fontPoll), 20000);
 }
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
 // logo: üstte koyu kızıl, altın çerçeveli kurdelede "DON'T MESS WITH" (arayüz yazı tipi, kemik beyazı),
@@ -10912,13 +10929,17 @@ function drawSkyCrows() {
   }
   ctx.restore();
 }
+// mağaza uygulaması (Capacitor): açılış görseli kapak çizilene kadar kalır, sonra yumuşakça kaybolur
+const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+function hideSplash() { try { const P = window.Capacitor && window.Capacitor.Plugins; if (P && P.SplashScreen) P.SplashScreen.hide(); } catch (e) {} }
+setTimeout(hideSplash, 6000); // kapak hiç gelmezse
 function drawNecroTitle(st) {
   const key = spr('nm_key');
   // kapak görseli yüklenene kadar düz karanlık (eski başlık görseli ya da ara zeminler görünüp değişmesin); gelince karanlıktan belirir
   if (!key && time < 5) { ctx.fillStyle = '#06030a'; ctx.fillRect(0, 0, W, H); return; } // 5 sn'de gelmezse eski zemine düşer
-  TITLE_C.keyT = TITLE_C.keyT ?? time;
+  if (TITLE_C.keyT == null) { TITLE_C.keyT = time; hideSplash(); }
   if (key) drawKeyArt(key);
-  const fadeIn = clamp(1 - (time - TITLE_C.keyT) / 0.6, 0, 1);
+  const fadeIn = NATIVE ? 0 : clamp(1 - (time - TITLE_C.keyT) / 0.6, 0, 1); // uygulamada açılış görseli zaten kapakla aynı: karanlıktan belirme yok
   if (fadeIn > 0) { ctx.fillStyle = `rgba(6,3,10,${fadeIn})`; ctx.fillRect(0, 0, W, H); }
   const bg = key ? null : spr('nm_title');
   const bz = 1.06 + Math.sin(time * 0.1) * 0.02, bx = Math.sin(time * 0.07) * 8, by = Math.cos(time * 0.09) * 4;
