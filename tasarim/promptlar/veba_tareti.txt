@@ -1,0 +1,12 @@
+The first attached image shows the quality and art style we want (our crypt tower), the second is our tower style reference, the third shows how our skeleton soldiers look. Draw a sprite sheet for a new tower of the same 2D tower defense game, the "Plague Sprayer", in EXACTLY the style of the first image: thick dark-brown outlines, painterly cartoon shading, chunky proportions, dark cracked stone, rusty iron and brass, ivory bones, toxic glowing GREEN plague with a little violet, same top-down 3/4 camera.
+
+Concept: like an anti-aircraft gun. A skeleton gunner sits on a swivel seat on top of a plague tank and sprays the plague liquid as a green toxic vapor at enemies. The turret is drawn SEPARATELY from the base because we rotate it in code.
+
+TOP ROW - 3 static BASES (level 1, 2, 3), side by side, growing bigger and grander. Each is a plague tank on a round stone base ring with a flat round iron swivel mount on top (the mount is EMPTY - no gun, no skeleton on the base):
+1. a riveted iron barrel-tank of glowing green plague on a small stone plinth, bones and a skull around.
+2. a larger tank with brass bands, glass windows showing bubbling green plague, pipes and valves, skull ornaments.
+3. a huge armored plague tank on a stone furnace with skull vents, many pipes, gauges, spikes and crimson banners, the grandest.
+
+BOTTOM ROW - 3 matching TURRETS (level 1, 2, 3), each drawn in pure SIDE VIEW facing RIGHT and NOT attached to anything: a skeleton gunner sitting on a swivel seat, both bony hands gripping a big spray cannon that points to the right, a thick hose from the cannon down to a round pivot plate under the seat. The pivot plate is at the bottom center of each turret so it can sit on the base's mount. Level 1: a simple copper nozzle and a plain skeleton with a leather cap. Level 2: a longer brass cannon with a glass plague canister, the skeleton wears a rusty helmet and goggles. Level 3: a massive triple-barrel spray cannon with skull muzzle, armored skeleton with a horned helmet and glowing green eyes. The nozzles are closed (no spray drawn - we draw the vapor in code).
+
+Lots of empty space between all 6 items. No text, no labels, no frames, no ground, no shadows. Background: flat solid magenta (#FF00FF) everywhere.
