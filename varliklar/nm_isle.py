@@ -21,7 +21,8 @@ SHEETS = [
     ('nm_sapel.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),  # Mortimer'ın kara şapeli, boş balkon (eski kule: nm_kule.jpg)
     ('nm_sunak_4.jpg', ['tower_altar_rite', 'tower_altar_blight'], 'decor'),  # 4. kademe: Kan Mabedi, Kara Lanet Mabedi
     ('nm_kazan_4.jpg', [None, None], 'decor'),  # eski 4. kademe kazanları (kullanılmıyor)  # 4. kademe: Ceset Mancınığı, Kara Veba Kazanı
-    ('nm_fener_4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'decor'),  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
+    ('nm_ruh_feneri_k4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'tower'),  # 10 Eki: Ruh Feneri 4. kademe (Ruh Emici: kristal, Ruh Kafesi: zincirli kafes; kollar ruh_feneri_isle.py)
+    ('nm_fener_4.jpg', [None, None], 'decor'),  # eski 4. kademe fenerler  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
     ('nm_dikilitas_4.jpg', ['tower_archer_nail', None], 'decor'),  # 4. kademe: Kemik Balistası (Hayalet Okçular artık nm_hayalet_okcular.jpg'den)
     ('nm_hayalet_arbaletciler.jpg', ['unit_ghostxbow', 'unit_ghostxbow_aim'], 'decor'),  # 11 Eki: arbaletçi kulesinin iskeletleri (hazır, nişan)
     ('nm_hayalet_okcular.jpg', ['unit_ghostarcher', 'unit_ghostarcher_draw', 'tower_archer_fan'], 'decor'),  # 10 Eki: tepesi boş kule + üstünde gezen 2 elit okçu (duruş, gerilmiş yay)

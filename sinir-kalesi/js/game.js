@@ -2727,7 +2727,7 @@ const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 const TOWER_EYE = { altar: [[0.5, 0.14], [0.48, 0.12], [0.505, 0.38]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
 function towerEye(t, ts) {
   ts = ts || towerSprite(t);
-  if (NECRO && t.type === 'mage' && ts && lanternRig(t, ts)) return lanternPt(t, ts, LANTERN_RIG[t.lvl].core); // ışın ve ruhlar fenerin içinden
+  if (NECRO && t.type === 'mage' && ts && lanternRig(t, ts)) return lanternPt(t, ts, lanternRig(t, ts).core); // ışın ve ruhlar fenerin (kristalin, kafesin) içinden
   const E = (TOWER_EYE[t.type] || [])[t.lvl];
   if (!ts || !E) return { x: t.x, y: t.y - 40 };
   return { x: t.x - ts.w / 2 + E[0] * ts.w, y: ts.bottom - ts.h + E[1] * ts.h };
@@ -2909,7 +2909,7 @@ function updateTower(t, dt) {
         t.ghostCd = gh.cd; t.shotAnim = 0.3;
         G.ghosts.push({ p: q.p, d: q.along, end: q.along - L.range * 2.2, hit: new Set(), dmg: gh.dmg, fear: gh.fear, t: 0, x: q.x, y: q.y });
         const GF = towerForm(t), gts = GF && towerSprite(t);
-        if (GF && GF.cageAt && gts) { const c = formPoint(t, gts, GF.cageAt); G.effects.push({ kind: 'zap', x0: c.x, y0: c.y, x1: q.x, y1: q.y - 10, t: 0, dur: 0.35, w: 1.4, seed: rand(0, 99), col: 'rgb(190,140,255)' }); } // hayalet kafesten süzülür
+        if (GF && GF.cageAt && gts) { const c = lanternRig(t, gts) ? towerEye(t, gts) : formPoint(t, gts, GF.cageAt); G.effects.push({ kind: 'zap', x0: c.x, y0: c.y, x1: q.x, y1: q.y - 10, t: 0, dur: 0.35, w: 1.4, seed: rand(0, 99), col: 'rgb(190,140,255)' }); } // hayalet kafesten süzülür
         sfx('scream');
       } else t.ghostCd = 0.4;
     }
@@ -2923,7 +2923,7 @@ function updateTower(t, dt) {
       if (v) {
         t.cageCd = CF.cage.cd; const T = CF.cage.t * (v.def.chief ? 0.5 : 1);
         v.cageT = T; stunEnemy(v, T); t.shotAnim = 0.3;
-        const cts = towerSprite(t), c = cts ? formPoint(t, cts, CF.cageAt) : { x: t.x, y: t.y - 50 };
+        const cts = towerSprite(t), c = cts ? (lanternRig(t, cts) ? towerEye(t, cts) : formPoint(t, cts, CF.cageAt)) : { x: t.x, y: t.y - 50 };
         G.effects.push({ kind: 'zap', x0: c.x, y0: c.y, x1: v.x, y1: aimY(v), t: 0, dur: 0.4, w: 1.6, seed: rand(0, 99), col: 'rgb(200,140,255)' });
         floatText(v.x, v.y - (CHAR_H['enemy_' + v.type] || 24) - 12, 'Ruh Hapsi!', '#d8a8ff'); sfx('magic');
       } else t.cageCd = 0.5;
@@ -2941,7 +2941,7 @@ function updateTower(t, dt) {
   let sx = t.x, sy = ts ? ts.bottom - ts.h * TOWER_TOP[t.type] : t.y - 34;
   if (ts) { const o = towerEye(t, ts); sx = o.x; sy = o.y + (t.type === 'mage' ? 8 : 0); }
   const MF = t.type === 'mage' && towerForm(t);
-  if (MF) { const o = formPoint(t, ts, MF.src); sx = o.x; sy = o.y + 8; } // ışın kristalden / kızıl gözden
+  if (MF) { const o = lanternRig(t, ts) ? towerEye(t, ts) : formPoint(t, ts, MF.src); sx = o.x; sy = o.y + 8; } // ışın kristalden / kafesten (kol oynadıkça izler)
   if (t.type === 'mage') {
     const d = dist(sx, sy, e.x, e.y);
     const dr = abRank(t, 'drain');
@@ -5702,8 +5702,8 @@ const TOWER_FORM = {
   // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
   archer_fan: { noAnim: true, w: 1.14, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
   archer_bow: { noAnim: true, img: 'tower_archer_fan', w: 1.14, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
-  mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
-  mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
+  mage_drain: { noAnim: true, w: 1, src: [0.73, 0.24], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
+  mage_ghost: { noAnim: true, w: 1, src: [0.73, 0.33], cageAt: [0.73, 0.33], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
   // Lanet Kulesi: rite -> Kan Mabedi (kızıl bağlar kâseden çıkar), blight -> Kara Lanet Mabedi (lanet küreden, ölenlerin kalkma şansı +%10)
 };
@@ -6718,9 +6718,14 @@ const LANTERN_RIG = [
   { pivot: [61, 14], swing: 0.022, f: 0.9, raiseA: -0.17, lift: 0, core: [73, 28], eyes: [[44.5, 12], [50.5, 12]], runes: [[37, 62, 0.06], [56, 67, 0.04]], hands: [[10, 72], [27, 80], [69, 62], [64, 81], [85, 73]] },
   { pivot: [75, 2], swing: 0.035, f: 0.8, raiseA: -0.05, lift: -0.03, core: [73, 30], eyes: [[47, 19.5], [51.5, 19.5]], braziers: [[20, 71.5], [86, 71.5]], vortex: [70, 47, 0.2] },
 ];
-const lanternRig = (t, ts) => (ts.name === 'tower_mage_' + (t.lvl + 1) && LANTERN_RIG[t.lvl] && spr(ts.name + '_arm') ? LANTERN_RIG[t.lvl] : null);
+// 4. kademe (10 Eki, Caner'in görseli): aynı pozda kanatlı ölüm; elinde kristal (Ruh Emici) / zincirli kafes (Ruh Kafesi)
+const LANTERN_FORM = {
+  tower_mage_drain: { pivot: [76, 3], swing: 0.03, f: 0.8, raiseA: -0.05, lift: -0.03, core: [73, 24], eyes: [[45.5, 19], [52, 19]], eyeCol: '190,110,255', braziers: [[21, 73], [86, 73]], crystal: true },
+  tower_mage_ghost: { pivot: [76, 2], swing: 0.045, f: 0.75, raiseA: -0.05, lift: -0.03, core: [73, 33], eyes: [[45.5, 18.5], [51.5, 18.5]], eyeCol: '255,60,50', braziers: [[21, 72], [86, 72]] },
+};
+const lanternRig = (t, ts) => { const R = LANTERN_FORM[ts.name] || (ts.name === 'tower_mage_' + (t.lvl + 1) && LANTERN_RIG[t.lvl]); return R && spr(ts.name + '_arm') ? R : null; };
 function lanternXf(t, ts) {
-  const R = LANTERN_RIG[t.lvl], k = easeInOut(t.raise || 0), sd = t.x * 0.011;
+  const R = lanternRig(t, ts), k = easeInOut(t.raise || 0), sd = t.x * 0.011;
   const a = R.swing * Math.sin(time * R.f * 2 + sd) * (1 - 0.6 * k) + R.raiseA * k + (t.soulT > 0 ? Math.sin(time * 22) * 0.04 * t.soulT / 0.45 : 0);
   return { a, px: (R.pivot[0] / 100 - 0.5) * ts.w, py: -ts.h + R.pivot[1] / 100 * ts.h, dy: R.lift * ts.h * k };
 }
@@ -6744,7 +6749,8 @@ function drawLanternFx(t, ts) {
     glow(ctx, x, y, 3.2 * s, '170,255,225', 0.5 * fr); glow(ctx, x, y, 1.3 * s, '240,255,250', 0.7 * fr);
   }
   for (const [i, q] of (R.candles || []).entries()) { const p = P(q), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.1) + 0.1 * Math.sin(time * 23 + i); glow(ctx, p.x, p.y, 3.5 * s * fk, '120,255,200', 0.55 * fk); }
-  for (const [i, q] of (R.eyes || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, (2 + 1.2 * k) * s, k > 0.3 ? '150,255,220' : '190,120,255', 0.6 + 0.25 * Math.sin(time * 3 + i) + 0.3 * k); } // göz: savaşta yeşil yanar
+  for (const [i, q] of (R.eyes || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, (2 + 1.2 * k) * s, R.eyeCol || (k > 0.3 ? '150,255,220' : '190,120,255'), 0.6 + 0.25 * Math.sin(time * 3 + i) + 0.3 * k); } // göz: savaşta yeşil yanar (4. kademede kendi rengi)
+  if (R.crystal) { const r = 1 + (t.ramp || 0) * 0.8; glow(ctx, c.x, c.y, 16 * s * r, '190,130,255', 0.25 + 0.15 * beat + 0.3 * (t.ramp || 0)); } // Ruh Emici: ışın güçlendikçe kristal büyür
   for (const [i, q] of (R.braziers || []).entries()) { const p = P(q), fk = 0.75 + 0.15 * Math.sin(time * 10 + i * 2.7) + 0.1 * Math.sin(time * 21 + i); glow(ctx, p.x, p.y, 8 * s * fk, '120,255,150', 0.5 * fk); if (Math.random() < 0.1) emit(G.parts, { kind: 'glow', add: true, x: p.x + rand(-2, 2) * s, y: p.y - 3 * s, vx: rand(-6, 6), vy: -rand(18, 36), col: '140,255,160', s0: 2.4, s1: 0.4, life: rand(0.6, 0.9) }); }
   for (const [i, q] of (R.runes || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, q[2] * ts.w, '170,90,255', 0.18 + 0.12 * Math.sin(time * 1.8 + i * 1.4 + sd)); }
   for (const [i, q] of (R.hands || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, 4 * s, '150,255,220', 0.12 + 0.1 * Math.sin(time * 2.2 + i * 1.7)); } // yerden uzanan ruh elleri soluk parlar
@@ -6798,7 +6804,7 @@ function drawNecroTowerFx(t, ts) {
       }
     } // hayalet arbaletçiler: parıltıları drawXbowMen çizer
     ctx.globalCompositeOperation = 'source-over';
-  } else if (t.type === 'mage' && towerForm(t)) {
+  } else if (t.type === 'mage' && towerForm(t) && !lanternRig(t, ts)) {
     const MF = towerForm(t), o = formPoint(t, ts, MF.src), sh2 = t.shotAnim > 0 ? t.shotAnim / 0.2 : 0;
     ctx.globalCompositeOperation = 'lighter';
     if (MF.ramp) { // kristal: mor-yeşil nabız, ışın güçlendikçe büyür

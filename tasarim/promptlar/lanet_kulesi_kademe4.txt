@@ -1,0 +1,7 @@
+The attached image is our Curse Tower at level 3: a black-stone temple with a GIANT FLOATING EYE inside a ring of bones and chains in its center, braziers with violet fire, skull altar in front. Draw 2 NEW level-4 upgrades of this exact tower for the same 2D tower defense game, in EXACTLY the same style, camera, scale and base: thick dark-brown outlines, painterly cartoon shading, chunky proportions, dark cracked stone, ivory bones, round stone base ring.
+
+Keep the giant eye in the SAME PLACE and SAME SIZE as in the attached image (we animate the eye in code), and keep the overall silhouette so both look like a true evolution of it. Both must be even more frightening and magnificent.
+1. "Blood Rite Temple": the temple turns crimson: blood pouring from the skull altar into a glowing blood pool at the front, blood channels carved into the steps, the giant eye now blood-red with dark veins, crimson banners, four braziers with red fire, thorny iron spikes, floating blood droplets.
+2. "Black Curse Temple": the temple rots under a black curse: cracked black-violet stone with glowing violet cracks, black tendrils and dead roots crawling over it, the giant eye now black with a violet glowing iris and dripping black ooze, violet-black miasma pooling on the base, withered crows' skulls, tattered black banners, braziers with violet-black fire.
+
+Draw the 2 buildings side by side with lots of empty space between them. No characters, no text, no labels, no frames, no ground, no shadows. Background: flat solid magenta (#FF00FF) everywhere.
