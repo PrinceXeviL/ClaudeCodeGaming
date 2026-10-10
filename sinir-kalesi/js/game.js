@@ -689,6 +689,10 @@ function buildPath(pts) {
   return { pts, cum, total: cum[cum.length - 1] };
 }
 function pathPos(p, d, off = 0) {
+  if (d < 0 && p.ext) { // tam ekran: çerçeve dışından gelen yolun girişinden geriye, ilk doğrultuda uzanır (düşman ekran dışında doğar)
+    const a = p.pts[0], b = p.pts[1], L = p.cum[1] || 1, dx = (b[0] - a[0]) / L, dy = (b[1] - a[1]) / L;
+    return { x: a[0] + dx * d - dy * off, y: a[1] + dy * d + dx * off, dx, dy };
+  }
   d = clamp(d, 0, p.total);
   let lo = 1, hi = p.pts.length - 1; // cum[i] >= d olan ilk i (ikili arama)
   while (lo < hi) { const mid = (lo + hi) >> 1; if (p.cum[mid] < d) lo = mid + 1; else hi = mid; }
@@ -698,6 +702,16 @@ function pathPos(p, d, off = 0) {
   const t = (d - p.cum[i - 1]) / segLen;
   const dx = (b[0] - a[0]) / segLen, dy = (b[1] - a[1]) / segLen;
   return { x: lerp(a[0], b[0], t) - dy * off, y: lerp(a[1], b[1], t) + dx * off, dx, dy };
+}
+// giriş payı: düşman/borazancı yolun bu kadar gerisinden (görünen ekranın dışından) yola çıkar; masaüstünde (taşma yok) 0
+const dLo = (p) => (p && p.ext ? -1e4 : 0);
+function entryLead(p) {
+  if (!p.ext) return 0;
+  for (let L = 0; L < 600; L += 10) {
+    const q = pathPos(p, -L);
+    if (q.x < VIS.l - 30 || q.x > VIS.r + 30 || q.y < VIS.t - 10 || q.y > VIS.b + 60) return L;
+  }
+  return 600;
 }
 function nearestOnPaths(paths, x, y) {
   let best = { d: 1e9, x, y };
@@ -1312,6 +1326,7 @@ function startLevel(idx, chal = null) {
   mapSel = null; musicRestartBattle();
   const lv = LEVELS[idx];
   const paths = lv.paths.map(buildPath);
+  for (const p of paths) { const a = p.pts[0]; p.ext = a[0] < 0 || a[0] > W || a[1] < 0 || a[1] > H; } // çerçeve dışından gelen giriş
   G = {
     idx, lv, paths,
     bg: renderBackground(lv, paths, bgRes(), BLEED),
@@ -1524,7 +1539,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   if (type === 'lantern' && !G.saidLight) { G.saidLight = true; setTimeout(() => G && mortSay('light', true), 2500); }
   const p = G.paths[pi] || G.paths[0];
   const esc = def.chief && BOSS_ESCORT[type];
-  if (esc && d0 === 0) d0 = 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
+  if (esc && d0 <= 0) d0 += 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
   const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * ROAD_K);
   const q = pathPos(p, d0, off);
   const tier = G.lv.tier ?? G.idx; // boss gücü kademesi (2. sefer 1. seferin sonlarından başlar)
@@ -1538,7 +1553,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
     let k = 0;
     for (const [t2, n] of esc) for (let i = 0; i < n; i++, k++) {
       const [fd, fo] = ESCORT_FORM[k % ESCORT_FORM.length];
-      const m = spawnEnemy(t2, G.paths.indexOf(p), Math.max(0, d0 + fd + (k >= ESCORT_FORM.length ? -30 : 0)), fo);
+      const m = spawnEnemy(t2, G.paths.indexOf(p), Math.max(dLo(p), d0 + fd + (k >= ESCORT_FORM.length ? -30 : 0)), fo);
       m.leader = e; m.form = fd + (k >= ESCORT_FORM.length ? -30 : 0);
     }
   }
@@ -1974,7 +1989,7 @@ function killEnemy(e) {
   // testudo: kalkan çatısı dağılır, içinden lejyonerler çıkıp yürümeye devam eder
   if (e.def.split && !e.leaked) {
     const [t, n] = e.def.split, pi = G.paths.indexOf(e.p);
-    for (let k = 0; k < n; k++) { const m = spawnEnemy(t, pi, Math.max(0, e.d - 4 + k * 5), e.off + (k - 1) * 7); m.hopT = 0.4; }
+    for (let k = 0; k < n; k++) { const m = spawnEnemy(t, pi, Math.max(dLo(e.p), e.d - 4 + k * 5), e.off + (k - 1) * 7); m.hopT = 0.4; }
     G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 });
   }
   if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
@@ -3055,7 +3070,7 @@ function updateEnemy(e, dt) {
     if (d <= st + 0.5) e.offPath = false;
     else { e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
   }
-  e.d += spd * dt;
+  e.d += spd * dt * (e.d < 0 ? 1.5 : 1); // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
   // ayak tozu: yürüyüş döngüsünde her adım yere bastığında (çizimdeki adım hızıyla aynı)
   if (!e.def.flying && spd > 0) {
     const step = Math.floor(e.anim * (5 + e.def.speed * G.wspd / 9) / Math.PI);
@@ -4272,11 +4287,11 @@ function heraldSpot(p) {
   return { dW: d, sd: best.sd, half };
 }
 function callHeralds(paths, long = false) {
-  paths.slice(0, 3).forEach((pi, i) => G.heralds.push({ p: G.paths[pi], d: 0, state: 'in', t: -i * 0.15, i, long, ...heraldSpot(G.paths[pi]) }));
+  paths.slice(0, 3).forEach((pi, i) => { const p = G.paths[pi], d0 = -entryLead(p); G.heralds.push({ p, d: d0, d0, state: 'in', t: -i * 0.15, i, long, ...heraldSpot(p) }); });
 }
 // düşmanlar borazancı(lar) geri dönünce yola çıkar
 const heraldT = (long) => 0.3 + Math.max(0, ...(G.heralds || []).filter(h => h.state === 'in').map(h =>
-  h.i * 0.15 + h.dW / HERALD.speed + (long ? HERALD.blowLong : HERALD.blow) + h.dW / HERALD.back));
+  h.i * 0.15 + (h.dW - h.d0) / HERALD.speed + (long ? HERALD.blowLong : HERALD.blow) + (h.dW - h.d0) / HERALD.back)); // borazancı ekran dışına çıkınca düşmanlar gelir
 function updateHeralds(dt) {
   for (const h of G.heralds || []) {
     h.t += dt;
@@ -4287,7 +4302,7 @@ function updateHeralds(dt) {
     }
     else h.d -= HERALD.back * dt;
   }
-  if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > -10);
+  if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > Math.min(-10, (h.d0 || 0) - 10));
 }
 function drawHeralds() {
   // Gemini borazancısı (enemy_herald: kurt postlu, sırtında cornu) varsa o çizilir; yoksa lejyoner + kodla çizilen borazan
@@ -4295,7 +4310,7 @@ function drawHeralds() {
   const name = hr ? 'enemy_herald' : 'enemy_legion', hgt = (CHAR_H.enemy_legion || ENEMIES.legion.h * UNIT_K) * (hr ? 1.3 : 1);
   for (const h of G.heralds || []) {
     if (h.t < 0 && h.state === 'in') continue;
-    const q = pathPos(h.p, Math.max(0, h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun kenarına yakın yürür
+    const q = pathPos(h.p, Math.max(dLo(h.p), h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun kenarına yakın yürür
     const face = h.state === 'out' ? -fwd : fwd; // çalarken düşmanın yürüyeceği yöne bakar
     const blowing = h.state === 'blow', dur = h.long ? HERALD.blowLong : HERALD.blow;
     // kaldırma: borazan 0,3 sn'de omuzdan ağza kalkar, çalarken gövde geriye yaslanır ve nefesle kabarır, sonunda iner
@@ -5063,7 +5078,7 @@ function update(dt) {
       const rt = G.lv.routes && G.lv.routes[sp.p];
       const pi = R && col ? sp.lastPi : rt ? rt[(sp.rk = (sp.rk ?? Math.floor(Math.random() * rt.length)) + 1) % rt.length] : sp.p;
       sp.lastPi = pi;
-      const e = spawnEnemy(ty, pi, 0, R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
+      const e = spawnEnemy(ty, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
       if (R) e.march = true;
       if (sp.hpK && !e.def.chief) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; }
       sp.left--;
@@ -6301,7 +6316,7 @@ function drawBurrow(e) {
 // tam ekranda yolun giriş ağzı görünür: düşman çerçeve dışında doğarken ilk adımlarında belirir (birden çıkmasın)
 function drawEnemy(e) {
   const out = e.x < 0 || e.x > W || e.y < 0 || e.y > H;
-  if (!out || e.d >= 45) return drawEnemy0(e);
+  if (!out || e.d >= 45 || e.d < 0 || e.p.ext) return drawEnemy0(e); // giriş payından gelen zaten ekran dışından yürür
   ctx.save(); ctx.globalAlpha *= clamp(e.d / 45, 0, 1); drawEnemy0(e); ctx.restore();
 }
 function drawEnemy0(e) {
@@ -9841,7 +9856,7 @@ function summonLegion(e) {
   let k = 0;
   for (const [t2, n] of L) for (let i = 0; i < n; i++, k++) {
     const behind = k % 2 === 0, pi = behind ? G.paths.indexOf(e.p) : k % G.paths.length;
-    const p = G.paths[pi], d0 = behind ? Math.max(0, e.d - 30 - i * 12) : 10 + i * 14;
+    const p = G.paths[pi], d0 = behind ? Math.max(dLo(p), e.d - 30 - i * 12) : 10 + i * 14;
     const m = spawnEnemy(t2, pi, d0);
     const q = pathPos(p, d0);
     if (i === 0) G.effects.push({ kind: 'portal', x: q.x, y: q.y, t: 0, dur: 1.4, col: '200,60,60' });
@@ -9936,7 +9951,7 @@ function bossAbilities(e, dt) {
     G.effects.push({ kind: 'portal', x: q.x, y: q.y, t: 0, dur: 1.2, col: e.def.base === 'knight' || e.type === 'dark_shaman' ? '170,90,255' : '120,230,90' });
     for (let i = 0; i < ab.summon.n; i++) {
       const st = Array.isArray(ab.summon.t) ? ab.summon.t[i % ab.summon.t.length] : ab.summon.t;
-      const m = spawnEnemy(st, pi, Math.max(0, d0 - i * 10), i % 2 ? 10 : -10);
+      const m = spawnEnemy(st, pi, Math.max(dLo(G.paths[pi]), d0 - i * 10), i % 2 ? 10 : -10);
       m.leader = e; m.form = -22 - i * 12; m.summonedBy = e;
       for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: m.x + rand(-8, 8), y: m.y - rand(0, 20), vy: -rand(20, 50), col: '200,160,255', s0: 4, s1: 0.5, life: 0.6 });
     }
