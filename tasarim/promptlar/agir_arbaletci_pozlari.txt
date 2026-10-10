@@ -1,0 +1,9 @@
+Using the attached reference image (our crimson ghost-skeleton crossbowman), redraw the SAME character for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly shading, same chunky cartoon proportions, same colors, same crimson hooded cloak, bone pauldrons with small skulls, glowing red eyes, crimson spectral mist at the feet. Make his crossbow BIGGER and HEAVIER: a large black bone arbalest with a winding crank (windlass) at the back.
+
+Draw 4 separate poses in ONE horizontal row, with lots of empty space between them, all side view facing RIGHT, full body, exactly the same size and the same feet height (a heavy crossbow shooting animation sequence):
+1. Ready: heavy arbalest held at the hip, pointing forward and slightly down.
+2. Aiming: arbalest raised to the shoulder, aiming straight forward, a thick glowing red bone bolt loaded.
+3. Recoil: just fired, bolt gone, string forward, arbalest kicked up and back, body rocked back.
+4. Reloading: arbalest tip resting on the ground, foot in the front stirrup, both hands turning the crank to pull the string back.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.

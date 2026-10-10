@@ -21,5 +21,15 @@
 "La tour devient Arbalétriers fantômes : 3 arbalétriers fantômes pourpres tirent sur des cibles différentes, +30 % contre les volants · chaque tir envoie {} carreaux supplémentaires sur les ennemis proches ({} % de dégâts) · efficace contre les foules",
 "BAS",
 "Qualité graphique",
-"RETOUR À LA CARTE"
+"RETOUR À LA CARTE",
+"Tour d'os",
+"Arbalétriers lourds",
+"Carreau perforant",
+"Les archers tirent 18 flèches vers le ciel, qui pleuvent sur la foule",
+"Un carreau géant transperce tous les ennemis sur sa ligne : lourds dégâts, ignore l'armure",
+"Deux arbalétriers écarlates : carreaux lents, lourds et perforants",
+"Trois archers écarlates : flèches très rapides, en cloche",
+"Des arbalétriers squelettes tirent des carreaux d'os, touchent aussi les volants · au niveau 4, choisissez archers ou arbalétriers lourds",
+"La tour devient 3 archers fantômes écarlates : flèches très rapides en cloche (peu de dégâts par flèche), +30% contre les volants · une flèche sur {} est empoisonnée : {} dégâts par seconde pendant 3 s",
+"La tour devient 2 arbalétriers lourds écarlates : carreaux lents mais lourds, percent {}% de l'armure, repoussent la cible · {}% de chances de triple dégâts"
 ]

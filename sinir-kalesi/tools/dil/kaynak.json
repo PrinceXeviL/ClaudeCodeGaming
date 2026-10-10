@@ -4824,5 +4824,47 @@
 {
 "tr": "HARİTAYA DÖN",
 "en": "BACK TO MAP"
+},
+{
+"tr": "Kemik Kulesi",
+"en": "Bone Tower"
+},
+{
+"tr": "Ağır Arbaletçiler",
+"en": "Heavy Crossbowmen"
+},
+{
+"tr": "Delici Cıvata",
+"en": "Piercing Bolt"
+},
+{
+"tr": "Okçular göğe 18 ok salar, kalabalığın üstüne yağar",
+"en": "The archers loose 18 arrows into the sky; they rain down on the crowd"
+},
+{
+"tr": "Dev bir cıvata hattaki bütün düşmanları delip geçer: ağır hasar, zırhı yok sayar",
+"en": "A giant bolt pierces every enemy in its line: heavy damage, ignores armor"
+},
+{
+"tr": "İki kızıl arbaletçi: yavaş, ağır, zırh delen cıvata",
+"en": "Two crimson crossbowmen: slow, heavy, armor-piercing bolts"
+},
+{
+"tr": "Üç kızıl okçu: çok sık, yüksek kavisli oklar",
+"en": "Three crimson archers: very rapid, high-arcing arrows"
+},
+{
+"tr": "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu",
+"en": "Skeleton crossbowmen on top shoot bone bolts, also hit flyers · at tier 4 choose archers or heavy crossbowmen"
+},
+{
+"tr": "Kule 3 kızıl hayalet okçuya dönüşür: çok sık, yüksek kavisli oklar (ok başına az hasar), uçanlara +%30 · her {}. ok zehirli: 3 sn boyunca saniyede {} hasar",
+"en": "The tower becomes 3 crimson ghost archers: very rapid, high-arcing arrows (low damage per arrow), +30% vs flyers · every {}th arrow is poisoned: {} damage per second for 3 s",
+"tpl": 1
+},
+{
+"tr": "Kule 2 kızıl ağır arbaletçiye dönüşür: yavaş ama ağır cıvata, zırhın %{} kadarını deler, vurduğunu geri iter · %{} şansla 3 kat hasar",
+"en": "The tower becomes 2 crimson heavy crossbowmen: slow but heavy bolts, pierce {}% of armor, knock targets back · {}% chance of triple damage",
+"tpl": 1
 }
 ]

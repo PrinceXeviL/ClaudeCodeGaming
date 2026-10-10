@@ -21,5 +21,15 @@
 "Der Turm wird zu Geister-Armbrustschützen: 3 purpurne Geister-Armbrustschützen schießen auf verschiedene Ziele, +30 % gegen Flieger · jeder Schuss schickt {} zusätzliche Bolzen auf nahe Feinde ({} % Schaden) · gut gegen Gruppen",
 "LEISE",
 "Grafikqualität",
-"ZUR KARTE"
+"ZUR KARTE",
+"Knochenturm",
+"Schwere Armbrustschützen",
+"Durchschlagender Bolzen",
+"Die Bogenschützen schießen 18 Pfeile in den Himmel, die auf die Menge niederregnen",
+"Ein riesiger Bolzen durchschlägt alle Feinde in seiner Bahn: hoher Schaden, ignoriert Rüstung",
+"Zwei karmesinrote Armbrustschützen: langsame, schwere, rüstungsbrechende Bolzen",
+"Drei karmesinrote Bogenschützen: sehr schnelle, hoch gebogene Pfeile",
+"Skelett-Armbrustschützen oben schießen Knochenbolzen, treffen auch Flieger · auf Stufe 4 Bogenschützen oder schwere Armbrustschützen wählen",
+"Der Turm wird zu 3 karmesinroten Geisterbogenschützen: sehr schnelle, hoch gebogene Pfeile (wenig Schaden pro Pfeil), +30% gegen Flieger · jeder {}. Pfeil ist vergiftet: {} Schaden pro Sekunde für 3 s",
+"Der Turm wird zu 2 karmesinroten schweren Armbrustschützen: langsame, aber schwere Bolzen, durchschlagen {}% der Rüstung, stoßen Ziele zurück · {}% Chance auf dreifachen Schaden"
 ]

@@ -21,5 +21,15 @@
 "La torre se convierte en Ballesteros Fantasma: 3 ballesteros fantasma carmesí disparan a objetivos distintos, +30% contra voladores · cada disparo lanza {} virotes extra a enemigos cercanos ({}% de daño) · buena contra multitudes",
 "BAJO",
 "Calidad gráfica",
-"VOLVER AL MAPA"
+"VOLVER AL MAPA",
+"Torre de Hueso",
+"Ballesteros Pesados",
+"Virote Perforante",
+"Los arqueros lanzan 18 flechas al cielo que caen sobre la multitud",
+"Un virote gigante atraviesa a todos los enemigos en su línea: daño elevado, ignora la armadura",
+"Dos ballesteros carmesí: virotes lentos, pesados y perforantes",
+"Tres arqueros carmesí: flechas muy rápidas y de gran arco",
+"Ballesteros esqueleto en lo alto disparan virotes de hueso, también a voladores · en el nivel 4 elige arqueros o ballesteros pesados",
+"La torre se convierte en 3 arqueros fantasma carmesí: flechas muy rápidas y de gran arco (poco daño por flecha), +30% contra voladores · cada {}.ª flecha está envenenada: {} de daño por segundo durante 3 s",
+"La torre se convierte en 2 ballesteros pesados carmesí: virotes lentos pero pesados, atraviesan el {}% de la armadura y empujan al objetivo · {}% de probabilidad de daño triple"
 ]

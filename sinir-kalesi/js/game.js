@@ -1931,7 +1931,7 @@ function aimY(e) {
 // bölüm sonu özeti için: o an vuranın türü (kule, iskelet, dirilen, komutan); çağıran kod ayarlar
 let hitBy = null;
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
-function damageEnemy(e, amount, type, quiet, src) {
+function damageEnemy(e, amount, type, quiet, src, pen = 0) { // pen: zırhın bu kadarını deler (ağır cıvata)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
   if (hitBy || src) e.lastBy = hitBy || src;
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
@@ -1954,7 +1954,7 @@ function damageEnemy(e, amount, type, quiet, src) {
     if (e.plate <= 0) plateBreak(e);
     if (amount <= 0) return;
   }
-  const red = (type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) : 0) // veba: zırh yarıya iner; sancak +zırh
+  const red = (type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) * (1 - pen) : 0) // veba: zırh yarıya iner; sancak +zırh
     * (e.curseT > 0 ? 1 - (e.curseRes || 0) : 1); // lanet: zırh ve büyü direnci kırılır
   const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
@@ -2525,7 +2525,7 @@ function updateObelisk(t, dt, L) {
     if (!e) { t.cd = 0.1; return; }
     t.cd = L.rate; t.shotAnim = 0.25;
     const crit = t.lvl >= 2 && Math.random() < 0.15;
-    xbowShoot(t, ts, L, e, { col: '140,255,150', dmg: roll(L.dmg) * (crit ? 2 : 1), crit, pierce: t.lvl >= 1 && Math.random() < 0.25 });
+    xbowShoot(t, ts, L, e, { dmg: roll(L.dmg) * (crit ? 2 : 1), crit, pierce: t.lvl >= 1 && Math.random() < 0.25 });
     return;
   }
   t.cd -= dt;
@@ -2577,9 +2577,12 @@ function updateObeliskForm(t, dt, L, ts, F) {
     G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: 14, col: '255,90,90', t: 0, dur: 0.25 });
     for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: o.x, y: o.y, vx: rand(-40, 40) + (e.x - o.x) * 0.3, vy: rand(-40, 20), drag: 3, col: i % 2 ? '255,80,80' : '255,190,120', s0: 3.5, s1: 0.5, life: 0.35 });
     t.snap = { x: n.x, y: n.y, t: 0.18 }; sfx('cannon');
-  } else {
-    const col = t.xi % 2 ? '255,70,130' : '255,90,90';
-    xbowShoot(t, ts, L, e, { col, dmg: roll(L.dmg) * (crit ? 2 : 1), crit, fly: F.fly, nail: nl ? nl.rise : 0, fan: fa, fanDmg: fa ? roll(L.dmg) * fa.mult * (F.fanK || 1) : 0 });
+  } else if (t.spec === 'bow') { // Hayalet Okçular: sık ve hafif; her N. ok zehirli
+    const bw = abRank(t, 'bow'); t.shotN = (t.shotN || 0) + 1;
+    xbowShoot(t, ts, L, e, { dmg: roll(L.dmg), fly: F.fly, poison: bw && t.shotN % bw.every === 0 ? bw.poison : 0 });
+  } else { // Ağır Arbaletçiler: seyrek ve ağır; zırh deler, kritik 3 kat
+    const cr = !!fa && Math.random() < fa.crit;
+    xbowShoot(t, ts, L, e, { dmg: roll(L.dmg) * (cr ? 3 : 1), crit: cr, pen: fa ? fa.pen : 0, fly: F.fly });
   }
 }
 // ----- 4. kademe ikinci güçleri -----
@@ -2605,14 +2608,25 @@ function updateExtra(t, dt) {
   }
   if (!near.length) { t.exT = 0.3; return; }
   t.exT = E.cd; t.shotAnim = 0.3;
-  if (t.spec === 'fan') {
-    const ts = towerSprite(t), GA = ts && xbowMen(t);
-    if (GA) GA.forEach(a => { a.tx = null; a.walking = false; a.aimT = XBOW.aim; a.kickT = XBOW.aim + XBOW.kick; a.face = near[0].x < xbowFoot(t, ts, a).x ? -1 : 1; });
-    const tipOf = (i) => (GA && GA.length ? xbowTip(t, ts, GA[i % GA.length]) : { x: eye.x + (i % 2 ? 8 : -8), y: eye.y });
-    near.sort((a, b) => (a.p.total - a.d) - (b.p.total - b.d)).slice(0, 8).forEach((e, i) => G.projectiles.push({ kind: 'ghostarrow', col: i % 2 ? '255,70,130' : '255,90,90', sx: tipOf(i).x, sy: tipOf(i).y,
-      bolt: true, target: e, tx: e.x, ty: aimY(e), t: -XBOW.aim - i * 0.05, dur: clamp(dist(eye.x, eye.y, e.x, e.y) / 650, 0.12, 0.4), dmg: avg * 0.9, dtype: 'phys', arc: 6, src: 'arrow' }));
-    sfx('arrow');
-  } else if (t.spec === 'nail' || t.spec === 'plague') {
+  if (t.spec === 'bow' || t.spec === 'fan') {
+    const ts = towerSprite(t), A = ts && xbowMen(t), M = menOf(t), w = M.aim * 1.3;
+    if (!A || !A.length) { t.exT = 0.5; return; }
+    const c = densestOf(near, 50);
+    A.forEach(a => { a.tx = null; a.walking = false; a.aimT = w; a.kickT = w + M.kick; a.face = c.x < xbowFoot(t, ts, a).x ? -1 : 1; });
+    if (t.spec === 'bow') { // Ok Yağmuru: okçular göğe 18 ok salar, kalabalığın çevresine yüksek kavisle yağar
+      for (let i = 0; i < 18; i++) {
+        const o = xbowTip(t, ts, A[i % A.length]), px = c.x + rand(-45, 45), py = c.y + rand(-18, 18);
+        G.projectiles.push({ kind: 'ghostarrow', ballistic: true, longArrow: true, col: M.col, sx: o.x, sy: o.y, gy0: t.y, ax: px, ay: py - 10, tx: px, ty: py - 10, fy: py, fy0: py,
+          target: null, t: -w - i * 0.05, dur: 0.85 + dist(o.x, o.y, px, py) / 900, arc: rand(110, 150), dmg: avg * 0.6, rain: 18, src: 'arrow' });
+      }
+      t.relQ = (t.relQ || []).concat(A.map(a => { const o = xbowTip(t, ts, a); return { t: w, x: o.x, y: o.y, col: M.col, bow: true }; }));
+    } else { // Delici Cıvata: dev cıvata en öndeki düşmana, arkasındaki hattı delip geçer
+      const e = near.slice().sort((a, b) => (a.p.total - a.d) - (b.p.total - b.d))[0], o = xbowTip(t, ts, A[0]);
+      ballisticShot(o, t.y, e, w, M, { giant: true, dmg: avg * 4, dtype: 'true', pierceLine: 99, pierceLen: 320, pierceK: 0.8, knock: true });
+      t.relQ = (t.relQ || []).concat([{ t: w, x: o.x, y: o.y, col: M.col, heavy: true }]);
+      setTimeout(() => G && shakeScreen(1.6, 0.15), w * 1000);
+    }
+  } else if (t.spec === 'plague') {
     const c = densestOf(near, 45);
     for (let k = 0; k < (t.spec === 'nail' ? 5 : 1); k++) {
       const x = c.x + (k ? rand(-28, 28) : 0), y = c.y + (k ? rand(-14, 14) : 0);
@@ -3081,7 +3095,8 @@ function updateEnemy(e, dt) {
     if (d <= st + 0.5) e.offPath = false;
     else { e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
   }
-  e.d += spd * dt * (e.d < 0 ? 1.5 : 1); // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
+  e.curSpd = spd * (e.d < 0 ? 1.5 : 1); e.movedAt = G.t; // mermilerin tahminli nişanı için (leadPoint)
+  e.d += e.curSpd * dt; // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
   // ayak tozu: yürüyüş döngüsünde her adım yere bastığında (çizimdeki adım hızıyla aynı)
   if (!e.def.flying && spd > 0) {
     const step = Math.floor(e.anim * (5 + e.def.speed * G.wspd / 9) / Math.PI);
@@ -3476,10 +3491,27 @@ function drawTraps() {
 }
 
 // ---------- mermiler & efektler ----------
+// saplanan ok: isabet edince düşmanın gövdesinde (onunla birlikte gider, 1,4 sn sonra söner; en çok 3), ıskalayınca yerde titreyerek kalır
+function stickArrow(pr, e) {
+  const k = 0.985, ang = projAng(pr, k);
+  if (e) {
+    if ((e.stuckN || 0) >= 3) return;
+    e.stuckN = (e.stuckN || 0) + 1;
+    G.effects.push({ kind: 'stuck', target: e, dx: pr.tx - e.x + Math.cos(ang) * 3, dy: pr.ty - e.y + Math.sin(ang) * 3, ang, t: 0, dur: 1.4, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow });
+  } else {
+    const gy = pr.fy ?? pr.ty, a = clamp(ang, 0.35, Math.PI - 0.35); // yere eğik saplanır
+    G.effects.push({ kind: 'stuck', x: pr.tx, y: gy, ang: a, t: 0, dur: 2.2, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow, ground: true });
+    for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx, y: gy, vx: rand(-25, 25), vy: -rand(15, 45), g: 220, col: '#7a6a52', s0: 1.3, s1: 0.6, life: 0.35 });
+  }
+}
+const dustPuff = (x, y, k = 1) => { for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'glow', x: x + rand(-3, 3), y, vx: rand(-14, 14), vy: -rand(4, 12), col: '170,150,120', s0: 3 * k, s1: 8 * k, life: 0.45, a: 0.3 }); };
 function projPos(pr, k) {
   k = clamp(k, 0, 1);
+  if (pr.ballistic) return { x: lerp(pr.sx, pr.tx, k), y: lerp(pr.sy, pr.ty, k) - 4 * pr.arc * k * (1 - k) }; // gerçek parabol (sabit yerçekimi)
   return { x: lerp(pr.sx, pr.tx, k), y: lerp(pr.sy, pr.ty, k) - Math.sin(k * Math.PI) * pr.arc };
 }
+// balistik merminin o anki doğrultusu (parabolün türevi): ok burnu hep uçuş yönüne bakar
+const projAng = (pr, k) => Math.atan2((pr.ty - pr.sy) - 4 * pr.arc * (1 - 2 * clamp(k, 0, 1)), (pr.tx - pr.sx) || 0.001);
 function updateProjectile(pr, dt) {
   pr.t += dt;
   if (pr.foe) {
@@ -3506,7 +3538,12 @@ function updateProjectile(pr, dt) {
     }
     return;
   }
-  if (pr.target && !pr.target.dead) { pr.tx = pr.target.x; pr.ty = aimY(pr.target); }
+  if (pr.ballistic) { // tahmin noktasına uçar; son %40'ta hedefe yumuşakça döner (isabet hissi; ani kıvrılma yok)
+    if (pr.target && !pr.target.dead && pr.t > 0) {
+      const w = clamp((pr.t / pr.dur - 0.6) / 0.4, 0, 1), s3 = w * w * (3 - 2 * w);
+      pr.tx = lerp(pr.ax, pr.target.x, s3); pr.ty = lerp(pr.ay, aimY(pr.target), s3); pr.fy = lerp(pr.fy0, pr.target.y, s3);
+    }
+  } else if (pr.target && !pr.target.dead) { pr.tx = pr.target.x; pr.ty = aimY(pr.target); }
   if (pr.t > 0) {
     pr.fxT = (pr.fxT || 0) - dt;
     if (pr.fxT <= 0) {
@@ -3530,6 +3567,11 @@ function updateProjectile(pr, dt) {
   }
   if (pr.t < pr.dur) return;
   pr.done = true;
+  if (pr.rain) { // ok yağmuru: düştüğü yerde küçük alan hasarı, ok yere saplanır
+    for (const e of G.enemies) if (!e.dead && !e.under && dist(e.x, e.y, pr.tx, pr.fy) < pr.rain) damageEnemy(e, pr.dmg, 'phys', true, 'arrow');
+    stickArrow(pr, null); dustPuff(pr.tx, pr.fy, 0.5);
+    return;
+  }
   if (pr.kind === 'rainarrow') {
     for (const e of G.enemies) {
       if (e.dead || dist(e.x, e.y, pr.tx, pr.ty) > pr.splash) continue;
@@ -3637,6 +3679,8 @@ function updateProjectile(pr, dt) {
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
     else fxExplosion(pr.tx, pr.ty, pr.splash, false);
     sfx(pr.kind === 'meteor' ? 'meteor' : 'boom');
+  } else if (pr.ballistic && !(pr.target && !pr.target.dead)) {
+    stickArrow(pr, null); // hedef uçuşta öldü: ok yere saplanır
   } else if (pr.target && !pr.target.dead) {
     const e = pr.target;
     if (pr.kind === 'bolt') fxMagicHit(pr.tx, pr.ty, pr.frost);
@@ -3655,11 +3699,13 @@ function updateProjectile(pr, dt) {
     if (pr.poison) poisonEnemy(e, pr.poison, 3);
     if (pr.slow) slowEnemy(e, pr.slow.k, pr.slow.t);
     if (pr.nail) { e.nailT = 4; e.nailK = pr.nail; } // ruh çivisi
-    damageEnemy(e, pr.dmg, pr.dtype, false, pr.src);
+    damageEnemy(e, pr.dmg, pr.dtype, false, pr.src, pr.pen || 0);
+    if (pr.ballistic) stickArrow(pr, e);
+    if (pr.knock && !e.dead && !e.def.chief && !e.def.boss && pushable(e) && !e.blocker) { e.knockT = KNOCK.t * 1.4; e.knockV = 110; e.hopT = Math.max(e.hopT || 0, 0.2); } // ağır cıvata geri iter
     if (pr.pierceLine) { // balista mızrağı: hedefin arkasında aynı doğrultudaki düşmanları da deler
       const L0 = Math.hypot(pr.tx - pr.sx, pr.ty - pr.sy) || 1, ux = (pr.tx - pr.sx) / L0, uy = (pr.ty - pr.sy) / L0;
       G.enemies.filter(o => o !== e && !o.dead && !o.under).map(o => { const ax = o.x - e.x, ay = aimY(o) - pr.ty, along = ax * ux + ay * uy; return { o, along, off: Math.abs(ax * uy - ay * ux) }; })
-        .filter(q => q.along > 0 && q.along < 110 && q.off < 18).sort((a, b) => a.along - b.along).slice(0, pr.pierceLine)
+        .filter(q => q.along > 0 && q.along < (pr.pierceLen || 110) && q.off < 18).sort((a, b) => a.along - b.along).slice(0, pr.pierceLine)
         .forEach(q => { damageEnemy(q.o, pr.dmg * (pr.pierceK || 0.6), 'true', false, pr.src); impactFx(q.o.x, aimY(q.o), '255,120,110', 0.9); });
     }
     if (pr.drain) for (const s of G.soldiers) { // ruh emici: hedefin yakınındaki iskeletler iyileşir
@@ -5117,6 +5163,9 @@ function update(dt) {
   G.enemies = G.enemies.filter(e => !e.dead);
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.projectiles = G.projectiles.filter(p => !p.done);
+  for (const f of G.effects) {
+    if (f.kind === 'stuck' && f.target && (f.target.dead || f.t + dt >= f.dur) && !f.gone) { f.gone = true; f.target.stuckN = Math.max(0, (f.target.stuckN || 1) - 1); if (f.target.dead) f.t = f.dur; }
+  }
   for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); else if (f.kind === 'bones') bonePhys(f, dt); else if (f.kind === 'skyfall') skyFallPhys(f, dt); }
   G.effects = G.effects.filter(f => f.t < f.dur);
   G.parts = updateParts(G.parts, dt);
@@ -5365,7 +5414,9 @@ const TOWER_FORM = {
   // 10 Eki denge: dönüşümler 3. kademenin ~1,3 katı (önce ~2,4 kattı, tek kule bölüm geçiyordu)
   archer_nail: { noAnim: true, layers: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.9857, 0.3389], nock: [0.3057, 0.1216], armUp: [0.7314, 0.0556], armLo: [0.1086, 0.2574], pivot: [0.4714, 0.3622], rotMax: [-1.05, 1.2], pierce: 2, pierceK: 0.45, flip: true },
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
-  archer_fan: { noAnim: true, w: 1.0, rate: 0.64, dmg: 0.72, range: 1.05, fly: 1.3, fanK: 0.7, bows: { L: [0.2, 0.2174], R: [0.76, 0.206] }, archers: true },
+  // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
+  archer_fan: { noAnim: true, w: 1.0, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
+  archer_bow: { noAnim: true, img: 'tower_archer_fan', w: 1.0, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
@@ -5384,7 +5435,8 @@ function towerAnim(t) {
   const im = spr(n); if (!im) { loadStrip(n); return null; }
   return { im, M, n, dur: M.n / TOWER_ANIM_FPS };
 }
-const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(`tower_${t.type}_${t.spec}`) ? TOWER_FORM[t.type + '_' + t.spec] : null);
+const formImg = (t) => { const F = TOWER_FORM[t.type + '_' + t.spec]; return (F && F.img) || `tower_${t.type}_${t.spec}`; }; // img: başka uzmanlığın görselini paylaşır
+const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(formImg(t)) ? TOWER_FORM[t.type + '_' + t.spec] : null);
 const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
 // dönüşmüş kulede görsel üzerindeki bir noktanın dünya konumu (balista hedefe dönükse aynalanır)
 // Arbaletçi kulesi (11 Eki, Caner): tepedeki platformda kademeye göre 1/2/3 yeşil kemik arbaletçi; Hayalet Arbaletçiler (fan) 3 kızıl hayalet.
@@ -5397,8 +5449,17 @@ const XBOW_T = {
   tower_xbow_3: { x: [0.3, 0.6], y: [0.21, 0.27], h: 0.166, clip: [[0, 0.17], [0.04, 0.17], [0.43, 0.3], [0.84, 0.16], [1, 0.16]] },
   tower_archer_fan: { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.181, clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]] },
 };
-const xbowCfg = (t) => XBOW_T[t.spec === 'fan' ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
-const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec === 'fan' ? 3 : t.spec ? 0 : t.lvl + 1);
+// kuledeki iskeletler: 1-3. kademe yeşil arbaletçiler; 4. kademede ya 2 kızıl ağır arbaletçi (fan) ya da 3 kızıl hayalet okçu (bow).
+// aim: nişan / yay germe süresi (ok bu sürenin sonunda çıkar), kick: bırakınca geri tepme, hold: atıştan sonra silahı indirmeden bekleme,
+// tip: atış pozunda okun çıktığı nokta (görsel kesri), spd: mermi hızı (px/sn), arc: kavis (uzaklığın kesri; okçular yüksek atar)
+const MEN = {
+  base: { pre: 'unit_xbow', pose: '_aim', aim: 0.3, kick: 0.16, hold: 0.55, tip: [0.99, 0.24], n: (t) => t.lvl + 1, col: '140,255,150', spd: 720, arc: 0.06 },
+  fan:  { pre: 'unit_ghostxbow', pose: '_aim', aim: 0.46, kick: 0.3, hold: 0.85, tip: [0.99, 0.24], n: () => 2, col: '255,80,90', spd: 820, arc: 0.035, heavy: true },
+  bow:  { pre: 'unit_ghostarcher', pose: '_draw', aim: 0.4, kick: 0.12, hold: 0.32, tip: [0.95, 0.27], n: () => 3, col: '255,90,130', spd: 420, arc: 0.26, bow: true },
+};
+const menOf = (t) => MEN[t.spec === 'fan' || t.spec === 'bow' ? t.spec : 'base'];
+const xbowCfg = (t) => XBOW_T[t.spec ? 'tower_archer_fan' : xbowTowerName(t.lvl)];
+const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
 function xbowMen(t) {
   const n = xbowCount(t); if (!t.ga) t.ga = [];
   if (t.ga.length > n) t.ga.length = n;
@@ -5407,10 +5468,10 @@ function xbowMen(t) {
   return t.ga;
 }
 function updateXbowMen(t, dt) {
-  const A = xbowMen(t), X = Object.assign({}, XBOW, xbowCfg(t));
+  const A = xbowMen(t), X = Object.assign({}, XBOW, xbowCfg(t)), M = menOf(t);
   A.forEach((a, i) => {
-    a.anim += dt; if (a.aimT > 0) a.aimT -= dt; if (a.kickT > -XBOW.hold) a.kickT -= dt;
-    const busy = a.aimT > 0 || a.kickT > -XBOW.hold;
+    a.anim += dt; if (a.aimT > 0) a.aimT -= dt; if (a.kickT > -M.hold) a.kickT -= dt;
+    const busy = a.aimT > 0 || a.kickT > -M.hold;
     if (a.tx == null && !busy && (a.moveT -= dt) <= 0) { // ara ara platformda yer değiştirir (diğerlerine çok yaklaşmadan)
       for (let k = 0; k < 8; k++) { const nx = rand(X.x[0], X.x[1]); if (A.every((o, j) => j === i || Math.abs(nx - o.x) > X.gap) && Math.abs(nx - a.x) > 0.05) { a.tx = nx; a.td = rand(0, 1); break; } }
       a.moveT = rand(2.5, 5);
@@ -5424,49 +5485,67 @@ function updateXbowMen(t, dt) {
   });
 }
 function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
-function xbowTip(t, ts, a) { // omuza kaldırılmış arbaletin cıvata ucu (dünya koordinatı)
-  const f = xbowFoot(t, ts, a), im = spr('unit_xbow_aim'), h = ts.h * xbowCfg(t).h, w = im ? h * im.width / im.height : h * 0.89;
-  return { x: f.x + (XBOW.tip[0] - 0.5) * w * a.face, y: f.y - (1 - XBOW.tip[1]) * h };
+function xbowTip(t, ts, a) { // atış pozunda okun / cıvatanın çıktığı nokta (dünya koordinatı)
+  const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = ts.h * xbowCfg(t).h, w = im ? h * im.width / im.height : h * 0.89;
+  return { x: f.x + (M.tip[0] - 0.5) * w * a.face, y: f.y - (1 - M.tip[1]) * h };
+}
+// fizik: hedefin mermi varana dek yolda nereye varacağı tahmin edilir (yürüyorsa); durmuş, dövüşen ya da yoldan çıkmışsa olduğu yer
+function leadPoint(e, T) {
+  const moving = e.p && !e.offPath && !e.blocker && !(e.stunT > 0) && !(e.skillT > 0) && !e.under && G.t - (e.movedAt || -9) < 0.15;
+  if (!moving) return { x: e.x, y: aimY(e), fy: e.y };
+  const q = pathPos(e.p, Math.min(e.p.total, e.d + (e.curSpd || 0) * T), e.off);
+  return { x: q.x, y: q.y + (aimY(e) - e.y), fy: q.y };
+}
+// balistik mermi: (sx,sy)'den tahmin noktasına parabol (arc: tepe yüksekliği); gy0 atanın, fy hedefin yer hizası (gölge için)
+function ballisticShot(o, gy0, tg, T0, M, extra) {
+  const d = dist(o.x, o.y, tg.x, aimY(tg)), dur = clamp(d / M.spd, 0.1, M.bow ? 0.8 : 0.45), P = leadPoint(tg, T0 + dur);
+  const pr = Object.assign({ kind: 'ghostarrow', ballistic: true, bolt: !M.bow, heavy: !!M.heavy, longArrow: !!M.bow, col: M.col, sx: o.x, sy: o.y, gy0, target: tg,
+    ax: P.x, ay: P.y, tx: P.x, ty: P.y, fy: P.fy, fy0: P.fy, t: -T0, dur, arc: clamp(dist(o.x, o.y, P.x, P.y) * M.arc, M.bow ? 16 : 2, M.bow ? 75 : 14), src: 'arrow' }, extra);
+  G.projectiles.push(pr);
+  return pr;
 }
 // bir arbaletçi atar: ötekilerin hedeflemediği en öndeki düşmanı seçer (yoksa verilen hedef), döner, nişan alır; cıvata nişan bitince çıkar
 function xbowShoot(t, ts, L, e0, opt) {
-  const A = xbowMen(t); if (!A.length) return null;
+  const A = xbowMen(t), M = menOf(t); if (!A.length) return null;
   const i = (t.xi = ((t.xi ?? -1) + 1) % A.length), a = A[i];
-  const taken = new Set(A.filter((o, j) => j !== i && o.kickT > -XBOW.hold && o.tg && !o.tg.dead).map(o => o.tg));
+  const taken = new Set(A.filter((o, j) => j !== i && o.kickT > -M.hold && o.tg && !o.tg.dead).map(o => o.tg));
   let e = e0;
   if (taken.has(e0)) { let br = 1e9; for (const x of G.enemies) if (!taken.has(x) && !x.dead && !x.under && dist(t.x, t.y - 10, x.x, x.y) <= L.range && x.p.total - x.d < br) { br = x.p.total - x.d; e = x; } }
-  a.tg = e; a.tx = null; a.walking = false; a.face = e.x < xbowFoot(t, ts, a).x ? -1 : 1; a.aimT = XBOW.aim; a.kickT = XBOW.aim + XBOW.kick;
+  a.tg = e; a.tx = null; a.walking = false; a.face = e.x < xbowFoot(t, ts, a).x ? -1 : 1; a.aimT = M.aim; a.kickT = M.aim + M.kick;
   const o = xbowTip(t, ts, a);
-  const shot = (tg, dmg, k = 0) => G.projectiles.push({ kind: 'ghostarrow', bolt: true, col: opt.col, sx: o.x, sy: o.y, target: tg, tx: tg.x, ty: aimY(tg), t: -XBOW.aim - k * 0.04, dur: clamp(dist(o.x, o.y, tg.x, tg.y) / 720, 0.1, 0.4),
-    dmg: dmg * (tg.def.flying ? opt.fly || 1 : 1), dtype: opt.pierce ? 'true' : 'phys', arc: 3, crit: opt.crit, pierce: opt.pierce, nail: opt.nail || 0, src: 'arrow' });
-  shot(e, opt.dmg);
-  if (opt.fan) G.enemies.filter(x => x !== e && !x.dead && !x.under && dist(t.x, t.y - 10, x.x, x.y) <= L.range)
-    .sort((p, q) => dist(p.x, p.y, e.x, e.y) - dist(q.x, q.y, e.x, e.y)).slice(0, opt.fan.n).forEach((x, k) => shot(x, opt.fanDmg, k + 1));
-  t.relQ = (t.relQ || []).concat([{ t: XBOW.aim, x: o.x, y: o.y, col: opt.col }]); // bırakma anında namlu parıltısı ve ses
+  ballisticShot(o, t.y, e, M.aim, M, { dmg: opt.dmg * (e.def.flying ? opt.fly || 1 : 1), dtype: opt.pierce ? 'true' : 'phys', crit: opt.crit, pierce: opt.pierce, pen: opt.pen || 0, poison: opt.poison || 0, knock: !!M.heavy });
+  t.relQ = (t.relQ || []).concat([{ t: M.aim, x: o.x, y: o.y, col: M.col, heavy: M.heavy, bow: M.bow }]); // bırakma anında parıltı ve ses
   return a;
 }
 function updateXbowRelease(t, dt) {
   if (!t.relQ || !t.relQ.length) return;
   for (const r of t.relQ) if ((r.t -= dt) <= 0) {
-    for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'glow', add: true, x: r.x, y: r.y, vx: rand(-30, 30), vy: rand(-30, 10), drag: 3, col: r.col, s0: 2.6, s1: 0.4, life: 0.28 });
-    sfx('arrow');
+    for (let i = 0; i < (r.heavy ? 9 : 5); i++) emit(G.parts, { kind: 'glow', add: true, x: r.x, y: r.y, vx: rand(-30, 30), vy: rand(-30, 10), drag: 3, col: r.col, s0: r.heavy ? 3.4 : 2.6, s1: 0.4, life: 0.28 });
+    sfx(r.heavy ? 'cannon' : 'arrow', r.heavy ? 1.5 : r.bow ? rand(1.05, 1.2) : undefined);
   }
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
 function drawXbowMen(t, ts, redraw) {
-  const A = xbowMen(t), h = ts.h * xbowCfg(t).h, ghost = t.spec === 'fan', pre = ghost ? 'unit_ghostxbow' : 'unit_xbow';
+  const A = xbowMen(t), h = ts.h * xbowCfg(t).h, M = menOf(t), ghost = !!t.spec, pre = M.pre;
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
-    const f = xbowFoot(t, ts, a), up = a.kickT > -XBOW.hold;
+    const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
-    const im = spr(up ? pre + '_aim' : pre); if (!im) continue;
+    const im = spr(up ? pre + M.pose : pre); if (!im) continue;
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1);
     const bob = a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012; // yürürken sekme, dururken nefes
-    const rise = a.aimT > 0 ? (1 - a.aimT / XBOW.aim) : 1; // nişana kalkış
-    const kk = a.aimT <= 0 && a.kickT > 0 ? a.kickT / XBOW.kick : 0; // bırakınca geri tepme (geri ve yukarı)
-    const lean = a.walking ? Math.sin(a.anim * 9) * 0.04 : up ? (1 - rise) * 0.12 - kk * 0.1 : 0;
-    ctx.translate(-h * 0.07 * kk, -bob); ctx.rotate(lean); drawSprite(ctx, im, 0, 0, h * im.width / im.height);
+    const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
+    const kk = a.aimT <= 0 && a.kickT > 0 ? a.kickT / M.kick : 0; // bırakınca geri tepme (geri ve yukarı)
+    let lean = a.walking ? Math.sin(a.anim * 9) * 0.04 : up ? (1 - rise) * 0.12 - kk * 0.1 : 0, sx = 1, sy = 1, back = 0;
+    if (M.bow && up) { // okçu: yay gerilirken gövde geriye yaslanır ve hafifçe gerilir, bırakınca ileri sekip yerine oturur
+      const tense = a.aimT > 0 ? rise * rise : 0;
+      lean = (1 - rise) * 0.1 - tense * 0.05 + kk * 0.06; back = tense * h * 0.025 - kk * h * 0.03; sx = 1 - tense * 0.025; sy = 1 + tense * 0.015;
+    }
+    if (M.heavy && up && kk > 0) back = h * 0.11 * kk; // ağır arbalet sert teper
+    ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy); drawSprite(ctx, im, 0, 0, h * im.width / im.height);
     ctx.restore();
-    if (kk > 0.5) { const o = xbowTip(t, ts, a); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * 0.16 * kk, ghost ? '255,80,90' : '140,255,150', 0.7 * kk); ctx.restore(); }
+    const o = xbowTip(t, ts, a);
+    if (M.bow && a.aimT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * 0.1 * rise, M.col, 0.45 * rise); ctx.restore(); } // gerilen okun ucunda kızıl ışık
+    if (kk > 0.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * (M.heavy ? 0.24 : 0.16) * kk, ghost ? M.col : '140,255,150', 0.7 * kk); ctx.restore(); }
   }
   redraw(); // ön korkuluk ve gövde iskeletlerin ayaklarının önüne
 }
@@ -5558,7 +5637,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), name = F ? `tower_${t.type}_${t.spec}` : xb ? xbowTowerName(t.lvl) : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
+  const xb = !F && xbowCount(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -7457,18 +7536,17 @@ function drawProjectile(p) {
     ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(2, -3.6); ctx.lineTo(4, 0); ctx.lineTo(2, 3.6); ctx.closePath(); ctx.fillStyle = '#ff6a5a'; ctx.fill(); ctx.strokeStyle = '#3a0a08'; ctx.lineWidth = 0.8; ctx.stroke();
     ctx.restore();
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + Math.cos(a) * 8, y + Math.sin(a) * 8, 7, '255,80,70', 0.7); ctx.restore();
-  } else if (p.kind === 'ghostarrow') { // hayalet ok: okçunun renginde ışıklı ince ok ve iz
-    const pv = projPos(p, k - 0.12), a = Math.atan2(y - pv.y, x - pv.x);
+  } else if (p.kind === 'ghostarrow') { // hayalet ok / cıvata: okçunun renginde ışıklı iz; balistikse yerde gölgesi uçar
+    const ang = p.ballistic ? projAng(p, k) : Math.atan2(y - projPos(p, k - 0.12).y, x - projPos(p, k - 0.12).x), pv = projPos(p, k - (p.longArrow ? 0.08 : 0.12));
+    if (p.ballistic && p.gy0 != null) { // yer gölgesi: atanın ayağından hedefin ayağına; ok yükseldikçe küçülür ve solar
+      const gy = lerp(p.gy0, p.fy ?? p.ty, k), hgt = Math.max(0, gy - y), sh = clamp(1 - hgt / 140, 0.3, 1);
+      ctx.save(); ctx.fillStyle = `rgba(0,0,0,${0.22 * sh})`; ctx.beginPath(); ctx.ellipse(x, gy, (p.heavy ? 7 : 5.5) * sh, 1.6 * sh, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    ctx.strokeStyle = `rgba(${p.col},0.45)`; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(pv.x, pv.y); ctx.lineTo(x, y); ctx.stroke();
-    ctx.translate(x, y); ctx.rotate(a); if (p.bolt) ctx.scale(0.72, 1.3); // arbalet cıvatası: kısa ve kalın
-    glow(ctx, 2, 0, 7, p.col, 0.5); ctx.globalCompositeOperation = 'source-over';
-    // kemik ok: koyu çizgili fildişi şaft, sivri kemik uç, kızıl tüy
-    ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(5, 0); ctx.stroke();
-    ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(5, 0); ctx.stroke();
-    ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 0.6;
-    ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(4.5, -2); ctx.lineTo(5.5, 0); ctx.lineTo(4.5, 2); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = `rgb(${p.col})`; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-12, -2.4); ctx.lineTo(-10.5, 0); ctx.lineTo(-12, 2.4); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = `rgba(${p.col},${p.heavy ? 0.55 : 0.45})`; ctx.lineWidth = p.heavy ? 3.2 : p.longArrow ? 1.4 : 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(pv.x, pv.y); ctx.lineTo(x, y); ctx.stroke();
+    ctx.restore();
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+    boneArrowShape(p.col, p.bolt, p.heavy, p.longArrow, false, p.giant);
     ctx.restore();
   } else if (p.kind === 'net') { // dönen ağ: halka ve ağ örgüsü, uçtukça açılır
     const k = clamp(p.t / p.dur, 0, 1), R = 3 + 6 * k;
@@ -7627,9 +7705,30 @@ function drawImpact(f) {
   }
   ctx.restore();
 }
+// kemik ok / cıvata çizimi (0,0 = uç bölgesi, +x uçuş yönü). embed: ucu gövdeye gömülü (yalnız şaft ve tüy görünür)
+function boneArrowShape(col, bolt, heavy, longA, embed, giant) {
+  ctx.save();
+  if (giant) ctx.scale(1.9, 1.9); else if (heavy) ctx.scale(0.9, 1.6); else if (bolt) ctx.scale(0.72, 1.3); else if (longA) ctx.scale(1.25, 0.9); // arbalet cıvatası kısa ve kalın, ok uzun ve ince
+  if (!embed) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 2, 0, heavy ? 9 : 7, col, heavy ? 0.6 : 0.5); ctx.restore(); }
+  const x1 = embed ? -1 : 5;
+  ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(x1, 0); ctx.stroke();
+  ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(x1, 0); ctx.stroke();
+  if (!embed) { ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(4.5, -2); ctx.lineTo(5.5, 0); ctx.lineTo(4.5, 2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  ctx.fillStyle = `rgb(${col})`; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-12, -2.4); ctx.lineTo(-10.5, 0); ctx.lineTo(-12, 2.4); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
 function drawEffect(f) {
   if (f.t < 0) return; // gecikmeli başlayan efekt
   const k = f.t / f.dur;
+  if (f.kind === 'stuck') { // saplanmış ok: düşmanda onunla birlikte, yerde titreyerek; sonda söner
+    const T = f.target, x = T ? T.x + f.dx : f.x, y = T ? T.y + f.dy : f.y, a = clamp((1 - k) / 0.3, 0, 1);
+    const wob = Math.exp(-f.t * 9) * Math.sin(f.t * 55) * 0.25; // saplanınca sallanır
+    ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.rotate(f.ang + wob);
+    if (f.ground) { ctx.fillStyle = 'rgba(40,26,12,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 3, 1.1, -f.ang, 0, Math.PI * 2); ctx.fill(); }
+    boneArrowShape(f.col || '255,90,90', f.bolt, f.heavy, f.longA, true);
+    ctx.restore();
+    return;
+  }
   if (f.kind === 'impact') { drawImpact(f); return; }
   if (f.kind === 'swordstuck') {
     ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot);
@@ -8409,9 +8508,14 @@ function drawAbilityIcon(id, x, y, s) {
   } else if (id === 'holy') {
     for (let i = 0; i < 8; i++) { ctx.save(); ctx.rotate(i * Math.PI / 4); ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(0, -13); ctx.strokeStyle = dark; ctx.lineWidth = 4; ctx.stroke(); ctx.strokeStyle = '#fff2b0'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
     circle(0, 0, 6.5, '#ffe27a', dark, 2.5);
-  } else if (id === 'fan') { // kemik yelpazesi: üç kıymık yelpaze gibi
-    for (const a of [-0.55, 0, 0.55]) { ctx.save(); ctx.rotate(a); ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(-2.4, -4); ctx.lineTo(0, -13); ctx.lineTo(2.4, -4); ctx.closePath();
-      ctx.strokeStyle = dark; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#efe6cc'; ctx.fill(); ctx.restore(); }
+  } else if (id === 'fan') { // ağır arbalet: kemik kundak, kaburga yaylar, kızıl cıvata
+    ctx.save(); ctx.rotate(-0.5);
+    roundRect(-3, -2, 6, 17, 2, '#4a3a44', dark, 2.2); // kundak
+    ctx.beginPath(); ctx.moveTo(-13, 3); ctx.quadraticCurveTo(0, -9, 13, 3); ctx.strokeStyle = dark; ctx.lineWidth = 5; ctx.stroke(); ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 2.6; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-12.5, 3); ctx.lineTo(0, 7); ctx.lineTo(12.5, 3); ctx.strokeStyle = '#ff6a6a'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(0, -12); ctx.strokeStyle = dark; ctx.lineWidth = 3.4; ctx.stroke(); ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 1.6; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(-3, -11); ctx.lineTo(3, -11); ctx.closePath(); ctx.fillStyle = '#ff5a5a'; ctx.fill(); ctx.strokeStyle = dark; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.restore();
   } else if (id === 'nail') { // ruh çivisi: kara çivi, yeşil ruh ışığı
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 14, '120,255,140', 0.6); ctx.restore();
     ctx.beginPath(); ctx.moveTo(-7, -11); ctx.lineTo(7, -11); ctx.lineTo(7, -7); ctx.lineTo(2, -7); ctx.lineTo(0.6, 12); ctx.lineTo(-0.6, 12); ctx.lineTo(-2, -7); ctx.lineTo(-7, -7); ctx.closePath();

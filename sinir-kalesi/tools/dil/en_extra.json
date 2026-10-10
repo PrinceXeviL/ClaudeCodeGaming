@@ -68,7 +68,15 @@
   "Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Arbaletçiler ve Ruh Feneri vurur": "Flies in flocks, eats corpses: an eaten corpse can't be raised and the vulture heals. Crossbowmen and Soul Lanterns can hit it",
   "KISIK": "LOW",
   "Görüntü kalitesi": "Graphics quality",
-  "HARİTAYA DÖN": "BACK TO MAP"
+  "HARİTAYA DÖN": "BACK TO MAP",
+  "Kemik Kulesi": "Bone Tower",
+  "Ağır Arbaletçiler": "Heavy Crossbowmen",
+  "Delici Cıvata": "Piercing Bolt",
+  "Okçular göğe 18 ok salar, kalabalığın üstüne yağar": "The archers loose 18 arrows into the sky; they rain down on the crowd",
+  "Dev bir cıvata hattaki bütün düşmanları delip geçer: ağır hasar, zırhı yok sayar": "A giant bolt pierces every enemy in its line: heavy damage, ignores armor",
+  "İki kızıl arbaletçi: yavaş, ağır, zırh delen cıvata": "Two crimson crossbowmen: slow, heavy, armor-piercing bolts",
+  "Üç kızıl okçu: çok sık, yüksek kavisli oklar": "Three crimson archers: very rapid, high-arcing arrows",
+  "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu": "Skeleton crossbowmen on top shoot bone bolts, also hit flyers · at tier 4 choose archers or heavy crossbowmen"
  },
  "tpl": [
   [
@@ -274,6 +282,14 @@
   [
    "Kule Hayalet Arbaletçilere dönüşür: 3 kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara +%30 · her atışta {} ek cıvata yakındaki düşmanlara (%{} hasar) · kalabalığa iyi",
    "The tower becomes Ghost Crossbowmen: 3 crimson ghost crossbowmen shoot separate targets, +30% vs flyers · each shot sends {} extra bolts at nearby enemies ({}% damage) · good against crowds"
+  ],
+  [
+   "Kule 3 kızıl hayalet okçuya dönüşür: çok sık, yüksek kavisli oklar (ok başına az hasar), uçanlara +%30 · her {}. ok zehirli: 3 sn boyunca saniyede {} hasar",
+   "The tower becomes 3 crimson ghost archers: very rapid, high-arcing arrows (low damage per arrow), +30% vs flyers · every {}th arrow is poisoned: {} damage per second for 3 s"
+  ],
+  [
+   "Kule 2 kızıl ağır arbaletçiye dönüşür: yavaş ama ağır cıvata, zırhın %{} kadarını deler, vurduğunu geri iter · %{} şansla 3 kat hasar",
+   "The tower becomes 2 crimson heavy crossbowmen: slow but heavy bolts, pierce {}% of armor, knock targets back · {}% chance of triple damage"
   ]
  ]
 }

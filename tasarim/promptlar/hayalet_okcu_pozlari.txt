@@ -1,0 +1,10 @@
+Using the attached reference image (our crimson ghost-skeleton archer), redraw the SAME character for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly shading, same chunky cartoon proportions, same colors, same crimson hooded cloak, bone pauldrons with small skulls, glowing red eyes, crimson spectral mist at the feet, same black bone longbow with a glowing red string.
+
+Draw 5 separate poses in ONE horizontal row, with lots of empty space between them, all side view facing RIGHT, full body, exactly the same size and the same feet height (a bow-shooting animation sequence):
+1. Idle: bow held low in the left hand, right hand resting near the quiver.
+2. Nocking: bow raised in front of the chest, right hand placing a red-fletched bone arrow on the string.
+3. Half draw: bow arm extended forward, string pulled halfway back to the chest, arrow pointing forward.
+4. Full draw: bow arm fully extended, string pulled back to the cheek, body leaning slightly back, arrow tip glowing red.
+5. Release: arrow gone, string snapped forward and straight, drawing hand flung open behind the head, slight follow-through lean.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
