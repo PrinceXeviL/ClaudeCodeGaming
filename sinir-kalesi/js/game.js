@@ -13302,6 +13302,13 @@ function comicNext() {
 }
 function comicBg(p, r, t) {
   const g = ctx;
+  const bim = spr('comic_bg_' + p.bg); // Gemini sahnesi (11 Eki, varliklar/panel_isle.py): kareyi doldurur, yavaşça yaklaşır (canlı dursun)
+  if (bim) {
+    const z = 1.03 + 0.025 * Math.min(1, t / 6), k = Math.max(r.w / bim.width, r.h / bim.height) * z, w = bim.width * k, h = bim.height * k;
+    g.save(); g.beginPath(); g.rect(r.x, r.y, r.w, r.h); g.clip(); g.drawImage(pickMip(g, bim, w), r.x + (r.w - w) / 2, r.y + (r.h - h) * 0.65, w, h);
+    if (p.sun) { g.globalCompositeOperation = 'lighter'; glow(g, r.x + r.w * 0.5, r.y + r.h * 0.35, r.h * 0.8, '255,230,150', 0.4); }
+    g.restore(); return;
+  }
   if (p.bg === 'gun') {
     let gr = g.createLinearGradient(0, r.y, 0, r.y + r.h); gr.addColorStop(0, '#f3c27c'); gr.addColorStop(0.6, '#e08a54'); gr.addColorStop(1, '#a8583a');
     g.fillStyle = gr; g.fillRect(r.x, r.y, r.w, r.h);
