@@ -3499,8 +3499,10 @@ function stickArrow(pr, e) {
     e.stuckN = (e.stuckN || 0) + 1;
     G.effects.push({ kind: 'stuck', target: e, dx: pr.tx - e.x + Math.cos(ang) * 3, dy: pr.ty - e.y + Math.sin(ang) * 3, ang, t: 0, dur: 1.4, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow });
   } else {
-    const gy = pr.fy ?? pr.ty, a = clamp(ang, 0.35, Math.PI - 0.35); // yere eğik saplanır
-    G.effects.push({ kind: 'stuck', x: pr.tx, y: gy, ang: a, t: 0, dur: 2.2, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow, ground: true });
+    const gy = pr.fy ?? pr.ty, a = clamp(ang, 0.35, Math.PI - 0.35); // yere eğik saplanır, 5,5 sn kalır (en çok 90 ok; fazlası en eskiden söner)
+    const old = G.effects.filter(f => f.kind === 'stuck' && f.ground);
+    if (old.length >= 90) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
+    G.effects.push({ kind: 'stuck', x: pr.tx, y: gy, ang: a, t: 0, dur: 5.5, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow, ground: true });
     for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx, y: gy, vx: rand(-25, 25), vy: -rand(15, 45), g: 220, col: '#7a6a52', s0: 1.3, s1: 0.6, life: 0.35 });
   }
 }
@@ -5487,8 +5489,20 @@ function updateXbowMen(t, dt) {
   });
 }
 function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
+// kuledeki iskeletler kuleyle karışmasın (Caner, 11 Eki): %10 iri ve koyu konturlu (kontur görsel başına bir kez hazırlanır)
+const MEN_K = 1.1, OUTL = new Map();
+function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
+  let c = OUTL.get(im); if (c) return c;
+  const s = document.createElement('canvas'); s.width = im.width; s.height = im.height;
+  const sg = s.getContext('2d'); sg.drawImage(im, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = col; sg.fillRect(0, 0, s.width, s.height);
+  c = document.createElement('canvas'); c.width = im.width + 2 * R; c.height = im.height + 2 * R;
+  const g = c.getContext('2d');
+  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8; g.drawImage(s, R + Math.cos(a) * R, R + Math.sin(a) * R); }
+  g.drawImage(im, R, R); c.pad = R; OUTL.set(im, c);
+  return c;
+}
 function xbowTip(t, ts, a) { // atış pozunda okun / cıvatanın çıktığı nokta (dünya koordinatı)
-  const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = ts.h * xbowCfg(t).h, w = im ? h * im.width / im.height : h * 0.89;
+  const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = ts.h * xbowCfg(t).h * MEN_K, w = im ? h * im.width / im.height : h * 0.89;
   return { x: f.x + (M.tip[0] - 0.5) * w * a.face, y: f.y - (1 - M.tip[1]) * h };
 }
 // fizik: hedefin mermi varana dek yolda nereye varacağı tahmin edilir (yürüyorsa); durmuş, dövüşen ya da yoldan çıkmışsa olduğu yer
@@ -5528,7 +5542,7 @@ function updateXbowRelease(t, dt) {
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
 function drawXbowMen(t, ts, redraw) {
-  const A = xbowMen(t), h = ts.h * xbowCfg(t).h, M = menOf(t), ghost = !!t.spec, pre = M.pre;
+  const A = xbowMen(t), h = ts.h * xbowCfg(t).h * MEN_K, M = menOf(t), ghost = !!t.spec, pre = M.pre;
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
     const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
@@ -5547,7 +5561,8 @@ function drawXbowMen(t, ts, redraw) {
     }
     if (M.heavy && up && kk > 0) back = h * 0.05 * kk; // ağır arbalet sert teper (poz zaten geri tepmiş)
     if (pose === '_load') back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
-    ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy); drawSprite(ctx, im, 0, 0, h * im.width / im.height);
+    ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
+    const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2);
     ctx.restore();
     const o = xbowTip(t, ts, a);
     if (M.bow && a.aimT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * 0.1 * rise, M.col, 0.45 * rise); ctx.restore(); } // gerilen okun ucunda kızıl ışık
@@ -7546,10 +7561,10 @@ function drawProjectile(p) {
     const ang = p.ballistic ? projAng(p, k) : Math.atan2(y - projPos(p, k - 0.12).y, x - projPos(p, k - 0.12).x), pv = projPos(p, k - (p.longArrow ? 0.08 : 0.12));
     if (p.ballistic && p.gy0 != null) { // yer gölgesi: atanın ayağından hedefin ayağına; ok yükseldikçe küçülür ve solar
       const gy = lerp(p.gy0, p.fy ?? p.ty, k), hgt = Math.max(0, gy - y), sh = clamp(1 - hgt / 140, 0.3, 1);
-      ctx.save(); ctx.fillStyle = `rgba(0,0,0,${0.22 * sh})`; ctx.beginPath(); ctx.ellipse(x, gy, (p.heavy ? 7 : 5.5) * sh, 1.6 * sh, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.fillStyle = `rgba(0,0,0,${0.22 * sh})`; ctx.beginPath(); ctx.ellipse(x, gy, (p.heavy ? 7 : 5.5) * sh * ARROW_K, 1.6 * sh * ARROW_K, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     }
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    ctx.strokeStyle = `rgba(${p.col},${p.heavy ? 0.55 : 0.45})`; ctx.lineWidth = p.heavy ? 3.2 : p.longArrow ? 1.4 : 2.2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(pv.x, pv.y); ctx.lineTo(x, y); ctx.stroke();
+    ctx.strokeStyle = `rgba(${p.col},${p.heavy ? 0.55 : 0.45})`; ctx.lineWidth = (p.heavy ? 3.2 : p.longArrow ? 1.4 : 2.2) * ARROW_K; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(pv.x, pv.y); ctx.lineTo(x, y); ctx.stroke();
     ctx.restore();
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
     boneArrowShape(p.col, p.bolt, p.heavy, p.longArrow, false, p.giant);
@@ -7712,8 +7727,9 @@ function drawImpact(f) {
   ctx.restore();
 }
 // kemik ok / cıvata çizimi (0,0 = uç bölgesi, +x uçuş yönü). embed: ucu gövdeye gömülü (yalnız şaft ve tüy görünür)
+const ARROW_K = 0.7; // oklar ve cıvatalar %30 küçük (Caner, 11 Eki)
 function boneArrowShape(col, bolt, heavy, longA, embed, giant) {
-  ctx.save();
+  ctx.save(); ctx.scale(ARROW_K, ARROW_K);
   if (giant) ctx.scale(1.9, 1.9); else if (heavy) ctx.scale(0.9, 1.6); else if (bolt) ctx.scale(0.72, 1.3); else if (longA) ctx.scale(1.25, 0.9); // arbalet cıvatası kısa ve kalın, ok uzun ve ince
   if (!embed) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 2, 0, heavy ? 9 : 7, col, heavy ? 0.6 : 0.5); ctx.restore(); }
   const x1 = embed ? -1 : 5;
@@ -7727,10 +7743,10 @@ function drawEffect(f) {
   if (f.t < 0) return; // gecikmeli başlayan efekt
   const k = f.t / f.dur;
   if (f.kind === 'stuck') { // saplanmış ok: düşmanda onunla birlikte, yerde titreyerek; sonda söner
-    const T = f.target, x = T ? T.x + f.dx : f.x, y = T ? T.y + f.dy : f.y, a = clamp((1 - k) / 0.3, 0, 1);
+    const T = f.target, x = T ? T.x + f.dx : f.x, y = T ? T.y + f.dy : f.y, a = clamp((f.dur - f.t) / 0.6, 0, 1); // son 0,6 sn'de söner
     const wob = Math.exp(-f.t * 9) * Math.sin(f.t * 55) * 0.25; // saplanınca sallanır
     ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.rotate(f.ang + wob);
-    if (f.ground) { ctx.fillStyle = 'rgba(40,26,12,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 3, 1.1, -f.ang, 0, Math.PI * 2); ctx.fill(); }
+    if (f.ground) { ctx.fillStyle = 'rgba(40,26,12,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 3 * ARROW_K, 1.1 * ARROW_K, -f.ang, 0, Math.PI * 2); ctx.fill(); }
     boneArrowShape(f.col || '255,90,90', f.bolt, f.heavy, f.longA, true);
     ctx.restore();
     return;

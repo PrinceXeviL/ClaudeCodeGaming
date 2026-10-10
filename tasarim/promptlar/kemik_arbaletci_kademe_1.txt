@@ -1,0 +1,11 @@
+Using the first attached image ONLY as the art-style and pose-layout reference (our crimson skeleton crossbowman sheet), draw a NEW character for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly cartoon shading, same chunky proportions, same size. The second attached image shows how our skeleton units get better armor at higher levels; use it as inspiration for the outfit.
+
+The character is a bare bony SKELETON RECRUIT: mostly exposed yellowed bones (ribs, spine, skull clearly visible), only a tattered dull grey-brown loincloth and a torn rag around the shoulders, a rusty dented iron pot helmet, a small simple wooden crossbow with a frayed rope string, plain bone bolts in a small cloth pouch at the belt, faint green glowing eye sockets.
+
+Draw the SAME character 4 times in ONE horizontal row, as a crossbow shooting animation sequence, all side view facing RIGHT, full body, exactly the same size and the same feet height. The crossbow must look IDENTICAL in all 4 poses (same size, same design). Leave WIDE empty magenta gaps between the poses: no part of one pose (crossbow, bolt, string, mist) may touch or overlap another pose.
+1. Ready: crossbow held at the hip, pointing forward and slightly down.
+2. Aiming: crossbow raised to the shoulder, aiming straight forward, a bolt loaded.
+3. Recoil: just fired, bolt gone, string forward, crossbow kicked up and back, body rocked back.
+4. Reloading: crossbow tip resting on the ground, one foot in the front stirrup, both hands pulling the string back.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
