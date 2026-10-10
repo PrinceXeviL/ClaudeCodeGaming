@@ -79,7 +79,17 @@
   "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu": "Skeleton crossbowmen on top shoot bone bolts, also hit flyers · at tier 4 choose archers or heavy crossbowmen",
   "Mahzen": "Crypt",
   "Mahzenler": "Crypts",
-  "Mahzenin kapısından çıkan iskelet savaşçılar yolu keser": "Skeleton warriors marching out of the crypt door block the road"
+  "Mahzenin kapısından çıkan iskelet savaşçılar yolu keser": "Skeleton warriors marching out of the crypt door block the road",
+  "SAVAŞ DURUMU": "BATTLE STATUS",
+  "Dalga": "Wave",
+  "Efektler": "Effects",
+  "Mortimer'ın tavsiyesi:": "Mortimer's advice:",
+  "Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.": "Plant the crypt's flag at a narrow spot on the road: the skeletons hold the enemy there and the towers hit at leisure.",
+  "Kalabalık bölüğe Korku büyüsü at: 4 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 4 seconds while the towers do their work.",
+  "Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.": "Call waves early and you earn gold. But greed digs graves.",
+  "Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.": "Soul Lantern for armored foes, Plague Cauldron for crowds. Mix your towers.",
+  "Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.": "The dead you raise are free soldiers. Don't waste corpses on the battlefield.",
+  "Kule satmak ayıp değil. Yanlış yere kurmak ayıp.": "Selling a tower is no shame. Building it in the wrong place is."
  },
  "tpl": [
   [

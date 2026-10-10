@@ -4878,5 +4878,45 @@
 {
 "tr": "Mahzenin kapısından çıkan iskelet savaşçılar yolu keser",
 "en": "Skeleton warriors marching out of the crypt door block the road"
+},
+{
+"tr": "SAVAŞ DURUMU",
+"en": "BATTLE STATUS"
+},
+{
+"tr": "Dalga",
+"en": "Wave"
+},
+{
+"tr": "Efektler",
+"en": "Effects"
+},
+{
+"tr": "Mortimer'ın tavsiyesi:",
+"en": "Mortimer's advice:"
+},
+{
+"tr": "Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.",
+"en": "Plant the crypt's flag at a narrow spot on the road: the skeletons hold the enemy there and the towers hit at leisure."
+},
+{
+"tr": "Kalabalık bölüğe Korku büyüsü at: 4 saniye geri kaçarlar, kuleler bu arada işini görür.",
+"en": "Cast Fear on a crowded company: they flee back for 4 seconds while the towers do their work."
+},
+{
+"tr": "Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.",
+"en": "Call waves early and you earn gold. But greed digs graves."
+},
+{
+"tr": "Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.",
+"en": "Soul Lantern for armored foes, Plague Cauldron for crowds. Mix your towers."
+},
+{
+"tr": "Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.",
+"en": "The dead you raise are free soldiers. Don't waste corpses on the battlefield."
+},
+{
+"tr": "Kule satmak ayıp değil. Yanlış yere kurmak ayıp.",
+"en": "Selling a tower is no shame. Building it in the wrong place is."
 }
 ]

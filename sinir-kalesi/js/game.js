@@ -12702,6 +12702,175 @@ function drawWinSummary(k, px, py, pw, cx) {
   txt(`${name} · ${bn}`, w / 2 - 24, 1, 17, '#b8ff9a', 'right', '400', FONT_T, false);
   ctx.restore();
 }
+// ---- Duraklatma menüsü (10 Eki, 2. tasarım; Caner: "rakip oyunlardan beğenilen özellikleri örnek al, desen olsun, koyu kırmızı-mor").
+// Kingdom Rush / Iron Marines duraklatmalarından alınanlar: süslü çerçeve ve arma, büyük ana düğme, savaş durumu özeti, hızlı ses
+// düğmeleri, her açılışta bir ipucu. Arkada yavaş dönen ritüel çemberi, kadife zeminde Necromancer deseni, köşelerde yakut süsler.
+const PAUSE_TIPS = [
+  'Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.',
+  'Kalabalık bölüğe Korku büyüsü at: 4 saniye geri kaçarlar, kuleler bu arada işini görür.',
+  'Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.',
+  'Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.',
+  'Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.',
+  'Kule satmak ayıp değil. Yanlış yere kurmak ayıp.',
+];
+const PAUSE_ART = {};
+function pauseSigil() { // ritüel çemberi (bir kez çizilir, her karede döndürülür)
+  if (PAUSE_ART.sigil) return PAUSE_ART.sigil;
+  const S = 640, c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d'), m = S / 2; g.translate(m, m); g.lineCap = 'round';
+  const ring = (r, w, col) => { g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.lineWidth = w; g.strokeStyle = col; g.stroke(); };
+  ring(300, 3, 'rgba(200,40,70,0.9)'); ring(286, 1.5, 'rgba(200,40,70,0.7)'); ring(212, 2, 'rgba(160,80,230,0.8)'); ring(120, 1.5, 'rgba(160,80,230,0.6)');
+  g.strokeStyle = 'rgba(220,60,90,0.85)'; g.lineWidth = 2;
+  for (let i = 0; i < 36; i++) { // dış halkada runlar
+    const a = i / 36 * Math.PI * 2; g.save(); g.rotate(a); g.translate(0, -293);
+    const k = i % 4; g.beginPath();
+    if (k === 0) { g.moveTo(0, -5); g.lineTo(0, 5); g.moveTo(-4, -2); g.lineTo(4, 2); }
+    else if (k === 1) { g.moveTo(-4, 4); g.lineTo(0, -5); g.lineTo(4, 4); }
+    else if (k === 2) { g.arc(0, 0, 3.5, 0, Math.PI * 2); }
+    else { g.moveTo(-4, -4); g.lineTo(4, 4); g.moveTo(4, -4); g.lineTo(-4, 4); }
+    g.stroke(); g.restore();
+  }
+  g.strokeStyle = 'rgba(170,90,240,0.75)'; g.lineWidth = 1.8; g.beginPath(); // iç yıldız (yedi köşeli, kesişen çizgiler)
+  for (let i = 0; i <= 7; i++) { const a = -Math.PI / 2 + i * 3 / 7 * Math.PI * 2; g.lineTo(Math.cos(a) * 212, Math.sin(a) * 212); }
+  g.stroke();
+  for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + i / 7 * Math.PI * 2; g.beginPath(); g.arc(Math.cos(a) * 212, Math.sin(a) * 212, 9, 0, Math.PI * 2); g.fillStyle = 'rgba(40,8,30,0.9)'; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(220,60,90,0.9)'; g.stroke(); }
+  return (PAUSE_ART.sigil = c);
+}
+function pausePattern() { // kadife üstünde soluk Necromancer deseni: küçük kafatası ve dört yapraklı süs, şaşırtmalı
+  if (PAUSE_ART.pat) return PAUSE_ART.pat;
+  const c = document.createElement('canvas'); c.width = c.height = 56; const g = c.getContext('2d');
+  const orn = (x, y) => { g.save(); g.translate(x, y); g.fillStyle = 'rgba(255,190,210,1)';
+    for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.beginPath(); g.ellipse(0, -5, 2.2, 4.5, 0, 0, Math.PI * 2); g.fill(); }
+    g.beginPath(); g.arc(0, 0, 1.6, 0, Math.PI * 2); g.fill(); g.restore(); };
+  const skull = (x, y) => { g.save(); g.translate(x, y); g.fillStyle = 'rgba(255,190,210,1)';
+    g.beginPath(); g.arc(0, -1, 4.5, Math.PI, 0); g.lineTo(3.2, 3); g.lineTo(-3.2, 3); g.closePath(); g.fill();
+    g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.arc(-1.7, -0.6, 1.2, 0, Math.PI * 2); g.arc(1.7, -0.6, 1.2, 0, Math.PI * 2); g.fill(); g.restore(); };
+  orn(14, 14); orn(42, 42); skull(42, 14); skull(14, 42);
+  return (PAUSE_ART.pat = c);
+}
+function rubyGem(x, y, r) {
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+  g.addColorStop(0, '#ff9aa8'); g.addColorStop(0.45, '#c0122e'); g.addColorStop(1, '#4a0410');
+  circle(x, y, r + 1.5, '#c9a865', '#1a0a08', 1.2); circle(x, y, r, g);
+  circle(x - r * 0.35, y - r * 0.4, r * 0.28, 'rgba(255,255,255,0.75)');
+}
+function pauseFrame(x, y, w, h) {
+  const rise = 26;
+  ctx.save();
+  tombPath(x + 4, y + 10, w, h, rise); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
+  const fr = ctx.createLinearGradient(0, y, 0, y + h); fr.addColorStop(0, '#3a1a2a'); fr.addColorStop(1, '#140810');
+  tombPath(x, y, w, h, rise); ctx.fillStyle = fr; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#050206'; ctx.stroke();
+  const ix = x + 12, iy = y + 12, iw = w - 24, ih = h - 24, ir = rise - 6;
+  const vel = ctx.createLinearGradient(0, iy, 0, iy + ih); vel.addColorStop(0, '#4c0f24'); vel.addColorStop(0.55, '#33102e'); vel.addColorStop(1, '#1e0b26');
+  tombPath(ix, iy, iw, ih, ir); ctx.fillStyle = vel; ctx.fill();
+  ctx.save(); tombPath(ix, iy, iw, ih, ir); ctx.clip();
+  ctx.globalAlpha = 0.07; ctx.fillStyle = ctx.createPattern(pausePattern(), 'repeat'); ctx.fillRect(ix, iy, iw, ih); ctx.globalAlpha = 1;
+  const vg = ctx.createRadialGradient(x + w / 2, y + h * 0.45, h * 0.2, x + w / 2, y + h * 0.45, w * 0.62);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.45)'); ctx.fillStyle = vg; ctx.fillRect(ix, iy, iw, ih);
+  ctx.restore();
+  tombPath(ix, iy, iw, ih, ir); ctx.lineWidth = 2.5; ctx.strokeStyle = '#c9a865'; ctx.stroke();
+  tombPath(ix + 6, iy + 6, iw - 12, ih - 12, ir - 4); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(201,168,101,0.35)'; ctx.stroke();
+  for (const [cx, cy, sx, sy] of [[ix + 8, iy + ir + 8, 1, 1], [ix + iw - 8, iy + ir + 8, -1, 1], [ix + 8, iy + ih - 8, 1, -1], [ix + iw - 8, iy + ih - 8, -1, -1]]) {
+    ctx.strokeStyle = '#c9a865'; ctx.lineWidth = 2; ctx.beginPath(); // köşe süsü: kıvrık altın kol + yakut
+    ctx.moveTo(cx + sx * 34, cy); ctx.quadraticCurveTo(cx, cy, cx, cy + sy * 34); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + sx * 34, cy + sy * 5, 4, 0, Math.PI * 2); ctx.moveTo(cx + sx * 5 + 4, cy + sy * 34); ctx.arc(cx + sx * 5, cy + sy * 34, 4, 0, Math.PI * 2); ctx.stroke();
+    rubyGem(cx + sx * 7, cy + sy * 7, 5);
+  }
+  ctx.restore();
+}
+function pauseCrest(cx, cy) { // tepe arması: yarasa kanatlı kafatası madalyonu
+  ctx.save(); ctx.translate(cx, cy);
+  for (const sd of [-1, 1]) {
+    ctx.beginPath(); ctx.moveTo(sd * 22, -6);
+    ctx.quadraticCurveTo(sd * 52, -34, sd * 92, -18); ctx.quadraticCurveTo(sd * 80, -8, sd * 84, 4);
+    ctx.quadraticCurveTo(sd * 70, -2, sd * 64, 10); ctx.quadraticCurveTo(sd * 54, 2, sd * 46, 14); ctx.quadraticCurveTo(sd * 36, 4, sd * 22, 10); ctx.closePath();
+    const wg = ctx.createLinearGradient(0, -30, 0, 14); wg.addColorStop(0, '#5a1838'); wg.addColorStop(1, '#22081a');
+    ctx.fillStyle = wg; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#050206'; ctx.stroke();
+    ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(201,168,101,0.5)'; ctx.beginPath(); ctx.moveTo(sd * 24, 0); ctx.lineTo(sd * 84, -14); ctx.moveTo(sd * 30, 4); ctx.lineTo(sd * 62, 6); ctx.stroke();
+  }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 46, '190,90,255', 0.35 + Math.sin(time * 2) * 0.08); ctx.restore();
+  const mg = ctx.createRadialGradient(-6, -8, 2, 0, 0, 30); mg.addColorStop(0, '#5a2a6a'); mg.addColorStop(1, '#1a0820');
+  circle(0, 0, 30, '#c9a865', '#050206', 2.5); circle(0, 0, 26, mg); circle(0, 0, 22, null, 'rgba(201,168,101,0.45)', 1);
+  drawSkullIcon(0, 1, 15);
+  ctx.restore();
+}
+function pauseTile(key, x, y, w, h, label, icon, fn, ac, ap, primary) {
+  const appear = easeOutBack(clamp(ap / 0.35, 0, 1)); if (appear <= 0.01) return;
+  const down = press.key === key, dy = down ? 3 : 0, r = 14;
+  ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear * (primary ? 1 + Math.sin(time * 3) * 0.015 : 1); ctx.scale(sc, sc);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, w * 0.75, ac, primary ? 0.32 + Math.sin(time * 3) * 0.08 : 0.1); ctx.restore();
+  roundRect(-w / 2 + 2, -h / 2 + 8, w - 4, h, r, 'rgba(0,0,0,0.5)');
+  roundRect(-w / 2 - 3, -h / 2 - 3, w + 6, h + 9, r + 3, '#050206');
+  roundRect(-w / 2, -h / 2 + 4, w, h, r, '#140610');
+  const g = ctx.createLinearGradient(0, -h / 2 + dy, 0, h / 2 + dy); g.addColorStop(0, primary ? '#3e1530' : '#3a1226'); g.addColorStop(1, '#170816');
+  roundRect(-w / 2, -h / 2 + dy, w, h, r, g);
+  ctx.save(); ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2 + dy, w, h, r); ctx.clip();
+  ctx.globalAlpha = 0.06; ctx.fillStyle = ctx.createPattern(pausePattern(), 'repeat'); ctx.fillRect(-w / 2, -h / 2 + dy, w, h); ctx.globalAlpha = 1;
+  const tg = ctx.createLinearGradient(0, h / 2 + dy, 0, -h / 2 + dy); tg.addColorStop(0, `rgba(${ac},0.3)`); tg.addColorStop(0.6, `rgba(${ac},0)`); ctx.fillStyle = tg; ctx.fillRect(-w / 2, -h / 2 + dy, w, h);
+  if (primary) { const ph = (time * 0.35) % 1.8; if (ph < 1) { const sx = -w / 2 - 40 + ph * (w + 80), sg = ctx.createLinearGradient(sx - 30, 0, sx + 30, 0);
+    sg.addColorStop(0, `rgba(${ac},0)`); sg.addColorStop(0.5, `rgba(${ac},0.25)`); sg.addColorStop(1, `rgba(${ac},0)`); ctx.fillStyle = sg; ctx.fillRect(-w / 2, -h / 2 + dy, w, h); } }
+  ctx.restore();
+  roundRect(-w / 2, -h / 2 + dy, w, h, r, null, '#c9a865', 2);
+  roundRect(-w / 2 + 4, -h / 2 + dy + 4, w - 8, h - 8, r - 3, null, 'rgba(201,168,101,0.3)', 1);
+  const my = dy - h * 0.13, mr = Math.min(25, h * 0.24); // simge madalyonu
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, my, mr * 1.8, ac, 0.3); ctx.restore();
+  const mg = ctx.createRadialGradient(-mr * 0.3, my - mr * 0.3, 1, 0, my, mr); mg.addColorStop(0, '#3a1a3a'); mg.addColorStop(1, '#12060f');
+  circle(0, my, mr + 2.5, '#c9a865', '#050206', 1.5); circle(0, my, mr, mg); circle(0, my, mr - 3, null, `rgba(${ac},0.55)`, 1.2);
+  drawIcon(icon, 0, my, mr * 1.05);
+  ctx.font = `17px ${FONT_T}`; const tw = ctx.measureText(TR(label)).width, fs = Math.min(17, 17 * (w - 18) / Math.max(1, tw));
+  txt(label, 0, dy + h * 0.3, fs, '#efe1c0', 'center', '400', FONT_T);
+  ctx.restore();
+  buttons.push({ key, x: x - w / 2, y: y - h / 2, w, h: h + 6, fn });
+}
+function drawPauseMenu(k, cx, cy) {
+  // ritüel çemberi
+  ctx.save(); ctx.globalAlpha = clamp(k / 0.4, 0, 1) * 0.22; ctx.translate(cx, cy); ctx.rotate(time * 0.05);
+  const sg = pauseSigil(); ctx.drawImage(sg, -sg.width / 2, -sg.height / 2); ctx.rotate(-time * 0.13); ctx.scale(0.62, 0.62); ctx.drawImage(sg, -sg.width / 2, -sg.height / 2);
+  ctx.restore();
+  const pw = 680, ph = 446, px = cx - pw / 2, py = cy - ph / 2 + 8;
+  pauseFrame(px, py, pw, ph);
+  pauseCrest(cx, py + 4);
+  // başlık: kızıl kumaş kurdele, altında bölüm adı
+  ctx.save(); const by = py + 64, bw = 300, bh = 38;
+  for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(cx + sd * (bw / 2 - 8), by - bh / 2 + 7); ctx.lineTo(cx + sd * (bw / 2 + 30), by - bh / 2 + 7); ctx.lineTo(cx + sd * (bw / 2 + 18), by + 7); ctx.lineTo(cx + sd * (bw / 2 + 30), by + bh / 2 + 7); ctx.lineTo(cx + sd * (bw / 2 - 8), by + bh / 2 + 7); ctx.closePath(); ctx.fillStyle = '#5a0a1c'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#050206'; ctx.stroke(); }
+  const rg = ctx.createLinearGradient(0, by - bh / 2, 0, by + bh / 2); rg.addColorStop(0, '#a3182f'); rg.addColorStop(1, '#5e0a1c');
+  roundRect(cx - bw / 2, by - bh / 2, bw, bh, 4, rg, '#050206', 2.5); roundRect(cx - bw / 2 + 4, by - bh / 2 + 4, bw - 8, bh - 8, 3, null, 'rgba(230,190,110,0.7)', 1.2);
+  ctx.restore();
+  txt('DURAKLATILDI', cx, by + 1, 24, '#fff0d8', 'center', '400', FONT_T);
+  txt(G.lv.name, cx, by + 34, 14, '#d9b8e8', 'center', '700', FONT_B);
+  // sol: 2x2 karolar (Caner'in düzeni: solda Devam Et / Yeniden Başla, sağda Ayarlar / Haritaya Dön)
+  const tw = 160, th = 116, gap = 16, gx = px + 54 + tw / 2, x2 = gx + tw + gap, y1 = py + 186, y2 = y1 + th + gap;
+  pauseTile('ov_resume', gx, y1, tw, th, 'DEVAM ET', 'play', () => setOverlay(null), '120,255,150', k - 0.15, true);
+  pauseTile('ov_set', x2, y1, tw, th, 'AYARLAR', 'gear', () => setOverlay('psettings'), '190,130,255', k - 0.19, false);
+  pauseTile('ov_restart', gx, y2, tw, th, 'YENİDEN BAŞLA', 'restart', () => go(() => startLevel(G.idx, G.chal)), '255,110,110', k - 0.23, false);
+  pauseTile('ov_map', x2, y2, tw, th, 'HARİTAYA DÖN', 'map', () => go(() => { screen = 'map'; setOverlay(null); }), '235,200,140', k - 0.27, false);
+  // sağ: savaş durumu ve hızlı ses düğmeleri
+  const rx = x2 + tw / 2 + 26, rw = px + pw - 40 - rx, rcx = rx + rw / 2, a = clamp((k - 0.25) / 0.3, 0, 1);
+  ctx.save(); ctx.globalAlpha *= a;
+  roundRect(rx, y1 - th / 2, rw, 178, 12, 'rgba(10,3,10,0.45)', 'rgba(201,168,101,0.45)', 1.5);
+  txt('SAVAŞ DURUMU', rcx, y1 - th / 2 + 20, 14, '#e6c27a', 'center', '400', FONT_T, false);
+  ctx.fillStyle = 'rgba(201,168,101,0.35)'; ctx.fillRect(rx + 16, y1 - th / 2 + 34, rw - 32, 1.2);
+  const mm = Math.floor(G.t / 60), ss = Math.floor(G.t % 60), nW = G.endless ? '∞' : G.lv.waves.length;
+  const rows = [['skull', 'Dalga', `${Math.max(0, G.wave)}/${nW}`], ['heart', 'Can', `${G.lives}/${G.maxLives}`], ['coin', 'Altın', String(Math.floor(G.gold))], ['fast', 'Süre', `${mm}:${String(ss).padStart(2, '0')}`]];
+  rows.forEach(([ic, lb, v], i) => { const yy = y1 - th / 2 + 56 + i * 32;
+    drawIcon(ic, rx + 26, yy, 20); txt(lb, rx + 44, yy + 1, 14, '#d8c8e0', 'left', '700', FONT_B, false); txt(v, rx + rw - 18, yy + 1, 17, '#fff0d8', 'right', '400', FONT_T, false); });
+  ctx.restore();
+  const mOn = !muted && setting('music'), sOn = !muted && setting('sfx'), ty = y2 + 18;
+  const tog = (kk, xx, on, lb, fn) => { roundBtn(kk, xx, ty, 25, on ? 'sound' : 'mute', fn, { appear: k - 0.32, style: on ? 'blue' : 'wood', active: on, activeCol: '190,120,255' });
+    txt(lb, xx, ty + 40, 13, on ? '#e8d8f0' : '#8a7a90', 'center', '700', FONT_B, false); };
+  tog('ov_mus', rcx - rw * 0.24, mOn, 'Müzik', () => { if (mOn) setSetting('music', false); else { setMuted(false); setSetting('music', true); } sfx('click'); });
+  tog('ov_sfx', rcx + rw * 0.24, sOn, 'Efektler', () => { if (sOn) setSetting('sfx', false); else { setMuted(false); setSetting('sfx', true); } sfx('click'); });
+  // alt: Mortimer'ın tavsiyesi (her açılışta başka)
+  const tip = PAUSE_TIPS[Math.floor(overlayT * 7.3) % PAUSE_TIPS.length], tyy = py + ph - 36, ta = clamp((k - 0.4) / 0.4, 0, 1);
+  ctx.save(); ctx.globalAlpha *= ta;
+  ctx.fillStyle = 'rgba(201,168,101,0.3)'; ctx.fillRect(px + 60, tyy - 20, pw - 120, 1.2);
+  drawSkullIcon(px + 72, tyy + 1, 8);
+  txt("Mortimer'ın tavsiyesi:", px + 86, tyy - 1, 13, '#e6c27a', 'left', '800', FONT_B, false);
+  ctx.font = `800 13px ${FONT_B}`; const lw = ctx.measureText(TR("Mortimer'ın tavsiyesi:")).width;
+  const lines = wrapLines(tip, pw - 160 - lw, 13, '700', FONT_B, 2);
+  lines.forEach((l, i) => txt(l, px + 94 + lw, tyy - 1 + (i - (lines.length - 1) / 2) * 16, 13, '#d9c8ea', 'left', '700', FONT_B, false));
+  ctx.restore();
+}
 // duraklatma: panelin solunda Mortimer, elinde ruh ışığı; yerde süzülen sis (Necromancer havası)
 function drawPauseMortimer(px, py, ph, k) {
   const im = spr('mortimer'); if (!im) return;
@@ -12736,7 +12905,8 @@ function drawOverlay() {
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
   if (overlay === 'win') sunburst(cx, py + 110, 300, NECRO ? '140,255,150' : '255,220,120');
-  if (NECRO && (pz || overlay === 'psettings')) drawPauseMortimer(px, py, ph, k);
+  if (NECRO && pz) { drawPauseMenu(k, cx, cy); ctx.restore(); return; } // duraklatma: kendi tasarımı (drawPauseMenu)
+  if (NECRO && overlay === 'psettings') drawPauseMortimer(px, py, ph, k);
   panel(px, py, pw, ph);
   if (overlay === 'skills') {
     drawSkillsPanel(k, px, py, pw, ph, cx);
