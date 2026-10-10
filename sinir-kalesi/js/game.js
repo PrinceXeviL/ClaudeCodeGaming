@@ -283,6 +283,7 @@ const SOUND = {
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
   yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  plaguethrow: { vol: 0.5, gap: 0.35, max: 2, rate: [0.94, 1.08] }, // Veba Kazanı sıvıyı fırlatırken: fışkırma (Caner'in 'Liquid Craft' kaydı)
   plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] },  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
   battle:  { vol: 0.5, full: 4 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
@@ -2726,6 +2727,7 @@ const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 const TOWER_EYE = { altar: [[0.5, 0.14], [0.48, 0.12], [0.505, 0.38]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
 function towerEye(t, ts) {
   ts = ts || towerSprite(t);
+  if (NECRO && t.type === 'mage' && ts && lanternRig(t, ts)) return lanternPt(t, ts, LANTERN_RIG[t.lvl].core); // ışın ve ruhlar fenerin içinden
   const E = (TOWER_EYE[t.type] || [])[t.lvl];
   if (!ts || !E) return { x: t.x, y: t.y - 40 };
   return { x: t.x - ts.w / 2 + E[0] * ts.w, y: ts.bottom - ts.h + E[1] * ts.h };
@@ -2887,6 +2889,7 @@ function updateExtra(t, dt) {
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
   if (t.gushT > 0) t.gushT -= dt; // veba kazanı: ağızdan fışkıran sıvı sütunu
+  if (t.type === 'mage') { const want = t.soulT > 0 || G.t - (t.lastFire ?? -9) < 1.6 ? 1 : 0; t.raise = clamp((t.raise || 0) + clamp(want - (t.raise || 0), -dt * 1.6, dt * 3.5), 0, 1); } // savaşırken / ruh çekerken fener kalkar
   if (t.animT != null) t.animT += dt;
   if (t.engageT > 0) { t.engageT -= dt; const A = towerAnim(t); if (A) { if (t.animT == null || t.animT >= A.dur) t.animT = 0; } } // döngü
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
@@ -2933,7 +2936,7 @@ function updateTower(t, dt) {
   if (LF && LF.ramp && t.lastHit && !t.lastHit.dead && !t.lastHit.under && dist(t.lastHit.x, t.lastHit.y, t.x, t.y - 10) <= L.range) e = t.lastHit;
   if (!e) return;
   t.cd = L.rate;
-  t.shotAnim = t.type === 'artillery' ? 0.35 : 0.2;
+  t.shotAnim = t.type === 'artillery' ? 0.35 : 0.2; t.lastFire = G.t;
   const ts = towerSprite(t);
   let sx = t.x, sy = ts ? ts.bottom - ts.h * TOWER_TOP[t.type] : t.y - 34;
   if (ts) { const o = towerEye(t, ts); sx = o.x; sy = o.y + (t.type === 'mage' ? 8 : 0); }
@@ -2994,7 +2997,7 @@ function updateTower(t, dt) {
         black: t.spec === 'plague', plague: pl ? pl.dps : 0, body: null, spin: rand(0, 6) });
       t.cd = L.rate * LOB.rate; t.aimX = tx; t.aimY = ty; t.gushT = GUSH;
       for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'dot', x: sx + rand(-5, 5), y: sy - rand(0, 8), vx: rand(-45, 45), vy: -rand(70, 170), g: 460, col: i % 3 ? '#8cff5a' : '#c6ff9a', s0: rand(1, 1.8), s1: 0.8, life: rand(0.4, 0.7), floor: sy + rand(2, 8) });
-      sfx('plaguefire');
+      sfx('plaguefire'); sfx('plaguethrow');
       return;
     }
     {
@@ -3013,7 +3016,7 @@ function updateTower(t, dt) {
         const a = Math.atan2(ty - sy, tx - sx) + rand(-1, 1) * 0.35, v = rand(80, 220);
         emit(G.parts, { kind: 'glow', x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, drag: 2.8, col: i % 3 === 0 ? '200,255,150' : i % 3 === 1 ? '150,230,100' : '170,120,230', s0: rand(3, 5), s1: rand(10, 18), life: rand(0.35, 0.65), a: 0.5 });
       }
-      sfx('splash');
+      sfx('plaguethrow');
       return;
     }
   }
@@ -6707,6 +6710,51 @@ const BONE_FX = {
   tower_xbow_3: { runes: [[0.36, 0.42, 0.66, '110,255,140'], [0.66, 0.42, 0.66, '110,255,140']], flames: [[0.06, 0.47, '120,255,150'], [0.95, 0.36, '190,110,255']], eyes: [[0.48, 0.275], [0.53, 0.275], [0.12, 0.2], [0.88, 0.2]], top: [0.5, 0.14, 0.4] },
   tower_archer_fan: { runes: [[0.39, 0.45, 0.6, '170,110,255'], [0.64, 0.45, 0.6, '170,110,255']], flames: [[0.08, 0.27, '200,110,255'], [0.93, 0.3, '150,255,200']], eyes: [[0.5, 0.33], [0.2, 0.24], [0.83, 0.24]], top: [0.5, 0.18, 0.4] },
 };
+// Ruh Feneri (10 Eki, 3. tasarım, Caner'in görseli): fener (1. kademe) / feneri tutan kol (2-3. kademe) ayrı katman (tower_mage_N_arm,
+// varliklar/ruh_feneri_isle.py), pivot [%x, %y] çevresinde döner. Boşta hafifçe sallanır (swing, f); savaşırken ya da ruh çekerken
+// (t.raise) kol feneri öne-yukarı kaldırır (raiseA rad, lift boyun oranı). core: fenerin içi (ışın ve ruhların girdiği yer).
+const LANTERN_RIG = [
+  { pivot: [67, 9], swing: 0.06, f: 1.25, raiseA: 0.06, lift: 0, core: [65, 40], candles: [[49, 52.5], [14.5, 66], [81, 62.5], [70.5, 73], [65.5, 75]], runes: [[47, 89, 0.12]] },
+  { pivot: [61, 14], swing: 0.022, f: 0.9, raiseA: -0.17, lift: 0, core: [73, 28], eyes: [[44.5, 12], [50.5, 12]], runes: [[37, 62, 0.06], [56, 67, 0.04]], hands: [[10, 72], [27, 80], [69, 62], [64, 81], [85, 73]] },
+  { pivot: [75, 2], swing: 0.035, f: 0.8, raiseA: -0.05, lift: -0.03, core: [73, 30], eyes: [[47, 19.5], [51.5, 19.5]], braziers: [[20, 71.5], [86, 71.5]], vortex: [70, 47, 0.2] },
+];
+const lanternRig = (t, ts) => (ts.name === 'tower_mage_' + (t.lvl + 1) && LANTERN_RIG[t.lvl] && spr(ts.name + '_arm') ? LANTERN_RIG[t.lvl] : null);
+function lanternXf(t, ts) {
+  const R = LANTERN_RIG[t.lvl], k = easeInOut(t.raise || 0), sd = t.x * 0.011;
+  const a = R.swing * Math.sin(time * R.f * 2 + sd) * (1 - 0.6 * k) + R.raiseA * k + (t.soulT > 0 ? Math.sin(time * 22) * 0.04 * t.soulT / 0.45 : 0);
+  return { a, px: (R.pivot[0] / 100 - 0.5) * ts.w, py: -ts.h + R.pivot[1] / 100 * ts.h, dy: R.lift * ts.h * k };
+}
+function lanternPt(t, ts, q) { // katmandaki noktanın dünya konumu (dönüş ve kaldırma uygulanmış)
+  const X = lanternXf(t, ts), lx = (q[0] / 100 - 0.5) * ts.w - X.px, ly = -ts.h + q[1] / 100 * ts.h - X.py, c = Math.cos(X.a), sn = Math.sin(X.a);
+  return { x: t.x + X.px + lx * c - ly * sn, y: ts.bottom + X.py + X.dy + lx * sn + ly * c };
+}
+function drawLanternArm(t, ts) { // tower çiziminin dönüşümü içinde (köken: kule tabanı ortası)
+  if (!lanternRig(t, ts)) return;
+  const im = spr(ts.name + '_arm'), lit = litOf(im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), X = lanternXf(t, ts);
+  ctx.save(); ctx.translate(X.px, X.py + X.dy); ctx.rotate(X.a); ctx.translate(-X.px, -X.py); drawSprite(ctx, lit || im, 0, 0, ts.w); ctx.restore();
+}
+function drawLanternFx(t, ts) {
+  const R = lanternRig(t, ts); if (!R) return;
+  const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] / 100 - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] / 100 * ts.h }), sd = t.x * 0.017, k = t.raise || 0;
+  const c = lanternPt(t, ts, R.core), beat = 0.5 + 0.5 * Math.sin(time * 2.4 + sd);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, c.x, c.y, (14 + 6 * beat + 8 * k) * s, '130,255,210', 0.22 + 0.12 * beat + 0.25 * k + (t.soulT > 0 ? 0.5 * t.soulT : 0)); // fenerin içi nabız gibi atar, savaşta parlar
+  for (let i = 0; i < 4; i++) { // fenerin çevresinde dönen ruh yüzleri (ön tarafta parlak)
+    const a = time * (1.1 + 0.25 * i + k) + i * 1.57 + sd, R0 = (5 + 2 * (i % 2)) * s * (1 + 0.4 * k), x = c.x + Math.cos(a) * R0, y = c.y + Math.sin(a) * R0 * 0.55 - Math.sin(time * 1.3 + i) * 1.5 * s, fr = Math.sin(a) > 0 ? 1 : 0.4;
+    glow(ctx, x, y, 3.2 * s, '170,255,225', 0.5 * fr); glow(ctx, x, y, 1.3 * s, '240,255,250', 0.7 * fr);
+  }
+  for (const [i, q] of (R.candles || []).entries()) { const p = P(q), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.1) + 0.1 * Math.sin(time * 23 + i); glow(ctx, p.x, p.y, 3.5 * s * fk, '120,255,200', 0.55 * fk); }
+  for (const [i, q] of (R.eyes || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, (2 + 1.2 * k) * s, k > 0.3 ? '150,255,220' : '190,120,255', 0.6 + 0.25 * Math.sin(time * 3 + i) + 0.3 * k); } // göz: savaşta yeşil yanar
+  for (const [i, q] of (R.braziers || []).entries()) { const p = P(q), fk = 0.75 + 0.15 * Math.sin(time * 10 + i * 2.7) + 0.1 * Math.sin(time * 21 + i); glow(ctx, p.x, p.y, 8 * s * fk, '120,255,150', 0.5 * fk); if (Math.random() < 0.1) emit(G.parts, { kind: 'glow', add: true, x: p.x + rand(-2, 2) * s, y: p.y - 3 * s, vx: rand(-6, 6), vy: -rand(18, 36), col: '140,255,160', s0: 2.4, s1: 0.4, life: rand(0.6, 0.9) }); }
+  for (const [i, q] of (R.runes || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, q[2] * ts.w, '170,90,255', 0.18 + 0.12 * Math.sin(time * 1.8 + i * 1.4 + sd)); }
+  for (const [i, q] of (R.hands || []).entries()) { const p = P(q); glow(ctx, p.x, p.y, 4 * s, '150,255,220', 0.12 + 0.1 * Math.sin(time * 2.2 + i * 1.7)); } // yerden uzanan ruh elleri soluk parlar
+  if (R.vortex) { // aşağıdaki girdap: dönen ruh izleri
+    const v = P(R.vortex), RW = R.vortex[2] * ts.w;
+    for (let i = 0; i < 6; i++) { const a = time * (1.6 + 0.2 * i) + i * 1.05, y = v.y - i * 2.2 * s, r = RW * (1 - i * 0.1), fr = Math.sin(a) > 0 ? 1 : 0.35; glow(ctx, v.x + Math.cos(a) * r, y + Math.sin(a) * r * 0.25, 3 * s, '150,255,220', 0.45 * fr); }
+  }
+  ctx.restore();
+  if (Math.random() < (0.05 + 0.15 * k)) emit(G.parts, { kind: 'glow', add: true, x: c.x + rand(-6, 6) * s, y: c.y + rand(-4, 4) * s, vx: rand(-10, 10), vy: -rand(8, 22), col: Math.random() < 0.7 ? '140,255,210' : '180,120,255', s0: 2.5 * s, s1: 0.4, life: rand(0.6, 1) });
+}
 function drawBoneTowerFx(t, ts) {
   const F = BONE_FX[ts.name]; if (!F) return;
   const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h }), sd = t.x * 0.013;
@@ -6734,6 +6782,7 @@ function drawBoneTowerFx(t, ts) {
 }
 function drawNecroTowerFx(t, ts) {
   if (t.type === 'archer') drawBoneTowerFx(t, ts); // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
+  if (t.type === 'mage') drawLanternFx(t, ts); // Ruh Feneri: fener nabzı, dönen ruh yüzleri, mum/göz/mangal/run
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
   const OF = obeliskForm(t);
@@ -6795,8 +6844,8 @@ function drawNecroTowerFx(t, ts) {
       else if (f[2] === 'b') { glow(ctx, q.x, q.y - 3 * s, 11 * s * fk, '110,255,140', 0.4 * fk); glow(ctx, q.x, q.y - 2 * s, 4 * s, '220,255,220', 0.5 * fk); } // mangal: yeşil ateş
       else { glow(ctx, q.x, q.y - 1.5 * s, 4.5 * s * fk, '255,190,90', 0.5 * fk); glow(ctx, q.x, q.y - 1.5 * s, 1.6 * s, '255,245,200', 0.6 * fk); }
     }
-  } else if (t.type === 'mage') {
-    // fenerdeki ruh: nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
+  } else if (t.type === 'mage' && !lanternRig(t, ts)) {
+    // fenerdeki ruh (eski fener görseli): nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
     const pulse = 0.5 + Math.sin(time * 3.2 + t.x) * 0.15 + 0.4 * sh;
     ctx.globalCompositeOperation = 'lighter';
     glow(ctx, o.x, o.y, (12 + 4 * t.lvl + 10 * sh) * s, '170,130,255', pulse);
@@ -6930,6 +6979,7 @@ function drawTowerBody(t) {
     else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), SP = TOWER_SPLIT[ts.name];
       if (SP) drawSplitTower(t, ts, lit || ts.im, SP); else drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
+      if (NECRO && t.type === 'mage') drawLanternArm(t, ts); // Ruh Feneri: sallanan fener / feneri kaldıran kol
     }
     ctx.restore();
     if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz

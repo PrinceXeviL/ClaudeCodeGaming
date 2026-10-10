@@ -30,7 +30,8 @@ SHEETS = [
     ('nm_mahzen_k2.jpg', ['tower_barracks_2', 'tower_barracks_2_side'], 'tower'),  # 10 Eki: yönlü mahzen 2. kademe (yan görünüşte kapı sol öne bakar)
     ('nm_mahzen_k1.jpg', ['tower_barracks_1', 'tower_barracks_1_side', None], 'tower'),  # 10 Eki: yönlü mahzen 1. kademe (önden, kapısı sağ öne bakan; aynası sol)
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
-    ('nm_fener.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # Ruh Feneri
+    ('nm_ruh_feneri_v3.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # 10 Eki: Ruh Feneri 3. tasarım (Caner'in promptu: darağacı feneri, fener tutan cüppeli, kanatlı tırpanlı ölüm; kollar varliklar/ruh_feneri_isle.py ile ayrı katman)
+    ('nm_fener.jpg', [None, None, None], 'tower'),  # eski Ruh Feneri
     ('nm_veba_kazani_v3.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_catapult'], 'tower'),  # 10 Eki: Veba Kazanı 1-2 (kafatası ocaklı kazan, boynuzlu kafatası kazan) ve Ceset Mancınığı (4. kademe)
     ('nm_veba_kazani.jpg', [None, None, 'tower_artillery_3'], 'tower'),  # 10 Eki: Veba Kazanı 2. tasarım (kemik üçayaklı kazan, kaburga ocağı, tepesi kazan olan dev boynuzlu kafatası; eski: nm_veba_tareti.jpg, nm_kazan.jpg)
     ('nm_lanet_kulesi.jpg', ['tower_altar_1', 'tower_altar_2', 'tower_altar_3'], 'tower'),  # 10 Eki: Lanet Kulesi 2. tasarım (gözlü dikilitaş, uçan kitaplı sütun, dev gözlü kara mabet; eski: nm_sunak.jpg)

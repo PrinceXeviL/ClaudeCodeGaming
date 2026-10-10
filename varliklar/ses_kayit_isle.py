@@ -120,6 +120,10 @@ def main():
         c = load('lisansli/cannon_fuse_fire'); a0, a1 = int(SR * 1.05), int(SR * 2.75)
         pf = fade(c[a0:a1].copy(), 0.06, 0.5)
         made.append(save('plaguefire_1', pf, -20)); made.append(save('plaguefire_2', pitch(pf, 0.9), -20))
+    # plaguethrow: Caner'in verdiği "Liquid Craft" kaydı (lisanslı): Veba Kazanı sıvıyı fırlatırken (bomba ve püskürtme), ~1,3 sn
+    if os.path.exists(os.path.join(HAM, 'lisansli', 'liquid_craft.wav')):
+        lq = fade(load('lisansli/liquid_craft')[:int(SR * 1.3)], 0.005, 0.4)
+        made.append(save('plaguethrow_1', lq, -19)); made.append(save('plaguethrow_2', pitch(lq, 0.88), -19))
     made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
     # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
     for n, cnt, db in [('xbow', 3, -23), ('xbowh', 2, -20), ('armorhit', 3, -25), ('rattle', 2, -25)]:

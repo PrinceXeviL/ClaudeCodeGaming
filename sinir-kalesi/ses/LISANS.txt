@@ -6,4 +6,4 @@ Düşman asker sesleri (pain, dvoice, scream; varliklar/ses_kayit_isle.py ile i�
 
 Kılıç çarpışma sesleri (clash): StarNinjas, "20 Sword Sound Effects (Attacks and Clashes)" — https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — CC0
 
-Savaş borazanı (horn), savaş narası (yell) ve savaş ortam sesi (battle): Caner'in lisansladığı kayıtlar ("Cinematic War Horn 02" → horn, "Military Trumpet Battle Call 2" ve "Ancient Battle Horn" yedek, "Male Battle Yell", "Battling Knights", "Cinematic Cannon Fuse Light Fire" → plaguefire); ham dosyalar depoda değil (varliklar/ham/ses/lisansli/).
+Savaş borazanı (horn), savaş narası (yell) ve savaş ortam sesi (battle): Caner'in lisansladığı kayıtlar ("Cinematic War Horn 02" → horn, "Military Trumpet Battle Call 2" ve "Ancient Battle Horn" yedek, "Male Battle Yell", "Battling Knights", "Cinematic Cannon Fuse Light Fire" → plaguefire, "Liquid Craft" → plaguethrow); ham dosyalar depoda değil (varliklar/ham/ses/lisansli/).
