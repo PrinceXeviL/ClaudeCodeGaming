@@ -2416,8 +2416,9 @@ const SKEL_STANCE = {
 };
 // Mahzen: iskeletler kapıdan toz kaldırarak çıkar (10 Eki'de mezarlıktaki mezarlardan kalkıyorlardı).
 // Noktalar görsele göre: [yatay pay (genişliğin oranı, merkezden), alttan yükseklik (boyun oranı)], kademe sırasıyla.
-// 11 Eki: yeniden Mahzen; iskeletler mahzenin kapısından çıkar (kapı noktası görsele göre, tek nokta)
-const GRAVE_SPOTS = [[[0.08, 0.16]], [[0.05, 0.18]], [[0.05, 0.16]]];
+// 11 Eki: yeni Mahzen (nm_mahzen_v2.jpg); iskeletler kapının merdiveninin dibinden çıkar. DOOR_GLOW: kapı ağzının ortası (ışık)
+const GRAVE_SPOTS = [[[-0.04, 0.2]], [[-0.2, 0.17]], [[-0.17, 0.12]]];
+const DOOR_GLOW = [[-0.05, 0.42], [-0.21, 0.4], [-0.14, 0.44]];
 function graveSpot(t, i) {
   const ts = towerSprite(t), L = GRAVE_SPOTS[t.lvl] || GRAVE_SPOTS[0], g = L[i % L.length];
   return ts ? { x: t.x + g[0] * ts.w, y: ts.bottom - g[1] * ts.h } : { x: t.x, y: t.y + 6 };
@@ -6252,14 +6253,14 @@ function drawNecroTowerFx(t, ts) {
     }
     if (sh > 0) ctx.restore();
   } else if (t.type === 'barracks' && NECRO) {
-    // Mahzen (11 Eki): kapının ağzında nabız gibi atan yeşil-mor ruh ışığı, ayağında süzülen sis (yeni Gemini çizimi gelince ayarlanacak)
-    const P = (dx, up) => ({ x: t.x + dx * ts.w, y: ts.bottom - up * ts.h }), g = GRAVE_SPOTS[t.lvl] ? GRAVE_SPOTS[t.lvl][0] : [0.05, 0.16];
+    // Mahzen (11 Eki): kapının ağzında nabız gibi atan yeşil-mor ruh ışığı, ayağında süzülen sis
+    const P = (dx, up) => ({ x: t.x + dx * ts.w, y: ts.bottom - up * ts.h }), g = DOOR_GLOW[t.lvl] || DOOR_GLOW[0];
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 3; i++) {
       const a = time * 0.5 + i * 2.1 + t.x * 0.01, q = P(Math.sin(a) * 0.3, 0.06 + 0.04 * Math.cos(a * 1.3 + i));
       glow(ctx, q.x, q.y, ts.w * (0.15 + 0.04 * Math.sin(a * 2)), i % 2 ? '190,120,255' : '120,255,150', 0.08 + 0.04 * Math.sin(a * 1.7));
     }
-    const d = P(g[0], g[1] + 0.06); glow(ctx, d.x, d.y, 12 * s, '170,100,255', 0.3 + 0.12 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 3 * s, 7 * s, '120,255,160', 0.28 + 0.1 * Math.sin(time * 3.1));
+    const d = P(g[0], g[1]); glow(ctx, d.x, d.y, 13 * s, '120,255,160', 0.22 + 0.1 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 4 * s, 8 * s, '170,100,255', 0.18 + 0.08 * Math.sin(time * 3.1));
   } else if (t.type === 'mage') {
     // fenerdeki ruh: nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
     const pulse = 0.5 + Math.sin(time * 3.2 + t.x) * 0.15 + 0.4 * sh;
