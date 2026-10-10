@@ -2880,7 +2880,7 @@ function updateTower(t, dt) {
     if (!e.blocker) { const f = pathPos(e.p, e.d + e.def.speed * G.wspd * dur, e.off); tx = f.x; ty = f.y; }
     const cr = abRank(t, 'corpse'), pl = abRank(t, 'plague');
     const AF = NECRO ? (t.spec && ARTI_SPEC[t.spec]) || null : towerForm(t), AA = !NECRO && AF && towerAnim(t); // necro: uzmanlık değerleri, görsel taret aynı
-    if (NECRO && ts && CAULDRON[t.lvl]) { const o = cauldronPt(t, ts, CAULDRON[t.lvl].mouth); sx = o.x; sy = o.y; } // veba kazanın ağzından çıkar
+    if (NECRO && ts && cauldronFx(t)) { const C = cauldronFx(t), o = cauldronPt(t, ts, C.launch || C.mouth); sx = o.x; sy = o.y; } // veba kazanın ağzından (mancınıkta kepçeden) çıkar
     else if (AF) { // dönüşmüş kazan: hedefe döner, atış animasyonu oynar, mermi fırlatma anında kovadan / ağızdan çıkar
       if (AF.flip) t.face = e.x < t.x ? -1 : 1;
       const ats = towerSprite(t), o = formPoint(t, ats, AA ? AA.M.relPt : AF.src); sx = o.x; sy = o.y;
@@ -5874,7 +5874,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
+  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -6483,11 +6483,16 @@ function drawCurseEye(t, ts, E, P, L) {
 // Noktalar görsel oranı [x soldan, y üstten]. mouth: kazan ağzı [x, y, rx, ry] (köpürür, atış buradan çıkar); fire: titreyen ateş [x, y, renk];
 // drip: tüpten kazana damlayan sıvı [üst, alt]; falls: göz çukurlarından akan veba şelalesi [üst, alt]; pool: şelalenin gölcüğü; braziers: mangallar; runes: mor runlar [x, y, yarıçap]
 const CAULDRON = [
-  { mouth: [0.47, 0.37, 0.19, 0.065], fire: [[0.47, 0.73, '170,90,255'], [0.39, 0.7, '120,255,90'], [0.57, 0.7, '120,255,90']] },
-  { mouth: [0.5, 0.485, 0.15, 0.035], fire: [[0.31, 0.42, '120,255,90'], [0.69, 0.42, '120,255,90'], [0.5, 0.34, '120,255,90'], [0.5, 0.73, '120,255,90']], drip: [[0.585, 0.43], [0.585, 0.48]] },
+  { mouth: [0.47, 0.215, 0.2, 0.06], eyes: [[0.335, 0.535], [0.44, 0.525]], fire: [[0.52, 0.64, '120,255,90'], [0.45, 0.69, '120,255,90']] },
+  { mouth: [0.5, 0.135, 0.15, 0.035], eyes: [[0.325, 0.36], [0.53, 0.395]], falls: [[[0.42, 0.58], [0.36, 0.76]], [[0.53, 0.43], [0.53, 0.51]]], pool: [0.3, 0.79, 0.16, 0.04],
+    braziers: [[0.08, 0.6], [0.63, 0.785]], runes: [[0.6, 0.6, 0.06]] },
   { mouth: [0.5, 0.155, 0.19, 0.055], falls: [[[0.455, 0.47], [0.445, 0.71]], [[0.655, 0.45], [0.66, 0.68]]], pool: [0.53, 0.72, 0.2, 0.04],
     braziers: [[0.115, 0.6], [0.885, 0.6]], runes: [[0.6, 0.335, 0.2], [0.33, 0.56, 0.05]] },
 ];
+// Ceset Mancınığı (4. kademe, tower_artillery_catapult): ağız yok; cesetler mancınığın kepçesinden (launch) çıkar, kepçedeki ceset yeşil parlar
+const CAULDRON_CAT = { launch: [0.74, 0.075], corpseGlow: [0.74, 0.075], falls: [[[0.335, 0.5], [0.31, 0.76]], [[0.5, 0.5], [0.5, 0.74]]], pool: [0.4, 0.76, 0.28, 0.05],
+  braziers: [[0.075, 0.665], [0.635, 0.8]], runes: [[0.39, 0.43, 0.05], [0.66, 0.43, 0.05], [0.54, 0.65, 0.04]] };
+const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_catapult') ? CAULDRON_CAT : CAULDRON[t.lvl]);
 // veba bombası: dur uçuş süresi, arc kavis yüksekliği, dmg/splash çarpanı, rate bekleme çarpanı, poison zehir çarpanı (gaz değerine), pool zehir gölü süresi, down yere düşme (sn)
 const LOB = { dur: 0.85, arc: 95, dmg: 1.3, splash: 1.15, rate: 1.75, poison: 1.2, pool: 3, down: 1 };
 const SPRAY_RATE = 1.35, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
@@ -6556,10 +6561,12 @@ function drawPlaguePools() {
 }
 // kazanın canlı kısımları: köpüren ağız, ateş, mangallar, runlar, tüpten damla, gözlerden akan şelale ve gölcük, buhar
 function drawPlagueCauldron(t, ts) {
-  const C = CAULDRON[t.lvl]; if (!C) return;
-  const s = ts.w / 50, m = cauldronPt(t, ts, C.mouth), rx = C.mouth[2] * ts.w, ry = C.mouth[3] * ts.h, surge = t.shotAnim > 0 ? t.shotAnim / 0.35 : 0, sd = t.x * 0.37;
+  const C = cauldronFx(t); if (!C) return;
+  const s = ts.w / 50, M = C.mouth || [0.5, 0.2, 0.1, 0.03], m = cauldronPt(t, ts, M), rx = M[2] * ts.w, ry = M[3] * ts.h, surge = t.shotAnim > 0 ? t.shotAnim / 0.35 : 0, sd = t.x * 0.37;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, m.x, m.y, rx * (1.25 + 0.3 * surge), '130,255,90', 0.22 + 0.07 * Math.sin(time * 2.6 + sd) + 0.4 * surge);
+  if (C.mouth) glow(ctx, m.x, m.y, rx * (1.25 + 0.3 * surge), '130,255,90', 0.22 + 0.07 * Math.sin(time * 2.6 + sd) + 0.4 * surge);
+  for (const [i, q0] of (C.eyes || []).entries()) { const q = cauldronPt(t, ts, q0); glow(ctx, q.x, q.y, (3 + surge * 2) * s, '140,255,100', 0.55 + 0.2 * Math.sin(time * 3 + i) + 0.3 * surge); } // kafatası gözleri
+  if (C.corpseGlow) { const q = cauldronPt(t, ts, C.corpseGlow), rl = t.gushT > 0 ? 1 - t.gushT / GUSH : 1; glow(ctx, q.x, q.y, 9 * s, '120,255,120', (0.25 + 0.1 * Math.sin(time * 4 + sd)) * rl); } // kepçedeki ceset (atınca söner, yeniden dolar)
   for (const [i, f] of (C.fire || []).entries()) { const q = cauldronPt(t, ts, f), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.1 + sd) + 0.1 * Math.sin(time * 23 + i); glow(ctx, q.x, q.y, 7 * s * fk, f[2], 0.45 * fk); }
   for (const [i, b] of (C.braziers || []).entries()) { const q = cauldronPt(t, ts, b), fk = 0.8 + 0.12 * Math.sin(time * 12 + i * 3) + 0.08 * Math.sin(time * 27 + i); glow(ctx, q.x, q.y, 6 * s * fk, '120,255,90', 0.6 * fk); glow(ctx, q.x, q.y - 2 * s, 2.5 * s, '230,255,200', 0.5 * fk); }
   for (const [i, r] of (C.runes || []).entries()) { const q = cauldronPt(t, ts, r); glow(ctx, q.x, q.y, r[2] * ts.w, '170,90,255', 0.16 + 0.1 * Math.sin(time * 1.8 + i * 1.3)); }
@@ -6579,7 +6586,7 @@ function drawPlagueCauldron(t, ts) {
     ctx.globalAlpha = 1;
   }
   if (C.drip) { const a0 = cauldronPt(t, ts, C.drip[0]), a1 = cauldronPt(t, ts, C.drip[1]), ph = (time * 1.6 + sd) % 1; ctx.globalAlpha = 1 - ph * 0.5; circle(lerp(a0.x, a1.x, ph), lerp(a0.y, a1.y, ph * ph), 0.8 * s, '#b6ff7c', '#2a6a14', 0.3 * s); ctx.globalAlpha = 1; }
-  if (t.gushT > 0) { // fışkırma: ağızdan hedefe doğru eğilen sıvı sütunu yükselip çöker, tepesinden damlalar kopar
+  if (t.gushT > 0 && C.mouth) { // fışkırma: ağızdan hedefe doğru eğilen sıvı sütunu yükselip çöker, tepesinden damlalar kopar
     const k = 1 - t.gushT / GUSH, hh = Math.sin(Math.min(1, k * 1.6) * Math.PI) * 26 * s * C.mouth[2] / 0.19 + 2, lean = clamp(((t.aimX ?? m.x) - m.x) / 200, -1, 1) * hh * 0.5, w = rx * 0.55 * (1 - 0.4 * k);
     const g = ctx.createLinearGradient(0, m.y, 0, m.y - hh); g.addColorStop(0, 'rgba(70,170,40,0.95)'); g.addColorStop(0.6, 'rgba(140,240,90,0.95)'); g.addColorStop(1, 'rgba(210,255,170,0.9)');
     ctx.fillStyle = g; ctx.strokeStyle = 'rgba(14,42,8,0.7)'; ctx.lineWidth = 0.6 * s; ctx.beginPath(); ctx.moveTo(m.x - w, m.y);
@@ -6588,7 +6595,7 @@ function drawPlagueCauldron(t, ts) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, m.x + lean * 0.5, m.y - hh * 0.5, hh * 0.7 + 4, '140,255,90', 0.35 * (1 - k)); ctx.restore();
     if (Math.random() < 0.5) emit(G.parts, { kind: 'dot', x: m.x + lean + rand(-w, w) * 0.4, y: m.y - hh, vx: rand(-30, 30) + lean, vy: -rand(10, 60), g: 420, col: Math.random() < 0.7 ? '#8cff5a' : '#d8ffb0', s0: rand(0.8, 1.6) * s, s1: 0.6, life: rand(0.3, 0.5), floor: m.y + rand(0, 3) });
   }
-  for (let i = 0; i < 7; i++) { // ağızdaki kabarcıklar: şişer, patlar, başka yerde yeniden çıkar
+  if (C.mouth) for (let i = 0; i < 7; i++) { // ağızdaki kabarcıklar: şişer, patlar, başka yerde yeniden çıkar
     const sp = 0.5 + ((i * 37) % 10) / 20, u = time * sp + i * 0.31 + sd, ph = u % 1, cyc = Math.floor(u);
     const a = (i * 2.4 + cyc * 1.7) % (Math.PI * 2), rr = 0.25 + 0.6 * (((i * 13 + cyc * 7) % 10) / 10);
     const x = m.x + Math.cos(a) * rx * rr * 0.85, y = m.y + Math.sin(a) * ry * rr * 0.85, r = (0.5 + ph * 1.6) * s * C.mouth[2] / 0.19;
@@ -6596,7 +6603,7 @@ function drawPlagueCauldron(t, ts) {
     else { const q = (ph - 0.85) / 0.15; ctx.globalAlpha = 1 - q; ctx.strokeStyle = '#d8ffb0'; ctx.lineWidth = 0.5 * s; ctx.beginPath(); ctx.ellipse(x, y, r * (1 + q * 1.5), r * 0.5 * (1 + q * 1.5), 0, 0, Math.PI * 2); ctx.stroke(); }
   }
   ctx.globalAlpha = 1;
-  if (Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: m.x + rand(-0.6, 0.6) * rx, y: m.y, vx: rand(-4, 4), vy: -rand(8, 18), col: Math.random() < 0.6 ? '150,230,110' : '170,110,230', s0: 2 * s, s1: 7 * s, life: 1.4, a: 0.22 });
+  if (C.mouth && Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: m.x + rand(-0.6, 0.6) * rx, y: m.y, vx: rand(-4, 4), vy: -rand(8, 18), col: Math.random() < 0.6 ? '150,230,110' : '170,110,230', s0: 2 * s, s1: 7 * s, life: 1.4, a: 0.22 });
 }
 // Necromancer kulelerinin canlı kısımları (kodla): dikilitaş kıymıkları, fener ruhu, kazan köpüğü
 function drawNecroTowerFx(t, ts) {

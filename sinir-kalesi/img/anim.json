@@ -908,40 +908,6 @@
   "ch": 0.9126,
   "sh": 1
  },
- "tower_artillery_corpse_atk": {
-  "n": 48,
-  "fw": 333,
-  "fh": 229,
-  "tower": true,
-  "rel": 0.149,
-  "relPt": [
-   0.934,
-   0.008
-  ],
-  "box": [
-   -0.7184,
-   -0.1,
-   1.1611,
-   1.0
-  ]
- },
- "tower_artillery_plague_atk": {
-  "n": 48,
-  "fw": 333,
-  "fh": 176,
-  "tower": true,
-  "rel": 0.638,
-  "relPt": [
-   0.968,
-   0.105
-  ],
-  "box": [
-   -0.7896,
-   -0.1,
-   1.7866,
-   1.0
-  ]
- },
  "tower_archer_nail_atk": {
   "n": 48,
   "fw": 333,
