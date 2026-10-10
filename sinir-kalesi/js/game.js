@@ -1472,6 +1472,7 @@ function waveBonusAndStart() {
   G.cryAt = G.t + wait + 2.2; // dalganın ilk sırası görününce çığlık
   repairGate(); // Mortimer her dalgada kapıyı onarır
   let lastSpawn = 0;
+  G.waveN = def.reduce((a, grp) => a + grp.n, 0); // dalganın asker sayısı (erken çağrı eşiği için)
   for (const grp of def) {
     G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + wait + grp.gap * (grp.n - 1));
@@ -8508,8 +8509,14 @@ function earlyBonus() {
 }
 
 // dalga çağrılınca buton kaybolur; sahadaki düşmanlar temizlenince (sonraki dalga kendiliğinden gelmeden önce) geri gelir
+// Sonraki dalga, mevcut dalganın gelmemiş + sahadaki askeri %30'un altına inince çağrılabilir (Caner, 10 Eki; önceden saha boşalmalıydı)
+const WAVE_CALL_AT = 0.3;
 function waveCallable() {
-  return G.wave < G.lv.waves.length && (G.wave === 0 || (G.waveCountdown != null && G.spawners.length === 0 && G.enemies.length === 0));
+  if (G.wave >= G.lv.waves.length) return false;
+  if (G.wave === 0) return true;
+  if (G.waveCountdown == null) return false;
+  const left = G.spawners.reduce((a, sp) => a + Math.max(0, sp.left), 0) + G.enemies.reduce((a, e) => a + (e.dead ? 0 : 1), 0);
+  return left < WAVE_CALL_AT * (G.waveN || 1);
 }
 // Dalga çağırma işareti (popüler kule savunma oyunlarındaki gibi): yolun girişinde, yol yönünü gösteren
 // küçük damla biçimli altın çerçeveli madalyon; içinde kırmızı kuru kafa; dikkat çekmek için radar dalgası
