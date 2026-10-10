@@ -2458,12 +2458,14 @@ const DOOR_GLOW = [[-0.05, 0.42], [-0.21, 0.4], [-0.14, 0.44]];
 const MAHZEN_V = {
   0: { front: { door: [0, 0.42], stair: [0, 0.15], glow: [0, 0.56], fire: [[-0.29, 0.33, 'c'], [-0.24, 0.32, 'c'], [0.25, 0.32, 'c'], [0.3, 0.3, 'c'], [0.43, 0.6, 'l']] },
        side: { door: [0.3, 0.42], stair: [0.37, 0.2], glow: [0.33, 0.56], fire: [[-0.25, 0.83, 'c'], [-0.19, 0.82, 'c'], [-0.03, 0.24, 'c'], [0.03, 0.24, 'c'], [0.45, 0.39, 'c'], [0.41, 0.69, 'l']] } },
+  1: { front: { door: [0, 0.29], stair: [0, 0.12], glow: [0, 0.45], fire: [[-0.38, 0.42, 'c'], [0.34, 0.42, 'c'], [0.38, 0.39, 'c'], [0.39, 0.53, 'l']] },
+       side: { dir: -1, door: [-0.12, 0.32], stair: [-0.2, 0.15], glow: [-0.12, 0.46], fire: [] } }, // dir -1: yan görselde kapı sola bakar
 };
 function mahzenView(t) {
   const V = NECRO && t.type === 'barracks' && MAHZEN_V[t.lvl];
   if (!V || !spr(`tower_barracks_${t.lvl + 1}`)) return null;
   const dx = (t.rx ?? t.x) - t.x, dy = (t.ry ?? t.y) - t.y, side = !!spr(`tower_barracks_${t.lvl + 1}_side`) && (Math.abs(dx) > Math.max(dy, 0) * 0.9 + 8 || dy < -10); // yol arkadaysa yandan çıkıp binanın yanından dolanır
-  return { side, fl: side && dx < 0 ? -1 : 1, P: side ? V.side : V.front };
+  return { side, fl: side ? (dx < 0 ? -1 : 1) * (V.side.dir || 1) : 1, P: side ? V.side : V.front };
 }
 const mahzenPt = (t, ts, MV, q) => ({ x: t.x + q[0] * MV.fl * ts.w, y: ts.bottom - q[1] * ts.h });
 function graveSpot(t, i) {
@@ -2476,7 +2478,7 @@ function riseFromGrave(s) {
   if (ts) { // kapının karanlığından belirir, merdivenden iner, sonra bayrağa yürür
     const d = mahzenPt(t, ts, MV, MV.P.door), st = mahzenPt(t, ts, MV, MV.P.stair), j = ((s.slot || 0) - 1) * ts.w * 0.04;
     s.x = d.x + j; s.y = d.y; s.born = G.t; s.door = true; s.exit = { x: st.x + j, y: st.y };
-    if ((t.ry ?? t.y) < t.y - 10) s.exit.then = { x: t.x + MV.fl * ts.w * 0.62 + j, y: t.y - 4 }; // bayrak arkada: önce binanın yanına
+    if ((t.ry ?? t.y) < t.y - 10) s.exit.then = { x: t.x + (Math.sign(MV.P.door[0] * MV.fl) || 1) * ts.w * 0.62 + j, y: t.y - 4 }; // bayrak arkada: önce binanın yanına
     for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', x: d.x + rand(-5, 5), y: d.y - rand(0, 8), vx: rand(-8, 8), vy: -rand(4, 12), col: k % 2 ? '150,230,170' : '180,160,220', s0: 4, s1: 10, life: rand(0.6, 1), a: 0.35 });
     return;
   }
@@ -5488,8 +5490,8 @@ const TOWER_FORM = {
   archer_nail: { noAnim: true, layers: true, w: 1.55, rate: 2.4, dmg: 2.3, range: 1.15, tip: [0.9857, 0.3389], nock: [0.3057, 0.1216], armUp: [0.7314, 0.0556], armLo: [0.1086, 0.2574], pivot: [0.4714, 0.3622], rotMax: [-1.05, 1.2], pierce: 2, pierceK: 0.45, flip: true },
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
   // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
-  archer_fan: { noAnim: true, w: 1.0, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
-  archer_bow: { noAnim: true, img: 'tower_archer_fan', w: 1.0, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
+  archer_fan: { noAnim: true, w: 1.14, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
+  archer_bow: { noAnim: true, img: 'tower_archer_fan', w: 1.14, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
@@ -5516,11 +5518,12 @@ const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
 // Her biri ayrı hedef seçer, platformda gezer; atarken arbaleti omzuna kaldırır (aim), cıvatayı bırakınca geri teper (kick), sonra indirip kurar.
 const XBOW = { speed: 0.22, gap: 0.13, aim: 0.3, kick: 0.16, hold: 0.55, tip: [0.99, 0.24], lvW: [0.8, 0.9, 1] };
 // platform ölçüleri kule görseline göre (görsel kesirleri): x gezinme aralığı, y ayak derinliği, h arbaletçi boyu (hepsinde aynı mutlak boy), clip ön korkuluk
+// 4. kademe kulesi (tower_archer_fan) 3. kademeden kısa kalıyordu (Caner, 10 Eki): w 1.14 ile ~140 birim (3. kademe 134); h buna göre küçüldü (askerin boyu aynı)
 const XBOW_T = {
   tower_xbow_1: { x: [0.47, 0.47], y: [0.19, 0.22], h: 0.1995, clip: null },
   tower_xbow_2: { x: [0.37, 0.63], y: [0.17, 0.22], h: 0.191, clip: [[0, 0.08], [0.11, 0.08], [0.5, 0.2], [0.85, 0.09], [1, 0.09]] },
   tower_xbow_3: { x: [0.3, 0.6], y: [0.21, 0.27], h: 0.166, clip: [[0, 0.17], [0.04, 0.17], [0.43, 0.3], [0.84, 0.16], [1, 0.16]] },
-  tower_archer_fan: { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.181, clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]] },
+  tower_archer_fan: { x: [0.3, 0.7], y: [0.246, 0.2997], h: 0.1588, clip: [[0, 0.246], [0.5, 0.3158], [1, 0.246]] },
 };
 // kuledeki iskeletler: 1-3. kademe yeşil arbaletçiler; 4. kademede ya 2 kızıl ağır arbaletçi (fan) ya da 3 kızıl hayalet okçu (bow).
 // aim: nişan / yay germe süresi (ok bu sürenin sonunda çıkar), kick: bırakınca geri tepme, hold: atıştan sonra silahı indirmeden bekleme,
