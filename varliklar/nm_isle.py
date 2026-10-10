@@ -36,6 +36,7 @@ SHEETS = [
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
     ('nm_ruh_feneri_v3.jpg', ['tower_mage_1', 'tower_mage_2', 'tower_mage_3'], 'tower'),  # 10 Eki: Ruh Feneri 3. tasarım (Caner'in promptu: darağacı feneri, fener tutan cüppeli, kanatlı tırpanlı ölüm; kollar varliklar/ruh_feneri_isle.py ile ayrı katman)
     ('nm_fener.jpg', [None, None, None], 'tower'),  # eski Ruh Feneri
+    ('nm_kazan_k4_karaveba.jpg', ['tower_artillery_plague'], 'tower'),  # 11 Eki: Kara Veba Kazanı (4. kademe; sis ve sinekler kodla oynar)
     ('nm_veba_kazani_v3.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_catapult'], 'tower'),  # 10 Eki: Veba Kazanı 1-2 (kafatası ocaklı kazan, boynuzlu kafatası kazan) ve Ceset Mancınığı (4. kademe)
     ('nm_veba_kazani.jpg', [None, None, 'tower_artillery_3'], 'tower'),  # 10 Eki: Veba Kazanı 2. tasarım (kemik üçayaklı kazan, kaburga ocağı, tepesi kazan olan dev boynuzlu kafatası; eski: nm_veba_tareti.jpg, nm_kazan.jpg)
     ('nm_lanet_kulesi.jpg', ['tower_altar_1', 'tower_altar_2', 'tower_altar_3'], 'tower'),  # 10 Eki: Lanet Kulesi 2. tasarım (gözlü dikilitaş, uçan kitaplı sütun, dev gözlü kara mabet; eski: nm_sunak.jpg)
