@@ -2414,9 +2414,10 @@ const SKEL_STANCE = {
   guard: { engage: 74, leash: 20, speed: 56, aggro: false },
   attack: { engage: 140, leash: 60, speed: 80, aggro: true },
 };
-// Savaşçı Mezarlığı (10 Eki): iskeletler binadaki açık mezarlardan (3. kademede türbe kapısından da) toprağı yararak kalkar.
+// Mahzen: iskeletler kapıdan toz kaldırarak çıkar (10 Eki'de mezarlıktaki mezarlardan kalkıyorlardı).
 // Noktalar görsele göre: [yatay pay (genişliğin oranı, merkezden), alttan yükseklik (boyun oranı)], kademe sırasıyla.
-const GRAVE_SPOTS = [[[0.07, 0.4]], [[-0.26, 0.42], [0.19, 0.375]], [[0.26, 0.24], [-0.085, 0.45]]];
+// 11 Eki: yeniden Mahzen; iskeletler mahzenin kapısından çıkar (kapı noktası görsele göre, tek nokta)
+const GRAVE_SPOTS = [[[0.08, 0.16]], [[0.05, 0.18]], [[0.05, 0.16]]];
 function graveSpot(t, i) {
   const ts = towerSprite(t), L = GRAVE_SPOTS[t.lvl] || GRAVE_SPOTS[0], g = L[i % L.length];
   return ts ? { x: t.x + g[0] * ts.w, y: ts.bottom - g[1] * ts.h } : { x: t.x, y: t.y + 6 };
@@ -6251,24 +6252,14 @@ function drawNecroTowerFx(t, ts) {
     }
     if (sh > 0) ctx.restore();
   } else if (t.type === 'barracks' && NECRO) {
-    // Savaşçı Mezarlığı: mezarlar arasında süzülen yeşil-mor sis; 1. kademede fener, 2.'de kafatası gözleri, 3.'de türbe kapısı ve mumlar
-    const P = (dx, up) => ({ x: t.x + dx * ts.w, y: ts.bottom - up * ts.h });
+    // Mahzen (11 Eki): kapının ağzında nabız gibi atan yeşil-mor ruh ışığı, ayağında süzülen sis (yeni Gemini çizimi gelince ayarlanacak)
+    const P = (dx, up) => ({ x: t.x + dx * ts.w, y: ts.bottom - up * ts.h }), g = GRAVE_SPOTS[t.lvl] ? GRAVE_SPOTS[t.lvl][0] : [0.05, 0.16];
     ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < 4; i++) {
-      const a = time * 0.5 + i * 1.7 + t.x * 0.01, q = P(Math.sin(a) * 0.28, 0.2 + 0.08 * Math.cos(a * 1.3 + i));
-      glow(ctx, q.x, q.y, ts.w * (0.16 + 0.04 * Math.sin(a * 2)), i % 2 ? '190,120,255' : '120,255,150', 0.1 + 0.05 * Math.sin(a * 1.7));
+    for (let i = 0; i < 3; i++) {
+      const a = time * 0.5 + i * 2.1 + t.x * 0.01, q = P(Math.sin(a) * 0.3, 0.06 + 0.04 * Math.cos(a * 1.3 + i));
+      glow(ctx, q.x, q.y, ts.w * (0.15 + 0.04 * Math.sin(a * 2)), i % 2 ? '190,120,255' : '120,255,150', 0.08 + 0.04 * Math.sin(a * 1.7));
     }
-    const fl = 0.8 + Math.sin(time * 9 + t.x) * 0.1 + Math.sin(time * 23 + t.y) * 0.06;
-    if (t.lvl === 0) { const q = P(-0.07, 0.42); glow(ctx, q.x, q.y, 7 * s, '120,255,150', 0.7 * fl); }
-    else if (t.lvl === 1) { const q = P(0.035, 0.9); for (const e of [-1, 1]) glow(ctx, q.x + e * 2.2 * s, q.y, 2.6 * s, '200,120,255', 0.9 * fl); glow(ctx, q.x, q.y, 9 * s, '170,90,255', 0.3 * fl); }
-    else {
-      const d = P(-0.085, 0.52); glow(ctx, d.x, d.y, 14 * s, '180,110,255', 0.35 + 0.15 * Math.sin(time * 2.2)); glow(ctx, d.x, d.y + 4 * s, 9 * s, '120,255,170', 0.3 + 0.1 * Math.sin(time * 3.1));
-      for (const [dx, up, k] of [[-0.34, 0.33, 0], [-0.39, 0.29, 1], [0.15, 0.36, 2], [0.19, 0.35, 3], [-0.01, 0.24, 4], [-0.06, 0.15, 5], [0.26, 0.3, 6]]) {
-        const q = P(dx, up), f = 0.75 + Math.sin(time * 11 + k * 2.3) * 0.15 + Math.sin(time * 27 + k) * 0.08;
-        glow(ctx, q.x, q.y, 3.4 * s, '255,200,110', 0.75 * f);
-      }
-      const b = P(0.38, 0.75); glow(ctx, b.x, b.y, 10 * s, '255,60,80', 0.12 + 0.06 * Math.sin(time * 1.5)); // kızıl sancaklar
-    }
+    const d = P(g[0], g[1] + 0.06); glow(ctx, d.x, d.y, 12 * s, '170,100,255', 0.3 + 0.12 * Math.sin(time * 2.2 + t.x)); glow(ctx, d.x, d.y + 3 * s, 7 * s, '120,255,160', 0.28 + 0.1 * Math.sin(time * 3.1));
   } else if (t.type === 'mage') {
     // fenerdeki ruh: nabız gibi atan mor-yeşil ışık, çevresinde dönen küçük hayalet kıvılcımları
     const pulse = 0.5 + Math.sin(time * 3.2 + t.x) * 0.15 + 0.4 * sh;
@@ -7758,17 +7749,28 @@ function drawImpact(f) {
   }
   ctx.restore();
 }
-// kemik ok / cıvata çizimi (0,0 = uç bölgesi, +x uçuş yönü). embed: ucu gövdeye gömülü (yalnız şaft ve tüy görünür)
 const ARROW_K = 0.7; // oklar ve cıvatalar %30 küçük (Caner, 11 Eki)
+// kemik ok / cıvata çizimi (0,0 = uç bölgesi, +x uçuş yönü). embed: ucu gövdeye gömülü (yalnız şaft ve tüy görünür).
+// Oranlar türe göre (Caner, 11 Eki): okçu oku uzun ve ince, ucu ve tüyü küçük (%10 daha küçük); arbalet cıvatası kısa, kalın şaftlı,
+// küt üçgen uçlu, kısa sert kanatçıklı; ağır cıvata aynı biçim biraz iri; dev cıvata (Delici Cıvata) iki katı
+const ARROW_FORM = {
+  arrow: { k: 0.9, sh: [-13, 6], w: 1.5, head: [9.5, 6, 1.15], fl: [-9, -13.5, 1.5] },
+  bolt:  { k: 1, sh: [-7, 4], w: 2.4, head: [7.5, 3.6, 1.7], fl: [-4, -7.5, 1.9] },
+};
 function boneArrowShape(col, bolt, heavy, longA, embed, giant) {
-  ctx.save(); ctx.scale(ARROW_K, ARROW_K);
-  if (giant) ctx.scale(1.9, 1.9); else if (heavy) ctx.scale(0.9, 1.6); else if (bolt) ctx.scale(0.72, 1.3); else if (longA) ctx.scale(1.25, 0.9); // arbalet cıvatası kısa ve kalın, ok uzun ve ince
-  if (!embed) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 2, 0, heavy ? 9 : 7, col, heavy ? 0.6 : 0.5); ctx.restore(); }
-  const x1 = embed ? -1 : 5;
-  ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(x1, 0); ctx.stroke();
-  ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(x1, 0); ctx.stroke();
-  if (!embed) { ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(4.5, -2); ctx.lineTo(5.5, 0); ctx.lineTo(4.5, 2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
-  ctx.fillStyle = `rgb(${col})`; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-12, -2.4); ctx.lineTo(-10.5, 0); ctx.lineTo(-12, 2.4); ctx.closePath(); ctx.fill();
+  const F = longA || !bolt ? ARROW_FORM.arrow : ARROW_FORM.bolt, k = ARROW_K * F.k * (giant ? 1.9 : heavy ? 1.25 : 1);
+  ctx.save(); ctx.scale(k, k);
+  if (!embed) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 2, 0, heavy || giant ? 8 : 6, col, heavy ? 0.55 : 0.45); ctx.restore(); }
+  const x1 = embed ? -1 : F.head[1];
+  ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = F.w; ctx.beginPath(); ctx.moveTo(F.sh[0], 0); ctx.lineTo(x1, 0); ctx.stroke();
+  ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = F.w * 0.5; ctx.beginPath(); ctx.moveTo(F.sh[0], 0); ctx.lineTo(x1, 0); ctx.stroke();
+  if (!embed) { // uç: ince sivri (ok) / küt üçgen (cıvata)
+    const [tx, bx, hw] = F.head;
+    ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a1c14'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(tx, 0); ctx.lineTo(bx, -hw); ctx.lineTo(bx + (tx - bx) * 0.2, 0); ctx.lineTo(bx, hw); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  const [f0, f1, fw] = F.fl; // tüy / kanatçık: iki küçük yaprak
+  ctx.fillStyle = `rgb(${col})`; ctx.beginPath(); ctx.moveTo(f0, 0); ctx.lineTo(f1, -fw); ctx.lineTo(f1 + (f0 - f1) * 0.25, 0); ctx.lineTo(f1, fw); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
 function drawEffect(f) {

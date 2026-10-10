@@ -4866,5 +4866,17 @@
 "tr": "Kule 2 kızıl ağır arbaletçiye dönüşür: yavaş ama ağır cıvata, zırhın %{} kadarını deler, vurduğunu geri iter · %{} şansla 3 kat hasar",
 "en": "The tower becomes 2 crimson heavy crossbowmen: slow but heavy bolts, pierce {}% of armor, knock targets back · {}% chance of triple damage",
 "tpl": 1
+},
+{
+"tr": "Mahzen",
+"en": "Crypt"
+},
+{
+"tr": "Mahzenler",
+"en": "Crypts"
+},
+{
+"tr": "Mahzenin kapısından çıkan iskelet savaşçılar yolu keser",
+"en": "Skeleton warriors marching out of the crypt door block the road"
 }
 ]

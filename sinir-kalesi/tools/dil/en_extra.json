@@ -76,7 +76,10 @@
   "Dev bir cıvata hattaki bütün düşmanları delip geçer: ağır hasar, zırhı yok sayar": "A giant bolt pierces every enemy in its line: heavy damage, ignores armor",
   "İki kızıl arbaletçi: yavaş, ağır, zırh delen cıvata": "Two crimson crossbowmen: slow, heavy, armor-piercing bolts",
   "Üç kızıl okçu: çok sık, yüksek kavisli oklar": "Three crimson archers: very rapid, high-arcing arrows",
-  "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu": "Skeleton crossbowmen on top shoot bone bolts, also hit flyers · at tier 4 choose archers or heavy crossbowmen"
+  "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu": "Skeleton crossbowmen on top shoot bone bolts, also hit flyers · at tier 4 choose archers or heavy crossbowmen",
+  "Mahzen": "Crypt",
+  "Mahzenler": "Crypts",
+  "Mahzenin kapısından çıkan iskelet savaşçılar yolu keser": "Skeleton warriors marching out of the crypt door block the road"
  },
  "tpl": [
   [

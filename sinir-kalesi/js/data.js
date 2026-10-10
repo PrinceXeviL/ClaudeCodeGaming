@@ -676,7 +676,7 @@ if (NECRO) {
 }
 // kuleler: Mortimer'ın yapıları
 Object.assign(TOWERS.archer, { name: 'Kemik Kulesi', desc: 'Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu' });
-Object.assign(TOWERS.barracks, { name: 'Savaşçı Mezarlığı', desc: 'Mezarlardan kalkan iskelet savaşçılar yolu keser' }); // 10 Eki: eski adı Mahzen
+Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'Mahzenin kapısından çıkan iskelet savaşçılar yolu keser' }); // 11 Eki: Savaşçı Mezarlığı'ndan yeniden Mahzen'e (Caner)
 Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır' });
 Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: alan hasarı, zehirli gaz, zırhı çürütür' });
 TOWERS.barracks.levels[0].perk = 'Tencere miğferli 3 iskelet acemi yolu keser';
@@ -1047,7 +1047,7 @@ if (NECRO) {
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları
 if (NECRO) {
-  Object.assign(TOWER_TITLES, { archer: ['Kemik Kulesi', 'Kemik Nişancılar', 'Ölüm Nişancıları'], barracks: ['Savaşçı Mezarlığı', 'Kemik Mezarlığı', 'Kara Türbe'],
+  Object.assign(TOWER_TITLES, { archer: ['Kemik Kulesi', 'Kemik Nişancılar', 'Ölüm Nişancıları'], barracks: ['Mahzen', 'Kemik Mahzeni', 'Kara Türbe'],
     mage: ['Ruh Feneri', 'Ruh Kafesi', 'Ruhlar Feneri'], artillery: ['Veba Kazanı', 'Kaynayan Veba Kazanı', 'Büyük Veba Kazanı'] });
   for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
   Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
@@ -1093,7 +1093,7 @@ if (NECRO) {
 // necro teması: yıldız gelişmeleri ve hasar türü adları (eski kule/kale adlarının yerine)
 if (NECRO) {
   const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
-  U.archer.name = 'Arbaletçiler'; U.barracks.name = 'Savaşçı Mezarlıkları'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
+  U.archer.name = 'Arbaletçiler'; U.barracks.name = 'Mahzenler'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
   U.barracks.ranks[0].desc = '+%20 iskelet canı'; U.barracks.ranks[1].desc = '+%20 iskelet hasarı';
   U.artillery.ranks[1].desc = '+%15 veba alanı';
   U.spells.name = 'Büyüler';
