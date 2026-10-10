@@ -2598,6 +2598,8 @@ const MAHZEN_V = {
 const MAHZEN_SPEC = {
   shield: { front: { door: [0, 0.31], stair: [0, 0.12], glow: [0, 0.36], col: '140,200,255', fire: [[-0.25, 0.61, 'r'], [0.25, 0.61, 'r'], [0, 0.79, 'r'], [-0.25, 0.52, 'r'], [0.25, 0.52, 'r']] }, // Mezar Bekçileri
             side: { door: [0.16, 0.34], stair: [0.28, 0.14], glow: [0.15, 0.4], col: '140,200,255', fire: [[0.15, 0.77, 'r'], [0.33, 0.65, 'r'], [-0.03, 0.56, 'r'], [-0.04, 0.45, 'r'], [0.32, 0.52, 'r']] } },
+  blade: { front: { door: [0, 0.3], stair: [0, 0.1], glow: [0, 0.36], fire: [[-0.25, 0.28, 'b'], [0.25, 0.28, 'b'], [-0.1, 0.8, 'b'], [0.1, 0.8, 'b'], [-0.25, 0.62, 'r'], [0.25, 0.62, 'r']] }, // Ölüm Şövalyeleri: mangallar, yanan çapraz kemikler
+           side: { door: [0.13, 0.32], stair: [0.25, 0.12], glow: [0.13, 0.4], fire: [[-0.03, 0.22, 'b'], [0.38, 0.31, 'b'], [0.07, 0.78, 'b'], [0.22, 0.76, 'b'], [-0.04, 0.55, 'r'], [0.32, 0.62, 'r']] } },
 };
 function mahzenView(t) {
   if (!NECRO || t.type !== 'barracks') return null;
