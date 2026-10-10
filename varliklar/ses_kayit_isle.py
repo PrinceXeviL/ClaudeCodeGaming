@@ -109,7 +109,7 @@ def main():
     if os.path.exists(os.path.join(HAM, 'lisansli', 'battling_knights.wav')):
         b = load('lisansli/battling_knights'); L, X = int(SR * 18), int(SR * 1.5)
         lp = b[:L].copy(); r = np.linspace(0, 1, X); lp[:X] = lp[:X] * r + b[L:L + X] * (1 - r)
-        made.append(save('battle_1', lp, -24))
+        made.append(save('battle_1', lp, -21))
     # plaguefire: Caner'in verdiği "Cinematic Cannon Fuse Light Fire" kaydı (lisanslı): Veba Kazanı bomba / ceset atarken.
     # Fitil cızırtısının son 0,35 sn'si + 1,4. sn'deki ateşleme ve 1,2 sn'lik gürleme (uzun kuyruk kesilir, 0,5 sn'de söner); ikinci hali biraz kalın.
     if os.path.exists(os.path.join(HAM, 'lisansli', 'cannon_fuse_fire.wav')):

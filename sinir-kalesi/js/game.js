@@ -282,9 +282,9 @@ const SOUND = {
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
-  yell:    { vol: 0.3, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
-  plaguefire: { vol: 0.34, gap: 0.5, max: 2, rate: [0.94, 1.06] },  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
-  battle:  { vol: 0.32, full: 5 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
+  yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] },  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
+  battle:  { vol: 0.5, full: 4 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
   armorhit: { vol: 0.2, gap: 0.08, max: 2, rate: [0.9, 1.12] },     // cıvata zırha çarpar (metal tınlaması)
@@ -12588,7 +12588,7 @@ function weatherAudio() {
   ambLast.t = time;
   if (amb.battle) {
     let n = 0; if (screen === 'play' && G && !muted) for (const e of G.enemies) if (!e.dead && e.blocker && onScreen(e, 0)) n++;
-    const v = n ? SOUND.battle.vol * (overlay ? 0.35 : 1) * clamp(0.35 + 0.65 * n / SOUND.battle.full, 0, 1) : 0;
+    const v = n ? SOUND.battle.vol * (overlay ? 0.35 : 1) * clamp(0.5 + 0.5 * n / SOUND.battle.full, 0, 1) : 0;
     if (Math.abs((ambLast.battle ?? -1) - v) > 0.002) { ambLast.battle = v; amb.battle.gain.setTargetAtTime(v, actx.currentTime, v > 0 ? 0.35 : 0.8); }
   }
   const on = screen === 'play' && G && !muted, k = overlay ? 0.35 : 1;
