@@ -913,7 +913,8 @@ const UPGRADES = [
 ];
 // Oyun tek, sabit zorlukta oynanır
 // gold: başlangıç altını çarpanı, bounty: düşman ödülü ve erken çağrı bonusu çarpanı (kazanç)
-const GAME_DIFF = { hp: 1.0, gold: 1, bounty: 0.8, lives: 20 }; // tek kahramana geçince düşman canı 1.15'ten 1.0'a indi
+const GAME_DIFF = { hp: 1.3, // 11 Eki (Caner: oyun çok kolay, 2 kuleyle geçiliyor): düşman ve boss canı +%30
+  gold: 1, bounty: 0.8, lives: 20 }; // tek kahramana geçince düşman canı 1.15'ten 1.0'a indi
 
 // Her kahramanın 3 yeteneği vardır (sade tutmak için); kahraman 4. seviyeye kadar çıkar, her seviyede 1 puan kazanır.
 const HERO_SKILLS = {

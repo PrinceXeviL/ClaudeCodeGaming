@@ -594,11 +594,11 @@ function painVoice(e) {
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.056, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.096, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
+  battle: { file: 'muzik_savas.mp3', gain: 0.15, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.2, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
-  battle2: { file: 'muzik_savas2.mp3', gain: 0.056, seam: true }, // The Gravekeeper's Morning Commute (11 Eki): 120 BPM, sessiz giriş atlanır, 8–112 sn döngü
-  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.096, seam: true, fade: 6, fromStart: true }, // The Belfry's Malice (11 Eki): ~143 BPM, 6,7–174,4 sn döngü; her boss'ta baştan, kısıktan açılır
+  battle2: { file: 'muzik_savas2.mp3', gain: 0.15, seam: true }, // The Gravekeeper's Morning Commute (11 Eki): 120 BPM, sessiz giriş atlanır, 8–112 sn döngü
+  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.2, seam: true, fade: 6, fromStart: true }, // The Belfry's Malice (11 Eki): ~143 BPM, 6,7–174,4 sn döngü; her boss'ta baştan, kısıktan açılır
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
@@ -671,7 +671,7 @@ function musicHeat(dt) {
   const alive = G.enemies.reduce((a, e) => a + (e.dead ? 0 : 1), 0), last = G.wave >= G.lv.waves.length && G.wave > 0;
   const goal = Math.max(clamp((alive - 4) / 12, 0, 1), last && alive > 0 ? 0.7 : 0);
   G.musHeat = (G.musHeat ?? 0) + (goal - (G.musHeat ?? 0)) * Math.min(1, dt / 4);
-  return 0.2 + 0.8 * G.musHeat;
+  return 0.5 + 0.5 * G.musHeat; // 11 Eki: iOS'ta düzey artık gerçekten uygulanıyor; eski 0,2 taban telefonda müziği duyulmaz yapıyordu
 }
 function updateMusic(dt) {
   if (!MUSIC.started) return;
@@ -1262,7 +1262,29 @@ function renderBackground0(lv, paths, res) {
       }
     }
   }
-  const trees = [], TN = th.trees * DK * (lv.decorK ? 1 : TREE_MUL);
+  // yan taşma payı (11 Eki, Caner: iPhone'da harita yanlara genişledi, oralar boş kalmasın): ayrı tohumla kaya, kütük/kemik, çalı ve ağaç.
+  // Ayrı tohum: ekran genişliği değişse de haritanın içindeki dekor aynı kalır. Arayüz kenara yaslı olduğu için HUD kuralı yok, yalnız yol.
+  const side = [], SX = BGM.x || 0, SY = BGM.y || 0;
+  if (SX > 12 && !lv.decorK) {
+    const srnd = seeded(lv.name.length * 131 + 7), sideXY = () => { const r = srnd(); return [r < 0.5 ? -SX + srnd() * (SX - 6) : W + 6 + srnd() * (SX - 6), -SY * 0.6 + srnd() * (H + SY * 1.4)]; };
+    const sBlocked = (x, y, pad) => nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad || (Math.abs(x - lv.castle[0]) < 75 + pad && y > lv.castle[1] - 170 && y < lv.castle[1] + 38 + pad);
+    const area = (2 * SX * (H + SY * 1.4)) / (W * H);
+    for (let i = 0, n = 0; i < 600 && n < (th.rocks + (th.bushes || 0)) * area * 1.3; i++) { // kaya, kütük/kemik, çalı
+      const [x, y] = sideXY(), sz = 5 + srnd() * 8; if (sBlocked(x, y, sz)) continue; n++;
+      const bush = th.bushSpr && srnd() < 0.4, name = bush ? th.bushSpr[n % th.bushSpr.length] : th.rockSpr ? th.rockSpr[n % th.rockSpr.length] : null, im = name && spr(name);
+      if (!im) continue;
+      if (bush) { drawSprite(g, im, x, y + 4, 12 + srnd() * 10); continue; }
+      const m = SPR_META[name], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (sz / 8) : sz * 3;
+      g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3, y + sz * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
+      drawSprite(g, im, x, y + sz * 0.5, w);
+    }
+    for (let i = 0; i < 2500 && side.length < th.trees * TREE_MUL * area * 1.2; i++) { // ağaçlar (ana alandaki gibi küme küme)
+      const [x, y] = sideXY(), sz = 10 + srnd() * 9;
+      if (sBlocked(x, y, sz) || side.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.5) < 20)) continue;
+      side.push([x, y, sz]);
+    }
+  }
+  const trees = side.slice(), TN = th.trees * DK * (lv.decorK ? 1 : TREE_MUL) + side.length;
   const treeOk = (x, y, s) => x > -10 && x < W + 10 && y > 20 && y < H + 10 && !blocked(x, y, s) && !trees.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.5) < 18) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < o[2] + 12);
   for (let i = 0; i < 3000 * DK && trees.length < TN; i++) {
     const x = rnd() * W, y = rnd() * H, s = 10 + rnd() * 9;
@@ -1597,7 +1619,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * ROAD_K);
   const q = pathPos(p, d0, off);
   const tier = G.lv.tier ?? G.idx; // boss gücü kademesi (2. sefer 1. seferin sonlarından başlar)
-  const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1) * (G.mod && G.mod.hp || 1);
+  const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) * diff().hp : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1) * (G.mod && G.mod.hp || 1);
   const e = { type, def, p, d: d0, off, x: q.x, y: q.y, hp, maxHp: hp, blocker: null, atk: 0, dead: false, anim: rand(0, 10), face: 1, healT: 3 };
   G.enemies.push(e);
   if (type === 'elephant') sfx('elephant'); else if (type === 'vulture' && Math.random() < 0.4) sfx('vulture');
@@ -5984,7 +6006,7 @@ function towerSprite(t) {
   const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'artillery' && t.spec === 'plague' && spr('tower_artillery_plague') ? 'tower_artillery_plague' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
-  const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.17 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
+  const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.05 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
   return { im, name, w, h, bottom: t.y + (m ? w * (m[2] ?? 0.24) : 10) };
 }
 
@@ -6621,8 +6643,9 @@ const CAULDRON_PLAGUE = { mouth: [0.42, 0.23, 0.175, 0.057], falls: [[[0.41, 0.4
   braziers: [[0.105, 0.58], [0.78, 0.58]], bcol: '170,80,255', runes: [[0.47, 0.34, 0.15]], fog: [0.5, 0.86, 0.5, 0.1], flies: 16 };
 const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_catapult') ? CAULDRON_CAT : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? CAULDRON_PLAGUE : CAULDRON[t.lvl]);
 // veba bombası: dur uçuş süresi, arc kavis yüksekliği, dmg/splash çarpanı, rate bekleme çarpanı, poison zehir çarpanı (gaz değerine), pool zehir gölü süresi, down yere düşme (sn)
-const LOB = { dur: 0.85, arc: 95, dmg: 1.3, splash: 1.15, rate: 1.75, poison: 1.2, pool: 3, down: 1 };
-const SPRAY_RATE = 1.35, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
+const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Caner: kazan fazla güçlü) dmg 1.3→1.05, splash 1.15→1, rate 1.75→2
+  poison: 1.2, pool: 3, down: 1 };
+const SPRAY_RATE = 1.6, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
 // Ceset Mancınığı (4. kademe): rate bekleme çarpanı, dmg cesedin çarpma hasarı çarpanı, max kule başına ayaktaki zombi, bodies fırlatılan cesetler
 const CORPSE = { rate: 1.6, dmg: 0.6, max: 6, bodies: ['enemy_legion', 'enemy_heavy', 'enemy_gladiator'] };
 // çarpma/patlama: düşmanlar yolda geriye ve yana savrulur; merkeze yakınlar bir an yere düşer (down sn)
