@@ -8467,7 +8467,7 @@ function drawRally(x, y) {
 // Arayüz yerleşimi (KR düzeninden esinli): sol üst can/altın + dalga, sağ üst kare düğmeler,
 // sol alt çerçeveli komutan portresi (altında seviye ve can plakası), yanında kare büyü kartları
 const HUD = (() => { // sağ üst düğmeler ve sol alt portre (UI_K ile büyütülmüş); tam ekranda güvenli bölgenin köşelerine yaslanır (EDGE)
-  const rb = 19 * UI_K, rm = 16 * UI_K, gap = 10 * UI_GAP, hr = 28 * UI_K;
+  const rb = 19 * UI_K * 1.1, rm = 16 * UI_K * 1.1, gap = 11 * UI_GAP, hr = 28 * UI_K; // sağ üst düğmeler %10 daha büyük (Caner, 10 Eki)
   return {
     get pause() { return { x: EDGE.r - 11 - rb, y: EDGE.t + 11 + rb, r: rb }; },
     get speed() { const p = this.pause; return { x: p.x - 2 * rb - gap, y: p.y, r: rb }; },
@@ -9415,13 +9415,13 @@ function settingsRows(x0, y0, w, st, inGame) {
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTOMATİK'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
-  const lx = x0 + 26, cw = Math.min(310, w - 250), LC = inGame && NECRO ? '#eadfc4' : '#4a2a0e', LS = 17, cx = x0 + w - 24 - cw, step = inGame ? 54 : 58;
+  const lx = x0 + 26, cw = Math.min(310, w - 250), LC = inGame && NECRO ? '#eadfc4' : '#4a2a0e', LS = 17, cx = x0 + w - 24 - cw, step = 58, sh = inGame ? 42 : 38; // oyun içinde (telefonda) seçenekler biraz daha iri
   rows.forEach(([icon, label, opts, cur, pick], i) => {
     const y = y0 + 30 + i * step, ap = st - 0.2 - i * 0.04;
     if (i) { ctx.fillStyle = 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y - step / 2, w - 40, 1.5); }
     drawIcon(icon, lx + 12, y, 22, '#f2d58a');
     txt(label, lx + 32, y + 1, LS, LC, 'left', '400', FONT_T, false);
-    segmented('seg' + i + '_', cx, y, cw, 38, opts, cur, pick, ap);
+    segmented('seg' + i + '_', cx, y, cw, sh, opts, cur, pick, ap);
   });
   // dil: dokununca sıradaki dil (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
   const y = y0 + 30 + rows.length * step;
@@ -12319,7 +12319,8 @@ function drawOverlay() {
   ctx.fillStyle = NECRO ? `rgba(8,4,16,${0.7 * fade})` : `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
-  const pw = big ? 600 : 470, ph = big ? 400 : sum ? 440 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : 18), px = cx - pw / 2, py = cy - ph / 2;
+  const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
+  const pw = big ? 600 : pz ? 500 : 470, ph = big ? 400 : sum ? 440 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
@@ -12329,10 +12330,11 @@ function drawOverlay() {
     drawSkillsPanel(k, px, py, pw, ph, cx);
   } else if (overlay === 'pause') {
     if (NECRO) plaqueTitle(cx, py + 50, 'DURAKLATILDI'); else ribbon(cx, py + 4, 290, 'DURAKLATILDI', 'blue', 26);
-    gameButton('ov_resume', cx, py + 104, 270, 50, 'DEVAM ET', () => setOverlay(null), 'green', { icon: 'play', shine: true, appear: k - 0.15 });
-    gameButton('ov_set', cx, py + 164, 270, 50, 'AYARLAR', () => setOverlay('psettings'), 'blue', { icon: 'gear', appear: k - 0.2 });
-    gameButton('ov_restart', cx, py + 224, 270, 50, 'YENİDEN BAŞLA', () => go(() => startLevel(G.idx, G.chal)), 'gold', { icon: 'restart', appear: k - 0.25 });
-    gameButton('ov_map', cx, py + 284, 270, 50, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.3 });
+    const bw = 320, bh = 60, by = py + 120, st = 78, fs = 22;
+    gameButton('ov_resume', cx, by, bw, bh, 'DEVAM ET', () => setOverlay(null), 'green', { icon: 'play', shine: true, appear: k - 0.15, size: fs });
+    gameButton('ov_set', cx, by + st, bw, bh, 'AYARLAR', () => setOverlay('psettings'), 'blue', { icon: 'gear', appear: k - 0.2, size: fs });
+    gameButton('ov_restart', cx, by + st * 2, bw, bh, 'YENİDEN BAŞLA', () => go(() => startLevel(G.idx, G.chal)), 'gold', { icon: 'restart', appear: k - 0.25, size: fs });
+    gameButton('ov_map', cx, by + st * 3, bw, bh, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.3, size: fs });
   } else if (overlay === 'psettings') {
     // duraklatma menüsünden ayarlar: ana ayarlarla aynı satırlar (sıfırlama hariç), geri ok duraklatmaya döner
     if (NECRO) plaqueTitle(cx, py + 50, 'AYARLAR'); else ribbon(cx, py + 4, 290, 'AYARLAR', 'blue', 26);
