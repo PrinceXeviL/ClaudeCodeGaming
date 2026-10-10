@@ -1639,7 +1639,7 @@ function fogTex(col, v) {
 }
 // Kulenin ayağında dönerek süzülen sis (Caner, 10 Eki: kuleler hareketli olsun, çevresindeki sis hareket etsin).
 // front=false: binanın arkasında kalan yarı (binadan önce çizilir), true: önündeki yarı (soluk, binayı örtmesin).
-const TOWER_FOG = { archer: { n: 8, a: 0.85, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
+const TOWER_FOG = { altar: { n: 9, a: 0.9, col: ['150,110,200', '120,70,170'] }, archer: { n: 8, a: 0.85, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
 function drawTowerFog(t, ts, front) {
   const F = NECRO && TOWER_FOG[t.type]; if (!F) return;
   const s = ts.w / 50, R = ts.w * 0.56, cy = ts.bottom - 3 * s;
@@ -2625,7 +2625,7 @@ function findTarget(t, range, allowAir) {
 const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 
 // Necromancer kulelerinde merminin çıktığı nokta (görsel oranı): dikilitaş tepesi, fener kafesi, kazan ağzı
-const TOWER_EYE = { altar: [[0.5, 0.2], [0.4, 0.19], [0.5, 0.22]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
+const TOWER_EYE = { altar: [[0.5, 0.14], [0.48, 0.12], [0.505, 0.38]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
 function towerEye(t, ts) {
   ts = ts || towerSprite(t);
   const E = (TOWER_EYE[t.type] || [])[t.lvl];
@@ -5563,8 +5563,6 @@ const TOWER_FORM = {
   artillery_corpse: { w: 1.3, src: [0.87, 0.08], flip: true, range: 1.2, dmg: 1 },
   artillery_plague: { w: 1.15, src: [0.5, 0.24], dmg: 1.05, gas: 1.6 },
   // Lanet Kulesi: rite -> Kan Mabedi (kızıl bağlar kâseden çıkar), blight -> Kara Lanet Mabedi (lanet küreden, ölenlerin kalkma şansı +%10)
-  altar_rite: { w: 1.02, src: [0.48, 0.12] },
-  altar_blight: { w: 1, src: [0.48, 0.14], rise: 0.1 },
 };
 // kule atış animasyonu (kule_anim_isle.py): <görsel>_atk şeridi; box: görsele göre çerçeve, rel: fırlatma anı, relPt: o anda fırlayan parça
 const TOWER_ANIM_FPS = 16;
@@ -5832,7 +5830,7 @@ function towerSprite(t) {
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
-  return { im, w, h, bottom: t.y + (m ? w * (m[2] ?? 0.24) : 10) };
+  return { im, name, w, h, bottom: t.y + (m ? w * (m[2] ?? 0.24) : 10) };
 }
 
 // ---- Top kulesinin 3B topu: gerçek 3B modelden eğik (ortografik) izdüşümle çizilir ----
@@ -6341,6 +6339,85 @@ function drawTower(t) {
   if (t.disabledT > 0) drawTowerDisabled(t);
 }
 // susturulan kule: üstünde dönen yıldızlar (sersemleme) ya da mor lanet halkası
+// ---- Lanet Kulesi canlandırması (10 Eki, Caner: "en kaliteli şekilde hareketlendir, korkutucu olsun") ----
+// Görsel nm_lanet_kulesi.jpg (3 kademe). Noktalar [x oranı, alttan yükseklik oranı]. eye: [cx, up, rx, ry] boyalı gözün yeri;
+// üstüne kodla canlı göz çizilir (iris, yarık bebek en yakın düşmana bakar, ara ara kırpar, korkuttuğunda kızarır).
+const ALTAR_FX = [
+  { eye: [0.5, 0.86, 0.095, 0.06], candles: [[0.43, 0.295], [0.28, 0.232], [0.658, 0.31], [0.722, 0.232], [0.668, 0.2]], runes: { x: 0.585, y0: 0.42, y1: 0.76, col: '190,110,255' }, smoke: [0.5, 0.95] },
+  { book: true, braziers: [[0.17, 0.35], [0.83, 0.35]], skullEyes: [[0.578, 0.63], [0.672, 0.63]], runes: { x: 0.41, y0: 0.3, y1: 0.46, col: '120,150,255' } },
+  { eye: [0.505, 0.62, 0.09, 0.075], braziers: [[0.225, 0.3], [0.78, 0.3]], skullEyes: [[0.488, 0.322], [0.522, 0.322]], floor: [0.5, 0.16, 0.36, 0.1] },
+];
+// görseli yatay bir çizgiden ikiye bölen katmanlar: üstteki (kitap) ayrı salınır. cut: alttan yükseklik oranı
+const TOWER_SPLIT = { tower_altar_2: { cut: 0.765, bob: 2.6, tilt: 0.035 } };
+const SPLIT_CACHE = new WeakMap();
+function splitOf(im, cut) {
+  let S = SPLIT_CACHE.get(im); if (S) return S;
+  const W = im.width, H = im.height, cy = Math.round(H * (1 - cut)), mk = (y0, y1) => { const c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(im, 0, y0, W, y1 - y0, 0, y0, W, y1 - y0); return c; };
+  S = { top: mk(0, cy), bot: mk(cy, H) }; SPLIT_CACHE.set(im, S); return S;
+}
+function drawSplitTower(t, ts, im, SP) {
+  const S = splitOf(im, SP.cut), s = ts.w / 50, ph = time * 1.5 + t.x * 0.01;
+  drawSprite(ctx, S.bot, 0, 0, ts.w);
+  // kitabın altına düşen mor ışık (sütunun tepesine)
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -ts.h * SP.cut + 2 * s, ts.w * 0.32, '170,90,255', 0.28 + Math.sin(ph * 1.7) * 0.08); ctx.restore();
+  const by = -ts.h * SP.cut, dy = -Math.abs(Math.sin(ph)) * SP.bob * s - 1.5 * s;
+  ctx.save(); ctx.translate(0, by + dy); ctx.rotate(Math.sin(ph * 0.8) * SP.tilt); ctx.translate(0, -by);
+  drawSprite(ctx, S.top, 0, 0, ts.w);
+  ctx.restore();
+}
+function drawAltarFx(t, ts) {
+  const F = ALTAR_FX[t.lvl], s = ts.w / 50; if (!F) return;
+  const P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - q[1] * ts.h });
+  const L = t.def.levels[t.lvl], beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  if (F.floor) { // lanet sisi zeminde ağır ağır döner
+    const c = P(F.floor);
+    for (let i = 0; i < 4; i++) { const a = time * 0.35 + i * 1.57; glow(ctx, c.x + Math.cos(a) * ts.w * F.floor[2] * 0.7, c.y + Math.sin(a) * ts.h * F.floor[3] * 0.5, ts.w * 0.2, i % 2 ? '150,70,255' : '110,40,200', 0.14 + 0.05 * Math.sin(time * 1.3 + i)); }
+  }
+  if (F.runes) { // runlar: aşağıdan yukarı akan lanet enerjisi
+    for (let i = 0; i < 3; i++) { const k = (time * 0.45 + i / 3 + t.x * 0.003) % 1, q = P([F.runes.x, lerp(F.runes.y0, F.runes.y1, k)]); glow(ctx, q.x, q.y, 6 * s, F.runes.col, 0.5 * Math.sin(k * Math.PI)); }
+    const q0 = P([F.runes.x, (F.runes.y0 + F.runes.y1) / 2]); glow(ctx, q0.x, q0.y, ts.h * (F.runes.y1 - F.runes.y0) * 0.6, F.runes.col, 0.08 + 0.06 * beat);
+  }
+  for (const [i, c] of (F.candles || []).entries()) { const q = P(c), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.1) + 0.1 * Math.sin(time * 23 + i); glow(ctx, q.x, q.y - 1.5 * s, 4.5 * s * fk, '255,190,90', 0.55 * fk); glow(ctx, q.x, q.y - 1.5 * s, 1.5 * s, '255,245,210', 0.6 * fk); }
+  for (const [i, c] of (F.braziers || []).entries()) { // mor ateş: titrer, kıvılcım savurur
+    const q = P(c), fk = 0.75 + 0.15 * Math.sin(time * 9 + i * 2.7) + 0.1 * Math.sin(time * 21 + i);
+    glow(ctx, q.x, q.y - 3 * s, 12 * s * fk, '170,80,255', 0.5 * fk); glow(ctx, q.x, q.y - 2 * s, 4.5 * s, '235,200,255', 0.55 * fk);
+    if (Math.random() < 0.12) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-6, 6), vy: -rand(20, 45), col: Math.random() < 0.3 ? '255,120,200' : '170,90,255', s0: 2.4, s1: 0.4, life: rand(0.5, 0.9) });
+  }
+  for (const c of F.skullEyes || []) { const q = P(c), f = 0.6 + 0.4 * Math.sin(time * 4.3 + c[0] * 9); glow(ctx, q.x, q.y, 2.6 * s, '255,40,60', 0.75 * f); } // kafatası gözlerinde kızıl kor
+  if (F.smoke && Math.random() < 0.18) { const q = P(F.smoke); emit(G.parts, { kind: 'glow', x: q.x + rand(-4, 4) * s, y: q.y, vx: rand(-6, 6), vy: -rand(10, 22), col: '130,60,200', s0: 3 * s, s1: 7 * s, life: rand(1, 1.6), a: 0.35 }); }
+  if (F.book) { // kitabın sayfalarından yükselen run kıvılcımları
+    const q = P([0.48, 0.88]); if (Math.random() < 0.2) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-8, 8) * s, y: q.y, vx: rand(-5, 5), vy: -rand(12, 28), col: Math.random() < 0.5 ? '200,150,255' : '150,110,255', s0: 2, s1: 0.4, life: rand(0.8, 1.3) });
+    glow(ctx, q.x, q.y, 14 * s, '180,110,255', 0.22 + 0.15 * beat);
+  }
+  ctx.restore();
+  if (F.eye) drawCurseEye(t, ts, F.eye, P, L);
+}
+// canlı lanet gözü: boyalı gözün üstüne iris + yarık bebek; bebek en yakın düşmana döner, ara ara göz kırpar, korkutunca kızarır
+function drawCurseEye(t, ts, E, P, L) {
+  const c = P(E), rx = E[2] * ts.w, ry = E[3] * ts.h, s = ts.w / 50;
+  let tx = Math.sin(time * 0.7 + t.x) * 0.6, ty = Math.sin(time * 0.53) * 0.3, best = 1e9;
+  for (const e of G.enemies) { if (e.dead || e.under) continue; const d = dist(e.x, e.y, t.x, t.y); if (d < L.range * 1.6 && d < best) { best = d; tx = clamp((e.x - c.x) / 90, -1, 1); ty = clamp((e.y - 10 - c.y) / 90, -1, 1); } }
+  t.eyeX = lerp(t.eyeX || 0, tx, 0.12); t.eyeY = lerp(t.eyeY || 0, ty, 0.12);
+  if ((t.blinkAt ?? (t.blinkAt = time + rand(2, 6))) < time - 0.22) t.blinkAt = time + rand(3, 7);
+  const bk = time >= t.blinkAt ? Math.sin(clamp((time - t.blinkAt) / 0.22, 0, 1) * Math.PI) : 0, red = clamp((t.scareT || 0) - time, 0, 1);
+  const beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
+  ctx.save();
+  ctx.beginPath(); ctx.ellipse(c.x, c.y, rx * 0.9, ry * 0.9, 0, 0, Math.PI * 2); ctx.clip();
+  const g = ctx.createRadialGradient(c.x + t.eyeX * rx * 0.25, c.y + t.eyeY * ry * 0.2, 1, c.x, c.y, rx);
+  g.addColorStop(0, red ? '#ffb0b0' : '#f0c8ff'); g.addColorStop(0.45, red ? '#ff3040' : '#a24dff'); g.addColorStop(1, red ? '#5a0610' : '#2a0850');
+  ctx.fillStyle = g; ctx.fillRect(c.x - rx, c.y - ry, rx * 2, ry * 2);
+  const px = c.x + t.eyeX * rx * 0.42, py = c.y + t.eyeY * ry * 0.3, pw = rx * (0.13 + 0.12 * beat), ph = ry * 0.78; // atışta bebek açılır
+  ctx.beginPath(); ctx.moveTo(px, py - ph); ctx.quadraticCurveTo(px + pw * 1.6, py, px, py + ph); ctx.quadraticCurveTo(px - pw * 1.6, py, px, py - ph); ctx.fillStyle = '#12041c'; ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.ellipse(c.x - rx * 0.32, c.y - ry * 0.38, rx * 0.12, ry * 0.12, 0, 0, Math.PI * 2); ctx.fill();
+  if (bk > 0) { // göz kapakları: koyu taş renginde yukarıdan ve aşağıdan kapanır
+    ctx.fillStyle = '#1e1426'; ctx.fillRect(c.x - rx, c.y - ry, rx * 2, ry * bk * 1.02); ctx.fillRect(c.x - rx, c.y + ry - ry * bk * 1.02, rx * 2, ry * bk * 1.02);
+  }
+  ctx.restore();
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, c.x, c.y, rx * (2.2 + 0.8 * beat), red ? '255,40,60' : '170,80,255', (0.3 + 0.35 * beat) * (1 - bk * 0.8));
+  ctx.restore();
+}
 // Necromancer kulelerinin canlı kısımları (kodla): dikilitaş kıymıkları, fener ruhu, kazan köpüğü
 function drawNecroTowerFx(t, ts) {
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
@@ -6417,8 +6494,8 @@ function drawNecroTowerFx(t, ts) {
   } else if (t.type === 'altar') {
     // lanet kulesi: nabız gibi atan mor lanet ışığı, yerde dönen lanet halkası; kan ayini varsa güçlendirdiği kulelere bağ
     const beat = Math.pow(Math.max(0, Math.sin(time * 3.2 + t.x)), 6), L = t.def.levels[t.lvl];
+    ctx.restore(); drawAltarFx(t, ts); ctx.save(); // göz, kitap, ateşler, sis (drawAltarFx)
     ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, o.x, o.y, (12 + 4 * t.lvl + 8 * beat) * s, '170,70,255', 0.35 + 0.35 * beat);
     {
       ctx.strokeStyle = `rgba(170,90,255,${0.14 + 0.1 * beat})`; ctx.lineWidth = 1.6; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -time * 14;
       ctx.beginPath(); ctx.ellipse(t.x, t.y, L.range, L.range * 0.62, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
@@ -6545,8 +6622,8 @@ function drawTowerBody(t) {
       ctx.drawImage(lim, i * M.fw, 0, M.fw, M.fh, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (balLay(t)) drawBallista(t, ts, OF);
     else {
-      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col);
-      drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
+      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), SP = TOWER_SPLIT[ts.name];
+      if (SP) drawSplitTower(t, ts, lit || ts.im, SP); else drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
     }
     ctx.restore();
     if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
@@ -10795,11 +10872,11 @@ function updateAltar(t, dt) {
     // girişte bir kez korku şansı (bosslar ve makineler korkmaz); korkan geri kaçar
     if (!e.altarRoll) { e.altarRoll = true;
       if (L.fear && !e.def.chief && !e.def.machine && e.siege === undefined && Math.random() < L.fear) {
-        e.fearT = Math.max(e.fearT || 0, 1.6); e.fearMax = 1.6; e.hopT = 0.4; floatText(e.x, e.y - 30, '!', '#d8a8ff');
+        e.fearT = Math.max(e.fearT || 0, 1.6); e.fearMax = 1.6; e.hopT = 0.4; floatText(e.x, e.y - 30, '!', '#d8a8ff'); t.scareT = time + 1; // göz kızarır
         for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(6, 26), vy: -rand(20, 50), col: '170,110,255', s0: 3, s1: 0.4, life: 0.6 });
       }
     }
-    e.curseT = Math.max(e.curseT || 0, L.linger || 0.4); // alandan çıkınca lanet 10 sn daha sürer e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise + (BF && BF.rise || 0));
+    e.curseT = Math.max(e.curseT || 0, L.linger || 0.4); // alandan çıkınca lanet 10 sn daha sürer e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise + (t.spec === 'blight' ? 0.1 : 0) + (BF && BF.rise || 0));
     e.curseRes = Math.max(e.curseRes || 0, L.res || 0); e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0);
     e.drumT = 0; e.armT = 0; // davul ve sancak coşkusu söner
     if (bl) e.blightN = Math.max(e.blightN || 0, bl.n);
