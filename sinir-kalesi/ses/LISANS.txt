@@ -5,3 +5,5 @@ Düşman asker sesleri (pain, dvoice, scream; varliklar/ses_kayit_isle.py ile i�
 - Michel Baradari, "11 male human pain/death sounds" — https://opengameart.org/content/11-male-human-paindeath-sounds
 
 Kılıç çarpışma sesleri (clash): StarNinjas, "20 Sword Sound Effects (Attacks and Clashes)" — https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — CC0
+
+Savaş borazanı (horn), savaş narası (yell) ve savaş ortam sesi (battle): Caner'in lisansladığı kayıtlar ("Ancient Battle Horn", "Male Battle Yell", "Battling Knights"); ham dosyalar depoda değil (varliklar/ham/ses/lisansli/).

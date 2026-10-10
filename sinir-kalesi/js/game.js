@@ -282,6 +282,8 @@ const SOUND = {
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
+  yell:    { vol: 0.3, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  battle:  { vol: 0.32, full: 5 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
   armorhit: { vol: 0.2, gap: 0.08, max: 2, rate: [0.9, 1.12] },     // cıvata zırha çarpar (metal tınlaması)
@@ -4512,14 +4514,14 @@ function drawAchievements() {
 // step: ekrana girdiği yerden yürüdüğü yol, side: yol ortasından kenara uzaklığı (yarı genişliğin oranı)
 // davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
 const DRUM = { beat: 0.3, dmg: 1.2 };
-const HERALD = { step: 16, side: 0.6, speed: 70, blow: 2.3, blowLong: 3.8, back: 90 }; // step: sınırdan iki adım
+const HERALD = { step: 8, side: 0.6, speed: 70, blow: 4.4, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
-  let d0 = 0; while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > 14 && q.y > 30 && q.x < W - 14 && q.y < H - 8) break; d0 += 4; }
+  let d0 = -entryLead(p); while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > VIS.l + 14 && q.y > VIS.t + 30 && q.x < VIS.r - 14 && q.y < VIS.b - 8) break; d0 += 4; } // görünen alanın (telefonda geniş) kenarı: fazla yürümesin
   const d = Math.min(p.total * 0.5, d0 + HERALD.step), q = pathPos(p, d), half = 22 * ROAD_K * HERALD.side;
   let best = null;
   for (const sd of [1, -1]) {
-    const g = pathPos(p, d, sd * half), inside = g.x > 24 && g.x < W - 24 && g.y > 80 && g.y < H - 20;
+    const g = pathPos(p, d, sd * half), inside = g.x > VIS.l + 24 && g.x < VIS.r - 24 && g.y > VIS.t + 80 && g.y < VIS.b - 20;
     const score = (inside ? 1000 : 0) + nearestOnPaths(G.paths, g.x, g.y).d;
     if (!best || score > best.score) best = { score, sd };
   }
@@ -4530,15 +4532,16 @@ function callHeralds(paths, long = false) {
 }
 // düşmanlar borazancı(lar) geri dönünce yola çıkar
 const heraldT = (long) => 0.3 + Math.max(0, ...(G.heralds || []).filter(h => h.state === 'in').map(h =>
-  h.i * 0.15 + (h.dW - h.d0) / HERALD.speed + (long ? HERALD.blowLong : HERALD.blow) + (h.dW - h.d0) / HERALD.back)); // borazancı ekran dışına çıkınca düşmanlar gelir
+  h.i * 0.15 + (h.dW - h.d0) / HERALD.speed + (long ? HERALD.blowLong : HERALD.blow) + HERALD.wait + (h.dW - h.d0) / HERALD.back)); // borazancı ekran dışına çıkınca düşmanlar gelir
 function updateHeralds(dt) {
   for (const h of G.heralds || []) {
     h.t += dt;
     if (h.t < 0) continue;
     if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'blow'; h.t = 0; if (h.i === 0) sfx(h.long ? 'hornboss' : 'horn'); } }
     else if (h.state === 'blow') {
-      if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'out'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
+      if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'wait'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
     }
+    else if (h.state === 'wait') { if (h.t > HERALD.wait) { h.state = 'out'; h.t = 0; } } // borazanı indirip bir an bekler, sonra döner
     else h.d -= HERALD.back * dt;
   }
   if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > Math.min(-10, (h.d0 || 0) - 10));
@@ -4558,7 +4561,7 @@ function drawHeralds() {
     ctx.save(); if (!hr) { ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y); } // Gemini borazancısında gövde sabit
     if (!hr) { ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); } // boru askerin arkasında: gövdeyi sarar
     if (blowing && hr) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath); // gövde sabit, yalnız borazan ve el oynar
-    else drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing, fly: 0, seed: h.i });
+    else drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing && h.state !== 'wait', fly: 0, seed: h.i }); // çaldıktan sonra durup bekler
     ctx.restore();
     if (!blowing || h.i !== 0) continue;
     // ses dalgaları borazanın ağzından ileri yayılır
@@ -10598,7 +10601,12 @@ function summonLegion(e) {
 // Hepsi kısa bir "büyü anı" oynatır (e.skillT): düşman durur, varsa <ad>_skill şeridi, yoksa saldırı şeridi oynar.
 // kind: net (ağ: kımıldayamaz), bash (kalkan darbesi), burn/poison (süreli hasar), whirl (çevresine savurma), charge (geri savurma)
 const ALT_DUR = 0.65;
-function playSkill(e, dur = ALT_DUR) { if (!(e.skillT > 0)) e.skillT = e.skillDur = dur; }
+const NO_YELL = new Set(['hound', 'elephant', 'vulture', 'ram', 'catapult']); // insan olmayanlar bağırmaz
+function playSkill(e, dur = ALT_DUR) {
+  if (e.skillT > 0) return;
+  e.skillT = e.skillDur = dur;
+  if (!e.def.machine && !e.def.flying && !NO_YELL.has(e.type) && onScreen(e)) sfx('yell', e.def.chief ? 0.85 : undefined); // özel saldırıda savaş narası
+}
 function soldierDot(s, dps, t, col) { s.dotT = Math.max(s.dotT || 0, t); s.dotDps = Math.max(s.dotT > t ? s.dotDps || 0 : 0, dps); s.dotCol = col; }
 function netSoldier(s, t) { if (s.wall) return; s.stunT = Math.max(s.stunT || 0, t); s.netT = Math.max(s.netT || 0, t); }
 function throwNet(e, s, stun) {
@@ -12571,8 +12579,17 @@ function weatherAudio() {
     // yağmur: tiz cızırtı yerine alçak geçiren süzgeçle yumuşak, boğuk bir hışırtı
     amb = { rain: mk('lowpass', 1100, 0.5), wind: mk('lowpass', 420, 0.8) };
   }
+  if (!amb.battle && SND.battle && SND.battle.length) { // kılıç-nara döngüsü: kavga sayısıyla yükselir, kavga bitince söner
+    const src = actx.createBufferSource(); src.buffer = SND.battle[0]; src.loop = true;
+    const g = actx.createGain(); g.gain.value = 0; src.connect(g); g.connect(master); src.start(0, rand(0, 10)); amb.battle = g;
+  }
   if (time - ambLast.t < 0.2) return;
   ambLast.t = time;
+  if (amb.battle) {
+    let n = 0; if (screen === 'play' && G && !muted) for (const e of G.enemies) if (!e.dead && e.blocker && onScreen(e, 0)) n++;
+    const v = n ? SOUND.battle.vol * (overlay ? 0.35 : 1) * clamp(0.35 + 0.65 * n / SOUND.battle.full, 0, 1) : 0;
+    if (Math.abs((ambLast.battle ?? -1) - v) > 0.002) { ambLast.battle = v; amb.battle.gain.setTargetAtTime(v, actx.currentTime, v > 0 ? 0.35 : 0.8); }
+  }
   const on = screen === 'play' && G && !muted, k = overlay ? 0.35 : 1;
   const rain = on && G.weather === 'rain' ? SOUND.rain.vol * k : 0;
   const windy = G && (G.weather === 'snow' || G.weather === 'sand' || G.stormT > 0), gust = G && (G.weather === 'sand' || G.stormT > 0) ? 1.6 : 1;

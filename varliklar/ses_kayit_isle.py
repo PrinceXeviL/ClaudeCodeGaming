@@ -96,7 +96,20 @@ def main():
     # Savaş borusu (10 Eki, Caner: daha gerçekçi olsun, boss gelirken farklı borazan çalsın): ElevenLabs adaylarından ölçerek seçildi.
     # horn: hornf_3 (10 Eki, Caner 2.: "klasik savaş filmlerindeki savaş öncesi borazan"; derin ~195 Hz, sabit perde, yükselip tutan uzun üfleme).
     # Önceki: hornw_3 (beğenilmedi). hornboss: hornb_1 (iki uzun üfleme) %15 kalınlaştırılmış.
-    made.append(save('horn_1', fade(load_mp3('hornf_3'), 0.01, 0.5), -17))
+    # 10 Eki (Caner, 3.): Caner'in verdiği "Ancient Battle Horn" kaydı (lisanslı, ham dosya depoda değil: ham/ses/lisansli/, .gitignore).
+    # İki üfleme + yankı: ilk 7,5 sn, sonu 1,5 sn'de söner. Kaynak yoksa ElevenLabs hornf_3'e düşer.
+    if os.path.exists(os.path.join(HAM, 'lisansli', 'ancient_battle_horn.wav')): made.append(save('horn_1', fade(load('lisansli/ancient_battle_horn')[:int(SR * 7.5)], 0.01, 1.5), -17))
+    else: made.append(save('horn_1', fade(load_mp3('hornf_3'), 0.01, 0.5), -17))
+    # yell: Caner'in verdiği "Male Battle Yell" kaydı (lisanslı, ham/ses/lisansli/): düşman özel saldırı yaparken bağırır; ikinci hali biraz kalın
+    if os.path.exists(os.path.join(HAM, 'lisansli', 'male_battle_yell.wav')):
+        y = fade(load('lisansli/male_battle_yell'), 0.005, 0.15)
+        made.append(save('yell_1', y, -19)); made.append(save('yell_2', pitch(y, 0.9), -19))
+    # battle: Caner'in verdiği "Battling Knights" kaydı (lisanslı): yakın dövüş sürerken arkada dönen kılıç-nara ortam sesi.
+    # İlk 18 sn; son 1,5 sn başa karıştırılır, döngü dikişsiz döner.
+    if os.path.exists(os.path.join(HAM, 'lisansli', 'battling_knights.wav')):
+        b = load('lisansli/battling_knights'); L, X = int(SR * 18), int(SR * 1.5)
+        lp = b[:L].copy(); r = np.linspace(0, 1, X); lp[:X] = lp[:X] * r + b[L:L + X] * (1 - r)
+        made.append(save('battle_1', lp, -24))
     made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
     # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
     for n, cnt, db in [('xbow', 3, -23), ('xbowh', 2, -20), ('armorhit', 3, -25), ('rattle', 2, -25)]:

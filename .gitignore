@@ -13,3 +13,6 @@ ios/App/Pods/
 ios/App/App/public/
 ios/DerivedData/
 ios/DerivedDataSim
+
+# lisanslı ses kaynakları (Envato vb.): ham dosya herkese açık depoya konmaz, yalnız oyundaki işlenmiş hali
+varliklar/ham/ses/lisansli/
