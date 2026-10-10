@@ -110,6 +110,12 @@ def main():
         b = load('lisansli/battling_knights'); L, X = int(SR * 18), int(SR * 1.5)
         lp = b[:L].copy(); r = np.linspace(0, 1, X); lp[:X] = lp[:X] * r + b[L:L + X] * (1 - r)
         made.append(save('battle_1', lp, -24))
+    # plaguefire: Caner'in verdiği "Cinematic Cannon Fuse Light Fire" kaydı (lisanslı): Veba Kazanı bomba / ceset atarken.
+    # Fitil cızırtısının son 0,35 sn'si + 1,4. sn'deki ateşleme ve 1,2 sn'lik gürleme (uzun kuyruk kesilir, 0,5 sn'de söner); ikinci hali biraz kalın.
+    if os.path.exists(os.path.join(HAM, 'lisansli', 'cannon_fuse_fire.wav')):
+        c = load('lisansli/cannon_fuse_fire'); a0, a1 = int(SR * 1.05), int(SR * 2.75)
+        pf = fade(c[a0:a1].copy(), 0.06, 0.5)
+        made.append(save('plaguefire_1', pf, -20)); made.append(save('plaguefire_2', pitch(pf, 0.9), -20))
     made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
     # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
     for n, cnt, db in [('xbow', 3, -23), ('xbowh', 2, -20), ('armorhit', 3, -25), ('rattle', 2, -25)]:

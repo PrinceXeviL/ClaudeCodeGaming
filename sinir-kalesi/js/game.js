@@ -283,6 +283,7 @@ const SOUND = {
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
   yell:    { vol: 0.3, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  plaguefire: { vol: 0.34, gap: 0.5, max: 2, rate: [0.94, 1.06] },  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
   battle:  { vol: 0.32, full: 5 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
@@ -2898,7 +2899,7 @@ function updateTower(t, dt) {
           arc: 80 + i * 14, splash: L.splash * 0.8, stun: 0, gas: (L.dmg[0] + L.dmg[1]) * 0.05, big: true, path: o.blocker ? null : o.p, along: ta,
           body: { name: CORPSE.bodies[Math.floor(Math.random() * CORPSE.bodies.length)], rig: null, h: 24, face: Math.random() < 0.5 ? -1 : 1 }, zombie: cr, tower: t });
       }
-      t.cd = L.rate * CORPSE.rate; t.gushT = GUSH; t.aimX = e.x; t.aimY = e.y; sfx('whirl');
+      t.cd = L.rate * CORPSE.rate; t.gushT = GUSH; t.aimX = e.x; t.aimY = e.y; sfx('plaguefire');
       return;
     }
     // ceset mancınığı: menzildeki bir cesedi cephane yapar; dönüşmüş mancınık ceset yoksa kendi ceset yığınını atar
@@ -2917,7 +2918,7 @@ function updateTower(t, dt) {
         black: t.spec === 'plague', plague: pl ? pl.dps : 0, body: null, spin: rand(0, 6) });
       t.cd = L.rate * LOB.rate; t.aimX = tx; t.aimY = ty; t.gushT = GUSH;
       for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'dot', x: sx + rand(-5, 5), y: sy - rand(0, 8), vx: rand(-45, 45), vy: -rand(70, 170), g: 460, col: i % 3 ? '#8cff5a' : '#c6ff9a', s0: rand(1, 1.8), s1: 0.8, life: rand(0.4, 0.7), floor: sy + rand(2, 8) });
-      sfx('whirl');
+      sfx('plaguefire');
       return;
     }
     {
