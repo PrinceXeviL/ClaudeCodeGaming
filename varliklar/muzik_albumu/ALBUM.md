@@ -10,5 +10,7 @@ Oyundaki döngü sürümleri `sinir-kalesi/ses/muzik_*.mp3` (dikişsiz döngü i
 | 03 | Bones on the Battlements | 2:37 | (artık kullanılmıyor; eski boss müziği) | Albüm dosyası eski döngü sürümü (tam hali yok) |
 | 04 | The Necromancer's Parade | 2:36 | (artık kullanılmıyor; eski savaş müziği) | Albüm dosyası eski döngü sürümü (tam hali yok) |
 | 05 | The Harpsichord's Final Grin | 3:01 | `muzik_boss.mp3` — boss sahadayken | 10 Eki 2026'dan beri boss müziği; oyunda 0:19,5'ten başlar, kısıktan ~6 sn'de açılır |
+| 06 | The Gravekeeper's Morning Commute | 2:01 | `muzik_savas2.mp3` — 2. sefer (Cadı Avı) bölüm içi | 11 Eki 2026; sessiz giriş atlanır, 120 BPM döngü |
+| 07 | The Belfry's Malice | 3:01 | `muzik_boss2.mp3` — 2. sefer boss sahadayken | 11 Eki 2026; her boss'ta baştan, kısıktan açılır |
 
-Gemini'nin görselli videoları (1024x1024) Caner'in İndirilenler klasöründe: `The_Gates_Tremble.mp4`, `The_Harpsichord’s_Final_Grin.mp4`.
+Gemini'nin görselli videoları (1024x1024) Caner'in İndirilenler klasöründe: `The_Gates_Tremble.mp4`, `The_Harpsichord’s_Final_Grin.mp4`, `The_Gravekeeper’s_Morning_Commute.mp4`, `The_Belfry’s_Malice.mp4`.
