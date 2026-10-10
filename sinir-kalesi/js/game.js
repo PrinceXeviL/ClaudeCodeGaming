@@ -614,6 +614,9 @@ function startMusic() {
 }
 // iOS ve bazı tarayıcılar sesi yalnız parmak kalkınca / tıklamada açar: birkaç olayda denenir
 for (const [t, o] of [['pointerup', window], ['touchend', window], ['click', window], ['keydown', window]]) o.addEventListener(t, () => startMusic(), { passive: true });
+// açılışta dokunuş beklemeden dener (Caner, 10 Eki: menü müziği hemen başlasın). iOS uygulamasında (Capacitor, WKWebView
+// mediaTypesRequiringUserActionForPlayback = []) izin var; tarayıcı izin vermezse NotAllowedError ile ilk dokunuşa kalır.
+setTimeout(() => { if (!muted) startMusic(); }, 400);
 // bölüm başında savaş parçası baştan başlar
 function musicRestartBattle() { for (const k of ['battle', 'battle2']) { const T = MUSIC.tracks[k]; if (T.el) { try { T.el.currentTime = 0; } catch (e) {} } } }
 function musicWanted() {
