@@ -3269,6 +3269,7 @@ function runHeroSkills(h, dt) {
 function heroSkills(h, dt) {
   for (const k in h.cds) h.cds[k] -= dt;
   if (h.castT > 0) h.castT -= dt;
+  if (h.ultT > 0) h.ultT -= dt;
   for (const p of h.def.paths) for (const sk of p.skills) {
     if (sk.passive || !h.learned[sk.id] || (h.cds[sk.id] || 0) > 0) continue;
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
@@ -4942,7 +4943,7 @@ function castUlt(h, x, y) {
     const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * r; return [x + Math.cos(a) * d, y + Math.sin(a) * d * 0.6];
   };
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
-  h.castT = 0.45;
+  h.castT = 0.45; h.ultT = ULT_ANIM; // komutanın güç şeridi (varsa) bu sürede bir kez oynar
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
   if (h.id === 'commander' && U.bats) {
     // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
@@ -6567,9 +6568,10 @@ function drawSoldier(s) {
     s.px = s.x; s.py = s.y;
     const ch = s.hero ? s.def.h * UNIT_K : CHAR_H[name];
     // komutan: Wan şeritleri geldiyse onlar oynar (saldırı kareleri vuruş döngüsüne bağlı)
-    const hsk = s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || (walking && animStrip(name, null, '_walk')));
+    const ult = s.hero && s.ultT > 0 && animStrip(name, null, '_skill');
+    const hsk = ult || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || (walking && animStrip(name, null, '_walk'))));
     if (hsk) {
-      const F = ANIM_META[hsk], i = hsk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
+      const F = ANIM_META[hsk], i = ult ? Math.floor(clamp(1 - s.ultT / ULT_ANIM, 0, 0.999) * F.n) : hsk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
       hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
@@ -9529,6 +9531,7 @@ const BOSS_LOOK = {
   },
 };
 // Kare şeridi: <ad><ek> varsa o; yoksa asıl türün (rig) şeridi bu türün renkleriyle (boss/rütbe) yeniden boyanır ve saklanır.
+const ULT_ANIM = 1.3; // komutan gücü şeridinin süresi (sn)
 function animStrip(name, rig, suf) {
   const key = name + suf;
   if (ANIM_META[key] && spr(key)) return key;
