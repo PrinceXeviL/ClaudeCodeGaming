@@ -554,7 +554,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 196, 199, 209, 218, 223, 228, 234, 206, 220, 234, 242, 242, 226, 211, 211, 265, 273, 281]; // 20 bölüm (10 Eki): yeni bölümler komşularının arası // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1, 1.3, 1.08, 1.4, 0.84, 1.25, 0.58, 0.98, 0.33, 0.49, 0.66, 0.31, 1.3, 0.81, 0.41, 0.38, 0.22, 0.7, 0.24, 0.28]; // 11 Eki: Arbaletçi Kulesi ve iki yollu mezarlıkla bot ayarı (2 tur)
+  const HPMUL = [1, 1.3, 1.188, 1.612, 1.012, 1.491, 0.574, 0.98, 0.398, 0.525, 0.818, 0.316, 1.267, 0.804, 0.42, 0.352, 0.194, 0.673, 0.24, 0.334]; // 10 Eki: hasar türü × zırh sınıfı, Kemik Kulesi yolları ve silah büyüleriyle bot ayarı (2 tur)
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -660,7 +660,7 @@ if (NECRO) {
   [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1.25, 1.46, 0.76, 1.05, 1.5, 0.8, 0.74, 1.6, 1.95, 1.25, 2.31, 1.8, 1.08, 1.11, 1.04, 1.38, 0.78, 1.75, 0.97, 0.32]; // 11 Eki: Arbaletçi Kulesi ile bot ayarı (2 tur)
+  const HPMUL2 = [1.311, 1.531, 0.787, 1.114, 1.545, 0.854, 0.638, 1.737, 2.166, 1.357, 2.5, 1.931, 1.206, 1.269, 0.911, 1.479, 0.874, 1.632, 1.09, 0.395]; // 10 Eki: hasar türü × zırh sınıfı, Kemik Kulesi yolları ve silah büyüleriyle bot ayarı (2 tur)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
@@ -675,7 +675,7 @@ if (NECRO) {
       a.push(n); return a; }, []) });
 }
 // kuleler: Mortimer'ın yapıları
-Object.assign(TOWERS.archer, { name: 'Kemik Kulesi', desc: 'Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu' });
+Object.assign(TOWERS.archer, { name: 'Kemik Kulesi', desc: 'Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin' });
 Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'Mahzenin kapısından çıkan iskelet savaşçılar yolu keser' }); // 11 Eki: Savaşçı Mezarlığı'ndan yeniden Mahzen'e (Caner)
 Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır' });
 Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: alan hasarı, zehirli gaz, zırhı çürütür' });
@@ -970,25 +970,25 @@ Object.assign(ENEMY_WK, {
 // Necromancer seferi: düşman açıklamaları (tanıtım kartı ve dokununca açılan panel)
 Object.assign(ENEMY_DESC, {
   legion: 'Kalkanlı piyade, kalabalık gelir. Ruh ışını kalkanını deler',
-  solarcher: 'Durup iskeletlere ok atar. Zırhsız: kemik kıymığı ve kılıç iyi işler',
-  gladiator: 'Çevik arena dövüşçüsü, iskeletleri hızla keser. Kıymık ve veba işler',
+  solarcher: 'Durup iskeletlere ok atar. Zırhsız: oklar ve kılıç iyi işler',
+  gladiator: 'Çevik arena dövüşçüsü, iskeletleri hızla keser. Ok ve veba işler',
   assassin: 'Çok hızlı, ara ara gölgeye dalıp ileri atlar. Vebanın alanından kaçamaz',
-  priest: 'Yakınındakileri iyileştirir, büyüye dirençli. Önce onu kıymıkla vur',
-  heavy: 'Kalkan duvarı: kıymıklar seker. Ruh ışını zırhını deler',
+  priest: 'Yakınındakileri iyileştirir, büyüye dirençli. Önce onu okla vur',
+  heavy: 'Kalkan duvarı: oklar seker. Ruh ışını zırhını deler',
   cavalry: 'Hızlı atlı, kuleye 2 can götürür. Veba atı ürkütür',
   ram: 'Çok yavaş, çok canlı; kapıya varırsa 3 can götürür. Veba kazanı kullan',
   catapult: 'Durup kulelerimize taş atar, 3 sn susturur. Önce onu durdur',
   wardog: 'Sürüyle gelir, çok hızlıdır ama canı azdır. Veba kazanı sürüyü dağıtır',
   chariot: 'Çok hızlı; iskeletleri ezip geçer, durduramazlar. Kemik duvar durdurur',
   siegetower: 'Ağır ve yavaş; yıkılınca içinden 6 lejyoner dökülür. Yolun başında yık',
-  eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Arbaletçiler ve Ruh Feneri vurur',
+  eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur',
   horsearcher: 'Koşarken iskeletlere ok atar, iskeletler onu durduramaz. Kemik duvar durdurur',
-  testudo: 'Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
+  testudo: 'Kalkan çatısı: oklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',
   sunpriest: 'Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir',
   signifer: 'Sancağı çevresindeki düşmanlara zırh verir. Ruh ışını ve iskeletler iyi işler',
-  vulture: 'Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Arbaletçiler ve Ruh Feneri vurur',
+  vulture: 'Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Kemik Kulesi ve Ruh Feneri vurur',
   elephant: 'Dev ve zırhlı: iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar. Kemik duvar durdurur, ruh ışını iyi işler',
-  drummer: 'Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, kıymık ve veba iyi işler',
+  drummer: 'Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, ok ve veba iyi işler',
 });
 // Sefer 2 düşmanlarının zayıflıkları ve açıklamaları (tanımlar yukarıda, SEFER 2 bölümünde)
 if (NECRO) {
@@ -1002,12 +1002,12 @@ if (NECRO) {
     hunter: 'Gümüş arbaletle iskeletleri uzaktan avlar. Zırhı ince: iskeletlerle üstüne bas',
     torch: 'Geçtiği yerdeki cesetleri yakar (diriltilemez), dirilen ölüleri ateşe verir. Önce onu indir',
     hound: 'Sürüyle ve çok hızlı koşar, canı azdır. Veba kazanı sürüyü dağıtır',
-    holywater: 'Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Kıymıkla erken vur',
+    holywater: 'Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Okla erken vur',
     flagellant: 'Canı azaldıkça hızlanır ve sertleşir. Ruh ışınıyla tek seferde bitir',
     lantern: 'Fenerin ışığında iskeletler zayıflar, ceset diriltilemez, lanet tutmaz. Önce feneri söndür',
     bellpriest: 'Çanını çalar: çevresindeki iskeletler sersemler. Menzilden vur',
     paladin: 'Ağır zırh, büyüye dirençli, kalkanıyla iskeletleri durdurur. Kazan ve lanet iyi işler',
-    inquisitor: 'Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve kıymık iyi işler',
+    inquisitor: 'Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve ok iyi işler',
     saint: 'Canlanan taş heykel: oklar seker, lanet tutmaz. Veba kazanı ve büyüler işler',
   });
 }
@@ -1058,9 +1058,9 @@ if (NECRO) {
   Object.assign(SPEC.blast, { title: 'Ruh Fırtınası', who: 'Kalabalığa patlayan ruh dalgası' });
   Object.assign(SPEC.napalm, { title: 'Çürüme Bulutu', who: 'Daha büyük, uzun süren gaz' });
   Object.assign(SPEC.double, { title: 'Çifte Kazan', who: 'Her atışta ikinci veba' });
-  TOWERS.archer.levels[0].perk = '1 iskelet arbaletçi kemik cıvata atar · uçanları da vurur';
-  TOWERS.archer.levels[1].perk = '2 arbaletçi, ayrı hedeflere · delici cıvata: %25 şansla zırhı yok sayar · +menzil';
-  TOWERS.archer.levels[2].perk = '3 arbaletçi, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil';
+  TOWERS.archer.levels[0].perk = '1 iskelet okçu kemik ok atar · uçanları da vurur';
+  TOWERS.archer.levels[1].perk = '2. kademede yolunu seç: okçular (hızlı, hafif) ya da arbaletçiler (yavaş, ağır)';
+  TOWERS.archer.levels[2].perk = '3 nişancı, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil';
   TOWERS.mage.levels[1].perk = 'Daha hızlı yükleme · ruh soğuğu: vurduğunu 1 sn %30 yavaşlatır';
   TOWERS.mage.levels[2].perk = 'Hızlı yükleme · ruh zinciri: yakındaki ikinci düşmana %60 hasar';
 }
@@ -1093,18 +1093,66 @@ if (NECRO) {
 // necro teması: yıldız gelişmeleri ve hasar türü adları (eski kule/kale adlarının yerine)
 if (NECRO) {
   const U = Object.fromEntries(UPGRADES.map(u => [u.id, u]));
-  U.archer.name = 'Arbaletçiler'; U.barracks.name = 'Mahzenler'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
+  U.archer.name = 'Kemik Kuleleri'; U.barracks.name = 'Mahzenler'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
   U.barracks.ranks[0].desc = '+%20 iskelet canı'; U.barracks.ranks[1].desc = '+%20 iskelet hasarı';
   U.artillery.ranks[1].desc = '+%15 veba alanı';
   U.spells.name = 'Büyüler';
   U.spells.ranks[0].desc = '+%20 komutan gücü hasarı'; U.spells.ranks[1].desc = 'Dirilen ölüler %25 dayanıklı'; U.spells.ranks[2].desc = 'Büyüler %25 hızlı dolar';
   U.castle.name = 'Şapel';
-  Object.assign(WK_NAME, { arrow: 'Kemik', magic: 'Ruh', blast: 'Veba', melee: 'Kılıç' });
+  Object.assign(WK_NAME, { arrow: 'Delici', magic: 'Ruh', blast: 'Veba/Ateş', melee: 'Kesici' }); // hasar türleri (10 Eki)
 }
 
 // ----- Necromancer: zayıflık/direnç bağlama + düşman rütbeleri -----
 // Necro düşmanlarının ENEMY_WK değerleri yukarıdaki bağlama döngüsünden sonra eklendiği için burada yeniden bağlanır.
 for (const k in ENEMY_WK) if (ENEMIES[k]) ENEMIES[k].wk = ENEMY_WK[k];
+// ----- Hasar türleri × zırh sınıfları (10 Eki, Caner onayı) -----
+// Dört hasar türü: Delici (ok, cıvata: src 'arrow'), Kesici (iskelet, komutan: 'melee'), Ruh (Ruh Feneri: 'magic'), Veba/Ateş (kazan, yanma: 'blast').
+// Her düşmanın bir zırh sınıfı vardır; çarpanlar bu tablodan gelir (eski düşmana özel çarpanların yerine). Zırh/büyü direnci ayrıca işler.
+const ARMOR_CLASS = {
+  hafif:   { name: 'Hafif',         mult: { arrow: 1.25, melee: 1, magic: 1, blast: 1 } },
+  agir:    { name: 'Ağır zırh',     mult: { arrow: 0.6, melee: 0.8, magic: 1.35, blast: 1 } },
+  kalkan:  { name: 'Kalkan duvarı', mult: { arrow: 0.5, melee: 1, magic: 1, blast: 1.4 } },
+  kutsal:  { name: 'Kutsal',        mult: { arrow: 1, melee: 1.15, magic: 0.6, blast: 1.1 } },
+  kusatma: { name: 'Kuşatma',       mult: { arrow: 0.5, melee: 1, magic: 0.8, blast: 1.5 }, immune: ['poison', 'bleed'] }, // makine: zehirlenmez, kanamaz
+  canavar: { name: 'Canavar',       mult: { arrow: 1, melee: 0.8, magic: 1, blast: 1.2 } },
+};
+const CLASS_OF = {
+  legion: 'kalkan', testudo: 'kalkan', signifer: 'kalkan', centurion: 'kalkan',
+  heavy: 'agir', paladin: 'agir', ironwarden: 'agir', gloriosus: 'agir', cavcaptain: 'agir',
+  priest: 'kutsal', sunpriest: 'kutsal', holywater: 'kutsal', bellpriest: 'kutsal', inquisitor: 'kutsal', saint: 'kutsal',
+  hierophant: 'kutsal', ignis: 'kutsal', severus: 'kutsal', campanus: 'kutsal', colossus: 'kutsal',
+  ram: 'kusatma', catapult: 'kusatma', siegetower: 'kusatma', lantern: 'kusatma', chariot: 'kusatma', cathedral: 'kusatma',
+  cavalry: 'canavar', horsearcher: 'canavar', elephant: 'canavar', eagle: 'canavar', vulture: 'canavar',
+};
+if (NECRO) for (const k in ENEMIES) {
+  const d = ENEMIES[k];
+  d.acl = CLASS_OF[k] || (d.base && CLASS_OF[d.base]) || (d.machine ? 'kusatma' : d.flying ? 'canavar' : d.armor >= 0.5 ? 'agir' : d.mr >= 0.4 ? 'kutsal' : 'hafif');
+  d.wk = Object.assign({}, ARMOR_CLASS[d.acl].mult);
+}
+// ----- Silah büyüleri (10 Eki): kemik kulesi ve mahzen son kademede tek bir büyü seçer; her vuruş düşmana durum etkisi bırakır -----
+const IMBUE_ORDER = ['fire', 'poison', 'frost', 'bleed', 'curse'];
+const IMBUE = {
+  fire:   { name: 'Alev',  arrow: 'Alevli Oklar',   melee: 'Alevli Kılıçlar',   col: '255,140,50',  cost: 220, dps: 12, t: 3,
+    desc: 'Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50' },
+  poison: { name: 'Zehir', arrow: 'Zehirli Oklar',  melee: 'Zehirli Kılıçlar',  col: '140,255,90',  cost: 220, dps: 9, t: 5,
+    desc: 'Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez' },
+  frost:  { name: 'Buz',   arrow: 'Buzlu Oklar',    melee: 'Buzlu Kılıçlar',    col: '150,215,255', cost: 220, slow: 0.35, t: 1.6,
+    desc: 'Vurduğu düşman 1,6 sn %35 yavaşlar (bosslar daha az)' },
+  bleed:  { name: 'Kan',   arrow: 'Kanatan Oklar',  melee: 'Kanatan Kılıçlar',  col: '230,40,50',   cost: 220, dps: 10, t: 4,
+    desc: 'Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz' },
+  curse:  { name: 'Lanet', arrow: 'Lanetli Oklar',  melee: 'Lanetli Kılıçlar',  col: '190,100,255', cost: 220, k: 0.2, res: 0.3, t: 3,
+    desc: 'Vurduğu düşman 3 sn lanetlenir: her kaynaktan %20 fazla hasar alır, zırhı ve direnci %30 erir · kutsallarda yarı süre' },
+};
+// ----- Kemik Kulesi yolları (10 Eki, Caner: A seçeneği): 1. kademe iskelet okçu; 2. kademeye yükseltirken okçu ya da arbaletçi yolu seçilir.
+// Yol 4. kademe uzmanlığını da belirler (okçu -> Hayalet Okçular, arbaletçi -> Ağır Arbaletçiler). rate/dmg: kademe değerlerine çarpan.
+const ARCHER_PATH = {
+  bow:  { name: 'Okçu Yolu',      spec: 'bow', rate: 0.72, dmg: 0.7, fly: 1.25, titles: ['Kemik Kulesi', 'Kemik Okçular', 'Ölüm Okçuları'],
+    desc: 'Hızlı ve hafif: sık ok, uçanlara +%25 · 4. kademede Hayalet Okçular',
+    perks: [null, '2 iskelet okçu, sık atış · uçanlara +%25 · +menzil', '3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil'] },
+  xbow: { name: 'Arbaletçi Yolu', spec: 'fan', rate: 1.3, dmg: 1.45, pen: 0.3, titles: ['Kemik Kulesi', 'Kemik Arbaletçiler', 'Ölüm Arbaletçileri'],
+    desc: 'Yavaş ve ağır: sert cıvata, zırhın %30 kadarını deler · 4. kademede Ağır Arbaletçiler',
+    perks: [null, '2 iskelet arbaletçi, ağır cıvata · zırhın %30 kadarını deler · +menzil', '3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil'] },
+};
 // Rütbeler (tasarim/necromancer-gdd.md): Er (sıradan), Kıdemli (koyu çelik zırh, şarap kırmızısı kumaş, kırmızı sorguç),
 // Yüzbaşı (altın kumaş ve sorguç, biraz iri, borazanla çevresini hızlandırır). Görsel aynı resmin yeniden renklendirilmesi (game.js RANK_LOOK).
 // Rütbeli türler ayrı düşman kaydıdır: legion_k (Kıdemli Lejyoner), legion_y (Lejyoner Yüzbaşı); base ile asıl türün resmini ve iskeletini kullanır.

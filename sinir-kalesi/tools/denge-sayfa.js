@@ -15,11 +15,12 @@ window.__bot = function (lvl) {
       const cov = (p) => p._cov ?? (p._cov = G.paths.reduce((a, P) => a + P.pts.filter(q => Math.hypot((q.x ?? q[0]) - p.x, (q.y ?? q[1]) - p.y) < 110).length, 0));
       const opts = []; let free = G.plots.findIndex(p => !p.tower && cov(p) >= 20); if (free < 0) free = G.plots.findIndex(p => !p.tower);
       if (free >= 0) { const t = order[G.towers.length % order.length]; opts.push({ c: { archer: 70, barracks: 70, mage: 100, artillery: 125 }[t] * 1.6, f: () => g.build(free, t) }); }
-      for (let i = 0; i < G.plots.length; i++) { const t = G.plots[i].tower; if (t && t.lvl < 2) opts.push({ c: t.def.levels[t.lvl + 1].cost, f: () => g.upgrade(i) }); }
+      for (let i = 0; i < G.plots.length; i++) { const t = G.plots[i].tower; if (t && t.lvl < 2) opts.push({ c: t.def.levels[t.lvl + 1].cost, f: () => (t.type === 'archer' && t.lvl === 0 && g.path ? g.path(i, i % 2 ? 'bow' : 'xbow') : g.upgrade(i)) }); } // Kemik Kulesi: arsalara göre okçu/arbaletçi yolu
       if (free < 0) for (const t of G.towers) if (t.lvl === 2) for (const a of (t.def.abilities || [])) { const r = (t.ab && t.ab[a.id]) || 0; if (r < 3 && a.ranks && a.ranks[r]) opts.push({ c: a.ranks[r].cost, f: () => g.buy(t, a.id) }); }
       // yeni sistemler (10 Eki): şapel devi, 4. kademe ikinci güç, büyü geliştirme (oyuncu bunları da alır)
       if (free < 0) {
         if (G.castle.lvl < 2) opts.push({ c: [0, 200, 300][G.castle.lvl + 1] * 1.2, f: () => g.upgradeCastle() });
+        for (const t of G.towers) { const pi = G.plots.indexOf(t.plot); if (g.imbue && t.spec && !t.imbue && (t.type === 'archer' || t.type === 'barracks') && ((t.ab && t.ab[t.spec]) || 0) >= 3) opts.push({ c: 220, f: () => g.imbue(pi, IMBUE_ORDER[pi % 5]) }); } // silah büyüsü
         for (const t of G.towers) { const E = t.spec && TOWER_EXTRA[t.spec]; if (E && !t.extra) opts.push({ c: E.cost, f: () => (G.gold >= E.cost ? (G.gold -= E.cost, t.extra = true, t.exT = 1.5, true) : false) }); }
         for (const id of ['nm_raise', 'nm_wall', 'nm_fear', 'nm_burst']) { const r = (G.spellUp && G.spellUp[id]) || 0, c = [120, 200][r]; if (c && G.spells[id] != null) opts.push({ c: c * 1.5, f: () => (G.gold >= c ? (G.gold -= c, G.spellUp = G.spellUp || {}, G.spellUp[id] = r + 1, true) : false) }); }
       }

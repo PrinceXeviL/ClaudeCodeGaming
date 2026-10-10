@@ -1440,24 +1440,24 @@
 "en": "Shielded infantry, comes in crowds. The soul beam pierces its shield"
 },
 {
-"tr": "Durup iskeletlere ok atar. Zırhsız: kemik kıymığı ve kılıç iyi işler",
-"en": "Stops to shoot skeletons. Unarmored: bone shards and swords work well"
+"tr": "Durup iskeletlere ok atar. Zırhsız: oklar ve kılıç iyi işler",
+"en": "Stops to shoot arrows at skeletons. Unarmored: arrows and swords work well"
 },
 {
-"tr": "Çevik arena dövüşçüsü, iskeletleri hızla keser. Kıymık ve veba işler",
-"en": "Agile arena fighter, cuts skeletons down fast. Shards and plague work"
+"tr": "Çevik arena dövüşçüsü, iskeletleri hızla keser. Ok ve veba işler",
+"en": "Agile arena fighter, cuts skeletons down fast. Arrows and plague work well"
 },
 {
 "tr": "Çok hızlı, ara ara gölgeye dalıp ileri atlar. Vebanın alanından kaçamaz",
 "en": "Very fast, now and then dives into the shadows and leaps ahead. Can't escape the plague cloud"
 },
 {
-"tr": "Yakınındakileri iyileştirir, büyüye dirençli. Önce onu kıymıkla vur",
-"en": "Heals nearby allies, resists magic. Hit it first with shards"
+"tr": "Yakınındakileri iyileştirir, büyüye dirençli. Önce onu okla vur",
+"en": "Heals those nearby, resists magic. Shoot him with arrows first"
 },
 {
-"tr": "Kalkan duvarı: kıymıklar seker. Ruh ışını zırhını deler",
-"en": "Shield wall: shards bounce off. The soul beam pierces its armor"
+"tr": "Kalkan duvarı: oklar seker. Ruh ışını zırhını deler",
+"en": "Shield wall: arrows bounce off. The soul beam pierces its armor"
 },
 {
 "tr": "Hızlı atlı, kuleye 2 can götürür. Veba atı ürkütür",
@@ -1492,8 +1492,8 @@
 "en": "Shoots skeletons while riding, skeletons can't stop it. The bone wall does"
 },
 {
-"tr": "Kalkan çatısı: kıymıklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır",
-"en": "Shield roof: shards barely work. The plague cauldron breaks it; splits into 3 legionaries when it dies"
+"tr": "Kalkan çatısı: oklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır",
+"en": "Shield roof: arrows barely work. The plague cauldron breaks it; splits into 3 legionaries on death"
 },
 {
 "tr": "Çevresindeki cesetleri yakar (diriltilemez), dirilen ölülere ışıkla vurur. Önce onu indir",
@@ -1512,8 +1512,8 @@
 "en": "Huge and armored: tramples skeletons, the archer on its back shoots while walking. The bone wall stops it, soul beams work well"
 },
 {
-"tr": "Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, kıymık ve veba iyi işler",
-"en": "Fires up those around him with his drum: they walk faster and hit harder. Unarmored, shards and plague work well"
+"tr": "Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, ok ve veba iyi işler",
+"en": "His drum fires up those nearby: they march faster and hit harder. Unarmored: arrows and plague work well"
 },
 {
 "tr": "Gümüş arbaletle iskeletleri uzaktan avlar. Zırhı ince: iskeletlerle üstüne bas",
@@ -1528,8 +1528,8 @@
 "en": "Runs very fast in packs, low health. The plague cauldron scatters the pack"
 },
 {
-"tr": "Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Kıymıkla erken vur",
-"en": "Throws holy water flasks: area damage to skeletons where they land. Hit early with shards"
+"tr": "Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Okla erken vur",
+"en": "Throws holy water flasks: area damage to skeletons where they land. Shoot him early with arrows"
 },
 {
 "tr": "Canı azaldıkça hızlanır ve sertleşir. Ruh ışınıyla tek seferde bitir",
@@ -1548,8 +1548,8 @@
 "en": "Heavy armor, resists magic, stops skeletons with his shield. Cauldrons and curses work well"
 },
 {
-"tr": "Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve kıymık iyi işler",
-"en": "Interrogates a tower: it falls silent for 4 s. Skeletons and shards work well"
+"tr": "Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve ok iyi işler",
+"en": "Interrogates a tower: it falls silent for 4 s. Skeletons and arrows work well"
 },
 {
 "tr": "Canlanan taş heykel: oklar seker, lanet tutmaz. Veba kazanı ve büyüler işler",
@@ -3256,8 +3256,8 @@
 "en": "Heals the wounded. I heal the dead. Professional rivalry."
 },
 {
-"tr": "Kalkanı kapımdan geniş. Kıymıklar seker, ruh ışını geçer.",
-"en": "His shield is wider than my door. Shards bounce off, soul beams go through."
+"tr": "Kalkanı kapımdan geniş. Oklar seker, ruh ışını geçer.",
+"en": "His shield is wider than my door. Arrows bounce off, the soul beam goes through."
 },
 {
 "tr": "At güzel. Üstündeki fazlalık. Atı bende kalsın.",
@@ -3524,20 +3524,20 @@
 "en": "Mortimer's note"
 },
 {
-"tr": "Kemik (kıymık)",
-"en": "Bone (shards)"
+"tr": "Delici (ok)",
+"en": "Piercing (arrows)"
 },
 {
 "tr": "Ruh (büyü)",
 "en": "Soul (magic)"
 },
 {
-"tr": "Veba (alan)",
-"en": "Plague (area)"
+"tr": "Veba/Ateş (alan)",
+"en": "Plague/Fire (area)"
 },
 {
-"tr": "Kılıç (iskeletler)",
-"en": "Sword (skeletons)"
+"tr": "Kesici (iskeletler)",
+"en": "Slashing (skeletons)"
 },
 {
 "tr": "Saldırmaz",
@@ -4749,16 +4749,16 @@
 "en": "Death Marksmen"
 },
 {
-"tr": "1 iskelet arbaletçi kemik cıvata atar · uçanları da vurur",
-"en": "1 skeleton crossbowman shoots bone bolts · hits flyers too"
+"tr": "1 iskelet okçu kemik ok atar · uçanları da vurur",
+"en": "1 skeleton archer shoots bone arrows · hits flyers too"
 },
 {
-"tr": "2 arbaletçi, ayrı hedeflere · delici cıvata: %25 şansla zırhı yok sayar · +menzil",
-"en": "2 crossbowmen, separate targets · piercing bolt: 25% chance to ignore armor · +range"
+"tr": "2. kademede yolunu seç: okçular (hızlı, hafif) ya da arbaletçiler (yavaş, ağır)",
+"en": "At level 2 choose your path: archers (fast, light) or crossbowmen (slow, heavy)"
 },
 {
-"tr": "3 arbaletçi, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil",
-"en": "3 crossbowmen, very fast fire · 15% critical hits · much longer range"
+"tr": "3 nişancı, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil",
+"en": "3 marksmen, very fast shots · 15% critical hits · much longer range"
 },
 {
 "tr": "Arbaletçiler",
@@ -4801,12 +4801,12 @@
 "en": "A bat swarm on the chosen area: 3 s of bites, slow, Dracula heals"
 },
 {
-"tr": "Uçar: iskeletler ve kazanlar vuramaz. Arbaletçiler ve Ruh Feneri vurur",
-"en": "Flies: skeletons and cauldrons can't hit it. Crossbowmen and Soul Lanterns can"
+"tr": "Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur",
+"en": "Flies: skeletons and cauldrons can't hit it. The Bone Tower and Soul Lantern can"
 },
 {
-"tr": "Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Arbaletçiler ve Ruh Feneri vurur",
-"en": "Flies in flocks, eats corpses: an eaten corpse can't be raised and the vulture heals. Crossbowmen and Soul Lanterns can hit it"
+"tr": "Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Kemik Kulesi ve Ruh Feneri vurur",
+"en": "Flies in flocks, eats corpses: an eaten body can't be raised and the vulture heals. The Bone Tower and Soul Lantern can hit it"
 },
 {
 "tr": "Kule Hayalet Arbaletçilere dönüşür: 3 kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara +%30 · her atışta {} ek cıvata yakındaki düşmanlara (%{} hasar) · kalabalığa iyi",
@@ -4854,8 +4854,8 @@
 "en": "Three crimson archers: very rapid, high-arcing arrows"
 },
 {
-"tr": "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur · 4. kademede okçu ya da ağır arbaletçi yolu",
-"en": "Skeleton crossbowmen on top shoot bone bolts, also hit flyers · at tier 4 choose archers or heavy crossbowmen"
+"tr": "Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin",
+"en": "Skeleton archers on top shoot bone arrows, hit air too · at level 2 you choose the archer or crossbow path"
 },
 {
 "tr": "Kule 3 kızıl hayalet okçuya dönüşür: çok sık, yüksek kavisli oklar (ok başına az hasar), uçanlara +%30 · her {}. ok zehirli: 3 sn boyunca saniyede {} hasar",
@@ -4918,5 +4918,246 @@
 {
 "tr": "Kule satmak ayıp değil. Yanlış yere kurmak ayıp.",
 "en": "Selling a tower is no shame. Building it in the wrong place is."
+},
+{
+"tr": "Kemik Kuleleri",
+"en": "Bone Towers"
+},
+{
+"tr": "Mahzen İskeletleri",
+"en": "Crypt Skeletons"
+},
+{
+"tr": "Delici",
+"en": "Piercing"
+},
+{
+"tr": "Kesici",
+"en": "Slashing"
+},
+{
+"tr": "Veba/Ateş",
+"en": "Plague/Fire"
+},
+{
+"tr": "Hafif",
+"en": "Light"
+},
+{
+"tr": "Ağır zırh",
+"en": "Heavy armor"
+},
+{
+"tr": "Kalkan duvarı",
+"en": "Shield wall"
+},
+{
+"tr": "Kutsal",
+"en": "Holy"
+},
+{
+"tr": "Kuşatma",
+"en": "Siege"
+},
+{
+"tr": "Canavar",
+"en": "Beast"
+},
+{
+"tr": "Zırh sınıfı",
+"en": "Armor class"
+},
+{
+"tr": "Alevli Oklar",
+"en": "Flaming Arrows"
+},
+{
+"tr": "Alevli Kılıçlar",
+"en": "Flaming Swords"
+},
+{
+"tr": "Zehirli Oklar",
+"en": "Poisoned Arrows"
+},
+{
+"tr": "Zehirli Kılıçlar",
+"en": "Poisoned Swords"
+},
+{
+"tr": "Buzlu Oklar",
+"en": "Frost Arrows"
+},
+{
+"tr": "Buzlu Kılıçlar",
+"en": "Frost Swords"
+},
+{
+"tr": "Kanatan Oklar",
+"en": "Bleeding Arrows"
+},
+{
+"tr": "Kanatan Kılıçlar",
+"en": "Bleeding Swords"
+},
+{
+"tr": "Lanetli Oklar",
+"en": "Cursed Arrows"
+},
+{
+"tr": "Lanetli Kılıçlar",
+"en": "Cursed Swords"
+},
+{
+"tr": "Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50",
+"en": "The enemy hit burns for 3 s: 12 damage per second. Burning enemies can't be healed · +50% against siege engines"
+},
+{
+"tr": "Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez",
+"en": "The enemy hit is poisoned for 5 s: 9 damage per second (45 total) · machines can't be poisoned"
+},
+{
+"tr": "Vurduğu düşman 1,6 sn %35 yavaşlar (bosslar daha az)",
+"en": "The enemy hit is slowed by 35% for 1.6 s (bosses less)"
+},
+{
+"tr": "Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz",
+"en": "The enemy hit bleeds for 4 s: 10 damage per second while walking, a third while standing · machines don't bleed"
+},
+{
+"tr": "Vurduğu düşman 3 sn lanetlenir: her kaynaktan %20 fazla hasar alır, zırhı ve direnci %30 erir · kutsallarda yarı süre",
+"en": "The enemy hit is cursed for 3 s: takes 20% more damage from all sources, armor and resistance melt by 30% · half duration on holy foes"
+},
+{
+"tr": "kule başına tek büyü",
+"en": "one enchantment per tower"
+},
+{
+"tr": "Silah büyüsü seç",
+"en": "Choose a weapon enchantment"
+},
+{
+"tr": "Oklar her vuruşta düşmana bir etki bırakır",
+"en": "Arrows leave an effect on the enemy with every hit"
+},
+{
+"tr": "Kılıçlar her vuruşta düşmana bir etki bırakır",
+"en": "Swords leave an effect on the enemy with every hit"
+},
+{
+"tr": "alev, zehir, buz, kanama ya da lanet",
+"en": "fire, poison, frost, bleeding or curse"
+},
+{
+"tr": "Silah büyüsü açıldı",
+"en": "Weapon enchantment unlocked"
+},
+{
+"tr": "yandaki düğme",
+"en": "the button beside it"
+},
+{
+"tr": "BÜYÜ",
+"en": "ENCHANT"
+},
+{
+"tr": "Okçu Yolu",
+"en": "Archer Path"
+},
+{
+"tr": "Arbaletçi Yolu",
+"en": "Crossbow Path"
+},
+{
+"tr": "Ölüm Okçuları",
+"en": "Death Archers"
+},
+{
+"tr": "Kemik Arbaletçiler",
+"en": "Bone Crossbowmen"
+},
+{
+"tr": "Ölüm Arbaletçileri",
+"en": "Death Crossbowmen"
+},
+{
+"tr": "Hızlı ve hafif: sık ok, uçanlara +%25 · 4. kademede Hayalet Okçular",
+"en": "Fast and light: frequent arrows, +25% vs flyers · Ghost Archers at level 4"
+},
+{
+"tr": "Yavaş ve ağır: sert cıvata, zırhın %30 kadarını deler · 4. kademede Ağır Arbaletçiler",
+"en": "Slow and heavy: hard-hitting bolts, pierce 30% of armor · Heavy Crossbowmen at level 4"
+},
+{
+"tr": "2 iskelet okçu, sık atış · uçanlara +%25 · +menzil",
+"en": "2 skeleton archers, frequent shots · +25% vs flyers · +range"
+},
+{
+"tr": "3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil",
+"en": "3 archers, very frequent shots · 15% crit · much longer range"
+},
+{
+"tr": "2 iskelet arbaletçi, ağır cıvata · zırhın %30 kadarını deler · +menzil",
+"en": "2 skeleton crossbowmen, heavy bolts · pierce 30% of armor · +range"
+},
+{
+"tr": "3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil",
+"en": "3 crossbowmen, heavy shots · 15% crit · much longer range"
+},
+{
+"tr": "Yükseltirken yolunu seç",
+"en": "Choose your path when upgrading"
+},
+{
+"tr": "okçular ya da arbaletçiler",
+"en": "archers or crossbowmen"
+},
+{
+"tr": "Uzmanlık",
+"en": "Specialization"
+},
+{
+"tr": "yukarıdaki düğme ({})",
+"en": "the button above ({})",
+"tpl": true
+},
+{
+"tr": "Alevli Oklar!",
+"en": "Flaming Arrows!"
+},
+{
+"tr": "Alevli Kılıçlar!",
+"en": "Flaming Swords!"
+},
+{
+"tr": "Zehirli Oklar!",
+"en": "Poisoned Arrows!"
+},
+{
+"tr": "Zehirli Kılıçlar!",
+"en": "Poisoned Swords!"
+},
+{
+"tr": "Buzlu Oklar!",
+"en": "Frost Arrows!"
+},
+{
+"tr": "Buzlu Kılıçlar!",
+"en": "Frost Swords!"
+},
+{
+"tr": "Kanatan Oklar!",
+"en": "Bleeding Arrows!"
+},
+{
+"tr": "Kanatan Kılıçlar!",
+"en": "Bleeding Swords!"
+},
+{
+"tr": "Lanetli Oklar!",
+"en": "Cursed Arrows!"
+},
+{
+"tr": "Lanetli Kılıçlar!",
+"en": "Cursed Swords!"
 }
 ]
