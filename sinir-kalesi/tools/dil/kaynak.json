@@ -5016,8 +5016,8 @@
 "en": "The enemy hit is poisoned for 5 s: 9 damage per second (45 total) · machines can't be poisoned"
 },
 {
-"tr": "Vurduğu düşman 1,6 sn %35 yavaşlar (bosslar daha az)",
-"en": "The enemy hit is slowed by 35% for 1.6 s (bosses less)"
+"tr": "Vurduğu düşman 2 sn donar · iri düşmanlar 2, komutanlar 3 vuruşta donar",
+"en": "The enemy hit freezes for 2 s · big enemies freeze after 2 hits, commanders after 3"
 },
 {
 "tr": "Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz",
@@ -5179,5 +5179,9 @@
 {
 "tr": "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir",
 "en": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death"
+},
+{
+"tr": "Dondu!",
+"en": "Frozen!"
 }
 ]

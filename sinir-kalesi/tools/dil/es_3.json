@@ -69,7 +69,7 @@
 "Espadas malditas",
 "El enemigo alcanzado arde 3 s: 12 de daño por segundo. Un enemigo en llamas no puede curarse · +50% contra máquinas de asedio",
 "El enemigo alcanzado queda envenenado 5 s: 9 de daño por segundo (45 en total) · las máquinas no se envenenan",
-"El enemigo alcanzado se ralentiza un 35% durante 1,6 s (los jefes menos)",
+"El enemigo alcanzado se congela 2 s · los enemigos grandes se congelan tras 2 impactos, los comandantes tras 3",
 "El enemigo alcanzado sangra 4 s: 10 de daño por segundo al caminar, un tercio quieto · las máquinas no sangran",
 "El enemigo alcanzado queda maldito 3 s: recibe un 20% más de daño de todo, su armadura y resistencia bajan un 30% · mitad de duración en los sagrados",
 "un encantamiento por torre",
@@ -109,5 +109,6 @@
 "Solo se puede construir una Torre de maldición por mapa",
 "Los enemigos reciben un 10% más de daño, pierden un 30% de defensa y atacan un 12% más lento · 6% de miedo · +10% de daño para esqueletos y arqueros · la maldición dura 10 s",
 "+14% de daño recibido · defensa −40% · ataques un 16% más lentos · 9% de miedo · +14% de daño para esqueletos y arqueros, +12% de armadura para esqueletos",
-"+18% de daño recibido · defensa −50% · ataques un 20% más lentos · 12% de miedo · +18% de daño para esqueletos y arqueros, +15% de armadura para esqueletos · 16% se alzan al morir"
+"+18% de daño recibido · defensa −50% · ataques un 20% más lentos · 12% de miedo · +18% de daño para esqueletos y arqueros, +15% de armadura para esqueletos · 16% se alzan al morir",
+"¡Congelado!"
 ]

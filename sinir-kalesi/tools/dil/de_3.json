@@ -69,7 +69,7 @@
 "Verfluchte Schwerter",
 "Der getroffene Feind brennt 3 s: 12 Schaden pro Sekunde. Brennende Feinde können nicht geheilt werden · +50 % gegen Belagerungsmaschinen",
 "Der getroffene Feind wird 5 s vergiftet: 9 Schaden pro Sekunde (45 insgesamt) · Maschinen sind immun",
-"Der getroffene Feind wird 1,6 s um 35 % verlangsamt (Bosse weniger)",
+"Der getroffene Feind friert 2 s ein · große Feinde frieren nach 2 Treffern ein, Kommandanten nach 3",
 "Der getroffene Feind blutet 4 s: 10 Schaden pro Sekunde beim Gehen, ein Drittel im Stand · Maschinen bluten nicht",
 "Der getroffene Feind ist 3 s verflucht: nimmt 20 % mehr Schaden, Rüstung und Resistenz sinken um 30 % · halbe Dauer bei Heiligen",
 "eine Verzauberung pro Turm",
@@ -109,5 +109,6 @@
 "Pro Karte kann nur ein Fluchturm gebaut werden",
 "Feinde nehmen 10 % mehr Schaden, verlieren 30 % Verteidigung, greifen 12 % langsamer an · 6 % Furcht · +10 % Schaden für Skelette und Schützen · der Fluch hält 10 s",
 "+14 % erlittener Schaden · Verteidigung −40 % · Angriffe 16 % langsamer · 9 % Furcht · +14 % Schaden für Skelette und Schützen, +12 % Rüstung für Skelette",
-"+18 % erlittener Schaden · Verteidigung −50 % · Angriffe 20 % langsamer · 12 % Furcht · +18 % Schaden für Skelette und Schützen, +15 % Rüstung für Skelette · 16 % erheben sich nach dem Tod"
+"+18 % erlittener Schaden · Verteidigung −50 % · Angriffe 20 % langsamer · 12 % Furcht · +18 % Schaden für Skelette und Schützen, +15 % Rüstung für Skelette · 16 % erheben sich nach dem Tod",
+"Eingefroren!"
 ]

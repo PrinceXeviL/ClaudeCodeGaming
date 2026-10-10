@@ -1141,8 +1141,8 @@ const IMBUE = {
     desc: 'Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50' },
   poison: { name: 'Zehir', arrow: 'Zehirli Oklar',  melee: 'Zehirli Kılıçlar',  col: '140,255,90',  cost: 220, dps: 9, t: 5,
     desc: 'Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez' },
-  frost:  { name: 'Buz',   arrow: 'Buzlu Oklar',    melee: 'Buzlu Kılıçlar',    col: '150,215,255', cost: 220, slow: 0.35, t: 1.6,
-    desc: 'Vurduğu düşman 1,6 sn %35 yavaşlar (bosslar daha az)' },
+  frost:  { name: 'Buz',   arrow: 'Buzlu Oklar',    melee: 'Buzlu Kılıçlar',    col: '150,215,255', cost: 220, slow: 0.35, t: 1.6, // slow: donana kadarki vuruşlarda (game.js FREEZE)
+    desc: 'Vurduğu düşman 2 sn donar · iri düşmanlar 2, komutanlar 3 vuruşta donar' },
 };
 // ----- Kemik Kulesi yolları (10 Eki, Caner: A seçeneği): 1. kademe iskelet okçu; 2. kademeye yükseltirken okçu ya da arbaletçi yolu seçilir.
 // Yol 4. kademe uzmanlığını da belirler (okçu -> Hayalet Okçular, arbaletçi -> Ağır Arbaletçiler). rate/dmg: kademe değerlerine çarpan.

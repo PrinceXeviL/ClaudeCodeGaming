@@ -69,7 +69,7 @@
 "Épées maudites",
 "L'ennemi touché brûle 3 s : 12 dégâts par seconde. Un ennemi en feu ne peut être soigné · +50 % contre les engins de siège",
 "L'ennemi touché est empoisonné 5 s : 9 dégâts par seconde (45 au total) · les machines sont immunisées",
-"L'ennemi touché est ralenti de 35 % pendant 1,6 s (les boss moins)",
+"L'ennemi touché gèle pendant 2 s · les grands ennemis gèlent après 2 coups, les commandants après 3",
 "L'ennemi touché saigne 4 s : 10 dégâts par seconde en marchant, un tiers à l'arrêt · les machines ne saignent pas",
 "L'ennemi touché est maudit 3 s : subit 20 % de dégâts en plus, armure et résistance fondent de 30 % · durée réduite de moitié sur les sacrés",
 "un enchantement par tour",
@@ -109,5 +109,6 @@
 "Une seule Tour maudite peut être construite par carte",
 "Les ennemis subissent 10 % de dégâts en plus, perdent 30 % de défense, attaquent 12 % plus lentement · 6 % de peur · +10 % de dégâts pour squelettes et archers · la malédiction dure 10 s",
 "+14 % de dégâts subis · défense −40 % · attaques 16 % plus lentes · 9 % de peur · +14 % de dégâts pour squelettes et archers, +12 % d'armure pour les squelettes",
-"+18 % de dégâts subis · défense −50 % · attaques 20 % plus lentes · 12 % de peur · +18 % de dégâts pour squelettes et archers, +15 % d'armure pour les squelettes · 16 % se relèvent à leur mort"
+"+18 % de dégâts subis · défense −50 % · attaques 20 % plus lentes · 12 % de peur · +18 % de dégâts pour squelettes et archers, +15 % d'armure pour les squelettes · 16 % se relèvent à leur mort",
+"Gelé !"
 ]

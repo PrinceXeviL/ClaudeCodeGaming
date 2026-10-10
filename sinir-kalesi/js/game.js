@@ -593,7 +593,7 @@ function painVoice(e) {
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
   battle: { file: 'muzik_savas.mp3', gain: 0.07, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.12, seam: true }, // Bones on the Battlements
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.12, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
   battle2: { file: 'muzik_savas2.mp3', gain: 0.07, seam: true },
   boss2:   { file: 'muzik_boss2.mp3',  gain: 0.12, seam: true },
@@ -677,7 +677,8 @@ function updateMusic(dt) {
     // kulak kararı doğrusal değil, karesel yükselir (başta çok kısık, sonra açılır); çıkış ~1 sn
     const full = T.gain * setting('mvol') || 0.1;
     T.lin = T.lin || 0;
-    T.lin = clamp(T.lin + clamp(Math.sqrt(tgt / full) - T.lin, -dt * 2, dt / (k.startsWith('boss') ? 2.5 : 5)), 0, 1);
+    if (T.fromStart && tgt > 0 && T.lin < 0.05 && el.paused) { try { el.currentTime = 0; } catch (e) {} } // boss parçası her seferinde baştan, kısıktan girer
+    T.lin = clamp(T.lin + clamp(Math.sqrt(tgt / full) - T.lin, -dt * 2, dt / (T.fade || (k.startsWith('boss') ? 2.5 : 5))), 0, 1);
     T.vol = full * T.lin * T.lin;
     el.volume = clamp(T.vol, 0, 1);
     if (T.seam) musicSeam(T, dt);
@@ -2047,7 +2048,27 @@ function applyImbue(e, kind, by) {
   const I = IMBUE[kind]; if (!I || !e || e.dead) return;
   if (kind === 'fire') burnEnemy(e, I.dps, I.t, by);
   else if (kind === 'poison') poisonEnemy(e, I.dps, I.t, by);
-  else if (kind === 'frost') slowEnemy(e, I.slow, I.t);
+  else if (kind === 'frost') frostHit(e, I);
+}
+// Buzlu ok / kılıç (10 Eki, Caner): vurulan düşman 2 sn donar (yürümez, vurmaz). İri düşmanlar (rütbeli, çok canlı) 2, komutan/bosslar 3 vuruşta
+// donar; vuruşlar reset sn içinde birikir, arada yavaşlatır. Çözülünce cd sn yeniden donmaz (sürekli buz kalıbı olmasın).
+const FREEZE = { t: 2, boss: 0.6, cd: 2, reset: 3, bigHp: 400 };
+const frostNeed = (e) => (e.def.chief || e.def.boss ? 3 : e.def.base || e.maxHp >= FREEZE.bigHp ? 2 : 1);
+function frostHit(e, I) {
+  if (e.frozenT > 0 || e.under) return;
+  if (e.frostCdT > 0) { slowEnemy(e, I.slow, I.t); return; }
+  if (G.t - (e.frostAt ?? -9) > FREEZE.reset) e.frostN = 0;
+  e.frostAt = G.t; e.frostN = (e.frostN || 0) + 1;
+  const h = CHAR_H['enemy_' + e.type] || 26;
+  if (e.frostN < frostNeed(e)) { // buz tutmaya başladı: yavaşlar, üstünde buz kırıntısı
+    slowEnemy(e, I.slow, I.t);
+    for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(0, h), vy: -rand(5, 20), col: '170,220,255', s0: 3, s1: 0.5, life: 0.5 });
+    return;
+  }
+  const T = FREEZE.t * (e.def.chief || e.def.boss ? FREEZE.boss : 1);
+  e.frostN = 0; e.frozenT = T; e.stun = Math.max(e.stun || 0, T); e.frostCdT = T + FREEZE.cd;
+  for (let i = 0; i < 14; i++) { const a = rand(0, Math.PI * 2), v = rand(30, 90); emit(G.parts, { kind: 'chunk', x: e.x, y: e.y - h * 0.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, g: 300, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#d8f2ff' : '#8fd0ff', s0: rand(1.5, 2.6), s1: 1, life: rand(0.4, 0.7) }); }
+  floatText(e.x, e.y - h - 12, 'Dondu!', '#bfe8ff');
 }
 function stunEnemy(e, t) {
   if (e.plate > 0 || e.def.stoneskin || e.under) return; // zırhlı boss / taş deri / gömülü sersemlemez
@@ -3152,6 +3173,7 @@ function updateEnemy(e, dt) {
       for (const o of near) { o.shieldT = Math.max(o.shieldT || 0, Wd.t); G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - 30, target: o, x1: o.x, y1: aimY(o), t: 0, dur: 0.3, w: 0.5, col: 'rgb(110,190,255)', seed: rand(0, 99) }); }
     }
   }
+  if (e.frozenT > 0) e.frozenT -= dt; if (e.frostCdT > 0) e.frostCdT -= dt; // buz (frostHit)
   if (e.stun > 0) { e.stun -= dt; return; } // sersemlemiş: yürümez, vurmaz
   if (e.def.ab) bossAbilities(e, dt);
   if (e.siege !== undefined) { updateSiege(e, dt); return; }
@@ -6949,7 +6971,18 @@ function drawEnemy0(e) {
       if (!d.chief) hpBar(e.x, top, d.boss ? 30 : 14, fr, d.boss ? '#ff7a3a' : fr > 0.5 ? '#5bd35b' : fr > 0.25 ? '#f2c230' : '#ef4a3a');
       else hpBar(e.x, top + 6, 34, fr, '#ff5a3a');
     }
-    if (e.stun > 0) {
+    if (e.frozenT > 0) { // buz kalıbı: gövdeyi saran yarı saydam, köşeli buz; sonunda çatlayıp incelir
+      const fa = clamp(e.frozenT / 0.3, 0, 1), bw = Math.max(9, dh * 0.42), bt = e.y - dh * 1.05;
+      ctx.save(); ctx.globalAlpha = 0.75 * fa;
+      const g = ctx.createLinearGradient(e.x - bw, bt, e.x + bw, e.y); g.addColorStop(0, 'rgba(225,245,255,0.75)'); g.addColorStop(0.5, 'rgba(140,205,255,0.45)'); g.addColorStop(1, 'rgba(90,160,235,0.6)');
+      ctx.fillStyle = g; ctx.strokeStyle = 'rgba(240,250,255,0.9)'; ctx.lineWidth = 1.2; ctx.beginPath();
+      const pts = [[-1, 1], [-1.05, 0.55], [-0.85, 0.15], [-0.55, -0.05], [-0.2, 0.02], [0.15, -0.06], [0.6, 0.05], [0.95, 0.3], [1.05, 0.7], [0.95, 1]];
+      pts.forEach(([u, v], i) => { const x = e.x + u * bw, y = bt + v * (e.y + 2 - bt); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.moveTo(e.x - bw * 0.6, bt + dh * 0.25); ctx.lineTo(e.x - bw * 0.35, bt + dh * 0.6); ctx.moveTo(e.x + bw * 0.4, bt + dh * 0.2); ctx.lineTo(e.x + bw * 0.55, bt + dh * 0.45); ctx.stroke();
+      ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - dh * 0.5, dh * 0.8, '140,210,255', 0.35 * fa);
+      ctx.restore();
+    } else if (e.stun > 0) {
       for (let i = 0; i < 3; i++) {
         const a = time * 5 + i * 2.1;
         drawStar(e.x + Math.cos(a) * 9, top - 4 + Math.sin(a) * 3, 3, '#ffe27a');
@@ -10089,7 +10122,7 @@ function drawSkillsPanel(k, px, py, pw, ph, cx) {
 // ----- kahraman seçim ekranı -----
 // ----- ayarlar ekranı -----
 let settingsBack = 'title', resetArm = 0;
-function openSettings(from) { settingsBack = from; resetArm = 0; go(() => { screen = 'settings'; }); }
+function openSettings(from) { settingsBack = from; resetArm = 0; langMenu = null; go(() => { screen = 'settings'; }); }
 function drawSettings() {
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (NECRO) menuBackdrop(st);
@@ -10145,8 +10178,10 @@ function segmented(key, x, y, w, h, opts, cur, pick, appear) {
   });
   ctx.restore();
 }
+const LANGS = [['tr', 'TÜRKÇE'], ['en', 'ENGLISH'], ['es', 'ESPAÑOL'], ['de', 'DEUTSCH'], ['fr', 'FRANÇAIS'], ['ru', 'РУССКИЙ'], ['zh', '中文']];
+let langMenu = null; // açık dil listesi: { t0 } (Caner, 10 Eki: dokununca liste açılır, seçince dil sayfa yenilenmeden değişir, menü açık kalır)
+window.addEventListener('langchange', () => { for (const k in THUMB) delete THUMB[k]; });
 function settingsRows(x0, y0, w, st, inGame) {
-  const LANGS = [['tr', 'TÜRKÇE'], ['en', 'ENGLISH'], ['es', 'ESPAÑOL'], ['de', 'DEUTSCH'], ['fr', 'FRANÇAIS'], ['ru', 'РУССКИЙ'], ['zh', '中文']];
   const lang = (LANGS.find(v => v[0] === window.LANG) || LANGS[0]);
   const vol = (onK, volK) => (v) => { setMuted(false); if (v === 0) setSetting(onK, false); else { setSetting(onK, true); setSetting(volK, v); } };
   const rows = [
@@ -10163,14 +10198,13 @@ function settingsRows(x0, y0, w, st, inGame) {
     txt(label, lx + 32, y + 1, LS, LC, 'left', '400', FONT_T, false);
     segmented('seg' + i + '_', cx, y, cw, sh, opts, cur, pick, ap);
   });
-  // dil: dokununca sıradaki dil (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
+  // dil: dokununca dil listesi açılır (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
   const y = y0 + 30 + rows.length * step;
   ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y - step / 2, w - 40, 1.5);
   drawIcon('map', lx + 12, y, 22, '#f2d58a');
   txt('Dil / Language', lx + 32, y + 1, LS, LC, 'left', '400', FONT_T, false);
-  const cyc = LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length][0];
-  gameButton('setlang', cx + cw / 2, y, cw, 40, '◀  ' + lang[1] + '  ▶', () => window.setLang(cyc), 'blue', { appear: st - 0.4, size: 15 });
-  if (inGame) return;
+  gameButton('setlang', cx + cw / 2, y, cw, 40, lang[1] + '  ▼', () => { langMenu = langMenu ? null : { t0: time }; }, 'blue', { appear: st - 0.4, size: 15 });
+  if (!inGame) {
   const y2 = y + step;
   ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y2 - step / 2, w - 40, 1.5);
   drawIcon('restart', lx + 12, y2, 22, '#ff9a8a');
@@ -10179,6 +10213,24 @@ function settingsRows(x0, y0, w, st, inGame) {
     if (time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
     else resetArm = time;
   }, 'red', { appear: st - 0.45, size: 15 });
+  }
+  if (langMenu) drawLangMenu(cx, y, cw);
+}
+// dil listesi: ekranı karartır, dil satırının üstünde iki sütunlu düğmeler; seçilen dil yeşil. Dışına dokununca kapanır.
+function drawLangMenu(cx, y, cw) {
+  const k = easeOutBack(clamp((time - langMenu.t0) / 0.25, 0, 1)), bw = Math.max(150, cw / 2 - 8), bh = 40, gap = 10, cols = 2, rows = Math.ceil(LANGS.length / cols);
+  const pw = bw * cols + gap * (cols - 1) + 36, ph = rows * (bh + gap) - gap + 76, px = clamp(cx + cw / 2 - pw / 2, VIS.l + 10, VIS.r - pw - 10), py = clamp(y - ph / 2, VIS.t + 10, VIS.b - ph - 10);
+  ctx.save(); ctx.globalAlpha = clamp((time - langMenu.t0) / 0.15, 0, 1); ctx.fillStyle = 'rgba(6,2,10,0.55)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); ctx.restore();
+  buttons.push({ key: 'langclose', x: VIS.l, y: VIS.t, w: VIS.w, h: VIS.h, fn: () => { langMenu = null; } }); // dışına dokununca kapanır
+  ctx.save(); ctx.translate(px + pw / 2, py + ph / 2); ctx.scale(k, k); ctx.translate(-(px + pw / 2), -(py + ph / 2));
+  if (NECRO) velvetCard(px, py, pw, ph, 18); else roundRect(px, py, pw, ph, 18, '#f3e3c0', '#5a3a1c', 3);
+  txt('Dil / Language', px + pw / 2, py + 30, 18, NECRO ? '#f2d58a' : '#4a2a0e', 'center', '400', FONT_T, false);
+  ctx.restore();
+  if (k < 0.9) return;
+  LANGS.forEach(([code, name], i) => {
+    const bx = px + 18 + (i % cols) * (bw + gap) + bw / 2, by = py + 58 + Math.floor(i / cols) * (bh + gap) + bh / 2;
+    gameButton('lang_' + code, bx, by, bw, bh, name, () => { window.setLang(code, () => { langMenu = null; }); sfx('click'); }, code === window.LANG ? 'green' : 'blue', { size: 15 });
+  });
 }
 // ---------- reklam ve tek seferlik satın alma ----------
 // Gelir modeli (10 Eki): ödüllü reklam (isteğe bağlı: kaybedince 5 canla devam, bölüme +150 altınla başla) + 3 bölümde bir
@@ -13426,7 +13478,7 @@ function drawOverlay() {
     const tw = 184, th = 128, gx = 26, gy = 26, x1 = cx - tw / 2 - gx / 2, x2 = cx + tw / 2 + gx / 2, y1 = py + 100 + th / 2, y2 = y1 + th + gy, fs = 18;
     gameButton('ov_resume', x1, y1, tw, th, 'DEVAM ET', () => setOverlay(null), 'green', { icon: 'play', tile: true, shine: true, appear: k - 0.15, size: fs });
     gameButton('ov_restart', x1, y2, tw, th, 'YENİDEN BAŞLA', () => go(() => startLevel(G.idx, G.chal)), 'gold', { icon: 'restart', tile: true, appear: k - 0.22, size: fs });
-    gameButton('ov_set', x2, y1, tw, th, 'AYARLAR', () => setOverlay('psettings'), 'blue', { icon: 'gear', tile: true, appear: k - 0.18, size: fs });
+    gameButton('ov_set', x2, y1, tw, th, 'AYARLAR', () => { langMenu = null; setOverlay('psettings'); }, 'blue', { icon: 'gear', tile: true, appear: k - 0.18, size: fs });
     gameButton('ov_map', x2, y2, tw, th, 'HARİTAYA DÖN', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', tile: true, appear: k - 0.26, size: fs });
   } else if (overlay === 'psettings') {
     // duraklatma menüsünden ayarlar: ana ayarlarla aynı satırlar (sıfırlama hariç), geri ok duraklatmaya döner

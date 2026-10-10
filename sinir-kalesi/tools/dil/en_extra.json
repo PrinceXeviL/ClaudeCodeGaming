@@ -127,7 +127,7 @@
   "Lanetli Kılıçlar": "Cursed Swords",
   "Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50": "The enemy hit burns for 3 s: 12 damage per second. Burning enemies can't be healed · +50% against siege engines",
   "Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez": "The enemy hit is poisoned for 5 s: 9 damage per second (45 total) · machines can't be poisoned",
-  "Vurduğu düşman 1,6 sn %35 yavaşlar (bosslar daha az)": "The enemy hit is slowed by 35% for 1.6 s (bosses less)",
+  "Vurduğu düşman 2 sn donar · iri düşmanlar 2, komutanlar 3 vuruşta donar": "The enemy hit freezes for 2 s · big enemies freeze after 2 hits, commanders after 3",
   "Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz": "The enemy hit bleeds for 4 s: 10 damage per second while walking, a third while standing · machines don't bleed",
   "Vurduğu düşman 3 sn lanetlenir: her kaynaktan %20 fazla hasar alır, zırhı ve direnci %30 erir · kutsallarda yarı süre": "The enemy hit is cursed for 3 s: takes 20% more damage from all sources, armor and resistance melt by 30% · half duration on holy foes",
   "kule başına tek büyü": "one enchantment per tower",
@@ -168,7 +168,8 @@
   "Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir": "Only one per map. Curses enemies (they take more damage, lose defense, attack slower and may panic) and empowers skeletons and archers",
   "Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer": "Enemies take 10% more damage, lose 30% defense, attack 12% slower · 6% fear · +10% damage for skeletons and archers · the curse lasts 10 s",
   "%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh": "+14% damage taken · defense −40% · attacks 16% slower · 9% fear · +14% damage for skeletons and archers, +12% armor for skeletons",
-  "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death"
+  "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death",
+  "Dondu!": "Frozen!"
  },
  "tpl": [
   [
