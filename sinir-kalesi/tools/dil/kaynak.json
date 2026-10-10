@@ -4812,5 +4812,13 @@
 "tr": "Kule Hayalet Arbaletçilere dönüşür: 3 kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara +%30 · her atışta {} ek cıvata yakındaki düşmanlara (%{} hasar) · kalabalığa iyi",
 "en": "The tower becomes Ghost Crossbowmen: 3 crimson ghost crossbowmen shoot separate targets, +30% vs flyers · each shot sends {} extra bolts at nearby enemies ({}% damage) · good against crowds",
 "tpl": 1
+},
+{
+"tr": "KISIK",
+"en": "LOW"
+},
+{
+"tr": "Görüntü kalitesi",
+"en": "Graphics quality"
 }
 ]
