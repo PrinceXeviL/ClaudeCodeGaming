@@ -12712,7 +12712,7 @@ function drawPlay() {
     if (hh.ranged) { ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(160,230,255,0.5)'; ctx.beginPath(); ctx.ellipse(hh.rx, hh.ry, hh.ranged, hh.ranged * 0.92, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
   }
   drawTraps();
-  drawIncoming();
+  // drawIncoming(); — 10 Eki (Caner): yolun başındaki ünlem uyarısı istenmedi
   if (G.mode && G.mode.kind === 'rally' && G.mode.castle) { if (G.castle.rally) drawRally(G.castle.rally.x, G.castle.rally.y); }
   else if (G.mode && G.mode.kind === 'rally') {
     const t = G.mode.tower; drawRange(t.x, t.y, t.def.levels[t.lvl].range, true); drawRally(t.rx, t.ry);

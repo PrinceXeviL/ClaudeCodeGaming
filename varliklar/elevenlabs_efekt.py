@@ -20,6 +20,8 @@ SFX = {
     # 10 Eki (Caner): daha gerçekçi borazan, boss için ayrı borazan; eksik savaş efektleri
     'hornw': ('realistic recording of a single medieval war horn blown by an army on an open battlefield, long deep brass note that swells and fades, natural outdoor echo, no music, no drums', 3.0, 3),
     'hornb': ('realistic recording of a huge ancient war horn, two long ominous very low blasts, a giant warlord arriving, deep rumbling brass, distant echo across a valley, no music', 4.0, 3),
+    # 10 Eki (Caner, 2.): klasik savaş filmlerindeki savaş öncesi borazan (hornw beğenilmedi)
+    'hornf': ('epic war horn call before a great battle, like in classic historical war movies, a mighty deep brass battle horn blown by a herald, one long powerful note that rises and holds, a huge army waits, big reverb across the battlefield, no drums, no orchestra', 4.0, 4),
     'xbow': ('crossbow firing, sharp taut string twang and bolt release, wooden stock clack, short close recording, no music', 0.6, 3),
     'xbowh': ('heavy siege crossbow firing, loud thick string thump, heavy mechanism clunk, bolt whooshing away, short, no music', 0.9, 2),
     'armorhit': ('crossbow bolt striking steel plate armor, short sharp metallic clang and ricochet ping, no music', 0.5, 3),

@@ -94,9 +94,9 @@ def main():
         made.append(save(f'clash_{i}', x, -25))
     # ElevenLabs efektleri (ücretsiz plan, jenerikte elevenlabs.io): yeni birimler ve büyüler.
     # Savaş borusu (10 Eki, Caner: daha gerçekçi olsun, boss gelirken farklı borazan çalsın): ElevenLabs adaylarından ölçerek seçildi.
-    # horn: hornw_3 (tek, uzun, derin ~72 Hz, sabit perde, doğal sönüş). hornboss: hornb_1 (iki uzun üfleme) %15 kalınlaştırılmış.
-    # Eski 8 Eki sürümü ham/ses/horn_ilk.wav'da duruyor (geri dönmek için shutil.copy ile horn_1.wav yap).
-    made.append(save('horn_1', fade(load_mp3('hornw_3'), 0.01, 0.4), -18))
+    # horn: hornf_3 (10 Eki, Caner 2.: "klasik savaş filmlerindeki savaş öncesi borazan"; derin ~195 Hz, sabit perde, yükselip tutan uzun üfleme).
+    # Önceki: hornw_3 (beğenilmedi). hornboss: hornb_1 (iki uzun üfleme) %15 kalınlaştırılmış.
+    made.append(save('horn_1', fade(load_mp3('hornf_3'), 0.01, 0.5), -17))
     made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
     # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
     for n, cnt, db in [('xbow', 3, -23), ('xbowh', 2, -20), ('armorhit', 3, -25), ('rattle', 2, -25)]:
