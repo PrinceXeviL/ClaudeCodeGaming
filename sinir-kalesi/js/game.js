@@ -218,15 +218,19 @@ document.body.appendChild(safeProbe);
 // Kare hızı düşerse çözünürlük kademeli olarak azaltılır, toparlanınca geri yükseltilir.
 const QMAX = Math.min(window.devicePixelRatio || 1, 3);
 let quality = setting('gfx') === 'low' ? 0.75 : QMAX;
-const perf = { acc: 0, n: 0, t: 0, good: 0 };
+// Otomatik kalite (10 Eki düzeltmesi): eskiden kare aralığına bakıyordu; iPhone Düşük Güç kipinde (30 fps sınırı) aralık hep uzun
+// olduğundan çözünürlük 0.85'e iner, birimler bulanıklaşırdı (Caner: "düşmanlar ve askerlerim net değil"). Artık karenin gerçek iş
+// süresine bakar ve otomatikte ekran yoğunluğunun 2 katının altına inmez (düşük kalite elle seçilirse 0.75).
+const QMIN = Math.min(QMAX, 2);
+const perf = { acc: 0, work: 0, n: 0, t: 0, good: 0, last: 0 };
 function adaptQuality(real) {
   if (real > 0.2 || setting('gfx') !== 'auto') return; // sekme arka plandaydı / kalite elle seçildi
-  perf.acc += real; perf.n++; perf.t += real;
+  perf.acc += real; perf.work += perf.last; perf.n++; perf.t += real;
   if (perf.t < 2) return;
-  const avg = perf.acc / perf.n;
-  perf.acc = perf.n = perf.t = 0;
-  if (avg > 1 / 42 && quality > 0.85) { quality = Math.max(0.85, quality * 0.82); perf.good = 0; resize(); }
-  else if (avg < 1 / 57 && quality < QMAX) { if (++perf.good >= 3) { quality = Math.min(QMAX, quality * 1.12); perf.good = 0; resize(); } }
+  const avg = perf.acc / perf.n, work = perf.work / perf.n;
+  perf.acc = perf.work = perf.n = perf.t = 0;
+  if (avg > 1 / 42 && work > 0.02 && quality > QMIN) { quality = Math.max(QMIN, quality * 0.85); perf.good = 0; resize(); }
+  else if (work < 0.01 && quality < QMAX) { if (++perf.good >= 2) { quality = Math.min(QMAX, quality * 1.15); perf.good = 0; resize(); } }
   else perf.good = 0;
 }
 function resize() {
@@ -8442,12 +8446,12 @@ function drawIcon(name, x, y, s, col = '#fff') {
 
 // ---------- menüler (halka menü) ----------
 // Arsa ya da kule seçilince öğeler merkezden yaylanarak sırayla açılır, seçim kalkınca içeri toplanıp kapanır.
-const MENU_R = 25;
+const MENU_R = 25, MENU_K = 1.15; // MENU_K: Caner (10 Eki) menü düğmeleri %15 büyük (içerikle birlikte ölçeklenir); arsa menüsünde aralar da %15 açıldı
 function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; return u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
   const types = TOWER_ORDER.filter(towerUnlocked);
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
-  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0], y: pl.y - 16 + offs[i][1], cost: TOWERS[type].levels[0].cost }));
+  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15, y: pl.y - 16 + offs[i][1] * 1.15, cost: TOWERS[type].levels[0].cost }));
 }
 function towerMenuItems(t) {
   const items = [];
@@ -8626,7 +8630,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   const ok = itemAffordable(it), R = MENU_R;
   const active = preview && preview.id === it.id && preview.type === it.type;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
-  const s = sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
+  const s = MENU_K * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
   ctx.scale(s, s);
   if (active) glow(ctx, 0, 0, R * 2.2, '255,215,110', 0.6);
   circle(0, 5, R + 3, 'rgba(0,0,0,0.38)');
@@ -13005,7 +13009,7 @@ function hudTap(x, y) {
   // açık menü
   if (!G.mode && G.sel && (G.sel.kind === 'plot' || G.sel.kind === 'tower' || G.sel.kind === 'castle' || G.sel.kind === 'hatch')) {
     for (const it of currentMenu()) {
-      if (dist(it.x, it.y, x, y) <= MENU_R + 8) {
+      if (dist(it.x, it.y, x, y) <= MENU_R * MENU_K + 8) {
         const same = G.preview && G.preview.id === it.id && G.preview.type === it.type;
         tapPop('mi' + it.id + (it.type || ''));
         if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
@@ -13133,7 +13137,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- döngü ----------
 let last = performance.now();
 function frame(now) {
-  const real = Math.min(0.05, (now - last) / 1000);
+  const w0 = performance.now(), real = Math.min(0.05, (now - last) / 1000);
   last = now; time += real;
   adaptQuality(real);
   if (bgDirty && time - bgDirty > 0.3) {
@@ -13187,6 +13191,7 @@ function frame(now) {
     roundRect(view.cw / 2 - 150, view.ch - 60, 300, 40, 20, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
     txt('Telefonu yan çevir ↻', view.cw / 2, view.ch - 40, 16, '#ffd34d', 'center', '400', FONT_T);
   }
+  perf.last = (performance.now() - w0) / 1000; // bu karenin iş süresi (kalite ayarı için)
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
