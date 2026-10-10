@@ -2460,6 +2460,8 @@ const MAHZEN_V = {
        side: { door: [0.3, 0.42], stair: [0.37, 0.2], glow: [0.33, 0.56], fire: [[-0.25, 0.83, 'c'], [-0.19, 0.82, 'c'], [-0.03, 0.24, 'c'], [0.03, 0.24, 'c'], [0.45, 0.39, 'c'], [0.41, 0.69, 'l']] } },
   1: { front: { door: [0, 0.29], stair: [0, 0.12], glow: [0, 0.45], fire: [[-0.38, 0.42, 'c'], [0.34, 0.42, 'c'], [0.38, 0.39, 'c'], [0.39, 0.53, 'l']] },
        side: { dir: -1, door: [-0.12, 0.32], stair: [-0.2, 0.15], glow: [-0.12, 0.46], fire: [] } }, // dir -1: yan görselde kapı sola bakar
+  2: { front: { door: [0, 0.35], stair: [0, 0.12], glow: [0, 0.42], fire: [[-0.26, 0.33, 'b'], [0.23, 0.33, 'b']] }, // Kara Türbe: kafatasının ağzı
+       side: { dir: -1, door: [-0.13, 0.33], stair: [-0.27, 0.15], glow: [-0.13, 0.43], fire: [[-0.39, 0.34, 'b'], [-0.03, 0.24, 'b']] } },
 };
 function mahzenView(t) {
   const V = NECRO && t.type === 'barracks' && MAHZEN_V[t.lvl];
@@ -6328,6 +6330,7 @@ function drawNecroTowerFx(t, ts) {
     if (MV) for (const [i, f] of MV.P.fire.entries()) { // mum ve fener alevleri titrer
       const q = mahzenPt(t, ts, MV, f), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.3) + 0.1 * Math.sin(time * 23 + i);
       if (f[2] === 'l') glow(ctx, q.x, q.y, 7 * s * fk, '120,255,150', 0.45 * fk);
+      else if (f[2] === 'b') { glow(ctx, q.x, q.y - 3 * s, 11 * s * fk, '110,255,140', 0.4 * fk); glow(ctx, q.x, q.y - 2 * s, 4 * s, '220,255,220', 0.5 * fk); } // mangal: yeşil ateş
       else { glow(ctx, q.x, q.y - 1.5 * s, 4.5 * s * fk, '255,190,90', 0.5 * fk); glow(ctx, q.x, q.y - 1.5 * s, 1.6 * s, '255,245,200', 0.6 * fk); }
     }
   } else if (t.type === 'mage') {

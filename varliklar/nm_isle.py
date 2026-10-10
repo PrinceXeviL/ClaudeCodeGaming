@@ -25,7 +25,8 @@ SHEETS = [
     ('nm_dikilitas_4.jpg', ['tower_archer_nail', None], 'decor'),  # 4. kademe: Kemik Balistası (Hayalet Okçular artık nm_hayalet_okcular.jpg'den)
     ('nm_hayalet_arbaletciler.jpg', ['unit_ghostxbow', 'unit_ghostxbow_aim'], 'decor'),  # 11 Eki: arbaletçi kulesinin iskeletleri (hazır, nişan)
     ('nm_hayalet_okcular.jpg', ['unit_ghostarcher', 'unit_ghostarcher_draw', 'tower_archer_fan'], 'decor'),  # 10 Eki: tepesi boş kule + üstünde gezen 2 elit okçu (duruş, gerilmiş yay)
-    ('nm_mahzen_v2.jpg', [None, None, 'tower_barracks_3'], 'tower'),  # 11 Eki: yeni Mahzen (yarı gömülü mahzen, kemik mahzeni, kafatası kapılı kara türbe; eski: nm_mezarlik.jpg, nm_mahzen.jpg)
+    ('nm_mahzen_v2.jpg', [None, None, None], 'tower'),  # 11 Eki: yeni Mahzen (yarı gömülü mahzen, kemik mahzeni, kafatası kapılı kara türbe; eski: nm_mezarlik.jpg, nm_mahzen.jpg)
+    ('nm_mahzen_k3.jpg', ['tower_barracks_3', 'tower_barracks_3_side'], 'tower'),  # 10 Eki: yönlü mahzen 3. kademe, Kara Türbe (yan görünüşte kapı sola bakar)
     ('nm_mahzen_k2.jpg', ['tower_barracks_2', 'tower_barracks_2_side'], 'tower'),  # 10 Eki: yönlü mahzen 2. kademe (yan görünüşte kapı sol öne bakar)
     ('nm_mahzen_k1.jpg', ['tower_barracks_1', 'tower_barracks_1_side', None], 'tower'),  # 10 Eki: yönlü mahzen 1. kademe (önden, kapısı sağ öne bakan; aynası sol)
     ('nm_dikilitas.jpg', ['tower_archer_1', 'tower_archer_2', 'tower_archer_3'], 'tower'),  # 8 Eki: okçu yerine Kemik Dikilitaşı
