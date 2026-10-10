@@ -5969,7 +5969,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
+  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -6508,14 +6508,30 @@ function drawSplitTower(t, ts, im, SP) {
   drawSprite(ctx, S.top, 0, 0, ts.w);
   ctx.restore();
 }
+// 4. kademe (10 Eki, Caner'in görseli; tower_altar_rite / _blight): göz 3. kademedeki yerinde. fcol/bcol: zemin sisi ve mangal rengi,
+// red: göz hep kızıl (Kan Ayini), drops: havada süzülen kan damlaları, pool: altarın önündeki kan havuzu [x, alttan y, yarıçap]
+const ALTAR_FORM = {
+  tower_altar_rite: { eye: [0.5, 0.655, 0.09, 0.065], red: true, braziers: [[0.215, 0.27], [0.785, 0.27]], bcol: '255,50,40', skullEyes: [[0.485, 0.345], [0.515, 0.345]], floor: [0.5, 0.15, 0.34, 0.08], fcol: ['255,40,40', '170,10,30'], drops: [0.5, 0.62, 0.32], pool: [0.5, 0.13, 0.16] },
+  tower_altar_blight: { eye: [0.495, 0.655, 0.08, 0.07], braziers: [[0.215, 0.27], [0.78, 0.27]], bcol: '170,70,255', skullEyes: [[0.485, 0.31], [0.515, 0.31]], floor: [0.5, 0.15, 0.36, 0.1], fcol: ['130,40,220', '60,10,120'], ooze: [0.495, 0.58] },
+};
 function drawAltarFx(t, ts) {
-  const F = ALTAR_FX[t.lvl], s = ts.w / 50; if (!F) return;
+  const F = ALTAR_FORM[ts.name] || ALTAR_FX[t.lvl], s = ts.w / 50; if (!F) return;
+  t.eyeTint = F.red ? 0.85 : 0;
   const P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - q[1] * ts.h });
   const L = t.def.levels[t.lvl], beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   if (F.floor) { // lanet sisi zeminde ağır ağır döner
     const c = P(F.floor);
-    for (let i = 0; i < 4; i++) { const a = time * 0.35 + i * 1.57; glow(ctx, c.x + Math.cos(a) * ts.w * F.floor[2] * 0.7, c.y + Math.sin(a) * ts.h * F.floor[3] * 0.5, ts.w * 0.2, i % 2 ? '150,70,255' : '110,40,200', 0.14 + 0.05 * Math.sin(time * 1.3 + i)); }
+    for (let i = 0; i < 4; i++) { const a = time * 0.35 + i * 1.57; glow(ctx, c.x + Math.cos(a) * ts.w * F.floor[2] * 0.7, c.y + Math.sin(a) * ts.h * F.floor[3] * 0.5, ts.w * 0.2, F.fcol ? F.fcol[i % 2] : i % 2 ? '150,70,255' : '110,40,200', 0.14 + 0.05 * Math.sin(time * 1.3 + i)); }
+  }
+  if (F.pool) { const c = P(F.pool); glow(ctx, c.x, c.y, ts.w * F.pool[2] * (1 + 0.08 * Math.sin(time * 1.7)), '255,30,40', 0.18 + 0.08 * Math.sin(time * 2.3 + t.x)); } // kan havuzu nabız gibi
+  if (F.drops) { // havada süzülen kan damlaları: yükselip söner
+    const c = P(F.drops);
+    for (let i = 0; i < 6; i++) { const k = (time * 0.35 + i / 6 + t.x * 0.01) % 1, x = c.x + Math.sin(i * 2.4 + t.x) * ts.w * F.drops[2], y = c.y + (0.12 - 0.24 * k) * ts.h; glow(ctx, x, y, 2.6 * s, '255,40,50', 0.7 * Math.sin(k * Math.PI)); }
+  }
+  if (F.ooze) { // gözden kara sızıntı damlar
+    const c = P(F.ooze), k = (time * 0.6 + t.x * 0.01) % 1;
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1 - k; circle(c.x, c.y + k * 0.12 * ts.h, (1.4 - 0.5 * k) * s, '#120618', '#2a0a3a', 0.4 * s); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'lighter';
   }
   if (F.runes) { // runlar: aşağıdan yukarı akan lanet enerjisi
     for (let i = 0; i < 3; i++) { const k = (time * 0.45 + i / 3 + t.x * 0.003) % 1, q = P([F.runes.x, lerp(F.runes.y0, F.runes.y1, k)]); glow(ctx, q.x, q.y, 6 * s, F.runes.col, 0.5 * Math.sin(k * Math.PI)); }
@@ -6524,8 +6540,8 @@ function drawAltarFx(t, ts) {
   for (const [i, c] of (F.candles || []).entries()) { const q = P(c), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.1) + 0.1 * Math.sin(time * 23 + i); glow(ctx, q.x, q.y - 1.5 * s, 4.5 * s * fk, '255,190,90', 0.55 * fk); glow(ctx, q.x, q.y - 1.5 * s, 1.5 * s, '255,245,210', 0.6 * fk); }
   for (const [i, c] of (F.braziers || []).entries()) { // mor ateş: titrer, kıvılcım savurur
     const q = P(c), fk = 0.75 + 0.15 * Math.sin(time * 9 + i * 2.7) + 0.1 * Math.sin(time * 21 + i);
-    glow(ctx, q.x, q.y - 3 * s, 12 * s * fk, '170,80,255', 0.5 * fk); glow(ctx, q.x, q.y - 2 * s, 4.5 * s, '235,200,255', 0.55 * fk);
-    if (Math.random() < 0.12) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-6, 6), vy: -rand(20, 45), col: Math.random() < 0.3 ? '255,120,200' : '170,90,255', s0: 2.4, s1: 0.4, life: rand(0.5, 0.9) });
+    glow(ctx, q.x, q.y - 3 * s, 12 * s * fk, F.bcol || '170,80,255', 0.5 * fk); glow(ctx, q.x, q.y - 2 * s, 4.5 * s, F.bcol ? '255,220,220' : '235,200,255', 0.55 * fk);
+    if (Math.random() < 0.12) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-6, 6), vy: -rand(20, 45), col: F.bcol || (Math.random() < 0.3 ? '255,120,200' : '170,90,255'), s0: 2.4, s1: 0.4, life: rand(0.5, 0.9) });
   }
   if (!F.eye) t.rage = lerp(t.rage || 0, t.gaze && !t.gaze.dead ? 1 : 0, t.gaze ? 0.25 : 0.08); // gözsüz kademe (kitaplı sütun): kafatası gözleri öfkeyle bakar
   const rgS = F.eye ? 0 : t.rage || 0;
@@ -6549,7 +6565,7 @@ function drawCurseEye(t, ts, E, P, L) {
   const tk = G0 ? 0.4 : 0.1; t.eyeX = lerp(t.eyeX || 0, tx, tk); t.eyeY = lerp(t.eyeY || 0, ty, tk); // kurbana hızla döner (ışın yok, yalnız bakış)
   if ((t.blinkAt ?? (t.blinkAt = time + rand(2, 6))) < time - 0.22) t.blinkAt = time + rand(3, 7);
   const rg = t.rage || 0, bk = rg > 0.3 ? 0 : time >= t.blinkAt ? Math.sin(clamp((time - t.blinkAt) / 0.22, 0, 1) * Math.PI) : 0; // öfkeliyken kırpmaz
-  const red = Math.max(clamp((t.scareT || 0) - time, 0, 1), rg * 0.55, clamp(1 - (time - (t.gazeHit ?? -9)) / 0.5, 0, 1));
+  const red = Math.max(clamp((t.scareT || 0) - time, 0, 1), rg * 0.55, clamp(1 - (time - (t.gazeHit ?? -9)) / 0.5, 0, 1), t.eyeTint || 0); // Kan Ayini: göz hep kızıl
   const beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
   ctx.save();
   if (rg > 0) { ctx.translate(c.x, c.y); ctx.scale(1 + 0.4 * rg, 1 + 0.4 * rg); ctx.translate(-c.x, -c.y); } // öfkeyle büyür

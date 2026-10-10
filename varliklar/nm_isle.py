@@ -19,7 +19,8 @@ TOWER_BASE = 0.13  # kule: arsa merkezinin görselin altından uzaklığı (geni
 # sayfa, adlar (sıralı), tür, ek
 SHEETS = [
     ('nm_sapel.jpg', ['castle_1', 'castle_2', 'castle_3'], 'castle'),  # Mortimer'ın kara şapeli, boş balkon (eski kule: nm_kule.jpg)
-    ('nm_sunak_4.jpg', ['tower_altar_rite', 'tower_altar_blight'], 'decor'),  # 4. kademe: Kan Mabedi, Kara Lanet Mabedi
+    ('nm_lanet_kulesi_k4.jpg', ['tower_altar_rite', 'tower_altar_blight'], 'tower'),  # 10 Eki: Lanet Kulesi 4. kademe (Kan Ayini: kızıl göz, kan havuzu; Kara Lanet: kara göz, çürüyen taş)
+    ('nm_sunak_4.jpg', [None, None], 'decor'),  # eski 4. kademe sunaklar  # 4. kademe: Kan Mabedi, Kara Lanet Mabedi
     ('nm_kazan_4.jpg', [None, None], 'decor'),  # eski 4. kademe kazanları (kullanılmıyor)  # 4. kademe: Ceset Mancınığı, Kara Veba Kazanı
     ('nm_ruh_feneri_k4.jpg', ['tower_mage_drain', 'tower_mage_ghost'], 'tower'),  # 10 Eki: Ruh Feneri 4. kademe (Ruh Emici: kristal, Ruh Kafesi: zincirli kafes; kollar ruh_feneri_isle.py)
     ('nm_fener_4.jpg', [None, None], 'decor'),  # eski 4. kademe fenerler  # 4. kademe: Ruh Emici (kristal), Ruh Kafesi
