@@ -568,11 +568,11 @@ function painVoice(e) {
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.09, seam: true }, // The Necromancer's Parade
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.11, seam: true }, // Bones on the Battlements
+  battle: { file: 'muzik_savas.mp3', gain: 0.07, seam: true }, // The Necromancer's Parade
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.12, seam: true }, // Bones on the Battlements
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
-  battle2: { file: 'muzik_savas2.mp3', gain: 0.09, seam: true },
-  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.11, seam: true },
+  battle2: { file: 'muzik_savas2.mp3', gain: 0.07, seam: true },
+  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.12, seam: true },
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
@@ -628,12 +628,22 @@ function musicWanted() {
   if (G.enemies.some(e => e.def.chief && e.hp > 0)) { if (ep2 && !T.boss2.missing) return 'boss2'; if (!T.boss.missing) return 'boss'; }
   return ep2 && !T.battle2.missing ? 'battle2' : 'battle';
 }
+// Savaşın yoğunluğu (Caner, 11 Eki: oyun içinde savaş ve efektler önde, müzik gerekince girsin, boss'ta kesin):
+// sahadaki düşman sayısı ve son dalga; yavaş değişir (~4 sn), müzik pompalamasın. 0,2 (sakin, neredeyse duyulmaz) .. 1 (yoğun).
+function musicHeat(dt) {
+  if (!G || screen !== 'play') return 1;
+  const alive = G.enemies.reduce((a, e) => a + (e.dead ? 0 : 1), 0), last = G.wave >= G.lv.waves.length && G.wave > 0;
+  const goal = Math.max(clamp((alive - 4) / 12, 0, 1), last && alive > 0 ? 0.7 : 0);
+  G.musHeat = (G.musHeat ?? 0) + (goal - (G.musHeat ?? 0)) * Math.min(1, dt / 4);
+  return 0.2 + 0.8 * G.musHeat;
+}
 function updateMusic(dt) {
   if (!MUSIC.started) return;
   const want = musicWanted(), on = !muted && setting('music') && !document.hidden;
   for (const k in MUSIC.tracks) {
     const T = MUSIC.tracks[k];
     let tgt = on && k === want ? T.gain * setting('mvol') : 0;
+    if (tgt && k.startsWith('battle')) tgt *= musicHeat(dt); // savaş müziği: sakinde çok kısık, kalabalıkta açılır (boss parçası hep tam)
     if (tgt && overlay === 'pause') tgt *= 0.4;
     if (tgt && G && screen === 'play' && (G.heralds || []).some(h => h.state === 'blow')) tgt *= 0.2; // borazan duyulsun
     if (tgt && time < mortVoiceUntil) tgt *= 0.45; // Mortimer konuşurken müzik kısılır
