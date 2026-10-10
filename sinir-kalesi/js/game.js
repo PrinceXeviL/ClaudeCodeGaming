@@ -2820,7 +2820,7 @@ function updateTower(t, dt) {
     if (t.yaw == null) t.yaw = t.x < W / 2 ? 0.25 : Math.PI - 0.25;
     const e = findTarget(t, L.range, false);
     if (e) {
-      t.yawGoal = Math.atan2((e.y - t.y) / CAM_S, e.x - t.x);
+      { const dy = (e.y - t.y) / CAM_S, h = Math.hypot(dy, e.x - t.x), dx = Math.abs(e.x - t.x) < 0.75 * h ? (Math.sign(e.x - t.x) || Math.sign(Math.cos(t.yaw)) || 1) * 0.75 * h : e.x - t.x; t.yawGoal = Math.atan2(dy, dx); } // taret yandan bakar (cos ≥ 0,6): yalnız yön değiştirirken incelir
       t.elGoal = 0.14 + 0.32 * clamp(dist(t.x, t.y, e.x, e.y) / L.range, 0, 1); // uzak hedefe namlu daha çok kalkar
     }
     if (t.yawGoal != null) t.yaw += clamp(angDiff(t.yawGoal, t.yaw), -3.2 * dt, 3.2 * dt);
@@ -2889,8 +2889,11 @@ function updateTower(t, dt) {
     let tx = e.x, ty = e.y;
     if (!e.blocker) { const f = pathPos(e.p, e.d + e.def.speed * G.wspd * dur, e.off); tx = f.x; ty = f.y; }
     const cr = abRank(t, 'corpse'), pl = abRank(t, 'plague');
-    const AF = towerForm(t), AA = AF && towerAnim(t);
-    if (AF) { // dönüşmüş kazan: hedefe döner, atış animasyonu oynar, mermi fırlatma anında kovadan / ağızdan çıkar
+    const AF = NECRO ? (t.spec && ARTI_SPEC[t.spec]) || null : towerForm(t), AA = !NECRO && AF && towerAnim(t); // necro: uzmanlık değerleri, görsel taret aynı
+    if (NECRO && ts && TURRET[t.lvl]) { // veba tareti: namlu hedefe dönmeden püskürtmez; buhar namlu ucundan çıkar
+      if (Math.abs(angDiff(t.yawGoal ?? t.yaw, t.yaw)) > 0.45) { t.cd = 0.05; t.shotAnim = 0; return; }
+      const o = turretTip(t, ts); sx = o.x; sy = o.y;
+    } else if (AF) { // dönüşmüş kazan: hedefe döner, atış animasyonu oynar, mermi fırlatma anında kovadan / ağızdan çıkar
       if (AF.flip) t.face = e.x < t.x ? -1 : 1;
       const ats = towerSprite(t), o = formPoint(t, ats, AA ? AA.M.relPt : AF.src); sx = o.x; sy = o.y;
       if (AA) t.animT = 0;
@@ -2899,22 +2902,24 @@ function updateTower(t, dt) {
     // ceset mancınığı: menzildeki bir cesedi cephane yapar; dönüşmüş mancınık ceset yoksa kendi ceset yığınını atar
     let body = cr && G.effects.find(f => f.kind === 'corpse' && !f.air && f.t > 0.4 && f.t < f.dur - 0.2 && dist(f.x, f.y, t.x, t.y) <= L.range);
     if (body) body.t = body.dur;
-    else if (AF && t.spec === 'corpse') body = { name: 'enemy_legion', rig: null, h: 24, face: t.face || 1, pile: true };
+    else if (t.spec === 'corpse' && (AF || NECRO)) body = { name: 'enemy_legion', rig: null, h: 24, face: t.face || 1, pile: true };
     {
       // buhar jeti: kazandan hedefe alçak kavisle yeşil buhar püskürür; değdiği yerde yolu kaplayan gaz bulutu kalır
       const fire = (x2, y2, dmg, delay, path, along) => G.projectiles.push({ kind: 'vapor', src: 'blast', sx, sy, gy: t.y, target: null, tx: x2, ty: y2, t: delay, dur: body ? 0.6 : 0.42,
         dmg, dtype: 'phys', arc: body ? 60 : 26, splash: L.splash * (body ? 1.3 : 1), stun: t.lvl >= 2 ? 0.3 : 0, gas: (L.dmg[0] + L.dmg[1]) * 0.09 * (AF && AF.gas || 1), big: !!body, path, along,
-        black: AF && t.spec === 'plague',
+        black: t.spec === 'plague' && !!(AF || NECRO),
         plague: pl ? pl.dps : 0, body: body ? { name: body.name, rig: body.rig, h: body.h, face: body.face } : null });
       const tp = e.blocker ? null : e.p, ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * (0.42 + rel);
       if (!e.blocker) { const f = pathPos(e.p, ta, e.off); tx = f.x; ty = f.y; }
       fire(tx, ty, roll(L.dmg) * (body ? (body.pile ? 1.3 : cr.mult) : 1) * (AF && AF.dmg || 1), -rel, tp, ta);
       if (rel) { t.aimX = tx; t.aimY = ty; sfx('whirl'); return; } // duman ve ses fırlatma anında (aşağıda değil)
       t.aimX = tx; t.aimY = ty;
-      for (let i = 0; i < 10; i++) {
-        const a = Math.atan2(ty - sy, tx - sx) + rand(-0.5, 0.5), v = rand(40, 110);
-        emit(G.parts, { kind: 'glow', x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, drag: 2.5, col: i % 2 ? '150,230,100' : '200,255,150', s0: rand(4, 7), s1: rand(10, 16), life: rand(0.4, 0.7), a: 0.45 });
+      const NT = NECRO && TURRET[t.lvl]; // taret: dar koni hâlinde hızlı buhar akışı; kazan: geniş fışkırma
+      for (let i = 0; i < (NT ? 22 : 10); i++) {
+        const a = Math.atan2(ty - sy, tx - sx) + rand(-1, 1) * (NT ? 0.22 : 0.5), v = NT ? rand(140, 300) : rand(40, 110);
+        emit(G.parts, { kind: 'glow', x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - (NT ? 8 : 30), drag: NT ? 3.2 : 2.5, col: i % 3 === 0 ? '200,255,150' : i % 3 === 1 ? '150,230,100' : '170,120,230', s0: rand(3, 5), s1: rand(10, 18), life: rand(0.35, 0.65), a: 0.5 });
       }
+      if (NT) t.sprayT = 0.35;
       sfx('splash');
       return;
     }
@@ -5586,8 +5591,6 @@ const TOWER_FORM = {
   mage_drain: { w: 1.1, src: [0.49, 0.1], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
   mage_ghost: { w: 1.15, src: [0.345, 0.43], cageAt: [0.55, 0.3], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
-  artillery_corpse: { w: 1.3, src: [0.87, 0.08], flip: true, range: 1.2, dmg: 1 },
-  artillery_plague: { w: 1.15, src: [0.5, 0.24], dmg: 1.05, gas: 1.6 },
   // Lanet Kulesi: rite -> Kan Mabedi (kızıl bağlar kâseden çıkar), blight -> Kara Lanet Mabedi (lanet küreden, ölenlerin kalkma şansı +%10)
 };
 // kule atış animasyonu (kule_anim_isle.py): <görsel>_atk şeridi; box: görsele göre çerçeve, rel: fırlatma anı, relPt: o anda fırlayan parça
@@ -6468,6 +6471,52 @@ function drawCurseEye(t, ts, E, P, L) {
   glow(ctx, c.x, c.y, rx * (2.2 + 0.8 * beat), red ? '255,40,60' : '170,80,255', (0.3 + 0.35 * beat) * (1 - bk * 0.8));
   ctx.restore();
 }
+// ---- Veba Tareti (10 Eki, Caner: "iskelet uçaksavar gibi otursun, sıvıyı buhar olarak püskürtsün, düşmana dönerken smooth") ----
+// Görsel varliklar/veba_tareti_isle.py: kaide tower_artillery_N, yandan (sağa bakan) taret turret_artillery_N. Taret kaidenin yuvasına oturur,
+// t.yaw (zemin düzleminde açı) ile döner: yatay ölçek cos(yaw) — hedef öbür yana geçince taret dönerek (incelip genişleyerek) çevrilir,
+// namlu uzaklığa göre kalkar (t.el). mount: kaidede yuva [x, alttan], pivot: taret görselinde döner tabla x'i, tip: namlu ucu [x, üstten], h: kaide boyuna oran
+const TURRET = [
+  { mount: [0.5, 0.955], pivot: 0.394, tip: [0.996, 0.394], h: 0.6 },
+  { mount: [0.5, 0.94], pivot: 0.349, tip: [0.997, 0.335], h: 0.6 },
+  { mount: [0.5, 0.885], pivot: 0.314, tip: [0.997, 0.49], h: 0.7 },
+];
+const ARTI_SPEC = { corpse: { range: 1.2, dmg: 1 }, plague: { dmg: 1.05, gas: 1.6 } }; // 4. kademe değerleri (eski dönüşüm görsellerinden)
+const BASE_FX = [
+  { glass: [0.47, 0.64, 0.16, 0.2], bubbles: [0.36, 0.42, 0.5, 0.84] },
+  { windows: [[0.4, 0.62], [0.5, 0.6], [0.61, 0.62]], steam: [[0.88, 0.88]] },
+  { fire: [[0.35, 0.38], [0.73, 0.38]], skullEyes: [[0.49, 0.43], [0.52, 0.43]], steam: [[0.37, 0.97], [0.9, 0.94]] },
+];
+function turretXf(t, ts) {
+  const T = TURRET[t.lvl], im = spr('turret_artillery_' + (t.lvl + 1)); if (!T || !im) return null;
+  const mx = t.x + (T.mount[0] - 0.5) * ts.w, my = ts.bottom - T.mount[1] * ts.h, th = ts.h * T.h, tw = th * im.width / im.height;
+  const fx = Math.cos(t.yaw ?? 0), rot = -((t.el ?? 0.25) - 0.25) * 0.9, kick = t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.35 * Math.PI) * tw * 0.04 : 0;
+  return { im, T, mx, my, th, tw, fx, rot, kick };
+}
+function turretTip(t, ts) {
+  const X = turretXf(t, ts); if (!X) return towerEye(t, ts);
+  const lx = (X.T.tip[0] - X.T.pivot) * X.tw + X.kick, ly = (X.T.tip[1] - 1) * X.th, c = Math.cos(X.rot), sn = Math.sin(X.rot);
+  return { x: X.mx + (lx * c - ly * sn) * X.fx, y: X.my + lx * sn + ly * c };
+}
+function drawPlagueTurret(t, ts) {
+  const F = BASE_FX[t.lvl], s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - q[1] * ts.h });
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  if (F && F.glass) { const q = P(F.glass); glow(ctx, q.x, q.y, ts.w * F.glass[2] * 1.6, '120,255,90', 0.22 + Math.sin(time * 2.2 + t.x) * 0.06); }
+  for (const [i, w] of ((F && F.windows) || []).entries()) { const q = P(w); glow(ctx, q.x, q.y, 6 * s, '120,255,90', 0.32 + 0.12 * Math.sin(time * 3 + i * 1.7)); }
+  for (const [i, f] of ((F && F.fire) || []).entries()) { const q = P(f), fk = 0.75 + 0.15 * Math.sin(time * 10 + i * 2) + 0.1 * Math.sin(time * 23 + i); glow(ctx, q.x, q.y, 9 * s * fk, '255,120,40', 0.55 * fk); glow(ctx, q.x, q.y, 4 * s, '255,220,140', 0.5 * fk); }
+  for (const c of (F && F.skullEyes) || []) { const q = P(c); glow(ctx, q.x, q.y, 2.4 * s, '255,50,40', 0.7 + 0.25 * Math.sin(time * 4 + c[0] * 9)); }
+  ctx.restore();
+  if (F && F.bubbles) for (let i = 0; i < 6; i++) { // fıçının camında yükselen kabarcıklar
+    const ph = (time * (0.45 + i * 0.07) + i / 6 + t.x * 0.01) % 1, b = F.bubbles, q = P([lerp(b[0], b[2] + 0.1, (Math.sin(i * 2.4 + t.x) + 1) / 2), lerp(b[1], b[3], ph)]);
+    ctx.globalAlpha = Math.sin(ph * Math.PI) * 0.8; circle(q.x, q.y, (0.8 + ph * 1.2) * s, '#c8ff9a', '#2a6a14', 0.5 * s); ctx.globalAlpha = 1;
+  }
+  for (const st of (F && F.steam) || []) if (Math.random() < 0.05) { const q = P(st); emit(G.parts, { kind: 'glow', x: q.x, y: q.y, vx: rand(-4, 4), vy: -rand(10, 22), col: '150,220,120', s0: 2.5 * s, s1: 7 * s, life: 1.1, a: 0.3 }); }
+  // taret: yuva üstünde döner; püskürtürken namlu ucunda yeşil parıltı
+  const X = turretXf(t, ts); if (!X) return;
+  ctx.save(); ctx.translate(X.mx, X.my); ctx.scale(X.fx, 1); ctx.rotate(X.rot);
+  ctx.drawImage(X.im, -X.T.pivot * X.tw + X.kick, -X.th, X.tw, X.th);
+  ctx.restore();
+  if (t.sprayT > 0) { t.sprayT -= 0.016; const q = turretTip(t, ts); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, q.x, q.y, 10 * s, '160,255,110', t.sprayT * 2); ctx.restore(); }
+}
 // Necromancer kulelerinin canlı kısımları (kodla): dikilitaş kıymıkları, fener ruhu, kazan köpüğü
 function drawNecroTowerFx(t, ts) {
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
@@ -6574,16 +6623,8 @@ function drawNecroTowerFx(t, ts) {
       glow(ctx, r.x, r.y, 14 * s, '170,90,255', 0.14 + Math.sin(time * 1.7) * 0.05);
     }
     ctx.globalCompositeOperation = 'source-over';
-  } else if (t.type === 'artillery') {
-    // kazan: kaynayan kabarcıklar, atışta yükselen bulamaç, üstte yeşil buhar ışığı
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, (12 + 3 * t.lvl) * s, '120,255,90', 0.3 + Math.sin(time * 2.5 + t.x) * 0.08 + 0.3 * sh); ctx.restore();
-    for (let i = 0; i < 4 + t.lvl; i++) {
-      const ph = (time * (0.9 + i * 0.13) + i / 4 + t.x * 0.01) % 1, x = o.x + Math.sin(i * 2.4 + t.x) * (6 + t.lvl) * s, y = o.y - ph * 7 * s;
-      ctx.globalAlpha = 1 - ph; circle(x, y, (0.9 + ph * 1.8) * s, ph > 0.8 ? null : '#9cf26a', '#1e4a10', 0.6 * s);
-    }
-    ctx.globalAlpha = 1;
-    if (sh > 0) { ctx.save(); ctx.translate(o.x, o.y - (1 - sh) * 14 * s); ctx.scale(s, s); circle(0, 0, 3.5 * sh + 1, '#7ae04a', '#1e4a10', 0.8); ctx.restore(); }
-    if (Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: o.x + rand(-6, 6) * s, y: o.y - 4 * s, vx: rand(-4, 4), vy: -rand(8, 16), col: '120,200,80', s0: 3 * s, s1: 8 * s, life: 1, a: 0.25 });
+  } else if (t.type === 'artillery' && NECRO) {
+    ctx.restore(); drawPlagueTurret(t, ts); ctx.save(); // veba tareti: kaide efektleri ve döner iskelet topçu
   }
   ctx.restore();
 }
@@ -10963,6 +11004,7 @@ function effLevel(t) {
   let L = t.def.levels[t.lvl];
   { const F = t.type !== 'archer' && towerForm(t); if (F && F.range) L = Object.assign({}, L, { range: L.range * F.range }); } // dönüşmüş kulenin menzili
   if (t.type === 'altar') return L;
+  if (NECRO && t.type === 'artillery' && t.spec && ARTI_SPEC[t.spec] && ARTI_SPEC[t.spec].range) L = Object.assign({}, L, { range: L.range * ARTI_SPEC[t.spec].range });
   const ab = t.type !== 'barracks' && altarBuff(t);
   if (ab) L = Object.assign({}, L, { rate: L.rate / (1 + ab.buff), dmg: [L.dmg[0] * (1 + ab.dmg), L.dmg[1] * (1 + ab.dmg)] });
   if (t.spec && t.type !== 'barracks') L = Object.assign({}, L, { dmg: [L.dmg[0] * SPEC_BONUS, L.dmg[1] * SPEC_BONUS] });
