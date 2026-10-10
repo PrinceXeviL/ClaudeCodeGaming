@@ -4515,7 +4515,7 @@ function drawAchievements() {
 // step: ekrana girdiği yerden yürüdüğü yol, side: yol ortasından kenara uzaklığı (yarı genişliğin oranı)
 // davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
 const DRUM = { beat: 0.3, dmg: 1.2 };
-const HERALD = { step: 8, side: 0.6, speed: 70, blow: 4.4, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
+const HERALD = { step: 4, walk: 30, side: 0.6, speed: 70, blow: 2.6, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
   let d0 = -entryLead(p); while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > VIS.l + 14 && q.y > VIS.t + 30 && q.x < VIS.r - 14 && q.y < VIS.b - 8) break; d0 += 4; } // görünen alanın (telefonda geniş) kenarı: fazla yürümesin
@@ -4529,7 +4529,7 @@ function heraldSpot(p) {
   return { dW: d, sd: best.sd, half };
 }
 function callHeralds(paths, long = false) {
-  paths.slice(0, 3).forEach((pi, i) => { const p = G.paths[pi], d0 = -entryLead(p); G.heralds.push({ p, d: d0, d0, state: 'in', t: -i * 0.15, i, long, ...heraldSpot(p) }); });
+  paths.slice(0, 3).forEach((pi, i) => { const p = G.paths[pi], sp = heraldSpot(p), d0 = Math.max(-entryLead(p), sp.dW - HERALD.walk); G.heralds.push({ p, d: d0, d0, state: 'in', t: -i * 0.15, i, long, ...sp }); }); // kenardan yalnız öne çıkar (walk), belirerek gelir
 }
 // düşmanlar borazancı(lar) geri dönünce yola çıkar
 const heraldT = (long) => 0.3 + Math.max(0, ...(G.heralds || []).filter(h => h.state === 'in').map(h =>
@@ -4545,7 +4545,7 @@ function updateHeralds(dt) {
     else if (h.state === 'wait') { if (h.t > HERALD.wait) { h.state = 'out'; h.t = 0; } } // borazanı indirip bir an bekler, sonra döner
     else h.d -= HERALD.back * dt;
   }
-  if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > Math.min(-10, (h.d0 || 0) - 10));
+  if (G.heralds) G.heralds = G.heralds.filter(h => h.state !== 'out' || h.d > h.d0); // geldiği yere dönünce (kenarda solarak) kaybolur
 }
 function drawHeralds() {
   // Gemini borazancısı (enemy_herald: kurt postlu, sırtında cornu) varsa o çizilir; yoksa lejyoner + kodla çizilen borazan
@@ -4554,12 +4554,13 @@ function drawHeralds() {
   for (const h of G.heralds || []) {
     if (h.t < 0 && h.state === 'in') continue;
     const q = pathPos(h.p, Math.max(dLo(h.p), h.d), h.sd * h.half), fwd = q.dx >= 0 ? 1 : -1; // yolun kenarına yakın yürür
+    const fa = clamp(h.state === 'in' ? (h.d - h.d0) / 14 : h.state === 'out' ? (h.d - h.d0) / 14 : 1, 0, 1); // kenarda belirir / kaybolur
     const face = h.state === 'out' ? -fwd : fwd; // çalarken düşmanın yürüyeceği yöne bakar
     const blowing = h.state === 'blow', dur = h.long ? HERALD.blowLong : HERALD.blow;
     // kaldırma: borazan 0,3 sn'de omuzdan ağza kalkar, çalarken gövde geriye yaslanır ve nefesle kabarır, sonunda iner
     const k = blowing ? easeInOut(clamp(h.t / 0.3, 0, 1)) * easeInOut(clamp((dur - h.t) / 0.3, 0, 1)) : 0;
     const breath = blowing ? Math.sin(h.t * 7) * 0.5 + 0.5 : 0;
-    ctx.save(); if (!hr) { ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y); } // Gemini borazancısında gövde sabit
+    ctx.save(); ctx.globalAlpha *= fa; if (!hr) { ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y); } // Gemini borazancısında gövde sabit
     if (!hr) { ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); } // boru askerin arkasında: gövdeyi sarar
     if (blowing && hr) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath); // gövde sabit, yalnız borazan ve el oynar
     else drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing && h.state !== 'wait', fly: 0, seed: h.i }); // çaldıktan sonra durup bekler
