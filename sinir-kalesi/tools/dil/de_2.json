@@ -270,7 +270,7 @@
 "Der Turm wird zum Seelenkäfig: alle 8 s wird der stärkste Feind 2 s eingesperrt · alle {} s schickt er einen Geist die Straße entlang: {} Schaden bei Berührung, {} s Furcht",
 "Der Turm wird zum Leichenkatapult: statt Seuche schleudert er {} Zombieleichen auf einmal · die Leichen werfen Feinde um, stehen dann auf und kämpfen {} s, ihre Schläge verbreiten die Seuche",
 "Der Turm wird zum Schwarzen Seuchenkessel: lila-grüne Seuche, größere Gaswolke · Getroffene werden verseucht ({} Gift pro Sekunde): Stirbt einer, springt die Seuche auf seine Nachbarn über",
-"Der Turm wird zum Bluttempel: purpurne Bande aus dem Kelch · Türme in Reichweite erhalten +{} % Feuerrate und +{} % Schaden",
+"Der Turm wird zum Bluttempel: entzieht Feinden Leben und heilt Skelette · Türme in Reichweite erhalten +{} % Feuerrate und +{} % Schaden · entzieht jedem Feind {} LP pro Sekunde",
 "Der Turm wird zum Tempel des Schwarzen Fluchs: Verfluchte erhalten +10 % Erhebungschance beim Tod · stirbt ein Verfluchter, springt der Fluch auf die {} nächsten Feinde (auch außer Reichweite, 4 s)",
 "Veteran {}",
 "{} Zenturio",

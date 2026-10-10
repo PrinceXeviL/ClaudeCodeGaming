@@ -4213,8 +4213,8 @@
 "tpl": 1
 },
 {
-"tr": "Kule Kan Mabedine dönüşür: kâseden kızıl bağlar · Menzildeki kulelere +%{} atış hızı ve +%{} hasar",
-"en": "The tower becomes a Blood Temple: crimson bonds from the chalice · towers in range get +{}% fire rate and +{}% damage",
+"tr": "Kule Kan Mabedine dönüşür: düşmanların canını emer, iskeletleri iyileştirir · Menzildeki kulelere +%{} atış hızı ve +%{} hasar · Her düşmandan saniyede {} can çeker",
+"en": "The tower becomes a Blood Temple: drains the life of enemies and heals skeletons · towers in range get +{}% fire rate and +{}% damage · drains {} HP per second from each enemy",
 "tpl": 1
 },
 {

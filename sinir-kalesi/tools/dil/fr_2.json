@@ -270,7 +270,7 @@
 "La tour devient une Cage d'âmes : toutes les 8 s, enferme 2 s l'ennemi le plus fort · toutes les {} s, lâche un fantôme sur la route : {} dégâts au contact, {} s de peur",
 "La tour devient une Catapulte à cadavres : au lieu de la peste, elle lance {} cadavres de zombies à la fois · les cadavres renversent les ennemis, puis se relèvent et combattent {} s, leurs coups propagent la peste",
 "La tour devient un Chaudron de peste noire : peste violette et verte, nuage de gaz plus grand · les cibles sont pestiférées ({} de poison par seconde) : quand l'une meurt, la peste passe à ses voisins",
-"La tour devient un Temple de sang : liens pourpres issus du calice · les tours à portée gagnent +{} % de cadence et +{} % de dégâts",
+"La tour devient un Temple de sang : draine la vie des ennemis et soigne les squelettes · les tours à portée gagnent +{} % de cadence et +{} % de dégâts · draine {} PV par seconde à chaque ennemi",
 "La tour devient un Temple de la malédiction noire : les maudits ont +10 % de chances de se relever à leur mort · quand un maudit meurt, la malédiction saute sur les {} ennemis les plus proches (même hors de portée, 4 s)",
 "{} vétéran",
 "{} centurion",

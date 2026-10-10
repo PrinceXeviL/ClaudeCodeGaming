@@ -1321,9 +1321,12 @@ let uiParts = [];
 let mapPage = null, mapPageT = 0; // bölüm haritasında açık sayfa (3 bölüm/sayfa)
 let swipe = null;                 // harita sayfasını parmakla kaydırma               // menü ekranlarının parçacıkları (konfeti, toz zerreleri)
 
+// TEST_OPEN (11 Eki, Caner oyunu test ediyor): bütün bölgeler, bölümler, kuleler, komutanlar, büyüler, kodeks ve meydan okumalar açık.
+// MAĞAZA SÜRÜMÜNDEN ÖNCE false YAP.
+const TEST_OPEN = true;
 function heroUnlocked(id) {
   const u = HEROES[id].unlock;
-  return !u || (save.stars[u - 1] || 0) > 0;
+  return TEST_OPEN || !u || (save.stars[u - 1] || 0) > 0;
 }
 // seçili kahraman takımı (en fazla 2, yalnızca açılmış olanlar)
 // seçili kahraman (savaşa tek kahraman gider; kahramanlar ekranından ya da ayarlardan seçilir)
@@ -4016,7 +4019,7 @@ function buySpellUp(id) {
   G.effects.push({ kind: 'ring', x: c.x, y: c.y - 20, r: 50, col: NECRO_SPELLS[id].col, t: 0, dur: 0.5 });
   return true;
 }
-const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return u == null || (save.stars[u] || 0) > 0; };
+const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return TEST_OPEN || u == null || (save.stars[u] || 0) > 0; };
 const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
 // Oyun içi arayüz ölçüsü (Caner, 10 Eki: telefonda parmakla dokunmak için küçüktü): düğmeler %25 büyük, aralıklar %10 açık,
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
@@ -5972,7 +5975,7 @@ function towerSprite(t) {
   const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : `tower_${t.type}_${t.lvl + 1}${MV && MV.side ? '_side' : ''}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
-  const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.3 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
+  const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.17 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
   return { im, name, w, h, bottom: t.y + (m ? w * (m[2] ?? 0.24) : 10) };
 }
 
@@ -8938,7 +8941,7 @@ function drawIcon(name, x, y, s, col = '#fff') {
 // ---------- menüler (halka menü) ----------
 // Arsa ya da kule seçilince öğeler merkezden yaylanarak sırayla açılır, seçim kalkınca içeri toplanıp kapanır.
 const MENU_R = 25, MENU_K = 1.15; // MENU_K: Caner (10 Eki) menü düğmeleri %15 büyük (içerikle birlikte ölçeklenir); arsa menüsünde aralar da %15 açıldı
-function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; return u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
+function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; return TEST_OPEN || u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
   const types = TOWER_ORDER.filter(type => towerUnlocked(type) && !(TOWERS[type].unique && G.towers.some(o => o.type === type))); // tek kurulan kule (Lanet Kulesi) kuruluysa menüde görünmez, satılınca geri gelir
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
@@ -11355,11 +11358,31 @@ function updateAltar(t, dt) {
         for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(6, 26), vy: -rand(20, 50), col: '170,110,255', s0: 3, s1: 0.4, life: 0.6 });
       }
     }
-    e.curseT = Math.max(e.curseT || 0, L.linger || 0.4); // alandan çıkınca lanet 10 sn daha sürer e.curseK = Math.max(e.curseK || 0, L.curse); e.curseRise = Math.max(e.curseRise || 0, L.rise + (t.spec === 'blight' ? 0.1 : 0) + (BF && BF.rise || 0));
+    e.curseT = Math.max(e.curseT || 0, L.linger || 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); // alandan çıkınca lanet 10 sn daha sürer (11 Eki: curseK ve curseRise yorumun içinde kalmıştı, çalışmıyordu)
+    e.curseRise = Math.max(e.curseRise || 0, L.rise + (t.spec === 'blight' ? 0.1 : 0) + (BF && BF.rise || 0));
     e.curseRes = Math.max(e.curseRes || 0, L.res || 0); e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0);
     e.drumT = 0; e.armT = 0; // davul ve sancak coşkusu söner
     if (bl) e.blightN = Math.max(e.blightN || 0, bl.n);
     slowEnemy(e, L.slow, 0.4);
+  }
+  const ri = abRank(t, 'rite');
+  if (ri && !(t.disabledT > 0)) { // Kan Ayini: menzildeki düşmanların canını emer, emilen can yakındaki iskeletlere akar
+    t.drainCd = (t.drainCd ?? 0.5) - dt;
+    if (t.drainCd <= 0) {
+      t.drainCd = 0.5; let got = 0;
+      const ts = towerSprite(t), eye = ts ? { x: t.x, y: ts.bottom - 0.655 * ts.h } : { x: t.x, y: t.y - 60 };
+      for (const e of G.enemies) {
+        if (e.dead || e.under || e.def.machine || dist(e.x, e.y, t.x, t.y) > L.range) continue;
+        const hp0 = e.hp; damageEnemy(e, ri.drain * 0.5, 'true', true, 'magic'); got += hp0 - Math.max(0, e.hp);
+        const y0 = aimY(e); for (let i = 0; i < 2; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx: (eye.x - e.x) / 0.55, vy: (eye.y - y0) / 0.55, col: i ? '255,40,50' : '200,10,30', s0: rand(2.4, 3.6), s1: 1, life: 0.55, a: 0.8 }); // kan akar
+      }
+      if (got > 0) {
+        t.scareT = Math.max(t.scareT || 0, time + 0.3); // göz kanla kızarır
+        const al = G.soldiers.filter(s => !s.dead && !s.wall && s.hp < s.maxHp && dist(s.x, s.y, t.x, t.y) <= L.range).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp);
+        let pool = got * ri.heal;
+        for (const s of al) { if (pool <= 0) break; const h = Math.min(pool, s.maxHp - s.hp); s.hp += h; pool -= h; emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 12, vy: -25, col: '255,90,90', s0: 4, s1: 0.5, life: 0.5 }); }
+      }
+    }
   }
 }
 function effLevel(t) {
@@ -11495,7 +11518,7 @@ const CODEX_NOTE = {
   altar: 'Kan bağışı gönüllüdür. Genellikle.',
 };
 const CODEX = { tab: 'e', sel: { e: 'legion', t: 'archer' }, rank: 0, lvl: 2, t0: 0 };
-function codexSeen(t) { return (save.codex || []).includes(t); }
+function codexSeen(t) { return TEST_OPEN || (save.codex || []).includes(t); }
 function codexNote(type) {
   const d = ENEMIES[type], base = d.rank ? d.base : type;
   save.codex = save.codex || [];
@@ -11505,7 +11528,7 @@ function codexNote(type) {
 }
 // eski kayıtlar: tanıtım kartı gösterilmiş düşmanlar kodekse sayılır
 if (save.seenEnemies2 && !save.codex) { save.codex = save.seenEnemies2.filter(t => CODEX_ENEMIES.includes(t)); persist(); }
-function codexTowerOpen(type) { const u = TOWERS[type].unlockLevel; return u == null || (save.stars[u - 1] || 0) > 0; }
+function codexTowerOpen(type) { const u = TOWERS[type].unlockLevel; return TEST_OPEN || u == null || (save.stars[u - 1] || 0) > 0; }
 // düşmanın ilk göründüğü bölüm (dalgalar, boss, muhafız)
 function codexFirstLevel(type) {
   for (let i = 0; i < LEVELS.length; i++) {
@@ -12135,12 +12158,13 @@ const epLevels = (ep) => LEVELS.map((lv, i) => i).filter(i => LEVELS[i].ep === e
 const epOf = (i) => LEVELS[i].ep || 1;
 // sefer, önceki seferin son bölümü bitince açılır
 function epUnlocked(ep) {
-  if (ep <= 1) return true;
+  if (ep <= 1 || TEST_OPEN) return true;
   const prev = epLevels(ep - 1);
   return (save.stars[prev[prev.length - 1]] || 0) > 0;
 }
 // bölüm: seferin ilk bölümü sefer açıksa, diğerleri önceki bölüm bitince açılır
 function levelUnlocked(i) {
+  if (TEST_OPEN) return true;
   const first = epLevels(epOf(i))[0];
   if ((save.stars[i] || 0) > 0) return true; // bitirilmiş bölüm hep açık (eski kayıttan taşınanlar dahil)
   return i === first ? epUnlocked(epOf(i)) : (save.stars[i - 1] || 0) > 0;
@@ -12554,7 +12578,7 @@ function drawLevelCard(i, cx, cy, at) {
     { const kb = 'boost' + i, yb = by + (st ? 60 : 46) * sc; // yan düğmelerin yazılarının altında kalsın
       gameButton(kb, cx, yb, 196 * sc, 30 * sc, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA', () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 11 * sc }); }
     // sonsuz gece: bölümü bir kez bitirince açılır; rekor altında yazar
-    if (st) {
+    if (st || TEST_OPEN) {
       const bx = cx - 96 * sc, k2 = 'end' + i, best = (save.endless || {})[i] || 0;
       ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(bx, by); const s2 = pressScale(k2) * sc; ctx.scale(s2, s2);
       glow(ctx, 0, 0, 30, '150,90,255', 0.25 + Math.sin(time * 2.5) * 0.08);
@@ -12567,8 +12591,8 @@ function drawLevelCard(i, cx, cy, at) {
       buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => go(() => startLevel(i, 'e')) });
     }
     // meydan okumalar: 3 yıldızdan sonra açılır; tamamlanan tikli
-    if (st) for (const [c, dx] of [['h', 96]]) {
-      const open = st >= 3, done = save.ch && save.ch[i] && save.ch[i][c], bx = cx + dx * sc, k2 = 'ch' + c + i;
+    if (st || TEST_OPEN) for (const [c, dx] of [['h', 96]]) {
+      const open = TEST_OPEN || st >= 3, done = save.ch && save.ch[i] && save.ch[i][c], bx = cx + dx * sc, k2 = 'ch' + c + i;
       ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(bx, by); const s2 = pressScale(k2) * sc; ctx.scale(s2, s2);
       if (open && !done) glow(ctx, 0, 0, 34, '255,90,70', 0.35 + Math.sin(time * 3) * 0.1);
       hudFrame(-21, -21, 42, 42, 9, '#5a1a20');

@@ -1087,8 +1087,9 @@ if (NECRO) {
         perk: '%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir' },
     ],
     abilities: [
-      { id: 'rite', name: 'Kan Ayini', desc: (r) => `Kule Kan Mabedine dönüşür: kâseden kızıl bağlar · Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar`,
-        ranks: [{ cost: 150, rate: 0.15, dmg: 0.1 }, { cost: 200, rate: 0.25, dmg: 0.18 }, { cost: 260, rate: 0.35, dmg: 0.25 }] },
+      // Kan Ayini (11 Eki, Caner: "kırmızı versiyon drain life ile uyumlu"): drain sn başına her düşmandan çekilen can, heal: emilenin iskeletlere giden oranı
+      { id: 'rite', name: 'Kan Ayini', desc: (r) => `Kule Kan Mabedine dönüşür: düşmanların canını emer, iskeletleri iyileştirir · Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar · Her düşmandan saniyede ${r.drain} can çeker`,
+        ranks: [{ cost: 150, rate: 0.15, dmg: 0.1, drain: 5, heal: 0.6 }, { cost: 200, rate: 0.25, dmg: 0.18, drain: 8, heal: 0.6 }, { cost: 260, rate: 0.35, dmg: 0.25, drain: 12, heal: 0.6 }] },
       { id: 'blight', name: 'Kara Lanet', desc: (r) => `Kule Kara Lanet Mabedine dönüşür: lanetliler ölünce +%10 kalkma şansı · Lanetli ölünce lanet en yakın ${r.n} düşmana sıçrar (menzil dışında da, 4 sn)`,
         ranks: [{ cost: 140, n: 2 }, { cost: 190, n: 3 }, { cost: 240, n: 4 }] },
     ],
