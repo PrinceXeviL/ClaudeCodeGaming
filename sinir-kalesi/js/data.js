@@ -2,6 +2,8 @@
 // Denge değerleri burada; revizeler çoğunlukla bu dosyada yapılır.
 
 const W = 960, H = 540;
+// bölümlerin toplam düşman sayısı çarpanı (10 Eki, Caner: her bölümde %20 daha çok düşman); TOTAL / TOTAL2 bununla çarpılır
+const MORE_FOES = 1.2;
 
 const TOWERS = {
   archer: {
@@ -556,7 +558,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
   const HPMUL = [1, 1.3, 1.188, 1.612, 1.012, 1.491, 0.574, 0.98, 0.398, 0.525, 0.818, 0.316, 1.267, 0.804, 0.42, 0.352, 0.194, 0.673, 0.24, 0.334]; // 10 Eki: hasar türü × zırh sınıfı, Kemik Kulesi yolları ve silah büyüleriyle bot ayarı (2 tur)
-  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: TOTAL[i], grow: 1.3, hpMul: HPMUL[i] }));
+  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
   LEVELS.splice(0, LEVELS.length, ...L);
@@ -665,7 +667,7 @@ if (NECRO) {
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
-  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, GEO2[i], { lives: 15, ep: 2, total: TOTAL2[i], grow: 1.3, hpMul: HPMUL2[i] }); if (!l.weather) delete l.weather; });
+  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, GEO2[i], { lives: 15, ep: 2, total: Math.round(TOTAL2[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL2[i] }); if (!l.weather) delete l.weather; });
   LEVELS.push(...L2);
   EPISODES.push({ name: 'Cadı Avı',
     zones: [['ravenwood', 'Kuzgun Ormanı'], ['plague', 'Veba Köyü'], ['monastery', 'Batık Manastır'], ['ossuary', 'Kemik Katedrali'], ['bloodmoon', 'Kızıl Ay Tepesi']],
