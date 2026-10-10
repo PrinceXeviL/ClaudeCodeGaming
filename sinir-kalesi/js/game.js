@@ -233,19 +233,28 @@ function resize() {
   canvas.width = Math.round(cw * dpr);
   canvas.height = Math.round(ch * dpr);
   const cs = getComputedStyle(safeProbe), px = (v) => parseFloat(v) || 0;
-  const sl = px(cs.paddingLeft), sr = px(cs.paddingRight), st = px(cs.paddingTop), sb = px(cs.paddingBottom);
+  let sl = px(cs.paddingLeft), sr = px(cs.paddingRight), st = px(cs.paddingTop), sb = px(cs.paddingBottom);
+  // geniş (çentikli / yuvarlak köşeli) telefon ekranı: güvenli bölge bilgisi gelmese de arayüz köşelere yenmesin (Caner, 10 Eki: iPhone'da
+  // sol üst, sağ üst ve sol alttaki düğmeler kesiliyordu). Yanlardan en az %5,5, alttan en az 14 px pay.
+  if (cw / ch > 1.95 && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+    const m = Math.round(cw * 0.055); sl = Math.max(sl, m); sr = Math.max(sr, m); sb = Math.max(sb, 14);
+  }
   const aw = cw - sl - sr, ah = ch - st - sb;
   const scale = Math.min(aw / W, ah / H);
   view = { scale, ox: sl + (aw - W * scale) / 2, oy: st + (ah - H * scale) / 2, dpr, cw, ch };
   const L = (x) => (x - view.ox) / scale, T = (y) => (y - view.oy) / scale;
   VIS = { l: L(0), t: T(0), r: L(cw), b: T(ch) }; VIS.w = VIS.r - VIS.l; VIS.h = VIS.b - VIS.t;
   EDGE = { l: Math.min(0, L(sl)), t: Math.min(0, T(st)), r: Math.max(W, L(cw - sr)), b: Math.max(H, T(ch - sb)) };
-  const bx = Math.min(BLEED_MAX.x, Math.ceil(Math.max(0, -VIS.l) / 16) * 16), by = Math.min(BLEED_MAX.y, Math.ceil(Math.max(0, -VIS.t) / 16) * 16);
+  const bx = Math.min(BLEED_MAX.x, Math.ceil(Math.max(0, -VIS.l, VIS.r - W) / 16) * 16), by = Math.min(BLEED_MAX.y, Math.ceil(Math.max(0, -VIS.t, VIS.b - H) / 16) * 16); // güvenli pay tek yandaysa çerçeve kayar: iki yanın büyüğü
   if (bx > BLEED.x || by > BLEED.y) { BLEED = { x: Math.max(bx, BLEED.x), y: Math.max(by, BLEED.y) }; try { if (G) bgDirty = Math.max(time, 0.001); } catch (e) {} } // ilk çağrıda G henüz tanımsız
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; // tuval boyutu değişince sıfırlanır
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 300));
 resize();
+// iOS uygulamasında güvenli bölge payları sayfa açıldıktan biraz sonra gelir (resize olayı olmadan): değişirse yeniden ölçülür
+{ let lastSafe = '';
+  setInterval(() => { const cs = getComputedStyle(safeProbe), k = cs.paddingLeft + cs.paddingRight + cs.paddingTop + cs.paddingBottom; if (k !== lastSafe) { lastSafe = k; resize(); } }, 700); }
 
 // ---------- ses ----------
 // ses/manifest.json içindeki WAV'lar (Kenney, CC0). Dosya adı "tür_n": aynı türün varyantları
@@ -555,14 +564,14 @@ function painVoice(e) {
 // Dosya yoksa (henüz üretilmediyse) o parça sessiz kalır, boss parçası yoksa savaş parçası çalar.
 // Her parça kaldığı yerden devam eder; savaş parçası her bölüm başında baştan başlar.
 // Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez. Parçalar yüksek masterlandığı için kısık çalınır.
-// Savaş ve boss parçaları 10 Eki'de %20 kısıldı (Caner: oyun içi müzik efektleri bastırıyordu).
+// Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
-  battle: { file: 'muzik_savas.mp3', gain: 0.12, seam: true }, // The Necromancer's Parade
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.144, seam: true }, // Bones on the Battlements
+  battle: { file: 'muzik_savas.mp3', gain: 0.09, seam: true }, // The Necromancer's Parade
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.11, seam: true }, // Bones on the Battlements
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
-  battle2: { file: 'muzik_savas2.mp3', gain: 0.12, seam: true },
-  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.144, seam: true },
+  battle2: { file: 'muzik_savas2.mp3', gain: 0.09, seam: true },
+  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.11, seam: true },
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
@@ -626,8 +635,12 @@ function updateMusic(dt) {
     if (tgt && time < mortVoiceUntil) tgt *= 0.45; // Mortimer konuşurken müzik kısılır
     if (!tgt && !T.el) continue;
     const el = musicEl(T); if (!el) continue;
-    // giriş ~2 sn, çıkış ~1 sn (boss geçişi biraz daha hızlı girer)
-    T.vol += clamp(tgt - T.vol, -dt * 0.3, dt * (k.startsWith('boss') ? 0.25 : 0.12));
+    // yumuşak giriş (Caner, 10 Eki: borazandan sonra müzik birden yüksek giriyordu): hedefe savaşta ~5 sn'de, boss'ta ~2,5 sn'de
+    // kulak kararı doğrusal değil, karesel yükselir (başta çok kısık, sonra açılır); çıkış ~1 sn
+    const full = T.gain * setting('mvol') || 0.1;
+    T.lin = T.lin || 0;
+    T.lin = clamp(T.lin + clamp(Math.sqrt(tgt / full) - T.lin, -dt * 2, dt / (k.startsWith('boss') ? 2.5 : 5)), 0, 1);
+    T.vol = full * T.lin * T.lin;
     el.volume = clamp(T.vol, 0, 1);
     if (T.seam) musicSeam(T, dt);
     if (T.vol <= 0.002 && tgt === 0 && !el.paused) { el.pause(); if (T.old) { T.old.pause(); T.old = null; } }
