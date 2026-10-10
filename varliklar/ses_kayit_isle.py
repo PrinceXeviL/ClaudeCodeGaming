@@ -99,7 +99,9 @@ def main():
     # 10 Eki (Caner, 3.): Caner'in verdiği "Ancient Battle Horn" kaydı (lisanslı, ham dosya depoda değil: ham/ses/lisansli/, .gitignore).
     # İki üfleme + yankı: ilk 7,5 sn, sonu 1,5 sn'de söner. Kaynak yoksa ElevenLabs hornf_3'e düşer.
     # 10 Eki (Caner, 4.): "Military Trumpet Battle Call" 2. kaydı (lisanslı): ~2,4 sn çağrı + yankı, ilk 4,5 sn, sonu 1,2 sn'de söner.
-    if os.path.exists(os.path.join(HAM, 'lisansli', 'military_trumpet_call_2.wav')): made.append(save('horn_1', fade(load('lisansli/military_trumpet_call_2')[:int(SR * 4.5)], 0.01, 1.2), -17))
+    # 10 Eki (Caner, 5.): "Cinematic War Horn 02" (lisanslı): ~2 sn güçlü üfleme + yankı, ilk 5,5 sn, sonu 1,5 sn'de söner.
+    if os.path.exists(os.path.join(HAM, 'lisansli', 'cinematic_war_horn_02.wav')): made.append(save('horn_1', fade(load('lisansli/cinematic_war_horn_02')[:int(SR * 5.5)], 0.01, 1.5), -17))
+    elif os.path.exists(os.path.join(HAM, 'lisansli', 'military_trumpet_call_2.wav')): made.append(save('horn_1', fade(load('lisansli/military_trumpet_call_2')[:int(SR * 4.5)], 0.01, 1.2), -17))
     elif os.path.exists(os.path.join(HAM, 'lisansli', 'ancient_battle_horn.wav')): made.append(save('horn_1', fade(load('lisansli/ancient_battle_horn')[:int(SR * 7.5)], 0.01, 1.5), -17))
     else: made.append(save('horn_1', fade(load_mp3('hornf_3'), 0.01, 0.5), -17))
     # yell: Caner'in verdiği "Male Battle Yell" kaydı (lisanslı, ham/ses/lisansli/): düşman özel saldırı yaparken bağırır; ikinci hali biraz kalın

@@ -4515,7 +4515,7 @@ function drawAchievements() {
 // step: ekrana girdiği yerden yürüdüğü yol, side: yol ortasından kenara uzaklığı (yarı genişliğin oranı)
 // davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
 const DRUM = { beat: 0.3, dmg: 1.2 };
-const HERALD = { step: 8, side: 0.6, speed: 70, blow: 2.6, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
+const HERALD = { step: 8, side: 0.6, speed: 70, blow: 2.4, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
   let d0 = -entryLead(p); while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > VIS.l + 14 && q.y > VIS.t + 30 && q.x < VIS.r - 14 && q.y < VIS.b - 8) break; d0 += 4; } // görünen alanın (telefonda geniş) kenarı: fazla yürümesin
@@ -4562,7 +4562,7 @@ function drawHeralds() {
     const breath = blowing ? Math.sin(h.t * 7) * 0.5 + 0.5 : 0;
     ctx.save(); ctx.globalAlpha *= fa; if (!hr) { ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y); } // Gemini borazancısında gövde sabit
     if (!hr) { ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); } // boru askerin arkasında: gövdeyi sarar
-    if (blowing && hr) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath); // gövde sabit, yalnız borazan ve el oynar
+    if (blowing && hr) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath, h.t, dur); // nefes alır, öne eğilip üfler; borazan ve el oynar
     else drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing && h.state !== 'wait', fly: 0, seed: h.i }); // çaldıktan sonra durup bekler
     ctx.restore();
     if (!blowing || h.i !== 0) continue;
@@ -4585,10 +4585,19 @@ function heraldPart(im, r) {
   const c = document.createElement('canvas'); c.width = sw; c.height = sh; c.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, sw, sh);
   return (C[key] = { im, c, sx, sy, sw, sh });
 }
-function drawHeraldBlow(im, x, y, face, hgt, k, breath) {
+// Üfleme hareketi (10 Eki, Caner): önce nefes alır (hafif geriye yaslanıp göğsü kabarır), sonra boruya abanıp öne eğilir,
+// üflerken nefesle hafifçe sallanır, sonunda doğrulur. Gövde ayaklardan döner (t: üflemenin süresi içindeki an, dur: toplam süre).
+function heraldLean(t, dur, breath) {
+  const out = easeInOut(clamp((dur - t) / 0.4, 0, 1)), inh = easeInOut(clamp(t / 0.3, 0, 1)), go = easeInOut(clamp((t - 0.3) / 0.25, 0, 1));
+  const lean = (t < 0.3 ? -0.05 * inh : lerp(-0.05, 0.085 + 0.015 * breath, go)) * out;
+  const sy = 1 + (t < 0.3 ? 0.03 * inh : lerp(0.03, -0.012 + 0.01 * breath, go)) * out; // göğüs kabarır, üflerken sıkışır
+  return { lean, sy };
+}
+function drawHeraldBlow(im, x, y, face, hgt, k, breath, t = 1, dur = 2) {
   const w = hgt * im.width / im.height, S = w / im.width; // görsel pikseli -> dünya
   ctx.save(); ctx.translate(x, y); ctx.scale(face, 1);
   shadow(0, 0, w * 0.32, w * 0.1);
+  const L = heraldLean(t, dur, breath); ctx.rotate(L.lean); ctx.scale(2 - L.sy, L.sy); // ayaklardan öne eğilir
   ctx.drawImage(pickMip(ctx, im, w), -w / 2, -hgt, w, hgt);
   const B = heraldPart(im, HERALD_PART.bell), px = -w / 2 + HERALD_PART.bellPivot[0] * w, py = -hgt + HERALD_PART.bellPivot[1] * hgt;
   const ang = -0.1 * k - 0.025 * breath, sc = 1 + 0.03 * k + 0.035 * breath; // kalkar, nefesle kabarır
