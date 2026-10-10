@@ -9493,7 +9493,7 @@ const CREDITS = [
     ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
     ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba ve büyü efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
-  ['YAZI TİPİ', [['Creepster · Russo One · Rubik', 'SIL Open Font License']]],
+  ['YAZI TİPİ', [['Metal Mania · Russo One · Rubik', 'SIL Open Font License']]],
 ];
 function drawCredits() {
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
@@ -10695,16 +10695,16 @@ function coverImage(im, zoom = 1, ox = 0, oy = 0) {
 // ----- Necromancer giriş ekranı: kemik rengi, mor konturlu, yeşil ışıklı başlık ve mezar taşı düğme -----
 // ----- giriş ekranı: logo ve düğmeler önbellekte (gölgeli yazılar her karede çizilmez, kasma olmaz) -----
 const TITLE_C = {};
-// logo yazı tipi (cadılar bayramı havası, damlalı harfler); önbellekler yalnız yazı tipi yüklenince bir kez yenilenir
-const FONT_LOGO = '"Creepster", "Russo One", "Arial Black", sans-serif';
+// logo yazı tipi: Metal Mania (sivri, metal havası; Caner 10 Eki, Creepster'ın yerine); önbellekler yalnız yazı tipi yüklenince bir kez yenilenir
+const FONT_LOGO = '"Metal Mania", "Russo One", "Arial Black", sans-serif';
 let FONT_VER = 0;
 if (document.fonts) {
-  document.fonts.load('80px "Creepster"').then(() => { FONT_VER++; }).catch(() => {});
+  document.fonts.load('80px "Metal Mania"').then(() => { FONT_VER++; }).catch(() => {});
   document.fonts.ready.then(() => { FONT_VER++; }).catch(() => {});
   if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { FONT_VER++; }); // yazı tipleri sonradan gelirse önbellekli yazılar yenilenir
   // yazı tipi sayfası beklemeden yüklendiği için (index.html media=print) yüzler sonradan tanımlanır: gelene kadar yarım saniyede bir dene
   const fontPoll = setInterval(() => {
-    Promise.all(['80px "Creepster"', '40px "Russo One"', '800 20px "Rubik"'].map(f => document.fonts.load(f))).then(r => {
+    Promise.all(['80px "Metal Mania"', '40px "Russo One"', '800 20px "Rubik"'].map(f => document.fonts.load(f))).then(r => {
       if (r.every(x => x.length)) { clearInterval(fontPoll); FONT_VER++; }
     }).catch(() => {});
   }, 500);
@@ -10712,7 +10712,7 @@ if (document.fonts) {
 }
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
 // logo: üstte koyu kızıl, altın çerçeveli kurdelede "DON'T MESS WITH" (arayüz yazı tipi, kemik beyazı),
-// altta Creepster ile kan kırmızısı "THE NECROMANCER"; yazı tipinin sarkıtları parlak kan rengine boyanır, uçlarına kan damlası konur
+// altta Metal Mania ile kan kırmızısı "THE NECROMANCER"; yazı tipinin sarkıtları parlak kan rengine boyanır, uçlarına kan damlası konur
 function titleLogo() {
   if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER) return TITLE_C.logo;
   const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), cx = LW / 2;
@@ -10733,7 +10733,7 @@ function titleLogo() {
   g.beginPath(); g.roundRect(cx - rw / 2 + 4, ry - rh / 2 + 4, rw - 8, rh - 8, 5); g.fillStyle = gr; g.fill();
   gr = g.createLinearGradient(0, ry - rh / 2, 0, ry); gr.addColorStop(0, 'rgba(255,220,200,0.22)'); gr.addColorStop(1, 'rgba(255,220,200,0)');
   g.fillStyle = gr; g.fillRect(cx - rw / 2 + 4, ry - rh / 2 + 4, rw - 8, rh / 2 - 4);
-  g.font = `38px ${FONT_T}`;
+  g.font = `40px ${FONT_LOGO}`;
   if ('letterSpacing' in g) g.letterSpacing = '3px';
   const DM = "DON'T MESS WITH", dx = ('letterSpacing' in g) ? 1.5 : 0;
   g.strokeStyle = '#0c0204'; g.lineWidth = 8; g.strokeText(DM, cx + dx, ry + 3);
