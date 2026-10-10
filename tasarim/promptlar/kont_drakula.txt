@@ -1,0 +1,7 @@
+Using the attached reference image (our three commander heroes), draw a NEW commander hero for the same 2D tower defense game, in EXACTLY the same art style: same thick dark-brown outlines, same painterly cartoon shading, same chunky proportions, same size and full-body framing as the reference characters.
+
+The new hero is COUNT DRACULA, the legendary vampire lord, cartoon version (original design, not any actor's likeness): very pale grey-white skin, slicked-back black hair with a sharp widow's peak, glowing red eyes, small fangs in a confident smirk, pointed ears. He wears an elegant black aristocratic suit with a dark crimson waistcoat, a white cravat with a ruby brooch, and a huge black cape with a tall stiff collar and blood-red lining that flares out behind him. He holds a slim silver rapier in his right hand. A few small bats flutter near his cape. Menacing, noble and a little theatrical.
+
+Draw him once, full body, standing in a ready pose, side view facing RIGHT (three-quarter is fine), with lots of empty space around him.
+
+Background: flat solid magenta (#FF00FF) everywhere, no ground, no shadows, no text, no labels, no frames.
