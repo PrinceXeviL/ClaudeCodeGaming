@@ -6928,9 +6928,9 @@ function drawBoneTowerFx(t, ts, layer) {
   const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h }), sd = t.x * 0.013;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   if (front) for (const [i, r] of (F.runes || []).entries()) { // run ışığı aşağıdan yukarı akar, sütun nabız gibi atar
-    const beat = 0.5 + 0.5 * Math.sin(time * 2.2 + i * 1.3 + sd), q0 = P([r[0], (r[1] + r[2]) / 2]);
-    glow(ctx, q0.x, q0.y, (r[2] - r[1]) * ts.h * 0.7, r[3], 0.12 + 0.12 * beat);
-    for (let j = 0; j < 2; j++) { const k = (time * 0.5 + j / 2 + i * 0.3 + sd) % 1, q = P([r[0], lerp(r[2], r[1], k)]); glow(ctx, q.x, q.y, 4.5 * s, r[3], 0.55 * Math.sin(k * Math.PI)); }
+    const beat = 0.5 + 0.5 * Math.sin(time * 2.2 + i * 1.3 + sd), q0 = P([r[0], (r[1] + r[2]) / 2]), rc = TOWER_LIVE[ts.name] && TOWER_LIVE[ts.name].rune ? runeColNow(t, ts.name) : r[3]; // ışık rünün dönen rengini izler
+    glow(ctx, q0.x, q0.y, (r[2] - r[1]) * ts.h * 0.7, rc, 0.12 + 0.12 * beat);
+    for (let j = 0; j < 2; j++) { const k = (time * 0.5 + j / 2 + i * 0.3 + sd) % 1, q = P([r[0], lerp(r[2], r[1], k)]); glow(ctx, q.x, q.y, 4.5 * s, rc, 0.55 * Math.sin(k * Math.PI)); }
   }
   for (const [i, f] of (F.flames || []).entries()) { // ruh alevi titrer, yukarı kıvılcım savurur
     if (f[1] < 0.18 ? !back : !front) continue; // platformun arkasındaki köşe alevleri okçulardan önce çizilir
@@ -7118,6 +7118,57 @@ function litOf(im, cols, strip) {
   if (im.decode) im.decode().then(build, () => LIT_CACHE.delete(key)); else build();
   return null;
 }
+// Kemik Kulesi canlı katmanları (11 Eki, Caner: kuleler de oynasın): bayraklar direkten rüzgârda dalgalanır (<ad>_flagN, satır satır
+// kaydırılır, direğe yakın kısım sabit), rünlerin rengi yavaşça yeşil → mor → kızıl döner (<ad>_rune beyaz maske, boyanıp üstüne çizilir).
+// Kıvılcım/parıltı yok. Katmanlar ve kutular: varliklar/kule_canli_isle.py (kutular görsel kesri x0, y0, x1, y1).
+const TOWER_LIVE = {
+  tower_archer_bow: {flags: [[0.0396, 0.5896, 0.1344, 0.7349], [0.8542, 0.5896, 0.95, 0.7349]], rune: [0.3396, 0.4598, 0.6698, 0.7496]},
+  tower_archer_fan: {flags: [[0.0292, 0.2843, 0.1594, 0.5599], [0.8292, 0.2843, 0.9698, 0.5599]], rune: [0.3, 0.3299, 0.7594, 0.6494]},
+  tower_xbow_1: {rune: [0.2792, 0.7096, 0.7198, 0.8194]},
+  tower_xbow_2: {rune: [0.2792, 0.4399, 0.6792, 0.6899]},
+  tower_xbow_3: {flags: [[0.0292, 0.2548, 0.1594, 0.5397], [0.8375, 0.2548, 0.9594, 0.5397]], rune: [0.3094, 0.4595, 0.6792, 0.7397]},
+};
+const RUNE_COLS = { base: ['110,255,140', '185,110,255', '255,70,95'], tower_archer_fan: ['235,80,235', '150,90,255', '255,70,95'] };
+const TINT = new Map();
+function tintOf(im, col) {
+  const key = im.src + '|' + col; let c = TINT.get(key);
+  if (c) return c;
+  if (!(im.naturalWidth || im.width)) return null;
+  c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height;
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = `rgb(${col})`; g.fillRect(0, 0, c.width, c.height);
+  TINT.set(key, c); return c;
+}
+function runePhase(t, name) {
+  const C = RUNE_COLS[name] || RUNE_COLS.base, ph = (time * 0.12 + t.x * 0.031 + t.y * 0.017) % C.length, i0 = Math.floor(ph);
+  return { C, i0, f: clamp((ph - i0 - 0.62) / 0.38, 0, 1) };
+}
+// rünün o anki rengi (ışık için iki renk arası karışım)
+function runeColNow(t, name) {
+  const { C, i0, f } = runePhase(t, name), a = C[i0].split(',').map(Number), b = C[(i0 + 1) % C.length].split(',').map(Number);
+  return a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',');
+}
+function drawTowerLive(t, ts) { // kulenin yerel koordinatında: (0,0) tabanın ortası, görsel [-w/2, w/2] x [-h, 0]
+  const L = TOWER_LIVE[ts.name]; if (!L) return;
+  const P = (f) => ({ x: (f[0] - 0.5) * ts.w, y: (f[1] - 1) * ts.h }), sd = t.x * 0.031 + t.y * 0.017;
+  if (L.flags) L.flags.forEach((b, i) => {
+    const im = spr(ts.name + '_flag' + (i + 1)); if (!im) return;
+    const p = P(b), w = (b[2] - b[0]) * ts.w, h = (b[3] - b[1]) * ts.h, iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, N = 16;
+    for (let k = 0; k < N; k++) {
+      const u = (k + 0.5) / N, dx = w * (0.075 * Math.pow(u, 1.3) * Math.sin(time * 2.3 + sd + i * 1.7 - u * 3.4) + 0.018 * u * Math.sin(time * 5.1 + i * 2.1 + sd));
+      ctx.drawImage(im, 0, k * ih / N, iw, ih / N + 0.6, p.x + dx, p.y + k * h / N, w, h / N + 0.6);
+    }
+  });
+  const R = L.rune && spr(ts.name + '_rune');
+  if (R) { // renk döngüsü: her renkte ~5 sn durur, ~3 sn'de ötekine geçer
+    const { C, i0, f } = runePhase(t, ts.name);
+    const a = tintOf(R, C[i0]), b2 = tintOf(R, C[(i0 + 1) % C.length]), p = P(L.rune), w = (L.rune[2] - L.rune[0]) * ts.w, h = (L.rune[3] - L.rune[1]) * ts.h;
+    const pulse = 0.8 + 0.2 * Math.sin(time * 1.9 + sd);
+    ctx.save();
+    if (a) { ctx.globalAlpha = pulse * (1 - f); ctx.drawImage(a, p.x, p.y, w, h); }
+    if (b2 && f > 0) { ctx.globalAlpha = pulse * f; ctx.drawImage(b2, p.x, p.y, w, h); }
+    ctx.restore();
+  }
+}
 // ön korkuluk katmanı kulenin ışıklı kopyasından kesilir (ayrı ışıklanırsa kesim çizgisinde ton farkı olur)
 const FRONT_LIT = new Map();
 function frontLit(name, FI, lit) {
@@ -7159,6 +7210,7 @@ function drawTowerBody(t) {
     else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), SP = TOWER_SPLIT[ts.name];
       if (SP) drawSplitTower(t, ts, lit || ts.im, SP); else drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
+      if (NECRO && xbowCount(t)) drawTowerLive(t, ts); // bayraklar dalgalanır, rünlerin rengi döner
       if (NECRO && t.type === 'mage') drawLanternArm(t, ts); // Ruh Feneri: sallanan fener / feneri kaldıran kol
     }
     ctx.restore();
