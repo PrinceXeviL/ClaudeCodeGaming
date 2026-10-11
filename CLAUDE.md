@@ -287,3 +287,10 @@ Magenta zeminli görselde magenta rünler de silinir: rün bölgesindeki delikle
 - MainActivity: tam ekran (sistem çubukları gizli), ekran kararmaz, çentik kenarı da dolu. capacitor.config SystemBars.insetsHandling = disable (oyun güvenli alanı kendi hesaplar).
 - Simge/açılış: `python3 varliklar/simge_isle.py [1024px.png]` iOS + Android kaynaklarını birlikte üretir.
 - Mağaza malzemeleri: `magaza/README.md`.
+
+## Menü akıcılığı ve önceden pişirilen zeminler (12 Eki)
+Başlıkta sefer haritası zemini 6 parça hâlinde oyunda çiziliyordu (her biri ~0,3–1 sn donma) ve kalite ayarı bunu yavaş cihaz sanıp çözünürlüğü düşürüyordu.
+Artık `img/map_bolge<N>.webp` + `img/map_bolge.json` (taşma payı 180x110, ışık/sancak/el noktaları) ve bölüm kartı önizlemeleri `img/map_kartlar.webp`
+(480x270 hücreli atlas, LEVELS sırası) hazır yüklenir. **Harita dekoru, temalar, EPISODES düğümleri ya da bölüm yolları değişince** sunucu açıkken
+`node tools/harita-pisir.js` çalıştır (yayında bu üç dosyayı da gönder). Ekran pişirilen paydan genişse oyun eski yoldan kendisi çizer.
+adaptQuality, renderBackground'dan sonraki 1 sn'yi saymaz (perf.heavy).

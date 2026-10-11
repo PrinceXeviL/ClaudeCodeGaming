@@ -244,9 +244,10 @@ let quality = setting('gfx') === 'low' ? 0.75 : QMAX;
 // olduğundan çözünürlük 0.85'e iner, birimler bulanıklaşırdı (Caner: "düşmanlar ve askerlerim net değil"). Artık karenin gerçek iş
 // süresine bakar ve otomatikte ekran yoğunluğunun 2 katının altına inmez (düşük kalite elle seçilirse 0.75).
 const QMIN = Math.min(QMAX, 2);
-const perf = { acc: 0, work: 0, n: 0, t: 0, good: 0, last: 0 };
+const perf = { acc: 0, work: 0, n: 0, t: 0, good: 0, last: 0, heavy: -9 }; // heavy: son tek seferlik ağır iş (zemin çizimi) anı
 function adaptQuality(real) {
   if (real > 0.2 || setting('gfx') !== 'auto') return; // sekme arka plandaydı / kalite elle seçildi
+  if (time - perf.heavy < 1) { perf.acc = perf.work = perf.n = perf.t = 0; return; } // 12 Eki: zemin/önizleme hazırlanırken yavaş kare cihazın yavaşlığı sayılmaz (kalite düşmesin)
   perf.acc += real; perf.work += perf.last; perf.n++; perf.t += real;
   if (perf.t < 2) return;
   const avg = perf.acc / perf.n, work = perf.work / perf.n;
@@ -308,8 +309,8 @@ const SOUND = {
   freeze: { vol: 0.4, gap: 0.25, max: 2, rate: [0.92, 1.1] },        // buzlu ok / kılıç düşmanı dondururken
   blooddrain: { vol: 0.22, gap: 2.5, max: 1, rate: [0.95, 1.05] },   // Kan Ayini can emerken (seyrek, arkada)
   plaguethrow: { vol: 0.5, gap: 0.35, max: 2, rate: [0.94, 1.08] }, // Veba Kazanı sıvıyı fırlatırken: fışkırma (Caner'in 'Liquid Craft' kaydı)
-  plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] },
-  acidboom: { vol: 0.42, gap: 0.18, max: 3, rate: [0.9, 1.1] },     // Veba Kazanı mermisi düşüp patlar: asit köpürmesi (Caner'in lisanslı sesi, 12 Eki)  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
+  plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] }, // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
+  acidboom: { vol: 0.42, gap: 0.18, max: 3, rate: [0.9, 1.1] },     // Veba Kazanı mermisi düşüp patlar: asit köpürmesi (Caner'in lisanslı sesi, 12 Eki)
   battle:  { vol: 0.5, full: 4 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
@@ -1084,7 +1085,7 @@ const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dün
 let BGM = { x: 0, y: 0 };
 const bgBox = () => ({ x: -BGM.x, y: -BGM.y, w: W + 2 * BGM.x, h: H + 2 * BGM.y });
 function renderBackground(lv, paths, res = 2, m = null) {
-  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = [];
+  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
   try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; }
 }
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
@@ -2315,7 +2316,7 @@ function killEnemy(e) {
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
-    dur: NECRO ? NECRO_SPELLS.nm_raise.corpse + 0.5 : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
+    dur: NECRO ? CORPSE_STAY : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
   // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
@@ -2501,7 +2502,8 @@ function damageSoldier(s, amount, src) {
   }
 }
 // iskelet çöker: görsel yatay dilimlere bölünür, dilimler yere düşüp kemik yığını olur, kafatası yuvarlanır; yığın bir süre durup söner
-const BONES = { n: 5, g: 760, stay: 3.2, fade: 0.6 };
+const CORPSE_STAY = 8; // 12 Eki (Caner): düşman cesetleri, kemik yığınları ve düşen uçanlar yerde 8 sn kalır
+const BONES = { n: 5, g: 760, stay: CORPSE_STAY - 0.6, fade: 0.6 };
 function boneCollapse(s) {
   const key = s.skelKey || 'unit_skel_1', im = spr(key);
   if (!im) return;
@@ -2559,7 +2561,7 @@ function skyFall(e) {
   const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
   if (!im) return;
   const h = CHAR_H[name] || 24;
-  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: 2.6 });
+  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: CORPSE_STAY });
   for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-6, 6), y: e.y - 26 - rand(0, 10), vx: rand(-60, 60), vy: rand(-80, 10), g: 120, vr: rand(-6, 6), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#7a4a22', s0: rand(1.2, 2.2), s1: 0.8, life: rand(0.9, 1.6) });
 }
 function skyFallPhys(f, dt) {
@@ -4042,17 +4044,27 @@ function drawTraps() {
 
 // ---------- mermiler & efektler ----------
 // saplanan ok: isabet edince düşmanın gövdesinde (onunla birlikte gider, 1,4 sn sonra söner; en çok 3), ıskalayınca yerde titreyerek kalır
+const STUCK = { max: 5, ground: 8, cap: 140 };
+function groundArrow(x, y, a, src) {
+  const old = G.effects.filter(f => f.kind === 'stuck' && f.ground);
+  if (old.length >= STUCK.cap) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
+  G.effects.push({ kind: 'stuck', x, y, ang: a, t: 0, dur: STUCK.ground, col: src.col, bolt: src.bolt, heavy: src.heavy, longA: src.longA ?? src.longArrow, ground: true });
+}
+function dropStuck(f) { // düşmandaki ok yere düşer (düşman öldü ya da üstünde çok ok birikti)
+  const T = f.target, fl = (T.face || 1) !== f.face0, x = T.x + (fl ? -f.dx : f.dx);
+  f.gone = true; f.t = f.dur; T.stuckN = Math.max(0, (T.stuckN || 1) - 1);
+  groundArrow(x + rand(-4, 4), T.y + rand(-3, 4), rand(0.5, Math.PI - 0.5), f);
+}
 function stickArrow(pr, e) {
   const k = 0.985, ang = projAng(pr, k);
-  if (e) {
-    if ((e.stuckN || 0) >= 3) return;
+  if (e) { // 12 Eki (Caner): ok düşmanda ölene kadar saplı kalır (en çok STUCK.max; fazlası en eskiyi düşürür), ölünce yere düşer
+    const mine = G.effects.filter(f => f.kind === 'stuck' && f.target === e && !f.gone);
+    if (mine.length >= STUCK.max) dropStuck(mine[0]);
     e.stuckN = (e.stuckN || 0) + 1;
-    G.effects.push({ kind: 'stuck', target: e, dx: pr.tx - e.x + Math.cos(ang) * 3, dy: pr.ty - e.y + Math.sin(ang) * 3, ang, t: 0, dur: 1.4, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow });
+    G.effects.push({ kind: 'stuck', target: e, face0: e.face || 1, dx: pr.tx - e.x + Math.cos(ang) * 3, dy: pr.ty - e.y + Math.sin(ang) * 3, ang, t: 0, dur: 1e9, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow });
   } else {
-    const gy = pr.fy ?? pr.ty, a = clamp(ang, 0.35, Math.PI - 0.35); // yere eğik saplanır, 5,5 sn kalır (en çok 90 ok; fazlası en eskiden söner)
-    const old = G.effects.filter(f => f.kind === 'stuck' && f.ground);
-    if (old.length >= 90) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
-    G.effects.push({ kind: 'stuck', x: pr.tx, y: gy, ang: a, t: 0, dur: 5.5, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow, ground: true });
+    const gy = pr.fy ?? pr.ty, a = clamp(ang, 0.35, Math.PI - 0.35); // yere eğik saplanır, STUCK.ground sn kalır (en çok STUCK.cap ok; fazlası en eskiden söner)
+    groundArrow(pr.tx, gy, a, pr);
     for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx, y: gy, vx: rand(-25, 25), vy: -rand(15, 45), g: 220, col: '#7a6a52', s0: 1.3, s1: 0.6, life: 0.35 });
   }
 }
@@ -5800,7 +5812,7 @@ function update(dt) {
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.projectiles = G.projectiles.filter(p => !p.done);
   for (const f of G.effects) {
-    if (f.kind === 'stuck' && f.target && (f.target.dead || f.t + dt >= f.dur) && !f.gone) { f.gone = true; f.target.stuckN = Math.max(0, (f.target.stuckN || 1) - 1); if (f.target.dead) f.t = f.dur; }
+    if (f.kind === 'stuck' && f.target && !f.gone && f.target.dead) dropStuck(f);
   }
   for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); else if (f.kind === 'bones') bonePhys(f, dt); else if (f.kind === 'skyfall') skyFallPhys(f, dt); }
   G.effects = G.effects.filter(f => f.t < f.dur);
@@ -7069,7 +7081,7 @@ function plagueBomb(pr) {
   for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
   for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: LOB.pool * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
-  shakeScreen(2, 0.15); sfx('boom'); sfx('splash');
+  shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
 // zehir gölü: yolda köpüren yeşil birikinti (içinden geçen zehirlenir)
 function drawPlaguePools() {
@@ -8991,9 +9003,11 @@ function drawEffect(f) {
   if (f.t < 0) return; // gecikmeli başlayan efekt
   const k = f.t / f.dur;
   if (f.kind === 'stuck') { // saplanmış ok: düşmanda onunla birlikte, yerde titreyerek; sonda söner
-    const T = f.target, x = T ? T.x + f.dx : f.x, y = T ? T.y + f.dy : f.y, a = clamp((f.dur - f.t) / 0.6, 0, 1); // son 0,6 sn'de söner
+    if (f.gone) return;
+    const T = f.target, fl = T && (T.face || 1) !== f.face0; // düşman dönünce ok da aynalanır
+    const x = T ? T.x + (fl ? -f.dx : f.dx) : f.x, y = T ? T.y + f.dy : f.y, a = clamp((f.dur - f.t) / 0.6, 0, 1); // son 0,6 sn'de söner
     const wob = Math.exp(-f.t * 9) * Math.sin(f.t * 55) * 0.25; // saplanınca sallanır
-    ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.rotate(f.ang + wob);
+    ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.rotate((fl ? Math.PI - f.ang : f.ang) + wob);
     if (f.ground) { ctx.fillStyle = 'rgba(40,26,12,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 3 * ARROW_K, 1.1 * ARROW_K, -f.ang, 0, Math.PI * 2); ctx.fill(); }
     boneArrowShape(f.col || '255,90,90', f.bolt, f.heavy, f.longA, true);
     ctx.restore();
@@ -12530,7 +12544,7 @@ function drawCodex() {
     ctx.save(); ctx.beginPath(); ctx.roundRect(x + 3, y + 3, tw - 6, th - 22, 9); ctx.clip();
     if (tab === 'e') {
       const im = codexEnemyImg(id);
-      if (im) { const ih = boss ? 112 : id === 'ram' || id === 'catapult' || id === 'cavalry' ? 84 : 98; drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
+      if (im) { const ih = (boss ? 112 : id === 'ram' || id === 'catapult' || id === 'cavalry' ? 84 : 98) * (CODEX_SMALL[id] || 1); drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
     } else {
       const im = towerIcon(id, 3);
       if (im) drawSprite(ctx, known ? im : silhouette('tower_' + id, im), x + tw / 2, y + th - 24, (th - 26) * im.width / im.height * 0.95);
@@ -12571,6 +12585,7 @@ function codexStage(x, y, w, h, col) {
   ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = `rgba(${col},0.5)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.stroke();
 }
+const CODEX_SMALL = { wardog: 0.6, hound: 0.6, eagle: 0.6, vulture: 0.6 }; // 12 Eki (Caner): hayvanlar kodekste çok büyüktü, %40 küçük
 function drawCodexEnemy(id, px, py, pw, ph) {
   const ranked = RANKED.includes(id), r = ranked ? CODEX.rank : 0, type = r ? id + '_' + RANKS[r].id : id, d = ENEMIES[type];
   const k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
@@ -12579,7 +12594,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   codexStage(cx, cy, 170, 190, d.chief ? '255,110,80' : r === 2 ? '255,210,90' : '170,130,255');
   if (im) {
     const big = d.chief ? 168 : ['ram', 'catapult', 'cavalry'].includes(id) ? 132 : 150;
-    const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k);
+    const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k) * (CODEX_SMALL[id] || 1);
     ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 236); ctx.clip();
     drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * 6, walking: true, fly: 0, seed: 0, rig: d.base ? 'enemy_' + d.base : undefined });
     ctx.restore();
@@ -13067,7 +13082,7 @@ function ensureMapEp() {
 const mapRes = () => clamp(view.scale * view.dpr * 1.25, 1.2, 2);
 let warmT = 0;
 function warmMap() {
-  if (!IMG_READY || time - warmT < 0.25) return;
+  if (!IMG_READY || REGION_PRE.wait || time - warmT < 0.25) return; // pişmiş zemin gelmeden çizmeye başlama
   warmT = time;
   const ep = ensureMapEp(), E = EPISODES[ep - 1], R = REGION_BG[ep];
   if (E && E.zones && !(R && R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y)) { regionBg(ep); return; }
@@ -13075,8 +13090,17 @@ function warmMap() {
   if (cur >= 0 && !THUMB[cur]) thumbOf(cur);
 }
 const THUMB = {};
-function thumbOf(i) {
+// bölüm kartı önizlemeleri de önceden pişirilir (img/map_kartlar.webp: 480x270 hücreli tek atlas, sıra LEVELS sırası; tools/harita-pisir.js)
+const THUMB_ATLAS = { im: null };
+{ const im = new Image(); im.onload = () => { THUMB_ATLAS.im = im; }; im.src = 'img/map_kartlar.webp' + (window.SURUM ? '?v=' + window.SURUM : ''); }
+function thumbOf(i, fresh) {
   if (THUMB[i]) return THUMB[i];
+  const A = THUMB_ATLAS.im, cols = A ? Math.round(A.width / 480) : 0;
+  if (A && !fresh && i < cols * Math.round(A.height / 270)) {
+    const c = document.createElement('canvas'); c.width = 480; c.height = 270;
+    c.getContext('2d').drawImage(A, (i % cols) * 480, Math.floor(i / cols) * 270, 480, 270, 0, 0, 480, 270);
+    return (THUMB[i] = c);
+  }
   if (thumbOf.at === time) return null; // kare başına en çok bir önizleme hazırlanır (takılma olmasın)
   thumbOf.at = time;
   const lv = LEVELS[i], bg = renderBackground(lv, lv.paths.map(buildPath), 0.75); // 480 px önizleme için düşük çözünürlük yeter (2x'te kart açılışı takılıyordu)
@@ -13165,6 +13189,19 @@ function drawMapNode(i, x, y, num, last, at, locked = null) {
 // Beş mekânın zemini bölüm zemin çizeriyle (renderBackground) ayrı ayrı çizilir, soldan sağa yumuşak geçişle birleşir.
 // Bölümleri tek kıvrımlı toprak yol bağlar, yolun sonunda şapel durur. Önbellekte tutulur; kare başına bir mekân hazırlanır.
 const REGION_BG = {};
+// 12 Eki: sefer haritasının zemini önceden pişirilir (img/map_bolge*.webp + map_bolge.json; tools/harita-pisir.js). Oyunda çizmek her mekân için
+// ~0,3-1 sn donduruyordu (başlıkta 6 kez). Görsel yoksa ya da ekran pişirilen taşma payından genişse eski yol: parça parça çizilir.
+const REGION_PRE = { wait: true };
+fetch('img/map_bolge.json' + (window.SURUM ? '?v=' + window.SURUM : ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(J => {
+  const eps = Object.keys(J); let left = eps.length;
+  if (!left) REGION_PRE.wait = false;
+  for (const ep of eps) {
+    const P = J[ep], im = new Image();
+    im.onload = () => { P.img = im; im.m = P.m; REGION_PRE[ep] = P; if (!--left) REGION_PRE.wait = false; };
+    im.onerror = () => { if (!--left) REGION_PRE.wait = false; };
+    im.src = 'img/' + P.file + (window.SURUM ? '?v=' + window.SURUM : '');
+  }
+}).catch(() => { REGION_PRE.wait = false; });
 function regionRoad(E) {
   const P = [E.start, ...E.nodes, ...gateApproach([E.nodes[E.nodes.length - 1], E.end]).slice(1)], out = [];
   for (let i = 0; i < P.length - 1; i++) { // Catmull-Rom: noktaların hepsinden geçen yumuşak eğri
@@ -13184,6 +13221,8 @@ function regionBg(ep) {
   if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
   if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; R.lights = []; R.banners = []; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
+  const P = !R.noPre && REGION_PRE[ep];
+  if (P && P.m.x >= BLEED.x && P.m.y >= BLEED.y) { R.lights = P.lights; R.banners = P.banners; R.hands = P.hands; R.parts = null; return (R.done = P.img); }
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
     const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes, castle: regionCastle(E), roadK: 0.62, decorK: 1.9 }, R.road, R.res || (R.res = mapRes()), BLEED);
@@ -15251,6 +15290,18 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
 window.__game = {
+  bakeThumbs(cols = 8) { // tools/harita-pisir.js: bütün bölüm kartı önizlemeleri tek atlasta
+    const n = LEVELS.length, c = document.createElement('canvas'); c.width = cols * 480; c.height = Math.ceil(n / cols) * 270;
+    const g = c.getContext('2d');
+    for (let i = 0; i < n; i++) { delete THUMB[i]; thumbOf.at = -1; const t = thumbOf(i, true); g.drawImage(t, (i % cols) * 480, Math.floor(i / cols) * 270); delete THUMB[i]; }
+    return { n, w: c.width, h: c.height, data: c.toDataURL('image/webp', 0.88) };
+  },
+  bakeRegion(ep, bx, by, res = 2) { // tools/harita-pisir.js: bölge haritası zeminini verilen taşma payıyla baştan sona çizer
+    const B0 = BLEED; BLEED = { x: bx, y: by }; delete REGION_BG[ep]; REGION_BG[ep] = { parts: [], res, noPre: true };
+    let c; for (let i = 0; i < 20 && !(c = REGION_BG[ep].done); i++) regionBg(ep);
+    const R = REGION_BG[ep], out = { m: c.m, res, w: c.width, h: c.height, lights: R.lights, banners: R.banners, hands: R.hands, data: c.toDataURL('image/webp', 0.9) };
+    BLEED = B0; delete REGION_BG[ep]; return out;
+  },
   openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
   cut: (n) => spr(n) && ARMS[n] ? cutImage(spr(n), ARMS[n]) : null, ARMS,
   // arsa denetimi (test): yolun çizilen şekline (koyu kenar dahil) taşan arsaları bulur, en yakın uygun yeri önerir
