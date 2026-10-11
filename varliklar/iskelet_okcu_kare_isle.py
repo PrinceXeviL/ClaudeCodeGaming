@@ -12,7 +12,7 @@ H0 = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H0)
 from anim_isle import remove_magenta
 IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 SUF = ['', '_nock', '_half', '_draw', '_rel'] # 1 kılıftan ok çekme (bekleme), 2 oku takma, 3 yarım germe, 4 tam germe, 5 bırakma
-SUF_X = ['', '_aim', '_kick', '_load'] # arbaletçi: hazır, nişan, geri tepme, dolum
+SUF_X = ['', '_aim', '_kick', '_load', '_load0', '_load2'] # arbaletçi: hazır, nişan, geri tepme, dolum (ortası), dolum başı, dolum sonu
 # kare: (görsel, sol kesim, sağ kesim); kesim None = görselin kenarı; kesimler görsel pikselinde çoklu çizgi
 A2 = [(307, 0), (307, 318), (309, 322), (309, 336), (299, 339), (299, 768)]
 B2 = [(559, 0), (559, 425), (578, 445), (578, 490), (555, 510), (555, 768)]
@@ -20,7 +20,8 @@ FRAMES = {
     1: [(f'nm_iskelet_okcu_1_k{i}.jpg', None, None) for i in range(1, 6)],
     3: [(f'nm_iskelet_okcu_3_k{i}.jpg', None, None) for i in range(1, 6)],
     # 3. kademe arbaletçi (11 Eki): hazır ve dolum eski sayfadan Gemini düzenlemesi (sis yok, zırh açık), nişan ve tepme kılavuzla; dolum boyu sayfadaki orandan
-    'x3': [('nm_kemik_arbaletci_k3_hazir.jpg', None, None), ('nm_kemik_arbaletci_k3_nisan.jpg', None, None), ('nm_kemik_arbaletci_k3_tepme.jpg', None, None), ('nm_kemik_arbaletci_k3_dolum.jpg', None, None, 0.956)],
+    'x3': [('nm_kemik_arbaletci_k3_hazir.jpg', None, None), ('nm_kemik_arbaletci_k3_nisan.jpg', None, None), ('nm_kemik_arbaletci_k3_tepme.jpg', None, None), ('nm_kemik_arbaletci_k3_dolum.jpg', None, None, 0.956),
+           ('nm_kemik_arbaletci_k3_dolum0.jpg', None, None, 'same:3:0.9494'), ('nm_kemik_arbaletci_k3_dolum2.jpg', None, None, 'same:3:0.9494')], # dolum0/2: dolum görselinin Gemini düzenlemesi (2400 px boya ölçeklenmiş: 2400/2528)
     2: [('nm_iskelet_okcu_2_deneme.jpg', None, A2), ('nm_iskelet_okcu_2_deneme.jpg', A2, B2),
         ('nm_iskelet_okcu_2_half.jpg', None, None), ('nm_iskelet_okcu_2_draw.jpg', None, None), ('nm_iskelet_okcu_2_rel.jpg', None, None)],
 }
@@ -47,7 +48,9 @@ for f, lc, rc, *rt in FRAMES[k]:
         return (e - s).max() if len(s) else 0
     top = next(y for y in range(y0, y1) if run(al[y]) > 0.07 * fig)
     fx = np.nonzero(al[y1 - int(0.04 * fig):y1].any(0))[0]; foot = (fx.min() + fx.max()) / 2
-    outs.append(dict(A=A, box=(x0, y0, x1, y1), top=top, foot=foot, body=(y1 - top) / (rt[0] if rt else 1)))
+    if rt and isinstance(rt[0], str): _, j, f = rt[0].split(':'); body = outs[int(j)]['body'] * float(f) # aynı çizim, görsel boyu farkı kadar
+    else: body = (y1 - top) / (rt[0] if rt else 1)
+    outs.append(dict(A=A, box=(x0, y0, x1, y1), top=top, foot=foot, body=body))
 B = 1.0 # ortak gövde boyu (birim); her kare body -> B
 tall = max((o['box'][3] - o['box'][1]) / o['body'] for o in outs) # yay uçlarıyla en uzun / gövde
 S0 = 300 / tall # gövde boyu piksel

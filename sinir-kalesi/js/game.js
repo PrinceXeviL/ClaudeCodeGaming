@@ -5790,8 +5790,8 @@ const MEN = {
     seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']], rel: 0.26 }, // yay germe kareleri (Gemini 5 poz, varliklar/okcu_poz_isle.py): ok takma → yarım → tam germe; bırakınca _rel
 };
 // 1-3. kademe: her kademenin kendi iskelet arbaletçisi (Gemini 4 poz, poz_ayir.py: unit_xbowN, _aim, _kick, _load); görseli yoksa eski yeşil arbaletçi
-const XBOW_TIP = [[0.99, 0.186], [0.99, 0.192], [0.989, 0.176]]; // kademe görsellerinde nişan pozunun cıvata ucu (poz_ayir.py yazar; 3. kademe 11 Eki: iskelet_okcu_kare_isle.py x3)
-for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: 0.5, hold: 0.9, tip: XBOW_TIP[k - 1] });
+const XBOW_TIP = [[0.99, 0.186], [0.99, 0.192], [0.847, 0.176]]; // kademe görsellerinde nişan pozunun cıvata ucu (poz_ayir.py yazar; 3. kademe 11 Eki: iskelet_okcu_kare_isle.py x3)
+for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: k === 3 ? 0.78 : 0.5, hold: 0.9, tip: XBOW_TIP[k - 1] }); // 3. kademe: 3 kurma karesi
 // 11 Eki: 2. kademenin geri tepmesi ve 3. kademenin dört pozu yeniden çizildi (kiriş önde, cıvatasız tepme karesi; 3. kademe sissiz, açık zırh)
 // 10 Eki (yol seçimi): 1. kademe ve okçu yolu iskelet okçu (geçici görsel: hayalet okçu çizimi, sayısı kademe kadar), arbaletçi yolu kademe arbaletçileri
 MEN.arch = Object.assign({}, MEN.bow, { n: (t) => t.lvl + 1, col: '150,255,160' });
@@ -5931,6 +5931,8 @@ function updateXbowRelease(t, dt) {
   }
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
+// kurma kareleri: <pre>_load0 (eğilip kirişi kavrar) → _load (çeker) → _load2 (doğrulup cıvatayı yerleştirir); yalnız _load varsa o (11 Eki, 3. kademe)
+const loadPose = (pre, u) => (spr(pre + '_load0') && spr(pre + '_load2') ? (u < 0.3 ? '_load0' : u < 0.66 ? '_load' : '_load2') : '_load');
 function drawXbowMen(t, ts, redraw) {
   const A = xbowMen(t), h = menH(t), M = menOf(t), ghost = !!t.spec, pre = M.pre;
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
@@ -5941,7 +5943,7 @@ function drawXbowMen(t, ts, redraw) {
     const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
     let pose = up ? M.pose : '';
     const sinceRel = M.kick - a.kickT; // bırakmadan bu yana geçen süre
-    if (M.seq && up) pose = a.aimT > 0 ? M.seq.find(q => rise <= q[0])[1] : sinceRel < M.rel ? M.relPose || '_rel' : M.load && sinceRel < M.rel + M.load ? '_load' : ''; // germe/nişan sırası, bırakma pozu, (arbalette) kurma
+    if (M.seq && up) pose = a.aimT > 0 ? M.seq.find(q => rise <= q[0])[1] : sinceRel < M.rel ? M.relPose || '_rel' : M.load && sinceRel < M.rel + M.load ? loadPose(pre, (sinceRel - M.rel) / M.load) : ''; // germe/nişan sırası, bırakma pozu, (arbalette) kurma
     const im = spr(pre + pose) || spr(up ? pre + M.pose : pre); if (!im) continue;
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1); if (rv < 1) { ctx.globalAlpha *= rv; ctx.translate(0, (1 - rv) * h * 0.25); } // yeniden kalkan okçu belirir
     const bob = a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012; // yürürken sekme, dururken nefes
@@ -5952,7 +5954,7 @@ function drawXbowMen(t, ts, redraw) {
       lean = -tense * 0.02 + kk * 0.03; back = Math.sin(a.anim * 40) * tense * h * 0.004 - kk * h * 0.02;
     }
     if (M.heavy && up && kk > 0) back = h * 0.05 * kk; // ağır arbalet sert teper (poz zaten geri tepmiş)
-    if (pose === '_load') back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
+    if (pose.startsWith('_load')) back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = a.walking && !up && animStrip(pre, null, '_walk'); // platformda yer değiştirirken yürüme şeridi (Kaggle Wan, 49 kare)
     if (wk) drawFrameOutlined(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
