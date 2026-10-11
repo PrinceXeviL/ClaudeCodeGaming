@@ -2617,7 +2617,7 @@ const itemBtn = (i) => { const b = itemBag(); return { x: b.x - (i + 1) * (SPELL
 const itemCount = (id) => (save.items && save.items[id]) || 0;
 function pickItem(id) {
   if (itemCount(id) <= 0) { floatText(itemBag().x - 120, itemBag().y - 50, 'Dükkândan kristalle al', '#e0b8ff'); sfx('error'); return; }
-  if (ITEMS[id].target) { G.mode = { kind: 'item', id }; G.bagOpen = false; G.spellPeek = null; sfx('spell'); floatText(W / 2, 90, ITEMS[id].name + ': yeri seç', '#ffe9b0'); return; }
+  if (ITEMS[id].target) { G.mode = { kind: 'item', id }; G.bagOpen = false; G.spellPeek = null; sfx('spell'); return; }
   useItem(id);
 }
 function useItem(id, x, y) {
@@ -10375,7 +10375,7 @@ function drawHud() {
     }
     lines.forEach((l, i) => txt(l, cxp, ly + i * (chips ? 14 : 16), chips ? 12 : 13, chips ? '#d8ccb4' : '#f2e8d4', 'center', '700', FONT_B, false));
   }
-  const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : `${spellInfo(G.mode.id).name}: hedefi seç`)
+  const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : G.mode.kind === 'item' ? `${ITEMS[G.mode.id].name}: patlayacağı yeri seç` : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
     ctx.font = `700 15px ${FONT_B}`;
