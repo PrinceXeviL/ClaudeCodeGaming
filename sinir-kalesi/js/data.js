@@ -557,7 +557,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 196, 199, 209, 218, 223, 228, 234, 206, 220, 234, 242, 242, 226, 211, 211, 265, 273, 281]; // 20 bölüm (10 Eki): yeni bölümler komşularının arası // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1.301, 1.141, 1.252, 2.365, 0.886, 1.114, 0.603, 0.396, 0.309, 0.438, 0.455, 0.582, 0.577, 0.643, 0.514, 0.296, 0.416, 0.733, 0.158, 0.316]; // 11 Eki: dalga yapısı v2 sonrası botla 8 tur ayarlandı (hedef 18→6 can)
+  const HPMUL = [1.512, 1.052, 1.174, 2.344, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.801, 0.257, 0.354]; // 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -663,7 +663,7 @@ if (NECRO) {
   [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1.73, 1.855, 1.014, 1.061, 0.529, 0.294, 0.271, 2.127, 2.304, 0.902, 1.82, 1.153, 1.475, 1.339, 0.642, 1.019, 0.7, 1.123, 0.634, 0.412]; // 11 Eki: dalga yapısı v2 sonrası botla 8 tur (hedef 12→3 can)
+  const HPMUL2 = [3, 3, 1.955, 1.834, 0.878, 0.733, 0.445, 3, 2.983, 1.418, 3, 2.751, 2.215, 1.868, 1.303, 1.174, 1.452, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can; 21, 22, 28, 31 üst sınırda: bot yine kaybetmiyor)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
