@@ -78,7 +78,6 @@
   "Efektler": "Effects",
   "Mortimer'ın tavsiyesi:": "Mortimer's advice:",
   "Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.": "Plant the crypt's flag at a narrow spot on the road: the skeletons hold the enemy there and the towers hit at leisure.",
-  "Kalabalık bölüğe Korku büyüsü at: 4 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 4 seconds while the towers do their work.",
   "Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.": "Call waves early and you earn gold. But greed digs graves.",
   "Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.": "Soul Lantern for armored foes, Plague Cauldron for crowds. Mix your towers.",
   "Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.": "The dead you raise are free soldiers. Don't waste corpses on the battlefield.",
@@ -170,7 +169,8 @@
   "%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh": "+14% damage taken · defense −40% · attacks 16% slower · 9% fear · +14% damage for skeletons and archers, +12% armor for skeletons",
   "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death",
   "Dondu!": "Frozen!",
-  "menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar": "harvests the souls of enemies dying in range, spells recharge faster"
+  "menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar": "harvests the souls of enemies dying in range, spells recharge faster",
+  "Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 3 seconds while the towers do their work."
  },
  "tpl": [
   [

@@ -3817,11 +3817,15 @@ function updateProjectile(pr, dt) {
   if (pr.foe) {
     // düşmandan kahramana: hedefi izler, varınca vurur
     const h = pr.hero;
-    if (h && !h.dead) { pr.tx = h.x; pr.ty = h.y - 12; }
+    if (h && h.towerMan) { if (pr.miss == null) pr.miss = rand(-1, 1) * 9; pr.tx = h.x + pr.miss; pr.ty = h.y - 12 + Math.abs(pr.miss) * 0.4; } // kule okçusuna giden ok hafif saparak gelir
+    else if (h && !h.dead) { pr.tx = h.x; pr.ty = h.y - 12; }
     if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'hex' ? 'magic' : pr.kind === 'axe' ? 'whirl' : 'arrow'); }
     if (pr.t < pr.dur) return;
     pr.done = true;
-    if (h && h.towerMan) { hitTowerMan(h.t, h.a, pr.edmg); return; } // kuledeki okçu vuruldu
+    if (h && h.towerMan) { // kuledeki okçu: çoğu ok aşağıdan ıskalar, korkuluğa çarpıp düşer
+      if (Math.random() < TMAN.miss) { for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty + rand(-2, 4), vx: rand(-40, 40), vy: -rand(20, 60), g: 300, col: '#9a8a6a', s0: 1.2, s1: 0.6, life: 0.35 }); return; }
+      hitTowerMan(h.t, h.a, pr.edmg * TMAN.dmg); return;
+    }
     if (pr.splash) { // kutsal su şişesi: isabet yerindeki bütün askerlere alan hasarı, mavi sıçrama
       for (const s2 of G.soldiers) if (s2 !== h && !s2.dead && !s2.wall && dist(s2.x, s2.y, pr.tx, pr.ty + 12) < pr.splash) damageSoldier(s2, pr.edmg * 0.7, pr.from);
       G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty + 12, r: pr.splash, col: '120,200,255', t: 0, dur: 0.4 });
@@ -5819,7 +5823,8 @@ const xbowCfg = (t) => XBOW_T[t.spec ? formImg(t) : xbowTowerName(t.lvl)] || XBO
 const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
 // kuledeki okçuların canı (11 Eki, Caner: düşman okçuları onları da hedef alsın). Ölen okçu kuleden düşer, TMAN.revive sn sonra kalkar;
 // kule eksik okçuyla seyrek atar (atış payı = sağ okçu / tüm okçu), hepsi ölünce susar.
-const TMAN = { hp: [30, 45, 60], spec: 70, revive: 10, prefer: 25, regen: 4, calm: 3 }; // regen: vurulmadan calm sn geçince saniyede iyileşme
+// 11 Eki (2): aşağıdan atılan okların %80'i ıskalar (miss), isabet edenin hasarı dmg ile çarpılır; can ve iyileşme artırıldı (kolay ölmesinler)
+const TMAN = { hp: [60, 85, 110], spec: 130, revive: 8, prefer: 25, regen: 6, calm: 3, miss: 0.8, dmg: 0.5 }; // regen: vurulmadan calm sn geçince saniyede iyileşme
 const tmanHp = (t) => (t.spec ? TMAN.spec : TMAN.hp[Math.min(2, t.lvl)]);
 function hitTowerMan(t, a, dmg) {
   if (a.dead) return;
@@ -13642,7 +13647,7 @@ function crimsonRibbon(cx, cy, text, size = 24, w = 0) {
 // düğmeleri, her açılışta bir ipucu. Arkada yavaş dönen ritüel çemberi, kadife zeminde Necromancer deseni, köşelerde yakut süsler.
 const PAUSE_TIPS = [
   'Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.',
-  'Kalabalık bölüğe Korku büyüsü at: 4 saniye geri kaçarlar, kuleler bu arada işini görür.',
+  'Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.',
   'Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.',
   'Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.',
   'Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.',

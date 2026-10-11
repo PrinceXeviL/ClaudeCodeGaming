@@ -1060,8 +1060,8 @@
 "en": "Fear"
 },
 {
-"tr": "Ruhlar alandaki düşmanların peşine düşer: korkudan 4 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz",
-"en": "Spirits chase the enemies in the area: they flee back in terror for 4 s. Magic-resistant foes and bosses fear less, machines don't"
+"tr": "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar, makineler korkmaz",
+"en": "Spirits chase the enemies in the area: they flee back in terror for 3 s. Magic-resistant foes and bosses fear less, machines don't"
 },
 {
 "tr": "Ruhlar düşmanları kovalar: 4 sn panikle geri kaçarlar",
@@ -4900,8 +4900,8 @@
 "en": "Plant the crypt's flag at a narrow spot on the road: the skeletons hold the enemy there and the towers hit at leisure."
 },
 {
-"tr": "Kalabalık bölüğe Korku büyüsü at: 4 saniye geri kaçarlar, kuleler bu arada işini görür.",
-"en": "Cast Fear on a crowded company: they flee back for 4 seconds while the towers do their work."
+"tr": "Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.",
+"en": "Cast Fear on a crowded company: they flee back for 3 seconds while the towers do their work."
 },
 {
 "tr": "Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.",
