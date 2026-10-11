@@ -931,6 +931,8 @@ LEVELS.forEach((lv, li) => {
 // 20. bölümde üç evreli General Gloriosus (nm_boss_C.jpg: aslanlı altın araba → yayan → Güneş Formu).
 if (NECRO) {
   for (const t of ['centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain']) ENEMIES[t].h = Math.round(ENEMIES[t].h * 1.25);
+  // kendi çizimi ve animasyonu hazır olanlar artık temel düşmanın renklendirilmiş kopyası değil (base kalkar)
+  for (const t of ['centurion', 'champion', 'hierophant']) delete ENEMIES[t].base;
   // evreler: canı at oranına inince to türüne dönüşür (bossPhase, game.js); toplam can ilk evrenin canıdır
   const GL = ENEMIES.gloriosus;
   ENEMIES.gloriosus1 = Object.assign({}, GL, { name: 'General Gloriosus', title: 'Altın Güneş Arabası', h: 84, hp: 6000, hpK: 2.64, // komutan canı kademe × hpK: eski tek evreli Gloriosus'un 2,2 katı

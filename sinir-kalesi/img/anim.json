@@ -1547,5 +1547,92 @@
   "fh": 173,
   "base": 0.014,
   "ch": 0.9254
+ },
+ "enemy_centurion_walk": {
+  "n": 32,
+  "fw": 120,
+  "fh": 167,
+  "base": 0.0144,
+  "ch": 0.9568,
+  "idle": 15
+ },
+ "enemy_centurion_atk": {
+  "n": 32,
+  "fw": 208,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_centurion_skill": {
+  "n": 32,
+  "fw": 226,
+  "fh": 177,
+  "base": 0.0136,
+  "ch": 0.9048
+ },
+ "enemy_centurion_die": {
+  "n": 33,
+  "fw": 237,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_champion_walk": {
+  "n": 32,
+  "fw": 139,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9549,
+  "idle": 7
+ },
+ "enemy_champion_atk": {
+  "n": 32,
+  "fw": 245,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_champion_skill": {
+  "n": 32,
+  "fw": 210,
+  "fh": 179,
+  "base": 0.0133,
+  "ch": 0.8936
+ },
+ "enemy_champion_die": {
+  "n": 33,
+  "fw": 265,
+  "fh": 179,
+  "base": 0.0134,
+  "ch": 0.8926
+ },
+ "enemy_hierophant_walk": {
+  "n": 32,
+  "fw": 119,
+  "fh": 167,
+  "base": 0.0145,
+  "ch": 0.9566,
+  "idle": 20
+ },
+ "enemy_hierophant_atk": {
+  "n": 32,
+  "fw": 188,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9634
+ },
+ "enemy_hierophant_skill": {
+  "n": 32,
+  "fw": 134,
+  "fh": 175,
+  "base": 0.0138,
+  "ch": 0.9126
+ },
+ "enemy_hierophant_die": {
+  "n": 33,
+  "fw": 212,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9613
  }
 }

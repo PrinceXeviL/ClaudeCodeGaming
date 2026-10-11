@@ -14,6 +14,8 @@ IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
 BAK = os.path.join(ROOT, 'varliklar', 'cikti', 'serit_yedek')
 OUTLINE = np.array([24, 16, 14], np.float32)
 RENK = '--renk' in sys.argv
+# magentaya karışmış ışık hâlesi (yarı saydam pembe) verilen renge çekilir: --isik 255,215,120
+ISIK = tuple(int(v) for v in sys.argv[sys.argv.index('--isik') + 1].split(',')) if '--isik' in sys.argv else None
 
 
 def stats(a, m):
@@ -42,6 +44,10 @@ def process(name, out_dir):
             fm, fs = stats(f, m)
             adj = (f[..., :3] - fm) / fs * rs + rm
             f[..., :3] = np.where(m[..., None], f[..., :3] * 0.5 + adj * 0.5, f[..., :3])
+        if ISIK:
+            r, g, b = f[..., 0], f[..., 1], f[..., 2]; pur = (r + b) / 2 - g; k = np.clip((pur - 12) / 45, 0, 1) * (f[..., 3] < 250)
+            lum = np.maximum(r, b) / 255
+            for c in range(3): f[..., c] = f[..., c] * (1 - k) + ISIK[c] * lum * k
         im = Image.fromarray(f.clip(0, 255).astype(np.uint8), 'RGBA')
         rgb = im.convert('RGB').filter(ImageFilter.UnsharpMask(radius=1.4, percent=90, threshold=2))
         g = np.dstack([np.asarray(rgb).astype(np.float32), f[..., 3]])
@@ -56,7 +62,8 @@ def process(name, out_dir):
 
 if __name__ == '__main__':
     out = sys.argv[sys.argv.index('--dene') + 1] if '--dene' in sys.argv else IMG
-    names = [a for a in sys.argv[1:] if not a.startswith('--') and a != out]
+    skip = {out} | ({sys.argv[sys.argv.index('--isik') + 1]} if '--isik' in sys.argv else set())
+    names = [a for a in sys.argv[1:] if not a.startswith('--') and a not in skip]
     for n in names:
         if not os.path.exists(os.path.join(IMG, n + '.webp')): print('yok, atlandı:', n); continue
         print(process(n, out))
