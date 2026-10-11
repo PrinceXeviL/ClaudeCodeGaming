@@ -1467,7 +1467,7 @@ function startLevel(idx, chal = null) {
   for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
-  for (const k in MEN) keep.add(MEN[k].pre + '_walk'); // kuledeki iskeletlerin yürüyüşü
+
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   setupMech();
@@ -5798,7 +5798,7 @@ function xbowRange(t, d) {
   const C = xbowCfg(t); if (!C.floor) return C.x;
   const [T, Lf, Rt, B] = C.floor, y = lerp(C.y[0], C.y[1], d), im = spr(t.spec ? formImg(t) : xbowTowerName(t.lvl));
   const side = (P) => y < P[1] ? lerp(T[0], P[0], clamp((y - T[1]) / (P[1] - T[1]), 0, 1)) : lerp(P[0], B[0], clamp((y - P[1]) / (B[1] - P[1]), 0, 1));
-  const ts = towerSprite(t), m = ts ? MEN_BODY * 0.17 / ts.w : 0.06; // gövde yarı genişliği (boyun ~%17'si, kule genişliğinin kesri)
+  const ts = towerSprite(t), m = ts ? menBody(t) * 0.17 / ts.w : 0.06; // gövde yarı genişliği (boyun ~%17'si, kule genişliğinin kesri)
   let lo = Math.max(side(Lf) + m, C.x[0]), hi = Math.min(side(Rt) - m, C.x[1]);
   if (lo > hi) lo = hi = (lo + hi) / 2;
   return [lo, hi];
@@ -5885,8 +5885,11 @@ function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5
 const MEN_K = 1.22, OUTL = new Map();
 // kuledeki okçunun boyu (11 Eki, Caner): her kademede aynı gövde boyu (miğfer üstü → ayak, dünya birimi; yerdeki iskelet savaşçı ~23).
 // Tuval boyu bekleme pozundaki gövde oranından bulunur: yayı başın üstüne taşan çizimler küçük görünmesin.
-const MEN_BODY = 20.5;
-const menH = (t) => { const M = menOf(t); return MEN_BODY / bodyRatio(spr(M.pre)); };
+// 11 Eki (2): kule büyüdükçe okçular aynı boyda kalınca büyük kulede küçük görünüyordu → kademeyle büyür, mahzen iskeletinin
+// o kademedeki boyunu geçmez (1. kademe 21, 2. 23, 3. ve 4. kademe 25; yoldaki iskelet savaşçılar 23..26)
+const MEN_BODY_T = [21, 23, 25], MEN_BODY = 21;
+const menBody = (t) => (t.spec ? 25 : MEN_BODY_T[Math.min(2, t.lvl)]);
+const menH = (t) => { const M = menOf(t); return menBody(t) / bodyRatio(spr(M.pre)); };
 function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   let c = OUTL.get(im); if (c) return c;
   const s = document.createElement('canvas'); s.width = im.width; s.height = im.height;
@@ -5980,7 +5983,7 @@ function drawXbowMen(t, ts, redraw) {
     if (M.heavy && up && kk > 0) back = h * 0.05 * kk; // ağır arbalet sert teper (poz zaten geri tepmiş)
     if (pose.startsWith('_load')) back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
-    const wk = a.walking && !up && animStrip(pre, null, '_walk'); // platformda yer değiştirirken yürüme şeridi (Kaggle Wan, 49 kare)
+    const wk = null; // 11 Eki (2): eski yürüme şeritleri (Kaggle Wan, 168 px, 3. kademede eski tasarım) kalktı; yürürken de net Gemini çizimi + adım sekmesi
     // 11 Eki (Caner): koyu kontur kaldırıldı, yoldaki iskeletler gibi düz çizilir
     if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
     else { const w0 = h * im.width / im.height; drawSprite(ctx, im, 0, 0, w0);
