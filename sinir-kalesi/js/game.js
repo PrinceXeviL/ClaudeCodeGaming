@@ -1279,7 +1279,7 @@ function renderBackground0(lv, paths, res) {
       drawSprite(g, im, q[0], q[1] + 4, w);
     }
     // mezardan çıkan eller (11 Eki, Caner): orman temalarında, mezarlıkta daha çok
-    if (th.dense && spr('nm3_hand_idle')) for (let i = 0, n = (th === THEMES.graveyard ? 4 : th === THEMES.necrogate ? 3 : 2) * (lv.decorK ? 2 : 1); i < n; i++) {
+    if (th.dense && spr('nm3_hand_idle')) for (let i = 0, n = th === THEMES.graveyard ? 2 : 1; i < n; i++) { // 11 Eki (Caner): az olsun
       const q = place(16); if (!q) continue;
       props.push([q[0], q[1], 16]); BG_HANDS.push({ x: q[0], y: q[1], off: rnd() * 30, T: 9 + rnd() * 7, face: rnd() < 0.5 ? -1 : 1 });
     }
@@ -7182,7 +7182,8 @@ function drawTowerLive(t, ts) { // kulenin yerel koordinatında: (0,0) tabanın 
 // Mezardan çıkan el (11 Eki, Caner; Gemini, her poz ayrı çizim: varliklar/mezar_eli_isle.py). Çoğu zaman parmak uçları topraktan
 // çıkık bekler (idle); arada bir el halkanın arkasından yükselir (çizim kayar, CUT çizgisinde kırpılır), pençe açılıp yumruk olur, geri batar.
 // Ara kare uydurulmaz: yalnız çizilmiş pozlar değişir, üstüne yükselme ve hafif sallanma.
-const GRAVE_HAND = { h: 32, cut: 0.894, start: 0.73, rise: 0.9, sink: 0.9, seq: [0.45, 0.4, 0.45, 0.55, 0.5] };
+const GRAVE_HAND = { h: 16, // 11 Eki (Caner): yarı boy
+  cut: 0.894, start: 0.73, rise: 0.9, sink: 0.9, seq: [0.45, 0.4, 0.45, 0.55, 0.5] };
 function drawGraveHands(list, parts) {
   if (!list || !list.length) return;
   const idle = spr('nm3_hand_idle'), ring = spr('nm3_hand_ring'), open = spr('nm3_hand_open'), fist = spr('nm3_hand_fist'); if (!idle || !ring || !open || !fist) return;
