@@ -14090,7 +14090,7 @@ const COMICS = {
     { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Atlar da ölür, kaptan. Sonra benim olurlar.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
   ],
   gloriosus: [
-    { bg: 'gun', act: [{ s: 'e:legion', x: 0.14, y: 0.9, h: 0.38 }, { s: 'e:heavy', x: 0.86, y: 0.9, h: 0.4, f: -1 }, { s: 'e:gloriosus', x: 0.5, y: 0.96, h: 0.82 }],
+    { bg: 'gun', act: [{ s: 'e:legion', x: 0.14, y: 0.9, h: 0.38 }, { s: 'e:heavy', x: 0.86, y: 0.9, h: 0.4, f: -1 }, { s: 'e:gloriosus1', x: 0.5, y: 0.96, h: 0.78 }],
       say: [{ who: 'General Gloriosus', text: 'Gloriosus bizzat geldi! Teslim ol ve çaydanlığı ver!', x: 0.5, y: 0.05, to: [0.5, 0.28] }] },
     { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Çaydanlığımı ancak cesedimden alırsın. Bir dakika... ben zaten ölüyüm.', x: 0.3, y: 0.08, to: [0.5, 0.36] }] },
     { bg: 'mezar', act: [{ s: 'k:4', x: 0.18, y: 0.93, h: 0.5, rise: 1 }, { s: 'k:3', x: 0.4, y: 0.94, h: 0.52, rise: 1, d: 0.25 }, { s: 'k:8', x: 0.62, y: 0.93, h: 0.5, rise: 1, d: 0.5 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
@@ -14183,20 +14183,40 @@ const COMICS = {
       say: [{ who: 'Aziz Kolos', text: 'TAŞ... UNUTMAZ...', x: 0.42, y: 0.06, to: [0.6, 0.26] }] },
     { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Ben de unutmam. Hele kırılan vazolarımı.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
   ],
-  severus: [
-    { bg: 'karanlik', act: [{ s: 'e:paladin', x: 0.18, y: 0.92, h: 0.44 }, { s: 'e:severus', x: 0.56, y: 0.95, h: 0.68 }],
-      say: [{ who: 'Büyük Engizitör Severus', text: 'Sonunda yüz yüzeyiz. Çaydanlığını özledin mi?', x: 0.42, y: 0.08, to: [0.56, 0.34] }] },
-    { bg: 'balkon', mort: 'stand', shake: 1, say: [{ who: 'Mortimer', text: 'BIRAK. ONU. YERE.', x: 0.5, y: 0.1, to: [0.5, 0.36] }] },
+  hubertus: [
+    { bg: 'gece', act: [{ s: 'e:hound', x: 0.2, y: 0.92, h: 0.34 }, { s: 'e:hubertus', x: 0.6, y: 0.95, h: 0.64 }],
+      say: [{ who: 'Tazı Ustası Hubertus', text: 'Ormanın her kemiği kokuyor, necromancer. Tazılarım çok acıktı!', x: 0.45, y: 0.08, to: [0.6, 0.34] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Kemiklerimi saymaya geldiler. Saymayı biliyorlarsa tabii.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+  ],
+  agnes: [
+    { bg: 'karanlik', act: [{ s: 'e:flagellant', x: 0.2, y: 0.92, h: 0.42 }, { s: 'e:agnes', x: 0.6, y: 0.95, h: 0.64 }],
+      say: [{ who: 'Kırbaç Rahibesi Agnes', text: 'Acı arındırır! Senin kemiklerin de arınacak, necromancer!', x: 0.45, y: 0.08, to: [0.6, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Kemiklerim gayet temiz, teşekkürler. Her pazar parlatıyorum.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  lucia: [
+    { bg: 'karanlik', sun: 1, act: [{ s: 'e:holywater', x: 0.2, y: 0.92, h: 0.42 }, { s: 'e:lucia', x: 0.6, y: 0.95, h: 0.62 }],
+      say: [{ who: 'Şeytan Kovucu Lucia', text: 'Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.', x: 0.45, y: 0.08, to: [0.6, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', shake: 1, say: [{ who: 'Mortimer', text: 'Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+  ],
+  godfrey: [
+    { bg: 'gece', act: [{ s: 'e:paladin', x: 0.2, y: 0.92, h: 0.44 }, { s: 'e:godfrey', x: 0.6, y: 0.96, h: 0.68 }],
+      say: [{ who: 'Tapınak Komutanı Godfrey', text: 'Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!', x: 0.45, y: 0.08, to: [0.6, 0.34] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
   ],
   cathedral: [
     { bg: 'gece', cap: 'Kızıl Ay Tepesi. Ay Sunağı.', act: [{ s: 'e:paladin', x: 0.14, y: 0.92, h: 0.36 }, { s: 'e:cathedral', x: 0.55, y: 0.97, h: 0.9 }],
       say: [{ who: 'Severus', text: 'Katedral yürüyor, necromancer! Göklerin gazabı seninle!', x: 0.42, y: 0.15, to: [0.55, 0.2] }] },
     { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Yürüyen kilise mi? Bu çağda her şey var.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+    { bg: 'karanlik', act: [{ s: 'e:paladin', x: 0.18, y: 0.92, h: 0.44 }, { s: 'e:severus', x: 0.56, y: 0.95, h: 0.68 }], // 12 Eki: Severus artık finalin 2. evresi; paneli buraya taşındı
+      say: [{ who: 'Büyük Engizitör Severus', text: 'Sonunda yüz yüzeyiz. Çaydanlığını özledin mi?', x: 0.42, y: 0.08, to: [0.56, 0.34] }] },
+    { bg: 'balkon', mort: 'stand', shake: 1, say: [{ who: 'Mortimer', text: 'BIRAK. ONU. YERE.', x: 0.5, y: 0.1, to: [0.5, 0.36] }] },
     { bg: 'mezar', act: [{ s: 'k:8', x: 0.18, y: 0.93, h: 0.52, rise: 1 }, { s: 'k:6', x: 0.42, y: 0.94, h: 0.52, rise: 1, d: 0.25 }, { s: 'k:4', x: 0.64, y: 0.93, h: 0.5, rise: 1, d: 0.5 }, { s: 'mort_cast', x: 0.88, y: 0.7, h: 0.34 }],
       say: [{ who: 'Mortimer', text: 'Kalkın! Bu gece çaydanlığı eve getiriyoruz.', x: 0.45, y: 0.08, to: [0.86, 0.4] }],
       title: 'AY SUNAĞI' },
   ],
 };
+COMICS.gloriosus1 = COMICS.gloriosus; // 12 Eki: 20. bölüm bossu artık üç evreli gloriosus1
+
 // sayfa düzeni: panel sayısına göre ızgara
 function comicRects(n) {
   const x0 = 34, y0 = 34, w = W - 68, h = H - 84, g = 12, R = (x, y, ww, hh) => ({ x: x0 + x * w, y: y0 + y * h, w: ww * w - g / 2, h: hh * h - g / 2 });
