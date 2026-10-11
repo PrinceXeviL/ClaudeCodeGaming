@@ -1,0 +1,210 @@
+[
+ {
+  "name": "unit_xbow3_walkx",
+  "ref": "ham/anim/unit_xbow3_ref.png",
+  "prompt": "a cartoon armored skeleton in black spiked plate armor with glowing green runes, a horned skull helmet and a tattered green cape, holding a black bone crossbow at the hip marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 23
+ },
+ {
+  "name": "unit_ghostxbow_walkx",
+  "ref": "ham/anim/unit_ghostxbow_ref.png",
+  "prompt": "a cartoon crimson-hooded skeleton with horned skull pauldrons, holding a heavy black crossbow at the hip, crimson mist at the feet marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 25
+ },
+ {
+  "name": "unit_xbow2_walkx",
+  "ref": "ham/anim/unit_xbow2_ref.png",
+  "prompt": "a cartoon skeleton marksman in studded brown leather armor with a chain-mail coif, an iron nose-guard helmet and leather boots, holding a wooden crossbow at the hip marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "unit_ghostarcher_walkx",
+  "ref": "ham/anim/unit_ghostarcher_ref.png",
+  "prompt": "a cartoon crimson-hooded skeleton archer with bone pauldrons, holding a black longbow low in one hand, crimson mist at the feet marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 24
+ },
+ {
+  "name": "unit_skel_2_atkx",
+  "ref": "ham/anim/unit_skel_2_ref.png",
+  "prompt": "a cartoon skeleton guard in chainmail with a skull shield and a long sword attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_1_atkx",
+  "ref": "ham/anim/unit_skel_1_ref.png",
+  "prompt": "a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_3_atkx",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_8_atkx",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "tower_archer_nail_atkx",
+  "ref": "ham/anim/tower_archer_nail_ref.png",
+  "prompt": "a giant ballista made of bones and black iron on a stone tower: the bowstring snaps forward and the huge bone spear with a burning crimson tip shoots away to the right out of frame, the rib bow arms flex and vibrate, then skeletal hands crank the string back and a new bone spear slides into place, ready to fire again. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. ",
+  "frames": 49,
+  "loop": true,
+  "seed": 3
+ },
+ {
+  "name": "tower_archer_fan_atkx",
+  "ref": "ham/anim/tower_archer_fan_ref.png",
+  "prompt": "on top of a dark stone tower two translucent glowing ghost skeleton archers, both glowing crimson red, draw their glowing bows and release arrows of light, the left archer shoots to the left and the right archer shoots to the right, the spirit mist swirls and bone shards orbit, then they nock new arrows. static camera, the tower base does not move, flat solid magenta background, 2D cartoon game animation, smooth motion. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. ",
+  "frames": 49,
+  "loop": true,
+  "seed": 3
+ },
+ {
+  "name": "unit_bonegiant_atkx",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club raises its arms and smashes down in one powerful ground-shaking strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "unit_corpsegolem_atkx",
+  "ref": "ham/anim/unit_corpsegolem_ref.png",
+  "prompt": "a huge cartoon stitched corpse golem with grey rotting skin, green slime dripping, chains across its chest, a second zombie head on its shoulder raises its arms and smashes down in one powerful ground-shaking strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "unit_gulyabani_atkx",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers lunges forward and slashes with both clawed hands, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "hero_vladrik_atkx",
+  "ref": "ham/anim/hero_vladrik_ref.png",
+  "prompt": "a cartoon undead vampire count in a long black and crimson cape with a sword swings the sword forward in one fast elegant slash, cape flaring, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "hero_spartacus_atkx",
+  "ref": "ham/anim/hero_spartacus_ref.png",
+  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists swings the sword in a powerful slash and whips the chain forward, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "hero_wren_atkx",
+  "ref": "ham/anim/hero_wren_ref.png",
+  "prompt": "a cartoon ghostly banshee woman with long floating pale green hair and a torn white dress leans forward and lets out a powerful ghostly wail, a green sound wave bursting from her mouth, hair blowing back, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "hero_leonidas_atkx",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear thrusts the spear forward from behind the shield in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "hero_drakula_atkx",
+  "ref": "ham/anim/hero_drakula_ref.png",
+  "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier lunges forward with a fast fencing thrust of the rapier, cape flaring, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "unit_skel_4_atkx",
+  "ref": "ham/anim/unit_skel_4_tam_ref.png",
+  "prompt": "a cartoon big skeleton grave warden with a coffin shield and a spiked mace swings the weapon forward in one strong strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_5_atkx",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes slashes forward with both swords in one fast diagonal strike, the raised sword swings down in front, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_bonegiant_diex",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club is destroyed: it staggers, falls apart and collapses into a pile on the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "unit_corpsegolem_diex",
+  "ref": "ham/anim/unit_corpsegolem_ref.png",
+  "prompt": "a huge cartoon stitched corpse golem with grey rotting skin, green slime dripping, chains across its chest, a second zombie head on its shoulder is destroyed: it staggers, falls apart and collapses into a pile on the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "unit_gulyabani_diex",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers is destroyed: it shrieks, crumbles and collapses into a pile of hair, rags and dust on the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "hero_wren_diex",
+  "ref": "ham/anim/hero_wren_ref.png",
+  "prompt": "a cartoon ghostly banshee woman with long floating pale green hair and a torn white dress fades and dissolves: she spins slowly upward and vanishes into green mist. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "hero_leonidas_diex",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear staggers back, drops the spear and shield and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "hero_vladrik_diex",
+  "ref": "ham/anim/hero_vladrik_ref.png",
+  "prompt": "a cartoon undead vampire count in a long black and crimson cape with a sword is struck down: he staggers, the cape wraps around him and he crumbles into a pile of dust and bats. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

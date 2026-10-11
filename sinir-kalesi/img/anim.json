@@ -24,22 +24,20 @@
   "sh": 1
  },
  "enemy_solarcher_walk": {
-  "n": 29,
-  "fw": 111,
-  "fh": 169,
-  "base": 0.0141,
-  "ch": 0.9485,
-  "idle": 7,
-  "sh": 1
+  "n": 32,
+  "fw": 109,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9499,
+  "idle": 0
  },
  "enemy_gladiator_walk": {
   "n": 32,
-  "fw": 107,
-  "fh": 167,
-  "base": 0.0145,
-  "ch": 0.959,
-  "idle": 8,
-  "sh": 1
+  "fw": 110,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952,
+  "idle": 0
  },
  "enemy_solarcher_atk": {
   "n": 32,
@@ -247,13 +245,12 @@
   "ch": 0.8206
  },
  "enemy_heavy_walk": {
-  "n": 19,
-  "fw": 149,
-  "fh": 171,
-  "base": 0.0141,
-  "ch": 0.9341,
-  "idle": 2,
-  "sh": 1
+  "n": 32,
+  "fw": 164,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9215,
+  "idle": 0
  },
  "enemy_ram_walk": {
   "n": 12,
@@ -877,22 +874,20 @@
   ]
  },
  "enemy_hunter_walk": {
-  "n": 23,
-  "fw": 232,
-  "fh": 169,
-  "base": 0.0143,
-  "ch": 0.9477,
-  "idle": 5,
-  "sh": 1
+  "n": 32,
+  "fw": 233,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.941,
+  "idle": 0
  },
  "enemy_torch_walk": {
-  "n": 23,
-  "fw": 203,
+  "n": 32,
+  "fw": 214,
   "fh": 169,
   "base": 0.0144,
   "ch": 0.9472,
-  "idle": 20,
-  "sh": 1
+  "idle": 0
  },
  "enemy_hound_walk": {
   "n": 28,
@@ -913,13 +908,12 @@
   "sh": 1
  },
  "enemy_flagellant_walk": {
-  "n": 23,
-  "fw": 210,
-  "fh": 172,
+  "n": 32,
+  "fw": 223,
+  "fh": 170,
   "base": 0.0145,
-  "ch": 0.9277,
-  "idle": 1,
-  "sh": 1
+  "ch": 0.9419,
+  "idle": 0
  },
  "enemy_lantern_walk": {
   "n": 17,
@@ -1886,68 +1880,5 @@
   "base": 0.1283,
   "ch": 0.8696,
   "sh": 1
- },
- "enemy_solarcher_walkx": {
-  "n": 32,
-  "fw": 109,
-  "fh": 168,
-  "base": 0.0143,
-  "ch": 0.9499
- },
- "enemy_heavy_walkx": {
-  "n": 32,
-  "fw": 164,
-  "fh": 174,
-  "base": 0.0139,
-  "ch": 0.9215
- },
- "enemy_gladiator_walkx": {
-  "n": 32,
-  "fw": 110,
-  "fh": 168,
-  "base": 0.0144,
-  "ch": 0.952
- },
- "enemy_hunter_walkx": {
-  "n": 32,
-  "fw": 233,
-  "fh": 170,
-  "base": 0.0142,
-  "ch": 0.941
- },
- "enemy_torch_walkx": {
-  "n": 32,
-  "fw": 214,
-  "fh": 169,
-  "base": 0.0144,
-  "ch": 0.9472
- },
- "enemy_flagellant_walkx": {
-  "n": 32,
-  "fw": 223,
-  "fh": 170,
-  "base": 0.0145,
-  "ch": 0.9419
- },
- "unit_skel_1_walkx": {
-  "n": 32,
-  "fw": 141,
-  "fh": 173,
-  "base": 0.0145,
-  "ch": 0.9225
- },
- "unit_skel_2_walkx": {
-  "n": 32,
-  "fw": 136,
-  "fh": 172,
-  "base": 0.0145,
-  "ch": 0.9322
- },
- "unit_skel_3_walkx": {
-  "n": 32,
-  "fw": 138,
-  "fh": 173,
-  "base": 0.0145,
-  "ch": 0.9229
  }
 }

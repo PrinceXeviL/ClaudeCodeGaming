@@ -1,0 +1,210 @@
+[
+ {
+  "name": "enemy_inquisitor_walkx",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe with a high collar and red skullcap, holding a glowing holy book marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_saint_walkx",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "prompt": "a walking cracked white marble statue of a robed saint with a stone halo and a stone sword marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_malleus_walkx",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows strides in place, a full walk cycle, legs stepping, the coat flapping, both crossbows held low marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_campanus_walkx",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk in black and gold robes carrying an enormous bronze church bell on his back with chains and holding a big hammer trudges in place heavily, a full walk cycle, legs stepping, the huge bell swaying on his back marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_ignis_walkx",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_colossus_walkx",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo and a stone greatsword marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_severus_walkx",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_cathedral_walkx",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels pushed by hooded monks rolls forward in place with exaggerated bouncy cartoon motion: the whole machine bounces and wobbles over bumps, the wheels turn fast, loose parts rattle and swing, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_hound_walkx",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar walks forward in place with an exaggerated bouncy cartoon gait: the legs reach far, the paws stomp down firmly, the whole body bobs up and down and rocks, squash and stretch, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_holywater_walkx",
+  "ref": "ham/anim/enemy_holywater_ref.png",
+  "prompt": "a chubby cartoon friar in a cream and gold robe carrying a basket of glowing blue glass flasks on his back waddles in place, a full walk cycle, legs stepping, the flasks clinking in the basket marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_lantern_walkx",
+  "ref": "ham/anim/enemy_lantern_ref.png",
+  "prompt": "a hooded cartoon monk pushing a heavy wooden two-wheeled cart that carries a huge brass lantern with golden fire inside pushes the cart forward in place, the monk stepping, the cart wheels turning, the lantern fire flickering rolls forward in place with exaggerated bouncy cartoon motion: the whole machine bounces and wobbles over bumps, the wheels turn fast, loose parts rattle and swing, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_elephant_walkx",
+  "ref": "ham/anim/enemy_elephant_ref.png",
+  "prompt": "a cartoon armored war elephant with red and gold barding and a small wooden tower with an archer on its back walks forward in place with an exaggerated bouncy cartoon gait: the legs reach far, the paws stomp down firmly, the whole body bobs up and down and rocks, squash and stretch, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_legion_atkx",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_solarcher_atkx",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "prompt": "a cartoon roman archer with a bow attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gladiator_atkx",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon gladiator with a sword and a net attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_assassin_atkx",
+  "ref": "ham/anim/enemy_assassin_ref.png",
+  "prompt": "a cartoon hooded assassin with daggers attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_heavy_atkx",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_priest_atkx",
+  "ref": "ham/anim/enemy_priest_ref.png",
+  "prompt": "a cartoon roman war priest with a golden scepter attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_cavalry_atkx",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "prompt": "a cartoon roman cavalryman with a lance riding a white horse attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_catapult_atkx",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart with a soldier attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_chariot_atkx",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it the charioteer thrusts his spear forward in one strong strike while the horse rears slightly, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_wardog_atkx",
+  "ref": "ham/anim/enemy_wardog_ref.png",
+  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness lunges forward and bites hard with its jaws, then steps back, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_eagle_atkx",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest dives forward and strikes with its talons, then flaps back up, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_herald_atkx",
+  "ref": "ham/anim/enemy_herald_ref.png",
+  "prompt": "a cartoon roman horn blower soldier with a wolf pelt hood takes a deep breath, leans back slightly and blows hard into the big round brass cornu horn: his cheeks puff out, his chest swells, the horn bell tilts up, then he relaxes back to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_drummer_atkx",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer with a bear pelt hood stands in place and pounds the big red drum at his waist hard and fast with both drumsticks, alternating left and right hands, his shoulders bouncing with each beat, then returns to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hunter_atkx",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow raises the silver crossbow, aims to the right and shoots one bolt, the crossbow kicks back, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ }
+]
