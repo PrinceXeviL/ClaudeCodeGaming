@@ -1,0 +1,21 @@
+Üç adım; her adımda aynı iki referans eklenir (1: hayalet okçu poz sayfası, 2: iskelet arbaletçiler). {KADEME} yerine aşağıdaki tariflerden biri gelir.
+
+The first attached image is a pose sheet of one of our archers: the SAME character drawn 5 times, side view facing right, in 5 shooting poses
+(1 standing ready, bow lowered; 2 nocking an arrow; 3 half draw; 4 full draw, aiming; 5 just released, string hand open behind the head).
+The second image shows our skeleton crossbowmen at levels 1, 2 and 3: this is the exact character style we want.
+Draw a NEW pose sheet in EXACTLY the same layout as the first image: the same skeleton archer drawn 5 times side by side, side view facing right,
+the same 5 poses in the same order, same size and same feet position in every pose, holding a BOW (not a crossbow).
+Style exactly like the second image: thick dark outlines, painterly cartoon shading, ivory bones, glowing green eyes.
+The character: {KADEME}
+Keep the character IDENTICAL in all 5 poses (same armor, colors, proportions), only the arms, bow, string and arrow change.
+No ground, no shadows, no text, no labels, no frames, no ghost smoke. Background: flat solid magenta (#FF00FF) everywhere.
+
+KADEME 1 (yayin.html: unit_archer1): a level-1 skeleton archer like the first crossbowman: rusty pot helmet, torn loincloth, a small arrow quiver on the back, a simple crude wooden bow.
+KADEME 2 (unit_archer2): a level-2 skeleton archer like the second crossbowman: chainmail coif with a round helmet, studded leather armor, a quiver of black-fletched arrows, a recurve bow of dark wood and bone.
+KADEME 3 (unit_archer3): a level-3 skeleton archer like the third crossbowman: horned skull helmet, black spiked armor with glowing green runes, a tattered dark-green cloak, a large elegant bow of carved bone with a glowing green string.
+
+--- 11 Eki düzeltme: arbaletçi referansı yay yerine arbalet çizdirdi. Kademe 2-3 için referanslar: 1 = onaylı kademe-1 okçu poz sayfası (nm_iskelet_okcu_1.jpg), 2 = o kademenin arbaletçisinin tek görseli (yalnız zırh için).
+The first image is our approved pose sheet of a level-1 skeleton archer: 5 poses side by side. Draw a NEW pose sheet in EXACTLY the same layout, poses, order, size, feet positions and drawing style,
+but the character is the level-2 version: wear the armor from the second image (chainmail coif with a round helmet, studded leather armor, belt and pouches) - copy ONLY its armor, ignore its crossbow.
+In every pose he holds a BOW exactly like in the first image, but a recurve bow of dark wood and bone, with a quiver of black-fletched arrows on his back. NO crossbow anywhere.
+Keep the character IDENTICAL in all 5 poses, only the arms, bow, string and arrow change. No ground, no shadows, no text, no labels, no frames. Background: flat solid magenta (#FF00FF) everywhere.
