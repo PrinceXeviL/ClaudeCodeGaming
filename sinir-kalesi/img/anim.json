@@ -1938,5 +1938,63 @@
   "fh": 165,
   "base": 0.0146,
   "ch": 0.9708
+ },
+ "enemy_hubertus_walk": {
+  "n": 32,
+  "fw": 228,
+  "fh": 166,
+  "base": 0.0144,
+  "ch": 0.9616,
+  "idle": 22
+ },
+ "enemy_hubertus_atk": {
+  "n": 32,
+  "fw": 313,
+  "fh": 170,
+  "base": 0.0145,
+  "ch": 0.9422
+ },
+ "enemy_hubertus_skill": {
+  "n": 32,
+  "fw": 418,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9611
+ },
+ "enemy_hubertus_die": {
+  "n": 33,
+  "fw": 342,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_agnes_walk": {
+  "n": 32,
+  "fw": 213,
+  "fh": 169,
+  "base": 0.0139,
+  "ch": 0.9443,
+  "idle": 9
+ },
+ "enemy_agnes_atk": {
+  "n": 32,
+  "fw": 251,
+  "fh": 174,
+  "base": 0.014,
+  "ch": 0.9182
+ },
+ "enemy_agnes_skill": {
+  "n": 32,
+  "fw": 227,
+  "fh": 177,
+  "base": 0.0133,
+  "ch": 0.9024
+ },
+ "enemy_agnes_die": {
+  "n": 33,
+  "fw": 298,
+  "fh": 178,
+  "base": 0.0136,
+  "ch": 0.9002
  }
 }

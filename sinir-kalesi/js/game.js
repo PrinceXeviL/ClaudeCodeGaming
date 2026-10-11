@@ -4044,7 +4044,7 @@ function drawTraps() {
 
 // ---------- mermiler & efektler ----------
 // saplanan ok: isabet edince düşmanın gövdesinde (onunla birlikte gider, 1,4 sn sonra söner; en çok 3), ıskalayınca yerde titreyerek kalır
-const STUCK = { max: 5, ground: 8, cap: 140 };
+const STUCK = { max: 3, on: 1.5, ground: 6, cap: 140 }; // 12 Eki (Caner): düşmanda 1,5 sn, yerde 6 sn
 function groundArrow(x, y, a, src) {
   const old = G.effects.filter(f => f.kind === 'stuck' && f.ground);
   if (old.length >= STUCK.cap) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
@@ -4057,11 +4057,11 @@ function dropStuck(f) { // düşmandaki ok yere düşer (düşman öldü ya da �
 }
 function stickArrow(pr, e) {
   const k = 0.985, ang = projAng(pr, k);
-  if (e) { // 12 Eki (Caner): ok düşmanda ölene kadar saplı kalır (en çok STUCK.max; fazlası en eskiyi düşürür), ölünce yere düşer
-    const mine = G.effects.filter(f => f.kind === 'stuck' && f.target === e && !f.gone);
+  if (e) { // ok düşmanda STUCK.on sn saplı kalır (en çok STUCK.max; fazlası en eskiyi düşürür), düşman ölürse yere düşer
+    const mine = G.effects.filter(f => f.kind === 'stuck' && f.target === e && !f.gone && f.t < f.dur);
     if (mine.length >= STUCK.max) dropStuck(mine[0]);
     e.stuckN = (e.stuckN || 0) + 1;
-    G.effects.push({ kind: 'stuck', target: e, face0: e.face || 1, dx: pr.tx - e.x + Math.cos(ang) * 3, dy: pr.ty - e.y + Math.sin(ang) * 3, ang, t: 0, dur: 1e9, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow });
+    G.effects.push({ kind: 'stuck', target: e, face0: e.face || 1, dx: pr.tx - e.x + Math.cos(ang) * 3, dy: pr.ty - e.y + Math.sin(ang) * 3, ang, t: 0, dur: STUCK.on, col: pr.col, bolt: pr.bolt, heavy: pr.heavy, longA: pr.longArrow });
   } else {
     const gy = pr.fy ?? pr.ty, a = clamp(ang, 0.35, Math.PI - 0.35); // yere eğik saplanır, STUCK.ground sn kalır (en çok STUCK.cap ok; fazlası en eskiden söner)
     groundArrow(pr.tx, gy, a, pr);
@@ -5812,7 +5812,7 @@ function update(dt) {
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.projectiles = G.projectiles.filter(p => !p.done);
   for (const f of G.effects) {
-    if (f.kind === 'stuck' && f.target && !f.gone && f.target.dead) dropStuck(f);
+    if (f.kind === 'stuck' && f.target && !f.gone && f.t < f.dur && f.target.dead) dropStuck(f);
   }
   for (const f of G.effects) { f.t += dt; if (f.air) corpsePhys(f, dt); else if (f.kind === 'bones') bonePhys(f, dt); else if (f.kind === 'skyfall') skyFallPhys(f, dt); }
   G.effects = G.effects.filter(f => f.t < f.dur);
@@ -5961,7 +5961,7 @@ function shadow(x, y, rx, ry) {
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
 }
 // küçük, yuvarlak uçlu (hap biçimli) can barı
-const HP_K = 0.77; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: %5 daha küçük (düşman, dost, komutan)
+const HP_K = 0.73; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: iki kez %5 küçüldü (düşman, dost, komutan)
 function hpBar(x, y, w, frac, col = '#4cd34c') {
   frac = clamp(frac, 0, 1); w *= HP_K;
   const h = 3.2 * HP_K, r = h / 2 + 1.1 * HP_K;
