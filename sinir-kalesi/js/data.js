@@ -663,11 +663,16 @@ if (NECRO) {
   [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [3, 3, 1.955, 1.834, 0.878, 0.733, 0.445, 3, 2.983, 1.418, 3, 2.751, 2.215, 1.868, 1.303, 1.174, 1.452, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can; 21, 22, 28, 31 üst sınırda: bot yine kaybetmiyor)
+  // ek dalga ve düşman sayısı çarpanı (restructureWaves eğrisinin üstüne; 11 Eki: 21, 22, 28, 31 can ×3'te bile kayıpsız geçiliyordu.
+  // Sebep 5. kademe büyüler: kısa bölümde bekleme süreleri her dalgaya yetiyor. Daha uzun bölüm, dalga başına aynı kalabalık)
+  const ADDN2 = [3, 3, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const GOLDK2 = [0.75, 0.75, 1, 1, 1, 1, 1, 0.75, 1, 1, 0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // tek girişli kolay bölümlerde başlangıç altını az (ilk dalgalar gerilsin)
+  const TOTK2 = ADDN2.map((a, i) => 1 + a / (6 + Math.round(i / 19 * 6) + (i % 4 === 3 ? 2 : 0)));
+  const HPMUL2 = [3, 3, 1.955, 1.834, 0.878, 0.733, 0.445, 3.1, 2.983, 1.418, 3.9, 2.751, 2.215, 1.868, 1.303, 1.174, 1.452, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
-  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, GEO2[i], { lives: 15, ep: 2, total: Math.round(TOTAL2[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL2[i] }); if (!l.weather) delete l.weather; });
+  L2.forEach((l, i) => { l.bossT = BOSS2[i]; Object.assign(l, GEO2[i], { lives: 15, ep: 2, total: Math.round(TOTAL2[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL2[i], totK: TOTK2[i], addN: ADDN2[i], gold: Math.round(l.gold * GOLDK2[i] / 5) * 5 }); if (!l.weather) delete l.weather; });
   LEVELS.push(...L2);
   EPISODES.push({ name: 'Cadı Avı',
     zones: [['ravenwood', 'Kuzgun Ormanı'], ['plague', 'Veba Köyü'], ['monastery', 'Batık Manastır'], ['ossuary', 'Kemik Katedrali'], ['bloodmoon', 'Kızıl Ay Tepesi']],
@@ -862,9 +867,9 @@ function restructureWaves() {
   const seen = new Set(['legion']), epIdx = {};
   LEVELS.forEach((lv) => {
     const ep = lv.ep || 1, k = epIdx[ep] = (epIdx[ep] ?? -1) + 1, p = k / 19, fin = k % 4 === 3;
-    const N = WAVES_V2.n0 + Math.round(p * (WAVES_V2.n1 - WAVES_V2.n0)) + (fin ? WAVES_V2.fin : 0);
+    const N = WAVES_V2.n0 + Math.round(p * (WAVES_V2.n1 - WAVES_V2.n0)) + (fin ? WAVES_V2.fin : 0) + (lv.addN || 0);
     const [t0, t1] = WAVES_V2.tot[ep] || WAVES_V2.tot[1];
-    lv.total = Math.round(t0 * Math.pow(t1 / t0, p));
+    lv.total = Math.round(t0 * Math.pow(t1 / t0, p) * (lv.totK || 1));
     const T = lv.waves, clone = (w) => w.map(g => Object.assign({}, g));
     const W = []; for (let j = 0; j < N; j++) W.push(clone(T[Math.round(j * (T.length - 1) / (N - 1))]));
     const heavyG = (g) => (ENEMIES[g.t] || {}).hp >= HEAVY_HP || (ENEMIES[g.t] || {}).elite;

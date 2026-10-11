@@ -1,0 +1,11 @@
+The attached image shows the art style of my game's decoration objects (dark gothic cartoon, thick dark outlines, rich muted colors, slight top-down 3/4 view, each object standing on its own small patch of ground). Draw a NEW sheet of 9 decoration objects for the "Witch Hunt" campaign, where a fanatical holy inquisition (crimson cloth, golden sun emblem, black iron, torches) hunts a necromancer through villages and forests at night. Exactly this style and quality, arranged in a clean 3x3 grid, each object centered in its own cell with plenty of empty magenta space around it, nothing touching the cell edges, all at a similar scale:
+1) an unlit witch-burning pyre: a tall wooden stake with chains, surrounded by a pile of firewood and straw bundles, EMPTY (no person)
+2) a tall wooden pole with a hanging crimson inquisition war banner with a golden sun emblem; the banner cloth hangs free from a crossbar
+3) a black iron brazier on three legs with a burning orange fire inside
+4) wooden pillory stocks on a small wooden platform, empty
+5) a small stone roadside shrine with a golden sun icon, melted candles with small warm yellow flames and dried flowers
+6) a wooden notice board with nailed parchment "wanted" posters (drawings only, no readable letters) and a small hanging oil lantern with a warm yellow flame
+7) an inquisition supply wagon with crates, barrels and a crimson canopy with a golden sun
+8) a stack of barrels and wooden crates with a burning torch stuck in a barrel
+9) a stone sun-cross road marker with iron chains and a skull at its base
+Warm fire and candle light is orange-yellow only (no green flames). Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines.
