@@ -5961,7 +5961,7 @@ function shadow(x, y, rx, ry) {
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
 }
 // küçük, yuvarlak uçlu (hap biçimli) can barı
-const HP_K = 0.81; // can barı ölçeği (genişlik ve kalınlık)
+const HP_K = 0.77; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: %5 daha küçük (düşman, dost, komutan)
 function hpBar(x, y, w, frac, col = '#4cd34c') {
   frac = clamp(frac, 0, 1); w *= HP_K;
   const h = 3.2 * HP_K, r = h / 2 + 1.1 * HP_K;
@@ -8975,7 +8975,7 @@ function drawImpact(f) {
   }
   ctx.restore();
 }
-const ARROW_K = 0.7; // oklar ve cıvatalar %30 küçük (Caner, 11 Eki)
+const ARROW_K = 0.665; // oklar ve cıvatalar %30 küçük (Caner, 11 Eki), 12 Eki: %5 daha
 // kemik ok / cıvata çizimi (0,0 = uç bölgesi, +x uçuş yönü). embed: ucu gövdeye gömülü (yalnız şaft ve tüy görünür).
 // Oranlar türe göre (Caner, 11 Eki): okçu oku uzun ve ince, ucu ve tüyü küçük (%10 daha küçük); arbalet cıvatası kısa, kalın şaftlı,
 // küt üçgen uçlu, kısa sert kanatçıklı; ağır cıvata aynı biçim biraz iri; dev cıvata (Delici Cıvata) iki katı
