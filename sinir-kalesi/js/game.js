@@ -6862,10 +6862,10 @@ function drawPlagueCauldron(t, ts) {
 // eyes: kafatası gözleri; top: tepedeki kafes (çevresinde dönen ruh zerreleri) [x, y, yarıçap]
 const BONE_FX = {
   tower_xbow_1: { runes: [[0.17, 0.74, 0.79, '110,255,140'], [0.43, 0.74, 0.79, '110,255,140']], top: [0.47, 0.12, 0.3] },
-  tower_xbow_2: { runes: [[0.36, 0.44, 0.65, '110,255,140'], [0.68, 0.44, 0.62, '110,255,140']], flames: [[0.5, 0.03, '120,255,220'], [0.07, 0.11, '120,255,220'], [0.93, 0.11, '120,255,220'], [0.5, 0.21, '120,255,220']], top: [0.5, 0.13, 0.36] },
-  tower_xbow_3: { runes: [[0.354, 0.47, 0.67, '110,255,140'], [0.637, 0.515, 0.647, '110,255,140']], flames: [[0.48, 0.05, '120,255,220'], [0.19, 0.15, '120,255,220'], [0.8, 0.14, '120,255,220']], eyes: [[0.465, 0.355], [0.525, 0.355]], top: [0.5, 0.18, 0.36] },
+  tower_xbow_2: { runes: [[0.36, 0.44, 0.65, '110,255,140'], [0.68, 0.44, 0.62, '110,255,140']], top: [0.5, 0.13, 0.36] }, // 11 Eki: köşe kafatasları kanlı, alevsiz
+  tower_xbow_3: { runes: [[0.354, 0.47, 0.67, '110,255,140'], [0.637, 0.515, 0.647, '110,255,140']], top: [0.5, 0.18, 0.36] }, // 11 Eki: kafataslar kanlı, alevsiz ve göz ışıksız
   tower_archer_fan: { runes: [[0.36, 0.49, 0.615, '230,90,210'], [0.625, 0.49, 0.6, '230,90,210']], top: [0.5, 0.2, 0.4] }, // Ağır Arbaletçiler burcu
-  tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], flames: [[0.5, 0.045, '120,255,220'], [0.15, 0.15, '120,255,220'], [0.85, 0.15, '120,255,220'], [0.5, 0.23, '120,255,220'], [0.1, 0.45, '120,255,230'], [0.9, 0.45, '120,255,230']], eyes: [[0.49, 0.313], [0.526, 0.313]], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular: hayalet alevler ve fenerler
+  tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], flames: [[0.1, 0.45, '120,255,230'], [0.9, 0.45, '120,255,230']], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular: fenerler (11 Eki: köşe kafatasları kanlı, alevsiz)
 };
 // Ruh Feneri (10 Eki, 3. tasarım, Caner'in görseli): fener (1. kademe) / feneri tutan kol (2-3. kademe) ayrı katman (tower_mage_N_arm,
 // varliklar/ruh_feneri_isle.py), pivot [%x, %y] çevresinde döner. Boşta hafifçe sallanır (swing, f); savaşırken ya da ruh çekerken

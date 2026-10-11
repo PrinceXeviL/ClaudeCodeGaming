@@ -17,7 +17,7 @@ IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
 OUT = os.path.join(ROOT, 'varliklar', 'cikti')
 
 FLAGS = {
-    'tower_xbow_3': [((0.03, 0.255, 0.16, 0.54), 'red'), ((0.838, 0.255, 0.96, 0.54), 'red')],
+    'tower_xbow_3': [((0.0, 0.272, 0.16, 0.56), 'red'), ((0.838, 0.272, 0.985, 0.54), 'red')],
     'tower_archer_fan': [((0.03, 0.285, 0.16, 0.56), 'red'), ((0.83, 0.285, 0.97, 0.56), 'red')],
     'tower_archer_bow': [((0.04, 0.59, 0.135, 0.735), 'teal'), ((0.855, 0.59, 0.95, 0.735), 'teal')],
 }
@@ -39,14 +39,14 @@ def cloth_mask(a, box, kind):
     r, g, b = [a[y0:y1, x0:x1, i].astype(int) for i in range(3)]
     col = ((r > g + 35) & (r > b + 15)) if kind == 'red' else ((g > r + 20) & (b > r + 10) & (r + g + b > 300))
     col &= a[y0:y1, x0:x1, 3] > 128
-    cnt = col.sum(0); keep = cnt >= cnt.max() * 0.25  # kumaşın sütunları (kule kenarındaki kızılımsı lekeler dışarıda)
+    cnt = col.sum(0); keep = cnt >= cnt.max() * 0.08  # kumaşın sütunları (kule kenarındaki kızılımsı lekeler dışarıda)
     c0, c1 = np.nonzero(keep)[0].min(), np.nonzero(keep)[0].max()
     col[:, :c0] = False; col[:, c1 + 1:] = False
     m = np.zeros_like(col)
     for y in range(col.shape[0]):  # satır satır doldur: kumaşın üstündeki amblem de bayrağa girer
         xs = np.nonzero(col[y])[0]
         if len(xs) > 2: m[y, xs.min():xs.max() + 1] = True
-    m = np.asarray(Image.fromarray((m * 255).astype('uint8')).filter(ImageFilter.MaxFilter(9))) > 0  # kenar çizgisi
+    m = np.asarray(Image.fromarray((m * 255).astype('uint8')).filter(ImageFilter.MaxFilter(13))) > 0  # kenar çizgisi
     full = np.zeros(a.shape[:2], bool); full[y0:y1, x0:x1] = m
     return full
 
