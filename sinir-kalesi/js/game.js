@@ -4069,7 +4069,10 @@ const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', '
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
 const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
 const SPELL_R = 24 * UI_K, SPELL_STEP = 2 * SPELL_R + 10 * UI_GAP;
-const spellBtn = (i) => ({ x: EDGE.l + 18 + 2 * 28 * UI_K + 16 * UI_GAP + SPELL_R + i * SPELL_STEP, y: EDGE.b - 14 - SPELL_R, r: SPELL_R });
+// 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
+const ULT_GAP = 18 * UI_GAP;
+const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
+const spellBtn = (i) => { const n = necroCount(); return { x: EDGE.l + 18 + 2 * 28 * UI_K + 16 * UI_GAP + SPELL_R + i * SPELL_STEP + (n && i >= n ? ULT_GAP : 0), y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
 const hudLeft = () => spellBtn(spellIds().length - 1).x + SPELL_R + 8;
 function spellInfo(id) {
@@ -9727,15 +9730,6 @@ function drawHeroPortrait(h, hb, i) {
   const selHero = G.sel && G.sel.kind === 'hero' && G.sel.hero === h, pts = heroPoints(h);
   ctx.save(); ctx.translate(hb.x, hb.y); const hs = pressScale('hud_hero' + i); ctx.scale(hs, hs);
   if (selHero) glow(ctx, 0, 0, hb.r * 2, '120,220,255', 0.55 + Math.sin(time * 5) * 0.2);
-  // alt plaka: solda seviye kutusu, sağda can barı
-  const pw = hb.r * 2.3, py = hb.r - 2;
-  hudFrame(-pw / 2, py, pw, 20, 6, false);
-  roundRect(-pw / 2 + 4, py + 4, 15, 12, 3, '#16101f', 'rgba(0,0,0,0.7)', 1);
-  hudNum(h.lvl + '', -pw / 2 + 11.5, py + 10.5, 11, '#f2ecd8', 'center');
-  const bw = pw - 26, bx = -pw / 2 + 22;
-  roundRect(bx, py + 6, bw, 8, 3, '#0e0a14', 'rgba(0,0,0,0.8)', 1);
-  roundRect(bx + 1, py + 7, (bw - 2) * clamp(h.hp / h.maxHp, 0, 1), 6, 2.5, h.hp / h.maxHp > 0.35 ? '#5fd04a' : '#e0503a');
-  if (h.lvl < HERO_MAX) roundRect(bx + 1, py + 12, (bw - 2) * clamp(h.xp / xpNeed(h.lvl), 0, 1), 1.5, 1, '#ffd34d');
   circle(0, 5, hb.r + 6, 'rgba(0,0,0,0.45)');
   const rim = ctx.createLinearGradient(0, -hb.r, 0, hb.r); rim.addColorStop(0, '#d8d2e8'); rim.addColorStop(0.5, '#6e6886'); rim.addColorStop(1, '#2c2640');
   circle(0, 0, hb.r + 6, rim, '#0a0612', 2);
@@ -9749,6 +9743,15 @@ function drawHeroPortrait(h, hb, i) {
   if (im) { const c = headCrop(im); if (c) ctx.drawImage(im, c.x, c.y, c.s, c.s, -hb.r, -hb.r, hb.r * 2, hb.r * 2); else { const ph = hb.r * 3.6; drawSprite(ctx, im, 3, hb.r * 2.35, ph * im.width / im.height); } }
   ctx.restore();
   if (h.dead) { circle(0, 0, hb.r, 'rgba(0,0,0,0.45)'); txt(Math.ceil(h.respawnT) + '', 0, 1, 20, '#fff', 'center', '400', FONT_T); }
+  // alt plaka: solda seviye kutusu, sağda can barı. Portrenin ÜSTÜNE çizilir (11 Eki: çerçevenin altında kalıyordu), alt kenara yaslı
+  const pw = hb.r * 2.3, py = hb.r - 6;
+  hudFrame(-pw / 2, py, pw, 20, 6, false);
+  roundRect(-pw / 2 + 4, py + 4, 15, 12, 3, '#16101f', 'rgba(0,0,0,0.7)', 1);
+  hudNum(h.lvl + '', -pw / 2 + 11.5, py + 10.5, 11, '#f2ecd8', 'center');
+  const bw = pw - 26, bx = -pw / 2 + 22;
+  roundRect(bx, py + 5, bw, 10, 3, '#0e0a14', 'rgba(0,0,0,0.8)', 1);
+  roundRect(bx + 1, py + 6, (bw - 2) * clamp(h.hp / h.maxHp, 0, 1), 6, 2.5, h.hp / h.maxHp > 0.35 ? '#5fd04a' : '#e0503a');
+  if (h.lvl < HERO_MAX) roundRect(bx + 1, py + 12.5, (bw - 2) * clamp(h.xp / xpNeed(h.lvl), 0, 1), 1.8, 0.9, '#ffd34d');
   ctx.restore();
   // seviye rozeti; harcanmamış puan varsa yeşil + (dokununca yetenek ağacı açılır)
   const b = heroBadge(hb);
@@ -9921,7 +9924,8 @@ function drawHud() {
     if (info.necro && time - (G.soulFlash ?? -9) < 0.5) glow(ctx, 0, 0, b.r * 2, '140,255,210', 0.6 * (1 - (time - G.soulFlash) / 0.5)); // ruh geldi: bekleme kısaldı
     circle(0, 5, b.r + 4, 'rgba(0,0,0,0.45)');
     const rm = ctx.createLinearGradient(0, -b.r, 0, b.r);
-    rm.addColorStop(0, ready ? '#d8d2e8' : '#8a8494'); rm.addColorStop(0.5, ready ? '#6e6886' : '#4a4452'); rm.addColorStop(1, '#2c2640');
+    if (info.hero) { rm.addColorStop(0, ready ? '#fff0b0' : '#a89870'); rm.addColorStop(0.5, ready ? '#c8902a' : '#6a5430'); rm.addColorStop(1, '#4a2c08'); } // komutan gücü: altın çerçeve
+    else { rm.addColorStop(0, ready ? '#d8d2e8' : '#8a8494'); rm.addColorStop(0.5, ready ? '#6e6886' : '#4a4452'); rm.addColorStop(1, '#2c2640'); }
     circle(0, 0, b.r + 4, rm, '#0a0612', 2);
     circle(0, 0, b.r + 2.5, null, 'rgba(255,255,255,0.3)', 1);
     const bd = ctx.createRadialGradient(-5, -7, 2, 0, 0, b.r);
@@ -9938,8 +9942,18 @@ function drawHud() {
       txt(Math.ceil(cd) + '', 0, 1, 16, '#fff', 'center', '400', FONT_T);
     }
     if (peek) { ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, b.r + 6, 0, Math.PI * 2); ctx.stroke(); }
+    if (info.hero) { // köşede komutanın küçük yüzü: kimin gücü olduğu belli olsun
+      const hh = info.hero, im = heroSprite(hh.def), c = im && headCrop(im), rr = b.r * 0.36, qx = b.r * 0.74, qy = -b.r * 0.74;
+      circle(qx, qy, rr + 2, '#4a2c08', '#0a0612', 1.5);
+      if (c) { ctx.save(); ctx.beginPath(); ctx.arc(qx, qy, rr, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(im, c.x, c.y, c.s, c.s, qx - rr, qy - rr, rr * 2, rr * 2); ctx.restore(); }
+    }
     ctx.restore();
   });
+  { const n = necroCount(); if (n && n < spellIds().length) { // büyüler | komutan gücü ayracı: kemik çubuk
+    const a = spellBtn(n - 1), c = spellBtn(n), mx = (a.x + a.r + c.x - c.r) / 2, y0 = a.y - a.r * 0.8, y1 = a.y + a.r * 0.8;
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(10,6,18,0.8)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(mx, y0); ctx.lineTo(mx, y1); ctx.stroke();
+    ctx.strokeStyle = '#d8ccb0'; ctx.lineWidth = 2.5; ctx.stroke(); circle(mx, y0, 3, '#d8ccb0', '#0a0612', 1); circle(mx, y1, 3, '#d8ccb0', '#0a0612', 1); ctx.restore();
+  } }
 
   drawWaveButtons();
   drawWavePeek();
