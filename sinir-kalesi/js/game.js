@@ -9002,6 +9002,29 @@ function drawIcon(name, x, y, s, col = '#fff') {
   const line = (lw = 3, c = col) => { ctx.strokeStyle = 'rgba(28,15,5,0.9)'; ctx.lineWidth = lw + 3; ctx.stroke(); ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.stroke(); };
   ctx.beginPath();
   switch (name) {
+    case 'grimoire': { // Büyü Kitabı (11 Eki): kara deri kapak, altın köşe bağları, kemik kafatası mühür, yeşil-mor parlayan gözler, kızıl ayraç
+      ctx.save(); ctx.rotate(-0.12);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gg = ctx.createRadialGradient(0, -1, 2, 0, -1, 17); gg.addColorStop(0, 'rgba(190,110,255,0.55)'); gg.addColorStop(1, 'rgba(190,110,255,0)'); ctx.fillStyle = gg; ctx.fillRect(-18, -18, 36, 36); ctx.restore();
+      ctx.fillStyle = '#f0e2bf'; ctx.strokeStyle = '#1a0a08'; ctx.lineWidth = 1.6; // sayfa kenarı
+      ctx.beginPath(); ctx.roundRect(-7.5, -11, 19.5, 22, 2.5); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(120,90,60,0.6)'; ctx.lineWidth = 0.7; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(8.8, -8 + i * 5); ctx.lineTo(11.2, -8 + i * 5); ctx.stroke(); }
+      const cv = ctx.createLinearGradient(-10, -12, 8, 12); cv.addColorStop(0, '#8a3486'); cv.addColorStop(0.55, '#4a164c'); cv.addColorStop(1, '#22081e'); // kapak
+      ctx.beginPath(); ctx.roundRect(-10.5, -12.5, 18.5, 24, 3); ctx.fillStyle = cv; ctx.fill(); ctx.strokeStyle = '#0a0206'; ctx.lineWidth = 2.2; ctx.stroke();
+      ctx.fillStyle = '#1c0618'; ctx.beginPath(); ctx.roundRect(-10.5, -12.5, 4, 24, [3, 0, 0, 3]); ctx.fill(); // sırt
+      ctx.strokeStyle = 'rgba(230,190,110,0.85)'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.roundRect(-5.2, -10, 11, 19, 2); ctx.stroke(); // altın çerçeve çizgisi
+      for (const [cx, cy, sx, sy] of [[-5.2, -10, 1, 1], [5.8, -10, -1, 1], [-5.2, 9, 1, -1], [5.8, 9, -1, -1]]) { // köşe bağları
+        ctx.fillStyle = '#e8bb4a'; ctx.strokeStyle = '#3a2208'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + sx * 4, cy); ctx.lineTo(cx, cy + sy * 4); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+      const sk = ctx.createLinearGradient(0, -6, 0, 5); sk.addColorStop(0, '#fbf3dc'); sk.addColorStop(1, '#c8b88e'); // kafatası
+      ctx.beginPath(); ctx.moveTo(-3.9, 0.2); ctx.bezierCurveTo(-4.6, -6.2, 5.4, -6.2, 4.7, 0.2); ctx.quadraticCurveTo(4.5, 1.9, 3, 2.3); ctx.lineTo(2.8, 4.1); ctx.lineTo(-2, 4.1); ctx.lineTo(-2.2, 2.3); ctx.quadraticCurveTo(-3.7, 1.9, -3.9, 0.2); ctx.closePath();
+      ctx.fillStyle = sk; ctx.fill(); ctx.strokeStyle = '#1a0a08'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const [ex, c] of [[-1.6, '120,255,150'], [2.4, '200,120,255']]) { const eg = ctx.createRadialGradient(ex, -1, 0.2, ex, -1, 3.2); eg.addColorStop(0, `rgba(${c},0.95)`); eg.addColorStop(1, `rgba(${c},0)`); ctx.fillStyle = eg; ctx.fillRect(ex - 3.4, -4.4, 6.8, 6.8); } ctx.restore();
+      ctx.fillStyle = '#12060c'; ctx.beginPath(); ctx.ellipse(-1.6, -1, 1.3, 1.5, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.ellipse(2.4, -1, 1.3, 1.5, -0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#9dff8a'; ctx.beginPath(); ctx.arc(-1.6, -1, 0.55, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#d8a0ff'; ctx.beginPath(); ctx.arc(2.4, -1, 0.55, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#1a0a08'; ctx.lineWidth = 0.6; ctx.beginPath(); for (const tx of [-0.8, 0.4, 1.6]) { ctx.moveTo(tx, 2.6); ctx.lineTo(tx, 4); } ctx.stroke();
+      ctx.fillStyle = '#b8142e'; ctx.strokeStyle = '#3a0408'; ctx.lineWidth = 0.8; // ayraç
+      ctx.beginPath(); ctx.moveTo(2.2, 11.3); ctx.lineTo(4.6, 11.3); ctx.lineTo(4.6, 16); ctx.lineTo(3.4, 14.6); ctx.lineTo(2.2, 16); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore(); break;
+    }
     case 'play': ctx.moveTo(-6, -9); ctx.lineTo(9, 0); ctx.lineTo(-6, 9); ctx.closePath(); fs(); break;
     case 'gear':
       for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r = i % 2 ? 7.6 : 10.4; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
@@ -10435,14 +10458,7 @@ function soulGem(x, y, r) {
   ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.moveTo(-r * 0.15, -r * 0.7); ctx.lineTo(r * 0.3, -r * 0.3); ctx.lineTo(-r * 0.15, -r * 0.1); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
-function drawGrimIcon(x, y, s) { // kale menüsü düğmesi: kafatası mühürlü kara kitap
-  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
-  roundRect(-11, -13, 22, 26, 3, '#3a1240', '#0a0410', 1.6); roundRect(-11, -13, 4, 26, 2, '#22082a');
-  roundRect(-7, -10, 15, 20, 2, null, '#c9a865', 1);
-  ctx.fillStyle = '#efe6cc'; ctx.beginPath(); ctx.arc(1, -2, 4.2, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-1.6, 1, 5.2, 3.5);
-  ctx.fillStyle = '#3a1240'; ctx.fillRect(-1.6, -3, 1.8, 1.8); ctx.fillRect(1.8, -3, 1.8, 1.8);
-  ctx.restore();
-}
+function drawGrimIcon(x, y, s) { drawIcon('grimoire', x, y, 30 * s); } // kale menüsü düğmesi: haritadaki Büyü Kitabı simgesi
 const GRIM_IDS = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'];
 let grimSel = null;
 function drawGrimoire(px, py, pw, ph, k, canBuy) {
@@ -12766,7 +12782,7 @@ function drawMap() {
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id)), BY = EDGE.b - 40;
   // 11 Eki: Büyü Kitabı eklendi, üç düğme yan yana (Büyü Kitabı · Komutanlar · Gelişmeler)
   const heroPts = HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0), freeSouls = soulsFree();
-  gameButton('grim', R0 - 532, BY, 202, 58, 'BÜYÜ KİTABI', () => go(() => { screen = 'grim'; }), 'red', { icon: 'star', appear: st - 0.3, size: 17, shine: freeSouls > 0 });
+  gameButton('grim', R0 - 532, BY, 202, 58, 'BÜYÜ KİTABI', () => go(() => { screen = 'grim'; }), 'red', { icon: 'grimoire', appear: st - 0.3, size: 17, shine: freeSouls > 0 });
   if (freeSouls > 0) { const ex = R0 - 440, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#8a3ad8', '#fff', 1.5); txt(freeSouls + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
   gameButton('heroes', R0 - 322, BY, 202, 58, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 || heroPts });
   const freeStars = starsTotal() - starsSpent();
