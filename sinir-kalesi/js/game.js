@@ -108,9 +108,10 @@ function rottenOf(name, im) {
   const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
   for (let i = 0; i < a.length; i += 4) {
     const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
-    a[i] = (a[i] * 0.3 + (L * 0.74 + 16) * 0.7) * 0.86;
-    a[i + 1] = (a[i + 1] * 0.3 + (L * 0.92 + 30) * 0.7) * 0.86;
-    a[i + 2] = (a[i + 2] * 0.3 + (L * 0.68 + 12) * 0.7) * 0.86;
+    // 11 Eki (Caner): morumsu kızıl ceset rengi (eskiden solgun yeşil-gri)
+    a[i] = (a[i] * 0.3 + (L * 0.98 + 30) * 0.7) * 0.86;
+    a[i + 1] = (a[i + 1] * 0.3 + (L * 0.6 + 4) * 0.7) * 0.86;
+    a[i + 2] = (a[i + 2] * 0.3 + (L * 0.84 + 22) * 0.7) * 0.86;
   }
   g.putImageData(d, 0, 0);
   return (ROT[name] = c);
@@ -4176,15 +4177,15 @@ function raiseMinion(e, delay = 0) {
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
-    rate: 1, speed: 40, engage: 60, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life * up, born: G.t + delay };
+    rate: 1, speed: 40, engage: 80, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life * up, born: G.t + delay }; // engage 80: dirilenler düşmana daha uzaktan saldırır
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
     const D = ENEMIES[e.name.slice(6)];
     s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true;
   }
   G.soldiers.push(s);
-  G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '140,255,140', t: 0, dur: 0.7 });
-  for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: '140,255,120', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
+  G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '190,70,255', t: 0, dur: 0.7 });
+  for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: i % 2 ? '230,50,110' : '190,80,255', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
 // Mortimer şapelin ön balkonunda durur. Hasar evresine göre (castle_1..3): at = ayak noktası (görsel oranı),
 // rail = korkuluk dikdörtgeni (x0, y0, x1, y1; Mortimer'dan sonra yeniden çizilir, ayakları korkuluğun arkasında kalır;
@@ -4291,7 +4292,7 @@ function drawNecroGlyph(id, r) {
     const im = spr('unit_skel_1');
     ctx.fillStyle = 'rgba(30,16,8,0.7)'; ctx.beginPath(); ctx.ellipse(0, r * 0.62, r * 0.75, r * 0.2, 0, 0, Math.PI * 2); ctx.fill();
     if (im) drawSprite(ctx, im, 0, r * 0.75, r * 1.5 * im.width / im.height);
-    if (G && G.raiseT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r, '120,255,140', 0.4 + Math.sin(time * 8) * 0.15); ctx.restore(); }
+    if (G && G.raiseT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r, '200,80,255', 0.4 + Math.sin(time * 8) * 0.15); ctx.restore(); }
     return;
   }
   const w = Math.sin(time * 4) * 1.5;
@@ -5493,7 +5494,7 @@ function update(dt) {
   if (G.intro) { G.intro.t += dt; if (G.intro.t > G.intro.dur) G.intro = null; }
   for (const f of G.effects) if (f.riseAt != null && f.kind === 'corpse' && f.t >= f.riseAt) { // çivili/lanetli ceset kendiliğinden dirilir
     f.riseAt = null;
-    if (G.soldiers.filter(s => s.minion && !s.dead).length < spellStats('nm_raise').max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#9dff8a'); }
+    if (G.soldiers.filter(s => s.minion && !s.dead).length < spellStats('nm_raise').max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#d98aff'); }
   }
   for (const g of G.ghosts) { // hayalet: yolda geriye süzülür, değdiğini yakar ve korkutur
     g.t += dt; g.d -= 85 * dt;
@@ -6675,7 +6676,7 @@ function raisePlagueZombie(pr) {
   const Z = pr.zombie, t = pr.tower, mine = G.soldiers.filter(o => o.plagueZ && !o.dead && o.byTower === t);
   if (mine.length >= CORPSE.max) mine.sort((a, b) => a.life - b.life)[0].life = 0; // en eskisi çürüyüp dağılır
   const s = { militia: true, merc: true, zombie: true, plagueZ: Z.dps, byTower: t, x: pr.tx, y: pr.ty, rx: pr.tx, ry: pr.ty, hp: Z.hp, maxHp: Z.hp, dmg: Z.zdmg, armor: 0.1,
-    rate: 1.1, speed: 34, engage: 60, atk: 0, target: null, dead: false, face: pr.body.face, anim: 0, slot: G.soldiers.length % 4, life: Z.life, born: G.t + 0.05,
+    rate: 1.1, speed: 34, engage: 80, atk: 0, target: null, dead: false, face: pr.body.face, anim: 0, slot: G.soldiers.length % 4, life: Z.life, born: G.t + 0.05,
     zname: pr.body.name, zrig: null, zh: CHAR_H[pr.body.name] || 26 };
   G.soldiers.push(s);
 }
@@ -7395,7 +7396,7 @@ function drawSoldier(s) {
       const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
       s.px = s.x; s.py = s.y;
       const ch = s.zh || 30 * UNIT_K;
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '110,255,140', 0.25); ctx.restore();
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '200,50,130', 0.25); ctx.restore();
       if (s.born != null && G.t < s.born) return;
       const up = s.born != null && G.t - s.born < DIE_T ? animStrip(key, s.zrig || s.zname, '_die') : null;
       if (up) { // yerden kalkış: ölüm kareleri tersten
@@ -7405,11 +7406,16 @@ function drawSoldier(s) {
         return;
       }
       const rise = s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
-      drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: s.zrig || s.zname, phase: s.anim * 7, walking, fly: 0, rise,
+      // zombi gibi: öne eğik, sallanarak ağır ağır yürür (her adımda öne yalpalar), dövüşte saldırıya atılır gibi öne kapanır
+      const sd = (s.slot || 0) * 1.9, fc = s.face || 1, lurch = walking ? Math.max(0, Math.sin(s.anim * 3.2 + sd)) * 0.09 : 0;
+      const lean = fc * (0.1 + 0.035 * Math.sin(time * 1.7 + sd) + lurch + (fighting ? 0.06 * Math.max(0, Math.sin(atkPhase(s.rate, s.atk) * Math.PI)) : 0)) + Math.sin(time * 2.3 + sd) * 0.04;
+      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(lean); ctx.translate(-s.x, -s.y);
+      drawUnit(key, im, s.x, s.y, fc, { h: ch, rig: s.zrig || s.zname, phase: s.anim * 4.5, walking, fly: 0, rise,
         atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
-      // başının üstünde soluk yeşil ruh alevi: bizim tarafta olduğu belli olsun
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch - 3, 5 + Math.sin(time * 6 + s.slot) * 1, '120,255,140', 0.55); ctx.restore();
-      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#7ad36a');
+      ctx.restore();
+      // başının üstünde soluk mor ruh alevi: bizim tarafta olduğu belli olsun
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x + Math.sin(lean) * ch, s.y - ch - 3, 5 + Math.sin(time * 6 + s.slot) * 1, '200,80,255', 0.55); ctx.restore();
+      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#c75aa0');
       return;
     }
   }
@@ -8129,7 +8135,7 @@ function drawCorpse(f) {
     ctx.save();
     const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78;
     ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
-    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '110,255,140', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
+    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '190,70,255', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
     ctx.translate(f.x, f.y + 1); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
     drawFrame(spr(dk), F, i, f.h || CHAR_H[f.name] || 20);
     ctx.restore();
@@ -8155,7 +8161,7 @@ function drawCorpse(f) {
   const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78; // uzun yatan ceset son yarım saniyede solar
   ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
   // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
-  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '110,255,140', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
+  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '190,70,255', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
   // ölüm pozu bitince (0.8 sn) ceset değişmez: bir kez ayrı tuvale çizilir, sonra tek resim olarak basılır (10 sn yatan cesetler ucuzlasın)
   if (f.air) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 1, w * 0.4, w * 0.13, 0, 0, Math.PI * 2); ctx.fill(); }
   if (t > 0.8 && !f.air && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
@@ -10138,13 +10144,13 @@ function avluFlame(x, y, hgt, wd, k, ph, col0, col1) {
   ctx.quadraticCurveTo(x - wd * 1.15, y - hgt * 0.45, x + sway, y - hgt * (0.9 + 0.2 * k));
   ctx.quadraticCurveTo(x + wd * 1.15, y - hgt * 0.45, x + wd, y + wd * 0.6); ctx.closePath(); ctx.fill();
 }
-// şapel pencereleri renk değiştirir (Caner, 10 Eki): yeşil → kızıl → mor → sarı, her pencere biraz gecikmeli (ışık dalga gibi geçer)
-const WIN_COLS = [[120, 255, 140], [255, 60, 60], [180, 90, 255], [255, 210, 80]];
+// şapel pencereleri renk değiştirir, her pencere biraz gecikmeli (ışık dalga gibi geçer); 11 Eki (Caner): yeşil yok, mor ve koyu kızıl tonları
+const WIN_COLS = [[175, 80, 255], [220, 40, 80], [140, 50, 210], [255, 70, 150]];
 function winCol(i) {
   const u = time / 3 + i * 0.12, a = Math.floor(u), f = u - a, k = f < 0.65 ? 0 : (f - 0.65) / 0.35, A = WIN_COLS[a % 4], B = WIN_COLS[(a + 1) % 4];
   return A.map((v, j) => Math.round(lerp(v, B[j], k))).join(',');
 }
-// heybetli kalenin ışıkları: iki mangalda yeşil ruh ateşi, pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
+// heybetli kalenin ışıkları: iki mangalda kızıl ruh ateşi (11 Eki: görsel de mor/kızıl, varliklar/kale_renk.py), pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
 const KEEP_FX = {
   fire: [[0.255, 0.715], [0.6, 0.765]], roof: [[0.276, 0.275], [0.8, 0.345]], eyes: [[0.405, 0.665], [0.505, 0.665]],
   win: [[0.505, 0.355, 2.2], [0.5, 0.245, 0.8], [0.63, 0.245, 0.8], [0.265, 0.455, 1], [0.36, 0.485, 0.8], [0.4, 0.485, 0.8],
@@ -10157,12 +10163,12 @@ function drawKeepLights(cp, h, sh, burning) {
     const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
     glow(ctx, x, y, 22 * s * f[2], winCol(i), 0.15 * k + 0.05);
   }
-  for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '120,255,140', 0.3 + 0.2 * Math.sin(time * 2)); }
+  for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '255,60,100', 0.3 + 0.2 * Math.sin(time * 2)); }
   for (const [i, f] of KEEP_FX.fire.entries()) {
     const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 9 + i * 2) * Math.sin(time * 5.3 + i);
-    glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, '110,255,130', 0.32 + 0.12 * k);
-    for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, '235,255,225', '90,255,110');
-    if (Math.random() < 0.05 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-4, 4), y: y - 24 * s, vx: rand(-6, 6), vy: rand(-30, -16), col: '120,255,140', s0: rand(1, 1.8), s1: 0.2, life: rand(0.6, 1.1), a: 0.9 });
+    glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, '230,40,90', 0.32 + 0.12 * k);
+    for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, '255,225,235', '225,40,100');
+    if (Math.random() < 0.05 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-4, 4), y: y - 24 * s, vx: rand(-6, 6), vy: rand(-30, -16), col: i % 2 ? '200,80,255' : '255,70,110', s0: rand(1, 1.8), s1: 0.2, life: rand(0.6, 1.1), a: 0.9 });
   }
   if (burning) for (const [i, f] of KEEP_FX.roof.entries()) { // ağır hasar: çatılarda yangın
     const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 11 + i * 3) * Math.sin(time * 6.1 + i);
