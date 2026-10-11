@@ -200,7 +200,26 @@ function setSetting(k, v) {
   if ((k === 'vol' || k === 'sfx') && master) master.gain.value = sfxGain();
   if (k === 'gfx') { quality = v === 'low' ? 0.75 : QMAX; resize(); }
 }
-function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+// Kayıt güvenliği (11 Eki): kayıt tarayıcı deposuna ek olarak uygulamanın kendi deposuna da yazılır (Capacitor Preferences,
+// iOS UserDefaults / Android SharedPreferences). WebView deposu temizlenirse açılışta yerel kopyadan geri yüklenir; iki kopyadan
+// daha ilerlemiş olan (yıldız + komutan seviyesi, eşitse daha yeni) kazanır. Tarayıcıda (yayın sayfası) yalnız localStorage.
+const NATIVE_PREFS = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins && window.Capacitor.Plugins.Preferences;
+let nativeT = null;
+function persist() {
+  save.t = Date.now();
+  const js = JSON.stringify(save);
+  try { localStorage.setItem(SAVE_KEY, js); } catch (e) {}
+  if (NATIVE_PREFS && !nativeT) nativeT = setTimeout(() => { nativeT = null; NATIVE_PREFS.set({ key: SAVE_KEY, value: JSON.stringify(save) }).catch(() => {}); }, 400); // art arda yazımlar tek seferde
+}
+const saveProgress = (o) => (o.stars || []).reduce((a, b) => a + (b || 0), 0) * 100 + Object.values(o.hero || {}).reduce((a, h) => a + (h.lvl || 1), 0);
+if (NATIVE_PREFS) NATIVE_PREFS.get({ key: SAVE_KEY }).then(r => {
+  const n = r && r.value ? JSON.parse(r.value) : null;
+  if (n && (saveProgress(n) > saveProgress(save) || (saveProgress(n) === saveProgress(save) && (n.t || 0) > (save.t || 0)))) {
+    for (const k of Object.keys(save)) delete save[k];
+    Object.assign(save, n);
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
+  } else persist(); // yerel kopya yoksa ya da geride kaldıysa tarayıcıdakini yaz
+}).catch(() => {});
 
 // ---------- canvas & ölçek ----------
 const canvas = document.getElementById('game');
@@ -9920,6 +9939,11 @@ function drawHud() {
   roundBtn('hud_mute', HUD.mute.x, HUD.mute.y, HUD.mute.r, muted ? 'mute' : 'sound', null);
 
   G.heroes.forEach((h, i) => drawHeroPortrait(h, HUD.heroes[i], i));
+  if (!overlay && !G.sel) { // tanıtım ipuçları (bir kez)
+    const h0 = G.heroes[0], hb = HUD.heroes[0];
+    if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts')) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
+    else if (G.wave === 0 && soulsFree() > 0 && !tipSeen('castle')) { const q = worldToScreen(G.castle.x, G.castle.y - 70); drawTip(q.x, q.y - 40, 'Kaleye dokun: Büyü Kitabı'); }
+  }
 
   spellIds().forEach((id, i) => {
     const b = spellBtn(i), cd = G.spells[id], info = spellInfo(id), max = info.cd;
@@ -10362,6 +10386,7 @@ function drawHeroSkillIcon(id, x, y, s) {
 
 // ----- yetenek ağacı penceresi (oyun durur) -----
 function openSkills(h) {
+  tipDone('pts');
   G.skillHero = h; G.skillSel = null;
   setOverlay('skills');
   sfx('open');
@@ -12727,6 +12752,21 @@ function drawRegionMap(E, ep, st) {
 }
 
 let mapNote = null;
+// Yeni sistem ipucu (11 Eki): kızıl kutuda kısa not + hedefi gösteren zıplayan altın ok. Bir kez görülünce (hedefe dokununca) save.tips'e yazılır.
+const tipSeen = (id) => !!(save.tips && save.tips[id]);
+function tipDone(id) { save.tips = save.tips || {}; if (!save.tips[id]) { save.tips[id] = 1; persist(); } }
+function drawTip(tx, ty, text, above = true) {
+  const b = Math.sin(time * 6) * 5, ay = above ? ty - 34 + b : ty + 34 - b;
+  ctx.save(); ctx.font = `800 16px ${FONT_B}`; const L = wrapLines(text, 300, 16, '800', FONT_B, 3);
+  let w = 0; for (const l of L) w = Math.max(w, ctx.measureText(l).width); w += 34;
+  const h = 18 + L.length * 21, bx = clamp(tx - w / 2, EDGE.l + 8, EDGE.r - w - 8), by = above ? ay - 26 - h : ay + 26;
+  crimsonBox(bx, by, w, h, 12, false);
+  L.forEach((l, i) => txt(l, bx + w / 2, by + 20 + i * 21, 16, '#fff3d0', 'center', '800', FONT_B, false));
+  ctx.translate(tx, ay); if (!above) ctx.scale(1, -1); // ok hedefi gösterir
+  ctx.beginPath(); ctx.moveTo(-14, -16); ctx.lineTo(14, -16); ctx.lineTo(14, -2); ctx.lineTo(24, -2); ctx.lineTo(0, 20); ctx.lineTo(-24, -2); ctx.lineTo(-14, -2); ctx.closePath();
+  ctx.fillStyle = '#ffd34d'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#3a1406'; ctx.stroke();
+  ctx.restore();
+}
 function drawMap() {
   // gelişme fiyatları arttı (9 Eki): harcanan yıldız eldekini aşıyorsa gelişmeler sıfırlanır, yıldızlar iade edilir
   if (!save.upgFix2) { save.upgFix2 = 1; if (starsSpent() > starsTotal()) save.upg = {}; persist(); }
@@ -12789,12 +12829,16 @@ function drawMap() {
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id)), BY = EDGE.b - 40;
   // 11 Eki: Büyü Kitabı eklendi, üç düğme yan yana (Büyü Kitabı · Komutanlar · Gelişmeler)
   const heroPts = HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0), freeSouls = soulsFree();
-  gameButton('grim', R0 - 532, BY, 202, 58, 'BÜYÜ KİTABI', () => go(() => { screen = 'grim'; }), 'red', { icon: 'grimoire', appear: st - 0.3, size: 17, shine: freeSouls > 0 });
+  gameButton('grim', R0 - 532, BY, 202, 58, 'BÜYÜ KİTABI', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, 'red', { icon: 'grimoire', appear: st - 0.3, size: 17, shine: freeSouls > 0 });
   if (freeSouls > 0) { const ex = R0 - 440, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#8a3ad8', '#fff', 1.5); txt(freeSouls + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
-  gameButton('heroes', R0 - 322, BY, 202, 58, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 || heroPts });
+  gameButton('heroes', R0 - 322, BY, 202, 58, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 || heroPts });
   const freeStars = starsTotal() - starsSpent();
   gameButton('upgrades', R0 - 112, BY, 202, 58, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
   if (freeStars > 0) { const ex = R0 - 20, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#e8434b', '#fff', 1.5); txt(freeStars + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
+  if (mapSel == null) { // tanıtım: önce Büyü Kitabı, sonra yetenek puanı
+    if (freeSouls > 0 && !tipSeen('grim')) drawTip(R0 - 532, BY - 34, 'Ruh taşların birikti! Büyü Kitabı\'nda büyülerini kalıcı olarak güçlendir');
+    else if (heroPts && !tipSeen('tree')) drawTip(R0 - 322, BY - 34, 'Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca');
+  }
   if (heroPts && !fresh.length) { const ex = R0 - 230, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#3cbf3c', '#fff', 1.5); txt('+', ex, ey + 1, 15, '#fff', 'center', '400', FONT_T); }
   if (fresh.length) {
     const ex = R0 - 262, ey = BY - 27 + Math.sin(time * 5) * 2;
@@ -14383,7 +14427,7 @@ function worldTap(x, y) {
   // kale: dokununca okçu yükseltme menüsü
   {
     const c = G.castle;
-    if (NECRO && Math.abs(x - c.x) < 62 && y < c.y + 24 && y > c.y - 120) { setOverlay('grim'); sfx('open'); return; } // 11 Eki: kaleye dokununca Büyü Kitabı
+    if (NECRO && Math.abs(x - c.x) < 62 && y < c.y + 24 && y > c.y - 120) { tipDone('castle'); tipDone('grim'); setOverlay('grim'); sfx('open'); return; } // 11 Eki: kaleye dokununca Büyü Kitabı
     if (!NECRO && Math.abs(x - (c.x - 12)) < 52 && y < c.y + 22 && y > c.y - 92) {
       setSel(G.sel && G.sel.kind === 'castle' ? null : { kind: 'castle' }); sfx('select'); return;
     }

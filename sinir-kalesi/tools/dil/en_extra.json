@@ -189,7 +189,11 @@
   "PUAN YOK": "NO POINTS",
   "EN YÜKSEK KADEME": "MAX RANK",
   "Sıfırlama Komutanlar ekranında": "Reset on the Commanders screen",
-  "İlk dalgadan önce geliştirilir": "Upgrade before the first wave"
+  "İlk dalgadan önce geliştirilir": "Upgrade before the first wave",
+  "Ruh taşların birikti! Büyü Kitabı'nda büyülerini kalıcı olarak güçlendir": "Your soul stones are piling up! Strengthen your spells for good in the Spell Book",
+  "Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca": "Your commander leveled up! Spend the skill point on the Commanders screen",
+  "Yetenek puanı! + simgesine dokun": "Skill point! Tap the +",
+  "Kaleye dokun: Büyü Kitabı": "Tap the castle: Spell Book"
  },
  "tpl": [
   [
