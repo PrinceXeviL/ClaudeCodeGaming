@@ -203,7 +203,7 @@ Gemini görsel kotası 0, HF ZeroGPU anonim kotası 1 görselde bitiyor. Kalıc�
 Model: QuantStack/FLUX.1-Kontext-dev-GGUF Q4 + ostris/Flex.1-alpha (VAE/metin kodlayıcı, Apache, hesapsız). T4'te fp16 SİYAH resim verir:
 metin kodlayıcı fp16 bir kez, dönüştürücü fp32 hesap, 768 px → görsel başına ~14 dk. Çıktı magenta zeminli PNG → anim_isle.remove_magenta +
 video_isle.biggest_mask ile kes, img/'e WebP; meta.json [w, h] (kulede [w, h, 0.13]). Kontext çıktıları ticari kullanılabilir (FLUX dev lisansı).
-Bu yolla yapılanlar: enemy_wardog, enemy_chariot (yatay çevrildi), enemy_siegetower, enemy_eagle, tower_altar_1..3 (Lanet Kulesi).
+Bu yolla yapılanlar (9 Eki) SONRADAN GEMİNİ İLE YENİLENDİ: oyunda FLUX çıktısı kalmadı (11 Eki denetimi; lisans tartışmalı olduğu için FLUX'a dönme).
 Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener); veri seti sürümü işlenmeden çekirdek gönderilmez (refs_dataset bekler).
 
 ## 9 Eki 2026 akşam (yayın 160–170)

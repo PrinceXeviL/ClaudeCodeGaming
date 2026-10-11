@@ -1479,8 +1479,9 @@ function startLevel(idx, chal = null) {
   const lv = LEVELS[idx];
   const paths = lv.paths.map(buildPath);
   for (const p of paths) { const a = p.pts[0]; p.ext = a[0] < 0 || a[0] > W || a[1] < 0 || a[1] > H; } // çerçeve dışından gelen giriş
+  const dk = CUR_DIFF = chal ? 'normal' : (DIFFS[save.diff] ? save.diff : 'normal');
   G = {
-    idx, lv, paths,
+    idx, lv, paths, diffKey: dk,
     bg: renderBackground(lv, paths, bgRes(), BLEED),
     gold: (Math.round(lv.gold * diff().gold) + (upgRank('castle') >= 2 ? 60 : 0) + (upgRank('castle') >= 3 ? 60 : 0)),
     lives: chal ? CHAL[chal].lives : diff().lives - (lv.ep === 2 ? 5 : 0) + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
@@ -3177,6 +3178,7 @@ function castleHit(e) {
 
 // kılıç savuruşu izi
 function slashFx(x, y, face, col = '#ffffff', size = 1) {
+  if (size >= 1.4 && G) G.hitStop = Math.max(G.hitStop || 0, 0.06); // kritik / ağır vuruş: kısa donma
   G.effects.push({ kind: 'slash', x, y, face, col, size, t: 0, dur: 0.2 });
   for (let i = 0; i < 3; i++) {
     G.effects.push({ kind: 'spark', x: x + rand(-3, 3), y: y + rand(-3, 3), t: 0, dur: 0.22, small: true });
@@ -5694,6 +5696,7 @@ function update(dt) {
     else {
       G.stars = lr >= 0.9 ? 3 : lr >= 0.3 ? 2 : 1;
       save.stars[G.idx] = Math.max(save.stars[G.idx] || 0, G.stars);
+      if (G.diffKey === 'usta') (save.usta || (save.usta = {}))[G.idx] = 1; // Usta zaferi: haritada kafatası rozeti
     }
     heroEndXp(true);
     persist();
@@ -8284,6 +8287,7 @@ function drawUnit(name, im, x, y, face, o) {
   }
   if (fName) {
     const F = ANIM_META[fName], fImg = spr(fName);
+    if (o.hit > 0) { const k = o.hit / 0.18; ctx.rotate(-0.07 * k); ctx.scale(1 + 0.07 * k, 1 - 0.06 * k); } // 11 Eki: darbede geriye sarsılır, ezilir (şeritli birimler)
     drawFrame(fImg, F, fi, o.h);
     if (o.flash > 0) { ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7; drawFrame(whiteOf(fName, fImg), F, fi, o.h); }
     ctx.restore();
@@ -8840,12 +8844,13 @@ function drawEffect(f) {
     }
     ctx.globalAlpha = 1;
   } else if (f.kind === 'slash') {
-    // yay şeklinde kılıç izi: önce parlak, sonra incelip kaybolur
-    const r = 11 * f.size, a0 = -1.9 + k * 0.6, a1 = a0 + 1.0 + k * 1.6;
-    ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.face, 1);
-    ctx.globalAlpha = 1 - k; ctx.strokeStyle = f.col; ctx.lineCap = 'round';
-    ctx.lineWidth = 3.2 * (1 - k) * f.size + 0.5;
-    ctx.beginPath(); ctx.arc(-4, 2, r, a0, a1); ctx.stroke();
+    // yay şeklinde kılıç izi (11 Eki): dolu hilal, uçları incelir; ilk anda beyaz parlar, sonra rengine döner ve süpürülerek kaybolur
+    if (k < 0) return;
+    const r = 11 * f.size, a0 = -2.1 + k * 0.5, a1 = a0 + 1.4 + k * 1.2, th = 3.8 * f.size * (1 - k * 0.7);
+    ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.face, 1); ctx.globalAlpha = 0.85 * Math.pow(1 - k, 1.2);
+    ctx.beginPath(); ctx.arc(-4, 2, r, a0, a1); ctx.arc(-4 - th * 0.5, 2 + th * 0.15, r - th, a1 - 0.05, a0 + 0.25, true); ctx.closePath();
+    ctx.fillStyle = k < 0.25 ? '#ffffff' : f.col; ctx.fill();
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= 0.5; ctx.lineWidth = 1.2; ctx.strokeStyle = '#ffffff'; ctx.stroke();
     ctx.restore(); ctx.globalAlpha = 1;
   } else if (f.kind === 'debris') {
     const x = f.x + f.vx * f.t, y = f.y + f.vy * f.t + 260 * f.t * f.t;
@@ -11883,7 +11888,17 @@ function treeBuy(R, kind, id) {
 function treeReset(R) { R.sk = {}; R.ult = 1; persist(); }
 // bölüm sonu XP: kazanınca tam, kaybedince yarım
 function heroEndXp(win) { if (!G) return; for (const h of G.heroes) gainXp(h, Math.round((100 + 40 * G.idx) * (win ? 1 : 0.5)), true); persist(); }
-function diff() { return GAME_DIFF; } // zorluk sabit
+// Zorluk seçimi (12 Eki, arastirma/oyuncu-istekleri.md: Kingdom Rush'taki Rahat/Normal/Usta gibi): bölüm kartında seçilir, save.diff'te
+// kalır. Yalnız Sefer modunda geçerli (Kahramanlık ve Sonsuz Gece kendi kurallarıyla, Normal). Yıldızlar her zorlukta aynı; Usta zaferi
+// save.usta[i] ile kaydedilir (haritada kafatası rozeti).
+const DIFFS = {
+  kolay: { name: 'Kolay', hp: 0.72, bounty: 1.1, lives: 5, note: 'Düşmanlar zayıf, +5 can' },
+  normal: { name: 'Normal', hp: 1, bounty: 1, lives: 0, note: 'Dengeli' },
+  usta: { name: 'Usta', hp: 1.4, bounty: 0.9, lives: 0, note: 'Düşmanlar %40 dayanıklı' },
+};
+let CUR_DIFF = 'normal'; // startLevel G'yi kurmadan önce ayarlar (G'nin içindeki can hesabı da diff() kullanıyor)
+const diffKey = () => CUR_DIFF;
+function diff() { const D = DIFFS[diffKey()] || DIFFS.normal; return { hp: GAME_DIFF.hp * D.hp, gold: GAME_DIFF.gold, bounty: GAME_DIFF.bounty * D.bounty, lives: GAME_DIFF.lives + D.lives }; }
 // gelişmelerle güçlenmiş kule seviyesi değerleri
 // uzmanlık seçen kule +%20 hasar (kışlada asker canı ve hasarı) alır: tek yol seçmenin karşılığı
 const SPEC_BONUS = 1.2;
@@ -13319,20 +13334,35 @@ function drawLevelCard(i, cx, cy, at) {
   const rx = x0 + 370, rw = w - 370 - 28, tile = (rw - 2 * 10) / 3, tyy = ty;
   txt('OYUN MODU', rx, tyy - 2, 13, '#d8c0a0', 'left', '800', FONT_B, false);
   MODES.forEach((o, k) => {
-    const bx = rx + k * (tile + 10), by = tyy + 12, bh = 104, sel = o.m === mapMode, key = 'mode_' + o.m + i, sc2 = pressScale(key);
+    const bx = rx + k * (tile + 10), by = tyy + 12, bh = 80, sel = o.m === mapMode, key = 'mode_' + o.m + i, sc2 = pressScale(key);
     ctx.save(); ctx.translate(bx + tile / 2, by + bh / 2); ctx.scale(sc2, sc2); ctx.translate(-(bx + tile / 2), -(by + bh / 2));
     if (sel) glow(ctx, bx + tile / 2, by + bh / 2, tile * 0.75, o.m === 'h' ? '255,90,70' : o.m === 'e' ? '170,110,255' : '255,210,110', 0.3 + Math.sin(time * 3) * 0.08);
     roundRect(bx, by, tile, bh, 14, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? '#ffd34d' : '#6a4a5a', sel ? 3 : 2);
-    modeIcon(o.m, bx + tile / 2, by + 36, 1.15);
-    fitTxt(o.name, bx + tile / 2, by + 72, tile - 10, 14, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true);
-    fitTxt(o.stat, bx + tile / 2, by + 91, tile - 10, 12, o.m === 'h' && hDone ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
-    if (!o.open) { roundRect(bx, by, tile, bh, 14, 'rgba(10,6,14,0.62)'); drawIcon('lock', bx + tile / 2, by + 38, 26); }
+    modeIcon(o.m, bx + tile / 2, by + 27, 0.95);
+    fitTxt(o.name, bx + tile / 2, by + 55, tile - 10, 14, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true);
+    fitTxt(o.stat, bx + tile / 2, by + 71, tile - 10, 12, o.m === 'h' && hDone ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
+    if (!o.open) { roundRect(bx, by, tile, bh, 14, 'rgba(10,6,14,0.62)'); drawIcon('lock', bx + tile / 2, by + 30, 24); }
     ctx.restore();
     buttons.push({ key, x: bx, y: by, w: tile, h: bh, fn: () => { if (mapMode !== o.m) { mapMode = o.m; sfx('pick'); } } });
   });
-  // seçili modun açıklaması
-  const lines = wrapLines(M.open ? M.desc : M.lock, rw - 8, 15, '700', FONT_B, 3);
-  lines.slice(0, 3).forEach((l, k) => txt(l, rx + 4, tyy + 140 + k * 20, 15, M.open ? '#f2ecd8' : '#ffb0a0', 'left', '700', FONT_B, false));
+  // seçili modun açıklaması; Sefer'de onun yerine zorluk seçici (12 Eki): üç büyük düğme, altında seçilenin notu
+  if (mapMode === 'c' && unlocked) {
+    const cur = DIFFS[save.diff] ? save.diff : 'normal', dw = (rw - 2 * 8) / 3, dy = tyy + 106, dh = 54, ust = save.usta && save.usta[i];
+    txt('ZORLUK  ·  ' + DIFFS[cur].note + (ust ? '  ·  Usta ✓' : ''), rx, dy - 4, 13, ust ? '#8af07a' : '#d8c0a0', 'left', '800', FONT_B, false);
+    Object.entries(DIFFS).forEach(([k, D], j) => {
+      const bx = rx + j * (dw + 8), sel = k === cur, key = 'diff_' + k + i, sc2 = pressScale(key), col = k === 'kolay' ? '120,220,120' : k === 'usta' ? '255,90,70' : '255,210,110';
+      ctx.save(); ctx.translate(bx + dw / 2, dy + 6 + dh / 2); ctx.scale(sc2, sc2); ctx.translate(-(bx + dw / 2), -(dy + 6 + dh / 2));
+      if (sel) glow(ctx, bx + dw / 2, dy + 6 + dh / 2, dw * 0.7, col, 0.25);
+      roundRect(bx, dy + 6, dw, dh, 12, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? `rgb(${col})` : '#6a4a5a', sel ? 3 : 2);
+      for (let q = 0; q <= j; q++) drawSkullIcon(bx + dw / 2 + (q - j / 2) * 16, dy + 22, 7); // 1-3 kafatası
+      fitTxt(D.name, bx + dw / 2, dy + 46, dw - 8, 15, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true);
+      ctx.restore();
+      buttons.push({ key, x: bx, y: dy + 6, w: dw, h: dh, fn: () => { if (save.diff !== k) { save.diff = k; persist(); sfx('pick'); } } });
+    });
+  } else {
+    const lines = wrapLines(M.open ? M.desc : M.lock, rw - 8, 15, '700', FONT_B, 3);
+    lines.slice(0, 3).forEach((l, k) => txt(l, rx + 4, tyy + 118 + k * 20, 15, M.open ? '#f2ecd8' : '#ffb0a0', 'left', '700', FONT_B, false));
+  }
   ctx.restore();
   // kilitli bölüm
   if (!unlocked) {
@@ -14874,7 +14904,8 @@ function frame(now) {
     for (const k in THUMB) delete THUMB[k];
   }
   if (screen === 'play' && !overlay && !trans && !AD) {
-    for (let i = 0; i < speed; i++) update(real);
+    const hs = G && G.hitStop > 0 ? (G.hitStop -= real, 0.12) : 1; // vuruş donması (11 Eki): ağır vuruşta oyun bir an yavaşlar
+    for (let i = 0; i < speed; i++) update(real * hs);
   }
   if (screen === 'play' && G) { updateCamera(real); weatherVisuals(real); }
   if (screen === 'title' && !trans) warmMap(); // haritanın zemini önceden hazırlanır
