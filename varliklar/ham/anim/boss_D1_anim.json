@@ -1,0 +1,66 @@
+[
+ {
+  "name": "enemy_hubertus_walk",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds walks forward in place with heavy confident steps while the two white hounds pull on their chains and trot beside him, legs alternating, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hubertus_atk",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds lashes out with a heavy kick and the two hounds lunge forward snapping their jaws, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_hubertus_skill",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds lets go of the chains and the two white hounds leap forward and charge out of the frame while he blows his hunting horn, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_hubertus_die",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_agnes_walk",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff stalks forward in place with jerky fanatical steps, the torn habit flapping, legs alternating, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_agnes_atk",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff cracks the long chain whip forward in one vicious lash, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_agnes_skill",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff raises the burning brazier staff high and screams, the fire flares up in a ring around her, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_agnes_die",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

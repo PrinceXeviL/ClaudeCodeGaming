@@ -1,0 +1,66 @@
+[
+ {
+  "name": "enemy_lucia_walk",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist nun in a white and gold habit with a crimson stole, holding a glowing holy book and a silver censer walks forward in place calmly with measured steps, the censer swinging and trailing smoke, legs alternating, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_lucia_atk",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist nun in a white and gold habit with a crimson stole, holding a glowing holy book and a silver censer thrusts the glowing holy book forward and a burst of golden light shoots out of it, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_lucia_skill",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist nun in a white and gold habit with a crimson stole, holding a glowing holy book and a silver censer holds the holy book high above her head while golden runes swirl around her and the censer smoke spreads in a wide ring, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_lucia_die",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist nun in a white and gold habit with a crimson stole, holding a glowing holy book and a silver censer is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_godfrey_walk",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering templar knight in white surcoat over silver plate armor with a great helm and a long white cape, holding a flaming greatsword marches forward in place with heavy armored steps, the cape flowing, legs alternating, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_godfrey_atk",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering templar knight in white surcoat over silver plate armor with a great helm and a long white cape, holding a flaming greatsword swings the flaming greatsword in a wide powerful overhead arc that leaves a trail of fire, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_skill",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering templar knight in white surcoat over silver plate armor with a great helm and a long white cape, holding a flaming greatsword plunges the flaming greatsword into the ground and a ring of holy fire bursts out around him, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_die",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering templar knight in white surcoat over silver plate armor with a great helm and a long white cape, holding a flaming greatsword is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

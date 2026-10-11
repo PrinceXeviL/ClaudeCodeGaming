@@ -68,6 +68,8 @@ SHEETS = [
     ('nm_engizisyon_D.jpg', ['enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'], 'unitgrid'),  # bosslar ve final
     ('nm3_orman_dekor.jpg', ['nm3_stump', 'nm3_cage', 'nm3_totem_1', 'nm3_totem_2', 'nm3_totem_3', 'nm3_candles', 'nm3_cart', 'nm3_coffin', 'nm3_coffin_open', 'nm3_sign_1', 'nm3_sign_2', 'nm3_log', 'nm3_grave'], 'decor'),  # 11 Eki: 1. sefer Necromancer ormanı dekorları (satır satır)
     ('nm4_engizisyon_dekor.jpg', ['nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_firebarrel', 'nm4_suntomb', 'nm4_shrine', 'nm4_board', 'nm4_pillory', 'nm4_wagon', 'nm4_barrels', 'nm4_cross'], 'decor'),  # 11 Eki: 2. sefer (Cadı Avı) engizisyon dekorları; sancak bezi oyunda dalgalanır
+    ('nm_boss_E.jpg', ['enemy_severus3'], 'unit'),  # 12 Eki: Lanetli Severus (2. sefer finalinin 3. evresi)
+    ('nm_boss_D.jpg', ['enemy_hubertus', 'enemy_agnes', 'enemy_lucia', 'enemy_godfrey'], 'unitgrid'),  # 12 Eki: 2. sefer komutanları (Tazı Ustası, Kırbaç Rahibesi, Şeytan Kovucu, Tapınak Komutanı)
     ('nm_boss_C.jpg', ['enemy_gloriosus1', 'enemy_gloriosus2', 'enemy_gloriosus3'], 'unit'),  # 11 Eki: Gloriosus 3 evre (aslanlı altın araba, yayan, Güneş Formu)
     ('nm_boss_B.jpg', ['enemy_shadowmaster', 'enemy_ironwarden', 'enemy_cavcaptain'], 'unit'),  # 11 Eki: Gölge Usta, Brutus, Aurelius
     ('nm_boss_A.jpg', ['enemy_centurion', 'enemy_champion', 'enemy_hierophant'], 'unit'),  # 11 Eki: 1. sefer komutanları kendi çizimi (Lucius, Maximus, Sollemnis)
@@ -83,18 +85,20 @@ BOXES = {
     'nm2_dekor_A.jpg': [(c * 341 + 2, r * 341 + 2, c * 341 + 339, r * 341 + 339) for r in range(3) for c in range(3)],  # 3x3 ızgara
     'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
     'nm4_engizisyon_dekor.jpg': [(41, 41, 777, 727), (826, 17, 1153, 773), (1273, 172, 1637, 630), (1761, 41, 2078, 457), (2208, 55, 2690, 484), (1640, 512, 2181, 993), (2208, 498, 2752, 980), (76, 853, 605, 1417), (592, 826, 1428, 1536), (1507, 980, 2208, 1493), (2250, 966, 2690, 1520)],  # 11 nesne (2752x1536)
+    'nm_boss_D.jpg': [(0, 0, 1036, 1010), (1036, 0, 2048, 1010), (0, 1010, 1000, 2048), (1000, 1010, 2048, 2048)],  # 2x2 (2048 kare)
 }
 # meta (dünya boyu) çarpanı: 2x çözünürlüklü sayfa, diğer dekor sayfalarıyla aynı ölçekte (ruinK) dursun
 META_K = {'nm4_engizisyon_dekor.jpg': 0.5}
-BOX_EDGE_DROP = {'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
+BOX_EDGE_DROP = {'nm_boss_D.jpg', 'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
 # renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
 # (10 Eki: Caner hayalet okçuları kırmızı istedi)
 HUE_TOP = {}  # (eski Hayalet Okçular kulesindeki okçuların rengi; yeni kulede okçular ayrı çiziliyor)
 # magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
 GLOW_FIX = {'enemy_gloriosus3': (255, 200, 90), 'enemy_hierophant': (255, 215, 120), 'nm4_brazier': (255, 170, 70), 'nm4_firebarrel': (255, 170, 70), 'nm4_shrine': (255, 190, 90), 'nm4_board': (255, 190, 90), 'nm4_barrels': (255, 170, 70), 'nm3_totem_1': (110, 255, 140), 'nm3_totem_2': (110, 255, 140), 'nm3_totem_3': (110, 255, 140), 'nm3_candles': (110, 255, 140), 'nm3_sign_1': (110, 255, 140), 'nm3_sign_2': (110, 255, 140), 'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
-DESPECK = {'enemy_gloriosus1', 'enemy_gloriosus2', 'enemy_gloriosus3', 'enemy_shadowmaster', 'enemy_ironwarden', 'enemy_cavcaptain', 'enemy_centurion', 'enemy_champion', 'enemy_hierophant'}
-SMOKE_FIX = {'castle_2', 'castle_3', 'enemy_hierophant'}
+DESPECK = {'enemy_severus3', 'enemy_hubertus', 'enemy_agnes', 'enemy_lucia', 'enemy_godfrey', 'enemy_gloriosus1', 'enemy_gloriosus2', 'enemy_gloriosus3', 'enemy_shadowmaster', 'enemy_ironwarden', 'enemy_cavcaptain', 'enemy_centurion', 'enemy_champion', 'enemy_hierophant'}
+GLOW_SEMI = {'enemy_severus3': (150, 255, 150)}
+SMOKE_FIX = {'castle_2', 'castle_3', 'enemy_hierophant', 'enemy_lucia'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
 # komşu nesneden taşan parçalar: kaynak sayfada silinecek dikdörtgenler (x0, y0, x1, y1)
 ERASE = {
@@ -286,6 +290,12 @@ def main():
                 col = GLOW_FIX[name]; lum = np.maximum(r, b) / 255
                 for ch in range(3): f[..., ch] = f[..., ch] * (1 - k) + ((col[ch] * lum) if col else (0.55 * lum * 255)) * k
                 c = np.dstack([f[..., :3].clip(0, 255).astype(np.uint8), c[..., 3]])
+            if name in GLOW_SEMI:
+                f = c.astype(np.float32); r, g, b = f[..., 0], f[..., 1], f[..., 2]
+                mg = np.minimum(r, b) - g; k = np.clip((mg - 6) / 40, 0, 1)  # magenta karışmış (kırmızı VE mavi yeşilden fazla): kırmızı kumaş ve altın etkilenmez
+                col = GLOW_SEMI[name]; lum = np.maximum(np.maximum(r, g), b) / 255
+                for ch in range(3): f[..., ch] = f[..., ch] * (1 - k) + col[ch] * lum * k
+                c = np.dstack([f[..., :3].clip(0, 255).astype(np.uint8), c[..., 3]])
             if name in HUE_TOP:
                 top, hue = HUE_TOP[name]
                 rgbf = c[..., :3].astype(np.float32) / 255; mx = rgbf.max(-1); mn = rgbf.min(-1); sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
@@ -312,7 +322,7 @@ def main():
             if name in FLIP: im = im.transpose(Image.FLIP_LEFT_RIGHT)
             if kind in ('unit', 'unitgrid') and im.height > UNIT_H * 1.05:
                 k = UNIT_H / im.height
-                if name in ('enemy_gloriosus1', 'enemy_gloriosus2', 'enemy_gloriosus3', 'enemy_shadowmaster', 'enemy_ironwarden', 'enemy_cavcaptain', 'enemy_centurion', 'enemy_champion', 'enemy_hierophant', 'enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant', 'enemy_malleus', 'enemy_campanus', 'enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'): k *= 1.35  # büyükler daha çok çözünürlük
+                if name in ('enemy_severus3', 'enemy_hubertus', 'enemy_agnes', 'enemy_lucia', 'enemy_godfrey', 'enemy_gloriosus1', 'enemy_gloriosus2', 'enemy_gloriosus3', 'enemy_shadowmaster', 'enemy_ironwarden', 'enemy_cavcaptain', 'enemy_centurion', 'enemy_champion', 'enemy_hierophant', 'enemy_gloriosus', 'enemy_cavalry', 'enemy_ram', 'enemy_catapult', 'enemy_elephant', 'enemy_malleus', 'enemy_campanus', 'enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'): k *= 1.35  # büyükler daha çok çözünürlük
                 im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
             elif im.width > 700:
                 k = 700 / im.width; im = im.resize((700, round(im.height * k)), Image.LANCZOS)
