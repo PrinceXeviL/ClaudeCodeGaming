@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die)$/, STRIP_WAIT = new Set();
+const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle)$/, STRIP_WAIT = new Set();
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -1441,7 +1441,7 @@ function startLevel(idx, chal = null) {
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
-  for (let i = 1; i <= 8; i++) SUF.forEach(sf => keep.add('unit_skel_' + i + sf));
+  for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
   for (const k in MEN) keep.add(MEN[k].pre + '_walk'); // kuledeki iskeletlerin yürüyüşü
@@ -7964,6 +7964,8 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
 }
 
 
+// bekleme döngüsü: 0 durgun kare araya girer (1 nefes, 2 bakınma, 3 sabırsızlık); her kare IDLE_STEP sn, birimler seed ile kaymalı
+const IDLE_SEQ = [0, 0, 1, 1, 0, 0, 2, 2, 0, 0, 1, 1, 0, 3, 3], IDLE_STEP = 0.45;
 function drawUnit(name, im, x, y, face, o) {
   const pad = o.pad || 0, h = o.h * (1 + pad), w = h * im.width / im.height;
   const rig = RIG[o.rig || name] || { legY: 0.7 };
@@ -8036,9 +8038,10 @@ function drawUnit(name, im, x, y, face, o) {
     if (fName) fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * ANIM_META[fName].n) % ANIM_META[fName].n;
   }
   else if (!rig.wings && !(o.rise != null)) {
-    // dururken: yürüyüş şeridinin ayakları kapalı karesi (anim.json "idle"); tek resme dönüp tasarım değişmesin
-    const n = animStrip(name, o.rig, '_walk');
-    if (n && ANIM_META[n].idle != null) { fName = n; fi = ANIM_META[n].idle; }
+    // dururken: Gemini bekleme kareleri (<ad>_idle; 11 Eki, mahzen iskeletleri) varsa nefes / bakınma döngüsü, yoksa yürüyüş şeridinin ayakları kapalı karesi
+    const id = animStrip(name, o.rig, '_idle');
+    if (id) { fName = id; const n = ANIM_META[id].n, Q = IDLE_SEQ, u = Math.floor((time + (o.seed || 0) * 1.37) / IDLE_STEP) % Q.length; fi = Q[u] % n; }
+    else { const n = animStrip(name, o.rig, '_walk'); if (n && ANIM_META[n].idle != null) { fName = n; fi = ANIM_META[n].idle; } }
   }
   const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
   if (window.__animLog && o.logId != null) window.__animLog.push([o.logId, fName, fi, face, !!o.walking, o.dir || '', +x.toFixed(2), +y.toFixed(2)]);
