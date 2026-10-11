@@ -1,0 +1,34 @@
+[
+ {
+  "name": "enemy_severus3_walk",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_severus3_atk",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours green necromantic smoke and a cracked sun staff swings the cracked sun staff forward and a blast of green and gold fire bursts from it, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_severus3_skill",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours green necromantic smoke and a cracked sun staff raises the black teapot high above his head and a huge swirl of green smoke and ghostly skulls erupts from it, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_severus3_die",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours green necromantic smoke and a cracked sun staff is defeated: the green smoke is sucked back into the teapot, the teapot falls from his hand, the green glow fades from his eyes and he collapses onto the ground and lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

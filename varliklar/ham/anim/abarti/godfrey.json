@@ -1,0 +1,66 @@
+[
+ {
+  "name": "enemy_godfrey_walk",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The emblem on the chest is a round sun, never a cross. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_godfrey_atk",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword swings the flaming greatsword in a wide powerful overhead arc that leaves a trail of fire, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. The emblem on the chest is a round sun, never a cross. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_skill",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword bursts out around him, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. The emblem on the chest is a round sun, never a cross. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_die",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. The emblem on the chest is a round sun, never a cross. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_lucia_walk",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Her pendant and all emblems are round suns, never crosses. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_lucia_atk",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer thrusts the glowing holy book forward and a burst of golden light shoots out of it, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Her pendant and all emblems are round suns, never crosses. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_lucia_skill",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer holds the holy book high above her head while golden runes swirl around her and the censer smoke spreads in a wide ring, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Her pendant and all emblems are round suns, never crosses. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_lucia_die",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Her pendant and all emblems are round suns, never crosses. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

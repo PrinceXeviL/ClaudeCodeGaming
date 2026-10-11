@@ -1880,5 +1880,63 @@
   "base": 0.1283,
   "ch": 0.8696,
   "sh": 1
+ },
+ "enemy_lucia_walk": {
+  "n": 32,
+  "fw": 183,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9523,
+  "idle": 17
+ },
+ "enemy_lucia_atk": {
+  "n": 32,
+  "fw": 182,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_lucia_skill": {
+  "n": 32,
+  "fw": 191,
+  "fh": 165,
+  "base": 0.0145,
+  "ch": 0.9709
+ },
+ "enemy_lucia_die": {
+  "n": 33,
+  "fw": 235,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_godfrey_walk": {
+  "n": 32,
+  "fw": 195,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9684,
+  "idle": 23
+ },
+ "enemy_godfrey_atk": {
+  "n": 32,
+  "fw": 181,
+  "fh": 178,
+  "base": 0.0135,
+  "ch": 0.9011
+ },
+ "enemy_godfrey_skill": {
+  "n": 32,
+  "fw": 211,
+  "fh": 175,
+  "base": 0.0136,
+  "ch": 0.9138
+ },
+ "enemy_godfrey_die": {
+  "n": 33,
+  "fw": 271,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
  }
 }

@@ -1,0 +1,130 @@
+[
+ {
+  "name": "enemy_centurion_skillx",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin raises the javelin high and throws it far forward with a big overhead throwing motion, then grabs a new javelin from his back, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_legion_walkx",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_drummer_walkx",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer in white and gold armor with a bear pelt hood marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "seed": 11
+ },
+ {
+  "name": "enemy_legion_atkx",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_solarcher_atkx",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "prompt": "a cartoon roman archer with a bow attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gladiator_atkx",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon gladiator with a sword and a net attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_drummer_atkx",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer with a bear pelt hood stands in place and pounds the big red drum at his waist hard and fast with both drumsticks, alternating left and right hands, his shoulders bouncing with each beat, then returns to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_solarcher_diex",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "prompt": "a cartoon roman archer with a bow is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_legion_diex",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_gladiator_diex",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon gladiator with a sword and a net is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_drummer_diex",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer in white and gold armor with a bear pelt hood is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_legion_skillx",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big red shield raises a javelin over his shoulder and hurls it forward to the right, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_solarcher_skillx",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "prompt": "a cartoon roman archer draws the bow, the arrow tip bursts into flame, and he shoots the flaming arrow forward to the right, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_gladiator_skillx",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon arena gladiator swings a weighted fishing net around once and throws it forward to the right, the net spreading open, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_gladiator_atk2x",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon gladiator with a sword and a net raises the sword high above the head and swings it straight down in one powerful overhead chop, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_gladiator_atk3x",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "prompt": "a cartoon gladiator with a sword and a net swings the sword horizontally from the side in one wide sweeping slash across the body, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ }
+]
