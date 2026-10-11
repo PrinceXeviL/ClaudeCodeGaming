@@ -5763,9 +5763,10 @@ const XBOW = { speed: 0.22, gap: 0.13, aim: 0.3, kick: 0.16, hold: 0.55, tip: [0
 // platform ölçüleri kule görseline göre (görsel kesirleri): x gezinme aralığı, y ayak derinliği, h arbaletçi boyu (hepsinde aynı mutlak boy), clip ön korkuluk
 // 4. kademe kulesi (tower_archer_fan) 3. kademeden kısa kalıyordu (Caner, 10 Eki): w 1.14 ile ~140 birim (3. kademe 134); h buna göre küçüldü (askerin boyu aynı)
 const XBOW_T = {
-  tower_xbow_1: { x: [0.47, 0.47], y: [0.19, 0.22], h: 0.1995, clip: null },
-  tower_xbow_2: { x: [0.37, 0.63], y: [0.17, 0.22], h: 0.191, clip: [[0, 0.08], [0.11, 0.08], [0.5, 0.2], [0.85, 0.09], [1, 0.09]] },
-  tower_xbow_3: { x: [0.3, 0.6], y: [0.21, 0.27], h: 0.166, clip: [[0, 0.17], [0.04, 0.17], [0.43, 0.3], [0.84, 0.16], [1, 0.16]] },
+  // 11 Eki: 1-3. kademe 2. tasarım (Gemini, nm_kemik_kulesi_k123.jpg); okçu boyu öncekiyle aynı mutlak boy (h = 176 / görsel dünya boyu)
+  tower_xbow_1: { x: [0.38, 0.6], y: [0.13, 0.19], h: 0.229, clip: null },
+  tower_xbow_2: { x: [0.34, 0.66], y: [0.13, 0.2], h: 0.181, clip: [[0, 0.15], [0.07, 0.15], [0.5, 0.25], [0.93, 0.15], [1, 0.15]] },
+  tower_xbow_3: { x: [0.36, 0.64], y: [0.16, 0.23], h: 0.15, clip: [[0, 0.18], [0.13, 0.18], [0.5, 0.29], [0.9, 0.18], [1, 0.18]] },
   tower_archer_fan: { x: [0.34, 0.66], y: [0.16, 0.23], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
   tower_archer_bow: { x: [0.34, 0.66], y: [0.16, 0.22], h: 0.149, clip: [[0, 0.19], [0.22, 0.19], [0.5, 0.28], [0.78, 0.19], [1, 0.19]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini)
 };
@@ -6782,9 +6783,9 @@ function drawPlagueCauldron(t, ts) {
 // runes: [x, üst y, alt y, renk] aşağıdan yukarı akan run ışığı; flames: yandaki ruh alevleri (titrer, kıvılcım savurur);
 // eyes: kafatası gözleri; top: tepedeki kafes (çevresinde dönen ruh zerreleri) [x, y, yarıçap]
 const BONE_FX = {
-  tower_xbow_1: { runes: [[0.33, 0.6, 0.72, '110,255,140'], [0.61, 0.6, 0.72, '110,255,140']], top: [0.52, 0.1, 0.32] },
-  tower_xbow_2: { runes: [[0.38, 0.38, 0.66, '110,255,140'], [0.62, 0.38, 0.66, '110,255,140']], flames: [[0.1, 0.55, '170,90,255'], [0.92, 0.32, '200,110,255']], eyes: [[0.13, 0.17], [0.85, 0.17], [0.5, 0.3]], top: [0.5, 0.13, 0.36] },
-  tower_xbow_3: { runes: [[0.36, 0.42, 0.66, '110,255,140'], [0.66, 0.42, 0.66, '110,255,140']], flames: [[0.06, 0.47, '120,255,150'], [0.95, 0.36, '190,110,255']], eyes: [[0.48, 0.275], [0.53, 0.275], [0.12, 0.2], [0.88, 0.2]], top: [0.5, 0.14, 0.4] },
+  tower_xbow_1: { runes: [[0.17, 0.74, 0.79, '110,255,140'], [0.43, 0.74, 0.79, '110,255,140']], top: [0.47, 0.12, 0.3] },
+  tower_xbow_2: { runes: [[0.36, 0.44, 0.65, '110,255,140'], [0.68, 0.44, 0.62, '110,255,140']], flames: [[0.5, 0.03, '120,255,220'], [0.07, 0.11, '120,255,220'], [0.93, 0.11, '120,255,220'], [0.5, 0.21, '120,255,220']], top: [0.5, 0.13, 0.36] },
+  tower_xbow_3: { runes: [[0.36, 0.45, 0.6, '110,255,140'], [0.66, 0.42, 0.52, '110,255,140']], flames: [[0.52, 0.02, '120,255,220'], [0.15, 0.09, '120,255,220'], [0.92, 0.09, '120,255,220']], eyes: [[0.505, 0.215], [0.54, 0.215]], top: [0.5, 0.14, 0.36] },
   tower_archer_fan: { runes: [[0.34, 0.47, 0.6, '230,90,210'], [0.66, 0.47, 0.6, '230,90,210']], top: [0.5, 0.17, 0.38] }, // Ağır Arbaletçiler burcu
   tower_archer_bow: { runes: [[0.37, 0.46, 0.62, '110,255,170'], [0.63, 0.46, 0.62, '110,255,170']], flames: [[0.5, 0.05, '120,255,220'], [0.22, 0.13, '120,255,220'], [0.78, 0.13, '120,255,220'], [0.5, 0.25, '120,255,220'], [0.09, 0.42, '120,255,230'], [0.9, 0.4, '120,255,230']], eyes: [[0.49, 0.33], [0.52, 0.33]], top: [0.5, 0.17, 0.36] }, // Hayalet Okçular: hayalet alevler ve fenerler
 };
