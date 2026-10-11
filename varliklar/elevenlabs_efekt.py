@@ -22,6 +22,11 @@ SFX = {
     'hornb': ('realistic recording of a huge ancient war horn, two long ominous very low blasts, a giant warlord arriving, deep rumbling brass, distant echo across a valley, no music', 4.0, 3),
     # 10 Eki (Caner, 2.): klasik savaş filmlerindeki savaş öncesi borazan (hornw beğenilmedi)
     'hornf': ('epic war horn call before a great battle, like in classic historical war movies, a mighty deep brass battle horn blown by a herald, one long powerful note that rises and holds, a huge army waits, big reverb across the battlefield, no drums, no orchestra', 4.0, 4),
+    # 11 Eki: yeni kule sesleri
+    'soulsuck': ('a tormented ghost soul being sucked into a cursed lantern, rising eerie whoosh with a faint distant scream, dark magic, short, no music', 1.2, 3),
+    'cursegaze': ('a giant evil eye glaring with fury, low ominous dark magic pulse and sinister whispering hiss, curse being cast, short, no music', 1.4, 3),
+    'freeze': ('an enemy instantly frozen into a block of ice, sharp crackling ice forming with a crystalline crunch, short, no music', 0.9, 3),
+    'blooddrain': ('dark blood magic draining life, thick wet liquid swirl and low sinister hum, vampiric, short, no music', 1.4, 2),
     'xbow': ('crossbow firing, sharp taut string twang and bolt release, wooden stock clack, short close recording, no music', 0.6, 3),
     'xbowh': ('heavy siege crossbow firing, loud thick string thump, heavy mechanism clunk, bolt whooshing away, short, no music', 0.9, 2),
     'armorhit': ('crossbow bolt striking steel plate armor, short sharp metallic clang and ricochet ping, no music', 0.5, 3),

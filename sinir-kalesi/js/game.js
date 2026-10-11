@@ -283,6 +283,10 @@ const SOUND = {
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
   yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  soulsuck: { vol: 0.32, gap: 0.6, max: 1, rate: [0.9, 1.1] },      // ruh fenere çekilirken (Ruh Hasadı)
+  cursegaze: { vol: 0.36, gap: 1.2, max: 1, rate: [0.95, 1.05] },    // Lanet Kulesi gözü kurbanı lanetlerken
+  freeze: { vol: 0.4, gap: 0.25, max: 2, rate: [0.92, 1.1] },        // buzlu ok / kılıç düşmanı dondururken
+  blooddrain: { vol: 0.22, gap: 2.5, max: 1, rate: [0.95, 1.05] },   // Kan Ayini can emerken (seyrek, arkada)
   plaguethrow: { vol: 0.5, gap: 0.35, max: 2, rate: [0.94, 1.08] }, // Veba Kazanı sıvıyı fırlatırken: fışkırma (Caner'in 'Liquid Craft' kaydı)
   plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] },  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
   battle:  { vol: 0.5, full: 4 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
@@ -2105,7 +2109,7 @@ function frostHit(e, I) {
   const T = FREEZE.t * (e.def.chief || e.def.boss ? FREEZE.boss : 1);
   e.frostN = 0; e.frozenT = T; e.stun = Math.max(e.stun || 0, T); e.frostCdT = T + FREEZE.cd;
   for (let i = 0; i < 14; i++) { const a = rand(0, Math.PI * 2), v = rand(30, 90); emit(G.parts, { kind: 'chunk', x: e.x, y: e.y - h * 0.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, g: 300, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#d8f2ff' : '#8fd0ff', s0: rand(1.5, 2.6), s1: 1, life: rand(0.4, 0.7) }); }
-  floatText(e.x, e.y - h - 12, 'Dondu!', '#bfe8ff');
+  floatText(e.x, e.y - h - 12, 'Dondu!', '#bfe8ff'); sfx('freeze');
 }
 function stunEnemy(e, t) {
   if (e.plate > 0 || e.def.stoneskin || e.under) return; // zırhlı boss / taş deri / gömülü sersemlemez
@@ -2152,7 +2156,7 @@ function updateSouls(dt) {
     if (o.t >= SOUL.fly && !o.done) {
       o.done = true; const t = o.tower; if (!G.towers.includes(t)) continue;
       for (const id of spellIds()) if (NECRO_SPELLS[id] && G.spells[id] > 0) G.spells[id] = Math.max(0, G.spells[id] - o.amt);
-      t.soulT = 0.45; G.soulFlash = time;
+      t.soulT = 0.45; G.soulFlash = time; sfx('soulsuck');
       const c = towerEye(t); for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: c.x + rand(-5, 5), y: c.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-30, 5), col: i % 2 ? '150,255,220' : '190,140,255', s0: 3, s1: 0.5, life: 0.5 });
     }
   }
@@ -11383,7 +11387,7 @@ function updateGaze(t, L, dt) {
       for (let i = 0; i < 8; i++) { const a = rand(0, Math.PI * 2); emit(G.parts, { kind: 'glow', add: true, x: v.x + Math.cos(a) * 8, y: aimY(v) + Math.sin(a) * 6, vx: -Math.cos(a) * 20, vy: -rand(10, 25), col: i % 3 ? '190,90,255' : '255,60,90', s0: 3, s1: 0.5, life: rand(0.3, 0.5) }); }
       G.effects.push({ kind: 'ring', x: v.x, y: v.y, r: 18, col: '190,90,255', t: 0, dur: 0.4 });
     }
-    floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 8, 'Lanet!', '#d8a8ff');
+    floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 8, 'Lanet!', '#d8a8ff'); sfx('cursegaze');
     t.gazeHit = time; t.gaze = null; t.gazeT = 0; // sonraki kurbana
   }
 }
@@ -11433,6 +11437,7 @@ function updateAltar(t, dt) {
         const y0 = aimY(e); for (let i = 0; i < 2; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx: (eye.x - e.x) / 0.55, vy: (eye.y - y0) / 0.55, col: i ? '255,40,50' : '200,10,30', s0: rand(2.4, 3.6), s1: 1, life: 0.55, a: 0.8 }); // kan akar
       }
       if (got > 0) {
+        sfx('blooddrain');
         t.scareT = Math.max(t.scareT || 0, time + 0.3); // göz kanla kızarır
         const al = G.soldiers.filter(s => !s.dead && !s.wall && s.hp < s.maxHp && dist(s.x, s.y, t.x, t.y) <= L.range).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp);
         let pool = got * ri.heal;
