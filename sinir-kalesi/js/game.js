@@ -1062,8 +1062,29 @@ const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dün
 let BGM = { x: 0, y: 0 };
 const bgBox = () => ({ x: -BGM.x, y: -BGM.y, w: W + 2 * BGM.x, h: H + 2 * BGM.y });
 function renderBackground(lv, paths, res = 2, m = null) {
-  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = [];
-  try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; return c; } finally { BGM = { x: 0, y: 0 }; }
+  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = [];
+  try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; return c; } finally { BGM = { x: 0, y: 0 }; }
+}
+let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
+// Dekor ışıkları (11 Eki, Caner): sıradan ışıklar (mum, fener) sıcak sarı, büyülü şeyler (mantar, mahzen, kütük gözü) yeşil; noktalar img/lights.json (varliklar/isik_isle.py)
+let DECOR_LIGHTS = {};
+fetch('img/lights.json?v=' + (window.SURUM || ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => { DECOR_LIGHTS = m; }).catch(() => {});
+function bgLight(name, x, y, w) {
+  const L = name && DECOR_LIGHTS[name], im = L && spr(name); if (!im) return;
+  const h = w * im.height / im.width;
+  for (const [fx, fy, fr] of L.pts) BG_LIGHTS.push({ x: x + (fx - 0.5) * w, y: y - h + fy * h, r: Math.max(2.5, fr * w * 0.9), col: L.col, ph: (x * 7.3 + y * 3.1 + fx * 50) % 9 });
+}
+function drawBgLights(list, view) {
+  if (!list || !list.length) return;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const o of list) {
+    if (view && (o.x < view[0] || o.x > view[2] || o.y < view[1] || o.y > view[3])) continue; // ekran dışı
+    if (o.col === 'warm') { // mum alevi: düzensiz titreme
+      const f = 0.75 + 0.15 * Math.sin(time * 9 + o.ph) + 0.1 * Math.sin(time * 23 + o.ph * 2.3);
+      glow(ctx, o.x, o.y, o.r * 2.6 * f, '255,190,90', 0.28 * f); glow(ctx, o.x, o.y - o.r * 0.2, o.r * 1.1 * f, '255,235,170', 0.35 * f);
+    } else { const f = 0.6 + 0.4 * Math.sin(time * 1.7 + o.ph); glow(ctx, o.x, o.y, o.r * 2.2, '120,255,150', 0.18 * f); } // büyülü: yavaş nabız
+  }
+  ctx.restore();
 }
 let BG_HANDS = []; // zemin çizilirken mezardan çıkan ellerin yerleri (zemine çizilmez, her karede canlı çizilir)
 // çerçevenin dışından gelen yollar taşma payında da sürsün: giriş ucu dışarıdaki yollar ilk doğrultusunda geriye uzatılır
@@ -1236,7 +1257,7 @@ function renderBackground0(lv, paths, res) {
   for (let i = 0, n = 0; i < 400 * DK && n < (th.bushes || 0) * DK; i++) {
     const x = rnd() * W, y = rnd() * H, b = spr(th.bushSpr ? th.bushSpr[i % th.bushSpr.length] : 's2_bush_' + (1 + (i % 2)));
     if (blocked(x, y, 6) || !b) continue;
-    n++; drawSprite(g, b, x, y + 4, 12 + rnd() * 10);
+    const bw = 12 + rnd() * 10; n++; drawSprite(g, b, x, y + 4, bw); bgLight(th.bushSpr && th.bushSpr[i % th.bushSpr.length], x, y + 4, bw);
   }
   // kayalar
   for (let i = 0, n = 0; i < 400 * DK && n < th.rocks * DK; i++) {
@@ -1247,7 +1268,7 @@ function renderBackground0(lv, paths, res) {
     if (rockIm) {
       const m = SPR_META[rockName], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (s / 8) : s * 3;
       g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3, y + s * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
-      drawSprite(g, rockIm, x, y + s * 0.5, w);
+      drawSprite(g, rockIm, x, y + s * 0.5, w); bgLight(rockName, x, y + s * 0.5, w);
       continue;
     }
     g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 2, y + 3, s, s * 0.5, 0, 0, Math.PI * 2); g.fill();
@@ -1276,7 +1297,7 @@ function renderBackground0(lv, paths, res) {
       if (!q) continue;
       props.push([q[0], q[1], w * 0.45], [q[0], q[1] - h * 0.5, w * 0.4]);
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q[0] + 4, q[1] + 2, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); g.fill();
-      drawSprite(g, im, q[0], q[1] + 4, w);
+      drawSprite(g, im, q[0], q[1] + 4, w); bgLight(name, q[0], q[1] + 4, w);
     }
     // mezardan çıkan eller (11 Eki, Caner): orman temalarında, mezarlıkta daha çok
     if (th.dense && spr('nm3_hand_idle')) for (let i = 0, n = th === THEMES.graveyard ? 2 : 1; i < n; i++) { // 11 Eki (Caner): az olsun
@@ -1295,7 +1316,7 @@ function renderBackground0(lv, paths, res) {
         g.fillStyle = 'rgba(52,36,22,0.75)'; g.beginPath(); g.ellipse(x, y + 4, w * 0.5, w * 0.2, 0, 0, Math.PI * 2); g.fill(); // toprak höyüğü
         g.fillStyle = 'rgba(90,66,40,0.5)'; g.beginPath(); g.ellipse(x - 1, y + 3, w * 0.4, w * 0.12, 0, 0, Math.PI * 2); g.fill();
         drawSprite(g, im, x, y + 1, w);
-        if (rnd() < 0.25) { g.fillStyle = '#e8e0c8'; g.fillRect(x + w * 0.35, y - 2, 1.6, 4); g.fillStyle = 'rgba(140,255,150,0.8)'; g.beginPath(); g.ellipse(x + w * 0.35 + 0.8, y - 3.5, 1.2, 2, 0, 0, Math.PI * 2); g.fill(); } // yeşil alevli mum
+        if (rnd() < 0.25) { g.fillStyle = '#e8e0c8'; g.fillRect(x + w * 0.35, y - 2, 1.6, 4); g.fillStyle = 'rgba(255,205,110,0.9)'; g.beginPath(); g.ellipse(x + w * 0.35 + 0.8, y - 3.5, 1.2, 2, 0, 0, Math.PI * 2); g.fill(); BG_LIGHTS.push({ x: x + w * 0.35 + 0.8, y: y - 3.5, r: 4, col: 'warm', ph: rnd() * 9 }); } // mum (11 Eki: sıradan ışık sarı)
       }
     }
   }
@@ -1310,10 +1331,10 @@ function renderBackground0(lv, paths, res) {
       const [x, y] = sideXY(), sz = 5 + srnd() * 8; if (sBlocked(x, y, sz)) continue; n++;
       const bush = th.bushSpr && srnd() < 0.4, name = bush ? th.bushSpr[n % th.bushSpr.length] : th.rockSpr ? th.rockSpr[n % th.rockSpr.length] : null, im = name && spr(name);
       if (!im) continue;
-      if (bush) { drawSprite(g, im, x, y + 4, 12 + srnd() * 10); continue; }
+      if (bush) { const bw = 12 + srnd() * 10; drawSprite(g, im, x, y + 4, bw); bgLight(name, x, y + 4, bw); continue; }
       const m = SPR_META[name], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (sz / 8) : sz * 3;
       g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3, y + sz * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
-      drawSprite(g, im, x, y + sz * 0.5, w);
+      drawSprite(g, im, x, y + sz * 0.5, w); bgLight(name, x, y + sz * 0.5, w);
     }
     for (let i = 0; i < 2500 && side.length < th.trees * TREE_MUL * area * 1.2; i++) { // ağaçlar (ana alandaki gibi küme küme)
       const [x, y] = sideXY(), sz = 10 + srnd() * 9;
@@ -1342,7 +1363,7 @@ function renderBackground0(lv, paths, res) {
     if (treeIm) {
       const m = SPR_META[treeName], w = m ? m[0] * TREE_K * (th.treeK || 1) * (0.75 + (s - 10) / 9 * 0.4) : s * 3.4;
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(x + 5, y + 3, w * 0.36, w * 0.11, 0, 0, Math.PI * 2); g.fill();
-      drawSprite(g, treeIm, x, y + 5, w);
+      drawSprite(g, treeIm, x, y + 5, w); bgLight(treeName, x, y + 5, w);
       continue;
     }
     g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(x + 3, y + 4, s * 0.9, s * 0.45, 0, 0, Math.PI * 2); g.fill();
@@ -12786,7 +12807,7 @@ const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
   if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
-  if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; } // ekran genişledi: taşma payıyla yeniden
+  if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; R.lights = []; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
@@ -12795,6 +12816,7 @@ function regionBg(ep) {
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
     R.parts.push(part);
+    R.lights = (R.lights || []).concat((part.lights || []).filter(o => o.x >= k * W / E.zones.length - 20 && o.x < (k + 1) * W / E.zones.length + 20)); // kendi mekânındakiler
     R.hands = (R.hands || []).concat((part.hands || []).filter(o => o.x >= k * W / E.zones.length - 20 && o.x < (k + 1) * W / E.zones.length + 20)); // mezar elleri: kendi mekânında
     if (R.parts.length < E.zones.length) return R.parts[0];
   }
@@ -12919,6 +12941,7 @@ function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
   ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
+  drawBgLights(R.lights);
   drawGraveHands(R.hands, uiParts);
   MAPFX.fog = drawMapFog2(E, ep, road, bm);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
@@ -13571,6 +13594,7 @@ function drawPlay() {
   ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
   const bm = G.bg.m || { x: 0, y: 0 };
   ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+  drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   drawGraveHands(G.bg.hands, G.parts);
   for (const d of G.decals) {
     if (d.kind === 'splat') {
