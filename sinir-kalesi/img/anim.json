@@ -1878,5 +1878,76 @@
   "fh": 310,
   "base": 0.0145,
   "ch": 0.9663
+ },
+ "unit_corpsegolem_rise": {
+  "n": 6,
+  "fw": 321,
+  "fh": 299,
+  "base": 0.1283,
+  "ch": 0.8696,
+  "sh": 1
+ },
+ "enemy_solarcher_walkx": {
+  "n": 32,
+  "fw": 109,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9499
+ },
+ "enemy_heavy_walkx": {
+  "n": 32,
+  "fw": 164,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9215
+ },
+ "enemy_gladiator_walkx": {
+  "n": 32,
+  "fw": 110,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952
+ },
+ "enemy_hunter_walkx": {
+  "n": 32,
+  "fw": 233,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.941
+ },
+ "enemy_torch_walkx": {
+  "n": 32,
+  "fw": 214,
+  "fh": 169,
+  "base": 0.0144,
+  "ch": 0.9472
+ },
+ "enemy_flagellant_walkx": {
+  "n": 32,
+  "fw": 223,
+  "fh": 170,
+  "base": 0.0145,
+  "ch": 0.9419
+ },
+ "unit_skel_1_walkx": {
+  "n": 32,
+  "fw": 141,
+  "fh": 173,
+  "base": 0.0145,
+  "ch": 0.9225
+ },
+ "unit_skel_2_walkx": {
+  "n": 32,
+  "fw": 136,
+  "fh": 172,
+  "base": 0.0145,
+  "ch": 0.9322
+ },
+ "unit_skel_3_walkx": {
+  "n": 32,
+  "fw": 138,
+  "fh": 173,
+  "base": 0.0145,
+  "ch": 0.9229
  }
 }

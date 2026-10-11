@@ -811,7 +811,8 @@ const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
   ghoul: { hp: 520, dmg: [10, 16], armor: 0.35, rate: 1.1, speed: 40, engage: 80 } };
 // ----- Mezar Bekçisi (12 Eki, Caner): 1. seferde 5. bölümden itibaren kalenin dibinde bir mezar; topraktan el uzanır (dokunulabilir),
 // altınla Ceset Golemi çıkar (vuruşu çevresine de işler), kapının önünü tutar; ölürse respawn sn sonra yeniden kalkar. Mahzen kapağı sistemiyle aynı.
-const GRAVE = { cost: 110, respawn: 30, w: 56, from: 4, knight: { hp: 620, dmg: [16, 24], armor: 0.3, rate: 1.2, speed: 34, engage: 80, aoe: 0.5 } }; // 12 Eki (Caner): mezardan Ceset Golemi kalkar; vuruşu çevresine de işler
+// rise: mezardan çıkış şeridinin (unit_corpsegolem_rise, 6 kare Gemini) kare süreleri; golem bu süre bitince savaşa girer
+const GRAVE = { cost: 110, respawn: 30, w: 56, from: 4, rise: [0.24, 0.24, 0.28, 0.22, 0.2, 0.5], knight: { hp: 620, dmg: [16, 24], armor: 0.3, rate: 1.2, speed: 34, engage: 80, aoe: 0.5 } }; // 12 Eki (Caner): mezardan Ceset Golemi kalkar; vuruşu çevresine de işler
 const epRel = (lv) => LEVELS.indexOf(lv) - LEVELS.findIndex(l => l.ep === lv.ep); // seferin içindeki sıra (0..19)
 function hatchSpots(lv, paths) {
   if (!NECRO) return [];
@@ -3779,7 +3780,7 @@ function updateSoldier(s, dt) {
     if (s.respawnT <= 0) {
       s.dead = false; s.hp = s.maxHp;
       if (s.hero) G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,190', t: 0, dur: 0.8 }); // olduğu yerde, ışık sütunuyla dirilir
-      else if (s.ghoul) { s.x = s.ghoul.x; s.y = s.ghoul.y; s.born = G.t; ghoulRiseFx(s.ghoul); }
+      else if (s.ghoul) { s.x = s.ghoul.x; s.y = s.ghoul.y; s.born = G.t + (s.ghoul.grave ? graveRise(s.ghoul) : 0); if (!s.ghoul.grave) ghoulRiseFx(s.ghoul); }
       else if (s.guard) { s.x = s.rx; s.y = s.ry; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '140,255,140', t: 0, dur: 0.6 }); }
       else { s.x = s.tower.x; s.y = s.tower.y + 6; riseFromGrave(s); }
     }
@@ -5538,10 +5539,9 @@ function openHatch(h) {
   G.gold -= cost; h.state = 'open'; h.openT = G.t;
   if (h.grave) { // Ceset Golemi (Caner, 12 Eki): golemin çizimi ve şeritleri, iri; ömrü yok (büyüdeki golemden farkı)
     const K = GRAVE.knight, s = { guard: true, ghoul: h, militia: false, x: h.x, y: h.y, rx: h.rx, ry: h.ry, hp: K.hp, maxHp: K.hp, dmg: K.dmg, armor: K.armor,
-      rate: K.rate, speed: K.speed, engage: K.engage, aoe: K.aoe, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t + 0.35,
+      rate: K.rate, speed: K.speed, engage: K.engage, aoe: K.aoe, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t + graveRise(h),
       big: 'unit_corpsegolem', bh: BIG_H.golem };
     h.ghoul = s; G.soldiers.push(s); h.burstT = G.t;
-    ghoulRiseFx(h);
     for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'chunk', x: h.x + rand(-10, 10), y: h.y - rand(0, 6), vx: rand(-90, 90), vy: -rand(80, 200), g: 520, vr: rand(-12, 12), rot: rand(0, 6), col: i % 2 ? '#5a4632' : '#3a2c20', s0: rand(1.6, 3), s1: 1, life: rand(0.6, 1), floor: h.y + rand(-4, 6) });
     shakeScreen(2.5, 0.25); sfx('raise'); sfx('rattle'); mortSay('grave', true);
     return true;
@@ -5617,6 +5617,36 @@ function drawGrave(h) {
     ctx.strokeStyle = '#96ff82'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(h.x, h.y - 30, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
     drawSkullIcon(h.x, h.y - 30, 5);
   }
+}
+// mezardan çıkış (12 Eki, Caner: "kare kare kaliteli"): el → iki kol ve başlar → bele kadar → diz → ayağa kalkıp kükrer.
+// Şerit yoksa eski yol: golem hemen belirir (büyüyerek).
+function graveRise(h) {
+  if (!spr('unit_corpsegolem_rise') || !ANIM_META.unit_corpsegolem_rise) { ghoulRiseFx(h); return 0.35; }
+  h.riseT = G.t; h.riseF = -1;
+  return GRAVE.rise.reduce((a, b) => a + b, 0);
+}
+function drawGraveRise(h) {
+  if (h.riseT == null) return false;
+  const F = ANIM_META.unit_corpsegolem_rise, im = spr('unit_corpsegolem_rise'), R = GRAVE.rise, T = R.reduce((a, b) => a + b, 0);
+  let u = G.t - h.riseT;
+  if (!F || !im || u > T + 0.15) { h.riseT = null; return false; }
+  let i = 0; for (let v = u; i < R.length - 1 && v >= R[i]; i++) v -= R[i];
+  if (i !== h.riseF) { // kareye özgü toz, sarsıntı ve ses (her kare bir kez)
+    h.riseF = i;
+    const n = [10, 8, 14, 6, 4, 8][i];
+    for (let j = 0; j < n; j++) emit(G.parts, { kind: 'chunk', x: h.x + rand(-12, 12), y: h.y - rand(0, 8), vx: rand(-80, 80), vy: -rand(60, i === 2 ? 210 : 150), g: 520, vr: rand(-12, 12), rot: rand(0, 6), col: j % 2 ? '#5a4632' : '#3a2c20', s0: rand(1.4, 2.8), s1: 1, life: rand(0.5, 0.9), floor: h.y + rand(-4, 6) });
+    if (i === 0) { // sütun ve toz bulutu kareyi örtmesin: yalnız halka ve zerreler
+      G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 30, col: '190,110,255', t: 0, dur: 0.5 }); sfx('raise');
+      for (let j = 0; j < 12; j++) emit(G.parts, { kind: 'glow', add: true, x: h.x + rand(-14, 14), y: h.y - rand(0, 10), vy: -rand(25, 60), drag: 1.5, col: j % 3 ? '130,255,120' : '200,110,255', s0: rand(2.5, 4), s1: 0.5, life: rand(0.5, 0.9) });
+    }
+    if (i === 2) { shakeScreen(2.5, 0.25); sfx('rattle'); }
+    if (i === 5) { shakeScreen(3, 0.3); sfx('stomp'); G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 36, col: '150,255,130', t: 0, dur: 0.5 }); }
+  }
+  const g = h.ghoul, face = g ? g.face || 1 : 1;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, h.x, h.y - 10, 40, '150,255,130', 0.3 * (1 - clamp(u / T, 0, 1)) + 0.1); ctx.restore();
+  ctx.save(); ctx.globalAlpha = u > T ? clamp(1 - (u - T) / 0.15, 0, 1) : 1; // son kareden yürüyen golemine yumuşak geçiş
+  ctx.translate(h.x, h.y); ctx.scale(face, 1); drawFrame(im, F, i, BIG_H.golem); ctx.restore();
+  return true;
 }
 // ----- şapel ağacı: Kemik Devi kapıyı tutar (son kademe Kemik Kolos: daha iri, yeri döver) -----
 function chapelGate() { // devin bekleyeceği yer: bayrak seçildiyse orası, yoksa kaleye giren yolun kapıdan biraz önü
@@ -7821,10 +7851,11 @@ function drawSoldier(s) {
   const name = s.hero ? s.def.sprite : s.merc ? 'soldier' : s.militia ? 'militia' : 'soldier';
   // iri birimler kendi görselleriyle (çürük tonu yok)
   if (NECRO && s.big && spr(s.big)) {
+    if (s.ghoul && s.ghoul.grave && drawGraveRise(s.ghoul) && G.t < s.born) return; // mezardan çıkış kareleri (birimlerle aynı katman ve ışık)
     if (s.born != null && G.t < s.born) return;
     const lunge = s.bigAtk && fighting && s.atk < s.rate * 0.45 && spr(s.bigAtk); // vuruş anında saldırı pozu
     const im = lunge || spr(s.big), walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
-    const ch = s.bh, rise = s.born != null && G.t - s.born < 0.7 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.7, 0, 1)) : null;
+    const ch = s.bh, rise = !(s.ghoul && s.ghoul.grave && spr('unit_corpsegolem_rise')) && s.born != null && G.t - s.born < 0.7 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.7, 0, 1)) : null;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.55, s.golem ? '150,255,110' : '170,120,255', 0.2); ctx.restore();
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, ch * 0.32, ch * 0.09, 0, 0, Math.PI * 2); ctx.fill();
     // Wan şeritleri geldiyse onlar oynar (saldırı: vuruş döngüsüne bağlı kare, yürüyüş: 16 fps); yoksa çizimden hareket
@@ -15220,6 +15251,7 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
 window.__game = {
+  openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
   cut: (n) => spr(n) && ARMS[n] ? cutImage(spr(n), ARMS[n]) : null, ARMS,
   // arsa denetimi (test): yolun çizilen şekline (koyu kenar dahil) taşan arsaları bulur, en yakın uygun yeri önerir
   plotAudit(fix = false, rw = 62) { // rw: arsanın değmeyeceği yol genişliği (ROAD_K katı)
