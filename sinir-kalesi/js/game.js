@@ -1716,7 +1716,7 @@ function fogTex(col, v) {
 // front=false: binanın arkasında kalan yarı (binadan önce çizilir), true: önündeki yarı (soluk, binayı örtmesin).
 const TOWER_FOG = { altar: { n: 9, a: 0.9, col: ['150,110,200', '120,70,170'] }, archer: { n: 11, a: 1, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
 function drawTowerFog(t, ts, front) {
-  const F = NECRO && TOWER_FOG[t.type]; if (!F) return;
+  const F = NECRO && TOWER_FOG[t.type] && t.spec !== 'bow' ? TOWER_FOG[t.type] : null; if (!F) return; // 11 Eki (Caner): Hayalet Okçular dumansız
   const s = ts.w / 50, R = ts.w * 0.56, cy = ts.bottom - 3 * s;
   for (let i = 0; i < F.n; i++) {
     const sp = 0.07 + (i % 3) * 0.025, a = time * sp * (i % 2 ? 1 : -1) + i * 2.399 + t.x * 0.013, sn = Math.sin(a);
@@ -6875,7 +6875,7 @@ const BONE_FX = {
   tower_xbow_2: { runes: [[0.36, 0.44, 0.65, '110,255,140'], [0.68, 0.44, 0.62, '110,255,140']], top: [0.5, 0.13, 0.36] }, // 11 Eki: köşe kafatasları kanlı, alevsiz
   tower_xbow_3: { runes: [[0.354, 0.47, 0.67, '110,255,140'], [0.637, 0.515, 0.647, '110,255,140']], top: [0.5, 0.18, 0.36] }, // 11 Eki: kafataslar kanlı, alevsiz ve göz ışıksız
   tower_archer_fan: { runes: [[0.36, 0.49, 0.615, '230,90,210'], [0.625, 0.49, 0.6, '230,90,210']], top: [0.5, 0.2, 0.4] }, // Ağır Arbaletçiler burcu
-  tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], flames: [[0.1, 0.45, '120,255,230'], [0.9, 0.45, '120,255,230']], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular: fenerler (11 Eki: köşe kafatasları kanlı, alevsiz)
+  tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular (11 Eki: kanlı kafataslı, dumansız; fenerler TOWER_LIVE.swing ile sallanır)
 };
 // Ruh Feneri (10 Eki, 3. tasarım, Caner'in görseli): fener (1. kademe) / feneri tutan kol (2-3. kademe) ayrı katman (tower_mage_N_arm,
 // varliklar/ruh_feneri_isle.py), pivot [%x, %y] çevresinde döner. Boşta hafifçe sallanır (swing, f); savaşırken ya da ruh çekerken
@@ -7132,7 +7132,7 @@ function litOf(im, cols, strip) {
 // kaydırılır, direğe yakın kısım sabit), rünlerin rengi yavaşça yeşil → mor → kızıl döner (<ad>_rune beyaz maske, boyanıp üstüne çizilir).
 // Kıvılcım/parıltı yok. Katmanlar ve kutular: varliklar/kule_canli_isle.py (kutular görsel kesri x0, y0, x1, y1).
 const TOWER_LIVE = {
-  tower_archer_bow: {flags: [[0.0396, 0.5896, 0.1344, 0.7349], [0.8542, 0.5896, 0.95, 0.7349]], rune: [0.3396, 0.4598, 0.6698, 0.7496]},
+  tower_archer_bow: {flags: [[0.0396, 0.5896, 0.1344, 0.7349], [0.8542, 0.5896, 0.95, 0.7349]], swing: [[0.0396, 0.3648, 0.1542, 0.5162, 0.0917, 0.3648], [0.8521, 0.3648, 0.9583, 0.5162, 0.9042, 0.3648]], rune: [0.3396, 0.4598, 0.6698, 0.7496]},
   tower_archer_fan: {flags: [[0.0292, 0.2843, 0.1594, 0.5599], [0.8292, 0.2843, 0.9698, 0.5599]], rune: [0.3, 0.3299, 0.7594, 0.6494]},
   tower_xbow_1: {rune: [0.2792, 0.7096, 0.7198, 0.8194]},
   tower_xbow_2: {rune: [0.2792, 0.4399, 0.6792, 0.6899]},
@@ -7167,6 +7167,13 @@ function drawTowerLive(t, ts) { // kulenin yerel koordinatında: (0,0) tabanın 
       const u = (k + 0.5) / N, dx = w * (0.075 * Math.pow(u, 1.3) * Math.sin(time * 2.3 + sd + i * 1.7 - u * 3.4) + 0.018 * u * Math.sin(time * 5.1 + i * 2.1 + sd));
       ctx.drawImage(im, 0, k * ih / N, iw, ih / N + 0.6, p.x + dx, p.y + k * h / N, w, h / N + 0.6);
     }
+  });
+  if (L.swing) L.swing.forEach((b, i) => { // fener zincirinde hafifçe sallanır, camın içi soluk yanıp söner (duman yok)
+    const im = spr(ts.name + '_sw' + (i + 1)); if (!im) return;
+    const p = P(b), w = (b[2] - b[0]) * ts.w, h = (b[3] - b[1]) * ts.h, pv = P([b[4], b[5]]), a = Math.sin(time * 1.6 + sd + i * 2.2) * 0.07 + Math.sin(time * 3.1 + i) * 0.015;
+    ctx.save(); ctx.translate(pv.x, pv.y); ctx.rotate(a); ctx.translate(-pv.x, -pv.y); ctx.drawImage(im, p.x, p.y, w, h);
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, pv.x, p.y + h * 0.66, w * 0.4, '130,255,220', 0.14 + 0.07 * Math.sin(time * 5 + i * 1.7) + 0.04 * Math.sin(time * 13 + i));
+    ctx.restore();
   });
   const R = L.rune && spr(ts.name + '_rune');
   if (R) { // renk döngüsü: her renkte ~5 sn durur, ~3 sn'de ötekine geçer
@@ -7614,9 +7621,10 @@ function drawSoldier(s) {
     s.px = s.x; s.py = s.y;
     const spR = sp2 && sp2 !== 'bow' && s.tower.ab ? s.tower.ab[sp2] || 0 : 0; // kalkan/kılıç kademesi
     const ch = SKEL_H[look] * UNIT_K * (1 + 0.05 * Math.max(0, spR - 1));
-    if (spR >= 2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.55, ch * (0.55 + 0.1 * spR), sp2 === 'shield' ? '120,200,255' : '120,255,120', 0.12 + 0.06 * spR + Math.sin(time * 4 + s.slot) * 0.04); ctx.restore(); }
+    const elite = look === 4 || look === 5; // 11 Eki (Caner): 4. kademe iskeletlerde yeşil duman/ışık yok, yalnız gözleri parlar
+    if (spR >= 2 && !elite) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.55, ch * (0.55 + 0.1 * spR), sp2 === 'shield' ? '120,200,255' : '120,255,120', 0.12 + 0.06 * spR + Math.sin(time * 4 + s.slot) * 0.04); ctx.restore(); }
     // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore();
+    if (!elite) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore(); }
     if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
     const rise = !s.door && s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir

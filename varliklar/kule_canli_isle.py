@@ -21,6 +21,8 @@ FLAGS = {
     'tower_archer_fan': [((0.03, 0.285, 0.16, 0.56), 'red'), ((0.83, 0.285, 0.97, 0.56), 'red')],
     'tower_archer_bow': [((0.04, 0.59, 0.135, 0.735), 'teal'), ((0.855, 0.59, 0.95, 0.735), 'teal')],
 }
+# sallanan fenerler (11 Eki): kutu (x0, y0, x1, y1) ve asılma noktası (görsel kesri); kutudaki her şey (zincirin alt kısmı + fener) ayrı katman
+SWING = {'tower_archer_bow': [((38 / 960, 472 / 1294, 148 / 960, 668 / 1294), (88 / 960, 472 / 1294)), ((818 / 960, 472 / 1294, 920 / 960, 668 / 1294), (868 / 960, 472 / 1294))]}
 RUNES = {
     'tower_xbow_1': [(0.28, 0.71, 0.36, 0.80), (0.62, 0.72, 0.72, 0.82)],
     'tower_xbow_2': [(0.28, 0.44, 0.37, 0.69), (0.58, 0.44, 0.68, 0.67)],
@@ -54,7 +56,7 @@ def cloth_mask(a, box, kind):
 def main():
     os.makedirs(OUT, exist_ok=True)
     live, man = {}, set(json.load(open(os.path.join(IMG, 'manifest.json'))))
-    for name in set(FLAGS) | set(RUNES):
+    for name in set(FLAGS) | set(RUNES) | set(SWING):
         tam = os.path.join(OUT, name + '_tam.webp')
         if not os.path.exists(tam): shutil.copy(os.path.join(IMG, name + '.webp'), tam)
         tamf = os.path.join(OUT, name + '_front_tam.webp')
@@ -68,7 +70,12 @@ def main():
             f = a[y0:y1, x0:x1].copy(); f[..., 3] = np.where(m[y0:y1, x0:x1], f[..., 3], 0)
             fn = f'{name}_flag{i}.webp'; Image.fromarray(f).save(os.path.join(IMG, fn), 'WEBP', quality=90, method=6); man.add(fn)
             L.setdefault('flags', []).append([round(x0 / W, 4), round(y0 / H, 4), round(x1 / W, 4), round(y1 / H, 4)])
-        if FLAGS.get(name):
+        for i, (box, piv) in enumerate(SWING.get(name, []), 1):
+            x0, y0, x1, y1 = px(box, W, H); m = np.zeros((H, W), bool); m[y0:y1, x0:x1] = a[y0:y1, x0:x1, 3] > 0; cut |= m
+            f = a[y0:y1, x0:x1].copy()
+            fn = f'{name}_sw{i}.webp'; Image.fromarray(f).save(os.path.join(IMG, fn), 'WEBP', quality=90, method=6); man.add(fn)
+            L.setdefault('swing', []).append([round(x0 / W, 4), round(y0 / H, 4), round(x1 / W, 4), round(y1 / H, 4), piv[0], piv[1]])
+        if FLAGS.get(name) or SWING.get(name):
             b = a.copy(); b[..., 3] = np.where(cut, 0, b[..., 3]); Image.fromarray(b).save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=88, method=6)
             if os.path.exists(tamf):
                 fr = np.asarray(Image.open(tamf).convert('RGBA')).copy(); fr[..., 3] = np.where(cut[:fr.shape[0]], 0, fr[..., 3])

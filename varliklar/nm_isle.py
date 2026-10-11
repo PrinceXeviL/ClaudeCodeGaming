@@ -42,7 +42,8 @@ SHEETS = [
     ('nm_veba_kazani_v3.jpg', ['tower_artillery_1', 'tower_artillery_2', 'tower_artillery_catapult'], 'tower'),  # 10 Eki: Veba Kazanı 1-2 (kafatası ocaklı kazan, boynuzlu kafatası kazan) ve Ceset Mancınığı (4. kademe)
     ('nm_veba_kazani.jpg', [None, None, 'tower_artillery_3'], 'tower'),  # 10 Eki: Veba Kazanı 2. tasarım (kemik üçayaklı kazan, kaburga ocağı, tepesi kazan olan dev boynuzlu kafatası; eski: nm_veba_tareti.jpg, nm_kazan.jpg)
     ('nm_lanet_kulesi.jpg', ['tower_altar_1', 'tower_altar_2', 'tower_altar_3'], 'tower'),  # 10 Eki: Lanet Kulesi 2. tasarım (gözlü dikilitaş, uçan kitaplı sütun, dev gözlü kara mabet; eski: nm_sunak.jpg)
-    ('nm_iskeletler.jpg', ['unit_skel_1', 'unit_skel_2', 'unit_skel_3', 'unit_skel_4', 'unit_skel_5'], 'unit'),
+    ('nm_mahzen_k4_iskeletler_v2.jpg', ['unit_skel_4', 'unit_skel_5'], 'unit'),  # 11 Eki: 4. kademe 2. tasarım (Mezar Bekçisi: tabut kalkan + rünlü gürz; Ölüm Şövalyesi: taçlı, iki alevli kılıç)
+    ('nm_iskeletler.jpg', ['unit_skel_1', 'unit_skel_2', 'unit_skel_3', None, None], 'unit'),  # 4-5 artık nm_mahzen_k4_iskeletler_v2.jpg
     ('nm_dusman_1.jpg', ['enemy_legion', 'enemy_solarcher', 'enemy_gladiator', 'enemy_assassin'], 'unit'),
     ('nm_dusman_2.jpg', ['enemy_heavy', 'enemy_cavalry', 'enemy_priest', 'enemy_gloriosus'], 'unit'),
     ('nm_kusatma.jpg', ['enemy_ram', 'enemy_catapult'], 'unit'),

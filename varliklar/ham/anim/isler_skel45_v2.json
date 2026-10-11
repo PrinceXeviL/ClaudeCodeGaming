@@ -1,0 +1,16 @@
+[
+ {
+  "name": "unit_skel_4_walk",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "prompt": "a cartoon huge armored skeleton grave warden in black spiked plate armor and horned helmet, with a big coffin tower shield and a spiked mace with green runes walking in place, slow heavy walk cycle, legs stepping, arms and cape swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true
+ },
+ {
+  "name": "unit_skel_5_walk",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes walking in place, slow heavy walk cycle, legs stepping, arms and cape swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true
+ }
+]
