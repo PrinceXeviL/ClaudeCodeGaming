@@ -7,10 +7,10 @@
 window.__progOf = function (lvl) {
   let xp = 0; for (let j = 0; j < lvl; j++) { let s = 0; for (const w of LEVELS[j].waves) for (const gr of w) for (const t of gr.types || Array(gr.n).fill(gr.t)) s += (ENEMIES[t] || {}).gold || 0; xp += s * 0.6 + 100 + 40 * j; }
   let L = 1; while (L < HERO_MAX && xp >= 80 * L * L) { xp -= 80 * L * L; L++; }
-  return { lvl: L, souls: Math.floor(2.6 * lvl) };
+  return { lvl: L };
 };
 window.__prog = function (lvl, off) {
-  const save = window.__game.save(); const P = off ? { lvl: 1, souls: 0 } : window.__progOf(lvl);
+  const save = window.__game.save(); const P = off ? { lvl: 1 } : window.__progOf(lvl);
   const id = (save.team || ['commander'])[0], R = { lvl: P.lvl, xp: 0, sk: {}, ult: 1 }, sks = HEROES[id].paths.flatMap(p => p.skills).map(s => s.id);
   for (let pts = P.lvl, guard = 0; pts > 0 && guard < 60; guard++) { // puanlar sırayla: yetenekler ve güç, açıldıkça
     const opts = sks.map(k => ['sk', k]).concat([['ult', 'ult']]).filter(([kind, k]) => { const T = kind === 'ult' ? HERO_TREE.ult : HERO_TREE.sk, r = kind === 'ult' ? R.ult : R.sk[k] || 0; return r + 1 < T.length && P.lvl >= T[r + 1]; });
@@ -18,9 +18,10 @@ window.__prog = function (lvl, off) {
     const [kind, k] = opts[0]; if (kind === 'ult') R.ult++; else R.sk[k] = (R.sk[k] || 0) + 1; pts--;
   }
   save.hero = { [id]: R };
-  const ids = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(k => { const u = NECRO_SPELLS[k].unlock; return u == null || u < lvl; });
-  save.grim = {}; let left = P.souls;
-  for (let guard = 0; guard < 40 && ids.length; guard++) { const k = ids.slice().sort((a, b) => (save.grim[a] || 0) - (save.grim[b] || 0))[0], r = save.grim[k] || 0; if (r >= 5 || GRIM.cost[r] > left) break; left -= GRIM.cost[r]; save.grim[k] = r + 1; }
+  // büyü XP'si (Genesis modeli): açık her büyü bölüm başına ~55 XP (birkaç kullanım), geç açılan catchup ile başlar; puanların hepsi harcanır
+  save.grim = {}; save.sxp = {};
+  for (const k of ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem']) { const u = NECRO_SPELLS[k].unlock || 0; if (off || u >= lvl) continue;
+    save.sxp[k] = GRIM.catchup * u + 55 * (lvl - u); let L = 1; while (L < GRIM.lv.length && save.sxp[k] >= GRIM.lv[L]) L++; save.grim[k] = Math.min(5, L - 1); }
   return { hero: R.lvl, grim: Object.assign({}, save.grim) };
 };
 window.__bot = function (lvl, off) {

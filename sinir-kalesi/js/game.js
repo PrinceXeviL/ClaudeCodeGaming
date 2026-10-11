@@ -4089,7 +4089,7 @@ function spellInfo(id) {
 }
 function castSpell(id, x, y) {
   if (NECRO_SPELLS[id] && G.mod && G.mod.nospell) { floatText(x, y - 20, 'Bu gece büyü yok!', '#d8a8ff'); sfx('error'); return; }
-  if (NECRO_SPELLS[id]) { if (castNecro(id, x, y) === false) return; }
+  if (NECRO_SPELLS[id]) { const n = enemiesNear(x, y, NECRO_SPELLS[id].r || 90).length; if (castNecro(id, x, y) === false) return; gainSpellXp(id, n); }
   else { hitBy = 'hero'; const ok = castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; if (ok === false) return; } // yanlış yere: bekleme başlamaz
   if (G.stats) G.stats.spells++;
   G.spells[id] = spellInfo(id).cd;
@@ -10512,25 +10512,24 @@ function soulGem(x, y, r) {
   ctx.restore();
 }
 function drawGrimIcon(x, y, s) { drawIcon('grimoire', x, y, 30 * s); } // kale menüsü düğmesi: haritadaki Büyü Kitabı simgesi
-const GRIM_IDS = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'];
 let grimSel = null;
 function drawGrimoire(px, py, pw, ph, k, canBuy) {
   const cx = px + pw / 2, free = soulsFree();
   crimsonRibbon(cx, py + 46, 'BÜYÜ KİTABI', 24, 300);
-  if (!GRIM_IDS.includes(grimSel)) grimSel = GRIM_IDS.find(id => necroSpellOn(id) && grimRank(id) < 5) || GRIM_IDS[0];
-  // sol sütun: ruh taşı ve büyü kartları
+  if (!GRIM_IDS.includes(grimSel)) grimSel = GRIM_IDS.find(id => necroSpellOn(id) && grimPts(id) > 0) || GRIM_IDS.find(id => necroSpellOn(id) && grimRank(id) < 5) || GRIM_IDS[0];
+  // sol sütun: harcanmamış büyü puanı ve büyü kartları (büyüler kullanıldıkça seviye atlar)
   const lx = px + 34, lw = 372;
   roundRect(lx, py + 74, lw, 38, 19, 'rgba(0,0,0,0.45)', '#c9a0ff', 1.8); soulGem(lx + 26, py + 93, 13);
-  txt(`${free} ruh taşı`, lx + 50, py + 94, 19, '#ecd8ff', 'left', '400', FONT_T);
+  txt(`${free} büyü puanı`, lx + 50, py + 94, 19, '#ecd8ff', 'left', '400', FONT_T);
   GRIM_IDS.forEach((id, i) => {
     const S = NECRO_SPELLS[id], y = py + 120 + i * 56, a = clamp((k - 0.1 - i * 0.05) / 0.25, 0, 1); if (a <= 0) return;
-    const r = grimRank(id), open = necroSpellOn(id), on = grimSel === id, can = open && canBuy && r < 5 && free >= GRIM.cost[r];
+    const r = grimRank(id), open = necroSpellOn(id), on = grimSel === id, can = open && canBuy && r < 5 && grimPts(id) > 0;
     ctx.save(); ctx.globalAlpha *= a;
     upCard(lx, y, lw, 50, on, !open);
     upIconRing(lx + 30, y + 25, 19, false);
     ctx.save(); ctx.beginPath(); ctx.arc(lx + 30, y + 25, 19, 0, Math.PI * 2); ctx.clip(); ctx.translate(lx + 30, y + 25); ctx.scale(0.78, 0.78); drawNecroGlyph(id, 24); ctx.restore();
     fitTxt(S.name, lx + 60, y + 18, lw - 62 - 100, UP_FONT.name - 1, '#ffe9b0', 'left', '400', FONT_T);
-    txt(open ? `Bekleme ${Math.round(S.cd * (1 - GRIM.cd * r))} sn` : `${(S.unlock ?? 0) + 1}. bölümü bitirince açılır`, lx + 60, y + 37, UP_FONT.small, '#c8b898', 'left', '800', FONT_B, false);
+    txt(open ? `Seviye ${spellLvl(id)}` : `${(S.unlock ?? 0) + 1}. bölümü bitirince açılır`, lx + 60, y + 37, UP_FONT.small, '#c8b898', 'left', '800', FONT_B, false);
     if (open) upPips(lx + lw - 92, y + 25, 5, r, '#c890ff'); else drawIcon('lock', lx + lw - 30, y + 25, 18);
     if (can) { glow(ctx, lx + lw - 14, y + 10, 14, '200,140,255', 0.5); circle(lx + lw - 14, y + 10, 8, '#8a3ad8', '#fff', 1.4); }
     ctx.restore();
@@ -10543,15 +10542,19 @@ function drawGrimoire(px, py, pw, ph, k, canBuy) {
   upIconRing(rx + 42, ry + 40, 26, false);
   ctx.save(); ctx.beginPath(); ctx.arc(rx + 42, ry + 40, 26, 0, Math.PI * 2); ctx.clip(); ctx.translate(rx + 42, ry + 40); drawNecroGlyph(id, 30); ctx.restore();
   fitTxt(S.name, rx + 80, ry + 30, rw - 96, 23, '#ffe9b0', 'left', '400', FONT_T);
-  txt(`Bekleme ${Math.round(S.cd * (1 - GRIM.cd * r))} sn`, rx + 80, ry + 56, 14, '#d8c8b0', 'left', '800', FONT_B, false);
+  { const L = spellLvl(id), x0 = GRIM.lv[L - 1], x1 = GRIM.lv[L], xp = spellXp(id), bw = rw - 96 - 120; // seviye ve XP çubuğu
+    txt(`Seviye ${L} · bekleme ${Math.round(S.cd * (1 - GRIM.cd * r))} sn`, rx + 80, ry + 56, 14, '#d8c8b0', 'left', '800', FONT_B, false);
+    if (x1 != null) { roundRect(rx + 80, ry + 66, rw - 112, 12, 6, 'rgba(0,0,0,0.5)', 'rgba(200,160,255,0.5)', 1); roundRect(rx + 81.5, ry + 67.5, (rw - 115) * clamp((xp - x0) / (x1 - x0), 0, 1), 9, 4.5, '#b880ff');
+      txt(`${Math.floor(xp)} / ${x1} XP`, rx + 80 + (rw - 112) / 2, ry + 72.5, 10.5, '#fff6dc', 'center', '800', FONT_B, true); } }
   const lad = GRIM[id].map((t, q) => ({ text: t, special: q === 4,
-    right: (x, y, done) => { if (done) return; soulGem(x - 12, y, 9); txt(GRIM.cost[q] + '', x + 6, y + 1, 16, '#ecd8ff', 'center', '400', FONT_T); } }));
-  upLadder(rx + 18, ry + 100, rw - 36, lad, r);
-  const by = py + ph - 62, cost = GRIM.cost[r], can = open && canBuy && cost != null && free >= cost;
+    right: (x, y, done) => { if (done) return; txt(`Sv. ${q + 2}`, x, y + 1, 14, spellLvl(id) >= q + 2 ? '#d8b0ff' : '#a89878', 'center', '800', FONT_B, false); } }));
+  upLadder(rx + 18, ry + 104, rw - 36, lad, r);
+  const by = py + ph - 62, cost = r < 5 ? 1 : null, pts = grimPts(id), can = open && canBuy && cost != null && pts > 0;
   if (!open) txt(`${(S.unlock ?? 0) + 1}. bölümü bitirince açılır`, rx + rw / 2, by, 15, '#c8b898', 'center', '800', FONT_B, false);
   else if (cost == null) txt('EN YÜKSEK KADEME', rx + rw / 2, by, 17, '#ffe27a', 'center', '400', FONT_T);
   else if (!canBuy) txt('İlk dalgadan önce geliştirilir', rx + rw / 2, by, 15, '#c8b898', 'center', '800', FONT_B, false);
-  else gameButton('grim_buy', rx + rw / 2, by, 230, 50, `GELİŞTİR · ${cost} TAŞ`, () => {
+  else if (!pts) txt(`Büyüyü kullandıkça seviye atlar · Sv. ${r + 2}'de açılır`, rx + rw / 2, by, 14, '#c8b898', 'center', '800', FONT_B, false);
+  else gameButton('grim_buy', rx + rw / 2, by, 230, 50, `GELİŞTİR · ${pts} PUAN`, () => {
     if (!buyGrim(id)) { sfx('error'); return; }
     sfx('upgrade');
     for (let q = 0; q < 18; q++) { const an = rand(0, Math.PI * 2), v = rand(50, 160); emit(uiParts, { kind: 'glow', add: true, x: rx + rw / 2, y: by, vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 3, col: '200,140,255', s0: 4, s1: 0.5, life: 0.5 }); }
@@ -11567,13 +11570,19 @@ function starsTotal() { return save.stars.reduce((a, b) => a + (b || 0), 0) + ch
 function starsSpent() { return UPGRADES.reduce((a, u) => a + u.ranks.slice(0, upgRank(u.id)).reduce((b, r) => b + r.cost, 0), 0); }
 // ---- kalıcı gelişim (11 Eki, Caner; arastirma/rpg-sistemi.md): Büyü Kitabı (Ruh Taşı) ve komutan seviyesi/yetenek ağacı ----
 const grimRank = (id) => (save.grim && save.grim[id]) || 0;
-function soulsTotal() { return starsTotal() + Math.floor(Object.keys(save.ach || {}).length / 2); } // yıldız + meydan okuma + her 2 başarım
-function soulsSpent() { let n = 0; for (const id in save.grim || {}) n += GRIM.cost.slice(0, save.grim[id]).reduce((a, b) => a + b, 0); return n; }
-const soulsFree = () => soulsTotal() - soulsSpent();
+// büyü XP'si ve seviyesi (Genesis modeli): save.sxp[id]; yoksa geç açılan büyü için başlangıç XP'si
+const spellXp = (id) => (save.sxp && save.sxp[id] != null ? save.sxp[id] : GRIM.catchup * (NECRO_SPELLS[id].unlock || 0));
+function spellLvl(id) { const x = spellXp(id); let L = 1; while (L < GRIM.lv.length && x >= GRIM.lv[L]) L++; return L; } // 1..6
+const grimPts = (id) => Math.max(0, spellLvl(id) - 1 - grimRank(id)); // o büyünün harcanmamış puanı
+const GRIM_IDS = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'];
+const soulsFree = () => GRIM_IDS.filter(necroSpellOn).reduce((a, id) => a + grimPts(id), 0); // bütün büyülerin harcanmamış puanı
 function buyGrim(id) {
-  const r = grimRank(id), c = GRIM.cost[r];
-  if (c == null || soulsFree() < c) return false;
-  save.grim = save.grim || {}; save.grim[id] = r + 1; persist(); return true;
+  if (grimPts(id) <= 0 || grimRank(id) >= 5) return false;
+  save.grim = save.grim || {}; save.grim[id] = grimRank(id) + 1; persist(); return true;
+}
+function gainSpellXp(id, n) { // büyü yapıldı: XP, seviye atlarsa kalenin üstünde bildirim
+  const L0 = spellLvl(id); save.sxp = save.sxp || {}; save.sxp[id] = spellXp(id) + GRIM.cast + GRIM.per * Math.min(10, n || 0); persist();
+  const L1 = spellLvl(id); if (L1 > L0 && G) { const c = G.castle; floatText(c.x, c.y - 110, `${NECRO_SPELLS[id].name} seviye ${L1}!`, '#e0b0ff'); sfx('levelup'); }
 }
 // komutan kaydı: seviye ve XP bölümler arası kalır; sk: yetenek kademeleri, ult: komutan gücü kademesi (1..5)
 function heroRec(id) { save.hero = save.hero || {}; return (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1 }); }
@@ -12857,7 +12866,7 @@ function drawMap() {
   gameButton('upgrades', R0 - 112, BY, 202, 58, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
   if (freeStars > 0) { const ex = R0 - 20, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#e8434b', '#fff', 1.5); txt(freeStars + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
   if (mapSel == null) { // tanıtım: önce Büyü Kitabı, sonra yetenek puanı
-    if (freeSouls > 0 && !tipSeen('grim')) drawTip(R0 - 532, BY - 34, 'Ruh taşların birikti! Büyü Kitabı\'nda büyülerini kalıcı olarak güçlendir');
+    if (freeSouls > 0 && !tipSeen('grim')) drawTip(R0 - 532, BY - 34, 'Büyülerin seviye atladı! Büyü Kitabı\'nda puanlarını harca');
     else if (heroPts && !tipSeen('tree')) drawTip(R0 - 322, BY - 34, 'Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca');
   }
   if (heroPts && !fresh.length) { const ex = R0 - 230, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#3cbf3c', '#fff', 1.5); txt('+', ex, ey + 1, 15, '#fff', 'center', '400', FONT_T); }

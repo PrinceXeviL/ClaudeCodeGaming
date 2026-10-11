@@ -5404,5 +5404,24 @@
 {
 "tr": "Kaleye dokun: Büyü Kitabı",
 "en": "Tap the castle: Spell Book"
+},
+{
+"tr": "{} büyü puanı",
+"en": "{} spell points",
+"tpl": 1
+},
+{
+"tr": "Seviye {} · bekleme {} sn",
+"en": "Level {} · cooldown {} s",
+"tpl": 1
+},
+{
+"tr": "Büyüyü kullandıkça seviye atlar · Sv. {}'de açılır",
+"en": "Levels up as you cast it · unlocks at Lv. {}",
+"tpl": 1
+},
+{
+"tr": "Büyülerin seviye atladı! Büyü Kitabı'nda puanlarını harca",
+"en": "Your spells leveled up! Spend the points in the Spell Book"
 }
 ]

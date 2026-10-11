@@ -727,10 +727,12 @@ Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dm
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
 // Mortimer'ın büyüleri (sol altta, bekleme süreli). raise: hedefsiz, süre boyunca ölen düşmanlar iskelet minyon olur.
 // fear: hedefli alan, düşmanlar kavgayı bırakıp yolda geri kaçar (bosslar yarı süre).
-// Büyü Kitabı (11 Eki, Caner): Mortimer'ın büyüleri kalıcı 5 kademe; para birimi Ruh Taşı (yıldız + meydan okuma + her 2 başarım 1).
-// Her kademe ayrıca beklemeyi %4 kısaltır. 5. kademe yeni bir etki açar. Değerler spellStats (game.js) içinde uygulanır.
+// Büyü Kitabı (11 Eki; Kingdom Rush 6: Genesis modeli): her büyü KULLANILDIKÇA XP kazanır (yalnız yapılınca), seviye atlar,
+// her seviye o büyüye 1 puan verir; puan, büyünün 5 kademesinden sıradakini açar. Her kademe beklemeyi %4 kısaltır, 5. kademe yeni etki.
+// lv: seviye eşikleri (toplam XP; 2..6. seviye), cast: büyü başına XP + per × etkilenen düşman (en çok 10). ~55 XP/bölüm: 1. seferin
+// sonunda 5. kademe. Sonradan açılan büyü geç kalmasın: açıldığı bölüm × catchup XP ile başlar (Genesis: geç açılanlar ek XP'li gelir).
 const GRIM = {
-  cost: [1, 2, 3, 4, 5], cd: 0.04,
+  lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
   nm_raise: ['+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+10 sn ömür · +%25 hasar'],
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
@@ -739,7 +741,7 @@ const GRIM = {
 };
 // Komutan yetenek ağacı (11 Eki): her seviyede 1 puan (1. seviyede de); yetenekler 5 kademe, komutan gücü 1→5 kademe. Kademe şu seviyede açılır:
 // 11 Eki (denge): her seviye 1 puan, 1. seviye dahil (komutan yeteneksiz başlamasın; ilk puanla bir yetenek seçilir)
-const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], dmg: 0.25, cd: 0.08, ultK: 0.25 };
+const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },

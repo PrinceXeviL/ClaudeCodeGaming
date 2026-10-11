@@ -159,5 +159,9 @@
 "Tes pierres d'âme s'accumulent ! Renforce tes sorts pour de bon dans le Grimoire",
 "Ton commandant a monté de niveau ! Dépense le point de compétence dans l'écran Commandants",
 "Point de compétence ! Touche le +",
-"Touche le château : Grimoire"
+"Touche le château : Grimoire",
+"{} points de sort",
+"Niveau {} · recharge {} s",
+"Monte de niveau en le lançant · débloqué au Niv. {}",
+"Tes sorts ont monté de niveau ! Dépense les points dans le Grimoire"
 ]

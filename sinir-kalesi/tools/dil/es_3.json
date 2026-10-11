@@ -159,5 +159,9 @@
 "¡Se acumulan tus piedras de alma! Mejora tus hechizos para siempre en el Grimorio",
 "¡Tu comandante subió de nivel! Gasta el punto de habilidad en la pantalla de Comandantes",
 "¡Punto de habilidad! Toca el +",
-"Toca el castillo: Grimorio"
+"Toca el castillo: Grimorio",
+"{} puntos de hechizo",
+"Nivel {} · recarga {} s",
+"Sube de nivel al lanzarlo · se desbloquea en Nv. {}",
+"¡Tus hechizos subieron de nivel! Gasta los puntos en el Grimorio"
 ]

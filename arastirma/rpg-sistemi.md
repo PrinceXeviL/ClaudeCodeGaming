@@ -29,3 +29,18 @@ Ortak ders: oyuncuyu geri getiren şey **görünür ilerleme** (seviye çubuğu,
 4. Sonra (isteğe bağlı): komutan eşyası/emanet, bölüm ustalığı (3 yıldız + meydan okuma rozetleri), günlük görev.
 
 Denge: kalıcı güç zorluğu düşürür; dalga canları (HPMUL) bot ile yeniden ayarlanmalı (bot ortalama gelişimle oynar).
+
+## Uygulanan (11 Eki, kaynaklarla doğrulandı)
+Kaynaklar: Kingdom Rush Wiki "Upgrades"; Ironhide "Patch 1" notları (Kingdom Rush 6: Genesis, Eylül 2026); wikily.gg Genesis kahraman seviyeleri; r/kingdomrush.
+- **KR 1, Frontiers, Origins:** büyüler (Rain of Fire, Reinforcements) yıldızla açılan kalıcı ağaçta (her büyüye 5 doğrusal geliştirme), sıfırlanabilir.
+- **KR Origins, Vengeance, Alliance:** kahraman seviyesi kalıcı (1→10), her seviyede yetenek puanı, oyuncu dağıtır.
+- **KR 6: Genesis (en yeni):** her kahraman ve büyü KULLANILDIKÇA XP kazanır; büyü yalnız yapılınca XP alır, kahraman hasar vererek.
+  Kahraman 1→10, seviye başına puan, 10'da ağaç tamamlanır. Sonradan açılanlar ek XP ile gelir (oyuncu geri dönüp kasmak zorunda kalmasın).
+  İlk yamada XP ihtiyacı azaltıldı (kahraman %40, büyü %25): oyuncular yavaş buldu.
+- **Bloons TD 6:** kalıcı ağaç (Monkey Knowledge) var, kahraman seviyesi her oyunda sıfırlanır.
+
+Bizdeki karşılığı:
+- Büyü Kitabı, Genesis modeline çevrildi: ruh taşı kaldırıldı; her büyü yapıldıkça XP (20 + etkilenen düşman × 3), 6 seviye, her seviye o büyüye 1 puan.
+  Bölüm başına ~55 XP: 1. seferin sonunda 5. kademe. Geç açılan büyü, açıldığı bölüme göre ek XP ile başlar.
+- Komutan seviyesi kalıcı (KR Origins+ ve Genesis gibi). Rakiplerde sınır 10; bizde Caner'in kararıyla 20 (seviye başına daha küçük artış).
+- Yıldız ağacı kulelere kaldı (KR'de de kule ağacı yıldızla).

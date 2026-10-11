@@ -193,7 +193,8 @@
   "Ruh taşların birikti! Büyü Kitabı'nda büyülerini kalıcı olarak güçlendir": "Your soul stones are piling up! Strengthen your spells for good in the Spell Book",
   "Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca": "Your commander leveled up! Spend the skill point on the Commanders screen",
   "Yetenek puanı! + simgesine dokun": "Skill point! Tap the +",
-  "Kaleye dokun: Büyü Kitabı": "Tap the castle: Spell Book"
+  "Kaleye dokun: Büyü Kitabı": "Tap the castle: Spell Book",
+  "Büyülerin seviye atladı! Büyü Kitabı'nda puanlarını harca": "Your spells leveled up! Spend the points in the Spell Book"
  },
  "tpl": [
   [
@@ -511,6 +512,18 @@
   [
    "{} TAŞ",
    "{} STONES"
+  ],
+  [
+   "{} büyü puanı",
+   "{} spell points"
+  ],
+  [
+   "Seviye {} · bekleme {} sn",
+   "Level {} · cooldown {} s"
+  ],
+  [
+   "Büyüyü kullandıkça seviye atlar · Sv. {}'de açılır",
+   "Levels up as you cast it · unlocks at Lv. {}"
   ]
  ]
 }
