@@ -5781,9 +5781,9 @@ const MEN = {
     seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']], rel: 0.26 }, // yay germe kareleri (Gemini 5 poz, varliklar/okcu_poz_isle.py): ok takma → yarım → tam germe; bırakınca _rel
 };
 // 1-3. kademe: her kademenin kendi iskelet arbaletçisi (Gemini 4 poz, poz_ayir.py: unit_xbowN, _aim, _kick, _load); görseli yoksa eski yeşil arbaletçi
-const XBOW_TIP = [[0.99, 0.186], [0.99, 0.192], [0.916, 0.253]]; // kademe görsellerinde nişan pozunun cıvata ucu (poz_ayir.py yazar)
+const XBOW_TIP = [[0.99, 0.186], [0.99, 0.192], [0.989, 0.176]]; // kademe görsellerinde nişan pozunun cıvata ucu (poz_ayir.py yazar; 3. kademe 11 Eki: iskelet_okcu_kare_isle.py x3)
 for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: 0.5, hold: 0.9, tip: XBOW_TIP[k - 1] });
-// 3. kademe sayfasının geri tepme pozu arbalet yerine yay çizilmişti: _kick nişan pozunun kopyası, tepme kodla
+// 11 Eki: 2. kademenin geri tepmesi ve 3. kademenin dört pozu yeniden çizildi (kiriş önde, cıvatasız tepme karesi; 3. kademe sissiz, açık zırh)
 // 10 Eki (yol seçimi): 1. kademe ve okçu yolu iskelet okçu (geçici görsel: hayalet okçu çizimi, sayısı kademe kadar), arbaletçi yolu kademe arbaletçileri
 MEN.arch = Object.assign({}, MEN.bow, { n: (t) => t.lvl + 1, col: '150,255,160' });
 // 11 Eki: kademe iskelet okçuları (Gemini, her kare ayrı görsel: unit_archerN + _nock/_half/_draw/_rel); kademe görseli yoksa bir alt kademeninki
