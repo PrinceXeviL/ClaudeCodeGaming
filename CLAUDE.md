@@ -249,3 +249,10 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
   Ok/cıvata (pr.imbue) ve iskelet kılıcı/oku her vuruşta applyImbue. Görsel: renkli mermi izi, kılıç parıltısı, kule rozeti.
 - Denge: tools/denge-sayfa.js yol ve büyü de alır; 40 bölüm __tune2 ile ayarlandı (HPMUL, HPMUL2). Bot tek turda çok oynak, ince ayar oynanışla.
 - Test kancaları: __game.path(i, 'bow'|'xbow'), __game.imbue(i, tür).
+
+## 11 Eki: dalga yapısı v2 (arastirma/dalga-analizi.md)
+- data.js `restructureWaves` (WAVES_V2) shapeWaves'ten önce çalışır: dalga sayısı 6→12 (+2 bölge sonu), toplam düşman 140→470 (2. sefer 180→500),
+  her 4. dalga "nefes" (az sayıda seçkin, `fixed`, canı x1,5, ölçeklenmez), türün seferdeki ilk dalgası tanıtım (yalnız o tür), ortadaki dalga tema
+  (hızlı/zırhlı/uçan/menzilli), çok girişli haritada tek gruplu dalgalar bölünür ve sondan üçüncü dalga ikinci girişten baskın.
+  Eski 8 dalgalık şablonlar (L, L2, mk) yeniden örneklenir. Can çarpanları HPMUL/HPMUL2 bu yapıya göre botla ayarlandı (hedef: 1. sefer 18→6, 2. sefer 12→3 can).
+- TEST_OPEN (game.js) test için her şeyi açar; mağaza sürümünden önce false.

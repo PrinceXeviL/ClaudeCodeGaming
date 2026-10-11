@@ -557,7 +557,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 196, 199, 209, 218, 223, 228, 234, 206, 220, 234, 242, 242, 226, 211, 211, 265, 273, 281]; // 20 bölüm (10 Eki): yeni bölümler komşularının arası // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1, 1.3, 1.188, 1.612, 1.012, 1.491, 0.574, 0.98, 0.398, 0.525, 0.818, 0.316, 1.267, 0.804, 0.42, 0.352, 0.194, 0.673, 0.24, 0.334]; // 10 Eki: hasar türü × zırh sınıfı, Kemik Kulesi yolları ve silah büyüleriyle bot ayarı (2 tur)
+  const HPMUL = [1.301, 1.141, 1.252, 2.365, 0.886, 1.114, 0.603, 0.396, 0.309, 0.438, 0.455, 0.582, 0.577, 0.643, 0.514, 0.296, 0.416, 0.733, 0.158, 0.316]; // 11 Eki: dalga yapısı v2 sonrası botla 8 tur ayarlandı (hedef 18→6 can)
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
@@ -663,7 +663,7 @@ if (NECRO) {
   [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
   // toplam düşman (boss hariç) ve can çarpanı: denge botuyla ayarlanır (tools/denge-sayfa.js, hedef __T2)
   const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
-  const HPMUL2 = [1.311, 1.531, 0.787, 1.114, 1.545, 0.854, 0.638, 1.737, 2.166, 1.357, 2.5, 1.931, 1.206, 1.269, 0.911, 1.479, 0.874, 1.632, 1.09, 0.395]; // 10 Eki: hasar türü × zırh sınıfı, Kemik Kulesi yolları ve silah büyüleriyle bot ayarı (2 tur)
+  const HPMUL2 = [1.73, 1.855, 1.014, 1.061, 0.529, 0.294, 0.271, 2.127, 2.304, 0.902, 1.82, 1.153, 1.475, 1.339, 0.642, 1.019, 0.7, 1.123, 0.634, 0.412]; // 11 Eki: dalga yapısı v2 sonrası botla 8 tur (hedef 12→3 can)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
@@ -775,13 +775,16 @@ function shapeWaves(lv, li) {
   const N = lv.waves.length, orig = lv.waves.map(count);
   // lv.total + lv.grow (necro bölümleri): toplam düşman sayısı ve dalga büyümesi doğrudan verilir
   const GROW = lv.grow || WAVE_GROW, LGROW = lv.grow || LAST_GROW, DENS = lv.total ? 1 : DENSITY;
-  const shape = [1];
+  let shape = [1];
   for (let k = 1; k < N; k++) shape.push(shape[k - 1] * (k === N - 1 ? LGROW : GROW));
-  const A = (lv.total || orig.reduce((a, b) => a + b) * WAVE_TOTAL) / shape.reduce((a, b) => a + b);
+  if (lv.shape) shape = lv.shape; // dalga yapısı v2: testere dişi (restructureWaves)
+  const fixedN = lv.waves.reduce((a, w) => a + (w.some(g => g.fixed) ? count(w) : 0), 0);
+  const A = Math.max(1, (lv.total || orig.reduce((a, b) => a + b) * WAVE_TOTAL) - fixedN) / shape.reduce((a, b, k) => a + (lv.waves[k].some(g => g.fixed) ? 0 : b), 0);
   let prev = 0;
   lv.waves.forEach((w, k) => {
+    if (w.some(g => g.fixed)) return; // nefes dalgası: sayıları elle, ölçeklenmez
     let target = Math.max(4, Math.round(A * shape[k]));
-    if (k) target = Math.max(target, Math.ceil(prev * (k === N - 1 ? LGROW : GROW)));
+    if (k && !lv.shape) target = Math.max(target, Math.ceil(prev * (k === N - 1 ? LGROW : GROW)));
     const light = w.filter(g => !heavy(g)), hc = count(w.filter(heavy)), lc = count(light);
     if (lc) {
       const f = Math.max(0.15, (target - hc) / lc);
@@ -832,6 +835,55 @@ LEVELS.forEach((lv) => {
   lv.castle = [end[0], end[1]]; // kapı eşiği = yolun ucu (game.js castlePlace şapeli buna göre koyar)
   lv.waves.forEach((w, k) => w.forEach((g, j) => { g.p = lv.entr > 1 ? (g.p != null ? g.p % lv.entr : (k + j) % lv.entr) : 0; }));
 });
+// ----- Dalga yapısı v2 (11 Eki, Kingdom Rush karşılaştırması: arastirma/dalga-analizi.md) -----
+// 1) dalga sayısı bölüme göre: 6'dan 12'ye, her bölgenin son bölümü +2 (14'e kadar)
+// 2) toplam düşman seferde ~3,5 kat büyür (1. seferde 140 -> 470, 2. seferde 180 -> 500)
+// 3) testere dişi: her 4. dalga "nefes": az sayıda seçkin düşman (sayıları ölçeklenmez, canı x1,5); sonra yükseliş sürer
+// 4) tanıtım: bir tür seferde ilk kez geldiği dalgada yalnız gelir; tema: ortadaki dalga tek fikirli (hızlı / zırhlı / uçan / menzilli)
+// 5) iki ve daha çok girişli haritada tek gruplu dalgalar girişlere bölünür, bir dalga ters taraftan "baskın" olarak gelir
+const WAVES_V2 = { n0: 6, n1: 12, fin: 2, tot: { 1: [140, 470], 2: [180, 500] }, growK: 6, breathEvery: 4, breathW: 0.35, eliteHp: 1.5 };
+const waveCat = (t) => { const d = ENEMIES[t] || {}; return d.flying ? 'fly' : d.speed >= 34 ? 'fast' : d.armor >= 0.4 ? 'armor' : d.ranged ? 'ranged' : null; };
+function restructureWaves() {
+  const seen = new Set(['legion']), epIdx = {};
+  LEVELS.forEach((lv) => {
+    const ep = lv.ep || 1, k = epIdx[ep] = (epIdx[ep] ?? -1) + 1, p = k / 19, fin = k % 4 === 3;
+    const N = WAVES_V2.n0 + Math.round(p * (WAVES_V2.n1 - WAVES_V2.n0)) + (fin ? WAVES_V2.fin : 0);
+    const [t0, t1] = WAVES_V2.tot[ep] || WAVES_V2.tot[1];
+    lv.total = Math.round(t0 * Math.pow(t1 / t0, p));
+    const T = lv.waves, clone = (w) => w.map(g => Object.assign({}, g));
+    const W = []; for (let j = 0; j < N; j++) W.push(clone(T[Math.round(j * (T.length - 1) / (N - 1))]));
+    const heavyG = (g) => (ENEMIES[g.t] || {}).hp >= HEAVY_HP || (ENEMIES[g.t] || {}).elite;
+    const shape = [], breath = [];
+    let v = 1; const g = Math.pow(WAVES_V2.growK, 1 / (N - 1));
+    for (let j = 0; j < N; j++) { const b = j % WAVES_V2.breathEvery === WAVES_V2.breathEvery - 1 && j < N - 1; breath.push(b); shape.push(b ? v * WAVES_V2.breathW : v); v *= g; }
+    W.forEach((w, j) => {
+      if (breath[j]) { // nefes dalgası: dalganın en güçlü türleri, az sayıda, sert
+        let el = w.filter(heavyG); if (!el.length) el = [w.slice().sort((a, b) => (ENEMIES[b.t].hp || 0) - (ENEMIES[a.t].hp || 0))[0]];
+        W[j] = el.slice(0, 2).map(x => Object.assign({}, x, { n: Math.max(1, Math.min(x.n, heavyG(x) ? x.n : 3 + Math.floor(k / 5))), at: 0, gap: Math.max(x.gap, 1.6), hpK: heavyG(x) ? 1 : WAVES_V2.eliteHp, fixed: true }));
+        return;
+      }
+      const fresh = w.filter(x => !seen.has(x.t) && !(ENEMIES[x.t] || {}).chief);
+      if (fresh.length && j > 0) { W[j] = fresh.map(x => Object.assign({}, x, { at: 0 })); W[j].intro = true; } // tanıtım: yeni tür yalnız
+      for (const x of W[j]) seen.add(x.t);
+    });
+    // tema dalgası: ortadaki sıradan dalga tek fikre iner (bölümde o kategoride tür varsa)
+    const cats = ['fast', 'armor', 'fly', 'ranged'], pool = T.flat();
+    const tj = Math.floor(N / 2) + (breath[Math.floor(N / 2)] || W[Math.floor(N / 2)].intro ? 1 : 0);
+    for (let c = 0; c < cats.length; c++) {
+      const cat = cats[(k + c) % cats.length], grp = pool.filter(x => waveCat(x.t) === cat && !(ENEMIES[x.t] || {}).chief);
+      if (!grp.length || !W[tj] || breath[tj] || W[tj].intro) continue;
+      const seenT = new Set(); W[tj] = grp.filter(x => !seenT.has(x.t) && seenT.add(x.t)).map(x => Object.assign({}, x, { at: 0 })); W[tj].theme = cat; break;
+    }
+    // girişler: tek gruplu dalga iki girişe bölünür; sondan üçüncü dalga tümden ikinci girişten (baskın)
+    if (lv.entr > 1) W.forEach((w, j) => {
+      if (breath[j]) return;
+      if (j === N - 3) { for (const x of w) x.p = 1 % lv.entr; return; }
+      if (w.length === 1 && w[0].n >= 2 && !heavyG(w[0])) { const a = w[0], n = a.n, b = Object.assign({}, a, { p: (a.p + 1) % lv.entr }); a.n = Math.ceil(n / 2); b.n = n - a.n; w.push(b); }
+    });
+    lv.waves = W; lv.shape = shape; lv.breath = breath;
+  });
+}
+restructureWaves();
 LEVELS.forEach((lv, i) => shapeWaves(lv, i));
 // Destek birlikleri (davulcu, sancaktar) tek başına gelmez: yalnız kalabalık piyade bölüğünün (en az SUPPORT.min kişi) ortasında,
 // bölükle aynı yoldan ve aynı anda yürür. Bölük büyükse (2 x min) ikisi birden; tür sırası bölükten bölüğe değişir.
