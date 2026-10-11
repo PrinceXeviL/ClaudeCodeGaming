@@ -1,0 +1,97 @@
+{
+"exact": {
+"ZORLUK": "SCHWIERIGKEIT",
+"Kolay": "Leicht",
+"Normal": "Normal",
+"Usta": "Veteran",
+"Usta ✓": "Veteran ✓",
+"Düşmanlar zayıf, +5 can": "Schwächere Feinde, +5 Leben",
+"Dengeli": "Ausgewogen",
+"Düşmanlar %40 dayanıklı": "Feinde 40 % zäher",
+"TAM OYUNU AÇ": "VOLLVERSION FREISCHALTEN",
+"sonrası tek seferlik": "danach einmaliger Kauf",
+"TAM OYUN": "VOLLVERSION",
+"KRİSTAL": "KRISTALLE",
+"Tek seferlik satın alma": "Einmaliger Kauf",
+"abonelik yok": "kein Abo",
+"reklam yok": "keine Werbung",
+"İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)": "Alle 40 Level beider Feldzüge (die ersten 10 gratis)",
+"Bütün bosslar, Gloriosus ve Cadı Avı seferi": "Alle Bosse, Gloriosus und der Feldzug Hexenjagd",
+"Ödüller (5 canla devam, altınla başla) reklam izlemeden": "Belohnungen (mit 5 Leben weiter, mit Gold starten) ohne Werbung",
+"Kristal yalnız bosslardan düşer": "Kristalle gibt es nur von Bossen",
+"komutan ve savaş eşyası açar": "schalten Kommandanten und Kampfgegenstände frei",
+"Kemik Bombası": "Knochenbombe",
+"Seçtiğin yerde patlar, ağır alan hasarı": "Explodiert an gewählter Stelle, hoher Flächenschaden",
+"Zaman Kum Saati": "Sanduhr der Zeit",
+"Bütün düşmanlar 5 sn donar": "Alle Feinde erstarren 5 s",
+"Mortimer'ın Çayı": "Mortimers Tee",
+"+5 can, bütün iskeletler ve komutan iyileşir": "+5 Leben, alle Skelette und der Kommandant heilen",
+"Lanetli Kese": "Verfluchter Beutel",
+"Hemen +250 altın": "Sofort +250 Gold",
+"AÇ": "ÖFFNEN",
+"Dükkândan kristalle al": "Im Laden mit Kristallen kaufen",
+"Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)": "Heilt Verbündete in der Nähe. Sonnenurteil: bringt einen Turm 4 s zum Schweigen (vorher erscheint ein goldener Ring)",
+"Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır": "Verschwindet in den Schatten und taucht weiter vorne auf, verbreitet Giftwolken, ruft Assassinen",
+"Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır": "Schildwall: blockt 4 s den Großteil von Pfeil- und Kanonenschaden (Magie und Soldaten wirken). Stampft auf, ruft schwere Infanterie",
+"İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır": "Kommt in einem goldenen Streitwagen mit zwei gepanzerten Löwen: Soldaten halten ihn nicht auf und werden überrannt. Lässt Katapultfeuer auf Türme regnen. Bricht der Wagen, kämpft er zu Fuß und schließlich mit der Macht der Sonne",
+"Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur": "Kämpft wütend zu Fuß: hebt den Schild, ruft die Prätorianergarde, bringt mit dem Kaiserlichen Erlass drei Türme zum Schweigen",
+"Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter": "Von der Macht der Sonne in Flammenrüstung gehüllt: wird schneller, sein Schwert setzt alles in Brand. Erreicht er die Burg, ist alles vorbei",
+"Güneş Hükmü!": "Sonnenurteil!",
+"Gölgeye Karış!": "In die Schatten!",
+"İmparatorluk Fermanı!": "Kaiserlicher Erlass!",
+"Güneş Kılıcı!": "Sonnenklinge!",
+"Güneş Gazabı!": "Zorn der Sonne!",
+"Muhafızlar!": "Wachen!",
+"GÜNEŞ BENİMLE!": "DIE SONNE IST MIT MIR!",
+"Araba parçalandı!": "Der Streitwagen ist zerschmettert!",
+"GÜNEŞ FORMU": "SONNENGESTALT",
+"Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor": "Gloriosus ist zu Fuß: ruft seine Wachen und bringt Türme per Erlass zum Schweigen",
+"Güneşin gücü Gloriosus'u sardı: hızlandı, kılıcı yakıyor": "Die Macht der Sonne umhüllt Gloriosus: er ist schneller, sein Schwert brennt",
+"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": "Sein Wagen ist kaputt. Ein Spaziergang tut ihm gut.",
+"Aslanlar kaçtı. Akıllı hayvanlar.": "Die Löwen sind weg. Kluge Tiere.",
+"Yayan general mi? Ne kadar da mütevazı.": "Ein General zu Fuß? Wie bescheiden.",
+"Parlıyor. Çayımı ısıtabilir mi acaba?": "Er glüht. Kann er meinen Tee aufwärmen?",
+"Güneş formu mu? Ben de gece formundayım.": "Sonnengestalt? Ich bin in Nachtgestalt.",
+"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": "Er hat mich geblendet. Jetzt bin ich wirklich sauer.",
+"Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.": "Kommt im Löwenwagen, brüllt zu Fuß und strahlt am Ende wie die Sonne. Ich muss ihn dreimal besiegen. Setzt den Tee auf.",
+"Yarasa Sürüsü!": "Fledermausschwarm!",
+"DÜŞMANLAR": "FEINDE",
+"SAVAŞA!": "IN DIE SCHLACHT!",
+"BAŞLA": "START",
+"Önceki bölümü bitir, bu bölüm açılsın": "Schließe das vorige Level ab, um dieses freizuschalten",
+"Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.": "Nur 3 Leben, Feinde 20 % zäher. Kein Platz für Fehler.",
+"Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?": "Die Wellen enden nie und werden stärker. Wie lange hältst du durch?",
+"Veba Kazanı patlaması": "Explosion des Pestkessels",
+"lisanslı ses kütüphanesi": "lizenzierte Klangbibliothek"
+},
+"tpl": [
+[
+"İlk {} bölüm ücretsiz",
+"Die ersten {} Level gratis"
+],
+[
+"Kristalin: {}",
+"Deine Kristalle: {}"
+],
+[
+"+{} KRİSTAL",
+"+{} KRISTALLE"
+],
+[
+"{}: patlayacağı yeri seç",
+"{}: wähle, wo sie explodiert"
+],
+[
+"{} için {} kristal gerekir (kristal bosslardan düşer)",
+"{} braucht {} Kristalle (Kristalle gibt es von Bossen)"
+],
+[
+"+{} can",
+"+{} Leben"
+],
+[
+"+{} altın",
+"+{} Gold"
+]
+]
+}

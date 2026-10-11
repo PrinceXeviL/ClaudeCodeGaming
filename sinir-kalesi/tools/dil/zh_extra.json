@@ -1,0 +1,97 @@
+{
+"exact": {
+"ZORLUK": "难度",
+"Kolay": "简单",
+"Normal": "普通",
+"Usta": "大师",
+"Usta ✓": "大师 ✓",
+"Düşmanlar zayıf, +5 can": "敌人更弱，生命+5",
+"Dengeli": "平衡",
+"Düşmanlar %40 dayanıklı": "敌人强度+40%",
+"TAM OYUNU AÇ": "解锁完整版",
+"sonrası tek seferlik": "之后一次性解锁",
+"TAM OYUN": "完整版",
+"KRİSTAL": "水晶",
+"Tek seferlik satın alma": "一次性购买",
+"abonelik yok": "无订阅",
+"reklam yok": "无广告",
+"İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)": "两个战役全部40关（前10关免费）",
+"Bütün bosslar, Gloriosus ve Cadı Avı seferi": "所有首领、格洛里奥苏斯与猎巫战役",
+"Ödüller (5 canla devam, altınla başla) reklam izlemeden": "奖励（5条命继续、金币开局）无需看广告",
+"Kristal yalnız bosslardan düşer": "水晶只从首领身上掉落",
+"komutan ve savaş eşyası açar": "解锁指挥官和战斗道具",
+"Kemik Bombası": "骨弹",
+"Seçtiğin yerde patlar, ağır alan hasarı": "在指定位置爆炸，造成大范围伤害",
+"Zaman Kum Saati": "时之沙漏",
+"Bütün düşmanlar 5 sn donar": "所有敌人冻结5秒",
+"Mortimer'ın Çayı": "莫蒂默的茶",
+"+5 can, bütün iskeletler ve komutan iyileşir": "生命+5，所有骷髅与指挥官恢复",
+"Lanetli Kese": "诅咒钱袋",
+"Hemen +250 altın": "立即获得250金币",
+"AÇ": "解锁",
+"Dükkândan kristalle al": "在商店用水晶购买",
+"Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)": "治疗附近友军。烈日审判：使一座塔沉默4秒（先出现金色光环）",
+"Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır": "隐入阴影并在前方现身，散布毒雾，召唤刺客",
+"Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır": "盾墙：4秒内抵挡大部分箭矢与炮弹伤害（魔法和士兵有效）。重击地面，召唤重步兵",
+"İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır": "乘坐两头披甲雄狮拉的金色战车登场：士兵无法阻挡，会被碾压击晕。向塔楼倾泻投石火焰。战车损毁后步行作战，最终借太阳之力而战",
+"Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur": "战车损毁后怒而步战：举盾防御，召唤禁卫军，以帝国敕令同时封锁三座塔",
+"Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter": "借太阳之力披上烈焰之甲：速度加快，剑焰灼烧四周。若抵达城堡，一切都完了",
+"Güneş Hükmü!": "烈日审判！",
+"Gölgeye Karış!": "隐入阴影！",
+"İmparatorluk Fermanı!": "帝国敕令！",
+"Güneş Kılıcı!": "烈日之剑！",
+"Güneş Gazabı!": "烈日之怒！",
+"Muhafızlar!": "卫兵！",
+"GÜNEŞ BENİMLE!": "太阳与我同在！",
+"Araba parçalandı!": "战车被摧毁了！",
+"GÜNEŞ FORMU": "太阳形态",
+"Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor": "格洛里奥苏斯徒步作战：召唤卫兵，以敕令封锁塔楼",
+"Güneşin gücü Gloriosus'u sardı: hızlandı, kılıcı yakıyor": "太阳之力笼罩格洛里奥苏斯：速度更快，剑焰灼人",
+"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": "战车坏了。走两步，对身体好。",
+"Aslanlar kaçtı. Akıllı hayvanlar.": "狮子跑了。聪明的动物。",
+"Yayan general mi? Ne kadar da mütevazı.": "徒步的将军？真谦虚。",
+"Parlıyor. Çayımı ısıtabilir mi acaba?": "他在发光。能帮我热热茶吗？",
+"Güneş formu mu? Ben de gece formundayım.": "太阳形态？我可是黑夜形态。",
+"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": "他晃瞎我的眼了。这下我真生气了。",
+"Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.": "坐狮车登场，步行时大吼，最后像太阳一样发光。我得打败他三次。烧壶水泡茶吧。",
+"Yarasa Sürüsü!": "蝙蝠群！",
+"DÜŞMANLAR": "敌人",
+"SAVAŞA!": "出战！",
+"BAŞLA": "开始",
+"Önceki bölümü bitir, bu bölüm açılsın": "完成上一关以解锁本关",
+"Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.": "只有3条命，敌人强度+20%。不容任何失误。",
+"Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?": "敌潮永不停歇，每轮更强。你能坚持多久？",
+"Veba Kazanı patlaması": "瘟疫大锅爆炸",
+"lisanslı ses kütüphanesi": "授权音效库"
+},
+"tpl": [
+[
+"İlk {} bölüm ücretsiz",
+"前{}关免费"
+],
+[
+"Kristalin: {}",
+"你的水晶：{}"
+],
+[
+"+{} KRİSTAL",
+"+{} 水晶"
+],
+[
+"{}: patlayacağı yeri seç",
+"{}：选择爆炸位置"
+],
+[
+"{} için {} kristal gerekir (kristal bosslardan düşer)",
+"{}需要{}颗水晶（水晶由首领掉落）"
+],
+[
+"+{} can",
+"生命+{}"
+],
+[
+"+{} altın",
+"+{} 金币"
+]
+]
+}

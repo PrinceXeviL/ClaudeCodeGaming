@@ -1,0 +1,97 @@
+{
+"exact": {
+"ZORLUK": "СЛОЖНОСТЬ",
+"Kolay": "Легко",
+"Normal": "Нормально",
+"Usta": "Ветеран",
+"Usta ✓": "Ветеран ✓",
+"Düşmanlar zayıf, +5 can": "Враги слабее, +5 жизней",
+"Dengeli": "Сбалансировано",
+"Düşmanlar %40 dayanıklı": "Враги на 40% крепче",
+"TAM OYUNU AÇ": "ОТКРЫТЬ ИГРУ",
+"sonrası tek seferlik": "дальше — разовая покупка",
+"TAM OYUN": "ПОЛНАЯ ИГРА",
+"KRİSTAL": "КРИСТАЛЛЫ",
+"Tek seferlik satın alma": "Разовая покупка",
+"abonelik yok": "без подписки",
+"reklam yok": "без рекламы",
+"İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)": "Все 40 уровней обеих кампаний (первые 10 бесплатно)",
+"Bütün bosslar, Gloriosus ve Cadı Avı seferi": "Все боссы, Глориозус и кампания «Охота на ведьм»",
+"Ödüller (5 canla devam, altınla başla) reklam izlemeden": "Награды (продолжить с 5 жизнями, начать с золотом) без рекламы",
+"Kristal yalnız bosslardan düşer": "Кристаллы выпадают только из боссов",
+"komutan ve savaş eşyası açar": "открывают командиров и предметы",
+"Kemik Bombası": "Костяная бомба",
+"Seçtiğin yerde patlar, ağır alan hasarı": "Взрывается в выбранном месте, сильный урон по области",
+"Zaman Kum Saati": "Песочные часы",
+"Bütün düşmanlar 5 sn donar": "Все враги замирают на 5 с",
+"Mortimer'ın Çayı": "Чай Мортимера",
+"+5 can, bütün iskeletler ve komutan iyileşir": "+5 жизней, все скелеты и командир исцеляются",
+"Lanetli Kese": "Проклятый кошель",
+"Hemen +250 altın": "Сразу +250 золота",
+"AÇ": "ОТКРЫТЬ",
+"Dükkândan kristalle al": "Купи за кристаллы в лавке",
+"Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)": "Лечит союзников рядом. Солнечный приговор: глушит башню на 4 с (сначала над ней появляется золотое кольцо)",
+"Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır": "Растворяется в тенях и появляется дальше по дороге, пускает ядовитые облака, зовёт убийц",
+"Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır": "Стена щитов: 4 с отражает большую часть урона стрел и снарядов (магия и солдаты пробивают). Бьёт по земле, зовёт тяжёлую пехоту",
+"İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır": "Прибывает на золотой колеснице с двумя бронированными львами: солдаты не могут её остановить и падают оглушёнными. Обстреливает башни из катапульт. Когда колесница разбита, сражается пешим, а в конце — силой солнца",
+"Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur": "Без колесницы в ярости бьётся пешим: поднимает щит, зовёт преторианцев, Имперским указом глушит сразу три башни",
+"Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter": "Сила солнца облекает его в пылающие доспехи: он ускоряется, меч поджигает всё вокруг. Если дойдёт до замка — конец",
+"Güneş Hükmü!": "Солнечный приговор!",
+"Gölgeye Karış!": "В тень!",
+"İmparatorluk Fermanı!": "Имперский указ!",
+"Güneş Kılıcı!": "Солнечный клинок!",
+"Güneş Gazabı!": "Гнев солнца!",
+"Muhafızlar!": "Стража!",
+"GÜNEŞ BENİMLE!": "СОЛНЦЕ СО МНОЙ!",
+"Araba parçalandı!": "Колесница разбита!",
+"GÜNEŞ FORMU": "СОЛНЕЧНЫЙ ОБЛИК",
+"Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor": "Глориозус пешком: зовёт стражу и глушит башни указом",
+"Güneşin gücü Gloriosus'u sardı: hızlandı, kılıcı yakıyor": "Сила солнца окутала Глориозуса: он быстрее, его меч жжёт",
+"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": "Колесница сломалась. Пусть прогуляется, полезно.",
+"Aslanlar kaçtı. Akıllı hayvanlar.": "Львы сбежали. Умные звери.",
+"Yayan general mi? Ne kadar da mütevazı.": "Генерал пешком? Какая скромность.",
+"Parlıyor. Çayımı ısıtabilir mi acaba?": "Светится. Может, подогреет мой чай?",
+"Güneş formu mu? Ben de gece formundayım.": "Солнечный облик? А я в ночном.",
+"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": "Ослепил меня. Теперь я по-настоящему зол.",
+"Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.": "Приезжает на львах, пешком орёт, в конце сияет как солнце. Придётся побить его трижды. Ставьте чайник.",
+"Yarasa Sürüsü!": "Стая летучих мышей!",
+"DÜŞMANLAR": "ВРАГИ",
+"SAVAŞA!": "В БОЙ!",
+"BAŞLA": "НАЧАТЬ",
+"Önceki bölümü bitir, bu bölüm açılsın": "Пройди предыдущий уровень, чтобы открыть этот",
+"Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.": "Всего 3 жизни, враги на 20% крепче. Права на ошибку нет.",
+"Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?": "Волны не кончаются и крепнут каждый раунд. Сколько продержишься?",
+"Veba Kazanı patlaması": "Взрыв чумного котла",
+"lisanslı ses kütüphanesi": "лицензированная библиотека звуков"
+},
+"tpl": [
+[
+"İlk {} bölüm ücretsiz",
+"Первые {} уровней бесплатно"
+],
+[
+"Kristalin: {}",
+"Твои кристаллы: {}"
+],
+[
+"+{} KRİSTAL",
+"+{} КРИСТАЛЛОВ"
+],
+[
+"{}: patlayacağı yeri seç",
+"{}: выбери место взрыва"
+],
+[
+"{} için {} kristal gerekir (kristal bosslardan düşer)",
+"Для «{}» нужно {} кристаллов (выпадают из боссов)"
+],
+[
+"+{} can",
+"+{} жизней"
+],
+[
+"+{} altın",
+"+{} золота"
+]
+]
+}

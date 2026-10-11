@@ -1,0 +1,97 @@
+{
+"exact": {
+"ZORLUK": "DIFFICULTÉ",
+"Kolay": "Facile",
+"Normal": "Normal",
+"Usta": "Vétéran",
+"Usta ✓": "Vétéran ✓",
+"Düşmanlar zayıf, +5 can": "Ennemis affaiblis, +5 vies",
+"Dengeli": "Équilibré",
+"Düşmanlar %40 dayanıklı": "Ennemis 40 % plus coriaces",
+"TAM OYUNU AÇ": "DÉBLOQUER LE JEU",
+"sonrası tek seferlik": "puis achat unique",
+"TAM OYUN": "JEU COMPLET",
+"KRİSTAL": "CRISTAUX",
+"Tek seferlik satın alma": "Achat unique",
+"abonelik yok": "sans abonnement",
+"reklam yok": "sans pub",
+"İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)": "Les 40 niveaux des deux campagnes (10 premiers gratuits)",
+"Bütün bosslar, Gloriosus ve Cadı Avı seferi": "Tous les boss, Gloriosus et la campagne Chasse aux sorcières",
+"Ödüller (5 canla devam, altınla başla) reklam izlemeden": "Récompenses (continuer avec 5 vies, commencer avec de l'or) sans pub",
+"Kristal yalnız bosslardan düşer": "Les cristaux ne tombent que des boss",
+"komutan ve savaş eşyası açar": "débloquent commandants et objets",
+"Kemik Bombası": "Bombe d'os",
+"Seçtiğin yerde patlar, ağır alan hasarı": "Explose où tu veux, lourds dégâts de zone",
+"Zaman Kum Saati": "Sablier du temps",
+"Bütün düşmanlar 5 sn donar": "Tous les ennemis gèlent 5 s",
+"Mortimer'ın Çayı": "Le thé de Mortimer",
+"+5 can, bütün iskeletler ve komutan iyileşir": "+5 vies, tous les squelettes et le commandant guérissent",
+"Lanetli Kese": "Bourse maudite",
+"Hemen +250 altın": "+250 or immédiatement",
+"AÇ": "OUVRIR",
+"Dükkândan kristalle al": "Achète-le avec des cristaux",
+"Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)": "Soigne ses alliés. Verdict solaire : réduit une tour au silence 4 s (un anneau doré apparaît d'abord)",
+"Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır": "Se fond dans l'ombre et réapparaît plus loin, répand du poison, invoque des assassins",
+"Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır": "Mur de boucliers : bloque l'essentiel des flèches et boulets 4 s (la magie et les soldats passent). Frappe le sol, appelle l'infanterie lourde",
+"İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır": "Arrive sur un char doré tiré par deux lions cuirassés : les soldats ne peuvent l'arrêter et sont piétinés. Fait pleuvoir le feu sur les tours. Char brisé, il combat à pied, puis avec la puissance du soleil",
+"Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur": "Combat à pied, furieux : lève son bouclier, appelle la garde prétorienne, réduit trois tours au silence avec l'Édit impérial",
+"Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter": "Revêtu d'une armure de flammes par le soleil : il accélère et son épée embrase tout. S'il atteint le château, tout est fini",
+"Güneş Hükmü!": "Verdict solaire !",
+"Gölgeye Karış!": "Dans l'ombre !",
+"İmparatorluk Fermanı!": "Édit impérial !",
+"Güneş Kılıcı!": "Lame solaire !",
+"Güneş Gazabı!": "Courroux du soleil !",
+"Muhafızlar!": "Gardes !",
+"GÜNEŞ BENİMLE!": "LE SOLEIL EST AVEC MOI !",
+"Araba parçalandı!": "Le char est en miettes !",
+"GÜNEŞ FORMU": "FORME SOLAIRE",
+"Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor": "Gloriosus est à pied : il appelle sa garde et fait taire les tours par édit",
+"Güneşin gücü Gloriosus'u sardı: hızlandı, kılıcı yakıyor": "Le soleil embrase Gloriosus : il accélère et son épée brûle",
+"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": "Son char est cassé. Un peu de marche, c'est bon pour la santé.",
+"Aslanlar kaçtı. Akıllı hayvanlar.": "Les lions ont filé. Bêtes malignes.",
+"Yayan general mi? Ne kadar da mütevazı.": "Un général à pied ? Quelle modestie.",
+"Parlıyor. Çayımı ısıtabilir mi acaba?": "Il brille. Il pourrait réchauffer mon thé ?",
+"Güneş formu mu? Ben de gece formundayım.": "Forme solaire ? Moi, je suis en forme nocturne.",
+"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": "Il m'a ébloui. Là, je suis vraiment fâché.",
+"Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.": "Arrive en char à lions, hurle à pied, finit par briller comme le soleil. Il faudra le battre trois fois. Mettez la bouilloire.",
+"Yarasa Sürüsü!": "Nuée de chauves-souris !",
+"DÜŞMANLAR": "ENNEMIS",
+"SAVAŞA!": "AU COMBAT !",
+"BAŞLA": "COMMENCER",
+"Önceki bölümü bitir, bu bölüm açılsın": "Termine le niveau précédent pour débloquer celui-ci",
+"Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.": "Seulement 3 vies, ennemis 20 % plus coriaces. Aucune erreur permise.",
+"Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?": "Les vagues ne finissent jamais et se renforcent. Combien de temps tiendras-tu ?",
+"Veba Kazanı patlaması": "Explosion du chaudron de peste",
+"lisanslı ses kütüphanesi": "banque de sons sous licence"
+},
+"tpl": [
+[
+"İlk {} bölüm ücretsiz",
+"{} premiers niveaux gratuits"
+],
+[
+"Kristalin: {}",
+"Tes cristaux : {}"
+],
+[
+"+{} KRİSTAL",
+"+{} CRISTAUX"
+],
+[
+"{}: patlayacağı yeri seç",
+"{} : choisis où elle explose"
+],
+[
+"{} için {} kristal gerekir (kristal bosslardan düşer)",
+"{} coûte {} cristaux (les cristaux tombent des boss)"
+],
+[
+"+{} can",
+"+{} vies"
+],
+[
+"+{} altın",
+"+{} or"
+]
+]
+}
