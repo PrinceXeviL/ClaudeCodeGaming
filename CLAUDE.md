@@ -234,8 +234,8 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
   ranged.splash + proj 'flask', def.nocurse, def.elite (shapeWaves çoğaltmaz), ab.slam.say/bell, ab.hex.say/col.
 - 2. sefer 5 can eksik başlar (startLevel lives). Kademe (tier) 3→6. Her bölüm bir komutanla biter (dalga kodu bunu varsayar).
 - Görseller: varliklar/ham/nm_engizisyon_A..D.jpg, nm2_dekor_A.jpg (nm_isle.py BOXES ile kutu kutu kesim), nm2_zeminler.jpg (zemin2_isle.py).
-- Eksikler: yeni düşmanların yürüme/saldırı şeritleri (Kaggle), mahzen kapakları (nm2_hatch*) mekaniği, Kızıl Ay olayı, hikâye panelleri,
-  2. sefer müziği/replikleri. Denge: bot hepsini kazanıyor, 20., 27. ve 30. bölüm hedeften zor; oynanışla ayarla.
+- (11 Eki denetimi) Bunlar yapıldı: yeni düşman şeritleri (fener arabası yalnız yürür, katedral saldırmaz), mahzen kapağı (HATCH),
+  Kızıl Ay (BLOOD), hikâye panelleri (COMICS, intro2), müzik (battle2/boss2), Mortimer replikleri (start2, blood). Denge: bot hepsini kazanıyor, 20., 27. ve 30. bölüm hedeften zor; oynanışla ayarla.
 
 ## 10 Eki gece: hasar türleri, Kemik Kulesi yolları, silah büyüleri (yayın 305)
 - Hasar türü × zırh sınıfı (data.js ARMOR_CLASS, CLASS_OF): src 'arrow' Delici, 'melee'/'minion'/komutan Kesici, 'magic' Ruh, 'blast' Veba/Ateş.

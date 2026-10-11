@@ -6950,7 +6950,7 @@ function drawBoneTowerFx(t, ts, layer) {
   ctx.restore();
 }
 function drawNecroTowerFx(t, ts) {
-  if (t.type === 'archer' && !(xbowCount(t) && xbowCfg(t).clip)) drawBoneTowerFx(t, ts, xbowCount(t) ? 'front' : null); // ön korkuluklu kulede ön ışıklar okçu çiziminde, korkuluğa kırpılı // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
+  if (t.type === 'archer' && !(xbowCount(t) && (xbowCfg(t).clip || xbowCfg(t).front))) drawBoneTowerFx(t, ts, xbowCount(t) ? 'front' : null); // ön korkuluklu kulede ön ışıklar okçu çiziminde, korkuluğa kırpılı // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
   if (t.type === 'mage') drawLanternFx(t, ts); // Ruh Feneri: fener nabzı, dönen ruh yüzleri, mum/göz/mangal/run
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
