@@ -1062,9 +1062,10 @@ const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dün
 let BGM = { x: 0, y: 0 };
 const bgBox = () => ({ x: -BGM.x, y: -BGM.y, w: W + 2 * BGM.x, h: H + 2 * BGM.y });
 function renderBackground(lv, paths, res = 2, m = null) {
-  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 };
-  try { const c = renderBackground0(lv, paths, res); c.m = BGM; return c; } finally { BGM = { x: 0, y: 0 }; }
+  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = [];
+  try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; return c; } finally { BGM = { x: 0, y: 0 }; }
 }
+let BG_HANDS = []; // zemin çizilirken mezardan çıkan ellerin yerleri (zemine çizilmez, her karede canlı çizilir)
 // çerçevenin dışından gelen yollar taşma payında da sürsün: giriş ucu dışarıdaki yollar ilk doğrultusunda geriye uzatılır
 function extendEntry(p) {
   const a = p.pts[0], b = p.pts[1];
@@ -1276,6 +1277,11 @@ function renderBackground0(lv, paths, res) {
       props.push([q[0], q[1], w * 0.45], [q[0], q[1] - h * 0.5, w * 0.4]);
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q[0] + 4, q[1] + 2, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); g.fill();
       drawSprite(g, im, q[0], q[1] + 4, w);
+    }
+    // mezardan çıkan eller (11 Eki, Caner): orman temalarında, mezarlıkta daha çok
+    if (th.dense && spr('nm3_hand_idle')) for (let i = 0, n = (th === THEMES.graveyard ? 4 : th === THEMES.necrogate ? 3 : 2) * (lv.decorK ? 2 : 1); i < n; i++) {
+      const q = place(16); if (!q) continue;
+      props.push([q[0], q[1], 16]); BG_HANDS.push({ x: q[0], y: q[1], off: rnd() * 30, T: 9 + rnd() * 7, face: rnd() < 0.5 ? -1 : 1 });
     }
     const tombs = ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3'].filter(n => spr(n));
     for (let i = 0; tombs.length && i < nG; i++) {
@@ -7173,6 +7179,32 @@ function drawTowerLive(t, ts) { // kulenin yerel koordinatında: (0,0) tabanın 
     ctx.restore();
   }
 }
+// Mezardan çıkan el (11 Eki, Caner; Gemini, her poz ayrı çizim: varliklar/mezar_eli_isle.py). Çoğu zaman parmak uçları topraktan
+// çıkık bekler (idle); arada bir el halkanın arkasından yükselir (çizim kayar, CUT çizgisinde kırpılır), pençe açılıp yumruk olur, geri batar.
+// Ara kare uydurulmaz: yalnız çizilmiş pozlar değişir, üstüne yükselme ve hafif sallanma.
+const GRAVE_HAND = { h: 32, cut: 0.894, start: 0.73, rise: 0.9, sink: 0.9, seq: [0.45, 0.4, 0.45, 0.55, 0.5] };
+function drawGraveHands(list, parts) {
+  if (!list || !list.length) return;
+  const idle = spr('nm3_hand_idle'), ring = spr('nm3_hand_ring'), open = spr('nm3_hand_open'), fist = spr('nm3_hand_fist'); if (!idle || !ring || !open || !fist) return;
+  const H = GRAVE_HAND.h, Wd = H * idle.width / idle.height, act = GRAVE_HAND.rise + GRAVE_HAND.seq.reduce((a, b) => a + b, 0) + GRAVE_HAND.sink;
+  for (const o of list) {
+    const p = (time + o.off) % o.T, t0 = o.T - act, x0 = o.x - Wd / 2, y0 = o.y - H;
+    ctx.save(); ctx.translate(o.x, 0); ctx.scale(o.face, 1); ctx.translate(-o.x, 0);
+    if (p < t0) { ctx.drawImage(idle, x0, y0, Wd, H); ctx.restore(); continue; }
+    let u = p - t0, d = 0, im = open, sway = 0;
+    if (u < GRAVE_HAND.rise) d = (1 - easeOutBack(u / GRAVE_HAND.rise)) * GRAVE_HAND.start * H;
+    else if ((u -= GRAVE_HAND.rise) < GRAVE_HAND.seq.reduce((a, b) => a + b, 0)) { // pençe açık / yumruk sırayla
+      let k = 0; for (; k < GRAVE_HAND.seq.length - 1 && u > GRAVE_HAND.seq[k]; k++) u -= GRAVE_HAND.seq[k];
+      im = k % 2 ? fist : open; sway = Math.sin((p - t0) * 7) * 0.05;
+    } else { u -= GRAVE_HAND.seq.reduce((a, b) => a + b, 0); d = Math.pow(clamp(u / GRAVE_HAND.sink, 0, 1), 2) * GRAVE_HAND.start * H; }
+    ctx.drawImage(ring, x0, y0, Wd, H);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0 - Wd, y0 - H, Wd * 3, H + GRAVE_HAND.cut * H); ctx.clip(); // halkanın ön dudağının üstü
+    const px = o.x, py = y0 + GRAVE_HAND.cut * H; ctx.translate(px, py); ctx.rotate(sway); ctx.translate(-px, -py);
+    ctx.drawImage(im, x0, y0 + d, Wd, H); ctx.restore();
+    if (parts && d > H * 0.05 && Math.random() < 0.15) emit(parts, { kind: 'glow', x: o.x + (Math.random() - 0.5) * Wd * 0.5, y: py - 1, vx: (Math.random() - 0.5) * 20, vy: -10 - Math.random() * 15, col: '90,70,50', s0: 1.6, s1: 0.4, life: 0.4 }); // toprak serpintisi
+    ctx.restore();
+  }
+}
 // ön korkuluk katmanı kulenin ışıklı kopyasından kesilir (ayrı ışıklanırsa kesim çizgisinde ton farkı olur)
 const FRONT_LIT = new Map();
 function frontLit(name, FI, lit) {
@@ -12705,7 +12737,7 @@ const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
   if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
-  if (R.done) { R.done = null; R.parts = []; R.res = 0; } // ekran genişledi: taşma payıyla yeniden
+  if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
@@ -12714,6 +12746,7 @@ function regionBg(ep) {
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
     R.parts.push(part);
+    R.hands = (R.hands || []).concat((part.hands || []).filter(o => o.x >= k * W / E.zones.length - 20 && o.x < (k + 1) * W / E.zones.length + 20)); // mezar elleri: kendi mekânında
     if (R.parts.length < E.zones.length) return R.parts[0];
   }
   const m = R.parts[0].m, c = document.createElement('canvas'); c.width = R.parts[0].width; c.height = R.parts[0].height; c.m = m;
@@ -12837,6 +12870,7 @@ function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
   ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
+  drawGraveHands(R.hands, uiParts);
   MAPFX.fog = drawMapFog2(E, ep, road, bm);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
@@ -13488,6 +13522,7 @@ function drawPlay() {
   ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
   const bm = G.bg.m || { x: 0, y: 0 };
   ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+  drawGraveHands(G.bg.hands, G.parts);
   for (const d of G.decals) {
     if (d.kind === 'splat') {
       // veba birikintisi: yere dökülmüş sıvı; hızla yayılır, yavaşça solar (yer düzlemine yatık)
