@@ -1553,7 +1553,7 @@ const HERO_AGGRO = { r: 30, max: 3, dmg: 1.3 };
 let HERO_SKILL = false; // yetenek hasarı işlenirken true
 let SKILL_K = 1; // işlenen yeteneğin ağaç kademesinden hasar çarpanı (mermi / alanlar kendi kopyasını taşır)
 function heroStats(h) {
-  const d = h.def, lk = 1 + 0.07 * (h.lvl - 1), k = lk * HERO_POWER, L = h.learned, ir = L.iron || 0; // seviye 20'de can ve hasar ×2,33
+  const d = h.def, lk = 1 + 0.035 * (h.lvl - 1), k = lk * HERO_POWER, L = h.learned, ir = L.iron || 0; // seviye 20'de can ve hasar ×1,67 (11 Eki denge: ×2,33 fazla güçlüydü)
   const ratio = h.maxHp ? h.hp / h.maxHp : 1;
   h.maxHp = Math.round(d.hp * lk * HERO_HP); h.hp = Math.min(h.maxHp, h.maxHp * ratio);
   h.dmg = [Math.max(1, Math.round(d.dmg[0] * k)), Math.max(1, Math.round(d.dmg[1] * k))];
@@ -5394,7 +5394,7 @@ function marchSoldier(s, dt) {
 
 // Kahraman gücü: seviyeyle hasar %15 artar, yıldız gelişmesiyle +%20
 function castUlt(h, x, y) {
-  const U = HERO_ULT[h.id], k = (1 + HERO_TREE.ultK * ((h.ult || 1) - 1)) * (1 + 0.03 * (h.lvl - 1)); // güç kademesi (ağaç) ve seviye
+  const U = HERO_ULT[h.id], k = (1 + HERO_TREE.ultK * ((h.ult || 1) - 1)) * (1 + 0.015 * (h.lvl - 1)); // güç kademesi (ağaç) ve seviye
   const dmg = () => roll(U.dmg) * k;
   // isabet noktası: yarısı alandaki düşmanların üstüne (biraz ileriye), kalanı alana rastgele düşer
   const foes = enemiesNear(x, y, U.r * 1.1, true);
@@ -10192,7 +10192,7 @@ function drawCastle() {
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     drawCastleArchers();
-    if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh, im === spr('castle_keep_3'));
+    if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh, [2, 3, 4].find(n => im === spr('castle_keep_' + n)));
     if (NECRO) {
       drawMortimer();
       const h = cp.w * im.height / im.width, R = mortStage(im).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
@@ -10255,7 +10255,26 @@ const KEEP_FX = {
   fire: [[0.255, 0.715], [0.6, 0.765]], roof: [[0.276, 0.275], [0.8, 0.345]], eyes: [[0.405, 0.665], [0.505, 0.665]],
   win: [[0.505, 0.355, 2.2], [0.5, 0.245, 0.8], [0.63, 0.245, 0.8], [0.265, 0.455, 1], [0.36, 0.485, 0.8], [0.4, 0.485, 0.8],
     [0.72, 0.495, 1], [0.8, 0.5, 0.8], [0.625, 0.515, 0.8]],
+  // 11 Eki: hasar evrelerinin dumanı ve çatı yangını görselden silindi, kodla canlı (Caner: duman hareketsizdi).
+  // smoke: [x, y, kalınlık] dumanın çıktığı yer; burn: [x, y, boy] çatıdaki yangın. Evre başına (castle_keep_N).
+  dmg: {
+    2: { smoke: [[0.62, 0.3, 0.8]], burn: [] },
+    3: { smoke: [[0.27, 0.3, 1], [0.79, 0.38, 1.1]], burn: [[0.27, 0.31, 0.9], [0.79, 0.39, 1]] },
+    4: { smoke: [[0.27, 0.27, 1.2], [0.81, 0.34, 1.3], [0.58, 0.22, 0.9], [0.86, 0.55, 0.7]], burn: [[0.27, 0.29, 1.1], [0.81, 0.36, 1.2], [0.86, 0.56, 0.7]] },
+  },
 };
+// süzülen duman: üst üste binen yumuşak gri lekeler aşağıdan yukarı yükselir, rüzgârla sağa kıvrılır, büyüyüp söner (görselde değil, her karede)
+function keepSmoke(x, y, s, k, seed) {
+  const N = 10, H = 150 * s * k;
+  for (let i = 0; i < N; i++) {
+    const u = (time * 0.16 + i / N + seed * 0.37) % 1, r = (9 + 26 * u) * s * k;
+    const px = x + Math.sin(time * 0.9 + i * 1.7 + seed) * 7 * s * u + 40 * s * k * u * u, py = y - H * u;
+    const a = Math.min(1, Math.sin(Math.PI * Math.min(1, u * 1.6)) * (1 - u * 0.7) * 1.25);
+    const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+    g.addColorStop(0, `rgba(70,62,78,${a * 0.9})`); g.addColorStop(0.55, `rgba(52,46,60,${a * 0.6})`); g.addColorStop(1, 'rgba(40,36,48,0)');
+    ctx.fillStyle = g; ctx.fillRect(px - r, py - r, 2 * r, 2 * r);
+  }
+}
 function drawKeepLights(cp, h, sh, burning) {
   const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -10270,13 +10289,15 @@ function drawKeepLights(cp, h, sh, burning) {
     for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, '255,225,235', '225,40,100');
     if (Math.random() < 0.05 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-4, 4), y: y - 24 * s, vx: rand(-6, 6), vy: rand(-30, -16), col: i % 2 ? '200,80,255' : '255,70,110', s0: rand(1, 1.8), s1: 0.2, life: rand(0.6, 1.1), a: 0.9 });
   }
-  if (burning) for (const [i, f] of KEEP_FX.roof.entries()) { // ağır hasar: çatılarda yangın
-    const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 11 + i * 3) * Math.sin(time * 6.1 + i);
-    glow(ctx, x, y, (50 + 10 * k) * s, '255,140,50', 0.3 + 0.12 * k);
-    for (let j = 0; j < 2; j++) avluFlame(x + (j - 0.5) * 10 * s, y + 8 * s, (30 + 10 * Math.sin(time * 8 + j * 2 + i)) * s, 8 * s, k, j * 3 + i, '255,240,180', '255,120,30');
+  const D = KEEP_FX.dmg[burning] || null; // burning: evre numarası (2..4) ya da yok
+  if (D) for (const [i, f] of D.burn.entries()) { // çatılarda yangın: titreyen alev dilleri ve kıvılcım
+    const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 11 + i * 3) * Math.sin(time * 6.1 + i), z = f[2];
+    glow(ctx, x, y, (50 + 10 * k) * s * z, '255,140,50', 0.3 + 0.12 * k);
+    for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 11 * s * z, y + 8 * s, (34 + 14 * Math.sin(time * 8 + j * 2 + i)) * s * z * (j === 1 ? 1.25 : 0.85), 9 * s * z, k, j * 3 + i, '255,240,180', '255,120,30');
     if (Math.random() < 0.06 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-5, 5), y: y - 14 * s, vx: rand(-8, 8), vy: rand(-36, -20), col: '255,160,60', s0: rand(1, 1.8), s1: 0.2, life: rand(0.5, 1), a: 0.9 });
   }
   ctx.restore();
+  if (D) { ctx.save(); for (const [i, f] of D.smoke.entries()) { const [x, y] = P(f); keepSmoke(x, y, cp.w / 200, f[2], i * 2.3); } ctx.restore(); } // duman ışıkların üstünde, normal karışım
 }
 function drawAvluLights(cp, h, sh, gateOk) {
   const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
@@ -10360,7 +10381,7 @@ function castleAmbient(dt) {
   const c = G.castle, ratio = G.lives / G.maxLives;
   c.shake = Math.max(0, c.shake - dt); c.flash = Math.max(0, c.flash - dt);
   G.hurt = Math.max(0, G.hurt - dt);
-  if (ratio > 0.6 || G.lives <= 0) return;
+  if (ratio > 0.6 || G.lives <= 0 || (NECRO && spr('castle_keep_1'))) return; // heybetli kalede duman drawKeepLights'ta
   c.smokeT -= dt;
   if (c.smokeT > 0) return;
   c.smokeT = ratio > 0.3 ? 0.35 : 0.15;
