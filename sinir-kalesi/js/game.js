@@ -308,7 +308,8 @@ const SOUND = {
   freeze: { vol: 0.4, gap: 0.25, max: 2, rate: [0.92, 1.1] },        // buzlu ok / kılıç düşmanı dondururken
   blooddrain: { vol: 0.22, gap: 2.5, max: 1, rate: [0.95, 1.05] },   // Kan Ayini can emerken (seyrek, arkada)
   plaguethrow: { vol: 0.5, gap: 0.35, max: 2, rate: [0.94, 1.08] }, // Veba Kazanı sıvıyı fırlatırken: fışkırma (Caner'in 'Liquid Craft' kaydı)
-  plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] },  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
+  plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] },
+  acidboom: { vol: 0.42, gap: 0.18, max: 3, rate: [0.9, 1.1] },     // Veba Kazanı mermisi düşüp patlar: asit köpürmesi (Caner'in lisanslı sesi, 12 Eki)  // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
   battle:  { vol: 0.5, full: 4 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
@@ -4213,7 +4214,7 @@ function updateProjectile(pr, dt) {
     if (pr.kind === 'meteor') fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn);
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
     else fxExplosion(pr.tx, pr.ty, pr.splash, false);
-    sfx(pr.kind === 'meteor' ? 'meteor' : 'boom');
+    sfx(pr.kind === 'meteor' ? 'meteor' : NECRO ? 'acidboom' : 'boom');
   } else if (pr.ballistic && !(pr.target && !pr.target.dead)) {
     stickArrow(pr, null); // hedef uçuşta öldü: ok yere saplanır
   } else if (pr.target && !pr.target.dead) {
@@ -11163,7 +11164,7 @@ const CREDITS = [
   ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
     ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
-    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü, borazan ve arbalet efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
+    ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Veba Kazanı patlaması', 'lisanslı ses kütüphanesi'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü, borazan ve arbalet efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
   ['YAZI TİPİ', [['Metal Mania · Russo One · Rubik', 'SIL Open Font License']]],
 ];
 function drawCredits() {
@@ -15224,6 +15225,12 @@ window.__game = {
     D.sort((a, b) => a - b); return { ort: +(D.reduce((a, b) => a + b) / n).toFixed(2), p95: +D[Math.floor(n * 0.95)].toFixed(2), max: +D[n - 1].toFixed(2) };
   },
   learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
+  // test: adıyla bir düğmenin ekran (CSS piksel) merkezi; son çizilen karedeki buttons listesinden (tools/akis-testi.js)
+  btn(key) { const b = buttons.find(o => o.key === key || (key.endsWith('*') && o.key.startsWith(key.slice(0, -1)))); return b ? { x: view.ox + (b.x + b.w / 2) * view.scale, y: view.oy + (b.y + b.h / 2) * view.scale, key: b.key } : null; },
+  btnKeys() { return buttons.map(b => b.key); },
+  menu() { return currentMenu(); },
+  bag() { const q = itemBag(); return { x: view.ox + q.x * view.scale, y: view.oy + q.y * view.scale }; },
+  toScreen(x, y) { const q = worldToScreen(x, y); return { x: view.ox + q.x * view.scale, y: view.oy + q.y * view.scale }; },
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
 })();
