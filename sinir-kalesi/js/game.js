@@ -2866,7 +2866,7 @@ function updateExtra(t, dt) {
   if (!near.length) { t.exT = 0.3; return; }
   t.exT = E.cd; t.shotAnim = 0.3;
   if (t.spec === 'bow' || t.spec === 'fan') {
-    const ts = towerSprite(t), A = ts && xbowMen(t), M = menOf(t), w = M.aim * 1.3;
+    const ts = towerSprite(t), A = ts && xbowMen(t).filter(o => !o.dead), M = menOf(t), w = M.aim * 1.3;
     if (!A || !A.length) { t.exT = 0.5; return; }
     const c = densestOf(near, 50);
     A.forEach(a => { a.tx = null; a.walking = false; a.aimT = w; a.kickT = w + M.kick; a.face = c.x < xbowFoot(t, ts, a).x ? -1 : 1; });
@@ -3286,6 +3286,10 @@ function updateEnemy(e, dt) {
     if (!tgt) for (const h of RG.any ? G.soldiers : G.heroes) {
       if (h.dead || h.removed || h.wall || (h.born != null && G.t < h.born)) continue;
       const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; }
+    }
+    if (RG.any && NECRO && !(e.blocker && RG.hold)) for (const t of G.towers) { // kuledeki okçular da hedef (yerdeki yakın asker önce)
+      if (!t.ga) continue;
+      for (const a of t.ga) { if (!a.pr || a.dead) continue; const d = dist(e.x, e.y, a.pr.x, a.pr.y) + TMAN.prefer; if (d <= bd) { bd = d; tgt = a.pr; } }
     }
     if (e.shootT > 0) { e.shootT -= dt; if (!RG.moving) { e.inMelee = false; return; } }
     e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt;
@@ -3817,6 +3821,7 @@ function updateProjectile(pr, dt) {
     if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'hex' ? 'magic' : pr.kind === 'axe' ? 'whirl' : 'arrow'); }
     if (pr.t < pr.dur) return;
     pr.done = true;
+    if (h && h.towerMan) { hitTowerMan(h.t, h.a, pr.edmg); return; } // kuledeki okçu vuruldu
     if (pr.splash) { // kutsal su şişesi: isabet yerindeki bütün askerlere alan hasarı, mavi sıçrama
       for (const s2 of G.soldiers) if (s2 !== h && !s2.dead && !s2.wall && dist(s2.x, s2.y, pr.tx, pr.ty + 12) < pr.splash) damageSoldier(s2, pr.edmg * 0.7, pr.from);
       G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty + 12, r: pr.splash, col: '120,200,255', t: 0, dur: 0.4 });
@@ -5812,16 +5817,36 @@ const menOf = (t) => {
 const towerTitle = (t, lvl = t.lvl) => (t.path && ARCHER_PATH[t.path] && ARCHER_PATH[t.path].titles[lvl]) || t.def.levels[lvl].title;
 const xbowCfg = (t) => XBOW_T[t.spec ? formImg(t) : xbowTowerName(t.lvl)] || XBOW_T.tower_archer_fan;
 const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
+// kuledeki okçuların canı (11 Eki, Caner: düşman okçuları onları da hedef alsın). Ölen okçu kuleden düşer, TMAN.revive sn sonra kalkar;
+// kule eksik okçuyla seyrek atar (atış payı = sağ okçu / tüm okçu), hepsi ölünce susar.
+const TMAN = { hp: [30, 45, 60], spec: 70, revive: 10, prefer: 25, regen: 4, calm: 3 }; // regen: vurulmadan calm sn geçince saniyede iyileşme
+const tmanHp = (t) => (t.spec ? TMAN.spec : TMAN.hp[Math.min(2, t.lvl)]);
+function hitTowerMan(t, a, dmg) {
+  if (a.dead) return;
+  a.hp -= dmg; a.flash = 0.12; a.hitT = G.t;
+  if (a.hp > 0) return;
+  a.dead = true; a.deadT = TMAN.revive; a.aimT = 0; a.kickT = -9; a.tg = null; if (a.pr) a.pr.dead = true;
+  const ts = towerSprite(t); if (!ts) return;
+  const f = xbowFoot(t, ts, a);
+  for (let i = 0; i < 10; i++) emit(G.parts, { kind: 'dot', x: f.x + rand(-4, 4), y: f.y - rand(4, 16), vx: rand(-60, 60), vy: -rand(30, 90), g: 380, col: i % 2 ? '#e8dcc0' : '#b8a888', s0: rand(1.4, 2.4), s1: 1, life: rand(0.5, 0.8), floor: t.y + rand(-4, 6) });
+  sfx('bonefall');
+}
 function xbowMen(t) {
   const n = xbowCount(t); if (!t.ga) t.ga = [];
   if (t.ga.length > n) t.ga.length = n;
   const C = xbowCfg(t);
-  while (t.ga.length < n) { const d = rand(0.2, 0.8), r = xbowRange(t, d); t.ga.push({ x: n === 1 ? (r[0] + r[1]) / 2 : lerp(r[0], r[1], t.ga.length / (n - 1)), d, tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null }); }
+  while (t.ga.length < n) { const d = rand(0.2, 0.8), r = xbowRange(t, d); t.ga.push({ hp: tmanHp(t), x: n === 1 ? (r[0] + r[1]) / 2 : lerp(r[0], r[1], t.ga.length / (n - 1)), d, tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null }); }
   return t.ga;
 }
 function updateXbowMen(t, dt) {
-  const A = xbowMen(t), X = Object.assign({}, XBOW, xbowCfg(t)), M = menOf(t);
+  const A = xbowMen(t), X = Object.assign({}, XBOW, xbowCfg(t)), M = menOf(t), ts = towerSprite(t), mh = tmanHp(t);
   A.forEach((a, i) => {
+    if (a.maxHp !== mh) { a.hp = a.hp == null ? mh : a.hp + Math.max(0, mh - (a.maxHp || mh)); a.maxHp = mh; } // yükseltmede can artar
+    if (a.flash > 0) a.flash -= dt;
+    if (a.dead) { if ((a.deadT -= dt) <= 0) { a.dead = false; a.hp = a.maxHp; a.reviveT = 0.6; if (a.pr) a.pr.dead = false; } return; }
+    if (a.reviveT > 0) a.reviveT -= dt;
+    if (a.hp < a.maxHp && G.t - (a.hitT ?? -99) > TMAN.calm) a.hp = Math.min(a.maxHp, a.hp + TMAN.regen * dt);
+    if (ts) { const f = xbowFoot(t, ts, a); a.pr ??= { towerMan: true, t, a, dead: false }; a.pr.x = f.x; a.pr.y = f.y; } // düşman okçusunun hedef aldığı nokta
     a.anim += dt; if (a.aimT > 0) a.aimT -= dt; if (a.kickT > -M.hold) a.kickT -= dt;
     const busy = a.aimT > 0 || a.kickT > -M.hold;
     if (a.tx == null && !busy && (a.moveT -= dt) <= 0) { // ara ara platformda yer değiştirir (diğerlerine çok yaklaşmadan)
@@ -5839,7 +5864,7 @@ function updateXbowMen(t, dt) {
 }
 function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
 // kuledeki iskeletler kuleyle karışmasın (Caner, 11 Eki): %10 iri ve koyu konturlu (kontur görsel başına bir kez hazırlanır)
-const MEN_K = 1.1, OUTL = new Map();
+const MEN_K = 1.22, OUTL = new Map(); // 11 Eki: 1-3. kademede ~22 birim (yerdeki iskelet savaşçı 23; Caner: en fazla o boyda)
 function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   let c = OUTL.get(im); if (c) return c;
   const s = document.createElement('canvas'); s.width = im.width; s.height = im.height;
@@ -5888,7 +5913,8 @@ function ballisticShot(o, gy0, tg, T0, M, extra) {
 }
 // bir arbaletçi atar: ötekilerin hedeflemediği en öndeki düşmanı seçer (yoksa verilen hedef), döner, nişan alır; cıvata nişan bitince çıkar
 function xbowShoot(t, ts, L, e0, opt) {
-  const A = xbowMen(t), M = menOf(t); if (!A.length) return null;
+  const all = xbowMen(t), A = all.filter(o => !o.dead), M = menOf(t); if (!A.length) return null;
+  if (A.length < all.length && Math.random() > A.length / all.length) return null; // ölen okçu varken kule daha seyrek atar
   const i = (t.xi = ((t.xi ?? -1) + 1) % A.length), a = A[i];
   const taken = new Set(A.filter((o, j) => j !== i && o.kickT > -M.hold && o.tg && !o.tg.dead).map(o => o.tg));
   let e = e0;
@@ -5910,14 +5936,15 @@ function updateXbowRelease(t, dt) {
 function drawXbowMen(t, ts, redraw) {
   const A = xbowMen(t), h = ts.h * xbowCfg(t).h * MEN_K, M = menOf(t), ghost = !!t.spec, pre = M.pre;
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
-    const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold;
+    if (a.dead) continue;
+    const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold, rv = a.reviveT > 0 ? 1 - a.reviveT / 0.6 : 1;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
     const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
     let pose = up ? M.pose : '';
     const sinceRel = M.kick - a.kickT; // bırakmadan bu yana geçen süre
     if (M.seq && up) pose = a.aimT > 0 ? M.seq.find(q => rise <= q[0])[1] : sinceRel < M.rel ? M.relPose || '_rel' : M.load && sinceRel < M.rel + M.load ? '_load' : ''; // germe/nişan sırası, bırakma pozu, (arbalette) kurma
     const im = spr(pre + pose) || spr(up ? pre + M.pose : pre); if (!im) continue;
-    ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1);
+    ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1); if (rv < 1) { ctx.globalAlpha *= rv; ctx.translate(0, (1 - rv) * h * 0.25); } // yeniden kalkan okçu belirir
     const bob = a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012; // yürürken sekme, dururken nefes
     const kk = a.aimT <= 0 && a.kickT > 0 ? a.kickT / M.kick : 0; // bırakınca geri tepme (geri ve yukarı)
     let lean = a.walking ? Math.sin(a.anim * 9) * 0.04 : up ? (1 - rise) * 0.12 - kk * 0.1 : 0, sx = 1, sy = 1, back = 0;
@@ -5930,8 +5957,10 @@ function drawXbowMen(t, ts, redraw) {
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = a.walking && !up && animStrip(pre, null, '_walk'); // platformda yer değiştirirken yürüme şeridi (Kaggle Wan, 49 kare)
     if (wk) drawFrameOutlined(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
-    else { const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2); }
+    else { const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2);
+      if (a.flash > 0) { const wi = whiteOf(pre + pose + '_w', im); ctx.globalAlpha *= 0.7; drawSprite(ctx, wi, 0, 0, w0); } } // isabet anında beyaz parlar
     ctx.restore();
+    if (a.hp < a.maxHp) hpBar(f.x, f.y - h - 4, 12, a.hp / a.maxHp, '#d8c8a8');
     const o = xbowTip(t, ts, a);
     if (M.bow && a.aimT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * 0.1 * rise, M.col, 0.45 * rise); ctx.restore(); } // gerilen okun ucunda kızıl ışık
     if (kk > 0.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y, h * (M.heavy ? 0.24 : 0.16) * kk, ghost ? M.col : '140,255,150', 0.7 * kk); ctx.restore(); }
@@ -6858,22 +6887,26 @@ function drawLanternFx(t, ts) {
   ctx.restore();
   if (Math.random() < (0.05 + 0.15 * k)) emit(G.parts, { kind: 'glow', add: true, x: c.x + rand(-6, 6) * s, y: c.y + rand(-4, 4) * s, vx: rand(-10, 10), vy: -rand(8, 22), col: Math.random() < 0.7 ? '140,255,210' : '180,120,255', s0: 2.5 * s, s1: 0.4, life: rand(0.6, 1) });
 }
-function drawBoneTowerFx(t, ts) {
+// layer: 'back' = okçuların arkasında kalanlar (arka köşe alevleri, tepede dönen ruhlar), 'front' = önündekiler (run, göz, ön alev), yoksa hepsi.
+// Okçular parıltının altında bulanık görünmesin (Caner, 11 Eki: yerdeki birimler daha net)
+function drawBoneTowerFx(t, ts, layer) {
   const F = BONE_FX[ts.name]; if (!F) return;
+  const back = layer !== 'front', front = layer !== 'back';
   const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h }), sd = t.x * 0.013;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  for (const [i, r] of (F.runes || []).entries()) { // run ışığı aşağıdan yukarı akar, sütun nabız gibi atar
+  if (front) for (const [i, r] of (F.runes || []).entries()) { // run ışığı aşağıdan yukarı akar, sütun nabız gibi atar
     const beat = 0.5 + 0.5 * Math.sin(time * 2.2 + i * 1.3 + sd), q0 = P([r[0], (r[1] + r[2]) / 2]);
     glow(ctx, q0.x, q0.y, (r[2] - r[1]) * ts.h * 0.7, r[3], 0.12 + 0.12 * beat);
     for (let j = 0; j < 2; j++) { const k = (time * 0.5 + j / 2 + i * 0.3 + sd) % 1, q = P([r[0], lerp(r[2], r[1], k)]); glow(ctx, q.x, q.y, 4.5 * s, r[3], 0.55 * Math.sin(k * Math.PI)); }
   }
   for (const [i, f] of (F.flames || []).entries()) { // ruh alevi titrer, yukarı kıvılcım savurur
+    if (f[1] < 0.18 ? !back : !front) continue; // platformun arkasındaki köşe alevleri okçulardan önce çizilir
     const q = P(f), fk = 0.7 + 0.18 * Math.sin(time * 9 + i * 2.3 + sd) + 0.12 * Math.sin(time * 21 + i);
     glow(ctx, q.x, q.y, 9 * s * fk, f[2], 0.4 * fk);
     if (Math.random() < 0.1) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
   }
-  for (const [i, e] of (F.eyes || []).entries()) { const q = P(e); glow(ctx, q.x, q.y, 2.2 * s, '120,255,140', 0.45 + 0.3 * Math.sin(time * 3.1 + i * 1.9 + sd)); } // kafatası gözlerinde yeşil kor
-  if (F.top) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
+  if (front) for (const [i, e] of (F.eyes || []).entries()) { const q = P(e); glow(ctx, q.x, q.y, 2.2 * s, '120,255,140', 0.45 + 0.3 * Math.sin(time * 3.1 + i * 1.9 + sd)); } // kafatası gözlerinde yeşil kor
+  if (F.top && back) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
     const c = P(F.top), R = F.top[2] * ts.w;
     for (let i = 0; i < 3; i++) {
       const a = time * (0.9 + i * 0.15) + i * 2.09 + sd, x = c.x + Math.cos(a) * R, y = c.y + Math.sin(a) * R * 0.32 - Math.sin(time * 1.7 + i) * 3 * s, fr = Math.sin(a) > 0 ? 1 : 0.45;
@@ -6884,7 +6917,7 @@ function drawBoneTowerFx(t, ts) {
   ctx.restore();
 }
 function drawNecroTowerFx(t, ts) {
-  if (t.type === 'archer') drawBoneTowerFx(t, ts); // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
+  if (t.type === 'archer') drawBoneTowerFx(t, ts, xbowCount(t) ? 'front' : null); // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
   if (t.type === 'mage') drawLanternFx(t, ts); // Ruh Feneri: fener nabzı, dönen ruh yüzleri, mum/göz/mangal/run
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
@@ -7086,6 +7119,7 @@ function drawTowerBody(t) {
       if (NECRO && t.type === 'mage') drawLanternArm(t, ts); // Ruh Feneri: sallanan fener / feneri kaldıran kol
     }
     ctx.restore();
+    if (NECRO && t.type === 'archer' && xbowCount(t)) drawBoneTowerFx(t, ts, 'back'); // parıltının arka yarısı okçuların altında kalır
     if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = xbowCfg(t).clip;
       if (!C) return; // ön korkuluk yok (1. kademe): ayaklar platformun üstünde görünür
