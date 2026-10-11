@@ -1321,3 +1321,18 @@ if (NECRO) {
     });
   });
 }
+
+// Boss kristali (12 Eki, Caner): yalnız bosslardan düşer, satılmaz (parayla güç yok). Kilitli komutanları ve tek kullanımlık
+// savaş eşyalarını açar. Komutan: final sefer sonu bossu; heroic/usta çarpanı.
+const CRYSTAL = { boss: 2, final: 8, heroic: 2, usta: 1.5 };
+for (const t of ['gloriosus3', 'cathedral']) if (ENEMIES[t]) ENEMIES[t].final = true;
+Object.assign(HEROES.spartacus, { cost: 15 }); // komutan kristalle açılır (eski unlock bölümü yerine)
+Object.assign(HEROES.leonidas, { cost: 30 });
+// tek kullanımlık savaş eşyaları: dükkânda kristalle alınır, savaşta sağ alttaki çantadan kullanılır (KR'deki eşyalar gibi)
+const ITEMS = {
+  bomb:   { name: 'Kemik Bombası',    cost: 3, desc: 'Seçtiğin yerde patlar, ağır alan hasarı', target: true, r: 85, dmg: 320 },
+  freeze: { name: 'Zaman Kum Saati',  cost: 4, desc: 'Bütün düşmanlar 5 sn donar', t: 5 },
+  tea:    { name: "Mortimer'ın Çayı", cost: 3, desc: '+5 can, bütün iskeletler ve komutan iyileşir', lives: 5 },
+  purse:  { name: 'Lanetli Kese',     cost: 2, desc: 'Hemen +250 altın', gold: 250 },
+};
+const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];

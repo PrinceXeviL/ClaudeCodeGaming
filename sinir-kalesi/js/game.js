@@ -1426,6 +1426,7 @@ let swipe = null;                 // harita sayfasını parmakla kaydırma      
 // MAĞAZA SÜRÜMÜNDEN ÖNCE false YAP.
 const TEST_OPEN = true;
 function heroUnlocked(id) {
+  if (HEROES[id].cost) return (TEST_OPEN && !window.__paywallTest) || (save.heroBuy || []).includes(id); // 12 Eki: kristalle açılır
   const u = HEROES[id].unlock;
   return TEST_OPEN || !u || (save.stars[u - 1] || 0) > 0;
 }
@@ -2276,6 +2277,7 @@ function killEnemy(e) {
     G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 });
   }
   if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
+  if (e.def.chief && !e.leaked) giveCrystals(e);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
     const r = spawnEnemy(e.def.dismount, G.paths.indexOf(e.p), e.d, e.off);
@@ -2563,6 +2565,109 @@ function releaseSoldier(s) {
 }
 
 function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 }); }
+// ---- Boss kristali ve savaş eşyaları (12 Eki, data.js CRYSTAL / ITEMS) ----
+function giveCrystals(e) {
+  let n = e.def.final ? CRYSTAL.final : CRYSTAL.boss;
+  if (G.chal === 'h') n *= CRYSTAL.heroic;
+  if (G.diffKey === 'usta') n *= CRYSTAL.usta;
+  n = Math.round(n); save.crystal = (save.crystal || 0) + n; G.crystalGain = (G.crystalGain || 0) + n; persist();
+  floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 40) - 14, `+${n} KRİSTAL`, '#e0b8ff');
+  for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(40, 120); emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, col: i % 2 ? '200,140,255' : '140,255,200', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) }); }
+  sfx('coins');
+}
+// kristal simgesi: mor-yeşil altıgen taş
+function drawCrystal(x, y, r) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * 0.72, -r * 0.35); ctx.lineTo(r * 0.55, r * 0.6); ctx.lineTo(0, r); ctx.lineTo(-r * 0.55, r * 0.6); ctx.lineTo(-r * 0.72, -r * 0.35); ctx.closePath();
+  const g = ctx.createLinearGradient(-r, -r, r, r); g.addColorStop(0, '#f0d8ff'); g.addColorStop(0.45, '#a860f0'); g.addColorStop(1, '#3a8a6a');
+  ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = Math.max(1.2, r * 0.14); ctx.strokeStyle = '#1a0a24'; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(0, r); ctx.moveTo(-r * 0.72, -r * 0.35); ctx.lineTo(r * 0.55, r * 0.6); ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = r * 0.07; ctx.stroke();
+  ctx.restore();
+}
+// eşya simgeleri (kodla): kemik bombası, kum saati, çay fincanı, kese
+function drawItemIcon(id, x, y, r) {
+  ctx.save(); ctx.translate(x, y); const k = r / 20; ctx.scale(k, k); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const ol = (lw = 2.4) => { ctx.strokeStyle = '#1a0c06'; ctx.lineWidth = lw; ctx.stroke(); };
+  if (id === 'bomb') {
+    ctx.beginPath(); ctx.arc(0, 3, 12, 0, Math.PI * 2); ctx.fillStyle = '#e8dcc0'; ctx.fill(); ol();
+    ctx.fillStyle = '#1a0c06'; ctx.beginPath(); ctx.arc(-4.5, 1, 3, 0, Math.PI * 2); ctx.arc(4.5, 1, 3, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-3, 8, 6, 2);
+    ctx.beginPath(); ctx.moveTo(6, -7); ctx.quadraticCurveTo(12, -14, 8, -18); ol(2.6); ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, 8, -18, 7, '255,190,80', 0.9);
+  } else if (id === 'freeze') {
+    ctx.beginPath(); ctx.moveTo(-10, -15); ctx.lineTo(10, -15); ctx.lineTo(1.5, 0); ctx.lineTo(10, 15); ctx.lineTo(-10, 15); ctx.lineTo(-1.5, 0); ctx.closePath();
+    ctx.fillStyle = '#bfe8ff'; ctx.fill(); ol();
+    ctx.fillStyle = '#e8c070'; ctx.beginPath(); ctx.moveTo(-6, 13); ctx.lineTo(6, 13); ctx.lineTo(0, 6); ctx.fill();
+    ctx.fillStyle = '#6a4a20'; ctx.fillRect(-13, -18, 26, 4); ctx.fillRect(-13, 14, 26, 4);
+  } else if (id === 'tea') {
+    ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(12, -4); ctx.quadraticCurveTo(11, 12, 0, 12); ctx.quadraticCurveTo(-11, 12, -12, -4); ctx.closePath();
+    ctx.fillStyle = '#f4f0ff'; ctx.fill(); ol();
+    ctx.beginPath(); ctx.arc(14, 3, 4.5, -Math.PI / 2, Math.PI / 2); ol(2.2);
+    ctx.fillStyle = '#a0522d'; ctx.beginPath(); ctx.ellipse(0, -3, 10, 2.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-3, -8); ctx.quadraticCurveTo(-6, -12, -2, -16); ctx.moveTo(4, -8); ctx.quadraticCurveTo(1, -12, 5, -16); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(-6, -10); ctx.lineTo(6, -10); ctx.lineTo(4, -6); ctx.quadraticCurveTo(14, 0, 12, 10); ctx.quadraticCurveTo(0, 16, -12, 10); ctx.quadraticCurveTo(-14, 0, -4, -6); ctx.closePath();
+    ctx.fillStyle = '#7a3a8a'; ctx.fill(); ol();
+    ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(0, 3, 4, 0, Math.PI * 2); ctx.fill(); ol(1.4);
+    ctx.strokeStyle = '#e8bb4a'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(-6, -7); ctx.lineTo(6, -7); ctx.stroke();
+  }
+  ctx.restore();
+}
+const itemBag = () => ({ x: EDGE.r - 16 - SPELL_R, y: EDGE.b - 14 - SPELL_R, r: SPELL_R });
+const itemBtn = (i) => { const b = itemBag(); return { x: b.x - (i + 1) * (SPELL_R * 2 + 8), y: b.y, r: SPELL_R * 0.92 }; };
+const itemCount = (id) => (save.items && save.items[id]) || 0;
+function pickItem(id) {
+  if (itemCount(id) <= 0) { floatText(itemBag().x - 120, itemBag().y - 50, 'Dükkândan kristalle al', '#e0b8ff'); sfx('error'); return; }
+  if (ITEMS[id].target) { G.mode = { kind: 'item', id }; G.bagOpen = false; G.spellPeek = null; sfx('spell'); floatText(W / 2, 90, ITEMS[id].name + ': yeri seç', '#ffe9b0'); return; }
+  useItem(id);
+}
+function useItem(id, x, y) {
+  const I = ITEMS[id]; if (!I || itemCount(id) <= 0) return;
+  save.items[id]--; persist(); G.bagOpen = false;
+  if (id === 'bomb') {
+    for (const e of G.enemies) if (!e.dead && !e.under && dist(e.x, e.y, x, y) < I.r) { hitBy = 'item'; damageEnemy(e, I.dmg * (e.def.chief ? 0.5 : 1), 'magic', false, 'blast'); hitBy = null; }
+    G.effects.push({ kind: 'shock', x, y, r: I.r * 1.3, t: 0, dur: 0.5 }); G.effects.push({ kind: 'firering', x, y, r: I.r, t: 0, dur: 0.6 });
+    for (let i = 0; i < 22; i++) emit(G.parts, { kind: 'chunk', x: x + rand(-10, 10), y: y - rand(0, 10), vx: rand(-160, 160), vy: -rand(80, 240), g: 520, vr: rand(-14, 14), rot: rand(0, 6), col: i % 2 ? '#e8dcc0' : '#bfb08a', s0: rand(2, 4), s1: 1.5, life: rand(0.8, 1.2), floor: y + rand(-6, 8) });
+    impactFx(x, y - 10, '255,200,120', 2.2); shakeScreen(7, 0.5); sfx('boom');
+  } else if (id === 'freeze') {
+    for (const e of G.enemies) if (!e.dead) { stunEnemy(e, e.def.chief ? I.t / 2 : I.t); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 18, col: '160,220,255', t: 0, dur: 0.6 }); }
+    G.freezeFx = { t: 0, dur: 0.8 }; sfx('magic');
+  } else if (id === 'tea') {
+    G.lives = Math.min(G.maxLives, G.lives + I.lives);
+    for (const s of G.soldiers) if (!s.dead) { s.hp = s.maxHp; G.effects.push({ kind: 'heal', x: s.x, y: s.y, t: 0, dur: 0.6 }); }
+    floatText(G.castle.x, G.castle.y - 80, '+' + I.lives + ' can', '#8af07a'); sfx('levelup'); mortSay('tea', true);
+  } else if (id === 'purse') {
+    G.gold += I.gold; floatText(G.castle.x, G.castle.y - 80, '+' + I.gold + ' altın', '#ffd34d'); sfx('coins');
+  }
+}
+function drawItemHud() {
+  if (!G || G.over) return;
+  const b = itemBag(), tot = ITEM_ORDER.reduce((a, id) => a + itemCount(id), 0), sc = pressScale('hud_bag');
+  ctx.save(); ctx.translate(b.x, b.y); ctx.scale(sc, sc);
+  circle(0, 0, b.r, G.bagOpen ? 'rgba(70,24,60,0.95)' : 'rgba(26,12,22,0.92)', G.bagOpen ? '#e0b8ff' : '#c9a865', 2.5);
+  drawItemIcon('purse', 0, 2, b.r * 0.62);
+  if (tot) { circle(b.r * 0.72, -b.r * 0.72, 11, '#7a3aaa', '#fff', 1.5); txt(tot + '', b.r * 0.72, -b.r * 0.72 + 0.5, 12, '#fff', 'center', '400', FONT_T); }
+  ctx.restore();
+  if (!G.bagOpen) return;
+  ITEM_ORDER.forEach((id, i) => {
+    const q = itemBtn(i), n = itemCount(id), s2 = pressScale('it_' + id), act = G.mode && G.mode.kind === 'item' && G.mode.id === id;
+    ctx.save(); ctx.translate(q.x, q.y); ctx.scale(s2, s2);
+    if (act) glow(ctx, 0, 0, q.r * 1.4, '224,184,255', 0.4);
+    circle(0, 0, q.r, 'rgba(26,12,22,0.94)', n ? '#e0b8ff' : '#5a4a5a', 2.2);
+    ctx.globalAlpha = n ? 1 : 0.4; drawItemIcon(id, 0, 0, q.r * 0.62); ctx.globalAlpha = 1;
+    circle(q.r * 0.7, q.r * 0.7, 10, n ? '#2a8a4a' : '#5a3a3a', '#fff', 1.4); txt(n + '', q.r * 0.7, q.r * 0.7 + 0.5, 11.5, '#fff', 'center', '400', FONT_T);
+    ctx.restore();
+  });
+}
+function buyItem(id) {
+  const I = ITEMS[id], c = save.crystal || 0;
+  if (c < I.cost) { sfx('error'); return false; }
+  save.crystal = c - I.cost; save.items = save.items || {}; save.items[id] = (save.items[id] || 0) + 1; persist(); sfx('levelup'); return true;
+}
+function buyHero(id) {
+  const d = HEROES[id], c = save.crystal || 0;
+  if (c < d.cost) { mapNote = { text: `${d.name} için ${d.cost} kristal gerekir (kristal bosslardan düşer)`, t: time }; sfx('error'); return; }
+  save.crystal = c - d.cost; (save.heroBuy || (save.heroBuy = [])).push(id); persist(); sfx('levelup');
+}
 // ----- basit fizik (görsel): geri itme ve patlamada savrulan cesetler -----
 // big: canın büyük kısmını götüren vuruş ya da patlama. Boss, kuşatma makinesi, uçan ve kapıdaki düşman itilmez.
 const KNOCK = { t: 0.2, hit: 0.22, blast: 0.06, launch: 0.3, g: 560, bounce: 0.32 };
@@ -10152,6 +10257,7 @@ function hudBar(x, y, w, h) {
   roundRect(x, y, w, h, h / 2.4, 'rgba(12,8,18,0.86)', 'rgba(205,190,235,0.45)', 1.4);
 }
 function drawHud() {
+  drawItemHud();
   // altın / can değişince sayı zıplar
   if (G.goldShown !== Math.floor(G.gold)) { if (G.goldShown != null) G.goldPop = time; G.goldShown = Math.floor(G.gold); }
   if (G.livesShown !== G.lives) { if (G.livesShown != null) G.livesPop = time; G.livesShown = G.lives; }
@@ -10992,6 +11098,24 @@ function drawAd() {
   if (left > 0) txt(Math.ceil(left) + '', W / 2, H / 2 + 80, 20, '#ffe27a', 'center', '400', FONT_T, false);
   else gameButton('ad_close', W / 2, H / 2 + 82, 200, 44, AD.kind === 'rew' ? 'ÖDÜLÜ AL' : 'KAPAT', () => { const cb = AD.cb; AD = null; if (cb) cb(); }, 'green', { size: 16 });
 }
+let shopTab = 'full';
+// kristal sekmesi: kristal sayısı + dört savaş eşyası (adet, fiyat, al düğmesi)
+function drawCrystalShop(px, py, pw, ph) {
+  const c = save.crystal || 0;
+  drawCrystal(W / 2 - 92, py + 52, 17);
+  txt(`Kristalin: ${c}`, W / 2 + 12, py + 53, 24, '#f0d8ff', 'center', '400', FONT_T, false);
+  txt('Kristal yalnız bosslardan düşer · komutan ve savaş eşyası açar', W / 2, py + 82, 14, '#c8b8d8', 'center', '700', FONT_B, false);
+  ITEM_ORDER.forEach((id, k) => {
+    const I = ITEMS[id], ry = py + 100 + k * 68, rx = px + 24, rw = pw - 48;
+    roundRect(rx, ry, rw, 60, 12, 'rgba(26,12,22,0.9)', '#6a4a5a', 2);
+    circle(rx + 32, ry + 30, 24, 'rgba(60,30,70,0.9)', '#e0b8ff', 1.5); drawItemIcon(id, rx + 32, ry + 30, 17);
+    txt(I.name, rx + 66, ry + 20, 17, '#fff4d0', 'left', '800', FONT_B, false);
+    fitTxt(I.desc, rx + 66, ry + 42, rw - 66 - 230, 13, '#c8b8a8', 'left', '700', FONT_B, false, 11);
+    txt('x' + itemCount(id), rx + rw - 180, ry + 31, 18, itemCount(id) ? '#8af07a' : '#8a7a8a', 'center', '400', FONT_T, false);
+    gameButton('buy_' + id, rx + rw - 76, ry + 30, 128, 48, '' + I.cost, () => buyItem(id), c >= I.cost ? 'green' : 'dark', { size: 18 });
+    drawCrystal(rx + rw - 106, ry + 30, 10);
+  });
+}
 function drawShop() {
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (NECRO) menuBackdrop(st);
@@ -11001,7 +11125,13 @@ function drawShop() {
     ctx.fillStyle = 'rgba(14,8,2,0.7)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, 'DÜKKÂN', 'gold', 26); ctx.restore();
+  // başlık yerine sekmeler (12 Eki): TAM OYUN | KRİSTAL
+  ctx.save(); ctx.globalAlpha = clamp(rk, 0, 1);
+  [['full', 'TAM OYUN'], ['kristal', 'KRİSTAL']].forEach(([k, lab], j) => {
+    const tx = W / 2 + (j - 0.5) * 210, sel = shopTab === k;
+    gameButton('tab_' + k, tx, 50, 196, 52, lab, () => { if (shopTab !== k) { shopTab = k; sfx('pick'); } }, sel ? 'gold' : 'dark', { size: 18 });
+  });
+  ctx.restore();
   roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = menuBack || 'map'; screenT = time; }), { appear: st - 0.1 });
   const pw = 600, ph = 388, px = W / 2 - pw / 2, py = 88, pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
@@ -11014,6 +11144,7 @@ function drawShop() {
   }
   ctx.restore();
   if (pk < 0.9) return;
+  if (shopTab === 'kristal') { drawCrystalShop(px, py, pw, ph); return; }
   ctx.save(); ctx.translate(W / 2, py + 72); drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); ctx.restore();
   txt("TAM OYUN · MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
   txt('Tek seferlik satın alma · abonelik yok · reklam yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
@@ -11152,10 +11283,16 @@ function drawHeroCard(id, cx, cy, at, tm) {
   if (!unlocked) {
     roundRect(x0, y0, w, h, 20, 'rgba(18,10,4,0.66)');
     drawIcon('lock', 0, y0 + 90, 44);
-    txt('Kilitli', 0, y0 + 250, 22, '#f0e2c4', 'center', '400', FONT_T);
-    txt(`${d.unlock}. bölümü bitirince açılır`, 0, y0 + 274, 12, '#cdb894', 'center', '700', FONT_B, false);
+    txt('Kilitli', 0, y0 + 236, 22, '#f0e2c4', 'center', '400', FONT_T);
+    if (d.cost) { // 12 Eki: kristalle açılır
+      const ok = (save.crystal || 0) >= d.cost;
+      roundRect(-62, y0 + 254, 124, 46, 23, ok ? '#2a7a3a' : 'rgba(40,24,40,0.95)', ok ? '#8af07a' : '#8a6a9a', 2);
+      drawCrystal(-30, y0 + 277, 11); txt(d.cost + '', 8, y0 + 278, 20, '#fff', 'center', '400', FONT_T);
+      txt('AÇ', 40, y0 + 278, 13, '#fff', 'center', '800', FONT_B, false);
+    } else txt(`${d.unlock}. bölümü bitirince açılır`, 0, y0 + 274, 12, '#cdb894', 'center', '700', FONT_B, false);
   }
   ctx.restore();
+  if (!unlocked && d.cost) buttons.push({ key: 'hbuy' + id, x: cx - 62, y: fy - h / 2 + 254, w: 124, h: 46, fn: () => buyHero(id) });
   if (unlocked) buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => toggleHero(id) });
 }
 function toggleHero(id) {
@@ -13228,6 +13365,7 @@ function drawMap() {
     }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3 });
   }
   roundBtn('shop', bx(4), TY, RB, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35 });
+  { const cc = save.crystal || 0; if (cc) { const qx = bx(4) + 2, qy = TY + 24; roundRect(qx - 26, qy - 11, 52, 22, 11, 'rgba(40,16,50,0.95)', '#e0b8ff', 1.5); drawCrystal(qx - 13, qy, 8); txt(cc + '', qx + 9, qy + 0.5, 13, '#fff', 'center', '400', FONT_T); } }
   if (save.achNew) { circle(bx(2) + 18, TY - 18, 9, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', bx(2) + 18, TY - 17.5, 11, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const cx = bx(1) + 18, cy = TY - 18 + Math.sin(time * 5) * 1.5; circle(cx, cy, 9, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', cx, cy + 0.5, 10.5, '#fff', 'center', '400', FONT_T); }
   // sefer adı: sekmelerle sağ düğmeler arasındaki boşlukta (dar ekranda küçülür, sığmazsa ikinci satıra iner)
@@ -14748,6 +14886,11 @@ function hudTap(x, y) {
       return true;
     }
   }
+  { // eşya çantası (12 Eki): sağ altta; açıkken solunda dört eşya
+    const bag = itemBag();
+    if (hitU(bag)) { tapPop('hud_bag'); G.bagOpen = !G.bagOpen; G.mode = null; sfx('pick'); return true; }
+    if (G.bagOpen) for (const [i, id] of ITEM_ORDER.entries()) if (hitU(itemBtn(i))) { tapPop('it_' + id); pickItem(id); return true; }
+  }
   for (const [i, id] of spellIds().entries()) {
     if (hitU(spellBtn(i))) {
       tapPop('hud_' + id);
@@ -14822,6 +14965,8 @@ function worldTap(x, y) {
     const m = G.mode; G.mode = null;
     if (m.kind === 'spell') {
       castSpell(m.id, x, y);
+    } else if (m.kind === 'item') {
+      useItem(m.id, x, y);
     } else if (m.kind === 'rally' && m.castle) {
       // paralı askerlerin toplanma yeri: haritanın her yeri (yola yakınsa yola oturur)
       const n = nearestOnPaths(G.paths, x, y);

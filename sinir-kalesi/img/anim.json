@@ -1721,5 +1721,78 @@
   "fh": 172,
   "base": 0.014,
   "ch": 0.9299
+ },
+ "enemy_gloriosus1_walk": {
+  "n": 32,
+  "fw": 215,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9516,
+  "idle": 11
+ },
+ "enemy_gloriosus1_atk": {
+  "n": 32,
+  "fw": 203,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9707
+ },
+ "enemy_gloriosus1_die": {
+  "n": 33,
+  "fw": 380,
+  "fh": 190,
+  "base": 0.0127,
+  "ch": 0.8414
+ },
+ "enemy_gloriosus2_walk": {
+  "n": 32,
+  "fw": 123,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9518,
+  "idle": 22
+ },
+ "enemy_gloriosus2_atk": {
+  "n": 32,
+  "fw": 146,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_gloriosus2_skill": {
+  "n": 32,
+  "fw": 144,
+  "fh": 179,
+  "base": 0.0133,
+  "ch": 0.8936
+ },
+ "enemy_gloriosus3_walk": {
+  "n": 32,
+  "fw": 165,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.941,
+  "idle": 12
+ },
+ "enemy_gloriosus3_atk": {
+  "n": 32,
+  "fw": 142,
+  "fh": 183,
+  "base": 0.0145,
+  "ch": 0.8747
+ },
+ "enemy_gloriosus3_skill": {
+  "n": 32,
+  "fw": 188,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9452
+ },
+ "enemy_gloriosus3_die": {
+  "n": 33,
+  "fw": 194,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9211
  }
 }
