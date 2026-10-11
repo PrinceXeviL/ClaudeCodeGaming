@@ -12675,7 +12675,7 @@ function drawMapNode(i, x, y, num, last, at) {
     roundRect(x - w / 2, y + 26, w, 20, 10, 'rgba(30,16,6,0.85)', '#d4ab5a', 1.4);
     txt(name, x, y + 36.5, 13, '#ffe9a8', 'center', '400', FONT_T, false);
   }
-  buttons.push({ key, x: x - 22, y: y - 40, w: 50, h: 64, fn: () => { mapSel = i; mapSelT = time; sfx('open'); } });
+  buttons.push({ key, x: x - 22, y: y - 40, w: 50, h: 64, fn: () => { mapSel = i; mapSelT = time; mapMode = 'c'; sfx('open'); } });
 }
 
 // ----- bölge haritası -----
@@ -12960,7 +12960,6 @@ function drawMap() {
     ctx.fillStyle = `rgba(10,5,0,${0.55 * k})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
     buttons.push({ key: 'map_close', x: 0, y: 0, w: W, h: H, fn: () => { mapSel = null; } });
     drawLevelCard(mapSel, W / 2, H / 2 + 6, time - mapSelT);
-    roundBtn('card_x', W / 2 + 122, H / 2 - 158, 22, 'close', () => { mapSel = null; }, { appear: time - mapSelT - 0.15 });
   }
   // kısa harita uyarısı (ör. kilitli meydan okuma)
   if (mapNote && time - mapNote.t < 2.2) {
@@ -12973,105 +12972,123 @@ function drawMap() {
   }
 }
 
-function drawLevelCard(i, cx, cy, at) {
-  const p = clamp(at / 0.5, 0, 1);
-  if (p <= 0) return;
-  const lv = LEVELS[i], e = easeOutBack(p), w = 254, h = 338;
-  const unlocked = levelUnlocked(i), st = save.stars[i] || 0, num = epLevels(epOf(i)).indexOf(i) + 1;
-  const current = unlocked && st === 0;
-  const fy = cy + (1 - e) * 80 + (current ? Math.sin(time * 2.2) * 3 : 0);
-  const key = 'card' + i, sc = pressScale(key);
-  const x0 = -w / 2, y0 = -h / 2;
-  ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(cx, fy); ctx.scale(sc, sc);
-  if (current) glow(ctx, 0, 0, w * 0.85, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1);
-  if (NECRO) velvetCard(x0, y0, w, h, 22, { border: current ? '#ffd34d' : null });
-  else {
-    roundRect(x0 + 5, y0 + 12, w, h, 22, 'rgba(0,0,0,0.5)');
-    const fr = ctx.createLinearGradient(0, y0, 0, y0 + h);
-    fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
-    roundRect(x0, y0, w, h, 22, fr, current ? '#ffd34d' : '#22120a', current ? 3.5 : 3);
-    const pg = ctx.createLinearGradient(0, y0 + 10, 0, y0 + h - 10);
-    pg.addColorStop(0, '#f8ebcc'); pg.addColorStop(1, '#dcc089');
-    roundRect(x0 + 10, y0 + 10, w - 20, h - 20, 15, pg, 'rgba(92,58,22,0.6)', 1.5);
-  }
-  // önizleme görseli
-  const tx = x0 + 18, ty = y0 + 18, tw = w - 36, th = 138;
-  ctx.save(); ctx.beginPath(); ctx.roundRect(tx, ty, tw, th, 11); ctx.clip();
-  const T = thumbOf(i);
-  if (T) {
-    const k = Math.max(tw / T.width, th / T.height), dw = T.width * k, dh = T.height * k;
-    ctx.drawImage(T, tx + (tw - dw) / 2, ty + (th - dh) / 2, dw, dh);
+// Bölüm kartı (11 Eki, Caner: "çok sıkışık, rakiplerden esinlen, mobilde rahat basılsın"). Kingdom Rush düzeni: geniş panel,
+// solda büyük önizleme + yıldızlar, sağda büyük mod kutuları (Sefer / Kahramanlık / Sonsuz Gece), mod açıklaması, bölümün düşmanları
+// ve tek büyük SAVAŞ düğmesi. Dokunma hedefleri en az ~60 birim (telefonda ≥44 pt). Kartın kendisine dokunmak artık bölümü başlatmaz.
+let mapMode = 'c';
+const CARD = { w: 720, h: 396 };
+function wrapLines(s, maxW, size, weight = '700', font = FONT_B) {
+  ctx.font = `${weight} ${size}px ${font}`; lastFont = null;
+  const out = []; let line = '';
+  for (const wd of s.split(' ')) { const t = line ? line + ' ' + wd : wd; if (ctx.measureText(t).width > maxW && line) { out.push(line); line = wd; } else line = t; }
+  if (line) out.push(line); return out;
+}
+function levelFoes(lv) { // bölümde çıkan düşman türleri (rütbeliler asıl türe sayılır), ilk görünüş sırasıyla
+  const seen = [];
+  for (const wv of lv.waves) for (const g of wv) { const d = ENEMIES[g.t]; const t = d && d.base ? d.base : g.t; if (ENEMIES[t] && !seen.includes(t)) seen.push(t); }
+  return seen;
+}
+function modeIcon(m, x, y, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  if (m === 'c') { fancyStar(0, 1, 15, true); }
+  else if (m === 'h') {
+    ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(12, -9.5); ctx.lineTo(11, 4); ctx.quadraticCurveTo(7, 12, 0, 16); ctx.quadraticCurveTo(-7, 12, -11, 4); ctx.lineTo(-12, -9.5); ctx.closePath();
+    ctx.fillStyle = '#e04a3a'; ctx.fill(); ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2.4; ctx.stroke(); drawSkullIcon(0, -1, 6);
   } else {
-    const pg2 = ctx.createLinearGradient(0, ty, 0, ty + th); pg2.addColorStop(0, '#6a9a4a'); pg2.addColorStop(1, '#3a5a2a');
-    ctx.fillStyle = pg2; ctx.fillRect(tx, ty, tw, th);
+    ctx.strokeStyle = '#d8b0ff'; ctx.lineWidth = 4.2; ctx.lineCap = 'round'; ctx.beginPath();
+    for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) { const d = 1 + Math.sin(a) ** 2, X = 15 * Math.cos(a) / d, Y = 15 * Math.sin(a) * Math.cos(a) / d; a ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
+    ctx.stroke();
   }
-  const sh = ctx.createLinearGradient(0, ty + th * 0.5, 0, ty + th);
-  sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.35)');
+  ctx.restore();
+}
+function drawLevelCard(i, cx, cy, at) {
+  const p = clamp(at / 0.4, 0, 1);
+  if (p <= 0) return;
+  const lv = LEVELS[i], e = easeOutBack(p), w = CARD.w, h = CARD.h;
+  const unlocked = levelUnlocked(i), st = save.stars[i] || 0, num = epLevels(epOf(i)).indexOf(i) + 1;
+  const current = unlocked && st === 0, fy = cy + (1 - e) * 60, x0 = cx - w / 2, y0 = fy - h / 2;
+  const best = (save.endless || {})[i] || 0, hDone = !!(save.ch && save.ch[i] && save.ch[i].h);
+  const MODES = [
+    { m: 'c', name: 'Sefer', open: true, stat: st ? st + '/3 yıldız' : 'Yeni', desc: st ? 'Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.' : 'Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.' },
+    { m: 'h', name: 'Kahramanlık', open: TEST_OPEN || st >= 3, stat: hDone ? 'Tamam' : (TEST_OPEN || st >= 3) ? 'Açık' : '3 yıldızla', desc: 'Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.', lock: '3 yıldız al, Kahramanlık açılır' },
+    { m: 'e', name: 'Sonsuz Gece', open: TEST_OPEN || st > 0, stat: best ? 'Rekor ' + best : (TEST_OPEN || st > 0) ? 'Açık' : 'Kilitli', desc: 'Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?' + (best ? ' Rekorun: ' + best + ' dalga.' : ''), lock: 'Bölümü bir kez bitir, Sonsuz Gece açılır' },
+  ];
+  if (!MODES.find(o => o.m === mapMode)) mapMode = 'c';
+  const M = MODES.find(o => o.m === mapMode);
+  ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
+  buttons.push({ key: 'card_bg', x: x0, y: y0, w, h, fn: () => {} }); // kartın boş yerine dokunmak kapatmaz
+  if (current) glow(ctx, cx, fy, w * 0.6, '255,200,90', 0.18 + Math.sin(time * 3) * 0.06);
+  velvetCard(x0, y0, w, h, 24, { border: current ? '#ffd34d' : null });
+  // başlık: numara madalyonu + kızıl kurdele
+  crimsonRibbon(cx + 10, y0 + 34, lv.name, 25, 400);
+  { const mx = x0 + 58, my = y0 + 34, mg = ctx.createLinearGradient(0, my - 26, 0, my + 26); mg.addColorStop(0, '#fff0b0'); mg.addColorStop(1, '#a8681a');
+    circle(mx, my, 26, mg, '#2e1606', 2.2); const mb = ctx.createRadialGradient(mx - 5, my - 6, 2, mx, my, 21); mb.addColorStop(0, '#f05a4a'); mb.addColorStop(1, '#7a140e');
+    circle(mx, my, 20.5, mb); txt(num + '', mx, my + 1, 25, '#fff', 'center', '400', FONT_T); }
+  // sol: önizleme
+  const tx = x0 + 28, ty = y0 + 76, tw = 318, th = 168;
+  ctx.save(); ctx.beginPath(); ctx.roundRect(tx, ty, tw, th, 14); ctx.clip();
+  const T = thumbOf(i);
+  if (T) { const k = Math.max(tw / T.width, th / T.height), dw = T.width * k, dh = T.height * k; ctx.drawImage(T, tx + (tw - dw) / 2, ty + (th - dh) / 2, dw, dh); }
+  else { ctx.fillStyle = '#3a2a3a'; ctx.fillRect(tx, ty, tw, th); }
+  const sh = ctx.createLinearGradient(0, ty + th * 0.55, 0, ty + th); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,0.45)');
   ctx.fillStyle = sh; ctx.fillRect(tx, ty, tw, th);
   ctx.restore();
-  roundRect(tx, ty, tw, th, 11, null, NECRO ? '#c9a865' : '#3a2410', 3);
-  roundRect(tx + 2, ty + 2, tw - 4, th - 4, 9, null, 'rgba(255,255,255,0.3)', 1.2);
-  // bölüm numarası madalyonu
-  const mg = ctx.createLinearGradient(0, y0 + 6, 0, y0 + 46);
-  mg.addColorStop(0, '#fff0b0'); mg.addColorStop(1, '#a8681a');
-  circle(x0 + 26, y0 + 26, 21, mg, '#2e1606', 2);
-  const mb = ctx.createRadialGradient(x0 + 22, y0 + 21, 2, x0 + 26, y0 + 26, 17);
-  mb.addColorStop(0, '#f05a4a'); mb.addColorStop(1, '#7a140e');
-  circle(x0 + 26, y0 + 26, 16.5, mb);
-  txt(num + '', x0 + 26, y0 + 27, 21, '#fff', 'center', '400', FONT_T);
-  if (NECRO) crimsonRibbon(0, y0 + 182, lv.name, 20, w - 70); else txt(lv.name, 0, y0 + 180, 24, '#4a2a0e', 'center', '400', FONT_T, false);
-  txt(`${lv.waves.length} dalga  ·  ${(lv.ep === 2 ? DIFF2 : DIFF)[epLevels(lv.ep || 1).indexOf(i)] || 'Zor'}`, 0, y0 + (NECRO ? 212 : 204), 14, '#8a6238', 'center', '800', FONT_B, false);
-  for (let s = 0; s < 3; s++) fancyStar((s - 1) * 40, y0 + 238 - (s === 1 ? 4 : 0), s === 1 ? 17 : 15, s < st);
-  if (!unlocked) {
-    roundRect(x0, y0, w, h, 22, 'rgba(18,10,4,0.62)');
-    drawIcon('lock', 0, y0 + 86, 46);
-    txt('Kilitli', 0, y0 + 274, 24, '#f0e2c4', 'center', '400', FONT_T);
-    txt(num === 1 ? 'Önceki bölgeyi tamamla' : 'Önceki bölümü tamamla', 0, y0 + 298, 13, '#cdb894', 'center', '700', FONT_B, false);
+  roundRect(tx, ty, tw, th, 14, null, '#c9a865', 3); roundRect(tx + 3, ty + 3, tw - 6, th - 6, 11, null, 'rgba(255,255,255,0.22)', 1.2);
+  const diff = (lv.ep === 2 ? DIFF2 : DIFF)[epLevels(lv.ep || 1).indexOf(i)] || 'Zor';
+  txt(`${lv.waves.length} dalga  ·  ${diff}`, tx + tw / 2, ty + th - 16, 15, '#f2ecd8', 'center', '800', FONT_B, true);
+  for (let s = 0; s < 3; s++) fancyStar(tx + tw / 2 + (s - 1) * 56, ty + th + 34 - (s === 1 ? 5 : 0), s === 1 ? 23 : 20, s < st);
+  // düşmanlar (önizlemenin altında)
+  const foes = levelFoes(lv), codex = new Set(save.codex || []), nShow = Math.min(foes.length, 6);
+  txt('DÜŞMANLAR', tx, ty + th + 72, 13, '#d8c0a0', 'left', '800', FONT_B, false);
+  for (let k = 0; k < nShow; k++) {
+    const t = foes[k], d = ENEMIES[t], ex = tx + 22 + k * 50, ey = ty + th + 106;
+    circle(ex, ey, 20, '#1a120a', d.chief ? '#ff7a5a' : '#c9a865', 2);
+    const im = spr('enemy_' + t) || enemySprite(t);
+    if (im) { ctx.save(); ctx.beginPath(); ctx.arc(ex, ey, 18.5, 0, Math.PI * 2); ctx.clip(); const ih = d.chief ? 54 : 44; drawSprite(ctx, im, ex, ey + ih * 0.6, ih * im.width / im.height); ctx.restore(); }
+    if (!codex.has(t)) { roundRect(ex - 19, ey - 30, 38, 15, 7, '#e8434b', '#fff', 1.2); txt('YENİ', ex, ey - 22, 10, '#fff', 'center', '400', FONT_T); }
   }
-  ctx.restore();
-  if (unlocked) {
-    const by = fy + (y0 + 290) * sc;
-    ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
-    gameButton(key, cx, by, st ? 132 : 176, 46, st ? 'TEKRAR' : 'OYNA', null, st ? 'gold' : 'green', { icon: st ? 'restart' : 'play', shine: current, size: 19 });
+  if (foes.length > nShow) txt('+' + (foes.length - nShow), tx + 22 + nShow * 50, ty + th + 107, 16, '#f2ecd8', 'center', '400', FONT_T);
+  // sağ: mod kutuları
+  const rx = x0 + 370, rw = w - 370 - 28, tile = (rw - 2 * 10) / 3, tyy = ty;
+  txt('OYUN MODU', rx, tyy - 2, 13, '#d8c0a0', 'left', '800', FONT_B, false);
+  MODES.forEach((o, k) => {
+    const bx = rx + k * (tile + 10), by = tyy + 12, bh = 104, sel = o.m === mapMode, key = 'mode_' + o.m + i, sc2 = pressScale(key);
+    ctx.save(); ctx.translate(bx + tile / 2, by + bh / 2); ctx.scale(sc2, sc2); ctx.translate(-(bx + tile / 2), -(by + bh / 2));
+    if (sel) glow(ctx, bx + tile / 2, by + bh / 2, tile * 0.75, o.m === 'h' ? '255,90,70' : o.m === 'e' ? '170,110,255' : '255,210,110', 0.3 + Math.sin(time * 3) * 0.08);
+    roundRect(bx, by, tile, bh, 14, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? '#ffd34d' : '#6a4a5a', sel ? 3 : 2);
+    modeIcon(o.m, bx + tile / 2, by + 36, 1.15);
+    fitTxt(o.name, bx + tile / 2, by + 72, tile - 10, 14, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true);
+    fitTxt(o.stat, bx + tile / 2, by + 91, tile - 10, 12, o.m === 'h' && hDone ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
+    if (!o.open) { roundRect(bx, by, tile, bh, 14, 'rgba(10,6,14,0.62)'); drawIcon('lock', bx + tile / 2, by + 38, 26); }
     ctx.restore();
-    buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => go(() => startLevel(i)) });
-    // ödüllü reklam: +150 altınla başla (bölüm kartının altında küçük düğme)
-    { const kb = 'boost' + i, yb = by + (st ? 60 : 46) * sc; // yan düğmelerin yazılarının altında kalsın
-      gameButton(kb, cx, yb, 196 * sc, 30 * sc, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA', () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 11 * sc }); }
-    // sonsuz gece: bölümü bir kez bitirince açılır; rekor altında yazar
-    if (st || TEST_OPEN) {
-      const bx = cx - 96 * sc, k2 = 'end' + i, best = (save.endless || {})[i] || 0;
-      ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(bx, by); const s2 = pressScale(k2) * sc; ctx.scale(s2, s2);
-      glow(ctx, 0, 0, 30, '150,90,255', 0.25 + Math.sin(time * 2.5) * 0.08);
-      hudFrame(-21, -21, 42, 42, 9, '#2a1440');
-      ctx.strokeStyle = '#d8b0ff'; ctx.lineWidth = 3.2; ctx.beginPath(); // sonsuzluk işareti
-      for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.1) { const d = 1 + Math.sin(a) ** 2, X = 11 * Math.cos(a) / d, Y = 11 * Math.sin(a) * Math.cos(a) / d; a ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
-      ctx.stroke();
-      fitTxt(best ? 'Rekor ' + best : 'Sonsuz', 0, 30, 60, 10, '#f2ecd8', 'center', '800', FONT_B, true); // kartın dışına taşmasın
-      ctx.restore();
-      buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => go(() => startLevel(i, 'e')) });
-    }
-    // meydan okumalar: 3 yıldızdan sonra açılır; tamamlanan tikli
-    if (st || TEST_OPEN) for (const [c, dx] of [['h', 96]]) {
-      const open = TEST_OPEN || st >= 3, done = save.ch && save.ch[i] && save.ch[i][c], bx = cx + dx * sc, k2 = 'ch' + c + i;
-      ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(bx, by); const s2 = pressScale(k2) * sc; ctx.scale(s2, s2);
-      if (open && !done) glow(ctx, 0, 0, 34, '255,90,70', 0.35 + Math.sin(time * 3) * 0.1);
-      hudFrame(-21, -21, 42, 42, 9, '#5a1a20');
-      // kalkan
-      ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(9, -7); ctx.lineTo(8, 3); ctx.quadraticCurveTo(5, 9, 0, 12); ctx.quadraticCurveTo(-5, 9, -8, 3); ctx.lineTo(-9, -7); ctx.closePath();
-      ctx.fillStyle = '#e04a3a'; ctx.fill(); ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2; ctx.stroke(); drawSkullIcon(0, -1, 4.5);
-      if (!open) { ctx.fillStyle = 'rgba(10,6,14,0.6)'; ctx.fillRect(-17, -17, 34, 34); drawIcon('lock', 0, 0, 18); }
-      if (done) { circle(13, -13, 7, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, -13); ctx.lineTo(12.5, -10.5); ctx.lineTo(16.5, -15.5); ctx.stroke(); }
-      fitTxt(CHAL[c].short, 0, 30, 60, 10, open ? '#f2ecd8' : '#a89a80', 'center', '800', FONT_B, true);
-      ctx.restore();
-      buttons.push({ key: k2, x: bx - 24, y: by - 24, w: 48, h: 48, fn: () => {
-        if (!open) { mapNote = { text: '3 yıldız al: ' + CHAL[c].short + ' açılır', t: time }; sfx('error'); return; }
-        go(() => startLevel(i, c));
-      } });
-    }
+    buttons.push({ key, x: bx, y: by, w: tile, h: bh, fn: () => { if (mapMode !== o.m) { mapMode = o.m; sfx('pick'); } } });
+  });
+  // seçili modun açıklaması
+  const lines = wrapLines(M.open ? M.desc : M.lock, rw - 8, 15);
+  lines.slice(0, 3).forEach((l, k) => txt(l, rx + 4, tyy + 140 + k * 20, 15, M.open ? '#f2ecd8' : '#ffb0a0', 'left', '700', FONT_B, false));
+  ctx.restore();
+  // kilitli bölüm
+  if (!unlocked) {
+    ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
+    roundRect(x0, y0, w, h, 24, 'rgba(18,10,4,0.66)');
+    drawIcon('lock', cx, fy - 20, 60);
+    txt('Kilitli', cx, fy + 34, 28, '#f0e2c4', 'center', '400', FONT_T);
+    txt(num === 1 ? 'Önceki bölgeyi tamamla' : 'Önceki bölümü tamamla', cx, fy + 62, 16, '#cdb894', 'center', '700', FONT_B, false);
+    ctx.restore();
+  } else {
+    // büyük SAVAŞ düğmesi + (Sefer'de) ödüllü reklamla +altın
+    const bxc = rx + rw / 2, byc = y0 + h - 104, lbl = mapMode === 'c' ? (st ? 'TEKRAR' : 'SAVAŞA!') : mapMode === 'h' ? 'MEYDAN OKU' : 'BAŞLA';
+    ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
+    gameButton('play' + i, bxc, byc, rw, 64, lbl, () => {
+      if (!M.open) { mapNote = { text: M.lock, t: time }; sfx('error'); return; }
+      go(() => startLevel(i, mapMode === 'c' ? undefined : mapMode));
+    }, !M.open ? 'gold' : mapMode === 'h' ? 'red' : mapMode === 'e' ? 'blue' : 'green', { icon: mapMode === 'c' && st ? 'restart' : 'play', shine: current && mapMode === 'c', size: 22 });
+    if (mapMode === 'c') gameButton('boost' + i, bxc, y0 + h - 40, rw, 44, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA',
+      () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 14 });
+    ctx.restore();
   }
+  roundBtn('card_x', x0 + w - 6, y0 + 6, 30, 'close', () => { mapSel = null; }, { appear: at - 0.15, style: 'red' });
 }
-
 
 // gülle patlamalarının zeminde bıraktığı yanık izi
 let SCORCH = null;
