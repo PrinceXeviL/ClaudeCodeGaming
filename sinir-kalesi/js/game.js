@@ -4582,10 +4582,9 @@ function drawAchToast() {
   const y = -40 + 56 * easeOutBack(clamp(k / 0.4, 0, 1)) * (k > 2.8 ? a : 1);
   ctx.save(); ctx.globalAlpha = a;
   const w = 300, x = W / 2 - w / 2;
-  roundRect(x + 2, y + 4, w, 46, 14, 'rgba(0,0,0,0.45)');
-  roundRect(x, y, w, 46, 14, '#241a32', '#e8c86a', 2);
+  crimsonBox(x, y, w, 46, 14);
   ctx.save(); ctx.translate(x + 26, y + 23); achIcon(T.a.icon, 14); ctx.restore();
-  txt('BAŞARIM: ' + T.a.name, x + 50, y + 15, 14, '#ffe27a', 'left', '400', FONT_T, false);
+  txt('BAŞARIM: ' + T.a.name, x + 50, y + 15, 14, '#f0cf86', 'left', '400', FONT_T, false);
   txt(T.a.desc, x + 50, y + 32, 11, '#e8e0f0', 'left', '700', FONT_B, false);
   ctx.restore();
 }
@@ -9567,7 +9566,7 @@ function drawWaveButtons() {
       const bx = clamp(b.x, EDGE.l + 30, EDGE.r - 30), by = b.y + 38 > EDGE.b ? b.y - 30 : b.y + 30;
       ctx.save(); ctx.globalAlpha = appear;
       ctx.font = `400 10.5px ${FONT_T}`; const tw = ctx.measureText('+' + bonus).width + 22;
-      roundRect(bx - tw / 2, by - 8, tw, 16, 8, 'rgba(24,12,4,0.85)', '#e8bb4a', 1.2);
+      roundRect(bx - tw / 2, by - 8, tw, 16, 8, 'rgba(60,14,36,0.92)', '#c9a865', 1.2);
       drawIcon('coin', bx - tw / 2 + 8.5, by, 9);
       txt('+' + bonus, bx + 5, by + 0.5, 10.5, '#ffe27a', 'center', '400', FONT_T, false);
       ctx.restore();
@@ -9608,18 +9607,16 @@ function drawWavePeek() {
   ctx.save(); ctx.globalAlpha = fade;
   const ox = right ? x0 : x0 + w, oy = clamp(b.y, y0 + 12, y0 + h - 12);
   ctx.translate(ox, oy); ctx.scale(k, k); ctx.translate(-ox, -oy);
-  roundRect(x0 + 2, y0 + 4, w, h, 12, 'rgba(0,0,0,0.35)');
-  const g = ctx.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, 'rgba(58,40,24,0.96)'); g.addColorStop(1, 'rgba(22,12,6,0.96)');
-  roundRect(x0, y0, w, h, 12, g, '#d4ab5a', 1.6);
+  crimsonBox(x0, y0, w, h, 12);
   // işarete bakan küçük uç
   ctx.beginPath(); const tx = right ? x0 : x0 + w, dir = right ? -1 : 1;
   ctx.moveTo(tx, oy - 7); ctx.lineTo(tx + dir * 8, oy); ctx.lineTo(tx, oy + 7); ctx.closePath();
-  ctx.fillStyle = 'rgba(40,26,14,0.96)'; ctx.fill(); ctx.strokeStyle = '#d4ab5a'; ctx.lineWidth = 1.6; ctx.stroke();
+  ctx.fillStyle = 'rgba(60,15,40,0.97)'; ctx.fill(); ctx.strokeStyle = '#c9a865'; ctx.lineWidth = 1.4; ctx.stroke();
   const N = G.lv.waves.length, last = G.wave === N - 1;
-  txt(`DALGA ${G.wave + 1}/${N}`, x0 + 12, y0 + 16, 14, last ? '#ff8a6a' : '#ffd34d', 'left', '400', FONT_T);
+  txt(`DALGA ${G.wave + 1}/${N}`, x0 + 14, y0 + 17, 14, last ? '#ff8a6a' : '#f0cf86', 'left', '400', FONT_T);
   const total = list.reduce((a, r) => a + r[1], 0);
-  txt(`${total} düşman`, x0 + w - 12, y0 + 16, 10.5, '#cdbb98', 'right', '800', FONT_B, false);
-  ctx.fillStyle = 'rgba(212,171,90,0.4)'; ctx.fillRect(x0 + 10, y0 + 30, w - 20, 1);
+  txt(`${total} düşman`, x0 + w - 14, y0 + 17, 10.5, '#d8c0b0', 'right', '800', FONT_B, false);
+  ctx.fillStyle = 'rgba(201,168,101,0.4)'; ctx.fillRect(x0 + 10, y0 + 30, w - 20, 1);
   list.forEach(([t, n, rk], i) => {
     const d = ENEMIES[t], cy = y0 + 44 + i * rowH, cx = x0 + 22;
     circle(cx, cy, 10.5, '#1a120a', d.chief ? '#ff7a5a' : RANK_COL[0], 1.5);
@@ -9641,7 +9638,7 @@ function drawWavePeek() {
       bx -= 21;
     }
   });
-  txt('Çağırmak için tekrar dokun', x0 + w / 2, y0 + h - 11, 9.5, '#ffe27a', 'center', '800', FONT_B, false);
+  txt('Çağırmak için tekrar dokun', x0 + w / 2, y0 + h - 12, 9.5, '#f0cf86', 'center', '800', FONT_B, false);
   ctx.restore();
 }
 
@@ -11268,11 +11265,11 @@ function drawIntroToast(it) {
   ctx.font = `400 13px ${FONT_T}`; const nw = ctx.measureText(name).width; ctx.font = `800 9.5px ${FONT_B}`;
   const w = Math.max(nw, ctx.measureText(sub).width, 70) + 46, h = sub ? 40 : 30, x0 = 8 - (1 - slide) * (w + 12), y0 = 62;
   ctx.save(); ctx.globalAlpha *= k;
-  roundRect(x0, y0, w, h, 9, 'rgba(14,8,20,0.82)', '#d4ab5a', 1.2);
+  crimsonBox(x0, y0, w, h, 9, false);
   circle(x0 + 17, y0 + h / 2, 12, '#1a120a', '#c9a35a', 1.2);
   const im = enemySprite(it.type) || spr('enemy_' + it.type);
   if (im) { ctx.save(); ctx.beginPath(); ctx.arc(x0 + 17, y0 + h / 2, 11, 0, Math.PI * 2); ctx.clip(); drawSprite(ctx, im, x0 + 17, y0 + h / 2 + 12, 22 * im.width / im.height); ctx.restore(); }
-  txt(label, x0 + 35, y0 + 9, 8.5, '#ffd34d', 'left', '800', FONT_B, false);
+  txt(label, x0 + 35, y0 + 9, 8.5, '#f0cf86', 'left', '800', FONT_B, false);
   txt(name, x0 + 35, y0 + 21, 13, '#fff', 'left', '400', FONT_T, false);
   if (sub) txt(sub, x0 + 35, y0 + 33, 9.5, '#ffd08a', 'left', '800', FONT_B, false);
   ctx.restore();
@@ -11287,18 +11284,15 @@ function drawIntro() {
   const w = it.boss ? 360 : 320, dl = wrapLines(d.desc || ENEMY_DESC[it.type] || '', w - 84, 11.5), ex = (dl.length - 1) * 13;
   const h = (weak.length || res.length ? 88 : 70) + ex, x0 = W / 2 - w / 2, y0 = it.boss ? 92 : 64;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, y0 + h / 2); ctx.scale(e, e); ctx.translate(-W / 2, -(y0 + h / 2));
-  roundRect(x0 + 2, y0 + 5, w, h, 16, 'rgba(0,0,0,0.3)');
-  const g = ctx.createLinearGradient(0, y0, 0, y0 + h);
-  g.addColorStop(0, it.boss ? 'rgba(90,20,14,0.96)' : 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,12,8,0.96)');
-  roundRect(x0, y0, w, h, 16, g, it.boss ? '#ff6a4a' : '#d4ab5a', 2);
-  circle(x0 + 36, y0 + h / 2, 26, '#1a120a', it.boss ? '#ff6a4a' : '#c9a35a', 2);
+  crimsonBox(x0, y0, w, h, 16);
+  circle(x0 + 36, y0 + h / 2, 26, '#1a0a12', it.boss ? '#ff6a4a' : '#c9a865', 2);
   const im = enemySprite(it.type) || spr('enemy_' + it.type);
   if (im) {
     ctx.save(); ctx.beginPath(); ctx.arc(x0 + 36, y0 + h / 2, 24.5, 0, Math.PI * 2); ctx.clip();
     const ih = it.boss ? 62 : 46; drawSprite(ctx, im, x0 + 36, y0 + h / 2 + ih * 0.55, ih * im.width / im.height);
     ctx.restore();
   }
-  txt(it.boss ? 'BOSS GELİYOR' : it.rank ? 'YENİ RÜTBE: ' + (it.rank === 2 ? 'YÜZBAŞI' : 'KIDEMLİ') : 'YENİ DÜŞMAN', x0 + 72, y0 + 16, 11, it.boss ? '#ff9a7a' : '#ffd34d', 'left', '800', FONT_B, false);
+  txt(it.boss ? 'BOSS GELİYOR' : it.rank ? 'YENİ RÜTBE: ' + (it.rank === 2 ? 'YÜZBAŞI' : 'KIDEMLİ') : 'YENİ DÜŞMAN', x0 + 72, y0 + 16, 11, it.boss ? '#ff9a7a' : '#f0cf86', 'left', '800', FONT_B, false);
   txt(d.name, x0 + 72, y0 + 34, 19, '#fff', 'left', '400', FONT_T);
   dl.forEach((l, i) => txt(l, x0 + 72, y0 + 54 + i * 13, 11.5, '#f0e2c4', 'left', '700', FONT_B, false));
   let tx = x0 + 72;
@@ -13642,6 +13636,14 @@ function rubyGem(x, y, r) {
   circle(x, y, r + 1.5, '#c9a865', '#1a0a08', 1.2); circle(x, y, r, g);
   circle(x - r * 0.35, y - r * 0.4, r * 0.28, 'rgba(255,255,255,0.75)');
 }
+// oyun içi bildirim kutuları (11 Eki, Caner): duraklatma menüsünün kızıl kadife tasarımının sade hali; altın ince çizgi, köşelerde minik yakut
+function crimsonBox(x, y, w, h, r = 12, gems = true) {
+  roundRect(x + 2, y + 4, w, h, r, 'rgba(0,0,0,0.4)');
+  const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, 'rgba(84,16,40,0.97)'); g.addColorStop(0.55, 'rgba(54,16,48,0.97)'); g.addColorStop(1, 'rgba(30,11,38,0.97)');
+  roundRect(x, y, w, h, r, g, '#050206', 2);
+  roundRect(x + 3, y + 3, w - 6, h - 6, Math.max(2, r - 3), null, '#c9a865', 1.2);
+  if (gems && w > 90 && h > 28) for (const [gx, gy] of [[x + 8, y + 8], [x + w - 8, y + 8], [x + 8, y + h - 8], [x + w - 8, y + h - 8]]) rubyGem(gx, gy, 1.8);
+}
 function pauseFrame(x, y, w, h, rise = 26) {
   ctx.save();
   tombPath(x + 4, y + 10, w, h, rise); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
@@ -13837,16 +13839,16 @@ function drawOverlay() {
     if (NECRO) txt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 336 : 228), 13, '#9fd8a0', 'center', '700', FONT_B, false);
     const appear = k - 1.3, by = sum ? 110 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
     if (G.idx + 1 < LEVELS.length) {
-      roundBtn('ov_retry', cx - 168, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear });
-      txt('Tekrar', cx - 168, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      roundBtn('ov_map', cx - 104, py + 262 + by, 25, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
-      txt('Harita', cx - 104, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      gameButton('ov_next', cx + 70, py + 262 + by, 236, 56, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
+      roundBtn('ov_retry', cx - 160, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
+      txt('Tekrar', cx - 160, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
+      roundBtn('ov_map', cx - 84, py + 262 + by, 25, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
+      txt('Harita', cx - 84, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
+      gameButton('ov_next', cx + 100, py + 262 + by, 196, 56, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
         { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 22, glow: '140,255,120' });
     } else {
       if (!NECRO) txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
-      gameButton('ov_retry', cx - 100, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear });
-      gameButton('ov_map', cx + 100, py + 278, 170, 50, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'green', { icon: 'map', appear: appear - 0.06, shine: true });
+      gameButton('ov_retry', cx - 110, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear });
+      gameButton('ov_map', cx + 110, py + 278, 170, 50, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'green', { icon: 'map', appear: appear - 0.06, shine: true });
     }
   } else if (overlay === 'lose') {
     if (NECRO) plaqueTitle(cx, py + 46, G.endless ? 'SONSUZ GECE BİTTİ' : 'KALE DÜŞTÜ', '#ff9a8a', 28); else ribbon(cx, py + 4, 280, 'KALE DÜŞTÜ', 'red', 28);
@@ -13858,19 +13860,19 @@ function drawOverlay() {
     } else {
       txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
       { const L = wrapLines(TIPS[(G.idx + G.wave) % TIPS.length], pw - 70, 13, '700', FONT_B, 2); // uzun ipucu panelden taşmasın
-        L.forEach((l, i) => txt(l, cx, py + 192 + (i - (L.length - 1) / 2) * 16, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false)); }
+        L.forEach((l, i) => txt(l, cx, py + 188 + (i - (L.length - 1) / 2) * 16, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false)); }
     }
     if (!G.revived && !G.endless) { // ödüllü reklam: bölüm başına bir kez, 5 canla kaldığın yerden devam
-      gameButton('ov_revive', cx, py + 236, 300, 50, isPremium() ? '5 CANLA DEVAM ET' : '▶ REKLAM İZLE · 5 CANLA DEVAM', () => showRewardedAd(() => {
+      gameButton('ov_revive', cx, py + 240, 300, 50, isPremium() ? '5 CANLA DEVAM ET' : '▶ REKLAM İZLE · 5 CANLA DEVAM', () => showRewardedAd(() => {
         G.revived = true; G.lives = 5; G.maxLives = Math.max(G.maxLives, 5);
         for (const e of G.enemies) if (dist(e.x, e.y, G.castle.x, G.castle.y) < 90) damageEnemy(e, 1e9, 'true'); // kapıdakiler dağılır
         setOverlay(null); sfx('levelup');
       }), 'blue', { appear: k - 0.25, size: 15 });
-      gameButton('ov_retry', cx - 72, py + 296, 136, 44, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', appear: k - 0.3 });
-      gameButton('ov_map', cx + 72, py + 296, 136, 44, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
+      gameButton('ov_retry', cx - 92, py + 310, 140, 44, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', appear: k - 0.3 });
+      gameButton('ov_map', cx + 92, py + 310, 140, 44, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
     } else {
       gameButton('ov_retry', cx, py + 240, 270, 52, 'TEKRAR DENE', () => go(() => startLevel(G.idx, G.chal)), 'green', { icon: 'restart', shine: true, appear: k - 0.3 });
-      gameButton('ov_map', cx, py + 304, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
+      gameButton('ov_map', cx, py + 312, 270, 46, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'wood', { icon: 'map', appear: k - 0.38 });
     }
   }
   ctx.restore();
