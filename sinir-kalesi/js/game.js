@@ -3558,8 +3558,7 @@ const ELITE_SK = {
 function eliteSkill(s, dt) {
   const sp = s.tower && s.tower.type === 'barracks' && !s.hero && !s.militia && s.tower.spec, S = ELITE_SK[sp]; if (!S) return false;
   if (s.skCd == null) s.skCd = S.cd * (0.35 + Math.random() * 0.4); // askerler aynı anda kullanmasın
-  if (s.skT > 0) { // yetenek oynuyor
-    s.skT -= dt;
+  if (s.skT > 0) { // yetenek oynuyor (süre updateSoldier'da azalır: hedef ölse de animasyon biter)
     if (sp === 'blade' && !s.skHit && s.skT < S.dur * 0.55) { // dönüşün ortasında vuruş
       s.skHit = true; let dealt = 0;
       hitBy = 'melee';
@@ -3589,6 +3588,7 @@ function updateSoldier(s, dt) {
   if (s.buffT > 0) s.buffT -= dt;
   if (s.spinT > 0) s.spinT -= dt;
   if (s.wardT > 0) s.wardT -= dt;
+  if (s.skT > 0) s.skT -= dt;
   if (s.militia) {
     s.life -= dt;
     if (s.life <= 0 && !s.dead) { s.dead = true; releaseSoldier(s); }
