@@ -4609,6 +4609,8 @@ function drawMortimer() {
 }
 // Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
 const MORT_LINES = {
+  sev2: ['Katedral yıkıldı. Kirasını kim ödeyecek?', 'Çaydanlığımı hâlâ tutuyor. Elini yakmasın.', 'İniyor! Merdiven yokmuş demek.'],
+  sev3: ['O çaydanlık bana ait. Laneti de.', 'Söylemiştim: demlenmeden içilmez.', 'Yeşil sana yakışmadı, Severus.'],
   glor2: ['Arabası kırıldı. Yürüsün biraz, sağlığa iyi.', 'Aslanlar kaçtı. Akıllı hayvanlar.', 'Yayan general mi? Ne kadar da mütevazı.'],
   glor3: ['Parlıyor. Çayımı ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
   // 2. sefer (Cadı Avı)
@@ -11800,6 +11802,18 @@ function bossAbilities(e, dt) {
       }
     }
   }
+  // Şeytan Kovma (12 Eki, Lucia): yakındaki dirilmiş ölüleri yok eder, oradaki cesetler artık diriltilemez (necromancer'a karşı)
+  if (ab.exorcise && ready('exorcise', ab.exorcise.cd)) {
+    const A = ab.exorcise, vs = G.soldiers.filter(o => !o.dead && o.minion && dist(o.x, o.y, e.x, e.y) < A.r).slice(0, A.n);
+    const cs = G.effects.filter(f => f.kind === 'corpse' && f.raisable && dist(f.x, f.y, e.x, e.y) < A.r);
+    if (!vs.length && !cs.length) e.abT.exorcise = 1;
+    else {
+      for (const o of vs) { damageSoldier(o, 99999, e); G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - (e.def.h || 40) * 0.6, x1: o.x, y1: o.y - 12, t: 0, dur: 0.45, w: 1.2, col: 'rgb(255,230,150)', seed: rand(0, 99) }); }
+      for (const f of cs) { f.raisable = false; f.dur = Math.min(f.dur, f.t + 0.8); for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'glow', add: true, x: f.x + rand(-6, 6), y: f.y - rand(0, 6), vy: -rand(20, 50), col: '255,235,170', s0: 4, s1: 0.5, life: 0.7 }); }
+      G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: A.r, col: '255,230,150', t: 0, dur: 0.6 });
+      bossCastFx(e, A.say || 'Şeytan Kovma!', '255,230,150'); sfx('magic');
+    }
+  }
   // Can emme: yakındaki askerlerden yeşil ışınlarla can çeker
   if (ab.drain && ready('drain', ab.drain.cd)) {
     const vs = G.soldiers.filter(s2 => !s2.dead && dist(s2.x, s2.y, e.x, e.y) < ab.drain.r);
@@ -12246,7 +12260,7 @@ const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus1',
   // 2. sefer: Engizisyon
   'hunter', 'hound', 'torch', 'holywater', 'flagellant', 'lantern', 'bellpriest', 'paladin', 'inquisitor', 'saint',
-  'malleus', 'campanus', 'ignis', 'colossus', 'cathedral', 'severus'];
+  'hubertus', 'agnes', 'lucia', 'godfrey', 'malleus', 'campanus', 'ignis', 'colossus', 'cathedral', 'severus', 'severus3'];
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
   solarcher: 'Uzaktan ok atar, yakından ağlar. İskeletlerimi yanına yolla.',
@@ -12291,6 +12305,11 @@ const CODEX_NOTE = {
   shadowmaster: 'Gölgelerin ustası. Ben de mezarların ustasıyım. Tanışırız.',
   cavcaptain: 'Hücum ederken bağırır. Neden hep bağırıyorlar?',
   gloriosus: 'Kendi heykelini sipariş etmiş. Mezar taşını ben hediye ederim.',
+  hubertus: 'Köpeklerini benden iyi besliyor. Kemik vermeyi denedim, beğenmediler.',
+  agnes: 'Kendini kırbaçlamaktan fırsat bulunca beni kırbaçlamaya geliyor. Meşgul bir kadın.',
+  lucia: 'Ölülerimi kovuyor. Kira ödemeden kalan tek kiracılarımdı.',
+  godfrey: 'Kılıcı yanıyor ama kafası soğuk. İkisinden biri hep yanlış yerde.',
+  severus3: 'Çaydanlığımı çaldı, şimdi çaydanlığım onu çalıyor. Adalet bazen demlenmeyi bekler.',
   gloriosus1: 'Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.',
   archer: 'Arbaletçilerim hiç ıskalamaz. Iskalasalar da cıvatayı geri toplarlar.',
   barracks: 'Eski komşular. Kira ödemiyorlar ama kapıyı iyi tutuyorlar.',

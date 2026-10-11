@@ -926,6 +926,7 @@ LEVELS.forEach((lv, li) => {
     }
   });
 });
+const CLASS_OF_EXTRA = {}; // sonradan eklenen bossların zırh sınıfı (CLASS_OF'a katılır)
 // 1. sefer bossları (11 Eki, Caner: "bosslar dikkat çekici olsun, 20. bölümdeki ultra güçlü"; arastirma/boss-analizi.md):
 // altı komutanın kendi çizimi (varliklar/ham/nm_boss_A/B.jpg), %25 iri; her mekânın kendi komutanı; 17-19'da ikili generaller;
 // 20. bölümde üç evreli General Gloriosus (nm_boss_C.jpg: aslanlı altın araba → yayan → Güneş Formu).
@@ -963,6 +964,43 @@ if (NECRO) {
     'shadowmaster', 'ironwarden', 'cavcaptain', 'ironwarden', 'cavcaptain', 'cavcaptain', 'ironwarden', 'cavcaptain', 'shadowmaster', 'gloriosus1'];
   const B2 = { 16: 'hierophant', 17: 'champion', 18: 'ironwarden' };
   LEVELS.filter(l => (l.ep || 1) === 1).forEach((l, i) => { if (B1[i]) l.bossT = B1[i]; if (B2[i]) l.boss2 = B2[i]; });
+}
+// 2. sefer bossları (12 Eki, Caner): engizisyonun kendi komutanları (varliklar/ham/nm_boss_D.jpg; haç yerine güneş amblemi),
+// her mekânın kendi komutanı, 17-19 ikili; 20. bölüm üç evre: Yürüyen Katedral → çaydanlıklı Severus → Lanetli Severus (nm_boss_E.jpg).
+if (NECRO) {
+  const OFF = { boss: true, chief: true, rate: 1.1, r: 15 };
+  Object.assign(ENEMIES, {
+    hubertus: Object.assign({}, OFF, { name: 'Tazı Ustası Hubertus', h: 56, hp: 1000, speed: 16, armor: 0.2, mr: 0.1, gold: 120, dmg: [12, 20], lives: 5, hpK: 0.9,
+      desc: 'Zincirli beyaz tazılarını salar: tazılar yolda iskeletlerin üstüne atılır. Avcı borusuyla sürüyü hızlandırır',
+      ab: { summon: { t: 'hound', n: 3, cd: 11 }, howl: { cd: 13, r: 120 } } }),
+    agnes: Object.assign({}, OFF, { name: 'Kırbaç Rahibesi Agnes', h: 56, hp: 1050, speed: 15, armor: 0.1, mr: 0.3, gold: 130, dmg: [14, 22], lives: 5, hpK: 0.95,
+      desc: 'Zincir kırbacıyla çevresindeki bütün iskeletleri döver, çığlığıyla kırbaççıları coşturur (hızlanırlar), kırbaççı çağırır',
+      ab: { whirl: { cd: 7, r: 52, dmg: 26, say: 'Kırbaç!' }, howl: { cd: 10, r: 140 }, summon: { t: 'flagellant', n: 2, cd: 13 } } }),
+    lucia: Object.assign({}, OFF, { name: 'Şeytan Kovucu Lucia', h: 54, hp: 950, speed: 13, armor: 0.05, mr: 0.6, gold: 140, dmg: [10, 16], lives: 5, hpK: 0.9,
+      desc: 'Şeytan Kovma: yakındaki dirilmiş ölüleri yok eder, oradaki cesetler artık diriltilemez. Yakındakileri iyileştirir',
+      ab: { exorcise: { cd: 10, r: 150, n: 5, say: 'Şeytan Kovma!' }, heal: { cd: 9, amt: 60, r: 90 } } }),
+    godfrey: Object.assign({}, OFF, { name: 'Tapınak Komutanı Godfrey', h: 58, hp: 1500, speed: 11, armor: 0.6, mr: 0.15, gold: 160, dmg: [20, 30], lives: 6, hpK: 1,
+      desc: 'Kutsanmış Toprak: alevli kılıcını yere saplar, çevresindeki iskeletleri yakar. Yere vurup sersemletir, paladin çağırır',
+      ab: { burn: { cd: 9, r: 75, dps: 12, t: 4, say: 'Kutsanmış Toprak!' }, slam: { cd: 8, r: 64, stun: 1.4, dmg: 30 }, summon: { t: 'paladin', n: 1, cd: 15 } } }),
+  });
+  Object.assign(BOSS_ESCORT, { hubertus: [['hound', 2]], agnes: [['flagellant', 2]], lucia: [['holywater', 1], ['bellpriest', 1]], godfrey: [['paladin', 2]] });
+  // final: Katedral (1. evre, kendi çizimi) → Severus (mevcut çizim, çaydanlıklı) → Lanetli Severus
+  const CT = ENEMIES.cathedral;
+  CT.hpK = +(CT.hpK * 2.2).toFixed(2);
+  CT.desc = 'Tepesinde Büyük Engizitör Severus ile gelir. Katedral yıkılınca Severus çaydanlıkla iner, en sonunda çaydanlığın laneti onu ele geçirir';
+  CT.phases = [
+    { at: 0.55, to: 'severus', title: 'Katedral yıkıldı!', sub: 'Severus çaydanlığı kaldırıp iniyor: kulelere hüküm yağdırıyor', say: 'Çaydanlık benim!', mort: 'sev2' },
+    { at: 0.25, to: 'severus3', title: 'LANETLİ SEVERUS', sub: 'Çaydanlığın laneti Severus\'u ele geçirdi: ölüm yeşili alev saçıyor', say: 'BU GÜÇ... BENİM!', mort: 'sev3' }];
+  ENEMIES.severus.legion = [['paladin', 2], ['inquisitor', 1]];
+  ENEMIES.severus3 = { name: 'Lanetli Severus', h: 58, hp: 2000, speed: 14, armor: 0.25, mr: 0.6, gold: 400, dmg: [26, 40], rate: 1, lives: 20, r: 16, boss: true, chief: true, hpK: 1.1, final: true, glow: '120,255,140', float: true,
+    desc: 'Çaydanlığın laneti onu ele geçirdi: iskeletlerden can emer, yeşil veba alevi saçar, öfkelenince yarı hasar alır. Kaleye ulaşırsa her şey biter',
+    ab: { drain: { cd: 7, r: 95, dmg: 18 }, burn: { cd: 8, r: 100, dps: 12, t: 4, poison: true, say: 'Lanetli Çay!' }, rage: { cd: 13, t: 3 } } };
+  for (const t of ['hubertus', 'agnes', 'lucia', 'godfrey', 'severus3']) CLASS_OF_EXTRA[t] = t === 'godfrey' ? 'agir' : t === 'hubertus' ? 'hafif' : 'kutsal';
+  // her mekânın kendi komutanı (2. sefer bölüm 1-20); 17-19 ikili
+  const B2 = ['hubertus', 'hubertus', 'hubertus', 'malleus', 'agnes', 'agnes', 'agnes', 'campanus', 'lucia', 'lucia', 'lucia', 'ignis',
+    'godfrey', 'godfrey', 'godfrey', 'colossus', 'godfrey', 'malleus', 'campanus', 'cathedral'];
+  const B2b = { 16: 'lucia', 17: 'agnes', 18: 'ignis' };
+  LEVELS.filter(l => l.ep === 2).forEach((l, i) => { l.bossT = B2[i]; if (B2b[i]) l.boss2 = B2b[i]; else delete l.boss2; });
 }
 LEVELS.forEach((lv, i) => {
   lv.boss = lv.bossT || LEVEL_BOSS[i];
@@ -1243,7 +1281,8 @@ const CLASS_OF = {
   hierophant: 'kutsal', ignis: 'kutsal', severus: 'kutsal', campanus: 'kutsal', colossus: 'kutsal',
   ram: 'kusatma', catapult: 'kusatma', siegetower: 'kusatma', lantern: 'kusatma', chariot: 'kusatma', cathedral: 'kusatma',
   cavalry: 'canavar', horsearcher: 'canavar', elephant: 'canavar', eagle: 'canavar', vulture: 'canavar',
-};
+};Object.assign(CLASS_OF, CLASS_OF_EXTRA);
+
 if (NECRO) for (const k in ENEMIES) {
   const d = ENEMIES[k];
   d.acl = CLASS_OF[k] || (d.base && CLASS_OF[d.base]) || (d.machine ? 'kusatma' : d.flying ? 'canavar' : d.armor >= 0.5 ? 'agir' : d.mr >= 0.4 ? 'kutsal' : 'hafif');
