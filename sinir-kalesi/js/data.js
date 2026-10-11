@@ -737,8 +737,9 @@ const GRIM = {
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],
   nm_golem: ['+3 sn · +%10 can', '+3 sn · +%10 can', '+3 sn · +%10 can', '+3 sn · +%10 can', 'Golem %30 sert vurur'],
 };
-// Komutan yetenek ağacı (11 Eki): her seviyede 1 puan; yetenekler 5 kademe, komutan gücü 1→5 kademe. Kademe şu seviyede açılır:
-const HERO_TREE = { sk: [0, 2, 5, 9, 13, 17], ult: [0, 1, 4, 8, 12, 16], dmg: 0.25, cd: 0.08, ultK: 0.25 };
+// Komutan yetenek ağacı (11 Eki): her seviyede 1 puan (1. seviyede de); yetenekler 5 kademe, komutan gücü 1→5 kademe. Kademe şu seviyede açılır:
+// 11 Eki (denge): her seviye 1 puan, 1. seviye dahil (komutan yeteneksiz başlamasın; ilk puanla bir yetenek seçilir)
+const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], dmg: 0.25, cd: 0.08, ultK: 0.25 };
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },

@@ -2,14 +2,39 @@
 //   __bot(i)            -> i. bölümü (0'dan) botla oynar: { lvl, result: 'win'|'lose', lives, wave, n, t }
 //   __measure(a, b, k)  -> a..b-1 bölümlerini k kez oynatır, ortalama puan (kazanınca kalan can, kaybedince eksi)
 //   __tune2(a, b)       -> puanı hedefe (__T) göre hpMul'u sönümlü adımla ayarlar (sonuç data.js HPMUL'a elle yazılır)
-window.__bot = function (lvl) {
+// 11 Eki: kalıcı gelişim. Bölüme o noktaya kadar normal oynamış oyuncunun komutan seviyesi ve Büyü Kitabı kademeleriyle girilir
+// (__prog). XP: önceki bölümlerin düşman altını (komutan hepsini öldürmez: %60) + bölüm sonu XP'si; ruh taşı: bölüm başına ~2,6.
+window.__progOf = function (lvl) {
+  let xp = 0; for (let j = 0; j < lvl; j++) { let s = 0; for (const w of LEVELS[j].waves) for (const gr of w) for (const t of gr.types || Array(gr.n).fill(gr.t)) s += (ENEMIES[t] || {}).gold || 0; xp += s * 0.6 + 100 + 40 * j; }
+  let L = 1; while (L < HERO_MAX && xp >= 80 * L * L) { xp -= 80 * L * L; L++; }
+  return { lvl: L, souls: Math.floor(2.6 * lvl) };
+};
+window.__prog = function (lvl, off) {
+  const save = window.__game.save(); const P = off ? { lvl: 1, souls: 0 } : window.__progOf(lvl);
+  const id = (save.team || ['commander'])[0], R = { lvl: P.lvl, xp: 0, sk: {}, ult: 1 }, sks = HEROES[id].paths.flatMap(p => p.skills).map(s => s.id);
+  for (let pts = P.lvl, guard = 0; pts > 0 && guard < 60; guard++) { // puanlar sırayla: yetenekler ve güç, açıldıkça
+    const opts = sks.map(k => ['sk', k]).concat([['ult', 'ult']]).filter(([kind, k]) => { const T = kind === 'ult' ? HERO_TREE.ult : HERO_TREE.sk, r = kind === 'ult' ? R.ult : R.sk[k] || 0; return r + 1 < T.length && P.lvl >= T[r + 1]; });
+    if (!opts.length) break; opts.sort((a, b) => (a[0] === 'ult' ? R.ult - 1 : R.sk[a[1]] || 0) - (b[0] === 'ult' ? R.ult - 1 : R.sk[b[1]] || 0));
+    const [kind, k] = opts[0]; if (kind === 'ult') R.ult++; else R.sk[k] = (R.sk[k] || 0) + 1; pts--;
+  }
+  save.hero = { [id]: R };
+  const ids = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(k => { const u = NECRO_SPELLS[k].unlock; return u == null || u < lvl; });
+  save.grim = {}; let left = P.souls;
+  for (let guard = 0; guard < 40 && ids.length; guard++) { const k = ids.slice().sort((a, b) => (save.grim[a] || 0) - (save.grim[b] || 0))[0], r = save.grim[k] || 0; if (r >= 5 || GRIM.cost[r] > left) break; left -= GRIM.cost[r]; save.grim[k] = r + 1; }
+  return { hero: R.lvl, grim: Object.assign({}, save.grim) };
+};
+window.__bot = function (lvl, off) {
+  window.__prog(lvl, off);
   const g = window.__game; g.startLevel(lvl); const G = g.G; if (g.overlay) g.setOverlay(null);
   const order = ['archer', 'barracks', 'mage', 'archer', 'artillery', 'mage', 'barracks', 'archer', 'artillery', 'mage', 'archer', 'barracks', 'mage'];
   let time = 0; g.wave();
   const dens = () => { let best = null, bn = 0; for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const n = G.enemies.filter(o => !o.dead && Math.hypot(o.x - e.x, o.y - e.y) < 55).length; if (n > bn) { bn = n; best = e; } } return [best, bn]; };
   while (time < 1500) {
     const ov = g.overlay; if (ov === 'win' || ov === 'lose') break; if (ov) g.setOverlay(null);
-    G.heroes.forEach((h, i) => { for (let k = 0; k < 3; k++) g.learn(i, (h.lvl + k) % 2) || g.learn(i, (h.lvl + k + 1) % 2); });
+    { const h = G.heroes[0]; if (h) for (let q = 0; q < 3; q++) { // savaşta kazanılan puan: en düşük kademeli açık yetenek
+      const R = window.__game.save().hero[h.id], ids = HEROES[h.id].paths.flatMap(p => p.skills).map(s => s.id).concat(['ult']);
+      ids.sort((a, b) => (a === 'ult' ? R.ult - 1 : R.sk[a] || 0) - (b === 'ult' ? R.ult - 1 : R.sk[b] || 0));
+      if (!ids.some(id => g.learn(0, id))) break; } }
     for (let guard = 0; guard < 6; guard++) {
       // yolu neredeyse hiç görmeyen arsa atlanır (oyuncu oraya kurmaz); 110 px içinde en az 20 yol noktası
       const cov = (p) => p._cov ?? (p._cov = G.paths.reduce((a, P) => a + P.pts.filter(q => Math.hypot((q.x ?? q[0]) - p.x, (q.y ?? q[1]) - p.y) < 110).length, 0));
@@ -22,7 +47,6 @@ window.__bot = function (lvl) {
         if (G.castle.lvl < 2) opts.push({ c: [0, 200, 300][G.castle.lvl + 1] * 1.2, f: () => g.upgradeCastle() });
         for (const t of G.towers) { const pi = G.plots.indexOf(t.plot); if (g.imbue && t.spec && !t.imbue && (t.type === 'archer' || t.type === 'barracks') && ((t.ab && t.ab[t.spec]) || 0) >= 3) opts.push({ c: 220, f: () => g.imbue(pi, IMBUE_ORDER[pi % IMBUE_ORDER.length]) }); } // silah büyüsü
         for (const t of G.towers) { const E = t.spec && TOWER_EXTRA[t.spec]; if (E && !t.extra) opts.push({ c: E.cost, f: () => (G.gold >= E.cost ? (G.gold -= E.cost, t.extra = true, t.exT = 1.5, true) : false) }); }
-        for (const id of ['nm_raise', 'nm_wall', 'nm_fear', 'nm_burst']) { const r = (G.spellUp && G.spellUp[id]) || 0, c = [120, 200][r]; if (c && G.spells[id] != null) opts.push({ c: c * 1.5, f: () => (G.gold >= c ? (G.gold -= c, G.spellUp = G.spellUp || {}, G.spellUp[id] = r + 1, true) : false) }); }
       }
       opts.sort((a, b) => a.c - b.c); const o = opts[0]; if (!o || !o.f()) break;
     }

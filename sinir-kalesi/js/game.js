@@ -11556,7 +11556,7 @@ function buyGrim(id) {
 }
 // komutan kaydı: seviye ve XP bölümler arası kalır; sk: yetenek kademeleri, ult: komutan gücü kademesi (1..5)
 function heroRec(id) { save.hero = save.hero || {}; return (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1 }); }
-function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return (R.lvl - 1) - n - (R.ult - 1); }
+function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return R.lvl - n - (R.ult - 1); } // her seviye 1 puan (1. seviye dahil)
 const treeRank = (R, kind, id) => (kind === 'ult' ? R.ult : R.sk[id] || 0);
 function treeNext(R, kind, id) { const T = kind === 'ult' ? HERO_TREE.ult : HERO_TREE.sk, r = treeRank(R, kind, id); return r + 1 < T.length ? T[r + 1] : null; } // sıradaki kademenin açıldığı seviye
 const treeCan = (R, kind, id) => { const n = treeNext(R, kind, id); return n != null && R.lvl >= n && recPoints(R) > 0; };
