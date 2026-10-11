@@ -1634,5 +1634,92 @@
   "fh": 166,
   "base": 0.0145,
   "ch": 0.9613
+ },
+ "enemy_shadowmaster_walk": {
+  "n": 32,
+  "fw": 186,
+  "fh": 171,
+  "base": 0.0142,
+  "ch": 0.9338,
+  "idle": 8
+ },
+ "enemy_shadowmaster_atk": {
+  "n": 32,
+  "fw": 190,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9611
+ },
+ "enemy_shadowmaster_skill": {
+  "n": 32,
+  "fw": 200,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9611
+ },
+ "enemy_shadowmaster_die": {
+  "n": 33,
+  "fw": 255,
+  "fh": 178,
+  "base": 0.0135,
+  "ch": 0.9007
+ },
+ "enemy_ironwarden_walk": {
+  "n": 32,
+  "fw": 140,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9523,
+  "idle": 13
+ },
+ "enemy_ironwarden_atk": {
+  "n": 32,
+  "fw": 130,
+  "fh": 172,
+  "base": 0.014,
+  "ch": 0.9279
+ },
+ "enemy_ironwarden_skill": {
+  "n": 32,
+  "fw": 173,
+  "fh": 171,
+  "base": 0.014,
+  "ch": 0.9347
+ },
+ "enemy_ironwarden_die": {
+  "n": 33,
+  "fw": 287,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9477
+ },
+ "enemy_cavcaptain_walk": {
+  "n": 32,
+  "fw": 151,
+  "fh": 169,
+  "base": 0.0144,
+  "ch": 0.9472,
+  "idle": 21
+ },
+ "enemy_cavcaptain_atk": {
+  "n": 32,
+  "fw": 181,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9518
+ },
+ "enemy_cavcaptain_skill": {
+  "n": 32,
+  "fw": 127,
+  "fh": 172,
+  "base": 0.0133,
+  "ch": 0.929
+ },
+ "enemy_cavcaptain_die": {
+  "n": 33,
+  "fw": 229,
+  "fh": 172,
+  "base": 0.014,
+  "ch": 0.9299
  }
 }
