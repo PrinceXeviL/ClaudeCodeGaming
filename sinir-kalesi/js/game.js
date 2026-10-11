@@ -108,10 +108,10 @@ function rottenOf(name, im) {
   const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
   for (let i = 0; i < a.length; i += 4) {
     const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
-    // 11 Eki (Caner): morumsu kızıl ceset rengi (eskiden solgun yeşil-gri)
-    a[i] = (a[i] * 0.3 + (L * 0.98 + 30) * 0.7) * 0.86;
-    a[i + 1] = (a[i + 1] * 0.3 + (L * 0.6 + 4) * 0.7) * 0.86;
-    a[i + 2] = (a[i + 2] * 0.3 + (L * 0.84 + 22) * 0.7) * 0.86;
+    // 11 Eki (Caner): koyu mor; boya eskisinin yarısı kadar baskın (asıl renk %45 kalır), karartılmış
+    a[i] = (a[i] * 0.45 + L * 0.7 * 0.55) * 0.72;
+    a[i + 1] = (a[i + 1] * 0.45 + L * 0.25 * 0.55) * 0.72;
+    a[i + 2] = (a[i + 2] * 0.45 + L * 1.1 * 0.55) * 0.72;
   }
   g.putImageData(d, 0, 0);
   return (ROT[name] = c);
@@ -5996,6 +5996,32 @@ function drawXbowMen(t, ts, redraw) {
   }
   redraw(); // ön korkuluk ve gövde iskeletlerin ayaklarının önüne
 }
+// 11 Eki (Caner): okçu/arbaletçi platformunun dört yanı yarım boy demir korkulukla çevrili (balkon gibi).
+// Zemin baklavasının (XBOW_T.floor) kenarlarına çizilir: arka iki kenar okçulardan önce, ön iki kenar sonra (ayaklarının önünde kalır).
+const RAIL = { h: 0.48, gap: 0.42, line: '#120c14', iron: '#4a4252', hi: 'rgba(190,170,210,0.55)' };
+function drawBalcony(t, ts, front) {
+  const C = xbowCfg(t); if (!C.floor) return;
+  const P = (f) => ({ x: t.x + (f[0] - 0.5) * ts.w, y: ts.bottom - ts.h + f[1] * ts.h });
+  const [T, Lf, Rt, B] = C.floor.map(P), h = menH(t) * RAIL.h, w = Math.max(0.7, h * 0.07);
+  const edges = front ? [[Lf, B], [Rt, B]] : [[T, Lf], [T, Rt]];
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const seg = (a, b, lw, col) => { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); };
+  const up = (p, k) => ({ x: p.x, y: p.y - h * k });
+  for (const [a, b] of edges) {
+    const n = Math.max(2, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / (h * RAIL.gap)));
+    for (let i = 1; i < n; i++) { const q = { x: lerp(a.x, b.x, i / n), y: lerp(a.y, b.y, i / n) }; // ince parmaklıklar
+      seg(q, up(q, 1), w * 1.9, RAIL.line); seg(q, up(q, 1), w * 0.8, RAIL.iron); }
+    for (const k of [1, 0.12]) { seg(up(a, k), up(b, k), w * (k === 1 ? 3 : 2.2), RAIL.line); seg(up(a, k), up(b, k), w * (k === 1 ? 1.5 : 1), RAIL.iron); } // üst ve alt kuşak
+    seg(up(a, 1), up(b, 1), w * 0.5, RAIL.hi); // üst kuşakta ışık
+  }
+  // köşe dikmeleri ve sivri tepelikler (arka geçişte arka köşe, ön geçişte yan ve ön köşeler)
+  for (const p of front ? [Lf, Rt, B] : [T]) {
+    seg(p, up(p, 1.05), w * 3.4, RAIL.line); seg(p, up(p, 1.05), w * 1.8, RAIL.iron);
+    const tp = up(p, 1.05); ctx.fillStyle = RAIL.iron; ctx.strokeStyle = RAIL.line; ctx.lineWidth = w * 0.9;
+    ctx.beginPath(); ctx.moveTo(tp.x - w * 1.6, tp.y); ctx.lineTo(tp.x, tp.y - h * 0.32); ctx.lineTo(tp.x + w * 1.6, tp.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
 // Kemik Balistası (katmanlı, kodla canlı): gövde + ayrı mızrak katmanı, kirişler kodla çizilir.
 // Atıştan sonra (s sn): kiriş şaklayıp titrer → kurma kolu kirişi geri çeker → yeni mızrak kızıl-yeşil sisle belirip oluğa kayar.
 // Süreler atış aralığıyla ölçeklenir (BAL x k, k = aralık / 2.4).
@@ -7151,6 +7177,7 @@ function drawTowerBody(t) {
     }
     ctx.restore();
     if (NECRO && t.type === 'archer' && xbowCount(t)) drawBoneTowerFx(t, ts, 'back'); // parıltının arka yarısı okçuların altında kalır
+    if (xbowCount(t) && pop >= 0.99) drawBalcony(t, ts, false); // arka korkuluk okçuların arkasında
     if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = xbowCfg(t).clip;
       if (!C) return; // ön korkuluk yok (1. kademe): ayaklar platformun üstünde görünür
@@ -7161,6 +7188,7 @@ function drawTowerBody(t) {
       if (NECRO && t.type === 'archer') drawBoneTowerFx(t, ts, 'front'); // run, göz, ön alev: yalnız korkuluk ve gövde bölgesinde, okçuların üstüne taşmaz
       ctx.restore();
     });
+    if (xbowCount(t) && pop >= 0.99) drawBalcony(t, ts, true); // ön korkuluk okçuların ayaklarının önünde
     drawNecroTowerFx(t, ts);
     drawTowerFog(t, ts, true);
     if (t.ab) {
@@ -7474,7 +7502,7 @@ function drawSoldier(s) {
       const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
       s.px = s.x; s.py = s.y;
       const ch = s.zh || 30 * UNIT_K;
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '200,50,130', 0.25); ctx.restore();
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '130,50,200', 0.18); ctx.restore();
       if (s.born != null && G.t < s.born) return;
       const up = s.born != null && G.t - s.born < DIE_T ? animStrip(key, s.zrig || s.zname, '_die') : null;
       if (up) { // yerden kalkış: ölüm kareleri tersten
@@ -7493,7 +7521,7 @@ function drawSoldier(s) {
       ctx.restore();
       // başının üstünde soluk mor ruh alevi: bizim tarafta olduğu belli olsun
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x + Math.sin(lean) * ch, s.y - ch - 3, 5 + Math.sin(time * 6 + s.slot) * 1, '200,80,255', 0.55); ctx.restore();
-      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#c75aa0');
+      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#9a5ac7');
       return;
     }
   }
