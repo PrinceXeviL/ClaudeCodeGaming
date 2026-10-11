@@ -9906,17 +9906,6 @@ const HUD = (() => { // sağ üst düğmeler ve sol alt portre (UI_K ile büyüt
 const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 * UI_K });
 
 // küçük bilgi hapı: solda ikon, sağda değer
-// Dalga göstergesinin rengi dalgaya göre ısınır: yeşil → sarı → turuncu; son dalga yanıp sönen kırmızı
-function waveTint() {
-  const n = G.endless ? 8 : G.lv.waves.length, w = G.endless ? (G.wave - 1) % 8 + 1 : G.wave;
-  if (w <= 0) return null;
-  if (w >= n) return ['rgba(190,30,20,0.96)', 'rgba(80,6,4,0.96)', '#ff9a7a', '255,60,30'];
-  const k = (w - 1) / Math.max(1, n - 2); // 0 ilk dalga, 1 sondan bir önceki
-  const stops = [[60, 120, 40], [170, 140, 30], [200, 90, 20], [190, 50, 20]];
-  const f = k * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(f)), t = f - i;
-  const c = stops[i].map((v, j) => Math.round(v + (stops[i + 1][j] - v) * t));
-  return [`rgba(${c[0]},${c[1]},${c[2]},0.94)`, `rgba(${c[0] * 0.35 | 0},${c[1] * 0.35 | 0},${c[2] * 0.35 | 0},0.94)`, `rgb(${Math.min(255, c[0] + 70)},${Math.min(255, c[1] + 70)},${Math.min(255, c[2] + 60)})`];
-}
 
 // Dalga butonu yolun üstünde değil yanında durur (düşmanları örtmesin); yolun girişinde yön okları akar.
 function waveButtonPos(pi) {
@@ -10269,19 +10258,32 @@ function drawHud() {
   ctx.save(); ctx.translate(34, 20); ctx.scale(pop(G.livesPop), pop(G.livesPop)); hudNum(G.lives + '', 0, 0, 14, G.lives <= 5 ? '#ff8a7a' : '#fff'); ctx.restore();
   drawIcon('coin', 76, 19, 16);
   ctx.save(); ctx.translate(88, 20); ctx.scale(pop(G.goldPop), pop(G.goldPop)); hudNum(Math.floor(G.gold) + '', 0, 0, 14, '#ffe27a'); ctx.restore();
-  const n = G.endless ? 8 : G.lv.waves.length, last = !G.endless && G.wave >= n && G.wave > 0, wk = G.endless ? ((G.wave - 1) % 8 + 1) / 8 * (G.wave > 0) : clamp(G.wave / n, 0, 1);
-  hudBar(8, 34, 96, 20);
-  // dolum: dalga ilerledikçe yeşilden kırmızıya, son dalgada tamamen dolu ve nabız gibi
-  if (wk > 0) {
-    const fw = (96 - 6) * wk, wt = waveTint();
+  // dalga çubuğu (12 Eki, Caner): dalga içinde düşmanlar çıktıkça yumuşakça dolar; renk yeşil (kolay) → sarı → turuncu,
+  // boss sahadayken kırmızı ve nabız gibi; sağ uçta boss işareti yaklaştıkça ısınır
+  const n = G.endless ? 8 : G.lv.waves.length;
+  let frac = 1; { let L = 0, T = 0; for (const sp of G.spawners) { L += sp.left; T += sp.n; } if (T) frac = 1 - L / T; }
+  const goal = G.wave <= 0 ? 0 : G.endless ? (((G.wave - 1) % 8) + frac) / 8 : clamp((G.wave - 1 + frac) / n, 0, 1);
+  G.waveFill = (G.waveFill ?? 0) + (goal - (G.waveFill ?? 0)) * 0.08;
+  const wk = G.waveFill, bossOn = G.enemies.some(e => e.def.chief && !e.dead), BW = 120;
+  hudBar(8, 34, BW, 20);
+  if (wk > 0.003) {
+    const fw = Math.max(8, (BW - 6) * wk), ST = [[70, 175, 60], [205, 195, 50], [225, 125, 35]], f = clamp(wk / 0.9, 0, 1) * (ST.length - 1), i0 = Math.min(ST.length - 2, Math.floor(f)), t0 = f - i0;
+    const c = bossOn ? [215, 40, 30] : ST[i0].map((v, j) => Math.round(v + (ST[i0 + 1][j] - v) * t0));
     const fg = ctx.createLinearGradient(0, 37, 0, 51);
-    fg.addColorStop(0, wt ? wt[2] : '#8fdc6a'); fg.addColorStop(1, wt ? wt[0] : '#3a7a2a');
-    ctx.save(); ctx.globalAlpha = last ? 0.75 + Math.sin(time * 6) * 0.2 : 0.85;
+    fg.addColorStop(0, `rgb(${Math.min(255, c[0] + 60)},${Math.min(255, c[1] + 60)},${Math.min(255, c[2] + 50)})`); fg.addColorStop(1, `rgb(${c[0] * 0.55 | 0},${c[1] * 0.55 | 0},${c[2] * 0.55 | 0})`);
+    ctx.save(); ctx.globalAlpha = bossOn ? 0.75 + Math.sin(time * 7) * 0.2 : 0.9;
     roundRect(11, 37, fw, 14, 5, fg); ctx.restore();
-    roundRect(12, 38, fw - 2, 4, 2, 'rgba(255,255,255,0.18)');
+    roundRect(12, 38, fw - 2, 4, 2, 'rgba(255,255,255,0.2)');
+    if (bossOn) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 11 + fw, 44, 16, '255,80,50', 0.35 + Math.sin(time * 7) * 0.15); ctx.restore(); }
+  }
+  if (!G.endless) { // sağ uçta boss işareti: kafatası + taç, son dalgaya yaklaştıkça ısınır
+    const hot = bossOn ? 1 : clamp((wk - 0.6) / 0.35, 0, 1), bx2 = 8 + BW + 12;
+    circle(bx2, 44, 11, `rgba(${40 + 170 * hot | 0},${18 + 10 * hot | 0},${16},0.95)`, hot > 0.5 ? '#ff9a7a' : '#c9a865', 1.6);
+    drawSkullIcon(bx2, 45, 6.5); drawCrown(bx2, 33.5, 0.42, 1);
+    if (bossOn) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx2, 44, 20, '255,70,40', 0.4 + Math.sin(time * 7) * 0.2); ctx.restore(); }
   }
   drawIcon('skull', 21, 44, 14);
-  ctx.save(); ctx.translate(58, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(G.endless ? `${G.wave} ∞` : `${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
+  ctx.save(); ctx.translate(68, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(G.endless ? `${G.wave} ∞` : `${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
   ctx.restore();
 
   // sağ üst: duraklat, hız, ses
