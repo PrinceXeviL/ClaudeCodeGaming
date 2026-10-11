@@ -1519,7 +1519,7 @@ function startLevel(idx, chal = null) {
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
-  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
+  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block']).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
 
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
@@ -2440,6 +2440,7 @@ function damageSoldier(s, amount, src) {
   if (s.dodge && Math.random() < s.dodge) { if (Math.random() < 0.4) floatText(s.x, s.y - 30, 'Kaçtı!', '#ffe9b0'); return; }
   if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('bash'); return; }
   if (s.wardT > 0) amount *= 1 - ELITE_SK.shield.red; // Tabut Duvarı
+  if (s.hero && amount > s.maxHp * 0.04 && !(s.blockCd > G.t) && !(s.ultT > 0) && !(s.castA > 0)) { s.blockA = HERO_ANIM.block; s.blockCd = G.t + 3; } // komutan darbeyi karşılar
   const CA = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); // lanet aurası: iskelete ek zırh
   s.hp -= amount * (1 - Math.min(0.85, s.armor + (CA ? CA.allyArm : 0)));
   s.flash = 0.1;
@@ -3776,13 +3777,15 @@ function heroSkills(h, dt) {
   for (const k in h.cds) h.cds[k] -= dt;
   if (h.castT > 0) h.castT -= dt;
   if (h.ultT > 0) h.ultT -= dt;
+  if (h.castA > 0) h.castA -= dt; // yetenek şeridi (12 Eki)
+  if (h.blockA > 0) h.blockA -= dt; // savunma şeridi
   for (const p of h.def.paths) for (const sk of p.skills) {
     if (sk.passive || !h.learned[sk.id] || (h.cds[sk.id] || 0) > 0) continue;
     const rk = h.learned[sk.id] || 1; SKILL_K = 1 + HERO_TREE.dmg * (rk - 1);
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
-      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45;
+      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45; h.castA = HERO_ANIM.cast;
       floatText(h.x, h.y - 46, sk.name + '!', '#ffe27a');
       const col = h.def.aura;
       G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 26, col, t: 0, dur: 0.4 });
@@ -7767,10 +7770,16 @@ function drawSoldier(s) {
     s.px = s.x; s.py = s.y;
     const ch = s.hero ? s.def.h * UNIT_K : CHAR_H[name];
     // komutan: Wan şeritleri geldiyse onlar oynar (saldırı kareleri vuruş döngüsüne bağlı)
+    // 12 Eki: bekleme (_idle), koşma (_run: oyuncu uzağa gönderince), yetenek (_cast), savunma (_block) şeritleri; yoksa eski davranış
     const ult = s.hero && s.ultT > 0 && animStrip(name, null, '_skill');
-    const hsk = ult || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || (walking && animStrip(name, null, '_walk'))));
+    const cst = !ult && s.hero && s.castA > 0 && animStrip(name, null, '_cast');
+    const blk = !ult && !cst && s.hero && s.blockA > 0 && animStrip(name, null, '_block');
+    const mov = walking && (s.moving && animStrip(name, null, '_run') || animStrip(name, null, '_walk'));
+    const hsk = ult || cst || blk || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
     if (hsk) {
-      const F = ANIM_META[hsk], i = ult ? Math.floor(clamp(1 - s.ultT / ULT_ANIM, 0, 0.999) * F.n) : hsk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
+      const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
+      const i = ult ? prog(s.ultT, ULT_ANIM) : cst ? prog(s.castA, HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
+        : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : 16)) % F.n;
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
       hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
@@ -11173,6 +11182,7 @@ const BOSS_LOOK = {
   },
 };
 // Kare şeridi: <ad><ek> varsa o; yoksa asıl türün (rig) şeridi bu türün renkleriyle (boss/rütbe) yeniden boyanır ve saklanır.
+const HERO_ANIM = { cast: 1.0, block: 0.7 }; // komutan yetenek / savunma şeridinin süresi (sn)
 const ULT_ANIM = 1.3; // komutan gücü şeridinin süresi (sn)
 function animStrip(name, rig, suf) {
   const key = name + suf;
