@@ -67,6 +67,7 @@ SHEETS = [
                          'nm2_hatch', 'nm2_hatch_open', 'nm2_hatch_sealed', 'nm2_ravtree'], 'decor'),  # Sefer 2 dekor: orman ve köy, mahzen kapağı 3 hali
     ('nm_engizisyon_D.jpg', ['enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'], 'unitgrid'),  # bosslar ve final
     ('nm3_orman_dekor.jpg', ['nm3_stump', 'nm3_cage', 'nm3_totem_1', 'nm3_totem_2', 'nm3_totem_3', 'nm3_candles', 'nm3_cart', 'nm3_coffin', 'nm3_coffin_open', 'nm3_sign_1', 'nm3_sign_2', 'nm3_log', 'nm3_grave'], 'decor'),  # 11 Eki: 1. sefer Necromancer ormanı dekorları (satır satır)
+    ('nm4_engizisyon_dekor.jpg', ['nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_firebarrel', 'nm4_suntomb', 'nm4_shrine', 'nm4_board', 'nm4_pillory', 'nm4_wagon', 'nm4_barrels', 'nm4_cross'], 'decor'),  # 11 Eki: 2. sefer (Cadı Avı) engizisyon dekorları; sancak bezi oyunda dalgalanır
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),
     ('nm_kemik_duvar_yan.jpg', ['nm_bwall_4', 'nm_bwall_5'], 'decor'),  # yandan görünüş (dikine duran duvar): sağlam, hasarlı  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
@@ -78,13 +79,16 @@ BOXES = {
     'nm_sunak_4.jpg': [(0, 80, 1010, 1116), (1010, 0, 2000, 1116)],  # rün halkası kopuk parçalar: kutuyla
     'nm2_dekor_A.jpg': [(c * 341 + 2, r * 341 + 2, c * 341 + 339, r * 341 + 339) for r in range(3) for c in range(3)],  # 3x3 ızgara
     'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
+    'nm4_engizisyon_dekor.jpg': [(41, 41, 777, 727), (826, 17, 1153, 773), (1273, 172, 1637, 630), (1761, 41, 2078, 457), (2208, 55, 2690, 484), (1640, 512, 2181, 993), (2208, 498, 2752, 980), (76, 853, 605, 1417), (592, 826, 1428, 1536), (1507, 980, 2208, 1493), (2250, 966, 2690, 1520)],  # 11 nesne (2752x1536)
 }
-BOX_EDGE_DROP = {'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg'}
+# meta (dünya boyu) çarpanı: 2x çözünürlüklü sayfa, diğer dekor sayfalarıyla aynı ölçekte (ruinK) dursun
+META_K = {'nm4_engizisyon_dekor.jpg': 0.5}
+BOX_EDGE_DROP = {'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
 # renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
 # (10 Eki: Caner hayalet okçuları kırmızı istedi)
 HUE_TOP = {}  # (eski Hayalet Okçular kulesindeki okçuların rengi; yeni kulede okçular ayrı çiziliyor)
 # magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
-GLOW_FIX = {'nm3_totem_1': (110, 255, 140), 'nm3_totem_2': (110, 255, 140), 'nm3_totem_3': (110, 255, 140), 'nm3_candles': (110, 255, 140), 'nm3_sign_1': (110, 255, 140), 'nm3_sign_2': (110, 255, 140), 'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
+GLOW_FIX = {'nm4_brazier': (255, 170, 70), 'nm4_firebarrel': (255, 170, 70), 'nm4_shrine': (255, 190, 90), 'nm4_board': (255, 190, 90), 'nm4_barrels': (255, 170, 70), 'nm3_totem_1': (110, 255, 140), 'nm3_totem_2': (110, 255, 140), 'nm3_totem_3': (110, 255, 140), 'nm3_candles': (110, 255, 140), 'nm3_sign_1': (110, 255, 140), 'nm3_sign_2': (110, 255, 140), 'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
@@ -301,6 +305,7 @@ def main():
             im.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=88, method=6)  # webp: indirme boyutu ~%75 küçük
             if os.path.exists(os.path.join(IMG, name + '.png')): os.remove(os.path.join(IMG, name + '.png'))
             entry = [im.width, im.height]
+            if fname in META_K: entry = [round(v * META_K[fname]) for v in entry]  # dünya boyu (çözünürlük korunur)
             if kind == 'tower': entry.append(TOWER_BASE)
             meta[name] = entry; man.discard(name + '.png'); man.add(name + '.webp')
             print(fname, '->', name, im.size)

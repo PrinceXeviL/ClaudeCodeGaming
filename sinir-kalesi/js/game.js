@@ -880,22 +880,23 @@ const THEMES = {
   necrogate: { tex: 'cursed', tint: 'rgba(60,20,70,0.22)', grass: '#36302e', grass2: '#1e1a1c', patch: ['#36302e', '#1e1a1c'], trees: 40, rocks: 26, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5048', '#a8968a', '#2a201a'], tuft: ['#4a4a30', '#6a6a3a'], stone: ['#665e66', '#9a909a'], light: 'rgba(180,255,170,0.1)', amb: '170,255,150', flowers: 0,
     treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3', 'nm2_ravtree'], rockSpr: ['nm_tomb_3', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence', 'nm2_stake', 'nm_crow'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 18, ruinSpr: ['nm_ruin_1', 'nm_ruin_6', 'nm2_gallows', 'nm_ruin_3', 'nm3_candles', 'nm3_totem_1', 'nm3_totem_3', 'nm3_cage', 'nm3_grave'], ruinK: 0.26, ruinN: 8, dense: true },
   // Sefer 2 (Cadı Avı): Kuzgun Ormanı, Veba Köyü, Batık Manastır, Kemik Katedrali, Kızıl Ay Tepesi.
-  // ruinSpr/ruinK: yol dışındaki büyük yapılar (harabe yerleşimiyle), ruinN: kaç tane
+  // ruinSpr/ruinK: yol dışındaki büyük yapılar (harabe yerleşimiyle), ruinN: kaç tane. 11 Eki: engizisyon dekorları nm4_* (Gemini nm4_engizisyon_dekor.jpg),
+  // deco: sefer haritasında da dekor (1. seferdeki dense gibi); nm4_banner bezi her karede dalgalanır (BANNER)
   ravenwood: { tex: 'cursed', tint: 'rgba(30,20,40,0.28)', grass: '#30362a', grass2: '#1a1e16', patch: ['#30362a', '#1a1e16'], trees: 28, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a4c3e', '#9e8c76', '#2a2016'], tuft: ['#3a4a2a', '#56663a'], stone: ['#605e5a', '#908c84'], light: 'rgba(200,170,120,0.06)', amb: '160,200,140', flowers: 0,
     treeSpr: ['nm_tree_1', 'nm_tree_3', 'nm_tree_4', 'nm2_ravtree'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow', 'nm2_stake'], treeK: 0.95, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 8,
-    ruinSpr: ['nm2_gallows', 'nm2_stake', 'nm2_ravtree'], ruinK: 0.2, ruinN: 3 },
+    ruinSpr: ['nm2_gallows', 'nm2_stake', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_board', 'nm4_wagon', 'nm4_barrels', 'nm4_cross'], ruinK: 0.22, ruinN: 8, deco: true },
   plague:    { tex: 'village', tint: 'rgba(40,30,20,0.15)', grass: '#4a3a2a', grass2: '#2a2018', patch: ['#4a3a2a', '#2a2018'], trees: 10, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5e5446', '#a89a84', '#2c241a'], tuft: ['#4a4a2a', '#66663a'], stone: ['#6a645a', '#9c968a'], light: 'rgba(255,190,120,0.06)', amb: '220,200,150', flowers: 0,
     treeSpr: ['nm_tree_1', 'nm_tree_4', 'nm_tree_3'], rockSpr: ['nm2_qfence', 'nm_bones', 'nm_rock_2', 'nm2_stake', 'nm_crow'], treeK: 0.9, rockK: 1.15, bushSpr: ['nm_shroom'], bushes: 6,
-    ruinSpr: ['nm2_cottage', 'nm2_well', 'nm2_cottage', 'nm2_gallows'], ruinK: 0.22, ruinN: 4, weather: 'rain' },
+    ruinSpr: ['nm2_cottage', 'nm2_well', 'nm2_gallows', 'nm4_pyre', 'nm4_pillory', 'nm4_board', 'nm4_barrels', 'nm4_firebarrel', 'nm4_wagon', 'nm4_shrine', 'nm4_banner'], ruinK: 0.22, ruinN: 8, deco: true, weather: 'rain' },
   monastery: { tex: 'marsh', tint: 'rgba(20,50,50,0.2)', grass: '#22322c', grass2: '#121c18', patch: ['#22322c', '#121c18'], trees: 12, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a564c', '#a29c8c', '#28241c'], tuft: ['#2a4a34', '#3a6a44'], stone: ['#5a6662', '#8a9692'], light: 'rgba(160,255,200,0.1)', amb: '170,255,190', flowers: 0,
     treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_2'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_tomb_3', 'nm_crow'], treeK: 0.9, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 10,
-    ruinSpr: ['nm_ruin_1', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_2'], ruinN: 3 },
+    ruinSpr: ['nm_ruin_1', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_2', 'nm4_shrine', 'nm4_suntomb', 'nm4_cross', 'nm4_banner', 'nm4_brazier', 'nm4_barrels'], ruinK: 0.24, ruinN: 7, deco: true },
   ossuary:   { tex: 'bone', tint: 'rgba(40,20,50,0.25)', grass: '#3a3440', grass2: '#1e1a22', patch: ['#3a3440', '#1e1a22'], trees: 4, rocks: 26, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5450', '#a89e96', '#2a2420'], tuft: ['#4a4a40', '#5e5e50'], stone: ['#6a6270', '#9c94a2'], light: 'rgba(190,160,255,0.08)', amb: '200,180,255', flowers: 0,
     treeSpr: ['nm_tree_4', 'nm_tree_1'], rockSpr: ['nm_bones', 'nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_rock_1'], treeK: 0.85, rockK: 1.2, bushSpr: ['nm_shroom'], bushes: 6,
-    ruinSpr: ['nm_ruin_3', 'nm_ruin_5', 'nm_ruin_6', 'nm_ruin_2'], ruinN: 4 },
+    ruinSpr: ['nm_ruin_3', 'nm_ruin_5', 'nm_ruin_6', 'nm_ruin_2', 'nm4_suntomb', 'nm4_cross', 'nm4_shrine', 'nm4_brazier', 'nm4_banner'], ruinK: 0.24, ruinN: 8, deco: true },
   bloodmoon: { tex: 'cursed', tint: 'rgba(110,10,20,0.26)', grass: '#3a2a26', grass2: '#1e1414', patch: ['#3a2a26', '#1e1414'], trees: 22, rocks: 16, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c4a44', '#a8908a', '#2a1c18'], tuft: ['#4a3a2a', '#6a4a3a'], stone: ['#665a5a', '#9a8a8a'], light: 'rgba(255,90,80,0.1)', amb: '255,140,130', flowers: 0,
     treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm2_ravtree'], rockSpr: ['nm_tomb_1', 'nm_bones', 'nm2_stake', 'nm_tomb_3', 'nm_rock_1'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 10,
-    ruinSpr: ['nm_ruin_1', 'nm2_gallows', 'nm_ruin_6', 'nm2_ravtree'], ruinK: 0.2, ruinN: 3 },
+    ruinSpr: ['nm_ruin_1', 'nm2_gallows', 'nm_ruin_6', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_firebarrel', 'nm4_wagon', 'nm4_cross', 'nm4_pillory'], ruinK: 0.22, ruinN: 8, deco: true },
   rocky:  { grass: '#a3ad6e', grass2: '#7f8c52', patch: ['#a0a878', '#5f6a40'], trees: 12, rocks: 22, treeCol: ['#3a5a2a', '#4d7236', '#628a44'], road: ['#6a6058', '#b0a690', '#4a4239'], tuft: ['#6f7a40', '#8f9a55'], stone: ['#8d877c', '#bdb6a6'], light: 'rgba(255,214,150,0.18)' },
 };
 
@@ -1062,8 +1063,8 @@ const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dün
 let BGM = { x: 0, y: 0 };
 const bgBox = () => ({ x: -BGM.x, y: -BGM.y, w: W + 2 * BGM.x, h: H + 2 * BGM.y });
 function renderBackground(lv, paths, res = 2, m = null) {
-  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = [];
-  try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; return c; } finally { BGM = { x: 0, y: 0 }; }
+  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = [];
+  try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; }
 }
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
 // Dekor ışıkları (11 Eki, Caner): sıradan ışıklar (mum, fener) sıcak sarı, büyülü şeyler (mantar, mahzen, kütük gözü) yeşil; noktalar img/lights.json (varliklar/isik_isle.py)
@@ -1085,6 +1086,23 @@ function drawBgLights(list, view) {
     } else { const f = 0.6 + 0.4 * Math.sin(time * 1.7 + o.ph); glow(ctx, o.x, o.y, o.r * 2.2, '120,255,150', 0.18 * f); } // büyülü: yavaş nabız
   }
   ctx.restore();
+}
+let BG_BANNERS = []; // engizisyon sancakları: direk zemine çizilir, bez her karede dalgalanır
+// sancak bezi (11 Eki): varliklar/sancak_isle.py bezi ayrı katmana ayırır (top/bot = BAND). Bez yatay şeritlerle çizilir; çubuğa bağlı üst
+// sabit, aşağı indikçe rüzgârla yana kayar (dalga yukarıdan aşağı ilerler). Ara kare uydurulmaz, aynı çizim kayar.
+const BANNER = { top: 0.14, bot: 0.73, n: 16, amp: 0.05, sp: 2.6, k: 4.2 };
+function drawBanners(list, view) {
+  const C = list && list.length && spr('nm4_banner_cloth'); if (!C) return;
+  const iw = C.naturalWidth || C.width, ih = C.naturalHeight || C.height, B = BANNER;
+  for (const o of list) {
+    const h = o.w * ih / iw, x0 = o.x - o.w / 2, y0 = o.y - h;
+    if (view && (o.x + o.w < view[0] || o.x - o.w > view[2] || o.y < view[1] || y0 > view[3])) continue;
+    const sy0 = B.top * ih, sh = (B.bot - B.top) * ih / B.n;
+    for (let i = 0; i < B.n; i++) {
+      const f = (i + 0.5) / B.n, dx = o.w * B.amp * Math.pow(f, 1.3) * (Math.sin(time * B.sp + o.ph - f * B.k) + 0.35 * Math.sin(time * B.sp * 2.3 + o.ph * 1.7 - f * B.k * 1.6));
+      const sy = sy0 + i * sh; ctx.drawImage(C, 0, sy, iw, sh + 0.6, x0 + dx, y0 + sy * h / ih, o.w, (sh + 0.6) * h / ih);
+    }
+  }
 }
 let BG_HANDS = []; // zemin çizilirken mezardan çıkan ellerin yerleri (zemine çizilmez, her karede canlı çizilir)
 // çerçevenin dışından gelen yollar taşma payında da sürsün: giriş ucu dışarıdaki yollar ilk doğrultusunda geriye uzatılır
@@ -1280,13 +1298,13 @@ function renderBackground0(lv, paths, res) {
   // harabeler (yıkık kilise duvarı, kırık sütunlar, mahzen girişi... nm_ruin_*) ve mezarlık kümeleri: yol dışındaki boşluklara,
   // ağaçlardan önce yerleşir (ağaçlar bunlara binmez)
   const props = [];
-  if (NECRO && (!lv.decorK || th.dense)) { // 1. sefer (dense) haritasında da: her mekân parçası tam ekran çizilir, ~1/5'i görünür → 4 kat
+  if (NECRO && (!lv.decorK || th.dense || th.deco)) { // 1. sefer (dense) haritasında da: her mekân parçası tam ekran çizilir, ~1/5'i görünür → 4 kat
     const ruins = (th.ruinSpr || [1, 2, 3, 4, 5, 6].map(n => 'nm_ruin_' + n)).filter(n => spr(n));
     const MK = lv.decorK ? 4 : 1, nR = (ruins.length ? th.ruinN || (th === THEMES.graveyard || th === THEMES.necrogate ? 3 : 2) : 0) * MK, nG = (th === THEMES.graveyard ? 5 : 3) * MK;
     const place = (pad) => { for (let k = 0; k < 300; k++) { const x = 40 + rnd() * (W - 80), y = 90 + rnd() * (H - 130); if (!blocked(x, y, pad) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < pad + o[2])) return [x, y]; } return null; };
     const deck = ruins.slice(); for (let k = deck.length - 1; k > 0; k--) { const j = Math.floor(rnd() * (k + 1)); [deck[k], deck[j]] = [deck[j], deck[k]]; }
     for (let i = 0; i < nR; i++) {
-      const name = th.dense ? deck[i % deck.length] : ruins[(i + Math.floor(rnd() * 9)) % ruins.length], im = spr(name), M = SPR_META[name] || [300, 300]; // orman: karışık deste, tekrar az
+      const name = deck[i % deck.length], im = spr(name), M = SPR_META[name] || [300, 300]; // orman: karışık deste, tekrar az
       const w = M[0] * (name.startsWith('nm_ruin') ? RUIN_K : th.ruinK || RUIN_K) * (0.85 + rnd() * 0.3), h = w * M[1] / M[0];
       // görsel ayak noktasından yukarı uzar: gövdesinin üst ve yan noktaları da yola/arsaya binmesin
       let q = null;
@@ -1297,7 +1315,9 @@ function renderBackground0(lv, paths, res) {
       if (!q) continue;
       props.push([q[0], q[1], w * 0.45], [q[0], q[1] - h * 0.5, w * 0.4]);
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q[0] + 4, q[1] + 2, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); g.fill();
-      drawSprite(g, im, q[0], q[1] + 4, w); bgLight(name, q[0], q[1] + 4, w);
+      if (name === 'nm4_banner' && spr('nm4_banner_pole') && spr('nm4_banner_cloth')) { drawSprite(g, spr('nm4_banner_pole'), q[0], q[1] + 4, w); BG_BANNERS.push({ x: q[0], y: q[1] + 4, w, ph: rnd() * 9 }); } // bez canlı çizilir
+      else drawSprite(g, im, q[0], q[1] + 4, w);
+      bgLight(name, q[0], q[1] + 4, w);
     }
     // mezardan çıkan eller (11 Eki, Caner): orman temalarında, mezarlıkta daha çok
     if (th.dense && spr('nm3_hand_idle')) for (let i = 0, n = th === THEMES.graveyard ? 2 : 1; i < n; i++) { // 11 Eki (Caner): az olsun
@@ -12825,7 +12845,7 @@ const regionCastle = (E) => E.end;
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
   if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
-  if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; R.lights = []; } // ekran genişledi: taşma payıyla yeniden
+  if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; R.lights = []; R.banners = []; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
   if (R.parts.length < E.zones.length) {
     const k = R.parts.length;
@@ -12835,6 +12855,7 @@ function regionBg(ep) {
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
     R.parts.push(part);
     R.lights = (R.lights || []).concat((part.lights || []).filter(o => o.x >= k * W / E.zones.length - 20 && o.x < (k + 1) * W / E.zones.length + 20)); // kendi mekânındakiler
+    R.banners = (R.banners || []).concat((part.banners || []).filter(o => o.x >= k * W / E.zones.length - 20 && o.x < (k + 1) * W / E.zones.length + 20));
     R.hands = (R.hands || []).concat((part.hands || []).filter(o => o.x >= k * W / E.zones.length - 20 && o.x < (k + 1) * W / E.zones.length + 20)); // mezar elleri: kendi mekânında
     if (R.parts.length < E.zones.length) return R.parts[0];
   }
@@ -12960,7 +12981,7 @@ function drawRegionMap(E, ep, st) {
   ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
   drawBgLights(R.lights);
-  drawGraveHands(R.hands, uiParts);
+  drawGraveHands(R.hands, uiParts); drawBanners(R.banners);
   MAPFX.fog = drawMapFog2(E, ep, road, bm);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
@@ -13613,7 +13634,7 @@ function drawPlay() {
   const bm = G.bg.m || { x: 0, y: 0 };
   ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
-  drawGraveHands(G.bg.hands, G.parts);
+  drawGraveHands(G.bg.hands, G.parts); drawBanners(G.bg.banners, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   for (const d of G.decals) {
     if (d.kind === 'splat') {
       // veba birikintisi: yere dökülmüş sıvı; hızla yayılır, yavaşça solar (yer düzlemine yatık)
