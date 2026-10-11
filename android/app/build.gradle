@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+
+// Google Play yükleme imzası (11 Eki): anahtar ve şifresi depoda DEĞİL, bu bilgisayarda ~/.android-imza/ içinde.
+// Dosya yoksa (başka bilgisayar) sürüm derlemesi imzasız kalır, hata vermez.
+def imza = new Properties()
+def imzaDosya = new File(System.getProperty('user.home'), '.android-imza/keystore.properties')
+if (imzaDosya.exists()) imza.load(new FileInputStream(imzaDosya))
+
+android {
+    namespace = "com.princexevil.necromancer"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "com.princexevil.necromancer"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~:<dir>tools:!yayin.html' // tools/: geliştirme betikleri, yayin.html: web yayını
+        }
+    }
+    signingConfigs {
+        if (imza['storeFile']) {
+            upload {
+                storeFile file(imza['storeFile'])
+                storePassword imza['storePassword']
+                keyAlias imza['keyAlias']
+                keyPassword imza['keyPassword']
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (imza['storeFile']) signingConfig signingConfigs.upload
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
