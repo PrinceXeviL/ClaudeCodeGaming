@@ -4628,7 +4628,7 @@ function drawAchievements() {
 // step: ekrana girdiği yerden yürüdüğü yol, side: yol ortasından kenara uzaklığı (yarı genişliğin oranı)
 // davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
 const DRUM = { beat: 0.3, dmg: 1.2 };
-const HERALD = { step: 8, side: 0.6, speed: 70, blow: 2.4, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
+const HERALD = { step: 8, side: 0.6, speed: 70, blow: 2.9, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
   let d0 = -entryLead(p); while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > VIS.l + 14 && q.y > VIS.t + 30 && q.x < VIS.r - 14 && q.y < VIS.b - 8) break; d0 += 4; } // görünen alanın (telefonda geniş) kenarı: fazla yürümesin
