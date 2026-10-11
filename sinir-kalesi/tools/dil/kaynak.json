@@ -5345,5 +5345,48 @@
 "tr": "Bekleme {} sn",
 "en": "Cooldown {} s",
 "tpl": 1
+},
+{
+"tr": "Yetenek açılır",
+"en": "Skill unlocked"
+},
+{
+"tr": "Güç açık",
+"en": "Power unlocked"
+},
+{
+"tr": "GELİŞTİR",
+"en": "UPGRADE"
+},
+{
+"tr": "{} PUAN",
+"en": "{} POINT",
+"tpl": 1
+},
+{
+"tr": "PUAN YOK",
+"en": "NO POINTS"
+},
+{
+"tr": "EN YÜKSEK KADEME",
+"en": "MAX RANK"
+},
+{
+"tr": "Sv. {}'de açılır",
+"en": "Unlocks at Lv. {}",
+"tpl": 1
+},
+{
+"tr": "Sıfırlama Komutanlar ekranında",
+"en": "Reset on the Commanders screen"
+},
+{
+"tr": "{} TAŞ",
+"en": "{} STONES",
+"tpl": 1
+},
+{
+"tr": "İlk dalgadan önce geliştirilir",
+"en": "Upgrade before the first wave"
 }
 ]

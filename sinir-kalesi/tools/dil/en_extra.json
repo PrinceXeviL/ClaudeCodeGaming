@@ -182,7 +182,14 @@
   "5. kademe yeni bir güç açar": "rank 5 unlocks a new power",
   "Bölüm içinde yalnızca ilk dalgadan önce geliştirilir": "In a level it can only be upgraded before the first wave",
   "Yetenek puanı kazandın": "You earned a skill point",
-  "portredeki + simgesine dokun": "tap the + on the portrait"
+  "portredeki + simgesine dokun": "tap the + on the portrait",
+  "Yetenek açılır": "Skill unlocked",
+  "Güç açık": "Power unlocked",
+  "GELİŞTİR": "UPGRADE",
+  "PUAN YOK": "NO POINTS",
+  "EN YÜKSEK KADEME": "MAX RANK",
+  "Sıfırlama Komutanlar ekranında": "Reset on the Commanders screen",
+  "İlk dalgadan önce geliştirilir": "Upgrade before the first wave"
  },
  "tpl": [
   [
@@ -488,6 +495,18 @@
   [
    "Bekleme {} sn",
    "Cooldown {} s"
+  ],
+  [
+   "{} PUAN",
+   "{} POINT"
+  ],
+  [
+   "Sv. {}'de açılır",
+   "Unlocks at Lv. {}"
+  ],
+  [
+   "{} TAŞ",
+   "{} STONES"
   ]
  ]
 }
