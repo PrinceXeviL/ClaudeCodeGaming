@@ -2392,6 +2392,7 @@ function damageSoldier(s, amount, src) {
   if (G.heroes.some(h => !h.dead && h.learned.frostarmor && dist(h.x, h.y, s.x, s.y) < 110)) amount *= 0.8;
   if (s.dodge && Math.random() < s.dodge) { if (Math.random() < 0.4) floatText(s.x, s.y - 30, 'Kaçtı!', '#ffe9b0'); return; }
   if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('bash'); return; }
+  if (s.wardT > 0) amount *= 1 - ELITE_SK.shield.red; // Tabut Duvarı
   const CA = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); // lanet aurası: iskelete ek zırh
   s.hp -= amount * (1 - Math.min(0.85, s.armor + (CA ? CA.allyArm : 0)));
   s.flash = 0.1;
@@ -3546,11 +3547,48 @@ function updateWall(s, dt) {
     if (dist(e.x, e.y, s.x, s.y) < 28) e.blocker = s;
   }
 }
+// Mahzen 4. kademe iskeletlerinin kişisel yeteneği (11 Eki, Caner): her asker kendi bekleme süresiyle kullanır.
+// Mezar Bekçisi (shield) "Tabut Duvarı": kalkanı yere çakar, ward sn boyunca hasarın %(red*100)'ü kadar azını alır, çevresindeki düşmanları kendine çeker.
+// Ölüm Şövalyesi (blade) "Ruh Biçimi": iki kılıçla döner, r içindeki herkese dmg x vurur, verdiği hasarın heal kadarını can olarak alır.
+// Animasyon: <ad>_skill şeridi (Bekçi: Gemini kareleri, varliklar/bekci_kare_isle.py) dur süresince bir kez oynar; bu sürede normal saldırı yok.
+const ELITE_SK = {
+  shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.7, r: 48, col: '170,120,255', hp: 0.75 },
+  blade:  { name: 'Ruh Biçimi', cd: 10, dur: 0.75, r: 42, dmg: 2.5, heal: 0.3, col: '200,120,255' },
+};
+function eliteSkill(s, dt) {
+  const sp = s.tower && s.tower.type === 'barracks' && !s.hero && !s.militia && s.tower.spec, S = ELITE_SK[sp]; if (!S) return false;
+  if (s.skCd == null) s.skCd = S.cd * (0.35 + Math.random() * 0.4); // askerler aynı anda kullanmasın
+  if (s.skT > 0) { // yetenek oynuyor
+    s.skT -= dt;
+    if (sp === 'blade' && !s.skHit && s.skT < S.dur * 0.55) { // dönüşün ortasında vuruş
+      s.skHit = true; let dealt = 0;
+      hitBy = 'melee';
+      for (const o of G.enemies) if (!o.dead && !o.def.flying && !o.under && dist(o.x, o.y, s.x, s.y) < S.r) { const d = roll(s.dmg) * S.dmg * allyK(s); dealt += d; damageEnemy(o, d, 'phys', false, 'melee'); slashFx(o.x, o.y - 14, o.x < s.x ? -1 : 1, '#e0b8ff', 1.2); }
+      hitBy = null;
+      s.hp = Math.min(s.maxHp, s.hp + dealt * S.heal);
+      G.effects.push({ kind: 'ring', x: s.x, y: s.y - 6, r: S.r, col: S.col, t: 0, dur: 0.4 }); sfx('whirl'); shakeScreen(1, 0.08);
+    }
+    if (sp === 'shield' && !s.skHit && s.skT < S.dur * 0.7) { // kalkan yere iner
+      s.skHit = true; s.wardT = S.ward;
+      for (const o of G.enemies) if (!o.dead && !o.def.flying && !o.under && !o.def.noblock && o.siege === undefined && dist(o.x, o.y, s.x, s.y) < S.r) { if (o.blocker && o.blocker !== s && o.blocker.target === o) o.blocker.target = null; o.blocker = s; }
+      impactFx(s.x + (s.face || 1) * 8, s.y - 4, '200,180,150', 1.3); shakeScreen(1.4, 0.1); sfx('bash');
+      G.effects.push({ kind: 'ring', x: s.x, y: s.y - 2, r: S.r, col: S.col, t: 0, dur: 0.5 });
+    }
+    return true;
+  }
+  if ((s.skCd -= dt) > 0 || !s.target) return false;
+  const near = G.enemies.filter(o => !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, s.x, s.y) < S.r).length;
+  if (sp === 'shield' ? !(near >= 2 || s.hp < s.maxHp * S.hp) : near < 1) return false;
+  s.skCd = S.cd; s.skT = S.dur; s.skHit = false;
+  floatText(s.x, s.y - 34, S.name + '!', '#e0c8ff');
+  return true;
+}
 function updateSoldier(s, dt) {
   if (s.born != null && G.t < s.born) return; // diriltilen minyon sırasını bekliyor
   if (s.flash > 0) s.flash -= dt;
   if (s.buffT > 0) s.buffT -= dt;
   if (s.spinT > 0) s.spinT -= dt;
+  if (s.wardT > 0) s.wardT -= dt;
   if (s.militia) {
     s.life -= dt;
     if (s.life <= 0 && !s.dead) { s.dead = true; releaseSoldier(s); }
@@ -3629,6 +3667,7 @@ function updateSoldier(s, dt) {
     const arrived = moveToward(s, spot.x, spot.y, dt);
     if (arrived || dist(s.x, s.y, t.x, t.y) < 19) {
       s.face = t.x < s.x ? -1 : 1;
+      if (eliteSkill(s, dt)) { s.anim += dt; return; } // Tabut Duvarı / Ruh Biçimi oynarken saldırmaz
       s.atk -= dt;
       s.anim += dt;
       if (s.atk <= 0) {
@@ -7630,7 +7669,8 @@ function drawSoldier(s) {
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
     drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking: walking || !!s.exit, fly: 0, rise,
-      atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT });
+      atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
+      skill: s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null }); // Tabut Duvarı süresince kalkan yerde
     if (fade < 1) ctx.restore();
     if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
       // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur
