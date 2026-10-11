@@ -23,7 +23,7 @@ Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üst
 2. **Gizlilik politikası adresi:** `gizlilik.html` içindeki `[İLETİŞİM E-POSTASI]` yerine mağazada görünecek bir iletişim adresi yazılmalı (depo herkese açık, kişisel adres yazılmadı). Sonra sayfa bir yere yüklenmeli (ör. GitHub Pages; depo zaten herkese açık). Bu, herkese açık yayın olduğu için Caner'in onayıyla yapılacak.
 3. **Hesaplar:** Apple Developer Program (yıllık 99 $), Google Play Console (tek sefer 25 $), vergi ve banka bilgileri.
 4. **Reklam ve satın alma:** AdMob hesabı + App Store Connect / Play Console'da `mortimer_hazine` ürünü. Reklam açılırsa gizlilik politikası ve yaş derecelendirmesi yanıtları güncellenir (aşağıda işaretli).
-5. **Android derlemesi:** bu bilgisayarda Java (JDK 17+) ve Android SDK yok. Android Studio kurulunca: `npm i @capacitor/android` → `npx cap add android` → `npx cap sync android` → Android Studio'da imzalı AAB.
+5. **Android derlemesi: HAZIR (11 Eki).** İmzalı paket `android/app/build/outputs/bundle/release/app-release.aab` (123 MB), emülatörde denendi. Yükleme imzası `~/.android-imza/` içinde (depoda değil) — bu klasör yedeklenmeli. Play Console hesabı açılınca bu AAB yüklenir; Play App Signing açık bırakılır.
 6. **TEST_OPEN = false** (game.js) — göndermeden önce.
 
 ## Simge için Gemini promptu
