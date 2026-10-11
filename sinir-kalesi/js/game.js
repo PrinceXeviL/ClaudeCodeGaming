@@ -5787,7 +5787,9 @@ const XBOW = { speed: 0.22, gap: 0.13, aim: 0.3, kick: 0.16, hold: 0.55, tip: [0
 const XBOW_T = {
   // 11 Eki: 1-3. kademe 2. tasarım (Gemini, nm_kemik_kulesi_k123.jpg); okçu boyu öncekiyle aynı mutlak boy (h = 176 / görsel dünya boyu)
   // floor: platform zemininin baklavası [arka, sol, sağ, ön köşe] (görsel kesri); ayak bu baklavanın gövde genişliği kadar içinde kalır (Caner, 11 Eki: çitlerin üstüne çıkmasın)
-  tower_xbow_1: { x: [0.3, 0.58], y: [0.16, 0.22], h: 0.229, clip: null, floor: [[0.5, 0.1], [0.17, 0.2], [0.84, 0.21], [0.5, 0.31]] },
+  // 11 Eki (Caner): platform %20 genişledi, dört yanı kemik korkuluklu (Gemini, nm_kemik_kulesi_k1_korkuluk.jpg). front: ön korkuluk katmanı
+  // (<ad>_front.webp, görselin üstten bu kesri kadar), okçulardan sonra çizilir; kırpma çokgeni yerine geçer
+  tower_xbow_1: { x: [0.25, 0.75], y: [0.17, 0.3], h: 0.229, clip: null, front: 0.42, floor: [[0.5, 0.125], [0.1, 0.235], [0.89, 0.235], [0.5, 0.35]] },
   tower_xbow_2: { x: [0.3, 0.7], y: [0.18, 0.235], h: 0.181, clip: [[0, 0.15], [0.07, 0.15], [0.5, 0.25], [0.93, 0.15], [1, 0.15]], floor: [[0.5, 0.135], [0.16, 0.215], [0.84, 0.215], [0.5, 0.3]] },
   tower_xbow_3: { x: [0.33, 0.67], y: [0.2, 0.24], h: 0.15, clip: [[0, 0.18], [0.13, 0.18], [0.5, 0.29], [0.9, 0.18], [1, 0.18]], floor: [[0.5, 0.165], [0.26, 0.225], [0.72, 0.22], [0.5, 0.285]] },
   tower_archer_fan: { x: [0.33, 0.67], y: [0.18, 0.235], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]], floor: [[0.5, 0.125], [0.25, 0.215], [0.74, 0.21], [0.5, 0.285]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
@@ -7116,6 +7118,16 @@ function litOf(im, cols, strip) {
   if (im.decode) im.decode().then(build, () => LIT_CACHE.delete(key)); else build();
   return null;
 }
+// ön korkuluk katmanı kulenin ışıklı kopyasından kesilir (ayrı ışıklanırsa kesim çizgisinde ton farkı olur)
+const FRONT_LIT = new Map();
+function frontLit(name, FI, lit) {
+  if (!lit) return FI;
+  if (FRONT_LIT.has(name)) return FRONT_LIT.get(name);
+  const c = document.createElement('canvas'); c.width = FI.naturalWidth || FI.width; c.height = FI.naturalHeight || FI.height;
+  const g = c.getContext('2d'); g.drawImage(lit, 0, 0, c.width, c.width * lit.height / lit.width);
+  g.globalCompositeOperation = 'destination-in'; g.drawImage(FI, 0, 0);
+  FRONT_LIT.set(name, c); return c;
+}
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
@@ -7152,8 +7164,13 @@ function drawTowerBody(t) {
     ctx.restore();
     if (NECRO && t.type === 'archer' && xbowCount(t)) drawBoneTowerFx(t, ts, 'back'); // parıltının arka yarısı okçuların altında kalır
     if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
-      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = xbowCfg(t).clip;
-      if (!C) return; // ön korkuluk yok (1. kademe): ayaklar platformun üstünde görünür
+      const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = xbowCfg(t).clip, FI = xbowCfg(t).front && spr(ts.name + '_front');
+      if (FI) { // ayrı ön korkuluk katmanı: parmaklıkların arasından okçular görünür
+        ctx.drawImage(frontLit(ts.name, FI, lit), t.x - ts.w / 2, ts.bottom - ts.h, ts.w, ts.w * FI.height / FI.width);
+        if (NECRO && t.type === 'archer') drawBoneTowerFx(t, ts, 'front');
+        return;
+      }
+      if (!C) return; // ön korkuluk yok: ayaklar platformun üstünde görünür
       ctx.save(); ctx.translate(t.x, ts.bottom); ctx.beginPath();
       ctx.moveTo(-ts.w / 2, (C[0][1] - 1) * ts.h); for (const [cx, cy] of C) ctx.lineTo((cx - 0.5) * ts.w, (cy - 1) * ts.h);
       ctx.lineTo(ts.w / 2, 0); ctx.lineTo(-ts.w / 2, 0); ctx.closePath(); ctx.clip();
