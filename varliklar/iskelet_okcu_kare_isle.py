@@ -18,6 +18,7 @@ A2 = [(307, 0), (307, 318), (309, 322), (309, 336), (299, 339), (299, 768)]
 B2 = [(559, 0), (559, 425), (578, 445), (578, 490), (555, 510), (555, 768)]
 FRAMES = {
     1: [(f'nm_iskelet_okcu_1_k{i}.jpg', None, None) for i in range(1, 6)],
+    3: [(f'nm_iskelet_okcu_3_k{i}.jpg', None, None) for i in range(1, 6)],
     # 3. kademe arbaletçi (11 Eki): hazır ve dolum eski sayfadan Gemini düzenlemesi (sis yok, zırh açık), nişan ve tepme kılavuzla; dolum boyu sayfadaki orandan
     'x3': [('nm_kemik_arbaletci_k3_hazir.jpg', None, None), ('nm_kemik_arbaletci_k3_nisan.jpg', None, None), ('nm_kemik_arbaletci_k3_tepme.jpg', None, None), ('nm_kemik_arbaletci_k3_dolum.jpg', None, None, 0.956)],
     2: [('nm_iskelet_okcu_2_deneme.jpg', None, A2), ('nm_iskelet_okcu_2_deneme.jpg', A2, B2),
