@@ -12219,8 +12219,7 @@ function epUnlocked(ep) {
   return (save.stars[prev[prev.length - 1]] || 0) > 0;
 }
 // bölüm: seferin ilk bölümü sefer açıksa, diğerleri önceki bölüm bitince açılır
-function levelUnlocked(i) {
-  if (TEST_OPEN) return true;
+function levelUnlocked(i) { // 11 Eki (Caner): haritada bölümler sırayla açılır (TEST_OPEN bölümleri açmaz; 2. sefer sekmesi açık kalır)
   const first = epLevels(epOf(i))[0];
   if ((save.stars[i] || 0) > 0) return true; // bitirilmiş bölüm hep açık (eski kayıttan taşınanlar dahil)
   return i === first ? epUnlocked(epOf(i)) : (save.stars[i - 1] || 0) > 0;
@@ -12402,10 +12401,45 @@ function drawFlyingCrow(x, y, dir, ph) {
 }
 // harita canlılığı: yolda yürüyen lejyon devriyesi, uçan kargalar, mezarlıkta ruh ışıkları
 const MAPFX = { patrol: [], crows: [], nextPatrol: 0, nextCrow: 2 };
+// Keşfedilmemiş yol (11 Eki, Caner): açılan son bölümden sonrası karanlığa gömülür; yolun ucu sisle söner, sonraki bölümler görünmez.
+// Karanlık şerit bir kez önbelleğe çizilir (ilerleme ya da ekran payı değişince yenilenir), her karede yalnız sınırda sis kıpırdar.
+const MAPFOG = { fade: 110, keep: 95, w: [64, 44, 28], a: [0.32, 0.38, 0.5] };
+let mapFogC = null;
+function mapReveal(E, ep, road) {
+  const ids = epLevels(ep); let k = -1;
+  ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; });
+  if (k < 0) return 0;
+  if (k >= ids.length - 1) return road.total;
+  const n = E.nodes[k]; return nearestOnPaths([road], n[0], n[1]).along + 34;
+}
+function drawMapFog(E, ep, road, bm) {
+  const a0 = mapReveal(E, ep, road), a1 = road.total - MAPFOG.keep;
+  if (a0 >= a1 - 20) return;
+  const key = ep + ':' + Math.round(a0) + ':' + bm.x + ':' + bm.y;
+  if (!mapFogC || mapFogC.key !== key) {
+    const c = document.createElement('canvas'), k = 1.5; c.width = Math.ceil((W + 2 * bm.x) * k); c.height = Math.ceil((H + 2 * bm.y) * k);
+    const g = c.getContext('2d'); g.scale(k, k); g.translate(bm.x, bm.y); g.lineJoin = 'round'; g.lineCap = 'round';
+    g.beginPath(); for (let d = a0; d <= a1; d += 5) { const q = pathPos(road, d); d === a0 ? g.moveTo(q.x, q.y) : g.lineTo(q.x, q.y); }
+    MAPFOG.w.forEach((w, li) => { g.lineWidth = w; g.strokeStyle = `rgba(6,4,10,${MAPFOG.a[li]})`; g.stroke(); }); // tek parça, üç kat: kenarlar yumuşak
+    // iki uç yumuşak silinir: sınırda karanlığa dalar, kale tarafında aydınlığa çıkar
+    g.globalCompositeOperation = 'destination-out';
+    const wipe = (d, r) => { const q = pathPos(road, d), gr = g.createRadialGradient(q.x, q.y, 0, q.x, q.y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.45, 'rgba(0,0,0,0.75)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(q.x - r, q.y - r, 2 * r, 2 * r); };
+    wipe(a0, MAPFOG.fade); wipe(a0 + MAPFOG.fade * 0.35, MAPFOG.fade * 0.7); wipe(a1, MAPFOG.fade * 0.7);
+    mapFogC = { c, key, k, a0 };
+  }
+  ctx.drawImage(mapFogC.c, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+  // sınır: yolun karanlığa daldığı yerde kıpırdayan sis ve iki soluk ruh ışığı
+  const q = pathPos(road, a0 + 40), q2 = pathPos(road, a0 + 95);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 4; i++) { const t = time * 0.5 + i * 1.7; glow(ctx, q.x + Math.cos(t) * 14 + (q2.x - q.x) * i / 4, q.y + Math.sin(t * 1.3) * 6 + (q2.y - q.y) * i / 4, 30 + 6 * Math.sin(t * 0.8), '130,120,170', 0.07 + 0.03 * Math.sin(t)); }
+  for (let i = 0; i < 2; i++) { const ph = (time * 0.25 + i * 0.5) % 1; glow(ctx, q2.x + (i ? 16 : -12), q2.y - ph * 22, 4, '150,255,190', 0.5 * Math.sin(ph * Math.PI)); }
+  ctx.restore();
+}
 function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
   ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
+  drawMapFog(E, ep, road, bm);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
   const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
@@ -12491,7 +12525,7 @@ function drawMap() {
   ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   const nodes = E.nodes || ids.map((_, k) => [120 + k * 80, 420 - (k % 2) * 60]);
   if (!E.zones) drawMapTrail(nodes, ids);
-  ids.forEach((i, k) => drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05));
+  ids.forEach((i, k) => { if (E.zones && !levelUnlocked(i)) return; drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05); }); // açılmamış bölüm görünmez (yol karanlıkta)
 
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   // üst çubuk (Caner, 11 Eki: mobilde dokunmaya göre büyütüldü, ekran kenarlarına yaslı): solda geri + sefer sekmeleri,
