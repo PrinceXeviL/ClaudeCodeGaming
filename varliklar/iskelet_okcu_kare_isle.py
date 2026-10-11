@@ -1,4 +1,4 @@
-"""İskelet okçu kareleri ayrı Gemini görsellerinden (kademe 2+): her kare ya tek figürlü bir görsel ya da bir sayfadan çokgenle kesilen parça.
+"""İskelet okçu kareleri ayrı Gemini görsellerinden: her kare ya tek figürlü bir görsel ya da bir sayfadan çokgenle kesilen parça.
 Ölçek ortak: miğfer üstü → ayak altı boyu (yay uçları hariç) her karede aynı; ayak ortası tuvalin ortasında, en uzun kare 300 px.
     .venv/bin/python varliklar/iskelet_okcu_kare_isle.py 2
 """
@@ -14,6 +14,7 @@ SUF = ['', '_nock', '_half', '_draw', '_rel'] # 1 kılıftan ok çekme (bekleme)
 A2 = [(307, 0), (307, 318), (309, 322), (309, 336), (299, 339), (299, 768)]
 B2 = [(559, 0), (559, 425), (578, 445), (578, 490), (555, 510), (555, 768)]
 FRAMES = {
+    1: [(f'nm_iskelet_okcu_1_k{i}.jpg', None, None) for i in range(1, 6)],
     2: [('nm_iskelet_okcu_2_deneme.jpg', None, A2), ('nm_iskelet_okcu_2_deneme.jpg', A2, B2),
         ('nm_iskelet_okcu_2_half.jpg', None, None), ('nm_iskelet_okcu_2_draw.jpg', None, None), ('nm_iskelet_okcu_2_rel.jpg', None, None)],
 }

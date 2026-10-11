@@ -5786,8 +5786,8 @@ for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: '
 // 3. kademe sayfasının geri tepme pozu arbalet yerine yay çizilmişti: _kick nişan pozunun kopyası, tepme kodla
 // 10 Eki (yol seçimi): 1. kademe ve okçu yolu iskelet okçu (geçici görsel: hayalet okçu çizimi, sayısı kademe kadar), arbaletçi yolu kademe arbaletçileri
 MEN.arch = Object.assign({}, MEN.bow, { n: (t) => t.lvl + 1, col: '150,255,160' });
-// 11 Eki: kademe iskelet okçuları (Gemini 5 poz, varliklar/iskelet_okcu_isle.py: unit_archerN + _nock/_half/_draw/_rel); kademe görseli yoksa bir alt kademeninki
-const ARCH_TIP = [[0.951, 0.236], [0.744, 0.249]]; // 2. kademe kareleri ayrı görsellerden: varliklar/iskelet_okcu_kare_isle.py
+// 11 Eki: kademe iskelet okçuları (Gemini, her kare ayrı görsel: unit_archerN + _nock/_half/_draw/_rel); kademe görseli yoksa bir alt kademeninki
+const ARCH_TIP = [[0.93, 0.26], [0.744, 0.249]]; // kareler ayrı Gemini görsellerinden: varliklar/iskelet_okcu_kare_isle.py
 for (let k = 1; k <= 3; k++) MEN['a' + k] = Object.assign({}, MEN.arch, { pre: 'unit_archer' + k, tip: ARCH_TIP[k - 1] || ARCH_TIP[0] });
 const menOf = (t) => {
   if (t.spec === 'fan' || t.spec === 'bow') return MEN[t.spec];
