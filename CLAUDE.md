@@ -269,3 +269,10 @@ Artifact bir sürümde en çok 512 dosya tutar; v347'de 507 dosya var. Yeni gör
   yetenekler 5 kademe (Sv. 2/5/9/13/17), komutan gücü 1→5 (Sv. 4/8/12/16). Pano `drawHeroTree` (bölümde portre +, Komutanlar ekranında YETENEKLER; sıfırlama yalnız ekranda).
   Yetenek kademesi: hasar +%25/kademe (SKILL_K), bekleme -%8/kademe. Bölüm sonu XP `heroEndXp` (kaybedince yarım).
 - Denge: kalıcı güç oyunu zamanla kolaylaştırır; HPMUL'ü bot ile yeniden ayarlamak gerekebilir (bot ortalama gelişim varsaymıyor).
+
+## Kule balkonları (11 Eki, yayın 393–397)
+Kemik Kulesi'nin 5 görseli (tower_xbow_1..3, tower_archer_bow, tower_archer_fan) Gemini ile yeniden çizildi: dar gövde, dört yanı kemik korkuluklu geniş balkon
+(ham: varliklar/ham/nm_kemik_kulesi_*_korkuluk.jpg). Okçuların önündeki korkuluk ayrı katman `<ad>_front.webp` (görselin üstten XBOW_T.front kesri),
+okçulardan sonra kulenin ışıklı kopyasından kesilerek çizilir (frontLit); eski clip çokgeni yalnız front yoksa kullanılır. Yeni kule görselinde
+XBOW_T.floor/x/y ve BONE_FX noktalarını yeni görsele göre ölç (ızgaralı önizleme), meta genişliğini taban halkası eski boyda kalacak şekilde ayarla.
+Magenta zeminli görselde magenta rünler de silinir: rün bölgesindeki delikleri kaynağın rengiyle geri doldur.

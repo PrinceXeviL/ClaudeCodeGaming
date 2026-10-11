@@ -5792,7 +5792,7 @@ const XBOW_T = {
   tower_xbow_1: { x: [0.25, 0.75], y: [0.17, 0.3], h: 0.229, clip: null, front: 0.42, floor: [[0.5, 0.125], [0.1, 0.235], [0.89, 0.235], [0.5, 0.35]] },
   tower_xbow_2: { x: [0.25, 0.75], y: [0.18, 0.29], h: 0.181, clip: null, front: 0.42, floor: [[0.5, 0.15], [0.14, 0.23], [0.86, 0.23], [0.5, 0.33]] }, // 11 Eki: kemik korkuluklu (nm_kemik_kulesi_k2_korkuluk.jpg)
   tower_xbow_3: { x: [0.28, 0.72], y: [0.19, 0.29], h: 0.15, clip: null, front: 0.5, floor: [[0.5, 0.15], [0.23, 0.245], [0.77, 0.245], [0.5, 0.33]] }, // 11 Eki: gövde daraldı, kemik korkuluklu geniş balkon (nm_kemik_kulesi_k3_korkuluk.jpg)
-  tower_archer_fan: { x: [0.33, 0.67], y: [0.18, 0.235], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]], floor: [[0.5, 0.125], [0.25, 0.215], [0.74, 0.21], [0.5, 0.285]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
+  tower_archer_fan: { x: [0.32, 0.68], y: [0.16, 0.26], h: 0.1586, clip: null, front: 0.5, floor: [[0.49, 0.14], [0.25, 0.22], [0.74, 0.22], [0.5, 0.29]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini); kemik korkuluklu balkon (nm_kemik_kulesi_fan_korkuluk.jpg)
   tower_archer_bow: { x: [0.3, 0.7], y: [0.16, 0.26], h: 0.149, clip: null, front: 0.5, floor: [[0.5, 0.13], [0.22, 0.21], [0.78, 0.21], [0.5, 0.29]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini); dar gövde, kemik korkuluklu balkon (nm_kemik_kulesi_bow_korkuluk.jpg)
 };
 // ayak derinliği d (0 arka .. 1 ön) için zeminde izinli x aralığı: baklavanın o satırdaki genişliği, iki yandan gövde yarı genişliği kadar daraltılmış
@@ -6864,7 +6864,7 @@ const BONE_FX = {
   tower_xbow_1: { runes: [[0.17, 0.74, 0.79, '110,255,140'], [0.43, 0.74, 0.79, '110,255,140']], top: [0.47, 0.12, 0.3] },
   tower_xbow_2: { runes: [[0.36, 0.44, 0.65, '110,255,140'], [0.68, 0.44, 0.62, '110,255,140']], flames: [[0.5, 0.03, '120,255,220'], [0.07, 0.11, '120,255,220'], [0.93, 0.11, '120,255,220'], [0.5, 0.21, '120,255,220']], top: [0.5, 0.13, 0.36] },
   tower_xbow_3: { runes: [[0.354, 0.47, 0.67, '110,255,140'], [0.637, 0.515, 0.647, '110,255,140']], flames: [[0.48, 0.05, '120,255,220'], [0.19, 0.15, '120,255,220'], [0.8, 0.14, '120,255,220']], eyes: [[0.465, 0.355], [0.525, 0.355]], top: [0.5, 0.18, 0.36] },
-  tower_archer_fan: { runes: [[0.34, 0.47, 0.6, '230,90,210'], [0.66, 0.47, 0.6, '230,90,210']], top: [0.5, 0.17, 0.38] }, // Ağır Arbaletçiler burcu
+  tower_archer_fan: { runes: [[0.36, 0.49, 0.615, '230,90,210'], [0.625, 0.49, 0.6, '230,90,210']], top: [0.5, 0.2, 0.4] }, // Ağır Arbaletçiler burcu
   tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], flames: [[0.5, 0.045, '120,255,220'], [0.15, 0.15, '120,255,220'], [0.85, 0.15, '120,255,220'], [0.5, 0.23, '120,255,220'], [0.1, 0.45, '120,255,230'], [0.9, 0.45, '120,255,230']], eyes: [[0.49, 0.313], [0.526, 0.313]], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular: hayalet alevler ve fenerler
 };
 // Ruh Feneri (10 Eki, 3. tasarım, Caner'in görseli): fener (1. kademe) / feneri tutan kol (2-3. kademe) ayrı katman (tower_mage_N_arm,
