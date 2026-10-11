@@ -5764,12 +5764,23 @@ const XBOW = { speed: 0.22, gap: 0.13, aim: 0.3, kick: 0.16, hold: 0.55, tip: [0
 // 4. kademe kulesi (tower_archer_fan) 3. kademeden kısa kalıyordu (Caner, 10 Eki): w 1.14 ile ~140 birim (3. kademe 134); h buna göre küçüldü (askerin boyu aynı)
 const XBOW_T = {
   // 11 Eki: 1-3. kademe 2. tasarım (Gemini, nm_kemik_kulesi_k123.jpg); okçu boyu öncekiyle aynı mutlak boy (h = 176 / görsel dünya boyu)
-  tower_xbow_1: { x: [0.38, 0.6], y: [0.13, 0.19], h: 0.229, clip: null },
-  tower_xbow_2: { x: [0.34, 0.66], y: [0.13, 0.2], h: 0.181, clip: [[0, 0.15], [0.07, 0.15], [0.5, 0.25], [0.93, 0.15], [1, 0.15]] },
-  tower_xbow_3: { x: [0.36, 0.64], y: [0.16, 0.23], h: 0.15, clip: [[0, 0.18], [0.13, 0.18], [0.5, 0.29], [0.9, 0.18], [1, 0.18]] },
-  tower_archer_fan: { x: [0.34, 0.66], y: [0.16, 0.23], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
-  tower_archer_bow: { x: [0.34, 0.66], y: [0.16, 0.22], h: 0.149, clip: [[0, 0.19], [0.22, 0.19], [0.5, 0.28], [0.78, 0.19], [1, 0.19]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini)
+  // floor: platform zemininin baklavası [arka, sol, sağ, ön köşe] (görsel kesri); ayak bu baklavanın gövde genişliği kadar içinde kalır (Caner, 11 Eki: çitlerin üstüne çıkmasın)
+  tower_xbow_1: { x: [0.3, 0.58], y: [0.16, 0.22], h: 0.229, clip: null, floor: [[0.5, 0.1], [0.17, 0.2], [0.84, 0.21], [0.5, 0.31]] },
+  tower_xbow_2: { x: [0.3, 0.7], y: [0.18, 0.235], h: 0.181, clip: [[0, 0.15], [0.07, 0.15], [0.5, 0.25], [0.93, 0.15], [1, 0.15]], floor: [[0.5, 0.135], [0.16, 0.215], [0.84, 0.215], [0.5, 0.3]] },
+  tower_xbow_3: { x: [0.33, 0.67], y: [0.2, 0.24], h: 0.15, clip: [[0, 0.18], [0.13, 0.18], [0.5, 0.29], [0.9, 0.18], [1, 0.18]], floor: [[0.5, 0.165], [0.26, 0.225], [0.72, 0.22], [0.5, 0.285]] },
+  tower_archer_fan: { x: [0.33, 0.67], y: [0.18, 0.235], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]], floor: [[0.5, 0.125], [0.25, 0.215], [0.74, 0.21], [0.5, 0.285]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
+  tower_archer_bow: { x: [0.33, 0.67], y: [0.19, 0.235], h: 0.149, clip: [[0, 0.19], [0.22, 0.19], [0.5, 0.28], [0.78, 0.19], [1, 0.19]], floor: [[0.5, 0.155], [0.27, 0.215], [0.73, 0.215], [0.5, 0.275]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini)
 };
+// ayak derinliği d (0 arka .. 1 ön) için zeminde izinli x aralığı: baklavanın o satırdaki genişliği, iki yandan gövde yarı genişliği kadar daraltılmış
+function xbowRange(t, d) {
+  const C = xbowCfg(t); if (!C.floor) return C.x;
+  const [T, Lf, Rt, B] = C.floor, y = lerp(C.y[0], C.y[1], d), im = spr(t.spec ? formImg(t) : xbowTowerName(t.lvl));
+  const side = (P) => y < P[1] ? lerp(T[0], P[0], clamp((y - T[1]) / (P[1] - T[1]), 0, 1)) : lerp(P[0], B[0], clamp((y - P[1]) / (B[1] - P[1]), 0, 1));
+  const m = C.h * MEN_K * (im ? im.height / im.width : 1.5) * 0.17; // gövde yarı genişliği (boyun ~%17'si)
+  let lo = Math.max(side(Lf) + m, C.x[0]), hi = Math.min(side(Rt) - m, C.x[1]);
+  if (lo > hi) lo = hi = (lo + hi) / 2;
+  return [lo, hi];
+}
 // kuledeki iskeletler: 1-3. kademe yeşil arbaletçiler; 4. kademede ya 2 kızıl ağır arbaletçi (fan) ya da 3 kızıl hayalet okçu (bow).
 // aim: nişan / yay germe süresi (ok bu sürenin sonunda çıkar), kick: bırakınca geri tepme, hold: atıştan sonra silahı indirmeden bekleme,
 // tip: atış pozunda okun çıktığı nokta (görsel kesri), spd: mermi hızı (px/sn), arc: kavis (uzaklığın kesri; okçular yüksek atar)
@@ -5805,7 +5816,7 @@ function xbowMen(t) {
   const n = xbowCount(t); if (!t.ga) t.ga = [];
   if (t.ga.length > n) t.ga.length = n;
   const C = xbowCfg(t);
-  while (t.ga.length < n) t.ga.push({ x: n === 1 ? (C.x[0] + C.x[1]) / 2 : lerp(C.x[0], C.x[1], t.ga.length / (n - 1)), d: rand(0.2, 0.8), tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null });
+  while (t.ga.length < n) { const d = rand(0.2, 0.8), r = xbowRange(t, d); t.ga.push({ x: n === 1 ? (r[0] + r[1]) / 2 : lerp(r[0], r[1], t.ga.length / (n - 1)), d, tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null }); }
   return t.ga;
 }
 function updateXbowMen(t, dt) {
@@ -5814,7 +5825,7 @@ function updateXbowMen(t, dt) {
     a.anim += dt; if (a.aimT > 0) a.aimT -= dt; if (a.kickT > -M.hold) a.kickT -= dt;
     const busy = a.aimT > 0 || a.kickT > -M.hold;
     if (a.tx == null && !busy && (a.moveT -= dt) <= 0) { // ara ara platformda yer değiştirir (diğerlerine çok yaklaşmadan)
-      for (let k = 0; k < 8; k++) { const nx = rand(X.x[0], X.x[1]); if (A.every((o, j) => j === i || Math.abs(nx - o.x) > X.gap) && Math.abs(nx - a.x) > 0.05) { a.tx = nx; a.td = rand(0, 1); break; } }
+      for (let k = 0; k < 8; k++) { const td = rand(0, 1), r = xbowRange(t, td), nx = rand(r[0], r[1]); if (A.every((o, j) => j === i || Math.abs(nx - o.x) > X.gap) && Math.abs(nx - a.x) > 0.05) { a.tx = nx; a.td = td; break; } }
       a.moveT = rand(2.5, 5);
     }
     if (a.tx != null && !busy) {
@@ -5823,6 +5834,7 @@ function updateXbowMen(t, dt) {
       if (Math.abs(dx) <= st) { a.x = a.tx; a.tx = null; a.walking = false; } else a.x += Math.sign(dx) * st;
       a.d += (a.td - a.d) * Math.min(1, dt * 2);
     } else a.walking = false;
+    const r = xbowRange(t, a.d); a.x = clamp(a.x, r[0], r[1]); // derinlik değişirken de zeminin içinde kalır
   });
 }
 function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
