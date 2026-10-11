@@ -276,3 +276,13 @@ Kemik Kulesi'nin 5 görseli (tower_xbow_1..3, tower_archer_bow, tower_archer_fan
 okçulardan sonra kulenin ışıklı kopyasından kesilerek çizilir (frontLit); eski clip çokgeni yalnız front yoksa kullanılır. Yeni kule görselinde
 XBOW_T.floor/x/y ve BONE_FX noktalarını yeni görsele göre ölç (ızgaralı önizleme), meta genişliğini taban halkası eski boyda kalacak şekilde ayarla.
 Magenta zeminli görselde magenta rünler de silinir: rün bölgesindeki delikleri kaynağın rengiyle geri doldur.
+
+## Android (11 Eki)
+- Kurulum (yönetici şifresi gerekmez, kullanıcı klasöründe): JDK 21 `~/Library/Java/jdk-21*/Contents/Home`, Android SDK `~/Library/Android/sdk`
+  (platform 36, build-tools 36, emülatör + `necro_test` AVD). Komutlardan önce: `export JAVA_HOME=$(ls -d ~/Library/Java/jdk-21*/Contents/Home | head -1) ANDROID_HOME=~/Library/Android/sdk`
+- Derleme: `npx cap sync android` → `cd android && ./gradlew bundleRelease` (Play için imzalı AAB: app/build/outputs/bundle/release/app-release.aab)
+  ya da `assembleDebug` (APK). Emülatör: `$ANDROID_HOME/emulator/emulator -avd necro_test`, `adb install -r ...apk`.
+- Yükleme imzası depoda DEĞİL: `~/.android-imza/` (necromancer-upload.jks + keystore.properties). Kaybolursa Play Console'dan anahtar sıfırlama istenir; yedeklenmeli.
+- MainActivity: tam ekran (sistem çubukları gizli), ekran kararmaz, çentik kenarı da dolu. capacitor.config SystemBars.insetsHandling = disable (oyun güvenli alanı kendi hesaplar).
+- Simge/açılış: `python3 varliklar/simge_isle.py [1024px.png]` iOS + Android kaynaklarını birlikte üretir.
+- Mağaza malzemeleri: `magaza/README.md`.

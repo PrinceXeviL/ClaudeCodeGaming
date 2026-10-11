@@ -13,6 +13,13 @@
       "launchFadeOutDuration": 400,
       "backgroundColor": "#06030a",
       "showSpinner": false
+    },
+    "SystemBars": {
+      "insetsHandling": "disable",
+      "hidden": true
     }
+  },
+  "android": {
+    "backgroundColor": "#06030a"
   }
 }
