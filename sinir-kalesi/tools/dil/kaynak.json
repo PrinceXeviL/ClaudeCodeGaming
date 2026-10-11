@@ -5187,5 +5187,163 @@
 {
 "tr": "menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar",
 "en": "harvests the souls of enemies dying in range, spells recharge faster"
+},
+{
+"tr": "BÜYÜ KİTABI",
+"en": "SPELL BOOK"
+},
+{
+"tr": "YETENEKLER",
+"en": "SKILLS"
+},
+{
+"tr": "EN YÜKSEK SEVİYE",
+"en": "MAX LEVEL"
+},
+{
+"tr": "GÜÇ",
+"en": "POWER"
+},
+{
+"tr": "Puanlar kalıcıdır",
+"en": "Points are permanent"
+},
+{
+"tr": "sıfırlama Komutanlar ekranında",
+"en": "reset on the Commanders screen"
+},
+{
+"tr": "Kademeler kalıcıdır",
+"en": "Ranks are permanent"
+},
+{
+"tr": "her kademe beklemeyi %4 kısaltır",
+"en": "each rank cuts the cooldown by %4"
+},
+{
+"tr": "5. kademe yeni bir güç açar",
+"en": "rank 5 unlocks a new power"
+},
+{
+"tr": "Bölüm içinde yalnızca ilk dalgadan önce geliştirilir",
+"en": "In a level it can only be upgraded before the first wave"
+},
+{
+"tr": "Yetenek puanı kazandın",
+"en": "You earned a skill point"
+},
+{
+"tr": "portredeki + simgesine dokun",
+"en": "tap the + on the portrait"
+},
+{
+"tr": "+{} dirilen",
+"en": "+{} raised dead",
+"tpl": 1
+},
+{
+"tr": "+%{} güç",
+"en": "+%{} power",
+"tpl": 1
+},
+{
+"tr": "+{} sn ömür",
+"en": "+{} s lifetime",
+"tpl": 1
+},
+{
+"tr": "+{} sn",
+"en": "+{} s",
+"tpl": 1
+},
+{
+"tr": "alan +%{}",
+"en": "area +%{}",
+"tpl": 1
+},
+{
+"tr": "korkan %{} fazla hasar alır",
+"en": "feared foes take %{} more damage",
+"tpl": 1
+},
+{
+"tr": "+%{} dayanıklı",
+"en": "+%{} sturdier",
+"tpl": 1
+},
+{
+"tr": "Patlama {} sn sersemletir",
+"en": "Blast stuns for {} s",
+"tpl": 1
+},
+{
+"tr": "Golem %{} sert vurur",
+"en": "Golem hits %{} harder",
+"tpl": 1
+},
+{
+"tr": "+%{} can",
+"en": "+%{} health",
+"tpl": 1
+},
+{
+"tr": "Seviye {}/{}",
+"en": "Level {}/{}",
+"tpl": 1
+},
+{
+"tr": "{} puan",
+"en": "{} points",
+"tpl": 1
+},
+{
+"tr": "{} / {} XP",
+"en": "{} / {} XP",
+"tpl": 1
+},
+{
+"tr": "Sv. {}",
+"en": "Lv. {}",
+"tpl": 1
+},
+{
+"tr": "Güç +%{}",
+"en": "Power +%{}",
+"tpl": 1
+},
+{
+"tr": "Hasar +%{}",
+"en": "Damage +%{}",
+"tpl": 1
+},
+{
+"tr": "bekleme -%{}",
+"en": "cooldown -%{}",
+"tpl": 1
+},
+{
+"tr": "{}. kademe",
+"en": "rank {}",
+"tpl": 1
+},
+{
+"tr": "Zırh +%{}",
+"en": "Armor +%{}",
+"tpl": 1
+},
+{
+"tr": "can yenilenmesi ×{}",
+"en": "regeneration ×{}",
+"tpl": 1
+},
+{
+"tr": "{} ruh taşı",
+"en": "{} soul stones",
+"tpl": 1
+},
+{
+"tr": "Bekleme {} sn",
+"en": "Cooldown {} s",
+"tpl": 1
 }
 ]

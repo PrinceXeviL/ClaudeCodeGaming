@@ -94,7 +94,7 @@ const ENEMIES = {
 // seviye 2-6 arasında her seviyede 1 yetenek puanı kazanılır. Yetenek ağacının iki yolu vardır, her yolda 3 yetenek
 // sırayla açılır; 5 puanla 6 yeteneğin hepsi alınamaz, oyuncu hangi yola ağırlık vereceğini seçer.
 // unlock: kahramanın açılması için bitirilmesi gereken bölüm numarası (null: baştan açık).
-const HERO_MAX = 4;
+const HERO_MAX = 20; // 11 Eki (Caner): komutan seviyesi kalıcı, 1→20 (her bölümde sıfırlanmaz)
 const HEROES = {
   commander: {
     name: 'Komutan', role: 'Yakın dövüş · Lider', sprite: 'hero', h: 29, aura: '255,210,90',
@@ -727,6 +727,18 @@ Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dm
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
 // Mortimer'ın büyüleri (sol altta, bekleme süreli). raise: hedefsiz, süre boyunca ölen düşmanlar iskelet minyon olur.
 // fear: hedefli alan, düşmanlar kavgayı bırakıp yolda geri kaçar (bosslar yarı süre).
+// Büyü Kitabı (11 Eki, Caner): Mortimer'ın büyüleri kalıcı 5 kademe; para birimi Ruh Taşı (yıldız + meydan okuma + her 2 başarım 1).
+// Her kademe ayrıca beklemeyi %4 kısaltır. 5. kademe yeni bir etki açar. Değerler spellStats (game.js) içinde uygulanır.
+const GRIM = {
+  cost: [1, 2, 3, 4, 5], cd: 0.04,
+  nm_raise: ['+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+10 sn ömür · +%25 hasar'],
+  nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
+  nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
+  nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],
+  nm_golem: ['+3 sn · +%10 can', '+3 sn · +%10 can', '+3 sn · +%10 can', '+3 sn · +%10 can', 'Golem %30 sert vurur'],
+};
+// Komutan yetenek ağacı (11 Eki): her seviyede 1 puan; yetenekler 5 kademe, komutan gücü 1→5 kademe. Kademe şu seviyede açılır:
+const HERO_TREE = { sk: [0, 2, 5, 9, 13, 17], ult: [0, 1, 4, 8, 12, 16], dmg: 0.25, cd: 0.08, ultK: 0.25 };
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
@@ -960,7 +972,7 @@ const UPGRADES = [
   { id: 'barracks', name: 'Kışla',     ranks: [{ cost: 2, desc: '+%20 asker canı' }, { cost: 3, desc: '+%20 asker hasarı' }, { cost: 5, desc: '+%15 zırh, hızlı doğma' }] },
   { id: 'mage',     name: 'Büyücüler', ranks: [{ cost: 2, desc: '+%10 hasar' }, { cost: 3, desc: '+%10 menzil' }, { cost: 5, desc: '+%15 hasar' }] },
   { id: 'artillery',name: 'Toplar',    ranks: [{ cost: 2, desc: '+%10 hasar' }, { cost: 3, desc: '+%15 patlama alanı' }, { cost: 5, desc: '+%15 hasar' }] },
-  { id: 'spells',   name: 'Güçler',    ranks: [{ cost: 2, desc: '+%20 kahraman gücü hasarı' }, { cost: 3, desc: '+1 paralı asker' }, { cost: 5, desc: 'Güçler ve paralı askerler %25 hızlı' }] },
+  // 'spells' (Güçler) satırı 11 Eki'de Büyü Kitabı'na taşındı (GRIM); yıldızları kendiliğinden geri döner
   { id: 'castle',   name: 'Kale',      ranks: [{ cost: 2, desc: '+3 can' }, { cost: 3, desc: '+60 altın' }, { cost: 5, desc: '+3 can, +60 altın' }] },
 ];
 // Oyun tek, sabit zorlukta oynanır
@@ -1157,8 +1169,7 @@ if (NECRO) {
   U.archer.name = 'Kemik Kuleleri'; U.barracks.name = 'Mahzenler'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
   U.barracks.ranks[0].desc = '+%20 iskelet canı'; U.barracks.ranks[1].desc = '+%20 iskelet hasarı';
   U.artillery.ranks[1].desc = '+%15 veba alanı';
-  U.spells.name = 'Büyüler';
-  U.spells.ranks[0].desc = '+%20 komutan gücü hasarı'; U.spells.ranks[1].desc = 'Dirilen ölüler %25 dayanıklı'; U.spells.ranks[2].desc = 'Büyüler %25 hızlı dolar';
+  // Büyüler satırı 11 Eki'de Büyü Kitabı'na taşındı (GRIM)
   UPGRADES.splice(UPGRADES.indexOf(U.castle), 1); // şapel yükseltilmez (Caner, 10 Eki): yıldızları iade olur
   Object.assign(WK_NAME, { arrow: 'Delici', magic: 'Ruh', blast: 'Veba/Ateş', melee: 'Kesici' }); // hasar türleri (10 Eki)
 }

@@ -170,7 +170,19 @@
   "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death",
   "Dondu!": "Frozen!",
   "menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar": "harvests the souls of enemies dying in range, spells recharge faster",
-  "Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 3 seconds while the towers do their work."
+  "Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 3 seconds while the towers do their work.",
+  "BÜYÜ KİTABI": "SPELL BOOK",
+  "YETENEKLER": "SKILLS",
+  "EN YÜKSEK SEVİYE": "MAX LEVEL",
+  "GÜÇ": "POWER",
+  "Puanlar kalıcıdır": "Points are permanent",
+  "sıfırlama Komutanlar ekranında": "reset on the Commanders screen",
+  "Kademeler kalıcıdır": "Ranks are permanent",
+  "her kademe beklemeyi %4 kısaltır": "each rank cuts the cooldown by %4",
+  "5. kademe yeni bir güç açar": "rank 5 unlocks a new power",
+  "Bölüm içinde yalnızca ilk dalgadan önce geliştirilir": "In a level it can only be upgraded before the first wave",
+  "Yetenek puanı kazandın": "You earned a skill point",
+  "portredeki + simgesine dokun": "tap the + on the portrait"
  },
  "tpl": [
   [
@@ -388,6 +400,94 @@
   [
    "yukarıdaki düğme ({})",
    "the button above ({})"
+  ],
+  [
+   "+{} dirilen",
+   "+{} raised dead"
+  ],
+  [
+   "+%{} güç",
+   "+%{} power"
+  ],
+  [
+   "+{} sn ömür",
+   "+{} s lifetime"
+  ],
+  [
+   "+{} sn",
+   "+{} s"
+  ],
+  [
+   "alan +%{}",
+   "area +%{}"
+  ],
+  [
+   "korkan %{} fazla hasar alır",
+   "feared foes take %{} more damage"
+  ],
+  [
+   "+%{} dayanıklı",
+   "+%{} sturdier"
+  ],
+  [
+   "Patlama {} sn sersemletir",
+   "Blast stuns for {} s"
+  ],
+  [
+   "Golem %{} sert vurur",
+   "Golem hits %{} harder"
+  ],
+  [
+   "+%{} can",
+   "+%{} health"
+  ],
+  [
+   "Seviye {}/{}",
+   "Level {}/{}"
+  ],
+  [
+   "{} puan",
+   "{} points"
+  ],
+  [
+   "{} / {} XP",
+   "{} / {} XP"
+  ],
+  [
+   "Sv. {}",
+   "Lv. {}"
+  ],
+  [
+   "Güç +%{}",
+   "Power +%{}"
+  ],
+  [
+   "Hasar +%{}",
+   "Damage +%{}"
+  ],
+  [
+   "bekleme -%{}",
+   "cooldown -%{}"
+  ],
+  [
+   "{}. kademe",
+   "rank {}"
+  ],
+  [
+   "Zırh +%{}",
+   "Armor +%{}"
+  ],
+  [
+   "can yenilenmesi ×{}",
+   "regeneration ×{}"
+  ],
+  [
+   "{} ruh taşı",
+   "{} soul stones"
+  ],
+  [
+   "Bekleme {} sn",
+   "Cooldown {} s"
   ]
  ]
 }

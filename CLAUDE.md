@@ -261,3 +261,11 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
 Artifact bir sürümde en çok 512 dosya tutar; v347'de 507 dosya var. Yeni görsel eklerken yer açmak için kullanılmayan yayın dosyalarını `files` içinde `null` ile sil
 (manifest/anim.json/kodda geçmeyenler; önce `Artifact list scope:files`). İskelet okçu 3. kademe +5 dosya getirecek.
 İskelet okçular: kademe kareleri `varliklar/iskelet_okcu_kare_isle.py` (her kare ayrı Gemini görseli + çöp adam poz kılavuzu).
+
+## Kalıcı gelişim (11 Eki, v369) — arastirma/rpg-sistemi.md
+- **Büyü Kitabı** (`GRIM`, data.js; `drawGrimoire`/`buyGrim`, game.js): 5 büyü × 5 kademe, Ruh Taşı = yıldız + meydan okuma + her 2 başarım (`soulsTotal`).
+  `save.grim`. Haritada düğme (ekran 'grim'), bölümde kaleye dokununca pencere ('grim' overlay; yalnız ilk dalgadan önce alınır). Bölüm içi altınla büyü geliştirme (SPELL_UP) ve yıldız ağacındaki "Büyüler" satırı kalktı.
+- **Komutan seviyesi kalıcı** 1→20 (`HERO_MAX`, `xpNeed = 80·lvl²`, `save.hero[id] = {lvl, xp, sk, ult}`), her seviye 1 puan; `HERO_TREE` (data.js):
+  yetenekler 5 kademe (Sv. 2/5/9/13/17), komutan gücü 1→5 (Sv. 4/8/12/16). Pano `drawHeroTree` (bölümde portre +, Komutanlar ekranında YETENEKLER; sıfırlama yalnız ekranda).
+  Yetenek kademesi: hasar +%25/kademe (SKILL_K), bekleme -%8/kademe. Bölüm sonu XP `heroEndXp` (kaybedince yarım).
+- Denge: kalıcı güç oyunu zamanla kolaylaştırır; HPMUL'ü bot ile yeniden ayarlamak gerekebilir (bot ortalama gelişim varsaymıyor).

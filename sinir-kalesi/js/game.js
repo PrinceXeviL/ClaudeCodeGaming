@@ -1514,6 +1514,8 @@ function makeHero(id, x, y, slot) {
   const h = { hero: true, id, def: d, slot, x, y, rx: x, ry: y, hp: d.hp, maxHp: d.hp, dmg: d.dmg.slice(), armor: d.armor,
     rate: d.rate, speed: d.speed, engage: d.engage, regen: d.regen, ranged: d.ranged || 0, atk: 0, target: null, dead: false, respawnT: 0,
     lvl: 1, xp: 0, face: 1, anim: 0, learned: {}, cds: {}, castT: 0, reviveLeft: 0, crit: 0, dustT: 0 };
+  const R = heroRec(id); h.lvl = Math.min(HERO_MAX, R.lvl); h.xp = R.xp; h.learned = R.sk; h.ult = R.ult; // kalıcı seviye ve ağaç (aynı nesne: öğrenince kayda yazılır)
+  if (h.learned.revive) h.reviveLeft = 1; if (h.learned.ninelives) h.reviveLeft = 2;
   heroStats(h);
   h.hp = h.maxHp;
   return h;
@@ -1526,30 +1528,22 @@ const HERO_POWER = 0.64, HERO_HP = 0.64;
 // (bir kahramana en çok HERO_AGGRO.max düşman), kahramana vuruşları HERO_AGGRO.dmg kat sert
 const HERO_AGGRO = { r: 30, max: 3, dmg: 1.3 };
 let HERO_SKILL = false; // yetenek hasarı işlenirken true
+let SKILL_K = 1; // işlenen yeteneğin ağaç kademesinden hasar çarpanı (mermi / alanlar kendi kopyasını taşır)
 function heroStats(h) {
-  const d = h.def, lk = 1 + 0.2 * (h.lvl - 1), k = lk * HERO_POWER, L = h.learned;
+  const d = h.def, lk = 1 + 0.07 * (h.lvl - 1), k = lk * HERO_POWER, L = h.learned, ir = L.iron || 0; // seviye 20'de can ve hasar ×2,33
   const ratio = h.maxHp ? h.hp / h.maxHp : 1;
   h.maxHp = Math.round(d.hp * lk * HERO_HP); h.hp = Math.min(h.maxHp, h.maxHp * ratio);
   h.dmg = [Math.max(1, Math.round(d.dmg[0] * k)), Math.max(1, Math.round(d.dmg[1] * k))];
-  h.armor = Math.min(0.8, d.armor + (L.iron ? 0.25 : 0));
-  h.regen = d.regen * HERO_HP * (L.iron ? 2 : 1);
+  h.armor = Math.min(0.8, d.armor + (ir ? 0.1 + 0.05 * ir : 0)); // Demir Duruş / Bronz Kalkan: kademeyle %15..%35
+  h.regen = d.regen * HERO_HP * (ir ? 1.4 + 0.2 * ir : 1);
   h.rate = d.rate * (L.shadow ? 0.75 : 1);
   h.crit = L.shadow ? 0.2 : L.eagle ? 0.25 : 0;
   h.ranged = (d.ranged || 0) * (L.eagle ? 1.2 : 1);
   h.dodge = L.dodge ? 0.35 : 0;
 }
-function heroPoints(h) { return (h.lvl - 1) - Object.keys(h.learned).length; }
-// bir yolun sıradaki öğrenilebilir yeteneği (yol içinde sırayla açılır)
-function nextSkill(h, pi) { const p = h.def.paths[pi] || h.def.paths[0]; return p.skills.find(sk => !h.learned[sk.id]) || null; }
-function learnSkill(h, pi, want) {
-  const sk = want && !h.learned[want.id] ? want : nextSkill(h, pi);
-  if (!sk || heroPoints(h) <= 0) return null;
-  h.learned[sk.id] = true;
-  if (sk.id === 'revive') h.reviveLeft = 1;
-  if (sk.id === 'ninelives') h.reviveLeft = 2;
-  heroStats(h);
-  return sk;
-}
+function heroPoints(h) { return recPoints(heroRec(h.id)); }
+// komutanın ağaçtaki bütün yetenekleri (yollar tek listede)
+const heroSkillList = (d) => d.paths.flatMap(p => p.skills);
 
 // ---------- dalgalar ----------
 const WAVE_REST = 20; // iki dalga arası dinlenme (sn); oyuncu dalgayı erken çağırıp altın kazanabilir
@@ -2045,7 +2039,8 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (wk && wk < 1 && e.curseT > 0) wk += (1 - wk) * (e.curseRes || 0); // lanet: dirençli olduğu saldırı türüne direnci erir
   if (wk) amount *= wk;
   if (e.rageT > 0) amount *= 0.5; // boss öfkesi
-  if (HERO_SKILL) amount *= HERO_POWER; // kahraman yetenek hasarı
+  if (HERO_SKILL) amount *= HERO_POWER * SKILL_K; // kahraman yetenek hasarı (SKILL_K: yeteneğin ağaçtaki kademesi)
+  if (e.fearT > 0 && NECRO && grimRank('nm_fear') >= 5) amount *= 1.2; // Büyü Kitabı: korkan düşman %20 fazla hasar alır
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
   if (e.markT > 0) amount *= 1.6;
   // zırh barı: hasarı önce zırh karşılar (direnç uygulanmaz), artan kısım cana geçer
@@ -2243,13 +2238,18 @@ function killEnemy(e) {
   }
   for (const h of G.heroes) if (!h.dead) gainXp(h, e.def.gold);
 }
-const xpNeed = (lvl) => 50 * lvl;
-function gainXp(h, amount) {
+// seviye eğrisi (11 Eki): 1. bölümün sonunda ~4. seviye, iki seferin sonunda ~20. seviye (toplam düşman altını ~190 bin XP)
+const xpNeed = (lvl) => 80 * lvl * lvl;
+function gainXp(h, amount, quiet) {
   if (h.lvl >= HERO_MAX) return;
-  h.xp += amount;
-  if (h.xp < xpNeed(h.lvl)) return;
-  h.xp -= xpNeed(h.lvl); h.lvl++;
-  heroStats(h); h.hp = h.maxHp;
+  const R = heroRec(h.id); h.xp += amount; R.xp = h.xp;
+  let up = 0;
+  while (h.lvl < HERO_MAX && h.xp >= xpNeed(h.lvl)) { h.xp -= xpNeed(h.lvl); h.lvl++; up++; }
+  if (h.lvl >= HERO_MAX) h.xp = 0;
+  R.lvl = h.lvl; R.xp = h.xp;
+  if (!up) return;
+  persist(); heroStats(h); h.hp = h.maxHp;
+  if (quiet || !G.heroes.includes(h)) return;
   floatText(h.x, h.y - 40, `Seviye ${h.lvl}!`, '#9ff');
   G.effects.push({ kind: 'pillar', x: h.x, y: h.y, col: '255,240,170', t: 0, dur: 0.9 });
   for (let i = 0; i < 18; i++) {
@@ -2257,12 +2257,8 @@ function gainXp(h, amount) {
       col: '255,230,140', s0: rand(3, 5), s1: 0.5, life: rand(0.6, 1) });
   }
   sfx('levelup');
-  // yetenekler seviye atladıkça sırayla kendiliğinden açılır
-  const sk = learnSkill(h, 0);
-  // küçük, dikkat dağıtmayan bildirim
-  G.banner = sk ? { title: `${h.def.name} Sv.${h.lvl} · ${sk.name}`, sub: sk.desc, t: 0, dur: 2.6, small: true }
-    : { title: `${h.def.name} seviye ${h.lvl}`, sub: 'Can ve hasar arttı', t: 0, dur: 2, small: true };
-  if (sk) floatText(h.x, h.y - 56, sk.name + ' açıldı!', '#ffe27a');
+  // küçük, dikkat dağıtmayan bildirim: yeni yetenek puanı portredeki yeşil + rozetinden harcanır
+  G.banner = { title: `${h.def.name} seviye ${h.lvl}`, sub: 'Yetenek puanı kazandın · portredeki + simgesine dokun', t: 0, dur: 2.6, small: true };
 }
 
 // ----- düşen altınlar -----
@@ -3647,11 +3643,12 @@ function updateSoldier(s, dt) {
 // ---------- kahraman yetenekleri (öğrenilenler bekleme süresi dolunca kendiliğinden kullanılır) ----------
 function runHeroSkills(h, dt) {
   const np = G.projectiles.length, nz = G.zones.length;
-  HERO_SKILL = true;
+  HERO_SKILL = true; SKILL_K = 1;
   heroSkills(h, dt);
   HERO_SKILL = false;
-  for (let i = np; i < G.projectiles.length; i++) G.projectiles[i].heroSkill = true;
-  for (let i = nz; i < G.zones.length; i++) G.zones[i].heroSkill = true;
+  for (let i = np; i < G.projectiles.length; i++) { G.projectiles[i].heroSkill = true; G.projectiles[i].skK = SKILL_K; }
+  for (let i = nz; i < G.zones.length; i++) { G.zones[i].heroSkill = true; G.zones[i].skK = SKILL_K; }
+  SKILL_K = 1;
 }
 function heroSkills(h, dt) {
   for (const k in h.cds) h.cds[k] -= dt;
@@ -3659,10 +3656,11 @@ function heroSkills(h, dt) {
   if (h.ultT > 0) h.ultT -= dt;
   for (const p of h.def.paths) for (const sk of p.skills) {
     if (sk.passive || !h.learned[sk.id] || (h.cds[sk.id] || 0) > 0) continue;
+    const rk = h.learned[sk.id] || 1; SKILL_K = 1 + HERO_TREE.dmg * (rk - 1);
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
-      h.cds[sk.id] = sk.cd; h.castT = 0.45;
+      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45;
       floatText(h.x, h.y - 46, sk.name + '!', '#ffe27a');
       const col = h.def.aura;
       G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 26, col, t: 0, dur: 0.4 });
@@ -4037,31 +4035,17 @@ function updateProjectile(pr, dt) {
 // ---------- büyüler ve kahraman güçleri ----------
 // Sol alttaki düğmeler: takımdaki her kahramanın kendi gücü (ult0, ult1)
 // büyü açık mı (unlock: o bölüm kazanılmış olmalı)
-// şapelde büyü geliştirme (bölüm içi, altınla): her büyü 2 kademe; her kademe beklemeyi %10 kısaltır
-const SPELL_UP = { cost: [120, 200],
-  nm_raise: ['+3 dirilen, dirilenler %25 dayanıklı', 'Dirilenler %40 sert vurur, +10 sn kalır'],
-  nm_fear: ['Korku alanı %25 geniş', 'Korku +1,5 sn sürer'],
-  nm_wall: ['Duvar %50 dayanıklı', 'Duvar +3 sn kalır'],
-  nm_burst: ['Patlama hasarı +%35', 'Patlama alanı %25 geniş'],
-  nm_golem: ['Golem +8 sn yaşar', 'Golem %40 daha canlı'] };
-const spellRank = (id) => (G && G.spellUp && G.spellUp[id]) || 0;
-function spellStats(id) { // kademelere göre büyünün o anki değerleri
+// büyü kademesi Büyü Kitabı'ndan (kalıcı); bölüm içi altınla geliştirme 11 Eki'de kalktı
+const spellRank = (id) => grimRank(id);
+function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM, data.js)
   const S = NECRO_SPELLS[id], r = spellRank(id); if (!r) return S;
-  const o = Object.assign({}, S);
-  if (id === 'nm_raise') { o.max = S.max + 3; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * 1.25 }); if (r >= 2) Object.assign(o.minion, { dmg: S.minion.dmg.map(v => v * 1.4), life: S.minion.life + 10 }); }
-  if (id === 'nm_fear') { o.r = S.r * 1.25; if (r >= 2) o.t = S.t + 1.5; }
-  if (id === 'nm_wall') { o.hp = S.hp * 1.5; if (r >= 2) o.life = S.life + 3; }
-  if (id === 'nm_burst') { o.dmg = S.dmg * 1.35; if (r >= 2) o.r = S.r * 1.25; }
-  if (id === 'nm_golem') { o.life = S.life + 8; if (r >= 2) { o.hp = S.hp * 1.4; o.hpPer = S.hpPer * 1.4; } }
+  const o = Object.assign({}, S), b = Math.min(r, 4), top = r >= 5;
+  if (id === 'nm_raise') { o.max = S.max + b; const k = 1 + 0.1 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k, dmg: S.minion.dmg.map(v => v * k * (top ? 1.25 : 1)), life: S.minion.life + (top ? 10 : 0) }); }
+  if (id === 'nm_fear') { o.t = S.t + 0.3 * r; o.r = S.r * (1 + 0.08 * b); }
+  if (id === 'nm_wall') { o.hp = S.hp * (1 + 0.15 * b + (top ? 0.4 : 0)); o.life = S.life + 0.75 * b + (top ? 2 : 0); }
+  if (id === 'nm_burst') { o.dmg = S.dmg * (1 + 0.12 * b); o.r = S.r * (1 + 0.05 * b); o.blast = S.blast * (1 + 0.05 * b); o.stun = top ? 1 : 0; }
+  if (id === 'nm_golem') { o.life = S.life + 3 * b; o.hp = S.hp * (1 + 0.1 * b); o.hpPer = S.hpPer * (1 + 0.1 * b); if (top) o.dmg = S.dmg.map(v => v * 1.3); }
   return o;
-}
-function buySpellUp(id) {
-  const r = spellRank(id), cost = SPELL_UP.cost[r];
-  if (cost == null || G.gold < cost) return false;
-  G.gold -= cost; G.spellUp = G.spellUp || {}; G.spellUp[id] = r + 1;
-  const c = G.castle; floatText(c.x, c.y - 90, NECRO_SPELLS[id].name + ' ' + (r + 1) + '!', '#c8ffb0'); sfx('upgrade');
-  G.effects.push({ kind: 'ring', x: c.x, y: c.y - 20, r: 50, col: NECRO_SPELLS[id].col, t: 0, dur: 0.5 });
-  return true;
 }
 const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return TEST_OPEN || u == null || (save.stars[u] || 0) > 0; };
 const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
@@ -4076,10 +4060,9 @@ const spellBtn = (i) => { const n = necroCount(); return { x: EDGE.l + 18 + 2 * 
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
 const hudLeft = () => spellBtn(spellIds().length - 1).x + SPELL_R + 8;
 function spellInfo(id) {
-  const fast = upgRank('spells') >= 3 ? 0.75 : 1;
-  if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * fast * (1 - 0.1 * spellRank(id)), necro: S, U: S }; }
+  if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * (1 - GRIM.cd * spellRank(id)), necro: S, U: S }; }
   const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
-  return { name: U.name, cd: U.cd * fast, hero: h, U };
+  return { name: U.name, cd: U.cd * (1 - 0.05 * ((h.ult || 1) - 1)), hero: h, U }; // güç kademesi beklemeyi de kısaltır
 }
 function castSpell(id, x, y) {
   if (NECRO_SPELLS[id] && G.mod && G.mod.nospell) { floatText(x, y - 20, 'Bu gece büyü yok!', '#d8a8ff'); sfx('error'); return; }
@@ -4161,6 +4144,7 @@ function castNecro(id, x, y) {
         if (e.dead || e.under || dist(e.x, e.y, f.x, f.y) > S.blast) continue;
         damageEnemy(e, S.dmg + e.maxHp * S.pct * (e.def.chief ? 0.5 : 1), 'magic', false, 'burst');
         if (!e.dead) poisonEnemy(e, S.poison[0], S.poison[1]);
+        if (!e.dead && S.stun) stunEnemy(e, S.stun); // Büyü Kitabı 5. kademe
       }
     }
     hitBy = null;
@@ -4185,7 +4169,7 @@ function zombieHunt(s) {
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
-  const S = spellStats('nm_raise'), M = S.minion, up = upgRank('spells') >= 2 ? 1.25 : 1; // gelişme: dirilenler %25 dayanıklı
+  const S = spellStats('nm_raise'), M = S.minion, up = 1; // dayanıklılık artık Büyü Kitabı'ndan (spellStats)
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
@@ -5386,7 +5370,7 @@ function marchSoldier(s, dt) {
 
 // Kahraman gücü: seviyeyle hasar %15 artar, yıldız gelişmesiyle +%20
 function castUlt(h, x, y) {
-  const U = HERO_ULT[h.id], k = (1 + 0.15 * (h.lvl - 1)) * (upgRank('spells') >= 1 ? 1.2 : 1);
+  const U = HERO_ULT[h.id], k = (1 + HERO_TREE.ultK * ((h.ult || 1) - 1)) * (1 + 0.03 * (h.lvl - 1)); // güç kademesi (ağaç) ve seviye
   const dmg = () => roll(U.dmg) * k;
   // isabet noktası: yarısı alandaki düşmanların üstüne (biraz ileriye), kalanı alana rastgele düşer
   const foes = enemiesNear(x, y, U.r * 1.1, true);
@@ -5485,9 +5469,9 @@ function update(dt) {
   for (const t of G.towers) updateTower(t, dt);
   for (const e of G.enemies) if (!e.dead) updateEnemy(e, dt);
   for (const s of G.soldiers) updateSoldier(s, dt);
-  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; updateProjectile(p, dt); }
+  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; updateProjectile(p, dt); }
   hitBy = null;
-  HERO_SKILL = false;
+  HERO_SKILL = false; SKILL_K = 1;
 
   G.enemies = G.enemies.filter(e => !e.dead);
   G.soldiers = G.soldiers.filter(s => !s.removed);
@@ -5520,7 +5504,7 @@ function update(dt) {
   updateSouls(dt);
   for (const z of G.zones) {
     z.t += dt; z.fxT -= dt;
-    HERO_SKILL = !!z.heroSkill;
+    HERO_SKILL = !!z.heroSkill; SKILL_K = z.skK || 1;
     const bats = z.kind === 'bats', live = !bats || z.t > 0.35; // yarasalar önce uçup gelir
     if (live) for (const e of G.enemies) if (!e.dead && (bats || !e.def.flying) && dist(e.x, e.y, z.x, z.y) <= z.r) {
       const hp0 = e.hp; damageEnemy(e, z.dps * dt, z.dtype || 'true', true, z.src);
@@ -5528,7 +5512,7 @@ function update(dt) {
       if (z.infect && !e.dead) { poisonEnemy(e, z.infect, 3); e.rotT = Math.max(e.rotT || 0, 2); } // zehir gölü: içinden geçen zehri üstünde taşır
       if (bats) { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); if (z.hero && !z.hero.dead) z.hero.hp = Math.min(z.hero.maxHp, z.hero.hp + (hp0 - Math.max(0, e.hp)) * z.heal); }
     }
-    HERO_SKILL = false;
+    HERO_SKILL = false; SKILL_K = 1;
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
@@ -5572,7 +5556,7 @@ function update(dt) {
 
   if (G.lives <= 0 && !overlay) {
     if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); }
-    setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd();
+    heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd();
   }
   if (G.gold >= 2000) achGive('hoard');
   if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
@@ -5583,6 +5567,7 @@ function update(dt) {
       G.stars = lr >= 0.9 ? 3 : lr >= 0.3 ? 2 : 1;
       save.stars[G.idx] = Math.max(save.stars[G.idx] || 0, G.stars);
     }
+    heroEndXp(true);
     persist();
     setOverlay('win');
     sfx('win');
@@ -9125,10 +9110,7 @@ function menuLayout(sel = G.sel) {
     const c = G.castle, q = worldToScreen(c.x - 10, c.y - 40), N = CASTLE.levels[c.lvl + 1];
     items = NECRO ? [] : [N ? { id: 'upgrade', type: 'castle', x: q.x, y: q.y - 74, cost: N.cost } : { id: 'max', x: q.x, y: q.y - 74 }]; // necro: şapel yükseltilmez (Caner, 10 Eki), yalnız büyüler
     if (NECRO) {
-      const ids = spellIds().filter(i => NECRO_SPELLS[i]), n = ids.length;
-      // iki sütunlu zikzak: komşu düğmelerin fiyat hapları birbirine binmesin
-      ids.forEach((id, i) => { const r = spellRank(id);
-        items.push({ id: 'spellup', type: id, x: q.x - (i % 2 ? 150 : 90), y: q.y - 8 + (i - (n - 1) / 2) * 48, rank: r, cost: SPELL_UP.cost[r] ?? null }); });
+      items.push({ id: 'grim', x: q.x - 92, y: q.y - 18 }); // Büyü Kitabı (kalıcı büyü geliştirmeleri)
       if (c.lvl) items.push({ id: 'rally', type: 'castle', x: q.x + 12, y: q.y + 58 });
     } else items.push({ id: 'rally', type: 'castle', x: q.x - 66, y: q.y - 20 });
     cx = q.x; cy = q.y;
@@ -9336,8 +9318,8 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     txt('MAX', 0, 12, 10, '#fff', 'center', '400', FONT_T);
   } else if (it.id === 'sell') {
     drawIcon('coin', -4, 3, 17); drawIcon('coin', 4, -3, 19);
-  } else if (it.id === 'spellup') {
-    ctx.save(); ctx.scale(0.72, 0.72); drawNecroGlyph(it.type, 22); ctx.restore();
+  } else if (it.id === 'grim') {
+    drawGrimIcon(0, 0, 1); if (soulsFree() > 0) { glow(ctx, 0, 0, 22, '200,120,255', 0.3 + Math.sin(time * 4) * 0.1); }
   } else if (it.id === 'extra') {
     glow(ctx, 0, 0, 20, '255,215,110', 0.3 + Math.sin(time * 4) * 0.08); drawAbilityIcon(it.type, 0, -1, 0.85); fancyStar(9, -10, 5, true);
   } else if (it.id === 'ghoul') {
@@ -9359,10 +9341,6 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   if (it.blocked) { circle(0, 0, R - 1, 'rgba(10,4,12,0.55)'); drawIcon('lock', 0, -2, 20); }
   if ((it.id === 'extra' || it.id === 'imbue') && it.owned) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#e8bb4a', 1.6); txt('VAR', 0, R + 9.5, 12, '#ffe27a', 'center', '400', FONT_T); }
   if (it.id === 'imbue' && !it.owned) { roundRect(-26, R + 0.5, 52, 17, 8.5, 'rgba(24,15,7,0.94)', '#c9a0ff', 1.6); txt('BÜYÜ', 0, R + 9.5, 12, '#e8d0ff', 'center', '400', FONT_T); }
-  if (it.id === 'spellup') {
-    for (let i = 0; i < 2; i++) circle((i - 0.5) * 9, -R - 2, 3.6, i < it.rank ? '#b8ff8a' : '#3a2a1a', '#1a0e04', 1.2);
-    if (it.cost == null) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#9dff8a', 1.6); txt('MAX', 0, R + 9.5, 12, '#c8ffb0', 'center', '400', FONT_T); }
-  }
   if (it.id === 'ability') {
     for (let i = 0; i < it.ab.ranks.length; i++) {
       const px = (i - 1) * 9, py = -R - 2;
@@ -10058,10 +10036,6 @@ function infoText() {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
     if (NECRO) { // şapel ağacı: Kara Şapel → Kemik Devi → Kemik Kolos
       const P = G.preview;
-      if (P && P.id === 'spellup') {
-        const S = NECRO_SPELLS[P.type], r = spellRank(P.type), L2 = SPELL_UP[P.type];
-        return r >= 2 ? [`${S.name} — son kademe`, L2.join(' · ')] : [`${S.name} ${r + 1}. kademe — ${SPELL_UP.cost[r]} altın`, `${L2[r]} · bekleme %10 kısa`];
-      }
       return [L.title, spellIds().filter(i => NECRO_SPELLS[i]).map(i => NECRO_SPELLS[i].name).join(' · ')]; // şapel yükseltilmez: büyüler
     }
     const st = (X) => `${X.archers} okçu · Hasar ${X.dmg[0]}-${X.dmg[1]} · Menzil ${CASTLE.range} · Atış ${X.rate}sn`;
@@ -10359,76 +10333,135 @@ function drawHeroSkillIcon(id, x, y, s) {
 // ----- yetenek ağacı penceresi (oyun durur) -----
 function openSkills(h) {
   G.skillHero = h; G.skillSel = null;
-  const pi = h.def.paths.findIndex((p, i) => nextSkill(h, i));
-  if (heroPoints(h) > 0 && pi >= 0) G.skillSel = { sk: nextSkill(h, pi), pi };
   setOverlay('skills');
   sfx('open');
 }
 function drawSkillsPanel(k, px, py, pw, ph, cx) {
-  const h = G.skillHero, pts = heroPoints(h);
-  const oy = NECRO ? 18 : 0; // necro: tepede arma var, başlık ve ağaç biraz aşağıda
-  ribbon(cx, py + 4 + (NECRO ? 42 : 0), 300, h.def.name, 'blue', 24);
-  txt(`Seviye ${h.lvl}/${HERO_MAX}  ·  yetenekler seviye atladıkça kendiliğinden açılır`, cx, py + 54 + oy, 14, '#7a5530', 'center', '800', FONT_B, false);
+  drawHeroTree(G.skillHero.id, px, py, pw, ph, k, true);
   roundBtn('sk_close', px + pw - 26, py + 26, 17, 'close', () => setOverlay(null), { style: 'red', appear: k - 0.2 });
-  h.def.paths.forEach((path, pi) => {
-    const colX = h.def.paths.length === 1 ? cx - 60 : cx + (pi ? 130 : -130);
-    roundRect(colX - 92, py + 70 + oy, 184, 24, 12, NECRO ? 'rgba(0,0,0,0.3)' : 'rgba(90,60,25,0.18)');
-    txt(path.name, colX, py + 83 + oy, 16, '#4a2a0e', 'center', '400', FONT_T, false);
-    const nxt = nextSkill(h, pi);
-    path.skills.forEach((sk, si) => {
-      const ny = py + 128 + oy + si * 58, nx = colX - 56;
-      if (si > 0) {
-        ctx.strokeStyle = h.learned[path.skills[si - 1].id] ? path.col : 'rgba(90,60,25,0.35)'; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(nx, ny - 58 + 22); ctx.lineTo(nx, ny - 22); ctx.stroke();
-      }
-      const learned = h.learned[sk.id], avail = !learned && pts > 0, sel = G.skillSel && G.skillSel.sk === sk;
-      const appear = easeOutBack(clamp((k - 0.15 - si * 0.07 - pi * 0.05) / 0.35, 0, 1));
-      ctx.save(); ctx.translate(nx, ny); ctx.scale(appear * pressScale('sk' + sk.id), appear * pressScale('sk' + sk.id));
-      if (avail) glow(ctx, 0, 0, 40, '120,255,120', 0.45 + Math.sin(time * 5) * 0.15);
-      if (sel) glow(ctx, 0, 0, 40, '255,220,120', 0.6);
-      circle(0, 3, 22, 'rgba(0,0,0,0.3)');
-      const rim = ctx.createLinearGradient(0, -20, 0, 20);
-      if (learned) { rim.addColorStop(0, '#fff2b8'); rim.addColorStop(1, '#a8681a'); } else { rim.addColorStop(0, '#b8b0a0'); rim.addColorStop(1, '#5a5246'); }
-      circle(0, 0, 21, rim, '#2a1606', 1.5);
-      const body = ctx.createRadialGradient(-5, -6, 2, 0, 0, 19);
-      body.addColorStop(0, learned ? '#6a5a40' : avail ? '#3a5a30' : '#4a4440'); body.addColorStop(1, learned ? '#241a10' : '#1a1814');
-      circle(0, 0, 18, body);
-      ctx.globalAlpha *= learned || avail ? 1 : 0.45;
-      drawHeroSkillIcon(sk.id, 0, 0, 0.85);
+}
+// Komutan yetenek ağacı (11 Eki): seviye/XP, 3 yetenek × 5 kademe ve komutan gücü 1→5. Bölümde ve Komutanlar ekranında aynı pano.
+// Kademe HERO_TREE'deki seviyede açılır, her seviye 1 puan verir; sıfırlama ücretsiz (yalnız bölüm dışında).
+function heroRankNote(sk, r) {
+  if (!r) return '';
+  if (sk.id === 'iron') return `Zırh +%${10 + 5 * r} · can yenilenmesi ×${(1.4 + 0.2 * r).toFixed(1).replace('.', ',')}`;
+  if (sk.passive) return `${r}. kademe`;
+  return r > 1 ? `Hasar +%${Math.round(HERO_TREE.dmg * 100 * (r - 1))} · bekleme -%${Math.round(HERO_TREE.cd * 100 * (r - 1))}` : '1. kademe';
+}
+function drawHeroTree(id, px, py, pw, ph, k, battle) {
+  const d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), cx = px + pw / 2;
+  crimsonRibbon(cx, py + 46, d.name, 22, 260);
+  const top = py + 84;
+  txt(`Seviye ${Rr.lvl}/${HERO_MAX}`, px + 44, top, 17, '#f0cf86', 'left', '400', FONT_T);
+  const bx = px + 170, bw = pw - 340, xpK = Rr.lvl >= HERO_MAX ? 1 : clamp(Rr.xp / xpNeed(Rr.lvl), 0, 1);
+  roundRect(bx, top - 6, bw, 12, 6, 'rgba(0,0,0,0.5)', 'rgba(201,168,101,0.5)', 1);
+  roundRect(bx + 1.5, top - 4.5, (bw - 3) * xpK, 9, 4.5, '#ffd34d');
+  txt(Rr.lvl >= HERO_MAX ? 'EN YÜKSEK SEVİYE' : `${Math.floor(Rr.xp)} / ${xpNeed(Rr.lvl)} XP`, bx + bw / 2, top + 0.5, 9.5, '#fff6dc', 'center', '800', FONT_B, true);
+  roundRect(px + pw - 156, top - 13, 116, 26, 13, pts > 0 ? '#2f7a22' : 'rgba(0,0,0,0.4)', pts > 0 ? '#b8ff8a' : 'rgba(201,168,101,0.4)', 1.5);
+  txt(`${pts} puan`, px + pw - 98, top + 1, 14, pts > 0 ? '#eaffd8' : '#a89878', 'center', '400', FONT_T);
+  const rows = heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk })).concat([{ kind: 'ult', id: 'ult', sk: null }]);
+  rows.forEach((row, i) => {
+    const y = top + 50 + i * 60, a = easeOutBack(clamp((k - 0.15 - i * 0.06) / 0.35, 0, 1)); if (a <= 0) return;
+    const r = treeRank(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), can = treeCan(Rr, row.kind, row.id), ult = row.kind === 'ult';
+    ctx.save(); ctx.globalAlpha *= clamp(a, 0, 1);
+    roundRect(px + 26, y - 26, pw - 52, 52, 14, ult ? 'rgba(80,50,10,0.35)' : 'rgba(0,0,0,0.28)', ult ? 'rgba(232,187,74,0.6)' : 'rgba(201,168,101,0.35)', 1.2);
+    const ix = px + 56;
+    circle(ix, y, 21, ult ? '#4a2c08' : '#1a0e14', ult ? '#e8bb4a' : '#c9a865', 2);
+    ctx.save(); ctx.beginPath(); ctx.arc(ix, y, 19, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha *= r ? 1 : 0.5;
+    if (ult) { ctx.translate(ix, y); if (id === 'zeynep') drawNecroGlyph('nm_scream', 19); else drawUltGlyph(id, 19); } else drawHeroSkillIcon(row.id, ix, y, 0.85);
+    ctx.restore();
+    const name = ult ? HERO_ULT[id].name : row.sk.name, desc = ult ? (HERO_ULT[id].desc || 'Komutan gücü') : row.sk.desc;
+    const tx = px + 86, tw = pw - 52 - 86 - 196;
+    fitTxt(name + (ult ? ' · GÜÇ' : row.sk.passive ? ' · KALICI' : ''), tx, y - 11, tw, 15, r ? '#ffe9b0' : '#b8a888', 'left', '400', FONT_T);
+    fitTxt(r ? (ult ? (r > 1 ? `Güç +%${Math.round(HERO_TREE.ultK * 100 * (r - 1))} · ` : '') + desc : heroRankNote(row.sk, r) + ' · ' + desc) : desc, tx, y + 9, tw, 10.5, '#d8c8b0', 'left', '700', FONT_B, false);
+    const p0 = px + pw - 188;
+    for (let q = 0; q < 5; q++) circle(p0 + q * 15, y, 5.2, q < r ? (ult ? '#ffd34d' : '#b8ff8a') : 'rgba(0,0,0,0.5)', '#0a0612', 1.2);
+    const bxx = px + pw - 64;
+    if (need == null) { roundRect(bxx - 26, y - 11, 52, 22, 11, 'rgba(0,0,0,0.4)', '#e8bb4a', 1.2); txt('MAX', bxx, y + 1, 12, '#ffe27a', 'center', '400', FONT_T); }
+    else if (Rr.lvl < need) { roundRect(bxx - 34, y - 11, 68, 22, 11, 'rgba(0,0,0,0.4)', 'rgba(201,168,101,0.4)', 1); drawIcon('lock', bxx - 21, y, 10); txt(`Sv. ${need}`, bxx + 7, y + 1, 11, '#c8b898', 'center', '800', FONT_B, false); }
+    else {
+      const key = 'tr' + id + row.id, sc = pressScale(key) * (can ? 1 + Math.sin(time * 5) * 0.05 : 1);
+      ctx.save(); ctx.translate(bxx, y); ctx.scale(sc, sc);
+      if (can) glow(ctx, 0, 0, 30, '120,255,120', 0.4);
+      circle(0, 0, 17, can ? '#3cbf3c' : 'rgba(60,60,60,0.8)', can ? '#fff' : 'rgba(255,255,255,0.3)', 2);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(6, 0); ctx.moveTo(0, -6); ctx.lineTo(0, 6); ctx.stroke();
       ctx.restore();
-      if (sk.passive) { roundRect(nx - 16, ny + 15, 32, 11, 5.5, '#5a3a8a'); txt('KALICI', nx, ny + 20.5, 7, '#fff', 'center', '800', FONT_B, false); }
-      if (learned) { circle(nx + 15, ny - 15, 7, '#3cbf3c', '#fff', 1.5); drawIcon('check', nx + 15, ny - 15, 9); }
-      txt(sk.name, nx + 28, ny - 6, 14, learned ? '#4a2a0e' : '#7a5530', 'left', '400', FONT_T, false);
-      txt(learned ? (sk.passive ? 'Kalıcı güç' : `${sk.cd} sn bekleme`) : `Seviye ${si + 2}${['', '', "'de", "'te", "'te"][si + 2]} açılır`, nx + 28, ny + 10, 11, '#8a6238', 'left', '700', FONT_B, false);
-      buttons.push({ key: 'sk' + sk.id, x: nx - 26, y: ny - 26, w: 150, h: 52, fn: () => { G.skillSel = { sk, pi }; sfx('pick'); } });
-    });
-  });
-  // seçili yeteneğin açıklaması ve öğren düğmesi
-  const by = py + ph - 82;
-  roundRect(px + 26, by, pw - 52, 58, 12, 'rgba(90,60,25,0.16)', 'rgba(90,60,25,0.35)', 1.5);
-  const ss = G.skillSel && G.skillSel.sk;
-  if (ss) {
-    const learned = h.learned[ss.id], can = !learned && pts > 0;
-    txt(ss.name, px + 44, by + 18, 17, '#4a2a0e', 'left', '400', FONT_T, false);
-    txt(ss.desc, px + 44, by + 39, 12.5, '#6a4420', 'left', '700', FONT_B, false);
-    if (can) {
-      gameButton('sk_learn', px + pw - 100, by + 26, 120, 40, 'ÖĞREN', () => {
-        const got = learnSkill(h, G.skillSel.pi, ss);
-        if (!got) return;
+      buttons.push({ key, x: bxx - 22, y: y - 22, w: 44, h: 44, fn: () => {
+        if (!treeBuy(Rr, row.kind, row.id)) { sfx('error'); return; }
         sfx('upgrade');
-        for (let i = 0; i < 20; i++) {
-          const a = rand(0, Math.PI * 2), v = rand(60, 180);
-          emit(uiParts, { kind: 'glow', add: true, x: px + pw - 100, y: by + 26, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: '140,255,140', s0: 5, s1: 0.5, life: 0.6 });
-        }
-        const pi2 = h.def.paths.findIndex((p, i) => nextSkill(h, i));
-        G.skillSel = heroPoints(h) > 0 && pi2 >= 0 ? { sk: nextSkill(h, pi2), pi: pi2 } : G.skillSel;
-      }, 'green', { icon: 'check', shine: true, size: 17 });
-    } else {
-      txt(learned ? 'Açık' : 'Henüz açılmadı', px + pw - 100, by + 29, 12, '#8a6238', 'center', '800', FONT_B, false);
+        for (let q = 0; q < 16; q++) { const an = rand(0, Math.PI * 2), v = rand(50, 150); emit(uiParts, { kind: 'glow', add: true, x: bxx, y, vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 3, col: '140,255,140', s0: 4, s1: 0.5, life: 0.5 }); }
+      } });
     }
-  } else {
-    txt('Ayrıntısını görmek için bir yeteneğe dokun', cx, by + 29, 13, '#7a5530', 'center', '700', FONT_B, false);
-  }
+    ctx.restore();
+  });
+  const fy = py + ph - 34;
+  if (!battle) gameButton('tr_reset', cx, fy, 190, 38, 'SIFIRLA', () => { treeReset(Rr); sfx('coins'); }, 'red', { icon: 'restart', size: 15 });
+  else txt('Puanlar kalıcıdır · sıfırlama Komutanlar ekranında', cx, fy, 11.5, '#c8b898', 'center', '700', FONT_B, false);
+}
+
+// ----- Büyü Kitabı (11 Eki): Mortimer'ın büyüleri, Ruh Taşı ile kalıcı 5 kademe -----
+function soulGem(x, y, r) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * 0.8, -r * 0.25); ctx.lineTo(0, r); ctx.lineTo(-r * 0.8, -r * 0.25); ctx.closePath();
+  const g = ctx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, '#f0c8ff'); g.addColorStop(0.5, '#a050e8'); g.addColorStop(1, '#3a0c5a');
+  ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#140620'; ctx.lineWidth = Math.max(1, r * 0.18); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.moveTo(-r * 0.15, -r * 0.7); ctx.lineTo(r * 0.3, -r * 0.3); ctx.lineTo(-r * 0.15, -r * 0.1); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function drawGrimIcon(x, y, s) { // kale menüsü düğmesi: kafatası mühürlü kara kitap
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  roundRect(-11, -13, 22, 26, 3, '#3a1240', '#0a0410', 1.6); roundRect(-11, -13, 4, 26, 2, '#22082a');
+  roundRect(-7, -10, 15, 20, 2, null, '#c9a865', 1);
+  ctx.fillStyle = '#efe6cc'; ctx.beginPath(); ctx.arc(1, -2, 4.2, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-1.6, 1, 5.2, 3.5);
+  ctx.fillStyle = '#3a1240'; ctx.fillRect(-1.6, -3, 1.8, 1.8); ctx.fillRect(1.8, -3, 1.8, 1.8);
+  ctx.restore();
+}
+const GRIM_IDS = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'];
+function drawGrimoire(px, py, pw, ph, k, canBuy) {
+  const cx = px + pw / 2, free = soulsFree();
+  crimsonRibbon(cx, py + 46, 'BÜYÜ KİTABI', 22, 300);
+  roundRect(px + pw - 196, py + 72, 160, 30, 15, 'rgba(0,0,0,0.45)', '#c9a0ff', 1.5); soulGem(px + pw - 176, py + 87, 10);
+  txt(`${free} ruh taşı`, px + pw - 106, py + 88, 15, '#ecd8ff', 'center', '400', FONT_T);
+  txt(canBuy ? 'Kademeler kalıcıdır · her kademe beklemeyi %4 kısaltır · 5. kademe yeni bir güç açar' : 'Bölüm içinde yalnızca ilk dalgadan önce geliştirilir',
+    px + 40, py + 88, 12, '#d8c8b0', 'left', '700', FONT_B, false);
+  GRIM_IDS.forEach((id, i) => {
+    const S = NECRO_SPELLS[id], y = py + 130 + i * 58, a = easeOutBack(clamp((k - 0.12 - i * 0.05) / 0.35, 0, 1)); if (a <= 0) return;
+    const r = grimRank(id), open = necroSpellOn(id);
+    ctx.save(); ctx.globalAlpha *= clamp(a, 0, 1);
+    roundRect(px + 26, y - 27, pw - 52, 54, 14, 'rgba(0,0,0,0.28)', 'rgba(201,168,101,0.35)', 1.2);
+    circle(px + 56, y, 21, '#1a0e14', '#c9a865', 2);
+    ctx.save(); ctx.beginPath(); ctx.arc(px + 56, y, 19, 0, Math.PI * 2); ctx.clip(); ctx.translate(px + 56, y); ctx.scale(0.8, 0.8); drawNecroGlyph(id, 22); ctx.restore();
+    fitTxt(S.name, px + 86, y - 9, 150, 15, '#ffe9b0', 'left', '400', FONT_T);
+    txt(`Bekleme ${Math.round(S.cd * (1 - GRIM.cd * r))} sn`, px + 86, y + 11, 10.5, '#c8b898', 'left', '700', FONT_B, false);
+    const x0 = px + 248, bw = (pw - 248 - 34) / 5;
+    if (!open) { roundRect(x0, y - 20, bw * 5 - 6, 40, 12, 'rgba(0,0,0,0.4)'); drawIcon('lock', x0 + 22, y, 16); txt(`${(S.unlock ?? 0) + 1}. bölümü bitirince açılır`, x0 + 40, y + 1, 12, '#c8b898', 'left', '700', FONT_B, false); ctx.restore(); return; }
+    for (let q = 0; q < 5; q++) {
+      const bx = x0 + q * bw, bought = q < r, next = q === r, can = next && canBuy && free >= GRIM.cost[q], key = 'gr' + id + q, sc = pressScale(key);
+      ctx.save(); ctx.translate(bx + (bw - 6) / 2, y); ctx.scale(sc, sc);
+      roundRect(-(bw - 6) / 2, -22, bw - 6, 44, 10, bought ? '#2c5a1c' : can ? '#6a1234' : 'rgba(20,8,20,0.8)', bought ? '#9be06a' : can ? '#ffd34d' : q === 4 ? 'rgba(200,140,255,0.6)' : 'rgba(201,168,101,0.3)', bought || can ? 1.8 : 1.1);
+      if (can) glow(ctx, 0, 0, bw * 0.5, '255,210,90', 0.12 + Math.sin(time * 4) * 0.05);
+      const L = wrapLines(GRIM[id][q], bw - 16, 9.5, '700', FONT_B, 2);
+      L.forEach((l, li) => txt(l, 0, -9 + li * 11 + (L.length === 1 ? 5 : 0), 9.5, bought ? '#eaffd8' : next ? '#fff3d0' : '#a89878', 'center', '700', FONT_B, false));
+      if (bought) { circle((bw - 6) / 2 - 8, -14, 6, '#3cbf3c', '#fff', 1.2); }
+      else { soulGem(-8, 14, 5); txt(GRIM.cost[q] + '', 4, 14.5, 10.5, '#ecd8ff', 'center', '400', FONT_T); }
+      ctx.restore();
+      if (next && canBuy) buttons.push({ key, x: bx, y: y - 22, w: bw - 6, h: 44, fn: () => {
+        if (!buyGrim(id)) { sfx('error'); return; }
+        sfx('upgrade');
+        for (let z = 0; z < 16; z++) { const an = rand(0, Math.PI * 2), v = rand(50, 150); emit(uiParts, { kind: 'glow', add: true, x: bx + bw / 2, y, vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 3, col: '200,140,255', s0: 4, s1: 0.5, life: 0.5 }); }
+      } });
+    }
+    ctx.restore();
+  });
+  if (canBuy) gameButton('grim_reset', cx, py + ph - 32, 190, 38, 'SIFIRLA', () => { save.grim = {}; persist(); sfx('coins'); }, 'red', { icon: 'restart', size: 15 });
+}
+function drawGrimScreen() {
+  const st = time - screenT;
+  menuBackdrop(st);
+  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
+  const pw = 860, ph = 470, px = W / 2 - pw / 2, py = 58;
+  pauseFrame(px, py, pw, ph);
+  drawGrimoire(px, py, pw, ph, st, true);
 }
 
 // ----- kahraman seçim ekranı -----
@@ -10693,10 +10726,23 @@ function drawHeroes() {
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
   const tm = team();
   txt(NECRO ? 'Savaşa bir komutan götürürsün · seçmek için karta dokun' : 'Savaşa bir kahraman götürürsün · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
-  HERO_ORDER.forEach((id, i) => drawHeroCard(id, W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, 300, st - 0.1 - i * 0.08, tm));
+  HERO_ORDER.forEach((id, i) => drawHeroCard(id, W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, 296, st - 0.1 - i * 0.08, tm));
+  // her açık komutanın altında yetenek ağacı düğmesi (11 Eki: kalıcı seviye ve yetenekler)
+  HERO_ORDER.forEach((id, i) => { if (!heroUnlocked(id)) return; const x = W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, pts = recPoints(heroRec(id));
+    gameButton('ht' + id, x, 492, 160, 36, 'YETENEKLER', () => { heroTreeId = id; heroTreeT = time; sfx('open'); }, pts > 0 ? 'green' : 'wood', { appear: st - 0.3 - i * 0.05, size: 14, shine: pts > 0 });
+    if (pts > 0) { circle(x + 72, 476, 11, '#3cbf3c', '#fff', 1.5); txt(pts + '', x + 72, 477, 12, '#fff', 'center', '400', FONT_T); } });
+  if (heroTreeId) { // yetenek ağacı panosu: arkadaki kartlara dokunulmaz
+    buttons.length = 0; const k = time - heroTreeT, pw = 640, ph = 440, px = W / 2 - pw / 2, py = H / 2 - ph / 2 + 6;
+    ctx.fillStyle = `rgba(8,4,16,${0.7 * clamp(k / 0.25, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    const e = easeOutBack(clamp(k / 0.4, 0, 1)); ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(e, e); ctx.translate(-W / 2, -H / 2);
+    pauseFrame(px, py, pw, ph); drawHeroTree(heroTreeId, px, py, pw, ph, k, false);
+    roundBtn('ht_close', px + pw - 30, py + 30, 17, 'close', () => { heroTreeId = null; }, { style: 'red', appear: k - 0.2 });
+    ctx.restore();
+  }
   save.seenHeroes = save.seenHeroes || ['commander'];
   for (const id of HERO_ORDER) if (heroUnlocked(id) && !save.seenHeroes.includes(id)) { save.seenHeroes.push(id); persist(); }
 }
+let heroTreeId = null, heroTreeT = 0;
 function drawHeroCard(id, cx, cy, at, tm) {
   const p = clamp(at / 0.45, 0, 1);
   if (p <= 0) return;
@@ -10742,6 +10788,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   else { roundRect(-44, y0 + 290 + by2, 88, 16, 8, '#8a3a1a'); txt('YAKIN DÖVÜŞ', 0, y0 + 298 + by2, 9, '#fff', 'center', '800', FONT_B, false); }
   if (unlocked) txt('Güç: ' + HERO_ULT[id].name, 0, y0 + 315 + by2 * 1.6, 9.5, '#5a3410', 'center', '800', FONT_B, false);
   if (sel) { circle(w / 2 - 20, y0 + 22, 13, '#3cbf3c', '#fff', 2); drawIcon('check', w / 2 - 20, y0 + 22, 16); }
+  if (unlocked) { const Rr = heroRec(id); roundRect(x0 + 14, y0 + 140, 58, 22, 11, 'rgba(10,6,18,0.85)', '#e8bb4a', 1.5); txt(`Sv. ${Rr.lvl}`, x0 + 43, y0 + 151.5, 12, '#ffe27a', 'center', '400', FONT_T); } // kalıcı seviye
   if (unlocked && !(save.seenHeroes || ['commander']).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
   if (!unlocked) {
     roundRect(x0, y0, w, h, 20, 'rgba(18,10,4,0.66)');
@@ -11415,6 +11462,32 @@ function drawIncoming() {
 function upgRank(id) { return (UPGRADES.some(u => u.id === id) && save.upg && save.upg[id]) || 0; } // listeden çıkan gelişme (şapel) artık işlemez
 function starsTotal() { return save.stars.reduce((a, b) => a + (b || 0), 0) + chalStars(); }
 function starsSpent() { return UPGRADES.reduce((a, u) => a + u.ranks.slice(0, upgRank(u.id)).reduce((b, r) => b + r.cost, 0), 0); }
+// ---- kalıcı gelişim (11 Eki, Caner; arastirma/rpg-sistemi.md): Büyü Kitabı (Ruh Taşı) ve komutan seviyesi/yetenek ağacı ----
+const grimRank = (id) => (save.grim && save.grim[id]) || 0;
+function soulsTotal() { return starsTotal() + Math.floor(Object.keys(save.ach || {}).length / 2); } // yıldız + meydan okuma + her 2 başarım
+function soulsSpent() { let n = 0; for (const id in save.grim || {}) n += GRIM.cost.slice(0, save.grim[id]).reduce((a, b) => a + b, 0); return n; }
+const soulsFree = () => soulsTotal() - soulsSpent();
+function buyGrim(id) {
+  const r = grimRank(id), c = GRIM.cost[r];
+  if (c == null || soulsFree() < c) return false;
+  save.grim = save.grim || {}; save.grim[id] = r + 1; persist(); return true;
+}
+// komutan kaydı: seviye ve XP bölümler arası kalır; sk: yetenek kademeleri, ult: komutan gücü kademesi (1..5)
+function heroRec(id) { save.hero = save.hero || {}; return (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1 }); }
+function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return (R.lvl - 1) - n - (R.ult - 1); }
+const treeRank = (R, kind, id) => (kind === 'ult' ? R.ult : R.sk[id] || 0);
+function treeNext(R, kind, id) { const T = kind === 'ult' ? HERO_TREE.ult : HERO_TREE.sk, r = treeRank(R, kind, id); return r + 1 < T.length ? T[r + 1] : null; } // sıradaki kademenin açıldığı seviye
+const treeCan = (R, kind, id) => { const n = treeNext(R, kind, id); return n != null && R.lvl >= n && recPoints(R) > 0; };
+function treeBuy(R, kind, id) {
+  if (!treeCan(R, kind, id)) return false;
+  if (kind === 'ult') R.ult++; else R.sk[id] = (R.sk[id] || 0) + 1;
+  persist();
+  if (G && G.heroes) for (const h of G.heroes) if (h.learned === R.sk) { h.ult = R.ult; heroStats(h); }
+  return true;
+}
+function treeReset(R) { R.sk = {}; R.ult = 1; persist(); }
+// bölüm sonu XP: kazanınca tam, kaybedince yarım
+function heroEndXp(win) { if (!G) return; for (const h of G.heroes) gainXp(h, Math.round((100 + 40 * G.idx) * (win ? 1 : 0.5)), true); persist(); }
 function diff() { return GAME_DIFF; } // zorluk sabit
 // gelişmelerle güçlenmiş kule seviyesi değerleri
 // uzmanlık seçen kule +%20 hasar (kışlada asker canı ve hasarı) alır: tek yol seçmenin karşılığı
@@ -12658,12 +12731,17 @@ function drawMap() {
     ctx.save(); ctx.translate(cx, cy); ctx.scale(rk, rk); ribbon(0, 0, rw, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 19); ctx.restore(); }
   // kahramanlar ve gelişmeler (sağ alt, ekran köşesine yaslı)
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id)), BY = EDGE.b - 40;
-  gameButton('heroes', R0 - 392, BY, 234, 52, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 19, shine: fresh.length > 0 });
+  // 11 Eki: Büyü Kitabı eklendi, üç düğme yan yana (Büyü Kitabı · Komutanlar · Gelişmeler)
+  const heroPts = HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0), freeSouls = soulsFree();
+  gameButton('grim', R0 - 520, BY, 196, 52, 'BÜYÜ KİTABI', () => go(() => { screen = 'grim'; }), 'red', { icon: 'star', appear: st - 0.3, size: 17, shine: freeSouls > 0 });
+  if (freeSouls > 0) { const ex = R0 - 432, ey = BY - 24 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#8a3ad8', '#fff', 1.5); txt(freeSouls + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
+  gameButton('heroes', R0 - 316, BY, 196, 52, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => go(() => { screen = 'heroes'; }), 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 || heroPts });
   const freeStars = starsTotal() - starsSpent();
-  gameButton('upgrades', R0 - 140, BY, 234, 52, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 19, shine: freeStars > 0 });
-  if (freeStars > 0) { const ex = R0 - 30, ey = BY - 24 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#e8434b', '#fff', 1.5); txt(freeStars + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
+  gameButton('upgrades', R0 - 110, BY, 196, 52, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
+  if (freeStars > 0) { const ex = R0 - 22, ey = BY - 24 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#e8434b', '#fff', 1.5); txt(freeStars + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
+  if (heroPts && !fresh.length) { const ex = R0 - 228, ey = BY - 24 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#3cbf3c', '#fff', 1.5); txt('+', ex, ey + 1, 15, '#fff', 'center', '400', FONT_T); }
   if (fresh.length) {
-    const ex = R0 - 300, ey = BY - 24 + Math.sin(time * 5) * 2;
+    const ex = R0 - 260, ey = BY - 24 + Math.sin(time * 5) * 2;
     roundRect(ex - 24, ey - 11, 48, 22, 11, '#e8434b', '#fff', 1.5); txt('YENİ', ex, ey + 1, 12, '#fff', 'center', '400', FONT_T);
   }
   if (Math.random() < 0.12) {
@@ -13856,6 +13934,13 @@ function drawOverlay() {
   const k = time - overlayT, fade = clamp(k / 0.25, 0, 1);
   ctx.fillStyle = NECRO ? `rgba(8,4,16,${0.7 * fade})` : `rgba(12,7,2,${0.62 * fade})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   if (NECRO) drawOverlayFog(fade);
+  if (overlay === 'grim') { // Büyü Kitabı (kaleye dokununca): yalnız ilk dalgadan önce harcanır
+    const e = easeOutBack(clamp(k / 0.42, 0, 1)), pw = 860, ph = 470, px = W / 2 - pw / 2, py = H / 2 - ph / 2 + 8;
+    ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1); ctx.translate(W / 2, H / 2); ctx.scale(e, e); ctx.translate(-W / 2, -H / 2);
+    pauseFrame(px, py, pw, ph); drawGrimoire(px, py, pw, ph, k, G && G.wave === 0);
+    roundBtn('grim_close', px + pw - 30, py + 30, 17, 'close', () => setOverlay(null), { style: 'red', appear: k - 0.2 });
+    ctx.restore(); return;
+  }
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
@@ -14147,13 +14232,13 @@ function hudTap(x, y) {
         tapPop('mi' + it.id + (it.type || ''));
         if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
         if (it.id === 'max') return true;
+        if (it.id === 'grim') { setSel(null); setOverlay('grim'); sfx('pick'); return true; } // Büyü Kitabı
         if (it.id === 'imbue' && !G.sel.tower.imbue) { G.sel.sub = 'imbue'; G.preview = null; G.menuT = time; sfx('pick'); return true; } // büyü seçimine geç
         if (it.id === 'imback') { G.sel.sub = null; G.preview = null; G.menuT = time; sfx('pick'); return true; }
         if (!same) { G.preview = it; sfx('pick'); return true; }
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
         else if (it.id === 'ghoul') { if (openHatch(G.sel.hatch)) setSel(null); else sfx('error'); }
         else if (it.id === 'extra') { if (it.cost != null && buyExtra(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
-        else if (it.id === 'spellup') { if (it.cost != null && buySpellUp(it.type)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade' && it.type === 'castle') { if (upgradeCastle()) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade') { if (upgradeTower(G.sel.tower)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'ability') { if (it.cost != null && buyAbility(G.sel.tower, it.type)) G.preview = null; else sfx('error'); }
@@ -14237,6 +14322,7 @@ function worldTap(x, y) {
   // kale: dokununca okçu yükseltme menüsü
   {
     const c = G.castle;
+    if (NECRO && Math.abs(x - c.x) < 62 && y < c.y + 24 && y > c.y - 120) { setOverlay('grim'); sfx('open'); return; } // 11 Eki: kaleye dokununca Büyü Kitabı
     if (!NECRO && Math.abs(x - (c.x - 12)) < 52 && y < c.y + 22 && y > c.y - 92) {
       setSel(G.sel && G.sel.kind === 'castle' ? null : { kind: 'castle' }); sfx('select'); return;
     }
@@ -14308,6 +14394,7 @@ function frame(now) {
   else if (screen === 'settings') drawSettings();
   else if (screen === 'credits') drawCredits();
   else if (screen === 'upgrades') drawUpgrades();
+  else if (screen === 'grim') drawGrimScreen();
   else if (screen === 'codex') drawCodex();
   else if (screen === 'ach') drawAchievements();
   else if (screen === 'shop') drawShop();
@@ -14433,7 +14520,7 @@ window.__game = {
     for (let i = 0; i < n; i++) { const t0 = performance.now(); ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawNecroTitle(5 + i / 60); drawPartsAll(uiParts); ctx.restore(); D.push(performance.now() - t0); time += 1 / 60; }
     D.sort((a, b) => a - b); return { ort: +(D.reduce((a, b) => a + b) / n).toFixed(2), p95: +D[Math.floor(n * 0.95)].toFixed(2), max: +D[n - 1].toFixed(2) };
   },
-  learn: (i, pi) => learnSkill(G.heroes[i], pi), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
+  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   sim(seconds, dt = 1 / 30) { for (let t = 0; t < seconds && !overlay; t += dt) update(dt); return overlay; },
 };
 })();
