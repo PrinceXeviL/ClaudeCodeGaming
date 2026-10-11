@@ -344,11 +344,15 @@ const rawSnd = {};   // ad -> ArrayBuffer (ses bağlamı açılmadan önce indir
 const SND = {};      // tür -> [AudioBuffer]
 const sndState = {}; // tür -> { last, playing }
 
-fetch('ses/manifest.json', { cache: 'no-cache' })
-  .then(r => (r.ok ? r.json() : []))
-  .then(list => Promise.all(list.map(name =>
-    fetch('ses/' + name + '.wav').then(r => r.arrayBuffer()).then(buf => { rawSnd[name] = buf; if (actx) decodeOne(name); }))))
-  .catch(() => {});
+// 11 Eki: kısa sesler tek pakette (ses/paket.bin + paket.json, tools/ses_paket.py): yayın dosya sınırı. Paket yoksa tek tek WAV.
+const SV = window.SURUM ? '?v=' + window.SURUM : '';
+fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject())).then(idx =>
+  fetch('ses/paket.bin' + SV).then(r => r.arrayBuffer()).then(all => { for (const [name, o, n] of idx) { rawSnd[name] = all.slice(o, o + n); if (actx) decodeOne(name); } }))
+  .catch(() => fetch('ses/manifest.json', { cache: 'no-cache' })
+    .then(r => (r.ok ? r.json() : []))
+    .then(list => Promise.all(list.map(name =>
+      fetch('ses/' + name + '.wav').then(r => r.arrayBuffer()).then(buf => { rawSnd[name] = buf; if (actx) decodeOne(name); }))))
+    .catch(() => {}));
 
 function decodeOne(name) {
   const buf = rawSnd[name];
