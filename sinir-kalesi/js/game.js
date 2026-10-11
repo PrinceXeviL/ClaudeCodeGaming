@@ -4693,27 +4693,31 @@ function drawAchievements() {
   ctx.save(); ctx.translate(W / 2, 40); ctx.scale(rk, rk); ribbon(0, 0, 300, 'BAŞARIMLAR', 'blue', 24); ctx.restore();
   const got = ACH.filter(a => save.ach && save.ach[a.id]).length;
   txt(`${got} / ${ACH.length}`, W / 2, 74, 15, '#ffe27a', 'center', '400', FONT_T);
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st });
-  const cols = 3, cw = 290, ch = 58, gx = 10, gy = 6, x0 = W / 2 - (cols * cw + (cols - 1) * gx) / 2, y0 = 88;
+  roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st });
+  // 11 Eki (mobil): 2 sütun, büyük kart ve yazı; liste kaydırılır
+  const cols = 2, cw = 436, ch = 76, gx = 12, gy = 8, x0 = W / 2 - (cols * cw + (cols - 1) * gx) / 2, Y0 = 88, AH = EDGE.b - 8 - Y0;
+  const sy = scrollArea('ach', x0 - 4, Y0, cols * cw + gx + 14, AH, Math.ceil(ACH.length / cols) * (ch + gy)), y0 = Y0 - sy;
+  ctx.save(); ctx.beginPath(); ctx.rect(x0 - 8, Y0, cols * cw + gx + 16, AH); ctx.clip();
   ACH.forEach((a, i) => {
     const c = i % cols, r = Math.floor(i / cols), x = x0 + c * (cw + gx), y = y0 + r * (ch + gy), on = save.ach && save.ach[a.id];
-    const ap = clamp((st - 0.1 - i * 0.025) / 0.25, 0, 1); if (ap <= 0) return;
+    const ap = clamp((st - 0.1 - i * 0.025) / 0.25, 0, 1); if (ap <= 0 || y > Y0 + AH || y + ch < Y0) return;
     ctx.save(); ctx.globalAlpha = ap;
     if (NECRO) { velvetCard(x, y, cw, ch, 12, { border: on ? '#e8c86a' : 'rgba(150,120,140,0.55)', ac: on ? '230,190,110' : null }); if (!on) roundRect(x, y, cw, ch, 12, 'rgba(10,4,12,0.35)'); }
     else roundRect(x, y, cw, ch, 12, on ? '#2c2240' : 'rgba(30,24,40,0.85)', on ? '#e8c86a' : 'rgba(150,140,170,0.4)', on ? 2 : 1.2);
-    circle(x + 30, y + ch / 2, 21, on ? '#3e2e58' : '#1c1626', on ? '#e8c86a' : '#4a4058', 1.6);
-    ctx.save(); ctx.translate(x + 30, y + ch / 2); if (!on) ctx.globalAlpha *= 0.45; achIcon(a.icon, 19); ctx.restore();
-    txt(a.name, x + 60, y + 19, 15, on ? '#ffe27a' : '#b8acc8', 'left', '400', FONT_T, false);
-    txt(a.desc, x + 60, y + 36, 11, on ? '#e8e0f0' : '#8a809a', 'left', '700', FONT_B, false);
+    circle(x + 36, y + ch / 2, 26, on ? '#3e2e58' : '#1c1626', on ? '#e8c86a' : '#4a4058', 1.8);
+    ctx.save(); ctx.translate(x + 36, y + ch / 2); if (!on) ctx.globalAlpha *= 0.45; achIcon(a.icon, 24); ctx.restore();
+    fitTxt(a.name, x + 72, y + 22, cw - 140, 18, on ? '#ffe27a' : '#b8acc8', 'left', '400', FONT_T, false);
+    wrapLines(a.desc, cw - 84, 13.5, '700', FONT_B, 2).forEach((l, k) => txt(l, x + 72, y + 42 + k * 16, 13.5, on ? '#e8e0f0' : '#9a90aa', 'left', '700', FONT_B, false));
     if (a.cnt && !on) {
-      const v = Math.min(a.need, (save.cnt && save.cnt[a.cnt]) || 0), bw = cw - 72;
-      roundRect(x + 60, y + 45, bw, 6, 3, '#120c1a');
-      if (v) roundRect(x + 60, y + 45, bw * v / a.need, 6, 3, '#8fd06a');
-      txt(`${v}/${a.need}`, x + cw - 10, y + 19, 10, '#8a809a', 'right', '800', FONT_B, false);
+      const v = Math.min(a.need, (save.cnt && save.cnt[a.cnt]) || 0), bw = cw - 84;
+      roundRect(x + 72, y + ch - 12, bw, 7, 3.5, '#120c1a');
+      if (v) roundRect(x + 72, y + ch - 12, bw * v / a.need, 7, 3.5, '#8fd06a');
+      txt(`${v}/${a.need}`, x + cw - 12, y + 22, 13, '#a89eb8', 'right', '800', FONT_B, false);
     }
-    if (on) { circle(x + cw - 16, y + 16, 8, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + cw - 20, y + 16); ctx.lineTo(x + cw - 17, y + 19); ctx.lineTo(x + cw - 12, y + 13); ctx.stroke(); }
+    if (on) { circle(x + cw - 20, y + 20, 10, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x + cw - 25, y + 20); ctx.lineTo(x + cw - 21, y + 24); ctx.lineTo(x + cw - 15, y + 16); ctx.stroke(); }
     ctx.restore();
   });
+  ctx.restore();
   save.achNew = 0;
 }
 // ----- borazancı: ilk dalga çağrılınca o dalganın girişlerinden birer lejyoner çıkar, savaş borazanını çalar, geri döner;
@@ -8922,6 +8926,19 @@ function drawEffect(f) {
 // Butonlar her karede yeniden çizilir ve `buttons` listesine kaydolur. Dokununca buton basılı görünür
 // (içeri çöker), parmak kalkınca yaylanarak eski boyuna döner ve işlevi çalışır (mobil oyunlardaki gibi).
 const buttons = [];
+// Kaydırılabilir alanlar (11 Eki, mobil: kodeks/başarımlar listesi ekrana sığmıyordu): her karede scrollArea ile kaydedilir,
+// parmakla dikey sürükleme ya da fare tekerleği kaydırır; sürükleme başlayınca alttaki düğmeye basma iptal olur.
+const SCROLL = {}, scrollAreas = [];
+function scrollArea(key, x, y, w, h, content) {
+  const max = Math.max(0, content - h); SCROLL[key] = clamp(SCROLL[key] || 0, 0, max);
+  scrollAreas.push({ key, x, y, w, h, max });
+  if (max > 0) { // kaydırma çubuğu
+    const bh = Math.max(30, h * h / content), by = y + (h - bh) * SCROLL[key] / max;
+    roundRect(x + w - 5, y, 4, h, 2, 'rgba(255,255,255,0.08)'); roundRect(x + w - 5, by, 4, bh, 2, 'rgba(240,210,150,0.55)');
+  }
+  return SCROLL[key];
+}
+const inScroll = (key, y, h) => { const a = scrollAreas.find(q => q.key === key); return !a || (y + h > a.y && y < a.y + a.h); };
 const press = { key: null, t: 0, b: null, id: null };
 const pops = {}; // anahtar -> bırakıldığı an (yaylanma animasyonu)
 function pressScale(key) {
@@ -10932,8 +10949,8 @@ function drawShop() {
   }
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, 'DÜKKÂN', 'gold', 26); ctx.restore();
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack || 'map'; screenT = time; }), { appear: st - 0.1 });
-  const pw = 520, ph = 360, px = W / 2 - pw / 2, py = 108, pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
+  roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = menuBack || 'map'; screenT = time; }), { appear: st - 0.1 });
+  const pw = 600, ph = 388, px = W / 2 - pw / 2, py = 88, pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
   glow(ctx, W / 2, py + 90, 200, '255,200,90', 0.18 + Math.sin(time * 2) * 0.05);
   if (NECRO) pauseFrame(px, py, pw, ph, 0);
@@ -10946,13 +10963,13 @@ function drawShop() {
   if (pk < 0.9) return;
   ctx.save(); ctx.translate(W / 2, py + 72); drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); ctx.restore();
   txt("MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
-  txt('Tek seferlik satın alma · abonelik yok', W / 2, py + 154, 13, '#e0c8a8', 'center', '700', FONT_B, false);
+  txt('Tek seferlik satın alma · abonelik yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
   const rows = ['Bölüm aralarındaki reklamlar tamamen kalkar', 'Reklam ödülleri (5 canla devam, altınla başla) reklam izlemeden', 'Mortimer\'a altın taç', 'Bir necromancer\'ı mutlu edersin'];
-  rows.forEach((r, i) => { circle(px + 74, py + 186 + i * 26, 6, '#3cbf3c', '#0a2a0a', 1.2); txt(r, px + 90, py + 187 + i * 26, 14, '#f2ecd8', 'left', '700', FONT_B, false); });
+  rows.forEach((r, i) => { circle(px + 46, py + 190 + i * 30, 7, '#3cbf3c', '#0a2a0a', 1.2); fitTxt(r, px + 62, py + 191 + i * 30, pw - 84, 16, '#f2ecd8', 'left', '700', FONT_B, false, 12); });
   if (isPremium()) txt('SATIN ALINDI — teşekkürler!', W / 2, py + ph - 38, 18, '#a8f0a0', 'center', '400', FONT_T, false);
-  else gameButton('buy', W / 2, py + ph - 40, 280, 52, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 17 });
-  txt('Satın alımları geri yükle', W / 2, H - 22, 12, '#cdb894', 'center', '700', FONT_B, false);
-  buttons.push({ key: 'restore', x: W / 2 - 90, y: H - 34, w: 180, h: 24, fn: () => { if (window.NativeIAP && window.NativeIAP.restore) window.NativeIAP.restore().then(ok => { if (ok) { save.premium = true; persist(); } }); else mapNote = { text: 'Geri yükleme mağaza sürümünde', t: time }; } });
+  else gameButton('buy', W / 2, py + ph - 42, 320, 60, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 20 });
+  gameButton('restore_b', W / 2, EDGE.b - 26, 300, 42, 'SATIN ALIMLARI GERİ YÜKLE', null, 'dark', { size: 14 }); // 11 Eki: mobilde basılacak boyda
+  buttons.push({ key: 'restore_b', x: W / 2 - 150, y: EDGE.b - 48, w: 300, h: 44, fn: () => { if (window.NativeIAP && window.NativeIAP.restore) window.NativeIAP.restore().then(ok => { if (ok) { save.premium = true; persist(); } }); else mapNote = { text: 'Geri yükleme mağaza sürümünde', t: time }; } });
 }
 // Emeği geçenler: kaynaklar ve lisanslar (CC-BY sesler adın gösterilmesini şart koşar; yeni kaynak eklenince buraya yaz)
 const CREDITS = [
@@ -12102,24 +12119,24 @@ function fitTxt(s, x, y, maxW, size, col, align = 'left', weight = '800', font =
 }
 function codexStats(stats, x0, y) {
   stats.forEach(([a, b], i) => {
-    const sx = x0 + (i % 2) * 112, sy = y + Math.floor(i / 2) * 20;
-    txt(a, sx, sy, 10, '#a898b8', 'left', '700', FONT_B, false);
-    fitTxt(b, sx + 106, sy, 44, 12, '#fff', 'right', '400', FONT_T);
+    const cw = CODEX.statW || 124, sx = x0 + (i % 2) * cw, sy = y + Math.floor(i / 2) * 22;
+    fitTxt(a, sx, sy, cw * 0.6, 12.5, '#b8a8c8', 'left', '700', FONT_B, false, 10);
+    fitTxt(b, sx + cw - 8, sy, cw * 0.4, 14.5, '#fff', 'right', '400', FONT_T);
   });
-  return y + Math.ceil(stats.length / 2) * 20;
+  return y + Math.ceil(stats.length / 2) * 22;
 }
 function codexChip(x, y, s, col, bg, size = 10.5) {
-  ctx.font = `800 ${size}px ${FONT_B}`; lastFont = null; const w = ctx.measureText(s).width + 14;
-  roundRect(x, y - 8, w, 16, 8, bg, col, 1); txt(s, x + w / 2, y + 0.5, size, col, 'center', '800', FONT_B, false);
+  size = Math.max(size, 12); ctx.font = `800 ${size}px ${FONT_B}`; lastFont = null; const w = ctx.measureText(s).width + 16;
+  roundRect(x, y - 10, w, 20, 10, bg, col, 1); txt(s, x + w / 2, y + 0.5, size, col, 'center', '800', FONT_B, false);
   return w;
 }
 function codexPill(key, x, y, w, label, on, fn) {
   const sc = pressScale(key);
   ctx.save(); ctx.translate(x + w / 2, y); ctx.scale(sc, sc);
-  roundRect(-w / 2, -12, w, 24, 12, on ? '#c9962e' : 'rgba(40,26,14,0.9)', on ? '#ffe9a0' : 'rgba(212,171,90,0.5)', on ? 2 : 1.2);
-  txt(label, 0, 1, 12, on ? '#fff' : '#cdbb98', 'center', '400', FONT_T);
+  roundRect(-w / 2, -15, w, 30, 15, on ? '#c9962e' : 'rgba(40,26,14,0.9)', on ? '#ffe9a0' : 'rgba(212,171,90,0.5)', on ? 2 : 1.2);
+  txt(label, 0, 1, 14, on ? '#fff' : '#cdbb98', 'center', '400', FONT_T);
   ctx.restore();
-  buttons.push({ key, x, y: y - 14, w, h: 28, fn: () => { if (!on) { fn(); sfx('pick'); } } });
+  buttons.push({ key, x, y: y - 20, w, h: 40, fn: () => { if (!on) { fn(); sfx('pick'); } } });
 }
 function drawCodex() {
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
@@ -12135,14 +12152,17 @@ function drawCodex() {
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st - 0.1 });
   // sekmeler
   const tab = CODEX.tab, nE = CODEX_ENEMIES.filter(codexSeen).length;
-  gameButton('cx_e', 160, 104, 200, 34, `DÜŞMANLAR ${nE}/${CODEX_ENEMIES.length}`, () => { CODEX.tab = 'e'; CODEX.t0 = time; }, tab === 'e' ? 'red' : 'dark', { size: 14, appear: st - 0.15 });
-  gameButton('cx_t', 372, 104, 190, 34, 'KULELER', () => { CODEX.tab = 't'; CODEX.t0 = time; }, tab === 't' ? 'gold' : 'dark', { size: 14, appear: st - 0.2 });
+  gameButton('cx_e', 140, 100, 210, 42, `DÜŞMANLAR ${nE}/${CODEX_ENEMIES.length}`, () => { CODEX.tab = 'e'; CODEX.t0 = time; }, tab === 'e' ? 'red' : 'dark', { size: 16, appear: st - 0.15 });
+  gameButton('cx_t', 352, 100, 190, 42, 'KULELER', () => { CODEX.tab = 't'; CODEX.t0 = time; }, tab === 't' ? 'gold' : 'dark', { size: 16, appear: st - 0.2 });
   // sol: kart ızgarası
-  const list = tab === 'e' ? CODEX_ENEMIES : TOWER_ORDER, cols = tab === 'e' ? 5 : 3, tw = tab === 'e' ? 74 : 118, th = tab === 'e' ? 84 : 118, gap = 8;
-  const gx = 40, gy = 136;
+  // 11 Eki (mobil): 4 sütun, daha büyük kart ve ad; liste kaydırılır (43 düşman ekrana sığmıyordu)
+  const list = tab === 'e' ? CODEX_ENEMIES : TOWER_ORDER, cols = tab === 'e' ? 4 : 3, tw = tab === 'e' ? 96 : 130, th = tab === 'e' ? 104 : 130, gap = 8;
+  const gx = 30, gy0 = 128, gh = EDGE.b - 8 - gy0, gw = cols * (tw + gap) + 6;
+  const sy = scrollArea('codex_' + tab, gx - 4, gy0, gw, gh, Math.ceil(list.length / cols) * (th + gap) + 8), gy = gy0 + 4 - sy;
+  ctx.save(); ctx.beginPath(); ctx.rect(gx - 8, gy0, gw + 4, gh); ctx.clip();
   list.forEach((id, i) => {
     const x = gx + (i % cols) * (tw + gap), y = gy + Math.floor(i / cols) * (th + gap), p = clamp((st - 0.15 - i * 0.025) / 0.3, 0, 1);
-    if (p <= 0) return;
+    if (p <= 0 || y > gy0 + gh || y + th < gy0) return;
     const known = tab === 'e' ? codexSeen(id) : codexTowerOpen(id), on = CODEX.sel[tab] === id, key = 'cx' + tab + id, sc = pressScale(key) * easeOutBack(p);
     const boss = tab === 'e' && ENEMIES[id].chief;
     ctx.save(); ctx.translate(x + tw / 2, y + th / 2); ctx.scale(sc, sc); ctx.translate(-(x + tw / 2), -(y + th / 2));
@@ -12153,21 +12173,22 @@ function drawCodex() {
     ctx.save(); ctx.beginPath(); ctx.roundRect(x + 3, y + 3, tw - 6, th - 22, 9); ctx.clip();
     if (tab === 'e') {
       const im = codexEnemyImg(id);
-      if (im) { const ih = boss ? 92 : id === 'ram' || id === 'catapult' || id === 'cavalry' ? 70 : 82; drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
+      if (im) { const ih = boss ? 112 : id === 'ram' || id === 'catapult' || id === 'cavalry' ? 84 : 98; drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
     } else {
       const im = towerIcon(id, 3);
       if (im) drawSprite(ctx, known ? im : silhouette('tower_' + id, im), x + tw / 2, y + th - 24, (th - 26) * im.width / im.height * 0.95);
     }
     ctx.restore();
-    fitTxt(known ? (tab === 'e' ? ENEMIES[id].name : TOWERS[id].name) : '???', x + tw / 2, y + th - 10, tw - 8, tab === 'e' ? 9.5 : 11, known ? '#f0e2c4' : '#8a7a9a', 'center', '800', FONT_B, false, 7);
+    fitTxt(known ? (tab === 'e' ? ENEMIES[id].name : TOWERS[id].name) : '???', x + tw / 2, y + th - 10, tw - 6, 13, known ? '#f0e2c4' : '#8a7a9a', 'center', '800', FONT_B, false, 10);
     if (!known) drawIcon('lock', x + tw - 14, y + 14, 14);
-    if ((save.codexNew || []).includes(id)) { const by = y + 6 + Math.sin(time * 5 + i) * 1.5; roundRect(x + tw - 34, by - 7, 34, 14, 7, '#e8434b', '#fff', 1.2); txt('YENİ', x + tw - 17, by + 0.5, 8.5, '#fff', 'center', '400', FONT_T); }
+    if ((save.codexNew || []).includes(id)) { const by = y + 6 + Math.sin(time * 5 + i) * 1.5; roundRect(x + tw - 40, by - 8, 40, 17, 8, '#e8434b', '#fff', 1.2); txt('YENİ', x + tw - 20, by + 0.5, 11, '#fff', 'center', '400', FONT_T); }
     ctx.restore();
-    buttons.push({ key, x, y, w: tw, h: th, fn: () => { if (!known) { sfx('error'); return; } if (!on) { CODEX.sel[tab] = id; CODEX.t0 = time; CODEX.rank = 0; sfx('pick'); } } });
+    buttons.push({ key, x, y: Math.max(y, gy0), w: tw, h: Math.min(y + th, gy0 + gh) - Math.max(y, gy0), fn: () => { if (!known) { sfx('error'); return; } if (!on) { CODEX.sel[tab] = id; CODEX.t0 = time; CODEX.rank = 0; sfx('pick'); } } });
   });
+  ctx.restore();
   // sağ: ayrıntı kartı
   const id = CODEX.sel[tab], known = tab === 'e' ? codexSeen(id) : codexTowerOpen(id);
-  const px = 476, py = 86, pw = 456, ph = 434, pk = clamp((st - 0.2) / 0.3, 0, 1);
+  const px = gx + gw + 6, py = 80, pw = Math.min(520, EDGE.r - 12 - px), ph = EDGE.b - 10 - py, pk = clamp((st - 0.2) / 0.3, 0, 1);
   if (pk <= 0) return;
   ctx.save(); ctx.globalAlpha = pk;
   if (NECRO) pauseFrame(px, py, pw, ph, 0);
@@ -12208,43 +12229,43 @@ function drawCodexEnemy(id, px, py, pw, ph) {
     if (r === 2) drawRankStar(cx, cy - hh - 8);
   }
   // rütbe seçimi
-  if (ranked) ['Er', 'Kıdemli', 'Yüzbaşı'].forEach((lb, i) => codexPill('cxr' + i, px + 14 + i * 66, py + 250, i ? 70 : 52, lb, r === i, () => { CODEX.rank = i; CODEX.t0 = time; }));
+  if (ranked) ['Er', 'Kıdemli', 'Yüzbaşı'].forEach((lb, i) => codexPill('cxr' + i, px + 12 + [0, 58, 144][i], py + 252, [54, 82, 82][i], lb, r === i, () => { CODEX.rank = i; CODEX.t0 = time; }));
   // sağ üst: ad ve bilgiler
-  const x0 = px + 222;
-  txt(d.chief ? 'BOSS' : r ? `RÜTBE: ${RANKS[r].name.toLocaleUpperCase('tr')}` : 'SOLARIAN İMPARATORLUĞU', x0, py + 26, 10.5, d.chief ? '#ff9a7a' : '#c8a8ff', 'left', '800', FONT_B, false);
+  const x0 = px + 222; CODEX.statW = Math.min(140, (pw - 236) / 2);
+  fitTxt(d.chief ? 'BOSS' : r ? `RÜTBE: ${RANKS[r].name.toLocaleUpperCase('tr')}` : (LEVELS[codexFirstLevel(id)] || {}).ep === 2 ? 'KUTSAL ENGİZİSYON' : 'SOLARIAN İMPARATORLUĞU', x0, py + 26, pw - 236, 12.5, d.chief ? '#ff9a7a' : '#c8a8ff', 'left', '800', FONT_B, false);
   const nl = wrapLines(d.name, pw - 236, 22, '400', FONT_T, 2);
   nl.forEach((l, i) => txt(l, x0, py + 48 + i * 24, 22, '#fff', 'left', '400', FONT_T));
   let y = py + 54 + nl.length * 24;
   const fl = codexFirstLevel(id);
-  if (fl >= 0) { fitTxt(`İlk görüldüğü yer: ${fl + 1}. bölüm · ${LEVELS[fl].name}`, x0, y, pw - 236, 10, '#a898b8', 'left', '700'); y += 18; }
+  if (fl >= 0) { fitTxt(`İlk görüldü: ${epLevels(epOf(fl)).indexOf(fl) + 1}. bölüm · ${LEVELS[fl].name}`, x0, y, pw - 236, 12.5, '#b8a8c8', 'left', '700', FONT_B, false, 10); y += 20; }
   const hp = d.chief ? codexBossHp(id) : d.hp;
   const stats = [['Can', hp + ''], ['Zırh', `%${Math.round(d.armor * 100)}`], ['Büyü dir.', `%${Math.round(d.mr * 100)}`],
     ['Hız', speedName(d.speed)], ['Hasar', `${d.dmg[0]}–${d.dmg[1]}`], ['Can kaybı', d.lives + ''], ['Altın', d.gold + '']];
   y = codexStats(stats, x0, y) + 6;
   const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
   let cxp = x0;
-  if (NECRO && ARMOR_CLASS[d.acl]) { codexChip(cxp, y, `Zırh sınıfı: ${ARMOR_CLASS[d.acl].name}`, '#efe1c0', 'rgba(90,20,50,0.7)', 9.5); y += 20; } // hasar türü tablosu (10 Eki)
-  for (const q of weak) cxp += codexChip(cxp, y, `Zayıf: ${WK_NAME[q]} +%${Math.round((wk[q] - 1) * 100)}`, '#ffd08a', 'rgba(150,60,10,0.6)', 9.5) + 4;
-  if (weak.length) { y += 20; cxp = x0; }
-  for (const q of res) cxp += codexChip(cxp, y, `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`, '#a8d8ff', 'rgba(20,60,120,0.6)', 9.5) + 4;
+  if (NECRO && ARMOR_CLASS[d.acl]) { codexChip(cxp, y, `Zırh: ${ARMOR_CLASS[d.acl].name}`, '#efe1c0', 'rgba(90,20,50,0.7)'); y += 24; } // hasar türü tablosu (10 Eki)
+  for (const q of weak) { const s2 = `Zayıf: ${WK_NAME[q]} +%${Math.round((wk[q] - 1) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#ffd08a', 'rgba(150,60,10,0.6)') + 4; }
+  if (weak.length) { y += 24; cxp = x0; }
+  for (const q of res) { const s2 = `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#a8d8ff', 'rgba(20,60,120,0.6)') + 4; }
   // alt: açıklama, yetenekler, Mortimer'ın notu
-  let by = py + 284;
+  let by = py + 290;
   const desc = ENEMY_DESC[id] || d.desc || '';
-  if (r) { txt(r === 1 ? 'Kıdemli: %60 daha canlı, daha sert vurur, biraz daha zırhlı' : 'Yüzbaşı: 2,5 kat canlı, borazanıyla çevresini hızlandırır', px + 18, by, 11.5, r === 2 ? '#ffe27a' : '#ff9a8a', 'left', '800', FONT_B, false); by += 18; }
-  wrapLines(d.chief ? d.desc : desc, pw - 36, 11.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 11.5, '#f0e2c4', 'left', '700', FONT_B, false); by += 16; });
+  if (r) { fitTxt(r === 1 ? 'Kıdemli: %60 daha canlı, daha sert vurur, biraz daha zırhlı' : 'Yüzbaşı: 2,5 kat canlı, borazanıyla çevresini hızlandırır', px + 18, by, pw - 36, 13, r === 2 ? '#ffe27a' : '#ff9a8a', 'left', '800', FONT_B, false); by += 20; }
+  wrapLines(d.chief ? d.desc : desc, pw - 36, 13.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 13.5, '#f0e2c4', 'left', '700', FONT_B, false); by += 18; });
   const sk = enemySkills(d);
   if (sk.length) {
     by += 2;
-    for (const l of sk.slice(0, 4)) { circle(px + 22, by, 3, '#c8a8ff'); txt(l, px + 32, by + 0.5, 10.5, '#e0d4f0', 'left', '700', FONT_B, false); by += 15; }
+    for (const l of sk.slice(0, r ? 2 : 3)) { circle(px + 22, by, 3.5, '#c8a8ff'); fitTxt(l, px + 32, by + 0.5, pw - 50, 12.5, '#e0d4f0', 'left', '700', FONT_B, false, 10); by += 17; }
   }
-  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 6, py + ph - 58), pw);
+  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 6, py + ph - 62), pw);
 }
 function codexNoteBox(note, px, y, pw) {
   if (!note) return;
-  roundRect(px + 14, y, pw - 28, 44, 10, 'rgba(232,220,188,0.95)', '#1a1024', 1.6);
-  drawSkullIcon(px + 32, y + 22, 9);
-  txt("Mortimer'ın notu", px + 48, y + 12, 9.5, '#6a4a8a', 'left', '800', FONT_B, false);
-  wrapLines(note, pw - 80, 11.5, '800', FONT_B, 2).forEach((l, i) => txt(l, px + 48, y + 26 + i * 13, 11.5, '#2a1838', 'left', '800', FONT_B, false));
+  roundRect(px + 14, y, pw - 28, 52, 10, 'rgba(232,220,188,0.95)', '#1a1024', 1.6);
+  drawSkullIcon(px + 32, y + 26, 10);
+  txt("Mortimer'ın notu", px + 50, y + 13, 11.5, '#6a4a8a', 'left', '800', FONT_B, false);
+  wrapLines(note, pw - 84, 13, '800', FONT_B, 2).forEach((l, i) => txt(l, px + 50, y + 29 + i * 15, 13, '#2a1838', 'left', '800', FONT_B, false));
 }
 const DMG_NAME = { archer: 'Delici (ok)', mage: 'Ruh (büyü)', artillery: 'Veba/Ateş (alan)', barracks: 'Kesici (iskeletler)', altar: 'Saldırmaz' };
 function drawCodexTower(id, px, py, pw, ph) {
@@ -12252,30 +12273,27 @@ function drawCodexTower(id, px, py, pw, ph) {
   const cx = px + 104, cy = py + 214, im = towerIcon(id, li + 1);
   codexStage(cx, cy, 170, 190, '170,130,255');
   if (im) { const h = (110 + li * 20) * (0.7 + 0.3 * k); drawSprite(ctx, im, cx, cy + 4, h * im.width / im.height); }
-  ['1', '2', '3'].forEach((lb, i) => codexPill('cxl' + i, px + 30 + i * 54, py + 250, 46, lb + '. sv', li === i, () => { CODEX.lvl = i; CODEX.t0 = time; }));
-  const x0 = px + 222;
-  txt(T.name.toLocaleUpperCase('tr'), x0, py + 26, 10.5, '#c8a8ff', 'left', '800', FONT_B, false);
-  txt(L.title, x0, py + 48, 22, '#fff', 'left', '400', FONT_T);
-  txt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 70, 10, '#a898b8', 'left', '700', FONT_B, false);
+  ['1', '2', '3'].forEach((lb, i) => codexPill('cxl' + i, px + 20 + i * 64, py + 252, 58, lb + '. sv', li === i, () => { CODEX.lvl = i; CODEX.t0 = time; }));
+  const x0 = px + 222; CODEX.statW = Math.min(140, (pw - 236) / 2);
+  txt(T.name.toLocaleUpperCase('tr'), x0, py + 26, 12.5, '#c8a8ff', 'left', '800', FONT_B, false);
+  fitTxt(L.title, x0, py + 48, pw - 236, 22, '#fff', 'left', '400', FONT_T);
+  fitTxt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 72, pw - 236, 12.5, '#a898b8', 'left', '700', FONT_B, false);
   const stats = [['Maliyet', L.cost + ' altın'], ['Menzil', L.range + '']];
   if (id === 'barracks') stats.push(['İskelet canı', L.hp + ''], ['İsk. hasarı', `${L.dmg[0]}–${L.dmg[1]}`], ['İsk. zırhı', `%${Math.round(L.armor * 100)}`], ['Doğma süresi', L.respawn + ' sn']);
   else if (id === 'altar') stats.push(['Direnç kırma', `%${Math.round(L.res * 100)}`], ['Fazla hasar', `+%${Math.round(L.curse * 100)}`], ['Yavaşlık', `%${Math.round(L.slow * 100)}`], ['Güçsüzlük', `%${Math.round(L.weak * 100)}`], ['Dirilme', `%${Math.round(L.rise * 100)}`]);
   else { stats.push(['Hasar', `${L.dmg[0]}–${L.dmg[1]}`], ['Atış arası', L.rate + ' sn']); if (L.splash) stats.push(['Alan', L.splash + '']); }
   let y = codexStats(stats, x0, py + 92) + 4;
-  wrapLines(L.perk || T.desc, pw - 236, 11, '700', FONT_B, 3).forEach(l => { txt(l, x0, y, 11, '#f0e2c4', 'left', '700', FONT_B, false); y += 15; });
+  wrapLines(L.perk || T.desc, pw - 236, 12.5, '700', FONT_B, 3).forEach(l => { txt(l, x0, y, 12.5, '#f0e2c4', 'left', '700', FONT_B, false); y += 16; });
   // uzmanlıklar
-  let by = py + 284;
-  txt('UZMANLIKLAR (3. seviyede biri seçilir)', px + 18, by, 10.5, '#ffe27a', 'left', '800', FONT_B, false); by += 16;
+  let by = py + 290;
+  txt('UZMANLIKLAR (3. seviyede biri seçilir)', px + 18, by, 12.5, '#ffe27a', 'left', '800', FONT_B, false); by += 19;
   for (const a of T.abilities || []) {
     const S = SPEC[a.id] || {}, top = a.ranks[a.ranks.length - 1], title = S.title || a.name;
-    txt(title, px + 18, by, 12.5, '#fff', 'left', '400', FONT_T);
-    ctx.font = `400 12.5px ${FONT_T}`; lastFont = null; const nw = ctx.measureText(title).width;
-    if (S.who) fitTxt('· ' + S.who, px + 24 + nw, by, pw - 48 - nw, 10, '#a898b8', 'left', '700');
-    by += 13;
-    fitTxt(`${a.name}, en üst kademe: ${a.desc(top)}`, px + 18, by, pw - 36, 10, '#cdbb98', 'left', '700');
-    by += 14;
+    txt(title, px + 18, by, 14, '#fff', 'left', '400', FONT_T); by += 17;
+    wrapLines(S.who || `${a.name}: ${a.desc(top)}`, pw - 36, 12.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 12.5, '#cdbb98', 'left', '700', FONT_B, false); by += 15; }); // 11 Eki: tek satıra küçültmek yerine iki satır
+    by += 4;
   }
-  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 4, py + ph - 58), pw);
+  if (by + 56 < py + ph) codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 4, py + ph - 62), pw);
 }
 
 
@@ -14060,8 +14078,8 @@ function drawWinSummary(k, px, py, pw, cx) {
   const up = (v, d) => Math.round(v * easeOutQ(clamp((k - 1.0 - d) / 0.8, 0, 1)));
   const mm = Math.floor(G.t / 60), ss = Math.floor(G.t % 60);
   const cell = (x, y, label, val, col) => {
-    txt(label, x, y, 12, '#a89cb8', 'left', '800', FONT_B, false);
-    txt(String(val), x + w / 2 - 34, y, 17, col || '#efe6cc', 'right', '400', FONT_T, false);
+    fitTxt(label, x, y, w / 2 - 80, 15, '#b8acc8', 'left', '800', FONT_B, false, 11);
+    txt(String(val), x + w / 2 - 30, y, 20, col || '#efe6cc', 'right', '400', FONT_T, false);
   };
   cell(x0 + 18, y0 + 22, 'Öldürülen düşman', up(G.kills || 0, 0));
   cell(x0 + w / 2 + 18, y0 + 22, 'Süre', k > 1.0 ? `${mm}:${String(ss).padStart(2, '0')}` : '–');
@@ -14075,8 +14093,8 @@ function drawWinSummary(k, px, py, pw, cx) {
   ctx.save(); ctx.translate(cx, y0 + 90); ctx.scale(a, a);
   roundRect(-w / 2 + 10, -16, w - 20, 32, 9, 'rgba(60,140,70,0.25)', 'rgba(140,255,150,0.6)', 1.2);
   drawIcon('crown', -w / 2 + 34, 0, 20);
-  txt('En çok öldüren:', -w / 2 + 52, 1, 13, '#cfe8c8', 'left', '800', FONT_B, false);
-  txt(`${name} · ${bn}`, w / 2 - 24, 1, 17, '#b8ff9a', 'right', '400', FONT_T, false);
+  txt('En çok öldüren:', -w / 2 + 52, 1, 15, '#cfe8c8', 'left', '800', FONT_B, false);
+  txt(`${name} · ${bn}`, w / 2 - 24, 1, 19, '#b8ff9a', 'right', '400', FONT_T, false);
   ctx.restore();
 }
 // ---- Necromancer menü kiti (duraklatma menüsünün tasarımı bütün oyuna; Caner, 10 Eki: "çok güzel olmuş, tüm oyuna uyarla") ----
@@ -14340,7 +14358,7 @@ function drawOverlay() {
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
-  const pw = big ? 600 : pz ? 480 : 470, ph = big ? (NECRO ? 420 : 400) : sum ? 440 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : 18), px = cx - pw / 2, py = cy - ph / 2;
+  const pw = big ? 600 : pz ? 480 : sum ? 560 : 500, ph = big ? (NECRO ? 420 : 400) : sum ? 472 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
@@ -14389,16 +14407,16 @@ function drawOverlay() {
     txt(lt, cx + 12, py + 178, 21, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
     const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60);
     if (sum) drawWinSummary(k, px, py, pw, cx);
-    else txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 13, '#8a6238', 'center', '800', FONT_B, false);
-    if (NECRO) txt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 336 : 228), 13, '#9fd8a0', 'center', '700', FONT_B, false);
-    const appear = k - 1.3, by = sum ? 110 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
+    else txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 15, '#8a6238', 'center', '800', FONT_B, false);
+    if (NECRO) fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 336 : 228), pw - 60, 15, '#9fd8a0', 'center', '700', FONT_B, false, 12);
+    const appear = k - 1.3, by = sum ? 138 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
     if (G.idx + 1 < LEVELS.length) {
-      roundBtn('ov_retry', cx - 160, py + 262 + by, 25, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
-      txt('Tekrar', cx - 160, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      roundBtn('ov_map', cx - 84, py + 262 + by, 25, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
-      txt('Harita', cx - 84, py + 302 + by, 12, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      gameButton('ov_next', cx + 100, py + 262 + by, 196, 56, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
-        { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 22, glow: '140,255,120' });
+      roundBtn('ov_retry', cx - 200, py + 258 + by, 29, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
+      txt('Tekrar', cx - 200, py + 304 + by, 14, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
+      roundBtn('ov_map', cx - 116, py + 258 + by, 29, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
+      txt('Harita', cx - 116, py + 304 + by, 14, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
+      gameButton('ov_next', cx + 104, py + 258 + by, 250, 60, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
+        { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 20, glow: '140,255,120' });
     } else {
       if (!NECRO) txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
       gameButton('ov_retry', cx - 110, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear });
@@ -14413,8 +14431,8 @@ function drawOverlay() {
       txt(G.endNew ? 'YENİ REKOR!' : `Rekor: ${G.endBest} dalga`, cx, py + 192, 15, G.endNew ? '#ffe27a' : '#a89cb8', 'center', '400', FONT_T, false);
     } else {
       txt(`${G.wave}. dalgada düştün`, cx, py + 164, 22, NECRO ? '#e8dcc0' : '#5a3410', 'center', '400', FONT_T, false);
-      { const L = wrapLines(TIPS[(G.idx + G.wave) % TIPS.length], pw - 70, 13, '700', FONT_B, 2); // uzun ipucu panelden taşmasın
-        L.forEach((l, i) => txt(l, cx, py + 188 + (i - (L.length - 1) / 2) * 16, 13, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false)); }
+      { const L = wrapLines(TIPS[(G.idx + G.wave) % TIPS.length], pw - 60, 15, '700', FONT_B, 2); // uzun ipucu panelden taşmasın
+        L.forEach((l, i) => txt(l, cx, py + 190 + (i - (L.length - 1) / 2) * 18, 15, NECRO ? '#a89cb8' : '#8a6238', 'center', '700', FONT_B, false)); }
     }
     if (!G.revived && !G.endless) { // ödüllü reklam: bölüm başına bir kez, 5 canla kaldığın yerden devam
       gameButton('ov_revive', cx, py + 240, 300, 50, isPremium() ? '5 CANLA DEVAM ET' : '▶ REKLAM İZLE · 5 CANLA DEVAM', () => showRewardedAd(() => {
@@ -14481,6 +14499,8 @@ canvas.addEventListener('pointerdown', (ev) => {
     return;
   }
   swipe = screen === 'map' ? { x: p.x, y: p.y } : null;
+  const sa = scrollAreas.find(a => a.max > 0 && p.x >= a.x && p.x <= a.x + a.w && p.y >= a.y && p.y <= a.y + a.h);
+  if (sa) ptr.scroll = { key: sa.key, start: SCROLL[sa.key] || 0, max: sa.max };
   for (let i = buttons.length - 1; i >= 0; i--) {
     const b = buttons[i];
     if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
@@ -14513,6 +14533,11 @@ canvas.addEventListener('pointermove', (ev) => {
     return;
   }
   if (!ptr.moved && dist(p.x, p.y, ptr.sx, ptr.sy) > DRAG_PX) ptr.moved = true;
+  if (ptr.scroll && ptr.moved) { // liste kaydırma: basılan düğme iptal
+    SCROLL[ptr.scroll.key] = clamp(ptr.scroll.start - (p.y - ptr.sy), 0, ptr.scroll.max);
+    if (press.id === ev.pointerId) { press.key = null; press.b = null; }
+    ptr.hud = true; return;
+  }
   if (ptr.moved && !ptr.hud && playing) { cam.x -= dx / cam.z; cam.y -= dy / cam.z; clampCam(); }
 });
 
@@ -14530,7 +14555,8 @@ window.addEventListener('pointercancel', (ev) => endPointer(ev, true));
 
 canvas.addEventListener('wheel', (ev) => {
   ev.preventDefault();
-  if (screen !== 'play' || overlay) return;
+  if (screen !== 'play') { const q = toLogical(ev), a = scrollAreas.find(o => o.max > 0 && q.x >= o.x && q.x <= o.x + o.w && q.y >= o.y && q.y <= o.y + o.h); if (a) SCROLL[a.key] = clamp((SCROLL[a.key] || 0) + ev.deltaY * 0.6, 0, a.max); return; }
+  if (overlay) return;
   const p = toLogical(ev);
   // trackpad sıkıştırması ctrlKey ile gelir ve küçük adımlıdır
   const k = Math.exp(-ev.deltaY * (ev.ctrlKey ? 0.012 : 0.0018)), base = zoomGoal ? zoomGoal.z : cam.z;
@@ -14781,7 +14807,7 @@ function frame(now) {
   ctx.fillStyle = '#06030a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy);
   ctx.save(); ctx.beginPath(); ctx.rect(VIS.l, VIS.t, VIS.w, VIS.h); ctx.clip();
-  buttons.length = 0;
+  buttons.length = 0; scrollAreas.length = 0;
   if (screen === 'title') drawTitle();
   else if (screen === 'map') drawMap();
   else if (screen === 'heroes') drawHeroes();
