@@ -256,3 +256,8 @@ Kaggle kuralları: aynı anda 2 GPU oturumu (betikler dakikada bir yeniden dener
   (hızlı/zırhlı/uçan/menzilli), çok girişli haritada tek gruplu dalgalar bölünür ve sondan üçüncü dalga ikinci girişten baskın.
   Eski 8 dalgalık şablonlar (L, L2, mk) yeniden örneklenir. Can çarpanları HPMUL/HPMUL2 bu yapıya göre botla ayarlandı (hedef: 1. sefer 18→6, 2. sefer 12→3 can).
 - TEST_OPEN (game.js) test için her şeyi açar; mağaza sürümünden önce false.
+
+## Artifact dosya sınırı (11 Eki)
+Artifact bir sürümde en çok 512 dosya tutar; v347'de 507 dosya var. Yeni görsel eklerken yer açmak için kullanılmayan yayın dosyalarını `files` içinde `null` ile sil
+(manifest/anim.json/kodda geçmeyenler; önce `Artifact list scope:files`). İskelet okçu 3. kademe +5 dosya getirecek.
+İskelet okçular: kademe kareleri `varliklar/iskelet_okcu_kare_isle.py` (her kare ayrı Gemini görseli + çöp adam poz kılavuzu), 1. kademe eski sayfa (`iskelet_okcu_isle.py`), yeniden çizilecek.
