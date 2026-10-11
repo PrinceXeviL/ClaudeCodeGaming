@@ -102,7 +102,11 @@
 "Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "Мертвецы, в могилы! На этой земле никто не встанет.",
 "Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "Изгоняет моих мертвецов? Осторожно, эта женщина нас погубит.",
 "Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "Мой меч горит святым огнём. Твои костяные башни станут пеплом!",
-"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "Принёс огонь, мило. Жаль, чайника нет — воду вскипятить."
+"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "Принёс огонь, мило. Жаль, чайника нет — воду вскипятить.",
+"YENİ: MEZAR BEKÇİSİ": "НОВОЕ: СТРАЖ МОГИЛЫ",
+"Kalk bakalım, nöbet senin.": "Подъём, твоя смена.",
+"Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Знаю, тебе удобно лежалось в могиле. Прости.",
+"Kapıya kimse girmeyecek. Kimse.": "Никто не пройдёт в ворота. Никто."
 },
 "tpl": [
 [
@@ -132,6 +136,18 @@
 [
 "+{} altın",
 "+{} золота"
+],
+[
+"Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
+"Нажми на могилу у замка: за {} золота встанет трупный голем и удержит ворота."
+],
+[
+"Mezar — {} altın",
+"Могила — {} золота"
+],
+[
+"Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
+"Встаёт трупный голем (Здоровье {} · Урон {}-{} · Броня {}%), держит ворота замка; если погибнет, встанет снова через {} с."
 ]
 ]
 }

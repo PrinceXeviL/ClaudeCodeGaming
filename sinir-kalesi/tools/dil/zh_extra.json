@@ -102,7 +102,11 @@
 "Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "亡者回墓去！这片土地上谁也别想站起来。",
 "Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "她在驱逐我的亡者？小心，这女人能毁了我们。",
 "Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "我的剑燃着圣火。你的骨塔将化为灰烬！",
-"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "他带火来了，挺好。可惜我没茶壶烧水。"
+"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "他带火来了，挺好。可惜我没茶壶烧水。",
+"YENİ: MEZAR BEKÇİSİ": "新：守墓者",
+"Kalk bakalım, nöbet senin.": "起来吧，该你站岗了。",
+"Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "我知道你在墓里躺得正舒服。抱歉。",
+"Kapıya kimse girmeyecek. Kimse.": "谁也别想进这道门。谁也别想。"
 },
 "tpl": [
 [
@@ -132,6 +136,18 @@
 [
 "+{} altın",
 "+{} 金币"
+],
+[
+"Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
+"点击城堡旁的坟墓：花{}金币唤起尸骸魔像守住城门。"
+],
+[
+"Mezar — {} altın",
+"坟墓 — {}金币"
+],
+[
+"Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
+"尸骸魔像起身（生命{} · 伤害{}-{} · 护甲{}%），守住城门；阵亡后{}秒再次站起。"
 ]
 ]
 }

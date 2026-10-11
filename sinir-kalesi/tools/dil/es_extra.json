@@ -102,7 +102,11 @@
 "Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "¡Muertos, a vuestras tumbas! Ninguno se alzará en esta tierra.",
 "Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "¿Expulsa a mis muertos? Cuidado, esta mujer puede acabar con nosotros.",
 "Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "Mi espada arde con fuego sagrado. ¡Tus torres de hueso serán cenizas!",
-"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "Ha traído fuego, qué bien. Lástima que no tenga tetera para hervir agua."
+"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "Ha traído fuego, qué bien. Lástima que no tenga tetera para hervir agua.",
+"YENİ: MEZAR BEKÇİSİ": "NUEVO: GUARDIÁN DE LA TUMBA",
+"Kalk bakalım, nöbet senin.": "Arriba, te toca la guardia.",
+"Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Estabas cómodo en tu tumba, lo sé. Perdona.",
+"Kapıya kimse girmeyecek. Kimse.": "Nadie cruza esa puerta. Nadie."
 },
 "tpl": [
 [
@@ -132,6 +136,18 @@
 [
 "+{} altın",
 "+{} de oro"
+],
+[
+"Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
+"Toca la tumba junto al castillo: por {} de oro se alza un Gólem de Cadáveres y guarda la puerta."
+],
+[
+"Mezar — {} altın",
+"Tumba — {} de oro"
+],
+[
+"Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
+"Se alza un Gólem de Cadáveres (Vida {} · Daño {}-{} · Armadura {}%) y guarda la puerta; si muere, vuelve a alzarse tras {} s."
 ]
 ]
 }

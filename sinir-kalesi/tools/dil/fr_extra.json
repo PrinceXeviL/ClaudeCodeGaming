@@ -102,7 +102,11 @@
 "Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "Morts, retournez dans vos tombes ! Aucun ne se relèvera ici.",
 "Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "Elle chasse mes morts ? Attention, cette femme peut nous ruiner.",
 "Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "Mon épée brûle d'un feu sacré. Tes tours d'os finiront en cendres !",
-"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "Il a apporté du feu, charmant. Dommage, je n'ai plus de théière."
+"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "Il a apporté du feu, charmant. Dommage, je n'ai plus de théière.",
+"YENİ: MEZAR BEKÇİSİ": "NOUVEAU : GARDIEN DE LA TOMBE",
+"Kalk bakalım, nöbet senin.": "Debout, c'est ton tour de garde.",
+"Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Tu reposais tranquille dans ta tombe, je sais. Désolé.",
+"Kapıya kimse girmeyecek. Kimse.": "Personne ne passe cette porte. Personne."
 },
 "tpl": [
 [
@@ -132,6 +136,18 @@
 [
 "+{} altın",
 "+{} or"
+],
+[
+"Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
+"Touche la tombe près du château : pour {} or, un golem de cadavres se lève et garde la porte."
+],
+[
+"Mezar — {} altın",
+"Tombe — {} or"
+],
+[
+"Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
+"Un golem de cadavres se lève (PV {} · Dégâts {}-{} · Armure {} %) et garde la porte ; s'il meurt, il se relève après {} s."
 ]
 ]
 }

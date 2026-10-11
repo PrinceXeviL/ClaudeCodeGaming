@@ -809,10 +809,14 @@ function nearestOnPaths(paths, x, y) {
 // gulyabani ölürse respawn sn sonra kapaktan yeniden çıkar; meşaleci kapağın yanında seal sn kalırsa kapağı mühürler (artık çıkmaz)
 const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
   ghoul: { hp: 520, dmg: [10, 16], armor: 0.35, rate: 1.1, speed: 40, engage: 80 } };
+// ----- Mezar Bekçisi (12 Eki, Caner): 1. seferde 5. bölümden itibaren kalenin dibinde bir mezar; topraktan el uzanır (dokunulabilir),
+// altınla Ceset Golemi çıkar (vuruşu çevresine de işler), kapının önünü tutar; ölürse respawn sn sonra yeniden kalkar. Mahzen kapağı sistemiyle aynı.
+const GRAVE = { cost: 110, respawn: 30, w: 56, from: 4, knight: { hp: 620, dmg: [16, 24], armor: 0.3, rate: 1.2, speed: 34, engage: 80, aoe: 0.5 } }; // 12 Eki (Caner): mezardan Ceset Golemi kalkar; vuruşu çevresine de işler
 const epRel = (lv) => LEVELS.indexOf(lv) - LEVELS.findIndex(l => l.ep === lv.ep); // seferin içindeki sıra (0..19)
 function hatchSpots(lv, paths) {
-  if (lv.ep !== 2 || !NECRO) return [];
+  if (!NECRO) return [];
   if (lv._hatch) return lv._hatch;
+  if (lv.ep !== 2) return (lv._hatch = castleGraveSpot(lv, paths));
   const li = LEVELS.indexOf(lv);
   let seed = ((li + 7) * 2246822519) >>> 0;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -831,6 +835,21 @@ function hatchSpots(lv, paths) {
   return (lv._hatch = out);
 }
 
+// kalenin dibindeki mezar: kaleye giren yolun son kısmında, yolun yanında, arsalara ve kaleye binmeden
+function castleGraveSpot(lv, paths) {
+  if (epRel(lv) < GRAVE.from || !lv.castle) return [];
+  const [cx, cy] = lv.castle, R = lv.roadK || ROAD_K, off = 34 + 12 * R;
+  const P = paths.reduce((a, p) => { const e = p.pts[p.pts.length - 1], f = a.pts[a.pts.length - 1]; return dist(e[0], e[1], cx, cy) < dist(f[0], f[1], cx, cy) ? p : a; }, paths[0]);
+  for (let d = P.total - 80; d > P.total - 260; d -= 12) for (const side of [1, -1]) {
+    const q = pathPos(P, d), x = q.x - q.dy * off * side, y = q.y + q.dx * off * side;
+    if (x < 40 || x > W - 40 || y < 90 || y > H - 40 || (y > H - 90 && x < 440)) continue;
+    if (nearestOnPaths(paths, x, y).d < off - 4) continue;
+    if (lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < 52)) continue;
+    if (dist(x, y, cx, cy) < 70) continue;
+    return [[x, y, q.x, q.y, 'grave']];
+  }
+  return [];
+}
 // ----- Kızıl Ay (2. sefer): işaretli dalgada gök kızarır. İskeletler sert vurur, büyüler hızlı dolar,
 // ölen düşman kendiliğinden ölü olarak kalkar; Engizisyon dua eder (yavaşlar) -----
 const BLOOD = { dur: 20, dmg: 1.3, cd: 2, slow: 0.75, rise: 0.8 };
@@ -1493,7 +1512,7 @@ function startLevel(idx, chal = null) {
     enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [], dmgNums: [],
     parts: [], decals: [], zones: [], coins: [], traps: [], shakeT: 0, shakeAmp: 0, shakeDur: 1, ambT: 0,
     plots: lv.plots.map(([x, y]) => ({ x, y, tower: null })),
-    hatches: hatchSpots(lv, paths).map(([x, y, rx, ry]) => ({ x, y, rx, ry, state: 'closed', sealT: 0, ghoul: null })),
+    hatches: hatchSpots(lv, paths).map(([x, y, rx, ry, kind]) => ({ x, y, rx, ry, state: 'closed', sealT: 0, ghoul: null, grave: kind === 'grave' })),
     heroes: [],
     spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
@@ -1531,7 +1550,10 @@ function startLevel(idx, chal = null) {
   setupGate();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
   // yeni büyü açıldıysa ilk bölümde duyurulur
-  if (G.hatches.length && !save.hatchSeen) {
+  if (G.hatches.some(h => h.grave) && !save.graveSeen) {
+    save.graveSeen = true; persist();
+    G.banner = { title: 'YENİ: MEZAR BEKÇİSİ', sub: `Kalenin yanındaki mezara dokun: ${GRAVE.cost} altına Ceset Golemi kalkar, kapıyı tutar.`, t: 0, dur: 5 };
+  } else if (G.hatches.some(h => !h.grave) && !save.hatchSeen) {
     save.hatchSeen = true; persist();
     G.banner = { title: 'YENİ: MAHZEN KAPAĞI', sub: `Kapağa dokun: ${HATCH.cost} altına gulyabani çıkar, yolu tutar. Meşaleciler kapağı mühürler!`, t: 0, dur: 5 };
   } else if (NECRO && necroSpellOn('nm_golem') && !save.golemSeen) {
@@ -4609,6 +4631,7 @@ function drawMortimer() {
 }
 // Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
 const MORT_LINES = {
+  grave: ['Kalk bakalım, nöbet senin.', 'Mezarında rahat yatıyordun, biliyorum. Kusura bakma.', 'Kapıya kimse girmeyecek. Kimse.'],
   sev2: ['Katedral yıkıldı. Kirasını kim ödeyecek?', 'Çaydanlığımı hâlâ tutuyor. Elini yakmasın.', 'İniyor! Merdiven yokmuş demek.'],
   sev3: ['O çaydanlık bana ait. Laneti de.', 'Söylemiştim: demlenmeden içilmez.', 'Yeşil sana yakışmadı, Severus.'],
   glor2: ['Arabası kırıldı. Yürüsün biraz, sağlığa iyi.', 'Aslanlar kaçtı. Akıllı hayvanlar.', 'Yayan general mi? Ne kadar da mütevazı.'],
@@ -5510,8 +5533,19 @@ function drawBloodMoon() {
 }
 // ----- mahzen kapağı -----
 function openHatch(h) {
-  if (!h || h.state !== 'closed' || G.gold < HATCH.cost) return false;
-  G.gold -= HATCH.cost; h.state = 'open'; h.openT = G.t;
+  const cost = h && h.grave ? GRAVE.cost : HATCH.cost;
+  if (!h || h.state !== 'closed' || G.gold < cost) return false;
+  G.gold -= cost; h.state = 'open'; h.openT = G.t;
+  if (h.grave) { // Ceset Golemi (Caner, 12 Eki): golemin çizimi ve şeritleri, iri; ömrü yok (büyüdeki golemden farkı)
+    const K = GRAVE.knight, s = { guard: true, ghoul: h, militia: false, x: h.x, y: h.y, rx: h.rx, ry: h.ry, hp: K.hp, maxHp: K.hp, dmg: K.dmg, armor: K.armor,
+      rate: K.rate, speed: K.speed, engage: K.engage, aoe: K.aoe, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t + 0.35,
+      big: 'unit_corpsegolem', bh: BIG_H.golem };
+    h.ghoul = s; G.soldiers.push(s); h.burstT = G.t;
+    ghoulRiseFx(h);
+    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'chunk', x: h.x + rand(-10, 10), y: h.y - rand(0, 6), vx: rand(-90, 90), vy: -rand(80, 200), g: 520, vr: rand(-12, 12), rot: rand(0, 6), col: i % 2 ? '#5a4632' : '#3a2c20', s0: rand(1.6, 3), s1: 1, life: rand(0.6, 1), floor: h.y + rand(-4, 6) });
+    shakeScreen(2.5, 0.25); sfx('raise'); sfx('rattle'); mortSay('grave', true);
+    return true;
+  }
   const C = HATCH.ghoul, s = { guard: true, ghoul: h, militia: false, x: h.x, y: h.y, rx: h.rx, ry: h.ry, hp: C.hp, maxHp: C.hp, dmg: C.dmg, armor: C.armor,
     rate: C.rate, speed: C.speed, engage: C.engage, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t,
     big: 'unit_gulyabani', bigAtk: 'unit_gulyabani_lunge', bh: BIG_H.ghoul };
@@ -5528,7 +5562,7 @@ function ghoulRiseFx(h) {
 }
 function updateHatches(dt) {
   for (const h of G.hatches) {
-    if (h.state === 'sealed') continue;
+    if (h.state === 'sealed' || h.grave) continue;
     // meşaleci yanından geçerken (gulyabani nöbette değilse) kapağı mühürler
     const guard = h.ghoul && !h.ghoul.dead && dist(h.ghoul.x, h.ghoul.y, h.x, h.y) < HATCH.sealR * 1.6;
     const torch = !guard && G.enemies.find(e => !e.dead && e.type === 'torch' && e.siege === undefined && dist(e.x, e.y, h.x, h.y) < HATCH.sealR);
@@ -5546,6 +5580,7 @@ function updateHatches(dt) {
 }
 function drawHatches() {
   for (const h of G.hatches) {
+    if (h.grave) { drawGrave(h); continue; }
     const name = h.state === 'sealed' ? 'nm2_hatch_sealed' : h.state === 'open' ? 'nm2_hatch_open' : 'nm2_hatch', im = spr(name);
     ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(h.x + 2, h.y + 2, HATCH.w * 0.52, HATCH.w * 0.17, 0, 0, Math.PI * 2); ctx.fill();
     // kapalı kapak: aralıktan sızan yeşil-mor ışık (dokunulabilir olduğu belli olsun)
@@ -5564,6 +5599,23 @@ function drawHatches() {
       ctx.strokeStyle = '#96ff82'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(h.x, h.y - 26, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
       drawSkullIcon(h.x, h.y - 26, 5);
     }
+  }
+}
+function drawGrave(h) {
+  const im = spr('nm3_grave'), w = GRAVE.w;
+  ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(h.x + 2, h.y + 2, w * 0.5, w * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+  if (h.state === 'closed') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, h.x, h.y - 8, 44, Math.sin(time * 1.3 + h.x) > 0 ? '150,255,130' : '190,110,255', 0.32 + Math.sin(time * 3) * 0.1); ctx.restore(); }
+  if (im) drawSprite(ctx, im, h.x, h.y + w * 0.2, w);
+  if (h.state === 'closed') {
+    drawGraveHands([{ x: h.x + 4, y: h.y - 2, off: h.x % 7, T: 5.5, face: 1, k: 2 }], G.parts); // topraktan uzanan el: dokun beni
+    if (G.gold >= GRAVE.cost) { const by = h.y - 52 + Math.sin(time * 3) * 2; circle(h.x, by, 10, 'rgba(26,12,22,0.9)', '#ffd34d', 1.6); drawIcon('coin', h.x, by, 12); } // alınabilir: altın işareti
+  }
+  const g = h.ghoul;
+  if (g && g.dead && h.state === 'open') { // yeniden kalkış sayacı
+    const k = 1 - g.respawnT / HATCH.respawn;
+    circle(h.x, h.y - 30, 9, 'rgba(20,12,24,0.75)', 'rgba(150,255,130,0.5)', 1.2);
+    ctx.strokeStyle = '#96ff82'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(h.x, h.y - 30, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+    drawSkullIcon(h.x, h.y - 30, 5);
   }
 }
 // ----- şapel ağacı: Kemik Devi kapıyı tutar (son kademe Kemik Kolos: daha iri, yeri döver) -----
@@ -7401,8 +7453,9 @@ const GRAVE_HAND = { h: 16, // 11 Eki (Caner): yarı boy
 function drawGraveHands(list, parts) {
   if (!list || !list.length) return;
   const idle = spr('nm3_hand_idle'), ring = spr('nm3_hand_ring'), open = spr('nm3_hand_open'), fist = spr('nm3_hand_fist'); if (!idle || !ring || !open || !fist) return;
-  const H = GRAVE_HAND.h, Wd = H * idle.width / idle.height, act = GRAVE_HAND.rise + GRAVE_HAND.seq.reduce((a, b) => a + b, 0) + GRAVE_HAND.sink;
+  const act = GRAVE_HAND.rise + GRAVE_HAND.seq.reduce((a, b) => a + b, 0) + GRAVE_HAND.sink;
   for (const o of list) {
+    const H = GRAVE_HAND.h * (o.k || 1), Wd = H * idle.width / idle.height; // o.k: ölçek (kale mezarı 2 kat)
     const p = (time + o.off) % o.T, t0 = o.T - act, x0 = o.x - Wd / 2, y0 = o.y - H;
     ctx.save(); ctx.translate(o.x, 0); ctx.scale(o.face, 1); ctx.translate(-o.x, 0);
     if (p < t0) { ctx.drawImage(idle, x0, y0, Wd, H); ctx.restore(); continue; }
@@ -9509,7 +9562,7 @@ function menuLayout(sel = G.sel) {
   let items, cx, cy;
   if (sel.kind === 'hatch') {
     const q = worldToScreen(sel.hatch.x, sel.hatch.y);
-    items = [{ id: 'ghoul', x: q.x, y: q.y - 66, cost: HATCH.cost }]; cx = q.x; cy = q.y - 10;
+    items = [{ id: 'ghoul', x: q.x, y: q.y - 66, cost: sel.hatch.grave ? GRAVE.cost : HATCH.cost }]; cx = q.x; cy = q.y - 10;
   } else
   if (sel.kind === 'castle') {
     const c = G.castle, q = worldToScreen(c.x - 10, c.y - 40), N = CASTLE.levels[c.lvl + 1];
@@ -10441,6 +10494,7 @@ function infoText() {
     const E = TOWER_EXTRA[G.preview.type], t = G.sel.tower;
     return [t.extra ? `${E.name} (alındı)` : `${E.name} — ${E.cost} altın`, `${E.desc} · ${E.cd} sn'de bir`];
   }
+  if (G.sel && G.sel.kind === 'hatch' && G.sel.hatch.grave) { const K = GRAVE.knight; return [`Mezar — ${GRAVE.cost} altın`, `Ceset Golemi kalkar (Can ${K.hp} · Hasar ${K.dmg[0]}-${K.dmg[1]} · Zırh %${Math.round(K.armor * 100)}), kalenin kapısını tutar; ölürse ${HATCH.respawn} sn sonra yeniden kalkar.`]; }
   if (G.sel && G.sel.kind === 'hatch') {
     const C = HATCH.ghoul;
     return [`Mahzen Kapağı — ${HATCH.cost} altın`, `Gulyabani çıkar (Can ${C.hp} · Hasar ${C.dmg[0]}-${C.dmg[1]} · Zırh %${Math.round(C.armor * 100)}), yolu tutar; ölürse ${HATCH.respawn} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!`];

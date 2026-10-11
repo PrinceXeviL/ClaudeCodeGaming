@@ -297,7 +297,11 @@
 "Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "Back to your graves, dead ones! None of you will rise on this soil.",
 "Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "She is banishing my dead? Careful, this woman could ruin us.",
 "Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "My sword burns with holy fire. Your bone towers will turn to ash!",
-"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "He brought fire, lovely. Pity I have no teapot to boil water in."
+"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "He brought fire, lovely. Pity I have no teapot to boil water in.",
+"YENİ: MEZAR BEKÇİSİ": "NEW: GRAVE KEEPER",
+"Kalk bakalım, nöbet senin.": "Up you get, your watch now.",
+"Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "You were resting comfortably in your grave, I know. Sorry.",
+"Kapıya kimse girmeyecek. Kimse.": "Nobody gets through that gate. Nobody."
 },
 "tpl": [
 [
@@ -647,6 +651,18 @@
 [
 "{} için {} kristal gerekir (kristal bosslardan düşer)",
 "{} needs {} crystals (crystals drop from bosses)"
+],
+[
+"Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
+"Tap the grave by the castle: for {} gold a Corpse Golem rises and holds the gate."
+],
+[
+"Mezar — {} altın",
+"Grave — {} gold"
+],
+[
+"Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
+"A Corpse Golem rises (HP {} · Damage {}-{} · Armor {}%) and holds the castle gate; if it dies it rises again after {} s."
 ]
 ]
 }
