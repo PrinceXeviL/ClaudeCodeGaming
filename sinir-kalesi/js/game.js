@@ -5980,8 +5980,9 @@ function drawXbowMen(t, ts, redraw) {
     if (pose.startsWith('_load')) back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = a.walking && !up && animStrip(pre, null, '_walk'); // platformda yer değiştirirken yürüme şeridi (Kaggle Wan, 49 kare)
-    if (wk) drawFrameOutlined(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
-    else { const io = outlined(im), w0 = h * im.width / im.height, kk2 = w0 / im.width; drawSprite(ctx, io, 0, io.pad * kk2, io.width * kk2);
+    // 11 Eki (Caner): koyu kontur kaldırıldı, yoldaki iskeletler gibi düz çizilir
+    if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
+    else { const w0 = h * im.width / im.height; drawSprite(ctx, im, 0, 0, w0);
       if (a.flash > 0) { const wi = whiteOf(pre + pose + '_w', im); ctx.globalAlpha *= 0.7; drawSprite(ctx, wi, 0, 0, w0); } } // isabet anında beyaz parlar
     ctx.restore();
     if (a.hp < a.maxHp) hpBar(f.x, f.y - h - 4, 12, a.hp / a.maxHp, '#d8c8a8');
