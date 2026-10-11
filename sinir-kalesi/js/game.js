@@ -10663,7 +10663,7 @@ function drawSettings() {
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 280, 'AYARLAR', 'gold', 26); ctx.restore();
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
-  const pw = 560, ph = 390, px = W / 2 - pw / 2, py = 100;
+  const pw = 600, ph = TEST_OPEN ? 440 : 390, px = W / 2 - pw / 2, py = TEST_OPEN ? 88 : 100; // TEST_OPEN: harita sisi denemesi satırı
   const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
   if (NECRO) pauseFrame(px, py, pw, ph, 0);
@@ -10678,7 +10678,7 @@ function drawSettings() {
   if (pk < 0.9) return;
   settingsRows(px + 10, py + 22, pw - 20, st, false);
   if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
-  gameButton('credits', W - 112, H - 34, 190, 38, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
+  gameButton('credits', EDGE.r - 112, EDGE.b - 32, 190, 44, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
 }
 // Ayar satırları (ana menüdeki ayarlar ekranı ve oyun içi duraklatma menüsü ortak). Kolay anlaşılsın diye (Caner, 10 Eki):
 // her satırda solda simge + ad, sağda seçenekler yan yana; seçili olan yeşil yanar, tek dokunuşla değişir (sırayla gezme yok).
@@ -10732,6 +10732,7 @@ function settingsRows(x0, y0, w, st, inGame) {
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTOMATİK'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
+  if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
   const lx = x0 + 26, cw = Math.min(310, w - 250), LC = NECRO ? '#eadfc4' : '#4a2a0e', LS = 17, cx = x0 + w - 24 - cw, step = 58, sh = inGame ? 42 : 38; // oyun içinde (telefonda) seçenekler biraz daha iri
   rows.forEach(([icon, label, opts, cur, pick], i) => {
     const y = y0 + 30 + i * step, ap = st - 0.2 - i * 0.04;
@@ -12628,18 +12629,19 @@ function drawMapTrail(nodes, ids) {
     }
   }
 }
-function drawMapNode(i, x, y, num, last, at) {
+function drawMapNode(i, x, y, num, last, at, locked = null) {
   const p = clamp(at / 0.4, 0, 1);
   if (p <= 0) return;
-  const unlocked = levelUnlocked(i), st = save.stars[i] || 0, current = unlocked && st === 0;
+  const unlocked = locked == null ? levelUnlocked(i) : !locked, st = save.stars[i] || 0, current = unlocked && st === 0;
   const e = easeOutBack(p), key = 'node' + i, sc = pressScale(key) * e;
   ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
   ctx.fillStyle = 'rgba(10,6,2,0.4)'; ctx.beginPath(); ctx.ellipse(0, 13, 17, 5.5, 0, 0, Math.PI * 2); ctx.fill();
-  if (!unlocked) {
-    circle(0, 0, 12, '#5a544c', '#1e1a14', 2.2);
-    circle(0, 0, 9, '#3e3a34');
-    drawIcon('lock', 0, 0, 13);
+  if (!unlocked) { // kilitli (sisin kenarında görünen sonraki bölümler): büyük, dokununca ne gerektiğini söyler
+    circle(0, 0, 17, '#5a544c', '#1e1a14', 2.4);
+    circle(0, 0, 13.5, '#2e2a26');
+    drawIcon('lock', 0, 0, 18);
     ctx.restore();
+    buttons.push({ key, x: x - 26, y: y - 26, w: 52, h: 52, fn: () => { mapNote = { text: 'Önceki bölümü bitir, bu bölüm açılsın', t: time }; sfx('error'); } });
     return;
   }
   if (current) glow(ctx, 0, 0, 44, '255,210,100', 0.45 + Math.sin(time * 4) * 0.15);
@@ -12749,45 +12751,89 @@ function drawFlyingCrow(x, y, dir, ph) {
 }
 // harita canlılığı: yolda yürüyen lejyon devriyesi, uçan kargalar, mezarlıkta ruh ışıkları
 const MAPFX = { patrol: [], crows: [], nextPatrol: 0, nextCrow: 2 };
-// Keşfedilmemiş yol (11 Eki, Caner): açılan son bölümden sonrası karanlığa gömülür; yolun ucu sisle söner, sonraki bölümler görünmez.
-// Karanlık şerit bir kez önbelleğe çizilir (ilerleme ya da ekran payı değişince yenilenir), her karede yalnız sınırda sis kıpırdar.
-const MAPFOG = { fade: 110, keep: 95, w: [64, 44, 28], a: [0.32, 0.38, 0.5] };
 let mapFogC = null;
-function mapReveal(E, ep, road) {
-  const ids = epLevels(ep); let k = -1;
-  ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; });
-  if (k < 0) return 0;
-  if (k >= ids.length - 1) return road.total;
-  const n = E.nodes[k]; return nearestOnPaths([road], n[0], n[1]).along + 34;
-}
-function drawMapFog(E, ep, road, bm) {
-  const a0 = mapReveal(E, ep, road), a1 = road.total - MAPFOG.keep;
-  if (a0 >= a1 - 20) return;
-  const key = ep + ':' + Math.round(a0) + ':' + bm.x + ':' + bm.y;
-  if (!mapFogC || mapFogC.key !== key) {
-    const c = document.createElement('canvas'), k = 1.5; c.width = Math.ceil((W + 2 * bm.x) * k); c.height = Math.ceil((H + 2 * bm.y) * k);
-    const g = c.getContext('2d'); g.scale(k, k); g.translate(bm.x, bm.y); g.lineJoin = 'round'; g.lineCap = 'round';
-    g.beginPath(); for (let d = a0; d <= a1; d += 5) { const q = pathPos(road, d); d === a0 ? g.moveTo(q.x, q.y) : g.lineTo(q.x, q.y); }
-    MAPFOG.w.forEach((w, li) => { g.lineWidth = w; g.strokeStyle = `rgba(6,4,10,${MAPFOG.a[li]})`; g.stroke(); }); // tek parça, üç kat: kenarlar yumuşak
-    // iki uç yumuşak silinir: sınırda karanlığa dalar, kale tarafında aydınlığa çıkar
-    g.globalCompositeOperation = 'destination-out';
-    const wipe = (d, r) => { const q = pathPos(road, d), gr = g.createRadialGradient(q.x, q.y, 0, q.x, q.y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.45, 'rgba(0,0,0,0.75)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(q.x - r, q.y - r, 2 * r, 2 * r); };
-    wipe(a0, MAPFOG.fade); wipe(a0 + MAPFOG.fade * 0.35, MAPFOG.fade * 0.7); wipe(a1, MAPFOG.fade * 0.7);
-    mapFogC = { c, key, k, a0 };
+// Sis perdesi (11 Eki, Caner; Kingdom Rush / Bloons haritaları gibi): bitirilen bölümler, sıradaki ve ondan sonraki FOG2.ahead bölüm
+// (kilitli) görünür; ötesi (yol, zemin, işaretler) tamamen karanlıkta. Yeni bölüm açılınca sis o bölümün çevresinden çekilir,
+// yeni bir bölgeye girilince bölgenin adı kurdeleyle belirir. Şapelin (yolun sonu) yalnız pencere ışıkları sisin içinden seçilir.
+// Görülen sınır save.mapSeen[ep]; ayarlardaki "Harita sisi: Yeni oyuncu" (yalnız TEST_OPEN) haritayı sıfırdan başlamış gibi gösterir.
+const FOG2 = { ahead: 2, hole: 96, road: 56, step: 14, col: '5,3,9', a: 0.96, delay: 0.5, gap: 0.5, grow: 1.1, res: 0.6 };
+const fogTest = () => TEST_OPEN && !!setting('fogTest');
+function mapProgress(ep) { if (fogTest()) return 0; let k = 0; epLevels(ep).forEach((i, j) => { if (levelUnlocked(i)) k = j; }); return k; }
+const mapVisible = (ep) => Math.min(epLevels(ep).length, mapProgress(ep) + 1 + FOG2.ahead);
+function mapReveal2(ep) { // açılış animasyonu: { from, to, t0 }; görülmüş sınır kayıtta
+  const vis = mapVisible(ep), tk = fogTest() ? 'test' + ep : ep;
+  MAPFX.seen = MAPFX.seen || {};
+  let seen = fogTest() ? MAPFX.seen[tk] : (save.mapSeen || {})[ep];
+  if (seen == null) seen = fogTest() ? 0 : Math.max(0, vis - 3); // eski kayıt: yalnız son üç işaret açılır
+  const R = MAPFX.rev && MAPFX.rev.tk === tk ? MAPFX.rev : null;
+  if (vis > seen && !R) { MAPFX.rev = { tk, from: seen, to: vis, t0: time, zone: -1 }; sfx('open'); }
+  const rv = MAPFX.rev && MAPFX.rev.tk === tk ? MAPFX.rev : null;
+  if (rv && time > rv.t0 + FOG2.delay + (rv.to - rv.from) * FOG2.gap + FOG2.grow + 0.3) {
+    if (fogTest()) MAPFX.seen[tk] = rv.to; else { save.mapSeen = save.mapSeen || {}; save.mapSeen[ep] = rv.to; persist(); }
+    MAPFX.rev = null; return { vis, g: () => 1, anim: false };
   }
-  ctx.drawImage(mapFogC.c, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
-  // sınır: yolun karanlığa daldığı yerde kıpırdayan sis ve iki soluk ruh ışığı
-  const q = pathPos(road, a0 + 40), q2 = pathPos(road, a0 + 95);
-  ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  for (let i = 0; i < 4; i++) { const t = time * 0.5 + i * 1.7; glow(ctx, q.x + Math.cos(t) * 14 + (q2.x - q.x) * i / 4, q.y + Math.sin(t * 1.3) * 6 + (q2.y - q.y) * i / 4, 30 + 6 * Math.sin(t * 0.8), '130,120,170', 0.07 + 0.03 * Math.sin(t)); }
-  for (let i = 0; i < 2; i++) { const ph = (time * 0.25 + i * 0.5) % 1; glow(ctx, q2.x + (i ? 16 : -12), q2.y - ph * 22, 4, '150,255,190', 0.5 * Math.sin(ph * Math.PI)); }
-  ctx.restore();
+  const g = (k) => !rv || k < rv.from ? 1 : 1 - Math.pow(1 - clamp((time - rv.t0 - FOG2.delay - (k - rv.from) * FOG2.gap) / FOG2.grow, 0, 1), 3);
+  return { vis, g, anim: !!rv, rv };
+}
+// sisteki şapel: kara siluet + yalnız yeşil pencere pikselleri (bir kez hazırlanır)
+let CHAPEL_FOG = null;
+function chapelFogLayers(ch) {
+  if (CHAPEL_FOG && CHAPEL_FOG.src === ch) return CHAPEL_FOG;
+  const w = ch.naturalWidth || ch.width, h = ch.naturalHeight || ch.height, mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+  const dark = mk(), dg = dark.getContext('2d'); dg.drawImage(ch, 0, 0); dg.globalCompositeOperation = 'source-in'; dg.fillStyle = `rgba(${FOG2.col},0.94)`; dg.fillRect(0, 0, w, h);
+  const win = mk(), wg = win.getContext('2d', { willReadFrequently: true }); wg.drawImage(ch, 0, 0);
+  try { const d = wg.getImageData(0, 0, w, h), a = d.data; for (let i = 0; i < a.length; i += 4) { const g = a[i + 1]; if (!(g > a[i] + 45 && g > a[i + 2] + 15 && g > 110)) a[i + 3] = 0; } wg.putImageData(d, 0, 0); } catch (e) {}
+  return (CHAPEL_FOG = { src: ch, dark, win });
+}
+function drawMapFog2(E, ep, road, bm) {
+  const ids = epLevels(ep), R = REGION_BG[ep], { vis, g, anim, rv } = mapReveal2(ep);
+  if (!R.along) R.along = E.nodes.map(n => nearestOnPaths([road], n[0], n[1]).along);
+  const A = R.along, all = vis >= ids.length && !anim;
+  if (!all) {
+    const key = ep + ':' + vis + ':' + bm.x + ':' + bm.y;
+    if (anim || !mapFogC || mapFogC.key !== key) {
+      const k = FOG2.res, c = (mapFogC && mapFogC.c && mapFogC.c.width === Math.ceil((W + 2 * bm.x) * k)) ? mapFogC.c : document.createElement('canvas');
+      c.width = Math.ceil((W + 2 * bm.x) * k); c.height = Math.ceil((H + 2 * bm.y) * k);
+      const gx = c.getContext('2d'); gx.setTransform(k, 0, 0, k, k * bm.x, k * bm.y);
+      gx.fillStyle = `rgba(${FOG2.col},${FOG2.a})`; gx.fillRect(-bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+      const r = seeded(ep * 7 + 3); // bulut dokusu: koyu sisin içinde biraz daha açık ve koyu öbekler
+      for (let i = 0; i < 70; i++) { const x = r() * (W + 2 * bm.x) - bm.x, y = r() * (H + 2 * bm.y) - bm.y, rr = 40 + r() * 110, gr = gx.createRadialGradient(x, y, 0, x, y, rr);
+        gr.addColorStop(0, i % 3 ? 'rgba(40,30,58,0.22)' : 'rgba(0,0,0,0.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); gx.fillStyle = gr; gx.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+      gx.globalCompositeOperation = 'destination-out';
+      const hole = (x, y, rr) => { if (rr < 2) return; const gr = gx.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); gx.fillStyle = gr; gx.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); };
+      const end = A[vis - 1] + 30;
+      for (let d = 0; d <= end; d += FOG2.step) { // yol boyunca açık şerit; açılmakta olan bölüme giden kısım o bölümle birlikte büyür
+        let j = 0; while (j < vis - 1 && A[j] < d) j++;
+        const f = d <= A[0] ? 1 : g(j), q = pathPos(road, d); hole(q.x, q.y, FOG2.road * f);
+      }
+      for (let kk = 0; kk < vis; kk++) hole(E.nodes[kk][0], E.nodes[kk][1], FOG2.hole * g(kk));
+      mapFogC = { c, key: anim ? null : key };
+    }
+    ctx.drawImage(mapFogC.c, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+    // sınırda kıpırdayan sis: son görünen bölümün ötesinde koyu öbekler yavaşça salınır
+    const a0 = A[vis - 1];
+    ctx.save();
+    for (let i = 0; i < 6; i++) {
+      const q = pathPos(road, Math.min(road.total, a0 + 70 + i * 34)), t = time * 0.55 + i * 1.3, rr = 58 + 10 * Math.sin(t * 0.8);
+      const x = q.x + Math.cos(t) * 12, y = q.y + Math.sin(t * 1.2) * 8, gr = ctx.createRadialGradient(x, y, 0, x, y, rr);
+      gr.addColorStop(0, `rgba(${FOG2.col},0.55)`); gr.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = gr; ctx.fillRect(x - rr, y - rr, 2 * rr, 2 * rr);
+    }
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 4; i++) { const q = pathPos(road, Math.min(road.total, a0 + 80 + i * 45)), t = time * 0.4 + i * 1.9; glow(ctx, q.x + Math.cos(t) * 18, q.y + Math.sin(t * 1.3) * 10, 46, '120,110,170', 0.06 + 0.03 * Math.sin(t)); }
+    ctx.restore();
+  }
+  // yeni bölge: açılan bölüm yeni bir mekândaysa adı kurdeleyle belirir
+  if (rv) {
+    const zone = (kk) => Math.min(E.zones.length - 1, Math.floor(kk * E.zones.length / ids.length));
+    for (let kk = rv.from; kk < rv.to; kk++) if (g(kk) > 0.4 && zone(kk) > (rv.from ? zone(rv.from - 1) : -1) && zone(kk) > rv.zone) { rv.zone = zone(kk); MAPFX.banner = { text: E.zones[rv.zone][1], t0: time }; sfx('levelup'); }
+  }
+  return { vis, g };
 }
 function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
   ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
-  drawMapFog(E, ep, road, bm);
+  MAPFX.fog = drawMapFog2(E, ep, road, bm);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
   const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
@@ -12803,8 +12849,12 @@ function drawRegionMap(E, ep, st) {
     ctx.restore();
   }
   // şapel (haritada biraz büyük) ve balkonda kuru kafalı Mortimer: çay içer, arkasında ruh ışığı
-  const ch = spr('castle_1'), mort = spr('mortimer');
-  if (ch) {
+  const ch = spr('castle_1'), mort = spr('mortimer'), fogged = MAPFX.fog && MAPFX.fog.vis < epLevels(ep).length;
+  if (ch && fogged) { // sisin içinde: şapel kara siluet, yalnız yeşil pencereleri soluk yanar
+    const cw = 150, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh, L = chapelFogLayers(ch);
+    drawSprite(ctx, L.dark, cx, cy, cw);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 + 0.2 * Math.sin(time * 1.5); drawSprite(ctx, L.win, cx, cy, cw); ctx.restore();
+  } else if (ch) {
     const cw = 150, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh;
     drawSprite(ctx, ch, cx, cy, cw);
     const S = MORT_STAGE[1];
@@ -12888,7 +12938,17 @@ function drawMap() {
   ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   const nodes = E.nodes || ids.map((_, k) => [120 + k * 80, 420 - (k % 2) * 60]);
   if (!E.zones) drawMapTrail(nodes, ids);
-  ids.forEach((i, k) => { if (E.zones && !levelUnlocked(i)) return; drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05); }); // açılmamış bölüm görünmez (yol karanlıkta)
+  const FG = E.zones && MAPFX.fog;
+  ids.forEach((i, k) => { // sis perdesi: yalnız görünen işaretler; açılmakta olanlar sis çekilince belirir
+    if (FG) { if (k >= FG.vis) return; const gk = FG.g(k); if (gk < 0.35) return;
+      const rv = MAPFX.rev, at = rv && k >= rv.from ? (time - rv.t0 - FOG2.delay - (k - rv.from) * FOG2.gap - 0.35) : st - 0.15 - k * 0.05;
+      drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, at, fogTest() ? k > 0 : !levelUnlocked(i)); return; }
+    drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05);
+  });
+  if (MAPFX.banner && time - MAPFX.banner.t0 < 3.2) { // yeni bölge kurdelesi
+    const bt = time - MAPFX.banner.t0, a = clamp(Math.min(bt / 0.3, (3.2 - bt) / 0.5), 0, 1), e = easeOutBack(clamp(bt / 0.45, 0, 1));
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, 130); ctx.scale(e, e); crimsonRibbon(0, 0, MAPFX.banner.text, 28, 380); ctx.restore();
+  }
 
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   // üst çubuk (Caner, 11 Eki: mobilde dokunmaya göre büyütüldü, ekran kenarlarına yaslı): solda geri + sefer sekmeleri,
@@ -12977,12 +13037,6 @@ function drawMap() {
 // ve tek büyük SAVAŞ düğmesi. Dokunma hedefleri en az ~60 birim (telefonda ≥44 pt). Kartın kendisine dokunmak artık bölümü başlatmaz.
 let mapMode = 'c';
 const CARD = { w: 720, h: 396 };
-function wrapLines(s, maxW, size, weight = '700', font = FONT_B) {
-  ctx.font = `${weight} ${size}px ${font}`; lastFont = null;
-  const out = []; let line = '';
-  for (const wd of s.split(' ')) { const t = line ? line + ' ' + wd : wd; if (ctx.measureText(t).width > maxW && line) { out.push(line); line = wd; } else line = t; }
-  if (line) out.push(line); return out;
-}
 function levelFoes(lv) { // bölümde çıkan düşman türleri (rütbeliler asıl türe sayılır), ilk görünüş sırasıyla
   const seen = [];
   for (const wv of lv.waves) for (const g of wv) { const d = ENEMIES[g.t]; const t = d && d.base ? d.base : g.t; if (ENEMIES[t] && !seen.includes(t)) seen.push(t); }
@@ -13064,7 +13118,7 @@ function drawLevelCard(i, cx, cy, at) {
     buttons.push({ key, x: bx, y: by, w: tile, h: bh, fn: () => { if (mapMode !== o.m) { mapMode = o.m; sfx('pick'); } } });
   });
   // seçili modun açıklaması
-  const lines = wrapLines(M.open ? M.desc : M.lock, rw - 8, 15);
+  const lines = wrapLines(M.open ? M.desc : M.lock, rw - 8, 15, '700', FONT_B, 3);
   lines.slice(0, 3).forEach((l, k) => txt(l, rx + 4, tyy + 140 + k * 20, 15, M.open ? '#f2ecd8' : '#ffb0a0', 'left', '700', FONT_B, false));
   ctx.restore();
   // kilitli bölüm
