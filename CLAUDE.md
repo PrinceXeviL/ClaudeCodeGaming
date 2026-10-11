@@ -21,7 +21,8 @@ artırmazsan tarayıcı eski önbellek kopyasını gösterir). Başlık ekranın
   Kule okçuları, kışla askerleri, 3B top ve efektler kodla çizilir (önbellekli parçalar).
 - `sinir-kalesi/ses/` — Kenney CC0 sesleri; arayüz "pop" sesleri ve düşman ölüm sesleri WebAudio ile sentezlenir.
 - `sinir-kalesi/tools/` — Playwright test araçları (sunucu 8765'te açıkken `node tools/...`):
-  - `akis-testi.js` menü→bölüm→kule kur akışı, sayfa hatalarını yazar
+  - `akis-testi.js` menü→bölüm→kule kur→dalga→çanta→duraklat→zafer→sonraki bölüm; sonunda "AKIŞ TAMAM" yazmalı. Düğmeleri adıyla bulur
+    (`__game.btn(key)`, `btnKeys()`, `toScreen(x,y)`, `menu()`, `bag()`). Playwright depo kökünde kurulu (12 Eki: `npm i -D playwright`, `npx playwright install chromium`)
   - `denge-botu.js [bölümler] [kahramanlar]` ör. `node tools/denge-botu.js 0,4,9 commander,caner` — botla bölüm oynatır
   - `arsa-uret.js` (`node tools/arsa-uret.js js/data.js [1,2,..]`) arsaları yollara göre otomatik yerleştirir ve yazar:
     yola değmez, kenar/arayüz/kale/dalga düğmesinden uzak, kıvrım ve kavşakları gören yerler önce. Yol değişince çalıştır (yavaş, ~3 dk).
