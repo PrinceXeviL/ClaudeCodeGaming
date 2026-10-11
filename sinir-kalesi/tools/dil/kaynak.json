@@ -1084,8 +1084,8 @@
 "en": "Corpse Burst"
 },
 {
-"tr": "Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)",
-"en": "Corpses in the chosen area explode: each deals heavy damage around it and poisons (percent damage halved on bosses)"
+"tr": "Seçtiğin alandaki cesetler patlar (en az 3 ceset): her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)",
+"en": "Corpses in the chosen area explode (at least 3 corpses): each deals heavy damage around it and poisons (percent damage halved on bosses)"
 },
 {
 "tr": "Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir",

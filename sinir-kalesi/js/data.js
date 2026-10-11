@@ -756,8 +756,8 @@ const NECRO_SPELLS = {
     desc: 'Sahadaki bütün cesetler seçtiğin yerde tek bir golemde birleşir: ceset ne kadar çoksa o kadar iri ve güçlü. 20 sn düşmanın üstüne yürür, alan vuruşu yapar',
     short: 'Cesetler birleşip golem olur (en az 3 ceset): 20 sn savaşır' },
   // 4. büyü: 1. bölge bitince (son bölüm kazanılınca) açılır. Cesedi diriltmek ya da patlatmak arasında seçim.
-  nm_burst: { name: 'Ceset Patlatma', cd: 35, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 19,
-    desc: 'Seçtiğin alandaki cesetler patlar: her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
+  nm_burst: { name: 'Ceset Patlatma', cd: 35, min: 3, r: 110, blast: 58, dmg: 70, pct: 0.08, poison: [8, 3], col: '170,255,90', unlock: 19,
+    desc: 'Seçtiğin alandaki cesetler patlar (en az 3 ceset): her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
     short: 'Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir' },
 };
 // şapel ağacı (10 Eki): okçular yerine kapıyı tutan Kemik Devi; son kademede Kemik Kolos

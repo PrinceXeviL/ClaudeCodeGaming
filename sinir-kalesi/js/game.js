@@ -4155,6 +4155,7 @@ function castNecro(id, x, y) {
   } else if (id === 'nm_burst') {
     const bodies = G.effects.filter(f => f.kind === 'corpse' && !f.air && f.t > 0.3 && f.t < f.dur - 0.1 && dist(f.x, f.y, x, y) <= S.r);
     if (!bodies.length) { G.mortCast = 0; floatText(x, y - 20, 'Burada ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    if (bodies.length < (S.min || 1)) { G.mortCast = 0; floatText(x, y - 20, `En az ${S.min} ceset gerek!`, '#c8c8c8'); sfx('error'); return false; } // 11 Eki: en az 3 ceset
     G.effects.push({ kind: 'ring', x, y, r: S.r, col: S.col, t: 0, dur: 0.5 }); mortSay('burst', true); cnt('burst', bodies.length);
     for (let i = 0; i < 16; i++) { const k = i / 15; emit(G.parts, { kind: 'glow', add: true, x: lerp(m.x, x, k) + rand(-6, 6), y: lerp(m.y - 18, y, k) + rand(-6, 6), vy: -rand(5, 20), col: S.col, s0: rand(3, 5), s1: 0.5, life: rand(0.3, 0.6) }); }
     hitBy = 'burst';
