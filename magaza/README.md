@@ -11,6 +11,7 @@ Uygulama kimliği: `com.princexevil.necromancer` (iOS ve Android aynı).
 | `app_store_ipad/` | iPad 13" ekran görüntüleri (oyun iPad'i de destekliyor, zorunlu) | 2752×2064, 6 adet |
 | `play/` | Google Play telefon ekran görüntüleri (Play en çok 2:1 kabul ediyor, ortadan kırpıldı) | 2640×1320, 6 adet |
 | `ekran/` | Ham çekimler (iPhone boyu) | |
+| `simge_1024.png`, `play_simge_512.png` | Uygulama simgesi (App Store 1024, Play 512) | |
 | `gizlilik.html` | Gizlilik politikası (TR + EN). Herkese açık bir adreste yayınlanmalı, iki mağaza da adres ister | |
 
 Sıra: 0 başlık, 1 savaş, 2 boss, 3 harita, 4 kodeks, 5 büyü kitabı. Mağazada ilk görüntü en önemlisi: **1_savas** ya da **2_boss** başa alınabilir.
@@ -19,7 +20,7 @@ Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üst
 
 ## Hâlâ gereken (Caner)
 
-1. **Simge (1024×1024):** şu anki iOS simgesi başlık görselinden kırpma, kenarları kesik. Gemini ile ayrı simge çizdirilecek (prompt aşağıda). Google Play için 512×512 ve 1024×500 öne çıkan görsel de gerekiyor.
+1. **Simge: HAZIR (11 Eki).** Gemini çizimi `varliklar/ham/nm_simge.jpg` → `simge_isle.py` ile iOS + Android'e işlendi. Mağaza dosyaları: `simge_1024.png` (App Store), `play_simge_512.png` (Play). Google Play için 1024×500 öne çıkan görsel hâlâ gerekiyor.
 2. **Gizlilik politikası adresi:** `gizlilik.html` içindeki `[İLETİŞİM E-POSTASI]` yerine mağazada görünecek bir iletişim adresi yazılmalı (depo herkese açık, kişisel adres yazılmadı). Sonra sayfa bir yere yüklenmeli (ör. GitHub Pages; depo zaten herkese açık). Bu, herkese açık yayın olduğu için Caner'in onayıyla yapılacak.
 3. **Hesaplar:** Apple Developer Program (yıllık 99 $), Google Play Console (tek sefer 25 $), vergi ve banka bilgileri.
 4. **Reklam ve satın alma:** AdMob hesabı + App Store Connect / Play Console'da `mortimer_hazine` ürünü. Reklam açılırsa gizlilik politikası ve yaş derecelendirmesi yanıtları güncellenir (aşağıda işaretli).
