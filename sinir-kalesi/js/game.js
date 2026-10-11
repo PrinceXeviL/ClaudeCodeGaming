@@ -1512,6 +1512,7 @@ function startLevel(idx, chal = null) {
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
+  [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
@@ -2102,6 +2103,7 @@ let hitBy = null;
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
+  if (e.invT > 0) return; // boss evre değiştiriyor
   if (hitBy || src) e.lastBy = hitBy || src;
   e.hitG = G.t; // komutan 'Kalkanlar!' için (oyun zamanı)
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
@@ -2113,6 +2115,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (wk && wk < 1 && e.curseT > 0) wk += (1 - wk) * (e.curseRes || 0); // lanet: dirençli olduğu saldırı türüne direnci erir
   if (wk) amount *= wk;
   if (e.rageT > 0) amount *= 0.5; // boss öfkesi
+  if (e.guardT > 0) { const GD = e.def.ab && e.def.ab.guard; if (GD && GD.vs.includes(src)) amount *= GD.k; } // Kalkan Duvarı: ok ve top işlemez
   if (HERO_SKILL) amount *= HERO_POWER * SKILL_K; // kahraman yetenek hasarı (SKILL_K: yeteneğin ağaçtaki kademesi)
   if (e.fearT > 0 && NECRO && grimRank('nm_fear') >= 5) amount *= 1.2; // Büyü Kitabı: korkan düşman %20 fazla hasar alır
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
@@ -2134,6 +2137,8 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (!quiet) knockback(e, dealt, src);
   if (!quiet) { e.flash = 0.1; e.hitT = 0.18; if (e.hp > 0) painVoice(e); }
   e.hitAt = time;
+  const PHS = e.phases || e.def.phases, PH = PHS && PHS[e.phase || 0]; // evre listesi ilk türden gelir (dönüşünce e.phases'te kalır)
+  if (PH && e.hp <= e.maxHp * PH.at) { e.hp = e.maxHp * PH.at; bossPhase(e, PH); return; } // evreli boss ölmeden dönüşür
   if (e.hp <= 0) killEnemy(e);
 }
 // durum etkileri: yavaşlatma (en güçlüsü geçerli), zehir (en güçlüsü geçerli, süre yenilenir), sersemletme
@@ -3258,6 +3263,8 @@ function updateEnemy(e, dt) {
     }
   }
   if (e.shieldT > 0) e.shieldT -= dt;
+  if (e.invT > 0) e.invT -= dt;
+  if (e.guardT > 0) e.guardT -= dt;
   if (e.rotT > 0) { e.rotT -= dt; if (Math.random() < dt * 3) emit(G.parts, { kind: 'dot', x: e.x + rand(-5, 5), y: aimY(e) + rand(-4, 6), vy: rand(10, 25), g: 80, col: '#8ae04a', s0: 1.4, s1: 0.6, life: 0.5 }); }
   // Korku (Mortimer): kavgayı bırakır, yolda geri kaçar
   if (e.fearT > 0) {
@@ -4491,6 +4498,8 @@ function drawMortimer() {
 }
 // Mortimer'ın lafları: olaylara göre balkondan konuşma balonu (aynı anda tek balon, iki laf arası en az 7 sn)
 const MORT_LINES = {
+  glor2: ['Arabası kırıldı. Yürüsün biraz, sağlığa iyi.', 'Aslanlar kaçtı. Akıllı hayvanlar.', 'Yayan general mi? Ne kadar da mütevazı.'],
+  glor3: ['Parlıyor. Çayımı ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
   // 2. sefer (Cadı Avı)
   start2: ['Cadı avı mı? Yanlış kapıyı çaldınız.', 'Meşaleler, çanlar... Ne kadar gürültücü bir din.', 'Çaydanlığımı geri alana kadar kimse uyumuyor.'],
   hatch: ['Mahzen açık! Bubu\'nun kuzeni geldi.', 'Gulyabani, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
@@ -5569,7 +5578,7 @@ function update(dt) {
       const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
       if (cap) e.captain = true;
       if (R) e.march = true;
-      if (sp.hpK && !e.def.chief) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; }
+      if (sp.hpK && (!e.def.chief || sp.hpK < 1)) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; } // ikili generaller (chief) de zayıflar
       sp.left--;
       // paket: küme içinde sık, kümeler arasında uzun ara (ortalama sıklık aynı kalır)
       if (sp.pack) sp.timer += (i + 1) % sp.pack ? sp.gap * 0.35 : sp.gap * (sp.pack - 0.35 * (sp.pack - 1));
@@ -8853,6 +8862,12 @@ function drawEffect(f) {
     ctx.globalAlpha = 1 - k;
     circle(f.x + Math.sin(f.t * 9 + f.y) * 3, f.y - k * 26, 1.8 * (1 - k) + 0.6, k < 0.4 ? '#ffe08a' : '#ff7a2a');
     ctx.globalAlpha = 1;
+  } else if (f.kind === 'hexwarn') { // boss fermanı uyarısı: kulenin dibinde daralan altın halka + tepesinde yanıp sönen güneş işareti
+    const ts = f.tower && towerSprite(f.tower), top = ts ? ts.bottom - ts.h - 10 : f.y - 70, r = 40 * (1.25 - 0.45 * k), bl = 0.55 + 0.45 * Math.sin(time * 18);
+    ctx.save(); ctx.strokeStyle = `rgba(${f.col},${0.5 + 0.4 * bl})`; ctx.lineWidth = 3; ctx.setLineDash([8, 5]); ctx.lineDashOffset = -time * 40;
+    ctx.beginPath(); ctx.ellipse(f.x, f.y, r, r * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, top, 16 + 6 * bl, f.col, 0.35 + 0.3 * bl); ctx.globalCompositeOperation = 'source-over';
+    drawStar(f.x, top, 6 + 2 * bl, `rgb(${f.col})`); ctx.restore();
   } else if (f.kind === 'ring') {
     ctx.save(); ctx.globalAlpha = 1 - k;
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
@@ -11326,6 +11341,28 @@ function bossIntro(e) {
   setTimeout(() => mortSay('boss', true), 2600);
 }
 
+// Evreli boss (11 Eki, 20. bölüm Gloriosus): canı eşiğe inince ölmez, yeni türe dönüşür. Eski evrenin ölüm şeridi yerde oynar
+// (araba devrilir), boss 1,6 sn dokunulmaz, ekran sarsılır, üstte evre başlığı çıkar, Mortimer laf atar.
+function bossPhase(e, PH) {
+  const D = ENEMIES[PH.to]; if (!D) return;
+  const from = e.type;
+  e.phases = e.phases || e.def.phases; e.phase = (e.phase || 0) + 1;
+  if (SPR['enemy_' + from + '_die'] || LAZY['enemy_' + from + '_die']) G.effects.push({ kind: 'corpse', name: 'enemy_' + from, h: CHAR_H['enemy_' + from], x: e.x, y: e.y, face: e.face, fly: 0, t: 0, dur: 5, raisable: false });
+  e.type = PH.to; e.def = D; e.abT = {}; e.hexQ = null; e.invT = 1.6; e.stunT = 0; e.fearT = 0; e.ran = null;
+  if (e.blocker) { for (const s of G.soldiers) if (s.target === e) s.target = null; e.blocker = null; }
+  e.rageT = Math.max(e.rageT || 0, 2);
+  const h = CHAR_H['enemy_' + e.type] || 60, col = D.glow || '255,210,120';
+  for (let i = 0; i < 26; i++) { const a = rand(0, Math.PI * 2), v = rand(60, 180); emit(G.parts, { kind: 'streak', add: true, x: e.x, y: e.y - h * 0.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v, col: '#ffe6a0', s0: 1.8, s1: 0.4, life: 0.45 }); }
+  G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: 130, t: 0, dur: 0.6 });
+  G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: 80, t: 0, dur: 0.7 });
+  impactFx(e.x, e.y - h * 0.5, col, 2);
+  bossCastFx(e, PH.say || 'Öfke!', col);
+  G.banner = { title: PH.title, sub: PH.sub || '', t: 0, dur: 3.2 };
+  shakeScreen(8, 0.7); sfx('boom'); setTimeout(() => sfx('roar'), 300);
+  if (PH.mort) setTimeout(() => mortSay(PH.mort, true), 1600);
+  if (D.legion) summonLegion(e);
+  codexNote(e.type);
+}
 // Zırh parçalanır: çelik parçaları saçılır, ekran sarsılır, boss 2. evreye geçer ve lejyonunu çağırır
 function plateBreak(e) {
   e.plate = 0; e.phase2 = true;
@@ -11526,6 +11563,7 @@ function bossAbilities(e, dt) {
     G.stormT = ab.storm.t;
     bossCastFx(e, 'Kum Fırtınası!', '255,190,110'); sfx('whirl'); shakeScreen(3, 0.4);
   }
+  if (ab.guard && ready('guard', ab.guard.cd)) { e.guardT = ab.guard.t; bossCastFx(e, ab.guard.say || 'Kalkan Duvarı!', '230,200,120'); sfx('bash'); shakeScreen(2, 0.2); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 46, col: '255,215,120', t: 0, dur: 0.5 }); }
   if (ab.shield && ready('shield', ab.shield.cd)) { e.shieldT = ab.shield.t; bossCastFx(e, 'Kalkan!', '120,200,255'); sfx('magic'); }
   if (ab.heal && ready('heal', ab.heal.cd)) {
     let any = false;
@@ -11537,13 +11575,13 @@ function bossAbilities(e, dt) {
     if (any) bossCastFx(e, 'Şifa!', '120,255,140');
   }
   if (ab.blink && !e.blocker && e.siege === undefined && ready('blink', ab.blink.cd)) {
-    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: '40,200,140', s0: 6, s1: 12, life: 0.6, a: 0.7 });
-    G.effects.push({ kind: 'portal', x: e.x, y: e.y, t: 0, dur: 0.8, col: '60,230,160' });
+    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: ab.blink.col || '40,200,140', s0: 6, s1: 12, life: 0.6, a: 0.7 });
+    G.effects.push({ kind: 'portal', x: e.x, y: e.y, t: 0, dur: 0.8, col: ab.blink.col || '60,230,160' });
     e.d = Math.min(e.p.total - 30, e.d + ab.blink.d);
     const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y;
-    G.effects.push({ kind: 'portal', x: e.x, y: e.y, t: 0, dur: 0.8, col: '60,230,160' });
-    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: '120,255,200', s0: 5, s1: 0.5, life: 0.5 });
-    bossCastFx(e, 'Işınlanma!', '90,240,190'); sfx('zap');
+    G.effects.push({ kind: 'portal', x: e.x, y: e.y, t: 0, dur: 0.8, col: ab.blink.col || '60,230,160' });
+    for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: ab.blink.col || '120,255,200', s0: 5, s1: 0.5, life: 0.5 });
+    bossCastFx(e, ab.blink.say || 'Işınlanma!', ab.blink.col || '90,240,190'); sfx('zap');
   }
   // İleri atılış: toz bulutu ve hız izleriyle yolda sıçrar
   if (ab.pounce && !e.blocker && e.siege === undefined && ready('pounce', ab.pounce.cd)) {
@@ -11572,13 +11610,26 @@ function bossAbilities(e, dt) {
     G.projectiles.push({ kind: 'bossthrow', sub: kind, sx: e.x, sy: e.y - (e.def.h || 40) * 0.7, tx: t.x, ty: t.y - 30, tower: t, stun: A.stun, t: 0, dur: 0.9, arc: 90, spin: rand(0, 6) });
     bossCastFx(e, kind === 'bomb' ? 'Bomba!' : 'Kaya!', '255,200,120'); sfx('whirl');
   }
+  // uyarısı biten fermanlar: gökten altın ışın, kule susar
+  if (e.hexQ && e.hexQ.length) for (const q of e.hexQ.slice()) if (G.t >= q.at) {
+    e.hexQ.splice(e.hexQ.indexOf(q), 1); const t = q.t; if (!G.towers.includes(t)) continue;
+    const ts = towerSprite(t), ty = ts ? ts.bottom - ts.h * 0.8 : t.y - 40, hc = (ab.hex && ab.hex.col) || '255,210,120';
+    G.effects.push({ kind: 'zap', x0: t.x + rand(-20, 20), y0: ty - 230, x1: t.x, y1: ty, t: 0, dur: 0.5, w: 2.2, col: `rgb(${hc})`, seed: rand(0, 99) });
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 46, col: hc, t: 0, dur: 0.5 });
+    t.disabledT = Math.max(t.disabledT || 0, (ab.hex && ab.hex.t) || 4); t.disabledKind = 'hex'; sfx('zap');
+  }
   // Lanet: gökten kara yıldırım bir kuleyi susturur
   if (ab.hex) {
     e.abT.hex = (e.abT.hex ?? ab.hex.cd * 0.6) - dt;
     if (e.abT.hex <= 0) {
       const t = bossTowerTarget(e, ab.hex.r);
       if (!t) e.abT.hex = 1;
-      else {
+      else if (ab.hex.warn) { // 11 Eki: önce uyarı (kulenin üstünde halka), warn sn sonra iner; n kule birden (Gloriosus'un fermanı)
+        e.abT.hex = ab.hex.cd * (e.cdMul || 1);
+        const ts = G.towers.filter(o => o !== t && !(o.disabledT > 0) && dist(o.x, o.y, e.x, e.y) < ab.hex.r).sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y));
+        for (const o of [t].concat(ts).slice(0, ab.hex.n || 1)) { (e.hexQ || (e.hexQ = [])).push({ t: o, at: G.t + ab.hex.warn }); G.effects.push({ kind: 'hexwarn', tower: o, x: o.x, y: o.y, col: ab.hex.col || '255,210,120', t: 0, dur: ab.hex.warn }); }
+        bossCastFx(e, ab.hex.say || 'Lanet!', ab.hex.col || '190,110,255'); sfx('magic');
+      } else {
         e.abT.hex = ab.hex.cd * (e.cdMul || 1);
         const ts = towerSprite(t), ty = ts ? ts.bottom - ts.h * 0.8 : t.y - 40;
         const hc = ab.hex.col || '170,70,255';
@@ -11625,6 +11676,13 @@ function drawBossAura(e, dh) {
   ctx.restore();
   if (Math.random() < (e.enraged ? 0.7 : 0.35)) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.45, dh * 0.45), y: e.y - rand(0, dh * 0.3), vy: -rand(18, 45), col: e.enraged ? '255,80,40' : '255,140,70', s0: rand(1.5, 3), s1: 0.3, life: rand(0.6, 1) });
   if (Math.random() < 0.18) emit(G.parts, { kind: 'glow', x: e.x + rand(-dh * 0.4, dh * 0.4), y: e.y - rand(0, 6), vy: -rand(8, 20), col: '30,18,22', s0: rand(5, 8), s1: rand(12, 18), life: rand(0.8, 1.3), a: 0.35 });
+  if (d.glow || e.guardT > 0 || e.invT > 0) { // Güneş Formu alevi, Kalkan Duvarı, evre değişirken beyaz parlama
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    if (d.glow) { glow(ctx, e.x, e.y - dh * 0.55, dh * 1.1, d.glow, 0.28 + pulse * 0.12); if (Math.random() < 0.6) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.3, dh * 0.3), y: e.y - rand(0, dh * 0.9), vy: -rand(30, 70), col: '255,190,70', s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.7) }); }
+    if (e.guardT > 0) glow(ctx, e.x + e.face * dh * 0.25, e.y - dh * 0.45, dh * 0.7, '255,215,120', 0.25 + 0.1 * Math.sin(time * 9));
+    if (e.invT > 0) glow(ctx, e.x, e.y - dh * 0.5, dh * 1.4, '255,240,200', 0.5 * Math.min(1, e.invT));
+    ctx.restore();
+  }
   // yetenek uyarısı: hazır olmaya 0.9 sn kala yerde büyüyen kesik çizgili kırmızı halka
   const A = d.ab || {}, T = e.abT || {};
   for (const k of ['slam', 'venom', 'summon']) {
@@ -11686,6 +11744,11 @@ function drawBossBarAt(b) {
     for (let i = 0; i <= 10; i += 2) circle(x + w * i / 10 - (i === 10 ? 4 : i === 0 ? -4 : 0), y + 4.5, 1.2, pf * 10 >= i ? '#eef3ff' : '#4a5260');
   }
   bar(hpY, hpH, fr, b.shownHp, b.shieldT > 0 ? ['#a8e0ff', '#3c9cf0', '#1a4c90'] : b.phase2 ? ['#ff9a6a', '#e83a22', '#7a0e08'] : ['#ff7a6a', '#d02a22', '#6a0a08'], 4);
+  for (const P of (b.phases || b.def.phases || [])) { // evre eşikleri: altın çentik + küçük güneş (geçilen soluk)
+    const sx = x + w * P.at, past = fr <= P.at + 0.001;
+    ctx.fillStyle = past ? 'rgba(255,230,160,0.35)' : '#ffd86a'; ctx.fillRect(sx - 1.5, hpY - 3, 3, hpH + 6);
+    if (!past) drawStar(sx, hpY - 5, 4.2, '#ffd34d');
+  }
   // kuru kafa madalyonu ve taç
   const mx = x - 22, my = y + H0 / 2 - 1;
   circle(mx, my + 2, 18, 'rgba(0,0,0,0.45)');
@@ -12011,7 +12074,7 @@ function upgradeIcon(id, x, y) {
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
 const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower', 'vulture', 'elephant',
-  'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus',
+  'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus1',
   // 2. sefer: Engizisyon
   'hunter', 'hound', 'torch', 'holywater', 'flagellant', 'lantern', 'bellpriest', 'paladin', 'inquisitor', 'saint',
   'malleus', 'campanus', 'ignis', 'colossus', 'cathedral', 'severus'];
@@ -12059,6 +12122,7 @@ const CODEX_NOTE = {
   shadowmaster: 'Gölgelerin ustası. Ben de mezarların ustasıyım. Tanışırız.',
   cavcaptain: 'Hücum ederken bağırır. Neden hep bağırıyorlar?',
   gloriosus: 'Kendi heykelini sipariş etmiş. Mezar taşını ben hediye ederim.',
+  gloriosus1: 'Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.',
   archer: 'Arbaletçilerim hiç ıskalamaz. Iskalasalar da cıvatayı geri toplarlar.',
   barracks: 'Eski komşular. Kira ödemiyorlar ama kapıyı iyi tutuyorlar.',
   mage: 'Ruhlar burada çalışıyor. Mesai bitince de çalışıyor.',

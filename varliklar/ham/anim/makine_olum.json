@@ -1,0 +1,26 @@
+[
+ {
+  "name": "enemy_ram_die",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a lion head ram and a roof is destroyed: the roof beams crack, the lion head ram falls off, the roof caves in and the whole cart collapses into a pile of broken planks and wheels with a puff of dust, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_catapult_die",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart is destroyed: the throwing arm snaps in half, the wooden frame cracks and leans, a wheel breaks off and the whole catapult collapses into a pile of broken planks with a puff of dust, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_lantern_die",
+  "ref": "ham/anim/enemy_lantern_ref.png",
+  "prompt": "a hooded cartoon monk with a heavy wooden two-wheeled cart that carries a huge brass lantern with golden fire inside is destroyed: the lantern glass shatters and its fire goes out, the monk falls down, a wheel breaks off and the cart collapses into a pile of broken planks with a puff of dust, then everything lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

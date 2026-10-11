@@ -926,11 +926,48 @@ LEVELS.forEach((lv, li) => {
     }
   });
 });
+// 1. sefer bossları (11 Eki, Caner: "bosslar dikkat çekici olsun, 20. bölümdeki ultra güçlü"; arastirma/boss-analizi.md):
+// altı komutanın kendi çizimi (varliklar/ham/nm_boss_A/B.jpg), %25 iri; her mekânın kendi komutanı; 17-19'da ikili generaller;
+// 20. bölümde üç evreli General Gloriosus (nm_boss_C.jpg: aslanlı altın araba → yayan → Güneş Formu).
+if (NECRO) {
+  for (const t of ['centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain']) ENEMIES[t].h = Math.round(ENEMIES[t].h * 1.25);
+  // evreler: canı at oranına inince to türüne dönüşür (bossPhase, game.js); toplam can ilk evrenin canıdır
+  const GL = ENEMIES.gloriosus;
+  ENEMIES.gloriosus1 = Object.assign({}, GL, { name: 'General Gloriosus', title: 'Altın Güneş Arabası', h: 84, hp: 6000, hpK: 2.64, // komutan canı kademe × hpK: eski tek evreli Gloriosus'un 2,2 katı
+    speed: 11, r: 30, gold: 600, noblock: true, trample: { dmg: 45, r: 30, stun: 1 },
+    desc: 'İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır',
+    ab: { bomb: { cd: 10, stun: 3, r: 240 }, howl: { cd: 12, r: 140 }, summon: { t: ['legion', 'heavy'], n: 3, cd: 12 } },
+    phases: [
+      { at: 0.55, to: 'gloriosus2', title: 'Araba parçalandı!', sub: 'Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor', say: 'Muhafızlar!', mort: 'glor2' },
+      { at: 0.25, to: 'gloriosus3', title: 'GÜNEŞ FORMU', sub: 'Güneşin gücü Gloriosus\'u sardı: hızlandı, kılıcı yakıyor', say: 'GÜNEŞ BENİMLE!', mort: 'glor3' }] });
+  ENEMIES.gloriosus2 = Object.assign({}, GL, { name: 'General Gloriosus', title: 'Yayan', h: 62, hp: 6000, speed: 13, armor: 0.45, dmg: [34, 52], rate: 1.2, r: 22,
+    desc: 'Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur',
+    legion: [['heavy', 2], ['legion', 4]],
+    ab: { shield: { cd: 14, t: 2.5 }, summon: { t: ['heavy', 'legion', 'gladiator'], n: 3, cd: 10 }, volley: { cd: 9, n: 5, dmg: 18, stun: 1, r: 170, say: 'Lejyon, Atış!' },
+      hex: { cd: 13, t: 4, r: 260, n: 3, warn: 1.3, say: 'İmparatorluk Fermanı!', col: '255,200,90' } } });
+  ENEMIES.gloriosus3 = Object.assign({}, GL, { name: 'General Gloriosus', title: 'Güneş Formu', h: 66, hp: 6000, speed: 19, armor: 0.3, mr: 0.45, dmg: [46, 66], rate: 0.9, r: 22, glow: '255,200,90',
+    desc: 'Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter',
+    ab: { whirl: { cd: 6, r: 62, dmg: 42, say: 'Güneş Kılıcı!' }, burn: { cd: 8, r: 95, dps: 12, t: 4, say: 'Güneş Gazabı!' }, rage: { cd: 13, t: 3 } } });
+  BOSS_ESCORT.gloriosus1 = BOSS_ESCORT.gloriosus;
+  // imza hareketleri (AB tablosu sonra eklenir; bunlar onun yerine geçer)
+  ENEMIES.hierophant.sig = { hex: { cd: 12, t: 4, r: 230, n: 1, warn: 1.3, say: 'Güneş Hükmü!', col: '255,215,120' } };
+  ENEMIES.shadowmaster.sig = { blink: { cd: 9, d: 120, col: '170,90,255', say: 'Gölgeye Karış!' } };
+  ENEMIES.ironwarden.sig = { guard: { cd: 13, t: 4, k: 0.15, vs: ['arrow', 'blast'], say: 'Kalkan Duvarı!' } };
+  ENEMIES.hierophant.desc = 'Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)';
+  ENEMIES.shadowmaster.desc = 'Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır';
+  ENEMIES.ironwarden.desc = 'Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır';
+  // her mekânın kendi komutanı (bölüm 1-20); 17-19 ikili
+  const B1 = ['centurion', 'centurion', 'centurion', 'champion', 'champion', 'champion', 'hierophant', 'hierophant', 'shadowmaster', 'shadowmaster',
+    'shadowmaster', 'ironwarden', 'cavcaptain', 'ironwarden', 'cavcaptain', 'cavcaptain', 'ironwarden', 'cavcaptain', 'shadowmaster', 'gloriosus1'];
+  const B2 = { 16: 'hierophant', 17: 'champion', 18: 'ironwarden' };
+  LEVELS.filter(l => (l.ep || 1) === 1).forEach((l, i) => { if (B1[i]) l.bossT = B1[i]; if (B2[i]) l.boss2 = B2[i]; });
+}
 LEVELS.forEach((lv, i) => {
   lv.boss = lv.bossT || LEVEL_BOSS[i];
   const w = lv.waves[lv.waves.length - 1];
   const end = Math.max(...w.map(g => (g.at || 0) + g.gap * (g.n - 1)));
-  w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0 });
+  w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0, hpK: lv.boss2 ? 0.75 : undefined });
+  if (lv.boss2) w.push({ t: lv.boss2, n: 1, gap: 1, at: Math.round(end + 10), p: (lv.entr || 1) > 1 ? 1 : 0, hpK: 0.75 }); // ikili generaller: ikisi de biraz zayıf
 });
 
 // Düşmanların hasar kaynaklarına göre zayıflık (>1) ve dirençleri (<1): ok, büyü (yıldırım), top (patlama/ateş), kılıç (askerler)
@@ -1040,7 +1077,7 @@ Object.assign(ENEMY_WK, {
   wardog: { blast: 1.4, melee: 1.2 }, chariot: { magic: 1.3, melee: 0.6 }, siegetower: { blast: 1.3, arrow: 0.5 }, eagle: { arrow: 1.4, magic: 1.1 }, vulture: { arrow: 1.4, magic: 1.1 }, elephant: { magic: 1.3, arrow: 0.7, melee: 0.8 },
   horsearcher: { arrow: 1.2, magic: 1.2 }, testudo: { arrow: 0.3, blast: 1.8, magic: 1.1 }, sunpriest: { arrow: 1.3, melee: 1.2 },
   signifer: { magic: 1.2, melee: 1.2 }, drummer: { arrow: 1.2, blast: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
-  gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 },
+  gloriosus: { magic: 0.85, arrow: 0.85, blast: 1.1 }, gloriosus1: { magic: 0.85, arrow: 0.85, blast: 1.1 }, gloriosus2: { magic: 0.85, arrow: 0.85, blast: 1.1 }, gloriosus3: { magic: 0.85, arrow: 0.85, blast: 1.1 },
 });
 
 // Necromancer seferi: düşman açıklamaları (tanıtım kartı ve dokununca açılan panel)
@@ -1119,6 +1156,7 @@ if (NECRO) {
     severus: { smite: { cd: 8, r: 200, dmg: 55, say: 'Hüküm!' } },
   };
   for (const t in AB) ENEMIES[t].ab = Object.assign({}, ENEMIES[t].ab, AB[t]);
+  for (const t in ENEMIES) if (ENEMIES[t].sig) { const ab = ENEMIES[t].ab; if (t === 'hierophant') { delete ab.smite; delete ab.shield; } if (t === 'shadowmaster') delete ab.pounce; if (t === 'ironwarden') delete ab.rage; Object.assign(ab, ENEMIES[t].sig); }
 }
 
 // Necromancer: kule seviye unvanları ve uzmanlık adları
@@ -1198,7 +1236,7 @@ const ARMOR_CLASS = {
 };
 const CLASS_OF = {
   legion: 'kalkan', testudo: 'kalkan', signifer: 'kalkan', centurion: 'kalkan',
-  heavy: 'agir', paladin: 'agir', ironwarden: 'agir', gloriosus: 'agir', cavcaptain: 'agir',
+  heavy: 'agir', paladin: 'agir', ironwarden: 'agir', gloriosus: 'agir', gloriosus1: 'agir', gloriosus2: 'agir', gloriosus3: 'agir', cavcaptain: 'agir',
   priest: 'kutsal', sunpriest: 'kutsal', holywater: 'kutsal', bellpriest: 'kutsal', inquisitor: 'kutsal', saint: 'kutsal',
   hierophant: 'kutsal', ignis: 'kutsal', severus: 'kutsal', campanus: 'kutsal', colossus: 'kutsal',
   ram: 'kusatma', catapult: 'kusatma', siegetower: 'kusatma', lantern: 'kusatma', chariot: 'kusatma', cathedral: 'kusatma',
