@@ -5786,9 +5786,15 @@ for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: '
 // 3. kademe sayfasının geri tepme pozu arbalet yerine yay çizilmişti: _kick nişan pozunun kopyası, tepme kodla
 // 10 Eki (yol seçimi): 1. kademe ve okçu yolu iskelet okçu (geçici görsel: hayalet okçu çizimi, sayısı kademe kadar), arbaletçi yolu kademe arbaletçileri
 MEN.arch = Object.assign({}, MEN.bow, { n: (t) => t.lvl + 1, col: '150,255,160' });
+// 11 Eki: kademe iskelet okçuları (Gemini 5 poz, varliklar/iskelet_okcu_isle.py: unit_archerN + _nock/_half/_draw/_rel); kademe görseli yoksa bir alt kademeninki
+const ARCH_TIP = [[0.951, 0.236]];
+for (let k = 1; k <= 3; k++) MEN['a' + k] = Object.assign({}, MEN.arch, { pre: 'unit_archer' + k, tip: ARCH_TIP[k - 1] || ARCH_TIP[0] });
 const menOf = (t) => {
   if (t.spec === 'fan' || t.spec === 'bow') return MEN[t.spec];
-  if (NECRO && (t.path === 'bow' || (!t.path && t.lvl === 0))) return MEN.arch;
+  if (NECRO && (t.path === 'bow' || (!t.path && t.lvl === 0))) {
+    for (let k = t.lvl + 1; k >= 1; k--) if (spr(MEN['a' + k].pre)) return MEN['a' + k];
+    return MEN.arch;
+  }
   const k = MEN['k' + (t.lvl + 1)]; return k && spr(k.pre) ? k : MEN.base;
 };
 // kulenin o anki unvanı: Kemik Kulesi yolunda yola göre (ör. Kemik Okçular / Kemik Arbaletçiler)
