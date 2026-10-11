@@ -5790,7 +5790,7 @@ const XBOW_T = {
   // 11 Eki (Caner): platform %20 genişledi, dört yanı kemik korkuluklu (Gemini, nm_kemik_kulesi_k1_korkuluk.jpg). front: ön korkuluk katmanı
   // (<ad>_front.webp, görselin üstten bu kesri kadar), okçulardan sonra çizilir; kırpma çokgeni yerine geçer
   tower_xbow_1: { x: [0.25, 0.75], y: [0.17, 0.3], h: 0.229, clip: null, front: 0.42, floor: [[0.5, 0.125], [0.1, 0.235], [0.89, 0.235], [0.5, 0.35]] },
-  tower_xbow_2: { x: [0.3, 0.7], y: [0.18, 0.235], h: 0.181, clip: [[0, 0.15], [0.07, 0.15], [0.5, 0.25], [0.93, 0.15], [1, 0.15]], floor: [[0.5, 0.135], [0.16, 0.215], [0.84, 0.215], [0.5, 0.3]] },
+  tower_xbow_2: { x: [0.25, 0.75], y: [0.18, 0.29], h: 0.181, clip: null, front: 0.42, floor: [[0.5, 0.15], [0.14, 0.23], [0.86, 0.23], [0.5, 0.33]] }, // 11 Eki: kemik korkuluklu (nm_kemik_kulesi_k2_korkuluk.jpg)
   tower_xbow_3: { x: [0.33, 0.67], y: [0.2, 0.24], h: 0.15, clip: [[0, 0.18], [0.13, 0.18], [0.5, 0.29], [0.9, 0.18], [1, 0.18]], floor: [[0.5, 0.165], [0.26, 0.225], [0.72, 0.22], [0.5, 0.285]] },
   tower_archer_fan: { x: [0.33, 0.67], y: [0.18, 0.235], h: 0.1586, clip: [[0, 0.2], [0.22, 0.2], [0.5, 0.29], [0.78, 0.2], [1, 0.2]], floor: [[0.5, 0.125], [0.25, 0.215], [0.74, 0.21], [0.5, 0.285]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini)
   tower_archer_bow: { x: [0.33, 0.67], y: [0.19, 0.235], h: 0.149, clip: [[0, 0.19], [0.22, 0.19], [0.5, 0.28], [0.78, 0.19], [1, 0.19]], floor: [[0.5, 0.155], [0.27, 0.215], [0.73, 0.215], [0.5, 0.275]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini)
