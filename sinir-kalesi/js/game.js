@@ -5781,7 +5781,7 @@ function xbowRange(t, d) {
   const C = xbowCfg(t); if (!C.floor) return C.x;
   const [T, Lf, Rt, B] = C.floor, y = lerp(C.y[0], C.y[1], d), im = spr(t.spec ? formImg(t) : xbowTowerName(t.lvl));
   const side = (P) => y < P[1] ? lerp(T[0], P[0], clamp((y - T[1]) / (P[1] - T[1]), 0, 1)) : lerp(P[0], B[0], clamp((y - P[1]) / (B[1] - P[1]), 0, 1));
-  const m = C.h * MEN_K * (im ? im.height / im.width : 1.5) * 0.17; // gövde yarı genişliği (boyun ~%17'si)
+  const ts = towerSprite(t), m = ts ? MEN_BODY * 0.17 / ts.w : 0.06; // gövde yarı genişliği (boyun ~%17'si, kule genişliğinin kesri)
   let lo = Math.max(side(Lf) + m, C.x[0]), hi = Math.min(side(Rt) - m, C.x[1]);
   if (lo > hi) lo = hi = (lo + hi) / 2;
   return [lo, hi];
@@ -5864,7 +5864,11 @@ function updateXbowMen(t, dt) {
 }
 function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
 // kuledeki iskeletler kuleyle karışmasın (Caner, 11 Eki): %10 iri ve koyu konturlu (kontur görsel başına bir kez hazırlanır)
-const MEN_K = 1.22, OUTL = new Map(); // 11 Eki: 1-3. kademede ~22 birim (yerdeki iskelet savaşçı 23; Caner: en fazla o boyda)
+const MEN_K = 1.22, OUTL = new Map();
+// kuledeki okçunun boyu (11 Eki, Caner): her kademede aynı gövde boyu (miğfer üstü → ayak, dünya birimi; yerdeki iskelet savaşçı ~23).
+// Tuval boyu bekleme pozundaki gövde oranından bulunur: yayı başın üstüne taşan çizimler küçük görünmesin.
+const MEN_BODY = 20.5;
+const menH = (t) => { const M = menOf(t); return MEN_BODY / bodyRatio(spr(M.pre)); };
 function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   let c = OUTL.get(im); if (c) return c;
   const s = document.createElement('canvas'); s.width = im.width; s.height = im.height;
@@ -5893,7 +5897,7 @@ function drawFrameOutlined(img, F, i, h) {
   ctx.drawImage(O, i * F.fw, 0, F.fw + 2 * p, F.fh + 2 * p, -dw / 2 - p * k, -dh * (1 - F.base) - p * k, dw + 2 * p * k, dh + 2 * p * k);
 }
 function xbowTip(t, ts, a) { // atış pozunda okun / cıvatanın çıktığı nokta (dünya koordinatı)
-  const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = ts.h * xbowCfg(t).h * MEN_K, w = im ? h * im.width / im.height : h * 0.89;
+  const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = menH(t), w = im ? h * im.width / im.height : h * 0.89;
   return { x: f.x + (M.tip[0] - 0.5) * w * a.face, y: f.y - (1 - M.tip[1]) * h };
 }
 // fizik: hedefin mermi varana dek yolda nereye varacağı tahmin edilir (yürüyorsa); durmuş, dövüşen ya da yoldan çıkmışsa olduğu yer
@@ -5934,11 +5938,12 @@ function updateXbowRelease(t, dt) {
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
 function drawXbowMen(t, ts, redraw) {
-  const A = xbowMen(t), h = ts.h * xbowCfg(t).h * MEN_K, M = menOf(t), ghost = !!t.spec, pre = M.pre;
+  const A = xbowMen(t), h = menH(t), M = menOf(t), ghost = !!t.spec, pre = M.pre;
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
     if (a.dead) continue;
     const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold, rv = a.reviveT > 0 ? 1 - a.reviveT / 0.6 : 1;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
+    else { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.45, h * 0.6, '255,215,165', 0.09 * rv); ctx.restore(); } // soluk sıcak arka ışık: koyu platformda gövde seçilsin
     const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
     let pose = up ? M.pose : '';
     const sinceRel = M.kick - a.kickT; // bırakmadan bu yana geçen süre
@@ -6891,7 +6896,7 @@ function drawLanternFx(t, ts) {
 // Okçular parıltının altında bulanık görünmesin (Caner, 11 Eki: yerdeki birimler daha net)
 function drawBoneTowerFx(t, ts, layer) {
   const F = BONE_FX[ts.name]; if (!F) return;
-  const back = layer !== 'front', front = layer !== 'back';
+  const back = layer !== 'front', front = layer !== 'back', men = !!xbowCount(t); // okçu varken ön alevin ve dönen ruhların kıvılcımı yok (okçuların üstünden geçer)
   const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h }), sd = t.x * 0.013;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   if (front) for (const [i, r] of (F.runes || []).entries()) { // run ışığı aşağıdan yukarı akar, sütun nabız gibi atar
@@ -6903,7 +6908,7 @@ function drawBoneTowerFx(t, ts, layer) {
     if (f[1] < 0.18 ? !back : !front) continue; // platformun arkasındaki köşe alevleri okçulardan önce çizilir
     const q = P(f), fk = 0.7 + 0.18 * Math.sin(time * 9 + i * 2.3 + sd) + 0.12 * Math.sin(time * 21 + i);
     glow(ctx, q.x, q.y, 9 * s * fk, f[2], 0.4 * fk);
-    if (Math.random() < 0.1) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
+    if (Math.random() < 0.1 && !(men && f[1] >= 0.18)) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
   }
   if (front) for (const [i, e] of (F.eyes || []).entries()) { const q = P(e); glow(ctx, q.x, q.y, 2.2 * s, '120,255,140', 0.45 + 0.3 * Math.sin(time * 3.1 + i * 1.9 + sd)); } // kafatası gözlerinde yeşil kor
   if (F.top && back) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
@@ -6911,13 +6916,13 @@ function drawBoneTowerFx(t, ts, layer) {
     for (let i = 0; i < 3; i++) {
       const a = time * (0.9 + i * 0.15) + i * 2.09 + sd, x = c.x + Math.cos(a) * R, y = c.y + Math.sin(a) * R * 0.32 - Math.sin(time * 1.7 + i) * 3 * s, fr = Math.sin(a) > 0 ? 1 : 0.45;
       glow(ctx, x, y, 5 * s, '150,255,200', 0.55 * fr); glow(ctx, x, y, 2 * s, '235,255,245', 0.7 * fr);
-      if (Math.random() < 0.15) emit(G.parts, { kind: 'glow', add: true, x, y, vx: rand(-5, 5), vy: rand(-8, 2), col: '140,255,200', s0: 2.2 * s, s1: 0.3, life: 0.5 });
+      if (Math.random() < 0.15 && !men) emit(G.parts, { kind: 'glow', add: true, x, y, vx: rand(-5, 5), vy: rand(-8, 2), col: '140,255,200', s0: 2.2 * s, s1: 0.3, life: 0.5 });
     }
   }
   ctx.restore();
 }
 function drawNecroTowerFx(t, ts) {
-  if (t.type === 'archer') drawBoneTowerFx(t, ts, xbowCount(t) ? 'front' : null); // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
+  if (t.type === 'archer' && !(xbowCount(t) && xbowCfg(t).clip)) drawBoneTowerFx(t, ts, xbowCount(t) ? 'front' : null); // ön korkuluklu kulede ön ışıklar okçu çiziminde, korkuluğa kırpılı // Kemik Kulesi: run, ruh alevi, kafatası gözleri, tepede dönen ruhlar
   if (t.type === 'mage') drawLanternFx(t, ts); // Ruh Feneri: fener nabzı, dönen ruh yüzleri, mum/göz/mangal/run
   const TF = towerForm(t), o = TF && TF.src ? formPoint(t, ts, TF.src) : towerEye(t, ts), s = ts.w / 50, sh = t.shotAnim > 0 ? t.shotAnim / 0.25 : 0;
   ctx.save();
@@ -7126,7 +7131,9 @@ function drawTowerBody(t) {
       ctx.save(); ctx.translate(t.x, ts.bottom); ctx.beginPath();
       ctx.moveTo(-ts.w / 2, (C[0][1] - 1) * ts.h); for (const [cx, cy] of C) ctx.lineTo((cx - 0.5) * ts.w, (cy - 1) * ts.h);
       ctx.lineTo(ts.w / 2, 0); ctx.lineTo(-ts.w / 2, 0); ctx.closePath(); ctx.clip();
-      drawSprite(ctx, lit || ts.im, 0, 0, ts.w); ctx.restore();
+      drawSprite(ctx, lit || ts.im, 0, 0, ts.w); ctx.translate(-t.x, -ts.bottom);
+      if (NECRO && t.type === 'archer') drawBoneTowerFx(t, ts, 'front'); // run, göz, ön alev: yalnız korkuluk ve gövde bölgesinde, okçuların üstüne taşmaz
+      ctx.restore();
     });
     drawNecroTowerFx(t, ts);
     drawTowerFog(t, ts, true);
