@@ -23,9 +23,10 @@ Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üst
 1. **Simge: HAZIR (11 Eki).** Gemini çizimi `varliklar/ham/nm_simge.jpg` → `simge_isle.py` ile iOS + Android'e işlendi. Mağaza dosyaları: `simge_1024.png` (App Store), `play_simge_512.png` (Play). Google Play için 1024×500 öne çıkan görsel hâlâ gerekiyor.
 2. **Gizlilik politikası adresi:** `gizlilik.html` içindeki `[İLETİŞİM E-POSTASI]` yerine mağazada görünecek bir iletişim adresi yazılmalı (depo herkese açık, kişisel adres yazılmadı). Sonra sayfa bir yere yüklenmeli (ör. GitHub Pages; depo zaten herkese açık). Bu, herkese açık yayın olduğu için Caner'in onayıyla yapılacak.
 3. **Hesaplar:** Apple Developer Program (yıllık 99 $), Google Play Console (tek sefer 25 $), vergi ve banka bilgileri.
-4. **Reklam ve satın alma:** AdMob hesabı + App Store Connect / Play Console'da `mortimer_hazine` ürünü. Reklam açılırsa gizlilik politikası ve yaş derecelendirmesi yanıtları güncellenir (aşağıda işaretli).
-5. **Android derlemesi: HAZIR (11 Eki).** İmzalı paket `android/app/build/outputs/bundle/release/app-release.aab` (123 MB), emülatörde denendi. Yükleme imzası `~/.android-imza/` içinde (depoda değil) — bu klasör yedeklenmeli. Play Console hesabı açılınca bu AAB yüklenir; Play App Signing açık bırakılır.
-6. **TEST_OPEN = false** (game.js) — göndermeden önce.
+4. **Gelir modeli (12 Eki, Caner onayı):** ücretsiz indirme, ilk 10 bölüm ücretsiz; tam oyun tek seferlik **4,99 $ / 149,99 ₺** (`mortimer_hazine`, game.js MONET). Zorunlu ara reklam YOK; yalnız isteğe bağlı ödüllü reklam (tam oyunda reklamsız). Araştırma: `arastirma/gelir-ve-pazarlama.md`.
+5. **Reklam ve satın alma:** AdMob hesabı + App Store Connect / Play Console'da `mortimer_hazine` ürünü. Reklam açılırsa gizlilik politikası ve yaş derecelendirmesi yanıtları güncellenir (aşağıda işaretli).
+6. **Android derlemesi: HAZIR (11 Eki).** İmzalı paket `android/app/build/outputs/bundle/release/app-release.aab` (123 MB), emülatörde denendi. Yükleme imzası `~/.android-imza/` içinde (depoda değil) — bu klasör yedeklenmeli. Play Console hesabı açılınca bu AAB yüklenir; Play App Signing açık bırakılır.
+7. **TEST_OPEN = false** (game.js) — göndermeden önce.
 
 ## Simge için Gemini promptu
 
@@ -60,7 +61,8 @@ Kemik kuleler kur, mahzenlerinden iskelet savaşçılar çıkar, düşmüş dü�
 • 40'tan fazla düşman: lejyonerler, savaş filleri, kuşatma kuleleri, engizisyoncular, yürüyen katedraller
 • Sis perdeli sefer haritası, boss savaşları, Kahramanlık ve Sonsuz Gece modları, günlük sınav
 • Mortimer'ın her şeye bir yorumu var
-• İnternet gerekmez. Abonelik yok
+• İlk 10 bölüm ücretsiz; tam oyun tek seferlik, abonelik ve zorunlu reklam yok
+• İnternet gerekmez
 
 7 dil: Türkçe, English, Español, Deutsch, Français, Русский, 中文
 
@@ -89,7 +91,8 @@ Build bone towers, send skeleton warriors out of your crypts and raise fallen en
 • 40+ enemies: legionaries, war elephants, siege towers, inquisitors, walking cathedrals
 • Fog-of-war campaign map, boss fights, Heroic and Endless Night modes, a daily trial
 • Mortimer has a comment for everything
-• No internet needed. No subscription
+• First 10 levels free; unlock the full game once, no subscription, no forced ads
+• No internet needed
 
 7 languages: English, Türkçe, Español, Deutsch, Français, Русский, 中文
 

@@ -10944,7 +10944,11 @@ function drawLangMenu(cx, y, cw) {
 // ara reklam; tek seferlik "Mortimer'ın Hazinesi" (MONET.price) ara reklamları kaldırır, ödüllü reklam ödüllerini reklamsız verir.
 // Tarayıcı sürümünde reklamlar DENEME ekranıdır; mağaza sürümünde Capacitor AdMob + uygulama içi satın alma buraya bağlanacak
 // (window.NativeAds?.showRewarded / showInterstitial, window.NativeIAP?.buy('mortimer_hazine')).
-const MONET = { interEvery: 3, interMinSec: 120, price: '₺149,99', priceUsd: '$4.99', product: 'mortimer_hazine', boostGold: 150 };
+// 12 Eki (Caner onayı, arastirma/gelir-ve-pazarlama.md): ilk FREE_LEVELS bölüm ücretsiz, tam oyun tek seferlik ("Mortimer'ın Hazinesi"),
+// zorunlu ara reklam YOK (interEvery 0). İsteğe bağlı ödüllü reklamlar kalır; tam oyunda reklamsız verilir.
+const MONET = { interEvery: 0, interMinSec: 120, price: '₺149,99', priceUsd: '$4.99', product: 'mortimer_hazine', boostGold: 150, freeLevels: 10 };
+// tam oyun kilidi: 1. seferin ilk 10 bölümünden sonrası (2. sefer dahil). TEST_OPEN açıkken kilit yok (test).
+const needsPremium = (i) => (!TEST_OPEN || window.__paywallTest) && !isPremium() && i >= MONET.freeLevels; // __paywallTest: test modunda kilidi görmek için
 let AD = null, lastInterAd = -1e9; // AD: { kind: 'rew' | 'int', t0, dur, cb }
 const isPremium = () => !!save.premium;
 function showRewardedAd(cb) {
@@ -10953,7 +10957,7 @@ function showRewardedAd(cb) {
   AD = { kind: 'rew', t0: time, dur: 3, cb };
 }
 function levelEndAd() {
-  if (isPremium()) return;
+  if (isPremium() || !MONET.interEvery) return; // 12 Eki: zorunlu reklam kapalı
   save.levelsEnded = (save.levelsEnded || 0) + 1; persist();
   if (save.levelsEnded % MONET.interEvery !== 0 || time - lastInterAd < MONET.interMinSec) return;
   lastInterAd = time;
@@ -11002,9 +11006,9 @@ function drawShop() {
   ctx.restore();
   if (pk < 0.9) return;
   ctx.save(); ctx.translate(W / 2, py + 72); drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); ctx.restore();
-  txt("MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
-  txt('Tek seferlik satın alma · abonelik yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
-  const rows = ['Bölüm aralarındaki reklamlar tamamen kalkar', 'Reklam ödülleri (5 canla devam, altınla başla) reklam izlemeden', 'Mortimer\'a altın taç', 'Bir necromancer\'ı mutlu edersin'];
+  txt("TAM OYUN · MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
+  txt('Tek seferlik satın alma · abonelik yok · reklam yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
+  const rows = ['İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)', 'Bütün bosslar, Gloriosus ve Cadı Avı seferi', 'Ödüller (5 canla devam, altınla başla) reklam izlemeden', 'Mortimer\'a altın taç'];
   rows.forEach((r, i) => { circle(px + 46, py + 190 + i * 30, 7, '#3cbf3c', '#0a2a0a', 1.2); fitTxt(r, px + 62, py + 191 + i * 30, pw - 84, 16, '#f2ecd8', 'left', '700', FONT_B, false, 12); });
   if (isPremium()) txt('SATIN ALINDI — teşekkürler!', W / 2, py + ph - 38, 18, '#a8f0a0', 'center', '400', FONT_T, false);
   else gameButton('buy', W / 2, py + ph - 42, 320, 60, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 20 });
@@ -11015,7 +11019,7 @@ function drawShop() {
 const CREDITS = [
   ['OYUN', [['Tasarım ve yapım', 'Caner'], ['Programlama yardımı', 'Claude (Anthropic)']]],
   ['GÖRSEL VE MÜZİK', [['Karakter, kule ve harita çizimleri', 'Google Gemini ile üretildi'], ['Animasyonlar', 'Wan 2.2 (Apache 2.0)'],
-    ['Lanet Kulesi (geçici görsel)', 'FLUX.1 Kontext [dev]'], ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
+    ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
     ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü, borazan ve arbalet efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
   ['YAZI TİPİ', [['Metal Mania · Russo One · Rubik', 'SIL Open Font License']]],
@@ -13376,6 +13380,11 @@ function drawLevelCard(i, cx, cy, at) {
     // büyük SAVAŞ düğmesi + (Sefer'de) ödüllü reklamla +altın
     const bxc = rx + rw / 2, byc = y0 + h - 104, lbl = mapMode === 'c' ? (st ? 'TEKRAR' : 'SAVAŞA!') : mapMode === 'h' ? 'MEYDAN OKU' : 'BAŞLA';
     ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
+    if (needsPremium(i)) { // tam oyun kilidi: dükkâna götürür
+      gameButton('play' + i, bxc, byc, rw, 64, 'TAM OYUNU AÇ · ' + MONET.price, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), 'gold', { icon: 'lock', shine: true, size: 18 });
+      txt('İlk ' + MONET.freeLevels + ' bölüm ücretsiz · sonrası tek seferlik', bxc, y0 + h - 40, 13, '#e8d8c0', 'center', '700', FONT_B, false);
+      ctx.restore();
+    } else {
     gameButton('play' + i, bxc, byc, rw, 64, lbl, () => {
       if (!M.open) { mapNote = { text: M.lock, t: time }; sfx('error'); return; }
       go(() => startLevel(i, mapMode === 'c' ? undefined : mapMode));
@@ -13383,6 +13392,7 @@ function drawLevelCard(i, cx, cy, at) {
     if (mapMode === 'c') gameButton('boost' + i, bxc, y0 + h - 40, rw, 44, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA',
       () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 14 });
     ctx.restore();
+    }
   }
   roundBtn('card_x', x0 + w - 6, y0 + 6, 30, 'close', () => { mapSel = null; }, { appear: at - 0.15, style: 'red' });
 }
