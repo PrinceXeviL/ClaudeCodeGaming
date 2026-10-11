@@ -5966,7 +5966,7 @@ function drawXbowMen(t, ts, redraw) {
     if (a.dead) continue;
     const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold, rv = a.reviveT > 0 ? 1 - a.reviveT / 0.6 : 1;
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
-    else { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.45, h * 0.6, '255,215,165', 0.09 * rv); ctx.restore(); } // soluk sıcak arka ışık: koyu platformda gövde seçilsin
+    else if (t.lvl >= 2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.45, h * 0.6, '255,215,165', 0.09 * rv); ctx.restore(); } // soluk sıcak arka ışık: koyu platformda gövde seçilsin
     const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
     let pose = up ? M.pose : '';
     const sinceRel = M.kick - a.kickT; // bırakmadan bu yana geçen süre
@@ -6920,6 +6920,8 @@ function drawLanternFx(t, ts) {
 // Okçular parıltının altında bulanık görünmesin (Caner, 11 Eki: yerdeki birimler daha net)
 function drawBoneTowerFx(t, ts, layer) {
   const F = BONE_FX[ts.name]; if (!F) return;
+  // 11 Eki (Caner): parıltılar kademeyle gelir: 1-2. kademede yok, 3. kademede run ve alev (kıvılcımsız), 4. kademede hepsi
+  const tier = t.spec ? 4 : t.lvl + 1; if (tier <= 2) return;
   const back = layer !== 'front', front = layer !== 'back', men = !!xbowCount(t); // okçu varken ön alevin ve dönen ruhların kıvılcımı yok (okçuların üstünden geçer)
   const s = ts.w / 50, P = (q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h }), sd = t.x * 0.013;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -6932,10 +6934,10 @@ function drawBoneTowerFx(t, ts, layer) {
     if (f[1] < 0.18 ? !back : !front) continue; // platformun arkasındaki köşe alevleri okçulardan önce çizilir
     const q = P(f), fk = 0.7 + 0.18 * Math.sin(time * 9 + i * 2.3 + sd) + 0.12 * Math.sin(time * 21 + i);
     glow(ctx, q.x, q.y, 9 * s * fk, f[2], 0.4 * fk);
-    if (Math.random() < 0.1 && !(men && f[1] >= 0.18)) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
+    if (tier >= 4 && Math.random() < 0.1 && !(men && f[1] >= 0.18)) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
   }
   if (front) for (const [i, e] of (F.eyes || []).entries()) { const q = P(e); glow(ctx, q.x, q.y, 2.2 * s, '120,255,140', 0.45 + 0.3 * Math.sin(time * 3.1 + i * 1.9 + sd)); } // kafatası gözlerinde yeşil kor
-  if (F.top && back) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
+  if (F.top && back && tier >= 4) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
     const c = P(F.top), R = F.top[2] * ts.w;
     for (let i = 0; i < 3; i++) {
       const a = time * (0.9 + i * 0.15) + i * 2.09 + sd, x = c.x + Math.cos(a) * R, y = c.y + Math.sin(a) * R * 0.32 - Math.sin(time * 1.7 + i) * 3 * s, fr = Math.sin(a) > 0 ? 1 : 0.45;
