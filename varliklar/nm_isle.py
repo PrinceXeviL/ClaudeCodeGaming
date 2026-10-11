@@ -65,23 +65,25 @@ SHEETS = [
     ('nm2_dekor_A.jpg', ['nm2_gallows', 'nm2_stake', 'nm2_qfence', 'nm2_cottage', 'nm2_well',
                          'nm2_hatch', 'nm2_hatch_open', 'nm2_hatch_sealed', 'nm2_ravtree'], 'decor'),  # Sefer 2 dekor: orman ve köy, mahzen kapağı 3 hali
     ('nm_engizisyon_D.jpg', ['enemy_ignis', 'enemy_colossus', 'enemy_severus', 'enemy_cathedral'], 'unitgrid'),  # bosslar ve final
+    ('nm3_orman_dekor.jpg', ['nm3_stump', 'nm3_cage', 'nm3_totem_1', 'nm3_totem_2', 'nm3_totem_3', 'nm3_candles', 'nm3_cart', 'nm3_coffin', 'nm3_coffin_open', 'nm3_sign_1', 'nm3_sign_2', 'nm3_log', 'nm3_grave'], 'decor'),  # 11 Eki: 1. sefer Necromancer ormanı dekorları (satır satır)
     ('nm_kemik_duvar.jpg', ['nm_bwall_1', 'nm_bwall_2', 'nm_bwall_3'], 'decor'),
     ('nm_kemik_duvar_yan.jpg', ['nm_bwall_4', 'nm_bwall_5'], 'decor'),  # yandan görünüş (dikine duran duvar): sağlam, hasarlı  # Kemik Duvarı büyüsü: önden, önden hasarlı, çapraz  # savaş fili (sırtında okçu), mini boss
 ]
 # satırlara düzgün oturmayan sayfalar: her nesnenin kaba kutusu (x0, y0, x1, y1), kutudaki opak pikseller o nesnedir
 BOXES = {
+    'nm3_orman_dekor.jpg': [(55, 15, 315, 308), (355, 12, 595, 308), (660, 12, 850, 308), (885, 12, 1065, 308), (1115, 12, 1305, 312), (25, 318, 345, 500), (415, 305, 745, 520), (755, 315, 1025, 520), (1035, 315, 1355, 520), (90, 515, 280, 752), (355, 512, 545, 752), (595, 550, 1005, 730), (1055, 515, 1355, 752)],  # 13 nesne, satırlara düzgün oturmuyor
     'nm_engizisyon_C.jpg': [(0, 0, 1000, 700), (1000, 0, 2000, 560), (0, 690, 1060, 1493), (1060, 540, 2000, 1493)],
     # bir nesne birden çok kutudan oluşabilir (katedral: sağdaki gövde + soldaki itici rahipler, kolosun altında)
     'nm_sunak_4.jpg': [(0, 80, 1010, 1116), (1010, 0, 2000, 1116)],  # rün halkası kopuk parçalar: kutuyla
     'nm2_dekor_A.jpg': [(c * 341 + 2, r * 341 + 2, c * 341 + 339, r * 341 + 339) for r in range(3) for c in range(3)],  # 3x3 ızgara
     'nm_engizisyon_D.jpg': [(0, 40, 660, 750), (670, 20, 1345, 760), (0, 760, 760, 1493), [(1345, 380, 2000, 1493), (940, 760, 1345, 1493)]],
 }
-BOX_EDGE_DROP = {'nm2_dekor_A.jpg'}
+BOX_EDGE_DROP = {'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg'}
 # renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
 # (10 Eki: Caner hayalet okçuları kırmızı istedi)
 HUE_TOP = {}  # (eski Hayalet Okçular kulesindeki okçuların rengi; yeni kulede okçular ayrı çiziliyor)
 # magentaya karışmış ışık/duman: yarı saydam mor pikseller verilen renge çekilir (ad: renk; None = gri duman)
-GLOW_FIX = {'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
+GLOW_FIX = {'nm3_totem_1': (110, 255, 140), 'nm3_totem_2': (110, 255, 140), 'nm3_totem_3': (110, 255, 140), 'nm3_candles': (110, 255, 140), 'nm3_sign_1': (110, 255, 140), 'nm3_sign_2': (110, 255, 140), 'nm_bwall_4': (120, 255, 140), 'nm_bwall_5': (120, 255, 140), 'nm2_stake': None, 'nm2_hatch_open': (120, 255, 140), 'nm2_hatch_sealed': (140, 255, 140), 'nm2_ravtree': (140, 255, 140)}
 # yarı saydam duman magenta zeminden mor/yeşil renk alır: bu görsellerde ateş dışındaki yarı saydam pikseller griye çekilir
 SMOKE_FIX = {'castle_2', 'castle_3'}
 FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
