@@ -1,0 +1,30 @@
+[
+ {
+  "name": "unit_skel_4_walk",
+  "ref": "ham/anim/unit_skel_4_tam_ref.png",
+  "prompt": "a cartoon big skeleton grave warden with a coffin shield and a spiked mace walking in place, walk cycle, legs stepping, arms swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true
+ },
+ {
+  "name": "unit_skel_4_atk",
+  "ref": "ham/anim/unit_skel_4_tam_ref.png",
+  "prompt": "a cartoon big skeleton grave warden with a coffin shield and a spiked mace swings the weapon forward in one strong strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true
+ },
+ {
+  "name": "unit_skel_5_walk",
+  "ref": "ham/anim/unit_skel_5_tam_ref.png",
+  "prompt": "a cartoon skeleton death knight in purple tattered robes with two green flaming blades walking in place, walk cycle, legs stepping, arms swinging naturally. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true
+ },
+ {
+  "name": "unit_skel_5_atk",
+  "ref": "ham/anim/unit_skel_5_tam_ref.png",
+  "prompt": "a cartoon skeleton death knight in purple tattered robes with two green flaming blades swings the weapon forward in one strong strike, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
+  "frames": 33,
+  "loop": true
+ }
+]
