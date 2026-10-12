@@ -11681,7 +11681,7 @@ function netSoldier(s, t) { if (s.wall) return; if (!(s.netT > 0)) s.netAt = G.t
 // Ağ (12 Eki, Caner: "olabildiğince gerçekçi"): retiarius ağı. İp örgü, kenarında kurşun ağırlıklar; elden toplu çıkar, havada dönerek
 // açılır, hedefin üstüne çöküp gövdeyi sarar (ağırlıklar yere değer). Bilekteki ip atan ele bağlı kalır. skill: atış şeridinin süresi,
 // rel: ağın elden çıktığı an (şeridin kesri), R: açık ağın yarıçapı (oyun px)
-const NET = { skill: 0.95, rel: 0.55, R: 13, spokes: 12, rings: 3, rope: '214,192,146', dark: '#5a4224', lead: '#3a383e' };
+const NET = { skill: 1.05, rel: 0.8, R: 13, spokes: 12, rings: 3, rope: '214,192,146', dark: '#5a4224', lead: '#3a383e' };
 function throwNet(e, s, stun, delay = 0) {
   const h = CHAR_H['enemy_' + e.type] || 30;
   G.projectiles.push({ kind: 'net', foe: true, hero: s, from: e, sx: e.x + e.face * h * 0.32, sy: e.y - h * 0.62, tx: s.x, ty: s.y - 12, t: -delay, seed: rand(0, 9),
@@ -15335,6 +15335,7 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
 window.__game = {
+  spawn(type, pi = 0) { return spawnEnemy(type, pi); }, // test: düşman çıkar
   netTest(i = 0) { const e = G.enemies.find(q => !q.dead), v = G.soldiers.find(q => !q.dead && !q.wall); if (!e || !v) return false; playSkill(e, NET.skill); throwNet(e, v, 2.5, NET.skill * NET.rel); return true; }, // test: ağ atışı
   bakeThumbs(cols = 8) { // tools/harita-pisir.js: bütün bölüm kartı önizlemeleri tek atlasta
     const n = LEVELS.length, c = document.createElement('canvas'); c.width = cols * 480; c.height = Math.ceil(n / cols) * 270;

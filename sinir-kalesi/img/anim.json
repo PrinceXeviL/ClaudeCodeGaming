@@ -753,12 +753,11 @@
   "sh": 1
  },
  "enemy_gladiator_skill": {
-  "n": 32,
-  "fw": 220,
-  "fh": 167,
-  "base": 0.0143,
-  "ch": 0.957,
-  "sh": 1
+  "n": 25,
+  "fw": 293,
+  "fh": 169,
+  "base": 0.014,
+  "ch": 0.9465
  },
  "enemy_cavalry_skill": {
   "n": 32,
@@ -1866,61 +1865,61 @@
  },
  "enemy_lucia_walk": {
   "n": 32,
-  "fw": 183,
-  "fh": 168,
-  "base": 0.0143,
-  "ch": 0.9523,
-  "idle": 17
+  "fw": 185,
+  "fh": 169,
+  "base": 0.0145,
+  "ch": 0.947,
+  "idle": 19
  },
  "enemy_lucia_atk": {
   "n": 32,
-  "fw": 182,
+  "fw": 334,
   "fh": 166,
-  "base": 0.0145,
-  "ch": 0.9661
+  "base": 0.0146,
+  "ch": 0.9611
  },
  "enemy_lucia_skill": {
   "n": 32,
-  "fw": 191,
-  "fh": 165,
-  "base": 0.0145,
-  "ch": 0.9709
+  "fw": 205,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9477
  },
  "enemy_lucia_die": {
   "n": 33,
-  "fw": 235,
-  "fh": 165,
-  "base": 0.0146,
-  "ch": 0.9708
+  "fw": 300,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9523
  },
  "enemy_godfrey_walk": {
   "n": 32,
-  "fw": 195,
-  "fh": 165,
-  "base": 0.0146,
-  "ch": 0.9684,
-  "idle": 23
+  "fw": 199,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.9544,
+  "idle": 20
  },
  "enemy_godfrey_atk": {
   "n": 32,
-  "fw": 181,
-  "fh": 178,
+  "fw": 209,
+  "fh": 177,
   "base": 0.0135,
-  "ch": 0.9011
+  "ch": 0.9052
  },
  "enemy_godfrey_skill": {
   "n": 32,
-  "fw": 211,
-  "fh": 175,
-  "base": 0.0136,
-  "ch": 0.9138
+  "fw": 199,
+  "fh": 167,
+  "base": 0.0145,
+  "ch": 0.9566
  },
  "enemy_godfrey_die": {
   "n": 33,
-  "fw": 271,
-  "fh": 165,
-  "base": 0.0146,
-  "ch": 0.9708
+  "fw": 273,
+  "fh": 167,
+  "base": 0.0144,
+  "ch": 0.9568
  },
  "enemy_hubertus_walk": {
   "n": 32,
@@ -1979,13 +1978,6 @@
   "fh": 178,
   "base": 0.0136,
   "ch": 0.9002
- },
- "enemy_gladiator_skillx": {
-  "n": 32,
-  "fw": 245,
-  "fh": 171,
-  "base": 0.0142,
-  "ch": 0.9363
  },
  "enemy_severus3_walk": {
   "n": 32,
