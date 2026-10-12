@@ -4345,16 +4345,17 @@ function drawTraps() {
 
 // ---------- mermiler & efektler ----------
 // saplanan ok: isabet edince düşmanın gövdesinde (onunla birlikte gider, 1,4 sn sonra söner; en çok 3), ıskalayınca yerde titreyerek kalır
-const STUCK = { max: 3, on: 1.5, ground: 6, cap: 140 }; // 12 Eki (Caner): düşmanda 1,5 sn, yerde 6 sn
-function groundArrow(x, y, a, src) {
+const STUCK = { max: 3, on: 10, ground: 10, cap: 140 }; // 15 Eki (Caner): düşmanda ve yerde 10 sn kalır (düşmandan düşen ok kalan süresiyle)
+function groundArrow(x, y, a, src, dur = STUCK.ground) {
   const old = G.effects.filter(f => f.kind === 'stuck' && f.ground);
   if (old.length >= STUCK.cap) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
-  G.effects.push({ kind: 'stuck', x, y, ang: a, t: 0, dur: NECRO ? REMAINS.keep : STUCK.ground, col: src.col, bolt: src.bolt, heavy: src.heavy, longA: src.longA ?? src.longArrow, ground: true }); // necro: yeni dalgaya dek
+  G.effects.push({ kind: 'stuck', x, y, ang: a, t: 0, dur, col: src.col, bolt: src.bolt, heavy: src.heavy, longA: src.longA ?? src.longArrow, ground: true });
 }
 function dropStuck(f) { // düşmandaki ok yere düşer (düşman öldü ya da üstünde çok ok birikti)
   const T = f.target, fl = (T.face || 1) !== f.face0, x = T.x + (fl ? -f.dx : f.dx);
+  const rem = Math.max(1.5, STUCK.ground - f.t); // saplandığından beri geçen süre düşülür: toplam ~10 sn
   f.gone = true; f.t = f.dur; T.stuckN = Math.max(0, (T.stuckN || 1) - 1);
-  groundArrow(x + rand(-4, 4), T.y + rand(-3, 4), rand(0.5, Math.PI - 0.5), f);
+  groundArrow(x + rand(-4, 4), T.y + rand(-3, 4), rand(0.5, Math.PI - 0.5), f, rem);
 }
 function stickArrow(pr, e) {
   const k = 0.985, ang = projAng(pr, k);
@@ -10090,6 +10091,49 @@ function boneBtn(key, x, y, r, icon, fn, o, appear) {
   if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn: () => { sfx('bonespin'); BONE_DEFER = { fn, at: time + BONE_RING.defer }; } }); // önce kemik döner, sonra sayfa
 }
 // yuvarlak 3B buton; fn yoksa (oyun içi HUD) dokunma hudTap'te ayrıca yakalanır
+// 15 Eki: Gemini kızıl-altın arayüz parçaları (varliklar/ui_isle.py → img/ui_*.webp). Caner 2. denemeyi seçti; önce Ayarlar ekranında.
+// Kaynak ölçüleri görsel pikselinde: ui_frame 9 dilim (köşe 130, tepe arması ayrı), uzun parçalar yatay 3 dilim.
+const UI_FRAME = { c: 130, y0: 92, y1: 1079, top: [135, 60], bot: [400, 60], side: [450, 250], mid: [300, 420, 300, 360], crest: [195, 0, 512, 215], plaque: 155, medal: 70 };
+const UI_3 = { pill: ['ui_pill', [0, 120], [300, 580], [761, 881], 0, 229], track: ['ui_toggle', [0, 90], [110, 170], [340, 432], 0, 142],
+  bar: ['ui_slider', [0, 70], [470, 740], [760, 830], 0, 147], fill: ['ui_slider', [0, 70], [110, 300], [760, 830], 0, 147] };
+const uiOk = () => NECRO && spr('ui_frame') && spr('ui_pill') && spr('ui_toggle') && spr('ui_slider') && spr('ui_knob');
+function ui3(kind, x, y, w, h) { // yatay 3 dilim: uçlar oranını korur, orta esner
+  const [n, L, M, R, sy0, sy1] = UI_3[kind], im = spr(n); if (!im) return;
+  let k = h / (sy1 - sy0), lw = (L[1] - L[0]) * k, rw = (R[1] - R[0]) * k;
+  if (lw + rw > w) { const f = w / (lw + rw); lw *= f; rw *= f; }
+  ctx.drawImage(im, L[0], sy0, L[1] - L[0], sy1 - sy0, x, y, lw, h);
+  ctx.drawImage(im, M[0], sy0, M[1] - M[0], sy1 - sy0, x + lw - 0.5, y, w - lw - rw + 1, h);
+  ctx.drawImage(im, R[0], sy0, R[1] - R[0], sy1 - sy0, x + w - rw, y, rw, h);
+}
+function uiFrame(px, py, pw, ph, s = 0.5) { // pencere: 9 dilim + tepe arması; döner: başlık plakası ve madalyon merkezi
+  const im = spr('ui_frame'), F = UI_FRAME, c = F.c * s, W0 = im.width, [mx, my, mw, mh] = F.mid;
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8; ctx.fillStyle = '#2a0812'; ctx.fillRect(px + c * 0.4, py + c * 0.4, pw - c * 0.8, ph - c * 0.8); ctx.restore();
+  ctx.drawImage(im, mx, my, mw, mh, px + c * 0.4, py + c * 0.4, pw - c * 0.8, ph - c * 0.8);
+  ctx.drawImage(im, F.top[0], F.y0, F.top[1], F.c, px + c, py, pw - 2 * c, c);
+  ctx.drawImage(im, F.bot[0], F.y1 - F.c, F.bot[1], F.c, px + c, py + ph - c, pw - 2 * c, c);
+  ctx.drawImage(im, 0, F.side[0], F.c, F.side[1], px, py + c, c, ph - 2 * c);
+  ctx.drawImage(im, W0 - F.c, F.side[0], F.c, F.side[1], px + pw - c, py + c, c, ph - 2 * c);
+  for (const [sx, sy, dx, dy] of [[0, F.y0, px, py], [W0 - F.c, F.y0, px + pw - c, py], [0, F.y1 - F.c, px, py + ph - c], [W0 - F.c, F.y1 - F.c, px + pw - c, py + ph - c]])
+    ctx.drawImage(im, sx, sy, F.c, F.c, dx, dy, c, c);
+  const [cx0, cy0, cw, chh] = F.crest; ctx.drawImage(im, cx0, cy0, cw, chh, px + pw / 2 - cw * s / 2, py - (F.y0 - cy0) * s, cw * s, chh * s);
+  return { x: px + pw / 2, plaque: py + (F.plaque - F.y0) * s, medal: py + (F.medal - F.y0) * s, pw: 440 * s };
+}
+function uiBtn(key, x, y, r, img, fn, o = {}) { // yuvarlak altın çerçeveli düğme (görsel); simge yoksa görselin kendi çizimi
+  const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1)), im = spr(img); if (appear <= 0.01 || !im) return;
+  ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
+  ctx.drawImage(im, -r, -r * im.height / im.width, 2 * r, 2 * r * im.height / im.width);
+  if (o.icon) drawIcon(o.icon, 0, 0, r * 0.62, '#f2d58a');
+  ctx.restore();
+  if (fn) buttons.push({ key, x: x - r, y: y - r, w: 2 * r, h: 2 * r, fn });
+}
+function uiPill(key, x, y, w, h, label, fn, o = {}) { // uzun kızıl düğme
+  const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1)); if (appear <= 0.01) return;
+  ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
+  ui3('pill', -w / 2, -h / 2, w, h);
+  txt(label, 0, 1, o.size || 15, o.col || '#f6e2b0', 'center', '400', FONT_T, true);
+  ctx.restore();
+  if (fn) buttons.push({ key, x: x - w / 2, y: y - h / 2 - 4, w, h: h + 8, fn });
+}
 function roundBtn(key, x, y, r, icon, fn, o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
   if (appear <= 0.01) return;
@@ -11868,14 +11912,18 @@ function drawSettings() {
     g.addColorStop(0, 'rgba(24,12,4,0.55)'); g.addColorStop(1, 'rgba(14,8,2,0.82)');
     ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
-  const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 280, 'AYARLAR', 'gold', 26); ctx.restore();
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
+  const rk = easeOutBack(clamp(st / 0.45, 0, 1)), U = uiOk();
+  if (!U) { ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 280, 'AYARLAR', 'gold', 26); ctx.restore(); }
+  if (U) uiBtn('back', 48, 48, 30, 'ui_btn_back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
+  else roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
   // 15 Eki (Caner: dil satırı kemik çerçevenin dışına taşmış): satırlar çoğalınca (titreşim, oyun verisi) iki sütuna geçildi; yükseklik satır sayısından
-  const pw = 880, ph = Math.ceil(settingsCount(false) / 2) * 58 + 64, px = W / 2 - pw / 2, py = 96;
+  // Gemini çerçevesinde (U) satırlar başlık plakasının altından başlar
+  const pw = 880, ph = Math.ceil(settingsCount(false) / 2) * 58 + (U ? 100 : 64), px = W / 2 - pw / 2, py = U ? 92 : 96;
   const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
-  if (NECRO) pauseFrame(px, py, pw, ph, 0, false); // ayarlarda kemik yok (Caner, 15 Eki: orada iyi durmuyor; menü tasarımı Gemini ile yapılacak)
+  let UF = null;
+  if (U) { UF = uiFrame(px, py, pw, ph); txt('AYARLAR', UF.x, UF.plaque + 1, 22, '#f6e2b0', 'center', '400', FONT_T, true); drawIcon('gear', UF.x, UF.medal, 20, '#f2d58a'); }
+  else if (NECRO) pauseFrame(px, py, pw, ph, 0, false); // ayarlarda kemik yok (Caner, 15 Eki: orada iyi durmuyor; menü tasarımı Gemini ile yapılacak)
   else {
     roundRect(px + 5, py + 10, pw, ph, 22, 'rgba(0,0,0,0.45)');
     const fr = ctx.createLinearGradient(0, py, 0, py + ph); fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
@@ -11885,21 +11933,26 @@ function drawSettings() {
   }
   ctx.restore();
   if (pk < 0.9) return;
-  settingsRows(px + 14, py + 22, pw - 28, st, false);
+  settingsRows(px + (U ? 26 : 14), py + (U ? 58 : 22), pw - (U ? 52 : 28), st, false);
   if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
-  gameButton('credits', EDGE.r - 112, EDGE.b - 32, 190, 44, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
+  (U ? (k, x, y, w, h, l, fn, sty, o) => uiPill(k, x, y, w, h + 4, l, fn, o) : gameButton)('credits', EDGE.r - 112, EDGE.b - 32, 190, 44, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
 }
 // Ayar satırları (ana menüdeki ayarlar ekranı ve oyun içi duraklatma menüsü ortak). Kolay anlaşılsın diye (Caner, 10 Eki):
 // her satırda solda simge + ad, sağda seçenekler yan yana; seçili olan yeşil yanar, tek dokunuşla değişir (sırayla gezme yok).
 function segmented(key, x, y, w, h, opts, cur, pick, appear) {
   const a = clamp(appear / 0.2, 0, 1); if (a <= 0) return;
   ctx.save(); ctx.globalAlpha *= a;
+  const U = uiOk();
+  if (U) ui3('track', x, y - h / 2 - 2, w, h + 4); // Gemini anahtar yuvası
+  else {
   roundRect(x, y - h / 2 + 2, w, h, h / 2, NECRO ? 'rgba(0,0,0,0.4)' : 'rgba(60,34,12,0.35)');
   roundRect(x, y - h / 2, w, h, h / 2, NECRO ? '#1a0814' : '#5a3a1c', NECRO ? '#c9a865' : '#2a160a', NECRO ? 1.6 : 2);
+  }
   const sw = w / opts.length;
   opts.forEach(([v, label], i) => {
     const on = v === cur, sx = x + i * sw, hot = press.key === key + i;
-    if (on) {
+    if (on && U) ui3('pill', sx + 2, y - h / 2 + 1, sw - 4, h - 2); // seçili: kızıl altın kenarlı
+    else if (on) {
       const off = v === 0 || v === false, g = ctx.createLinearGradient(0, y - h / 2, 0, y + h / 2);
       if (NECRO) { g.addColorStop(0, off ? '#6a5a72' : '#b8284a'); g.addColorStop(1, off ? '#2e2436' : '#5e0a24'); }
       else { g.addColorStop(0, off ? '#9a8a7a' : '#8fe06a'); g.addColorStop(1, off ? '#5a4a3e' : '#2f8a2a'); }
@@ -11907,7 +11960,7 @@ function segmented(key, x, y, w, h, opts, cur, pick, appear) {
     } else if (hot) roundRect(sx + 3, y - h / 2 + 3, sw - 6, h - 6, (h - 6) / 2, 'rgba(255,240,200,0.15)');
     const fs = Math.min(14, (sw - 10) / Math.max(4, TR(label).length) * 1.55);
     txt(label, sx + sw / 2, y + 1, fs, on ? '#fff' : 'rgba(255,236,200,0.6)', 'center', '400', FONT_T, on);
-    if (i) { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(sx, y - h / 2 + 7, 1.5, h - 14); }
+    if (i && !U) { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(sx, y - h / 2 + 7, 1.5, h - 14); }
     buttons.push({ key: key + i, x: sx, y: y - h / 2 - 4, w: sw, h: h + 8, fn: () => { if (!on) { pick(v); sfx('click'); } } });
   });
   ctx.restore();
@@ -11920,6 +11973,17 @@ function volSlider(key, x, y, w, h, v, set, appear) {
   const a = clamp(appear / 0.2, 0, 1); if (a <= 0) return;
   const nw = 46, tx = x + 14, tw = w - nw - 28, f = clamp(v, 0, 1), kx = tx + tw * f, th = 10;
   ctx.save(); ctx.globalAlpha *= a;
+  if (uiOk()) { // Gemini kemik uçlu çubuk + kafatası topuz
+    const bw = w - nw + 6, bh = h * 1.05, ux0 = x + bw * 0.055, uw = bw * 0.89, ukx = ux0 + uw * f;
+    ui3('bar', x, y - bh / 2, bw, bh);
+    if (f > 0) { ctx.save(); ctx.beginPath(); ctx.rect(x + bh * 0.4, y - bh / 2, ukx - x - bh * 0.4, bh); ctx.clip(); ui3('fill', x, y - bh / 2, bw, bh); ctx.restore(); }
+    const kr = h * 0.62 * (slide && slide.key === key ? 1.1 : 1), kn = spr('ui_knob'); ctx.drawImage(kn, ukx - kr, y - kr, kr * 2, kr * 2);
+    txt(String(Math.round(f * 100)), x + w - nw / 2 + 10, y + 1, 15, f > 0 ? '#f6e2b0' : 'rgba(255,236,200,0.5)', 'center', '400', FONT_T, true);
+    ctx.restore();
+    const pick = (px) => set(Math.round(clamp((px - ux0) / uw, 0, 1) * 100) / 100);
+    buttons.push({ key, x, y: y - h / 2 - 6, w, h: h + 12, fn: () => {}, drag: pick });
+    return;
+  }
   roundRect(x, y - h / 2, w, h, h / 2, NECRO ? '#1a0814' : '#5a3a1c', NECRO ? '#c9a865' : '#2a160a', NECRO ? 1.6 : 2);
   roundRect(tx, y - th / 2, tw, th, th / 2, 'rgba(0,0,0,0.45)');
   if (f > 0) { const g = ctx.createLinearGradient(0, y - th / 2, 0, y + th / 2); g.addColorStop(0, NECRO ? '#d8385a' : '#8fe06a'); g.addColorStop(1, NECRO ? '#6a0a28' : '#2f8a2a'); roundRect(tx, y - th / 2, Math.max(th, tw * f), th, th / 2, g); }
@@ -11952,7 +12016,7 @@ function settingsRows(x0, y0, w, st, inGame) {
   const lang = (LANGS.find(v => v[0] === window.LANG) || LANGS[0]);
   const rows = settingsList(inGame), cols = inGame ? 1 : 2, n = settingsCount(inGame), per = Math.ceil(n / cols), colW = w / cols;
   const LC = NECRO ? '#eadfc4' : '#4a2a0e', LS = inGame ? 17 : 16, step = inGame ? 54 : 58, sh = inGame ? 42 : 38; // oyun içinde (telefonda) seçenekler biraz daha iri
-  const cell = (j) => { const c = Math.floor(j / per), i = j % per, cx0 = x0 + c * colW, cw = inGame ? Math.min(310, colW - 250) : colW - 238;
+  const cell = (j) => { const c = Math.floor(j / per), i = j % per, cx0 = x0 + c * colW, cw = inGame ? Math.min(310, colW - 250) : colW - (c ? 214 : 238);
     return { i, y: y0 + 30 + i * step, lx: cx0 + (inGame ? 26 : 18), cw, cx: cx0 + colW - (inGame ? 24 : 16) - cw, l: cx0 + 16, r: cx0 + colW - 16 }; };
   const head = (c, icon, label, col) => { if (c.i) { ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(c.l, c.y - step / 2, c.r - c.l, 1.5); }
     drawIcon(icon, c.lx + 12, c.y, 22, col || '#f2d58a'); txt(label, c.lx + 32, c.y + 1, LS, LC, 'left', '400', FONT_T, false); };
@@ -11965,11 +12029,12 @@ function settingsRows(x0, y0, w, st, inGame) {
   });
   // dil: dokununca dil listesi açılır (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
   const L = cell(rows.length); head(L, 'map', 'Dil / Language');
-  gameButton('setlang', L.cx + L.cw / 2, L.y, L.cw, 40, lang[1] + '  ▼', () => { langMenu = langMenu ? null : { t0: time }; }, 'blue', { appear: st - 0.4, size: 15 });
+  const BTN = uiOk() ? (k, x, y, w, h, l, fn, sty, o) => uiPill(k, x, y, w, h + 4, l, fn, o) : gameButton; // Gemini stili: kızıl uzun düğme
+  BTN('setlang', L.cx + L.cw / 2, L.y, L.cw, 40, lang[1] + '  ▼', () => { langMenu = langMenu ? null : { t0: time }; }, 'blue', { appear: st - 0.4, size: 15 });
   if (!inGame) {
     const R2 = cell(rows.length + 1); head(R2, 'restart', 'İlerlemeyi sıfırla', '#ff9a8a');
-    gameButton('setreset', R2.cx + R2.cw / 2, R2.y, R2.cw, 40, time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
-      if (time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
+    BTN('setreset', R2.cx + R2.cw / 2, R2.y, R2.cw, 40, resetArm && time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
+      if (resetArm && time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
       else resetArm = time;
     }, 'red', { appear: st - 0.45, size: 15 });
   }
