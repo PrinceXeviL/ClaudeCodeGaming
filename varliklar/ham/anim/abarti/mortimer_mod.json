@@ -48,30 +48,6 @@
   "prompt": "a cartoon grim reaper skeleton necromancer with a skull face, a deep red hooded robe with black feather shoulders, holding a big scythe in one hand and a small white tea cup in the other, wispy green and purple magic smoke around his feet celebrates a victory: does a silly little victory dance, spins the scythe, raises the tea cup in a toast, bounces from foot to foot with exaggerated cartoon joy, squash and stretch, then returns to the starting pose. Front view, the character faces the viewer, static camera, the character stays in the center of the frame, the feet stay planted on the same spot, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
  },
  {
-  "name": "mortimer_yuru",
-  "ref": "ham/anim/mortimer_ref.png",
-  "frames": 33,
-  "loop": true,
-  "seed": 21,
-  "prompt": "a cartoon grim reaper skeleton necromancer with a skull face, a deep red hooded robe with black feather shoulders, holding a big scythe in one hand and a small white tea cup in the other, wispy green and purple magic smoke around his feet walks toward the viewer in place with a proud, bouncy, exaggerated cartoon villain strut: big steps, the robe swishes, the scythe swings with each step, the skull bobs, the tea cup stays level, a full walk cycle. Front view, he walks in place toward the camera without leaving the center, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
- },
- {
-  "name": "mortimer_don",
-  "ref": "ham/anim/mortimer_ref.png",
-  "frames": 33,
-  "loop": false,
-  "seed": 21,
-  "prompt": "a cartoon grim reaper skeleton necromancer with a skull face, a deep red hooded robe with black feather shoulders, holding a big scythe in one hand and a small white tea cup in the other, wispy green and purple magic smoke around his feet turns around and walks away from the viewer into a dark doorway behind him with a dramatic swish of his robe, his back to the camera at the end. static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
- },
- {
-  "name": "mortimer_dirilt",
-  "ref": "ham/anim/mortimer_ref.png",
-  "frames": 33,
-  "loop": false,
-  "seed": 21,
-  "prompt": "a cartoon grim reaper skeleton necromancer with a skull face, a deep red hooded robe with black feather shoulders, holding a big scythe in one hand and a small white tea cup in the other, wispy green and purple magic smoke around his feet raises the dead: he lifts both bony arms high, the scythe glowing, green and purple necromantic energy swirls up from the ground around him, his eye sockets blaze green, then he lowers his arms. Exaggerated powerful spell casting, squash and stretch, then returns to the starting pose. Front view, the character faces the viewer, the feet stay planted on the same spot, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
- },
- {
   "name": "mortimer_korku",
   "ref": "ham/anim/mortimer_ref.png",
   "frames": 33,
