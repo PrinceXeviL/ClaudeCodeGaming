@@ -42,6 +42,26 @@ function useStrips(keep) {
   for (const k of [...STRIP_WAIT]) if (!keep.has(k)) STRIP_WAIT.delete(k);
   keep.forEach(loadStrip);
 }
+// atlas (12 Eki, varliklar/atlas_kur.py): küçük dekor/kule/poz görselleri birkaç sayfada; sayfalar SIRAYLA yüklenir, her parça kendi tuvaline
+// kesilir (SPR[ad]), sayfa bırakılır (telefonda 8 sayfa birden çözülüp belleği şişirmesin)
+function loadAtlas(done) {
+  fetch('img/atlas.json' + (window.SURUM ? '?v=' + window.SURUM : ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null).then(A => {
+    if (!A || !A.pages.length) return done();
+    const byPage = A.pages.map(() => []);
+    for (const [name, e] of Object.entries(A.items)) byPage[e[0]].push([name, e]);
+    const next = (i) => {
+      if (i >= A.pages.length) { bgDirty = Math.max(time, 0.001); return done(); }
+      const im = new Image();
+      im.onload = () => {
+        for (const [name, e] of byPage[i]) { const c = document.createElement('canvas'); c.width = e[3]; c.height = e[4]; c.getContext('2d').drawImage(im, e[1], e[2], e[3], e[4], 0, 0, e[3], e[4]); SPR[name] = c; }
+        next(i + 1);
+      };
+      im.onerror = () => next(i + 1);
+      im.src = 'img/' + A.pages[i] + (window.SURUM ? '?v=' + window.SURUM : '');
+    };
+    next(0);
+  });
+}
 let IMG_READY = false; // açılışta yüklenen bütün görseller geldi (harita zemini ancak o zaman önceden hazırlanır)
 let bgDirty = 0; // arka plan sprite'ı yeni yüklendi: bölüm arka planı ve harita önizlemeleri yeniden çizilecek
 fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopya kullanılmasın
@@ -68,7 +88,7 @@ fetch('img/manifest.json', { cache: 'no-cache' }) // liste değişince eski kopy
     };
     const isKey = (f) => /^nm_key/.test(f), rest = list.filter(f => !isKey(f));
     let started = false, left = 0; const tick = () => { if (--left <= 0) IMG_READY = true; };
-    const go = () => { if (!started) { started = true; const eager = rest.filter(f => !LAZY_RE.test(f.replace(/\.(png|svg|jpg|webp)$/, ''))); left = eager.length; rest.forEach(f => load(f, LAZY_RE.test(f.replace(/\.(png|svg|jpg|webp)$/, '')) ? null : tick)); if (!left) IMG_READY = true; } };
+    const go = () => { if (!started) { started = true; const eager = rest.filter(f => !LAZY_RE.test(f.replace(/\.(png|svg|jpg|webp)$/, ''))); left = eager.length + 1; rest.forEach(f => load(f, LAZY_RE.test(f.replace(/\.(png|svg|jpg|webp)$/, '')) ? null : tick)); loadAtlas(tick); } };
     const key = list.filter(isKey); key.forEach(f => load(f, go)); if (!key.length) go();
     setTimeout(go, 2500); // kapak gelmezse yine de devam
   })
