@@ -4713,7 +4713,7 @@ function mortDanger() {
 }
 // 13 Eki (Caner): Mortimer sakinken kapıdan içeri girer ('goin' → 'in'); düşman kaleye yaklaşınca, kalabalık ordu ya da boss gelince,
 // kale vurulunca ya da büyü yapınca kapıdan çıkar ('out'). MORT_IN: çıkış/giriş süresi, sakinlik süreleri, kalabalık eşiği
-const MORT_IN = { walk: 0.9, quiet: 14, crowd: 12, near: 260 };
+const MORT_IN = { walk: 1.4, quiet: 14, crowd: 12, near: 260 };
 function mortLoud() {
   const c = G.castle, alive = G.enemies.filter(e => !e.dead);
   return c.shake > 0 || G.mortCast > 0 || alive.length >= MORT_IN.crowd || alive.some(e => e.def.chief || dist(e.x, e.y, c.x, c.y) < MORT_IN.near);
@@ -4750,11 +4750,13 @@ function mortAnim(p) {
 // kapı ile balkon arası yürüyüş: kapının karanlığından çıkar (silik, küçük, kapı eşiğinde) → balkondaki yerine (tam boy); girerken tersi
 function drawMortDoor() {
   const M = G.mort, m = mortimerPoint(), q0 = clamp(M.t / MORT_IN.walk, 0, 1), q = M.st === 'out' ? q0 : 1 - q0, e = q * q * (3 - 2 * q);
-  const im = spr('mortimer'); if (!im) return;
+  const W = mortStrip('mortimer_yuru'), im = spr('mortimer'); if (!W && !im) return;
   const c = G.castle, ci = castleStageSprite(), cp = castlePlace(c.x, c.y, ci), h = cp.w * ci.height / ci.width;
-  const dy = (KEEP.door ? KEEP.door[1] : 0.536) * h + (cp.y - h), x = m.x, y = lerp(dy, m.y, e), sc = 0.82 + 0.18 * e, bob = Math.abs(Math.sin(q0 * Math.PI * 4)) * 1.5;
-  ctx.save(); ctx.globalAlpha = clamp(e * 1.6, 0, 1); ctx.translate(x, y - bob); ctx.scale((M.st === 'out' ? 1 : -1) * sc, sc);
-  const hgt = m.h * 1.15 * MORT_SIT_K * 1.15; drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
+  const dy = (KEEP.door ? KEEP.door[1] : 0.536) * h + (cp.y - h), x = m.x, y = lerp(dy, m.y, e), sc = 0.82 + 0.18 * e;
+  ctx.save(); ctx.globalAlpha = clamp(e * 1.6, 0, 1); ctx.translate(x, y); ctx.scale(sc, sc);
+  if (W) { // 13 Eki: Gemini (Veo) yürüyüşü, kameraya doğru; içeri girerken kareler tersten (dönüş şeridi gelene kadar)
+    const F = ANIM_META[W], fi = Math.floor(M.t * 16) % F.n; drawFrame(spr(W), F, M.st === 'out' ? fi : F.n - 1 - fi, m.h * 1.15);
+  } else { ctx.translate(0, -Math.abs(Math.sin(q0 * Math.PI * 4)) * 1.5); drawSprite(ctx, im, 0, 0, m.h * 1.15 * im.width / im.height); }
   ctx.restore();
 }
 // balkon muhafızları: Mezar Bekçisi iskeletleri bekleme şeridiyle nefes alır; kale vurulunca kalkanını kaldırır (saldırı şeridi), boss gelince tetikte
