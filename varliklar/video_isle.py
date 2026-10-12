@@ -2,6 +2,7 @@
 
     python3 varliklar/video_isle.py ham/anim/lejyoner_yuru_video.mp4 enemy_legion_walk            # döngüyü kendisi bulur
     python3 varliklar/video_isle.py ham/anim/lejyoner_yuru_video.mp4 enemy_legion_walk --start 61 --len 31
+    python3 varliklar/video_isle.py ham/anim/mortimer_bekle_veo.mp4 mortimer_bekle --beyaz --fps 10 --lo 50 --hi 80   # beyaz zemin, uzun döngü
 
 - Video 24 kare/sn'ye çevrilir; --len verilmezse 20-40 kare arası en iyi kapanan döngü (baş ve son kare en benzer) aranır.
 - Magenta zemin silinir, kırıntılar atılır; kareler SABİT bir çerçeveyle kesilir (videodaki doğal inip kalkma korunur).
@@ -33,6 +34,20 @@ def frames_of(video, fps=24):
     return [np.asarray(Image.open(os.path.join(d, f)).convert('RGB')) for f in fs]
 
 
+def remove_white(a):
+    """Beyaz zeminli video (15 Eki, Veo): kenara bağlı açık renkli zemin silinir, kontur içindeki beyaz kalır."""
+    from scipy import ndimage as nd
+    f = a.astype(np.float32); mn = f.min(2); mx = f.max(2)
+    lab, _ = nd.label((mn > 228) & (mx - mn < 26))
+    edge = set(np.unique(np.r_[lab[0], lab[-1], lab[:, 0], lab[:, -1]])) - {0}
+    bg = nd.binary_opening(np.isin(lab, list(edge)), iterations=1)
+    dist = nd.distance_transform_edt(~bg)
+    al = np.where(bg, 0, np.where(dist < 2.5, np.clip((255 - mn) / 45, 0, 1), 1))
+    rgb = f.copy(); k = (al > 0) & (al < 1)
+    rgb[k] = np.clip((f[k] - 255 * (1 - al[k, None])) / np.maximum(al[k, None], 0.05), 0, 255)
+    return np.dstack([rgb, al * 255]).astype(np.uint8)
+
+
 def find_loop(rgb, lo=20, hi=40):
     small = []
     for a in rgb:
@@ -47,15 +62,15 @@ def find_loop(rgb, lo=20, hi=40):
     return best[1], best[2]
 
 
-def main(src, name, start=None, length=None, fps=24, order=None, first_h=False):
+def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, white=False, lo=20, hi=40):
     rgb = frames_of(os.path.join(ROOT, 'varliklar', src), fps)
     if order is None and (start is None or length is None):
-        start, length = find_loop(rgb)
+        start, length = find_loop(rgb, lo, hi)
         print('döngü: başlangıç', start, 'uzunluk', length)
     picked = [rgb[i] for i in order] if order is not None else rgb[start:start + length]  # order: kare sırası (döngüyü kaydırmak için)
     cells = []
     for a in picked:
-        rgba = remove_magenta(a)
+        rgba = remove_white(a) if white else remove_magenta(a)
         keep = biggest_mask(rgba[..., 3])
         rgba[..., 3] = np.where(keep | ((rgba[..., 3] > 0) & (rgba[..., 3] <= 128)), rgba[..., 3], 0)
         cells.append(rgba)
@@ -100,4 +115,6 @@ if __name__ == '__main__':
     st = int(a[a.index('--start') + 1]) if '--start' in a else None
     ln = int(a[a.index('--len') + 1]) if '--len' in a else None
     fps = int(a[a.index('--fps') + 1]) if '--fps' in a else 24
-    main(a[1], a[2], st, ln, fps)
+    lo = int(a[a.index('--lo') + 1]) if '--lo' in a else 20
+    hi = int(a[a.index('--hi') + 1]) if '--hi' in a else 40
+    main(a[1], a[2], st, ln, fps, white='--beyaz' in a, lo=lo, hi=hi)  # --beyaz: beyaz zeminli video

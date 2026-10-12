@@ -4781,7 +4781,7 @@ function mortAnim(p) {
   if (p >= 0 && mortStrip('mortimer_buyu')) return { n: 'mortimer_buyu', i: Math.min(ANIM_META.mortimer_buyu.n - 1, Math.floor(p * ANIM_META.mortimer_buyu.n)), k: 1 };
   if (!M) return null;
   // 15 Eki (Caner): Mortimer oturmaz, balkonun önünde ayakta durur (diriltme şeridinin ilk karesi + nefes); ayakta bekleme videosu gelince o oynar
-  if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_bekle')) return { n: 'mortimer_bekle', i: Math.floor(time * 12) % ANIM_META.mortimer_bekle.n, k: 1 };
+  if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_bekle')) return { n: 'mortimer_bekle', i: Math.floor(time * 10) % ANIM_META.mortimer_bekle.n, k: 1, cx: 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
   if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_dirilt')) return { n: 'mortimer_dirilt', i: 0, k: 1, breathe: true };
   if ((M.st === 'up' || M.st === 'down') && mortStrip('mortimer_otur')) {
     const q = clamp(M.t / MORT_TRANS, 0, 1), N = ANIM_META.mortimer_otur.n;
@@ -4854,6 +4854,7 @@ function drawMortimer() {
   // panik şeridi yoksa: ayakta tedirgin titreme ve küçük sekmeler
   if (!MA && p < 0 && G.mort && G.mort.st === 'panic') ctx.translate(Math.sin(time * 47) * 0.5, -Math.abs(Math.sin(time * 9)) * 1.2);
   if (MA && MA.breathe) { ctx.scale(1 + Math.sin(time * 1.6 + 1) * 0.006, 1 + Math.sin(time * 1.6) * 0.012); ctx.rotate(Math.sin(time * 0.7) * 0.012); } // ayakta nefes, hafif salınım
+  if (MA && MA.cx) { const F2 = ANIM_META[MA.n]; ctx.translate(-(MA.cx - 0.5) * F2.fw * hgt * 1.15 * MA.k / (F2.ch * F2.fh), 0); } // şeritte baş ortada değil (solda tırpan): gövde noktaya otursun
   if (MA) drawFrame(spr(MA.n), ANIM_META[MA.n], MA.i, hgt * 1.15 * MA.k);
   else if (fim) {
     // boşta 1. kare hafifçe nefes alır; büyüde kareler sırayla oynar
