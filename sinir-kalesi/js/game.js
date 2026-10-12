@@ -13779,7 +13779,7 @@ function drawMapFog2(E, ep, road, bm) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 1.35, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400 };
+const MAPCAM = { z: 2, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400 };
 function mapCamClamp(bm) {
   const z = MAPCAM.z;
   MAPCAM.tx = clamp(MAPCAM.tx, VIS.r - (W + bm.x) * z, VIS.l + bm.x * z);
