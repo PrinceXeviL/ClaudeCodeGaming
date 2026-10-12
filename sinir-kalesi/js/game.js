@@ -2792,7 +2792,101 @@ function giveCrystals(e) {
   sfx('coins');
 }
 // kristal simgesi: mor-yeşil altıgen taş
-function drawCrystal(x, y, r) {
+// 15 Eki (Caner: kristal, kese ve kum saati daha güzel çizilsin): ayrıntılı simgeler bir kez 192 px tuvale çizilir (ICON_C), sonra ölçeklenip basılır.
+// Gemini kotası açılınca bunlar boyalı görsellerle değiştirilebilir (aynı ad: img/ico_<ad>.webp varsa o kullanılır).
+const ICON_C = {};
+function iconArt(name, paint) {
+  if (ICON_C[name]) return ICON_C[name];
+  const S = 192, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d');
+  g.translate(S / 2, S / 2); g.lineJoin = 'round'; g.lineCap = 'round'; paint(g, S * 0.4);
+  return (ICON_C[name] = c);
+}
+const icoImg = (name) => spr('ico_' + name);
+function drawIconArt(name, paint, x, y, r) { const im = icoImg(name) || iconArt(name, paint); ctx.drawImage(im, x - r * 1.2, y - r * 1.2, r * 2.4, r * 2.4); }
+// ruh kristali: yedi yüzlü taş, yüzeyler ayrı tonlarda, içinde yeşil ruh ışığı, kenar parıltıları ve yıldız pırıltısı
+function paintCrystal(g, R) {
+  const glowR = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.15); glowR.addColorStop(0, 'rgba(190,120,255,0.55)'); glowR.addColorStop(1, 'rgba(190,120,255,0)');
+  g.fillStyle = glowR; g.fillRect(-R * 1.2, -R * 1.2, R * 2.4, R * 2.4);
+  const P = { t: [0, -R], tl: [-R * 0.62, -R * 0.42], tr: [R * 0.62, -R * 0.42], ml: [-R * 0.7, R * 0.18], mr: [R * 0.7, R * 0.18], b: [0, R * 1.0], cl: [-R * 0.22, -R * 0.3], cr: [R * 0.22, -R * 0.3], cm: [0, R * 0.12] };
+  const face = (pts, c0, c1) => { g.beginPath(); pts.forEach((q, i) => (i ? g.lineTo : g.moveTo).call(g, P[q][0], P[q][1])); g.closePath(); const gr = g.createLinearGradient(P[pts[0]][0], P[pts[0]][1], P[pts[pts.length - 1]][0], P[pts[pts.length - 1]][1]); gr.addColorStop(0, c0); gr.addColorStop(1, c1); g.fillStyle = gr; g.fill(); };
+  g.beginPath(); ['t', 'tr', 'mr', 'b', 'ml', 'tl'].forEach((q, i) => (i ? g.lineTo : g.moveTo).call(g, P[q][0], P[q][1])); g.closePath(); g.lineWidth = R * 0.11; g.strokeStyle = '#1a0824'; g.stroke(); // kontur
+  face(['t', 'cr', 'cl'], '#ffffff', '#e6c8ff');      // tepe
+  face(['t', 'tr', 'cr'], '#e8d0ff', '#b07cf0');     // sağ üst
+  face(['t', 'cl', 'tl'], '#f6e8ff', '#c49af8');     // sol üst
+  face(['cl', 'cr', 'cm'], '#c99cff', '#7a3cd0');    // ön üçgen
+  face(['tl', 'cl', 'cm', 'ml'], '#a870f0', '#5a22a8');
+  face(['tr', 'mr', 'cm', 'cr'], '#7e44d4', '#3e1478');
+  face(['ml', 'cm', 'b'], '#6a2cc0', '#2c0c5a');
+  face(['mr', 'b', 'cm'], '#4a1890', '#1c0838');
+  const core = g.createRadialGradient(0, R * 0.12, 0, 0, R * 0.12, R * 0.5); core.addColorStop(0, 'rgba(150,255,170,0.75)'); core.addColorStop(1, 'rgba(150,255,170,0)'); // ruh ışığı
+  g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = core; g.fillRect(-R, -R, R * 2, R * 2); g.restore();
+  g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = R * 0.035; g.beginPath(); g.moveTo(P.tl[0], P.tl[1]); g.lineTo(P.t[0], P.t[1]); g.lineTo(P.tr[0], P.tr[1]); g.moveTo(P.cl[0], P.cl[1]); g.lineTo(P.cm[0], P.cm[1]); g.stroke(); // kenar parıltısı
+  g.save(); g.globalCompositeOperation = 'lighter'; g.translate(-R * 0.3, -R * 0.55); g.fillStyle = '#ffffff'; // pırıltı
+  g.beginPath(); g.moveTo(0, -R * 0.22); g.lineTo(R * 0.04, -R * 0.04); g.lineTo(R * 0.22, 0); g.lineTo(R * 0.04, R * 0.04); g.lineTo(0, R * 0.22); g.lineTo(-R * 0.04, R * 0.04); g.lineTo(-R * 0.22, 0); g.lineTo(-R * 0.04, -R * 0.04); g.closePath(); g.fill(); g.restore();
+}
+// lanetli kese: kemer dikişli koyu deri, ağzı ipli, kafatası tokalı; ağzından altın taşar, çevresinde mor lanet ışığı
+function paintPurse(g, R) {
+  const aura = g.createRadialGradient(0, R * 0.2, R * 0.3, 0, R * 0.2, R * 1.15); aura.addColorStop(0, 'rgba(170,80,255,0.45)'); aura.addColorStop(1, 'rgba(170,80,255,0)'); g.fillStyle = aura; g.fillRect(-R * 1.2, -R * 1.2, R * 2.4, R * 2.4);
+  const coin = (x, y, r, a) => { g.save(); g.translate(x, y); g.rotate(a); const cg = g.createLinearGradient(-r, -r, r, r); cg.addColorStop(0, '#fff2a8'); cg.addColorStop(0.5, '#f2b632'); cg.addColorStop(1, '#a86a10');
+    g.beginPath(); g.ellipse(0, 0, r, r * 0.8, 0, 0, Math.PI * 2); g.fillStyle = cg; g.fill(); g.lineWidth = R * 0.05; g.strokeStyle = '#4a2a06'; g.stroke(); g.strokeStyle = 'rgba(120,70,10,0.8)'; g.lineWidth = R * 0.03; g.beginPath(); g.ellipse(0, 0, r * 0.6, r * 0.45, 0, 0, Math.PI * 2); g.stroke(); g.restore(); };
+  const leather = (x0, y0, x1, y1) => { const lg = g.createRadialGradient(x0, y0, R * 0.08, x1, y1, R * 1.0); lg.addColorStop(0, '#a454bc'); lg.addColorStop(0.55, '#5e2276'); lg.addColorStop(1, '#2a0a36'); return lg; };
+  g.beginPath(); g.ellipse(0, -R * 0.66, R * 0.44, R * 0.13, 0, 0, Math.PI * 2); g.fillStyle = '#1a0620'; g.fill(); // açık ağız içi
+  coin(-R * 0.26, -R * 0.74, R * 0.17, -0.45); coin(R * 0.25, -R * 0.76, R * 0.16, 0.5); coin(0, -R * 0.84, R * 0.18, 0.05); // ağızdan taşan altınlar
+  // fırfırlı ön dudak: ağzın alt kenarından boyuna iner
+  g.beginPath(); g.moveTo(-R * 0.44, -R * 0.66);
+  for (let i = 0; i <= 6; i++) { const t = i / 6, x = -R * 0.44 + t * R * 0.88, y = -R * 0.66 + Math.sin(t * Math.PI) * R * 0.13; g.quadraticCurveTo(x - R * 0.07, y + R * 0.07, x, y); }
+  g.quadraticCurveTo(R * 0.36, -R * 0.45, R * 0.2, -R * 0.32); g.lineTo(-R * 0.2, -R * 0.32); g.quadraticCurveTo(-R * 0.36, -R * 0.45, -R * 0.44, -R * 0.66); g.closePath();
+  { const rg = g.createLinearGradient(0, -R * 0.7, 0, -R * 0.32); rg.addColorStop(0, '#b468cc'); rg.addColorStop(1, '#4a1a5e'); g.fillStyle = rg; } g.fill(); g.lineWidth = R * 0.07; g.strokeStyle = '#140612'; g.stroke();
+  // gövde: dar boyundan armut gibi genişler
+  g.beginPath(); g.moveTo(-R * 0.22, -R * 0.33); g.bezierCurveTo(-R * 0.55, -R * 0.2, -R * 0.92, R * 0.15, -R * 0.82, R * 0.58); g.quadraticCurveTo(-R * 0.62, R * 0.98, 0, R * 0.98); g.quadraticCurveTo(R * 0.62, R * 0.98, R * 0.82, R * 0.58); g.bezierCurveTo(R * 0.92, R * 0.15, R * 0.55, -R * 0.2, R * 0.22, -R * 0.33); g.closePath();
+  g.fillStyle = leather(-R * 0.3, R * 0.15, 0, R * 0.35); g.fill(); g.lineWidth = R * 0.09; g.strokeStyle = '#140612'; g.stroke();
+  g.save(); g.clip(); g.strokeStyle = 'rgba(240,200,120,0.55)'; g.lineWidth = R * 0.03; g.setLineDash([R * 0.07, R * 0.06]); // dikiş
+  g.beginPath(); g.moveTo(-R * 0.5, -R * 0.08); g.quadraticCurveTo(-R * 0.75, R * 0.5, -R * 0.3, R * 0.84); g.moveTo(R * 0.5, -R * 0.08); g.quadraticCurveTo(R * 0.75, R * 0.5, R * 0.3, R * 0.84); g.stroke(); g.setLineDash([]);
+  g.strokeStyle = 'rgba(20,6,18,0.45)'; g.lineWidth = R * 0.04; g.beginPath(); g.moveTo(-R * 0.12, -R * 0.28); g.quadraticCurveTo(-R * 0.2, -R * 0.05, -R * 0.12, R * 0.08); g.moveTo(R * 0.12, -R * 0.28); g.quadraticCurveTo(R * 0.2, -R * 0.05, R * 0.12, R * 0.08); g.stroke(); // büzgü kırışıkları
+  g.fillStyle = 'rgba(255,255,255,0.14)'; g.beginPath(); g.ellipse(-R * 0.42, R * 0.3, R * 0.14, R * 0.36, -0.3, 0, Math.PI * 2); g.fill(); g.restore(); // deri parıltısı
+  // ip: boyna sarılı, ucu sarkar
+  g.strokeStyle = '#2a1608'; g.lineWidth = R * 0.12; g.beginPath(); g.moveTo(-R * 0.27, -R * 0.33); g.quadraticCurveTo(0, -R * 0.24, R * 0.27, -R * 0.33); g.stroke();
+  g.strokeStyle = '#d8b878'; g.lineWidth = R * 0.07; g.stroke();
+  g.beginPath(); g.moveTo(R * 0.22, -R * 0.3); g.quadraticCurveTo(R * 0.52, -R * 0.12, R * 0.46, R * 0.12); g.stroke(); g.fillStyle = '#d8b878'; g.beginPath(); g.arc(R * 0.46, R * 0.15, R * 0.07, 0, Math.PI * 2); g.fill();
+  // kafatası toka
+  g.save(); g.translate(0, R * 0.35); const sk = g.createLinearGradient(0, -R * 0.25, 0, R * 0.25); sk.addColorStop(0, '#fbf3dc'); sk.addColorStop(1, '#bfae86');
+  g.beginPath(); g.arc(0, -R * 0.04, R * 0.22, Math.PI * 0.92, Math.PI * 2.08); g.lineTo(R * 0.12, R * 0.2); g.lineTo(-R * 0.12, R * 0.2); g.closePath(); g.fillStyle = sk; g.fill(); g.lineWidth = R * 0.04; g.strokeStyle = '#140612'; g.stroke();
+  g.fillStyle = '#140612'; g.beginPath(); g.ellipse(-R * 0.08, -R * 0.04, R * 0.055, R * 0.065, 0, 0, Math.PI * 2); g.ellipse(R * 0.08, -R * 0.04, R * 0.055, R * 0.065, 0, 0, Math.PI * 2); g.fill();
+  g.globalCompositeOperation = 'lighter'; for (const ex of [-R * 0.08, R * 0.08]) { const eg = g.createRadialGradient(ex, -R * 0.04, 0, ex, -R * 0.04, R * 0.1); eg.addColorStop(0, 'rgba(200,120,255,0.95)'); eg.addColorStop(1, 'rgba(200,120,255,0)'); g.fillStyle = eg; g.fillRect(ex - R * 0.1, -R * 0.14, R * 0.2, R * 0.2); }
+  g.restore();
+}
+// zaman kum saati: kemik sütunlu çerçeve, kafatası tepelik, iki cam hazne (yansımalı), içinde yeşil ışıklı ruh kumu akar
+function paintHourglass(g, R) {
+  const aura = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.15); aura.addColorStop(0, 'rgba(120,255,170,0.35)'); aura.addColorStop(1, 'rgba(120,255,170,0)'); g.fillStyle = aura; g.fillRect(-R * 1.2, -R * 1.2, R * 2.4, R * 2.4);
+  const W2 = R * 0.5, H2 = R * 0.8, glass = () => { g.beginPath(); g.moveTo(-W2 * 0.9, -H2); g.quadraticCurveTo(-W2 * 0.95, -H2 * 0.25, -R * 0.07, 0); g.quadraticCurveTo(-W2 * 0.95, H2 * 0.25, -W2 * 0.9, H2); g.lineTo(W2 * 0.9, H2); g.quadraticCurveTo(W2 * 0.95, H2 * 0.25, R * 0.07, 0); g.quadraticCurveTo(W2 * 0.95, -H2 * 0.25, W2 * 0.9, -H2); g.closePath(); };
+  glass(); const gg = g.createLinearGradient(-W2, 0, W2, 0); gg.addColorStop(0, 'rgba(225,245,255,0.75)'); gg.addColorStop(0.45, 'rgba(170,205,235,0.45)'); gg.addColorStop(1, 'rgba(110,150,200,0.7)'); g.fillStyle = gg; g.fill();
+  g.save(); glass(); g.clip(); // kum: üstte azalmış, altta yığın, ortada akan ip
+  const sand = g.createLinearGradient(0, -H2, 0, H2); sand.addColorStop(0, '#d8ffb8'); sand.addColorStop(1, '#6ad86a');
+  g.fillStyle = sand; g.beginPath(); g.moveTo(-W2 * 0.55, -H2 * 0.42); g.quadraticCurveTo(0, -H2 * 0.5, W2 * 0.55, -H2 * 0.42); g.lineTo(R * 0.06, -R * 0.02); g.lineTo(-R * 0.06, -R * 0.02); g.closePath(); g.fill();
+  g.beginPath(); g.moveTo(-W2 * 0.9, H2); g.quadraticCurveTo(0, H2 * 0.12, W2 * 0.9, H2); g.closePath(); g.fill();
+  g.fillRect(-R * 0.025, 0, R * 0.05, H2 * 0.7);
+  g.globalCompositeOperation = 'lighter'; const sg = g.createRadialGradient(0, H2 * 0.75, 0, 0, H2 * 0.75, R * 0.5); sg.addColorStop(0, 'rgba(150,255,170,0.6)'); sg.addColorStop(1, 'rgba(150,255,170,0)'); g.fillStyle = sg; g.fillRect(-R, 0, R * 2, R);
+  g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(255,255,255,0.55)'; g.beginPath(); g.ellipse(-W2 * 0.5, -H2 * 0.55, R * 0.06, R * 0.22, 0.15, 0, Math.PI * 2); g.ellipse(-W2 * 0.5, H2 * 0.6, R * 0.05, R * 0.18, -0.15, 0, Math.PI * 2); g.fill(); // cam yansıması
+  g.restore();
+  glass(); g.lineWidth = R * 0.06; g.strokeStyle = '#1a2a34'; g.stroke();
+  for (const sd of [-1, 1]) { // kemik sütunlar
+    const x = sd * W2 * 1.08, bg = g.createLinearGradient(x - R * 0.08, 0, x + R * 0.08, 0); bg.addColorStop(0, '#bfae86'); bg.addColorStop(0.5, '#fbf3dc'); bg.addColorStop(1, '#a8946a');
+    g.fillStyle = bg; g.strokeStyle = '#140c10'; g.lineWidth = R * 0.045; g.beginPath(); g.roundRect(x - R * 0.065, -H2 * 0.95, R * 0.13, H2 * 1.9, R * 0.06); g.fill(); g.stroke();
+    for (const yy of [-H2 * 0.95, H2 * 0.95]) { g.beginPath(); g.arc(x - R * 0.05, yy, R * 0.08, 0, Math.PI * 2); g.arc(x + R * 0.05, yy, R * 0.08, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  }
+  for (const sy of [-1, 1]) { // üst ve alt kapak: koyu ahşap, altın şerit
+    const y = sy * (H2 + R * 0.08), wg = g.createLinearGradient(0, y - R * 0.1, 0, y + R * 0.1); wg.addColorStop(0, '#6a3a22'); wg.addColorStop(1, '#2a140a');
+    g.fillStyle = wg; g.beginPath(); g.roundRect(-W2 * 1.3, y - R * 0.1, W2 * 2.6, R * 0.2, R * 0.06); g.fill(); g.lineWidth = R * 0.045; g.strokeStyle = '#140806'; g.stroke();
+    g.strokeStyle = '#e0b44a'; g.lineWidth = R * 0.03; g.beginPath(); g.moveTo(-W2 * 1.2, y); g.lineTo(W2 * 1.2, y); g.stroke();
+  }
+  g.save(); g.translate(0, -H2 - R * 0.24); // kafatası tepelik
+  const sk = g.createLinearGradient(0, -R * 0.16, 0, R * 0.16); sk.addColorStop(0, '#fbf3dc'); sk.addColorStop(1, '#bfae86');
+  g.beginPath(); g.arc(0, -R * 0.02, R * 0.16, Math.PI * 0.92, Math.PI * 2.08); g.lineTo(R * 0.09, R * 0.14); g.lineTo(-R * 0.09, R * 0.14); g.closePath(); g.fillStyle = sk; g.fill(); g.lineWidth = R * 0.035; g.strokeStyle = '#140c10'; g.stroke();
+  g.fillStyle = '#140c10'; g.beginPath(); g.ellipse(-R * 0.06, -R * 0.01, R * 0.04, R * 0.05, 0, 0, Math.PI * 2); g.ellipse(R * 0.06, -R * 0.01, R * 0.04, R * 0.05, 0, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+function drawCrystal(x, y, r) { drawIconArt('kristal', paintCrystal, x, y, r * 1.05); }
+function drawCrystalOld(x, y, r) {
   ctx.save(); ctx.translate(x, y);
   ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * 0.72, -r * 0.35); ctx.lineTo(r * 0.55, r * 0.6); ctx.lineTo(0, r); ctx.lineTo(-r * 0.55, r * 0.6); ctx.lineTo(-r * 0.72, -r * 0.35); ctx.closePath();
   const g = ctx.createLinearGradient(-r, -r, r, r); g.addColorStop(0, '#f0d8ff'); g.addColorStop(0.45, '#a860f0'); g.addColorStop(1, '#3a8a6a');
@@ -2802,6 +2896,8 @@ function drawCrystal(x, y, r) {
 }
 // eşya simgeleri (kodla): kemik bombası, kum saati, çay fincanı, kese
 function drawItemIcon(id, x, y, r) {
+  if (id === 'purse') { drawIconArt('kese', paintPurse, x, y, r * 1.1); return; }
+  if (id === 'freeze') { drawIconArt('kumsaati', paintHourglass, x, y, r * 1.1); return; }
   ctx.save(); ctx.translate(x, y); const k = r / 20; ctx.scale(k, k); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const ol = (lw = 2.4) => { ctx.strokeStyle = '#1a0c06'; ctx.lineWidth = lw; ctx.stroke(); };
   if (id === 'bomb') {
