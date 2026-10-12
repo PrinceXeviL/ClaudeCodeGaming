@@ -29,6 +29,7 @@ const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|at
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
+  if (paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir
   const im = new Image();
   im.src = 'img/' + LAZY[name] + (window.SURUM ? '?v=' + window.SURUM : '');
   (im.decode ? im.decode() : new Promise((ok, no) => { im.onload = ok; im.onerror = no; }))
@@ -121,20 +122,78 @@ const easeOutBack = (x) => 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow
 const WHITE = {};
 // dirilen cesetler: aynı görselin solgun, yeşilimsi-gri çürümüş renkli kopyası (önbellekli)
 const ROT = {};
+const ROT_WAIT = new Set();
 function rottenOf(name, im) {
   if (ROT[name]) return ROT[name];
+  if (ROT_WAIT.has(name)) return im; // boyacıda boyanıyor: o ana kadar asıl renk
   const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
   const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
-  const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
+  const d = g.getImageData(0, 0, c.width, c.height);
+  rotPixels(d.data);
+  g.putImageData(d, 0, 0);
+  return (ROT[name] = c);
+}
+// 13 Eki (Caner): dirilen ölüler kızıl (11 Eki: mor); asıl rengin %20'si kalır, karartılmış. Boyacı iş parçacığı da bunu kullanır (toString)
+function rotPixels(a) {
   for (let i = 0; i < a.length; i += 4) {
     const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
-    // 13 Eki (Caner): dirilen ölüler kızıl (11 Eki: mor); asıl renk %45 kalır, karartılmış
     a[i] = (a[i] * 0.2 + L * 1.25 * 0.8) * 0.72;
     a[i + 1] = (a[i + 1] * 0.2 + L * 0.1 * 0.8) * 0.72;
     a[i + 2] = (a[i + 2] * 0.2 + L * 0.14 * 0.8) * 0.72;
   }
-  g.putImageData(d, 0, 0);
-  return (ROT[name] = c);
+}
+// ---------- boyacı iş parçacığı (13 Eki) ----------
+// Rütbe/boss kılığı boyaması, dirilenlerin kızıl şeritleri ve şeritlerin küçük kopyaları (mipmap) ana döngüyü dondurmasın diye
+// Web Worker'da (OffscreenCanvas) yapılır. 12. bölümde savaş ortasında 35-240 ms'lik, ilk dalgada 1 sn'lik takılmalar buradandı.
+// İş bitene kadar şeridin boyasız hâli çizilir. Worker/OffscreenCanvas yoksa (eski tarayıcı) eski eşzamanlı yol çalışır.
+const PAINT = (() => {
+  try {
+    if (typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined' || typeof createImageBitmap === 'undefined') return null;
+    const src = `const clamp = (v, a, b) => (v < a ? a : v > b ? b : v); ${rgb2hsl} ${hsl2rgb} ${rotPixels} ${lutPixels}
+      const FN = {};
+      onmessage = async (ev) => { const { id, url, ops } = ev.data; try {
+        const bmp = await createImageBitmap(await (await fetch(url)).blob()); // indirme ve çözme bu iş parçacığında
+        const c = new OffscreenCanvas(bmp.width, bmp.height), g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0); bmp.close();
+        if (ops.length) { const im = g.getImageData(0, 0, c.width, c.height);
+          for (const [op, f] of ops) { if (op === 'rot') rotPixels(im.data); else { const F = FN[f] || (FN[f] = { fn: new Function('return ' + f)() }); lutPixels(im.data, c.width, c.height, F); } }
+          g.putImageData(im, 0, 0); }
+        const L = [c]; let cur = c;
+        while (cur.width > 48 && cur.height > 48) { const n = new OffscreenCanvas(Math.ceil(cur.width / 2), Math.ceil(cur.height / 2)), ng = n.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.drawImage(cur, 0, 0, n.width, n.height); L.push(n); cur = n; }
+        const out = L.map(x => x.transferToImageBitmap()); postMessage({ id, out }, out);
+      } catch (e) { postMessage({ id, err: String(e) }); } };`;
+    const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    w.jobs = new Map(); w.n = 0;
+    w.onmessage = (ev) => { const J = w.jobs.get(ev.data.id); w.jobs.delete(ev.data.id); if (J) J(ev.data.out || null); };
+    return w;
+  } catch (e) { return null; }
+})();
+// şerit dosyasını (LAZY adı) boyacıda yükletir, ops: [['lut', işlev], ['rot']] sırayla uygulanır, küçük kopyalarla döner.
+// done(bitmap) iş bitince; başarısızsa done(null) (çağıran eski eşzamanlı yola düşer). Boyacı yoksa false
+let PAINT_OK = true; // ilk başarısızlıkta (ör. özel adres şeması fetch'e kapalı) eski yola geçilir
+function paintAsync(file, ops, done) {
+  const path = LAZY[file] || (SPR[file] && SPR[file].src && !SPR[file].src.startsWith('data:') ? file + '.webp' : null); // şerit ya da tek dosyalı görsel
+  if (!PAINT || !PAINT_OK || !path) return false;
+  const id = ++PAINT.n, url = new URL('img/' + path + (window.SURUM ? '?v=' + window.SURUM : ''), location.href).href;
+  PAINT.jobs.set(id, (out) => { if (!out) { PAINT_OK = false; done(null); return; } MIPS.set(out[0], out); done(out[0]); });
+  PAINT.postMessage({ id, url, ops: ops.map(([o, f]) => [o, f ? f.toString() : null]) });
+  return true;
+}
+const recolorOf = (type) => { const d = ENEMIES[type]; return d && (BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank])); };
+// renk tablosuyla boyama (recolorCanvas ve boyacı ortak): 6 bit/kanal × üst/alt bant; boyama işlevleri yalnız y < 0.24 bandına bakar (sorguç)
+function lutPixels(a, cw, ch, F) {
+  const lut = F.lut || (F.lut = new Int32Array(2 << 18).fill(-2)), rowB = Math.ceil(ch * 0.24) * cw * 4, f = F.fn;
+  for (let i = 0; i < a.length; i += 4) {
+    if (a[i + 3] < 10) continue;
+    const k = (i < rowB ? 0 : 1 << 18) | (a[i] >> 2) << 12 | (a[i + 1] >> 2) << 6 | (a[i + 2] >> 2);
+    let v = lut[k];
+    if (v === -2) {
+      const r = f(...rgb2hsl(a[i], a[i + 1], a[i + 2]), 0.5, i < rowB ? 0.1 : 0.5);
+      if (!r) v = -1; else { const q = hsl2rgb((r[0] + 360) % 360, clamp(r[1], 0, 1), clamp(r[2], 0, 1)); v = (q[0] << 16) | (q[1] << 8) | q[2]; }
+      lut[k] = v;
+    }
+    if (v < 0) continue;
+    a[i] = v >> 16 & 255; a[i + 1] = v >> 8 & 255; a[i + 2] = v & 255;
+  }
 }
 function whiteOf(name, im) {
   if (!WHITE[name]) {
@@ -1566,6 +1625,10 @@ function startLevel(idx, chal = null) {
 
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
+  // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
+  [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
+    if (d.base) SUF.forEach(sf => G.bakeQ.push('s:' + t + ':' + sf));
+    if (!d.flying && !d.chief && !d.machine && !d.noraise) G.bakeQ.push('r:' + t); });
   setupMech();
   setupProps();
   setupHeralds();
@@ -1600,6 +1663,18 @@ function startLevel(idx, chal = null) {
 }
 function bakeNext() {
   const k = G.bakeQ.shift();
+  if (k[0] === 's' || k[0] === 'r') { // tek şerit boya / dirilen ölünün kızıl ölüm şeridi
+    const [, t, sf] = k.split(':'), d = ENEMIES[t]; if (!d) return;
+    const rig = d.base ? 'enemy_' + d.base : 'enemy_' + t, suf = k[0] === 'r' ? '_die' : sf;
+    if (STRIP_WAIT.has(rig + suf) || (LAZY[rig + suf] && !SPR[rig + suf])) { if ((G.bakeTry = (G.bakeTry || 0) + 1) < 4000) G.bakeQ.push(k); return; } // şerit yükleniyor
+    if (k[0] === 's') animStrip('enemy_' + t, rig, sf);
+    else {
+      const nm = 'enemy_' + t, f = d.base && recolorOf(t), file = d.base ? 'enemy_' + d.base : nm; // sabit görselin kızıl kopyası da boyacıda
+      if (!ROT[nm] && !ROT_WAIT.has(nm) && spr(file)) { ROT_WAIT.add(nm); if (!paintAsync(file, (f ? [['lut', f]] : []).concat([['rot']]), (b) => { ROT_WAIT.delete(nm); if (b) ROT[nm] = b; })) ROT_WAIT.delete(nm); }
+      animStrip(nm + '_rot', rig, '_die');
+    }
+    return;
+  }
   let name, rigName, im;
   if (k[0] === 'e') {
     const t = k.slice(2), d = ENEMIES[t]; if (!d) return; name = 'enemy_' + t; rigName = d.base ? 'enemy_' + d.base : name; im = d.base ? enemySprite(t) : spr(name);
@@ -4489,7 +4564,10 @@ function raiseMinion(e, delay = 0) {
     s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true;
   }
   G.soldiers.push(s);
-  G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '230,50,50', t: 0, dur: 0.7 });
+  // 13 Eki: ışık sütunu yerine yerden fışkıran toprak ve kızıl kıvılcım (sütunlar ekranı boyuyordu)
+  G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 16, col: '220,60,50', t: 0, dur: 0.45 });
+  for (let i = 0; i < 9; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-8, 8), y: e.y - rand(0, 4), vx: rand(-60, 60), vy: -rand(50, 130), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#5a4632' : '#3a2c20', s0: rand(1.2, 2.2), s1: 1, life: rand(0.4, 0.7), floor: e.y + rand(-3, 4) });
+  for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 10), vy: -rand(20, 45), col: '255,80,60', s0: rand(2, 3), s1: 0.4, life: rand(0.4, 0.7) });
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: i % 2 ? '230,50,110' : '190,80,255', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
 // Mortimer şapelin ön balkonunda durur. Hasar evresine göre (castle_1..3): at = ayak noktası (görsel oranı),
@@ -8597,7 +8675,9 @@ function drawUnit(name, im, x, y, face, o) {
   ctx.save();
   ctx.translate(x + (frontBack ? 0 : ox * face), y + 1 + oy);
   ctx.scale(frontBack ? 1 : face * (rig.flip ? -1 : 1), 1);
-  if (o.rise != null) ctx.scale(1, o.rise); // kumdan çıkış
+  if (o.rise != null) { // 13 Eki: topraktan sıyrılarak çıkar (eskiden dikeyde esniyordu, büyüyormuş gibi duruyordu); zeminin altı görünmez
+    const k = clamp(o.rise, 0, 1.05); ctx.beginPath(); ctx.rect(-h * 3, -h * 3, h * 6, h * 3 + 1); ctx.clip(); ctx.translate(0, (1 - k) * h * 0.95);
+  }
   if (o.skill != null && !fName) { // şeridi olmayan birimde özel saldırı: geri gerilip ileri atılır
     const k = o.skill, lean = k < 0.45 ? -Math.sin(k / 0.45 * Math.PI / 2) * 0.14 : -0.14 + (k - 0.45) / 0.55 * 0.3 * Math.sin((k - 0.45) / 0.55 * Math.PI);
     ctx.rotate(lean); ctx.scale(1 + (k > 0.45 ? 0.06 * Math.sin((k - 0.45) / 0.55 * Math.PI) : 0), 1);
@@ -11547,7 +11627,11 @@ function animStrip(name, rig, suf) {
   if (name.endsWith('_rot')) { // dirilen ölü: düşmanın şeridinin çürümüş renkli kopyası
     const src = animStrip(name.slice(0, -4), rig === name ? null : rig, suf);
     if (!src) return null;
-    SPR[key] = rottenOf(key, spr(src)); ANIM_META[key] = ANIM_META[src];
+    ANIM_META[key] = ANIM_META[src];
+    const base = name.slice(0, -4), own = LAZY[base + suf], f = !own && recolorOf(base.slice(6)), file = own ? base + suf : src.endsWith(suf) && LAZY[src] ? src : rig && LAZY[rig + suf] ? rig + suf : null;
+    const tmp = spr(src);
+    if (file && paintAsync(file, (f && file !== src ? [['lut', f]] : []).concat([['rot']]), (b) => { if (SPR[key] !== tmp) return; SPR[key] = b || rottenOf(key, tmp); })) SPR[key] = tmp; // boyanana kadar asıl renk
+    else SPR[key] = rottenOf(key, tmp);
     return key;
   }
   if (!SPR[key]) { loadStrip(key); if (rig) loadStrip(rig + suf); } // bölüm dışı (harita, kodeks): ilk istekte yüklenir
@@ -11555,23 +11639,18 @@ function animStrip(name, rig, suf) {
   const type = name.slice(6), d = ENEMIES[type];
   if (!d) return null;
   const f = BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank]);
-  SPR[key] = f ? recolorCanvas(spr(rig + suf), f) : spr(rig + suf);
+  const srcS = spr(rig + suf);
+  if (f && paintAsync(rig + suf, [['lut', f]], (b) => { if (SPR[key] !== srcS) return; SPR[key] = b || recolorCanvas(srcS, f); })) SPR[key] = srcS; // boyanana kadar asıl renk (13 Eki: boyacıda)
+  else SPR[key] = f ? recolorCanvas(srcS, f) : srcS;
   ANIM_META[key] = ANIM_META[rig + suf];
   return key;
 }
 // görseli renk işleviyle (h, s, l, x, y -> yeni hsl ya da null) yeniden boyar; y görsel yüksekliğine göre (şeritte kare yüksekliği)
 function recolorCanvas(src, f) {
   const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
-  const g = c.getContext('2d'); g.drawImage(src, 0, 0);
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(src, 0, 0);
   const im = g.getImageData(0, 0, c.width, c.height), a = im.data, cw = c.width, ch = c.height;
-  for (let i = 0; i < a.length; i += 4) {
-    if (a[i + 3] < 10) continue;
-    const px = i / 4;
-    const r = f(...rgb2hsl(a[i], a[i + 1], a[i + 2]), (px % cw) / cw, Math.floor(px / cw) / ch);
-    if (!r) continue;
-    const rgb = hsl2rgb((r[0] + 360) % 360, clamp(r[1], 0, 1), clamp(r[2], 0, 1));
-    a[i] = rgb[0]; a[i + 1] = rgb[1]; a[i + 2] = rgb[2];
-  }
+  lutPixels(a, cw, ch, f.F || (f.F = { fn: f }));
   g.putImageData(im, 0, 0);
   c.generated = true;
   return c;
