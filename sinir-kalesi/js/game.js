@@ -9785,11 +9785,48 @@ function tileBtn(key, x, y, r, icon, fn, o, appear) {
   ctx.restore();
   if (fn) buttons.push({ key, x: x - r - 6, y: y - r - 6, w: 2 * r + 12, h: 2 * r + 14, fn });
 }
+// 15 Eki (Caner: simgeler yine yuvarlak, çevresinde kemik kontur; dokununca kemikler dönsün): renkli yuvarlak gövde (TILE renkleri),
+// dışında N kemikten halka; dokunulunca halka bir tur döner (yavaşlayarak). BONE_RING: kemik sayısı, dönüş süresi
+const BONE_RING = { n: 9, spin: 0.7 };
+function drawBoneSeg(x, y, ang, L, w) { // tek kemik: gövde + iki uçta çift topuz
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+  const knob = (cx, sy) => { ctx.beginPath(); ctx.arc(cx, -w * 0.42, w * 0.55, 0, Math.PI * 2); ctx.arc(cx, w * 0.42, w * 0.55, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); };
+  ctx.fillStyle = '#efe3c4'; ctx.strokeStyle = '#1a0c18'; ctx.lineWidth = 1.3;
+  knob(-L / 2); knob(L / 2);
+  ctx.beginPath(); ctx.roundRect(-L / 2, -w * 0.36, L, w * 0.72, w * 0.3); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#efe3c4'; ctx.beginPath(); ctx.arc(-L / 2, -w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.arc(-L / 2, w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.arc(L / 2, -w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.arc(L / 2, w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.fill(); // eklem çizgisi kalmasın
+  ctx.fillRect(-L / 2, -w * 0.3, L, w * 0.6);
+  ctx.fillStyle = 'rgba(120,100,70,0.45)'; ctx.fillRect(-L / 2 + w * 0.2, w * 0.05, L - w * 0.4, w * 0.22); // alt gölge
+  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillRect(-L / 2 + w * 0.3, -w * 0.25, L - w * 0.6, w * 0.12); // üst parıltı
+  ctx.restore();
+}
+function boneBtn(key, x, y, r, icon, fn, o, appear) {
+  const C = TILE[o.tile] || TILE.violet;
+  const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 * (sp < 1 ? 1 : 0);
+  ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
+  if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
+  circle(0, 5, r + 7, 'rgba(0,0,0,0.42)'); // gölge
+  circle(0, 0, r + 1.5, '#120712'); // koyu kontur
+  const g = ctx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, C[0]); g.addColorStop(1, C[1]); circle(0, 0, r, g);
+  ctx.save(); ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip(); // üstte parlama, kenarda koyuluk
+  const gl = ctx.createLinearGradient(0, -r, 0, 0); gl.addColorStop(0, 'rgba(255,255,255,0.34)'); gl.addColorStop(1, 'rgba(255,255,255,0.02)');
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(0, -r * 0.55, r * 0.85, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+  const rg = ctx.createRadialGradient(0, r * 0.15, r * 0.3, 0, 0, r * 1.05); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(10,0,20,0.45)'); ctx.fillStyle = rg; ctx.fillRect(-r, -r, 2 * r, 2 * r);
+  ctx.restore();
+  // kemik halka: her kemik çembere teğet; dokununca halka döner
+  const R = r + 4, N = BONE_RING.n, L = (2 * Math.PI * R / N) * 0.74, w = Math.max(4.2, r * 0.19);
+  for (let i = 0; i < N; i++) { const a = rot + i / N * Math.PI * 2 - Math.PI / 2; drawBoneSeg(Math.cos(a) * R, Math.sin(a) * R, a + Math.PI / 2, L, w); }
+  for (let i = 0; i < N; i++) { const a = rot + (i + 0.5) / N * Math.PI * 2 - Math.PI / 2; circle(Math.cos(a) * R, Math.sin(a) * R, w * 0.42, '#d8c8a0', '#1a0c18', 1); } // kemikler arası eklem
+  ctx.shadowColor = 'rgba(10,0,16,0.7)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
+  if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.05, '#f6ecd4');
+  ctx.restore();
+  if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn });
+}
 // yuvarlak 3B buton; fn yoksa (oyun içi HUD) dokunma hudTap'te ayrıca yakalanır
 function roundBtn(key, x, y, r, icon, fn, o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
   if (appear <= 0.01) return;
-  if (NECRO && (o.tile || (key === 'back' && icon === 'back'))) { tileBtn(key, x, y, r * 0.92, icon, fn, o.tile ? o : Object.assign({ tile: 'red' }, o), appear); return; } // geri düğmeleri de kare
+  if (NECRO && (o.tile || (key === 'back' && icon === 'back'))) { boneBtn(key, x, y, r * 0.86, icon, fn, o.tile ? o : Object.assign({ tile: 'red' }, o), appear); return; } // 15 Eki (2): yuvarlak, kemik halkalı
   const c = STYLES[o.style || 'wood'];
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
