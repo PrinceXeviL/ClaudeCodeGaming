@@ -142,7 +142,47 @@
 "Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Les cadavres touchés se relèvent · les grands plus forts",
 "Burada ceset yok!": "Pas de cadavres ici !",
 "Güçlü ölü!": "Mort puissant !",
-"Kutsandı!": "Béni !"
+"Kutsandı!": "Béni !",
+"Kök Tuzağı": "Piège de racines",
+"Kök Tuzağı!": "Piège de racines!",
+"Kökler fışkırır, yakındaki düşmanları tutar": "Des racines jaillissent et retiennent les ennemis proches",
+"Kökler fışkırır, yakındaki düşmanları tutar!": "Des racines jaillissent et retiennent les ennemis proches!",
+"Bataklık Gazı": "Gaz des marais",
+"Bataklık Gazı!": "Gaz des marais!",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Un gaz toxique explose, les ennemis sont empoisonnés et ralentis",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Un gaz toxique explose, les ennemis sont empoisonnés et ralentis!",
+"Açık Mezar": "Tombe ouverte",
+"Açık Mezar!": "Tombe ouverte!",
+"Mezardan iki ölü kalkar, senin için savaşır": "Deux morts sortent de la tombe et combattent pour toi",
+"Mezardan iki ölü kalkar, senin için savaşır!": "Deux morts sortent de la tombe et combattent pour toi!",
+"Kara Girdap": "Tourbillon noir",
+"Kara Girdap!": "Tourbillon noir!",
+"Girdap en güçlü iki düşmanı suya çeker": "Le tourbillon entraîne les deux ennemis les plus forts",
+"Girdap en güçlü iki düşmanı suya çeker!": "Le tourbillon entraîne les deux ennemis les plus forts!",
+"Lanet Taşı": "Pierre maudite",
+"Lanet Taşı!": "Pierre maudite!",
+"Yakındaki bütün düşmanlar lanetlenir": "Tous les ennemis proches sont maudits",
+"Yakındaki bütün düşmanlar lanetlenir!": "Tous les ennemis proches sont maudits!",
+"Yarasa Ağacı": "Arbre aux chauves-souris",
+"Yarasa Ağacı!": "Arbre aux chauves-souris!",
+"Yarasa sürüsü düşmanlara saldırır": "Un essaim de chauves-souris attaque",
+"Yarasa sürüsü düşmanlara saldırır!": "Un essaim de chauves-souris attaque!",
+"Veba Kuyusu": "Puits de la peste",
+"Veba Kuyusu!": "Puits de la peste!",
+"Kuyudan veba bulutu yükselir": "Un nuage de peste monte du puits",
+"Kuyudan veba bulutu yükselir!": "Un nuage de peste monte du puits!",
+"Batık Çan": "Cloche engloutie",
+"Batık Çan!": "Cloche engloutie!",
+"Çan çalar, yakındaki düşmanlar sersemler": "La cloche sonne, les ennemis proches sont étourdis",
+"Çan çalar, yakındaki düşmanlar sersemler!": "La cloche sonne, les ennemis proches sont étourdis!",
+"Kemik Totemi": "Totem d'os",
+"Kemik Totemi!": "Totem d'os!",
+"Totem patlar, kemik kıymıkları saçılır": "Le totem explose et projette des éclats d'os",
+"Totem patlar, kemik kıymıkları saçılır!": "Le totem explose et projette des éclats d'os!",
+"Kan Sunağı": "Autel de sang",
+"Kan Sunağı!": "Autel de sang!",
+"Düşmanların kanını emer, iskeletlerini iyileştirir": "Draine le sang des ennemis et soigne tes squelettes",
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Draine le sang des ennemis et soigne tes squelettes!"
 },
 "tpl": [
 [
@@ -220,6 +260,10 @@
 [
 "{}, seni mezardan çıkardığıma pişman ettirme!",
 "{}, ne me fais pas regretter de t'avoir tiré de la tombe !"
+],
+[
+"{}: dokun! {}",
+"{} : touche ! {}"
 ]
 ]
 }

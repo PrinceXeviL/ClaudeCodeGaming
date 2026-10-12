@@ -142,7 +142,47 @@
 "Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Los cadáveres donde toques se alzan · los grandes, más fuertes",
 "Burada ceset yok!": "¡Aquí no hay cadáveres!",
 "Güçlü ölü!": "¡Muerto poderoso!",
-"Kutsandı!": "¡Bendecido!"
+"Kutsandı!": "¡Bendecido!",
+"Kök Tuzağı": "Trampa de raíces",
+"Kök Tuzağı!": "Trampa de raíces!",
+"Kökler fışkırır, yakındaki düşmanları tutar": "Brotan raíces que atrapan a los enemigos cercanos",
+"Kökler fışkırır, yakındaki düşmanları tutar!": "Brotan raíces que atrapan a los enemigos cercanos!",
+"Bataklık Gazı": "Gas del pantano",
+"Bataklık Gazı!": "Gas del pantano!",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Estalla gas tóxico, los enemigos se envenenan y ralentizan",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Estalla gas tóxico, los enemigos se envenenan y ralentizan!",
+"Açık Mezar": "Tumba abierta",
+"Açık Mezar!": "Tumba abierta!",
+"Mezardan iki ölü kalkar, senin için savaşır": "Dos muertos salen de la tumba y luchan por ti",
+"Mezardan iki ölü kalkar, senin için savaşır!": "Dos muertos salen de la tumba y luchan por ti!",
+"Kara Girdap": "Remolino negro",
+"Kara Girdap!": "Remolino negro!",
+"Girdap en güçlü iki düşmanı suya çeker": "El remolino arrastra a los dos enemigos más fuertes",
+"Girdap en güçlü iki düşmanı suya çeker!": "El remolino arrastra a los dos enemigos más fuertes!",
+"Lanet Taşı": "Piedra maldita",
+"Lanet Taşı!": "Piedra maldita!",
+"Yakındaki bütün düşmanlar lanetlenir": "Todos los enemigos cercanos quedan malditos",
+"Yakındaki bütün düşmanlar lanetlenir!": "Todos los enemigos cercanos quedan malditos!",
+"Yarasa Ağacı": "Árbol de murciélagos",
+"Yarasa Ağacı!": "Árbol de murciélagos!",
+"Yarasa sürüsü düşmanlara saldırır": "Un enjambre de murciélagos ataca",
+"Yarasa sürüsü düşmanlara saldırır!": "Un enjambre de murciélagos ataca!",
+"Veba Kuyusu": "Pozo de la peste",
+"Veba Kuyusu!": "Pozo de la peste!",
+"Kuyudan veba bulutu yükselir": "Una nube de peste sale del pozo",
+"Kuyudan veba bulutu yükselir!": "Una nube de peste sale del pozo!",
+"Batık Çan": "Campana hundida",
+"Batık Çan!": "Campana hundida!",
+"Çan çalar, yakındaki düşmanlar sersemler": "La campana suena y aturde a los enemigos",
+"Çan çalar, yakındaki düşmanlar sersemler!": "La campana suena y aturde a los enemigos!",
+"Kemik Totemi": "Tótem de hueso",
+"Kemik Totemi!": "Tótem de hueso!",
+"Totem patlar, kemik kıymıkları saçılır": "El tótem estalla y esparce astillas de hueso",
+"Totem patlar, kemik kıymıkları saçılır!": "El tótem estalla y esparce astillas de hueso!",
+"Kan Sunağı": "Altar de sangre",
+"Kan Sunağı!": "Altar de sangre!",
+"Düşmanların kanını emer, iskeletlerini iyileştirir": "Drena la sangre enemiga y cura a tus esqueletos",
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Drena la sangre enemiga y cura a tus esqueletos!"
 },
 "tpl": [
 [
@@ -220,6 +260,10 @@
 [
 "{}, seni mezardan çıkardığıma pişman ettirme!",
 "{}, ¡no me hagas lamentar haberte sacado de la tumba!"
+],
+[
+"{}: dokun! {}",
+"{}: ¡toca! {}"
 ]
 ]
 }

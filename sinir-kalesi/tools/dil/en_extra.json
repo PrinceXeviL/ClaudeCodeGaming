@@ -337,7 +337,47 @@
 "Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Corpses where you tap rise · big enemies rise stronger",
 "Burada ceset yok!": "No corpses here!",
 "Güçlü ölü!": "Mighty dead!",
-"Kutsandı!": "Blessed!"
+"Kutsandı!": "Blessed!",
+"Kök Tuzağı": "Root Trap",
+"Kök Tuzağı!": "Root Trap!",
+"Kökler fışkırır, yakındaki düşmanları tutar": "Roots burst out and hold nearby enemies",
+"Kökler fışkırır, yakındaki düşmanları tutar!": "Roots burst out and hold nearby enemies!",
+"Bataklık Gazı": "Swamp Gas",
+"Bataklık Gazı!": "Swamp Gas!",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Toxic gas bursts, enemies are poisoned and slowed",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Toxic gas bursts, enemies are poisoned and slowed!",
+"Açık Mezar": "Open Grave",
+"Açık Mezar!": "Open Grave!",
+"Mezardan iki ölü kalkar, senin için savaşır": "Two dead rise from the grave and fight for you",
+"Mezardan iki ölü kalkar, senin için savaşır!": "Two dead rise from the grave and fight for you!",
+"Kara Girdap": "Black Whirlpool",
+"Kara Girdap!": "Black Whirlpool!",
+"Girdap en güçlü iki düşmanı suya çeker": "The whirlpool drags the two strongest enemies under",
+"Girdap en güçlü iki düşmanı suya çeker!": "The whirlpool drags the two strongest enemies under!",
+"Lanet Taşı": "Curse Stone",
+"Lanet Taşı!": "Curse Stone!",
+"Yakındaki bütün düşmanlar lanetlenir": "All nearby enemies are cursed",
+"Yakındaki bütün düşmanlar lanetlenir!": "All nearby enemies are cursed!",
+"Yarasa Ağacı": "Bat Tree",
+"Yarasa Ağacı!": "Bat Tree!",
+"Yarasa sürüsü düşmanlara saldırır": "A swarm of bats attacks the enemies",
+"Yarasa sürüsü düşmanlara saldırır!": "A swarm of bats attacks the enemies!",
+"Veba Kuyusu": "Plague Well",
+"Veba Kuyusu!": "Plague Well!",
+"Kuyudan veba bulutu yükselir": "A plague cloud rises from the well",
+"Kuyudan veba bulutu yükselir!": "A plague cloud rises from the well!",
+"Batık Çan": "Sunken Bell",
+"Batık Çan!": "Sunken Bell!",
+"Çan çalar, yakındaki düşmanlar sersemler": "The bell tolls, nearby enemies are stunned",
+"Çan çalar, yakındaki düşmanlar sersemler!": "The bell tolls, nearby enemies are stunned!",
+"Kemik Totemi": "Bone Totem",
+"Kemik Totemi!": "Bone Totem!",
+"Totem patlar, kemik kıymıkları saçılır": "The totem bursts, scattering bone shards",
+"Totem patlar, kemik kıymıkları saçılır!": "The totem bursts, scattering bone shards!",
+"Kan Sunağı": "Blood Altar",
+"Kan Sunağı!": "Blood Altar!",
+"Düşmanların kanını emer, iskeletlerini iyileştirir": "Drains the enemies' blood and heals your skeletons",
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Drains the enemies' blood and heals your skeletons!"
 },
 "tpl": [
 [
@@ -731,6 +771,10 @@
 [
 "{}, seni mezardan çıkardığıma pişman ettirme!",
 "{}, don't make me regret raising you from the grave!"
+],
+[
+"{}: dokun! {}",
+"{}: tap! {}"
 ]
 ]
 }

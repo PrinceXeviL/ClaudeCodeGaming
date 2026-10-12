@@ -5318,9 +5318,11 @@ function setupProps() {
   for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
   const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
   G.teaT = 0;
+  setupZoneItem();
 }
 function updateProps(dt) {
   if (G.teaT > 0) G.teaT -= dt;
+  if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
     o.t += dt;
     if (o.kind === 'crow') {
@@ -5331,6 +5333,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
+  if (tapZoneItem(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -5376,6 +5379,7 @@ function crowCaw() {
   }
 }
 function drawProps(air) {
+  if (!air) drawZoneItem();
   for (const o of G.props || []) {
     if (o.kind === 'crow') {
       const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
@@ -5417,6 +5421,88 @@ function drawProps(air) {
       }
     }
   }
+}
+// ----- mekân öğeleri (15 Eki, Caner: her mekâna dokunulabilir bir harita öğesi) -----
+// Yolun kenarında, mekânın temasına göre bir öğe: dokununca savaşa etki eder, sonra cd sn dolar. Kodla çizilir (yeni görsel gerekmez).
+// r: etki yarıçapı (öğenin çevresi; yol öğeden ~58 birim uzakta), cd: bekleme
+const ZONE_ITEM = {
+  cursed:    { id: 'roots', name: 'Kök Tuzağı', sub: 'Kökler fışkırır, yakındaki düşmanları tutar', r: 88, cd: 28 },
+  bog:       { id: 'gas', name: 'Bataklık Gazı', sub: 'Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar', r: 84, cd: 26 },
+  graveyard: { id: 'grave', name: 'Açık Mezar', sub: 'Mezardan iki ölü kalkar, senin için savaşır', r: 70, cd: 32 },
+  blacklake: { id: 'whirl', name: 'Kara Girdap', sub: 'Girdap en güçlü iki düşmanı suya çeker', r: 92, cd: 30 },
+  necrogate: { id: 'obelisk', name: 'Lanet Taşı', sub: 'Yakındaki bütün düşmanlar lanetlenir', r: 100, cd: 30 },
+  ravenwood: { id: 'bats', name: 'Yarasa Ağacı', sub: 'Yarasa sürüsü düşmanlara saldırır', r: 90, cd: 26 },
+  plague:    { id: 'well', name: 'Veba Kuyusu', sub: 'Kuyudan veba bulutu yükselir', r: 86, cd: 26 },
+  monastery: { id: 'bell', name: 'Batık Çan', sub: 'Çan çalar, yakındaki düşmanlar sersemler', r: 110, cd: 30 },
+  ossuary:   { id: 'bones', name: 'Kemik Totemi', sub: 'Totem patlar, kemik kıymıkları saçılır', r: 84, cd: 26 },
+  bloodmoon: { id: 'altar', name: 'Kan Sunağı', sub: 'Düşmanların kanını emer, iskeletlerini iyileştirir', r: 96, cd: 30 },
+};
+function setupZoneItem() {
+  const Z = NECRO && ZONE_ITEM[G.lv.theme]; G.zitem = null; if (!Z) return;
+  const free = (x, y) => x > 50 && x < W - 50 && y > 100 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 40
+    && G.plots.every(p => dist(p.x, p.y, x, y) > 52) && dist(x, y, G.castle.x, G.castle.y - 40) > 120 && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
+    && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60);
+  for (const P of G.paths) for (const f of [0.42, 0.55, 0.3, 0.66, 0.48, 0.22, 0.75]) {
+    const q = pathPos(P, P.total * f), L = Math.hypot(q.dx, q.dy) || 1;
+    for (const sd of [1, -1]) { const x = q.x - q.dy / L * 58 * sd, y = q.y + q.dx / L * 50 * sd; if (free(x, y)) { G.zitem = Object.assign({ x, y, cd: 6, t: 0, used: 0 }, Z); return; } }
+  }
+}
+function tapZoneItem(x, y) {
+  const o = G.zitem; if (!o || dist(x, y, o.x, o.y - 10) > 30) return false;
+  if (o.cd > 0) { floatText(o.x, o.y - 40, Math.ceil(o.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
+  fireZoneItem(o); o.cd = o.cd0 = o.cdMax = ZONE_ITEM[G.lv.theme].cd; o.fireT = G.t; o.used++; tipDone('zitem');
+  return true;
+}
+function fireZoneItem(o) {
+  const near = G.enemies.filter(e => !e.dead && !e.under && (o.id === 'bats' || !e.def.flying) && dist(e.x, e.y, o.x, o.y) <= o.r), boss = (e) => e.def.chief || e.def.boss;
+  floatText(o.x, o.y - 44, o.name + '!', '#ffd8a0'); haptic('medium');
+  if (o.id === 'roots') { for (const e of near) { stunEnemy(e, boss(e) ? 0.8 : 2.2); damageEnemy(e, 20, 'phys', false, 'blast'); for (let i = 0; i < 4; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-6, 6), y: e.y, vx: rand(-30, 30), vy: -rand(40, 90), g: 380, vr: rand(-8, 8), rot: rand(0, 6), col: i % 2 ? '#4a3420' : '#2a1c10', s0: rand(1.5, 2.6), s1: 1, life: 0.6 }); } sfx('bonewall'); shakeScreen(2, 0.2); }
+  else if (o.id === 'gas' || o.id === 'well') { G.zones.push({ x: o.x, y: o.y, r: o.r * 0.9, dps: 6, slowK: 0.3, infect: 3, t: 0, life: 4, fxT: 0, src: 'blast', kind: 'plague', gas: true, seed: rand(0, 9) }); for (const e of near) poisonEnemy(e, 5, 4); fxPlagueSplash(o.x, o.y, o.r * 0.8); sfx('acidboom'); }
+  else if (o.id === 'grave') { for (let i = 0; i < 2; i++) raiseMinion({ x: o.x + (i ? 12 : -12), y: o.y + 4, name: 'enemy_legion', rig: null, h: CHAR_H.enemy_legion, face: 1, pw: 1.2 }, i * 0.15); sfx('raise'); }
+  else if (o.id === 'whirl') { near.filter(e => !boss(e)).sort((a, b) => b.hp - a.hp).slice(0, 2).forEach(e => { stunEnemy(e, 1.6); damageEnemy(e, 160, 'true', false, 'blast'); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 22, col: '80,140,200', t: 0, dur: 0.6 }); }); sfx('splash'); }
+  else if (o.id === 'obelisk') { for (const e of near) { if (e.def.nocurse) continue; e.curseT = Math.max(e.curseT || 0, 6); e.curseK = Math.max(e.curseK || 0, 0.3); slowEnemy(e, 0.25, 3); } sfx('cursegaze'); }
+  else if (o.id === 'bats') { G.zones.push({ x: o.x, y: o.y, r: o.r, dps: 16, dtype: 'phys', t: 0, life: 3, fxT: 0, kind: 'bats', hx: o.x, hy: o.y - 20, hero: null, slow: 0.3, heal: 0, n: 12, seed: rand(0, 9) }); sfx('bats'); }
+  else if (o.id === 'bell') { for (const e of near) stunEnemy(e, boss(e) ? 0.5 : 1.6); sfx('horn'); shakeScreen(1.5, 0.2); }
+  else if (o.id === 'bones') { for (const e of near) damageEnemy(e, 60 * (1 - 0.4 * dist(e.x, e.y, o.x, o.y) / o.r), 'phys', false, 'blast'); for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(80, 200); emit(G.parts, { kind: 'chunk', x: o.x, y: o.y - 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6 - 60, g: 420, vr: rand(-12, 12), rot: rand(0, 6), col: '#e8dcc0', s0: rand(1.5, 2.8), s1: 1, life: 0.8 }); } sfx('bash'); shakeScreen(2.5, 0.25); }
+  else if (o.id === 'altar') { let got = 0; for (const e of near) { const d0 = e.hp; damageEnemy(e, 40, 'true', false, 'blast'); got += Math.max(0, d0 - Math.max(0, e.hp)); }
+    for (const s2 of G.soldiers) if (!s2.dead && !s2.wall && dist(s2.x, s2.y, o.x, o.y) < o.r * 1.4) s2.hp = Math.min(s2.maxHp, s2.hp + 40 + got * 0.2); sfx('blooddrain'); }
+  G.effects.push({ kind: 'ring', x: o.x, y: o.y, r: o.r, col: o.id === 'altar' ? '220,40,60' : o.id === 'bell' ? '255,220,140' : '170,110,255', t: 0, dur: 0.55 });
+}
+// mekân öğesinin çizimi: hazırken nabız gibi parlar ve üstünde küçük el işareti, beklerken dolum halkası
+function drawZoneItem() {
+  const o = G.zitem; if (!o) return;
+  const ready = o.cd <= 0, x = o.x, y = o.y, pulse = 0.5 + 0.5 * Math.sin(time * 4), fk = clamp(1 - (G.t - (o.fireT ?? -9)) / 0.5, 0, 1);
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(x + 2, y + 2, 17, 5.5, 0, 0, Math.PI * 2); ctx.fill();
+  if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - 10, 34, o.id === 'altar' ? '255,60,70' : o.id === 'bell' ? '255,210,120' : '170,110,255', 0.22 + 0.16 * pulse); ctx.restore(); }
+  const ol = '#1a0c18'; ctx.lineWidth = 1.4; ctx.strokeStyle = ol;
+  const shape = {
+    roots: () => { ctx.fillStyle = '#4a3422'; ctx.beginPath(); ctx.moveTo(x - 13, y); ctx.lineTo(x - 9, y - 18); ctx.lineTo(x - 3, y - 22); ctx.lineTo(x + 6, y - 20); ctx.lineTo(x + 11, y - 14); ctx.lineTo(x + 14, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + s * 10, y - 2); ctx.quadraticCurveTo(x + s * 20, y - 2, x + s * 24, y + 4); ctx.lineWidth = 3; ctx.strokeStyle = '#3a2818'; ctx.stroke(); } ctx.lineWidth = 1.4; ctx.strokeStyle = ol;
+      ctx.fillStyle = ready ? '#8cff7a' : '#3a5a30'; ctx.beginPath(); ctx.arc(x - 3, y - 13, 1.8, 0, 7); ctx.arc(x + 4, y - 13, 1.8, 0, 7); ctx.fill(); },
+    gas: () => { ctx.fillStyle = '#2e4a2a'; ctx.beginPath(); ctx.ellipse(x, y - 3, 18, 7, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#6aa848'; ctx.beginPath(); ctx.ellipse(x, y - 4, 14, 5, 0, 0, 7); ctx.fill();
+      for (let i = 0; i < 3; i++) { const u = (time * 0.7 + i / 3) % 1; ctx.fillStyle = `rgba(170,240,110,${0.8 * (1 - u)})`; ctx.beginPath(); ctx.arc(x - 8 + i * 8, y - 5 - u * 14, 2 + u * 2, 0, 7); ctx.fill(); } },
+    well: () => { ctx.fillStyle = '#6a6458'; ctx.beginPath(); ctx.ellipse(x, y - 4, 14, 6, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#5a5448'; ctx.fillRect(x - 14, y - 12, 28, 8); ctx.strokeRect(x - 14, y - 12, 28, 8); ctx.fillStyle = '#3a5a2a'; ctx.beginPath(); ctx.ellipse(x, y - 12, 12, 4, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#4a3422'; ctx.fillRect(x - 13, y - 30, 3, 18); ctx.fillRect(x + 10, y - 30, 3, 18); ctx.fillRect(x - 14, y - 31, 28, 3); },
+    grave: () => { ctx.fillStyle = '#3a2c20'; ctx.beginPath(); ctx.ellipse(x, y - 2, 16, 6, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#1a1210'; ctx.beginPath(); ctx.ellipse(x, y - 3, 10, 3.5, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = '#8a8494'; ctx.beginPath(); ctx.roundRect(x + 6, y - 24, 10, 18, [5, 5, 1, 1]); ctx.fill(); ctx.stroke(); ctx.strokeStyle = '#4a4452'; ctx.beginPath(); ctx.moveTo(x + 11, y - 20); ctx.lineTo(x + 11, y - 12); ctx.moveTo(x + 8, y - 17); ctx.lineTo(x + 14, y - 17); ctx.stroke(); },
+    whirl: () => { ctx.fillStyle = '#16283a'; ctx.beginPath(); ctx.ellipse(x, y - 3, 19, 7, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'rgba(140,190,230,0.7)'; ctx.lineWidth = 1.4;
+      for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(x, y - 3, 14 - i * 4, 5 - i * 1.4, 0, time * (2 + i) , time * (2 + i) + 3.5); ctx.stroke(); } },
+    obelisk: () => { ctx.fillStyle = '#2a2236'; ctx.beginPath(); ctx.moveTo(x - 7, y); ctx.lineTo(x - 5, y - 30); ctx.lineTo(x, y - 36); ctx.lineTo(x + 5, y - 30); ctx.lineTo(x + 7, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = ready ? '#c890ff' : '#5a4a6a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - 2, y - 24); ctx.lineTo(x + 2, y - 20); ctx.lineTo(x - 2, y - 16); ctx.moveTo(x, y - 12); ctx.lineTo(x, y - 6); ctx.stroke(); },
+    bats: () => { ctx.strokeStyle = '#1e1622'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 26); ctx.moveTo(x, y - 18); ctx.lineTo(x - 10, y - 28); ctx.moveTo(x, y - 22); ctx.lineTo(x + 11, y - 31); ctx.stroke();
+      for (const [bx, by] of [[x - 10, y - 30], [x + 11, y - 33]]) drawBat(bx, by + 3, 1, Math.PI / 2, 0.55); },
+    bell: () => { ctx.fillStyle = '#4a3422'; ctx.fillRect(x - 14, y - 30, 3, 30); ctx.fillRect(x + 11, y - 30, 3, 30); ctx.fillRect(x - 15, y - 32, 30, 3);
+      const sw = fk ? Math.sin(time * 30) * 0.25 * fk : 0; ctx.save(); ctx.translate(x, y - 29); ctx.rotate(sw); ctx.fillStyle = '#b08440'; ctx.beginPath(); ctx.moveTo(-6, 2); ctx.quadraticCurveTo(-7, 14, -10, 18); ctx.lineTo(10, 18); ctx.quadraticCurveTo(7, 14, 6, 2); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); },
+    bones: () => { ctx.fillStyle = '#e8dcc0'; for (const [dx, dy, a] of [[-6, -4, 0.6], [5, -5, -0.5], [0, -12, 1.5], [-3, -18, 0.2]]) { ctx.save(); ctx.translate(x + dx, y + dy); ctx.rotate(a); ctx.beginPath(); ctx.roundRect(-8, -1.5, 16, 3, 1.5); ctx.fill(); ctx.stroke(); ctx.restore(); }
+      ctx.beginPath(); ctx.arc(x, y - 24, 5.5, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#1a0c18'; ctx.beginPath(); ctx.arc(x - 2, y - 24, 1.3, 0, 7); ctx.arc(x + 2, y - 24, 1.3, 0, 7); ctx.fill(); },
+    altar: () => { ctx.fillStyle = '#5a4a52'; ctx.fillRect(x - 15, y - 14, 30, 14); ctx.strokeRect(x - 15, y - 14, 30, 14); ctx.fillStyle = '#6a5a62'; ctx.fillRect(x - 17, y - 17, 34, 4); ctx.strokeRect(x - 17, y - 17, 34, 4);
+      ctx.fillStyle = ready ? '#c81830' : '#5a1a22'; ctx.beginPath(); ctx.ellipse(x, y - 17, 8, 2.4, 0, 0, 7); ctx.fill(); },
+  }[o.id];
+  if (shape) shape();
+  ctx.restore();
+  if (!ready) { const k = 1 - o.cd / (o.cdMax || ZONE_ITEM[G.lv.theme].cd); circle(x, y - 46, 8, 'rgba(20,12,24,0.75)', 'rgba(200,160,255,0.5)', 1.2); ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x, y - 46, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
+  else { const by = y - 48 + Math.sin(time * 4) * 2; circle(x, by, 9, 'rgba(26,12,22,0.9)', '#f2e6c8', 1.5); drawIcon('play', x + 0.5, by, 9, '#f2e6c8'); } // dokun işareti
 }
 // ----- bölüme özel mekanikler (lv.mech) -----
 // mud: yoldaki çamur düşmanı yavaşlatır · graves: yol kenarı mezarlardan arada bir bizim tarafa ölü kalkar
@@ -10932,6 +11018,7 @@ function drawHud() {
     if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts')) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
     else if (G.idx < NOVICE.levels && !tipSeen('spell') && spellIds().includes('nm_raise') && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 3) { // büyüyü öğret
       const b = spellBtn(spellIds().indexOf('nm_raise')); drawTip(b.x, b.y - 34, 'Cesetleri dirilt: büyüye dokun!'); }
+    else if (G.wave > 0 && G.zitem && G.zitem.cd <= 0 && !tipSeen('zitem')) { const q = worldToScreen(G.zitem.x, G.zitem.y - 56); drawTip(q.x, q.y, G.zitem.name + ': dokun! ' + G.zitem.sub); } // mekân öğesi
     else if (G.wave > 0 && G.castle.lvl === 0 && G.gold >= CASTLE.levels[1].cost && !tipSeen('castle')) { const q = worldToScreen(G.castle.x, G.castle.y - 70); drawTip(q.x, q.y - 40, 'Kaleye dokun: kaleyi yükselt'); } // 15 Eki: kale menüsü yükseltme
   }
 
@@ -16184,7 +16271,7 @@ window.__game = {
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
+  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)

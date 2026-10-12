@@ -142,7 +142,47 @@
 "Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "点击处尸体复活 · 大型更强",
 "Burada ceset yok!": "这里没有尸体！",
 "Güçlü ölü!": "强大亡者！",
-"Kutsandı!": "已圣化！"
+"Kutsandı!": "已圣化！",
+"Kök Tuzağı": "根须陷阱",
+"Kök Tuzağı!": "根须陷阱!",
+"Kökler fışkırır, yakındaki düşmanları tutar": "根须破土而出，缠住附近敌人",
+"Kökler fışkırır, yakındaki düşmanları tutar!": "根须破土而出，缠住附近敌人!",
+"Bataklık Gazı": "沼气",
+"Bataklık Gazı!": "沼气!",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "毒气爆发，敌人中毒并减速",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "毒气爆发，敌人中毒并减速!",
+"Açık Mezar": "敞开的坟墓",
+"Açık Mezar!": "敞开的坟墓!",
+"Mezardan iki ölü kalkar, senin için savaşır": "两具亡者从坟中爬出为你作战",
+"Mezardan iki ölü kalkar, senin için savaşır!": "两具亡者从坟中爬出为你作战!",
+"Kara Girdap": "黑色漩涡",
+"Kara Girdap!": "黑色漩涡!",
+"Girdap en güçlü iki düşmanı suya çeker": "漩涡将两个最强的敌人拖入水中",
+"Girdap en güçlü iki düşmanı suya çeker!": "漩涡将两个最强的敌人拖入水中!",
+"Lanet Taşı": "诅咒石",
+"Lanet Taşı!": "诅咒石!",
+"Yakındaki bütün düşmanlar lanetlenir": "附近所有敌人被诅咒",
+"Yakındaki bütün düşmanlar lanetlenir!": "附近所有敌人被诅咒!",
+"Yarasa Ağacı": "蝙蝠树",
+"Yarasa Ağacı!": "蝙蝠树!",
+"Yarasa sürüsü düşmanlara saldırır": "蝙蝠群攻击敌人",
+"Yarasa sürüsü düşmanlara saldırır!": "蝙蝠群攻击敌人!",
+"Veba Kuyusu": "瘟疫井",
+"Veba Kuyusu!": "瘟疫井!",
+"Kuyudan veba bulutu yükselir": "瘟疫云从井中升起",
+"Kuyudan veba bulutu yükselir!": "瘟疫云从井中升起!",
+"Batık Çan": "沉钟",
+"Batık Çan!": "沉钟!",
+"Çan çalar, yakındaki düşmanlar sersemler": "钟声响起，附近敌人被眩晕",
+"Çan çalar, yakındaki düşmanlar sersemler!": "钟声响起，附近敌人被眩晕!",
+"Kemik Totemi": "骨图腾",
+"Kemik Totemi!": "骨图腾!",
+"Totem patlar, kemik kıymıkları saçılır": "图腾爆裂，骨片四溅",
+"Totem patlar, kemik kıymıkları saçılır!": "图腾爆裂，骨片四溅!",
+"Kan Sunağı": "血之祭坛",
+"Kan Sunağı!": "血之祭坛!",
+"Düşmanların kanını emer, iskeletlerini iyileştirir": "吸取敌人鲜血，治疗你的骷髅",
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "吸取敌人鲜血，治疗你的骷髅!"
 },
 "tpl": [
 [
@@ -220,6 +260,10 @@
 [
 "{}, seni mezardan çıkardığıma pişman ettirme!",
 "{}，别让我后悔把你从坟里挖出来！"
+],
+[
+"{}: dokun! {}",
+"{}：点击！{}"
 ]
 ]
 }

@@ -142,7 +142,47 @@
 "Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Трупы в месте касания встают · крупные сильнее",
 "Burada ceset yok!": "Здесь нет трупов!",
 "Güçlü ölü!": "Сильный мертвец!",
-"Kutsandı!": "Освящено!"
+"Kutsandı!": "Освящено!",
+"Kök Tuzağı": "Корневая ловушка",
+"Kök Tuzağı!": "Корневая ловушка!",
+"Kökler fışkırır, yakındaki düşmanları tutar": "Корни вырываются и держат ближайших врагов",
+"Kökler fışkırır, yakındaki düşmanları tutar!": "Корни вырываются и держат ближайших врагов!",
+"Bataklık Gazı": "Болотный газ",
+"Bataklık Gazı!": "Болотный газ!",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Взрывается ядовитый газ, враги отравлены и замедлены",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Взрывается ядовитый газ, враги отравлены и замедлены!",
+"Açık Mezar": "Открытая могила",
+"Açık Mezar!": "Открытая могила!",
+"Mezardan iki ölü kalkar, senin için savaşır": "Двое мертвецов встают из могилы и сражаются за тебя",
+"Mezardan iki ölü kalkar, senin için savaşır!": "Двое мертвецов встают из могилы и сражаются за тебя!",
+"Kara Girdap": "Чёрный водоворот",
+"Kara Girdap!": "Чёрный водоворот!",
+"Girdap en güçlü iki düşmanı suya çeker": "Водоворот утягивает двух сильнейших врагов",
+"Girdap en güçlü iki düşmanı suya çeker!": "Водоворот утягивает двух сильнейших врагов!",
+"Lanet Taşı": "Камень проклятия",
+"Lanet Taşı!": "Камень проклятия!",
+"Yakındaki bütün düşmanlar lanetlenir": "Все ближайшие враги прокляты",
+"Yakındaki bütün düşmanlar lanetlenir!": "Все ближайшие враги прокляты!",
+"Yarasa Ağacı": "Дерево летучих мышей",
+"Yarasa Ağacı!": "Дерево летучих мышей!",
+"Yarasa sürüsü düşmanlara saldırır": "Стая летучих мышей атакует врагов",
+"Yarasa sürüsü düşmanlara saldırır!": "Стая летучих мышей атакует врагов!",
+"Veba Kuyusu": "Чумной колодец",
+"Veba Kuyusu!": "Чумной колодец!",
+"Kuyudan veba bulutu yükselir": "Из колодца поднимается чумное облако",
+"Kuyudan veba bulutu yükselir!": "Из колодца поднимается чумное облако!",
+"Batık Çan": "Затонувший колокол",
+"Batık Çan!": "Затонувший колокол!",
+"Çan çalar, yakındaki düşmanlar sersemler": "Звонит колокол, ближайшие враги оглушены",
+"Çan çalar, yakındaki düşmanlar sersemler!": "Звонит колокол, ближайшие враги оглушены!",
+"Kemik Totemi": "Костяной тотем",
+"Kemik Totemi!": "Костяной тотем!",
+"Totem patlar, kemik kıymıkları saçılır": "Тотем взрывается, разбрасывая осколки костей",
+"Totem patlar, kemik kıymıkları saçılır!": "Тотем взрывается, разбрасывая осколки костей!",
+"Kan Sunağı": "Кровавый алтарь",
+"Kan Sunağı!": "Кровавый алтарь!",
+"Düşmanların kanını emer, iskeletlerini iyileştirir": "Высасывает кровь врагов и лечит твоих скелетов",
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Высасывает кровь врагов и лечит твоих скелетов!"
 },
 "tpl": [
 [
@@ -220,6 +260,10 @@
 [
 "{}, seni mezardan çıkardığıma pişman ettirme!",
 "{}, не заставляй жалеть, что я поднял тебя из могилы!"
+],
+[
+"{}: dokun! {}",
+"{}: нажми! {}"
 ]
 ]
 }

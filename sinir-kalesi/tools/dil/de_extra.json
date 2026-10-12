@@ -142,7 +142,47 @@
 "Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Leichen an der Stelle erheben sich · große Feinde stärker",
 "Burada ceset yok!": "Hier keine Leichen!",
 "Güçlü ölü!": "Starker Toter!",
-"Kutsandı!": "Gesegnet!"
+"Kutsandı!": "Gesegnet!",
+"Kök Tuzağı": "Wurzelfalle",
+"Kök Tuzağı!": "Wurzelfalle!",
+"Kökler fışkırır, yakındaki düşmanları tutar": "Wurzeln brechen hervor und halten Feinde fest",
+"Kökler fışkırır, yakındaki düşmanları tutar!": "Wurzeln brechen hervor und halten Feinde fest!",
+"Bataklık Gazı": "Sumpfgas",
+"Bataklık Gazı!": "Sumpfgas!",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Giftgas explodiert, Feinde werden vergiftet und verlangsamt",
+"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Giftgas explodiert, Feinde werden vergiftet und verlangsamt!",
+"Açık Mezar": "Offenes Grab",
+"Açık Mezar!": "Offenes Grab!",
+"Mezardan iki ölü kalkar, senin için savaşır": "Zwei Tote steigen aus dem Grab und kämpfen für dich",
+"Mezardan iki ölü kalkar, senin için savaşır!": "Zwei Tote steigen aus dem Grab und kämpfen für dich!",
+"Kara Girdap": "Schwarzer Strudel",
+"Kara Girdap!": "Schwarzer Strudel!",
+"Girdap en güçlü iki düşmanı suya çeker": "Der Strudel zieht die zwei stärksten Feinde hinab",
+"Girdap en güçlü iki düşmanı suya çeker!": "Der Strudel zieht die zwei stärksten Feinde hinab!",
+"Lanet Taşı": "Fluchstein",
+"Lanet Taşı!": "Fluchstein!",
+"Yakındaki bütün düşmanlar lanetlenir": "Alle Feinde in der Nähe werden verflucht",
+"Yakındaki bütün düşmanlar lanetlenir!": "Alle Feinde in der Nähe werden verflucht!",
+"Yarasa Ağacı": "Fledermausbaum",
+"Yarasa Ağacı!": "Fledermausbaum!",
+"Yarasa sürüsü düşmanlara saldırır": "Ein Fledermausschwarm greift die Feinde an",
+"Yarasa sürüsü düşmanlara saldırır!": "Ein Fledermausschwarm greift die Feinde an!",
+"Veba Kuyusu": "Pestbrunnen",
+"Veba Kuyusu!": "Pestbrunnen!",
+"Kuyudan veba bulutu yükselir": "Eine Pestwolke steigt aus dem Brunnen",
+"Kuyudan veba bulutu yükselir!": "Eine Pestwolke steigt aus dem Brunnen!",
+"Batık Çan": "Versunkene Glocke",
+"Batık Çan!": "Versunkene Glocke!",
+"Çan çalar, yakındaki düşmanlar sersemler": "Die Glocke läutet, Feinde in der Nähe sind betäubt",
+"Çan çalar, yakındaki düşmanlar sersemler!": "Die Glocke läutet, Feinde in der Nähe sind betäubt!",
+"Kemik Totemi": "Knochentotem",
+"Kemik Totemi!": "Knochentotem!",
+"Totem patlar, kemik kıymıkları saçılır": "Das Totem platzt und verstreut Knochensplitter",
+"Totem patlar, kemik kıymıkları saçılır!": "Das Totem platzt und verstreut Knochensplitter!",
+"Kan Sunağı": "Blutaltar",
+"Kan Sunağı!": "Blutaltar!",
+"Düşmanların kanını emer, iskeletlerini iyileştirir": "Saugt das Blut der Feinde und heilt deine Skelette",
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Saugt das Blut der Feinde und heilt deine Skelette!"
 },
 "tpl": [
 [
@@ -220,6 +260,10 @@
 [
 "{}, seni mezardan çıkardığıma pişman ettirme!",
 "{}, lass mich nicht bereuen, dich aus dem Grab geholt zu haben!"
+],
+[
+"{}: dokun! {}",
+"{}: tippen! {}"
 ]
 ]
 }
