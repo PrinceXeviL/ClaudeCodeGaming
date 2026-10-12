@@ -28,7 +28,7 @@ const { chromium } = require('playwright');
   if (mi) { await tap(mi.x, mi.y); await tap(mi.x, mi.y); } else await p.evaluate(() => window.__game.build(0, 'archer'));
   s = await st(); console.log('kule inşa ->', s); check(s.towers === 1, 'kule kurulmadı');
   // dalga işareti: ilk dokunuş önizleme, ikinci dokunuş çağırır
-  const wb = await p.evaluate(() => { const G = window.__game.G, b = Object.values(G.waveBtn)[0]; return window.__game.toScreen(b.x, b.y); });
+  const wb = await p.evaluate(() => window.__game.waveBtn(+Object.keys(window.__game.G.waveBtn)[0] || 0)); // ekrana kenetlenmiş gerçek yer
   await tap(wb.x, wb.y); s = await st(); console.log('dalga önizleme ->', s); check(s.peek && s.wave === 0, 'önizleme açılmadı');
   await tap(wb.x, wb.y); s = await st(); console.log('dalga çağır ->', s); check(s.wave === 1, 'dalga çağrılmadı');
   // eşya çantası açılıp kapanır

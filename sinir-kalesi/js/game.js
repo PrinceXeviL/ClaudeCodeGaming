@@ -2281,7 +2281,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   e.hp -= amount * (1 - red);
   dmgNum(e, dealt, quiet);
   if (!quiet) knockback(e, dealt, src);
-  if (!quiet) { e.flash = 0.1; e.hitT = 0.18; if (e.hp > 0) painVoice(e); }
+  if (!quiet) { e.flash = 0.1; e.hitT = NO_KNOCK ? 0 : 0.18; if (e.hp > 0) painVoice(e); } // veba: geriye sarsılma yok
   e.hitAt = time;
   const PHS = e.phases || e.def.phases, PH = PHS && PHS[e.phase || 0]; // evre listesi ilk türden gelir (dönüşünce e.phases'te kalır)
   if (PH && e.hp <= e.maxHp * PH.at) { e.hp = e.maxHp * PH.at; bossPhase(e, PH); return; } // evreli boss ölmeden dönüşür
@@ -2829,7 +2829,9 @@ function buyHero(id) {
 // big: canın büyük kısmını götüren vuruş ya da patlama. Boss, kuşatma makinesi, uçan ve kapıdaki düşman itilmez.
 const KNOCK = { t: 0.2, hit: 0.22, blast: 0.06, launch: 0.3, g: 560, bounce: 0.32 };
 const pushable = (e) => !e.def.chief && !e.def.machine && !e.def.flying && e.siege === undefined && !e.under;
+let NO_KNOCK = false; // veba kazanı vuruşu: düşman geri itilmez, ceset savrulmaz (15 Eki, Caner)
 function knockback(e, dealt, src) {
+  if (NO_KNOCK) { e.lastBig = false; return; }
   const r = dealt / e.maxHp;
   e.lastBig = src === 'blast' || r > KNOCK.launch; // bu vuruşla ölürse ceset savrulur
   if (e.hp <= 0 || !pushable(e) || e.blocker || r < (src === 'blast' ? KNOCK.blast : KNOCK.hit)) return;
@@ -3560,6 +3562,7 @@ function updateEnemy(e, dt) {
     if (Math.random() < dt * 8) emit(G.parts, { kind: 'dot', x: e.x + rand(-5, 5), y: aimY(e) + rand(-4, 6), vy: rand(10, 30), g: 120, col: '#c0181a', s0: 1.6, s1: 0.6, life: 0.5 });
     if (e.dead) return;
   }
+  if (e.coatT > 0) e.coatT -= dt;
   if (e.poisonT > 0) {
     e.poisonT -= dt;
     damageEnemy(e, e.poisonDps * dt, 'true', true, e.poisonBy || 'arrow', 0, true);
@@ -4361,8 +4364,8 @@ function updateProjectile(pr, dt) {
       if (e.dead || e.def.flying) continue;
       const d = dist(e.x, e.y, pr.tx, pr.ty);
       if (d <= pr.splash) {
-        damageEnemy(e, pr.dmg * (1 - 0.4 * d / pr.splash) * (veba ? PLAGUE_HIT.hit : 1), 'phys', false, pr.src); e.rotT = 4; if (pr.stun && Math.random() < pr.stun) stunEnemy(e, 0.5);
-        if (veba && !e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); }
+        NO_KNOCK = veba; damageEnemy(e, pr.dmg * (1 - 0.4 * d / pr.splash) * (veba ? PLAGUE_HIT.hit : 1), 'phys', false, pr.src); NO_KNOCK = false; e.rotT = 4; if (pr.stun && Math.random() < pr.stun) stunEnemy(e, 0.5);
+        if (veba && !e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = PLAGUE_HIT.dotT; }
         if (pr.plague && !e.dead) { poisonEnemy(e, pr.plague, 4); e.plagueT = 4; e.plagueDps = pr.plague; } // kara veba
       }
     }
@@ -7295,7 +7298,7 @@ const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Cane
   poison: 1.2, pool: 3, down: 1 };
 // 15 Eki (Caner: kazan fazla güçlü): çarpma anında çok az alan hasarı (hit), sonra saniyede vuruşun dot kadarı zehir (dotT sn),
 // vurulanlar ve gazın içindekiler yavaşlar (slow oranı, slowT sn); gaz bulutunun hasarı gas ile çarpılır
-const PLAGUE_HIT = { hit: 0.18, dot: 0.12, dotT: 4, slow: 0.35, slowT: 2.5, gas: 0.5 };
+const PLAGUE_HIT = { hit: 0.14, dot: 0.09, dotT: 4, slow: 0.35, slowT: 2.5, gas: 0.35 }; // 15 Eki (2): hâlâ güçlüydü, bir kez daha kısıldı; düşman geri tepmez, üstü vebayla kaplanır (coat)
 const SPRAY_RATE = 1.6, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
 // Ceset Mancınığı (4. kademe): rate bekleme çarpanı, dmg cesedin çarpma hasarı çarpanı, max kule başına ayaktaki zombi, bodies fırlatılan cesetler
 const CORPSE = { rate: 1.6, dmg: 0.6, max: 6, bodies: ['enemy_legion', 'enemy_heavy', 'enemy_gladiator'] };
@@ -7322,17 +7325,29 @@ function raisePlagueZombie(pr) {
 const ARTI_SPEC = { corpse: { range: 1.2, dmg: 1 }, plague: { dmg: 1.05, gas: 1.6 } }; // 4. kademe değerleri (eski dönüşüm görsellerinden)
 const cauldronPt = (t, ts, q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h });
 // bomba düştü: alan hasarı, düşmanlar patlamadan uzağa savrulur (yakındakiler bir an yere düşer), yerde bulaşıcı zehir gölü kalır
+// veba kaplaması (15 Eki, Caner): vurulan düşmanın gövdesine yapışan yeşil veba lekeleri, ara ara damlar; zehir süresince solar
+function drawPlagueCoat(e, x, h, fly) {
+  const a = clamp(e.coatT / 1.2, 0, 1) * 0.85, r = seeded(Math.floor(e.off * 97 + 13));
+  ctx.save(); ctx.globalAlpha *= a;
+  for (let i = 0; i < 6; i++) {
+    const bx = x + (r() - 0.5) * h * 0.36, by = e.y - fly - h * (0.18 + r() * 0.62) + Math.sin(time * 2 + i) * 0.4, br = h * (0.05 + r() * 0.05);
+    ctx.fillStyle = 'rgba(40,90,20,0.7)'; ctx.beginPath(); ctx.ellipse(bx, by + br * 0.25, br * 1.1, br * 0.9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = i % 3 ? 'rgba(140,230,80,0.85)' : 'rgba(170,110,230,0.8)'; ctx.beginPath(); ctx.ellipse(bx, by, br, br * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(235,255,210,0.8)'; ctx.beginPath(); ctx.arc(bx - br * 0.35, by - br * 0.3, br * 0.25, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+  if (Math.random() < 0.06) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
+}
 function plagueBomb(pr) {
   for (const e of G.enemies) {
     if (e.dead || e.def.flying) continue;
     const d = dist(e.x, e.y, pr.tx, pr.ty); if (d > pr.splash) continue;
     const k = 1 - d / pr.splash;
-    damageEnemy(e, pr.dmg * (0.6 + 0.4 * k) * PLAGUE_HIT.hit, 'phys', false, pr.src); e.rotT = 4;
-    if (!e.dead) { poisonEnemy(e, Math.max(pr.gas * LOB.poison, pr.dmg * PLAGUE_HIT.dot), PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); }
+    NO_KNOCK = true; damageEnemy(e, pr.dmg * (0.6 + 0.4 * k) * PLAGUE_HIT.hit, 'phys', false, pr.src); NO_KNOCK = false; e.rotT = 4;
+    if (!e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = PLAGUE_HIT.dotT; }
     if (pr.plague && !e.dead) { poisonEnemy(e, pr.plague, 4); e.plagueT = 4; e.plagueDps = pr.plague; } // kara veba
   }
-  scatterFoes(pr.tx, pr.ty, pr.splash, LOB.down);
-  G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.gas * LOB.poison, t: 0, life: LOB.pool, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) });
+  G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: LOB.pool, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) });
   fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2);
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
   for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
@@ -7905,6 +7920,7 @@ function drawEnemy0(e) {
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else drawUnit(name, im, ux, e.y, e.face, uo);
+    if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);
     if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: yukarı uçuşan kıvılcım (13 Eki, Caner: ayaktaki yuvarlak ışıklar kalktı)
       if (Math.random() < 0.03) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-5, 5), y: e.y - rand(6, 20), vy: -rand(18, 34), col: '255,140,70', s0: 1.4, s1: 0.3, life: 0.6, a: 0.9 });
@@ -10392,7 +10408,7 @@ function waveButtonPos(pi) {
   const p = G.paths[pi];
   // HUD'a çarpmayan güvenli bölge (tam ekranda görünen kenarlara göre). Caner (10 Eki): düğme biraz daha geride, yolun ağzında dursun:
   // yolun ekran dışından gelen uzantısından başlar, kenara ve HUD'a değmeyen ilk noktaya oturur
-  const E = EDGE, m = 32, blocked = (x, y) => x < E.l + m || x > E.r - m || y < E.t + m || y > E.b - m ||
+  const E = EDGE, m = 24 * WAVE_BTN_K + 8, blocked = (x, y) => // kenar payı düğme boyuna göre x < E.l + m || x > E.r - m || y < E.t + m || y > E.b - m ||
     (x < E.l + 300 && y < E.t + 84) || (x > E.r - 190 && y < E.t + 80) || (x < E.l + 290 && y > E.b - 100);
   let d = -entryLead(p), q = pathPos(p, d);
   while (d < p.total - 40 && blocked(q.x, q.y)) { d += 3; q = pathPos(p, d); }
@@ -10444,9 +10460,10 @@ function wavePinIcon() {
 }
 function waveBtnScreen(pi) {
   const b = waveButtonPos(pi), q = worldToScreen(b.x, b.y);
-  return { x: clamp(q.x, EDGE.l + 30, EDGE.r - 30), y: clamp(q.y, EDGE.t + 30, EDGE.b - 30), dx: b.dx, dy: b.dy };
+  const m = 24 * WAVE_BTN_K + 6; // düğme ekrandan taşmasın
+  return { x: clamp(q.x, EDGE.l + m, EDGE.r - m), y: clamp(q.y, EDGE.t + m, EDGE.b - m), dx: b.dx, dy: b.dy };
 }
-const WAVE_BTN_K = 1.22; // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük)
+const WAVE_BTN_K = 1.59; // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük; 15 Eki: %30 daha)
 function drawWaveButtons() {
   const show = waveCallable();
   if (show && G.waveShowT == null) G.waveShowT = time;
@@ -13817,18 +13834,32 @@ function drawMapFog2(E, ep, road, bm) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 2.6, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400 };
-function mapCamClamp(bm) {
+const MAPCAM = { z: 2.6, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400, padX: 70, padY: 40 };
+// 15 Eki (Caner): yolun dışındaki boş alanlara gidilmez: sınır = yol, bölüm işaretleri ve şapelin kutusu + pay (ekranda MAPCAM.padX / üst-alt çubuk + padY)
+function mapRoadBox(E) {
+  if (E._box) return E._box;
+  const P = [E.start, E.end, ...E.nodes].filter(Boolean);
+  let x0 = Math.min(...P.map(p => p[0])), x1 = Math.max(...P.map(p => p[0])), y0 = Math.min(...P.map(p => p[1])), y1 = Math.max(...P.map(p => p[1]));
+  y0 = Math.min(y0, E.end[1] - 120); // şapel yolun ucundan yukarı uzanır
+  return (E._box = { x0, x1, y0, y1 });
+}
+function mapCamClamp(bm, E) {
   const z = MAPCAM.z;
-  MAPCAM.tx = clamp(MAPCAM.tx, VIS.r - (W + bm.x) * z, VIS.l + bm.x * z);
-  MAPCAM.ty = clamp(MAPCAM.ty, VIS.b - (H + bm.y) * z, VIS.t + bm.y * z);
+  let lx = VIS.r - (W + bm.x) * z, hx = VIS.l + bm.x * z, ly = VIS.b - (H + bm.y) * z, hy = VIS.t + bm.y * z; // zeminin taşma payı
+  if (E) {
+    const B = mapRoadBox(E), px = MAPCAM.padX, pt = MAPCAM.bar + MAPCAM.padY, pb = MAPCAM.bar + MAPCAM.padY;
+    lx = Math.max(lx, VIS.r - px - B.x1 * z); hx = Math.min(hx, VIS.l + px - B.x0 * z);
+    ly = Math.max(ly, VIS.b - pb - B.y1 * z); hy = Math.min(hy, VIS.t + pt - B.y0 * z);
+  }
+  MAPCAM.tx = lx > hx ? (lx + hx) / 2 : clamp(MAPCAM.tx, lx, hx); // yol ekrana sığıyorsa ortalanır
+  MAPCAM.ty = ly > hy ? (ly + hy) / 2 : clamp(MAPCAM.ty, ly, hy);
 }
 function mapCamFocus(E, ep, bm) {
   const ids = epLevels(ep); let k = ids.findIndex(i => levelUnlocked(i) && !(save.stars[i] > 0));
   if (k < 0) { k = 0; ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; }); }
   const n = E.nodes[Math.min(k, E.nodes.length - 1)], z = MAPCAM.z;
   const cx = (VIS.l + VIS.r) / 2, cy = (EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2;
-  MAPCAM.tx = cx - n[0] * z; MAPCAM.ty = cy - n[1] * z; MAPCAM.vx = MAPCAM.vy = 0; mapCamClamp(bm);
+  MAPCAM.tx = cx - n[0] * z; MAPCAM.ty = cy - n[1] * z; MAPCAM.vx = MAPCAM.vy = 0; mapCamClamp(bm, E);
 }
 const mapToScreen = (x, y) => [x * MAPCAM.z + MAPCAM.tx, y * MAPCAM.z + MAPCAM.ty];
 function drawRegionMap(E, ep, st) {
@@ -13940,7 +13971,7 @@ function drawMap() {
     if (!MAPCAM.drag && (Math.abs(MAPCAM.vx) > 2 || Math.abs(MAPCAM.vy) > 2)) { // bırakınca süzülür
       MAPCAM.tx += MAPCAM.vx * dtm; MAPCAM.ty += MAPCAM.vy * dtm; const f = Math.exp(-MAPCAM.fric * dtm); MAPCAM.vx *= f; MAPCAM.vy *= f;
     }
-    mapCamClamp(bm);
+    mapCamClamp(bm, E);
     ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
     drawRegionMap(E, mapEp, st);
     ctx.restore();
@@ -15896,7 +15927,8 @@ window.__game = {
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
+  goMap: () => { screen = 'map'; screenT = time; }, waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
+  goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)

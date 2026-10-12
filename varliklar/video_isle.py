@@ -83,7 +83,7 @@ def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, 
         ys, xs = np.nonzero(c[..., 3] > 128); boxes.append((ys.min(), ys.max(), xs.min(), xs.max()))
     y0 = min(b[0] for b in boxes); y1 = max(b[1] for b in boxes); x0 = min(b[2] for b in boxes); x1 = max(b[3] for b in boxes)
     hs = sorted(b[1] - b[0] for b in boxes); chH = hs[len(hs) // 2]
-    if first_h: chH = boxes[0][1] - boxes[0][0]  # ölüm: boy ilk (ayakta) kareden; yatan karelerle ölçek büyümesin
+    if first_h or name.endswith('_die'): chH = max(b[1] - b[0] for b in boxes[:4])  # ölüm: boy ayaktaki ilk karelerden; yatan karelerle ölçek büyümesin (15 Eki: _die şeritlerinde kendiliğinden)
     k = (UNIT_H if name.startswith(('enemy_', 'unit_')) else TARGET_H) / chH; pad = 6
     # kare ortası: başın (miğfer/sorguç) ortalama yatay yeri (sabit; mızrak uzansa da karakter kaymaz,
     # yürüyüş ve saldırı şeritleri aynı noktaya oturur)
