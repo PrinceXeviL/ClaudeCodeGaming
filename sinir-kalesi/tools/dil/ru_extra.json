@@ -182,7 +182,10 @@
 "Kan Sunağı": "Кровавый алтарь",
 "Kan Sunağı!": "Кровавый алтарь!",
 "Düşmanların kanını emer, iskeletlerini iyileştirir": "Высасывает кровь врагов и лечит твоих скелетов",
-"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Высасывает кровь врагов и лечит твоих скелетов!"
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Высасывает кровь врагов и лечит твоих скелетов!",
+"Oyunu birlikte geliştirelim": "Помоги улучшить игру",
+"Anonim oyun verisi": "Анонимные игровые данные",
+"Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "Можно отправлять анонимные данные, например какой уровень был трудным и какие башни ты строишь? Никто не узнает, кто ты; выключить можно в настройках."
 },
 "tpl": [
 [

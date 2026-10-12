@@ -271,7 +271,7 @@ if (NECRO && !save.lv20 && save.stars && save.stars.length) {
 }
 save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { vol: 1, shake: true, haptic: true, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
+const SETTINGS_DEF = { vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 function setSetting(k, v) {
@@ -675,6 +675,25 @@ function haptic(kind = 'light') {
     } else if (navigator.vibrate) navigator.vibrate({ light: 8, medium: 16, heavy: 30, success: [12, 40, 18], error: [30, 50, 30], warn: 20 }[kind] || 10);
   } catch (e) {}
 }
+// 15 Eki (Caner): ölçüm (GameAnalytics, ücretsiz). Hangi bölümde bırakılıyor, hangi kule kurulmuyor, hangi büyü kullanılıyor.
+// Anahtarlar GA_KEYS'e (GameAnalytics panelinden: Game key + Secret key). Boşsa hiçbir şey gönderilmez. Oyuncu ilk açılışta izin verir (setting 'stats').
+// Olaylar: ilerleme (bölüm başla/bitir/kaybet, puan = yıldız) ve tasarım olayları (kule:kur:okcu, buyu:nm_raise ...).
+const GA_KEYS = { game: '', secret: '' };
+let GA = null, GA_TRY = false;
+function gaInit() {
+  if (GA || GA_TRY || !GA_KEYS.game || !setting('stats')) return GA;
+  GA_TRY = true;
+  try { const A = window.gameanalytics && window.gameanalytics.GameAnalytics; if (!A) return null;
+    A.configureBuild('surum' + (window.SURUM || '0')); A.initialize(GA_KEYS.game, GA_KEYS.secret); GA = A; } catch (e) { GA = null; }
+  return GA;
+}
+const gaLvl = (i) => { const lv = LEVELS[i]; return lv ? ['sefer' + (lv.ep || 1), 'bolum' + String(epLevels(lv.ep || 1).indexOf(i) + 1).padStart(2, '0')] : ['sefer0', 'bolum00']; };
+function gaProg(st, i, score) { // st: 'Start' | 'Complete' | 'Fail'
+  const A = gaInit(); if (!A) return;
+  try { const E = window.gameanalytics.EGAProgressionStatus, [a, b] = gaLvl(i), c = (G && G.chal) || (G && G.diffKey) || 'normal';
+    if (score != null) A.addProgressionEvent(E[st], a, b, c, score); else A.addProgressionEvent(E[st], a, b, c); } catch (e) {}
+}
+function gaDesign(id, v) { const A = gaInit(); if (!A) return; try { if (v != null) A.addDesignEvent(id, v); else A.addDesignEvent(id); } catch (e) {} }
 function sfx(kind, rate) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
@@ -1673,6 +1692,7 @@ function startLevel(idx, chal = null) {
     if (!d.flying && !d.chief && !d.machine && !d.noraise) G.bakeQ.push('r:' + t); });
   setupMech();
   setupProps();
+  gaProg('Start', idx);
   setupHeralds();
   setupGate();
   G.tut = NECRO && idx === 0 && !save.tutDone ? { i: 0, t: 0, on: false } : null;
@@ -2913,7 +2933,7 @@ function buildTower(plot, type) {
   const cost = TOWERS[type].levels[0].cost;
   if (G.gold < cost) return false;
   if (TOWERS[type].unique && G.towers.some(o => o.type === type)) return false; // Lanet Kulesi haritada tek
-  G.gold -= cost;
+  G.gold -= cost; gaDesign('kule:kur:' + type);
   const t = { type, def: TOWERS[type], lvl: 0, x: plot.x, y: plot.y, cd: 0.3, spent: cost, plot, soldiers: [], anim: 0, shotAnim: 0, born: G.t };
   plot.tower = t;
   G.towers.push(t);
@@ -3092,7 +3112,7 @@ function upgradeTower(t) {
   if (t.lvl >= t.def.levels.length - 1) return false;
   const cost = t.def.levels[t.lvl + 1].cost;
   if (G.gold < cost) return false;
-  G.gold -= cost; t.spent += cost; t.lvl++; t.born = G.t;
+  G.gold -= cost; t.spent += cost; t.lvl++; t.born = G.t; gaDesign('kule:yukselt:' + t.type + ':' + (t.lvl + 1));
   if (t.type === 'barracks') applySoldierStats(t);
   G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 });
   floatText(t.x, t.y - 80, towerTitle(t), '#ffe27a');
@@ -4504,6 +4524,7 @@ function castSpell(id, x, y) {
   if (NECRO_SPELLS[id]) { const n = enemiesNear(x, y, NECRO_SPELLS[id].r || 90).length; if (castNecro(id, x, y) === false) return; gainSpellXp(id, n); }
   else { hitBy = 'hero'; const ok = castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; if (ok === false) return; } // yanlış yere: bekleme başlamaz
   if (G.stats) G.stats.spells++;
+  gaDesign('buyu:' + id);
   G.spells[id] = spellInfo(id).cd;
 }
 // ----- Mortimer'ın büyüleri -----
@@ -5450,7 +5471,7 @@ function setupZoneItem() {
 function tapZoneItem(x, y) {
   const o = G.zitem; if (!o || dist(x, y, o.x, o.y - 10) > 30) return false;
   if (o.cd > 0) { floatText(o.x, o.y - 40, Math.ceil(o.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
-  fireZoneItem(o); o.cd = o.cd0 = o.cdMax = ZONE_ITEM[G.lv.theme].cd; o.fireT = G.t; o.used++; tipDone('zitem');
+  fireZoneItem(o); o.cd = o.cd0 = o.cdMax = ZONE_ITEM[G.lv.theme].cd; o.fireT = G.t; o.used++; tipDone('zitem'); gaDesign('mekan:' + o.id);
   return true;
 }
 function fireZoneItem(o) {
@@ -6256,7 +6277,7 @@ function update(dt) {
 
   if (G.lives <= 0 && !overlay) {
     if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); }
-    heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd();
+    heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave);
   }
   if (G.gold >= 2000) achGive('hoard');
   if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0) {
@@ -6271,7 +6292,7 @@ function update(dt) {
     heroEndXp(true);
     persist();
     setOverlay('win');
-    sfx('win');
+    sfx('win'); gaProg('Complete', G.idx, G.stars);
     achLevelEnd(true); levelEndAd();
   }
 }
@@ -11503,7 +11524,7 @@ function drawCastleArchers() {
 function upgradeCastle() {
   const c = G.castle, N = CASTLE.levels[c.lvl + 1];
   if (!N || G.gold < N.cost) return false;
-  G.gold -= N.cost; c.lvl++;
+  G.gold -= N.cost; c.lvl++; gaDesign('kale:yukselt:' + c.lvl);
   G.effects.push({ kind: 'ring', x: c.x, y: c.y - 20, r: 50, col: '255,226,122', t: 0, dur: 0.5 });
   for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', add: true, x: c.x + rand(-40, 40), y: c.y - rand(10, 80), vy: -rand(20, 60), col: '255,220,120', s0: 3.5, s1: 0.5, life: 0.7 });
   floatText(c.x, c.y - 90, N.title + '!', '#ffe27a');
@@ -11790,6 +11811,7 @@ function settingsRows(x0, y0, w, st, inGame) {
     ['sound', 'Ses efektleri', 'slider', !muted && setting('sfx') ? setting('vol') : 0, vol('sfx', 'vol')],
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
     ['fast', 'Titreşim', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('haptic'), (v) => { setSetting('haptic', v); if (v) haptic('medium'); }],
+    ['map', 'Anonim oyun verisi', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('stats'), (v) => { setSetting('stats', v); save.statsAsked = 1; persist(); if (v) gaInit(); else if (GA) try { GA.setEnabledEventSubmission(false); } catch (e) {} }],
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTOMATİK'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
@@ -13759,8 +13781,21 @@ function drawTitle() {
     roundBtn('t_codex', W - 138, 38, 21, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
     roundBtn('t_ach', W - 188, 38, 21, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
+    if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
     return;
   }
+// anonim oyun verisi izni (15 Eki): ilk açılışta bir kez sorulur; ayarlardan değiştirilebilir
+function statsConsent() {
+  ctx.fillStyle = 'rgba(6,3,10,0.6)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  const w = 560, h = 210, x = W / 2 - w / 2, y = H / 2 - h / 2;
+  roundRect(x, y, w, h, 16, 'rgba(26,14,30,0.97)', '#c9a865', 2.5);
+  txt('Oyunu birlikte geliştirelim', W / 2, y + 34, 22, '#ffe7b0', 'center', '400', FONT_T);
+  wrapLines('Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.', w - 60, 15, '700', FONT_B, 3)
+    .forEach((l, i) => txt(l, W / 2, y + 70 + i * 21, 15, '#f2e6c8', 'center', '700', FONT_B, false));
+  const ok = (v) => { save.statsAsked = 1; setSetting('stats', v); persist(); if (v) gaInit(); };
+  gameButton('st_no', W / 2 - 120, y + h - 38, 200, 50, 'HAYIR', () => ok(false), 'wood', { size: 17 });
+  gameButton('st_yes', W / 2 + 120, y + h - 38, 200, 50, 'EVET', () => ok(true), 'green', { size: 17 });
+}
 
 // ----- bölüm seçimi: önizlemeli kartlar -----
 const DIFF = ['Kolay', 'Kolay', 'Kolay', 'Orta', 'Orta', 'Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Çok zor', 'Çok zor', 'Efsane'];

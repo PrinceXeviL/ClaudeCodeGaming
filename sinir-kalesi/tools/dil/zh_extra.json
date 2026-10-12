@@ -182,7 +182,10 @@
 "Kan Sunağı": "血之祭坛",
 "Kan Sunağı!": "血之祭坛!",
 "Düşmanların kanını emer, iskeletlerini iyileştirir": "吸取敌人鲜血，治疗你的骷髅",
-"Düşmanların kanını emer, iskeletlerini iyileştirir!": "吸取敌人鲜血，治疗你的骷髅!"
+"Düşmanların kanını emer, iskeletlerini iyileştirir!": "吸取敌人鲜血，治疗你的骷髅!",
+"Oyunu birlikte geliştirelim": "帮助我们改进游戏",
+"Anonim oyun verisi": "匿名游戏数据",
+"Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "我们可以发送匿名游戏数据吗？例如哪关较难、你建造了哪些塔。我们不会知道你是谁，你可以随时在设置中关闭。"
 },
 "tpl": [
 [
