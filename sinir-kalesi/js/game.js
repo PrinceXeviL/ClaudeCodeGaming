@@ -9482,7 +9482,48 @@ const tapPop = (key) => { pops[key] = time; };
 // Ekran geçişi: kısa bir kararma, ortasında ekran değişir
 let trans = null;
 // ekran geçişi (Caner, 11 Eki): hışırtı sesi, ekran kenarlardan ortaya doğru kararır (göz kapanır gibi), yeni ekran ortadan açılır
-const TRANS = { in: 0.3, out: 0.38 };
+const TRANS = { in: 0.42, out: 0.48, hold: 0.75 }; // 15 Eki: kapüşon biçimli iris; bölüm başlarken karanlıkta Mortimer belirir (hold)
+// Mortimer'ın kapüşon silueti (birim kutu: genişlik ~2, tepe -1, omuz 0,75): geçişte ekranı bu biçimli pencere kapatır
+function hoodPath(cx, cy, s) {
+  ctx.moveTo(cx, cy - s);
+  ctx.bezierCurveTo(cx + 0.38 * s, cy - 0.98 * s, cx + 0.64 * s, cy - 0.62 * s, cx + 0.63 * s, cy - 0.12 * s);
+  ctx.bezierCurveTo(cx + 0.62 * s, cy + 0.3 * s, cx + 0.78 * s, cy + 0.55 * s, cx + 1.02 * s, cy + 0.78 * s);
+  ctx.lineTo(cx - 1.02 * s, cy + 0.78 * s);
+  ctx.bezierCurveTo(cx - 0.78 * s, cy + 0.55 * s, cx - 0.62 * s, cy + 0.3 * s, cx - 0.63 * s, cy - 0.12 * s);
+  ctx.bezierCurveTo(cx - 0.64 * s, cy - 0.62 * s, cx - 0.38 * s, cy - 0.98 * s, cx, cy - s);
+  ctx.closePath();
+}
+function drawTrans() {
+  const T = trans, hold = T.hold || 0, t = T.t;
+  const a = clamp(t < TRANS.in ? t / TRANS.in : t < TRANS.in + hold ? 1 : 1 - (t - TRANS.in - hold) / TRANS.out, 0, 1), e = a * a * (3 - 2 * a);
+  const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2 + VIS.h * 0.06, S = Math.hypot(VIS.w, VIS.h) * 1.25 * Math.pow(1 - e, 1.35);
+  ctx.save();
+  ctx.fillStyle = '#06030a'; ctx.beginPath(); ctx.rect(VIS.l - 2, VIS.t - 2, VIS.w + 4, VIS.h + 4);
+  if (S > 0.5) hoodPath(cx, cy, S);
+  ctx.fill('evenodd');
+  if (S > 0.5 && e > 0.02) { // pencerenin kenarında mor-yeşil ruh ışığı
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineJoin = 'round';
+    ctx.beginPath(); hoodPath(cx, cy, S); ctx.strokeStyle = `rgba(170,90,255,${0.55 * e})`; ctx.lineWidth = 10; ctx.stroke();
+    ctx.beginPath(); hoodPath(cx, cy, S); ctx.strokeStyle = `rgba(130,255,150,${0.5 * e})`; ctx.lineWidth = 3; ctx.stroke();
+  }
+  ctx.restore();
+  if (hold && t > TRANS.in * 0.85 && t < TRANS.in + hold + TRANS.out * 0.6) { // bölüm başlıyor: karanlıkta Mortimer
+    const ht = t - TRANS.in * 0.85, pop = easeOutBack(clamp(ht / 0.3, 0, 1)), fade = clamp((TRANS.in + hold + TRANS.out * 0.6 - t) / 0.25, 0, 1);
+    const h = VIS.h * 0.5 * pop, my = cy + h * 0.45;
+    ctx.save(); ctx.globalAlpha = fade;
+    ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, cx, my - h * 0.5, h * 0.95, '150,70,255', 0.45 + Math.sin(time * 3) * 0.08);
+    glow(ctx, cx, my - h * 0.55, h * 0.55, '110,255,140', 0.22);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(190,140,255,0.7)'; ctx.lineWidth = 2; // dönen rün çemberi
+    for (let j = 0; j < 12; j++) { const a0 = time * 1.6 + j * Math.PI / 6; ctx.beginPath(); ctx.ellipse(cx, my, h * 0.62, h * 0.17, 0, a0, a0 + 0.3); ctx.stroke(); }
+    const B = mortStrip('mortimer_bekle'), im = spr('mortimer');
+    ctx.translate(cx, my);
+    if (B) { const F = ANIM_META[B]; ctx.translate(-(0.617 - 0.5) * F.fw * h / (F.ch * F.fh), 0); drawFrame(spr(B), F, Math.floor(time * 10) % F.n, h); }
+    else if (im) drawSprite(ctx, im, 0, 0, h * im.width / im.height);
+    ctx.restore();
+  }
+}
 function go(fn) {
   if (trans) return;
   trans = { t: 0, fn, fired: false };
@@ -9597,10 +9638,39 @@ function gameButton(key, x, y, w, h, label, fn, style = 'gold', o = {}) {
   if (fn && o.reg !== false) buttons.push({ key, x: x - w / 2, y: y - h / 2, w, h: h + lip, fn });
 }
 
+// 15 Eki (Caner: yuvarlak değil, köşeleri yumuşak kare, renkli arka planlı simgeler; rakip mobil oyunlardaki kabarık düğmeler):
+// koyu kontur, alt dudak (derinlik), renkli gradyan gövde, kemik rengi iç çerçeve ve köşelerde kemik perçin, üstte parlama.
+// TILE: [üst, alt, dudak] renkleri; simge hafif gölgeli fildişi
+const TILE = {
+  red: ['#d8464f', '#7a1424', '#4a0814'], violet: ['#7a6c9c', '#3a2f52', '#211a30'], green: ['#4fae6a', '#1d5c34', '#0f3620'],
+  purple: ['#a866e6', '#4c1f86', '#2c0f52'], ember: ['#e57a3c', '#8a2a12', '#561608'], gold: ['#f4c050', '#9a5a10', '#5e3406'], blue: ['#5a8ee0', '#1f3a7a', '#12224a'],
+};
+function tileBtn(key, x, y, r, icon, fn, o, appear) {
+  const C = TILE[o.tile] || TILE.violet, rad = r * 0.44;
+  ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
+  if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
+  roundRect(-r - 1, -r + 6, 2 * r + 2, 2 * r + 2, rad + 1, 'rgba(0,0,0,0.42)'); // gölge
+  roundRect(-r - 3, -r - 3, 2 * r + 6, 2 * r + 9, rad + 3, '#120712'); // kontur
+  roundRect(-r, -r + 4, 2 * r, 2 * r, rad, C[2]); // dudak
+  const g = ctx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, C[0]); g.addColorStop(1, C[1]);
+  roundRect(-r, -r, 2 * r, 2 * r - 1, rad, g);
+  ctx.save(); ctx.beginPath(); ctx.roundRect(-r, -r, 2 * r, 2 * r - 1, rad); ctx.clip(); // parlama ve alt koyuluk
+  const gl = ctx.createLinearGradient(0, -r, 0, 0); gl.addColorStop(0, 'rgba(255,255,255,0.32)'); gl.addColorStop(1, 'rgba(255,255,255,0.02)');
+  ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(0, -r * 0.62, r * 1.05, r * 0.52, 0, 0, Math.PI * 2); ctx.fill();
+  const rg = ctx.createRadialGradient(0, r * 0.2, r * 0.2, 0, r * 0.2, r * 1.3); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(10,0,20,0.35)');
+  ctx.fillStyle = rg; ctx.fillRect(-r, -r, 2 * r, 2 * r); ctx.restore();
+  roundRect(-r + 2.5, -r + 2.5, 2 * r - 5, 2 * r - 6, rad - 2, null, 'rgba(242,230,200,0.6)', 1.6); // kemik iç çerçeve
+  for (const [cx, cy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) circle(cx * (r - 5.5), cy * (r - 6) - (cy > 0 ? 0.5 : 0), 1.7, '#efe3c4', '#2a1626', 0.8); // kemik perçinler
+  ctx.shadowColor = 'rgba(10,0,16,0.7)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
+  if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.05, '#f6ecd4');
+  ctx.restore();
+  if (fn) buttons.push({ key, x: x - r - 6, y: y - r - 6, w: 2 * r + 12, h: 2 * r + 14, fn });
+}
 // yuvarlak 3B buton; fn yoksa (oyun içi HUD) dokunma hudTap'te ayrıca yakalanır
 function roundBtn(key, x, y, r, icon, fn, o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
   if (appear <= 0.01) return;
+  if (NECRO && (o.tile || (key === 'back' && icon === 'back'))) { tileBtn(key, x, y, r * 0.92, icon, fn, o.tile ? o : Object.assign({ tile: 'red' }, o), appear); return; } // geri düğmeleri de kare
   const c = STYLES[o.style || 'wood'];
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
@@ -13398,10 +13468,10 @@ function drawNecroTitle(st) {
 function drawTitle() {
     const st = time - screenT;
     drawNecroTitle(st);
-    roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7 });
-    roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75 });
-    roundBtn('t_codex', W - 138, 38, 21, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8 });
-    roundBtn('t_ach', W - 188, 38, 21, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85 });
+    roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7, tile: 'blue' });
+    roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
+    roundBtn('t_codex', W - 138, 38, 21, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
+    roundBtn('t_ach', W - 188, 38, 21, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
     return;
   }
@@ -13707,6 +13777,22 @@ function drawMapFog2(E, ep, road, bm) {
   }
   return { vis, g };
 }
+// 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
+// üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
+const MAPCAM = { z: 1.35, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400 };
+function mapCamClamp(bm) {
+  const z = MAPCAM.z;
+  MAPCAM.tx = clamp(MAPCAM.tx, VIS.r - (W + bm.x) * z, VIS.l + bm.x * z);
+  MAPCAM.ty = clamp(MAPCAM.ty, VIS.b - (H + bm.y) * z, VIS.t + bm.y * z);
+}
+function mapCamFocus(E, ep, bm) {
+  const ids = epLevels(ep); let k = ids.findIndex(i => levelUnlocked(i) && !(save.stars[i] > 0));
+  if (k < 0) { k = 0; ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; }); }
+  const n = E.nodes[Math.min(k, E.nodes.length - 1)], z = MAPCAM.z;
+  const cx = (VIS.l + VIS.r) / 2, cy = (EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2;
+  MAPCAM.tx = cx - n[0] * z; MAPCAM.ty = cy - n[1] * z; MAPCAM.vx = MAPCAM.vy = 0; mapCamClamp(bm);
+}
+const mapToScreen = (x, y) => [x * MAPCAM.z + MAPCAM.tx, y * MAPCAM.z + MAPCAM.ty];
 function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
   ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
@@ -13809,7 +13895,18 @@ function drawMap() {
   ensureMapEp();
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);
   const st = time - screenT;
-  if (E.zones) drawRegionMap(E, mapEp, st);
+  if (E.zones) {
+    const bm = regionBg(mapEp).m || { x: 0, y: 0 }, key = mapEp + ':' + screenT;
+    if (MAPCAM.key !== key) { MAPCAM.key = key; mapCamFocus(E, mapEp, bm); }
+    const dtm = Math.min(0.05, time - (MAPCAM.last || time)); MAPCAM.last = time;
+    if (!MAPCAM.drag && (Math.abs(MAPCAM.vx) > 2 || Math.abs(MAPCAM.vy) > 2)) { // bırakınca süzülür
+      MAPCAM.tx += MAPCAM.vx * dtm; MAPCAM.ty += MAPCAM.vy * dtm; const f = Math.exp(-MAPCAM.fric * dtm); MAPCAM.vx *= f; MAPCAM.vy *= f;
+    }
+    mapCamClamp(bm);
+    ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
+    drawRegionMap(E, mapEp, st);
+    ctx.restore();
+  }
   else { const bg = spr(E.bg) || spr('title_bg'); if (bg) coverImage(bg, 1); else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); } }
   // üstte başlık için koyu bant, kenarlarda hafif vinyet
   let g = ctx.createLinearGradient(0, 0, 0, 110); g.addColorStop(0, 'rgba(24,12,4,0.55)'); g.addColorStop(1, 'rgba(24,12,4,0)');
@@ -13822,7 +13919,8 @@ function drawMap() {
   ids.forEach((i, k) => { // sis perdesi: yalnız görünen işaretler; açılmakta olanlar sis çekilince belirir
     if (FG) { if (k >= FG.vis) return; const gk = FG.g(k); if (gk < 0.35) return;
       const rv = MAPFX.rev, at = rv && k >= rv.from ? (time - rv.t0 - FOG2.delay - (k - rv.from) * FOG2.gap - 0.35) : st - 0.15 - k * 0.05;
-      drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, at, fogTest() ? k > 0 : !levelUnlocked(i)); return; }
+      const [sx, sy] = mapToScreen(nodes[k][0], nodes[k][1]);
+      drawMapNode(i, sx, sy, k + 1, k === ids.length - 1, at, fogTest() ? k > 0 : !levelUnlocked(i)); return; }
     drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05);
   });
   if (MAPFX.banner && time - MAPFX.banner.t0 < 3.2) { // yeni bölge kurdelesi
@@ -13851,9 +13949,9 @@ function drawMap() {
   txt(`${total} / ${LEVELS.length * 4}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
   ctx.restore();
   const bx = (i) => px - 14 - RB - i * RS;
-  roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15 });
-  roundBtn('codex', bx(1), TY, RB, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2 });
-  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25 });
+  roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15, tile: 'violet' });
+  roundBtn('codex', bx(1), TY, RB, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2, tile: 'green' });
+  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25, tile: 'purple' });
   { // günün sınavı: takvim düğmesi, bugün yapılmadıysa parlar
     const done = save.daily && save.daily.key === todayKey() && save.daily.done, k = RB / 19;
     if (!done) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx(3), TY, 34, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1); ctx.restore(); }
@@ -13863,9 +13961,9 @@ function drawMap() {
       txt(new Date().getDate() + '', 0, 3.5, 9, '#2a1608', 'center', '400', FONT_T, false);
       if (done) { ctx.strokeStyle = '#3cbf3c'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-5, 2); ctx.lineTo(-1, 6); ctx.lineTo(7, -4); ctx.stroke(); }
       ctx.restore();
-    }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3 });
+    }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3, tile: 'ember' });
   }
-  roundBtn('shop', bx(4), TY, RB, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35 });
+  roundBtn('shop', bx(4), TY, RB, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35, tile: 'gold' });
   { const cc = save.crystal || 0; if (cc) { const qx = bx(4) + 2, qy = TY + 24; roundRect(qx - 26, qy - 11, 52, 22, 11, 'rgba(40,16,50,0.95)', '#e0b8ff', 1.5); drawCrystal(qx - 13, qy, 8); txt(cc + '', qx + 9, qy + 0.5, 13, '#fff', 'center', '400', FONT_T); } }
   if (save.achNew) { circle(bx(2) + 18, TY - 18, 9, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', bx(2) + 18, TY - 17.5, 11, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const cx = bx(1) + 18, cy = TY - 18 + Math.sin(time * 5) * 1.5; circle(cx, cy, 9, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', cx, cy + 0.5, 10.5, '#fff', 'center', '400', FONT_T); }
@@ -15298,6 +15396,7 @@ canvas.addEventListener('pointerdown', (ev) => {
     return;
   }
   swipe = screen === 'map' ? { x: p.x, y: p.y } : null;
+  if (screen === 'map') { MAPCAM.vx = MAPCAM.vy = 0; MAPCAM.mt = performance.now(); } // dokununca süzülme durur
   const sa = scrollAreas.find(a => a.max > 0 && p.x >= a.x && p.x <= a.x + a.w && p.y >= a.y && p.y <= a.y + a.h);
   if (sa) ptr.scroll = { key: sa.key, start: SCROLL[sa.key] || 0, max: sa.max };
   for (let i = buttons.length - 1; i >= 0; i--) {
@@ -15332,6 +15431,13 @@ canvas.addEventListener('pointermove', (ev) => {
     return;
   }
   if (!ptr.moved && dist(p.x, p.y, ptr.sx, ptr.sy) > DRAG_PX) ptr.moved = true;
+  if (screen === 'map' && ptr.moved && mapSel == null && !trans && !slide && !ptr.scroll && EPISODES[mapEp - 1].zones) { // haritayı kaydır (basılan düğme iptal)
+    if (press.id === ev.pointerId) { press.key = null; press.b = null; }
+    const now = performance.now(), dts = Math.max(0.008, (now - (MAPCAM.mt || now - 16)) / 1000); MAPCAM.mt = now;
+    MAPCAM.tx += dx; MAPCAM.ty += dy; MAPCAM.drag = true;
+    MAPCAM.vx = clamp(MAPCAM.vx * 0.5 + 0.5 * dx / dts, -MAPCAM.vmax, MAPCAM.vmax); MAPCAM.vy = clamp(MAPCAM.vy * 0.5 + 0.5 * dy / dts, -MAPCAM.vmax, MAPCAM.vmax);
+    return;
+  }
   if (ptr.scroll && ptr.moved) { // liste kaydırma: basılan düğme iptal
     SCROLL[ptr.scroll.key] = clamp(ptr.scroll.start - (p.y - ptr.sy), 0, ptr.scroll.max);
     if (press.id === ev.pointerId) { press.key = null; press.b = null; }
@@ -15371,10 +15477,11 @@ window.addEventListener('keydown', (ev) => {
 // buton işlevi parmak kalkınca çalışır; parmak butondan kayıp gittiyse iptal olur
 function release(ev, cancel) {
   if (slide && slide.id === ev.pointerId) { slide = null; sfx('click'); }
+  if (MAPCAM.drag) { MAPCAM.drag = false; if (performance.now() - (MAPCAM.mt || 0) > 90) MAPCAM.vx = MAPCAM.vy = 0; } // durup bırakınca süzülmez
   if (swipe && !cancel && screen === 'map') {
     const p = toLogical(ev), dx = p.x - swipe.x;
     swipe = null;
-    if (Math.abs(dx) > 70 && mapSel == null) {
+    if (Math.abs(dx) > 70 && mapSel == null && !EPISODES[mapEp - 1].zones) { // bölge haritasında kaydırma haritayı gezdirir (sefer: üstteki sekmeler)
       // haritada yana kaydırma: önceki / sonraki sefer (açıksa)
       const ne = clamp((mapEp || 1) - Math.sign(dx), 1, EPISODES.length);
       if (ne !== mapEp && epUnlocked(ne)) { mapEp = ne; screenT = time; sfx('pick'); }
@@ -15604,8 +15711,8 @@ function frame(now) {
   updateMusic(real);
   if (trans) {
     trans.t += real;
-    if (!trans.fired && trans.t >= TRANS.in) { trans.fired = true; uiParts = []; trans.fn(); screenT = time; }
-    if (trans.t >= TRANS.in + TRANS.out) trans = null;
+    if (!trans.fired && trans.t >= TRANS.in) { const was = screen; trans.fired = true; uiParts = []; trans.fn(); screenT = time; if (NECRO && screen === 'play' && (was !== 'play' || G)) trans.hold = TRANS.hold; } // bölüm başlıyor: Mortimer görünür
+    if (trans && trans.t >= TRANS.in + (trans.hold || 0) + TRANS.out) trans = null;
   }
   uiParts = updateParts(uiParts, real);
   // çizim
@@ -15629,13 +15736,7 @@ function frame(now) {
   drawPartsAll(uiParts);
   drawAchToast();
   drawAd();
-  if (trans) {
-    const a = clamp(trans.t < TRANS.in ? trans.t / TRANS.in : 1 - (trans.t - TRANS.in) / TRANS.out, 0, 1), e = a * a * (3 - 2 * a);
-    const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2, R = Math.hypot(VIS.w, VIS.h) / 2 * 1.15 * (1 - e);
-    if (e > 0.995) ctx.fillStyle = '#06030a';
-    else { const g = ctx.createRadialGradient(cx, cy, Math.max(0, R - 120), cx, cy, R + 1); g.addColorStop(0, `rgba(6,3,10,${0.25 * e})`); g.addColorStop(1, 'rgba(6,3,10,1)'); ctx.fillStyle = g; }
-    ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
-  }
+  if (trans) drawTrans();
   ctx.restore();
   if (view.ch > view.cw * 1.1) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -15757,7 +15858,8 @@ window.__game = {
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
+  goMap: () => { screen = 'map'; screenT = time; }, goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
     const D = [], { dpr, scale, ox, oy } = view;
