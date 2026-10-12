@@ -719,9 +719,9 @@ Object.assign(HEROES, {
     ] }] },
 });
 // 15 Eki (Caner: "Merlin ölüm büyücüsünü yapalım, çok ihtişamlı"): Mortimer'a düelloda yenilen efsanevi büyücü; menzilli büyü ve kalabalık kontrolü.
-// Görseli (hero_merlin) gelene kadar seçim listesinde yok (HERO_ORDER'a görsel gelince eklenir, bkz. game.js heroArtOk).
-HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü', sprite: 'hero_merlin', h: 35, aura: '160,110,255', cost: 45,
-  hp: 210, dmg: [18, 26], armor: 0, rate: 1.3, speed: 70, respawn: 18, regen: 8, engage: 0, ranged: 185, proj: 'fireball', soul: true, splash: 22, magic: true,
+// Görsel: varliklar/ham/nm_merlin.jpg (boynuz taçlı lich; h boynuz ve alevle birlikte, ihtişam için öbür komutanlardan uzun).
+HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü', sprite: 'hero_merlin', h: 40, aura: '160,110,255', cost: 45,
+  hp: 210, dmg: [18, 26], armor: 0, rate: 1.3, speed: 70, respawn: 18, regen: 8, engage: 0, ranged: 185, proj: 'fireball', soul: true, float: true, splash: 22, magic: true,
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
     { id: 'chainbolt', name: 'Ruh Yıldırımı', cd: 9, desc: 'Yeşil yıldırım 5 düşman arasında sıçrar (uçanlar dahil), zırhı deler' },
     { id: 'mist', name: 'Mezar Sisi', cd: 14, desc: 'Kalabalığın üstüne mor sis çöker: 4 sn %45 yavaşlatır, çürütür' },
@@ -735,7 +735,7 @@ Object.assign(HERO_ULT, {
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas'); // merlin: hero_merlin görseli gelince eklenir
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin');
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
   desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
   short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });

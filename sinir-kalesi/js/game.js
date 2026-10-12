@@ -8570,10 +8570,13 @@ function drawSoldier(s) {
       return;
     }
     drawUnit(key, im, s.x, s.y, s.face, { logId: s.logId,
-      h: ch, rig: name, pad, glow: glowIm, phase: s.anim * walkRate(name, null, s.speed * G.wspd, ch), walking, fly: 0,
+      h: ch, rig: name, pad, glow: glowIm, phase: s.anim * walkRate(name, null, s.speed * G.wspd, ch), walking: walking && !(s.def && s.def.float), // süzülen komutan adım atmaz
+      fly: s.def && s.def.float ? 3 + Math.sin(time * 2.2 + (s.slot || 0)) * 2 : 0,
       atk: fighting || s.shooting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7,
       buff: s.buffT, spin: s.spinT, cast: s.castT, aura: s.hero ? s.def.aura : null,
     });
+    if (s.def && s.def.float && Math.random() < (walking ? 0.5 : 0.18)) // Merlin: eteğinden mor-yeşil sis dökülür (yürürken iz bırakır)
+      emit(G.parts, { kind: 'glow', x: s.x + rand(-6, 6), y: s.y - rand(0, 4), vx: rand(-6, 6) - (walking ? (s.face || 1) * 10 : 0), vy: -rand(2, 8), col: Math.random() < 0.6 ? '150,90,230' : '110,220,140', s0: rand(3, 5), s1: rand(7, 10), life: rand(0.6, 0.9), a: 0.35 });
     if (s.hero) {
       hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
       return;
@@ -11030,9 +11033,13 @@ function drawWavePeek() {
 
 // portre kadrajı: görselin tepesinden (kafa) kare bir parça; kafa bandındaki piksellerin ortasına ortalanır (bir kez hesaplanır)
 const HEAD_CROP = new Map();
-function headCrop(im) {
+// elle yüz kırpması (görsel kesri: yüz ortası x, y ve kare boyu / boy): tepesinde boynuz, alev ya da asa olan komutanlarda otomatik kırpma yüzü kaçırır
+const HEAD_FIX = { hero_merlin: [0.55, 0.31, 0.34] };
+function headCrop(im, key) {
   if (HEAD_CROP.has(im)) return HEAD_CROP.get(im);
   let c = null;
+  const F = key && HEAD_FIX[key];
+  if (F) { const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, sz = F[2] * H; c = { x: F[0] * W - sz / 2, y: F[1] * H - sz / 2, s: sz }; HEAD_CROP.set(im, c); return c; }
   try {
     const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, k = Math.min(1, 200 / H);
     const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(W * k)); cv.height = Math.max(1, Math.round(H * k));
@@ -11062,7 +11069,7 @@ function drawHeroPortrait(h, hb, i) {
   ctx.save(); ctx.beginPath(); ctx.arc(0, 0, hb.r - 1, 0, Math.PI * 2); ctx.clip();
   ctx.globalAlpha = h.dead ? 0.35 : 1;
   const im = heroSprite(h.def);
-  if (im) { const c = headCrop(im); if (c) ctx.drawImage(im, c.x, c.y, c.s, c.s, -hb.r, -hb.r, hb.r * 2, hb.r * 2); else { const ph = hb.r * 3.6; drawSprite(ctx, im, 3, hb.r * 2.35, ph * im.width / im.height); } }
+  if (im) { const c = headCrop(im, h.def.sprite); if (c) ctx.drawImage(im, c.x, c.y, c.s, c.s, -hb.r, -hb.r, hb.r * 2, hb.r * 2); else { const ph = hb.r * 3.6; drawSprite(ctx, im, 3, hb.r * 2.35, ph * im.width / im.height); } }
   ctx.restore();
   if (h.dead) { circle(0, 0, hb.r, 'rgba(0,0,0,0.45)'); txt(Math.ceil(h.respawnT) + '', 0, 1, 20, '#fff', 'center', '400', FONT_T); }
   // alt plaka: solda seviye kutusu, sağda can barı. Portrenin ÜSTÜNE çizilir (11 Eki: çerçevenin altında kalıyordu), alt kenara yaslı
@@ -11292,7 +11299,7 @@ function drawHud() {
       roundRect(qx - w0 / 2, qy - 10, w0, 20, 10, nS ? '#b8202a' : '#4a1a6a', '#f2e6c8', 1.5); txt(nC + '', qx, qy + 1, 13, '#fff', 'center', '400', FONT_T);
     }
     if (info.hero) { // köşede komutanın küçük yüzü: kimin gücü olduğu belli olsun
-      const hh = info.hero, im = heroSprite(hh.def), c = im && headCrop(im), rr = b.r * 0.36, qx = b.r * 0.74, qy = -b.r * 0.74;
+      const hh = info.hero, im = heroSprite(hh.def), c = im && headCrop(im, hh.def.sprite), rr = b.r * 0.36, qx = b.r * 0.74, qy = -b.r * 0.74;
       circle(qx, qy, rr + 2, '#4a2c08', '#0a0612', 1.5);
       if (c) { ctx.save(); ctx.beginPath(); ctx.arc(qx, qy, rr, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(im, c.x, c.y, c.s, c.s, qx - rr, qy - rr, rr * 2, rr * 2); ctx.restore(); }
     }
