@@ -718,13 +718,24 @@ Object.assign(HEROES, {
       { id: 'iron', name: 'Bronz Kalkan', passive: true, desc: 'Kalıcı: +%25 zırh ve iki kat can yenilenmesi' },
     ] }] },
 });
+// 15 Eki (Caner: "Merlin ölüm büyücüsünü yapalım, çok ihtişamlı"): Mortimer'a düelloda yenilen efsanevi büyücü; menzilli büyü ve kalabalık kontrolü.
+// Görseli (hero_merlin) gelene kadar seçim listesinde yok (HERO_ORDER'a görsel gelince eklenir, bkz. game.js heroArtOk).
+HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü', sprite: 'hero_merlin', h: 35, aura: '160,110,255', cost: 45,
+  hp: 210, dmg: [18, 26], armor: 0, rate: 1.3, speed: 70, respawn: 18, regen: 8, engage: 0, ranged: 185, proj: 'fireball', soul: true, splash: 22, magic: true,
+  paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
+    { id: 'chainbolt', name: 'Ruh Yıldırımı', cd: 9, desc: 'Yeşil yıldırım 5 düşman arasında sıçrar (uçanlar dahil), zırhı deler' },
+    { id: 'mist', name: 'Mezar Sisi', cd: 14, desc: 'Kalabalığın üstüne mor sis çöker: 4 sn %45 yavaşlatır, çürütür' },
+    { id: 'arcane', name: 'Kadim Bilgi', passive: true, desc: 'Kalıcı: +%20 menzil; her 4. ruh küresi üçe bölünür' },
+  ] }] };
 Object.assign(HERO_ULT, {
+  merlin: { name: 'Zaman Kapısı', cd: 65, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
+    desc: 'Seçtiğin alanda zaman kapısı açılır: düşmanlar yolun gerisine fırlatılır, hasar alır, 1 sn sersemler (boss yarı yol)', short: 'Alandaki düşmanları yolda geri ışınlar' },
   spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
     desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas');
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas'); // merlin: hero_merlin görseli gelince eklenir
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
   desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
   short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });

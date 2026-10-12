@@ -1815,7 +1815,7 @@ function heroStats(h) {
   h.regen = d.regen * HERO_HP * (ir ? 1.4 + 0.2 * ir : 1);
   h.rate = d.rate * (L.shadow ? 0.75 : 1);
   h.crit = L.shadow ? 0.2 : L.eagle ? 0.25 : 0;
-  h.ranged = (d.ranged || 0) * (L.eagle ? 1.2 : 1);
+  h.ranged = (d.ranged || 0) * (L.eagle || L.arcane ? 1.2 : 1); // arcane: Merlin'in Kadim Bilgisi
   h.dodge = L.dodge ? 0.35 : 0;
 }
 function heroPoints(h) { return recPoints(heroRec(h.id)); }
@@ -4291,6 +4291,25 @@ function useSkill(h, id) {
       fireHeroShot(h, c.e, 2.2, { splash: 60, big: true, dtype: 'phys' });
       return true;
     }
+    case 'chainbolt': { // Merlin: yeşil ruh yıldırımı en öndekinden başlar, 80 px içindeki vurulmamış düşmana sıçrar (5 düşman, her sıçrayış %80)
+      let e = null, br = 1e9; for (const o of G.enemies) if (!o.dead && !o.under && dist(h.x, h.y - 10, o.x, o.y) <= R && o.p.total - o.d < br) { br = o.p.total - o.d; e = o; }
+      if (!e) return false;
+      const pts = [[h.x + h.face * 6, h.y - h.def.h * UNIT_K * 0.75]], hit = new Set(); let d0 = 28 + 7 * L;
+      for (let i = 0; i < 5 && e; i++) {
+        hit.add(e); pts.push([e.x, aimY(e)]); damageEnemy(e, d0, 'magic'); fxMagicHit(e.x, aimY(e)); d0 *= 0.8;
+        let nx = null, nd = 80; for (const o of G.enemies) if (!o.dead && !o.under && !hit.has(o)) { const dd = dist(o.x, o.y, e.x, e.y); if (dd < nd) { nd = dd; nx = o; } }
+        e = nx;
+      }
+      G.effects.push({ kind: 'bolt', pts, col: 'soul', t: 0, dur: 0.35 }); sfx('magic'); shakeScreen(1.5, 0.12);
+      return true;
+    }
+    case 'mist': { // Merlin: en kalabalık yere mor-yeşil mezar sisi
+      const c = densest(h.x, h.y, R + 20, 60);
+      if (!c || c.n < 3) return false;
+      G.zones.push({ x: c.e.x, y: c.e.y, r: 62, dps: 6 + 2 * L, dtype: 'magic', t: 0, life: 4, fxT: 0, kind: 'mist', slowK: 0.45 });
+      G.effects.push({ kind: 'ring', x: c.e.x, y: c.e.y, r: 62, col: '170,110,255', t: 0, dur: 0.5 }); sfx('magic');
+      return true;
+    }
     case 'multishot': {
       const ts = enemiesNear(h.x, h.y, R, true).slice(0, 4);
       if (ts.length < 2) return false;
@@ -4310,9 +4329,12 @@ function fireHeroShot(h, e, mult = 1, extra) {
     splash: h.def.splash ? h.def.splash * (h.learned.fireaim ? 1.6 : 1) : 0, burn: !!h.learned.fireaim,
     dmg: roll(h.dmg) * mult * (crit ? 2 : 1) / (HERO_SKILL ? HERO_POWER : 1), dtype: h.def.magic ? 'magic' : 'phys', arc: h.def.proj === 'dagger' ? 10 : 16, crit,
     poison: h.learned.venom ? 4 + h.lvl * 1.5 : 0, inferno: h.learned.inferno ? 34 : 0 };
+  if (h.def.soul) p.soul = true; // Merlin: yeşil-mor ruh küresi
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
   sfx(h.def.proj === 'fireball' ? 'magic' : 'arrow');
+  if (h.learned.arcane && !extra && !HERO_SKILL && (h.shotN = (h.shotN || 0) + 1) % 4 === 0) // Kadim Bilgi: her 4. küre yakındaki iki düşmana daha bölünür
+    for (const o of enemiesNear(e.x, e.y, 90, true).filter(o => o !== e).slice(0, 2)) fireHeroShot(h, o, 0.6, { split: true });
 }
 
 // tuzak: üstüne basan ilk yer düşmanı hasar alır ve sersemler
@@ -4423,7 +4445,8 @@ function updateProjectile(pr, dt) {
         pr.fxT = 1;
       } else if (pr.kind === 'fireball') {
         pr.fxT = 0.016;
-        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-2, 2), y: q.y + rand(-2, 2), vx: rand(-12, 12), vy: rand(-20, 0), col: Math.random() < 0.5 ? '255,130,40' : '255,210,90', s0: rand(5, 8), s1: 1, life: rand(0.25, 0.4) });
+        const sc = pr.soul ? (Math.random() < 0.5 ? '150,90,255' : '130,255,160') : Math.random() < 0.5 ? '255,130,40' : '255,210,90';
+        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-2, 2), y: q.y + rand(-2, 2), vx: rand(-12, 12), vy: rand(-20, 0), col: sc, s0: rand(5, 8), s1: 1, life: rand(0.25, 0.4) });
       } else if (pr.kind === 'shell') {
         pr.fxT = 0.03;
         if (NECRO) emit(G.parts, { kind: 'dot', x: q.x, y: q.y, vx: rand(-8, 8), vy: rand(0, 20), g: 160, col: '#7ae04a', s0: 1.6, s1: 0.8, life: 0.4 });
@@ -4559,7 +4582,7 @@ function updateProjectile(pr, dt) {
   } else if (pr.target && !pr.target.dead) {
     const e = pr.target;
     if (pr.kind === 'bolt') fxMagicHit(pr.tx, pr.ty, pr.frost);
-    else if (pr.kind === 'fireball') fxFireHit(pr.tx, pr.ty, pr.inferno);
+    else if (pr.kind === 'fireball') { if (pr.soul) fxMagicHit(pr.tx, pr.ty); else fxFireHit(pr.tx, pr.ty, pr.inferno); }
     else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
     if (pr.kind === 'arrow') sfx(e.def.armor >= 0.5 ? 'armorhit' : 'arrowhit'); // zırhlıya saplanan cıvata metal tınlar
@@ -6233,6 +6256,16 @@ function castUlt(h, x, y) {
       engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: U.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
     G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.9 }); G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 50, col: '200,150,255', t: 0, dur: 0.5 });
     floatText(q.x, q.y - 40, 'Bu Sparta!', '#ffd34d'); shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200);
+  } else if (U.portal) {
+    // Merlin'in zaman kapısı: alanda dönen mor-yeşil halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
+    G.effects.push({ kind: 'portal', x, y, r: U.r, t: 0, dur: 1.1 });
+    for (const e of enemiesNear(x, y, U.r, true)) {
+      damageEnemy(e, dmg(), 'magic'); if (e.dead || e.under || !e.p) continue;
+      const back = U.back * (e.def.chief ? 0.5 : 1); e.d = Math.max(0, e.d - back);
+      const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; stunEnemy(e, U.stun); e.blocker = null;
+      G.effects.push({ kind: 'portal', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
+    }
+    shakeScreen(4, 0.35); sfx('magic'); setTimeout(() => sfx('whirl'), 120);
   } else if (h.id === 'zeynep') {
     // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
@@ -6355,6 +6388,11 @@ function update(dt) {
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
       if (z.kind === 'chains') { z.fxT = 0.1; emit(G.parts, { kind: 'chunk', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-40, 40), vy: -rand(40, 90), g: 420, col: '#6a5a4a', s0: 1.6, s1: 1, life: 0.4, vr: rand(-8, 8) }); continue; }
       if (bats) { z.fxT = 0.12; if (live) emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5 - 6, vy: rand(10, 30), g: 140, col: '#b01020', s0: 1.4, s1: 0.5, life: 0.4 }); continue; }
+      if (z.kind === 'mist') { // Merlin'in mezar sisi: yere çöken mor ve yeşil sis
+        z.fxT = 0.05;
+        emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-8, 8), vy: -rand(2, 8), col: Math.random() < 0.6 ? '150,90,230' : '110,220,140', s0: rand(6, 9), s1: rand(12, 16), life: rand(0.9, 1.3), a: 0.32 });
+        continue;
+      }
       if (z.kind === 'plague') {
         z.fxT = z.gas ? 0.22 : 0.07;
         emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-6, 6), vy: -rand(6, 16), col: Math.random() < 0.5 ? '120,200,80' : '150,230,100', s0: rand(5, 8), s1: rand(10, 14), life: rand(0.8, 1.2), a: 0.35 });
@@ -9389,7 +9427,8 @@ function drawProjectile(p) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 7, '200,255,200', 0.35); ctx.restore();
   } else if (p.kind === 'fireball') {
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, x, y, 16, '255,120,40', 0.9); glow(ctx, x, y, 7, '255,240,190', 1);
+    if (p.soul) { glow(ctx, x, y, 16, '150,90,255', 0.9); glow(ctx, x, y, 8, '140,255,170', 1); glow(ctx, x, y, 3.5, '240,255,240', 1); }
+    else { glow(ctx, x, y, 16, '255,120,40', 0.9); glow(ctx, x, y, 7, '255,240,190', 1); }
     ctx.restore();
   } else if (p.kind === 'bossthrow') {
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.sy + 40, p.ty + 30, k);
@@ -9649,6 +9688,14 @@ function drawEffect(f) {
     ctx.beginPath(); ctx.ellipse(f.x, f.y, r, r * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, top, 16 + 6 * bl, f.col, 0.35 + 0.3 * bl); ctx.globalCompositeOperation = 'source-over';
     drawStar(f.x, top, 6 + 2 * bl, `rgb(${f.col})`); ctx.restore();
+  } else if (f.kind === 'portal') { // zaman kapısı: zıt yönde dönen yarım halkalar, içte mor ışık
+    const a = k < 0.2 ? k / 0.2 : 1 - (k - 0.2) / 0.8, gr = Math.min(1, k * 5);
+    ctx.save(); ctx.translate(f.x, f.y); ctx.scale(1, 0.5); ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, 0, 0, f.r * 1.1, '150,90,255', 0.5 * a); glow(ctx, 0, 0, f.r * 0.45, '140,255,170', 0.5 * a);
+    for (let i = 0; i < 3; i++) { ctx.save(); ctx.rotate(time * (3 + i) * (i % 2 ? -1 : 1) + i);
+      ctx.strokeStyle = `rgba(${i % 2 ? '140,255,170' : '190,120,255'},${0.85 * a})`; ctx.lineWidth = 3 - i * 0.6;
+      ctx.beginPath(); ctx.arc(0, 0, f.r * (0.45 + i * 0.27) * (0.6 + 0.4 * gr), 0, Math.PI * 1.5); ctx.stroke(); ctx.restore(); }
+    ctx.restore();
   } else if (f.kind === 'ring') {
     ctx.save(); ctx.globalAlpha = 1 - k;
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
@@ -9667,7 +9714,7 @@ function drawEffect(f) {
     drawZap(f);
   } else if (f.kind === 'bolt') {
     ctx.save(); ctx.globalAlpha = 1 - k; ctx.lineJoin = 'round';
-    const bc = f.col === 'arcane' ? 'rgba(190,120,255,0.55)' : f.col === 'frost' ? 'rgba(140,210,255,0.55)' : f.col === 'holy' ? 'rgba(255,235,160,0.6)' : 'rgba(140,180,255,0.5)';
+    const bc = f.col === 'soul' ? 'rgba(130,255,160,0.6)' : f.col === 'arcane' ? 'rgba(190,120,255,0.55)' : f.col === 'frost' ? 'rgba(140,210,255,0.55)' : f.col === 'holy' ? 'rgba(255,235,160,0.6)' : 'rgba(140,180,255,0.5)';
     for (const [lw, col] of [[6, bc], [2.2, '#f2f7ff']]) {
       ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
       f.pts.forEach(([x, y], i) => {
@@ -16590,7 +16637,7 @@ window.__game = {
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
-  goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
+  goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
