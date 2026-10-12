@@ -4638,7 +4638,7 @@ const KEEP = { w: 178, gate: [0.42, 0.85], at: [0.49, 0.572], rail: [0.37, 0.53,
   railPoly: [[0.08, 0.478], [0.11, 0.486], [0.2, 0.5], [0.3, 0.516], [0.37, 0.526], [0.4, 0.546], [0.45, 0.553], [0.5, 0.555], [0.55, 0.551], [0.585, 0.538],
     [0.65, 0.551], [0.75, 0.564], [0.85, 0.568], [0.9, 0.562], [0.95, 0.528], [0.98, 0.528], [0.98, 0.64], [0.08, 0.64]],
   guards: [], gpx: 128, // 15 Eki (Caner): balkon muhafızları kalktı; yerlerinde kale yükseltmesiyle gelen iskelet okçular
-  archers: [[0.8, 0.578, -1], [0.24, 0.516, 1]], apx: 150 };
+  archers: [[0.8, 0.578, -1], [0.24, 0.516, 1]], apx: 105 }; // 15 Eki: okçular %30 küçük (Caner)
 const isKeep = (im) => im && [1, 2, 3, 4].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
   if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
