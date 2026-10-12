@@ -384,7 +384,7 @@ const SOUND = {
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
   yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
   soulsuck: { vol: 0.32, gap: 0.6, max: 1, rate: [0.9, 1.1] },      // ruh fenere çekilirken (Ruh Hasadı)
-  cursegaze: { vol: 0.36, gap: 1.2, max: 1, rate: [0.95, 1.05] },    // Lanet Kulesi gözü kurbanı lanetlerken
+  cursegaze: { vol: 0.2, gap: 1.2, max: 1, rate: [0.95, 1.05] },    // Lanet Kulesi gözü kurbanı lanetlerken
   freeze: { vol: 0.4, gap: 0.25, max: 2, rate: [0.92, 1.1] },        // buzlu ok / kılıç düşmanı dondururken
   blooddrain: { vol: 0.22, gap: 2.5, max: 1, rate: [0.95, 1.05] },   // Kan Ayini can emerken (seyrek, arkada)
   plaguethrow: { vol: 0.5, gap: 0.35, max: 2, rate: [0.94, 1.08] }, // Veba Kazanı sıvıyı fırlatırken: fışkırma (Caner'in 'Liquid Craft' kaydı)
@@ -7253,7 +7253,8 @@ function drawCurseEye(t, ts, E, P, L) {
   const red = Math.max(clamp((t.scareT || 0) - time, 0, 1), rg * 0.55, clamp(1 - (time - (t.gazeHit ?? -9)) / 0.5, 0, 1), t.eyeTint || 0); // Kan Ayini: göz hep kızıl
   const beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
   ctx.save();
-  if (rg > 0) { ctx.translate(c.x, c.y); ctx.scale(1 + 0.4 * rg, 1 + 0.4 * rg); ctx.translate(-c.x, -c.y); } // öfkeyle büyür
+  const pop = clamp(1 - (time - (t.gazeHit ?? -9)) / 0.35, 0, 1); // lanet anında göz bir an daha da açılır
+  if (rg > 0 || pop > 0) { const k = 1 + 0.65 * rg + 0.3 * pop * pop; ctx.translate(c.x, c.y); ctx.scale(k, k); ctx.translate(-c.x, -c.y); } // öfkeyle büyür (15 Eki: daha belirgin)
   ctx.beginPath(); ctx.ellipse(c.x, c.y, rx * 0.9, ry * 0.9, 0, 0, Math.PI * 2); ctx.clip();
   const g = ctx.createRadialGradient(c.x + t.eyeX * rx * 0.25, c.y + t.eyeY * ry * 0.2, 1, c.x, c.y, rx);
   g.addColorStop(0, red ? '#ffb0b0' : '#f0c8ff'); g.addColorStop(0.45, red ? '#ff3040' : '#a24dff'); g.addColorStop(1, red ? '#5a0610' : '#2a0850');
@@ -7271,7 +7272,7 @@ function drawCurseEye(t, ts, E, P, L) {
   }
   ctx.restore();
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, c.x, c.y, rx * (2.2 + 0.8 * beat + 1.2 * rg), red ? '255,40,60' : '170,80,255', (0.3 + 0.35 * beat + 0.3 * rg) * (1 - bk * 0.8));
+  glow(ctx, c.x, c.y, rx * (2.2 + 0.8 * beat + 1.8 * rg + 2.5 * pop), red ? '255,40,60' : '170,80,255', (0.3 + 0.35 * beat + 0.4 * rg + 0.5 * pop) * (1 - bk * 0.8));
   ctx.restore();
 }
 // ---- Veba Kazanı (10 Eki, 3. tasarım; Caner: "bazen patlama yapıp düşmanın üstüne düşsün, düşman dağılsın, yerde kalan zehir diğerlerine bulaşsın; bazen püskürtsün") ----
@@ -7930,7 +7931,12 @@ function drawEnemy0(e) {
     if (d.rank === 2) drawRankStar(e.x, top - 1);
     // durum işaretleri: lanet (mor duman), ruh çivisi (başın üstünde kara çivi), kara veba (yeşil kabarcık)
     // lanet: ayaktaki mor halka kalktı (13 Eki, Caner: hoş görünmüyor); yalnız gövdeden arada bir koyu mor duman yükselir
-    if (e.curseT > 0 && Math.random() < 0.08) emit(G.parts, { kind: 'glow', x: e.x + rand(-5, 5), y: e.y - rand(dh * 0.2, dh * 0.7), vy: -rand(10, 22), col: '120,50,170', s0: rand(2, 3.2), s1: 0.6, life: 0.7, a: 0.55 });
+    if (e.curseT > 0) { // 15 Eki (Caner): lanetlinin çevresinde hafif mor sis döner, arada koyu mor duman yükselir
+      const a = clamp(e.curseT / 1.5, 0, 1) * 0.9;
+      for (let i = 0; i < 3; i++) { const an = time * 1.3 + i * 2.09 + e.off, x = e.x + Math.cos(an) * dh * 0.32, y = e.y - dh * (0.35 + 0.18 * Math.sin(an * 0.7 + i)), rr = dh * 0.42;
+        const gm = ctx.createRadialGradient(x, y, 0, x, y, rr); gm.addColorStop(0, `rgba(150,70,220,${0.2 * a})`); gm.addColorStop(1, 'rgba(150,70,220,0)'); ctx.fillStyle = gm; ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
+      if (Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: e.x + rand(-5, 5), y: e.y - rand(dh * 0.2, dh * 0.7), vy: -rand(10, 22), col: '120,50,170', s0: rand(2, 3.2), s1: 0.6, life: 0.7, a: 0.5 });
+    }
     if (e.nailT > 0) { ctx.save(); ctx.translate(e.x + 6, top - 4); ctx.rotate(0.3); ctx.fillStyle = '#1a1020'; ctx.strokeStyle = '#9dff8a'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(-2.4, -5); ctx.lineTo(2.4, -5); ctx.lineTo(0.6, 4); ctx.lineTo(-0.6, 4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
     if (e.plagueT > 0 && Math.random() < 0.15) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(4, dh * 0.8), vy: -rand(8, 20), col: '110,220,60', s0: 2.5, s1: 0.4, life: 0.6 });
@@ -12754,7 +12760,6 @@ function updateGaze(t, L, dt) {
       v.curseT = Math.max(v.curseT || 0, L.linger || 3); v.curseK = Math.max(v.curseK || 0, L.curse); v.curseRes = Math.max(v.curseRes || 0, L.res || 0);
       v.curseWeak = Math.max(v.curseWeak || 0, L.weak || 0); v.curseRise = Math.max(v.curseRise || 0, L.rise || 0);
       for (let i = 0; i < 8; i++) { const a = rand(0, Math.PI * 2); emit(G.parts, { kind: 'glow', add: true, x: v.x + Math.cos(a) * 8, y: aimY(v) + Math.sin(a) * 6, vx: -Math.cos(a) * 20, vy: -rand(10, 25), col: i % 3 ? '190,90,255' : '255,60,90', s0: 3, s1: 0.5, life: rand(0.3, 0.5) }); }
-      G.effects.push({ kind: 'ring', x: v.x, y: v.y, r: 18, col: '190,90,255', t: 0, dur: 0.4 });
     }
     floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 8, 'Lanet!', '#d8a8ff'); sfx('cursegaze');
     t.gazeHit = time; t.gaze = null; t.gazeT = 0; // sonraki kurbana
@@ -12769,11 +12774,8 @@ function updateAltar(t, dt) {
     const near = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= L.range);
     if (near.length) {
       t.pulseCd = L.every; t.shotAnim = 0.35; t.engageT = 2; // mabet animasyonu (varsa) düşman varken döngüde
-      G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: L.range, col: '190,90,255', t: 0, dur: 0.55 });
-      for (const e of near) {
-        for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(4, 24), vy: -rand(15, 40), col: i % 2 ? '190,90,255' : '120,255,140', s0: rand(2.5, 4), s1: 0.4, life: rand(0.4, 0.7) });
-      }
-      sfx('zap');
+      // 15 Eki (Caner): yerden yayılan mor dalga ve sesi kalktı; lanet gözün bakışıyla ve düşmanın çevresindeki mor sisle görünür
+      /* ses yok */
     } else t.pulseCd = 0.3;
   }
   for (const e of G.enemies) {
