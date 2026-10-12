@@ -5978,6 +5978,14 @@ function roundRect(x, y, w, h, r, fill, stroke, lw = 2) {
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
 }
+// karakter gölgesi (13 Eki, Caner: her karakterin gölgesi olsun): boya göre, yumuşak kenarlı elips (önbellekteki gradyan görseli)
+let SHADOW_IMG = null;
+function unitShadow(x, y, h, k = 1) {
+  if (!SHADOW_IMG) { const [c, g] = offscreen(64, 64, 1), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(0,0,0,0.7)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.5)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); SHADOW_IMG = c; }
+  const rx = h * 0.34 * k, ry = rx * 0.36;
+  ctx.drawImage(SHADOW_IMG, x - rx, y - ry, rx * 2, ry * 2);
+}
 function shadow(x, y, rx, ry) {
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
@@ -7884,7 +7892,7 @@ function drawSoldier(s) {
     const im = lunge || spr(s.big), walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
     const ch = s.bh, rise = !(s.ghoul && s.ghoul.grave && spr('unit_corpsegolem_rise')) && s.born != null && G.t - s.born < 0.7 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.7, 0, 1)) : null;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.55, s.golem ? '150,255,110' : '170,120,255', 0.2); ctx.restore();
-    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, ch * 0.32, ch * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+    unitShadow(s.x, s.y + 1, ch, 1.05);
     // Wan şeritleri geldiyse onlar oynar (saldırı: vuruş döngüsüne bağlı kare, yürüyüş: 16 fps); yoksa çizimden hareket
     const sk = rise == null && ((fighting && animStrip(s.big, null, '_atk')) || (walking && animStrip(s.big, null, '_walk')));
     if (sk) {
@@ -7905,12 +7913,12 @@ function drawSoldier(s) {
       const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
       s.px = s.x; s.py = s.y;
       const ch = s.zh || 30 * UNIT_K;
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 14, '130,50,200', 0.18); ctx.restore();
-      if (s.born != null && G.t < s.born) return;
+      if (s.born != null && G.t < s.born) return; // 13 Eki: ayaktaki mor ışık kalktı, gölge drawUnit'te
       const up = s.born != null && G.t - s.born < DIE_T ? animStrip(key, s.zrig || s.zname, '_die') : null;
       if (up) { // yerden kalkış: ölüm kareleri tersten
         const F = ANIM_META[up], i = Math.max(0, F.n - 1 - Math.floor((G.t - s.born) / DIE_T * F.n));
         const rg = RIG[s.zrig || s.zname] || {};
+        unitShadow(s.x, s.y + 1, ch);
         ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale((s.face || 1) * (rg.flip ? -1 : 1), 1); drawFrame(spr(up), F, i, ch); ctx.restore();
         return;
       }
@@ -7999,6 +8007,7 @@ function drawSoldier(s) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
       const i = ult ? prog(s.ultT, ULT_ANIM) : cst ? prog(s.castA, HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
         : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : 16)) % F.n;
+      unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
       hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
@@ -8466,7 +8475,7 @@ function drawUnit(name, im, x, y, face, o) {
   }
   if (o.hit > 0) { const k = o.hit / 0.18; P.rot -= 0.16 * k; ox -= 2 * k; P.arm -= 0.25 * k; P.bend -= 0.04 * k; }   // darbe alınca geriye sarsılır
   if (o.spin > 0) P.sx *= Math.cos((0.5 - o.spin) * Math.PI * 6);           // kasırga: hızlı dönüş
-  shadow(x, y + 1, w * 0.34 * (o.fly ? 0.7 : 1), w * 0.11);
+  if (!o.noShadow) unitShadow(x, y + 1, Math.max(o.h, w * 0.9), o.fly ? 0.7 : 1);
   if (o.aura) {
     // kahramanın ayağının altında dönen renkli halka
     ctx.save(); ctx.strokeStyle = `rgba(${o.aura},${0.45 + Math.sin(time * 3) * 0.12})`; ctx.lineWidth = 1.6;
