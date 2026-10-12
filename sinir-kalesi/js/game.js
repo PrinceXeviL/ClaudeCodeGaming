@@ -6377,7 +6377,7 @@ function xbowRange(t, d) {
 // aim: nişan / yay germe süresi (ok bu sürenin sonunda çıkar), kick: bırakınca geri tepme, hold: atıştan sonra silahı indirmeden bekleme,
 // tip: atış pozunda okun çıktığı nokta (görsel kesri), spd: mermi hızı (px/sn), arc: kavis (uzaklığın kesri; okçular yüksek atar)
 const MEN = {
-  base: { pre: 'unit_xbow', pose: '_aim', aim: 0.3, kick: 0.16, hold: 0.55, tip: [0.99, 0.24], n: (t) => t.lvl + 1, col: '140,255,150', spd: 720, arc: 0.06 },
+  base: { pre: 'unit_xbow', pose: '_aim', aim: 0.3, kick: 0.16, hold: 0.55, tip: [0.99, 0.24], n: (t) => Math.max(2, t.lvl + 1), col: '140,255,150', spd: 720, arc: 0.06 },
   fan:  { pre: 'unit_ghostxbow', pose: '_aim', aim: 0.46, kick: 0.3, hold: 1.25, tip: [0.989, 0.189], n: () => 2, col: '255,80,90', spd: 820, arc: 0.035, heavy: true,
     seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.22, load: 0.85 }, // Gemini 4 poz (arbaletci_poz_isle.py): hazır → nişan → geri tepme → kurma kolunu çevirerek dolum
   bow:  { pre: 'unit_ghostarcher', pose: '_draw', aim: 0.42, kick: 0.12, hold: 0.32, tip: [0.98, 0.237], n: () => 3, col: '255,90,130', spd: 420, arc: 0.26, bow: true,
@@ -6388,7 +6388,7 @@ const XBOW_TIP = [[0.99, 0.186], [0.99, 0.192], [0.847, 0.176]]; // kademe görs
 for (let k = 1; k <= 3; k++) MEN['k' + k] = Object.assign({}, MEN.base, { pre: 'unit_xbow' + k, seq: [[0.35, ''], [1, '_aim']], relPose: '_kick', rel: 0.18, load: k === 3 ? 0.78 : 0.5, hold: 0.9, tip: XBOW_TIP[k - 1] }); // 3. kademe: 3 kurma karesi
 // 11 Eki: 2. kademenin geri tepmesi ve 3. kademenin dört pozu yeniden çizildi (kiriş önde, cıvatasız tepme karesi; 3. kademe sissiz, açık zırh)
 // 10 Eki (yol seçimi): 1. kademe ve okçu yolu iskelet okçu (geçici görsel: hayalet okçu çizimi, sayısı kademe kadar), arbaletçi yolu kademe arbaletçileri
-MEN.arch = Object.assign({}, MEN.bow, { n: (t) => t.lvl + 1, col: '150,255,160' });
+MEN.arch = Object.assign({}, MEN.bow, { n: (t) => Math.max(2, t.lvl + 1), col: '150,255,160' }); // 15 Eki (Caner): 1. seviyede de 2 okçu
 // 11 Eki: kademe iskelet okçuları (Gemini, her kare ayrı görsel: unit_archerN + _nock/_half/_draw/_rel); kademe görseli yoksa bir alt kademeninki
 const ARCH_TIP = [[0.93, 0.26], [0.744, 0.249], [0.99, 0.303]]; // kareler ayrı Gemini görsellerinden: varliklar/iskelet_okcu_kare_isle.py
 for (let k = 1; k <= 3; k++) MEN['a' + k] = Object.assign({}, MEN.arch, { pre: 'unit_archer' + k, tip: ARCH_TIP[k - 1] || ARCH_TIP[0] });
@@ -9498,7 +9498,7 @@ const tapPop = (key) => { pops[key] = time; };
 // Ekran geçişi: kısa bir kararma, ortasında ekran değişir
 let trans = null;
 // ekran geçişi (Caner, 11 Eki): hışırtı sesi, ekran kenarlardan ortaya doğru kararır (göz kapanır gibi), yeni ekran ortadan açılır
-const TRANS = { in: 0.38, out: 0.42, hold: 0.55, shut: 0.1 };
+const TRANS = { in: 0.5, out: 0.5, hold: 0.6, shut: 0.12 };
 // 15 Eki (Caner: Kingdom Rush gibi): iki yandan kapanan taş kapı kanatları. Kanatlar ortada çarpışır (sarsıntı + toz), ortada Mortimer madalyonu;
 // bölüm başlarken kapı biraz daha uzun kapalı kalır (hold), sonra iki yana açılır. Kanatlar bir kez çizilip önbellekte tutulur.
 let GATE_C = null;
@@ -9556,13 +9556,66 @@ function gatePanels() {
   };
   return (GATE_C = { key, w, h, L: mk(true), R: mk(false) });
 }
+// 15 Eki (Caner: kapı Kingdom Rush'a benzedi): Mortimer'ın kara silüeti ekranın ortasından büyüyüp her yeri kaplar; karanlıkta yalnız kızıl
+// gözleri yanar (bölüm başlarken göz kırpar), sonra silüet küçülerek yeni sayfayı açar. TRANS_STYLE: 'mort' | 'gate' (taş kapı)
+const TRANS_STYLE = 'mort';
+const MORT_SIL = { ax: 0.6, ay: 0.56, eyes: [[199, 51], [217, 51]] }; // büyüme ekseni (görsel kesri; cübbenin dolu yeri), gözler (mortimer.webp pikseli)
+let SIL_C = null;
+function mortSil() {
+  const im = spr('mortimer'); if (!im) return null;
+  const key = VIS.w + 'x' + VIS.h; if (SIL_C && SIL_C.key === key && SIL_C.im === im) return SIL_C;
+  const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+  g.globalCompositeOperation = 'source-in'; g.fillStyle = '#06030a'; g.fillRect(0, 0, w, h);
+  // ekranı tamamen örten en küçük ölçek: eksen çevresindeki ekran dikdörtgeni silüetin dolu kısmında kalmalı
+  let full = 40;
+  try {
+    const d = g.getImageData(0, 0, w, h).data, ax = MORT_SIL.ax * w, ay = MORT_SIL.ay * h, A = (x, y) => { x = Math.round(x); y = Math.round(y); return x < 0 || y < 0 || x >= w || y >= h ? 0 : d[(y * w + x) * 4 + 3]; };
+    for (let sc = 2; sc < 60; sc *= 1.06) {
+      const hw = VIS.w / 2 / sc, hh = VIS.h / 2 / sc; let ok = true;
+      for (let i = 0; i <= 12 && ok; i++) for (let j = 0; j <= 12 && ok; j++) if (A(ax - hw + 2 * hw * i / 12, ay - hh + 2 * hh * j / 12) < 200) ok = false;
+      if (ok) { full = sc * 1.15; break; }
+    }
+  } catch (e) {}
+  return (SIL_C = { key, im, c, w, h, full });
+}
 function drawTrans() {
+  if (TRANS_STYLE === 'mort' && mortSil()) { drawTransMort(); return; }
+  drawTransGate();
+}
+function drawTransMort() {
+  const T = trans, hold = T.hold != null ? T.hold : TRANS.shut, t = T.t, S = mortSil();
+  let k; // 0 yok .. 1 ekranı kaplar
+  if (t < TRANS.in) k = t / TRANS.in;
+  else if (t < TRANS.in + hold) k = 1;
+  else k = 1 - clamp((t - TRANS.in - hold) / TRANS.out, 0, 1);
+  if (k <= 0.001) return;
+  const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2;
+  // ölçek üstel büyür (göz her adımı eşit algılar): önce ekranın yarısı boyunda belirir, sonra ekranı yutar
+  const base = VIS.h * 0.5 / S.h, e = k < 0.25 ? 0 : Math.pow((k - 0.25) / 0.75, 1.5), sc = base * Math.pow(S.full / base, e), a = clamp(k / 0.2, 0, 1);
+  k = e;
+  ctx.save();
+  if (k >= 0.999) { ctx.fillStyle = '#06030a'; ctx.fillRect(VIS.l - 2, VIS.t - 2, VIS.w + 4, VIS.h + 4); }
+  else {
+    ctx.globalAlpha = a;
+    ctx.fillStyle = `rgba(6,3,10,${0.3 * k})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); // çevresi hafif kararır
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, cy, VIS.h * (0.4 + 0.6 * k), '150,70,255', 0.25 * (1 - k)); ctx.globalCompositeOperation = 'source-over'; // arkasında mor ruh ışığı
+    ctx.drawImage(S.c, cx - MORT_SIL.ax * S.w * sc, cy - MORT_SIL.ay * S.h * sc, S.w * sc, S.h * sc);
+  }
+  // kızıl gözler: silüet küçükken yüzünde, ekranı kaplayınca karanlığın ortasında (bölüm başlarken göz kırpar)
+  const eyeOn = k < 0.999 ? 1 - k : 1, blink = hold > 0.2 && t > TRANS.in ? (Math.sin((t - TRANS.in) * 9) > 0.93 ? 0.15 : 1) : 1;
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1;
+  if (k < 0.999) for (const [ex, ey] of MORT_SIL.eyes) { const x = cx + (ex - MORT_SIL.ax * S.w) * sc, y = cy + (ey - MORT_SIL.ay * S.h) * sc; glow(ctx, x, y, Math.max(4, 6 * sc), '255,40,30', 0.9 * eyeOn * a); }
+  else { const ew = VIS.h * 0.05, ey = cy - VIS.h * 0.04; for (const sd of [-1, 1]) { glow(ctx, cx + sd * ew * 1.5, ey, ew * 1.6, '255,30,20', 0.85 * blink); glow(ctx, cx + sd * ew * 1.5, ey, ew * 0.45, '255,190,170', 0.9 * blink); } }
+  ctx.restore();
+}
+function drawTransGate() {
   const T = trans, hold = T.hold != null ? T.hold : TRANS.shut, t = T.t, P = gatePanels();
   let k; // 0 açık .. 1 kapalı
   if (t < TRANS.in) { const u = t / TRANS.in; k = u < 0.82 ? Math.pow(u / 0.82, 2) : 1 - Math.sin((u - 0.82) / 0.18 * Math.PI) * 0.025; } // hızlanarak kapanır, çarpınca hafif seker
   else if (t < TRANS.in + hold) k = 1;
   else { const u = clamp((t - TRANS.in - hold) / TRANS.out, 0, 1); k = 1 - u * u * (3 - 2 * u); }
-  if (!T.slam && t >= TRANS.in * 0.82) { T.slam = true; sfx('castlehit'); T.shakeT = 0.22; }
+  if (!T.slam && t >= TRANS.in * 0.82) { T.slam = true; sfx('castlehit'); T.shakeT = 0.22; } // yalnız kapı biçeminde
   const sh = T.shakeT > 0 ? (T.shakeT -= 1 / 60, Math.sin(t * 90) * 5 * T.shakeT / 0.22) : 0;
   const cx = (VIS.l + VIS.r) / 2, y0 = VIS.t - 4 + sh * 0.3;
   if (k <= 0.001) return;
@@ -13759,7 +13812,8 @@ let mapFogC = null;
 // (kilitli) görünür; ötesi (yol, zemin, işaretler) tamamen karanlıkta. Yeni bölüm açılınca sis o bölümün çevresinden çekilir,
 // yeni bir bölgeye girilince bölgenin adı kurdeleyle belirir. Şapelin (yolun sonu) yalnız pencere ışıkları sisin içinden seçilir.
 // Görülen sınır save.mapSeen[ep]; ayarlardaki "Harita sisi: Yeni oyuncu" (yalnız TEST_OPEN) haritayı sıfırdan başlamış gibi gösterir.
-const FOG2 = { ahead: 2, hole: 96, road: 56, step: 14, col: '5,3,9', a: 0.96, delay: 0.5, gap: 0.5, grow: 1.1, res: 0.6 };
+const FOG2 = { ahead: 2, hole: 124, road: 92, // 15 Eki: yol kıvrımlarının arası karanlık kalmasın (hole/road büyüdü)
+  step: 14, col: '5,3,9', a: 0.96, delay: 0.5, gap: 0.5, grow: 1.1, res: 0.6 };
 const fogTest = () => TEST_OPEN && !!setting('fogTest');
 function mapProgress(ep) { if (fogTest()) return 0; let k = 0; epLevels(ep).forEach((i, j) => { if (levelUnlocked(i)) k = j; }); return k; }
 const mapVisible = (ep) => Math.min(epLevels(ep).length, mapProgress(ep) + 1 + FOG2.ahead);

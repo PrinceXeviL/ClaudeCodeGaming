@@ -768,8 +768,8 @@ const NECRO_SPELLS = {
 };
 // şapel ağacı (10 Eki): kapıyı tutan Kemik Devi; 15 Eki (Caner): kale kuleler gibi 3 kez yükselir, balkona en çok 2 iskelet okçu
 Object.assign(CASTLE.levels[0], { title: 'Kara Şapel', perk: 'Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu', archers: 0 });
-Object.assign(CASTLE.levels[1], { title: 'Kemik Devi', cost: 200, dmg: [7, 11], rate: 1.5, archers: 1,
-  perk: 'Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn\'de kalkar); balkonda 1 iskelet okçu',
+Object.assign(CASTLE.levels[1], { title: 'Kemik Devi', cost: 200, dmg: [6, 9], rate: 1.6, archers: 2, // 15 Eki: ilk yükseltmede de 2 okçu (hasar biraz düşük)
+  perk: 'Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn\'de kalkar); balkonda 2 iskelet okçu',
   giant: { hp: 900, dmg: [22, 34], armor: 0.45, block: 3, respawn: 30 } });
 Object.assign(CASTLE.levels[2], { title: 'Kemik Kolos', cost: 300, dmg: [9, 14], rate: 1.35, archers: 2, crit: 0,
   perk: 'Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn\'de kalkar; balkonda 2 iskelet okçu',
