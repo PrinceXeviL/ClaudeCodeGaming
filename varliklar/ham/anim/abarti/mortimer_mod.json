@@ -16,14 +16,6 @@
   "prompt": "a cartoon grim reaper skeleton necromancer with a skull face, a deep red hooded robe with black feather shoulders, holding a big scythe in one hand and a small white tea cup in the other, wispy green and purple magic smoke around his feet spots an approaching enemy: his skull snaps toward the left, he stiffens, sets the tea cup aside, raises the scythe and points it dramatically forward-left with an exaggerated angry gesture, eye sockets glow brighter, then returns to the starting pose. Front view, the character faces the viewer, static camera, the character stays in the center of the frame, the feet stay planted on the same spot, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
  },
  {
-  "name": "mortimer_ofke",
-  "ref": "ham/anim/mortimer_ref.png",
-  "frames": 33,
-  "loop": false,
-  "seed": 21,
-  "prompt": "a cartoon grim reaper skeleton necromancer with a skull face, a deep red hooded robe with black feather shoulders, holding a big scythe in one hand and a small white tea cup in the other, wispy green and purple magic smoke around his feet is furious because his castle was hit: he stomps his foot, shakes his bony fist in the air, his whole body trembles with rage, the robe flaps, steam puffs out from under his hood, exaggerated comic anger, squash and stretch, then returns to the starting pose. Front view, the character faces the viewer, static camera, the character stays in the center of the frame, the feet stay planted on the same spot, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
- },
- {
   "name": "mortimer_kahkaha",
   "ref": "ham/anim/mortimer_ref.png",
   "frames": 33,
