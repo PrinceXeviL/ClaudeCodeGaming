@@ -728,7 +728,7 @@ HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü'
     { id: 'arcane', name: 'Kadim Bilgi', passive: true, desc: 'Kalıcı: +%20 menzil; her 4. ruh küresi üçe bölünür' },
   ] }] };
 Object.assign(HERO_ULT, {
-  merlin: { name: 'Zaman Kapısı', cd: 65, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
+  merlin: { name: 'Zaman Kapısı', cd: 65, anim: 1.8, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
     desc: 'Seçtiğin alanda zaman kapısı açılır: düşmanlar yolun gerisine fırlatılır, hasar alır, 1 sn sersemler (boss yarı yol)', short: 'Alandaki düşmanları yolda geri ışınlar' },
   spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
     desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },

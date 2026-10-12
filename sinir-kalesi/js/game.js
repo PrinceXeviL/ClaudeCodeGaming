@@ -6237,7 +6237,7 @@ function castUlt(h, x, y) {
     const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * r; return [x + Math.cos(a) * d, y + Math.sin(a) * d * 0.6];
   };
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
-  h.castT = 0.45; h.ultT = ULT_ANIM; // komutanın güç şeridi (varsa) bu sürede bir kez oynar
+  h.castT = 0.45; h.ultT = h.ultD = U.anim || ULT_ANIM; // komutanın güç şeridi (varsa) bu sürede bir kez oynar
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
   if (h.id === 'commander' && U.bats) {
     // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
@@ -8560,7 +8560,7 @@ function drawSoldier(s) {
     const hsk = ult || cst || blk || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
-      const i = ult ? prog(s.ultT, ULT_ANIM) : cst ? prog(s.castA, HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
+      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
         : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n)) % F.n;
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();

@@ -174,5 +174,13 @@
   "loop": true,
   "seed": 21,
   "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "merlin_atk",
+  "ref": "ham/anim/merlin_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 31,
+  "prompt": "a cartoon undead lich sorcerer with a skull face, glowing green eyes, a long pale green ghostly beard, a tall crown of black antlers with a green flame above it, deep purple and crimson robes with glowing green runes, bone shoulder plates with skulls, an hourglass amulet, holding a tall twisted black staff topped with a bone cage holding a purple-green soul orb, his robe ends in dark purple mist. Exaggerated attack: he swings the staff forward, the soul orb flares bright purple and green, he thrusts the staff and fires a glowing purple-green magic orb that flies out of the frame to the right, then he returns to the starting pose. Front view, the character faces the viewer, static camera, no zoom, the whole character including the antler crown, the top of the staff and the mist at the bottom stays fully inside the frame, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur. The colors stay exactly the same as in the reference image."
  }
 ]
