@@ -4515,7 +4515,13 @@ function avluPt(f) {
 function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r > 0.3 ? 2 : r > 0.15 || !(NECRO && spr('castle_keep_4')) ? 3 : 4; }
 // Heybetli kale (10 Eki, Gemini): kafatası çenesi kapı, önde balkon. gate = kapı eşiği (yolun ucu), at = Mortimer'ın ayağı,
 // rail = Mortimer'ın önüne yeniden çizilen korkuluk bandı, px = Mortimer boyu (görsel pikseli), w = oyundaki genişlik
-const KEEP = { w: 178, gate: [0.45, 0.85], at: [0.478, 0.57], rail: [0.36, 0.525, 0.61, 0.6], px: 130 }; // Mortimer balkonun ortasında, önde
+// 13 Eki: geniş balkonlu kale (ham/nm_kale_balkon.jpg). Mortimer orta çıkıntıda, iki yan kanatta Mezar Bekçisi muhafızlar (guards: [x, y, yüz]).
+// rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
+const KEEP = { w: 178, gate: [0.42, 0.85], at: [0.5, 0.566], rail: [0.37, 0.53, 0.62, 0.61], px: 190,
+  // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (dikdörtgen olsaydı balkon zemini karakterleri düz keserdi)
+  railPoly: [[0.08, 0.478], [0.11, 0.486], [0.2, 0.5], [0.3, 0.516], [0.37, 0.526], [0.4, 0.546], [0.45, 0.553], [0.5, 0.555], [0.55, 0.551], [0.585, 0.538],
+    [0.65, 0.551], [0.75, 0.564], [0.85, 0.568], [0.9, 0.562], [0.95, 0.528], [0.98, 0.528], [0.98, 0.64], [0.08, 0.64]],
+  guards: [[0.24, 0.516, 1], [0.8, 0.578, -1]], gpx: 128 };
 const isKeep = (im) => im && [1, 2, 3, 4].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
   if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
@@ -4649,6 +4655,20 @@ function mortAnim(p) {
   if (M.st === 'panic' && mortStrip('mortimer_panik')) return { n: 'mortimer_panik', i: Math.floor(time * 16) % ANIM_META.mortimer_panik.n, k: 1 };
   if (mortStrip('mortimer_cay') && M.st !== 'panic') return { n: 'mortimer_cay', i: Math.floor(time * 12) % ANIM_META.mortimer_cay.n, k: MORT_SIT_K };
   return null;
+}
+// balkon muhafızları: Mezar Bekçisi iskeletleri bekleme şeridiyle nefes alır; kale vurulunca kalkanını kaldırır (saldırı şeridi), boss gelince tetikte
+function drawKeepGuards(S, cp, h, sh) {
+  const x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h, gh = S.gpx * cp.w / 760;
+  const idle = animStrip('unit_skel_4', null, '_idle'), atk = animStrip('unit_skel_4', null, '_atk'), base = spr('unit_skel_4');
+  S.guards.forEach(([fx, fy, face], i) => {
+    const x = x0 + fx * cp.w, y = y0 + fy * h, hit = G.castle.flash > 0 || (G.guardT || 0) > G.t;
+    unitShadow(x, y, gh * 0.8);
+    ctx.save(); ctx.translate(x, y); ctx.scale(face, 1);
+    if (hit && atk) { const F = ANIM_META[atk]; drawFrame(spr(atk), F, Math.floor((time * 14 + i * 9)) % F.n, gh); }
+    else if (idle) { const F = ANIM_META[idle]; drawFrame(spr(idle), F, Math.floor((time + i * 1.7) * 12) % F.n, gh); }
+    else if (base) drawSprite(ctx, base, 0, 0, gh * base.width / base.height);
+    ctx.restore();
+  });
 }
 function drawMortimer() {
   const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / MORT_CAST_T, 0, 1) : -1;
@@ -10719,9 +10739,13 @@ function drawCastle() {
     if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh, [2, 3, 4].find(n => im === spr('castle_keep_' + n)));
     if (NECRO) {
       drawMortimer();
-      const h = cp.w * im.height / im.width, R = mortStage(im).rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
+      const h = cp.w * im.height / im.width, MS = mortStage(im), R = MS.rail, x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h;
+      if (MS.guards) drawKeepGuards(MS, cp, h, sh);
       if (R) {
-        ctx.save(); ctx.beginPath(); ctx.rect(x0 + R[0] * cp.w, y0 + R[1] * h, (R[2] - R[0]) * cp.w, (R[3] - R[1]) * h); ctx.clip();
+        ctx.save(); ctx.beginPath();
+        if (MS.railPoly) MS.railPoly.forEach(([fx, fy], i) => (i ? ctx.lineTo : ctx.moveTo).call(ctx, x0 + fx * cp.w, y0 + fy * h));
+        else ctx.rect(x0 + R[0] * cp.w, y0 + R[1] * h, (R[2] - R[0]) * cp.w, (R[3] - R[1]) * h);
+        ctx.clip();
         ctx.translate(cp.x + sh, cp.y); drawSprite(ctx, im, 0, 0, cp.w); ctx.restore();
       }
     }
@@ -10776,7 +10800,7 @@ function winCol(i) {
 }
 // heybetli kalenin ışıkları: iki mangalda kızıl ruh ateşi (11 Eki: görsel de mor/kızıl, varliklar/kale_renk.py), pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
 const KEEP_FX = {
-  fire: [[0.255, 0.715], [0.6, 0.765]], roof: [[0.276, 0.275], [0.8, 0.345]], eyes: [[0.405, 0.665], [0.505, 0.665]],
+  fire: [[0.25, 0.71], [0.6, 0.77]], roof: [[0.276, 0.275], [0.8, 0.345]], eyes: [[0.335, 0.662], [0.445, 0.662]], // 13 Eki: geniş balkonlu kale
   win: [[0.505, 0.355, 2.2], [0.5, 0.245, 0.8], [0.63, 0.245, 0.8], [0.265, 0.455, 1], [0.36, 0.485, 0.8], [0.4, 0.485, 0.8],
     [0.72, 0.495, 1], [0.8, 0.5, 0.8], [0.625, 0.515, 0.8]],
   // 11 Eki: hasar evrelerinin dumanı ve çatı yangını görselden silindi, kodla canlı (Caner: duman hareketsizdi).
