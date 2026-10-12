@@ -1,0 +1,194 @@
+[
+ {
+  "name": "enemy_flagellant_diex",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "prompt": "a bare-chested hooded cartoon fanatic with a crimson hood and rope belt holding a knotted whip is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_paladin_diex",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_malleus_diex",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_ignis_diex",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_saint_diex",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "prompt": "a walking cracked white marble statue of a robed saint with a stone halo and a stone sword is shattered: cracks spread over its body, then it crumbles down into a pile of white marble rubble and dust. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_cathedral_diex",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels is destroyed: the spires crack and fall, the walls cave in and it collapses into a smoking heap of stones and broken wood. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_elephant_diex",
+  "ref": "ham/anim/enemy_elephant_ref.png",
+  "prompt": "a cartoon armored war elephant with red and gold barding and a small wooden tower with an archer on its back is struck and dies: it stumbles, sinks to its knees and topples over onto its side, the tower breaking, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_torch_diex",
+  "ref": "ham/anim/enemy_torch_ref.png",
+  "prompt": "a cartoon hooded zealot monk in a dark crimson robe holding a big burning torch is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_holywater_diex",
+  "ref": "ham/anim/enemy_holywater_ref.png",
+  "prompt": "a chubby cartoon friar in a cream and gold robe carrying a basket of glowing blue glass flasks on his back is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_bellpriest_diex",
+  "ref": "ham/anim/enemy_bellpriest_ref.png",
+  "prompt": "a thin old cartoon priest in a black and gold robe holding a big bronze hand bell is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_inquisitor_diex",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe with a high collar and red skullcap, holding a glowing holy book is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_campanus_diex",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk in black and gold robes carrying an enormous bronze church bell on his back with chains and holding a big hammer is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_severus_diex",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_colossus_diex",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo is destroyed: it falls to its knees, cracks spread and it collapses into a big pile of marble rubble and dust. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_ram_diex",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a lion head ram and a roof is destroyed: the roof beams crack, the lion head ram falls off, the roof caves in and the whole cart collapses into a pile of broken planks and wheels with a puff of dust, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_catapult_diex",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart is destroyed: the throwing arm snaps in half, the wooden frame cracks and leans, a wheel breaks off and the whole catapult collapses into a pile of broken planks with a puff of dust, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_lantern_diex",
+  "ref": "ham/anim/enemy_lantern_ref.png",
+  "prompt": "a hooded cartoon monk with a heavy wooden two-wheeled cart that carries a huge brass lantern with golden fire inside is destroyed: the lantern glass shatters and its fire goes out, the monk falls down, a wheel breaks off and the cart collapses into a pile of broken planks with a puff of dust, then everything lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_assassin_skillx",
+  "ref": "ham/anim/enemy_assassin_ref.png",
+  "prompt": "a cartoon hooded assassin quickly stabs forward with a dagger dripping green poison, then flicks the dagger, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_priest_skillx",
+  "ref": "ham/anim/enemy_priest_ref.png",
+  "prompt": "a cartoon roman sun priest raises both arms high to the sky calling down golden holy light, glowing hands, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_hunter_skillx",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat raises his silver crossbow and fires a spreading silver net forward to the right, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_flagellant_skillx",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "prompt": "a cartoon bare-chested hooded fanatic spins around once lashing his knotted whip in a full circle around himself, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_hound_skillx",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "prompt": "a lean white wolfhound crouches and leaps forward in a big pouncing jump, jaws open, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_malleus_skillx",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general raises both silver crossbows and fires two spreading silver nets forward to the right, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_ignis_skillx",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun raises her brass sun flamethrower censer and spins, spraying a ring of fire all around her, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ }
+]
