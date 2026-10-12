@@ -11858,7 +11858,8 @@ function drawSettings() {
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 280, 'AYARLAR', 'gold', 26); ctx.restore();
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
-  const pw = 600, ph = TEST_OPEN ? 440 : 390, px = W / 2 - pw / 2, py = TEST_OPEN ? 88 : 100; // TEST_OPEN: harita sisi denemesi satırı
+  // 15 Eki (Caner: dil satırı kemik çerçevenin dışına taşmış): satırlar çoğalınca (titreşim, oyun verisi) iki sütuna geçildi; yükseklik satır sayısından
+  const pw = 880, ph = Math.ceil(settingsCount(false) / 2) * 58 + 64, px = W / 2 - pw / 2, py = 96;
   const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
   if (NECRO) pauseFrame(px, py, pw, ph, 0);
@@ -11871,7 +11872,7 @@ function drawSettings() {
   }
   ctx.restore();
   if (pk < 0.9) return;
-  settingsRows(px + 10, py + 22, pw - 20, st, false);
+  settingsRows(px + 14, py + 22, pw - 28, st, false);
   if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
   gameButton('credits', EDGE.r - 112, EDGE.b - 32, 190, 44, 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
 }
@@ -11918,8 +11919,8 @@ function volSlider(key, x, y, w, h, v, set, appear) {
   buttons.push({ key, x, y: y - h / 2 - 6, w, h: h + 12, fn: () => {}, drag: pick });
 }
 let slide = null; // sürüklenen ses çubuğu { key, b, id }
-function settingsRows(x0, y0, w, st, inGame) {
-  const lang = (LANGS.find(v => v[0] === window.LANG) || LANGS[0]);
+const settingsCount = (inGame) => settingsList(inGame).length + (inGame ? 1 : 2); // + dil (+ sıfırla)
+function settingsList(inGame) {
   const vol = (onK, volK) => (v) => { setMuted(false); if (v <= 0.005) setSetting(onK, false); else { setSetting(onK, true); setSetting(volK, v); } };
   const rows = [ // ses düzeyleri 0-100 çubuk (Caner, 10 Eki): sürükleyerek ya da dokunarak
     ['sound', 'Müzik', 'slider', !muted && setting('music') ? setting('mvol') : 0, vol('music', 'mvol')],
@@ -11927,35 +11928,39 @@ function settingsRows(x0, y0, w, st, inGame) {
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
     ['fast', 'Titreşim', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('haptic'), (v) => { setSetting('haptic', v); if (v) haptic('medium'); }],
     ['map', 'Anonim oyun verisi', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('stats'), (v) => { setSetting('stats', v); save.statsAsked = 1; persist(); if (v) gaInit(); else if (GA) try { GA.setEnabledEventSubmission(false); } catch (e) {} }],
-    ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTOMATİK'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
+    ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTO'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
+  if (inGame) rows.splice(4, 1); // oyun verisi izni yalnız ana ayarlarda
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
-  const lx = x0 + 26, cw = Math.min(310, w - 250), LC = NECRO ? '#eadfc4' : '#4a2a0e', LS = 17, cx = x0 + w - 24 - cw, step = 58, sh = inGame ? 42 : 38; // oyun içinde (telefonda) seçenekler biraz daha iri
-  rows.forEach(([icon, label, opts, cur, pick], i) => {
-    const y = y0 + 30 + i * step, ap = st - 0.2 - i * 0.04;
-    if (i) { ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y - step / 2, w - 40, 1.5); }
-    drawIcon(icon, lx + 12, y, 22, '#f2d58a');
-    txt(label, lx + 32, y + 1, LS, LC, 'left', '400', FONT_T, false);
-    if (opts === 'slider') volSlider('vol' + i, cx, y, cw, sh, cur, pick, ap);
-    else segmented('seg' + i + '_', cx, y, cw, sh, opts, cur, pick, ap);
+  return rows;
+}
+// ana ayarlarda iki sütun (yukarıdan aşağı dolar), oyun içinde tek sütun
+function settingsRows(x0, y0, w, st, inGame) {
+  const lang = (LANGS.find(v => v[0] === window.LANG) || LANGS[0]);
+  const rows = settingsList(inGame), cols = inGame ? 1 : 2, n = settingsCount(inGame), per = Math.ceil(n / cols), colW = w / cols;
+  const LC = NECRO ? '#eadfc4' : '#4a2a0e', LS = inGame ? 17 : 16, step = inGame ? 54 : 58, sh = inGame ? 42 : 38; // oyun içinde (telefonda) seçenekler biraz daha iri
+  const cell = (j) => { const c = Math.floor(j / per), i = j % per, cx0 = x0 + c * colW, cw = inGame ? Math.min(310, colW - 250) : colW - 238;
+    return { i, y: y0 + 30 + i * step, lx: cx0 + (inGame ? 26 : 18), cw, cx: cx0 + colW - (inGame ? 24 : 16) - cw, l: cx0 + 16, r: cx0 + colW - 16 }; };
+  const head = (c, icon, label, col) => { if (c.i) { ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(c.l, c.y - step / 2, c.r - c.l, 1.5); }
+    drawIcon(icon, c.lx + 12, c.y, 22, col || '#f2d58a'); txt(label, c.lx + 32, c.y + 1, LS, LC, 'left', '400', FONT_T, false); };
+  if (cols > 1) { ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.28)' : 'rgba(92,58,22,0.2)'; ctx.fillRect(x0 + colW - 0.75, y0 + 6, 1.5, per * step - 12); } // sütun ayracı
+  rows.forEach(([icon, label, opts, cur, pick], j) => {
+    const c = cell(j), ap = st - 0.2 - j * 0.04;
+    head(c, icon, label);
+    if (opts === 'slider') volSlider('vol' + j, c.cx, c.y, c.cw, sh, cur, pick, ap);
+    else segmented('seg' + j + '_', c.cx, c.y, c.cw, sh, opts, cur, pick, ap);
   });
   // dil: dokununca dil listesi açılır (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
-  const y = y0 + 30 + rows.length * step;
-  ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y - step / 2, w - 40, 1.5);
-  drawIcon('map', lx + 12, y, 22, '#f2d58a');
-  txt('Dil / Language', lx + 32, y + 1, LS, LC, 'left', '400', FONT_T, false);
-  gameButton('setlang', cx + cw / 2, y, cw, 40, lang[1] + '  ▼', () => { langMenu = langMenu ? null : { t0: time }; }, 'blue', { appear: st - 0.4, size: 15 });
+  const L = cell(rows.length); head(L, 'map', 'Dil / Language');
+  gameButton('setlang', L.cx + L.cw / 2, L.y, L.cw, 40, lang[1] + '  ▼', () => { langMenu = langMenu ? null : { t0: time }; }, 'blue', { appear: st - 0.4, size: 15 });
   if (!inGame) {
-  const y2 = y + step;
-  ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.22)' : 'rgba(92,58,22,0.18)'; ctx.fillRect(x0 + 20, y2 - step / 2, w - 40, 1.5);
-  drawIcon('restart', lx + 12, y2, 22, '#ff9a8a');
-  txt('İlerlemeyi sıfırla', lx + 32, y2 + 1, LS, LC, 'left', '400', FONT_T, false);
-  gameButton('setreset', cx + cw / 2, y2, cw, 40, time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
-    if (time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
-    else resetArm = time;
-  }, 'red', { appear: st - 0.45, size: 15 });
+    const R2 = cell(rows.length + 1); head(R2, 'restart', 'İlerlemeyi sıfırla', '#ff9a8a');
+    gameButton('setreset', R2.cx + R2.cw / 2, R2.y, R2.cw, 40, time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
+      if (time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
+      else resetArm = time;
+    }, 'red', { appear: st - 0.45, size: 15 });
   }
-  if (langMenu) drawLangMenu(cx, y, cw);
+  if (langMenu) drawLangMenu(L.cx, L.y, L.cw);
 }
 // dil listesi: ekranı karartır, dil satırının üstünde iki sütunlu düğmeler; seçilen dil yeşil. Dışına dokununca kapanır.
 function drawLangMenu(cx, y, cw) {
@@ -15895,7 +15900,7 @@ function drawOverlay() {
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
-  const pw = big ? 600 : pz ? 480 : sum ? 560 : 500, ph = big ? (NECRO ? 420 : 400) : sum ? 472 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
+  const pw = big ? 600 : pz ? 480 : sum ? 560 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? 472 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
   ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
