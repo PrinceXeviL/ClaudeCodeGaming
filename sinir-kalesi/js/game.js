@@ -5860,10 +5860,11 @@ function drawHatches() {
 function drawGrave(h) {
   const im = spr('nm3_grave'), w = GRAVE.w;
   ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(h.x + 2, h.y + 2, w * 0.5, w * 0.16, 0, 0, Math.PI * 2); ctx.fill();
-  if (h.state === 'closed') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, h.x, h.y - 8, 44, Math.sin(time * 1.3 + h.x) > 0 ? '150,255,130' : '190,110,255', 0.32 + Math.sin(time * 3) * 0.1); ctx.restore(); }
+  const zk = clamp(1.7 / (cam.z || 1), 1, 1.7); // 15 Eki (Caner): uzaktayken el görünmüyordu: uzaklaştıkça el ve ışık büyür
+  if (h.state === 'closed') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, h.x, h.y - 8, 44 * zk, Math.sin(time * 1.3 + h.x) > 0 ? '150,255,130' : '190,110,255', 0.42 + Math.sin(time * 3) * 0.12); ctx.restore(); }
   if (im) drawSprite(ctx, im, h.x, h.y + w * 0.2, w);
   if (h.state === 'closed') {
-    drawGraveHands([{ x: h.x + 4, y: h.y - 2, off: h.x % 7, T: 5.5, face: 1, k: 2 }], G.parts); // topraktan uzanan el: dokun beni
+    drawGraveHands([{ x: h.x + 4, y: h.y - 2, off: h.x % 7, T: 5.5, face: 1, k: 2 * zk }], G.parts); // topraktan uzanan el: dokun beni
     if (G.gold >= GRAVE.cost) { const by = h.y - 52 + Math.sin(time * 3) * 2; circle(h.x, by, 10, 'rgba(26,12,22,0.9)', '#ffd34d', 1.6); drawIcon('coin', h.x, by, 12); } // alınabilir: altın işareti
   }
   const g = h.ghoul;
@@ -8139,7 +8140,8 @@ function drawSoldier(s) {
     if (s.born != null && G.t < s.born) return;
     const lunge = s.bigAtk && fighting && s.atk < s.rate * 0.45 && spr(s.bigAtk); // vuruş anında saldırı pozu
     const im = lunge || spr(s.big), walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
-    const ch = s.bh, rise = !(s.ghoul && s.ghoul.grave && spr('unit_corpsegolem_rise')) && s.born != null && G.t - s.born < 0.7 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.7, 0, 1)) : null;
+    const graveRiseStrip = s.ghoul && s.ghoul.grave && spr('unit_corpsegolem_rise'); // 15 Eki: eskiden bu koşul false döndürüp şeritleri kapatıyordu (golem kayarak yürüyordu)
+    const ch = s.bh, rise = !graveRiseStrip && s.born != null && G.t - s.born < 0.7 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.7, 0, 1)) : null;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.55, s.golem ? '150,255,110' : '170,120,255', 0.2); ctx.restore();
     unitShadow(s.x, s.y + 1, ch, 1.05);
     // Wan şeritleri geldiyse onlar oynar (saldırı: vuruş döngüsüne bağlı kare, yürüyüş: 16 fps); yoksa çizimden hareket
@@ -13125,17 +13127,23 @@ function codexStage(x, y, w, h, col) {
   ctx.strokeStyle = `rgba(${col},0.5)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.stroke();
 }
 const CODEX_SMALL = { wardog: 0.6, hound: 0.6, eagle: 0.6, vulture: 0.6 }; // 12 Eki (Caner): hayvanlar kodekste çok büyüktü, %40 küçük
+const CODEX_PACE = 0.7; // kodeks yürüyüşü: saniyede karakter boyunun 0,7'si kadar
 function drawCodexEnemy(id, px, py, pw, ph) {
   const ranked = RANKED.includes(id), r = ranked ? CODEX.rank : 0, type = r ? id + '_' + RANKS[r].id : id, d = ENEMIES[type];
   const k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
   // sol üst: canlı karakter
   const cx = px + 104, cy = py + 210, im = codexEnemyImg(type);
   codexStage(cx, cy, 170, 190, d.chief ? '255,110,80' : r === 2 ? '255,210,90' : '170,130,255');
-  if (im) {
+  // 15 Eki (Caner): yürüyüş şeridi yüklenmeden çizilmez (önce farklı boyda tek resim görünüp sıçrıyordu); şerit gelince belirir
+  const rigN = d.base ? 'enemy_' + d.base : undefined, wantStrip = LAZY['enemy_' + type + '_walk'] || (rigN && LAZY[rigN + '_walk']);
+  const ready = !wantStrip || animStrip('enemy_' + type, rigN, '_walk');
+  if (!ready) { CODEX.t0 = time; const a = time * 5; ctx.save(); ctx.strokeStyle = 'rgba(200,160,255,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy - 70, 14, a, a + 4); ctx.stroke(); ctx.restore(); } // yükleniyor
+  if (im && ready) {
     const big = d.chief ? 168 : ['ram', 'catapult', 'cavalry'].includes(id) ? 132 : 150;
     const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k) * (CODEX_SMALL[id] || 1);
     ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 236); ctx.clip();
-    drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * 6, walking: true, fly: 0, seed: 0, rig: d.base ? 'enemy_' + d.base : undefined });
+    // hepsi aynı görünür hızda yürür: saniyede CODEX_PACE boy kadar yol (adım boyu şeritten), ayaklar kaymaz
+    drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * walkRate('enemy_' + type, rigN, CODEX_PACE * hh, hh), walking: true, fly: 0, seed: 0, rig: rigN });
     ctx.restore();
     if (r === 2) drawRankStar(cx, cy - hh - 8);
   }
@@ -16043,7 +16051,7 @@ window.__game = {
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
+  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
