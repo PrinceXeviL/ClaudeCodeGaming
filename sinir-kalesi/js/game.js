@@ -2160,6 +2160,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   const wkK = src === 'minion' || src === 'ghoul' || (!src && hitBy === 'hero') ? 'melee' : src; // dirilen ölü ve komutan da Kesici
   let wk = !raw && wkK && e.def.wk && e.def.wk[wkK];
   if (wk && wk < 1 && e.curseT > 0) wk += (1 - wk) * (e.curseRes || 0); // lanet: dirençli olduğu saldırı türüne direnci erir
+  if (wk && wk < 1 && G.idx < NOVICE.levels) wk = 1 - (1 - wk) * NOVICE.resist; // 13 Eki: ilk bölümlerde direnç hafif (lejyoner okları %50 değil %20 savuşturur)
   if (wk) amount *= wk;
   if (e.rageT > 0) amount *= 0.5; // boss öfkesi
   if (e.guardT > 0) { const GD = e.def.ab && e.def.ab.guard; if (GD && GD.vs.includes(src)) amount *= GD.k; } // Kalkan Duvarı: ok ve top işlemez
@@ -3655,6 +3656,8 @@ function soldierHome(s) {
 
 // yüz çevirme (13 Eki): hedef neredeyse tam üstte/altta iken her karede sağa sola dönmesin
 const faceTo = (u, x, th = 4) => { if (Math.abs(x - u.x) > th) u.face = x < u.x ? -1 : 1; };
+// acemi kolaylığı (13 Eki): 1. seferin ilk bölümlerinde düşman dirençleri hafifler; ipucu Ölüleri Diriltme'yi öğretir
+const NOVICE = { levels: 3, resist: 0.4 };
 function moveToward(s, x, y, dt) {
   const d = dist(s.x, s.y, x, y);
   if (d < 1) return true;
@@ -10440,6 +10443,8 @@ function drawHud() {
   if (!overlay && !G.sel) { // tanıtım ipuçları (bir kez)
     const h0 = G.heroes[0], hb = HUD.heroes[0];
     if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts')) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
+    else if (G.idx < NOVICE.levels && !tipSeen('spell') && spellIds().includes('nm_raise') && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 3) { // büyüyü öğret
+      const b = spellBtn(spellIds().indexOf('nm_raise')); drawTip(b.x, b.y - 34, 'Cesetleri dirilt: büyüye dokun!'); }
     else if (G.wave === 0 && soulsFree() > 0 && !tipSeen('castle')) { const q = worldToScreen(G.castle.x, G.castle.y - 70); drawTip(q.x, q.y - 40, 'Kaleye dokun: Büyü Kitabı'); }
   }
 
@@ -15141,7 +15146,7 @@ function hudTap(x, y) {
       setSel(null);
       // tek dokunuş: hazırsa seçer (diriltme hemen çalışır), alt panelde ne yaptığını yazar; seçiliyken dokunmak bırakır
       if (G.spells[id] > 0) { G.spellPeek = id; G.mode = null; sfx('error'); return true; }
-      if (id === 'nm_raise') { G.mode = null; castSpell(id); return true; }
+      if (id === 'nm_raise') { G.mode = null; castSpell(id); tipDone('spell'); return true; }
       G.mode = G.mode && G.mode.id === id ? null : { kind: 'spell', id };
       if (G.mode) { G.spellPeek = id; sfx('spell'); }
       return true;
