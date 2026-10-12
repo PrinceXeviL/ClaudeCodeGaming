@@ -683,19 +683,17 @@
  },
  "enemy_assassin_skill": {
   "n": 32,
-  "fw": 172,
-  "fh": 169,
-  "base": 0.0143,
-  "ch": 0.9477,
-  "sh": 1
+  "fw": 180,
+  "fh": 171,
+  "base": 0.0146,
+  "ch": 0.9367
  },
  "enemy_priest_skill": {
   "n": 32,
-  "fw": 132,
-  "fh": 202,
+  "fw": 114,
+  "fh": 185,
   "base": 0.0157,
-  "ch": 0.7927,
-  "sh": 1
+  "ch": 0.8668
  },
  "enemy_solarcher_skill": {
   "n": 32,
@@ -722,11 +720,10 @@
  },
  "enemy_hound_skill": {
   "n": 32,
-  "fw": 423,
-  "fh": 237,
-  "base": 0.0143,
-  "ch": 0.6754,
-  "sh": 1
+  "fw": 369,
+  "fh": 226,
+  "base": 0.015,
+  "ch": 0.7093
  },
  "enemy_malleus_skill": {
   "n": 32,
@@ -1166,35 +1163,31 @@
  },
  "enemy_flagellant_die": {
   "n": 33,
-  "fw": 273,
-  "fh": 173,
-  "base": 0.0139,
-  "ch": 0.9258,
-  "sh": 1
+  "fw": 485,
+  "fh": 269,
+  "base": 0.0141,
+  "ch": 0.4588
  },
  "enemy_paladin_die": {
   "n": 33,
-  "fw": 306,
-  "fh": 169,
-  "base": 0.0143,
-  "ch": 0.9475,
-  "sh": 1
+  "fw": 442,
+  "fh": 239,
+  "base": 0.0141,
+  "ch": 0.6706
  },
  "enemy_malleus_die": {
   "n": 33,
-  "fw": 300,
-  "fh": 170,
-  "base": 0.0142,
-  "ch": 0.9385,
-  "sh": 1
+  "fw": 453,
+  "fh": 266,
+  "base": 0.0136,
+  "ch": 0.6023
  },
  "enemy_ignis_die": {
   "n": 33,
-  "fw": 271,
-  "fh": 175,
-  "base": 0.0137,
-  "ch": 0.913,
-  "sh": 1
+  "fw": 485,
+  "fh": 278,
+  "base": 0.0139,
+  "ch": 0.5255
  },
  "enemy_drummer_die": {
   "n": 33,
@@ -1205,11 +1198,10 @@
  },
  "enemy_saint_die": {
   "n": 33,
-  "fw": 258,
-  "fh": 176,
-  "base": 0.0139,
-  "ch": 0.9072,
-  "sh": 1
+  "fw": 485,
+  "fh": 334,
+  "base": 0.0141,
+  "ch": 0.3741
  },
  "enemy_cathedral_die": {
   "n": 33,
@@ -1238,11 +1230,10 @@
  },
  "enemy_elephant_die": {
   "n": 33,
-  "fw": 325,
-  "fh": 165,
+  "fw": 410,
+  "fh": 212,
   "base": 0.0139,
-  "ch": 0.9699,
-  "sh": 1
+  "ch": 0.7541
  },
  "hero_leonidas_skill": {
   "n": 32,
@@ -1296,27 +1287,24 @@
  },
  "enemy_holywater_die": {
   "n": 33,
-  "fw": 229,
-  "fh": 175,
-  "base": 0.0137,
-  "ch": 0.913,
-  "sh": 1
+  "fw": 345,
+  "fh": 268,
+  "base": 0.0132,
+  "ch": 0.5978
  },
  "enemy_bellpriest_die": {
   "n": 33,
-  "fw": 228,
-  "fh": 173,
-  "base": 0.014,
-  "ch": 0.9254,
-  "sh": 1
+  "fw": 469,
+  "fh": 344,
+  "base": 0.0137,
+  "ch": 0.4647
  },
  "enemy_inquisitor_die": {
   "n": 33,
-  "fw": 184,
-  "fh": 173,
+  "fw": 485,
+  "fh": 334,
   "base": 0.014,
-  "ch": 0.9254,
-  "sh": 1
+  "ch": 0.4452
  },
  "enemy_campanus_die": {
   "n": 33,
@@ -1328,11 +1316,10 @@
  },
  "enemy_severus_die": {
   "n": 33,
-  "fw": 269,
-  "fh": 174,
+  "fw": 485,
+  "fh": 286,
   "base": 0.0139,
-  "ch": 0.9215,
-  "sh": 1
+  "ch": 0.4514
  },
  "enemy_gloriosus_die": {
   "n": 33,
@@ -1343,11 +1330,10 @@
  },
  "enemy_colossus_die": {
   "n": 33,
-  "fw": 248,
-  "fh": 175,
+  "fw": 378,
+  "fh": 273,
   "base": 0.0141,
-  "ch": 0.9155,
-  "sh": 1
+  "ch": 0.5855
  },
  "enemy_bellpriest_skill": {
   "n": 32,
@@ -1525,10 +1511,10 @@
  },
  "enemy_lantern_die": {
   "n": 33,
-  "fw": 328,
-  "fh": 173,
-  "base": 0.014,
-  "ch": 0.9254
+  "fw": 439,
+  "fh": 237,
+  "base": 0.0141,
+  "ch": 0.6753
  },
  "enemy_centurion_walk": {
   "n": 32,
