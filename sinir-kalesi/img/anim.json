@@ -1756,24 +1756,24 @@
  },
  "hero_drakula_run": {
   "n": 32,
-  "fw": 425,
-  "fh": 335,
-  "base": 0.0129,
-  "ch": 0.8966
+  "fw": 488,
+  "fh": 320,
+  "base": 0.0133,
+  "ch": 0.9379
  },
  "hero_drakula_cast": {
   "n": 32,
-  "fw": 356,
-  "fh": 308,
-  "base": 0.0133,
-  "ch": 0.9734
- },
- "hero_drakula_block": {
-  "n": 32,
-  "fw": 397,
+  "fw": 409,
   "fh": 310,
   "base": 0.0133,
   "ch": 0.969
+ },
+ "hero_drakula_block": {
+  "n": 32,
+  "fw": 421,
+  "fh": 319,
+  "base": 0.0132,
+  "ch": 0.9404
  },
  "hero_spartacus_idle": {
   "n": 32,
@@ -1784,24 +1784,24 @@
  },
  "hero_spartacus_run": {
   "n": 32,
-  "fw": 275,
-  "fh": 311,
+  "fw": 335,
+  "fh": 315,
   "base": 0.0147,
-  "ch": 0.9658
+  "ch": 0.9511
  },
  "hero_spartacus_cast": {
   "n": 32,
-  "fw": 315,
-  "fh": 333,
-  "base": 0.0134,
-  "ch": 0.9016
+  "fw": 310,
+  "fh": 334,
+  "base": 0.0133,
+  "ch": 0.898
  },
  "hero_spartacus_block": {
   "n": 32,
   "fw": 286,
-  "fh": 312,
-  "base": 0.0147,
-  "ch": 0.9609
+  "fh": 314,
+  "base": 0.0145,
+  "ch": 0.9564
  },
  "hero_leonidas_idle": {
   "n": 32,
@@ -1812,10 +1812,10 @@
  },
  "hero_leonidas_run": {
   "n": 32,
-  "fw": 353,
-  "fh": 310,
-  "base": 0.0146,
-  "ch": 0.9684
+  "fw": 393,
+  "fh": 327,
+  "base": 0.0139,
+  "ch": 0.9169
  },
  "hero_leonidas_cast": {
   "n": 32,
@@ -1826,10 +1826,10 @@
  },
  "hero_leonidas_block": {
   "n": 32,
-  "fw": 340,
-  "fh": 310,
-  "base": 0.0145,
-  "ch": 0.9663
+  "fw": 332,
+  "fh": 317,
+  "base": 0.0143,
+  "ch": 0.9476
  },
  "unit_corpsegolem_rise": {
   "n": 6,
