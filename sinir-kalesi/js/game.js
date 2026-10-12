@@ -8523,7 +8523,9 @@ function drawUnit(name, im, x, y, face, o) {
   else if (!rig.wings && !(o.rise != null)) {
     // dururken: Gemini bekleme kareleri (<ad>_idle; 11 Eki, mahzen iskeletleri) varsa nefes / bakınma döngüsü, yoksa yürüyüş şeridinin ayakları kapalı karesi
     const id = animStrip(name, o.rig, '_idle');
-    if (id) { fName = id; const n = ANIM_META[id].n, Q = IDLE_SEQ, u = Math.floor((time + (o.seed || 0) * 1.37) / IDLE_STEP) % Q.length; fi = Q[u] % n; }
+    if (id) { fName = id; const n = ANIM_META[id].n;
+      if (n > 8) fi = Math.floor((time + (o.seed || 0) * 1.37) * 12) % n; // 13 Eki: Wan bekleme döngüsü (32 kare) sırayla, 12 fps; her birim farklı karede başlar
+      else { const Q = IDLE_SEQ, u = Math.floor((time + (o.seed || 0) * 1.37) / IDLE_STEP) % Q.length; fi = Q[u] % n; } }
     else { const n = animStrip(name, o.rig, '_walk'); if (n && ANIM_META[n].idle != null) { fName = n; fi = ANIM_META[n].idle; } }
   }
   const frontBack = fName && /_walk_(on|arka)$/.test(fName); // önden/arkadan görünüş aynalanmaz
