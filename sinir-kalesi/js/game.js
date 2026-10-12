@@ -4517,7 +4517,7 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // rail = Mortimer'ın önüne yeniden çizilen korkuluk bandı, px = Mortimer boyu (görsel pikseli), w = oyundaki genişlik
 // 13 Eki: geniş balkonlu kale (ham/nm_kale_balkon.jpg). Mortimer orta çıkıntıda, iki yan kanatta Mezar Bekçisi muhafızlar (guards: [x, y, yüz]).
 // rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
-const KEEP = { w: 178, gate: [0.42, 0.85], at: [0.5, 0.566], rail: [0.37, 0.53, 0.62, 0.61], px: 190,
+const KEEP = { w: 178, gate: [0.42, 0.85], at: [0.5, 0.566], rail: [0.37, 0.53, 0.62, 0.61], px: 135, // px: Mortimer muhafızlarla aynı boyda (13 Eki, Caner)
   // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (dikdörtgen olsaydı balkon zemini karakterleri düz keserdi)
   railPoly: [[0.08, 0.478], [0.11, 0.486], [0.2, 0.5], [0.3, 0.516], [0.37, 0.526], [0.4, 0.546], [0.45, 0.553], [0.5, 0.555], [0.55, 0.551], [0.585, 0.538],
     [0.65, 0.551], [0.75, 0.564], [0.85, 0.568], [0.9, 0.562], [0.95, 0.528], [0.98, 0.528], [0.98, 0.64], [0.08, 0.64]],
@@ -4633,13 +4633,26 @@ function mortDanger() {
   const c = G.castle;
   return c.shake > 0 || G.enemies.some(e => !e.dead && !e.def.flying && dist(e.x, e.y, c.x, c.y) < 150);
 }
+// 13 Eki (Caner): Mortimer sakinken kapıdan içeri girer ('goin' → 'in'); düşman kaleye yaklaşınca, kalabalık ordu ya da boss gelince,
+// kale vurulunca ya da büyü yapınca kapıdan çıkar ('out'). MORT_IN: çıkış/giriş süresi, sakinlik süreleri, kalabalık eşiği
+const MORT_IN = { walk: 0.9, quiet: 14, crowd: 12, near: 260 };
+function mortLoud() {
+  const c = G.castle, alive = G.enemies.filter(e => !e.dead);
+  return c.shake > 0 || G.mortCast > 0 || alive.length >= MORT_IN.crowd || alive.some(e => e.def.chief || dist(e.x, e.y, c.x, c.y) < MORT_IN.near);
+}
 function updateMortState(dt) {
-  const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0 });
+  const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 });
   M.t += dt;
   if (mortDanger()) M.calm = 0; else M.calm += dt;
-  if (M.st === 'tea' && M.calm === 0) { M.st = 'up'; M.t = 0; }
-  else if (M.st === 'up' && M.t > MORT_TRANS) { M.st = 'panic'; M.t = 0; }
-  else if (M.st === 'panic' && M.calm > 3) { M.st = 'down'; M.t = 0; }
+  const loud = mortLoud(); if (loud) M.quiet = 0; else M.quiet += dt;
+  if (G.mortCast > 0 && (M.st === 'in' || M.st === 'goin')) { M.st = 'panic'; M.t = 0; G.effects.push({ kind: 'ring', x: mortimerPoint().x, y: mortimerPoint().y, r: 22, col: '190,110,255', t: 0, dur: 0.4 }); } // büyüde hemen çıkar
+  if (M.st === 'in') { if (loud) { M.st = 'out'; M.t = 0; } }
+  else if (M.st === 'out') { if (M.t > MORT_IN.walk) { M.st = 'panic'; M.t = 0; } }
+  else if (M.st === 'goin') { if (loud) { M.st = 'out'; M.t = MORT_IN.walk - Math.min(M.t, MORT_IN.walk); } else if (M.t > MORT_IN.walk) { M.st = 'in'; M.t = 0; } }
+  else if (M.st === 'tea' && M.calm === 0) { M.st = 'up'; M.t = 0; M.leave = false; }
+  else if (M.st === 'tea' && M.quiet > MORT_IN.quiet) { M.st = 'up'; M.t = 0; M.leave = true; } // çayını bitirdi, içeri
+  else if (M.st === 'up' && M.t > MORT_TRANS) { M.st = M.leave ? 'goin' : 'panic'; M.t = 0; M.leave = false; }
+  else if (M.st === 'panic' && M.calm > 3) { M.st = M.quiet > 6 ? 'goin' : 'down'; M.t = 0; }
   else if (M.st === 'down' && M.t > MORT_TRANS) { M.st = 'tea'; M.t = 0; }
 }
 const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : null);
@@ -4656,6 +4669,16 @@ function mortAnim(p) {
   if (mortStrip('mortimer_cay') && M.st !== 'panic') return { n: 'mortimer_cay', i: Math.floor(time * 12) % ANIM_META.mortimer_cay.n, k: MORT_SIT_K };
   return null;
 }
+// kapı ile balkon arası yürüyüş: kapının karanlığından çıkar (silik, küçük, kapı eşiğinde) → balkondaki yerine (tam boy); girerken tersi
+function drawMortDoor() {
+  const M = G.mort, m = mortimerPoint(), q0 = clamp(M.t / MORT_IN.walk, 0, 1), q = M.st === 'out' ? q0 : 1 - q0, e = q * q * (3 - 2 * q);
+  const im = spr('mortimer'); if (!im) return;
+  const c = G.castle, ci = castleStageSprite(), cp = castlePlace(c.x, c.y, ci), h = cp.w * ci.height / ci.width;
+  const dy = (KEEP.door ? KEEP.door[1] : 0.536) * h + (cp.y - h), x = m.x, y = lerp(dy, m.y, e), sc = 0.82 + 0.18 * e, bob = Math.abs(Math.sin(q0 * Math.PI * 4)) * 1.5;
+  ctx.save(); ctx.globalAlpha = clamp(e * 1.6, 0, 1); ctx.translate(x, y - bob); ctx.scale((M.st === 'out' ? 1 : -1) * sc, sc);
+  const hgt = m.h * 1.15 * MORT_SIT_K * 1.15; drawSprite(ctx, im, 0, 0, hgt * im.width / im.height);
+  ctx.restore();
+}
 // balkon muhafızları: Mezar Bekçisi iskeletleri bekleme şeridiyle nefes alır; kale vurulunca kalkanını kaldırır (saldırı şeridi), boss gelince tetikte
 function drawKeepGuards(S, cp, h, sh) {
   const x0 = cp.x + sh - cp.w / 2, y0 = cp.y - h, gh = S.gpx * cp.w / 760;
@@ -4671,6 +4694,9 @@ function drawKeepGuards(S, cp, h, sh) {
   });
 }
 function drawMortimer() {
+  const MS = G.mort && G.mort.st;
+  if (MS === 'in') return;
+  if (MS === 'out' || MS === 'goin') { drawMortDoor(); return; }
   const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / MORT_CAST_T, 0, 1) : -1;
   const k = p >= 0 ? Math.sin(p * Math.PI) : 0;
   const F = ANIM_META.mortimer_cast, fim = F && spr('mortimer_cast'), im = spr('mortimer');
