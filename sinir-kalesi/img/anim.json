@@ -426,11 +426,10 @@
  },
  "enemy_heavy_atk2": {
   "n": 32,
-  "fw": 164,
+  "fw": 170,
   "fh": 181,
   "base": 0.0133,
-  "ch": 0.8847,
-  "sh": 1
+  "ch": 0.8847
  },
  "unit_skel_1_atk2": {
   "n": 32,
@@ -465,11 +464,10 @@
  },
  "enemy_heavy_atk3": {
   "n": 32,
-  "fw": 168,
-  "fh": 166,
-  "base": 0.0145,
-  "ch": 0.9661,
-  "sh": 1
+  "fw": 164,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9684
  },
  "unit_skel_1_atk3": {
   "n": 32,
@@ -766,11 +764,10 @@
  },
  "enemy_heavy_skill": {
   "n": 32,
-  "fw": 172,
-  "fh": 165,
+  "fw": 157,
+  "fh": 167,
   "base": 0.0146,
-  "ch": 0.9708,
-  "sh": 1
+  "ch": 0.9562
  },
  "enemy_gloriosus_skill": {
   "n": 32,
@@ -790,11 +787,10 @@
  },
  "enemy_paladin_skill": {
   "n": 32,
-  "fw": 199,
-  "fh": 166,
+  "fw": 220,
+  "fh": 167,
   "base": 0.0147,
-  "ch": 0.9633,
-  "sh": 1
+  "ch": 0.9609
  },
  "enemy_saint_skill": {
   "n": 32,
@@ -806,19 +802,17 @@
  },
  "enemy_campanus_skill": {
   "n": 32,
-  "fw": 190,
-  "fh": 176,
-  "base": 0.0141,
-  "ch": 0.9106,
-  "sh": 1
+  "fw": 183,
+  "fh": 170,
+  "base": 0.0146,
+  "ch": 0.9416
  },
  "enemy_colossus_skill": {
   "n": 32,
-  "fw": 181,
-  "fh": 175,
-  "base": 0.0138,
-  "ch": 0.9126,
-  "sh": 1
+  "fw": 182,
+  "fh": 176,
+  "base": 0.014,
+  "ch": 0.9114
  },
  "tower_archer_nail_atk": {
   "n": 48,
@@ -973,14 +967,13 @@
   "ch": 0.9659
  },
  "unit_bonegiant_walk": {
-  "n": 25,
-  "fw": 187,
-  "fh": 169,
-  "base": 0.0143,
-  "ch": 0.9475,
-  "idle": 1,
-  "sh": 1,
-  "stride": 1.234
+  "n": 49,
+  "fw": 191,
+  "fh": 172,
+  "base": 0.014,
+  "ch": 0.9301,
+  "idle": 0,
+  "stride": 1.115
  },
  "unit_bonegiant_atk": {
   "n": 32,
@@ -999,14 +992,13 @@
   "sh": 1
  },
  "unit_corpsegolem_walk": {
-  "n": 26,
-  "fw": 189,
-  "fh": 172,
-  "base": 0.014,
-  "ch": 0.9279,
+  "n": 49,
+  "fw": 201,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9433,
   "idle": 0,
-  "sh": 1,
-  "stride": 1.366
+  "stride": 1.462
  },
  "unit_corpsegolem_atk": {
   "n": 32,
@@ -1025,14 +1017,13 @@
   "sh": 1
  },
  "unit_gulyabani_walk": {
-  "n": 29,
-  "fw": 165,
+  "n": 49,
+  "fw": 180,
   "fh": 171,
   "base": 0.0143,
-  "ch": 0.9382,
+  "ch": 0.9379,
   "idle": 0,
-  "sh": 1,
-  "stride": 1.374
+  "stride": 1.347
  },
  "unit_gulyabani_atk": {
   "n": 32,
@@ -1337,19 +1328,17 @@
  },
  "enemy_bellpriest_skill": {
   "n": 32,
-  "fw": 167,
-  "fh": 170,
-  "base": 0.0142,
-  "ch": 0.9385,
-  "sh": 1
+  "fw": 164,
+  "fh": 165,
+  "base": 0.0147,
+  "ch": 0.9707
  },
  "enemy_cathedral_skill": {
   "n": 32,
-  "fw": 168,
+  "fw": 169,
   "fh": 165,
   "base": 0.0147,
-  "ch": 0.9707,
-  "sh": 1
+  "ch": 0.9682
  },
  "enemy_elephant_atk": {
   "n": 32,
@@ -1578,12 +1567,12 @@
  },
  "enemy_hierophant_walk": {
   "n": 32,
-  "fw": 119,
-  "fh": 167,
-  "base": 0.0145,
-  "ch": 0.9566,
-  "idle": 20,
-  "stride": 0.814
+  "fw": 138,
+  "fh": 171,
+  "base": 0.0143,
+  "ch": 0.9359,
+  "idle": 0,
+  "stride": 0.874
  },
  "enemy_hierophant_atk": {
   "n": 32,
@@ -1594,10 +1583,10 @@
  },
  "enemy_hierophant_skill": {
   "n": 32,
-  "fw": 134,
+  "fw": 145,
   "fh": 175,
-  "base": 0.0138,
-  "ch": 0.9126
+  "base": 0.0139,
+  "ch": 0.9169
  },
  "enemy_hierophant_die": {
   "n": 33,
@@ -1638,19 +1627,19 @@
  },
  "enemy_ironwarden_walk": {
   "n": 32,
-  "fw": 140,
-  "fh": 168,
+  "fw": 160,
+  "fh": 171,
   "base": 0.0143,
-  "ch": 0.9523,
-  "idle": 13,
-  "stride": 1.161
+  "ch": 0.9379,
+  "idle": 0,
+  "stride": 1.16
  },
  "enemy_ironwarden_atk": {
   "n": 32,
-  "fw": 130,
-  "fh": 172,
-  "base": 0.014,
-  "ch": 0.9279
+  "fw": 131,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
  },
  "enemy_ironwarden_skill": {
   "n": 32,
