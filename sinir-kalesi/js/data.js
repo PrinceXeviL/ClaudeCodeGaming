@@ -1390,8 +1390,10 @@ function vertEpisode(E, ph, flip) {
   let s = Math.round(ph * 1000) + 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
   E.vert = true; E.mapH = MH;
   E.nodes = Array.from({ length: n }, (_, k) => {
-    const t = k / (n - 1), y = MH - MAP_V.bot - t * (MH - MAP_V.bot - MAP_V.top) + (r() - 0.5) * MAP_V.jit;
-    return [Math.round(MAP_V.x + flip * MAP_V.amp * Math.sin(k * 1.15 + ph) + (r() - 0.5) * MAP_V.jit), Math.round(y)];
+    // doğal kıvrım (Caner: hep aynı zikzak olmasın): iki farklı dalganın toplamı + küçük sapma; bazen aynı yana birkaç bölüm sürer
+    const t = k / (n - 1), y = MH - MAP_V.bot - t * (MH - MAP_V.bot - MAP_V.top) + (r() - 0.5) * 50;
+    const x = MAP_V.x + flip * (105 * Math.sin(0.62 * k + ph) + 48 * Math.sin(1.47 * k + 2.3 * ph)) + (r() - 0.5) * 40;
+    return [Math.round(Math.max(300, Math.min(660, x))), Math.round(y)];
   });
   E.start = [MAP_V.x + flip * 40, MH + 70]; E.end = [MAP_V.x, 150];
 }
