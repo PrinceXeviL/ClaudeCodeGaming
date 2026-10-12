@@ -128,10 +128,10 @@ function rottenOf(name, im) {
   const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
   for (let i = 0; i < a.length; i += 4) {
     const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
-    // 11 Eki (Caner): koyu mor; boya eskisinin yarısı kadar baskın (asıl renk %45 kalır), karartılmış
-    a[i] = (a[i] * 0.45 + L * 0.7 * 0.55) * 0.72;
-    a[i + 1] = (a[i + 1] * 0.45 + L * 0.25 * 0.55) * 0.72;
-    a[i + 2] = (a[i + 2] * 0.45 + L * 1.1 * 0.55) * 0.72;
+    // 13 Eki (Caner): dirilen ölüler kızıl (11 Eki: mor); asıl renk %45 kalır, karartılmış
+    a[i] = (a[i] * 0.2 + L * 1.25 * 0.8) * 0.72;
+    a[i + 1] = (a[i + 1] * 0.2 + L * 0.1 * 0.8) * 0.72;
+    a[i + 2] = (a[i + 2] * 0.2 + L * 0.14 * 0.8) * 0.72;
   }
   g.putImageData(d, 0, 0);
   return (ROT[name] = c);
@@ -3841,7 +3841,7 @@ function updateSoldier(s, dt) {
     s.target = pv; if (!pv.blocker && !pv.def.noblock) pv.blocker = s;
   }
   const e = s.target, lim = e && e === s.provoker ? PROVOKE.r + 20 : s.engage + (s.leash ?? 40);
-  if (e && (e.dead || e.under || e.reviveT > 0 || dist(e.x, e.y, home.x, home.y) > lim || s.moving)) {
+  if (e && (e.dead || e.under || e.reviveT > 0 || (s.zombie ? dist(e.x, e.y, s.x, s.y) > ZOMBIE.drop : dist(e.x, e.y, home.x, home.y) > lim) || s.moving)) {
     if (e.blocker === s) e.blocker = null;
     s.target = null;
   }
@@ -3870,7 +3870,11 @@ function updateSoldier(s, dt) {
     const t = s.target;
     if ((!t.blocker || t.blocker.dead) && !t.def.noblock) t.blocker = s;
     const side = s.x < t.x ? -1 : 1;
-    const spot = t.blocker === s ? { x: t.x + side * 13, y: t.y } : { x: t.x + side * 12, y: t.y + (s.slot === 2 ? 7 : -7) };
+    let spot = t.blocker === s ? { x: t.x + side * 13, y: t.y } : { x: t.x + side * 12, y: t.y + (s.slot === 2 ? 7 : -7) };
+    if (s.zombie && t.blocker !== s) { // 13 Eki: ek saldıranlar hedefin çevresine yayılır (aynı noktaya yığılmaz)
+      const atk = G.soldiers.filter(o => o !== t.blocker && !o.dead && o.target === t), k = atk.indexOf(s), n = atk.length;
+      const a = (k + 1) / (n + 1) * Math.PI - Math.PI / 2; spot = { x: t.x + side * 13 * Math.cos(a) + side * 4, y: t.y + 11 * Math.sin(a) };
+    }
     const arrived = moveToward(s, spot.x, spot.y, dt);
     if (arrived || dist(s.x, s.y, t.x, t.y) < 19) {
       faceTo(s, t.x);
@@ -4444,6 +4448,18 @@ function castNecro(id, x, y) {
   }
 }
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
+// dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
+// sep = birimler arası en az uzaklık (separateUnits)
+const ZOMBIE = { drop: 150, lane: 9, sep: 10 };
+function separateUnits(dt) {
+  const L = G.soldiers.filter(s => !s.dead && !s.wall && !s.hero && !s.big && !s.bow && !(s.born != null && G.t < s.born) && !s.exit);
+  for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
+    const a = L[i], b = L[j], dx = b.x - a.x, dy = (b.y - a.y) * 1.6, d = Math.hypot(dx, dy);
+    if (d >= ZOMBIE.sep || !(a.zombie || b.zombie)) continue; // yalnız dirilenler (kışla askerlerinin düzeni kendi yuvalarından)
+    const push = (ZOMBIE.sep - d) * Math.min(1, dt * 8) * 0.5, ux = d > 0.01 ? dx / d : (i % 2 ? 1 : -1), uy = d > 0.01 ? dy / d / 1.6 : 0;
+    a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push;
+  }
+}
 function zombieHunt(s) {
   let best = null, bd = 1e9;
   for (const o of G.enemies) {
@@ -4455,14 +4471,15 @@ function zombieHunt(s) {
   // yoldan yürür: önce en yakın yol noktasına çıkar, sonra yol boyunca düşmana doğru adım adım ilerler (yol dışına kesmez);
   // hedef menzile girince normal dövüş seçimi devralır
   const me = nearestOnPaths(G.paths, s.x, s.y);
-  if (me.d > 8) { s.rx = me.x; s.ry = me.y; return; }
-  const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, me.along + clamp(tg.along - me.along, -30, 30));
+  s.zlane ??= rand(-1, 1) * ZOMBIE.lane; // 13 Eki: her zombi yolun kendi şeridinden yürür (üst üste binmesin)
+  if (me.d > 8 + Math.abs(s.zlane)) { const q0 = pathPos(me.p, me.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return; }
+  const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, me.along + clamp(tg.along - me.along, -30, 30), s.zlane);
   s.rx = q.x; s.ry = q.y;
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 function raiseMinion(e, delay = 0) {
   const S = spellStats('nm_raise'), M = S.minion, up = 1; // dayanıklılık artık Büyü Kitabı'ndan (spellStats)
-  if (G.soldiers.filter(s => s.minion && !s.dead).length >= S.max) return;
+  if (G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
     rate: 1, speed: 40, engage: 80, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life * up, born: G.t + delay }; // engage 80: dirilenler düşmana daha uzaktan saldırır
@@ -4472,7 +4489,7 @@ function raiseMinion(e, delay = 0) {
     s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true;
   }
   G.soldiers.push(s);
-  G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '190,70,255', t: 0, dur: 0.7 });
+  G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '230,50,50', t: 0, dur: 0.7 });
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(20, 45), col: i % 2 ? '230,50,110' : '190,80,255', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
 }
 // Mortimer şapelin ön balkonunda durur. Hasar evresine göre (castle_1..3): at = ayak noktası (görsel oranı),
@@ -5829,6 +5846,7 @@ function update(dt) {
   for (const t of G.towers) updateTower(t, dt);
   for (const e of G.enemies) if (!e.dead) updateEnemy(e, dt);
   for (const s of G.soldiers) updateSoldier(s, dt);
+  separateUnits(dt);
   for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; updateProjectile(p, dt); }
   hitBy = null;
   HERO_SKILL = false; SKILL_K = 1;
@@ -5849,7 +5867,7 @@ function update(dt) {
   if (G.intro) { G.intro.t += dt; if (G.intro.t > G.intro.dur) G.intro = null; }
   for (const f of G.effects) if (f.riseAt != null && f.kind === 'corpse' && f.t >= f.riseAt) { // çivili/lanetli ceset kendiliğinden dirilir
     f.riseAt = null;
-    if (G.soldiers.filter(s => s.minion && !s.dead).length < spellStats('nm_raise').max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#d98aff'); }
+    if (G.soldiers.filter(s => s.minion && !s.dead).length < spellStats('nm_raise').max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#ff7a6a'); }
   }
   for (const g of G.ghosts) { // hayalet: yolda geriye süzülür, değdiğini yakar ve korkutur
     g.t += dt; g.d -= 85 * dt;
@@ -15375,6 +15393,8 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
 window.__game = {
+  rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme
+  raiseAll() { G.testRaiseMax = 99; const c = G.effects.filter(f => f.kind === 'corpse' && f.raisable); c.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); return c.length; }, // test: bütün cesetleri dirilt
   spawn(type, pi = 0) { return spawnEnemy(type, pi); }, // test: düşman çıkar
   netTest(i = 0) { const e = G.enemies.find(q => !q.dead), v = G.soldiers.find(q => !q.dead && !q.wall); if (!e || !v) return false; playSkill(e, NET.skill); throwNet(e, v, 2.5, NET.skill * NET.rel); return true; }, // test: ağ atışı
   bakeThumbs(cols = 8) { // tools/harita-pisir.js: bütün bölüm kartı önizlemeleri tek atlasta
