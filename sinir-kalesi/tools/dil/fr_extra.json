@@ -106,7 +106,21 @@
 "YENİ: MEZAR BEKÇİSİ": "NOUVEAU : GARDIEN DE LA TOMBE",
 "Kalk bakalım, nöbet senin.": "Debout, c'est ton tour de garde.",
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Tu reposais tranquille dans ta tombe, je sais. Désolé.",
-"Kapıya kimse girmeyecek. Kimse.": "Personne ne passe cette porte. Personne."
+"Kapıya kimse girmeyecek. Kimse.": "Personne ne passe cette porte. Personne.",
+"Tabut Duvarı": "Mur de cercueils",
+"Ruh Biçimi": "Moisson des âmes",
+"Kılıçlar": "Épées",
+"YENİ OYUNCU": "NOUVEAU JOUEUR",
+"GERÇEK": "RÉEL",
+"Kalkan Duvarı!": "Mur de boucliers !",
+"KUTSAL ENGİZİSYON": "SAINTE INQUISITION",
+"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Arrête toutes les vagues. Termine sans perdre de vie pour 3 étoiles.",
+"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Arrête toutes les vagues et protège le château. Moins tu perds de vies, plus tu gagnes d'étoiles.",
+"Bölümü bir kez bitir, Sonsuz Gece açılır": "Termine le niveau une fois pour débloquer la Nuit sans fin",
+"Altın Güneş Arabası": "Char du Soleil d'or",
+"Güneş Formu": "Forme solaire",
+"+%15 dayanıklı · +0,75 sn": "+15 % plus résistant · +0,75 s",
+"+%40 dayanıklı · +2 sn": "+40 % plus résistant · +2 s"
 },
 "tpl": [
 [
@@ -148,6 +162,14 @@
 [
 "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
 "Un golem de cadavres se lève (PV {} · Dégâts {}-{} · Armure {} %) et garde la porte ; s'il meurt, il se relève après {} s."
+],
+[
+"+%{} dayanıklı",
+"+{}% plus résistant"
+],
+[
+"İlk görüldü: {}. bölüm · {}",
+"Vu pour la première fois : niveau {} · {}"
 ]
 ]
 }

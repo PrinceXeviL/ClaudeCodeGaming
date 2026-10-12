@@ -106,7 +106,21 @@
 "YENİ: MEZAR BEKÇİSİ": "新：守墓者",
 "Kalk bakalım, nöbet senin.": "起来吧，该你站岗了。",
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "我知道你在墓里躺得正舒服。抱歉。",
-"Kapıya kimse girmeyecek. Kimse.": "谁也别想进这道门。谁也别想。"
+"Kapıya kimse girmeyecek. Kimse.": "谁也别想进这道门。谁也别想。",
+"Tabut Duvarı": "棺材之墙",
+"Ruh Biçimi": "灵魂收割",
+"Kılıçlar": "剑",
+"YENİ OYUNCU": "新玩家",
+"GERÇEK": "真实",
+"Kalkan Duvarı!": "盾墙！",
+"KUTSAL ENGİZİSYON": "神圣宗教裁判所",
+"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "挡住所有波次。不失一命即可获得3星。",
+"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "挡住所有波次，守住城堡。失去的生命越少，星星越多。",
+"Bölümü bir kez bitir, Sonsuz Gece açılır": "通关一次即可解锁无尽之夜",
+"Altın Güneş Arabası": "黄金太阳战车",
+"Güneş Formu": "太阳形态",
+"+%15 dayanıklı · +0,75 sn": "耐久+15% · +0.75秒",
+"+%40 dayanıklı · +2 sn": "耐久+40% · +2秒"
 },
 "tpl": [
 [
@@ -148,6 +162,14 @@
 [
 "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
 "尸骸魔像起身（生命{} · 伤害{}-{} · 护甲{}%），守住城门；阵亡后{}秒再次站起。"
+],
+[
+"+%{} dayanıklı",
+"耐久+{}%"
+],
+[
+"İlk görüldü: {}. bölüm · {}",
+"首次出现：第{}关 · {}"
 ]
 ]
 }

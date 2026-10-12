@@ -1039,6 +1039,7 @@ Object.assign(ENEMY_WK, {
   raider_chief: { melee: 1.1 }, scorpion_queen: { magic: 1.3, arrow: 0.7 }, worm_king: { blast: 1.3, arrow: 0.8 }, mummy_king: { blast: 1.3 }, golem_titan: { magic: 1.35, arrow: 0.6 },
   storm_djinn: { arrow: 1.15, magic: 0.8, blast: 0.9 },
 });
+const ENEMY_NOTE = {}; // özel saldırı notu (açıklamanın ikinci cümlesi; enemyDesc birleştirir)
 const ENEMY_DESC = {
   raider: 'Kalabalık gelen çöl piyadesi', scorpion: 'Zırhlı ve hızlı: büyücü kulesi kullan', vulture: 'Uçar: yalnızca okçu ve büyücü vurur',
   camel: 'Hızlı ve dayanıklı; ölünce süvarisi yaya devam eder', sandworm: 'Kuma gömülür: gömülüyken vurulamaz, top yüzeye çıkınca iyi vurur',
@@ -1180,7 +1181,7 @@ if (NECRO) {
     hound: { kind: 'charge', cd: 6, d: 16, stun: 0.6, mul: 1, note: 'Atılıp iskeleti devirir' },
     saint: { kind: 'bash', cd: 8, stun: 1.5, mul: 1.5, note: 'Taş kılıcıyla ezer, sersemletir' },
   };
-  for (const t in ALT) { const { note, ...a } = ALT[t]; ENEMIES[t].alt = a; if (ENEMY_DESC[t]) ENEMY_DESC[t] += '. ' + note; }
+  for (const t in ALT) { const { note, ...a } = ALT[t]; ENEMIES[t].alt = a; if (ENEMY_DESC[t]) ENEMY_NOTE[t] = note; } // not ayrı: çeviri cümle cümle bulunsun (12 Eki)
   const AB = {
     centurion: { volley: { cd: 10, n: 3, dmg: 14, stun: 0.8, r: 150, say: 'Pilum!' } },
     champion: { net: { cd: 9, n: 2, stun: 3, r: 120, say: 'Arena Ağı!' } },

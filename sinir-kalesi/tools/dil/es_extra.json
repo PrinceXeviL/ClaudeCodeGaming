@@ -106,7 +106,21 @@
 "YENİ: MEZAR BEKÇİSİ": "NUEVO: GUARDIÁN DE LA TUMBA",
 "Kalk bakalım, nöbet senin.": "Arriba, te toca la guardia.",
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Estabas cómodo en tu tumba, lo sé. Perdona.",
-"Kapıya kimse girmeyecek. Kimse.": "Nadie cruza esa puerta. Nadie."
+"Kapıya kimse girmeyecek. Kimse.": "Nadie cruza esa puerta. Nadie.",
+"Tabut Duvarı": "Muro de ataúdes",
+"Ruh Biçimi": "Siega de almas",
+"Kılıçlar": "Espadas",
+"YENİ OYUNCU": "JUGADOR NUEVO",
+"GERÇEK": "REAL",
+"Kalkan Duvarı!": "¡Muro de escudos!",
+"KUTSAL ENGİZİSYON": "SANTA INQUISICIÓN",
+"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Detén todas las oleadas. Termina sin perder vidas y obtendrás 3 estrellas.",
+"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Detén todas las oleadas y protege el castillo. Cuantas menos vidas pierdas, más estrellas.",
+"Bölümü bir kez bitir, Sonsuz Gece açılır": "Supera el nivel una vez para desbloquear la Noche Eterna",
+"Altın Güneş Arabası": "Carro del Sol Dorado",
+"Güneş Formu": "Forma Solar",
+"+%15 dayanıklı · +0,75 sn": "+15% más resistente · +0,75 s",
+"+%40 dayanıklı · +2 sn": "+40% más resistente · +2 s"
 },
 "tpl": [
 [
@@ -148,6 +162,14 @@
 [
 "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
 "Se alza un Gólem de Cadáveres (Vida {} · Daño {}-{} · Armadura {}%) y guarda la puerta; si muere, vuelve a alzarse tras {} s."
+],
+[
+"+%{} dayanıklı",
+"+{}% más resistente"
+],
+[
+"İlk görüldü: {}. bölüm · {}",
+"Visto por primera vez: nivel {} · {}"
 ]
 ]
 }

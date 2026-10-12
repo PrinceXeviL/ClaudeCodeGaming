@@ -301,7 +301,21 @@
 "YENİ: MEZAR BEKÇİSİ": "NEW: GRAVE KEEPER",
 "Kalk bakalım, nöbet senin.": "Up you get, your watch now.",
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "You were resting comfortably in your grave, I know. Sorry.",
-"Kapıya kimse girmeyecek. Kimse.": "Nobody gets through that gate. Nobody."
+"Kapıya kimse girmeyecek. Kimse.": "Nobody gets through that gate. Nobody.",
+"Tabut Duvarı": "Coffin Wall",
+"Ruh Biçimi": "Soul Reaping",
+"Kılıçlar": "Swords",
+"YENİ OYUNCU": "NEW PLAYER",
+"GERÇEK": "REAL",
+"Kalkan Duvarı!": "Shield Wall!",
+"KUTSAL ENGİZİSYON": "HOLY INQUISITION",
+"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Stop every wave. Finish without losing a life for 3 stars.",
+"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Stop every wave and guard the castle. Lose fewer lives, earn more stars.",
+"Bölümü bir kez bitir, Sonsuz Gece açılır": "Beat the level once to unlock Endless Night",
+"Altın Güneş Arabası": "Golden Sun Chariot",
+"Güneş Formu": "Sun Form",
+"+%15 dayanıklı · +0,75 sn": "+15% tougher · +0.75 s",
+"+%40 dayanıklı · +2 sn": "+40% tougher · +2 s"
 },
 "tpl": [
 [
@@ -663,6 +677,10 @@
 [
 "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
 "A Corpse Golem rises (HP {} · Damage {}-{} · Armor {}%) and holds the castle gate; if it dies it rises again after {} s."
+],
+[
+"İlk görüldü: {}. bölüm · {}",
+"First seen: level {} · {}"
 ]
 ]
 }

@@ -106,7 +106,21 @@
 "YENİ: MEZAR BEKÇİSİ": "НОВОЕ: СТРАЖ МОГИЛЫ",
 "Kalk bakalım, nöbet senin.": "Подъём, твоя смена.",
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Знаю, тебе удобно лежалось в могиле. Прости.",
-"Kapıya kimse girmeyecek. Kimse.": "Никто не пройдёт в ворота. Никто."
+"Kapıya kimse girmeyecek. Kimse.": "Никто не пройдёт в ворота. Никто.",
+"Tabut Duvarı": "Стена гробов",
+"Ruh Biçimi": "Жатва душ",
+"Kılıçlar": "Мечи",
+"YENİ OYUNCU": "НОВЫЙ ИГРОК",
+"GERÇEK": "РЕАЛЬНЫЙ",
+"Kalkan Duvarı!": "Стена щитов!",
+"KUTSAL ENGİZİSYON": "СВЯТАЯ ИНКВИЗИЦИЯ",
+"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Останови все волны. Пройди без потерь — получишь 3 звезды.",
+"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Останови все волны и защити замок. Чем меньше потеряешь жизней, тем больше звёзд.",
+"Bölümü bir kez bitir, Sonsuz Gece açılır": "Пройди уровень один раз, чтобы открыть Бесконечную ночь",
+"Altın Güneş Arabası": "Золотая солнечная колесница",
+"Güneş Formu": "Солнечная форма",
+"+%15 dayanıklı · +0,75 sn": "+15% прочнее · +0,75 с",
+"+%40 dayanıklı · +2 sn": "+40% прочнее · +2 с"
 },
 "tpl": [
 [
@@ -148,6 +162,14 @@
 [
 "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
 "Встаёт трупный голем (Здоровье {} · Урон {}-{} · Броня {}%), держит ворота замка; если погибнет, встанет снова через {} с."
+],
+[
+"+%{} dayanıklı",
+"+{}% прочнее"
+],
+[
+"İlk görüldü: {}. bölüm · {}",
+"Впервые: уровень {} · {}"
 ]
 ]
 }

@@ -5935,6 +5935,8 @@ function txt(s, x, y, size, col = '#fff', align = 'center', weight = '800', font
 }
 // metni verilen genişliğe sığacak satırlara böler (en çok max satır; taşan son satır '…' ile biter)
 const TR = (s) => (window.tr ? window.tr(s) : s); // dil katmanı (js/dil.js): satıra bölmeden / kısaltmadan önce bütün metin çevrilir
+// düşman açıklaması + özel saldırı notu: iki cümle ayrı ayrı çevrilir, sonra birleşir (birleşik cümle sözlükte yok)
+function enemyDesc(type, base) { const n = ENEMY_NOTE[type]; base = base || ''; return n && base === ENEMY_DESC[type] ? TR(base) + '. ' + TR(n) : base; }
 function wrapLines(s, maxW, size, weight = '700', font = FONT_B, max = 2) {
   s = TR(s);
   ctx.font = `${weight} ${size}px ${font}`; lastFont = null;
@@ -9658,7 +9660,7 @@ function drawEnemyPanel() {
   if (e.dead || e.siege !== undefined) { G.sel = null; return; }
   G.enemyPanelR = null;
   if (infoText()) return; // büyü/kule açıklaması aynı alt şeridi kullanır: o açıkken kart çekilir
-  const d = e.def, dl = wrapLines(d.desc || ENEMY_DESC[e.type] || '', ENEMY_PANEL.w - 82, 9.5, '700', FONT_B, 4);
+  const d = e.def, dl = wrapLines(enemyDesc(e.type, d.desc || ENEMY_DESC[e.type]), ENEMY_PANEL.w - 82, 9.5, '700', FONT_B, 4);
   // zayıflık / direnç etiketleri: ikisi bir satıra sığmazsa direnç alt satıra iner
   const wk = d.wk || {}, cls = NECRO && ARMOR_CLASS[d.acl] ? ARMOR_CLASS[d.acl].name + ' · ' : '', tagS = [[cls + 'Zayıf:', Object.keys(wk).filter(q => wk[q] > 1)], ['Dirençli:', Object.keys(wk).filter(q => wk[q] < 1)]]
     .map(([label, list]) => label + ' ' + (list.length ? list.map(q => `${WK_NAME[q]} ${wk[q] > 1 ? '+' : '−'}%${Math.round(Math.abs(wk[q] - 1) * 100)}`).join(', ') : 'yok'));
@@ -12102,7 +12104,7 @@ function drawIntro() {
   if (!it.boss) { drawIntroToast(it); return; }
   const d = ENEMIES[it.type], a = clamp(Math.min(it.t / 0.3, (it.dur - it.t) / 0.4), 0, 1), e = easeOutBack(clamp(it.t / 0.4, 0, 1));
   const wk = d.wk || {}, weak = Object.keys(wk).filter(k => wk[k] > 1), res = Object.keys(wk).filter(k => wk[k] < 1);
-  const w = it.boss ? 360 : 320, dl = wrapLines(d.desc || ENEMY_DESC[it.type] || '', w - 84, 11.5), ex = (dl.length - 1) * 13;
+  const w = it.boss ? 360 : 320, dl = wrapLines(enemyDesc(it.type, d.desc || ENEMY_DESC[it.type]), w - 84, 11.5), ex = (dl.length - 1) * 13;
   const h = (weak.length || res.length ? 88 : 70) + ex, x0 = W / 2 - w / 2, y0 = it.boss ? 92 : 64;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, y0 + h / 2); ctx.scale(e, e); ctx.translate(-W / 2, -(y0 + h / 2));
   crimsonBox(x0, y0, w, h, 16);
@@ -12660,7 +12662,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   for (const q of res) { const s2 = `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#a8d8ff', 'rgba(20,60,120,0.6)') + 4; }
   // alt: açıklama, yetenekler, Mortimer'ın notu
   let by = py + 290;
-  const desc = ENEMY_DESC[id] || d.desc || '';
+  const desc = enemyDesc(id, ENEMY_DESC[id] || d.desc);
   if (r) { fitTxt(r === 1 ? 'Kıdemli: %60 daha canlı, daha sert vurur, biraz daha zırhlı' : 'Yüzbaşı: 2,5 kat canlı, borazanıyla çevresini hızlandırır', px + 18, by, pw - 36, 13, r === 2 ? '#ffe27a' : '#ff9a8a', 'left', '800', FONT_B, false); by += 20; }
   wrapLines(d.chief ? d.desc : desc, pw - 36, 13.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 13.5, '#f0e2c4', 'left', '700', FONT_B, false); by += 18; });
   const sk = enemySkills(d);

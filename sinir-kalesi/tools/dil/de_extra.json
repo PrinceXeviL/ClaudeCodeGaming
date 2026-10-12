@@ -106,7 +106,21 @@
 "YENİ: MEZAR BEKÇİSİ": "NEU: GRABWÄCHTER",
 "Kalk bakalım, nöbet senin.": "Hoch mit dir, du hast Wache.",
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "Du lagst gemütlich in deinem Grab, ich weiß. Tut mir leid.",
-"Kapıya kimse girmeyecek. Kimse.": "Durch dieses Tor kommt keiner. Keiner."
+"Kapıya kimse girmeyecek. Kimse.": "Durch dieses Tor kommt keiner. Keiner.",
+"Tabut Duvarı": "Sargwall",
+"Ruh Biçimi": "Seelenernte",
+"Kılıçlar": "Schwerter",
+"YENİ OYUNCU": "NEUER SPIELER",
+"GERÇEK": "ECHT",
+"Kalkan Duvarı!": "Schildwall!",
+"KUTSAL ENGİZİSYON": "HEILIGE INQUISITION",
+"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Halte alle Wellen auf. Ohne Lebensverlust gibt es 3 Sterne.",
+"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Halte alle Wellen auf und schütze die Burg. Je weniger Leben du verlierst, desto mehr Sterne.",
+"Bölümü bir kez bitir, Sonsuz Gece açılır": "Schaffe das Level einmal, um die Endlose Nacht freizuschalten",
+"Altın Güneş Arabası": "Goldener Sonnenwagen",
+"Güneş Formu": "Sonnengestalt",
+"+%15 dayanıklı · +0,75 sn": "+15 % zäher · +0,75 s",
+"+%40 dayanıklı · +2 sn": "+40 % zäher · +2 s"
 },
 "tpl": [
 [
@@ -148,6 +162,14 @@
 [
 "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
 "Ein Leichengolem erhebt sich (LP {} · Schaden {}-{} · Rüstung {} %) und hält das Burgtor; fällt er, erhebt er sich nach {} s erneut."
+],
+[
+"+%{} dayanıklı",
+"+{}% zäher"
+],
+[
+"İlk görüldü: {}. bölüm · {}",
+"Zuerst gesehen: Level {} · {}"
 ]
 ]
 }
