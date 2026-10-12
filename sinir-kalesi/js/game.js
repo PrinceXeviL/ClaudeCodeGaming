@@ -13823,16 +13823,16 @@ function drawLoginBonus(st) {
   ctx.fillStyle = `rgba(6,3,10,${0.62 * clamp((time - LOGIN_UI.t0) / 0.3, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   buttons.push({ key: 'login_bg', x: VIS.l, y: VIS.t, w: VIS.w, h: VIS.h, fn: () => {} }); // alttaki düğmelere dokunulmasın
   if (k <= 0.01) return;
-  const n = DAILY_LOGIN.length, cw = Math.min(104, (Math.min(VIS.w, 960) - 90) / n), ch = cw * 1.32, gap = 8, tw = n * cw + (n - 1) * gap;
-  const pw = tw + 48, ph = ch + 170, px = W / 2 - pw / 2, py = H / 2 - ph / 2;
+  const n = DAILY_LOGIN.length, cw = Math.min(100, (Math.min(VIS.w, 960) - 120) / n), ch = cw * 1.32, gap = 8, tw = n * cw + (n - 1) * gap;
+  const pw = tw + 80, ph = ch + 190, px = W / 2 - pw / 2, py = H / 2 - ph / 2;
   ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(k, k); ctx.translate(-W / 2, -H / 2);
-  roundRect(px, py, pw, ph, 18, 'rgba(26,14,30,0.97)', '#c9a865', 2.5);
+  pauseFrame(px, py, pw, ph, 0); // kızıl kadife + kemik çerçeve
   crimsonRibbon(W / 2, py + 4, "MORTİMER'IN HEDİYESİ", 22, Math.min(420, pw - 40));
-  txt('Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.', W / 2, py + 48, 14, '#e8dcc0', 'center', '700', FONT_B, false);
+  txt('Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.', W / 2, py + 52, 14, '#e8dcc0', 'center', '700', FONT_B, false);
   DAILY_LOGIN.forEach((R, i) => {
-    const x = px + 24 + i * (cw + gap), y = py + 66, done = i < cur, today = i === cur, big = i === n - 1;
+    const x = px + 40 + i * (cw + gap), y = py + 74, done = i < cur, today = i === cur, big = i === n - 1;
     if (today) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + cw / 2, y + ch / 2, cw * 0.9, '255,210,120', 0.35 + Math.sin(time * 4) * 0.1); ctx.restore(); }
-    roundRect(x, y, cw, ch, 12, done ? 'rgba(40,30,44,0.9)' : big ? 'rgba(70,30,80,0.95)' : 'rgba(52,36,60,0.95)', today ? '#ffd76a' : '#6a5a7a', today ? 3 : 1.5);
+    velvetCard(x, y, cw, ch, 12, { border: today ? '#ffd76a' : done ? 'rgba(120,100,110,0.6)' : big ? '#e0603e' : null, top: big ? '#5e1018' : null }); if (done) roundRect(x, y, cw, ch, 12, 'rgba(10,4,14,0.45)');
     txt((i + 1) + '. GÜN', x + cw / 2, y + 16, 12.5, today ? '#ffe7a0' : '#cbb8d8', 'center', '400', FONT_T, false);
     ctx.save(); if (done) ctx.globalAlpha = 0.4;
     const cy = y + ch * 0.52, rr = cw * 0.24;
@@ -13845,13 +13845,13 @@ function drawLoginBonus(st) {
     if (done) { ctx.strokeStyle = '#7cdc6a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x + cw * 0.3, y + ch * 0.52); ctx.lineTo(x + cw * 0.45, y + ch * 0.66); ctx.lineTo(x + cw * 0.72, y + ch * 0.36); ctx.stroke(); }
   });
   ctx.restore();
-  if (k > 0.9) gameButton('login_take', W / 2, py + ph - 40, 220, 56, 'HEDİYEYİ AL', claimLogin, 'green', { size: 18, shine: true });
+  if (k > 0.9) gameButton('login_take', W / 2, py + ph - 46, 230, 58, 'HEDİYEYİ AL', claimLogin, 'green', { size: 19, shine: true });
 }
 // anonim oyun verisi izni (15 Eki): ilk açılışta bir kez sorulur; ayarlardan değiştirilebilir
 function statsConsent() {
   ctx.fillStyle = 'rgba(6,3,10,0.6)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
-  const w = 560, h = 210, x = W / 2 - w / 2, y = H / 2 - h / 2;
-  roundRect(x, y, w, h, 16, 'rgba(26,14,30,0.97)', '#c9a865', 2.5);
+  const w = 600, h = 240, x = W / 2 - w / 2, y = H / 2 - h / 2;
+  pauseFrame(x, y, w, h, 0);
   txt('Oyunu birlikte geliştirelim', W / 2, y + 34, 22, '#ffe7b0', 'center', '400', FONT_T);
   wrapLines('Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.', w - 60, 15, '700', FONT_B, 3)
     .forEach((l, i) => txt(l, W / 2, y + 70 + i * 21, 15, '#f2e6c8', 'center', '700', FONT_B, false));
@@ -15510,7 +15510,7 @@ function velvetCard(x, y, w, h, r = 14, o = {}) {
   // büyük kartlar duraklatma menüsünün panelinin aynısı (kalın kara çerçeve, kızıl-mor kadife, çift altın çizgi, köşelerde altın kıvrım ve yakut);
   // küçük kartlarda (kodeks kutusu, başarım satırı) süsler sığmaz: aynı kadife ve altın çerçeve
   if (w >= 120 && h >= 90) {
-    pauseFrame(x, y, w, h, 0);
+    pauseFrame(x, y, w, h, 0, !!o.bones);
     if (o.ac) { ctx.save(); ctx.beginPath(); ctx.roundRect(x + 12, y + 12, w - 24, h - 24, 12); ctx.clip(); const tg = ctx.createLinearGradient(0, y + h, 0, y); tg.addColorStop(0, `rgba(${o.ac},0.3)`); tg.addColorStop(0.6, `rgba(${o.ac},0)`); ctx.fillStyle = tg; ctx.fillRect(x, y, w, h); ctx.restore(); }
     if (o.border) roundRect(x + 1, y + 1, w - 2, h - 2, 14, null, o.border, 3);
     return;
@@ -15611,7 +15611,40 @@ function crimsonBox(x, y, w, h, r = 12, gems = true) {
   roundRect(x + 3, y + 3, w - 6, h - 6, Math.max(2, r - 3), null, '#c9a865', 1.2);
   if (gems && w > 90 && h > 28) for (const [gx, gy] of [[x + 8, y + 8], [x + w - 8, y + 8], [x + 8, y + h - 8], [x + w - 8, y + h - 8]]) rubyGem(gx, gy, 1.8);
 }
-function pauseFrame(x, y, w, h, rise = 26) {
+// 15 Eki (Caner: pencereler kemikten olsun, kızıl kadife zemin; en kaliteli mobil oyunlar gibi ama Necromancer): ana pencerelerin
+// dış bandında boğumlu kemikler (uçlarda çift topuz), aralarında eklem, köşelerde kafatası madalyonu. boneBar: tek düz kemik
+function boneBar(x0, y0, x1, y1, w) {
+  const L = Math.hypot(x1 - x0, y1 - y0); if (L < w * 2) return;
+  ctx.save(); ctx.translate(x0, y0); ctx.rotate(Math.atan2(y1 - y0, x1 - x0));
+  const knobs = (fill, rr) => { ctx.fillStyle = fill; for (const ex of [w * 0.45, L - w * 0.45]) for (const sd of [-1, 1]) { ctx.beginPath(); ctx.arc(ex, sd * w * 0.34, rr, 0, Math.PI * 2); ctx.fill(); } };
+  knobs('#120712', w * 0.5); ctx.fillStyle = '#120712'; ctx.fillRect(w * 0.4, -w * 0.38, L - w * 0.8, w * 0.76); // koyu kontur
+  const g = ctx.createLinearGradient(0, -w * 0.5, 0, w * 0.5); g.addColorStop(0, '#fbf2dc'); g.addColorStop(0.55, '#e2d2ac'); g.addColorStop(1, '#a8946a');
+  knobs(g, w * 0.5 - 1.3); ctx.fillStyle = g; ctx.fillRect(w * 0.42, -w * 0.38 + 1.3, L - w * 0.84, w * 0.76 - 2.6); // gövde
+  ctx.fillStyle = 'rgba(255,255,250,0.7)'; ctx.fillRect(w * 0.9, -w * 0.2, L - w * 1.8, w * 0.14); // üst parıltı
+  ctx.fillStyle = 'rgba(120,96,64,0.45)'; ctx.fillRect(w * 0.9, w * 0.12, L - w * 1.8, w * 0.12); // alt gölge
+  ctx.restore();
+}
+function boneEdge(x0, y0, x1, y1, w, seg) { // kenar boyunca kemikler ve aralarında eklem
+  const L = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.round(L / seg)), ux = (x1 - x0) / L, uy = (y1 - y0) / L, gap = w * 0.5;
+  for (let i = 0; i < n; i++) { const a = i * L / n + gap / 2, b = (i + 1) * L / n - gap / 2; boneBar(x0 + ux * a, y0 + uy * a, x0 + ux * b, y0 + uy * b, w); }
+  for (let i = 1; i < n; i++) { const t = i * L / n; circle(x0 + ux * t, y0 + uy * t, w * 0.42, '#d8c8a0', '#120712', 1.3); }
+}
+function skullMedal(x, y, r) { // köşe: koyu madalyon üstünde kafatası, gözlerinde yeşil ışık
+  circle(x, y + 2, r + 3, 'rgba(0,0,0,0.5)'); circle(x, y, r + 2.5, '#2a1220', '#120712', 2);
+  circle(x, y, r, null, '#c9a865', 1.6); drawSkullIcon(x, y + r * 0.08, r * 0.95);
+}
+function boneBorder(x, y, w, h, rise = 0) {
+  const bw = clamp(Math.min(w, h) * 0.05, 11, 14), seg = 84, m = 5, R = 18, top = y + rise + m;
+  ctx.save();
+  boneEdge(x + m, top + R, x + m, y + h - m - R, bw, seg); boneEdge(x + w - m, top + R, x + w - m, y + h - m - R, bw, seg); // yanlar
+  boneEdge(x + m + R, y + h - m, x + w - m - R, y + h - m, bw, seg); // alt
+  if (rise > 0) { boneEdge(x + m + R, top, x + w * 0.3, top, bw, seg); boneEdge(x + w * 0.7, top, x + w - m - R, top, bw, seg); } // üst: kemerin iki yanı
+  else boneEdge(x + m + R, top, x + w - m - R, top, bw, seg);
+  const sr = clamp(Math.min(w, h) * 0.06, 15, 20);
+  for (const [cx, cy] of [[x + m + 2, top + 2], [x + w - m - 2, top + 2], [x + m + 2, y + h - m - 2], [x + w - m - 2, y + h - m - 2]]) skullMedal(cx, cy, sr);
+  ctx.restore();
+}
+function pauseFrame(x, y, w, h, rise = 26, bones = true) {
   ctx.save();
   tombPath(x + 4, y + 10, w, h, rise); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
   const fr = ctx.createLinearGradient(0, y, 0, y + h); fr.addColorStop(0, '#3a1a2a'); fr.addColorStop(1, '#140810');
@@ -15633,6 +15666,7 @@ function pauseFrame(x, y, w, h, rise = 26) {
     rubyGem(cx + sx * 7, cy + sy * 7, 5);
   }
   ctx.restore();
+  if (bones && w >= 220 && h >= 140) boneBorder(x, y, w, h, rise);
 }
 function pauseCrest(cx, cy) { // tepe arması: yarasa kanatlı kafatası madalyonu
   ctx.save(); ctx.translate(cx, cy);
@@ -16372,7 +16406,7 @@ window.__game = {
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
     const D = [], { dpr, scale, ox, oy } = view;
