@@ -271,7 +271,7 @@ if (NECRO && !save.lv20 && save.stars && save.stars.length) {
 }
 save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { vol: 1, shake: true, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
+const SETTINGS_DEF = { vol: 1, shake: true, haptic: true, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 function setSetting(k, v) {
@@ -520,6 +520,9 @@ function uiSound(kind) {
     n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.Q.value = 2; bp.frequency.setValueAtTime(450, now); bp.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
     g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.09, now + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
     n.connect(bp); bp.connect(g); g.connect(out); n.start(now); n.stop(now + 0.17);
+  } else if (kind === 'bonespin') { // kemik halka döner: hızlanıp yavaşlayan hafif kemik takırtısı (15 Eki)
+    for (let i = 0; i < 7; i++) { const t = now + i * 0.04 + i * i * 0.007; uiTick(t, 1250 - i * 70, 0.05 * (1 - i * 0.09), out); uiTick(t + 0.008, 2600, 0.018, out); }
+    uiPop(now + 0.02, 520, 240, 0.05, 0.12, out);
   } else if (kind === 'whoosh') { // geçiş: yükselip alçalan hava hışırtısı ve altta boğuk bir gümleme
     const n = actx.createBufferSource(), bp = actx.createBiquadFilter(), g = actx.createGain();
     n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.Q.value = 1.4; bp.frequency.setValueAtTime(320, now); bp.frequency.exponentialRampToValueAtTime(1700, now + 0.22); bp.frequency.exponentialRampToValueAtTime(500, now + 0.5);
@@ -656,10 +659,27 @@ function bossSting() {
 }
 const SYNTH_SFX = { portal: portalSound, roar: roarSound, stomp: stompSound };
 
+// 15 Eki (Caner): titreşimli geri bildirim. Uygulamada Capacitor Haptics (iOS Taptic / Android), tarayıcıda navigator.vibrate.
+// Ayarlardan kapatılabilir (setting 'haptic'). Sesten bağımsız: ses kısıkken de titrer. HAPTIC_SFX: hangi seste ne kadar titreşir
+const HAPTIC_SFX = { click: 'light', select: 'light', pick: 'light', bonespin: 'light', build: 'medium', upgrade: 'medium', spell: 'medium', raise: 'medium', bonewall: 'medium',
+  castlehit: 'heavy', hornboss: 'heavy', roar: 'heavy', win: 'success', lose: 'error', error: 'warn', levelup: 'success' };
+let hapticLast = 0;
+function haptic(kind = 'light') {
+  if (!setting('haptic')) return;
+  const now = performance.now(); if (now - hapticLast < 45) return; hapticLast = now;
+  const H = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics;
+  try {
+    if (H && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+      if (kind === 'success' || kind === 'error' || kind === 'warn') H.notification({ type: kind === 'success' ? 'SUCCESS' : kind === 'error' ? 'ERROR' : 'WARNING' });
+      else H.impact({ style: kind === 'heavy' ? 'HEAVY' : kind === 'medium' ? 'MEDIUM' : 'LIGHT' });
+    } else if (navigator.vibrate) navigator.vibrate({ light: 8, medium: 16, heavy: 30, success: [12, 40, 18], error: [30, 50, 30], warn: 20 }[kind] || 10);
+  } catch (e) {}
+}
 function sfx(kind, rate) {
+  if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
-  if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open' || kind === 'whoosh') && uiSound(kind)) return;
+  if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open' || kind === 'whoosh' || kind === 'bonespin') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
   const synth = SYNTH_SFX[kind];
   if (!def || (!synth && (!list || !list.length))) return;
@@ -9787,22 +9807,27 @@ function tileBtn(key, x, y, r, icon, fn, o, appear) {
 }
 // 15 Eki (Caner: simgeler yine yuvarlak, çevresinde kemik kontur; dokununca kemikler dönsün): renkli yuvarlak gövde (TILE renkleri),
 // dışında N kemikten halka; dokunulunca halka bir tur döner (yavaşlayarak). BONE_RING: kemik sayısı, dönüş süresi
-const BONE_RING = { n: 9, spin: 0.7 };
-function drawBoneSeg(x, y, ang, L, w) { // tek kemik: gövde + iki uçta çift topuz
-  ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
-  const knob = (cx, sy) => { ctx.beginPath(); ctx.arc(cx, -w * 0.42, w * 0.55, 0, Math.PI * 2); ctx.arc(cx, w * 0.42, w * 0.55, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); };
-  ctx.fillStyle = '#efe3c4'; ctx.strokeStyle = '#1a0c18'; ctx.lineWidth = 1.3;
-  knob(-L / 2); knob(L / 2);
-  ctx.beginPath(); ctx.roundRect(-L / 2, -w * 0.36, L, w * 0.72, w * 0.3); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#efe3c4'; ctx.beginPath(); ctx.arc(-L / 2, -w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.arc(-L / 2, w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.arc(L / 2, -w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.arc(L / 2, w * 0.42, w * 0.42, 0, Math.PI * 2); ctx.fill(); // eklem çizgisi kalmasın
-  ctx.fillRect(-L / 2, -w * 0.3, L, w * 0.6);
-  ctx.fillStyle = 'rgba(120,100,70,0.45)'; ctx.fillRect(-L / 2 + w * 0.2, w * 0.05, L - w * 0.4, w * 0.22); // alt gölge
-  ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillRect(-L / 2 + w * 0.3, -w * 0.25, L - w * 0.6, w * 0.12); // üst parıltı
-  ctx.restore();
+const BONE_RING = { n: 6, spin: 0.5, defer: 0.34 }; // n: halkadaki kemik, spin: dönüş süresi, defer: sayfa dönüş görülünce açılır
+let BONE_DEFER = null; // kemik düğmesine dokunuldu: işlev dönüşün ardından çalışır
+// halkadaki tek kemik: çembere oturan kavisli gövde, iki ucunda çift topuz (eklem); ışık üstten, gölge alttan
+function drawBoneArc(R, a0, a1, w) {
+  const ends = [a0, a1], knob = (a, rr, fill, stroke) => { for (const sd of [-1, 1]) { const rx = (R + sd * w * 0.36), x = Math.cos(a) * rx, y = Math.sin(a) * rx; ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI * 2); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.6; ctx.stroke(); } } };
+  ctx.lineCap = 'butt';
+  for (const a of ends) knob(a, w * 0.5, '#1a0c18'); // koyu kontur
+  ctx.beginPath(); ctx.arc(0, 0, R, a0, a1); ctx.strokeStyle = '#1a0c18'; ctx.lineWidth = w + 2.6; ctx.stroke();
+  for (const a of ends) knob(a, w * 0.5 - 1.3, '#e9dcbc');
+  ctx.beginPath(); ctx.arc(0, 0, R, a0, a1); ctx.strokeStyle = '#e9dcbc'; ctx.lineWidth = w; ctx.stroke(); // gövde
+  ctx.beginPath(); ctx.arc(0, 0, R + w * 0.28, a0 + 0.05, a1 - 0.05); ctx.strokeStyle = 'rgba(120,96,64,0.55)'; ctx.lineWidth = w * 0.3; ctx.stroke(); // dış gölge
+  ctx.beginPath(); ctx.arc(0, 0, R - w * 0.2, a0 + 0.08, a1 - 0.08); ctx.strokeStyle = 'rgba(255,255,248,0.75)'; ctx.lineWidth = w * 0.2; ctx.stroke(); // iç parıltı
+  for (const a of ends) { const x = Math.cos(a) * (R - w * 0.42), y = Math.sin(a) * (R - w * 0.42); ctx.fillStyle = 'rgba(255,255,250,0.7)'; ctx.beginPath(); ctx.arc(x, y, w * 0.16, 0, Math.PI * 2); ctx.fill(); } // topuz parıltısı
+}
+function drawBoneRing(r, rot, w) {
+  const R = r + w * 0.55, N = BONE_RING.n, gap = 0.2;
+  for (let i = 0; i < N; i++) { const a = rot + i / N * Math.PI * 2 - Math.PI / 2 + gap / 2; drawBoneArc(R, a, a + Math.PI * 2 / N - gap, w); }
 }
 function boneBtn(key, x, y, r, icon, fn, o, appear) {
   const C = TILE[o.tile] || TILE.violet;
-  const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 * (sp < 1 ? 1 : 0);
+  const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = sp < 1 ? (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 / BONE_RING.n * 2 : 0; // iki kemik boyu döner, yavaşlayarak
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
   circle(0, 5, r + 7, 'rgba(0,0,0,0.42)'); // gölge
@@ -9813,14 +9838,11 @@ function boneBtn(key, x, y, r, icon, fn, o, appear) {
   ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(0, -r * 0.55, r * 0.85, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
   const rg = ctx.createRadialGradient(0, r * 0.15, r * 0.3, 0, 0, r * 1.05); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(10,0,20,0.45)'); ctx.fillStyle = rg; ctx.fillRect(-r, -r, 2 * r, 2 * r);
   ctx.restore();
-  // kemik halka: her kemik çembere teğet; dokununca halka döner
-  const R = r + 4, N = BONE_RING.n, L = (2 * Math.PI * R / N) * 0.74, w = Math.max(4.2, r * 0.19);
-  for (let i = 0; i < N; i++) { const a = rot + i / N * Math.PI * 2 - Math.PI / 2; drawBoneSeg(Math.cos(a) * R, Math.sin(a) * R, a + Math.PI / 2, L, w); }
-  for (let i = 0; i < N; i++) { const a = rot + (i + 0.5) / N * Math.PI * 2 - Math.PI / 2; circle(Math.cos(a) * R, Math.sin(a) * R, w * 0.42, '#d8c8a0', '#1a0c18', 1); } // kemikler arası eklem
+  drawBoneRing(r, rot, Math.max(5, r * 0.2)); // kemik halka: dokununca döner
   ctx.shadowColor = 'rgba(10,0,16,0.7)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
   if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.05, '#f6ecd4');
   ctx.restore();
-  if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn });
+  if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn: () => { sfx('bonespin'); BONE_DEFER = { fn, at: time + BONE_RING.defer }; } }); // önce kemik döner, sonra sayfa
 }
 // yuvarlak 3B buton; fn yoksa (oyun içi HUD) dokunma hudTap'te ayrıca yakalanır
 function roundBtn(key, x, y, r, icon, fn, o = {}) {
@@ -11663,6 +11685,7 @@ function settingsRows(x0, y0, w, st, inGame) {
     ['sound', 'Müzik', 'slider', !muted && setting('music') ? setting('mvol') : 0, vol('music', 'mvol')],
     ['sound', 'Ses efektleri', 'slider', !muted && setting('sfx') ? setting('vol') : 0, vol('sfx', 'vol')],
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
+    ['fast', 'Titreşim', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('haptic'), (v) => { setSetting('haptic', v); if (v) haptic('medium'); }],
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTOMATİK'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
@@ -13992,7 +14015,7 @@ function drawMapFog2(E, ep, road, X) {
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
 const MAPCAM = { z: 2, // 15 Eki: dikey haritada 2,6 fazla yakındı (aynı anda tek bölüm görünüyordu)
-  tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400, padX: 70, padY: 40 };
+  tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 100, fric: 7, vmax: 1400, padX: 70, padY: 40 };
 // 15 Eki (Caner): yolun dışındaki boş alanlara gidilmez: sınır = yol, bölüm işaretleri ve şapelin kutusu + pay (ekranda MAPCAM.padX / üst-alt çubuk + padY)
 function mapRoadBox(E) {
   if (E._box) return E._box;
@@ -14203,21 +14226,23 @@ function drawMap() {
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id)), BY = EDGE.b - 40;
   // 11 Eki: Büyü Kitabı eklendi, üç düğme yan yana (Büyü Kitabı · Komutanlar · Gelişmeler)
   const heroPts = HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0), freeSouls = soulsFree();
-  gameButton('grim', R0 - 532, BY, 202, 58, 'BÜYÜ KİTABI', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, 'red', { icon: 'grimoire', appear: st - 0.3, size: 17, shine: freeSouls > 0 });
-  if (freeSouls > 0) { const ex = R0 - 440, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#8a3ad8', '#fff', 1.5); txt(freeSouls + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
-  gameButton('heroes', R0 - 322, BY, 202, 58, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, 'blue', { icon: 'crown', appear: st - 0.35, size: 17, shine: fresh.length > 0 || heroPts });
+  // 15 Eki (Caner): alt düğmeler de yuvarlak, kemik halkalı; adı altında. BR: yarıçap, BS: aralık
+  const BR = 30, BS = 104, bx2 = (i) => R0 - 46 - i * BS, by2 = EDGE.b - 58;
+  const lab = (x, t) => { ctx.save(); ctx.font = `400 13px ${FONT_T}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,4,14,0.95)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.strokeText(t, x, by2 + BR + 14); ctx.fillStyle = '#f2e6c8'; ctx.fillText(t, x, by2 + BR + 14); ctx.restore(); };
+  roundBtn('grim', bx2(2), by2, BR, 'grimoire', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, { appear: st - 0.3, tile: 'red', active: freeSouls > 0, activeCol: '190,110,255' }); lab(bx2(2), 'BÜYÜ KİTABI');
+  roundBtn('heroes', bx2(1), by2, BR, 'crown', () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
   const freeStars = starsTotal() - starsSpent();
-  gameButton('upgrades', R0 - 112, BY, 202, 58, 'GELİŞMELER', () => go(() => { screen = 'upgrades'; }), 'gold', { icon: 'crown', appear: st - 0.4, size: 17, shine: freeStars > 0 });
-  if (freeStars > 0) { const ex = R0 - 20, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#e8434b', '#fff', 1.5); txt(freeStars + '', ex, ey + 1, 13, '#fff', 'center', '400', FONT_T); }
+  roundBtn('upgrades', bx2(0), by2, BR, (r) => fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'gold', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
+  const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
+  if (freeSouls > 0) badge(2, freeSouls, '#8a3ad8');
+  if (freeStars > 0) badge(0, freeStars, '#e8434b');
   if (mapSel == null) { // tanıtım: önce Büyü Kitabı, sonra yetenek puanı
-    if (freeSouls > 0 && !tipSeen('grim')) drawTip(R0 - 532, BY - 34, 'Büyülerin seviye atladı! Büyü Kitabı\'nda puanlarını harca');
-    else if (heroPts && !tipSeen('tree')) drawTip(R0 - 322, BY - 34, 'Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca');
+    if (freeSouls > 0 && !tipSeen('grim')) drawTip(bx2(2), by2 - BR - 6, 'Büyülerin seviye atladı! Büyü Kitabı\'nda puanlarını harca');
+    else if (heroPts && !tipSeen('tree')) drawTip(bx2(1), by2 - BR - 6, 'Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca');
   }
-  if (heroPts && !fresh.length) { const ex = R0 - 230, ey = BY - 27 + Math.sin(time * 5) * 2; circle(ex, ey, 12, '#3cbf3c', '#fff', 1.5); txt('+', ex, ey + 1, 15, '#fff', 'center', '400', FONT_T); }
-  if (fresh.length) {
-    const ex = R0 - 262, ey = BY - 27 + Math.sin(time * 5) * 2;
-    roundRect(ex - 24, ey - 11, 48, 22, 11, '#e8434b', '#fff', 1.5); txt('YENİ', ex, ey + 1, 12, '#fff', 'center', '400', FONT_T);
-  }
+  if (heroPts && !fresh.length) badge(1, '+', '#3cbf3c');
+  if (fresh.length) { const ex = bx2(1), ey = by2 - BR - 10 + Math.sin(time * 5) * 2; roundRect(ex - 24, ey - 11, 48, 22, 11, '#e8434b', '#fff', 1.5); txt('YENİ', ex, ey + 1, 12, '#fff', 'center', '400', FONT_T); }
+
   if (Math.random() < 0.12) {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.4, H), vx: rand(-6, 6), vy: rand(-14, -5),
       col: '255,210,140', s0: rand(1.5, 2.8), s1: 0.5, life: rand(3, 5), a: 0.7, fadeIn: 0.3 });
@@ -15938,6 +15963,7 @@ function frame(now) {
   if (screen === 'title' && !trans) warmMap(); // haritanın zemini önceden hazırlanır
   weatherAudio();
   updateMusic(real);
+  if (BONE_DEFER && time >= BONE_DEFER.at) { const f = BONE_DEFER.fn; BONE_DEFER = null; f(); }
   if (trans) {
     trans.t += real;
     if (!trans.fired && trans.t >= transIn()) { const was = screen; trans.fired = true; uiParts = []; trans.fn(); screenT = time; if (NECRO && screen === 'play' && (was !== 'play' || G)) trans.hold = TRANS.hold; } // bölüm başlıyor: Mortimer görünür
