@@ -10112,8 +10112,8 @@ function roundBtn(key, x, y, r, icon, fn, o = {}) {
 }
 
 // tahta çerçeveli parşömen panel
-function panel(x, y, w, h) {
-  if (NECRO) { pauseFrame(x, y, w, h); pauseCrest(x + w / 2, y + 4); return; }
+function panel(x, y, w, h, bones = true) {
+  if (NECRO) { pauseFrame(x, y, w, h, 26, bones); pauseCrest(x + w / 2, y + 4); return; }
   roundRect(x + 4, y + 10, w, h, 24, 'rgba(0,0,0,0.45)');
   const fr = ctx.createLinearGradient(0, y, 0, y + h);
   fr.addColorStop(0, '#a87442'); fr.addColorStop(1, '#4e2f16');
@@ -11862,7 +11862,7 @@ function drawSettings() {
   const pw = 880, ph = Math.ceil(settingsCount(false) / 2) * 58 + 64, px = W / 2 - pw / 2, py = 96;
   const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
-  if (NECRO) pauseFrame(px, py, pw, ph, 0);
+  if (NECRO) pauseFrame(px, py, pw, ph, 0, false); // ayarlarda kemik yok (Caner, 15 Eki: orada iyi durmuyor; menü tasarımı Gemini ile yapılacak)
   else {
     roundRect(px + 5, py + 10, pw, ph, 22, 'rgba(0,0,0,0.45)');
     const fr = ctx.createLinearGradient(0, py, 0, py + ph); fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
@@ -15819,7 +15819,7 @@ function drawPauseMenu(k, cx, cy) {
   const sg = pauseSigil(); ctx.drawImage(sg, -sg.width / 2, -sg.height / 2); ctx.rotate(-time * 0.13); ctx.scale(0.62, 0.62); ctx.drawImage(sg, -sg.width / 2, -sg.height / 2);
   ctx.restore();
   const pw = 680, ph = 446, px = cx - pw / 2, py = cy - ph / 2 + 8;
-  pauseFrame(px, py, pw, ph);
+  pauseFrame(px, py, pw, ph, 26, false);
   pauseCrest(cx, py + 4);
   // başlık: kızıl kumaş kurdele, altında bölüm adı
   const by = py + 64; crimsonRibbon(cx, by, 'DURAKLATILDI', 24, 300);
@@ -15907,7 +15907,7 @@ function drawOverlay() {
   if (overlay === 'win') sunburst(cx, py + 110, 300, NECRO ? '140,255,150' : '255,220,120');
   if (NECRO && pz) { drawPauseMenu(k, cx, cy); ctx.restore(); return; } // duraklatma: kendi tasarımı (drawPauseMenu)
   if (NECRO && overlay === 'psettings') drawPauseMortimer(px, py, ph, k);
-  panel(px, py, pw, ph);
+  panel(px, py, pw, ph, overlay !== 'psettings');
   if (overlay === 'pause') {
     if (NECRO) plaqueTitle(cx, py + 50, 'DURAKLATILDI'); else ribbon(cx, py + 4, 290, 'DURAKLATILDI', 'blue', 26);
     // 2x2 kare karolar (Caner, 10 Eki): solda Devam Et / Yeniden Başla, sağda Ayarlar / Haritaya Dön
