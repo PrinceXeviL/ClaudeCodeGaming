@@ -13730,7 +13730,7 @@ fetch('img/map_bolge.json' + (window.SURUM ? '?v=' + window.SURUM : ''), { cache
   if (!left) REGION_PRE.wait = false;
   for (const ep of eps) {
     const P = J[ep], im = new Image();
-    im.onload = () => { P.img = im; im.m = P.m; REGION_PRE[ep] = P; if (!--left) REGION_PRE.wait = false; };
+    im.onload = () => { P.img = im; im.m = P.ext ? { x: 9999, y: 9999 } : P.m; if (P.ext) im.ext = P.ext; REGION_PRE[ep] = P; if (!--left) REGION_PRE.wait = false; };
     im.onerror = () => { if (!--left) REGION_PRE.wait = false; };
     im.src = 'img/' + P.file + (window.SURUM ? '?v=' + window.SURUM : '');
   }
@@ -13749,8 +13749,46 @@ function regionRoad(E) {
 }
 const REGION_TINT = { ravenwood: 'rgba(40,30,60,0.2)', plague: 'rgba(90,60,30,0.2)', monastery: 'rgba(20,80,80,0.22)', ossuary: 'rgba(90,60,120,0.22)', bloodmoon: 'rgba(150,20,30,0.25)', cursed: 'rgba(90,110,40,0.08)', bog: 'rgba(30,120,100,0.2)', graveyard: 'rgba(110,100,140,0.2)', blacklake: 'rgba(20,40,100,0.28)', necrogate: 'rgba(120,30,90,0.2)' };
 const regionCastle = (E) => E.end;
+// dikey sefer haritası (15 Eki): her mekân ayrı 960x540 dilim olarak çizilir (yol, işaretler dilime kaydırılır), alttan üste dikilir;
+// yalnız yolun gezildiği orta sütun (MAPV.x) tutulur, dikişler MAPV.blend ile harmanlanır. Görsel c.ext = dünya kutusu {x, y, w, h}.
+const MAPV = { x: [130, 830], my: 80, blend: 70, res: 1.5 };
+const mapExt = (bg) => bg.ext || { x: -bg.m.x, y: -bg.m.y, w: W + 2 * bg.m.x, h: H + 2 * bg.m.y };
+function regionBgV(ep, E, R) {
+  if (R.done) return R.done;
+  if (!R.road) R.road = [buildPath(regionRoad(E))];
+  const P = !R.noPre && REGION_PRE[ep];
+  if (P && P.ext) { R.lights = P.lights; R.banners = P.banners; R.hands = P.hands; R.parts = null; return (R.done = P.img); }
+  const Z = E.zones.length, MH = E.mapH, rs = R.res || (R.res = Math.min(MAPV.res, mapRes())), my = MAPV.my;
+  if (R.parts.length < Z) {
+    const k = R.parts.length, offY = MH - (k + 1) * H, sh = (q) => [q[0], q[1] - offY];
+    const road = [buildPath(regionRoad(E).map(sh))];
+    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes.map(sh), castle: k === Z - 1 ? sh(E.end) : [-9999, -9999], roadK: 0.62, decorK: 1.9 }, road, rs, { x: 0, y: my });
+    const tint = REGION_TINT[E.zones[k][0]];
+    if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
+    const mine = (o) => o.y >= -20 && o.y < H + 20 && o.x > MAPV.x[0] && o.x < MAPV.x[1], up = (o) => Object.assign({}, o, { y: o.y + offY });
+    R.lights = (R.lights || []).concat((part.lights || []).filter(mine).map(up));
+    R.banners = (R.banners || []).concat((part.banners || []).filter(mine).map(up));
+    R.hands = (R.hands || []).concat((part.hands || []).filter(mine).map(up));
+    R.parts.push(part);
+    if (R.parts.length < Z) return null;
+  }
+  const X0 = MAPV.x[0], c = document.createElement('canvas'), g = c.getContext('2d');
+  c.width = Math.round((MAPV.x[1] - X0) * rs); c.height = Math.round((MH + 2 * my) * rs);
+  R.parts.forEach((part, k) => {
+    const offY = MH - (k + 1) * H;
+    if (!k) { g.drawImage(part, -X0 * rs, offY * rs); return; }
+    const t = document.createElement('canvas'); t.width = part.width; t.height = part.height; const tg = t.getContext('2d');
+    tg.drawImage(part, 0, 0); tg.globalCompositeOperation = 'destination-in'; // alt dikişte bir alttaki mekâna yumuşak geçiş
+    const gr = tg.createLinearGradient(0, (H + my - MAPV.blend) * rs, 0, (H + my + MAPV.blend) * rs); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    tg.fillStyle = gr; tg.fillRect(0, 0, t.width, t.height); g.drawImage(t, -X0 * rs, offY * rs);
+  });
+  c.ext = { x: X0, y: -my, w: MAPV.x[1] - X0, h: MH + 2 * my }; c.m = { x: 9999, y: 9999 }; // m: eski taşma payı denetimleri hep "yeterli" görsün
+  R.parts = null;
+  return (R.done = c);
+}
 function regionBg(ep) {
   const E = EPISODES[ep - 1], R = REGION_BG[ep] || (REGION_BG[ep] = { parts: [] });
+  if (E.vert) return regionBgV(ep, E, R);
   if (R.done && R.done.m.x >= BLEED.x && R.done.m.y >= BLEED.y) return R.done;
   if (R.done) { R.done = null; R.parts = []; R.res = 0; R.hands = []; R.lights = []; R.banners = []; } // ekran genişledi: taşma payıyla yeniden
   if (!R.road) R.road = [buildPath(regionRoad(E))];
@@ -13842,19 +13880,33 @@ function chapelFogLayers(ch) {
   try { const d = wg.getImageData(0, 0, w, h), a = d.data; for (let i = 0; i < a.length; i += 4) { const g = a[i + 1]; if (!(g > a[i] + 45 && g > a[i + 2] + 15 && g > 110)) a[i + 3] = 0; } wg.putImageData(d, 0, 0); } catch (e) {}
   return (CHAPEL_FOG = { src: ch, dark, win });
 }
-function drawMapFog2(E, ep, road, bm) {
+function drawMapFog2(E, ep, road, X) {
   const ids = epLevels(ep), R = REGION_BG[ep], { vis, g, anim, rv } = mapReveal2(ep);
   if (!R.along) R.along = E.nodes.map(n => nearestOnPaths([road], n[0], n[1]).along);
   const A = R.along, all = vis >= ids.length && !anim;
-  if (!all) {
-    const key = ep + ':' + vis + ':' + bm.x + ':' + bm.y;
+  if (E.vert && !all) { // dikey harita: açılan bölümlerin aşağısı tamamen aydınlık; sıradakinin üstü yumuşak kenarlı sis (açılınca yukarı çekilir)
+    const fy = (kk) => E.nodes[Math.min(kk, E.nodes.length - 1)][1] - 110;
+    let yF = fy(vis - 1); if (rv) { const a0 = fy(Math.max(0, rv.from - 1)), b0 = fy(rv.to - 1); let gg = 1; for (let kk = rv.from; kk < rv.to; kk++) gg = Math.min(gg, g(kk)); yF = lerp(a0, b0, gg); }
+    const soft = 150, gr = ctx.createLinearGradient(0, yF - soft, 0, yF + soft * 0.4);
+    gr.addColorStop(0, `rgba(${FOG2.col},${FOG2.a})`); gr.addColorStop(1, `rgba(${FOG2.col},0)`);
+    ctx.fillStyle = `rgba(${FOG2.col},${FOG2.a})`; ctx.fillRect(X.x, X.y, X.w, Math.max(0, yF - soft - X.y));
+    ctx.fillStyle = gr; ctx.fillRect(X.x, yF - soft, X.w, soft * 1.4);
+    ctx.save(); // sınırda kıpırdayan sis öbekleri
+    for (let i = 0; i < 9; i++) { const t = time * 0.4 + i * 1.7, x = X.x + X.w * ((i + 0.5) / 9) + Math.sin(t) * 18, y = yF - 40 + Math.sin(t * 1.3) * 14, rr = 80 + 14 * Math.sin(t * 0.8);
+      const g2 = ctx.createRadialGradient(x, y, 0, x, y, rr); g2.addColorStop(0, `rgba(${FOG2.col},0.6)`); g2.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = g2; ctx.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 5; i++) { const t = time * 0.35 + i * 2.1; glow(ctx, X.x + X.w * ((i + 0.5) / 5) + Math.cos(t) * 20, yF - 70 + Math.sin(t) * 10, 60, '120,110,170', 0.07); }
+    ctx.restore();
+  }
+  if (!all && !E.vert) {
+    const key = ep + ':' + vis + ':' + X.x + ':' + X.y + ':' + X.w + ':' + X.h;
     if (anim || !mapFogC || mapFogC.key !== key) {
-      const k = FOG2.res, c = (mapFogC && mapFogC.c && mapFogC.c.width === Math.ceil((W + 2 * bm.x) * k)) ? mapFogC.c : document.createElement('canvas');
-      c.width = Math.ceil((W + 2 * bm.x) * k); c.height = Math.ceil((H + 2 * bm.y) * k);
-      const gx = c.getContext('2d'); gx.setTransform(k, 0, 0, k, k * bm.x, k * bm.y);
-      gx.fillStyle = `rgba(${FOG2.col},${FOG2.a})`; gx.fillRect(-bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+      const k = FOG2.res * (X.h > 1200 ? 0.6 : 1), c = (mapFogC && mapFogC.c && mapFogC.c.width === Math.ceil(X.w * k) && mapFogC.c.height === Math.ceil(X.h * k)) ? mapFogC.c : document.createElement('canvas');
+      c.width = Math.ceil(X.w * k); c.height = Math.ceil(X.h * k);
+      const gx = c.getContext('2d'); gx.setTransform(k, 0, 0, k, -k * X.x, -k * X.y);
+      gx.fillStyle = `rgba(${FOG2.col},${FOG2.a})`; gx.fillRect(X.x, X.y, X.w, X.h);
       const r = seeded(ep * 7 + 3); // bulut dokusu: koyu sisin içinde biraz daha açık ve koyu öbekler
-      for (let i = 0; i < 70; i++) { const x = r() * (W + 2 * bm.x) - bm.x, y = r() * (H + 2 * bm.y) - bm.y, rr = 40 + r() * 110, gr = gx.createRadialGradient(x, y, 0, x, y, rr);
+      for (let i = 0; i < 70 * Math.max(1, X.h / 600); i++) { const x = X.x + r() * X.w, y = X.y + r() * X.h, rr = 40 + r() * 110, gr = gx.createRadialGradient(x, y, 0, x, y, rr);
         gr.addColorStop(0, i % 3 ? 'rgba(40,30,58,0.22)' : 'rgba(0,0,0,0.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); gx.fillStyle = gr; gx.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
       gx.globalCompositeOperation = 'destination-out';
       const hole = (x, y, rr) => { if (rr < 2) return; const gr = gx.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.5, 'rgba(0,0,0,0.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); gx.fillStyle = gr; gx.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); };
@@ -13866,7 +13918,7 @@ function drawMapFog2(E, ep, road, bm) {
       for (let kk = 0; kk < vis; kk++) hole(E.nodes[kk][0], E.nodes[kk][1], FOG2.hole * g(kk));
       mapFogC = { c, key: anim ? null : key };
     }
-    ctx.drawImage(mapFogC.c, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+    ctx.drawImage(mapFogC.c, X.x, X.y, X.w, X.h);
     // sınırda kıpırdayan sis: son görünen bölümün ötesinde koyu öbekler yavaşça salınır
     const a0 = A[vis - 1];
     ctx.save();
@@ -13888,7 +13940,8 @@ function drawMapFog2(E, ep, road, bm) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 2.6, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400, padX: 70, padY: 40 };
+const MAPCAM = { z: 2, // 15 Eki: dikey haritada 2,6 fazla yakındı (aynı anda tek bölüm görünüyordu)
+  tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400, padX: 70, padY: 40 };
 // 15 Eki (Caner): yolun dışındaki boş alanlara gidilmez: sınır = yol, bölüm işaretleri ve şapelin kutusu + pay (ekranda MAPCAM.padX / üst-alt çubuk + padY)
 function mapRoadBox(E) {
   if (E._box) return E._box;
@@ -13897,9 +13950,9 @@ function mapRoadBox(E) {
   y0 = Math.min(y0, E.end[1] - 120); // şapel yolun ucundan yukarı uzanır
   return (E._box = { x0, x1, y0, y1 });
 }
-function mapCamClamp(bm, E) {
+function mapCamClamp(X, E) {
   const z = MAPCAM.z;
-  let lx = VIS.r - (W + bm.x) * z, hx = VIS.l + bm.x * z, ly = VIS.b - (H + bm.y) * z, hy = VIS.t + bm.y * z; // zeminin taşma payı
+  let lx = VIS.r - (X.x + X.w) * z, hx = VIS.l - X.x * z, ly = VIS.b - (X.y + X.h) * z, hy = VIS.t - X.y * z; // zeminin kutusu
   if (E) {
     const B = mapRoadBox(E), px = MAPCAM.padX, pt = MAPCAM.bar + MAPCAM.padY, pb = MAPCAM.bar + MAPCAM.padY;
     lx = Math.max(lx, VIS.r - px - B.x1 * z); hx = Math.min(hx, VIS.l + px - B.x0 * z);
@@ -13908,21 +13961,22 @@ function mapCamClamp(bm, E) {
   MAPCAM.tx = lx > hx ? (lx + hx) / 2 : clamp(MAPCAM.tx, lx, hx); // yol ekrana sığıyorsa ortalanır
   MAPCAM.ty = ly > hy ? (ly + hy) / 2 : clamp(MAPCAM.ty, ly, hy);
 }
-function mapCamFocus(E, ep, bm) {
+function mapCamFocus(E, ep, X) {
   const ids = epLevels(ep); let k = ids.findIndex(i => levelUnlocked(i) && !(save.stars[i] > 0));
   if (k < 0) { k = 0; ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; }); }
   const n = E.nodes[Math.min(k, E.nodes.length - 1)], z = MAPCAM.z;
   const cx = (VIS.l + VIS.r) / 2, cy = (EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2;
-  MAPCAM.tx = cx - n[0] * z; MAPCAM.ty = cy - n[1] * z; MAPCAM.vx = MAPCAM.vy = 0; mapCamClamp(bm, E);
+  MAPCAM.tx = cx - n[0] * z; MAPCAM.ty = cy - n[1] * z; MAPCAM.vx = MAPCAM.vy = 0; mapCamClamp(X, E);
 }
 const mapToScreen = (x, y) => [x * MAPCAM.z + MAPCAM.tx, y * MAPCAM.z + MAPCAM.ty];
 function drawRegionMap(E, ep, st) {
-  const bg = regionBg(ep), R = REGION_BG[ep], bm = bg.m || { x: 0, y: 0 };
-  ctx.drawImage(bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+  const bg = regionBg(ep), R = REGION_BG[ep]; if (!bg) return;
+  const X = mapExt(bg), z = MAPCAM.z, V = [(VIS.l - MAPCAM.tx) / z, (VIS.t - MAPCAM.ty) / z, (VIS.r - MAPCAM.tx) / z, (VIS.b - MAPCAM.ty) / z]; // ekranda görünen dünya kutusu
+  ctx.drawImage(bg, X.x, X.y, X.w, X.h);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
-  drawBgLights(R.lights);
-  drawGraveHands(R.hands, uiParts); drawBanners(R.banners);
-  MAPFX.fog = drawMapFog2(E, ep, road, bm);
+  drawBgLights(R.lights, V);
+  drawGraveHands(R.hands, uiParts); drawBanners(R.banners, V);
+  MAPFX.fog = drawMapFog2(E, ep, road, X);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
   const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
@@ -13977,19 +14031,20 @@ function drawRegionMap(E, ep, st) {
   }
   // yavaş sürüklenen sis
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const vw = V[2] - V[0], vh = V[3] - V[1];
   for (let i = 0; i < 5; i++) {
-    const x = ((i * 233 + time * (6 + i * 2)) % (W + 400)) - 200, y = 130 + i * 85 + Math.sin(time * 0.3 + i) * 12;
-    glow(ctx, x, y, 170, '150,170,190', 0.05);
+    const x = V[0] + ((i * 233 + time * (6 + i * 2)) % (vw + 400)) - 200, y = V[1] + vh * (0.12 + i * 0.19) + Math.sin(time * 0.3 + i) * 12;
+    glow(ctx, x, y, 170 * Math.min(1, vh / 400), '150,170,190', 0.05);
   }
   // mezarlıkta ve kara gölde süzülen ruh ışıkları
   for (let i = 0; i < 9; i++) {
-    const ph = (time * 0.12 + i * 0.37) % 1, zx = i < 5 ? 400 : 580, x = zx + ((i * 71) % 170) + Math.sin(time * 0.8 + i) * 8, y = 470 - ((i * 53) % 260) - ph * 40;
+    const ph = (time * 0.12 + i * 0.37) % 1, x = V[0] + vw * (((i * 0.37) % 1) * 0.9 + 0.05) + Math.sin(time * 0.8 + i) * 8, y = V[1] + vh * (0.9 - ((i * 0.53) % 0.8)) - ph * 40;
     glow(ctx, x, y, 7, i < 5 ? '140,255,170' : '140,190,255', 0.5 * Math.sin(ph * Math.PI));
   }
   ctx.restore();
   // kargalar: arada bir ekranı kanat çırparak geçer
-  if (time > MAPFX.nextCrow) { MAPFX.nextCrow = time + rand(4, 8); const l = Math.random() < 0.5; MAPFX.crows.push({ x: l ? -30 : W + 30, y: rand(110, 380), v: (l ? 1 : -1) * rand(70, 100), ph: rand(0, 6) }); }
-  MAPFX.crows = MAPFX.crows.filter(c => c.x > -60 && c.x < W + 60);
+  if (time > MAPFX.nextCrow) { MAPFX.nextCrow = time + rand(4, 8); const l = Math.random() < 0.5; MAPFX.crows.push({ x: l ? V[0] - 30 : V[2] + 30, y: V[1] + vh * rand(0.2, 0.7), v: (l ? 1 : -1) * rand(70, 100) / Math.max(1, z * 0.6), ph: rand(0, 6) }); }
+  MAPFX.crows = MAPFX.crows.filter(c => c.x > V[0] - 80 && c.x < V[2] + 80);
   for (const c of MAPFX.crows) {
     c.x += c.v * dt; c.y += Math.sin(time * 2 + c.ph) * 0.3;
     drawFlyingCrow(c.x, c.y, c.v > 0 ? 1 : -1, time * 9 + c.ph);
@@ -14019,8 +14074,8 @@ function drawMap() {
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);
   const st = time - screenT;
   if (E.zones) {
-    const bm = regionBg(mapEp).m || { x: 0, y: 0 }, key = mapEp + ':' + screenT;
-    if (MAPCAM.key !== key) { MAPCAM.key = key; mapCamFocus(E, mapEp, bm); }
+    const bgI = regionBg(mapEp), bm = bgI ? mapExt(bgI) : { x: 0, y: 0, w: W, h: E.mapH || H }, key = mapEp + ':' + screenT;
+    if (MAPCAM.key !== key && bgI) { MAPCAM.key = key; mapCamFocus(E, mapEp, bm); }
     const dtm = Math.min(0.05, time - (MAPCAM.last || time)); MAPCAM.last = time;
     if (!MAPCAM.drag && (Math.abs(MAPCAM.vx) > 2 || Math.abs(MAPCAM.vy) > 2)) { // bırakınca süzülür
       MAPCAM.tx += MAPCAM.vx * dtm; MAPCAM.ty += MAPCAM.vy * dtm; const f = Math.exp(-MAPCAM.fric * dtm); MAPCAM.vx *= f; MAPCAM.vy *= f;
@@ -15885,9 +15940,10 @@ window.__game = {
     return { n, w: c.width, h: c.height, data: c.toDataURL('image/webp', 0.88) };
   },
   bakeRegion(ep, bx, by, res = 2) { // tools/harita-pisir.js: bölge haritası zeminini verilen taşma payıyla baştan sona çizer
+    if (EPISODES[ep - 1].vert) res = Math.min(res, MAPV.res); // dikey harita uzun: bellek için daha düşük çözünürlük
     const B0 = BLEED; BLEED = { x: bx, y: by }; delete REGION_BG[ep]; REGION_BG[ep] = { parts: [], res, noPre: true };
     let c; for (let i = 0; i < 20 && !(c = REGION_BG[ep].done); i++) regionBg(ep);
-    const R = REGION_BG[ep], out = { m: c.m, res, w: c.width, h: c.height, lights: R.lights, banners: R.banners, hands: R.hands, data: c.toDataURL('image/webp', 0.9) };
+    const R = REGION_BG[ep], out = { m: c.m, ext: c.ext, res, w: c.width, h: c.height, lights: R.lights, banners: R.banners, hands: R.hands, data: c.toDataURL('image/webp', 0.9) };
     BLEED = B0; delete REGION_BG[ep]; return out;
   },
   openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
@@ -15981,7 +16037,7 @@ window.__game = {
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
-  goMap: () => { screen = 'map'; screenT = time; }, waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
+  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, achGive, cnt, mapfx: MAPFX,
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)

@@ -17,7 +17,7 @@ const BX = 180, BY = 110, RES = 2;
     const r = await p.evaluate(([ep, bx, by, res]) => window.__game.bakeRegion(ep, bx, by, res), [ep, BX, BY, RES]);
     const file = `map_bolge${ep}.webp`;
     fs.writeFileSync(path.join(img, file), Buffer.from(r.data.split(',')[1], 'base64'));
-    meta[ep] = { file, m: r.m, res: r.res, lights: r.lights, banners: r.banners, hands: r.hands };
+    meta[ep] = { file, m: r.m, ext: r.ext, res: r.res, lights: r.lights, banners: r.banners, hands: r.hands }; // ext: dikey haritanın dünya kutusu
     console.log(file, r.w + 'x' + r.h, Math.round(fs.statSync(path.join(img, file)).size / 1024) + ' KB', 'ışık', r.lights.length, 'sancak', r.banners.length, 'el', r.hands.length);
   }
   fs.writeFileSync(path.join(img, 'map_bolge.json'), JSON.stringify(meta));

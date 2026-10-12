@@ -1382,3 +1382,17 @@ const ITEMS = {
   purse:  { name: 'Lanetli Kese',     cost: 2, desc: 'Hemen +250 altın', gold: 250 },
 };
 const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];
+// 15 Eki (Caner): sefer haritaları dikey: yol alttan girer, kıvrıla kıvrıla yukarı çıkar, Mortimer'ın şapeli en üstte; ilerleyen bölümler yukarıda.
+// Her mekân 960x540'lık bir dilim, alttan üste dizilir (zones[0] en altta). game.js drawRegionMap / regionBg (E.vert) bu düzeni kullanır.
+const MAP_V = { h: 540, x: 480, amp: 150, top: 250, bot: 110, jit: 36 };
+function vertEpisode(E, ph, flip) {
+  const n = E.nodes.length, MH = E.zones.length * MAP_V.h;
+  let s = Math.round(ph * 1000) + 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  E.vert = true; E.mapH = MH;
+  E.nodes = Array.from({ length: n }, (_, k) => {
+    const t = k / (n - 1), y = MH - MAP_V.bot - t * (MH - MAP_V.bot - MAP_V.top) + (r() - 0.5) * MAP_V.jit;
+    return [Math.round(MAP_V.x + flip * MAP_V.amp * Math.sin(k * 1.15 + ph) + (r() - 0.5) * MAP_V.jit), Math.round(y)];
+  });
+  E.start = [MAP_V.x + flip * 40, MH + 70]; E.end = [MAP_V.x, 150];
+}
+if (typeof NECRO !== 'undefined' && NECRO && EPISODES.length) { vertEpisode(EPISODES[0], 0.4, 1); if (EPISODES[1]) vertEpisode(EPISODES[1], 1.9, -1); }
