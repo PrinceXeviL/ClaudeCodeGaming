@@ -2455,7 +2455,8 @@ function killEnemy(e) {
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
-    dur: NECRO ? CORPSE_STAY : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
+    dur: NECRO ? CORPSE_STAY : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
+    pw: corpsePower(e) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
   // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
@@ -3528,12 +3529,15 @@ function updateEnemy(e, dt) {
     if (e.purT <= 0) {
       e.purT = PU.every;
       let n = 0;
+      let nb = 0;
       for (const f of G.effects) if (f.kind === 'corpse' && f.raisable && dist(f.x, f.y, e.x, e.y) < PU.r) {
-        f.raisable = false; f.dur = Math.min(f.dur, f.t + 0.7); n++;
+        f.raisable = false; nb++;
+        if (PU.bless) { f.blessT = G.t; f.dur = Math.min(f.dur, f.t + 1.6); } else f.dur = Math.min(f.dur, f.t + 0.7); // kutsanan ceset altın ışıkta söner (diriltilemez)
         for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: f.x + rand(-8, 8), y: f.y - rand(0, 6), vy: -rand(20, 50), col: i % 2 ? '255,200,90' : '255,240,180', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) });
       }
-      for (const so of G.soldiers) if (so.zombie && !so.dead && dist(so.x, so.y, e.x, e.y) < PU.r) { damageSoldier(so, PU.dmg); n++; }
-      if (n) { G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: PU.r, col: '255,220,120', t: 0, dur: 0.6 }); sfx('magic'); }
+      n += nb;
+      if (PU.dmg) for (const so of G.soldiers) if (so.zombie && !so.dead && dist(so.x, so.y, e.x, e.y) < PU.r) { damageSoldier(so, PU.dmg); n++; }
+      if (n) { G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: PU.r, col: '255,220,120', t: 0, dur: 0.6 }); sfx('magic'); if (PU.bless && nb) floatText(e.x, e.y - 40, 'Kutsandı!', '#ffe6a0'); }
     }
   }
   // leş akbabası: yakındaki diriltilebilir cesedi yer (Mortimer diriltemez), canı dolar
@@ -4507,9 +4511,11 @@ function castNecro(id, x, y) {
   const S = spellStats(id), c = G.castle, m = mortimerPoint();
   G.mortCast = G.mortCastT = id === 'nm_raise' && mortStrip('mortimer_dirilt') ? MORT_RAISE.t : MORT_CAST_T; G.mortCastN = id === 'nm_raise' ? 'mortimer_dirilt' : null; G.mortFlash = false; // balkonda büyü kareleri (diriltmede Veo şeridi)
   if (id === 'nm_raise') {
-    const alive = G.soldiers.filter(s => s.minion && !s.dead).length;
-    const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15).sort((a, b) => a.t - b.t).slice(0, Math.max(0, S.max - alive));
-    if (!bodies.length) { G.mortCast = 0; floatText(m.x, m.y - 40, 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    const alive = G.soldiers.filter(s => s.minion && !s.dead).length, hasXY = x != null && y != null;
+    const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
+      .sort((a, b) => (b.pw || 1) - (a.pw || 1) || a.t - b.t).slice(0, Math.max(0, S.max - alive)); // güçlüler önce
+    if (!bodies.length) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    if (hasXY) G.effects.push({ kind: 'ring', x, y, r: CORPSE_ECO.r, col: '220,60,60', t: 0, dur: 0.5 });
     G.raiseT = 1.2; mortSay('raise', true);
     bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); cnt('raise', bodies.length);
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
@@ -4613,12 +4619,17 @@ function zombieHunt(s) {
   s.rx = q.x; s.ry = q.y;
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
+// 15 Eki (Caner): ceset ekonomisi. İri düşmanın ölüsü daha güçlü kalkar: güç = sqrt(düşman canı / CORPSE_ECO.base) (alt/üst sınırlı).
+// Diriltme hedefli: dokunulan yerin CORPSE_ECO.r çevresindeki cesetler, en güçlüler önce. Rahip ve fener arabası çevrelerindeki cesetleri kutsar.
+const CORPSE_ECO = { base: 110, min: 0.8, max: 2.4, r: 95, strong: 1.5 };
+const corpsePower = (e) => clamp(Math.sqrt((e.def.hp || 100) / CORPSE_ECO.base), CORPSE_ECO.min, CORPSE_ECO.max); // düşmanın temel canı (bölüm çarpanı değil)
 function raiseMinion(e, delay = 0) {
-  const S = spellStats('nm_raise'), M = S.minion, up = 1; // dayanıklılık artık Büyü Kitabı'ndan (spellStats)
+  const S = spellStats('nm_raise'), M = S.minion, up = e.pw || 1; // dayanıklılık Büyü Kitabı'ndan (spellStats), güç cesedin sahibinden
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
   if (G.stats) G.stats.raised++;
-  const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg, armor: M.armor,
-    rate: 1, speed: 40, engage: 80, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life * up, born: G.t + delay }; // engage 80: dirilenler düşmana daha uzaktan saldırır
+  const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg.map(v => v * Math.pow(up, 0.8)), armor: M.armor, pw: up,
+    rate: 1, speed: 40, engage: 80, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay };
+  if (up >= CORPSE_ECO.strong && !delay) floatText(e.x, e.y - 36, 'Güçlü ölü!', '#ff8a7a'); // engage 80: dirilenler düşmana daha uzaktan saldırır
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
     const D = ENEMIES[e.name.slice(6)];
@@ -8942,6 +8953,7 @@ const DIE_T = 0.9;
 function drawCorpse(f) {
   const im = spr(f.name);
   if (!im) return;
+  if (f.blessT != null) { const k = clamp(1 - (G.t - f.blessT) / 1.6, 0, 1); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - 4, 22, '255,220,130', 0.5 * k); ctx.restore(); } // kutsanmış: altın ışık
   const t = f.t, rig = RIG[f.rig || f.name] || { legY: 0.7 };
   const dk = !f.air && !rig.wings && animStrip(f.name, f.rig, '_die');
   if (dk) {
@@ -8950,7 +8962,7 @@ function drawCorpse(f) {
     const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78;
     ctx.globalAlpha = f.kind === 'remains' ? (f.fading ? clamp((f.dur - t) / REMAINS.fade, 0, 1) : 1) : NECRO && !f.fly ? 1 : 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1); // necro: ceset kalıntıya sönmeden geçer
     if (f.kind === 'remains') { const F = ANIM_META[dk]; ctx.translate(f.x, f.y + 1); ctx.scale(f.face * (rig.flip ? -1 : 1), 1); drawFrame(spr(dk), F, F.n - 1, f.h || CHAR_H[f.name] || 20); ctx.restore(); return; }
-    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '190,70,255', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
+    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); }
     ctx.translate(f.x, f.y + 1); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
     drawFrame(spr(dk), F, i, f.h || CHAR_H[f.name] || 20);
     ctx.restore();
@@ -8976,7 +8988,7 @@ function drawCorpse(f) {
   const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78; // uzun yatan ceset son yarım saniyede solar
   ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
   // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
-  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 12, '190,70,255', 0.18 + Math.sin(time * 5 + f.x) * 0.06); ctx.restore(); }
+  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); }
   // ölüm pozu bitince (0.8 sn) ceset değişmez: bir kez ayrı tuvale çizilir, sonra tek resim olarak basılır (10 sn yatan cesetler ucuzlasın)
   if (f.air) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 1, w * 0.4, w * 0.13, 0, 0, Math.PI * 2); ctx.fill(); }
   if (t > 0.8 && !f.air && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
@@ -10952,6 +10964,11 @@ function drawHud() {
       txt(Math.ceil(cd) + '', 0, 1, 16, '#fff', 'center', '400', FONT_T);
     }
     if (peek) { ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, b.r + 6, 0, Math.PI * 2); ctx.stroke(); }
+    if (id === 'nm_raise') { // ceset sayacı: diriltilebilir ceset sayısı; güçlü ceset varsa kızıl
+      let nC = 0, nS = 0; for (const f of G.effects) if (f.kind === 'corpse' && f.raisable && f.t < f.dur - 0.15) { nC++; if ((f.pw || 1) >= CORPSE_ECO.strong) nS++; }
+      const qx = -b.r * 0.72, qy = -b.r * 0.78, w0 = nC > 9 ? 28 : 22;
+      roundRect(qx - w0 / 2, qy - 10, w0, 20, 10, nS ? '#b8202a' : '#4a1a6a', '#f2e6c8', 1.5); txt(nC + '', qx, qy + 1, 13, '#fff', 'center', '400', FONT_T);
+    }
     if (info.hero) { // köşede komutanın küçük yüzü: kimin gücü olduğu belli olsun
       const hh = info.hero, im = heroSprite(hh.def), c = im && headCrop(im), rr = b.r * 0.36, qx = b.r * 0.74, qy = -b.r * 0.74;
       circle(qx, qy, rr + 2, '#4a2c08', '#0a0612', 1.5);
@@ -15837,7 +15854,7 @@ function hudTap(x, y) {
       setSel(null);
       // tek dokunuş: hazırsa seçer (diriltme hemen çalışır), alt panelde ne yaptığını yazar; seçiliyken dokunmak bırakır
       if (G.spells[id] > 0) { G.spellPeek = id; G.mode = null; sfx('error'); return true; }
-      if (id === 'nm_raise') { G.mode = null; castSpell(id); tipDone('spell'); return true; }
+      if (id === 'nm_raise') tipDone('spell'); // 15 Eki: diriltme de hedefli (haritada cesetlerin olduğu yere dokun)
       G.mode = G.mode && G.mode.id === id ? null : { kind: 'spell', id };
       if (G.mode) { G.spellPeek = id; sfx('spell'); }
       return true;

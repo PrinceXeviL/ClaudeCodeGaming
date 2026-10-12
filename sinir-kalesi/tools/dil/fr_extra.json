@@ -137,7 +137,12 @@
 "Kaburganız boş, kafanız da mı boş?!": "Vos côtes sont vides, vos crânes aussi ?!",
 "Kim nöbetteydi? Kafatasını görmek istiyorum!": "Qui était de garde ? Je veux voir son crâne !",
 "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "Un Géant d'Os garde la porte (bloque 3 ennemis, se relève en 30 s) ; 2 archers squelettes au balcon",
-"Titreşim": "Vibration"
+"Titreşim": "Vibration",
+"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Les cadavres à l'endroit touché se relèvent en morts-vivants et combattent 30 s pour toi · Les grands ennemis se relèvent plus forts (lueur rouge) · Prêtres et lanternes bénissent les cadavres, qui ne peuvent plus être relevés",
+"Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Les cadavres touchés se relèvent · les grands plus forts",
+"Burada ceset yok!": "Pas de cadavres ici !",
+"Güçlü ölü!": "Mort puissant !",
+"Kutsandı!": "Béni !"
 },
 "tpl": [
 [

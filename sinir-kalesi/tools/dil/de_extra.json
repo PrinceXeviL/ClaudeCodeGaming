@@ -137,7 +137,12 @@
 "Kaburganız boş, kafanız da mı boş?!": "Eure Rippen sind leer, eure Schädel etwa auch?!",
 "Kim nöbetteydi? Kafatasını görmek istiyorum!": "Wer hatte Wache? Ich will seinen Schädel sehen!",
 "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "Ein Knochenriese bewacht das Tor (hält 3 Feinde auf, steht nach 30 s wieder auf); 2 Skelettschützen auf dem Balkon",
-"Titreşim": "Vibration"
+"Titreşim": "Vibration",
+"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Leichen an der angetippten Stelle erheben sich als verrottende Untote und kämpfen 30 s für dich · Große Feinde erheben sich stärker (rot leuchtend) · Priester und Laternen segnen Leichen, dann sind sie nicht erweckbar",
+"Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Leichen an der Stelle erheben sich · große Feinde stärker",
+"Burada ceset yok!": "Hier keine Leichen!",
+"Güçlü ölü!": "Starker Toter!",
+"Kutsandı!": "Gesegnet!"
 },
 "tpl": [
 [

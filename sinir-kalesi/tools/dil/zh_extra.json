@@ -137,7 +137,12 @@
 "Kaburganız boş, kafanız da mı boş?!": "肋骨是空的，脑袋也是空的吗？！",
 "Kim nöbetteydi? Kafatasını görmek istiyorum!": "谁在站岗？我要看看他的脑壳！",
 "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "白骨巨人守卫城门（阻挡3名敌人，30秒后复活）；阳台上2名骷髅弓箭手",
-"Titreşim": "振动"
+"Titreşim": "振动",
+"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "点击处的尸体会化作腐尸为你战斗30秒 · 大型敌人的尸体更强（红光） · 牧师和灯车会圣化尸体，使其无法复活",
+"Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "点击处尸体复活 · 大型更强",
+"Burada ceset yok!": "这里没有尸体！",
+"Güçlü ölü!": "强大亡者！",
+"Kutsandı!": "已圣化！"
 },
 "tpl": [
 [

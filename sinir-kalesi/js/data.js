@@ -312,7 +312,7 @@ Object.assign(ENEMIES, {
   solarcher: { name: 'Solarian Okçusu',     h: 30, hp: 45,  speed: 26, armor: 0,    mr: 0,    gold: 9,  dmg: [1, 3],   rate: 1,   lives: 1, r: 9, ranged: { r: 130, dmg: [4, 7], rate: 1.8, proj: 'harrow', any: true, hold: true } },
   gladiator: { name: 'Gladyatör',           h: 31, hp: 120, speed: 30, armor: 0,    mr: 0,    gold: 14, dmg: [6, 10],  rate: 0.8, lives: 1, r: 9 },
   assassin:  { name: 'Suikastçı',           h: 30, hp: 80,  speed: 38, armor: 0,    mr: 0.25, gold: 15, dmg: [5, 9],   rate: 0.8, lives: 1, r: 9, blink: { cd: 9, d: 55 } },
-  priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true },
+  priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true, purify: { r: 70, every: 5, dmg: 0, bless: true } }, // 15 Eki: cesetleri kutsar
   heavy:     { name: 'Ağır Piyade',         h: 33, hp: 380, speed: 14, armor: 0.7,  mr: 0,    gold: 32, dmg: [9, 15],  rate: 1.3, lives: 1, r: 12 },
   cavalry:   { name: 'Solarian Süvarisi',   h: 42, hp: 280, speed: 34, armor: 0.3,  mr: 0,    gold: 28, dmg: [10, 16], rate: 1.1, lives: 2, r: 13 },
   ram:       { name: 'Koçbaşı',             h: 40, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 16, machine: true },
@@ -590,7 +590,7 @@ if (NECRO) {
     holywater:  { name: 'Kutsal Su Taşıyıcı', h: 32, hp: 160, speed: 18, armor: 0, mr: 0.3, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30 } },
     flagellant: { name: 'Kırbaçlı Tövbekâr', h: 31, hp: 220, speed: 22, armor: 0, mr: 0, gold: 16, dmg: [6, 10], rate: 0.8, lives: 1, r: 10, frenzy: { spd: 0.9, dmg: 1.2 } },
-    lantern:    { name: 'Fener Arabası', h: 40, hp: 650, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 } },
+    lantern:    { name: 'Fener Arabası', h: 40, hp: 650, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 }, purify: { r: 95, every: 5, dmg: 0, bless: true } }, // 15 Eki: fener cesetleri kutsar
     bellpriest: { name: 'Çan Rahibi', h: 32, hp: 170, speed: 18, armor: 0, mr: 0.4, gold: 18, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ab: { slam: { cd: 7, r: 80, stun: 1.4, dmg: 4, say: 'Çan!', bell: true } } },
     paladin:    { name: 'Paladin', h: 36, hp: 520, speed: 13, armor: 0.5, mr: 0.45, gold: 36, dmg: [10, 16], rate: 1.2, lives: 2, r: 12, elite: true },
@@ -750,9 +750,9 @@ const GRIM = {
 const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
-  nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 10, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
-    desc: 'Yerde yatan düşman cesetleri (ölümden sonra 10 sn) çürümüş ölüler olarak kalkar, düşmanın geldiği yöne yürüyüp senin için savaşır · 30 sn yaşarlar',
-    short: 'Yerdeki cesetler çürümüş ölüler olarak kalkar, düşmana yürüyüp 30 sn senin için savaşır' },
+  nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 10, r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: 30 },
+    desc: 'Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur',
+    short: 'Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü' },
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
     desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 7 sn durdurur, vurularak kırılabilir',
     short: 'Yola kemik duvar diker: düşmanlar 7 sn takılır (kırılabilir)' },

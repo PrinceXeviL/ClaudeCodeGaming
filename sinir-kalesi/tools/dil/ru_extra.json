@@ -137,7 +137,12 @@
 "Kaburganız boş, kafanız da mı boş?!": "Рёбра пустые, головы тоже пустые?!",
 "Kim nöbetteydi? Kafatasını görmek istiyorum!": "Кто стоял на посту? Хочу видеть его череп!",
 "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "Костяной великан охраняет ворота (держит 3 врагов, встаёт через 30 с); 2 лучника-скелета на балконе",
-"Titreşim": "Вибрация"
+"Titreşim": "Вибрация",
+"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Трупы в месте касания встают гниющими мертвецами и 30 с сражаются за тебя · Крупные враги встают сильнее (красное свечение) · Жрецы и фонари освящают трупы, их нельзя поднять",
+"Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Трупы в месте касания встают · крупные сильнее",
+"Burada ceset yok!": "Здесь нет трупов!",
+"Güçlü ölü!": "Сильный мертвец!",
+"Kutsandı!": "Освящено!"
 },
 "tpl": [
 [
