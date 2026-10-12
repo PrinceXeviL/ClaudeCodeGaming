@@ -7674,11 +7674,7 @@ function drawEnemy0(e) {
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);
-    if (e.captain) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - 2, 15, '255,200,90', 0.24 + Math.sin(time * 3 + e.off) * 0.05); ctx.restore(); } // bölük komutanı
-    if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: ayağında ritimle atan kızıl ışık, yukarı uçuşan kıvılcım
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      glow(ctx, e.x, e.y - 2, 12, '255,120,60', 0.18 + 0.12 * Math.max(0, Math.sin(G.t * Math.PI / DRUM.beat)));
-      ctx.restore();
+    if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: yukarı uçuşan kıvılcım (13 Eki, Caner: ayaktaki yuvarlak ışıklar kalktı)
       if (Math.random() < 0.03) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-5, 5), y: e.y - rand(6, 20), vy: -rand(18, 34), col: '255,140,70', s0: 1.4, s1: 0.3, life: 0.6, a: 0.9 });
     }
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
