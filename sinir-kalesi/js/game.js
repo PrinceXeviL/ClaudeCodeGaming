@@ -14124,7 +14124,7 @@ function drawRegionMap(E, ep, st) {
   MAPFX.crows = MAPFX.crows.filter(c => c.x > V[0] - 80 && c.x < V[2] + 80);
   for (const c of MAPFX.crows) {
     c.x += c.v * dt; c.y += Math.sin(time * 2 + c.ph) * 0.3;
-    drawFlyingCrow(c.x, c.y, c.v > 0 ? 1 : -1, time * 9 + c.ph);
+    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(0.75, 0.75); drawFlyingCrow(0, 0, c.v > 0 ? 1 : -1, time * 9 + c.ph); ctx.restore(); // 15 Eki: haritada karga daha ufak
   }
   mapAmbient(E, V, dt);
 }
@@ -14159,11 +14159,11 @@ function mapAmbient(E, V, dt) {
   // yarasa sürüsü: 4-7 yarasa ekranın bir yanından öbürüne zikzakla geçer
   if (time > MAPFX.nextBats) {
     MAPFX.nextBats = time + rand(AMB.bats[0], AMB.bats[1]); const l = Math.random() < 0.5, y0 = V[1] + vh * rand(0.15, 0.6), n = 4 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < n; i++) MAPFX.bats.push({ x: (l ? V[0] - 20 : V[2] + 20) - (l ? 1 : -1) * i * rand(8, 22), y: y0 + rand(-25, 25), v: (l ? 1 : -1) * rand(55, 80), ph: rand(0, 6), w: rand(1.6, 3.2), s: rand(0.8, 1.15) });
+    for (let i = 0; i < n; i++) MAPFX.bats.push({ x: (l ? V[0] - 20 : V[2] + 20) - (l ? 1 : -1) * i * rand(8, 22), y: y0 + rand(-25, 25), v: (l ? 1 : -1) * rand(55, 80), ph: rand(0, 6), w: rand(1.6, 3.2), s: rand(0.64, 0.92) }); // 15 Eki: %20 ufak
   }
   MAPFX.bats = MAPFX.bats.filter(b => b.x > V[0] - 120 && b.x < V[2] + 120);
   for (const b of MAPFX.bats) { b.x += b.v * dt; b.y += Math.sin(time * b.w + b.ph) * 22 * dt; drawBat(b.x, b.y + Math.sin(time * 7 + b.ph) * 2, b.v > 0 ? 1 : -1, time * 26 + b.ph, b.s); }
-  // kovalamaca: fare önde kaçar, peşinde kara köpek (kovalayan köpeğin şeridi varsa o, yoksa ikinci bir fare)
+  // kovalamaca: fare önde kaçar, peşinde ikinci bir fare (15 Eki, Caner: köpek olmasın)
   if (!MAPFX.chase && time > MAPFX.nextChase) {
     MAPFX.nextChase = time + rand(AMB.chase[0], AMB.chase[1]);
     const lo = Math.max(V[1] + vh * 0.35, MAPFX.fogY != null ? MAPFX.fogY + 60 : -1e9), hi = V[3] - vh * 0.18;
@@ -14173,9 +14173,7 @@ function mapAmbient(E, V, dt) {
   if (C) {
     C.t += dt; C.x += C.v * dt; const dir = C.v > 0 ? 1 : -1, ry = C.y + Math.sin(C.t * 3 + C.wob) * 10;
     drawRat(C.x, ry, dir, time * 30, 1.1);
-    const hx = C.x - dir * 34, hy = C.y + Math.sin((C.t - 0.4) * 3 + C.wob) * 10, hs = animStrip('enemy_hound', null, '_walk');
-    if (hs) { const F = ANIM_META[hs]; ctx.save(); ctx.translate(hx, hy); ctx.scale(dir * ((RIG.enemy_hound || {}).flip ? -1 : 1), 1); unitShadow(0, 0, 12); drawFrame(spr(hs), F, Math.floor(time * 22) % F.n, 13); ctx.restore(); }
-    else drawRat(hx, hy, dir, time * 30 + 1, 1.25);
+    drawRat(C.x - dir * 16, C.y + Math.sin((C.t - 0.3) * 3 + C.wob) * 10, dir, time * 30 + 1, 1.15);
     if (C.x < V[0] - 80 || C.x > V[2] + 80) MAPFX.chase = null;
   }
 }
