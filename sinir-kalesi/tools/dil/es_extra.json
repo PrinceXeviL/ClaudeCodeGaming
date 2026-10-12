@@ -187,7 +187,11 @@
 "Anonim oyun verisi": "Datos de juego anónimos",
 "Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "¿Podemos enviar datos anónimos, como qué nivel te costó o qué torres construyes? Nadie sabe quién eres y puedes desactivarlo cuando quieras en ajustes.",
 "Liderlik tablosu mağaza sürümünde açılır": "Las clasificaciones se abren en la versión de la tienda",
-"Bulut kaydı yüklendi": "Partida en la nube cargada"
+"Bulut kaydı yüklendi": "Partida en la nube cargada",
+"MORTİMER'IN HEDİYESİ": "EL REGALO DE MORTIMER",
+"Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "Ven cada día por un regalo nuevo. Si faltas un día, no se rompe la racha.",
+"HEDİYEYİ AL": "RECOGER REGALO",
+"Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "¡Regalo recogido! Los objetos están en tu bolsa de batalla. ¡Vuelve mañana!"
 },
 "tpl": [
 [
@@ -269,6 +273,18 @@
 [
 "{}: dokun! {}",
 "{}: ¡toca! {}"
+],
+[
+"{}. GÜN",
+"DÍA {}"
+],
+[
+"{} kristal",
+"{} cristales"
+],
+[
+"{} + {}",
+"{} + {}"
 ]
 ]
 }

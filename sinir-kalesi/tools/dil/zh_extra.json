@@ -187,7 +187,11 @@
 "Anonim oyun verisi": "匿名游戏数据",
 "Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "我们可以发送匿名游戏数据吗？例如哪关较难、你建造了哪些塔。我们不会知道你是谁，你可以随时在设置中关闭。",
 "Liderlik tablosu mağaza sürümünde açılır": "排行榜将在商店版本中开放",
-"Bulut kaydı yüklendi": "已加载云存档"
+"Bulut kaydı yüklendi": "已加载云存档",
+"MORTİMER'IN HEDİYESİ": "莫蒂默的礼物",
+"Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "每天来领新礼物。错过一天也不会中断。",
+"HEDİYEYİ AL": "领取礼物",
+"Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "礼物已领取！物品在战斗背包中。明天再来！"
 },
 "tpl": [
 [
@@ -269,6 +273,18 @@
 [
 "{}: dokun! {}",
 "{}：点击！{}"
+],
+[
+"{}. GÜN",
+"第{}天"
+],
+[
+"{} kristal",
+"{}水晶"
+],
+[
+"{} + {}",
+"{} + {}"
 ]
 ]
 }

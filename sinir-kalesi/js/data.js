@@ -1382,6 +1382,9 @@ const ITEMS = {
   purse:  { name: 'Lanetli Kese',     cost: 2, desc: 'Hemen +250 altın', gold: 250 },
 };
 const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];
+// 15 Eki (Caner): günlük giriş hediyesi. 7 günlük döngü; bir gün kaçırılırsa seri sıfırlanmaz, kaldığı yerden sürer.
+// c: kristal, item: savaş eşyası (ITEMS). Haftada ~8 kristal + 4 eşya (komutanlar 15/30 kristal: bossların payını ezmesin).
+const DAILY_LOGIN = [{ c: 1 }, { item: 'purse' }, { c: 1 }, { item: 'freeze' }, { c: 2 }, { item: 'tea' }, { c: 4, item: 'bomb' }];
 // 15 Eki (Caner): sefer haritaları dikey: yol alttan girer, kıvrıla kıvrıla yukarı çıkar, Mortimer'ın şapeli en üstte; ilerleyen bölümler yukarıda.
 // Her mekân 960x540'lık bir dilim, alttan üste dizilir (zones[0] en altta). game.js drawRegionMap / regionBg (E.vert) bu düzeni kullanır.
 const MAP_V = { h: 540, x: 480, amp: 150, top: 250, bot: 110, jit: 36 };

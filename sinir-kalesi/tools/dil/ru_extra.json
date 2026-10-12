@@ -187,7 +187,11 @@
 "Anonim oyun verisi": "Анонимные игровые данные",
 "Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "Можно отправлять анонимные данные, например какой уровень был трудным и какие башни ты строишь? Никто не узнает, кто ты; выключить можно в настройках.",
 "Liderlik tablosu mağaza sürümünde açılır": "Таблицы лидеров доступны в версии из магазина",
-"Bulut kaydı yüklendi": "Облачное сохранение загружено"
+"Bulut kaydı yüklendi": "Облачное сохранение загружено",
+"MORTİMER'IN HEDİYESİ": "ПОДАРОК МОРТИМЕРА",
+"Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "Заходи каждый день за новым подарком. Пропуск дня не сбрасывает серию.",
+"HEDİYEYİ AL": "ЗАБРАТЬ ПОДАРОК",
+"Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "Подарок получен! Предметы в боевой сумке. Возвращайся завтра!"
 },
 "tpl": [
 [
@@ -269,6 +273,18 @@
 [
 "{}: dokun! {}",
 "{}: нажми! {}"
+],
+[
+"{}. GÜN",
+"ДЕНЬ {}"
+],
+[
+"{} kristal",
+"{} кристалла"
+],
+[
+"{} + {}",
+"{} + {}"
 ]
 ]
 }

@@ -13803,6 +13803,50 @@ function drawTitle() {
     if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
     return;
   }
+// ----- günlük giriş hediyesi (15 Eki, data.js DAILY_LOGIN) -----
+// Haritaya girince günde bir kez açılır (ilk bölüm bitmeden yeni oyuncuya gösterilmez). save.login = { day: sıradaki gün 0..6, last: alındığı gün, n: toplam }
+const loginDue = () => NECRO && (save.stars[0] || 0) > 0 && !(save.login && save.login.last === todayKey()) && !(!save.statsAsked && GA_KEYS.game);
+let LOGIN_UI = { t0: null, got: null };
+function claimLogin() {
+  const L = save.login || (save.login = { day: 0, last: null, n: 0 }), R = DAILY_LOGIN[L.day % DAILY_LOGIN.length];
+  if (R.c) save.crystal = (save.crystal || 0) + R.c;
+  if (R.item) { save.items = save.items || {}; save.items[R.item] = (save.items[R.item] || 0) + 1; }
+  LOGIN_UI.got = { day: L.day, t: time };
+  L.last = todayKey(); L.day = (L.day + 1) % DAILY_LOGIN.length; L.n = (L.n || 0) + 1;
+  persist(); sfx('coins'); haptic('success'); gaDesign('gunluk:al:' + (LOGIN_UI.got.day + 1));
+  mapNote = { text: 'Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!', t: time };
+  for (let i = 0; i < 26; i++) { const a = rand(0, Math.PI * 2), v = rand(60, 200); emit(uiParts, { kind: 'glow', add: true, x: W / 2, y: H / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, col: i % 2 ? '200,140,255' : '255,220,120', s0: rand(2.5, 4.5), s1: 0.4, life: rand(0.6, 1.1) }); }
+}
+function drawLoginBonus(st) {
+  if (LOGIN_UI.t0 == null || time - LOGIN_UI.t0 > 999) LOGIN_UI.t0 = time;
+  const k = easeOutBack(clamp((time - LOGIN_UI.t0 - 0.3) / 0.4, 0, 1)), L = save.login || { day: 0 }, cur = L.day % DAILY_LOGIN.length;
+  ctx.fillStyle = `rgba(6,3,10,${0.62 * clamp((time - LOGIN_UI.t0) / 0.3, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  buttons.push({ key: 'login_bg', x: VIS.l, y: VIS.t, w: VIS.w, h: VIS.h, fn: () => {} }); // alttaki düğmelere dokunulmasın
+  if (k <= 0.01) return;
+  const n = DAILY_LOGIN.length, cw = Math.min(104, (Math.min(VIS.w, 960) - 90) / n), ch = cw * 1.32, gap = 8, tw = n * cw + (n - 1) * gap;
+  const pw = tw + 48, ph = ch + 170, px = W / 2 - pw / 2, py = H / 2 - ph / 2;
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(k, k); ctx.translate(-W / 2, -H / 2);
+  roundRect(px, py, pw, ph, 18, 'rgba(26,14,30,0.97)', '#c9a865', 2.5);
+  crimsonRibbon(W / 2, py + 4, "MORTİMER'IN HEDİYESİ", 22, Math.min(420, pw - 40));
+  txt('Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.', W / 2, py + 48, 14, '#e8dcc0', 'center', '700', FONT_B, false);
+  DAILY_LOGIN.forEach((R, i) => {
+    const x = px + 24 + i * (cw + gap), y = py + 66, done = i < cur, today = i === cur, big = i === n - 1;
+    if (today) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + cw / 2, y + ch / 2, cw * 0.9, '255,210,120', 0.35 + Math.sin(time * 4) * 0.1); ctx.restore(); }
+    roundRect(x, y, cw, ch, 12, done ? 'rgba(40,30,44,0.9)' : big ? 'rgba(70,30,80,0.95)' : 'rgba(52,36,60,0.95)', today ? '#ffd76a' : '#6a5a7a', today ? 3 : 1.5);
+    txt((i + 1) + '. GÜN', x + cw / 2, y + 16, 12.5, today ? '#ffe7a0' : '#cbb8d8', 'center', '400', FONT_T, false);
+    ctx.save(); if (done) ctx.globalAlpha = 0.4;
+    const cy = y + ch * 0.52, rr = cw * 0.24;
+    if (R.c && R.item) { drawItemIcon(R.item, x + cw / 2 - rr * 0.6, cy, rr * 0.95); drawCrystal(x + cw / 2 + rr * 0.75, cy + rr * 0.3, rr * 0.75); }
+    else if (R.c) drawCrystal(x + cw / 2, cy, rr * 1.05);
+    else drawItemIcon(R.item, x + cw / 2, cy, rr * 1.1);
+    const lab = R.c && R.item ? `${R.c} + ${ITEMS[R.item].name}` : R.c ? `${R.c} kristal` : ITEMS[R.item].name;
+    fitTxt(lab, x + cw / 2, y + ch - 16, cw - 8, 11.5, '#f2e6c8', 'center', '800', FONT_B, false, 9);
+    ctx.restore();
+    if (done) { ctx.strokeStyle = '#7cdc6a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x + cw * 0.3, y + ch * 0.52); ctx.lineTo(x + cw * 0.45, y + ch * 0.66); ctx.lineTo(x + cw * 0.72, y + ch * 0.36); ctx.stroke(); }
+  });
+  ctx.restore();
+  if (k > 0.9) gameButton('login_take', W / 2, py + ph - 40, 220, 56, 'HEDİYEYİ AL', claimLogin, 'green', { size: 18, shine: true });
+}
 // anonim oyun verisi izni (15 Eki): ilk açılışta bir kez sorulur; ayarlardan değiştirilebilir
 function statsConsent() {
   ctx.fillStyle = 'rgba(6,3,10,0.6)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
@@ -14458,6 +14502,7 @@ function drawMap() {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.4, H), vx: rand(-6, 6), vy: rand(-14, -5),
       col: '255,210,140', s0: rand(1.5, 2.8), s1: 0.5, life: rand(3, 5), a: 0.7, fadeIn: 0.3 });
   }
+  if (mapSel == null && !trans && loginDue()) drawLoginBonus(st);
   // bölüm kartı (bayrağa dokununca): arka plan kararır, dışına dokununca kapanır
   if (mapSel != null) {
     const k = clamp((time - mapSelT) / 0.2, 0, 1);
