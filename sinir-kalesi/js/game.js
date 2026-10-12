@@ -6473,7 +6473,7 @@ function shadow(x, y, rx, ry) {
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
 }
 // küçük, yuvarlak uçlu (hap biçimli) can barı
-const HP_K = 0.73; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: iki kez %5 küçüldü (düşman, dost, komutan)
+const HP_K = 0.657; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: iki kez %5 küçüldü; 15 Eki: %10 daha (düşman, dost, komutan)
 function hpBar(x, y, w, frac, col = '#4cd34c') {
   frac = clamp(frac, 0, 1); w *= HP_K;
   const h = 3.2 * HP_K, r = h / 2 + 1.1 * HP_K;
