@@ -3329,7 +3329,7 @@ function footDust(e) {
 }
 
 function unitH(u) {
-  return u.hero ? CHAR_H.hero : u.militia ? CHAR_H.militia : CHAR_H.soldier;
+  return u.hero ? (u.def && u.def.h ? u.def.h * UNIT_K : 30) : u.militia ? CHAR_H.militia : CHAR_H.soldier; // 12 Eki: CHAR_H.hero tanımsızdı (NaN)
 }
 
 function updateEnemy(e, dt) {
@@ -3511,8 +3511,8 @@ function updateEnemy(e, dt) {
         e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         const AR = e.def.alt && e.def.alt.ranged && (e.altT ??= e.def.alt.cd * 0.4) <= 0 ? e.def.alt : null; // özel atış: ağ ya da ateşli ok
-        if (AR) { e.altT = AR.cd; playSkill(e); }
-        if (AR && AR.kind === 'net') throwNet(e, tgt, AR.stun); else
+        if (AR) { e.altT = AR.cd; playSkill(e, AR.kind === 'net' ? NET.skill : undefined); }
+        if (AR && AR.kind === 'net') throwNet(e, tgt, AR.stun, NET.skill * NET.rel); else
         G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
@@ -3553,7 +3553,7 @@ function updateEnemy(e, dt) {
       if (e.atk <= 0) {
         e.atk = e.def.rate * curseSlowAtk(e); e.atkV = Math.floor(Math.random() * 3);
         const victim = e.blocker, A = e.def.alt;
-        if (A && !A.ranged && (e.altT ??= A.cd * 0.4) <= 0) { e.altT = A.cd; playSkill(e); doAlt(e, A, victim); return; } // özel saldırı
+        if (A && !A.ranged && (e.altT ??= A.cd * 0.4) <= 0) { e.altT = A.cd; playSkill(e, A.kind === 'net' ? NET.skill : undefined); doAlt(e, A, victim); return; } // özel saldırı
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
         damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
         sfx('clash');
@@ -4083,7 +4083,7 @@ function updateProjectile(pr, dt) {
     const h = pr.hero;
     if (h && h.towerMan) { if (pr.miss == null) pr.miss = rand(-1, 1) * 9; pr.tx = h.x + pr.miss; pr.ty = h.y - 12 + Math.abs(pr.miss) * 0.4; } // kule okçusuna giden ok hafif saparak gelir
     else if (h && !h.dead) { pr.tx = h.x; pr.ty = h.y - 12; }
-    if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'hex' ? 'magic' : pr.kind === 'axe' ? 'whirl' : 'arrow'); }
+    if (pr.t >= 0 && !pr.snd) { pr.snd = true; sfx(pr.kind === 'hex' ? 'magic' : pr.kind === 'axe' || pr.kind === 'net' ? 'whirl' : 'arrow'); } // ağ: elden çıktığı an
     if (pr.t < pr.dur) return;
     pr.done = true;
     if (h && h.towerMan) { // kuledeki okçu: çoğu ok aşağıdan ıskalar, korkuluğa çarpıp düşer
@@ -8801,13 +8801,19 @@ function drawProjectile(p) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
     boneArrowShape(p.col, p.bolt, p.heavy, p.longArrow, false, p.giant);
     ctx.restore();
-  } else if (p.kind === 'net') { // dönen ağ: halka ve ağ örgüsü, uçtukça açılır
-    const k = clamp(p.t / p.dur, 0, 1), R = 3 + 6 * k;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(time * 9); ctx.scale(1, 0.7);
-    ctx.strokeStyle = '#d8ccaa'; ctx.lineWidth = 0.8;
-    for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(i * R / 2.5, -R); ctx.lineTo(i * R / 2.5, R); ctx.moveTo(-R, i * R / 2.5); ctx.lineTo(R, i * R / 2.5); ctx.stroke(); }
-    ctx.strokeStyle = '#8a6a3a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
+  } else if (p.kind === 'net') { // retiarius ağı: elden toplu çıkar, dönerek açılır (perspektifte basık daire), ip bileğe bağlı
+    const open = clamp((k - 0.08) / 0.5, 0, 1), o = open * open * (3 - 2 * open), R = NET.R * (0.22 + 0.78 * o);
+    const n = projPos(p, Math.min(1, k + 0.04)), dx = n.x - x, dy = n.y - y, L = Math.hypot(dx, dy) || 1, fa = Math.atan2(dy, dx);
+    const gy = lerp(p.sy + 18, p.ty + 12, k); // yerdeki gölge
+    ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.1 * o})`; ctx.beginPath(); ctx.ellipse(x, gy, R * 0.9, R * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+    const F = p.from; if (F && !F.dead) { // bilek ipi: atanın elinden ağın ortasına sarkan ince ip
+      const h = CHAR_H['enemy_' + F.type] || 30, hx = F.x + (F.face || 1) * h * 0.3, hy = F.y - h * 0.55;
+      ctx.strokeStyle = `rgba(${NET.rope},0.7)`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(hx, hy);
+      ctx.quadraticCurveTo((hx + x) / 2, Math.max(hy, y) + 8 * (1 - k), x, y); ctx.stroke();
+    }
+    // toplu çıkışta uçuş yönünde uzun, açıldıkça yataya oturur ve döner; merkez arkada kalır (kenar ağırlıkları önden gider)
+    const rot = (1 - o) * fa + time * 2.2 + p.seed, rx = R * (1 + 0.5 * (1 - o)), ry = R * (0.32 + 0.14 * o);
+    drawNetMesh(x, y, rx, ry, rot, -dx / L * R * 0.35 * o, -dy / L * R * 0.35 * o + R * 0.12 * o, p.seed);
   } else if (p.kind === 'flask') { // kutsal su şişesi: dönen mavi cam
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 12);
     circle(0, 1, 3.2, '#6ac8ff', '#1a3050', 0.8); roundRect(-1, -4.5, 2, 3, 0.6, '#cfe8ff', '#1a3050', 0.6); roundRect(-1.2, -5.6, 2.4, 1.3, 0.5, '#8a5a2a');
@@ -11669,13 +11675,45 @@ function playSkill(e, dur = ALT_DUR) {
   if (!e.def.machine && !e.def.flying && !NO_YELL.has(e.type) && onScreen(e)) sfx('yell', e.def.chief ? 0.85 : undefined); // özel saldırıda savaş narası
 }
 function soldierDot(s, dps, t, col) { s.dotT = Math.max(s.dotT || 0, t); s.dotDps = Math.max(s.dotT > t ? s.dotDps || 0 : 0, dps); s.dotCol = col; }
-function netSoldier(s, t) { if (s.wall) return; s.stunT = Math.max(s.stunT || 0, t); s.netT = Math.max(s.netT || 0, t); }
-function throwNet(e, s, stun) {
-  G.projectiles.push({ kind: 'net', foe: true, hero: s, from: e, sx: e.x + e.face * 6, sy: aimY(e), tx: s.x, ty: s.y - 12, t: 0, dur: clamp(dist(e.x, e.y, s.x, s.y) / 260, 0.2, 0.5), arc: 22, edmg: 0, net: stun });
+function netSoldier(s, t) { if (s.wall) return; if (!(s.netT > 0)) s.netAt = G.t; s.stunT = Math.max(s.stunT || 0, t); s.netT = Math.max(s.netT || 0, t); }
+// Ağ (12 Eki, Caner: "olabildiğince gerçekçi"): retiarius ağı. İp örgü, kenarında kurşun ağırlıklar; elden toplu çıkar, havada dönerek
+// açılır, hedefin üstüne çöküp gövdeyi sarar (ağırlıklar yere değer). Bilekteki ip atan ele bağlı kalır. skill: atış şeridinin süresi,
+// rel: ağın elden çıktığı an (şeridin kesri), R: açık ağın yarıçapı (oyun px)
+const NET = { skill: 0.95, rel: 0.55, R: 13, spokes: 12, rings: 3, rope: '214,192,146', dark: '#5a4224', lead: '#3a383e' };
+function throwNet(e, s, stun, delay = 0) {
+  const h = CHAR_H['enemy_' + e.type] || 30;
+  G.projectiles.push({ kind: 'net', foe: true, hero: s, from: e, sx: e.x + e.face * h * 0.32, sy: e.y - h * 0.62, tx: s.x, ty: s.y - 12, t: -delay, seed: rand(0, 9),
+    dur: clamp(dist(e.x, e.y, s.x, s.y) / 210, 0.3, 0.6), arc: 26, edmg: 0, net: stun });
+}
+// ağ örgüsü (elmas göz): P[j][i] = halka j (0 merkez .. M kenar), ışın i. Gözler komşu halkalar arasında çapraz iplerle oluşur;
+// kenar kalın ip, üstünde kurşun ağırlıklar. lit(i): o ipin önde mi arkada mı olduğu (arkadakiler soluk çizilir)
+function netLattice(P, N, M, back) {
+  const lit = (i) => back ? back(i) : 1;
+  for (const pass of back ? [0, 1] : [1]) {
+    ctx.strokeStyle = `rgba(${NET.rope},${pass ? 0.78 : 0.3})`; ctx.lineWidth = pass ? 0.48 : 0.38; ctx.beginPath();
+    for (let j = 0; j < M; j++) for (let i = 0; i < N; i++) for (const di of [1, -1]) {
+      const ii = (i + di + N) % N; if ((lit(i) + lit(ii) > 0) !== !!pass) continue;
+      ctx.moveTo(P[j][i][0], P[j][i][1]); ctx.lineTo(P[j + 1][ii][0], P[j + 1][ii][1]);
+    }
+    ctx.stroke();
+  }
+  ctx.strokeStyle = NET.dark; ctx.lineWidth = 0.95; ctx.beginPath();
+  for (let i = 0; i <= N; i++) { const q = P[M][i % N]; i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }
+  ctx.stroke();
+  ctx.fillStyle = NET.lead; for (let i = 0; i < N; i += 2) { const q = P[M][i]; ctx.beginPath(); ctx.arc(q[0], q[1], 0.9, 0, Math.PI * 2); ctx.fill(); }
+}
+// uçan ağ: merkez (cx, cy), yarıçap rx/ry (perspektif), açı rot, merkezin kayması (lx, ly), titreme seed
+function drawNetMesh(cx, cy, rx, ry, rot, lx, ly, seed, a = 1) {
+  const N = NET.spokes, M = NET.rings, P = [];
+  for (let j = 0; j <= M; j++) { const row = [], u = j / M;
+    for (let i = 0; i < N; i++) { const t = (i / N) * Math.PI * 2 + rot, w = 1 + 0.08 * Math.sin(seed * 3 + i * 1.7 + j * 0.9);
+      row.push([cx + lx * (1 - u * u) + Math.cos(t) * rx * u * w, cy + ly * (1 - u * u) + Math.sin(t) * ry * u * w]); }
+    P.push(row); }
+  ctx.save(); ctx.globalAlpha *= a; ctx.lineCap = 'round'; netLattice(P, N, M); ctx.restore();
 }
 function doAlt(e, A, v) {
   const m = foeDmgMul(e), base = roll(e.def.dmg) * m, hy = v ? v.y - unitH(v) * 0.55 : e.y;
-  if (A.kind === 'net') { throwNet(e, v, A.stun); sfx('whirl'); }
+  if (A.kind === 'net') throwNet(e, v, A.stun, e.skillT > 0 ? NET.skill * NET.rel : 0);
   else if (A.kind === 'bash') {
     damageSoldier(v, base * (A.mul || 1.3), e); if (!v.wall) v.stunT = Math.max(v.stunT || 0, A.stun || 1);
     impactFx(v.x, hy, '255,230,180', 1.3); G.effects.push({ kind: 'ring', x: v.x, y: v.y, r: 16, col: '255,220,150', t: 0, dur: 0.35 }); sfx('bash');
@@ -13998,14 +14036,19 @@ function drawCages() {
 function drawNets() {
   for (const s of G.soldiers) {
     if (!(s.netT > 0) || s.dead) continue;
-    const h = unitH(s), a = clamp(s.netT / 0.4, 0, 1), cx = s.x, cy = s.y - h * 0.5, R = h * 0.62;
-    ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, cy); ctx.rotate(Math.sin(time * 6 + s.x) * 0.05);
-    ctx.beginPath(); ctx.ellipse(0, 0, R * 0.75, R, 0, 0, Math.PI * 2); ctx.save(); ctx.clip();
-    ctx.strokeStyle = 'rgba(225,210,170,0.9)'; ctx.lineWidth = 0.8;
-    for (let i = -4; i <= 4; i++) { ctx.beginPath(); ctx.moveTo(i * R / 4 - R, -R); ctx.lineTo(i * R / 4 + R, R); ctx.moveTo(i * R / 4 + R, -R); ctx.lineTo(i * R / 4 - R, R); ctx.stroke(); }
-    ctx.restore();
-    ctx.strokeStyle = 'rgba(120,90,50,0.95)'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.ellipse(0, 0, R * 0.75, R, 0, 0, Math.PI * 2); ctx.stroke();
-    for (const [x, y] of [[-R * 0.6, R * 0.7], [R * 0.6, R * 0.7], [0, -R]]) circle(x, y, 1.3, '#6a5034');
+    // ağ başın üstünden gövdeye çöker: tepe noktası başta, ağırlıklı kenar ayaklarda yere değer; iskelet çırpındıkça sallanır
+    const h = s.bh || s.zh || unitH(s), a = clamp(s.netT / 0.35, 0, 1), d = clamp((G.t - (s.netAt ?? G.t - 1)) / 0.22, 0, 1), drop = 1 - (1 - d) * (1 - d);
+    const sq = 1 + 0.18 * (1 - drop), wig = Math.sin(time * 15 + s.x) * 0.9 * (s.netT > 0.35 ? 1 : 0);
+    const top = [s.x + wig, s.y - h * (1.02 + 0.25 * (1 - drop))], Rr = h * 0.42 * sq, gy = s.y - h * 0.25 * (1 - drop), N = NET.spokes, M = 4;
+    ctx.save(); ctx.globalAlpha = a; ctx.lineCap = 'round';
+    const sd = s.x * 0.13, Mr = 5, P = [];
+    for (let j = 0; j <= Mr; j++) { const u = j / Mr, row = []; // u: 0 tepe (baş) .. 1 kenar (yer)
+      const prof = 0.92 * Math.sqrt(Math.min(1, u / 0.32)) + 0.12 * u * u; // tepede tek nokta, omuza hızla genişler, yere doğru hafif açılır
+      for (let i = 0; i < N; i++) { const t = (i / N) * Math.PI * 2 + 0.3, fold = 1 + 0.16 * Math.sin(i * 2.3 + sd) * u; // kenarda kıvrımlar
+        const ex = Math.cos(t), ey = Math.sin(t), r = Rr * prof * fold;
+        row.push([top[0] + (s.x - top[0]) * u + ex * r, lerp(top[1], gy + ey * r * 0.34, u * (1.6 - 0.6 * u)) + Math.sin(i * 1.7 + sd) * u * u * 1.2]); }
+      P.push(row); }
+    netLattice(P, N, Mr, (i) => (Math.sin((i / N) * Math.PI * 2 + 0.3) > -0.15 ? 1 : 0));
     ctx.restore();
   }
 }
@@ -15290,6 +15333,7 @@ requestAnimationFrame(frame);
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
 window.__game = {
+  netTest(i = 0) { const e = G.enemies.find(q => !q.dead), v = G.soldiers.find(q => !q.dead && !q.wall); if (!e || !v) return false; playSkill(e, NET.skill); throwNet(e, v, 2.5, NET.skill * NET.rel); return true; }, // test: ağ atışı
   bakeThumbs(cols = 8) { // tools/harita-pisir.js: bütün bölüm kartı önizlemeleri tek atlasta
     const n = LEVELS.length, c = document.createElement('canvas'); c.width = cols * 480; c.height = Math.ceil(n / cols) * 270;
     const g = c.getContext('2d');

@@ -1,5 +1,13 @@
 [
  {
+  "name": "enemy_gladiator_skilln",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 21,
+  "prompt": "a cartoon arena gladiator with a sword and a net holds the bunched round rope net in his free hand, swings it back behind his hip, then steps forward and casts it with a strong sweeping underarm throw; the net leaves his hand, opens and flies out of the frame to the right; after the throw his free hand is empty and open, then he settles back into his ready stance. Realistic natural body mechanics: the weight shifts to the back foot during the wind-up, then onto the front foot as he throws, the torso twists with the throw and the arm follows through. The net is made of thin tan brown rope with small dark lead weights on its edge. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
   "name": "enemy_godfrey_walk",
   "ref": "ham/anim/enemy_godfrey_ref.png",
   "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The emblem on the chest is a round sun, never a cross. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
