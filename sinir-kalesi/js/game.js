@@ -6783,6 +6783,15 @@ function updateXbowRelease(t, dt) {
   t.relQ = t.relQ.filter(r => r.t > 0);
 }
 // kurma kareleri: <pre>_load0 (eğilip kirişi kavrar) → _load (çeker) → _load2 (doğrulup cıvatayı yerleştirir); yalnız _load varsa o (11 Eki, 3. kademe)
+// 15 Eki: Veo atış videosundan şerit (<pre>_shot, video_isle.py; anim.json rel = okun bırakıldığı kare). Varsa tek tek pozlar yerine akıcı şerit:
+// dururken 0. kare, gererken 3..rel-1, bırakınca rel..son (relDur içinde). Yoksa null (eski Gemini pozları).
+function archShot(pre, rise, since, relDur) {
+  const key = pre + '_shot', F = ANIM_META[key], im = F && spr(key); if (!im) return null;
+  const R = F.rel || Math.round(F.n * 0.66); let i = 0;
+  if (rise != null) i = Math.min(R - 1, 3 + Math.floor(rise * (R - 3)));
+  else if (since != null && since < relDur) i = R + Math.floor(since / relDur * (F.n - R));
+  return { im, F, i: clamp(i, 0, F.n - 1) };
+}
 const loadPose = (pre, u) => (spr(pre + '_load0') && spr(pre + '_load2') ? (u < 0.3 ? '_load0' : u < 0.66 ? '_load' : '_load2') : '_load');
 function drawXbowMen(t, ts, redraw) {
   const A = xbowMen(t), h = menH(t), M = menOf(t), ghost = !!t.spec, pre = M.pre;
@@ -6809,7 +6818,9 @@ function drawXbowMen(t, ts, redraw) {
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = null; // 11 Eki (2): eski yürüme şeritleri (Kaggle Wan, 168 px, 3. kademede eski tasarım) kalktı; yürürken de net Gemini çizimi + adım sekmesi
     // 11 Eki (Caner): koyu kontur kaldırıldı, yoldaki iskeletler gibi düz çizilir
+    const shot = M.bow && !a.walking && archShot(pre, up && a.aimT > 0 ? rise : null, up && a.aimT <= 0 ? sinceRel : null, M.kick + M.hold);
     if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
+    else if (shot) drawFrame(shot.im, shot.F, shot.i, h * bodyRatio(spr(pre)) * 1.04); // Veo şeridi (boy: gövde, miğfer dahil)
     else { const w0 = h * im.width / im.height; drawSprite(ctx, im, 0, 0, w0);
       if (a.flash > 0) { const wi = whiteOf(pre + pose + '_w', im); ctx.globalAlpha *= 0.7; drawSprite(ctx, wi, 0, 0, w0); } } // isabet anında beyaz parlar
     ctx.restore();
@@ -11586,7 +11597,7 @@ function updateCastleArchers(dt) {
   });
 }
 // 15 Eki (Caner): kale yükseltmesiyle balkona en çok 2 iskelet okçu (Mahzen okçularının Gemini pozları: _nock/_half/_draw/_rel)
-const KEEP_ARCH = { aim: 0.42, rel: 0.26, seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']] };
+const KEEP_ARCH = { aim: 0.42, rel: 0.42, seq: [[0.3, '_nock'], [0.62, '_half'], [1, '_draw']] };
 function keepArcherPoint(i) {
   const c = G.castle, im = castleStageSprite();
   if (!isKeep(im)) return { x: c.x + (i ? -22 : 22), y: c.y - 58, h: 30, face: i ? 1 : -1 };
@@ -11627,7 +11638,9 @@ function drawKeepArchers() {
     unitShadow(o.x, o.y, o.h * 0.7);
     ctx.save(); ctx.globalAlpha *= k; ctx.translate(o.x, o.y + (1 - k) * o.h * 0.3); ctx.scale(a.face || o.face, 1);
     ctx.translate(0, -Math.sin(a.anim * 2) * o.h * 0.012); // nefes
-    drawSprite(ctx, im, 0, 0, o.h * im.width / im.height);
+    const shot = archShot(P[0], a.aimT > 0 ? rise : null, a.relT > 0 ? KEEP_ARCH.rel - a.relT : null, KEEP_ARCH.rel);
+    if (shot) drawFrame(shot.im, shot.F, shot.i, o.h * bodyRatio(spr(P[0])) * 1.04);
+    else drawSprite(ctx, im, 0, 0, o.h * im.width / im.height);
     ctx.restore();
   });
 }
