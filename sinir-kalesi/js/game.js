@@ -9482,47 +9482,85 @@ const tapPop = (key) => { pops[key] = time; };
 // Ekran geçişi: kısa bir kararma, ortasında ekran değişir
 let trans = null;
 // ekran geçişi (Caner, 11 Eki): hışırtı sesi, ekran kenarlardan ortaya doğru kararır (göz kapanır gibi), yeni ekran ortadan açılır
-const TRANS = { in: 0.42, out: 0.48, hold: 0.75 }; // 15 Eki: kapüşon biçimli iris; bölüm başlarken karanlıkta Mortimer belirir (hold)
-// Mortimer'ın kapüşon silueti (birim kutu: genişlik ~2, tepe -1, omuz 0,75): geçişte ekranı bu biçimli pencere kapatır
-function hoodPath(cx, cy, s) {
-  ctx.moveTo(cx, cy - s);
-  ctx.bezierCurveTo(cx + 0.38 * s, cy - 0.98 * s, cx + 0.64 * s, cy - 0.62 * s, cx + 0.63 * s, cy - 0.12 * s);
-  ctx.bezierCurveTo(cx + 0.62 * s, cy + 0.3 * s, cx + 0.78 * s, cy + 0.55 * s, cx + 1.02 * s, cy + 0.78 * s);
-  ctx.lineTo(cx - 1.02 * s, cy + 0.78 * s);
-  ctx.bezierCurveTo(cx - 0.78 * s, cy + 0.55 * s, cx - 0.62 * s, cy + 0.3 * s, cx - 0.63 * s, cy - 0.12 * s);
-  ctx.bezierCurveTo(cx - 0.64 * s, cy - 0.62 * s, cx - 0.38 * s, cy - 0.98 * s, cx, cy - s);
-  ctx.closePath();
+const TRANS = { in: 0.38, out: 0.42, hold: 0.55, shut: 0.1 };
+// 15 Eki (Caner: Kingdom Rush gibi): iki yandan kapanan taş kapı kanatları. Kanatlar ortada çarpışır (sarsıntı + toz), ortada Mortimer madalyonu;
+// bölüm başlarken kapı biraz daha uzun kapalı kalır (hold), sonra iki yana açılır. Kanatlar bir kez çizilip önbellekte tutulur.
+let GATE_C = null;
+function gatePanels() {
+  const w = Math.ceil(VIS.w / 2) + 40, h = Math.ceil(VIS.h) + 8, key = w + 'x' + h;
+  if (GATE_C && GATE_C.key === key) return GATE_C;
+  const mk = (left) => {
+    const [c, g] = offscreen(w, h, 2), r = seeded(left ? 7 : 11), seam = left ? w : 0;
+    const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#2c2238'); bg.addColorStop(0.5, '#221a2e'); bg.addColorStop(1, '#130d1c');
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    const bh = 46; // taş sıraları: her sırada kaydırılmış bloklar, blok blok hafif ton farkı
+    for (let y = 0, row = 0; y < h; y += bh, row++) {
+      for (let x = -(row % 2) * 40; x < w; x += 80) {
+        g.fillStyle = `rgba(${r() < 0.5 ? '255,240,255' : '0,0,0'},${0.03 + r() * 0.06})`; g.fillRect(x + 2, y + 2, 76, bh - 4);
+        g.fillStyle = 'rgba(255,255,255,0.05)'; g.fillRect(x + 2, y + 2, 76, 3); // üst kenar ışığı
+      }
+      g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(0, y, w, 2.5);
+      for (let x = -(row % 2) * 40; x < w; x += 80) g.fillRect(x, y, 2.5, bh);
+    }
+    for (let i = 0; i < 18; i++) { const x = r() * w, y = r() * h; g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) g.lineTo(x + (r() - 0.5) * 30, y + (r() - 0.2) * 22 * (k + 1)); g.stroke(); } // çatlaklar
+    const band = (y, hh) => { // üst ve alt kemik bantları
+      const gr = g.createLinearGradient(0, y, 0, y + hh); gr.addColorStop(0, '#efe3c4'); gr.addColorStop(0.5, '#c9b88e'); gr.addColorStop(1, '#8a7a58');
+      g.fillStyle = '#0c0610'; g.fillRect(0, y - 3, w, hh + 6); g.fillStyle = gr; g.fillRect(0, y, w, hh);
+      for (let x = 10; x < w; x += 34) { g.fillStyle = 'rgba(60,40,30,0.35)'; g.fillRect(x, y + 2, 3, hh - 4); }
+    };
+    band(26, 14); band(h - 40, 14);
+    // ortadaki kenar: kalın kemik pervaz, demir perçinler, iç tarafta yeşil ruh ışığı sızıntısı
+    const ex = left ? w - 30 : 0;
+    g.fillStyle = '#0c0610'; g.fillRect(ex - 3, 0, 36, h);
+    const pg = g.createLinearGradient(ex, 0, ex + 30, 0); pg.addColorStop(0, '#8a7a58'); pg.addColorStop(0.45, '#f2e7cb'); pg.addColorStop(1, '#8a7a58');
+    g.fillStyle = pg; g.fillRect(ex, 0, 30, h);
+    for (let y = 30; y < h; y += 56) { g.fillStyle = '#2a2230'; g.beginPath(); g.arc(ex + 15, y, 5.5, 0, Math.PI * 2); g.fill(); g.fillStyle = '#9a90a8'; g.beginPath(); g.arc(ex + 14, y - 1, 2.6, 0, Math.PI * 2); g.fill(); }
+    // madalyon yarısı: ortada (dikişte) kemik-altın halka, koyu mor zemin, Mortimer'ın kapüşonu
+    const cy = h / 2, R = Math.min(w * 0.42, h * 0.27);
+    g.save(); g.beginPath(); g.rect(left ? 0 : 0, 0, w, h); g.clip();
+    g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.arc(seam, cy + 6, R + 14, 0, Math.PI * 2); g.fill();
+    const rg = g.createLinearGradient(0, cy - R, 0, cy + R); rg.addColorStop(0, '#f6e9c6'); rg.addColorStop(0.5, '#d4b26a'); rg.addColorStop(1, '#7e5e2a');
+    g.fillStyle = '#0c0610'; g.beginPath(); g.arc(seam, cy, R + 13, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rg; g.beginPath(); g.arc(seam, cy, R + 10, 0, Math.PI * 2); g.fill();
+    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; g.fillStyle = '#5a4020'; g.beginPath(); g.arc(seam + Math.cos(a) * (R + 5), cy + Math.sin(a) * (R + 5), 2.2, 0, Math.PI * 2); g.fill(); }
+    const dg = g.createRadialGradient(seam, cy - R * 0.3, R * 0.1, seam, cy, R); dg.addColorStop(0, '#4a1f5e'); dg.addColorStop(1, '#14061c');
+    g.fillStyle = dg; g.beginPath(); g.arc(seam, cy, R, 0, Math.PI * 2); g.fill();
+    const im = spr('mortimer');
+    if (im) { // kapüşon ve kafatası (görselin üst kısmı)
+      g.save(); g.beginPath(); g.arc(seam, cy, R - 3, 0, Math.PI * 2); g.clip();
+      const sw = im.width * 0.42, sh = im.height * 0.34, sx = im.width * 0.41, sy = 0, dw = R * 2.25, dh = dw * sh / sw;
+      g.drawImage(im, sx, sy, sw, sh, seam - dw / 2, cy - dh * 0.52, dw, dh); g.restore();
+    }
+    g.strokeStyle = 'rgba(160,255,170,0.55)'; g.lineWidth = 2; g.beginPath(); g.arc(seam, cy, R - 2, 0, Math.PI * 2); g.stroke();
+    g.restore();
+    // kenar gölgesi (kanadın dış ucu kararır: derinlik)
+    const sg = g.createLinearGradient(left ? 0 : w, 0, left ? 120 : w - 120, 0); sg.addColorStop(0, 'rgba(0,0,0,0.45)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = sg; g.fillRect(0, 0, w, h);
+    return c;
+  };
+  return (GATE_C = { key, w, h, L: mk(true), R: mk(false) });
 }
 function drawTrans() {
-  const T = trans, hold = T.hold || 0, t = T.t;
-  const a = clamp(t < TRANS.in ? t / TRANS.in : t < TRANS.in + hold ? 1 : 1 - (t - TRANS.in - hold) / TRANS.out, 0, 1), e = a * a * (3 - 2 * a);
-  const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2 + VIS.h * 0.06, S = Math.hypot(VIS.w, VIS.h) * 1.25 * Math.pow(1 - e, 1.35);
+  const T = trans, hold = T.hold != null ? T.hold : TRANS.shut, t = T.t, P = gatePanels();
+  let k; // 0 açık .. 1 kapalı
+  if (t < TRANS.in) { const u = t / TRANS.in; k = u < 0.82 ? Math.pow(u / 0.82, 2) : 1 - Math.sin((u - 0.82) / 0.18 * Math.PI) * 0.025; } // hızlanarak kapanır, çarpınca hafif seker
+  else if (t < TRANS.in + hold) k = 1;
+  else { const u = clamp((t - TRANS.in - hold) / TRANS.out, 0, 1); k = 1 - u * u * (3 - 2 * u); }
+  if (!T.slam && t >= TRANS.in * 0.82) { T.slam = true; sfx('castlehit'); T.shakeT = 0.22; }
+  const sh = T.shakeT > 0 ? (T.shakeT -= 1 / 60, Math.sin(t * 90) * 5 * T.shakeT / 0.22) : 0;
+  const cx = (VIS.l + VIS.r) / 2, y0 = VIS.t - 4 + sh * 0.3;
+  if (k <= 0.001) return;
   ctx.save();
-  ctx.fillStyle = '#06030a'; ctx.beginPath(); ctx.rect(VIS.l - 2, VIS.t - 2, VIS.w + 4, VIS.h + 4);
-  if (S > 0.5) hoodPath(cx, cy, S);
-  ctx.fill('evenodd');
-  if (S > 0.5 && e > 0.02) { // pencerenin kenarında mor-yeşil ruh ışığı
-    ctx.globalCompositeOperation = 'lighter'; ctx.lineJoin = 'round';
-    ctx.beginPath(); hoodPath(cx, cy, S); ctx.strokeStyle = `rgba(170,90,255,${0.55 * e})`; ctx.lineWidth = 10; ctx.stroke();
-    ctx.beginPath(); hoodPath(cx, cy, S); ctx.strokeStyle = `rgba(130,255,150,${0.5 * e})`; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = `rgba(6,3,10,${0.35 * k})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); // arkası hafif kararır
+  const off = (1 - k) * (P.w + 20);
+  ctx.drawImage(P.L, cx - P.w - off + sh, y0, P.w, P.h);
+  ctx.drawImage(P.R, cx + off + sh, y0, P.w, P.h);
+  if (T.slam && T.shakeT > 0) { // çarpışmada dikişten toz ve ruh kıvılcımı
+    const a = T.shakeT / 0.22; ctx.globalCompositeOperation = 'lighter';
+    glow(ctx, cx, (VIS.t + VIS.b) / 2, VIS.h * 0.5, '150,90,255', 0.25 * a);
   }
+  if (hold > 0.2 && k > 0.99) { const a = clamp((t - TRANS.in) / 0.25, 0, 1); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, (VIS.t + VIS.b) / 2, Math.min(P.w * 0.42, P.h * 0.27) * 1.6, '130,255,150', (0.18 + Math.sin(time * 5) * 0.06) * a); } // bölüm yükleniyor: madalyon nabız gibi parlar
   ctx.restore();
-  if (hold && t > TRANS.in * 0.85 && t < TRANS.in + hold + TRANS.out * 0.6) { // bölüm başlıyor: karanlıkta Mortimer
-    const ht = t - TRANS.in * 0.85, pop = easeOutBack(clamp(ht / 0.3, 0, 1)), fade = clamp((TRANS.in + hold + TRANS.out * 0.6 - t) / 0.25, 0, 1);
-    const h = VIS.h * 0.5 * pop, my = cy + h * 0.45;
-    ctx.save(); ctx.globalAlpha = fade;
-    ctx.globalCompositeOperation = 'lighter';
-    glow(ctx, cx, my - h * 0.5, h * 0.95, '150,70,255', 0.45 + Math.sin(time * 3) * 0.08);
-    glow(ctx, cx, my - h * 0.55, h * 0.55, '110,255,140', 0.22);
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = 'rgba(190,140,255,0.7)'; ctx.lineWidth = 2; // dönen rün çemberi
-    for (let j = 0; j < 12; j++) { const a0 = time * 1.6 + j * Math.PI / 6; ctx.beginPath(); ctx.ellipse(cx, my, h * 0.62, h * 0.17, 0, a0, a0 + 0.3); ctx.stroke(); }
-    const B = mortStrip('mortimer_bekle'), im = spr('mortimer');
-    ctx.translate(cx, my);
-    if (B) { const F = ANIM_META[B]; ctx.translate(-(0.617 - 0.5) * F.fw * h / (F.ch * F.fh), 0); drawFrame(spr(B), F, Math.floor(time * 10) % F.n, h); }
-    else if (im) drawSprite(ctx, im, 0, 0, h * im.width / im.height);
-    ctx.restore();
-  }
 }
 function go(fn) {
   if (trans) return;
@@ -13779,7 +13817,7 @@ function drawMapFog2(E, ep, road, bm) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 2, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400 };
+const MAPCAM = { z: 2.6, tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 84, fric: 7, vmax: 1400 };
 function mapCamClamp(bm) {
   const z = MAPCAM.z;
   MAPCAM.tx = clamp(MAPCAM.tx, VIS.r - (W + bm.x) * z, VIS.l + bm.x * z);
@@ -15712,7 +15750,7 @@ function frame(now) {
   if (trans) {
     trans.t += real;
     if (!trans.fired && trans.t >= TRANS.in) { const was = screen; trans.fired = true; uiParts = []; trans.fn(); screenT = time; if (NECRO && screen === 'play' && (was !== 'play' || G)) trans.hold = TRANS.hold; } // bölüm başlıyor: Mortimer görünür
-    if (trans && trans.t >= TRANS.in + (trans.hold || 0) + TRANS.out) trans = null;
+    if (trans && trans.t >= TRANS.in + (trans.hold ?? TRANS.shut) + TRANS.out) trans = null;
   }
   uiParts = updateParts(uiParts, real);
   // çizim

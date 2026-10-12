@@ -71,13 +71,13 @@
   "ch": 0.9467
  },
  "enemy_priest_walk": {
-  "n": 32,
+  "n": 29,
   "fw": 158,
   "fh": 175,
   "base": 0.0182,
   "ch": 0.9121,
-  "idle": 0,
-  "stride": 0.876
+  "idle": 2,
+  "stride": 0.834
  },
  "enemy_cavalry_walk": {
   "n": 32,
@@ -236,30 +236,30 @@
   "ch": 0.8206
  },
  "enemy_heavy_walk": {
-  "n": 32,
+  "n": 31,
   "fw": 164,
   "fh": 174,
   "base": 0.0139,
   "ch": 0.9215,
-  "idle": 0,
-  "stride": 1.197
+  "idle": 11,
+  "stride": 1.186
  },
  "enemy_ram_walk": {
-  "n": 49,
+  "n": 36,
   "fw": 228,
   "fh": 169,
   "base": 0.0143,
   "ch": 0.9477,
-  "idle": 0,
-  "stride": 1.923
+  "idle": 1,
+  "stride": 1.929
  },
  "enemy_catapult_walk": {
-  "n": 49,
+  "n": 48,
   "fw": 218,
   "fh": 181,
   "base": 0.0143,
   "ch": 0.8854,
-  "idle": 0,
+  "idle": 9,
   "stride": 1.622
  },
  "unit_skel_3_walk": {
@@ -362,14 +362,14 @@
   "ch": 0.9298
  },
  "enemy_siegetower_walk": {
-  "n": 12,
+  "n": 8,
   "fw": 144,
   "fh": 166,
   "base": 0.0146,
   "ch": 0.9612,
-  "idle": 3,
+  "idle": 5,
   "sh": 1,
-  "stride": 1.363
+  "stride": 0.802
  },
  "enemy_eagle_walk": {
   "n": 18,
@@ -571,49 +571,49 @@
   "ch": 0.9048
  },
  "enemy_bellpriest_walk": {
-  "n": 49,
+  "n": 23,
   "fw": 178,
   "fh": 173,
   "base": 0.0142,
   "ch": 0.9265,
-  "idle": 0,
-  "stride": 1.088
+  "idle": 3,
+  "stride": 1.076
  },
  "enemy_paladin_walk": {
-  "n": 49,
+  "n": 42,
   "fw": 170,
   "fh": 171,
   "base": 0.0141,
   "ch": 0.9341,
-  "idle": 0,
-  "stride": 1.24
+  "idle": 27,
+  "stride": 1.237
  },
  "enemy_inquisitor_walk": {
-  "n": 49,
+  "n": 39,
   "fw": 145,
   "fh": 173,
   "base": 0.0146,
   "ch": 0.927,
   "idle": 0,
-  "stride": 0.948
+  "stride": 1.01
  },
  "enemy_saint_walk": {
-  "n": 49,
+  "n": 33,
   "fw": 235,
   "fh": 169,
   "base": 0.0143,
   "ch": 0.9451,
-  "idle": 0,
-  "stride": 1.104
+  "idle": 3,
+  "stride": 1.042
  },
  "enemy_malleus_walk": {
-  "n": 49,
+  "n": 43,
   "fw": 247,
   "fh": 170,
   "base": 0.0143,
   "ch": 0.9427,
-  "idle": 0,
-  "stride": 1.161
+  "idle": 8,
+  "stride": 1.121
  },
  "enemy_campanus_walk": {
   "n": 22,
@@ -635,22 +635,22 @@
   "stride": 0.989
  },
  "enemy_colossus_walk": {
-  "n": 49,
+  "n": 24,
   "fw": 211,
   "fh": 171,
   "base": 0.0143,
   "ch": 0.9359,
   "idle": 0,
-  "stride": 1.265
+  "stride": 1.231
  },
  "enemy_severus_walk": {
-  "n": 49,
+  "n": 41,
   "fw": 184,
   "fh": 169,
   "base": 0.0143,
   "ch": 0.9451,
-  "idle": 0,
-  "stride": 1.057
+  "idle": 21,
+  "stride": 1.052
  },
  "enemy_cathedral_walk": {
   "n": 12,
@@ -866,13 +866,13 @@
   "stride": 3.727
  },
  "enemy_holywater_walk": {
-  "n": 49,
+  "n": 37,
   "fw": 241,
   "fh": 170,
   "base": 0.0141,
   "ch": 0.9388,
-  "idle": 0,
-  "stride": 1.394
+  "idle": 21,
+  "stride": 1.351
  },
  "enemy_flagellant_walk": {
   "n": 32,
@@ -981,13 +981,13 @@
   "sh": 1
  },
  "unit_corpsegolem_walk": {
-  "n": 49,
+  "n": 43,
   "fw": 201,
   "fh": 170,
   "base": 0.0142,
   "ch": 0.9433,
-  "idle": 0,
-  "stride": 1.462
+  "idle": 31,
+  "stride": 1.469
  },
  "unit_corpsegolem_atk": {
   "n": 32,
@@ -1196,12 +1196,12 @@
   "sh": 1
  },
  "enemy_elephant_walk": {
-  "n": 49,
+  "n": 25,
   "fw": 304,
   "fh": 166,
   "base": 0.0139,
   "ch": 0.963,
-  "idle": 0,
+  "idle": 7,
   "stride": 2.039
  },
  "enemy_elephant_die": {
@@ -1346,13 +1346,13 @@
   "stride": 0.891
  },
  "unit_xbow3_walk": {
-  "n": 49,
+  "n": 40,
   "fw": 134,
   "fh": 173,
   "base": 0.0144,
   "ch": 0.9233,
-  "idle": 0,
-  "stride": 0.957
+  "idle": 7,
+  "stride": 0.903
  },
  "unit_ghostxbow_walk": {
   "n": 49,
@@ -1364,22 +1364,22 @@
   "stride": 0.813
  },
  "unit_xbow2_walk": {
-  "n": 49,
+  "n": 44,
   "fw": 116,
   "fh": 171,
   "base": 0.0143,
   "ch": 0.9335,
-  "idle": 0,
-  "stride": 1.035
+  "idle": 6,
+  "stride": 0.974
  },
  "unit_ghostarcher_walk": {
-  "n": 49,
+  "n": 48,
   "fw": 140,
   "fh": 172,
   "base": 0.0141,
   "ch": 0.9294,
-  "idle": 0,
-  "stride": 0.903
+  "idle": 43,
+  "stride": 0.905
  },
  "unit_skel_1_idle": {
   "n": 32,
@@ -1598,13 +1598,13 @@
   "ch": 0.5749
  },
  "enemy_ironwarden_walk": {
-  "n": 32,
+  "n": 29,
   "fw": 160,
   "fh": 171,
   "base": 0.0143,
   "ch": 0.9379,
-  "idle": 0,
-  "stride": 1.16
+  "idle": 9,
+  "stride": 1.162
  },
  "enemy_ironwarden_atk": {
   "n": 32,
@@ -1856,12 +1856,12 @@
   "ch": 0.9523
  },
  "enemy_godfrey_walk": {
-  "n": 32,
+  "n": 31,
   "fw": 199,
   "fh": 168,
   "base": 0.0144,
   "ch": 0.9544,
-  "idle": 20,
+  "idle": 11,
   "stride": 0.948
  },
  "enemy_godfrey_atk": {
