@@ -1,0 +1,50 @@
+[
+ {
+  "name": "unit_skel_1_walkx",
+  "ref": "ham/anim/unit_skel_1_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet marches to the right in strict side profile view with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each bony foot stomps down firmly, the whole skeleton bobs up and down, the arms swing strongly, the bones rattle, lively snappy timing, a full walk cycle. The skeleton always faces right and is seen exactly from the side the whole time, it never turns toward the camera and never walks toward the viewer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_2_walkx",
+  "ref": "ham/anim/unit_skel_2_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon skeleton guard in chainmail with a skull shield and a long sword marches to the right in strict side profile view with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each bony foot stomps down firmly, the whole skeleton bobs up and down, the arms swing strongly, the bones rattle, lively snappy timing, a full walk cycle. The skeleton always faces right and is seen exactly from the side the whole time, it never turns toward the camera and never walks toward the viewer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_3_walkx",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield marches to the right in strict side profile view with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each bony foot stomps down firmly, the whole skeleton bobs up and down, the arms swing strongly, the bones rattle, lively snappy timing, a full walk cycle. The skeleton always faces right and is seen exactly from the side the whole time, it never turns toward the camera and never walks toward the viewer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_4_walkx",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon huge armored skeleton grave warden in black spiked plate armor and horned helmet, with a big coffin tower shield and a spiked mace with green runes marches to the right in strict side profile view with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each bony foot stomps down firmly, the whole skeleton bobs up and down, the arms swing strongly, the bones rattle, lively snappy timing, a full walk cycle. The skeleton always faces right and is seen exactly from the side the whole time, it never turns toward the camera and never walks toward the viewer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_5_walkx",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes marches to the right in strict side profile view with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each bony foot stomps down firmly, the whole skeleton bobs up and down, the arms swing strongly, the bones rattle, lively snappy timing, a full walk cycle. The skeleton always faces right and is seen exactly from the side the whole time, it never turns toward the camera and never walks toward the viewer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_8_walkx",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow marches to the right in strict side profile view with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each bony foot stomps down firmly, the whole skeleton bobs up and down, the arms swing strongly, the bones rattle, lively snappy timing, a full walk cycle. The skeleton always faces right and is seen exactly from the side the whole time, it never turns toward the camera and never walks toward the viewer. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]
