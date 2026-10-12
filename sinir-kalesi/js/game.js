@@ -7358,14 +7358,11 @@ function drawNecroTowerFx(t, ts) {
       glow(ctx, x, y, 3 * s, i % 2 ? '170,255,220' : '190,150,255', 0.55);
     }
   } else if (t.type === 'altar') {
-    // lanet kulesi: nabız gibi atan mor lanet ışığı, yerde dönen lanet halkası; kan ayini varsa güçlendirdiği kulelere bağ
+    // lanet kulesi: nabız gibi atan mor lanet ışığı; kan ayini varsa güçlendirdiği kulelere bağ
     const beat = Math.pow(Math.max(0, Math.sin(time * 3.2 + t.x)), 6), L = t.def.levels[t.lvl];
     ctx.restore(); drawAltarFx(t, ts); ctx.save(); // göz, kitap, ateşler, sis (drawAltarFx)
     ctx.globalCompositeOperation = 'lighter';
-    {
-      ctx.strokeStyle = `rgba(170,90,255,${0.14 + 0.1 * beat})`; ctx.lineWidth = 1.6; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -time * 14;
-      ctx.beginPath(); ctx.ellipse(t.x, t.y, L.range, L.range * 0.62, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-    }
+    // yerde dönen menzil halkası kalktı (13 Eki, Caner); menzil kule seçilince görünür
     for (const u of G.towers) {
       if (!abRank(t, 'rite')) break;
       if (u === t || u.type === 'altar' || u.type === 'barracks' || dist(u.x, u.y, t.x, t.y) > L.range) continue;
@@ -7680,9 +7677,9 @@ function drawEnemy0(e) {
     const top = e.y - fly - (CHAR_H[name] || 20) - 6;
     const fr = e.hp / e.maxHp;
     if (d.rank === 2) drawRankStar(e.x, top - 1);
-    // durum işaretleri: lanet (mor halka, ayakta), ruh çivisi (başın üstünde kara çivi), kara veba (yeşil kabarcık)
-    if (e.curseT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(190,100,255,${0.5 + Math.sin(time * 6 + e.off) * 0.15})`; ctx.lineWidth = 1.4;
-      ctx.beginPath(); ctx.ellipse(e.x, e.y + 1, d.r * 1.1, d.r * 0.4, 0, 0, Math.PI * 2); ctx.stroke(); glow(ctx, e.x, e.y - dh * 0.4, dh * 0.5, '170,80,255', 0.12); ctx.restore(); }
+    // durum işaretleri: lanet (mor duman), ruh çivisi (başın üstünde kara çivi), kara veba (yeşil kabarcık)
+    // lanet: ayaktaki mor halka kalktı (13 Eki, Caner: hoş görünmüyor); yalnız gövdeden arada bir koyu mor duman yükselir
+    if (e.curseT > 0 && Math.random() < 0.08) emit(G.parts, { kind: 'glow', x: e.x + rand(-5, 5), y: e.y - rand(dh * 0.2, dh * 0.7), vy: -rand(10, 22), col: '120,50,170', s0: rand(2, 3.2), s1: 0.6, life: 0.7, a: 0.55 });
     if (e.nailT > 0) { ctx.save(); ctx.translate(e.x + 6, top - 4); ctx.rotate(0.3); ctx.fillStyle = '#1a1020'; ctx.strokeStyle = '#9dff8a'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(-2.4, -5); ctx.lineTo(2.4, -5); ctx.lineTo(0.6, 4); ctx.lineTo(-0.6, 4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
     if (e.plagueT > 0 && Math.random() < 0.15) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(4, dh * 0.8), vy: -rand(8, 20), col: '110,220,60', s0: 2.5, s1: 0.4, life: 0.6 });

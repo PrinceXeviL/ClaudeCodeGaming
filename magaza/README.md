@@ -7,14 +7,15 @@ Uygulama kimliği: `com.princexevil.necromancer` (iOS ve Android aynı).
 
 | Klasör | İçerik | Boyut |
 |-|-|-|
-| `app_store_iphone/` | iPhone 6,9" ekran görüntüleri (App Store bunlardan küçük iPhone'ları kendisi türetir) | 2868×1320, 6 adet |
-| `app_store_ipad/` | iPad 13" ekran görüntüleri (oyun iPad'i de destekliyor, zorunlu) | 2752×2064, 6 adet |
-| `play/` | Google Play telefon ekran görüntüleri (Play en çok 2:1 kabul ediyor, ortadan kırpıldı) | 2640×1320, 6 adet |
+| `app_store_iphone/` | iPhone 6,9" ekran görüntüleri (App Store bunlardan küçük iPhone'ları kendisi türetir) | 2868×1320, 7 adet |
+| `app_store_ipad/` | iPad 13" ekran görüntüleri (oyun iPad'i de destekliyor, zorunlu) | 2752×2064, 7 adet |
+| `play/` | Google Play telefon ekran görüntüleri (Play en çok 2:1 kabul ediyor, ortadan kırpıldı) | 2640×1320, 7 adet |
 | `ekran/` | Ham çekimler (iPhone boyu) | |
 | `simge_1024.png`, `play_simge_512.png` | Uygulama simgesi (App Store 1024, Play 512) | |
 | `gizlilik.html` | Gizlilik politikası (TR + EN). Herkese açık bir adreste yayınlanmalı, iki mağaza da adres ister | |
 
-Sıra: 0 başlık, 1 savaş, 2 boss, 3 harita, 4 kodeks, 5 büyü kitabı. Mağazada ilk görüntü en önemlisi: **1_savas** ya da **2_boss** başa alınabilir.
+Sıra: 0 başlık, 1 savaş, 2 boss (Gloriosus), 3 final (Lanetli Severus), 4 harita, 5 kodeks, 6 büyü kitabı.
+Yeniden çekmek: sunucu açıkken `cd sinir-kalesi && node tools/magaza-ekran.js` (13 Eki; 1_savas ve 6_buyu_kitabi 11 Eki çekimi). Mağazada ilk görüntü en önemlisi: **1_savas** ya da **2_boss** başa alınabilir.
 
 Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üstteki altın/yıldız sayıları test verisi; gerçek oyunla aynı görünüm.
 
