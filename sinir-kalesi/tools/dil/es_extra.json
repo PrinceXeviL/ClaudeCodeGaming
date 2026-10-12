@@ -129,7 +129,13 @@
 "Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Coloso más resistente; arqueros maestros: flechas más duras, 15% de golpe crítico",
 "Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Lanza peste: poco daño en área y luego veneno cada segundo; los alcanzados se ralentizan y su armadura se pudre",
 "Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Lodo de peste: poco daño en área, 4 s de veneno, 35% de ralentización, armadura a la mitad",
-"Kaleye dokun: kaleyi yükselt": "Toca el castillo: mejóralo"
+"Kaleye dokun: kaleyi yükselt": "Toca el castillo: mejóralo",
+"Kemik torbaları! Kapıyı tutun demedim mi?!": "¡Sacos de huesos! ¿No dije que defendierais la puerta?!",
+"İskeletler! Uyumak için mezarınız var!": "¡Esqueletos! ¡Para dormir tenéis tumbas!",
+"Size yeniden kas mı takayım? Durdurun şunları!": "¿Os vuelvo a poner músculos? ¡Detenedlos!",
+"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "No detuvisteis ni a un enemigo. ¡Os haré harina de hueso!",
+"Kaburganız boş, kafanız da mı boş?!": "Vuestras costillas están vacías, ¿y vuestras cabezas también?!",
+"Kim nöbetteydi? Kafatasını görmek istiyorum!": "¿Quién estaba de guardia? ¡Quiero ver su calavera!"
 },
 "tpl": [
 [
@@ -187,6 +193,26 @@
 [
 "{} · Ok: yükselt · Bayrak: devi gönder",
 "{} · Flecha: mejorar · Bandera: enviar al gigante"
+],
+[
+"{}! Seni kapıya süs olsun diye mi diktim?!",
+"¡{}! ¿Te puse en la puerta de adorno?!"
+],
+[
+"{}, kale yanıyor, sen manzara mı seyrediyorsun?",
+"{}, el castillo arde ¿y tú admiras el paisaje?"
+],
+[
+"Hey {}! Komutan dediğin önden gider!",
+"¡Eh, {}! ¡Un comandante va al frente!"
+],
+[
+"{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
+"¡{}! ¡Si alguien más cruza esa puerta, te vuelvo a enterrar!"
+],
+[
+"{}, seni mezardan çıkardığıma pişman ettirme!",
+"{}, ¡no me hagas lamentar haberte sacado de la tumba!"
 ]
 ]
 }

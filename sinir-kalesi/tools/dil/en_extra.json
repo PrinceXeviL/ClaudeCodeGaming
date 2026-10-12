@@ -324,7 +324,13 @@
 "Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Tougher colossus; master archers: harder arrows, 15% critical hits",
 "Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Hurls plague: light area damage, then poison every second; victims slow down and their armor rots",
 "Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Plague slurry: light area damage, 4 s poison, 35% slow, armor halved",
-"Kaleye dokun: kaleyi yükselt": "Tap the castle: upgrade it"
+"Kaleye dokun: kaleyi yükselt": "Tap the castle: upgrade it",
+"Kemik torbaları! Kapıyı tutun demedim mi?!": "Bags of bones! Didn't I say hold the gate?!",
+"İskeletler! Uyumak için mezarınız var!": "Skeletons! You have graves for sleeping!",
+"Size yeniden kas mı takayım? Durdurun şunları!": "Shall I give you muscles again? Stop them!",
+"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "You couldn't hold even one enemy. I'll grind you all into bone meal!",
+"Kaburganız boş, kafanız da mı boş?!": "Your ribcages are empty, are your skulls too?!",
+"Kim nöbetteydi? Kafatasını görmek istiyorum!": "Who was on guard? I want to see their skull!"
 },
 "tpl": [
 [
@@ -698,6 +704,26 @@
 [
 "{} · Ok: yükselt · Bayrak: devi gönder",
 "{} · Arrow: upgrade · Flag: send the giant"
+],
+[
+"{}! Seni kapıya süs olsun diye mi diktim?!",
+"{}! Did I put you at the gate as decoration?!"
+],
+[
+"{}, kale yanıyor, sen manzara mı seyrediyorsun?",
+"{}, the castle is burning and you are enjoying the view?"
+],
+[
+"Hey {}! Komutan dediğin önden gider!",
+"Hey {}! A commander leads from the front!"
+],
+[
+"{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
+"{}! If anyone else gets through that gate, I will bury you back in your grave!"
+],
+[
+"{}, seni mezardan çıkardığıma pişman ettirme!",
+"{}, don't make me regret raising you from the grave!"
 ]
 ]
 }

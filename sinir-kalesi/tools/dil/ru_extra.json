@@ -129,7 +129,13 @@
 "Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Колосс крепче; мастера-лучники: сильнее стрелы, 15% критических ударов",
 "Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Мечет чуму: слабый урон по области, затем яд каждую секунду; поражённые замедляются, их броня гниёт",
 "Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Чумная жижа: слабый урон по области, яд 4 с, замедление 35%, броня вдвое слабее",
-"Kaleye dokun: kaleyi yükselt": "Нажми на замок: улучши его"
+"Kaleye dokun: kaleyi yükselt": "Нажми на замок: улучши его",
+"Kemik torbaları! Kapıyı tutun demedim mi?!": "Мешки с костями! Я же сказал держать ворота?!",
+"İskeletler! Uyumak için mezarınız var!": "Скелеты! Спать будете в могилах!",
+"Size yeniden kas mı takayım? Durdurun şunları!": "Мне вам мышцы обратно пришить? Остановите их!",
+"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "Ни одного врага не удержали. Всех в костную муку смелю!",
+"Kaburganız boş, kafanız da mı boş?!": "Рёбра пустые, головы тоже пустые?!",
+"Kim nöbetteydi? Kafatasını görmek istiyorum!": "Кто стоял на посту? Хочу видеть его череп!"
 },
 "tpl": [
 [
@@ -187,6 +193,26 @@
 [
 "{} · Ok: yükselt · Bayrak: devi gönder",
 "{} · Стрелка: улучшить · Флаг: послать великана"
+],
+[
+"{}! Seni kapıya süs olsun diye mi diktim?!",
+"{}! Я тебя у ворот для красоты поставил?!"
+],
+[
+"{}, kale yanıyor, sen manzara mı seyrediyorsun?",
+"{}, замок горит, а ты видом любуешься?"
+],
+[
+"Hey {}! Komutan dediğin önden gider!",
+"Эй, {}! Командир идёт впереди!"
+],
+[
+"{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
+"{}! Если ещё кто пройдёт в ворота, закопаю тебя обратно!"
+],
+[
+"{}, seni mezardan çıkardığıma pişman ettirme!",
+"{}, не заставляй жалеть, что я поднял тебя из могилы!"
 ]
 ]
 }

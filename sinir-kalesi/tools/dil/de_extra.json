@@ -129,7 +129,13 @@
 "Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Zäherer Koloss; Meisterschützen: härtere Pfeile, 15 % kritische Treffer",
 "Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Schleudert Pest: leichter Flächenschaden, dann Gift jede Sekunde; Getroffene werden langsamer, ihre Rüstung verrottet",
 "Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Pestschlamm: leichter Flächenschaden, 4 s Gift, 35 % Verlangsamung, Rüstung halbiert",
-"Kaleye dokun: kaleyi yükselt": "Tippe auf die Burg: verbessern"
+"Kaleye dokun: kaleyi yükselt": "Tippe auf die Burg: verbessern",
+"Kemik torbaları! Kapıyı tutun demedim mi?!": "Knochensäcke! Hab ich nicht gesagt, haltet das Tor?!",
+"İskeletler! Uyumak için mezarınız var!": "Skelette! Zum Schlafen habt ihr Gräber!",
+"Size yeniden kas mı takayım? Durdurun şunları!": "Soll ich euch wieder Muskeln geben? Haltet sie auf!",
+"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "Nicht mal einen Feind habt ihr aufgehalten. Ich mahle euch zu Knochenmehl!",
+"Kaburganız boş, kafanız da mı boş?!": "Eure Rippen sind leer, eure Schädel etwa auch?!",
+"Kim nöbetteydi? Kafatasını görmek istiyorum!": "Wer hatte Wache? Ich will seinen Schädel sehen!"
 },
 "tpl": [
 [
@@ -187,6 +193,26 @@
 [
 "{} · Ok: yükselt · Bayrak: devi gönder",
 "{} · Pfeil: verbessern · Flagge: Riesen schicken"
+],
+[
+"{}! Seni kapıya süs olsun diye mi diktim?!",
+"{}! Hab ich dich als Deko ans Tor gestellt?!"
+],
+[
+"{}, kale yanıyor, sen manzara mı seyrediyorsun?",
+"{}, die Burg brennt und du genießt die Aussicht?"
+],
+[
+"Hey {}! Komutan dediğin önden gider!",
+"He {}! Ein Kommandant geht voran!"
+],
+[
+"{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
+"{}! Kommt noch einer durchs Tor, begrabe ich dich wieder!"
+],
+[
+"{}, seni mezardan çıkardığıma pişman ettirme!",
+"{}, lass mich nicht bereuen, dich aus dem Grab geholt zu haben!"
 ]
 ]
 }

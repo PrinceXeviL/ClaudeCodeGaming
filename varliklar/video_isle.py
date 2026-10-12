@@ -38,9 +38,13 @@ def remove_white(a):
     """Beyaz zeminli video (15 Eki, Veo): kenara bağlı açık renkli zemin silinir, kontur içindeki beyaz kalır."""
     from scipy import ndimage as nd
     f = a.astype(np.float32); mn = f.min(2); mx = f.max(2)
-    lab, _ = nd.label((mn > 228) & (mx - mn < 26))
+    lab, n = nd.label((mn > 228) & (mx - mn < 26))
     edge = set(np.unique(np.r_[lab[0], lab[-1], lab[:, 0], lab[:, -1]])) - {0}
-    bg = nd.binary_opening(np.isin(lab, list(edge)), iterations=1)
+    bg = np.isin(lab, list(edge))
+    # kontur içinde kalan zemin (ör. tırpan sapıyla cübbe arası): büyük ve neredeyse saf beyaz bileşenler de zemin
+    idx = np.arange(n + 1); pure = ((mn > 240) & (mx - mn < 14)).astype(np.float32)
+    inner = (nd.sum(np.ones_like(mn), lab, idx) >= 60) & (nd.mean(pure, lab, idx) > 0.7); inner[0] = False
+    bg = nd.binary_opening(bg | inner[lab], iterations=1)
     dist = nd.distance_transform_edt(~bg)
     al = np.where(bg, 0, np.where(dist < 2.5, np.clip((255 - mn) / 45, 0, 1), 1))
     rgb = f.copy(); k = (al > 0) & (al < 1)

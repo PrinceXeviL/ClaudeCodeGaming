@@ -129,7 +129,13 @@
 "Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "巨像更坚固；弓箭大师：箭矢更强，15%暴击",
 "Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "投掷瘟疫：轻微范围伤害，之后每秒中毒；被击中者减速，护甲腐烂",
 "Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "瘟疫泥浆：轻微范围伤害，中毒4秒，减速35%，护甲减半",
-"Kaleye dokun: kaleyi yükselt": "点击城堡：升级"
+"Kaleye dokun: kaleyi yükselt": "点击城堡：升级",
+"Kemik torbaları! Kapıyı tutun demedim mi?!": "一袋袋骨头！我不是说守住大门吗？！",
+"İskeletler! Uyumak için mezarınız var!": "骷髅们！要睡觉回坟墓去睡！",
+"Size yeniden kas mı takayım? Durdurun şunları!": "要我再给你们装上肌肉吗？拦住他们！",
+"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "连一个敌人都拦不住。我要把你们全磨成骨粉！",
+"Kaburganız boş, kafanız da mı boş?!": "肋骨是空的，脑袋也是空的吗？！",
+"Kim nöbetteydi? Kafatasını görmek istiyorum!": "谁在站岗？我要看看他的脑壳！"
 },
 "tpl": [
 [
@@ -187,6 +193,26 @@
 [
 "{} · Ok: yükselt · Bayrak: devi gönder",
 "{} · 箭头：升级 · 旗帜：派出巨人"
+],
+[
+"{}! Seni kapıya süs olsun diye mi diktim?!",
+"{}！我把你放在门口是当摆设的吗？！"
+],
+[
+"{}, kale yanıyor, sen manzara mı seyrediyorsun?",
+"{}，城堡着火了，你还在看风景？"
+],
+[
+"Hey {}! Komutan dediğin önden gider!",
+"喂，{}！指挥官要冲在前面！"
+],
+[
+"{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
+"{}！再有人闯过大门，我就把你埋回坟里！"
+],
+[
+"{}, seni mezardan çıkardığıma pişman ettirme!",
+"{}，别让我后悔把你从坟里挖出来！"
 ]
 ]
 }

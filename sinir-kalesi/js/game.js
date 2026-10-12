@@ -3423,7 +3423,8 @@ function castleHit(e) {
   G.lives = Math.max(0, G.lives - dmg);
   if (!G.saidLeak) { G.saidLeak = true; mortSay('firstleak', true); }
   else if (!G.saidLow && G.lives <= 5 && G.lives > 0) { G.saidLow = true; mortSay('low', true); }
-  else mortSay('leak');
+  else { const r = Math.random(); mortSay(r < 0.35 ? 'scold' : r < 0.65 && G.heroes.length ? 'scoldHero' : 'leak'); } // askerlerine ya da komutana kızar
+  mortRage();
   impactFx(e.x, e.y - 16, '255,120,90', 1.2);
   c.shake = 0.4; c.flash = 0.25; G.hurt = 0.6;
   const hx = e.x + e.face * 10, hy = e.y - 14;
@@ -4760,6 +4761,7 @@ function mortLoud() {
 }
 function updateMortState(dt) {
   const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 });
+  if (G.mortMood && (G.mortMood.t += dt) * MORT_MOOD.fps >= ANIM_META[G.mortMood.n].n) G.mortMood = null;
   M.t += dt;
   if (mortDanger()) M.calm = 0; else M.calm += dt;
   const loud = mortLoud(); if (loud) M.quiet = 0; else M.quiet += dt;
@@ -4774,9 +4776,19 @@ function updateMortState(dt) {
   else if (M.st === 'down' && M.t > MORT_TRANS) { M.st = 'tea'; M.t = 0; }
 }
 const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : null);
+// 15 Eki: ruh hali animasyonları (Veo, tek seferlik): kale vurulunca öfke (ayak vurur, yumruk sallar). MORT_MOOD: kare/sn, tekrar bekleme (sn)
+const MORT_MOOD = { fps: 10, cd: 14 };
+function mortRage() {
+  if (!NECRO || !mortStrip('mortimer_ofke') || (G.moodCd || 0) > G.t || G.mortCast > 0) return;
+  G.mortMood = { n: 'mortimer_ofke', t: 0 }; G.moodCd = G.t + MORT_MOOD.cd;
+}
 // o an çizilecek şerit, kare ve boy çarpanı (yoksa null)
 function mortAnim(p) {
   const M = G && G.mort;
+  if (p < 0 && G && G.mortMood && M && !['in', 'out', 'goin'].includes(M.st)) { // ruh hali animasyonu (öfke) bitene dek oynar
+    const F = ANIM_META[G.mortMood.n], i = Math.floor(G.mortMood.t * MORT_MOOD.fps);
+    if (i < F.n) return { n: G.mortMood.n, i, k: 1, cx: 0.617 };
+  }
   if (p >= 0 && G.mortCastN && mortStrip(G.mortCastN)) { const F = ANIM_META[G.mortCastN]; return { n: G.mortCastN, i: Math.min(F.n - 1, Math.floor(p * F.n)), k: 1 }; }
   if (p >= 0 && mortStrip('mortimer_buyu')) return { n: 'mortimer_buyu', i: Math.min(ANIM_META.mortimer_buyu.n - 1, Math.floor(p * ANIM_META.mortimer_buyu.n)), k: 1 };
   if (!M) return null;
@@ -4894,6 +4906,11 @@ const MORT_LINES = {
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
   firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Çayıma toz kaçtı. Bu kişisel oldu.'],
+  // 15 Eki (Caner): kale vurulunca Mortimer askerlerine ve komutana kızar ({h}: takımdaki komutanın adı)
+  scold: ['Kemik torbaları! Kapıyı tutun demedim mi?!', 'İskeletler! Uyumak için mezarınız var!', 'Size yeniden kas mı takayım? Durdurun şunları!',
+    'Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!', 'Kaburganız boş, kafanız da mı boş?!', 'Kim nöbetteydi? Kafatasını görmek istiyorum!'],
+  scoldHero: ['{h}! Seni kapıya süs olsun diye mi diktim?!', '{h}, kale yanıyor, sen manzara mı seyrediyorsun?', 'Hey {h}! Komutan dediğin önden gider!',
+    '{h}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!', '{h}, seni mezardan çıkardığıma pişman ettirme!'],
   low: ['Kule sallanıyor... Kitaplarım!', 'Bu gidişle çayı bahçede içeceğim.', 'Az kaldı! Biri şu kapıyı tutsun!'],
   veteran: ['Kıdemliler. Kemikleri daha sağlam olur.', 'Kırmızı sorguç mu? Ne kadar da şık.', 'Tecrübeli askerler. Tecrübeli iskelet olurlar.'],
   captain: ['Yüzbaşı! Borazanı da benim olacak.', 'Altın sorguç... Rafımda tam yeri var.', 'Rütbe yükseldikçe mezar derinleşir.'],
@@ -4914,6 +4931,7 @@ function mortSay(kind, force) {
   if (kind !== 'start' && kind !== 'start2' && Math.random() < MORT_TALK_SKIP) return; // 10 Eki: Caner daha az konuşsun istedi (%20 seyrek)
   let text = L[Math.floor(Math.random() * L.length)];
   if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
+  if (text.includes('{h}')) { const H = HEROES[team()[0]]; text = text.split('{h}').join(H ? H.name : 'Komutan'); }
   G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
   mortMumble(text, kind);
 }
