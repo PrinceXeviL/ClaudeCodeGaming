@@ -1986,5 +1986,34 @@
   "fh": 171,
   "base": 0.0142,
   "ch": 0.9363
+ },
+ "enemy_severus3_walk": {
+  "n": 32,
+  "fw": 208,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952,
+  "idle": 21
+ },
+ "enemy_severus3_atk": {
+  "n": 32,
+  "fw": 296,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9613
+ },
+ "enemy_severus3_skill": {
+  "n": 32,
+  "fw": 214,
+  "fh": 171,
+  "base": 0.0133,
+  "ch": 0.9379
+ },
+ "enemy_severus3_die": {
+  "n": 33,
+  "fw": 249,
+  "fh": 183,
+  "base": 0.0132,
+  "ch": 0.8725
  }
 }
