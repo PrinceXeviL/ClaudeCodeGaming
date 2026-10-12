@@ -523,9 +523,9 @@ function uiSound(kind) {
   } else if (kind === 'whoosh') { // geçiş: yükselip alçalan hava hışırtısı ve altta boğuk bir gümleme
     const n = actx.createBufferSource(), bp = actx.createBiquadFilter(), g = actx.createGain();
     n.buffer = noiseBuf(); bp.type = 'bandpass'; bp.Q.value = 1.4; bp.frequency.setValueAtTime(320, now); bp.frequency.exponentialRampToValueAtTime(1700, now + 0.22); bp.frequency.exponentialRampToValueAtTime(500, now + 0.5);
-    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.16, now + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.09, now + 0.14); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.42); // 15 Eki: daha kısık ve kısa
     n.connect(bp); bp.connect(g); g.connect(master); n.start(now); n.stop(now + 0.6);
-    uiPop(now + 0.24, 120, 55, 0.22, 0.35, out);
+    uiPop(now + 0.2, 120, 55, 0.13, 0.3, out);
   } else return false;
   return true;
 }
@@ -9498,7 +9498,7 @@ const tapPop = (key) => { pops[key] = time; };
 // Ekran geçişi: kısa bir kararma, ortasında ekran değişir
 let trans = null;
 // ekran geçişi (Caner, 11 Eki): hışırtı sesi, ekran kenarlardan ortaya doğru kararır (göz kapanır gibi), yeni ekran ortadan açılır
-const TRANS = { in: 0.5, out: 0.5, hold: 0.6, shut: 0.12 };
+const TRANS = { in: 0.36, out: 0.36, hold: 0.4, shut: 0.08, fade: 0.16 }; // fade: sade geçişin yarı süresi
 // 15 Eki (Caner: Kingdom Rush gibi): iki yandan kapanan taş kapı kanatları. Kanatlar ortada çarpışır (sarsıntı + toz), ortada Mortimer madalyonu;
 // bölüm başlarken kapı biraz daha uzun kapalı kalır (hold), sonra iki yana açılır. Kanatlar bir kez çizilip önbellekte tutulur.
 let GATE_C = null;
@@ -9579,7 +9579,9 @@ function mortSil() {
   } catch (e) {}
   return (SIL_C = { key, im, c, w, h, full });
 }
+const transIn = () => (trans && !trans.big ? TRANS.fade : TRANS.in), transOut = () => (trans && !trans.big ? TRANS.fade : TRANS.out);
 function drawTrans() {
+  if (!trans.big) { const t = trans.t, a = t < TRANS.fade ? t / TRANS.fade : 1 - (t - TRANS.fade) / TRANS.fade; ctx.fillStyle = `rgba(6,3,10,${clamp(a, 0, 1)})`; ctx.fillRect(VIS.l - 2, VIS.t - 2, VIS.w + 4, VIS.h + 4); return; } // sade: kısa karartma
   if (TRANS_STYLE === 'mort' && mortSil()) { drawTransMort(); return; }
   drawTransGate();
 }
@@ -9631,10 +9633,12 @@ function drawTransGate() {
   if (hold > 0.2 && k > 0.99) { const a = clamp((t - TRANS.in) / 0.25, 0, 1); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, (VIS.t + VIS.b) / 2, Math.min(P.w * 0.42, P.h * 0.27) * 1.6, '130,255,150', (0.18 + Math.sin(time * 5) * 0.06) * a); } // bölüm yükleniyor: madalyon nabız gibi parlar
   ctx.restore();
 }
+// 15 Eki (Caner): Mortimer silüeti yalnız gerekli yerlerde: bölüm başlarken ve bölümden çıkarken. Öteki geçişler kısa karartma.
 function go(fn) {
   if (trans) return;
-  trans = { t: 0, fn, fired: false };
-  sfx('whoosh');
+  const big = screen === 'play' || /startLevel/.test(fn.toString());
+  trans = { t: 0, fn, fired: false, big };
+  if (big) sfx('whoosh');
 }
 
 // renk takımları: [üst, alt, dudak, dış çizgi]
@@ -15889,8 +15893,8 @@ function frame(now) {
   updateMusic(real);
   if (trans) {
     trans.t += real;
-    if (!trans.fired && trans.t >= TRANS.in) { const was = screen; trans.fired = true; uiParts = []; trans.fn(); screenT = time; if (NECRO && screen === 'play' && (was !== 'play' || G)) trans.hold = TRANS.hold; } // bölüm başlıyor: Mortimer görünür
-    if (trans && trans.t >= TRANS.in + (trans.hold ?? TRANS.shut) + TRANS.out) trans = null;
+    if (!trans.fired && trans.t >= transIn()) { const was = screen; trans.fired = true; uiParts = []; trans.fn(); screenT = time; if (NECRO && screen === 'play' && (was !== 'play' || G)) trans.hold = TRANS.hold; } // bölüm başlıyor: Mortimer görünür
+    if (trans && trans.t >= transIn() + (trans.big ? trans.hold ?? TRANS.shut : 0) + transOut()) trans = null;
   }
   uiParts = updateParts(uiParts, real);
   // çizim
