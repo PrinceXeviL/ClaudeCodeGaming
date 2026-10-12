@@ -120,7 +120,16 @@
 "Altın Güneş Arabası": "黄金太阳战车",
 "Güneş Formu": "太阳形态",
 "+%15 dayanıklı · +0,75 sn": "耐久+15% · +0.75秒",
-"+%40 dayanıklı · +2 sn": "耐久+40% · +2秒"
+"+%40 dayanıklı · +2 sn": "耐久+40% · +2秒",
+"Kemik Hisarı": "白骨城堡",
+"Okçu yok": "没有弓箭手",
+"Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "莫蒂默在喝茶。升级：城门出现白骨巨人，阳台出现骷髅弓箭手",
+"Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "白骨巨人守卫城门（阻挡3名敌人，30秒后复活）；阳台上1名骷髅弓箭手",
+"Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "巨人变大：阻挡4名敌人，捶地眩晕，15秒后复活；阳台上2名骷髅弓箭手",
+"Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "巨像更坚固；弓箭大师：箭矢更强，15%暴击",
+"Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "投掷瘟疫：轻微范围伤害，之后每秒中毒；被击中者减速，护甲腐烂",
+"Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "瘟疫泥浆：轻微范围伤害，中毒4秒，减速35%，护甲减半",
+"Kaleye dokun: kaleyi yükselt": "点击城堡：升级"
 },
 "tpl": [
 [
@@ -170,6 +179,14 @@
 [
 "İlk görüldü: {}. bölüm · {}",
 "首次出现：第{}关 · {}"
+],
+[
+"{} okçu · Hasar {}-{} · Atış {}sn",
+"{}名弓箭手 · 伤害 {}-{} · 射速 {}秒"
+],
+[
+"{} · Ok: yükselt · Bayrak: devi gönder",
+"{} · 箭头：升级 · 旗帜：派出巨人"
 ]
 ]
 }

@@ -120,7 +120,16 @@
 "Altın Güneş Arabası": "Золотая солнечная колесница",
 "Güneş Formu": "Солнечная форма",
 "+%15 dayanıklı · +0,75 sn": "+15% прочнее · +0,75 с",
-"+%40 dayanıklı · +2 sn": "+40% прочнее · +2 с"
+"+%40 dayanıklı · +2 sn": "+40% прочнее · +2 с",
+"Kemik Hisarı": "Костяная цитадель",
+"Okçu yok": "Нет лучников",
+"Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Мортимер пьёт чай. Улучшение: Костяной великан у ворот, лучник-скелет на балконе",
+"Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "Костяной великан охраняет ворота (держит 3 врагов, встаёт через 30 с); 1 лучник-скелет на балконе",
+"Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "Великан растёт: держит 4 врагов, оглушает ударом о землю, встаёт через 15 с; 2 лучника-скелета на балконе",
+"Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Колосс крепче; мастера-лучники: сильнее стрелы, 15% критических ударов",
+"Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Мечет чуму: слабый урон по области, затем яд каждую секунду; поражённые замедляются, их броня гниёт",
+"Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Чумная жижа: слабый урон по области, яд 4 с, замедление 35%, броня вдвое слабее",
+"Kaleye dokun: kaleyi yükselt": "Нажми на замок: улучши его"
 },
 "tpl": [
 [
@@ -170,6 +179,14 @@
 [
 "İlk görüldü: {}. bölüm · {}",
 "Впервые: уровень {} · {}"
+],
+[
+"{} okçu · Hasar {}-{} · Atış {}sn",
+"Лучников: {} · Урон {}-{} · Выстрел {}с"
+],
+[
+"{} · Ok: yükselt · Bayrak: devi gönder",
+"{} · Стрелка: улучшить · Флаг: послать великана"
 ]
 ]
 }

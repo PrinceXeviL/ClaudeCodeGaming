@@ -2121,5 +2121,152 @@
   "fh": 315,
   "base": 0.0093,
   "ch": 0.9536
+ },
+ "unit_skel_3_atk3x": {
+  "n": 32,
+  "fw": 164,
+  "fh": 168,
+  "base": 0.0146,
+  "ch": 0.9539
+ },
+ "unit_skel_1_idlex": {
+  "n": 32,
+  "fw": 103,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9707
+ },
+ "unit_skel_2_idlex": {
+  "n": 32,
+  "fw": 83,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "unit_skel_3_idlex": {
+  "n": 32,
+  "fw": 87,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952
+ },
+ "unit_skel_5_atk2x": {
+  "n": 32,
+  "fw": 209,
+  "fh": 170,
+  "base": 0.0146,
+  "ch": 0.9392
+ },
+ "unit_skel_6_walkx": {
+  "n": 32,
+  "fw": 134,
+  "fh": 169,
+  "base": 0.0144,
+  "ch": 0.9472
+ },
+ "unit_skel_6_atkx": {
+  "n": 33,
+  "fw": 181,
+  "fh": 169,
+  "base": 0.0141,
+  "ch": 0.9482
+ },
+ "unit_skel_7_walkx": {
+  "n": 32,
+  "fw": 138,
+  "fh": 170,
+  "base": 0.0143,
+  "ch": 0.9427
+ },
+ "unit_skel_7_atkx": {
+  "n": 33,
+  "fw": 164,
+  "fh": 166,
+  "base": 0.0142,
+  "ch": 0.9645
+ },
+ "hero_leonidas_walkx": {
+  "n": 49,
+  "fw": 327,
+  "fh": 275,
+  "base": 0.0143,
+  "ch": 0.9359
+ },
+ "hero_spartacus_walkx": {
+  "n": 49,
+  "fw": 293,
+  "fh": 321,
+  "base": 0.0142,
+  "ch": 0.936
+ },
+ "hero_drakula_walkx": {
+  "n": 49,
+  "fw": 327,
+  "fh": 256,
+  "base": 0.0131,
+  "ch": 0.9344
+ },
+ "hero_spartacus_atkx": {
+  "n": 32,
+  "fw": 343,
+  "fh": 314,
+  "base": 0.0147,
+  "ch": 0.956
+ },
+ "hero_leonidas_atkx": {
+  "n": 32,
+  "fw": 373,
+  "fh": 330,
+  "base": 0.0137,
+  "ch": 0.9089
+ },
+ "hero_drakula_atkx": {
+  "n": 32,
+  "fw": 433,
+  "fh": 317,
+  "base": 0.0133,
+  "ch": 0.9468
+ },
+ "hero_leonidas_diex": {
+  "n": 33,
+  "fw": 485,
+  "fh": 267,
+  "base": 0.0141,
+  "ch": 0.6393
+ },
+ "hero_spartacus_diex": {
+  "n": 33,
+  "fw": 485,
+  "fh": 327,
+  "base": 0.0146,
+  "ch": 0.5864
+ },
+ "hero_drakula_diex": {
+  "n": 33,
+  "fw": 485,
+  "fh": 340,
+  "base": 0.0133,
+  "ch": 0.5654
+ },
+ "hero_leonidas_skillx": {
+  "n": 32,
+  "fw": 388,
+  "fh": 339,
+  "base": 0.0133,
+  "ch": 0.8847
+ },
+ "hero_drakula_skillx": {
+  "n": 32,
+  "fw": 442,
+  "fh": 311,
+  "base": 0.0133,
+  "ch": 0.9645
+ },
+ "hero_spartacus_skillx": {
+  "n": 32,
+  "fw": 370,
+  "fh": 317,
+  "base": 0.0143,
+  "ch": 0.9475
  }
 }

@@ -687,11 +687,11 @@ if (NECRO) {
 Object.assign(TOWERS.archer, { name: 'Kemik Kulesi', desc: 'Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin' });
 Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'Mahzenin kapısından çıkan iskelet savaşçılar yolu keser' }); // 11 Eki: Savaşçı Mezarlığı'ndan yeniden Mahzen'e (Caner)
 Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır · menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar' }); // Ruh Hasadı: game.js SOUL
-Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: alan hasarı, zehirli gaz, zırhı çürütür' });
+Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür' });
 TOWERS.barracks.levels[0].perk = 'Tencere miğferli 3 iskelet acemi yolu keser';
 TOWERS.barracks.levels[1].perk = 'İskelet muhafızlar: zincir zırh, kalkan, uzun kılıç';
 TOWERS.barracks.levels[2].perk = 'Kemik şövalyeler: kara zırh · vuruşlar %15 can çalar';
-TOWERS.artillery.levels[0].perk = 'Veba bulamacı: alan hasarı, yerde zehirli gaz, zırh yarıya iner';
+TOWERS.artillery.levels[0].perk = 'Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner';
 TOWERS.artillery.levels[1].perk = 'Daha ağır veba, daha geniş gaz bulutu';
 TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir';
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
@@ -766,12 +766,17 @@ const NECRO_SPELLS = {
     desc: 'Seçtiğin alandaki cesetler patlar (en az 3 ceset): her biri çevresine ağır hasar verir ve zehirler (bosslara yüzdelik hasar yarım)',
     short: 'Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir' },
 };
-// şapel ağacı (10 Eki): okçular yerine kapıyı tutan Kemik Devi; son kademede Kemik Kolos
-Object.assign(CASTLE.levels[0], { title: 'Kara Şapel', perk: 'Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi', archers: 0 });
-Object.assign(CASTLE.levels[1], { title: 'Kemik Devi', cost: 200, perk: 'Kapıyı Kemik Devi korur: alan vuruşu, 3 düşmanı birden durdurur; ölürse 30 sn sonra kalkar', archers: 0,
+// şapel ağacı (10 Eki): kapıyı tutan Kemik Devi; 15 Eki (Caner): kale kuleler gibi 3 kez yükselir, balkona en çok 2 iskelet okçu
+Object.assign(CASTLE.levels[0], { title: 'Kara Şapel', perk: 'Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu', archers: 0 });
+Object.assign(CASTLE.levels[1], { title: 'Kemik Devi', cost: 200, dmg: [7, 11], rate: 1.5, archers: 1,
+  perk: 'Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn\'de kalkar); balkonda 1 iskelet okçu',
   giant: { hp: 900, dmg: [22, 34], armor: 0.45, block: 3, respawn: 30 } });
-Object.assign(CASTLE.levels[2], { title: 'Kemik Kolos', cost: 300, perk: 'Dev büyür: daha çok can ve hasar, 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn\'de kalkar', archers: 0,
+Object.assign(CASTLE.levels[2], { title: 'Kemik Kolos', cost: 300, dmg: [9, 14], rate: 1.35, archers: 2, crit: 0,
+  perk: 'Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn\'de kalkar; balkonda 2 iskelet okçu',
   giant: { hp: 1300, dmg: [32, 48], armor: 0.5, block: 4, stomp: true, k: 1.18, respawn: 15 } }); // Mortimer saldırmaz (Caner: ana karakter)
+CASTLE.levels[3] = { title: 'Kemik Hisarı', cost: 400, dmg: [13, 20], rate: 1.15, archers: 2, crit: 0.15,
+  perk: 'Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş',
+  giant: { hp: 1600, dmg: [36, 54], armor: 0.55, block: 4, stomp: true, k: 1.24, respawn: 12 } };
 
 const LEVEL_BOSS = ['goblin_king', 'wolf_alpha', 'orc_warlord', 'dark_shaman', 'death_knight', 'troll_king', 'wolf_alpha', 'dark_shaman', 'death_knight', 'overlord',
   'raider_chief', 'raider_chief', 'scorpion_queen', 'scorpion_queen', 'mummy_king', 'worm_king', 'mummy_king', 'mummy_king', 'golem_titan', 'storm_djinn'];

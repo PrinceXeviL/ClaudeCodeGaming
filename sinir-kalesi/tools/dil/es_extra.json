@@ -120,7 +120,16 @@
 "Altın Güneş Arabası": "Carro del Sol Dorado",
 "Güneş Formu": "Forma Solar",
 "+%15 dayanıklı · +0,75 sn": "+15% más resistente · +0,75 s",
-"+%40 dayanıklı · +2 sn": "+40% más resistente · +2 s"
+"+%40 dayanıklı · +2 sn": "+40% más resistente · +2 s",
+"Kemik Hisarı": "Ciudadela de Hueso",
+"Okçu yok": "Sin arqueros",
+"Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer toma su té. Mejora: Gigante de Hueso en la puerta, arquero esqueleto en el balcón",
+"Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "Un Gigante de Hueso guarda la puerta (frena a 3 enemigos, se levanta en 30 s); 1 arquero esqueleto en el balcón",
+"Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "El gigante crece: frena a 4 enemigos, aturde golpeando el suelo, se levanta en 15 s; 2 arqueros esqueleto en el balcón",
+"Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Coloso más resistente; arqueros maestros: flechas más duras, 15% de golpe crítico",
+"Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Lanza peste: poco daño en área y luego veneno cada segundo; los alcanzados se ralentizan y su armadura se pudre",
+"Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Lodo de peste: poco daño en área, 4 s de veneno, 35% de ralentización, armadura a la mitad",
+"Kaleye dokun: kaleyi yükselt": "Toca el castillo: mejóralo"
 },
 "tpl": [
 [
@@ -170,6 +179,14 @@
 [
 "İlk görüldü: {}. bölüm · {}",
 "Visto por primera vez: nivel {} · {}"
+],
+[
+"{} okçu · Hasar {}-{} · Atış {}sn",
+"{} arqueros · Daño {}-{} · Disparo {}s"
+],
+[
+"{} · Ok: yükselt · Bayrak: devi gönder",
+"{} · Flecha: mejorar · Bandera: enviar al gigante"
 ]
 ]
 }

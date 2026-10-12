@@ -120,7 +120,16 @@
 "Altın Güneş Arabası": "Char du Soleil d'or",
 "Güneş Formu": "Forme solaire",
 "+%15 dayanıklı · +0,75 sn": "+15 % plus résistant · +0,75 s",
-"+%40 dayanıklı · +2 sn": "+40 % plus résistant · +2 s"
+"+%40 dayanıklı · +2 sn": "+40 % plus résistant · +2 s",
+"Kemik Hisarı": "Citadelle d'Os",
+"Okçu yok": "Pas d'archers",
+"Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer boit son thé. Amélioration : Géant d'Os à la porte, archer squelette au balcon",
+"Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "Un Géant d'Os garde la porte (bloque 3 ennemis, se relève en 30 s) ; 1 archer squelette au balcon",
+"Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "Le géant grandit : bloque 4 ennemis, étourdit en frappant le sol, se relève en 15 s ; 2 archers squelettes au balcon",
+"Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Colosse plus robuste ; archers experts : flèches plus dures, 15 % de coups critiques",
+"Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Projette la peste : léger dégât de zone, puis poison chaque seconde ; les cibles ralentissent et leur armure pourrit",
+"Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Boue de peste : léger dégât de zone, 4 s de poison, 35 % de ralentissement, armure réduite de moitié",
+"Kaleye dokun: kaleyi yükselt": "Touche le château : améliore-le"
 },
 "tpl": [
 [
@@ -170,6 +179,14 @@
 [
 "İlk görüldü: {}. bölüm · {}",
 "Vu pour la première fois : niveau {} · {}"
+],
+[
+"{} okçu · Hasar {}-{} · Atış {}sn",
+"{} archers · Dégâts {}-{} · Tir {}s"
+],
+[
+"{} · Ok: yükselt · Bayrak: devi gönder",
+"{} · Flèche : améliorer · Drapeau : envoyer le géant"
 ]
 ]
 }
