@@ -380,7 +380,9 @@
 "Düşmanların kanını emer, iskeletlerini iyileştirir!": "Drains the enemies' blood and heals your skeletons!",
 "Oyunu birlikte geliştirelim": "Help us improve the game",
 "Anonim oyun verisi": "Anonymous game data",
-"Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "May we send anonymous game data, like which level was hard or which towers you build? Nobody knows who you are, and you can turn it off anytime in settings."
+"Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "May we send anonymous game data, like which level was hard or which towers you build? Nobody knows who you are, and you can turn it off anytime in settings.",
+"Liderlik tablosu mağaza sürümünde açılır": "Leaderboards open in the store version",
+"Bulut kaydı yüklendi": "Cloud save loaded"
 },
 "tpl": [
 [

@@ -288,6 +288,7 @@ function persist() {
   save.t = Date.now();
   const js = JSON.stringify(save);
   try { localStorage.setItem(SAVE_KEY, js); } catch (e) {}
+  cloudPush();
   if (NATIVE_PREFS && !nativeT) nativeT = setTimeout(() => { nativeT = null; NATIVE_PREFS.set({ key: SAVE_KEY, value: JSON.stringify(save) }).catch(() => {}); }, 400); // art arda yazımlar tek seferde
 }
 const saveProgress = (o) => (o.stars || []).reduce((a, b) => a + (b || 0), 0) * 100 + Object.values(o.hero || {}).reduce((a, h) => a + (h.lvl || 1), 0);
@@ -299,6 +300,23 @@ if (NATIVE_PREFS) NATIVE_PREFS.get({ key: SAVE_KEY }).then(r => {
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
   } else persist(); // yerel kopya yoksa ya da geride kaldıysa tarayıcıdakini yaz
 }).catch(() => {});
+// 15 Eki (Caner): liderlik tablosu ve bulut kayıt. Uygulamada yerel NecroServices eklentisi (iOS: Game Center + iCloud anahtar-değer deposu;
+// Android: Google Play Games) varsa çalışır; tarayıcıda ve ücretsiz geliştirici hesabında eklenti/izin yoktur, sessizce atlanır.
+// BOARDS: mağaza panellerinde açılacak tablo kimlikleri (App Store Connect / Play Console'da aynı adla oluşturulmalı)
+const BOARDS = { stars: 'necro_toplam_yildiz', endless: 'necro_sonsuz_gece', daily: 'necro_gunun_sinavi' };
+const SVC = () => { const C = window.Capacitor; return C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.NecroServices; };
+let svcReady = false, cloudT = null, cloudOk = false; // cloudOk: buluttaki kayıt bir kez okunmadan buluta yazılmaz (eski kayıt ezilmesin)
+function svcLogin() { const P = SVC(); if (!P || svcReady) return; cloudPull(); P.login().then(r => { svcReady = !!(r && r.ok); }).catch(() => {}); }
+function svcScore(board, v) { const P = SVC(); if (!P || !svcReady || !BOARDS[board]) return; P.submitScore({ id: BOARDS[board], score: Math.round(v) }).catch(() => {}); }
+function svcShowBoards() { const P = SVC(); if (!P || !svcReady) { mapNote = { text: 'Liderlik tablosu mağaza sürümünde açılır', t: time }; sfx('error'); return; } P.showLeaderboards().catch(() => {}); }
+function cloudPush() { const P = SVC(); if (!P || !cloudOk || cloudT) return; cloudT = setTimeout(() => { cloudT = null; P.cloudSave({ data: JSON.stringify(save) }).catch(() => {}); }, 8000); } // seyrek yaz
+function cloudPull() { // buluttaki kayıt daha ilerdeyse onu al (aynı ilerlemede daha yeni olanı)
+  const P = SVC(); if (!P) return;
+  P.cloudLoad().then(r => { cloudOk = true; const n = r && r.data ? JSON.parse(r.data) : null; if (!n) { cloudPush(); return; }
+    if (saveProgress(n) > saveProgress(save) || (saveProgress(n) === saveProgress(save) && (n.t || 0) > (save.t || 0))) { for (const k of Object.keys(save)) delete save[k]; Object.assign(save, n); try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} mapNote = { text: 'Bulut kaydı yüklendi', t: time }; }
+    else cloudPush(); }).catch(() => {});
+}
+setTimeout(svcLogin, 1500);
 
 // ---------- canvas & ölçek ----------
 const canvas = document.getElementById('game');
@@ -5168,6 +5186,7 @@ function drawAchievements() {
   const got = ACH.filter(a => save.ach && save.ach[a.id]).length;
   txt(`${got} / ${ACH.length}`, W / 2, 74, 15, '#ffe27a', 'center', '400', FONT_T);
   roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st });
+  roundBtn('boards', EDGE.r - 46, 44, 29, (r) => fancyStar(0, -1, r * 0.6, true), svcShowBoards, { appear: st - 0.1, tile: 'gold' }); // liderlik tablosu
   // 11 Eki (mobil): 2 sütun, büyük kart ve yazı; liste kaydırılır
   const cols = 2, cw = 436, ch = 76, gx = 12, gy = 8, x0 = W / 2 - (cols * cw + (cols - 1) * gx) / 2, Y0 = 88, AH = EDGE.b - 8 - Y0;
   const sy = scrollArea('ach', x0 - 4, Y0, cols * cw + gx + 14, AH, Math.ceil(ACH.length / cols) * (ch + gy)), y0 = Y0 - sy;
@@ -6276,7 +6295,7 @@ function update(dt) {
   G.floaters = G.floaters.filter(f => f.t < 1.1);
 
   if (G.lives <= 0 && !overlay) {
-    if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); }
+    if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); svcScore('endless', Object.values(save.endless).reduce((a, b) => a + b, 0)); } // tablo: bütün bölümlerdeki en iyi dalgaların toplamı
     heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave);
   }
   if (G.gold >= 2000) achGive('hoard');
@@ -6292,7 +6311,7 @@ function update(dt) {
     heroEndXp(true);
     persist();
     setOverlay('win');
-    sfx('win'); gaProg('Complete', G.idx, G.stars);
+    sfx('win'); gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
 }
