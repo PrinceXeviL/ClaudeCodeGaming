@@ -294,3 +294,14 @@ Artık `img/map_bolge<N>.webp` + `img/map_bolge.json` (taşma payı 180x110, ı�
 (480x270 hücreli atlas, LEVELS sırası) hazır yüklenir. **Harita dekoru, temalar, EPISODES düğümleri ya da bölüm yolları değişince** sunucu açıkken
 `node tools/harita-pisir.js` çalıştır (yayında bu üç dosyayı da gönder). Ekran pişirilen paydan genişse oyun eski yoldan kendisi çizer.
 adaptQuality, renderBackground'dan sonraki 1 sn'yi saymaz (perf.heavy).
+
+## Atlas ve abartılı animasyonlar (12 Eki gece, yayın 433 / Artifact v355)
+- **Atlas:** dekor (nm*), arsa, kule parçaları (arm/front/rune/flag/sw) ve kuledeki okçu/arbaletçi pozları `img/atlas_<N>.webp` + `atlas.json`
+  içinde (127 görsel, 8 sayfa). Manifestten çıktılar, dosyaları img/'de duruyor (işleme betikleri için) ama yayına/telefona gitmez. Oyun sayfaları
+  SIRAYLA yükleyip her parçayı tuvale keser (loadAtlas). Bu görsellerden biri değişince ya da yeni küçük dekor eklenince `python3 varliklar/atlas_kur.py`.
+  Yayında atlasa geçen tek tek dosyalar `null` ile silinir (sürüm başına 511 dosya sınırı). yerel_temizle.js map_* ve atlas_* dosyalarını korur.
+- **Abartılı animasyon:** iş listesi `varliklar/abarti_isler.py` (çıktı `<şerit>x`), karşılaştırma/yerine geçirme/geri alma
+  `varliklar/abarti_degistir.py gif|gec|geri <ad>...` (eskiler `varliklar/cikti/abarti_eski/`, GIF'ler ~/Downloads/abarti_karsilastirma).
+  Wan magenta zemini pembe sızdırırsa `varliklar/pembe_duzelt.py <ad>` (ip/ahşap/tene; mor duman olan karakterde kullanma).
+  Promptta "templar", "nun" gibi kelimeler haç çizdiriyor: güneş amblemini açıkça tarif et ("never a cross").
+- Gladyatör ağı kodla çizilir (NET, drawNetMesh/netLattice, drawNets); atış şeridi `enemy_gladiator_skill` (25 kare, ağ 20. karede elden çıkar = NET.rel).
