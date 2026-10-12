@@ -4444,7 +4444,7 @@ function castSpell(id, x, y) {
 // ----- Mortimer'ın büyüleri -----
 function castNecro(id, x, y) {
   const S = spellStats(id), c = G.castle, m = mortimerPoint();
-  G.mortCast = MORT_CAST_T; // balkonda tırpanını kaldırır (büyü kareleri)
+  G.mortCast = G.mortCastT = id === 'nm_raise' && mortStrip('mortimer_dirilt') ? MORT_RAISE.t : MORT_CAST_T; G.mortCastN = id === 'nm_raise' ? 'mortimer_dirilt' : null; G.mortFlash = false; // balkonda büyü kareleri (diriltmede Veo şeridi)
   if (id === 'nm_raise') {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length;
     const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15).sort((a, b) => a.t - b.t).slice(0, Math.max(0, S.max - alive));
@@ -4713,7 +4713,9 @@ function mortDanger() {
 }
 // 13 Eki (Caner): Mortimer sakinken kapıdan içeri girer ('goin' → 'in'); düşman kaleye yaklaşınca, kalabalık ordu ya da boss gelince,
 // kale vurulunca ya da büyü yapınca kapıdan çıkar ('out'). MORT_IN: çıkış/giriş süresi, sakinlik süreleri, kalabalık eşiği
-const MORT_IN = { walk: 1.4, quiet: 14, crowd: 12, near: 260 };
+const MORT_IN = { walk: 1.4, turn: 1.1, quiet: 14, crowd: 12, near: 260 };
+// diriltme şeridi (Veo, 42 kare): süre ve videodan kesilen tam ekran patlamanın yeri (şeridin kesri)
+const MORT_RAISE = { t: 2.2, flash: 0.7 };
 function mortLoud() {
   const c = G.castle, alive = G.enemies.filter(e => !e.dead);
   return c.shake > 0 || G.mortCast > 0 || alive.length >= MORT_IN.crowd || alive.some(e => e.def.chief || dist(e.x, e.y, c.x, c.y) < MORT_IN.near);
@@ -4726,7 +4728,7 @@ function updateMortState(dt) {
   if (G.mortCast > 0 && (M.st === 'in' || M.st === 'goin')) { M.st = 'panic'; M.t = 0; G.effects.push({ kind: 'ring', x: mortimerPoint().x, y: mortimerPoint().y, r: 22, col: '190,110,255', t: 0, dur: 0.4 }); } // büyüde hemen çıkar
   if (M.st === 'in') { if (loud) { M.st = 'out'; M.t = 0; } }
   else if (M.st === 'out') { if (M.t > MORT_IN.walk) { M.st = 'panic'; M.t = 0; } }
-  else if (M.st === 'goin') { if (loud) { M.st = 'out'; M.t = MORT_IN.walk - Math.min(M.t, MORT_IN.walk); } else if (M.t > MORT_IN.walk) { M.st = 'in'; M.t = 0; } }
+  else if (M.st === 'goin') { const T = (mortStrip('mortimer_don') ? MORT_IN.turn : 0) + MORT_IN.walk; if (loud) { M.st = 'out'; M.t = 0; } else if (M.t > T) { M.st = 'in'; M.t = 0; } }
   else if (M.st === 'tea' && M.calm === 0) { M.st = 'up'; M.t = 0; M.leave = false; }
   else if (M.st === 'tea' && M.quiet > MORT_IN.quiet) { M.st = 'up'; M.t = 0; M.leave = true; } // çayını bitirdi, içeri
   else if (M.st === 'up' && M.t > MORT_TRANS) { M.st = M.leave ? 'goin' : 'panic'; M.t = 0; M.leave = false; }
@@ -4737,6 +4739,7 @@ const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : null);
 // o an çizilecek şerit, kare ve boy çarpanı (yoksa null)
 function mortAnim(p) {
   const M = G && G.mort;
+  if (p >= 0 && G.mortCastN && mortStrip(G.mortCastN)) { const F = ANIM_META[G.mortCastN]; return { n: G.mortCastN, i: Math.min(F.n - 1, Math.floor(p * F.n)), k: 1 }; }
   if (p >= 0 && mortStrip('mortimer_buyu')) return { n: 'mortimer_buyu', i: Math.min(ANIM_META.mortimer_buyu.n - 1, Math.floor(p * ANIM_META.mortimer_buyu.n)), k: 1 };
   if (!M) return null;
   if ((M.st === 'up' || M.st === 'down') && mortStrip('mortimer_otur')) {
@@ -4749,13 +4752,17 @@ function mortAnim(p) {
 }
 // kapı ile balkon arası yürüyüş: kapının karanlığından çıkar (silik, küçük, kapı eşiğinde) → balkondaki yerine (tam boy); girerken tersi
 function drawMortDoor() {
-  const M = G.mort, m = mortimerPoint(), q0 = clamp(M.t / MORT_IN.walk, 0, 1), q = M.st === 'out' ? q0 : 1 - q0, e = q * q * (3 - 2 * q);
-  const W = mortStrip('mortimer_yuru'), im = spr('mortimer'); if (!W && !im) return;
+  const M = G.mort, m = mortimerPoint(), TN = M.st === 'goin' && mortStrip('mortimer_don') ? MORT_IN.turn : 0;
+  if (TN && M.t < TN) { // içeri girmeden önce yerinde arkasını döner
+    const F = ANIM_META.mortimer_don; ctx.save(); ctx.translate(m.x, m.y); drawFrame(spr('mortimer_don'), F, Math.min(F.n - 1, Math.floor(M.t / TN * F.n)), m.h * 1.15); ctx.restore(); return;
+  }
+  const q0 = clamp((M.t - TN) / MORT_IN.walk, 0, 1), q = M.st === 'out' ? q0 : 1 - q0, e = q * q * (3 - 2 * q);
+  const W = M.st === 'goin' && mortStrip('mortimer_arka') || mortStrip('mortimer_yuru'), im = spr('mortimer'); if (!W && !im) return;
   const c = G.castle, ci = castleStageSprite(), cp = castlePlace(c.x, c.y, ci), h = cp.w * ci.height / ci.width;
   const dy = (KEEP.door ? KEEP.door[1] : 0.536) * h + (cp.y - h), x = m.x, y = lerp(dy, m.y, e), sc = 0.82 + 0.18 * e;
   ctx.save(); ctx.globalAlpha = clamp(e * 1.6, 0, 1); ctx.translate(x, y); ctx.scale(sc, sc);
   if (W) { // 13 Eki: Gemini (Veo) yürüyüşü, kameraya doğru; içeri girerken kareler tersten (dönüş şeridi gelene kadar)
-    const F = ANIM_META[W], fi = Math.floor(M.t * 16) % F.n; drawFrame(spr(W), F, M.st === 'out' ? fi : F.n - 1 - fi, m.h * 1.15);
+    const F = ANIM_META[W], fi = Math.floor(M.t * 16) % F.n; drawFrame(spr(W), F, M.st === 'out' || W === 'mortimer_arka' ? fi : F.n - 1 - fi, m.h * 1.15);
   } else { ctx.translate(0, -Math.abs(Math.sin(q0 * Math.PI * 4)) * 1.5); drawSprite(ctx, im, 0, 0, m.h * 1.15 * im.width / im.height); }
   ctx.restore();
 }
@@ -4777,8 +4784,13 @@ function drawMortimer() {
   const MS = G.mort && G.mort.st;
   if (MS === 'in') return;
   if (MS === 'out' || MS === 'goin') { drawMortDoor(); return; }
-  const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / MORT_CAST_T, 0, 1) : -1;
-  const k = p >= 0 ? Math.sin(p * Math.PI) : 0;
+  const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / (G.mortCastT || MORT_CAST_T), 0, 1) : -1;
+  if (p >= MORT_RAISE.flash && G.mortCastN === 'mortimer_dirilt' && !G.mortFlash) { // videodaki tam ekran patlama kesildi: yerine kodla yeşil patlama
+    G.mortFlash = true; G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.9, col: '130,255,140', t: 0, dur: 0.45 });
+    for (let i = 0; i < 22; i++) { const a = rand(0, Math.PI * 2), v = rand(60, 160); emit(G.parts, { kind: 'glow', add: true, x: m.x, y: m.y - hgt * 0.55, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, drag: 2.5, col: i % 3 ? '140,255,150' : '200,130,255', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.8) }); }
+    shakeScreen(2.5, 0.25);
+  }
+  const k = p >= 0 ? Math.sin(p * Math.PI) * (G.mortCastN ? 0.3 : 1) : 0; // Veo şeridinin kendi büyü ışığı var: kod ışığı hafif
   const F = ANIM_META.mortimer_cast, fim = F && spr('mortimer_cast'), im = spr('mortimer');
   if (!fim && !im) return;
   // arkasında hafif parlayan hale: mor, yeşil ve kızıl yavaşça birbirine karışır; büyüde ışık sütunu, dönen rün çemberi ve kıvılcımlar
