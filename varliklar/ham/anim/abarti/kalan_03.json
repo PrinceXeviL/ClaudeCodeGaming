@@ -1,5 +1,125 @@
 [
  {
+  "name": "enemy_legion_idle",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_solarcher_idle",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon roman archer with a bow stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_gladiator_idle",
+  "ref": "ham/anim/enemy_gladiator_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon gladiator with a sword and a net stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_drummer_idle",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon roman war drummer in white and gold armor with a bear pelt hood stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_centurion_idle",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_heavy_idle",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_assassin_idle",
+  "ref": "ham/anim/enemy_assassin_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon hooded assassin with daggers stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_priest_idle",
+  "ref": "ham/anim/enemy_priest_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon roman war priest with a golden scepter stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_hunter_idle",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_torch_idle",
+  "ref": "ham/anim/enemy_torch_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon hooded zealot monk in a dark crimson robe holding a big burning torch high stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_holywater_idle",
+  "ref": "ham/anim/enemy_holywater_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a chubby cartoon friar in a cream and gold robe carrying a basket of glowing blue glass flasks on his back stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_inquisitor_idle",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe with a high collar and red skullcap, holding a glowing holy book stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_4_idle",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon huge armored skeleton grave warden in black spiked plate armor and horned helmet, with a big coffin tower shield and a spiked mace with green runes stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_5_idle",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_8_idle",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
   "name": "enemy_hunter_atkx",
   "ref": "ham/anim/enemy_hunter_ref.png",
   "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow raises the silver crossbow, aims to the right and shoots one bolt, the crossbow kicks back, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",

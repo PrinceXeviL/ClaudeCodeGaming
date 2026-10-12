@@ -557,7 +557,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   const TOTAL = [184, 193, 196, 199, 209, 218, 223, 228, 234, 206, 220, 234, 242, 242, 226, 211, 211, 265, 273, 281]; // 20 bölüm (10 Eki): yeni bölümler komşularının arası // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
-  const HPMUL = [1.512, 1.052, 1.174, 2.344, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.801, 0.257, 0.354]; // 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
+  const HPMUL = [0.8, 1.052, 1.174, 2.344, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.801, 0.257, 0.354]; // 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i] }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });

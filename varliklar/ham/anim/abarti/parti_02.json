@@ -1,5 +1,85 @@
 [
  {
+  "name": "enemy_godfrey_atkx",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering templar knight in white surcoat over silver plate armor with a great helm and a long white cape, holding a flaming greatsword swings the flaming greatsword in a wide powerful overhead arc that leaves a trail of fire, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_hubertus_atkx",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds lashes out with a heavy kick and the two hounds lunge forward snapping their jaws, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_agnes_atkx",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff cracks the long chain whip forward in one vicious lash, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_severus3_atkx",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours green necromantic smoke and a cracked sun staff swings the cracked sun staff forward and a blast of green and gold fire bursts from it, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 5
+ },
+ {
+  "name": "enemy_gloriosus_diex",
+  "ref": "ham/anim/enemy_gloriosus_ref.png",
+  "prompt": "a cartoon pompous roman general in shining gold armor with a red cape is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_centurion_diex",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_champion_diex",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hierophant_diex",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_shadowmaster_diex",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_ironwarden_diex",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
   "name": "enemy_cavcaptain_diex",
   "ref": "ham/anim/enemy_cavcaptain_ref.png",
   "prompt": "a cartoon cavalry captain with a winged golden helmet and red cape riding a big black armored warhorse with golden barding, holding a long lance with a red pennant the horse collapses to the ground and the captain falls off, then both lie still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
@@ -19,6 +99,46 @@
   "name": "enemy_gloriosus3_diex",
   "ref": "ham/anim/enemy_gloriosus3_ref.png",
   "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword is defeated: the flames on his body go out, his armor turns dull, he drops the sword, falls to his knees and collapses face down onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_lucia_diex",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist nun in a white and gold habit with a crimson stole, holding a glowing holy book and a silver censer is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_godfrey_diex",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering templar knight in white surcoat over silver plate armor with a great helm and a long white cape, holding a flaming greatsword is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hubertus_diex",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_agnes_diex",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_severus3_diex",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours green necromantic smoke and a cracked sun staff is defeated: the green smoke is sucked back into the teapot, the teapot falls from his hand, the green glow fades from his eyes and he collapses onto the ground and lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
   "frames": 33,
   "loop": false,
   "seed": 7
@@ -86,125 +206,5 @@
   "frames": 33,
   "loop": true,
   "seed": 5
- },
- {
-  "name": "enemy_gloriosus3_skillx",
-  "ref": "ham/anim/enemy_gloriosus3_ref.png",
-  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword raises both arms and the sun halo behind him flares into a blinding burst of golden fire, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 5
- },
- {
-  "name": "enemy_legion_walkx",
-  "ref": "ham/anim/enemy_legion_ref.png",
-  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "enemy_assassin_walkx",
-  "ref": "ham/anim/enemy_assassin_ref.png",
-  "prompt": "a cartoon hooded assassin with daggers marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "enemy_priest_walkx",
-  "ref": "ham/anim/enemy_priest_ref.png",
-  "prompt": "a cartoon roman war priest with a golden scepter marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "enemy_cavalry_walkx",
-  "ref": "ham/anim/enemy_cavalry_ref.png",
-  "prompt": "a cartoon roman cavalryman with a lance riding a white horse moves forward in place with an exaggerated bouncy cartoon gallop: the animals legs reach far and stomp down, their bodies bob and rock, the rider or the vehicle bounces with every stride, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "enemy_ram_walkx",
-  "ref": "ham/anim/enemy_ram_ref.png",
-  "prompt": "a cartoon wooden siege battering ram cart with a lion head ram and soldiers inside rolls forward in place with exaggerated bouncy cartoon motion: the whole machine bounces and wobbles over bumps, the wheels turn fast, loose parts rattle and swing, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 21
- },
- {
-  "name": "enemy_catapult_walkx",
-  "ref": "ham/anim/enemy_catapult_ref.png",
-  "prompt": "a cartoon wooden catapult cart with a soldier rolls forward in place with exaggerated bouncy cartoon motion: the whole machine bounces and wobbles over bumps, the wheels turn fast, loose parts rattle and swing, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 21
- },
- {
-  "name": "enemy_wardog_walkx",
-  "ref": "ham/anim/enemy_wardog_ref.png",
-  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness walks forward in place with an exaggerated bouncy cartoon gait: the legs reach far, the paws stomp down firmly, the whole body bobs up and down and rocks, squash and stretch, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 11
- },
- {
-  "name": "enemy_siegetower_walkx",
-  "ref": "ham/anim/enemy_siegetower_ref.png",
-  "prompt": "a cartoon tall wooden roman siege tower on four wooden wheels with red panels and gold sun emblems rolls forward in place with exaggerated bouncy cartoon motion: the whole machine bounces and wobbles over bumps, the wheels turn fast, loose parts rattle and swing, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 7
- },
- {
-  "name": "enemy_eagle_walkx",
-  "ref": "ham/anim/enemy_eagle_ref.png",
-  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest flies in place with exaggerated cartoon flight: big powerful wing beats, the whole body bobs up and down with each beat, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 7
- },
- {
-  "name": "enemy_chariot_walkx",
-  "ref": "ham/anim/enemy_chariot_ref.png",
-  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it gallops in place: the horse moves forward in place with an exaggerated bouncy cartoon gallop: the animals legs reach far and stomp down, their bodies bob and rock, the rider or the vehicle bounces with every stride, squash and stretch, lively snappy timing, a full looping cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 7
- },
- {
-  "name": "enemy_herald_walkx",
-  "ref": "ham/anim/enemy_herald_ref.png",
-  "prompt": "a cartoon roman horn blower soldier in white and gold armor with a wolf pelt hood, carrying a big round brass cornu horn on his shoulder, marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 11
- },
- {
-  "name": "enemy_drummer_walkx",
-  "ref": "ham/anim/enemy_drummer_ref.png",
-  "prompt": "a cartoon roman war drummer in white and gold armor with a bear pelt hood marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 11
- },
- {
-  "name": "enemy_bellpriest_walkx",
-  "ref": "ham/anim/enemy_bellpriest_ref.png",
-  "prompt": "a thin old cartoon priest in a black and gold robe holding a big bronze hand bell high marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 11
- },
- {
-  "name": "enemy_paladin_walkx",
-  "ref": "ham/anim/enemy_paladin_ref.png",
-  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 11
  }
 ]

@@ -1558,7 +1558,7 @@ function startLevel(idx, chal = null) {
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die'];
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
@@ -3526,7 +3526,7 @@ function updateEnemy(e, dt) {
     if (e.shootT > 0) { e.shootT -= dt; if (!RG.moving) { e.inMelee = false; return; } }
     e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt;
     if (tgt) {
-      if (!RG.moving) e.face = tgt.x < e.x ? -1 : 1;
+      if (!RG.moving) faceTo(e, tgt.x);
       if (e.rcd <= 0) {
         e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
@@ -3568,7 +3568,7 @@ function updateEnemy(e, dt) {
       if (!e.blocker) return;
     } else e.waitT = 0;
     if (e.inMelee) {
-      e.face = e.blocker.x < e.x ? -1 : 1;
+      faceTo(e, e.blocker.x);
       e.atk -= dt;
       if (e.atk <= 0) {
         e.atk = e.def.rate * curseSlowAtk(e); e.atkV = Math.floor(Math.random() * 3);
@@ -3653,11 +3653,13 @@ function soldierHome(s) {
   return { x: t.rx + o[0], y: t.ry + o[1] };
 }
 
+// yüz çevirme (13 Eki): hedef neredeyse tam üstte/altta iken her karede sağa sola dönmesin
+const faceTo = (u, x, th = 4) => { if (Math.abs(x - u.x) > th) u.face = x < u.x ? -1 : 1; };
 function moveToward(s, x, y, dt) {
   const d = dist(s.x, s.y, x, y);
   if (d < 1) return true;
   const step = Math.min(d, s.speed * G.wspd * dt);
-  s.face = x < s.x ? -1 : 1;
+  if (Math.abs(x - s.x) > Math.max(2, d * 0.3)) s.face = x < s.x ? -1 : 1; // 13 Eki: dikeye yakın yürürken yüz titremesin (eşik)
   s.x += (x - s.x) / d * step; s.y += (y - s.y) / d * step;
   s.anim += dt;
   return d - step < 1;
@@ -3868,7 +3870,7 @@ function updateSoldier(s, dt) {
     const spot = t.blocker === s ? { x: t.x + side * 13, y: t.y } : { x: t.x + side * 12, y: t.y + (s.slot === 2 ? 7 : -7) };
     const arrived = moveToward(s, spot.x, spot.y, dt);
     if (arrived || dist(s.x, s.y, t.x, t.y) < 19) {
-      s.face = t.x < s.x ? -1 : 1;
+      faceTo(s, t.x);
       if (eliteSkill(s, dt)) { s.anim += dt; return; } // Tabut Duvarı / Ruh Biçimi oynarken saldırmaz
       s.atk -= dt;
       s.anim += dt;
@@ -7666,7 +7668,7 @@ function drawEnemy0(e) {
     if (d.chief) drawBossAura(e, dh);
     const uo = {
       rig: d.base ? 'enemy_' + d.base : undefined,
-      h: CHAR_H[name] || d.r * 2.6, phase: (e.march && !(e.slowT > 0) ? G.t : e.anim) * (5 + d.speed * G.wspd / 9), // sıradakiler uygun adım
+      h: CHAR_H[name] || d.r * 2.6, phase: (e.march && !(e.slowT > 0) ? G.t : e.anim) * walkRate(name, d.base ? 'enemy_' + d.base : null, d.speed * G.wspd, CHAR_H[name] || d.r * 2.6), // sıradakiler uygun adım
       rise: e.reviveT > 0 ? 0.25 + 0.75 * (1 - e.reviveT / 1.1) : e.emergeT > 0 ? 1 - e.emergeT / 0.35 * 0.85 : null,
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
@@ -7898,7 +7900,8 @@ function drawSoldier(s) {
     if (sk) {
       const F = ANIM_META[sk], i = sk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(sk), F, i, ch); ctx.restore();
-    } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
+      if (window.__animLog && s.logId != null) window.__animLog.push([s.logId, sk, i, s.face || 1, walking, '', +s.x.toFixed(2), +s.y.toFixed(2)]);
+    } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: 0.7 });
     if (s.golem && s.life < 4) { ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 10); glow(ctx, s.x, s.y - ch * 0.5, ch * 0.5, '150,255,110', 0.3); ctx.restore(); } // dağılmak üzere
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 22, s.hp / s.maxHp, s.golem ? '#9dff6a' : '#d8c8a8');
@@ -7927,7 +7930,7 @@ function drawSoldier(s) {
       const sd = (s.slot || 0) * 1.9, fc = s.face || 1, lurch = walking ? Math.max(0, Math.sin(s.anim * 3.2 + sd)) * 0.09 : 0;
       const lean = fc * (0.1 + 0.035 * Math.sin(time * 1.7 + sd) + lurch + (fighting ? 0.06 * Math.max(0, Math.sin(atkPhase(s.rate, s.atk) * Math.PI)) : 0)) + Math.sin(time * 2.3 + sd) * 0.04;
       ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(lean); ctx.translate(-s.x, -s.y);
-      drawUnit(key, im, s.x, s.y, fc, { h: ch, rig: s.zrig || s.zname, phase: s.anim * 4.5, walking, fly: 0, rise,
+      drawUnit(key, im, s.x, s.y, fc, { logId: s.logId, h: ch, rig: s.zrig || s.zname, phase: s.anim * walkRate(s.zname, s.zrig, s.speed * G.wspd, ch), walking, fly: 0, rise,
         atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       ctx.restore();
       // başının üstünde soluk mor ruh alevi: bizim tarafta olduğu belli olsun
@@ -7955,7 +7958,7 @@ function drawSoldier(s) {
     const rise = !s.door && s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
-    drawUnit(key, im, s.x, s.y, s.face || 1, { h: ch, rig: key, phase: s.anim * 9, walking: walking || !!s.exit, fly: 0, rise,
+    drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
       skill: s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null }); // Tabut Duvarı süresince kalkan yerde
     if (fade < 1) ctx.restore();
@@ -8006,15 +8009,16 @@ function drawSoldier(s) {
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
       const i = ult ? prog(s.ultT, ULT_ANIM) : cst ? prog(s.castA, HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
-        : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : 16)) % F.n;
+        : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n)) % F.n;
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
+      if (window.__animLog && s.logId != null) window.__animLog.push([s.logId, hsk, i, s.face || 1, walking, '', +s.x.toFixed(2), +s.y.toFixed(2)]);
       hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
       return;
     }
-    drawUnit(key, im, s.x, s.y, s.face, {
-      h: ch, rig: name, pad, glow: glowIm, phase: s.anim * 9, walking, fly: 0,
+    drawUnit(key, im, s.x, s.y, s.face, { logId: s.logId,
+      h: ch, rig: name, pad, glow: glowIm, phase: s.anim * walkRate(name, null, s.speed * G.wspd, ch), walking, fly: 0,
       atk: fighting || s.shooting ? atkPhase(s.rate, s.atk) : null, flash: s.flash, seed: (s.slot || 0) * 1.7,
       buff: s.buffT, spin: s.spinT, cast: s.castT, aura: s.hero ? s.def.aura : null,
     });
@@ -8435,6 +8439,13 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
 
 // bekleme döngüsü: 0 durgun kare araya girer (1 nefes, 2 bakınma, 3 sabırsızlık); her kare IDLE_STEP sn, birimler seed ile kaymalı
 const IDLE_SEQ = [0, 0, 1, 1, 0, 0, 2, 2, 0, 0, 1, 1, 0, 3, 3], IDLE_STEP = 0.45;
+// yürüyüş adım hızı (13 Eki): şeridin adım boyu (anim.json stride: bir döngüde gidilen yol / boy) ile gerçek hız eşlenir, ayak yerde kaymaz.
+// Döngü 0,5-1,4 sn arasında tutulur (çok yavaş birimde ağır çekim olmasın). Şerit yoksa eski formül.
+function walkRate(name, rig, spd, h) {
+  const F = ANIM_META[name + '_walk'] || (rig && ANIM_META[rig + '_walk']);
+  if (!F || !F.stride || !h) return 5 + spd / 9;
+  return clamp(TAU * spd / (F.stride * h), TAU / 1.4, TAU / 0.5);
+}
 function drawUnit(name, im, x, y, face, o) {
   const pad = o.pad || 0, h = o.h * (1 + pad), w = h * im.width / im.height;
   const rig = RIG[o.rig || name] || { legY: 0.7 };
