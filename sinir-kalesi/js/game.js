@@ -5389,6 +5389,7 @@ function buildStep(type, plotText, menuText) {
     at: () => { if (menuOpen()) { const it = currentMenu().find(o => o.id === 'build' && o.type === type); return it && worldToScreen(it.x, it.y - 22); }
       const pl = tutPlot(type); return pl && worldToScreen(pl.x, pl.y - 10); } };
 }
+const tutSelUp = () => (G.sel && G.sel.kind === 'tower' && G.sel.tower.lvl < G.sel.tower.def.levels.length - 1 ? G.sel.tower : null); // eğitim: seçili, yükseltilebilir kule
 const tutSpell = (id) => !spellIds().includes(id) || G.spells[id] > 0; // götürülmeyen büyü atlanır
 const spellMode = (id) => G.mode && G.mode.kind === 'spell' && G.mode.id === id;
 const tutFoes = () => G.enemies.filter(e => !e.dead && !e.under && e.x > 20 && e.x < W - 20);
@@ -5402,11 +5403,16 @@ const TUTS = [
     buildStep('barracks', 'Yol kenarındaki boş arsaya dokun: Mahzen kur', 'Mahzen simgesine dokun, onaylamak için bir daha dokun'),
     { card: true, icon: 'barracks', title: 'Mahzen', text: 'İskelet savaşçılar yola çıkıp düşmanı durdurur. Durdurulan düşmanı okçular rahatça vurur: ikisi birlikte çok güçlü.' },
     WAVE_STEP('Kafatasına dokun: gelecek düşmanları gör. Bir daha dokun: dalga gelsin.'),
-    { text: 'Altının yetince kuleye dokunup yükselt: daha güçlü olur.', when: () => G.towers.some(o => o.lvl < o.def.levels.length - 1 && G.gold >= o.def.levels[o.lvl + 1].cost),
-      done: () => G.towers.some(o => o.lvl > 0), timeout: 16, at: () => { const o = G.towers.find(o => G.gold >= (o.def.levels[o.lvl + 1] || {}).cost) || G.towers[0]; return o && worldToScreen(o.x, o.y - 46); } },
-    { text: () => (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks' ? 'Bayrağa dokun, sonra askerlerin bekleyeceği yere dokun' : 'Mahzene dokun: askerlerin yerini değiştirebilirsin'),
-      when: () => G.wave >= 2 && G.towers.some(o => o.type === 'barracks'), done: () => !!G.tutRally, timeout: 16,
-      at: () => { if (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks') { const it = currentMenu().find(o => o.id === 'rally'); return it && worldToScreen(it.x, it.y - 22); }
+    { text: () => (tutSelUp() ? (tutSelUp().type === 'archer' && !tutSelUp().path && tutSelUp().lvl === 0 ? 'Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun' : 'Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir') : 'Altının yetti: kuleye dokunup yükselt'),
+      when: () => G.towers.some(o => o.lvl < o.def.levels.length - 1 && G.gold >= o.def.levels[o.lvl + 1].cost) || !!tutSelUp(),
+      done: () => G.towers.some(o => o.lvl > 0), timeout: 40,
+      at: () => { const o = tutSelUp(); if (o) { const it = currentMenu().find(m => m.id === 'path' && m.type === 'bow') || currentMenu().find(m => m.id === 'upgrade'); return it && worldToScreen(it.x, it.y - 22); }
+        const u = G.towers.find(o => G.gold >= (o.def.levels[o.lvl + 1] || {}).cost) || G.towers[0]; return u && worldToScreen(u.x, u.y - 46); } },
+    { text: () => (G.mode && G.mode.kind === 'rally' ? 'Kesik çizgili alanın içinde yola dokun: askerler oraya yürür' : G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks' ? 'Bayrağa dokun' : 'Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin'),
+      when: () => G.wave >= 2 && G.towers.some(o => o.type === 'barracks'), done: () => !!G.tutRally, timeout: 40,
+      at: () => { if (G.mode && G.mode.kind === 'rally' && G.mode.tower) { const m = G.mode.tower, a = G.towers.find(o => o.type === 'archer') || m, q = nearestOnPaths(G.paths, a.x, a.y);
+          return dist(q.x, q.y, m.x, m.y) <= m.def.levels[m.lvl].range ? worldToScreen(q.x, q.y - 4) : worldToScreen(m.rx, m.ry - 4); }
+        if (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks') { const it = currentMenu().find(o => o.id === 'rally'); return it && worldToScreen(it.x, it.y - 22); }
         const o = G.towers.find(o => o.type === 'barracks'); return o && worldToScreen(o.x, o.y - 46); } },
   ],
   [ // 2. bölüm
@@ -11643,7 +11649,7 @@ function drawHud() {
   roundBtn('hud_mute', HUD.mute.x, HUD.mute.y, HUD.mute.r, muted ? 'mute' : 'sound', null);
 
   G.heroes.forEach((h, i) => drawHeroPortrait(h, HUD.heroes[i], i));
-  if (!overlay && !G.sel && !G.tut) { // tanıtım ipuçları (bir kez; eğitim sürerken çıkmaz)
+  if (!overlay && !G.sel && !G.tut && !G.mode) { // tanıtım ipuçları (bir kez; eğitim sürerken çıkmaz)
     const h0 = G.heroes[0], hb = HUD.heroes[0];
     if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts')) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
     else if (G.idx < NOVICE.levels && !tipSeen('spell') && spellIds().includes('nm_raise') && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 3) { // büyüyü öğret
@@ -16591,7 +16597,8 @@ function updateCamera(dt) {
 // iki parmak = sıkıştırarak zoom. Fare: tekerlek = zoom, sürükleme = kaydırma. Klavye: + - 0.
 const pointers = new Map(); // id -> { x, y, sx, sy, moved, hud }
 let pinch = null;           // { d, mx, my }
-const DRAG_PX = 8;          // bu kadar kayarsa dokunuş değil sürüklemedir (mantıksal px)
+const DRAG_PX = 12;         // bu kadar kayarsa dokunuş değil sürüklemedir (mantıksal px). 13 Eki (Caner): 8 telefonda azdı, dokunuş harita kaydırmaya dönüyordu
+const dragPx = () => (G && G.mode && G.mode.kind === 'rally' ? 28 : DRAG_PX); // bayrak yeri seçerken parmak biraz kaysa da dokunuş sayılır
 
 canvas.addEventListener('pointerdown', (ev) => {
   ev.preventDefault();
@@ -16643,7 +16650,7 @@ canvas.addEventListener('pointermove', (ev) => {
     pinch = { d, mx, my };
     return;
   }
-  if (!ptr.moved && dist(p.x, p.y, ptr.sx, ptr.sy) > DRAG_PX) ptr.moved = true;
+  if (!ptr.moved && dist(p.x, p.y, ptr.sx, ptr.sy) > dragPx()) ptr.moved = true;
   if (screen === 'map' && ptr.moved && mapSel == null && !trans && !slide && !ptr.scroll && EPISODES[mapEp - 1].zones) { // haritayı kaydır (basılan düğme iptal)
     if (press.id === ev.pointerId) { press.key = null; press.b = null; }
     const now = performance.now(), dts = Math.max(0.008, (now - (MAPCAM.mt || now - 16)) / 1000); MAPCAM.mt = now;
@@ -16777,7 +16784,7 @@ function hudTap(x, y) {
       if (dist(it.x, it.y, x, y) <= MENU_R * MENU_K + 8) {
         const same = G.preview && G.preview.id === it.id && G.preview.type === it.type;
         tapPop('mi' + it.id + (it.type || ''));
-        if (it.id === 'rally') { G.tutRally = true; const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
+        if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
         if (it.id === 'max') return true;
         if (it.id === 'grim') { setSel(null); setOverlay('grim'); sfx('pick'); return true; } // Büyü Kitabı
         if (it.id === 'imbue' && !G.sel.tower.imbue) { G.sel.sub = 'imbue'; G.preview = null; G.menuT = time; sfx('pick'); return true; } // büyü seçimine geç
@@ -16830,7 +16837,7 @@ function worldTap(x, y) {
       const n = nearestOnPaths(G.paths, x, y);
       const px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
       if (dist(t.x, t.y, px, py) <= t.def.levels[t.lvl].range) {
-        t.rx = px; t.ry = py;
+        t.rx = px; t.ry = py; G.tutRally = true;
         for (const s of t.soldiers) { releaseSoldier(s); s.moving = true; }
         G.effects.push({ kind: 'ring', x: px, y: py, r: 22, col: '120,180,255', t: 0, dur: 0.4 });
         sfx('click');

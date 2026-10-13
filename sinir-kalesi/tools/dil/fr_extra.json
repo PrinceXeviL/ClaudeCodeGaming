@@ -1,5 +1,11 @@
 {
 "exact": {
+"Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun": "Choisis la voie de l'Archer (tirs rapides, touche les volants) ou de l'Arbalétrier (coups lourds, perce l'armure) : touche l'icône, puis encore pour confirmer",
+"Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir": "Touche la flèche verte, puis encore pour confirmer : la tour se renforce",
+"Altının yetti: kuleye dokunup yükselt": "Tu as assez d'or : touche une tour pour l'améliorer",
+"Kesik çizgili alanın içinde yola dokun: askerler oraya yürür": "Touche la route dans le cercle pointillé : les soldats y vont",
+"Bayrağa dokun": "Touche le drapeau",
+"Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin": "Touche la Crypte : tu peux changer l'endroit où ses soldats attendent",
 "Solarian lejyonları Mortimer'ın kulesine yürüyor. Yolda durdurmazsan kaleye ulaşıp can götürürler. Önce iki kule öğreneceğiz.": "Les légions solariennes marchent sur la tour de Mortimer. Arrête-les sur la route, sinon elles atteignent le château et te coûtent des vies. D'abord, deux tours.",
 "Yol kenarındaki boş arsaya dokun: Kemik Kulesi kur": "Touche un terrain libre au bord de la route : construis une Tour d'Os",
 "Kemik Kulesi simgesine dokun, onaylamak için bir daha dokun": "Touche l'icône de la Tour d'Os, puis encore pour confirmer",

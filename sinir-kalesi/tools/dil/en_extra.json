@@ -1,5 +1,11 @@
 {
 "exact": {
+"Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun": "Pick the Archer path (fast shots, hits flyers) or the Crossbow path (heavy hits, pierces armor): tap the icon, tap again to confirm",
+"Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir": "Tap the green arrow, tap again to confirm: the tower gets stronger",
+"Altının yetti: kuleye dokunup yükselt": "You have enough gold: tap a tower to upgrade it",
+"Kesik çizgili alanın içinde yola dokun: askerler oraya yürür": "Tap the road inside the dashed circle: the soldiers walk there",
+"Bayrağa dokun": "Tap the flag",
+"Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin": "Tap the Crypt: you can change where its soldiers wait",
 "Solarian lejyonları Mortimer'ın kulesine yürüyor. Yolda durdurmazsan kaleye ulaşıp can götürürler. Önce iki kule öğreneceğiz.": "Solarian legions are marching on Mortimer's tower. Stop them on the road or they reach the keep and take lives. First, two towers.",
 "Yol kenarındaki boş arsaya dokun: Kemik Kulesi kur": "Tap an empty plot by the road: build a Bone Tower",
 "Kemik Kulesi simgesine dokun, onaylamak için bir daha dokun": "Tap the Bone Tower icon, tap again to confirm",

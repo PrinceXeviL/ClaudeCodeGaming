@@ -1,5 +1,11 @@
 {
 "exact": {
+"Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun": "Выбери путь Лучника (быстрые выстрелы, бьёт летающих) или Арбалетчика (тяжёлый удар, пробивает броню): коснись значка, затем ещё раз для подтверждения",
+"Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir": "Коснись зелёной стрелки, затем ещё раз для подтверждения: башня станет сильнее",
+"Altının yetti: kuleye dokunup yükselt": "Золота хватает: коснись башни, чтобы улучшить её",
+"Kesik çizgili alanın içinde yola dokun: askerler oraya yürür": "Коснись дороги внутри пунктирного круга: солдаты пойдут туда",
+"Bayrağa dokun": "Коснись флага",
+"Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin": "Коснись Склепа: можно изменить, где ждут его солдаты",
 "Solarian lejyonları Mortimer'ın kulesine yürüyor. Yolda durdurmazsan kaleye ulaşıp can götürürler. Önce iki kule öğreneceğiz.": "Соларианские легионы идут к башне Мортимера. Останови их на дороге, иначе они дойдут до замка и отнимут жизни. Сначала две башни.",
 "Yol kenarındaki boş arsaya dokun: Kemik Kulesi kur": "Коснись пустого места у дороги: построй Костяную башню",
 "Kemik Kulesi simgesine dokun, onaylamak için bir daha dokun": "Коснись значка Костяной башни, затем ещё раз для подтверждения",
