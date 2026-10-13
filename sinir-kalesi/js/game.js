@@ -5375,9 +5375,13 @@ function drawMortSay() {
 const EARLY = { n: 2, wait: 90 };
 const tutDue = (idx) => NECRO && idx < 3 && !(save.tut3 && save.tut3[idx]);
 const earlyLock = (idx) => NECRO && idx < EARLY.n && (tutDue(idx) || !((save.stars[EARLY.n] || 0) > 0));
-function tutPlot(type) { // önerilen arsa: Kemik Kulesi yolun ilk üçte birinde, Mahzen kaleye yakın, diğerleri ortada
-  const P = G.paths[0], q = pathPos(P, P.total * ({ archer: 0.3, barracks: 0.62, mage: 0.45, artillery: 0.52 }[type] || 0.5));
-  let b = null; for (const pl of G.plots) if (!pl.tower && (!b || dist(pl.x, pl.y, q.x, q.y) < dist(b.x, b.y, q.x, q.y))) b = pl; return b;
+function tutPlot(type) { // önerilen arsa (13 Eki, Caner): ilk kule yolun ilk üçte birine; sonrakiler var olan kulelerin hemen yanına
+  // (Mahzen'in askerleri okçuların menzilinde düşmanı tutsun; kuleler birbirini desteklesin), yolu gören arsalardan
+  const free = G.plots.filter(pl => !pl.tower);
+  if (!G.towers.length) { const P = G.paths[0], q = pathPos(P, P.total * 0.32); let b = null; for (const pl of free) if (!b || dist(pl.x, pl.y, q.x, q.y) < dist(b.x, b.y, q.x, q.y)) b = pl; return b; }
+  const cx = G.towers.reduce((s, o) => s + o.x, 0) / G.towers.length, cy = G.towers.reduce((s, o) => s + o.y, 0) / G.towers.length;
+  let b = null, bs = Infinity; // puan: arsanın yola değdiği nokta (Mahzen askerlerinin duracağı yer) kulelere yakın olsun, arsa da
+  for (const pl of free) { const q = nearestOnPaths(G.paths, pl.x, pl.y), sc = dist(q.x, q.y, cx, cy) + 0.5 * dist(pl.x, pl.y, cx, cy) + Math.max(0, q.d - 70) * 3; if (sc < bs) { bs = sc; b = pl; } } return b;
 }
 function buildStep(type, plotText, menuText) {
   const menuOpen = () => G.sel && G.sel.kind === 'plot';
