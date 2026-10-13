@@ -288,7 +288,7 @@ if (NECRO && !save.lv20 && save.stars && save.stars.length) {
 }
 save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
+const SETTINGS_DEF = { atmo: true, vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 function setSetting(k, v) {
@@ -12504,6 +12504,7 @@ function settingsList(inGame) {
     ['fast', 'Titreşim', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('haptic'), (v) => { setSetting('haptic', v); if (v) haptic('medium'); }],
     ['map', 'Anonim oyun verisi', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('stats'), (v) => { setSetting('stats', v); save.statsAsked = 1; persist(); if (v) gaInit(); else if (GA) try { GA.setEnabledEventSubmission(false); } catch (e) {} }],
     ['map', 'Öğretici', [[false, 'KAPALI'], [true, 'AÇIK']], [0, 1, 2].some(i => !(save.tut3 && save.tut3[i])), (v) => { save.tut3 = v ? {} : { 0: 1, 1: 1, 2: 1 }; persist(); }], // 13 Eki: ilk 3 bölümün eğitimi yeniden
+    ['gear', 'Atmosfer ışığı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('atmo'), (v) => setSetting('atmo', v)], // 13 Eki: deneme (14. bölüm)
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTO'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
   if (inGame) rows.splice(5, 1); // öğretici satırı yalnız ana ayarlarda
@@ -15519,6 +15520,22 @@ function drawNight() {
   ctx.restore();
 }
 
+// 13 Eki (Caner): atmosfer ışığı (deneme): ekranın kenarları hafifçe kararır, kulelerin ve komutanın dibi soluk sıcak ışıkla ısınır
+// (kuleler renkli ışıkla boyanmaz, ışık yere vurur). Ayarlar'dan kapanır. Önce yalnız ATMO.levels bölümlerinde (14. bölüm) denenir.
+const ATMO = { levels: [13], edge: 0.4, warm: 0.09 };
+function drawAtmo() {
+  if (!setting('atmo') || !ATMO.levels.includes(G.idx) || G.weather === 'night') return;
+  const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2, R = Math.hypot(VIS.w, VIS.h) / 2;
+  const g = ctx.createRadialGradient(cx, cy, R * 0.42, cx, cy, R);
+  g.addColorStop(0, 'rgba(10,4,20,0)'); g.addColorStop(0.65, `rgba(10,4,20,${ATMO.edge * 0.5})`); g.addColorStop(1, `rgba(10,4,20,${ATMO.edge})`);
+  ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const warm = (wx, wy, r, a) => { const q = worldToScreen(wx, wy); glow(ctx, q.x, q.y, r * cam.z, '255,170,90', a); };
+  for (const t of G.towers) warm(t.x, t.y + 4, 78, ATMO.warm);
+  for (const s of G.soldiers) if (s.hero && !s.dead) warm(s.x, s.y, 50, ATMO.warm * 0.8);
+  if (G.castle) warm(G.castle.x, G.castle.y - 10, 120, ATMO.warm * 0.9);
+  ctx.restore();
+}
 function drawWeather() {
   if (G.weather === 'sand' || G.stormT > 0) drawSandstorm(G.stormT > 0 ? 1.6 : 1);
   if (G.weather === 'rain') {
@@ -15794,6 +15811,7 @@ function drawPlay() {
   drawEnemyRing();
   ctx.restore();
   drawWeather();
+  drawAtmo();
   drawBloodMoon();
   if (G.bossFx) {
     // boss girişi: ekran kenarları kızıl karanlığa bürünür, nabız gibi atar, sonra açılır
