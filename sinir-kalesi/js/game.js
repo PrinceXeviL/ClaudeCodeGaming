@@ -2543,7 +2543,7 @@ function killEnemy(e) {
   }
   G.kills = (G.kills || 0) + 1;
   if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
-  cnt('kills'); if (e.def.chief) cnt('bosses');
+  cnt('kills'); if (e.def.chief) cnt('bosses'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
   dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)));
   sfx('death');
   deathVoice(e);
@@ -11661,6 +11661,15 @@ function drawHud() {
   }
   drawIcon('skull', 21, 44, 14);
   ctx.save(); ctx.translate(68, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(G.endless ? `${G.wave} ∞` : `${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
+  { // 13 Eki (Caner): öldürülen düşman sayacı (dalganın altında); rakam birden atlamaz, tıkır tıkır sayar
+    const kn = G.killN || 0; G.killRoll = Math.min(kn, (G.killRoll || 0) + Math.max(0.12, (kn - (G.killRoll || 0)) * 0.12));
+    const kv = Math.floor(G.killRoll); if (kv !== G.killShown) { if (G.killShown != null) G.killPop = time; G.killShown = kv; }
+    hudBar(8, 57, 92, 20);
+    ctx.save(); ctx.translate(21, 67); ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; // çapraz kemik + kafatası
+    ctx.beginPath(); ctx.moveTo(-6, -5); ctx.lineTo(6, 5); ctx.moveTo(6, -5); ctx.lineTo(-6, 5); ctx.stroke(); ctx.restore();
+    drawSkullIcon(21, 66, 6);
+    ctx.save(); ctx.translate(62, 68); ctx.scale(pop(G.killPop), pop(G.killPop)); hudNum(kv + '', 0, 0, 12, '#ffb8a0', 'center'); ctx.restore();
+  }
   ctx.restore();
 
   // sağ üst: duraklat, hız, ses
