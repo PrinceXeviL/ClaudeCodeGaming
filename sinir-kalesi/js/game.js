@@ -5020,12 +5020,14 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // rail = Mortimer'ın önüne yeniden çizilen korkuluk bandı, px = Mortimer boyu (görsel pikseli), w = oyundaki genişlik
 // 13 Eki: geniş balkonlu kale (ham/nm_kale_balkon.jpg). Mortimer orta çıkıntıda, iki yan kanatta Mezar Bekçisi muhafızlar (guards: [x, y, yüz]).
 // rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
-const KEEP = { w: 178, gate: [0.42, 0.85], at: [0.49, 0.572], rail: [0.37, 0.53, 0.62, 0.61], px: 122, // 15 Eki: %10 küçük, balkonun ön ortasında // px: Mortimer muhafızlarla aynı boyda (13 Eki, Caner)
-  // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (dikdörtgen olsaydı balkon zemini karakterleri düz keserdi)
-  railPoly: [[0.08, 0.478], [0.11, 0.486], [0.2, 0.5], [0.3, 0.516], [0.37, 0.526], [0.4, 0.546], [0.45, 0.553], [0.5, 0.555], [0.55, 0.551], [0.585, 0.538],
-    [0.65, 0.551], [0.75, 0.564], [0.85, 0.568], [0.9, 0.562], [0.95, 0.528], [0.98, 0.528], [0.98, 0.64], [0.08, 0.64]],
-  guards: [], gpx: 128, // 15 Eki (Caner): balkon muhafızları kalktı; yerlerinde kale yükseltmesiyle gelen iskelet okçular
-  archers: [[0.8, 0.578, -1], [0.24, 0.516, 1]], apx: 105 }; // 15 Eki: okçular %30 küçük (Caner)
+// 13 Eki (Caner): kale sıfırdan (ham/nm_kale_v3.jpg, varliklar/kale_v3_isle.py): boynuzlu kafatası kule, kafatası ağzı kapı, ortada yarım daire
+// balkon (Mortimer), iki yan kanat balkonda okçular. Kesirler castle_keep_1 görseline göre (ızgarayla ölçüldü).
+const KEEP = { w: 184, gate: [0.455, 0.845], at: [0.485, 0.552], rail: [0.36, 0.53, 0.62, 0.61], px: 122,
+  // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (Mortimer ve okçuların ayakları korkuluğun ardında)
+  railPoly: [[0.1, 0.46], [0.13, 0.47], [0.2, 0.5], [0.28, 0.518], [0.33, 0.535], [0.37, 0.548], [0.42, 0.56], [0.48, 0.566], [0.54, 0.562], [0.58, 0.552],
+    [0.62, 0.556], [0.7, 0.574], [0.8, 0.584], [0.88, 0.584], [0.93, 0.57], [0.97, 0.548], [0.97, 0.63], [0.1, 0.63]],
+  guards: [], gpx: 128,
+  archers: [[0.8, 0.566, -1], [0.2, 0.488, 1]], apx: 105 };
 const isKeep = (im) => im && [1, 2, 3, 4].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
   if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
@@ -11895,7 +11897,9 @@ function drawCastle() {
   if (im) {
     const cp = castlePlace(c.x, c.y, im);
     ctx.save(); ctx.translate(cp.x + sh, cp.y);
-    drawSprite(ctx, im, 0, 0, cp.w);
+    const IA = im === spr('castle_keep_1') && spr('castle_keep_1_idle') && ANIM_META.castle_keep_1_idle; // 13 Eki: Veo idle döngüsü (alev, pencere, dal) yalnız hasarsız kalede
+    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw; ctx.drawImage(spr('castle_keep_1_idle'), fi * IA.fw, 0, IA.fw, IA.fh, -cp.w / 2, -h, cp.w, h); }
+    else drawSprite(ctx, im, 0, 0, cp.w);
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
     drawCastleArchers();
@@ -11963,10 +11967,10 @@ function winCol(i) {
   return A.map((v, j) => Math.round(lerp(v, B[j], k))).join(',');
 }
 // heybetli kalenin ışıkları: iki mangalda kızıl ruh ateşi (11 Eki: görsel de mor/kızıl, varliklar/kale_renk.py), pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
-const KEEP_FX = {
-  fire: [[0.25, 0.71], [0.6, 0.77]], roof: [[0.276, 0.275], [0.8, 0.345]], eyes: [[0.335, 0.662], [0.445, 0.662]], // 13 Eki: geniş balkonlu kale
-  win: [[0.505, 0.355, 2.2], [0.5, 0.245, 0.8], [0.63, 0.245, 0.8], [0.265, 0.455, 1], [0.36, 0.485, 0.8], [0.4, 0.485, 0.8],
-    [0.72, 0.495, 1], [0.8, 0.5, 0.8], [0.625, 0.515, 0.8]],
+const KEEP_FX = { // 13 Eki: yeni kale (yeşil alevli mangallar, mor/yeşil pencereler; 4. öğe pencerenin rengi)
+  fire: [[0.255, 0.76], [0.6, 0.79]], green: true, roof: [[0.27, 0.32], [0.72, 0.36]], eyes: [[0.39, 0.688], [0.505, 0.692]],
+  win: [[0.5, 0.36, 2.2, '200,90,255'], [0.5, 0.25, 0.5, '110,255,120'], [0.625, 0.25, 0.5, '200,90,255'], [0.26, 0.33, 1, '200,90,255'], [0.26, 0.455, 1, '110,255,120'],
+    [0.36, 0.48, 0.8, '110,255,120'], [0.405, 0.48, 0.8, '110,255,120'], [0.72, 0.37, 1, '110,255,120'], [0.72, 0.5, 1, '200,90,255'], [0.8, 0.5, 0.8, '110,255,120'], [0.62, 0.515, 0.8, '110,255,120']],
   // 11 Eki: hasar evrelerinin dumanı ve çatı yangını görselden silindi, kodla canlı (Caner: duman hareketsizdi).
   // smoke: [x, y, kalınlık] dumanın çıktığı yer; burn: [x, y, boy] çatıdaki yangın. Evre başına (castle_keep_N).
   dmg: {
@@ -11992,13 +11996,15 @@ function drawKeepLights(cp, h, sh, burning) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const [i, f] of KEEP_FX.win.entries()) {
     const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
-    glow(ctx, x, y, 22 * s * f[2], winCol(i), 0.15 * k + 0.05);
+    glow(ctx, x, y, 22 * s * f[2], f[3] || winCol(i), 0.15 * k + 0.05);
   }
-  for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '255,60,100', 0.3 + 0.2 * Math.sin(time * 2)); }
+  for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, KEEP_FX.green ? '110,255,130' : '255,60,100', 0.3 + 0.2 * Math.sin(time * 2)); }
+  const vid = !burning && !!spr('castle_keep_1_idle'); // Veo döngüsünde alevler videoda: kodla yalnız ışık
   for (const [i, f] of KEEP_FX.fire.entries()) {
     const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 9 + i * 2) * Math.sin(time * 5.3 + i);
-    glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, '230,40,90', 0.32 + 0.12 * k);
-    for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, '255,225,235', '225,40,100');
+    const G2 = KEEP_FX.green; // yeni kalenin mangalları yeşil alevli
+    glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, G2 ? '80,255,110' : '230,40,90', 0.32 + 0.12 * k);
+    if (!vid) for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, G2 ? '230,255,220' : '255,225,235', G2 ? '60,220,90' : '225,40,100');
     if (Math.random() < 0.05 * speed) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-4, 4), y: y - 24 * s, vx: rand(-6, 6), vy: rand(-30, -16), col: i % 2 ? '200,80,255' : '255,70,110', s0: rand(1, 1.8), s1: 0.2, life: rand(0.6, 1.1), a: 0.9 });
   }
   const D = KEEP_FX.dmg[burning] || null; // burning: evre numarası (2..4) ya da yok
