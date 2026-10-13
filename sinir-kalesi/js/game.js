@@ -4736,13 +4736,13 @@ const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', '
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
 const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
 const SPELL_R = 24 * 1.2 * UI_K, // 13 Eki (Caner): büyü düğmeleri %20 büyük
-      SPELL_STEP = 2 * SPELL_R + 10 * UI_GAP;
+      SPELL_STEP = 2 * SPELL_R + 20 * UI_GAP; // 13 Eki (Caner): düğme arası 2 kat
 // 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
 // 13 Eki (Caner): yanlış dokunmasın diye komutan grubu (portre + gücü) solda bir arada, geniş boşluk ve kemik ayraçtan sonra Mortimer'ın büyüleri
-const ULT_GAP = 40 * UI_GAP;
+const ULT_GAP = 46 * UI_GAP;
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
 const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, slot = i >= n ? i - n : nu + i, gap = i < n && nu ? ULT_GAP : 0;
-  return { x: EDGE.l + 18 + 2 * 28 * UI_K + 16 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
+  return { x: EDGE.l + 18 + 2 * 28 * UI_K + 26 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
 const hudLeft = () => Math.max(...spellIds().map((_, i) => spellBtn(i).x)) + SPELL_R + 8;
 // dokunulan büyü düğmesi: geniş dokunma alanları komşuyla kesişirse en yakın düğme kazanır
@@ -11571,9 +11571,8 @@ function drawHud() {
     ctx.restore();
   });
   { const n = necroCount(); if (n && n < spellIds().length) { // komutan gücü | büyüler ayracı: kemik çubuk
-    const a = spellBtn(spellIds().length - 1), c = spellBtn(0), mx = (a.x + a.r + c.x - c.r) / 2, y0 = a.y - a.r * 0.8, y1 = a.y + a.r * 0.8;
-    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(10,6,18,0.8)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(mx, y0); ctx.lineTo(mx, y1); ctx.stroke();
-    ctx.strokeStyle = '#d8ccb0'; ctx.lineWidth = 2.5; ctx.stroke(); circle(mx, y0, 3, '#d8ccb0', '#0a0612', 1); circle(mx, y1, 3, '#d8ccb0', '#0a0612', 1); ctx.restore();
+    const a = spellBtn(spellIds().length - 1), c = spellBtn(0);
+    drawBoneDivider((a.x + a.r + c.x - c.r) / 2, a.y, a.r * 1.05);
   } }
 
   drawWaveButtons();
@@ -14097,6 +14096,21 @@ function necroPlayButton(key, x, y, w, h, label, fn, appear) {
   }
   ctx.restore();
   if (fn) buttons.push({ key, x: x - w / 2, y: y - h / 2 - 12, w, h: h + 20, fn });
+}
+// 13 Eki (Caner): komutan grubu ile Mortimer'ın büyüleri arasındaki ayraç: dikey kemik (topuzlu uçlar) ortasında yeşil gözlü kafatası
+function drawBoneDivider(x, y, h) {
+  const w = 3.2, kr = 4.6, kx = 3.4, y0 = y - h + kr, y1 = y + h - kr;
+  const shape = () => { ctx.beginPath(); ctx.rect(x - w, y0, 2 * w, y1 - y0);
+    for (const yy of [y0, y1]) for (const s of [-1, 1]) { ctx.moveTo(x + s * kx + kr, yy); ctx.arc(x + s * kx, yy, kr, 0, Math.PI * 2); } };
+  ctx.save();
+  ctx.translate(0, 3); shape(); ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fill(); ctx.translate(0, -3); // gölge
+  shape(); ctx.lineJoin = 'round'; ctx.strokeStyle = '#140c18'; ctx.lineWidth = 4; ctx.stroke();
+  const g = ctx.createLinearGradient(x - kx - kr, 0, x + kx + kr, 0); g.addColorStop(0, '#fff6dc'); g.addColorStop(0.55, '#d8ccac'); g.addColorStop(1, '#8a7c62');
+  ctx.fillStyle = g; shape(); ctx.fill();
+  ctx.strokeStyle = 'rgba(90,70,50,0.55)'; ctx.lineWidth = 1; ctx.beginPath(); // kemik çatlakları
+  ctx.moveTo(x - 1.5, y - h * 0.62); ctx.lineTo(x + 1, y - h * 0.52); ctx.lineTo(x - 0.5, y - h * 0.44); ctx.moveTo(x + 1.2, y + h * 0.5); ctx.lineTo(x - 1, y + h * 0.6); ctx.stroke();
+  circle(x, y + 1, 11.5, '#140c18'); drawSkullIcon(x, y + 1, 12.5);
+  ctx.restore();
 }
 function drawSkullIcon(x, y, r) {
   ctx.save(); ctx.translate(x, y);
