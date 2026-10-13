@@ -14897,9 +14897,9 @@ function drawFlyingCrow(x, y, dir, ph) {
   ctx.restore();
 }
 // harita canlılığı: yolda yürüyen lejyon devriyesi, uçan kargalar, mezarlıkta ruh ışıkları
-const MAPFX = { patrol: [], crows: [], nextPatrol: 0, nextCrow: 2, bats: [], nextBats: 9, chase: null, nextChase: 6, fogY: null };
+const MAPFX = { cat: null, nextCat: 8, frogs: [], nextFrog: 3, spiders: [], nextSpider: 5, patrol: [], crows: [], nextPatrol: 0, nextCrow: 2, bats: [], nextBats: 9, chase: null, nextChase: 6, fogY: null };
 // 15 Eki (Caner): haritaya hava katan seyrek ayrıntılar: ara sıra yarasa sürüsü geçer, yerde hayvanlar birbirini kovalar. AMB: aralıklar (sn)
-const AMB = { bats: [16, 28], chase: [20, 36] };
+const AMB = { bats: [16, 28], chase: [20, 36], cat: [18, 30], frog: [9, 16], spider: [12, 22] }; // 14 Eki: kedi, kurbağa, örümcek
 let mapFogC = null;
 // Sis perdesi (11 Eki, Caner; Kingdom Rush / Bloons haritaları gibi): bitirilen bölümler, sıradaki ve ondan sonraki FOG2.ahead bölüm
 // (kilitli) görünür; ötesi (yol, zemin, işaretler) tamamen karanlıkta. Yeni bölüm açılınca sis o bölümün çevresinden çekilir,
@@ -14996,7 +14996,7 @@ function drawMapFog2(E, ep, road, X) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 2.6, // 15 Eki: 2,6 fazla yakın bulunup 2 yapılmıştı; 13 Eki (Caner): %30 daha yakın istendi → 2,6
+const MAPCAM = { z: 2.86, /* 14 Eki (Caner): %10 daha yakın */ // 15 Eki: 2,6 fazla yakın bulunup 2 yapılmıştı; 13 Eki (Caner): %30 daha yakın istendi → 2,6
   tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 100, fric: 7, vmax: 1400, padX: 70, padY: 40 };
 // 15 Eki (Caner): yolun dışındaki boş alanlara gidilmez: sınır = yol, bölüm işaretleri ve şapelin kutusu + pay (ekranda MAPCAM.padX / üst-alt çubuk + padY)
 function mapRoadBox(E) {
@@ -15036,15 +15036,15 @@ function drawRegionMap(E, ep, st) {
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
   const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
-  if (time > MAPFX.nextPatrol) { MAPFX.nextPatrol = time + 9; for (let i = 0; i < 4; i++) MAPFX.patrol.push({ d: -i * 15, off: (i % 2 ? 4 : -4), seed: Math.random() * 9 }); }
+  if (time > MAPFX.nextPatrol) { MAPFX.nextPatrol = time + 9; for (let i = 0; i < 4; i++) MAPFX.patrol.push({ d: -i * 8, off: (i % 2 ? 2 : -2), seed: Math.random() * 9 }); } // 14 Eki: askerler %50 ufak, sık dizilir
   const im = spr('enemy_legion');
   MAPFX.patrol = MAPFX.patrol.filter(u => u.d < stop + 30);
   for (const u of MAPFX.patrol) {
-    u.d += dt * 16;
+    u.d += dt * 11;
     if (u.d < 0 || !im) continue;
     const q = pathPos(road, u.d, u.off), a = clamp(Math.min(u.d / 20, (stop + 30 - u.d) / 30), 0, 1);
     ctx.save(); ctx.globalAlpha = a;
-    drawUnit('enemy_legion', im, q.x, q.y, q.dx >= 0 ? 1 : -1, { h: 17, phase: (time + u.seed) * 7, walking: true, fly: 0, seed: u.seed });
+    drawUnit('enemy_legion', im, q.x, q.y, q.dx >= 0 ? 1 : -1, { h: 8.5, phase: (time + u.seed) * 10, walking: true, fly: 0, seed: u.seed });
     ctx.restore();
   }
   // şapel (haritada biraz büyük) ve balkonda kuru kafalı Mortimer: çay içer, arkasında ruh ışığı
@@ -15098,13 +15098,7 @@ function drawRegionMap(E, ep, st) {
     glow(ctx, x, y, 7, i < 5 ? '140,255,170' : '140,190,255', 0.5 * Math.sin(ph * Math.PI));
   }
   ctx.restore();
-  // kargalar: arada bir ekranı kanat çırparak geçer
-  if (time > MAPFX.nextCrow) { MAPFX.nextCrow = time + rand(4, 8); const l = Math.random() < 0.5; MAPFX.crows.push({ x: l ? V[0] - 30 : V[2] + 30, y: V[1] + vh * rand(0.2, 0.7), v: (l ? 1 : -1) * rand(70, 100) / Math.max(1, z * 0.6), ph: rand(0, 6) }); }
-  MAPFX.crows = MAPFX.crows.filter(c => c.x > V[0] - 80 && c.x < V[2] + 80);
-  for (const c of MAPFX.crows) {
-    c.x += c.v * dt; c.y += Math.sin(time * 2 + c.ph) * 0.3;
-    ctx.save(); ctx.translate(c.x, c.y); ctx.scale(0.75, 0.75); drawFlyingCrow(0, 0, c.v > 0 ? 1 : -1, time * 9 + c.ph); ctx.restore(); // 15 Eki: haritada karga daha ufak
-  }
+  // 14 Eki (Caner): uçan kargalar kaldırıldı
   mapAmbient(E, V, dt);
 }
 // yarasa: kısa gövde, hızlı çırpan zar kanatlar, kanat uçlarında parmak kemikleri; zikzaklı uçar
@@ -15155,6 +15149,52 @@ function mapAmbient(E, V, dt) {
     drawRat(C.x - dir * 16, C.y + Math.sin((C.t - 0.3) * 3 + C.wob) * 10, dir, time * 30 + 1, 1.15);
     if (C.x < V[0] - 80 || C.x > V[2] + 80) MAPFX.chase = null;
   }
+  // 14 Eki (Caner: haritaya birkaç ufak hayvan): kara kedi ağır ağır yürür, kurbağa sıçrar, örümcek ağından iner çıkar
+  const lo = Math.max(V[1] + vh * 0.3, MAPFX.fogY != null ? MAPFX.fogY + 60 : -1e9), hi = V[3] - vh * 0.12;
+  if (!MAPFX.cat && time > MAPFX.nextCat && hi > lo) { MAPFX.nextCat = time + rand(AMB.cat[0], AMB.cat[1]); const l = Math.random() < 0.5; MAPFX.cat = { x: l ? V[0] - 20 : V[2] + 20, y: rand(lo, hi), v: (l ? 1 : -1) * rand(14, 20), sit: rand(2, 5), t: 0 }; }
+  const K = MAPFX.cat;
+  if (K) { K.t += dt; const sitting = K.t > K.sit && K.t < K.sit + 2.5; if (!sitting) K.x += K.v * dt; drawCat(K.x, K.y, K.v > 0 ? 1 : -1, time * 8, 0.9, sitting); if (K.x < V[0] - 40 || K.x > V[2] + 40) MAPFX.cat = null; }
+  if (time > MAPFX.nextFrog && hi > lo) { MAPFX.nextFrog = time + rand(AMB.frog[0], AMB.frog[1]); MAPFX.frogs.push({ x: V[0] + vw * rand(0.15, 0.85), y: rand(lo, hi), dir: Math.random() < 0.5 ? 1 : -1, t: 0, hops: 3 + Math.floor(Math.random() * 3) }); }
+  MAPFX.frogs = MAPFX.frogs.filter(f => f.t < f.hops * 0.9 + 0.6);
+  for (const f of MAPFX.frogs) { f.t += dt; const hop = (f.t % 0.9) / 0.9, inAir = hop < 0.45 && f.t < f.hops * 0.9; if (inAir) f.x += f.dir * 26 * dt;
+    const a = Math.min(1, f.t / 0.3, (f.hops * 0.9 + 0.6 - f.t) / 0.4); ctx.save(); ctx.globalAlpha = a; drawFrog(f.x, f.y - (inAir ? Math.sin(hop / 0.45 * Math.PI) * 5 : 0), f.dir, inAir, 0.9); ctx.restore(); }
+  if (time > MAPFX.nextSpider) { MAPFX.nextSpider = time + rand(AMB.spider[0], AMB.spider[1]); MAPFX.spiders.push({ x: V[0] + vw * rand(0.1, 0.9), y0: V[1] + vh * rand(0.08, 0.5), t: 0, len: rand(16, 30) }); }
+  MAPFX.spiders = MAPFX.spiders.filter(s => s.t < 6);
+  for (const s of MAPFX.spiders) { s.t += dt; const k = s.t < 1.5 ? s.t / 1.5 : s.t < 4.5 ? 1 : (6 - s.t) / 1.5, y = s.y0 + s.len * k + (k === 1 ? Math.sin(time * 2 + s.x) * 1.5 : 0);
+    ctx.save(); ctx.globalAlpha = Math.min(1, s.t / 0.4, (6 - s.t) / 0.4); ctx.strokeStyle = 'rgba(230,230,240,0.45)'; ctx.lineWidth = 0.4; ctx.beginPath(); ctx.moveTo(s.x, s.y0); ctx.lineTo(s.x, y); ctx.stroke(); drawSpider(s.x, y, time * 6 + s.x, 0.8); ctx.restore(); }
+}
+// kara kedi: kıvrık kuyruk, sivri kulaklar, yeşil gözler; oturunca kuyruğunu sallar
+function drawCat(x, y, dir, ph, s, sit) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir * s, s);
+  ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(0, 0.5, 5, 1.2, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#120c14'; ctx.strokeStyle = '#120c14'; ctx.lineCap = 'round';
+  ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(-3.8, sit ? -1 : -3); ctx.quadraticCurveTo(-7, sit ? -2 : -5 + Math.sin(ph * 0.5) * 1.5, -6 + Math.sin(ph * 0.4), sit ? -6 + Math.sin(time * 3) : -8); ctx.stroke(); // kuyruk
+  if (sit) { ctx.beginPath(); ctx.ellipse(-0.5, -2.6, 3, 2.8, 0, 0, Math.PI * 2); ctx.fill(); }
+  else { ctx.beginPath(); ctx.ellipse(-0.3, -3.2, 4, 1.8, 0, 0, Math.PI * 2); ctx.fill(); for (const k of [-2.8, -1.8, 1.6, 2.6]) { const o = Math.sin(ph + k) * 1.1; ctx.fillRect(k + o * 0.4, -2, 0.7, 2); } }
+  const hx = sit ? 1.6 : 3.6, hy = sit ? -5.6 : -4.4;
+  ctx.beginPath(); ctx.arc(hx, hy, 1.7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(hx - 1.4, hy - 0.8); ctx.lineTo(hx - 1, hy - 2.9); ctx.lineTo(hx - 0.1, hy - 1.4); ctx.moveTo(hx + 0.2, hy - 1.4); ctx.lineTo(hx + 1, hy - 2.9); ctx.lineTo(hx + 1.5, hy - 0.8); ctx.fill(); // kulaklar
+  ctx.fillStyle = '#9fff6a'; ctx.fillRect(hx + 0.2, hy - 0.5, 0.5, 0.5); ctx.fillRect(hx + 1, hy - 0.5, 0.5, 0.5); // gözler
+  ctx.restore();
+}
+// kurbağa: bataklık yeşili, sıçrarken bacakları açılır
+function drawFrog(x, y, dir, air, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir * s, s);
+  ctx.fillStyle = '#3e6a2a'; ctx.strokeStyle = '#1a2a10'; ctx.lineWidth = 0.4;
+  if (air) { ctx.beginPath(); ctx.moveTo(-2, -1); ctx.lineTo(-5, 0.5); ctx.lineTo(-4, -0.5); ctx.closePath(); ctx.fill(); }
+  ctx.beginPath(); ctx.ellipse(0, -1.4, 2.6, 1.6, air ? -0.3 : 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#5a8a3a'; ctx.beginPath(); ctx.arc(1.4, -2.7, 0.8, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffe27a'; ctx.fillRect(1.3, -2.9, 0.5, 0.5);
+  if (!air) { ctx.fillStyle = '#2e5220'; ctx.beginPath(); ctx.ellipse(-1.6, -0.3, 1.3, 0.6, 0, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
+// örümcek: sekiz ince bacak, kıpırdar
+function drawSpider(x, y, ph, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.strokeStyle = '#140c14'; ctx.lineWidth = 0.5;
+  for (let i = 0; i < 4; i++) for (const sd of [-1, 1]) { const a = (i - 1.5) * 0.45 + Math.sin(ph + i) * 0.12; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(sd * 2.2 * Math.cos(a), 1.6 * Math.sin(a) - 1); ctx.lineTo(sd * 3.4 * Math.cos(a), 2.2 * Math.sin(a) + 1); ctx.stroke(); }
+  ctx.fillStyle = '#1a101a'; ctx.beginPath(); ctx.ellipse(0, 0.6, 1.4, 1.7, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(0, -1, 0.9, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#c0203a'; ctx.fillRect(-0.4, 0.4, 0.8, 0.8); // sırtında kızıl leke
+  ctx.restore();
 }
 
 let mapNote = null;
