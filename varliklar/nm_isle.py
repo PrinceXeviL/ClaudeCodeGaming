@@ -53,7 +53,8 @@ SHEETS = [
     ('nm_komutanlar_2.jpg', ['hero_spartacus', 'hero_leonidas'], 'unit'),
     ('nm_merlin.jpg', ['hero_merlin'], 'unit'),
     ('nm_robin.jpg', ['hero_robin'], 'unit'),
-    ('nm_ruh_kurdu_1.jpg', ['pet_wolf_1'], 'unit'),  # 16 Eki: Robin'in Ruh Kurdu (1. form)  # 16 Eki: Robin, Ölü Orman'ın Hayaleti (okçu, suikastçı, druid; sissiz çizim)  # 15 Eki: Merlin, Ölüm Büyücüsü (boynuz taçlı lich, ruh küreli asa)
+    ('nm_ruh_kurdu_1.jpg', ['pet_wolf_1'], 'unit'),  # 16 Eki: Robin'in Ruh Kurdu (1. form)
+    ('nm_ruh_kurdu_2.jpg', ['pet_wolf_2'], 'unit'),  # 16 Eki: Kadim Ruh Kurdu (2. form, Robin 6. seviye)  # 16 Eki: Robin, Ölü Orman'ın Hayaleti (okçu, suikastçı, druid; sissiz çizim)  # 15 Eki: Merlin, Ölüm Büyücüsü (boynuz taçlı lich, ruh küreli asa)
     ('nm_golemler.jpg', ['unit_bonegiant', 'unit_corpsegolem'], 'unit'),
     ('nm_gulyabani.jpg', ['unit_gulyabani', 'unit_gulyabani_lunge'], 'unit'),  # 10 Eki: mahzen kapağından çıkan gulyabani (duruş, saldırı pozu)  # 10 Eki: Kemik Devi (Mezarlık 4. kademe), Ceset Golemi (5. büyü)  # 10 Eki: düellolarda yenilip Mortimer'a katılan komutanlar
     ('nm_iskelet_okcu.jpg', ['unit_skel_6', 'unit_skel_7', 'unit_skel_8'], 'unit'),  # Mahzen okçu yolu, kademe 1-3

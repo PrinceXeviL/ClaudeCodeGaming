@@ -4202,6 +4202,7 @@ function updateSoldier(s, dt) {
           if (s.learned.bleed) { t.bleedDps = Math.max(t.bleedT > 0 ? t.bleedDps : 0, 6 + s.lvl * 2); t.bleedT = 3; }
         }
         hitBy = s.hero ? 'hero' : s.minion ? 'minion' : 'melee'; damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee');
+        if (s.pet && s.pet.stun && !t.dead && !t.def.chief && Math.random() < 0.35) stunEnemy(t, s.pet.stun); // Kadim Ruh Kurdu: ısırık bazen sersemletir
         if (s.tower && s.tower.imbue && !s.hero) applyImbue(t, s.tower.imbue, 'melee'); // silah büyüsü
         if (s.plagueZ && !t.dead) poisonEnemy(t, s.plagueZ, 3); // veba zombisi: vuruşu zehirler
         if (s.aoe) { // iri birim: savurması çevresindeki herkese işler
@@ -4823,7 +4824,7 @@ function separateUnits(dt) {
 // sahibinin yanında yeniden belirir. Sahibi PET.lvl2. seviyeye ulaşınca 2. forma geçer (pet_wolf_2 görseli gelince).
 const PET = { lvl2: 6, respawn: 12, wolf: [
   { img: 'pet_wolf_1', name: 'Ruh Kurdu', hp: 220, dmg: [10, 16], rate: 0.9, h: 28 },
-  { img: 'pet_wolf_2', name: 'Kadim Ruh Kurdu', hp: 420, dmg: [18, 28], rate: 0.8, h: 32, stun: 0.4 }] };
+  { img: 'pet_wolf_2', name: 'Kadim Ruh Kurdu', hp: 420, dmg: [18, 28], rate: 0.8, h: 37, stun: 0.4 }] };
 function updatePets(dt) {
   for (const h of G.heroes) {
     if (!h.def.pet) continue;
