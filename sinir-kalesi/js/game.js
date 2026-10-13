@@ -4143,20 +4143,20 @@ function updateSoldier(s, dt) {
     s.target = pv; if (!pv.blocker && !pv.def.noblock) pv.blocker = s;
   }
   const e = s.target, lim = e && e === s.provoker ? PROVOKE.r + 20 : s.engage + (s.leash ?? 40);
-  if (e && (e.dead || e.under || e.reviveT > 0 || (s.zombie ? dist(e.x, e.y, s.x, s.y) > ZOMBIE.drop : dist(e.x, e.y, home.x, home.y) > lim) || s.moving)) {
+  if (e && (e.dead || e.under || e.reviveT > 0 || (!s.hero && !inReach(e)) || (s.zombie ? dist(e.x, e.y, s.x, s.y) > ZOMBIE.drop : dist(e.x, e.y, home.x, home.y) > lim) || s.moving)) {
     if (e.blocker === s) e.blocker = null;
     s.target = null;
   }
   // yardımcı (düşmanı başkası durdurmuş): menzilde kimsenin durdurmadığı düşman varsa ona geçer; her iskelet ayrı birini tutsun
   if (s.target && !s.moving && s.target.blocker && s.target.blocker !== s && !s.hero && (s.retgT = (s.retgT || 0) - dt) <= 0) {
     s.retgT = 0.4;
-    const free = G.enemies.find(o => !o.dead && !o.blocker && !o.def.flying && !o.def.noblock && !o.under && !(o.reviveT > 0) && o.siege === undefined && dist(o.x, o.y, home.x, home.y) <= s.engage);
+    const free = G.enemies.find(o => !o.dead && !o.blocker && !o.def.flying && !o.def.noblock && !o.under && !(o.reviveT > 0) && o.siege === undefined && (s.hero || inReach(o)) && dist(o.x, o.y, home.x, home.y) <= s.engage);
     if (free) { s.target = free; free.blocker = s; }
   }
   if (!s.target && !s.moving) {
     let best = null, bestScore = 1e9;
     for (const o of G.enemies) {
-      if (o.dead || o.def.flying || o.under || o.reviveT > 0) continue; // uçmayan her şeye saldırır (araba gibi durdurulamayanlar dahil)
+      if (o.dead || o.def.flying || o.under || o.reviveT > 0 || (!s.hero && !inReach(o))) continue; // uçmayan her şeye saldırır (araba gibi durdurulamayanlar dahil); girişteki düşmana gitmez
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
       const busy = G.soldiers.reduce((n, x) => n + (x !== s && !x.dead && x.target === o ? 1 : 0), 0); // ona zaten saldıranlar
@@ -4792,10 +4792,14 @@ function separateUnits(dt) {
     a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push;
   }
 }
+// 16 Eki (Caner: dirilenler ve girişe yakın iskeletler kadrajdan çıkıp düşmanın çıktığı yerde savaşıyordu): askerler düşmanın yola girdiği
+// yerden ilk REACH birimdeki (ve ekran dışındaki) düşmana saldırmaz, oraya yürümez. Komutan serbest (oyuncu yönlendirir).
+const SOLDIER_REACH = 110;
+const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
 function zombieHunt(s) {
   let best = null, bd = 1e9;
   for (const o of G.enemies) {
-    if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0) continue;
+    if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o)) continue;
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
@@ -4805,7 +4809,7 @@ function zombieHunt(s) {
   const me = nearestOnPaths(G.paths, s.x, s.y);
   s.zlane ??= rand(-1, 1) * ZOMBIE.lane; // 13 Eki: her zombi yolun kendi şeridinden yürür (üst üste binmesin)
   if (me.d > 8 + Math.abs(s.zlane)) { const q0 = pathPos(me.p, me.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return; }
-  const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, me.along + clamp(tg.along - me.along, -30, 30), s.zlane);
+  const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, Math.max(SOLDIER_REACH, me.along + clamp(tg.along - me.along, -30, 30)), s.zlane); // girişe yürümez
   s.rx = q.x; s.ry = q.y;
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
