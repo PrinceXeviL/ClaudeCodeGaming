@@ -746,7 +746,7 @@ HEROES.bathory = { name: 'Báthory', role: 'Kan Kontesi · Kan büyüsü', sprit
     { id: 'thirst', name: 'Kana Susamışlık', passive: true, desc: 'Kalıcı: kan okları %40 can çalar (normalde %20), +%15 hasar' },
   ] }] };
 Object.assign(HERO_ULT, {
-  bathory: { name: 'Kan Gölü', cd: 60, r: 72, dps: [26, 34], dur: 5, bloodpool: true,
+  bathory: { name: 'Kan Gölü', cd: 60, anim: 2.0, r: 72, dps: [26, 34], dur: 5, bloodpool: true,
     desc: 'Seçtiğin yerde 5 sn kaynayan bir kan gölü açılır: düşmanların canını emer ve yavaşlatır, içindeki iskeletler iyileşir', short: 'Can emen, iskeletleri iyileştiren kan gölü' },
   robin: { name: 'Ok Yağmuru', cd: 55, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
     desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
