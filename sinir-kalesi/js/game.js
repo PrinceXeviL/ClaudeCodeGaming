@@ -25,11 +25,11 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle|run|cast|block)x?|castle_keep_\d_idle)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle|run|cast|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down))$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
-  if (paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir
+  if (!/^bubu_/.test(name) && paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir (Bubu doğrudan: boyacı kuyruğunda beklemesin)
   const im = new Image();
   im.src = 'img/' + LAZY[name] + (window.SURUM ? '?v=' + window.SURUM : '');
   (im.decode ? im.decode() : new Promise((ok, no) => { im.onload = ok; im.onerror = no; }))
@@ -1759,7 +1759,7 @@ function startLevel(idx, chal = null) {
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block']).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
 
-  keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
+  keep.add('castle_keep_1_idle'); if (idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
@@ -5332,6 +5332,7 @@ const MORT_LINES = {
   maxTower: ['İşte şimdi oldu.', 'Böyle bir kulem olsun isterdim. Dur, var.', 'Mimari harikası. Biraz da ürkütücü.'],
   heroDown: ['Kalk, uyuklama!', 'Ölmek mi? Bizde bu geçici.', 'Kısa bir mola. Hemen döner.'],
   clean: ['Tertemiz. Tek damla çay dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
+  bubu: ['Bubu! Mama vakti!', 'Aferin Bubu. Kim iyi solucan?', 'Bubu ısırmaz. Yutar.'],
   loot: ['Solarian vergisi... ters yönde.', 'İmparatorluğun parası. Artık benim.', 'Bu sikkede güneş var. Ne ironi.', 'Ölüler cüzdan taşımaz. Ben taşırım.', 'Bağışınız için teşekkürler, lejyoner.', 'Hazine bakanlığı: ben.'],
   rich: ['Altınlar mezara gömülmez. Bir şey kur!', 'Kese dolu, kuleler boş. Garip.', 'O altınla iki kule olur. Sadece diyorum.'],
   ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
@@ -5800,11 +5801,12 @@ function setupProps() {
   for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
   const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
   G.teaT = 0;
-  setupZoneItem();
+  setupZoneItem(); setupBubu();
 }
 function updateProps(dt) {
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
+  updateBubu(dt);
   for (const o of G.props || []) {
     o.t += dt;
     if (o.kind === 'crow') {
@@ -5815,7 +5817,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
-  if (tapZoneItem(x, y)) return true;
+  if (tapZoneItem(x, y) || tapBubu(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -5861,7 +5863,7 @@ function crowCaw() {
   }
 }
 function drawProps(air) {
-  if (!air) drawZoneItem();
+  if (!air) { drawZoneItem(); drawBubu(); }
   for (const o of G.props || []) {
     if (o.kind === 'crow') {
       const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
@@ -5919,6 +5921,68 @@ const ZONE_ITEM = {
   ossuary:   { id: 'bones', name: 'Kemik Totemi', sub: 'Totem patlar, kemik kıymıkları saçılır', r: 84, cd: 26 },
   bloodmoon: { id: 'altar', name: 'Kan Sunağı', sub: 'Düşmanların kanını emer, iskeletlerini iyileştirir', r: 96, cd: 30 },
 };
+// ----- Bubu (14 Eki, Caner): Mortimer'ın evcil mezar solucanı. Kale tarafında yol kenarındaki çukurda yaşar; dokununca topraktan fırlar,
+// yere dalıp toprağı patlatarak yoldaki düşmanlara vurur (hasar, sersemletme), bir süre kalkık bekler, gömülür, BUBU.cd sn dinlenir.
+// Görsel: Veo videosu (varliklar/bubu_isle.py): bubu_hole, bubu_atk (hit: vuruş karesi), bubu_idle, bubu_down. 4. bölümden itibaren.
+const BUBU = { from: 3, cd: 40, r: 92, dmg: [70, 95], stun: 1.6, h: 80, idle: 4 }; // h: kalkık solucanın boyu (dev görünsün)
+function setupBubu() {
+  G.bubu = null; if (!NECRO || G.idx < BUBU.from || !ANIM_META.bubu_atk) return;
+  const free = (x, y) => x > 50 && x < W - 50 && y > 110 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 38
+    && G.plots.every(p => dist(p.x, p.y, x, y) > 56) && dist(x, y, G.castle.x, G.castle.y - 40) > 95 && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
+    && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60) && !(G.zitem && dist(G.zitem.x, G.zitem.y, x, y) < 80);
+  for (const f of [0.8, 0.72, 0.86, 0.64, 0.9, 0.56]) for (const P of G.paths) {
+    const q = pathPos(P, P.total * f), L = Math.hypot(q.dx, q.dy) || 1;
+    for (const sd of [1, -1]) { const x = q.x - q.dy / L * 52 * sd, y = q.y + q.dx / L * 44 * sd; if (free(x, y)) { G.bubu = { x, y, st: 'hole', t: 0, cd: 8, face: x < q.x ? 1 : -1 }; ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(loadStrip);
+      if (!save.bubuSeen) { save.bubuSeen = 1; persist(); G.bubuIntro = true; } return; } } // şeritler baştan yüklensin (dokununca beklemesin)
+  }
+}
+function bubuFrame(name) { const F = ANIM_META[name]; if (!spr(name)) loadStrip(name); return F && spr(name) ? F : null; }
+function updateBubu(dt) {
+  const b = G.bubu; if (!b) return;
+  if (G.bubuIntro && !G.banner && !overlay) { G.bubuIntro = false; G.banner = { title: 'YENİ: BUBU', sub: "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin", t: 0, dur: 5 }; }
+  b.t += dt; if (b.st === 'hole' && b.cd > 0) b.cd -= dt;
+  const n = (k) => (ANIM_META[k] || { n: 1 }).n / 12;
+  if (b.st === 'atk') {
+    const F = ANIM_META.bubu_atk;
+    if (!b.hit && b.t >= F.hit / 12) { b.hit = true; bubuStrike(b); }
+    if (b.t >= n('bubu_atk')) { b.st = 'idle'; b.t = 0; }
+  } else if (b.st === 'idle' && b.t >= BUBU.idle) { b.st = 'down'; b.t = 0; sfx('fs_bone'); }
+  else if (b.st === 'down' && b.t >= n('bubu_down')) { b.st = 'hole'; b.t = 0; b.cd = BUBU.cd; }
+}
+function bubuStrike(b) {
+  const q = nearestOnPaths(G.paths, b.x, b.y), cx = (b.x + q.x) / 2, cy = (b.y + q.y) / 2;
+  for (const e of G.enemies) {
+    if (e.dead || e.under || e.def.flying || dist(e.x, e.y, cx, cy) > BUBU.r) continue;
+    damageEnemy(e, roll(BUBU.dmg), 'phys', false, 'blast'); if (!e.dead) stunEnemy(e, e.def.chief ? BUBU.stun * 0.4 : BUBU.stun);
+  }
+  for (let i = 0; i < 26; i++) { const a = rand(Math.PI * 1.05, Math.PI * 1.95), v = rand(80, 220);
+    emit(G.parts, { kind: 'chunk', x: cx + rand(-20, 20), y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 440, col: ['#5a4430', '#7a6448', '#e8dcc0', '#3a2a1e'][i % 4], s0: rand(2, 3.6), s1: 1.5, life: rand(0.6, 1), vr: rand(-12, 12), floor: cy + rand(-6, 10) }); }
+  G.effects.push({ kind: 'ring', x: cx, y: cy, r: BUBU.r, col: '150,255,110', t: 0, dur: 0.55 }); G.effects.push({ kind: 'dust', x: cx, y: cy, t: 0, dur: 0.9 });
+  shakeScreen(7, 0.5); sfx('stomp'); sfx('boom'); haptic('heavy');
+}
+function tapBubu(x, y) {
+  const b = G.bubu; if (!b || dist(x, y, b.x, b.y - 14) > 34) return false;
+  if (b.st !== 'hole') return true;
+  if (b.cd > 0) { floatText(b.x, b.y - 50, Math.ceil(b.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
+  b.st = 'atk'; b.t = 0; b.hit = false; floatText(b.x, b.y - 70, 'Bubu!', '#b8ff8a'); sfx('roar'); tipDone('bubu'); gaDesign('bubu');
+  if (!(save.cnt && save.cnt.bubu)) mortSay('bubu', true); cnt('bubu');
+  return true;
+}
+function drawBubu() {
+  const b = G.bubu; if (!b) return;
+  const name = b.st === 'hole' ? 'bubu_hole' : 'bubu_' + b.st, F = bubuFrame(name) || bubuFrame('bubu_hole'); if (!F) return;
+  const nm = bubuFrame(name) ? name : 'bubu_hole', fi = nm === 'bubu_hole' ? 0 : nm === 'bubu_idle' ? Math.floor(time * F.fps) % F.n : Math.min(F.n - 1, Math.floor(b.t * F.fps));
+  const ready = b.st === 'hole' && b.cd <= 0;
+  if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, b.x, b.y - 8, 36, '140,255,110', 0.18 + 0.12 * Math.sin(time * 4)); ctx.restore(); }
+  const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh;
+  ctx.save(); ctx.translate(b.x, b.y); ctx.scale(b.face, 1);
+  ctx.drawImage(spr(nm), fi * F.fw, 0, F.fw, F.fh, -fw * F.fx, -fh * (1 - F.base), fw, fh);
+  ctx.restore();
+  if (b.st === 'hole') {
+    if (!ready) { const k = 1 - b.cd / BUBU.cd; circle(b.x, b.y - 30, 8, 'rgba(20,12,24,0.75)', 'rgba(160,255,140,0.5)', 1.2); ctx.strokeStyle = '#a8ff8a'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(b.x, b.y - 30, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
+    else { const by = b.y - 32 + Math.sin(time * 4) * 2; circle(b.x, by, 9, 'rgba(26,12,22,0.9)', '#f2e6c8', 1.5); drawIcon('play', b.x + 0.5, by, 9, '#f2e6c8'); }
+  }
+}
 function setupZoneItem() {
   const Z = NECRO && ZONE_ITEM[G.lv.theme]; G.zitem = null; if (!Z) return;
   const free = (x, y) => x > 50 && x < W - 50 && y > 100 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 40
