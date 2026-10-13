@@ -526,7 +526,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('legion', 8, 1), W_('assassin', 2, 1.5, 6)], [W_('gladiator', 5, 1.1), W_('solarcher', 4, 1.4, 4)], [W_('assassin', 5, 1), W_('legion', 8, 0.9, 4)],
       [W_('legion', 10, 0.8), W_('gladiator', 4, 1.2, 6)], [W_('assassin', 6, 0.9), W_('solarcher', 6, 1, 5)], [W_('gladiator', 6, 1), W_('legion', 10, 0.8, 5)],
       [W_('assassin', 8, 0.8), W_('solarcher', 6, 1, 6), W_('legion', 8, 0.8, 10)], [W_('legion', 12, 0.7), W_('gladiator', 8, 0.9, 5), W_('assassin', 8, 0.8, 10)] ] },
-    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, hpMul: 0.72, bossT: 'shadowmaster', comic: 'bekci', waves: [
+    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, hpMul: 0.64, bossT: 'shadowmaster', comic: 'bekci', waves: [
       [W_('legion', 10, 0.9), W_('priest', 1, 1, 6)], [W_('heavy', 2, 2.4), W_('solarcher', 5, 1.2, 4)], [W_('assassin', 6, 1), W_('gladiator', 5, 1.1, 5)],
       [W_('priest', 2, 3), W_('legion', 10, 0.8, 3)], [W_('heavy', 3, 2.2), W_('assassin', 6, 0.9, 6)], [W_('gladiator', 8, 0.9), W_('priest', 2, 3, 6)],
       [W_('heavy', 4, 2), W_('solarcher', 8, 0.9, 4), W_('legion', 10, 0.7, 10)], [W_('assassin', 10, 0.7), W_('heavy', 4, 2, 5), W_('priest', 3, 2.4, 9), W_('gladiator', 8, 0.8, 12)] ] },
@@ -671,7 +671,7 @@ if (NECRO) {
   const TOTK2 = ADDN2.map((a, i) => 1 + a / (6 + Math.round(i / 19 * 6) + (i % 4 === 3 ? 2 : 0)));
   // 16 Eki (Caner: "bütün bölümleri botla oyna, dengesizlikleri düzelt"): tools/denge-botu2.js (gerçekçi oyuncu: yıldızlar, Büyü Kitabı, komutan puanı
   // harcanmış, kuleler yolu en çok gören yerlere, büyüler yerinde). Eski değerlerle 22, 25, 26, 28, 31, 35 kaybediliyor, 24, 34, 37 1-3 canla geçiliyordu.
-  const HPMUL2 = [3, 2.0, 1.955, 1.25, 0.55, 0.5, 0.445, 2.1, 1.7, 1.25, 2.1, 2.1, 2.215, 1.5, 0.95, 1.174, 0.85, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
+  const HPMUL2 = [2.5, 2.0, 1.6, 1.25, 0.55, 0.5, 0.445, 2.1, 1.7, 1.25, 2.1, 2.1, 1.85, 1.5, 0.95, 1.174, 0.85, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
