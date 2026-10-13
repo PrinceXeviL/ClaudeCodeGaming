@@ -192,7 +192,10 @@
 "Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "Заходи каждый день за новым подарком. Пропуск дня не сбрасывает серию.",
 "HEDİYEYİ AL": "ЗАБРАТЬ ПОДАРОК",
 "Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "Подарок получен! Предметы в боевой сумке. Возвращайся завтра!",
-"OTO": "АВТО"
+"OTO": "АВТО",
+"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Трупы там, где ты коснёшься, восстают гниющими мертвецами и сражаются за тебя, пока не падут · Труп крупного врага восстаёт сильнее (светящиеся красным) · Жрецы и фонари освящают трупы, их больше нельзя поднять",
+"+%25 can · +%25 hasar": "+25% здоровья · +25% урона",
+"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Духи преследуют врагов в области: те в ужасе бегут назад 3 с. Устойчивые к магии и боссы боятся меньше; машины не боятся, но кони колесниц пугаются и замедляются"
 },
 "tpl": [
 [

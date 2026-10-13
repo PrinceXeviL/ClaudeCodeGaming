@@ -192,7 +192,10 @@
 "Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "Ven cada día por un regalo nuevo. Si faltas un día, no se rompe la racha.",
 "HEDİYEYİ AL": "RECOGER REGALO",
 "Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "¡Regalo recogido! Los objetos están en tu bolsa de batalla. ¡Vuelve mañana!",
-"OTO": "AUTO"
+"OTO": "AUTO",
+"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Los cadáveres donde tocas se alzan como muertos podridos y luchan por ti hasta caer · El cadáver de un enemigo grande se alza más fuerte (los que brillan en rojo) · Sacerdotes y faroles bendicen los cadáveres y ya no se pueden alzar",
+"+%25 can · +%25 hasar": "+25 % vida · +25 % daño",
+"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Los espíritus persiguen a los enemigos del área: huyen aterrados durante 3 s. Los resistentes a la magia y los jefes temen menos; las máquinas no temen, pero los caballos de los carros se espantan y frenan"
 },
 "tpl": [
 [

@@ -4637,7 +4637,7 @@ const spellRank = (id) => grimRank(id);
 function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM, data.js)
   const S = NECRO_SPELLS[id], r = spellRank(id); if (!r) return S;
   const o = Object.assign({}, S), b = Math.min(r, 4), top = r >= 5;
-  if (id === 'nm_raise') { o.max = S.max + b; const k = 1 + 0.1 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k, dmg: S.minion.dmg.map(v => v * k * (top ? 1.25 : 1)), life: S.minion.life + (top ? 10 : 0) }); }
+  if (id === 'nm_raise') { o.max = S.max + b; const k = 1 + 0.1 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k * (top ? 1.25 : 1), dmg: S.minion.dmg.map(v => v * k * (top ? 1.25 : 1)) }); } // ömür sınırsız (ölene dek)
   if (id === 'nm_fear') { o.t = S.t + 0.3 * r; o.r = S.r * (1 + 0.08 * b); }
   if (id === 'nm_wall') { o.hp = S.hp * (1 + 0.15 * b + (top ? 0.4 : 0)); o.life = S.life + 0.75 * b + (top ? 2 : 0); }
   if (id === 'nm_burst') { o.dmg = S.dmg * (1 + 0.12 * b); o.r = S.r * (1 + 0.05 * b); o.blast = S.blast * (1 + 0.05 * b); o.stun = top ? 1 : 0; }
@@ -4718,7 +4718,8 @@ function castNecro(id, x, y) {
     let nScream = 0, nGhost = 0;
     for (const e of G.enemies) {
       if (e.dead || e.siege !== undefined || dist(e.x, e.y, x, y) > S.r) continue;
-      if (e.def.machine) continue; // makine korkmaz
+      // makine korkmaz; ama atlı arabanın atları ürker (15 Eki, Caner: 12-13. bölümde atlılar durdurulamıyordu): süre boyunca %55 yavaşlar
+      if (e.def.machine) { if (e.def.trample && !e.def.chief) { slowEnemy(e, 0.55, S.t); floatText(e.x, e.y - 30, 'Atlar ürktü!', '#d8a8ff'); } continue; }
       // büyü direnci korkuyu kısaltır; bosslar çok az etkilenir
       const k = e.def.chief ? 0.22 : clamp(1 - 0.8 * (e.def.mr || 0), 0.3, 1), t = S.t * k;
       if (t < 0.9) { floatText(e.x, e.y - 30, 'Direndi!', '#c8c8e8'); e.fearT = Math.max(e.fearT || 0, t); continue; }
