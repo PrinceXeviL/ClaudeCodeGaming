@@ -2522,7 +2522,8 @@ function killEnemy(e) {
   sfx('death');
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
-    x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
+    x: e.x, y: e.y, face: (e.face || 1) * (NECRO && Math.random() < 0.45 ? -1 : 1), fly: e.def.flying ? 26 : 0, t: 0, // 16 Eki: ölenler hep aynı yöne düşmesin
+    vr: rand(-0.1, 0.1), vs: rand(0.93, 1.07), blood: !e.def.machine && !e.def.ghost,
     dur: NECRO ? corpseStay() : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
     pw: corpsePower(e), str: (e.maxHp || e.def.hp) * (e.def.chief ? 3 : 1) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
@@ -2727,7 +2728,7 @@ function keepRemains(f) {
     if ((weak.str || 0) > st) return;
     weak.dur = weak.t + REMAINS.fade; weak.fading = true;
   }
-  G.effects.push({ kind: 'remains', name: f.name, rig: f.rig, h: f.h, x: f.x, y: f.y, face: f.face, fly: 0, flung: f.flung, t: 0, dur: REMAINS.keep, str: st });
+  G.effects.push({ kind: 'remains', name: f.name, rig: f.rig, h: f.h, x: f.x, y: f.y, face: f.face, fly: 0, flung: f.flung, t: 0, dur: REMAINS.keep, str: st, vr: f.vr, vs: f.vs, blood: f.blood });
 }
 function clearRemains() { // yeni dalga: kalıntılar ve yerdeki oklar söner
   for (const f of G.effects) if ((f.kind === 'remains' || f.kind === 'stuck' && f.ground && f.dur > STUCK.ground) && !f.fading) { f.dur = f.t + REMAINS.fade; f.fading = true; }
@@ -9288,10 +9289,15 @@ function drawCorpse(f) {
     ctx.save();
     const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78;
     ctx.globalAlpha = f.kind === 'remains' ? (f.fading ? clamp((f.dur - t) / REMAINS.fade, 0, 1) : 1) : NECRO && !f.fly ? 1 : 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1); // necro: ceset kalıntıya sönmeden geçer
-    if (f.kind === 'remains') { const F = ANIM_META[dk]; ctx.translate(f.x, f.y + 1); ctx.scale(f.face * (rig.flip ? -1 : 1), 1); drawFrame(spr(dk), F, F.n - 1, f.h || CHAR_H[f.name] || 20); ctx.restore(); return; }
+    // 16 Eki (Caner: cesetler yerde kötü duruyor): yere oturan gölge ve koyu kan lekesi (düştükçe yayılır), hafif açı ve boy farkı; eski kalıntı solup zemine karışır
+    const hh = (f.h || CHAR_H[f.name] || 20) * (f.vs || 1), lay = f.kind === 'remains' ? 1 : clamp(i / Math.max(1, F.n - 1), 0, 1);
+    { const a0 = ctx.globalAlpha; ctx.fillStyle = 'rgba(10,6,8,' + (0.24 * lay) + ')'; ctx.beginPath(); ctx.ellipse(f.x + f.face * hh * 0.06, f.y + 1, hh * (0.3 + 0.32 * lay), hh * 0.1, 0, 0, Math.PI * 2); ctx.fill();
+      if (f.blood && lay > 0.5) { const b = clamp((lay - 0.5) * 2, 0, 1) * Math.min(1, 0.5 + (f.t || 0) * 0.15); ctx.fillStyle = 'rgba(70,6,12,' + (0.38 * b) + ')'; ctx.beginPath(); ctx.ellipse(f.x - f.face * hh * 0.18, f.y + 2, hh * 0.32 * b, hh * 0.09 * b, 0.1, 0, Math.PI * 2); ctx.fill(); }
+      ctx.globalAlpha = a0; }
+    if (f.kind === 'remains') { const F = ANIM_META[dk]; ctx.globalAlpha *= 0.86; ctx.translate(f.x, f.y + 1); ctx.rotate(f.vr || 0); ctx.scale(f.face * (rig.flip ? -1 : 1), 1); drawFrame(spr(dk), F, F.n - 1, hh); ctx.restore(); return; }
     if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); }
-    ctx.translate(f.x, f.y + 1); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
-    drawFrame(spr(dk), F, i, f.h || CHAR_H[f.name] || 20);
+    ctx.translate(f.x, f.y + 1); ctx.rotate((f.vr || 0) * lay); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
+    drawFrame(spr(dk), F, i, hh);
     ctx.restore();
     return;
   }
