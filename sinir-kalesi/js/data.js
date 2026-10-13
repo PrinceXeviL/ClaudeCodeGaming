@@ -760,6 +760,25 @@ Object.assign(HERO_ULT, {
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
 HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin', 'robin', 'bathory');
+// 13 Eki (Caner): her komutanın 2 aktif gücü (savaşa yalnız biri götürülür, Komutanlar ekranında seçilir) ve kendi kendine kullandığı
+// 2 pasif yeteneği var. İkinci aktifler: HERO_ULT2 (kademe tablosu HERO_TREE.ult2), pasifler: HEROES[id].passives (ağaçta yalnız bunlar).
+const HERO_ULT2 = {
+  commander: { name: 'Kazık Ormanı', cd: 50, r: 66, dmg: [30, 42], stun: 1.2, bleed: 16, stakes: true,
+    desc: 'Seçtiğin yerde topraktan kara kazıklar fışkırır: ağır hasar, 1,2 sn sersemletme ve kanama', short: 'Alanda topraktan kazıklar: hasar, sersemletme, kanama' },
+  spartacus: { name: 'Arena Kükremesi', cd: 45, r: 84, dmg: [18, 26], stun: 1.5, scream: true, col: '255,170,90',
+    desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
+  leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
+    desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
+  merlin: { name: 'Ruh Bataklığı', cd: 55, anim: 1.8, r: 74, dps: [16, 24], dur: 6, soulpool: true,
+    desc: 'Seçtiğin yerde 6 sn mor ruh bataklığı açılır: düşmanlar %45 yavaşlar ve çürür', short: 'Yavaşlatan, çürüten ruh bataklığı' },
+  robin: { name: 'Kurt Uluması', cd: 45, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
+    desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
+  bathory: { name: 'Kan Yarasaları', cd: 50, r: 70, dps: [16, 22], dur: 3, slow: 0.35, heal: 0.4, n: 14, bats: true,
+    desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
+};
+// pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)
+const HERO_PASSIVES = { commander: ['whirl', 'iron'], spartacus: ['whirl', 'bash'], leonidas: ['bash', 'iron'], merlin: ['chainbolt', 'arcane'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
+for (const id in HERO_PASSIVES) if (HEROES[id]) HEROES[id].passives = HERO_PASSIVES[id];
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
   desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
   short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });
@@ -782,7 +801,7 @@ const GRIM = {
 };
 // Komutan yetenek ağacı (11 Eki): her seviyede 1 puan (1. seviyede de); yetenekler 5 kademe, komutan gücü 1→5 kademe. Kademe şu seviyede açılır:
 // 11 Eki (denge): her seviye 1 puan, 1. seviye dahil (komutan yeteneksiz başlamasın; ilk puanla bir yetenek seçilir)
-const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
+const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], ult2: [0, 3, 6, 10, 14, 18], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // ult2: ikinci aktif (13 Eki) // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 3, /* 13 Eki (Caner): 1. seviyede en çok 3 ölü, her kademe +1 (5. kademede 8) */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır

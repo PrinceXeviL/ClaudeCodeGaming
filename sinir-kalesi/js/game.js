@@ -1848,7 +1848,7 @@ function makeHero(id, x, y, slot) {
   const h = { hero: true, id, def: d, slot, x, y, rx: x, ry: y, hp: d.hp, maxHp: d.hp, dmg: d.dmg.slice(), armor: d.armor,
     rate: d.rate, speed: d.speed, engage: d.engage, regen: d.regen, ranged: d.ranged || 0, atk: 0, target: null, dead: false, respawnT: 0,
     lvl: 1, xp: 0, face: 1, anim: 0, learned: {}, cds: {}, castT: 0, reviveLeft: 0, crit: 0, dustT: 0 };
-  const R = heroRec(id); h.lvl = Math.min(HERO_MAX, R.lvl); h.xp = R.xp; h.learned = R.sk; h.ult = R.ult; // kalıcı seviye ve ağaç (aynı nesne: öğrenince kayda yazılır)
+  const R = heroRec(id); h.lvl = Math.min(HERO_MAX, R.lvl); h.xp = R.xp; h.learned = R.sk; h.ult = R.ult; h.ult2 = R.ult2 || 0; h.act = R.act === 'ult2' && R.ult2 > 0 ? 'ult2' : 'ult'; // kalıcı seviye ve ağaç (aynı nesne: öğrenince kayda yazılır)
   if (h.learned.revive) h.reviveLeft = 1; if (h.learned.ninelives) h.reviveLeft = 2;
   heroStats(h);
   h.hp = h.maxHp;
@@ -1877,7 +1877,10 @@ function heroStats(h) {
 }
 function heroPoints(h) { return recPoints(heroRec(h.id)); }
 // komutanın ağaçtaki bütün yetenekleri (yollar tek listede)
-const heroSkillList = (d) => d.paths.flatMap(p => p.skills);
+const heroSkillList = (d) => { const all = d.paths.flatMap(p => p.skills); return d.passives ? d.passives.map(id => all.find(s => s.id === id)).filter(Boolean) : all; }; // 13 Eki: ağaçta yalnız 2 pasif
+// komutanın savaşa götürdüğü aktif güç (13 Eki): 'ult' (HERO_ULT) ya da 'ult2' (HERO_ULT2); kademesi
+const heroUlt = (h) => (h.act === 'ult2' && HERO_ULT2[h.id] ? HERO_ULT2[h.id] : HERO_ULT[h.id]);
+const heroUltRank = (h) => (h.act === 'ult2' ? h.ult2 || 1 : h.ult || 1);
 
 // ---------- dalgalar ----------
 const WAVE_REST = 20; // iki dalga arası dinlenme (sn); oyuncu dalgayı erken çağırıp altın kazanabilir
@@ -4794,8 +4797,8 @@ const hudLeft = () => (spellIds().length ? Math.max(...spellIds().map((_, i) => 
 function spellAt(x, y) { let best = -1, bd = Infinity; spellIds().forEach((_, i) => { const b = spellBtn(i), d = dist(b.x, b.y, x, y); if (d <= b.r * (1 + UI_HIT) && d - b.r < bd) { bd = d - b.r; best = i; } }); return { i: best, d: bd }; }
 function spellInfo(id) {
   if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * (1 - GRIM.cd * spellRank(id)), necro: S, U: S }; }
-  const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
-  return { name: U.name, cd: U.cd * (1 - 0.05 * ((h.ult || 1) - 1)), hero: h, U }; // güç kademesi beklemeyi de kısaltır
+  const h = G.heroes[+id.slice(3)], U = heroUlt(h);
+  return { name: U.name, cd: U.cd * (1 - 0.05 * (heroUltRank(h) - 1)), hero: h, U }; // güç kademesi beklemeyi de kısaltır
 }
 function castSpell(id, x, y) {
   if (NECRO_SPELLS[id] && G.mod && G.mod.nospell) { floatText(x, y - 20, 'Bu gece büyü yok!', '#d8a8ff'); sfx('error'); return; }
@@ -5969,7 +5972,7 @@ function drawZoneItem() {
     obelisk: () => { ctx.fillStyle = '#2a2236'; ctx.beginPath(); ctx.moveTo(x - 7, y); ctx.lineTo(x - 5, y - 30); ctx.lineTo(x, y - 36); ctx.lineTo(x + 5, y - 30); ctx.lineTo(x + 7, y); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.strokeStyle = ready ? '#c890ff' : '#5a4a6a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - 2, y - 24); ctx.lineTo(x + 2, y - 20); ctx.lineTo(x - 2, y - 16); ctx.moveTo(x, y - 12); ctx.lineTo(x, y - 6); ctx.stroke(); },
     bats: () => { ctx.strokeStyle = '#1e1622'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 26); ctx.moveTo(x, y - 18); ctx.lineTo(x - 10, y - 28); ctx.moveTo(x, y - 22); ctx.lineTo(x + 11, y - 31); ctx.stroke();
-      for (const [bx, by] of [[x - 10, y - 30], [x + 11, y - 33]]) drawBat(bx, by + 3, 1, Math.PI / 2, 0.55); },
+      for (const [bx, by] of [[x - 10, y - 30], [x + 11, y - 33]]) drawBatMap(bx, by + 3, 1, Math.PI / 2, 0.55); },
     bell: () => { ctx.fillStyle = '#4a3422'; ctx.fillRect(x - 14, y - 30, 3, 30); ctx.fillRect(x + 11, y - 30, 3, 30); ctx.fillRect(x - 15, y - 32, 30, 3);
       const sw = fk ? Math.sin(time * 30) * 0.25 * fk : 0; ctx.save(); ctx.translate(x, y - 29); ctx.rotate(sw); ctx.fillStyle = '#b08440'; ctx.beginPath(); ctx.moveTo(-6, 2); ctx.quadraticCurveTo(-7, 14, -10, 18); ctx.lineTo(10, 18); ctx.quadraticCurveTo(7, 14, 6, 2); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); },
     bones: () => { ctx.fillStyle = '#e8dcc0'; for (const [dx, dy, a] of [[-6, -4, 0.6], [5, -5, -0.5], [0, -12, 1.5], [-3, -18, 0.2]]) { ctx.save(); ctx.translate(x + dx, y + dy); ctx.rotate(a); ctx.beginPath(); ctx.roundRect(-8, -1.5, 16, 3, 1.5); ctx.fill(); ctx.stroke(); ctx.restore(); }
@@ -6545,7 +6548,7 @@ function marchSoldier(s, dt) {
 
 // Kahraman gücü: seviyeyle hasar %15 artar, yıldız gelişmesiyle +%20
 function castUlt(h, x, y) {
-  const U = HERO_ULT[h.id], k = (1 + HERO_TREE.ultK * ((h.ult || 1) - 1)) * (1 + 0.015 * (h.lvl - 1)); // güç kademesi (ağaç) ve seviye
+  const U = heroUlt(h), k = (1 + HERO_TREE.ultK * (heroUltRank(h) - 1)) * (1 + 0.015 * (h.lvl - 1)); // güç kademesi (ağaç) ve seviye
   const dmg = () => roll(U.dmg) * k;
   // isabet noktası: yarısı alandaki düşmanların üstüne (biraz ileriye), kalanı alana rastgele düşer
   const foes = enemiesNear(x, y, U.r * 1.1, true);
@@ -6557,7 +6560,7 @@ function castUlt(h, x, y) {
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
   h.castT = 0.45; h.ultT = h.ultD = U.anim || ULT_ANIM; // komutanın güç şeridi (varsa) bu sürede bir kez oynar
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
-  if (h.id === 'commander' && U.bats) {
+  if (U.bats) { // Drakula'nın ve Báthory'nin (Kan Yarasaları) yarasaları
     // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) }); sfx('bats');
     sfx('whirl'); setTimeout(() => sfx('scream', 1.8), 250);
@@ -6582,7 +6585,7 @@ function castUlt(h, x, y) {
   } else if (U.rain) {
     // Robin'in ok yağmuru: alana zamana yayılmış zehirli yeşil oklar
     for (let i = 0; i < U.n; i++) { const [tx, ty] = spot(U.r);
-      G.projectiles.push({ kind: 'rainarrow', sx: tx - 70, sy: ty - 280, tx, ty, t: -i * U.dur / U.n, dur: 0.42, dmg: dmg(), splash: 18, arc: 0, poison: 3, poisonT: 2 }); }
+      G.projectiles.push({ kind: 'rainarrow', sx: tx - 70, sy: ty - 280, tx, ty, t: -i * U.dur / U.n, dur: 0.42, dmg: dmg(), splash: 18, arc: 0, poison: U.poison ?? 3, poisonT: 2, gold: U.gold }); }
     for (let i = 0; i < 5; i++) setTimeout(() => sfx('arrow'), i * 600);
   } else if (U.portal) {
     // Merlin'in zaman kapısı: alanda dönen mor-yeşil halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
@@ -6594,6 +6597,21 @@ function castUlt(h, x, y) {
       G.effects.push({ kind: 'timegate', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
     }
     shakeScreen(4, 0.35); sfx('timegate');
+  } else if (U.stakes) {
+    // Drakula'nın Kazık Ormanı (Kazıklı Voyvoda): topraktan kara kazıklar fışkırır; hasar, sersemletme, kanama
+    const pts = []; for (let i = 0; i < 11; i++) pts.push(spot(U.r * 0.9));
+    G.effects.push({ kind: 'stakes', x, y, pts, t: 0, dur: 1.6 });
+    for (const e of enemiesNear(x, y, U.r, false)) { damageEnemy(e, dmg(), 'melee'); if (!e.dead) { stunEnemy(e, U.stun); e.bleedDps = Math.max(e.bleedT > 0 ? e.bleedDps : 0, U.bleed * k); e.bleedT = 3; } }
+    shakeScreen(5, 0.4); sfx('bash'); setTimeout(() => sfx('fs_bone'), 120); setTimeout(() => sfx('scream', 1.8), 300);
+  } else if (U.soulpool) {
+    // Merlin'in Ruh Bataklığı: mor bataklık (drawPlaguePools z.black), yavaşlatır ve çürütür
+    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'magic', t: 0, life: U.dur, fxT: 0, kind: 'soulpool', pool: true, black: true, slowK: 0.45, infect: 2, seed: rand(0, 9) });
+    shakeScreen(3, 0.3); sfx('gravemist'); setTimeout(() => sfx('splash'), 150);
+  } else if (U.scream) {
+    // Spartaküs'ün kükremesi / Robin'in kurt uluması: iç içe genişleyen halkalar, hasar ve sersemletme
+    for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: U.col || '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
+    for (const e of enemiesNear(x, y, U.r, true)) { damageEnemy(e, dmg(), 'magic'); stunEnemy(e, U.stun); }
+    shakeScreen(3, 0.3); sfx('roar');
   } else if (h.id === 'zeynep') {
     // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
@@ -6727,6 +6745,7 @@ function update(dt) {
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
       if (z.kind === 'chains') { z.fxT = 0.1; emit(G.parts, { kind: 'chunk', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-40, 40), vy: -rand(40, 90), g: 420, col: '#6a5a4a', s0: 1.6, s1: 1, life: 0.4, vr: rand(-8, 8) }); continue; }
       if (bats) { z.fxT = 0.12; if (live) emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5 - 6, vy: rand(10, 30), g: 140, col: '#b01020', s0: 1.4, s1: 0.5, life: 0.4 }); continue; }
+      if (z.kind === 'soulpool') { z.fxT = 0.06; emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.45, vx: rand(-6, 6), vy: -rand(6, 18), col: Math.random() < 0.6 ? '170,110,255' : '120,230,150', s0: rand(4, 7), s1: rand(8, 12), life: rand(0.6, 1) }); continue; }
       if (z.kind === 'bloodpool') { z.fxT = 0.06; emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.45, vy: -rand(20, 50), g: 260, col: Math.random() < 0.5 ? '#b0101e' : '#e8404a', s0: rand(1.4, 2.4), s1: 0.6, life: 0.5 }); continue; }
       if (z.kind === 'mist') { // Merlin'in mezar sisi: yere çöken mor ve yeşil sis
         z.fxT = 0.05;
@@ -9656,7 +9675,8 @@ function drawProjectile(p) {
     if (p.poison) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 7, '140,255,80', 0.55); ctx.restore(); }
     ctx.strokeStyle = p.poison ? 'rgba(160,255,110,0.55)' : 'rgba(255,250,230,0.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-18, 0); ctx.lineTo(-8, 0); ctx.stroke();
     ctx.strokeStyle = '#5a3a1a'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke();
-    ctx.fillStyle = p.poison ? '#8fe85a' : '#d8dbe2'; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2.2); ctx.lineTo(3, 2.2); ctx.fill();
+    if (p.gold) { ctx.strokeStyle = '#6a4a22'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(4, 0); ctx.stroke(); } // Leonidas'ın mızrağı: uzun sap, bronz uç
+    ctx.fillStyle = p.gold ? '#e0a83a' : p.poison ? '#8fe85a' : '#d8dbe2'; ctx.beginPath(); ctx.moveTo(p.gold ? 10 : 7, 0); ctx.lineTo(3, -2.6); ctx.lineTo(3, 2.6); ctx.fill();
     ctx.restore();
     return;
   }
@@ -10082,6 +10102,17 @@ function drawEffect(f) {
       ctx.stroke();
     }
     ctx.restore();
+  } else if (f.kind === 'stakes') { // Drakula'nın kazıkları: topraktan fırlar, durur, sonunda toprağa çekilir
+    const up = clamp(f.t / 0.12, 0, 1), down = clamp((f.t - f.dur + 0.35) / 0.35, 0, 1), hh = 26 * easeOutBack(up) * (1 - down);
+    f.pts.forEach(([px, py], i) => {
+      const h2 = hh * (0.7 + 0.3 * ((i * 37) % 10) / 10), lean = ((i * 53) % 7 - 3) * 0.06;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(lean);
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 1, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(3, 0); ctx.lineTo(0.6, -h2); ctx.lineTo(-0.6, -h2); ctx.closePath();
+      const g = ctx.createLinearGradient(-3, 0, 3, 0); g.addColorStop(0, '#2a1a12'); g.addColorStop(0.5, '#5a3a24'); g.addColorStop(1, '#1a0e08'); ctx.fillStyle = g; ctx.fill();
+      ctx.fillStyle = '#9a1020'; ctx.beginPath(); ctx.moveTo(-1.1, -h2 + 5); ctx.lineTo(1.1, -h2 + 5); ctx.lineTo(0.5, -h2); ctx.lineTo(-0.5, -h2); ctx.closePath(); ctx.fill(); // kanlı uç
+      ctx.restore();
+    });
   } else if (f.kind === 'dust') {
     ctx.globalAlpha = 1 - k;
     for (let i = 0; i < 8; i++) { const a = i * 0.785; circle(f.x + Math.cos(a) * (10 + k * 22), f.y + Math.sin(a) * (5 + k * 10), 4 * (1 - k) + 1, '#d9c8a8'); }
@@ -11461,10 +11492,37 @@ function drawHeroPortrait(h, hb, i) {
   ctx.restore();
 }
 
+// 13 Eki: ikinci aktif güçlerin simgeleri (HERO_ULT2)
+function drawUlt2Glyph(id, r) {
+  ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (id === 'commander') { // kazıklar
+    for (let i = -2; i <= 2; i++) { const x = i * r * 0.22, h = r * (0.55 + 0.18 * (2 - Math.abs(i)) / 2);
+      ctx.beginPath(); ctx.moveTo(x - r * 0.07, r * 0.5); ctx.lineTo(x + r * 0.07, r * 0.5); ctx.lineTo(x, r * 0.5 - h); ctx.closePath(); ctx.fillStyle = '#4a2c18'; ctx.fill(); ctx.strokeStyle = '#1a0c06'; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - r * 0.03, r * 0.5 - h + r * 0.14); ctx.lineTo(x + r * 0.03, r * 0.5 - h + r * 0.14); ctx.lineTo(x, r * 0.5 - h); ctx.closePath(); ctx.fillStyle = '#d0203a'; ctx.fill(); }
+  } else if (id === 'spartacus' || id === 'robin') { // kükreme / uluma: genişleyen yaylar
+    const col = id === 'robin' ? '150,255,170' : '255,170,90';
+    for (let i = 0; i < 3; i++) { const ph = (time * 1.4 + i / 3) % 1; ctx.strokeStyle = `rgba(${col},${1 - ph})`; ctx.lineWidth = r * 0.09; ctx.beginPath(); ctx.arc(-r * 0.3, 0, r * (0.25 + ph * 0.6), -0.9, 0.9); ctx.stroke(); }
+    if (id === 'robin') { ctx.fillStyle = '#d8ffe0'; ctx.beginPath(); ctx.arc(-r * 0.32, -r * 0.05, r * 0.2, Math.PI * 0.3, Math.PI * 1.7); ctx.fill(); } // ay
+    else { ctx.fillStyle = '#ffd08a'; ctx.beginPath(); ctx.ellipse(-r * 0.36, 0, r * 0.14, r * 0.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#5a1a0a'; ctx.beginPath(); ctx.ellipse(-r * 0.33, r * 0.04, r * 0.07, r * 0.1, 0, 0, Math.PI * 2); ctx.fill(); } // açık ağız
+  } else if (id === 'leonidas') { // üç bronz mızrak
+    for (let i = -1; i <= 1; i++) { ctx.save(); ctx.translate(i * r * 0.28, 0); ctx.rotate(0.5);
+      ctx.strokeStyle = '#6a4a22'; ctx.lineWidth = r * 0.08; ctx.beginPath(); ctx.moveTo(0, -r * 0.55); ctx.lineTo(0, r * 0.55); ctx.stroke();
+      ctx.fillStyle = '#e0a83a'; ctx.beginPath(); ctx.moveTo(0, r * 0.72); ctx.lineTo(-r * 0.1, r * 0.48); ctx.lineTo(r * 0.1, r * 0.48); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  } else if (id === 'merlin') { // mor bataklık ve kabarcıklar
+    ctx.save(); ctx.scale(1, 0.5); circle(0, r * 0.45, r * 0.62, '#4a1a7a', '#1a0630', r * 0.05); circle(0, r * 0.45, r * 0.44, '#8a4ad8'); ctx.restore();
+    for (let k = 0; k < 4; k++) { const ph = (time * 0.9 + k / 4) % 1; ctx.globalAlpha = Math.sin(ph * Math.PI); circle(Math.cos(k * 1.9) * r * 0.32, r * 0.18 - ph * r * 0.55, r * (0.06 + 0.04 * (k % 2)), k % 2 ? '#b0ffc0' : '#d8b0ff'); }
+    ctx.globalAlpha = 1;
+  } else if (id === 'bathory') { // kan yarasaları
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 0.8, '220,20,40', 0.55); ctx.restore();
+    drawBat(-6 * r / 20, -2 * r / 20, 1.1 * r / 20, 1, time * 9, 1); drawBat(7 * r / 20, 4 * r / 20, 0.8 * r / 20, -1, time * 9 + 2, 1);
+  }
+  ctx.restore();
+}
+const heroGlyph = (id, r, act) => (act === 'ult2' ? drawUlt2Glyph(id, r) : id === 'zeynep' ? drawNecroGlyph('nm_scream', r) : drawUltGlyph(id, r));
 // kahraman gücü düğmesinin simgesi
 function drawUltGlyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  if (id === 'commander') { drawBat(-6, -2, 1.1, 1, time * 9, 1); drawBat(7, 4, 0.8, -1, time * 9 + 2, 1); drawBat(1, 9, 0.7, 1, time * 9 + 4, 1); }
+  if (id === 'commander') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 0.8, '200,30,50', 0.45); ctx.restore(); const q = r / 20; drawBat(-6 * q, -2 * q, 1.1 * q, 1, time * 9, 1); drawBat(7 * q, 4 * q, 0.8 * q, -1, time * 9 + 2, 1); drawBat(1 * q, 9 * q, 0.7 * q, 1, time * 9 + 4, 1); }
   else if (id === 'spartacus') { // dönen zincir halkası
     for (let k = 0; k < 8; k++) { const a = time * 3 + k * Math.PI / 4; ctx.save(); ctx.translate(Math.cos(a) * r * 0.42, Math.sin(a) * r * 0.42); ctx.rotate(a + (k % 2 ? 0 : Math.PI / 2));
       ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, r * 0.13, r * 0.075, 0, 0, Math.PI * 2); ctx.stroke(); ctx.strokeStyle = '#d8ccb8'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
@@ -11710,7 +11768,7 @@ function drawHud() {
     bd.addColorStop(0, `rgba(${col},0.95)`); bd.addColorStop(1, '#120c18');
     circle(0, 0, b.r, bd);
     ctx.save(); ctx.beginPath(); ctx.arc(0, 0, b.r - 1, 0, Math.PI * 2); ctx.clip();
-    if (info.hero) { if (info.hero.id === 'zeynep') drawNecroGlyph('nm_scream', b.r); else drawUltGlyph(info.hero.id, b.r); }
+    if (info.hero) heroGlyph(info.hero.id, b.r, info.hero.act);
     else if (info.necro) drawNecroGlyph(id, b.r);
     ctx.restore();
     ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.ellipse(0, -b.r * 0.5, b.r * 0.6, b.r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
@@ -12290,7 +12348,8 @@ let treeSel = {};
 function drawHeroTree(id, px, py, pw, ph, k, battle) {
   const d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), cx = px + pw / 2;
   crimsonRibbon(cx, py + 46, d.name, 24, 280);
-  const rows = heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk })).concat([{ kind: 'ult', id: 'ult', sk: null }]);
+  const rows = [{ kind: 'ult', id: 'ult', sk: null }].concat(HERO_ULT2[id] ? [{ kind: 'ult2', id: 'ult2', sk: null }] : [], heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk }))); // 13 Eki: 2 aktif üstte, 2 pasif altta
+  const UO = (kind) => (kind === 'ult2' ? HERO_ULT2[id] : HERO_ULT[id]), act = Rr.act === 'ult2' && Rr.ult2 > 0 ? 'ult2' : 'ult';
   if (!rows.find(r => r.id === treeSel[id])) treeSel[id] = (rows.find(r => treeCan(Rr, r.kind, r.id)) || rows[0]).id;
   // sol sütun: seviye, XP, puan ve yetenek kartları
   const lx = px + 34, lw = 372;
@@ -12303,39 +12362,41 @@ function drawHeroTree(id, px, py, pw, ph, k, battle) {
   txt(Rr.lvl >= HERO_MAX ? 'EN YÜKSEK SEVİYE' : `${Math.floor(Rr.xp)} / ${xpNeed(Rr.lvl)} XP`, lx + lw / 2, py + 126, 12.5, '#fff6dc', 'center', '800', FONT_B, true);
   rows.forEach((row, i) => {
     const y = py + 146 + i * 62, a = clamp((k - 0.1 - i * 0.05) / 0.25, 0, 1); if (a <= 0) return;
-    const r = treeRank(Rr, row.kind, row.id), ult = row.kind === 'ult', on = treeSel[id] === row.id, can = treeCan(Rr, row.kind, row.id);
+    const r = treeRank(Rr, row.kind, row.id), ult = row.kind !== 'sk', on = treeSel[id] === row.id, can = treeCan(Rr, row.kind, row.id);
     ctx.save(); ctx.globalAlpha *= a;
     upCard(lx, y, lw, 58, on, false);
     upIconRing(lx + 34, y + 29, 21, ult);
     ctx.save(); ctx.beginPath(); ctx.arc(lx + 34, y + 29, 21, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha *= r ? 1 : 0.55;
-    if (ult) { ctx.translate(lx + 34, y + 29); if (id === 'zeynep') drawNecroGlyph('nm_scream', 21); else drawUltGlyph(id, 21); } else drawHeroSkillIcon(row.id, lx + 34, y + 29, 0.95);
+    if (ult) { ctx.translate(lx + 34, y + 29); heroGlyph(id, 21, row.kind); } else drawHeroSkillIcon(row.id, lx + 34, y + 29, 0.95);
     ctx.restore();
-    fitTxt(ult ? HERO_ULT[id].name : row.sk.name, lx + 66, y + 20, lw - 66 - 100, UP_FONT.name - 1, r ? '#ffe9b0' : '#c8b898', 'left', '400', FONT_T);
-    txt(ult ? 'GÜÇ' : row.sk.passive ? 'KALICI' : `${row.sk.cd} sn`, lx + 66, y + 42, UP_FONT.small, ult ? '#ffd34d' : '#c8b898', 'left', '800', FONT_B, false);
+    fitTxt(ult ? UO(row.kind).name : row.sk.name, lx + 66, y + 20, lw - 66 - 100, UP_FONT.name - 1, r ? '#ffe9b0' : '#c8b898', 'left', '400', FONT_T);
+    txt(ult ? (act === row.kind && r ? 'AKTİF · SAVAŞTA' : 'AKTİF') : row.sk.passive ? 'PASİF · KALICI' : 'PASİF · OTOMATİK', lx + 66, y + 42, UP_FONT.small, ult ? (act === row.kind && r ? '#9fff8a' : '#ffd34d') : '#c8b898', 'left', '800', FONT_B, false);
     upPips(lx + lw - 92, y + 29, 5, r, ult ? '#ffd34d' : '#b8ff8a');
     if (can) { glow(ctx, lx + lw - 14, y + 10, 14, '120,255,120', 0.5); circle(lx + lw - 14, y + 10, 8, '#3cbf3c', '#fff', 1.4); }
     ctx.restore();
     buttons.push({ key: 'ts' + row.id, x: lx, y, w: lw, h: 58, fn: () => { treeSel[id] = row.id; sfx('pick'); } });
   });
   // sağ sütun: seçilenin ayrıntısı
-  const row = rows.find(r => r.id === treeSel[id]), ult = row.kind === 'ult', r = treeRank(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), can = treeCan(Rr, row.kind, row.id);
+  const row = rows.find(r => r.id === treeSel[id]), ult = row.kind !== 'sk', r = treeRank(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), can = treeCan(Rr, row.kind, row.id);
   const rx = px + 430, rw = pw - 430 - 34, ry = py + 76;
   roundRect(rx, ry, rw, ph - 76 - 30, 16, 'rgba(0,0,0,0.3)', 'rgba(201,168,101,0.4)', 1.2);
   upIconRing(rx + 42, ry + 40, 26, ult);
   ctx.save(); ctx.beginPath(); ctx.arc(rx + 42, ry + 40, 26, 0, Math.PI * 2); ctx.clip();
-  if (ult) { ctx.translate(rx + 42, ry + 40); if (id === 'zeynep') drawNecroGlyph('nm_scream', 26); else drawUltGlyph(id, 26); } else drawHeroSkillIcon(row.id, rx + 42, ry + 40, 1.2);
+  if (ult) { ctx.translate(rx + 42, ry + 40); heroGlyph(id, 26, row.kind); } else drawHeroSkillIcon(row.id, rx + 42, ry + 40, 1.2);
   ctx.restore();
-  fitTxt(ult ? HERO_ULT[id].name : row.sk.name, rx + 80, ry + 28, rw - 96, 23, '#ffe9b0', 'left', '400', FONT_T);
-  const DL = wrapLines(ult ? HERO_ULT[id].desc || '' : row.sk.desc, rw - 96, 13.5, '700', FONT_B, 2);
+  fitTxt(ult ? UO(row.kind).name : row.sk.name, rx + 80, ry + 28, rw - 96, 23, '#ffe9b0', 'left', '400', FONT_T);
+  const DL = wrapLines(ult ? UO(row.kind).desc || '' : row.sk.desc, rw - 96, 13.5, '700', FONT_B, 2);
   DL.forEach((l, li) => txt(l, rx + 80, ry + 52 + li * 16, 13.5, '#d8c8b0', 'left', '700', FONT_B, false));
-  const T = ult ? HERO_TREE.ult : HERO_TREE.sk;
-  const lad = [1, 2, 3, 4, 5].map(n => ({ text: ult ? ultRankNote(n) : row.sk.passive && row.sk.id !== 'iron' ? `${n}. kademe` : heroRankNote(row.sk, n),
+  const T = row.kind === 'ult2' ? HERO_TREE.ult2 : ult ? HERO_TREE.ult : HERO_TREE.sk;
+  const lad = [1, 2, 3, 4, 5].map(n => ({ text: ult ? (row.kind === 'ult2' && n === 1 ? 'Güç açılır' : ultRankNote(n)) : row.sk.passive && row.sk.id !== 'iron' ? `${n}. kademe` : heroRankNote(row.sk, n),
     right: (x, y, done) => { if (done) return; txt(`Sv. ${T[n]}`, x, y + 1, 14, Rr.lvl >= T[n] ? '#b8ff8a' : '#a89878', 'center', '800', FONT_B, false); } }));
   upLadder(rx + 18, ry + 106, rw - 36, lad, r);
-  const by = py + ph - 62;
-  if (need == null) txt('EN YÜKSEK KADEME', rx + rw / 2, by, 17, '#ffe27a', 'center', '400', FONT_T);
-  else if (Rr.lvl < need) txt(`Sv. ${need}'de açılır`, rx + rw / 2, by, 16, '#c8b898', 'center', '800', FONT_B, false);
-  else gameButton('tr_buy', rx + rw / 2, by, 230, 50, pts > 0 ? 'GELİŞTİR · 1 PUAN' : 'PUAN YOK', () => {
+  const by = py + ph - 62, eq = ult && HERO_ULT2[id] && !battle, bxc = eq ? rx + rw * 0.3 : rx + rw / 2; // aktiflerde yanında "savaşa götür"
+  if (eq) { const isAct = act === row.kind && r > 0;
+    gameButton('tr_eq', rx + rw * 0.76, by, 176, 50, isAct ? 'SAVAŞTA ✓' : 'SAVAŞA GÖTÜR', () => { if (isAct) return; if (r <= 0) { sfx('error'); return; } Rr.act = row.kind; persist(); sfx('pick'); }, isAct ? 'dark' : r > 0 ? 'gold' : 'dark', { size: 15 }); }
+  if (need == null) txt('EN YÜKSEK KADEME', bxc, by, 17, '#ffe27a', 'center', '400', FONT_T);
+  else if (Rr.lvl < need) txt(`Sv. ${need}'de açılır`, bxc, by, 16, '#c8b898', 'center', '800', FONT_B, false);
+  else gameButton('tr_buy', bxc, by, eq ? 196 : 230, 50, pts > 0 ? 'GELİŞTİR · 1 PUAN' : 'PUAN YOK', () => {
     if (!treeBuy(Rr, row.kind, row.id)) { sfx('error'); return; }
     sfx('upgrade');
     for (let q = 0; q < 18; q++) { const an = rand(0, Math.PI * 2), v = rand(50, 160); emit(uiParts, { kind: 'glow', add: true, x: rx + rw / 2, y: by, vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 3, col: '140,255,140', s0: 4, s1: 0.5, life: 0.5 }); }
@@ -12817,7 +12878,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   if (!unlocked) { /* rozet yok */ }
   else if (d.ranged) { roundRect(-44, y0 + 288 + by2, 88, 20, 10, '#2a5fb8'); txt('MENZİLLİ', 0, y0 + 298 + by2, 11.5, '#fff', 'center', '800', FONT_B, false); }
   else { roundRect(-56, y0 + 288 + by2, 112, 20, 10, '#8a3a1a'); txt('YAKIN DÖVÜŞ', 0, y0 + 298 + by2, 11.5, '#fff', 'center', '800', FONT_B, false); }
-  if (unlocked) fitTxt('Güç: ' + HERO_ULT[id].name, 0, y0 + 316 + by2 * 1.6, w - 36, 12, '#5a3410', 'center', '800', FONT_B, false);
+  if (unlocked) fitTxt('Güç: ' + (heroRec(id).act === 'ult2' && heroRec(id).ult2 > 0 && HERO_ULT2[id] ? HERO_ULT2[id] : HERO_ULT[id]).name, 0, y0 + 316 + by2 * 1.6, w - 36, 12, '#5a3410', 'center', '800', FONT_B, false);
   if (sel) { circle(w / 2 - 20, y0 + 22, 13, '#3cbf3c', '#fff', 2); drawIcon('check', w / 2 - 20, y0 + 22, 16); }
   if (unlocked) { const Rr = heroRec(id); roundRect(x0 + 14, y0 + 140, 58, 22, 11, 'rgba(10,6,18,0.85)', '#e8bb4a', 1.5); txt(`Sv. ${Rr.lvl}`, x0 + 43, y0 + 151.5, 12, '#ffe27a', 'center', '400', FONT_T); } // kalıcı seviye
   if (unlocked && !(save.seenHeroes || ['commander']).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
@@ -13609,19 +13670,23 @@ function gainSpellXp(id, n) { // büyü yapıldı: XP, seviye atlarsa kalenin ü
   const L1 = spellLvl(id); if (L1 > L0 && G) { const c = G.castle; floatText(c.x, c.y - 110, `${NECRO_SPELLS[id].name} seviye ${L1}!`, '#e0b0ff'); sfx('levelup'); }
 }
 // komutan kaydı: seviye ve XP bölümler arası kalır; sk: yetenek kademeleri, ult: komutan gücü kademesi (1..5)
-function heroRec(id) { save.hero = save.hero || {}; return (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1 }); }
-function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return R.lvl - n - (R.ult - 1); } // her seviye 1 puan (1. seviye dahil)
-const treeRank = (R, kind, id) => (kind === 'ult' ? R.ult : R.sk[id] || 0);
-function treeNext(R, kind, id) { const T = kind === 'ult' ? HERO_TREE.ult : HERO_TREE.sk, r = treeRank(R, kind, id); return r + 1 < T.length ? T[r + 1] : null; } // sıradaki kademenin açıldığı seviye
+function heroRec(id) {
+  save.hero = save.hero || {}; const R = (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1, ult2: 0, act: 'ult' });
+  if (!R.v2 && HEROES[id]) { R.v2 = 1; const keep = new Set(heroSkillList(HEROES[id]).map(s => s.id)); for (const k in R.sk) if (!keep.has(k)) delete R.sk[k]; } // 13 Eki: 2 pasif dışındakilerin puanı iade
+  return R;
+}
+function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return R.lvl - n - (R.ult - 1) - (R.ult2 || 0); } // her seviye 1 puan (1. seviye dahil)
+const treeRank = (R, kind, id) => (kind === 'ult' ? R.ult : kind === 'ult2' ? R.ult2 || 0 : R.sk[id] || 0);
+function treeNext(R, kind, id) { const T = kind === 'ult' ? HERO_TREE.ult : kind === 'ult2' ? HERO_TREE.ult2 : HERO_TREE.sk, r = treeRank(R, kind, id); return r + 1 < T.length ? T[r + 1] : null; } // sıradaki kademenin açıldığı seviye
 const treeCan = (R, kind, id) => { const n = treeNext(R, kind, id); return n != null && R.lvl >= n && recPoints(R) > 0; };
 function treeBuy(R, kind, id) {
   if (!treeCan(R, kind, id)) return false;
-  if (kind === 'ult') R.ult++; else R.sk[id] = (R.sk[id] || 0) + 1;
+  if (kind === 'ult') R.ult++; else if (kind === 'ult2') R.ult2 = (R.ult2 || 0) + 1; else R.sk[id] = (R.sk[id] || 0) + 1;
   persist();
-  if (G && G.heroes) for (const h of G.heroes) if (h.learned === R.sk) { h.ult = R.ult; heroStats(h); }
+  if (G && G.heroes) for (const h of G.heroes) if (h.learned === R.sk) { h.ult = R.ult; h.ult2 = R.ult2 || 0; heroStats(h); }
   return true;
 }
-function treeReset(R) { R.sk = {}; R.ult = 1; persist(); }
+function treeReset(R) { R.sk = {}; R.ult = 1; R.ult2 = 0; R.act = 'ult'; persist(); }
 // bölüm sonu XP: kazanınca tam, kaybedince yarım
 function heroEndXp(win) { if (!G) return; for (const h of G.heroes) gainXp(h, Math.round((100 + 40 * G.idx) * (win ? 1 : 0.5)), true); persist(); }
 // Zorluk seçimi (12 Eki, arastirma/oyuncu-istekleri.md: Kingdom Rush'taki Rahat/Normal/Usta gibi): bölüm kartında seçilir, save.diff'te
@@ -15066,7 +15131,7 @@ function drawRegionMap(E, ep, st) {
   mapAmbient(E, V, dt);
 }
 // yarasa: kısa gövde, hızlı çırpan zar kanatlar, kanat uçlarında parmak kemikleri; zikzaklı uçar
-function drawBat(x, y, dir, ph, s) {
+function drawBatMap(x, y, dir, ph, s) { // harita ve dekor yarasası (13 Eki: adı drawBat ile çakışıyordu, güç simgesindeki yarasalar bozuk çıkıyordu)
   const f = Math.sin(ph), span = 9 * s, lift = f * 4 * s;
   ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1); ctx.fillStyle = '#140e18';
   for (const sd of [-1, 1]) {
@@ -15099,7 +15164,7 @@ function mapAmbient(E, V, dt) {
     for (let i = 0; i < n; i++) MAPFX.bats.push({ x: (l ? V[0] - 20 : V[2] + 20) - (l ? 1 : -1) * i * rand(8, 22), y: y0 + rand(-25, 25), v: (l ? 1 : -1) * rand(55, 80), ph: rand(0, 6), w: rand(1.6, 3.2), s: rand(0.64, 0.92) }); // 15 Eki: %20 ufak
   }
   MAPFX.bats = MAPFX.bats.filter(b => b.x > V[0] - 120 && b.x < V[2] + 120);
-  for (const b of MAPFX.bats) { b.x += b.v * dt; b.y += Math.sin(time * b.w + b.ph) * 22 * dt; drawBat(b.x, b.y + Math.sin(time * 7 + b.ph) * 2, b.v > 0 ? 1 : -1, time * 26 + b.ph, b.s); }
+  for (const b of MAPFX.bats) { b.x += b.v * dt; b.y += Math.sin(time * b.w + b.ph) * 22 * dt; drawBatMap(b.x, b.y + Math.sin(time * 7 + b.ph) * 2, b.v > 0 ? 1 : -1, time * 26 + b.ph, b.s); }
   // kovalamaca: fare önde kaçar, peşinde ikinci bir fare (15 Eki, Caner: köpek olmasın)
   if (!MAPFX.chase && time > MAPFX.nextChase) {
     MAPFX.nextChase = time + rand(AMB.chase[0], AMB.chase[1]);
