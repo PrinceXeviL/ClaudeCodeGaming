@@ -9,26 +9,30 @@ from PIL import Image, ImageFilter
 from scipy import ndimage
 
 D = os.path.dirname(os.path.abspath(__file__)); IMG = os.path.join(D, '..', 'sinir-kalesi', 'img'); W_OUT = 760
-src = np.asarray(Image.open(os.path.join(D, 'ham', 'nm_kale_v3.jpg')).convert('RGB')).astype(float)
-mn, mx = src.min(2), src.max(2)
-white = (mn > 222) & (mx - mn < 26)                    # beyaza yakın ve renksiz
-lab, _ = ndimage.label(white)
-edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
-bg = np.isin(lab, list(edge))
-lab2, n2 = ndimage.label(white & ~bg)                  # korkuluk aralarında kalan kapalı beyaz cepler (saf beyaz, en az 25 px)
-sz = ndimage.sum(np.ones_like(mn), lab2, range(1, n2 + 1)); pure = ndimage.mean(mn, lab2, range(1, n2 + 1))
-holes = [i + 1 for i in range(n2) if sz[i] >= 25 and pure[i] > 236]
-bg |= np.isin(lab2, holes)
-bg = ndimage.binary_opening(bg, iterations=1)
-a = (~bg).astype(float)
-a = ndimage.gaussian_filter(a, 0.8); a = np.clip((a - 0.25) / 0.5, 0, 1)   # yumuşak kenar
-# kenardaki açık hale: beyazlığı kadar saydamlaştır
-soft = (a < 1) & (a > 0); a[soft] *= np.clip((255 - mn[soft]) / 60, 0.3, 1)
-ys, xs = np.where(a > 0.3); box = (xs.min() - 3, ys.min() - 3, xs.max() + 4, ys.max() + 4)
-rgba = np.dstack([src, a * 255]).clip(0, 255).astype(np.uint8)
-base = Image.fromarray(rgba, 'RGBA').crop(box)
-H_OUT = round(W_OUT * base.height / base.width)
-base = base.resize((W_OUT, H_OUT), Image.LANCZOS)
+def cut(name, box=None):
+    """beyaz zemini kenardan taşma doldurmayla siler (+ korkuluk aralarındaki kapalı beyaz cepler); box verilirse aynı kadraj"""
+    src = np.asarray(Image.open(os.path.join(D, 'ham', name)).convert('RGB')).astype(float)
+    mn, mx = src.min(2), src.max(2)
+    white = (mn > 222) & (mx - mn < 26)                    # beyaza yakın ve renksiz
+    lab, _ = ndimage.label(white)
+    edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    bg = np.isin(lab, list(edge))
+    lab2, n2 = ndimage.label(white & ~bg)                  # korkuluk aralarında kalan kapalı beyaz cepler (saf beyaz, en az 25 px)
+    sz = ndimage.sum(np.ones_like(mn), lab2, range(1, n2 + 1)); pure = ndimage.mean(mn, lab2, range(1, n2 + 1))
+    bg |= np.isin(lab2, [i + 1 for i in range(n2) if sz[i] >= 25 and pure[i] > 236])
+    bg = ndimage.binary_opening(bg, iterations=1)
+    a = ndimage.gaussian_filter((~bg).astype(float), 0.8); a = np.clip((a - 0.25) / 0.5, 0, 1)   # yumuşak kenar
+    soft = (a < 1) & (a > 0); a[soft] *= np.clip((255 - mn[soft]) / 60, 0.3, 1)   # kenardaki açık hale saydamlaşır
+    if box is None: ys, xs = np.where(a > 0.3); box = (xs.min() - 3, ys.min() - 3, xs.max() + 4, ys.max() + 4)
+    im = Image.fromarray(np.dstack([src, a * 255]).clip(0, 255).astype(np.uint8), 'RGBA').crop(box)
+    return im.resize((W_OUT, round(W_OUT * im.height / im.width)), Image.LANCZOS), box
+
+
+base, box = cut('nm_kale_v3.jpg')
+H_OUT = base.height
+# 13 Eki: orta hasar Gemini'de çizildi (ham/nm_kale_v3_hasar2.jpg, aynı kadraj); ağır hasar gelene dek 3-4. evre ondan koddan
+dmg2 = cut('nm_kale_v3_hasar2.jpg', box)[0] if os.path.exists(os.path.join(D, 'ham', 'nm_kale_v3_hasar2.jpg')) else None
+dmg3 = cut('nm_kale_v3_hasar3.jpg', box)[0] if os.path.exists(os.path.join(D, 'ham', 'nm_kale_v3_hasar3.jpg')) else None
 
 def stage(im, k, soot, win):
     x = np.asarray(im).astype(float); rgb, al = x[..., :3], x[..., 3:]
@@ -43,10 +47,12 @@ def stage(im, k, soot, win):
     rgb = rgb * (1 - 0.55 * m[..., None])
     return Image.fromarray(np.dstack([rgb, al]).clip(0, 255).astype(np.uint8), 'RGBA')
 
-outs = {1: base, 2: stage(base, 0.12, 6, 0.85), 3: stage(base, 0.25, 12, 0.6), 4: stage(base, 0.38, 18, 0.35)}
+outs = {1: base, 2: dmg2 or stage(base, 0.12, 6, 0.85),
+        3: dmg3 or stage(dmg2 or base, 0.14 if dmg2 else 0.25, 6 if dmg2 else 12, 0.7 if dmg2 else 0.6),
+        4: stage(dmg3, 0.15, 6, 0.6) if dmg3 else stage(dmg2 or base, 0.3 if dmg2 else 0.38, 12 if dmg2 else 18, 0.4 if dmg2 else 0.35)}
 meta = json.load(open(os.path.join(IMG, 'meta.json')))
 for n, im in outs.items():
     im.save(os.path.join(IMG, f'castle_keep_{n}.webp'), 'WEBP', quality=90, method=6)
     meta[f'castle_keep_{n}'] = [W_OUT, H_OUT]
 json.dump(meta, open(os.path.join(IMG, 'meta.json'), 'w'), ensure_ascii=False)
-print(W_OUT, H_OUT, box)
+print(W_OUT, H_OUT, box, 'orta' if dmg2 else '-', 'ağır' if dmg3 else '-')
