@@ -40,6 +40,9 @@ function loadStrip(name) {
 function useStrips(keep) {
   for (const k in SPR) if (LAZY_RE.test(k) && !keep.has(k)) delete SPR[k];
   for (const k in ROT) if (LAZY_RE.test(k)) delete ROT[k]; // dirilenlerin çürümüş şerit kopyaları
+  // 15 Eki (Caner: oyun nadiren atıyor; iPhone Jetsam kaydı: WebContent ~1 GB): vuruş parlamasının beyaz şerit kopyaları (15-21 MB)
+  // hiç silinmiyordu, bölümden bölüme birikiyordu. Artık bu bölümde gerekmeyenler atılır.
+  for (const k in WHITE) if (LAZY_RE.test(k) && !keep.has(k)) delete WHITE[k];
   for (const k of [...STRIP_WAIT]) if (!keep.has(k)) STRIP_WAIT.delete(k);
   keep.forEach(loadStrip);
 }
@@ -208,6 +211,20 @@ function whiteOf(name, im) {
   return WHITE[name];
 }
 
+// şeritli birimin vuruş parlaması: bütün şeridin beyaz kopyası yerine yalnız o karenin küçük beyaz kopyası (en çok 180 kare önbellekte, ~0,1 MB'lık)
+const WHITE_FR = new Map();
+function drawWhiteFrame(name, img, F, i, h) {
+  const key = name + '#' + i; let c = WHITE_FR.get(key);
+  if (!c) {
+    const s0 = img.width / (F.fw * F.n), H = Math.min(F.fh, 180), k = H / F.fh;
+    c = document.createElement('canvas'); c.width = Math.max(1, Math.round(F.fw * k)); c.height = H;
+    const g = c.getContext('2d'); g.drawImage(img, i * F.fw * s0, 0, F.fw * s0, F.fh * s0, 0, 0, c.width, c.height);
+    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    WHITE_FR.set(key, c); if (WHITE_FR.size > 180) WHITE_FR.delete(WHITE_FR.keys().next().value);
+  }
+  const k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
+  ctx.drawImage(c, -dw / 2, -dh * (1 - F.base), dw, dh);
+}
 // Büyük kaynak görselleri küçük çizerken tarayıcının tek adımlı küçültmesi tırtıklı sonuç verir.
 // Her görselin yarıya yarıya küçültülmüş kopyaları (mipmap) bir kez hazırlanır; çizimde ekrandaki
 // piksel boyuna en yakın (ondan büyük) kopya seçilir, böylece sprite'lar her boyda keskin kalır.
@@ -6765,7 +6782,7 @@ function updateXbowMen(t, dt) {
 }
 function xbowFoot(t, ts, a) { const C = xbowCfg(t); return { x: t.x + (a.x - 0.5) * ts.w, y: ts.bottom - ts.h + lerp(C.y[0], C.y[1], a.d) * ts.h }; }
 // kuledeki iskeletler kuleyle karışmasın (Caner, 11 Eki): %10 iri ve koyu konturlu (kontur görsel başına bir kez hazırlanır)
-const MEN_K = 1.22, OUTL = new Map();
+const MEN_K = 1.22, OUTL = new WeakMap(); // 15 Eki: zayıf anahtar (atılan şeritlerin konturlu kopyaları bellekte kalmasın)
 // kuledeki okçunun boyu (11 Eki, Caner): her kademede aynı gövde boyu (miğfer üstü → ayak, dünya birimi; yerdeki iskelet savaşçı ~23).
 // Tuval boyu bekleme pozundaki gövde oranından bulunur: yayı başın üstüne taşan çizimler küçük görünmesin.
 // 11 Eki (2): kule büyüdükçe okçular aynı boyda kalınca büyük kulede küçük görünüyordu → kademeyle büyür, mahzen iskeletinin
@@ -9118,7 +9135,7 @@ function drawUnit(name, im, x, y, face, o) {
     const F = ANIM_META[fName], fImg = spr(fName);
     if (o.hit > 0) { const k = o.hit / 0.18; ctx.rotate(-0.07 * k); ctx.scale(1 + 0.07 * k, 1 - 0.06 * k); } // 11 Eki: darbede geriye sarsılır, ezilir (şeritli birimler)
     drawFrame(fImg, F, fi, o.h);
-    if (o.flash > 0) { ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7; drawFrame(whiteOf(fName, fImg), F, fi, o.h); }
+    if (o.flash > 0) { ctx.globalAlpha = clamp(o.flash / 0.1, 0, 1) * 0.7; drawWhiteFrame(fName, fImg, F, fi, o.h); }
     ctx.restore();
     return;
   }
@@ -10179,13 +10196,26 @@ function ui3(kind, x, y, w, h) { // yatay 3 dilim: uçlar oranını korur, orta 
   if (R === 'mirror') { ctx.save(); ctx.translate(x + w, y); ctx.scale(-1, 1); ctx.drawImage(im, L[0], sy0, L[1] - L[0], sy1 - sy0, 0, 0, rw, h); ctx.restore(); }
   else ctx.drawImage(im, R[0], sy0, R[1] - R[0], sy1 - sy0, x + w - rw, y, rw, h);
 }
-function uiFrame(px, py, pw, ph) { // pencere çerçevesi; döner: iç kutu (l, r, t, b) ve madalyon merkezi
-  const im = spr('ui_frame'), F = UI_FRAME, s = ph / (im.height - F.top), fixed = F.cols.reduce((a, c) => a + (c[2] ? 0 : c[1] - c[0]), 0) * s;
+function uiFrame(px, py, pw, ph, s0) { // pencere çerçevesi; döner: iç kutu (l, r, t, b) ve madalyon merkezi
+  // s0 verilmezse çerçeve boyu panele oturur (yalnız genişlik esner); verilirse ölçek sabit, yan runeli şerit dikeyde de esner
+  const im = spr('ui_frame'), F = UI_FRAME, H0 = im.height, s = s0 || ph / (H0 - F.top), fixed = F.cols.reduce((a, c) => a + (c[2] ? 0 : c[1] - c[0]), 0) * s;
   const st = Math.max(0, (pw - fixed) / F.cols.filter(c => c[2]).length);
+  const R0 = 230, R1 = 640, midH = Math.max(0, ph - (R0 - F.top) * s - (H0 - R1) * s); // satırlar: üst (arma dahil), orta (esner), alt
+  const rows = [[0, R0, py - F.top * s, R0 * s], [R0, R1, py + (R0 - F.top) * s, midH], [R1, H0, py + ph - (H0 - R1) * s, (H0 - R1) * s]];
   ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 8; ctx.fillStyle = '#16101e'; ctx.fillRect(px + 20 * s, py + 20 * s, pw - 40 * s, ph - 40 * s); ctx.restore();
   let x = px;
-  for (const [a, b, str] of F.cols) { const dw = str ? st : (b - a) * s; ctx.drawImage(im, a, 0, b - a, im.height, x - 0.4, py - F.top * s, dw + 0.8, im.height * s); x += dw; }
+  for (const [a, b, str] of F.cols) { const dw = str ? st : (b - a) * s;
+    for (const [r0, r1, dy, dh] of rows) if (dh > 0) ctx.drawImage(im, a, r0, b - a, r1 - r0, x - 0.4, dy - 0.4, dw + 0.8, dh + 0.8);
+    x += dw; }
   return { l: px + F.inL * s, r: px + pw - F.inR * s, t: py + (F.inT - F.top) * s, b: py + ph - F.inB * s, x: px + pw / 2, medal: py + (F.medal - F.top) * s };
+}
+// 16 Eki (Caner: yeni menü tasarımı her yere): ortak pencere çerçevesi mor taşla, içeriğin DIŞINA oturur (iç yerleşim bozulmaz);
+// ölçek ekrana sığacak kadar (en çok 0.34)
+function uiFrameAround(x, y, w, h) {
+  const F = UI_FRAME, s = clamp(Math.min(0.34, (H - 6 - h) / 241, (W + 40 - w) / 244), 0.16, 0.34);
+  // ekran kenarına dayalı paneller (ör. kodeks bilgi paneli): taş çerçeve sığmaz, eski kadife kalır
+  if (x - F.inL * s < VIS.l - 4 || x + w + F.inR * s > VIS.r + 4 || y - (F.inT - F.top) * s < VIS.t - 30 || y + h + F.inB * s > VIS.b + 4) return null;
+  return uiFrame(x - F.inL * s, y - (F.inT - F.top) * s, w + (F.inL + F.inR) * s, h + (F.inT - F.top + F.inB) * s, s);
 }
 function uiBtn(key, x, y, r, img, fn, o = {}) { // yuvarlak altın çerçeveli düğme (görsel); simge yoksa görselin kendi çizimi
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1)), im = spr(img); if (appear <= 0.01 || !im) return;
@@ -10237,7 +10267,7 @@ function roundBtn(key, x, y, r, icon, fn, o = {}) {
 
 // tahta çerçeveli parşömen panel
 function panel(x, y, w, h, bones = true) {
-  if (NECRO) { pauseFrame(x, y, w, h, 26, bones); pauseCrest(x + w / 2, y + 4); return; }
+  if (NECRO) { pauseFrame(x, y, w, h, 26, bones); if (!uiOk()) pauseCrest(x + w / 2, y + 4); return; }
   roundRect(x + 4, y + 10, w, h, 24, 'rgba(0,0,0,0.45)');
   const fr = ctx.createLinearGradient(0, y, 0, y + h);
   fr.addColorStop(0, '#a87442'); fr.addColorStop(1, '#4e2f16');
@@ -10273,6 +10303,10 @@ function tombPath(x, y, w, h, rise) {
 }
 // panel başlığı: oyulmuş yazı, iki yanda ince süs çizgisi
 function plaqueTitle(cx, y, text, col = '#e8dcc0', size = 26) {
+  if (NECRO && uiOk()) { // 16 Eki: mor taş tasarımda başlık taş plakada (kızıl iç, yeşil taşlar)
+    ctx.font = `400 ${Math.min(size, 26)}px ${FONT_T}`; const tw = ctx.measureText(TR(text)).width, w = Math.max(240, tw + 120), h = 54;
+    ui3('pill', cx - w / 2, y + 14 - h / 2, w, h); txt(text, cx, y + 15, Math.min(size, 26), '#f3e8ff', 'center', '400', FONT_T, true); return;
+  }
   if (NECRO) return crimsonRibbon(cx, y + 14, text, Math.min(size, 26), 280);
   ctx.font = `400 ${size}px ${FONT_T}`;
   const tw = ctx.measureText(text).width;
@@ -12245,13 +12279,6 @@ function drawShop() {
     ctx.fillStyle = 'rgba(14,8,2,0.7)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  // başlık yerine sekmeler (12 Eki): TAM OYUN | KRİSTAL
-  ctx.save(); ctx.globalAlpha = clamp(rk, 0, 1);
-  [['full', 'TAM OYUN'], ['kristal', 'KRİSTAL']].forEach(([k, lab], j) => {
-    const tx = W / 2 + (j - 0.5) * 210, sel = shopTab === k;
-    gameButton('tab_' + k, tx, 50, 196, 52, lab, () => { if (shopTab !== k) { shopTab = k; sfx('pick'); } }, sel ? 'gold' : 'dark', { size: 18 });
-  });
-  ctx.restore();
   roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = menuBack || 'map'; screenT = time; }), { appear: st - 0.1 });
   const pw = 600, ph = 388, px = W / 2 - pw / 2, py = 88, pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
@@ -12262,6 +12289,13 @@ function drawShop() {
     const fr = ctx.createLinearGradient(0, py, 0, py + ph); fr.addColorStop(0, '#6a1a20'); fr.addColorStop(1, '#2a0608');
     roundRect(px, py, pw, ph, 22, fr, '#e8bb52', 3);
   }
+  ctx.restore();
+  // başlık yerine sekmeler (12 Eki): TAM OYUN | KRİSTAL; 16 Eki: çerçeveden sonra çizilir (taş çerçevenin üst kenarı örtmesin)
+  ctx.save(); ctx.globalAlpha = clamp(rk, 0, 1);
+  [['full', 'TAM OYUN'], ['kristal', 'KRİSTAL']].forEach(([k, lab], j) => {
+    const tx = W / 2 + (j - 0.5) * 210, sel = shopTab === k;
+    gameButton('tab_' + k, tx, uiOk() ? 40 : 50, 196, 52, lab, () => { if (shopTab !== k) { shopTab = k; sfx('pick'); } }, sel ? 'gold' : 'dark', { size: 18 });
+  });
   ctx.restore();
   if (pk < 0.9) return;
   if (shopTab === 'kristal') { drawCrystalShop(px, py, pw, ph); return; }
@@ -15807,7 +15841,7 @@ function velvetCard(x, y, w, h, r = 14, o = {}) {
   // büyük kartlar duraklatma menüsünün panelinin aynısı (kalın kara çerçeve, kızıl-mor kadife, çift altın çizgi, köşelerde altın kıvrım ve yakut);
   // küçük kartlarda (kodeks kutusu, başarım satırı) süsler sığmaz: aynı kadife ve altın çerçeve
   if (w >= 120 && h >= 90) {
-    pauseFrame(x, y, w, h, 0, !!o.bones);
+    velvetFrame(x, y, w, h, 0, !!o.bones);
     if (o.ac) { ctx.save(); ctx.beginPath(); ctx.roundRect(x + 12, y + 12, w - 24, h - 24, 12); ctx.clip(); const tg = ctx.createLinearGradient(0, y + h, 0, y); tg.addColorStop(0, `rgba(${o.ac},0.3)`); tg.addColorStop(0.6, `rgba(${o.ac},0)`); ctx.fillStyle = tg; ctx.fillRect(x, y, w, h); ctx.restore(); }
     if (o.border) roundRect(x + 1, y + 1, w - 2, h - 2, 14, null, o.border, 3);
     return;
@@ -15838,6 +15872,10 @@ function menuBackdrop(st) {
 }
 // kızıl kumaş kurdele başlık (altın kenarlı, uçları çatallı)
 function crimsonRibbon(cx, cy, text, size = 24, w = 0) {
+  if (uiOk()) { // 16 Eki: mor taş tasarımda kurdele yerine taş plaka (kızıl iç, yeşil taşlar)
+    ctx.font = `400 ${size}px ${FONT_T}`; const tw = ctx.measureText(TR(text)).width, bw = Math.max(w, tw + 110), bh = size * 2.1;
+    ui3('pill', cx - bw / 2, cy - bh / 2, bw, bh); txt(text, cx, cy + 1, size, '#f3e8ff', 'center', '400', FONT_T, true); return;
+  }
   ctx.font = `400 ${size}px ${FONT_T}`; const tw = ctx.measureText(TR(text)).width, bw = Math.max(w, tw + 70), bh = size * 1.6;
   for (const sd of [-1, 1]) {
     ctx.beginPath(); ctx.moveTo(cx + sd * (bw / 2 - 8), cy - bh / 2 + 7); ctx.lineTo(cx + sd * (bw / 2 + 30), cy - bh / 2 + 7); ctx.lineTo(cx + sd * (bw / 2 + 18), cy + 7);
@@ -15942,6 +15980,10 @@ function boneBorder(x, y, w, h, rise = 0) {
   ctx.restore();
 }
 function pauseFrame(x, y, w, h, rise = 26, bones = true) {
+  if (uiOk() && uiFrameAround(x, y, w, h)) return; // mor taş + rune çerçeve (pencereler); içteki kartlar velvetFrame ile eski kadife
+  velvetFrame(x, y, w, h, rise, bones);
+}
+function velvetFrame(x, y, w, h, rise = 26, bones = true) {
   ctx.save();
   tombPath(x + 4, y + 10, w, h, rise); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fill();
   const fr = ctx.createLinearGradient(0, y, 0, y + h); fr.addColorStop(0, '#3a1a2a'); fr.addColorStop(1, '#140810');
@@ -16016,7 +16058,7 @@ function drawPauseMenu(k, cx, cy) {
   ctx.restore();
   const pw = 680, ph = 446, px = cx - pw / 2, py = cy - ph / 2 + 8;
   pauseFrame(px, py, pw, ph, 26, false);
-  pauseCrest(cx, py + 4);
+  if (!uiOk()) pauseCrest(cx, py + 4); // mor taş çerçevenin kendi kafatası madalyonu var
   // başlık: kızıl kumaş kurdele, altında bölüm adı
   const by = py + 64; crimsonRibbon(cx, by, 'DURAKLATILDI', 24, 300);
   txt(G.lv.name, cx, by + 34, 14, '#d9b8e8', 'center', '700', FONT_B);
