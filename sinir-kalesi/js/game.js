@@ -11998,10 +11998,10 @@ function drawKeepLights(cp, h, sh, burning) {
     const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
     glow(ctx, x, y, 22 * s * f[2], f[3] || winCol(i), 0.15 * k + 0.05);
   }
-  for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, KEEP_FX.green ? '110,255,130' : '255,60,100', 0.3 + 0.2 * Math.sin(time * 2)); }
+  if (!KEEP_FX.green) for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '255,60,100', 0.3 + 0.2 * Math.sin(time * 2)); } // yeni kalede kapı kafatasının gözleri sönük (Caner)
   const vid = !burning && !!spr('castle_keep_1_idle'); // Veo döngüsünde alevler videoda: kodla yalnız ışık
   for (const [i, f] of KEEP_FX.fire.entries()) {
-    const [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(time * 9 + i * 2) * Math.sin(time * 5.3 + i);
+    const tf = KEEP_FX.green ? time * 0.9 : time, [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(tf * 9 + i * 2) * Math.sin(tf * 5.3 + i); // yeni kalede ateş %10 yavaş (Caner)
     const G2 = KEEP_FX.green; // yeni kalenin mangalları yeşil alevli
     glow(ctx, x, y - 6 * s, (62 + 10 * k) * s, G2 ? '80,255,110' : '230,40,90', 0.32 + 0.12 * k);
     if (!vid) for (let j = 0; j < 3; j++) avluFlame(x + (j - 1) * 9 * s, y + 10 * s, (40 + 14 * Math.sin(time * 7 + j * 2 + i)) * s * (j === 1 ? 1.2 : 0.8), 9 * s, k, j * 2 + i, G2 ? '230,255,220' : '255,225,235', G2 ? '60,220,90' : '225,40,100');

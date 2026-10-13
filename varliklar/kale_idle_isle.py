@@ -31,10 +31,17 @@ bg = np.isin(lab, list(edge) + [i + 1 for i in range(n) if sz[i] >= 8 and pure[i
 a = ndimage.gaussian_filter((~bg).astype(float), 0.7); a = np.clip((a - 0.25) / 0.5, 0, 1)
 soft = (a < 1) & (a > 0); a[soft] *= np.clip((255 - mn[soft]) / 60, 0.3, 1)
 alpha = Image.fromarray((a * 255).astype(np.uint8))
+# 13 Eki (Caner): kapı kafatasının gözleri yanıp sönmesin, sönük kalsın: gözleri en sönük karedeki hali bütün karelere yumuşak kenarlı yapıştırılır
+E = [(0.39, 0.688), (0.505, 0.692)]; R = 0.06 * FW
+yy, xx = np.mgrid[:FH, :FW]; m = np.zeros((FH, FW))
+for ex, ey in E: m = np.maximum(m, np.clip(1.6 - np.hypot(xx - ex * FW, (yy - ey * FH) * 1.25) / R, 0, 1))
+F = [np.asarray(f).astype(float) for f in frames]
+dim = F[int(np.argmin([(f.mean(2) * m).sum() for f in F]))]
+frames = [Image.fromarray((f * (1 - m[..., None]) + dim * m[..., None]).astype(np.uint8)) for f in F]
 strip = Image.new('RGBA', (FW * N, FH))
 for i, fr in enumerate(frames): fr.putalpha(alpha); strip.paste(fr, (i * FW, 0))
 strip.save(os.path.join(IMG, 'castle_keep_1_idle.webp'), 'WEBP', quality=88, method=6)
-an = json.load(open(os.path.join(IMG, 'anim.json'))); an['castle_keep_1_idle'] = {'n': N, 'fw': FW, 'fh': FH, 'fps': 12}
+an = json.load(open(os.path.join(IMG, 'anim.json'))); an['castle_keep_1_idle'] = {'n': N, 'fw': FW, 'fh': FH, 'fps': 10.8}  # 13 Eki (Caner): ateş %10 yavaş
 json.dump(an, open(os.path.join(IMG, 'anim.json'), 'w'), indent=1, ensure_ascii=False)
 man = json.load(open(os.path.join(IMG, 'manifest.json')))
 if 'castle_keep_1_idle.webp' not in man: man = sorted(man + ['castle_keep_1_idle.webp']); json.dump(man, open(os.path.join(IMG, 'manifest.json'), 'w'), indent=0)
