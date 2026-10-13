@@ -737,7 +737,17 @@ HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprit
     { id: 'bonearrow', name: 'Kemik Ok', cd: 12, desc: 'Yol boyunca önündeki bütün düşmanları delip geçen kemik ok' },
     { id: 'hunter', name: 'Gölge Avcı', passive: true, desc: 'Kalıcı: %25 kritik vuruş, bosslara +%20 hasar' },
   ] }] };
+// 16 Eki (Caner: "blood magic yapan ihtişamlı, korkunç, sıra dışı büyücü"): Erzsébet Báthory, Kan Kontesi. Menzilli kan büyüsü, can çalma, iskeletlere kan feda eder.
+HEROES.bathory = { name: 'Báthory', role: 'Kan Kontesi · Kan büyüsü', sprite: 'hero_bathory', h: 42, aura: '220,30,50', halo: '255,90,90', cost: 70,
+  hp: 240, dmg: [17, 25], armor: 0.1, rate: 1.15, speed: 72, respawn: 18, regen: 6, engage: 0, ranged: 180, proj: 'fireball', blood: true, magic: true, splash: 16,
+  paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
+    { id: 'bloodlink', name: 'Kan Bağı', cd: 12, desc: '4 düşmanı kan iplikleriyle bağlar: 5 sn canlarını emer, yavaşlatır; emilen can Báthory\'ye akar' },
+    { id: 'sacrifice', name: 'Kan Fedası', cd: 16, desc: 'Canının %15\'ini feda eder: yakındaki iskeletler iyileşir, 6 sn %50 sert vurur' },
+    { id: 'thirst', name: 'Kana Susamışlık', passive: true, desc: 'Kalıcı: kan okları %40 can çalar (normalde %20), +%15 hasar' },
+  ] }] };
 Object.assign(HERO_ULT, {
+  bathory: { name: 'Kan Gölü', cd: 60, r: 72, dps: [26, 34], dur: 5, bloodpool: true,
+    desc: 'Seçtiğin yerde 5 sn kaynayan bir kan gölü açılır: düşmanların canını emer ve yavaşlatır, içindeki iskeletler iyileşir', short: 'Can emen, iskeletleri iyileştiren kan gölü' },
   robin: { name: 'Ok Yağmuru', cd: 55, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
     desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
   merlin: { name: 'Zaman Kapısı', cd: 65, anim: 1.8, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
@@ -747,7 +757,7 @@ Object.assign(HERO_ULT, {
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin', 'robin');
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin', 'robin', 'bathory');
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
   desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
   short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });

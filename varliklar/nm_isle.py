@@ -53,6 +53,7 @@ SHEETS = [
     ('nm_komutanlar_2.jpg', ['hero_spartacus', 'hero_leonidas'], 'unit'),
     ('nm_merlin.jpg', ['hero_merlin'], 'unit'),
     ('nm_robin.jpg', ['hero_robin'], 'unit'),
+    ('nm_bathory.jpg', ['hero_bathory'], 'unit'),  # 16 Eki: Erzsébet Báthory, Kan Kontesi (kan büyücüsü)
     ('nm_ruh_kurdu_1.jpg', ['pet_wolf_1'], 'unit'),  # 16 Eki: Robin'in Ruh Kurdu (1. form)
     ('nm_ruh_kurdu_2.jpg', ['pet_wolf_2'], 'unit'),  # 16 Eki: Kadim Ruh Kurdu (2. form, Robin 6. seviye)  # 16 Eki: Robin, Ölü Orman'ın Hayaleti (okçu, suikastçı, druid; sissiz çizim)  # 15 Eki: Merlin, Ölüm Büyücüsü (boynuz taçlı lich, ruh küreli asa)
     ('nm_golemler.jpg', ['unit_bonegiant', 'unit_corpsegolem'], 'unit'),
