@@ -452,6 +452,10 @@ const SOUND = {
   fs_pain:   { vol: 0.15, gap: 0.12, max: 2 },                       // Romalı zorlanma ve acı (MrFossy, ale-batec)
   fs_death:  { vol: 0.17, gap: 0.15, max: 2 },                       // Romalı ölümü (Artmasterrich, unfa)
   fs_bone:   { vol: 0.16, gap: 0.2, max: 1, rate: [0.9, 1.12] },     // iskelet kırılıp dağılır (samueleunimancer, JarredGibb, NeoSpica)
+  // 13 Eki (Caner): yürüyüş sesleri (varliklar/adim_sesleri.py: Kenney CC0 + Freesound CC0); updateSteps kalabalığa göre kısık çalar
+  step_foot:   { vol: 0.11, gap: 0.07, max: 3, rate: [0.88, 1.12] },  // düşman piyadesinin ayak sesi
+  step_gallop: { vol: 0.16, gap: 0.12, max: 2, rate: [0.92, 1.08] },  // süvari / atlı okçu / savaş arabası dörtnalı
+  step_bone:   { vol: 0.09, gap: 0.08, max: 2, rate: [0.9, 1.15] },   // iskeletlerin kemik takırtılı adımı
   fs_rattle: { vol: 0.09, gap: 2.5, max: 1, rate: [0.9, 1.1] },      // bekleyen iskeletin kemik takırtısı (spookymodem, Kneeling), çok kısık     // kılıç çarpışması (gerçek kayıt, StarNinjas CC0; hafif)
   death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
   coin:    { vol: 0.22, gap: 0.09, max: 2, rate: [0.95, 1.15] },
@@ -741,7 +745,28 @@ function gaProg(st, i, score) { // st: 'Start' | 'Complete' | 'Fail'
 function gaDesign(id, v) { const A = gaInit(); if (!A) return; try { if (v != null) A.addDesignEvent(id, v); else A.addDesignEvent(id); } catch (e) {} }
 const FREESOUND_ON = true; // false: eski sesler (Caner beğenmezse)
 const FS_ALIAS = { clash: 'fs_clash', pain: 'fs_pain', dvoice: 'fs_death', bonefall: 'fs_bone' };
-function sfx(kind, rate) {
+// ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
+// piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
+const STEPS = { foot: { gap: 0.36, cap: 10 }, gallop: { gap: 0.5, cap: 4 }, bone: { gap: 0.33, cap: 6 } };
+const HORSE = new Set(['cavalry', 'horsearcher', 'chariot', 'cavcaptain']);
+function updateSteps(dt) {
+  if (muted || !G.t) return;
+  let nf = 0, nh = 0, nb = 0;
+  for (const e of G.enemies) {
+    if (e.dead || e.under || e.inMelee || e.stun > 0 || !onScreen(e, 0)) continue;
+    const d = e.def; if (d.flying || d.machine) continue;
+    if (HORSE.has(e.type) || HORSE.has(d.base)) nh++; else if (!MUTE_VOICE(e) || e.type === 'wardog') nf++;
+  }
+  for (const s of G.soldiers) { // iskeletler: gerçekten yer değiştirenler
+    const mv = s.lx != null && Math.hypot(s.x - s.lx, s.y - s.ly) > 12 * dt; s.lx = s.x; s.ly = s.y;
+    if (mv && !s.dead && !s.hero && !s.wall && !s.golem && !s.pet && onScreen(s, 0)) nb++;
+  }
+  const S = G.stepT || (G.stepT = { foot: 0, gallop: 0.2, bone: 0.1 });
+  const go = (k, n, kind) => { if (!n) { S[k] = Math.min(S[k], 0.1); return; } if ((S[k] -= dt) > 0) return;
+    const C = STEPS[k]; S[k] = C.gap * rand(0.85, 1.15) / (n > 3 ? 1.35 : 1); sfx(kind, null, 0.45 + 0.55 * Math.min(1, n / C.cap)); };
+  go('foot', nf, 'step_foot'); go('gallop', nh, 'step_gallop'); go('bone', nb, 'step_bone');
+}
+function sfx(kind, rate, volK = 1) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
   if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
@@ -761,7 +786,7 @@ function sfx(kind, rate) {
   if (rate) src.playbackRate.value = rate;
   else if (def.rate) src.playbackRate.value = rand(def.rate[0], def.rate[1]);
   const g = actx.createGain();
-  g.gain.value = def.vol;
+  g.gain.value = def.vol * volK;
   src.connect(g); g.connect(master);
   src.onended = () => { st.playing--; };
   src.start();
@@ -6554,6 +6579,7 @@ function update(dt) {
   updateMortSay(dt);
   updatePets(dt);
   updateBloodLinks(dt);
+  updateSteps(dt);
   // bekleyen iskeletler ara ara kemik takırdatır (15 Eki, Caner): ekranda görünen boşta bir iskelet, 7-14 sn'de bir, tek ses
   if ((G.rattleT = (G.rattleT ?? rand(4, 8)) - dt) <= 0) {
     G.rattleT = rand(7, 14);
