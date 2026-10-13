@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle|run|cast|block)x?$/, STRIP_WAIT = new Set();
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle|run|cast|block)x?|castle_keep_\d_idle)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -1758,6 +1758,7 @@ function startLevel(idx, chal = null) {
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block']).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
 
+  keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
@@ -11964,8 +11965,12 @@ function drawCastle() {
     const kst = G.keepStage ?? stage;
     if (stage > kst && isKeep(im)) { G.keepTr = { t0: time, prev: spr('castle_keep_' + kst), seed: rand(0, 9) }; keepCollapse(c, cp, cp.w * im.height / im.width); }
     G.keepStage = stage;
-    const IA = im === spr('castle_keep_1') && spr('castle_keep_1_idle') && ANIM_META.castle_keep_1_idle; // 13 Eki: Veo idle döngüsü (alev, pencere, dal) yalnız hasarsız kalede
-    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw; ctx.drawImage(spr('castle_keep_1_idle'), fi * IA.fw, 0, IA.fw, IA.fh, -cp.w / 2, -h, cp.w, h); }
+    // 13 Eki: Veo idle döngüsü (alev, pencere, dal); her evre kendi döngüsünü kullanır, yalnız o an ekrandaki evrenin şeridi bellekte durur
+    const SN = [1, 2, 3, 4].find(n => im === spr('castle_keep_' + n)), IN = SN && (ANIM_META['castle_keep_' + SN + '_idle'] ? 'castle_keep_' + SN + '_idle' : null);
+    if (IN && !spr(IN)) loadStrip(IN);
+    if (SN && G.keepIdleN !== IN) { if (G.keepIdleN && G.keepIdleN !== IN) { delete SPR[G.keepIdleN]; STRIP_WAIT.delete(G.keepIdleN); } G.keepIdleN = IN; }
+    const IA = IN && spr(IN) && ANIM_META[IN];
+    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw; ctx.drawImage(spr(IN), fi * IA.fw, 0, IA.fw, IA.fh, -cp.w / 2, -h, cp.w, h); }
     else drawSprite(ctx, im, 0, 0, cp.w);
     if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
@@ -12068,7 +12073,7 @@ function drawKeepLights(cp, h, sh, burning) {
     glow(ctx, x, y, 22 * s * f[2], f[3] || winCol(i), 0.15 * k + 0.05);
   }
   if (!KEEP_FX.green) for (const f of KEEP_FX.eyes) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '255,60,100', 0.3 + 0.2 * Math.sin(time * 2)); } // yeni kalede kapı kafatasının gözleri sönük (Caner)
-  const vid = !burning && !!spr('castle_keep_1_idle'); // Veo döngüsünde alevler videoda: kodla yalnız ışık
+  const vid = !!(G.keepIdleN && spr(G.keepIdleN)); // Veo döngüsünde alevler videoda: kodla yalnız ışık
   for (const [i, f] of KEEP_FX.fire.entries()) {
     const tf = KEEP_FX.green ? time * 0.9 : time, [x, y] = P(f), k = 0.5 + 0.5 * Math.sin(tf * 9 + i * 2) * Math.sin(tf * 5.3 + i); // yeni kalede ateş %10 yavaş (Caner)
     const G2 = KEEP_FX.green; // yeni kalenin mangalları yeşil alevli
