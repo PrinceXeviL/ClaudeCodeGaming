@@ -750,7 +750,7 @@ HEROES.bathory = { name: 'Báthory', role: 'Kan Kontesi · Kan büyüsü', sprit
 Object.assign(HERO_ULT, {
   bathory: { name: 'Kan Gölü', cd: 60, anim: 2.0, r: 72, dps: [26, 34], dur: 5, bloodpool: true,
     desc: 'Seçtiğin yerde 5 sn kaynayan bir kan gölü açılır: düşmanların canını emer ve yavaşlatır, içindeki iskeletler iyileşir', short: 'Can emen, iskeletleri iyileştiren kan gölü' },
-  robin: { name: 'Ok Yağmuru', cd: 55, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
+  robin: { name: 'Ok Yağmuru', cd: 55, anim: 2.6, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
     desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
   merlin: { name: 'Zaman Kapısı', cd: 65, anim: 1.8, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
     desc: 'Seçtiğin alanda zaman kapısı açılır: düşmanlar yolun gerisine fırlatılır, hasar alır, 1 sn sersemler (boss yarı yol)', short: 'Alandaki düşmanları yolda geri ışınlar' },
