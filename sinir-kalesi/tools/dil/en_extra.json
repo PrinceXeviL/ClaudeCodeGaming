@@ -1,8 +1,5 @@
 {
 "exact": {
-"Kazık Ormanı": "Forest of Stakes",
-"Seçtiğin yerde topraktan kara kazıklar fışkırır: ağır hasar, 1,2 sn sersemletme ve kanama": "Black stakes burst from the ground where you choose: heavy damage, 1.2 s stun and bleeding",
-"Alanda topraktan kazıklar: hasar, sersemletme, kanama": "Stakes from the ground: damage, stun, bleeding",
 "Arena Kükremesi": "Arena Roar",
 "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Spartacus shakes the arena: enemies in the area take damage and are stunned for 1.5 s",
 "Alanda kükreme: hasar ve 1,5 sn sersemletme": "Roar in an area: damage and 1.5 s stun",
@@ -138,9 +135,6 @@
 "Üç arbaletçi menzildeki 8 düşmana birden cıvata yağdırır": "Three crossbowmen rain bolts on 8 enemies in range at once",
 "Üç kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara ek hasar": "Three crimson ghost crossbowmen shoot separate targets, bonus vs flyers",
 "Arbaletçilerim hiç ıskalamaz. Iskalasalar da cıvatayı geri toplarlar.": "My crossbowmen never miss. And when they do, they collect the bolts.",
-"Kont Drakula": "Count Dracula",
-"Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir": "Vampire bats swarm the area: they bite for 3 s and slow, Dracula heals from the bites",
-"Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir": "A bat swarm on the chosen area: 3 s of bites, slow, Dracula heals",
 "KISIK": "LOW",
 "Görüntü kalitesi": "Graphics quality",
 "HARİTAYA DÖN": "BACK TO MAP",

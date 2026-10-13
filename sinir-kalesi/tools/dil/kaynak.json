@@ -920,10 +920,6 @@
 "en": "Double Cauldron"
 },
 {
-"tr": "Kont Vladrik",
-"en": "Count Vladrik"
-},
-{
 "tr": "Vampir · Yakın dövüş",
 "en": "Vampire · Melee"
 },
@@ -1014,14 +1010,6 @@
 {
 "tr": "Yarasa Sürüsü",
 "en": "Bat Swarm"
-},
-{
-"tr": "Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Vladrik ısırıklarla iyileşir",
-"en": "Vampire bats swarm the area: bite and slow for 3 s, Vladrik heals from the bites"
-},
-{
-"tr": "Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Vladrik iyileşir",
-"en": "Bat swarm on the chosen area: 3 s of bites and slow, Vladrik heals"
 },
 {
 "tr": "Ölüm Çığlığı",
@@ -4787,18 +4775,6 @@
 {
 "tr": "İpucu: Mahzenden çıkan iskeletler düşmanı yolda durdurur, arbaletçiler arkadan vurur.",
 "en": "Tip: Skeletons from the crypt stop enemies on the road, crossbowmen shoot from behind."
-},
-{
-"tr": "Kont Drakula",
-"en": "Count Dracula"
-},
-{
-"tr": "Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir",
-"en": "Vampire bats swarm the area: they bite for 3 s and slow, Dracula heals from the bites"
-},
-{
-"tr": "Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir",
-"en": "A bat swarm on the chosen area: 3 s of bites, slow, Dracula heals"
 },
 {
 "tr": "Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur",

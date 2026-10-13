@@ -47,7 +47,6 @@ SHEETS = [
     ('nm_dusman_1.jpg', ['enemy_legion', 'enemy_solarcher', 'enemy_gladiator', 'enemy_assassin'], 'unit'),
     ('nm_dusman_2.jpg', ['enemy_heavy', 'enemy_cavalry', 'enemy_priest', 'enemy_gloriosus'], 'unit'),
     ('nm_kusatma.jpg', ['enemy_ram', 'enemy_catapult'], 'unit'),
-    ('nm_komutanlar.jpg', ['hero_vladrik', None, None, None], 'unit'),  # eski Mortimer (4.) artık kullanılmıyor
     ('nm_mortimer.jpg', ['mortimer', None], 'unit'),  # azrail Mortimer: önden görünüş (balkondan ekrana/aşağı bakar)
     ('nm_banshee.jpg', ['hero_wren'], 'unit'),
     ('nm_komutanlar_2.jpg', ['hero_spartacus', 'hero_leonidas'], 'unit'),
@@ -109,7 +108,6 @@ FLIP = {'enemy_ram'}  # sola bakan görseller aynalanır
 ERASE = {
     'enemy_priest': [(0, 0, 1070, 1116), (1330, 0, 2000, 592), (1475, 0, 2000, 1116)],
     'enemy_gloriosus': [(0, 0, 1330, 1116), (1330, 596, 1478, 745)],
-    'hero_vladrik': [(522, 230, 800, 600)],
     'castle_2': [(1290, 0, 1420, 300)],  # sağ kuleden yukarı savrulan duman
     'castle_3': [(1150, 0, 1430, 860), (1150, 860, 1340, 1116)],  # soldaki 2. evreden taşan kule/haç/duman
     'mortimer': [(0, 760, 400, 1116), (800, 700, 1000, 1116)],  # eteğin iki yanına savrulan duman (görseli genişletiyor)

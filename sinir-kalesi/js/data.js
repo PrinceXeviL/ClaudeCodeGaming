@@ -701,8 +701,7 @@ TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
 const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
-// komutanlar (tek seçilir): Kont Drakula (eski komutanın yetenekleri; 11 Eki Vladrik'in yerine). Wailing Wren 11 Eki'de çıkarıldı (HERO_ORDER'da yok)
-Object.assign(HEROES.commander, { name: 'Kont Drakula', role: 'Vampir · Yakın dövüş', sprite: 'hero_drakula', h: 31, aura: '220,40,60' });
+// komutanlar (tek seçilir). Wailing Wren 11 Eki'de, eski komutan 14 Eki'de (Caner) çıkarıldı: HERO_ORDER'da yok, başlangıç komutanı Spartaküs
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
 // 10 Eki: Mortimer'a düelloda yenilip onun komutanı olan ünlü savaşçılar (tasarim/komutanlar-golemler.md).
 // unlock: bitirilmesi gereken bölüm (15: 1. seferin sonu; 21: Cadı Avı'nın 6. bölümü)
@@ -759,12 +758,10 @@ Object.assign(HERO_ULT, {
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin', 'robin', 'bathory');
+HERO_ORDER.splice(0, HERO_ORDER.length, 'spartacus', 'leonidas', 'merlin', 'robin', 'bathory');
 // 13 Eki (Caner): her komutanın 2 aktif gücü (savaşa yalnız biri götürülür, Komutanlar ekranında seçilir) ve kendi kendine kullandığı
 // 2 pasif yeteneği var. İkinci aktifler: HERO_ULT2 (kademe tablosu HERO_TREE.ult2), pasifler: HEROES[id].passives (ağaçta yalnız bunlar).
 const HERO_ULT2 = {
-  commander: { name: 'Kazık Ormanı', cd: 50, r: 66, dmg: [30, 42], stun: 1.2, bleed: 16, stakes: true,
-    desc: 'Seçtiğin yerde topraktan kara kazıklar fışkırır: ağır hasar, 1,2 sn sersemletme ve kanama', short: 'Alanda topraktan kazıklar: hasar, sersemletme, kanama' },
   spartacus: { name: 'Arena Kükremesi', cd: 45, r: 84, dmg: [18, 26], stun: 1.5, scream: true, col: '255,170,90',
     desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
   leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
@@ -777,11 +774,8 @@ const HERO_ULT2 = {
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
 };
 // pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)
-const HERO_PASSIVES = { commander: ['whirl', 'iron'], spartacus: ['whirl', 'bash'], leonidas: ['bash', 'iron'], merlin: ['chainbolt', 'arcane'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
+const HERO_PASSIVES = { spartacus: ['whirl', 'bash'], leonidas: ['bash', 'iron'], merlin: ['chainbolt', 'arcane'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
 for (const id in HERO_PASSIVES) if (HEROES[id]) HEROES[id].passives = HERO_PASSIVES[id];
-Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
-  desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
-  short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
@@ -1426,7 +1420,7 @@ if (NECRO) {
 // savaş eşyalarını açar. Komutan: final sefer sonu bossu; heroic/usta çarpanı.
 const CRYSTAL = { boss: 2, final: 8, heroic: 2, usta: 1.5 };
 for (const t of ['gloriosus3', 'cathedral']) if (ENEMIES[t]) ENEMIES[t].final = true;
-Object.assign(HEROES.spartacus, { cost: 15 }); // komutan kristalle açılır (eski unlock bölümü yerine)
+Object.assign(HEROES.spartacus, { cost: 0, unlock: null }); // 14 Eki: başlangıç komutanı (ücretsiz) // komutan kristalle açılır (eski unlock bölümü yerine)
 Object.assign(HEROES.leonidas, { cost: 30 });
 // tek kullanımlık savaş eşyaları: dükkânda kristalle alınır, savaşta sağ alttaki çantadan kullanılır (KR'deki eşyalar gibi)
 const ITEMS = {

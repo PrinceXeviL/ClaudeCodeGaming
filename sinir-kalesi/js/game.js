@@ -1668,8 +1668,8 @@ function heroUnlocked(id) {
 // seçili kahraman takımı (en fazla 2, yalnızca açılmış olanlar)
 // seçili kahraman (savaşa tek kahraman gider; kahramanlar ekranından ya da ayarlardan seçilir)
 function team() {
-  const t = (save.team || ['commander']).filter(id => HEROES[id] && HERO_ORDER.includes(id) && heroUnlocked(id)).slice(0, 1);
-  return t.length ? t : ['commander'];
+  const t = (save.team || [HERO_ORDER[0]]).filter(id => HEROES[id] && HERO_ORDER.includes(id) && heroUnlocked(id)).slice(0, 1);
+  return t.length ? t : [HERO_ORDER[0]];
 }
 
 // Meydan okuma (bölümde 3 yıldızdan sonra): 'h' Kahramanlık (aynı dalgalar, düşman canı +%20, 3 can). 1 ek yıldız (save.ch).
@@ -6560,8 +6560,7 @@ function castUlt(h, x, y) {
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
   h.castT = 0.45; h.ultT = h.ultD = U.anim || ULT_ANIM; // komutanın güç şeridi (varsa) bu sürede bir kez oynar
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
-  if (U.bats) { // Drakula'nın ve Báthory'nin (Kan Yarasaları) yarasaları
-    // Vladrik'in yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), ısırıklarla Vladrik iyileşir
+  if (U.bats) { // Báthory'nin Kan Yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), komutan ısırıklarla iyileşir
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) }); sfx('bats');
     sfx('whirl'); setTimeout(() => sfx('scream', 1.8), 250);
   } else if (U.chains) {
@@ -6597,12 +6596,6 @@ function castUlt(h, x, y) {
       G.effects.push({ kind: 'timegate', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
     }
     shakeScreen(4, 0.35); sfx('timegate');
-  } else if (U.stakes) {
-    // Drakula'nın Kazık Ormanı (Kazıklı Voyvoda): topraktan kara kazıklar fışkırır; hasar, sersemletme, kanama
-    const pts = []; for (let i = 0; i < 11; i++) pts.push(spot(U.r * 0.9));
-    G.effects.push({ kind: 'stakes', x, y, pts, t: 0, dur: 1.6 });
-    for (const e of enemiesNear(x, y, U.r, false)) { damageEnemy(e, dmg(), 'melee'); if (!e.dead) { stunEnemy(e, U.stun); e.bleedDps = Math.max(e.bleedT > 0 ? e.bleedDps : 0, U.bleed * k); e.bleedT = 3; } }
-    shakeScreen(5, 0.4); sfx('bash'); setTimeout(() => sfx('fs_bone'), 120); setTimeout(() => sfx('scream', 1.8), 300);
   } else if (U.soulpool) {
     // Merlin'in Ruh Bataklığı: mor bataklık (drawPlaguePools z.black), yavaşlatır ve çürütür
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'magic', t: 0, life: U.dur, fxT: 0, kind: 'soulpool', pool: true, black: true, slowK: 0.45, infect: 2, seed: rand(0, 9) });
@@ -9136,7 +9129,6 @@ Object.assign(RIG, {
   enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
   enemy_priest: { legY: 0.82, stride: 0.5 }, enemy_heavy: { legY: 0.74, stride: 0.8 }, enemy_cavalry: { legY: 0.62, stride: 1.2 },
   enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' },
-  hero_drakula: { legY: 0.66 },
 });
 
 // ----- silah kolu ve gövde iskeleti -----
@@ -10102,17 +10094,6 @@ function drawEffect(f) {
       ctx.stroke();
     }
     ctx.restore();
-  } else if (f.kind === 'stakes') { // Drakula'nın kazıkları: topraktan fırlar, durur, sonunda toprağa çekilir
-    const up = clamp(f.t / 0.12, 0, 1), down = clamp((f.t - f.dur + 0.35) / 0.35, 0, 1), hh = 26 * easeOutBack(up) * (1 - down);
-    f.pts.forEach(([px, py], i) => {
-      const h2 = hh * (0.7 + 0.3 * ((i * 37) % 10) / 10), lean = ((i * 53) % 7 - 3) * 0.06;
-      ctx.save(); ctx.translate(px, py); ctx.rotate(lean);
-      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 1, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(3, 0); ctx.lineTo(0.6, -h2); ctx.lineTo(-0.6, -h2); ctx.closePath();
-      const g = ctx.createLinearGradient(-3, 0, 3, 0); g.addColorStop(0, '#2a1a12'); g.addColorStop(0.5, '#5a3a24'); g.addColorStop(1, '#1a0e08'); ctx.fillStyle = g; ctx.fill();
-      ctx.fillStyle = '#9a1020'; ctx.beginPath(); ctx.moveTo(-1.1, -h2 + 5); ctx.lineTo(1.1, -h2 + 5); ctx.lineTo(0.5, -h2); ctx.lineTo(-0.5, -h2); ctx.closePath(); ctx.fill(); // kanlı uç
-      ctx.restore();
-    });
   } else if (f.kind === 'dust') {
     ctx.globalAlpha = 1 - k;
     for (let i = 0; i < 8; i++) { const a = i * 0.785; circle(f.x + Math.cos(a) * (10 + k * 22), f.y + Math.sin(a) * (5 + k * 10), 4 * (1 - k) + 1, '#d9c8a8'); }
@@ -11495,11 +11476,7 @@ function drawHeroPortrait(h, hb, i) {
 // 13 Eki: ikinci aktif güçlerin simgeleri (HERO_ULT2)
 function drawUlt2Glyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  if (id === 'commander') { // kazıklar
-    for (let i = -2; i <= 2; i++) { const x = i * r * 0.22, h = r * (0.55 + 0.18 * (2 - Math.abs(i)) / 2);
-      ctx.beginPath(); ctx.moveTo(x - r * 0.07, r * 0.5); ctx.lineTo(x + r * 0.07, r * 0.5); ctx.lineTo(x, r * 0.5 - h); ctx.closePath(); ctx.fillStyle = '#4a2c18'; ctx.fill(); ctx.strokeStyle = '#1a0c06'; ctx.lineWidth = 1.2; ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x - r * 0.03, r * 0.5 - h + r * 0.14); ctx.lineTo(x + r * 0.03, r * 0.5 - h + r * 0.14); ctx.lineTo(x, r * 0.5 - h); ctx.closePath(); ctx.fillStyle = '#d0203a'; ctx.fill(); }
-  } else if (id === 'spartacus' || id === 'robin') { // kükreme / uluma: genişleyen yaylar
+  if (id === 'spartacus' || id === 'robin') { // kükreme / uluma: genişleyen yaylar
     const col = id === 'robin' ? '150,255,170' : '255,170,90';
     for (let i = 0; i < 3; i++) { const ph = (time * 1.4 + i / 3) % 1; ctx.strokeStyle = `rgba(${col},${1 - ph})`; ctx.lineWidth = r * 0.09; ctx.beginPath(); ctx.arc(-r * 0.3, 0, r * (0.25 + ph * 0.6), -0.9, 0.9); ctx.stroke(); }
     if (id === 'robin') { ctx.fillStyle = '#d8ffe0'; ctx.beginPath(); ctx.arc(-r * 0.32, -r * 0.05, r * 0.2, Math.PI * 0.3, Math.PI * 1.7); ctx.fill(); } // ay
@@ -11522,8 +11499,7 @@ const heroGlyph = (id, r, act) => (act === 'ult2' ? drawUlt2Glyph(id, r) : id ==
 // kahraman gücü düğmesinin simgesi
 function drawUltGlyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  if (id === 'commander') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 0.8, '200,30,50', 0.45); ctx.restore(); const q = r / 20; drawBat(-6 * q, -2 * q, 1.1 * q, 1, time * 9, 1); drawBat(7 * q, 4 * q, 0.8 * q, -1, time * 9 + 2, 1); drawBat(1 * q, 9 * q, 0.7 * q, 1, time * 9 + 4, 1); }
-  else if (id === 'spartacus') { // dönen zincir halkası
+  if (id === 'spartacus') { // dönen zincir halkası
     for (let k = 0; k < 8; k++) { const a = time * 3 + k * Math.PI / 4; ctx.save(); ctx.translate(Math.cos(a) * r * 0.42, Math.sin(a) * r * 0.42); ctx.rotate(a + (k % 2 ? 0 : Math.PI / 2));
       ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(0, 0, r * 0.13, r * 0.075, 0, 0, Math.PI * 2); ctx.stroke(); ctx.strokeStyle = '#d8ccb8'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
   } else if (id === 'leonidas') { // bronz hoplit kalkanı ve lambda
@@ -12831,7 +12807,7 @@ function drawHeroes() {
     roundBtn('ht_close', px + pw - 34, py + 34, 22, 'close', () => { heroTreeId = null; }, { style: 'red', appear: k - 0.2 });
     ctx.restore();
   }
-  save.seenHeroes = save.seenHeroes || ['commander'];
+  save.seenHeroes = save.seenHeroes || [HERO_ORDER[0]];
   for (const id of HERO_ORDER) if (heroUnlocked(id) && !save.seenHeroes.includes(id)) { save.seenHeroes.push(id); persist(); }
 }
 let heroTreeId = null, heroTreeT = 0;
@@ -12881,7 +12857,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   if (unlocked) fitTxt('Güç: ' + (heroRec(id).act === 'ult2' && heroRec(id).ult2 > 0 && HERO_ULT2[id] ? HERO_ULT2[id] : HERO_ULT[id]).name, 0, y0 + 316 + by2 * 1.6, w - 36, 12, '#5a3410', 'center', '800', FONT_B, false);
   if (sel) { circle(w / 2 - 20, y0 + 22, 13, '#3cbf3c', '#fff', 2); drawIcon('check', w / 2 - 20, y0 + 22, 16); }
   if (unlocked) { const Rr = heroRec(id); roundRect(x0 + 14, y0 + 140, 58, 22, 11, 'rgba(10,6,18,0.85)', '#e8bb4a', 1.5); txt(`Sv. ${Rr.lvl}`, x0 + 43, y0 + 151.5, 12, '#ffe27a', 'center', '400', FONT_T); } // kalıcı seviye
-  if (unlocked && !(save.seenHeroes || ['commander']).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
+  if (unlocked && !(save.seenHeroes || [HERO_ORDER[0]]).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
   if (!unlocked) {
     roundRect(x0, y0, w, h, 20, 'rgba(18,10,4,0.66)');
     drawIcon('lock', 0, y0 + 90, 44);
@@ -15199,6 +15175,7 @@ function drawTip(tx, ty, text, above = true) {
 function drawMap() {
   // gelişme fiyatları arttı (9 Eki): harcanan yıldız eldekini aşıyorsa gelişmeler sıfırlanır, yıldızlar iade edilir
   if (!save.upgFix2) { save.upgFix2 = 1; if (starsSpent() > starsTotal()) save.upg = {}; persist(); }
+  if (save.hero && save.hero.commander) { delete save.hero.commander; if (save.team && save.team.includes('commander')) save.team = [HERO_ORDER[0]]; persist(); } // 14 Eki: eski komutan (Drakula) kaldırıldı
   ensureMapEp();
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);
   const st = time - screenT;
@@ -15278,7 +15255,7 @@ function drawMap() {
   // 11 Eki: sefer adı üst satırda sekmelerle düğmelerin arasına sıkışıyordu (telefonda üst üste) → sol altta, alt düğmelerle aynı hizada
   { const cw = Math.min(240, R0 - 650 - L0 - 80); if (cw > 140) { ctx.save(); ctx.translate(L0 + 46 + cw / 2, EDGE.b - 40); ctx.scale(rk, rk); ribbon(0, 0, cw, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 18); ctx.restore(); } }
   // kahramanlar ve gelişmeler (sağ alt, ekran köşesine yaslı)
-  const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || ['commander']).includes(id)), BY = EDGE.b - 40;
+  const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || [HERO_ORDER[0]]).includes(id)), BY = EDGE.b - 40;
   // 11 Eki: Büyü Kitabı eklendi, üç düğme yan yana (Büyü Kitabı · Komutanlar · Gelişmeler)
   const heroPts = HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0), freeSouls = soulsFree();
   // 15 Eki (Caner): alt düğmeler de yuvarlak, kemik halkalı; adı altında. BR: yarıçap, BS: aralık

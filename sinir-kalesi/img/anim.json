@@ -1028,13 +1028,6 @@
   "ch": 0.9126,
   "sh": 1
  },
- "hero_vladrik_atk": {
-  "n": 32,
-  "fw": 326,
-  "fh": 309,
-  "base": 0.0146,
-  "ch": 0.9708
- },
  "hero_wren_walk": {
   "n": 17,
   "fw": 285,
@@ -1073,21 +1066,6 @@
   "fh": 231,
   "base": 0.0141,
   "ch": 0.9513
- },
- "hero_vladrik_walk": {
-  "n": 14,
-  "fw": 299,
-  "fh": 313,
-  "base": 0.0148,
-  "ch": 0.9581,
-  "idle": 0
- },
- "hero_vladrik_die": {
-  "n": 33,
-  "fw": 379,
-  "fh": 317,
-  "base": 0.0143,
-  "ch": 0.9477
  },
  "hero_wren_atk": {
   "n": 32,
@@ -1217,38 +1195,6 @@
   "fh": 249,
   "base": 0.0133,
   "ch": 0.8847
- },
- "hero_drakula_walk": {
-  "n": 20,
-  "fw": 303,
-  "fh": 232,
-  "base": 0.0131,
-  "ch": 0.9498,
-  "idle": 16,
-  "sh": 1,
-  "stride": 0.527
- },
- "hero_drakula_atk": {
-  "n": 32,
-  "fw": 317,
-  "fh": 232,
-  "base": 0.0133,
-  "ch": 0.9468
- },
- "hero_drakula_die": {
-  "n": 33,
-  "fw": 309,
-  "fh": 227,
-  "base": 0.0132,
-  "ch": 0.9691,
-  "sh": 1
- },
- "hero_drakula_skill": {
-  "n": 32,
-  "fw": 324,
-  "fh": 228,
-  "base": 0.0133,
-  "ch": 0.9645
  },
  "enemy_torch_die": {
   "n": 33,
@@ -1732,34 +1678,6 @@
   "fh": 174,
   "base": 0.0139,
   "ch": 0.9211
- },
- "hero_drakula_idle": {
-  "n": 32,
-  "fw": 286,
-  "fh": 227,
-  "base": 0.0132,
-  "ch": 0.9691
- },
- "hero_drakula_run": {
-  "n": 32,
-  "fw": 358,
-  "fh": 235,
-  "base": 0.0133,
-  "ch": 0.9379
- },
- "hero_drakula_cast": {
-  "n": 32,
-  "fw": 300,
-  "fh": 227,
-  "base": 0.0133,
-  "ch": 0.969
- },
- "hero_drakula_block": {
-  "n": 32,
-  "fw": 309,
-  "fh": 234,
-  "base": 0.0132,
-  "ch": 0.9404
  },
  "hero_spartacus_idle": {
   "n": 32,

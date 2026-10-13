@@ -5,7 +5,7 @@
 // Strateji: kule yerleri yolu en çok gördükleri sıraya göre; karışık kule; en ucuz geliştirme; okçu yolu sırayla bow/xbow;
 // büyüler: duvar kaleye yaklaşan durdurulamayanların (noblock/hızlı) önüne, korku kalabalığa, diriltme/patlatma/golem ceset kümesine.
 const { chromium } = require('playwright');
-const arg = process.argv[2] || '0-39', team = (process.argv[3] || 'commander').split(','), STARS = +(process.argv[4] || 3);
+const arg = process.argv[2] || '0-39', team = (process.argv[3] || 'spartacus').split(','), STARS = +(process.argv[4] || 3);
 const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, (_, i) => a + i))(arg.split('-').map(Number)) : arg.split(',').map(Number);
 (async () => {
   const b = await chromium.launch();
