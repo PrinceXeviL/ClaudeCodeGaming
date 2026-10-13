@@ -4709,7 +4709,7 @@ const spellRank = (id) => grimRank(id);
 function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM, data.js)
   const S = NECRO_SPELLS[id], r = spellRank(id); if (!r) return S;
   const o = Object.assign({}, S), b = Math.min(r, 4), top = r >= 5;
-  if (id === 'nm_raise') { o.max = S.max + b; const k = 1 + 0.1 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k * (top ? 1.25 : 1), dmg: S.minion.dmg.map(v => v * k * (top ? 1.25 : 1)) }); } // ömür sınırsız (ölene dek)
+  if (id === 'nm_raise') { o.max = S.max + r; const k = 1 + 0.1 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k * (top ? 1.25 : 1), dmg: S.minion.dmg.map(v => v * k * (top ? 1.25 : 1)) }); } // ömür sınırsız (ölene dek)
   if (id === 'nm_fear') { o.t = S.t + 0.3 * r; o.r = S.r * (1 + 0.08 * b); }
   if (id === 'nm_wall') { o.hp = S.hp * (1 + 0.15 * b + (top ? 0.4 : 0)); o.life = S.life + 0.75 * b + (top ? 2 : 0); }
   if (id === 'nm_burst') { o.dmg = S.dmg * (1 + 0.12 * b); o.r = S.r * (1 + 0.05 * b); o.blast = S.blast * (1 + 0.05 * b); o.stun = top ? 1 : 0; }
