@@ -29,10 +29,10 @@ def score(s, x0, y0, step=3):
     ys, xs = np.where(t[..., 3] > 200); sel = (ys % step == 0) & (xs % step == 0); ys, xs = ys[sel], xs[sel]
     X, Y = xs + x0, ys + y0; ok = (X >= 0) & (X < V.shape[1]) & (Y >= 0) & (Y < V.shape[0])
     return np.abs(V[Y[ok], X[ok]] - t[ys[ok], xs[ok], :3]).mean() if ok.mean() > 0.97 else 1e9
-m = V.min(2) < 225; ys, xs = np.where(m); s0 = (xs.max() - xs.min()) / kw
+m = V.min(2) < 225; ys, xs = np.where(m); s0 = (ys.max() - ys.min()) / kh  # boydan (yanlara uçan kıvılcımlar genişliği şaşırtır)
 bestA = (1e9,)
 for s in np.arange(s0 - 0.05, s0 + 0.05, 0.0025):
-    w, h = kw * s, kh * s; cx, cy = (xs.min() + xs.max()) / 2 - w / 2, (ys.min() + ys.max()) / 2 - h / 2
+    w, h = kw * s, kh * s; cx, cy = float(np.median(xs)) - w / 2, (ys.min() + ys.max()) / 2 - h / 2
     for dx in range(-30, 31, 3):
         for dy in range(-30, 31, 3):
             e = score(s, int(cx + dx), int(cy + dy))
@@ -61,6 +61,14 @@ yy, xx = np.mgrid[:FH, :FW]; mk = np.zeros((FH, FW))
 for ex, ey in E: mk = np.maximum(mk, np.clip(1.6 - np.hypot(xx - ex * FW, (yy - ey * FH) * 1.25) / R, 0, 1))
 F = [np.asarray(f).astype(float) for f in frames]
 dim = F[int(np.argmin([(f.mean(2) * mk).sum() for f in F]))]
+# --agac: Veo bahçe ağaçlarını bazı karelerde beyaza boyamış; alt köşelerdeki ağaçlar durağan çizimden (renk ve saydamlık), yumuşak geçişle
+if '--agac' in sys.argv:
+    st = np.asarray(keep.resize((FW, FH), Image.LANCZOS)).astype(float); tm = np.zeros((FH, FW))
+    for x0, y0, x1, y1 in [(0, 0.5, 0.2, 1), (0.8, 0.5, 1, 1)]:
+        tm[int(y0 * FH):int(y1 * FH), int(x0 * FW):int(x1 * FW)] = 1
+    tm = ndimage.gaussian_filter(tm, 8)
+    F = [f * (1 - tm[..., None]) + st[..., :3] * tm[..., None] for f in F]
+    alpha = Image.fromarray((np.asarray(alpha).astype(float) * (1 - tm) + st[..., 3] * tm).astype(np.uint8))
 strip = Image.new('RGBA', (FW * NF, FH))
 for i, f in enumerate(F):
     fr = Image.fromarray((f * (1 - mk[..., None]) + dim * mk[..., None]).astype(np.uint8)); fr.putalpha(alpha); strip.paste(fr, (i * FW, 0))
