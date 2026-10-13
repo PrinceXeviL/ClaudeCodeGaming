@@ -730,7 +730,7 @@ HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü'
     { id: 'arcane', name: 'Kadim Bilgi', passive: true, desc: 'Kalıcı: +%20 menzil; her 4. ruh küresi üçe bölünür' },
   ] }] };
 // 16 Eki (Caner: "ok ve bıçak fırlatmada uzman, ihtişamlı, ölü"): Robin, Ölü Orman'ın Hayaleti. Okçu + suikastçı + biraz druid; yanında Ruh Kurdu (görseli gelince).
-HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprite: 'hero_robin', h: 41, aura: '110,255,150', halo: '150,255,170', cost: 60,
+HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprite: 'hero_robin', h: 41, aura: '110,255,150', halo: '150,255,170', cost: 60, pet: 'wolf',
   hp: 260, dmg: [20, 30], armor: 0.15, rate: 1.0, speed: 88, respawn: 16, regen: 9, engage: 0, ranged: 205, proj: 'harrow',
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
     { id: 'knives', name: 'Bıçak Yelpazesi', cd: 8, desc: 'Yakınındaki 5 düşmana yeşil alevli bıçak fırlatır' },

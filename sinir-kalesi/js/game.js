@@ -2690,7 +2690,7 @@ function damageSoldier(s, amount, src) {
     }
     s.dead = true; s.hp = 0;
     if (s.hero) mortSay('heroDown');
-    else if (s.ghoul || s.big) { // gulyabani / golem / dev çürük bir toz bulutuyla yere çöker
+    else if (s.ghoul || s.big || s.pet) { // gulyabani / golem / dev / ruh kurdu çürük bir toz bulutuyla yere çöker
       sfx('bonefall');
       for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-10, 10), y: s.y - rand(2, 26), vx: rand(-30, 30), vy: -rand(10, 40), drag: 2,
         col: i % 3 ? '120,230,110' : '190,110,255', s0: rand(3, 6), s1: 0.5, life: rand(0.5, 0.9) });
@@ -2704,7 +2704,7 @@ function damageSoldier(s, amount, src) {
     }
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     if (s.big && ANIM_META[s.big + '_die']) G.effects.push({ kind: 'corpse', name: s.big, rig: s.big, h: s.bh, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: 3 }); // iri birim: Wan çöküş şeridi
-    else if (!s.ghoul && !s.big) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
+    else if (!s.ghoul && !s.big && !s.pet) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.chapel ? s.giant.respawn : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
@@ -4819,6 +4819,48 @@ function separateUnits(dt) {
     a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push;
   }
 }
+// 16 Eki (Caner): Robin'in Ruh Kurdu. Sahibinin arkasında durur, yakına gelen düşmanı tutup ısırır; ölürse PET.respawn sn sonra
+// sahibinin yanında yeniden belirir. Sahibi PET.lvl2. seviyeye ulaşınca 2. forma geçer (pet_wolf_2 görseli gelince).
+const PET = { lvl2: 6, respawn: 12, wolf: [
+  { img: 'pet_wolf_1', name: 'Ruh Kurdu', hp: 220, dmg: [10, 16], rate: 0.9, h: 28 },
+  { img: 'pet_wolf_2', name: 'Kadim Ruh Kurdu', hp: 420, dmg: [18, 28], rate: 0.8, h: 32, stun: 0.4 }] };
+function updatePets(dt) {
+  for (const h of G.heroes) {
+    if (!h.def.pet) continue;
+    const form = h.lvl >= PET.lvl2 && spr(PET.wolf[1].img) ? 1 : 0, P = PET.wolf[form];
+    let p = h.petObj;
+    if (p && (p.removed || p.dead)) { h.petObj = p = null; h.petT = PET.respawn; }
+    if (!p) {
+      if (h.dead || (h.petT = (h.petT ?? 0) - dt) > 0 || !spr(P.img)) continue;
+      p = h.petObj = { militia: true, merc: true, pet: P, form, x: h.x - (h.face || 1) * 16, y: h.y + 5, rx: h.x, ry: h.y, hp: P.hp, maxHp: P.hp, dmg: P.dmg.slice(), armor: 0.2,
+        rate: P.rate, speed: 100, engage: 70, atk: 0, target: null, dead: false, face: h.face || 1, anim: 0, slot: 0, life: Infinity, born: G.t, owner: h };
+      G.soldiers.push(p);
+      G.effects.push({ kind: 'ring', x: p.x, y: p.y, r: 22, col: '110,255,150', t: 0, dur: 0.5 });
+      for (let i = 0; i < 10; i++) emit(G.parts, { kind: 'glow', add: true, x: p.x + rand(-10, 10), y: p.y - rand(0, 16), vy: -rand(15, 40), col: '110,255,150', s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.7) });
+    }
+    if (p.form !== form) { // sahibi seviye atladı: kurt büyür
+      p.form = form; p.pet = P; p.hp = Math.min(P.hp, p.hp + P.hp - p.maxHp); p.maxHp = P.hp; p.dmg = P.dmg.slice(); p.rate = P.rate;
+      floatText(p.x, p.y - 40, P.name + '!', '#9affb0'); G.effects.push({ kind: 'ring', x: p.x, y: p.y, r: 34, col: '110,255,150', t: 0, dur: 0.6 }); sfx('roar');
+    }
+    p.rx = h.x - (h.face || 1) * 16; p.ry = h.y + 5; // sahibinin arkasında bekler
+  }
+}
+function drawPet(s) {
+  const im = spr(s.pet.img); if (!im) return;
+  const moving = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
+  if (moving) s.anim += 1 / 60;
+  const h = s.pet.h * UNIT_K, w = h * im.width / im.height, fighting = s.target && dist(s.x, s.y, s.target.x, s.target.y) < 26;
+  const bob = moving ? Math.abs(Math.sin(s.anim * 14)) * h * 0.07 : Math.sin(time * 2.4 + s.x) * h * 0.012;
+  const bite = fighting ? Math.max(0, Math.sin(atkPhase(s.rate, s.atk) * Math.PI)) : 0;
+  unitShadow(s.x, s.y + 1, w * 0.6);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - h * 0.3, h * 0.8, '110,255,150', 0.16 + Math.sin(time * 3 + s.x) * 0.04); ctx.restore();
+  ctx.save(); ctx.translate(s.x + (s.face || 1) * bite * h * 0.18, s.y - bob); ctx.scale(s.face || 1, 1); ctx.rotate(moving ? Math.sin(s.anim * 14) * 0.04 : bite * 0.12);
+  drawSprite(ctx, im, 0, 0, w);
+  if (s.flash > 0) { ctx.globalAlpha *= 0.7; drawSprite(ctx, whiteOf(s.pet.img + '_w', im), 0, 0, w); }
+  ctx.restore();
+  if (Math.random() < 0.12) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-w * 0.3, w * 0.3), y: s.y - h * rand(0.4, 0.9), vy: -rand(10, 25), col: '110,255,150', s0: rand(2, 3.5), s1: 0.5, life: rand(0.4, 0.7) });
+  if (s.hp < s.maxHp) hpBar(s.x, s.y - h - 4, 14, s.hp / s.maxHp, '#7ae08a');
+}
 // 16 Eki (Caner: dirilenler ve girişe yakın iskeletler kadrajdan çıkıp düşmanın çıktığı yerde savaşıyordu): askerler düşmanın yola girdiği
 // yerden ilk REACH birimdeki (ve ekran dışındaki) düşmana saldırmaz, oraya yürümez. Komutan serbest (oyuncu yönlendirir).
 const SOLDIER_REACH = 110;
@@ -6350,6 +6392,7 @@ function update(dt) {
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortState(dt);
   updateMortSay(dt);
+  updatePets(dt);
   // bekleyen iskeletler ara ara kemik takırdatır (15 Eki, Caner): ekranda görünen boşta bir iskelet, 7-14 sn'de bir, tek ses
   if ((G.rattleT = (G.rattleT ?? rand(4, 8)) - dt) <= 0) {
     G.rattleT = rand(7, 14);
@@ -8499,6 +8542,7 @@ function drawBoneWall(s) {
 }
 function drawSoldier(s) {
   if (s.wall) { drawBoneWall(s); return; }
+  if (s.pet && !s.dead) { drawPet(s); return; }
   if (s.dead) {
     if (s.hero) {
       ctx.globalAlpha = 0.5; circle(s.x, s.y - 4, 7, '#888'); ctx.globalAlpha = 1;
