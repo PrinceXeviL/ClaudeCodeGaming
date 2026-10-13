@@ -14554,12 +14554,12 @@ function regionBgV(ep, E, R) {
   if (P && P.ext) { R.lights = P.lights; R.banners = P.banners; R.hands = P.hands; R.parts = null; return (R.done = P.img); }
   const Z = E.zones.length, MH = E.mapH, rs = R.res || (R.res = Math.min(MAPV.res, mapRes())), my = MAPV.my;
   if (R.parts.length < Z) {
-    const k = R.parts.length, offY = MH - (k + 1) * H, sh = (q) => [q[0], q[1] - offY];
+    const k = R.parts.length, offY = MH - k * MAP_V.step - H, sh = (q) => [q[0], q[1] - offY];
     const road = [buildPath(regionRoad(E).map(sh))];
     const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes.map(sh), castle: k === Z - 1 ? sh(E.end) : [-9999, -9999], roadK: 0.62, decorK: 1.9 }, road, rs, { x: 0, y: my });
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
-    const mine = (o) => o.y >= -20 && o.y < H + 20 && o.x > MAPV.x[0] && o.x < MAPV.x[1], up = (o) => Object.assign({}, o, { y: o.y + offY });
+    const mine = (o) => o.y >= (k < Z - 1 ? H - MAP_V.step - 20 : -20) && o.y < H + 20 && o.x > MAPV.x[0] && o.x < MAPV.x[1], up = (o) => Object.assign({}, o, { y: o.y + offY });
     R.lights = (R.lights || []).concat((part.lights || []).filter(mine).map(up));
     R.banners = (R.banners || []).concat((part.banners || []).filter(mine).map(up));
     R.hands = (R.hands || []).concat((part.hands || []).filter(mine).map(up));
@@ -14569,7 +14569,7 @@ function regionBgV(ep, E, R) {
   const X0 = MAPV.x[0], c = document.createElement('canvas'), g = c.getContext('2d');
   c.width = Math.round((MAPV.x[1] - X0) * rs); c.height = Math.round((MH + 2 * my) * rs);
   R.parts.forEach((part, k) => {
-    const offY = MH - (k + 1) * H;
+    const offY = MH - k * MAP_V.step - H;
     if (!k) { g.drawImage(part, -X0 * rs, offY * rs); return; }
     const t = document.createElement('canvas'); t.width = part.width; t.height = part.height; const tg = t.getContext('2d');
     tg.drawImage(part, 0, 0); tg.globalCompositeOperation = 'destination-in'; // alt dikişte bir alttaki mekâna yumuşak geçiş

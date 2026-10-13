@@ -1420,15 +1420,15 @@ const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];
 const DAILY_LOGIN = [{ c: 1 }, { item: 'purse' }, { c: 1 }, { item: 'freeze' }, { c: 2 }, { item: 'tea' }, { c: 4, item: 'bomb' }];
 // 15 Eki (Caner): sefer haritaları dikey: yol alttan girer, kıvrıla kıvrıla yukarı çıkar, Mortimer'ın şapeli en üstte; ilerleyen bölümler yukarıda.
 // Her mekân 960x540'lık bir dilim, alttan üste dizilir (zones[0] en altta). game.js drawRegionMap / regionBg (E.vert) bu düzeni kullanır.
-const MAP_V = { h: 540, x: 480, amp: 150, top: 250, bot: 110, jit: 36 };
+const MAP_V = { h: 540, x: 480, amp: 150, top: 250, bot: 110, jit: 36, step: 250, ax: 0.5 }; // 13 Eki (Caner): bölümler %50 sık: mekânlar 250 aralıkla üst üste biner (dilim yine 540), kıvrım yarı genişlikte
 function vertEpisode(E, ph, flip) {
-  const n = E.nodes.length, MH = E.zones.length * MAP_V.h;
+  const n = E.nodes.length, MH = (E.zones.length - 1) * MAP_V.step + MAP_V.h, ax = MAP_V.ax;
   let s = Math.round(ph * 1000) + 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
   E.vert = true; E.mapH = MH;
   E.nodes = Array.from({ length: n }, (_, k) => {
     // doğal kıvrım (Caner: hep aynı zikzak olmasın): iki farklı dalganın toplamı + küçük sapma; bazen aynı yana birkaç bölüm sürer
-    const t = k / (n - 1), y = MH - MAP_V.bot - t * (MH - MAP_V.bot - MAP_V.top) + (r() - 0.5) * 50;
-    const x = MAP_V.x + flip * (105 * Math.sin(0.62 * k + ph) + 48 * Math.sin(1.47 * k + 2.3 * ph)) + (r() - 0.5) * 40;
+    const t = k / (n - 1), y = MH - MAP_V.bot - t * (MH - MAP_V.bot - MAP_V.top) + (r() - 0.5) * 50 * ax;
+    const x = MAP_V.x + flip * ax * (105 * Math.sin(0.62 * k + ph) + 48 * Math.sin(1.47 * k + 2.3 * ph)) + (r() - 0.5) * 40 * ax;
     return [Math.round(Math.max(300, Math.min(660, x))), Math.round(y)];
   });
   E.start = [MAP_V.x + flip * 40, MH + 70]; E.end = [MAP_V.x, 150];
