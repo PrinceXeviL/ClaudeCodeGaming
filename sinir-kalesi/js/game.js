@@ -11970,9 +11970,9 @@ const KEEP_FX = {
   // 11 Eki: hasar evrelerinin dumanı ve çatı yangını görselden silindi, kodla canlı (Caner: duman hareketsizdi).
   // smoke: [x, y, kalınlık] dumanın çıktığı yer; burn: [x, y, boy] çatıdaki yangın. Evre başına (castle_keep_N).
   dmg: {
-    2: { smoke: [[0.62, 0.3, 0.8]], burn: [] },
-    3: { smoke: [[0.27, 0.3, 1], [0.79, 0.38, 1.1]], burn: [[0.27, 0.31, 0.9], [0.79, 0.39, 1]] },
-    4: { smoke: [[0.27, 0.27, 1.2], [0.81, 0.34, 1.3], [0.58, 0.22, 0.9], [0.86, 0.55, 0.7]], burn: [[0.27, 0.29, 1.1], [0.81, 0.36, 1.2], [0.86, 0.56, 0.7]] },
+    2: { smoke: [[0.66, 0.3, 0.8]], burn: [] }, // 13 Eki: yeni kalenin çatıları
+    3: { smoke: [[0.26, 0.28, 1], [0.72, 0.33, 1.1]], burn: [[0.26, 0.29, 0.9], [0.72, 0.34, 1]] },
+    4: { smoke: [[0.26, 0.26, 1.2], [0.72, 0.31, 1.3], [0.5, 0.2, 0.9], [0.87, 0.55, 0.7]], burn: [[0.26, 0.28, 1.1], [0.72, 0.33, 1.2], [0.87, 0.56, 0.7]] },
   },
 };
 // süzülen duman: üst üste binen yumuşak gri lekeler aşağıdan yukarı yükselir, rüzgârla sağa kıvrılır, büyüyüp söner (görselde değil, her karede)
