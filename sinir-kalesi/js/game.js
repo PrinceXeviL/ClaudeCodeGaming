@@ -429,7 +429,13 @@ const SOUND = {
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
   boom:    { vol: 0.50, gap: 0.08, max: 3, rate: [0.9, 1.1] },
   meteor:  { vol: 0.70, gap: 0.15, max: 2, rate: [0.85, 1.0] },
-  clash:   { vol: 0.17, gap: 0.1, max: 2, rate: [0.94, 1.06] },     // kılıç çarpışması (gerçek kayıt, StarNinjas CC0; hafif)
+  clash:   { vol: 0.17, gap: 0.1, max: 2, rate: [0.94, 1.06] },
+  // 15 Eki: Freesound CC0 kayıtları (varliklar/freesound_isle.py); FREESOUND_ON açıkken eskilerin yerine çalar, eski dosyalar duruyor
+  fs_clash:  { vol: 0.2, gap: 0.09, max: 2, rate: [0.93, 1.07] },  // kılıç çarpışması ve zırha vuruş (JohnBuhr, velcronator, Empiremonkey...)
+  fs_pain:   { vol: 0.15, gap: 0.12, max: 2 },                       // Romalı zorlanma ve acı (MrFossy, ale-batec)
+  fs_death:  { vol: 0.17, gap: 0.15, max: 2 },                       // Romalı ölümü (Artmasterrich, unfa)
+  fs_bone:   { vol: 0.16, gap: 0.2, max: 1, rate: [0.9, 1.12] },     // iskelet kırılıp dağılır (samueleunimancer, JarredGibb, NeoSpica)
+  fs_rattle: { vol: 0.09, gap: 2.5, max: 1, rate: [0.9, 1.1] },      // bekleyen iskeletin kemik takırtısı (spookymodem, Kneeling), çok kısık     // kılıç çarpışması (gerçek kayıt, StarNinjas CC0; hafif)
   death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
   coin:    { vol: 0.22, gap: 0.09, max: 2, rate: [0.95, 1.15] },
   coins:   { vol: 0.45, gap: 0.25, max: 1 },
@@ -716,9 +722,12 @@ function gaProg(st, i, score) { // st: 'Start' | 'Complete' | 'Fail'
     if (score != null) A.addProgressionEvent(E[st], a, b, c, score); else A.addProgressionEvent(E[st], a, b, c); } catch (e) {}
 }
 function gaDesign(id, v) { const A = gaInit(); if (!A) return; try { if (v != null) A.addDesignEvent(id, v); else A.addDesignEvent(id); } catch (e) {} }
+const FREESOUND_ON = true; // false: eski sesler (Caner beğenmezse)
+const FS_ALIAS = { clash: 'fs_clash', pain: 'fs_pain', dvoice: 'fs_death', bonefall: 'fs_bone' };
 function sfx(kind, rate) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
+  if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
   if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open' || kind === 'whoosh' || kind === 'bonespin') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
@@ -6288,6 +6297,12 @@ function update(dt) {
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortState(dt);
   updateMortSay(dt);
+  // bekleyen iskeletler ara ara kemik takırdatır (15 Eki, Caner): ekranda görünen boşta bir iskelet, 7-14 sn'de bir, tek ses
+  if ((G.rattleT = (G.rattleT ?? rand(4, 8)) - dt) <= 0) {
+    G.rattleT = rand(7, 14);
+    const idle = G.soldiers.filter(s => !s.dead && !s.hero && !s.wall && !s.target && (s.minion || (NECRO && s.tower && s.tower.type === 'barracks')) && onScreen(s, 0));
+    if (idle.length) sfx('fs_rattle');
+  }
   updateMech(dt);
   updateProps(dt);
   updateHeralds(dt);

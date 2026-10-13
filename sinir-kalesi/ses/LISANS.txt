@@ -7,3 +7,10 @@ Düşman asker sesleri (pain, dvoice, scream; varliklar/ses_kayit_isle.py ile i�
 Kılıç çarpışma sesleri (clash): StarNinjas, "20 Sword Sound Effects (Attacks and Clashes)" — https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes — CC0
 
 Savaş borazanı (horn), savaş narası (yell) ve savaş ortam sesi (battle): Caner'in lisansladığı kayıtlar ("Cinematic War Horn 02" → horn, "Military Trumpet Battle Call 2" ve "Ancient Battle Horn" yedek, "Male Battle Yell", "Battling Knights", "Cinematic Cannon Fuse Light Fire" → plaguefire, "Liquid Craft" → plaguethrow); ham dosyalar depoda değil (varliklar/ham/ses/lisansli/).
+
+Freesound.org (CC0, atıf gerekmez; teşekkür olarak yazılıdır) — fs_*.wav, varliklar/freesound_isle.py:
+  MrFossy "Voice – Male Grunts and Screams", ale-batec "Male Fight Grunts", unfa "Medium Male Pain Grunts",
+  Artmasterrich "Action SFX Vocal Kit", JohnBuhr "Sword Clashes Pack", Bird_man "Sword Clash", loudernoises "Sword Clash",
+  velcronator "Sword Impact", Empiremonkey "clank", samueleunimancer "BoneSnaping", JarredGibb "Cracks", NeoSpica "Punch",
+  spookymodem "Rattling Bones", Kneeling "bones".
+Merlin sesleri (soulorb, soulbolt, gravemist, timegate): ElevenLabs Sound Effects (elevenlabs.io).
