@@ -752,7 +752,7 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 // sonunda 5. kademe. Sonradan açılan büyü geç kalmasın: açıldığı bölüm × catchup XP ile başlar (Genesis: geç açılanlar ek XP'li gelir).
 const GRIM = {
   lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
-  nm_raise: ['+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+1 dirilen · +%10 güç', '+%25 can · +%25 hasar'],
+  nm_raise: ['+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%10 güç · ceset +1,5 sn', '+%25 can · +%25 hasar · ceset +1,5 sn'], // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],

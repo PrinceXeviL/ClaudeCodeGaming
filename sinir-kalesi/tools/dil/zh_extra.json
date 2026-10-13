@@ -195,7 +195,9 @@
 "OTO": "自动",
 "Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "你点击处的尸体会化为腐尸起身，为你战斗直到倒下 · 大型敌人的尸体起身后更强（发红光的那些）· 牧师和提灯会净化尸体，使其无法复活",
 "+%25 can · +%25 hasar": "+25% 生命 · +25% 伤害",
-"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "亡魂追逐区域内的敌人：它们惊恐地后退 3 秒。有魔法抗性的敌人和首领受影响较小；机械不会恐惧，但战车的马匹会受惊减速"
+"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "亡魂追逐区域内的敌人：它们惊恐地后退 3 秒。有魔法抗性的敌人和首领受影响较小；机械不会恐惧，但战车的马匹会受惊减速",
+"+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 复活者 · +10% 力量 · 尸体 +1.5 秒",
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% 生命 · +25% 伤害 · 尸体 +1.5 秒"
 },
 "tpl": [
 [

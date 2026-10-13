@@ -195,7 +195,9 @@
 "OTO": "АВТО",
 "Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Трупы там, где ты коснёшься, восстают гниющими мертвецами и сражаются за тебя, пока не падут · Труп крупного врага восстаёт сильнее (светящиеся красным) · Жрецы и фонари освящают трупы, их больше нельзя поднять",
 "+%25 can · +%25 hasar": "+25% здоровья · +25% урона",
-"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Духи преследуют врагов в области: те в ужасе бегут назад 3 с. Устойчивые к магии и боссы боятся меньше; машины не боятся, но кони колесниц пугаются и замедляются"
+"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Духи преследуют врагов в области: те в ужасе бегут назад 3 с. Устойчивые к магии и боссы боятся меньше; машины не боятся, но кони колесниц пугаются и замедляются",
+"+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 поднятый · +10% силы · труп +1,5 с",
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% здоровья · +25% урона · труп +1,5 с"
 },
 "tpl": [
 [

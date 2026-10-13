@@ -2523,7 +2523,7 @@ function killEnemy(e) {
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
-    dur: NECRO ? CORPSE_STAY : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
+    dur: NECRO ? corpseStay() : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
     pw: corpsePower(e) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
@@ -2710,10 +2710,13 @@ function damageSoldier(s, amount, src) {
   }
 }
 // iskelet çöker: görsel yatay dilimlere bölünür, dilimler yere düşüp kemik yığını olur, kafatası yuvarlanır; yığın bir süre durup söner
-const CORPSE_STAY = 8; // 12 Eki (Caner): düşman cesetleri, kemik yığınları ve düşen uçanlar yerde 8 sn kalır
+const CORPSE_STAY = 8; // 12 Eki (Caner): kemik yığınları yerde 8 sn kalır
+// 16 Eki (Caner): düşman cesedi diriltilebilir halde 6 sn kalır; Büyü Kitabı'nda Ölüleri Diriltme'nin her kademesi +1,5 sn (5. kademede 13,5 sn)
+const CORPSE_T = { base: 6, per: 1.5 };
+const corpseStay = () => CORPSE_T.base + CORPSE_T.per * grimRank('nm_raise');
 // 15 Eki (Caner): süresi dolan ceset büyüye yaramaz ama yerde 'remains' olarak yeni dalga başlayana dek kalır (yerdeki oklar da);
 // en çok REMAINS.cap kalıntı (fazlası en eskiden söner), dalga başında hepsi fade sn'de söner
-const REMAINS = { cap: 70, fade: 0.8, keep: 9999 };
+const REMAINS = { cap: 40, fade: 0.8, keep: 9999 }; // 16 Eki: 70 -> 40 (telefonda güvenli)
 function keepRemains(f) {
   if (f.kind !== 'corpse' || f.air || f.fly || !NECRO || f.dur - (f.lt ?? 0) > 0.12 || !animStrip(f.name, f.rig, '_die')) return; // büyüyle kullanılan ceset kalıntı bırakmaz
   const old = G.effects.filter(o => o.kind === 'remains' && !o.fading);
@@ -2781,7 +2784,7 @@ function skyFall(e) {
   const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
   if (!im) return;
   const h = CHAR_H[name] || 24;
-  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: CORPSE_STAY });
+  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: corpseStay() });
   for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-6, 6), y: e.y - 26 - rand(0, 10), vx: rand(-60, 60), vy: rand(-80, 10), g: 120, vr: rand(-6, 6), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#7a4a22', s0: rand(1.2, 2.2), s1: 0.8, life: rand(0.9, 1.6) });
 }
 function skyFallPhys(f, dt) {

@@ -195,7 +195,9 @@
 "OTO": "AUTO",
 "Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Les cadavres là où tu touches se relèvent en morts pourrissants et combattent pour toi jusqu'à tomber · Le cadavre d'un grand ennemi se relève plus fort (ceux qui brillent en rouge) · Les prêtres et les lanternes bénissent les cadavres, qui ne peuvent plus être relevés",
 "+%25 can · +%25 hasar": "+25 % de vie · +25 % de dégâts",
-"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Les esprits pourchassent les ennemis de la zone : ils fuient terrorisés pendant 3 s. Les ennemis résistants à la magie et les boss ont moins peur ; les machines n'ont pas peur, mais les chevaux des chars s'affolent et ralentissent"
+"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Les esprits pourchassent les ennemis de la zone : ils fuient terrorisés pendant 3 s. Les ennemis résistants à la magie et les boss ont moins peur ; les machines n'ont pas peur, mais les chevaux des chars s'affolent et ralentissent",
+"+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 relevé · +10 % de puissance · cadavre +1,5 s",
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % de vie · +25 % de dégâts · cadavre +1,5 s"
 },
 "tpl": [
 [

@@ -195,7 +195,9 @@
 "OTO": "AUTO",
 "Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Leichen an der angetippten Stelle erheben sich als verweste Tote und kämpfen für dich, bis sie fallen · Die Leiche eines großen Feindes erhebt sich stärker (die rot leuchtenden) · Priester und Laternen segnen Leichen, dann können sie nicht erweckt werden",
 "+%25 can · +%25 hasar": "+25 % Leben · +25 % Schaden",
-"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Geister jagen die Feinde im Gebiet: Sie fliehen 3 s lang voller Angst zurück. Magieresistente Feinde und Bosse fürchten sich weniger; Maschinen fürchten sich nicht, aber die Pferde der Streitwagen scheuen und werden langsamer"
+"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Geister jagen die Feinde im Gebiet: Sie fliehen 3 s lang voller Angst zurück. Magieresistente Feinde und Bosse fürchten sich weniger; Maschinen fürchten sich nicht, aber die Pferde der Streitwagen scheuen und werden langsamer",
+"+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 Erweckter · +10 % Kraft · Leiche +1,5 s",
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % Leben · +25 % Schaden · Leiche +1,5 s"
 },
 "tpl": [
 [
