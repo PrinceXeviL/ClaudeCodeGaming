@@ -10490,6 +10490,24 @@ function boneBtn(key, x, y, r, icon, fn, o, appear) {
   const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = sp < 1 ? (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 / BONE_RING.n * 2 : 0; // iki kemik boyu döner, yavaşlayarak
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
+  if (o.sq || (screen === 'map' && key !== 'back')) { // 14 Eki (Caner): sefer haritasındaki düğmeler köşeleri yuvarlatılmış kare (simgeler sonra Gemini'yle yenilenecek)
+    const R = r * 1.02, cr = R * 0.34, sq = (k, fill, stroke, lw) => roundRect(-R - k, -R - k, 2 * (R + k), 2 * (R + k), cr + k, fill, stroke, lw);
+    roundRect(-R - 4, -R + 2, 2 * R + 8, 2 * R + 8, cr + 4, 'rgba(0,0,0,0.42)'); // gölge
+    const fr = ctx.createLinearGradient(0, -R - 5, 0, R + 5); fr.addColorStop(0, '#f2e6c8'); fr.addColorStop(0.5, '#b8a47a'); fr.addColorStop(1, '#6e5a3a');
+    sq(5, fr, '#120712', 2); // kemik rengi dış çerçeve
+    const g = ctx.createLinearGradient(0, -R, 0, R); g.addColorStop(0, C[0]); g.addColorStop(1, C[1]); sq(0, g, '#120712', 1.5);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(-R, -R, 2 * R, 2 * R, cr); ctx.clip();
+    const gl = ctx.createLinearGradient(0, -R, 0, 0); gl.addColorStop(0, 'rgba(255,255,255,0.32)'); gl.addColorStop(1, 'rgba(255,255,255,0.02)'); ctx.fillStyle = gl; ctx.fillRect(-R, -R, 2 * R, R * 0.9);
+    const rg = ctx.createRadialGradient(0, R * 0.15, R * 0.4, 0, 0, R * 1.4); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(10,0,20,0.5)'); ctx.fillStyle = rg; ctx.fillRect(-R, -R, 2 * R, 2 * R);
+    ctx.restore();
+    sq(-3, null, 'rgba(255,240,210,0.35)', 1.2); // iç ince çizgi
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { circle(sx * (R + 1.5), sy * (R + 1.5), 3.2, '#efe2c2', '#120712', 1.2); } // köşe perçinleri (kemik düğme)
+    ctx.shadowColor = 'rgba(10,0,16,0.7)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
+    if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.05, '#f6ecd4');
+    ctx.restore();
+    if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn: () => { sfx('pick'); fn(); } });
+    return;
+  }
   circle(0, 5, r + 7, 'rgba(0,0,0,0.42)'); // gölge
   circle(0, 0, r + 1.5, '#120712'); // koyu kontur
   const g = ctx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, C[0]); g.addColorStop(1, C[1]); circle(0, 0, r, g);
@@ -15132,7 +15150,7 @@ function mapAmbient(E, V, dt) {
   // yarasa sürüsü: 4-7 yarasa ekranın bir yanından öbürüne zikzakla geçer
   if (time > MAPFX.nextBats) {
     MAPFX.nextBats = time + rand(AMB.bats[0], AMB.bats[1]); const l = Math.random() < 0.5, y0 = V[1] + vh * rand(0.15, 0.6), n = 4 + Math.floor(Math.random() * 4);
-    for (let i = 0; i < n; i++) MAPFX.bats.push({ x: (l ? V[0] - 20 : V[2] + 20) - (l ? 1 : -1) * i * rand(8, 22), y: y0 + rand(-25, 25), v: (l ? 1 : -1) * rand(55, 80), ph: rand(0, 6), w: rand(1.6, 3.2), s: rand(0.64, 0.92) }); // 15 Eki: %20 ufak
+    for (let i = 0; i < n; i++) MAPFX.bats.push({ x: (l ? V[0] - 20 : V[2] + 20) - (l ? 1 : -1) * i * rand(8, 22), y: y0 + rand(-25, 25), v: (l ? 1 : -1) * rand(55, 80), ph: rand(0, 6), w: rand(1.6, 3.2), s: rand(0.32, 0.44) }); // 14 Eki (Caner): askere göre gerçekçi boy (asker 8,5 birim)
   }
   MAPFX.bats = MAPFX.bats.filter(b => b.x > V[0] - 120 && b.x < V[2] + 120);
   for (const b of MAPFX.bats) { b.x += b.v * dt; b.y += Math.sin(time * b.w + b.ph) * 22 * dt; drawBatMap(b.x, b.y + Math.sin(time * 7 + b.ph) * 2, b.v > 0 ? 1 : -1, time * 26 + b.ph, b.s); }
@@ -15140,28 +15158,28 @@ function mapAmbient(E, V, dt) {
   if (!MAPFX.chase && time > MAPFX.nextChase) {
     MAPFX.nextChase = time + rand(AMB.chase[0], AMB.chase[1]);
     const lo = Math.max(V[1] + vh * 0.35, MAPFX.fogY != null ? MAPFX.fogY + 60 : -1e9), hi = V[3] - vh * 0.18;
-    if (hi > lo) { const l = Math.random() < 0.5; MAPFX.chase = { x: l ? V[0] - 30 : V[2] + 30, y: rand(lo, hi), v: (l ? 1 : -1) * rand(70, 90), t: 0, wob: rand(0, 6) }; }
+    if (hi > lo) { const l = Math.random() < 0.5; MAPFX.chase = { x: l ? V[0] - 30 : V[2] + 30, y: rand(lo, hi), v: (l ? 1 : -1) * rand(32, 42), t: 0, wob: rand(0, 6) }; }
   }
   const C = MAPFX.chase;
   if (C) {
-    C.t += dt; C.x += C.v * dt; const dir = C.v > 0 ? 1 : -1, ry = C.y + Math.sin(C.t * 3 + C.wob) * 10;
-    drawRat(C.x, ry, dir, time * 30, 1.1);
-    drawRat(C.x - dir * 16, C.y + Math.sin((C.t - 0.3) * 3 + C.wob) * 10, dir, time * 30 + 1, 1.15);
+    C.t += dt; C.x += C.v * dt; const dir = C.v > 0 ? 1 : -1, ry = C.y + Math.sin(C.t * 3 + C.wob) * 4;
+    drawRat(C.x, ry, dir, time * 30, 0.32);
+    drawRat(C.x - dir * 6, C.y + Math.sin((C.t - 0.3) * 3 + C.wob) * 4, dir, time * 30 + 1, 0.34); // askere göre fare boyu
     if (C.x < V[0] - 80 || C.x > V[2] + 80) MAPFX.chase = null;
   }
   // 14 Eki (Caner: haritaya birkaç ufak hayvan): kara kedi ağır ağır yürür, kurbağa sıçrar, örümcek ağından iner çıkar
   const lo = Math.max(V[1] + vh * 0.3, MAPFX.fogY != null ? MAPFX.fogY + 60 : -1e9), hi = V[3] - vh * 0.12;
-  if (!MAPFX.cat && time > MAPFX.nextCat && hi > lo) { MAPFX.nextCat = time + rand(AMB.cat[0], AMB.cat[1]); const l = Math.random() < 0.5; MAPFX.cat = { x: l ? V[0] - 20 : V[2] + 20, y: rand(lo, hi), v: (l ? 1 : -1) * rand(14, 20), sit: rand(2, 5), t: 0 }; }
+  if (!MAPFX.cat && time > MAPFX.nextCat && hi > lo) { MAPFX.nextCat = time + rand(AMB.cat[0], AMB.cat[1]); const l = Math.random() < 0.5; MAPFX.cat = { x: l ? V[0] - 20 : V[2] + 20, y: rand(lo, hi), v: (l ? 1 : -1) * rand(6, 9), sit: rand(3, 6), t: 0 }; }
   const K = MAPFX.cat;
-  if (K) { K.t += dt; const sitting = K.t > K.sit && K.t < K.sit + 2.5; if (!sitting) K.x += K.v * dt; drawCat(K.x, K.y, K.v > 0 ? 1 : -1, time * 8, 0.9, sitting); if (K.x < V[0] - 40 || K.x > V[2] + 40) MAPFX.cat = null; }
+  if (K) { K.t += dt; const sitting = K.t > K.sit && K.t < K.sit + 2.5; if (!sitting) K.x += K.v * dt; drawCat(K.x, K.y, K.v > 0 ? 1 : -1, time * 8, 0.38, sitting); /* asker boyunun ~üçte biri */ if (K.x < V[0] - 40 || K.x > V[2] + 40) MAPFX.cat = null; }
   if (time > MAPFX.nextFrog && hi > lo) { MAPFX.nextFrog = time + rand(AMB.frog[0], AMB.frog[1]); MAPFX.frogs.push({ x: V[0] + vw * rand(0.15, 0.85), y: rand(lo, hi), dir: Math.random() < 0.5 ? 1 : -1, t: 0, hops: 3 + Math.floor(Math.random() * 3) }); }
   MAPFX.frogs = MAPFX.frogs.filter(f => f.t < f.hops * 0.9 + 0.6);
-  for (const f of MAPFX.frogs) { f.t += dt; const hop = (f.t % 0.9) / 0.9, inAir = hop < 0.45 && f.t < f.hops * 0.9; if (inAir) f.x += f.dir * 26 * dt;
-    const a = Math.min(1, f.t / 0.3, (f.hops * 0.9 + 0.6 - f.t) / 0.4); ctx.save(); ctx.globalAlpha = a; drawFrog(f.x, f.y - (inAir ? Math.sin(hop / 0.45 * Math.PI) * 5 : 0), f.dir, inAir, 0.9); ctx.restore(); }
-  if (time > MAPFX.nextSpider) { MAPFX.nextSpider = time + rand(AMB.spider[0], AMB.spider[1]); MAPFX.spiders.push({ x: V[0] + vw * rand(0.1, 0.9), y0: V[1] + vh * rand(0.08, 0.5), t: 0, len: rand(16, 30) }); }
+  for (const f of MAPFX.frogs) { f.t += dt; const hop = (f.t % 0.9) / 0.9, inAir = hop < 0.45 && f.t < f.hops * 0.9; if (inAir) f.x += f.dir * 9 * dt;
+    const a = Math.min(1, f.t / 0.3, (f.hops * 0.9 + 0.6 - f.t) / 0.4); ctx.save(); ctx.globalAlpha = a; drawFrog(f.x, f.y - (inAir ? Math.sin(hop / 0.45 * Math.PI) * 2 : 0), f.dir, inAir, 0.32); ctx.restore(); }
+  if (time > MAPFX.nextSpider) { MAPFX.nextSpider = time + rand(AMB.spider[0], AMB.spider[1]); MAPFX.spiders.push({ x: V[0] + vw * rand(0.1, 0.9), y0: V[1] + vh * rand(0.08, 0.5), t: 0, len: rand(8, 16) }); }
   MAPFX.spiders = MAPFX.spiders.filter(s => s.t < 6);
   for (const s of MAPFX.spiders) { s.t += dt; const k = s.t < 1.5 ? s.t / 1.5 : s.t < 4.5 ? 1 : (6 - s.t) / 1.5, y = s.y0 + s.len * k + (k === 1 ? Math.sin(time * 2 + s.x) * 1.5 : 0);
-    ctx.save(); ctx.globalAlpha = Math.min(1, s.t / 0.4, (6 - s.t) / 0.4); ctx.strokeStyle = 'rgba(230,230,240,0.45)'; ctx.lineWidth = 0.4; ctx.beginPath(); ctx.moveTo(s.x, s.y0); ctx.lineTo(s.x, y); ctx.stroke(); drawSpider(s.x, y, time * 6 + s.x, 0.8); ctx.restore(); }
+    ctx.save(); ctx.globalAlpha = Math.min(1, s.t / 0.4, (6 - s.t) / 0.4); ctx.strokeStyle = 'rgba(230,230,240,0.45)'; ctx.lineWidth = 0.2; ctx.beginPath(); ctx.moveTo(s.x, s.y0); ctx.lineTo(s.x, y); ctx.stroke(); drawSpider(s.x, y, time * 6 + s.x, 0.3); ctx.restore(); }
 }
 // kara kedi: kıvrık kuyruk, sivri kulaklar, yeşil gözler; oturunca kuyruğunu sallar
 function drawCat(x, y, dir, ph, s, sit) {
