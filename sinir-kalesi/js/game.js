@@ -12651,7 +12651,7 @@ function drawShop() {
   ctx.save(); ctx.translate(W / 2, py + 72); drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); ctx.restore();
   txt("TAM OYUN · MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
   txt('Tek seferlik satın alma · abonelik yok · reklam yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
-  const rows = ['İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)', 'Bütün bosslar, Gloriosus ve Cadı Avı seferi', 'Ödüller (5 canla devam, altınla başla) reklam izlemeden', 'Mortimer\'a altın taç'];
+  const rows = ['İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)', 'Bütün bosslar, Gloriosus ve Cadı Avı seferi', 'Ödüller (5 canla devam, altınla başla) reklam izlemeden', '3x oyun hızı · Mortimer\'a altın taç'];
   rows.forEach((r, i) => { circle(px + 46, py + 190 + i * 30, 7, '#3cbf3c', '#0a2a0a', 1.2); fitTxt(r, px + 62, py + 191 + i * 30, pw - 84, 16, '#f2ecd8', 'left', '700', FONT_B, false, 12); });
   if (isPremium()) txt('SATIN ALINDI — teşekkürler!', W / 2, py + ph - 38, 18, '#a8f0a0', 'center', '400', FONT_T, false);
   else gameButton('buy', W / 2, py + ph - 42, 320, 60, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 20 });
@@ -16765,7 +16765,10 @@ function hudTap(x, y) {
   G.spellPeek = null; // büyü seçimi: başka yere dokununca kalkar
   const hitU = (b) => hit(b, x, y, b.r * UI_HIT); // arayüz düğmeleri: görünenden geniş dokunma alanı
   if (hitU(HUD.pause)) { tapPop('hud_pause'); sfx('click'); setOverlay('pause'); return true; }
-  if (hitU(HUD.speed)) { tapPop('hud_speed'); sfx('click'); speed = speed >= 3 ? 1 : speed + 1; return true; }
+  if (hitU(HUD.speed)) { // 13 Eki (Caner): 1x ve 2x ücretsiz, 3x Mortimer'ın Hazinesi ile (test sürümünde açık)
+    tapPop('hud_speed'); sfx('click'); const top = isPremium() || TEST_OPEN ? 3 : 2;
+    if (speed === 2 && top === 2 && !save.speedTip) { save.speedTip = 1; persist(); floatText(G.castle.x, G.castle.y - 90, "3x hız: Mortimer'ın Hazinesi", '#ffd34d'); }
+    speed = speed >= top ? 1 : speed + 1; return true; }
   if (hitU(HUD.mute)) { tapPop('hud_mute'); setMuted(!muted); sfx('click'); return true; }
   for (let i = 0; i < G.heroes.length; i++) {
     const h = G.heroes[i], hb = HUD.heroes[i], bd = heroBadge(hb);
