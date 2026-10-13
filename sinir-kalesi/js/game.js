@@ -1769,7 +1769,7 @@ function startLevel(idx, chal = null) {
   gaProg('Start', idx);
   setupHeralds();
   setupGate();
-  G.tut = tutDue(idx) && !G.chal ? { i: 0, t: 0, w: 0, on: false, steps: TUTS[idx] } : null;
+  G.tut = tutDue(idx) && !G.chal ? { i: 0, t: 0, w: 0, on: false, steps: TUTS[idx] } : null; G.tutLv = !!G.tut;
   // yeni büyü açıldıysa ilk bölümde duyurulur
   if (G.hatches.some(h => h.grave) && !save.graveSeen) {
     save.graveSeen = true; persist();
@@ -5448,7 +5448,7 @@ const TUTS = [
 function tutEval() { // sıradaki adıma geç; kart adımında oyun durur
   const T = G.tut; if (!T) return;
   while (T.i < T.steps.length && !T.steps[T.i].card && T.steps[T.i].done()) { T.i++; T.t = 0; T.w = 0; }
-  if (T.i >= T.steps.length) { G.tut = null; save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); return; }
+  if (T.i >= T.steps.length) { G.tut = null; return; } // 13 Eki (Caner): bölüm kazanılınca kaydedilir; kaybedip ya da yeniden başlayınca eğitim yine çıkar
   const S = T.steps[T.i]; T.card = !!S.card; if (T.card && T.c0 == null) T.c0 = time;
 }
 function updateTut(dt) {
@@ -6762,6 +6762,7 @@ function update(dt) {
       if (G.diffKey === 'usta') (save.usta || (save.usta = {}))[G.idx] = 1; // Usta zaferi: haritada kafatası rozeti
     }
     heroEndXp(true);
+    if (G.tutLv) { save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); } // eğitimli bölüm kazanıldı: eğitimi bir daha gösterme
     persist();
     setOverlay('win');
     sfx('win'); gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
@@ -12471,8 +12472,10 @@ function settingsList(inGame) {
     ['fast', 'Ekran sarsıntısı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('shake'), (v) => setSetting('shake', v)],
     ['fast', 'Titreşim', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('haptic'), (v) => { setSetting('haptic', v); if (v) haptic('medium'); }],
     ['map', 'Anonim oyun verisi', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('stats'), (v) => { setSetting('stats', v); save.statsAsked = 1; persist(); if (v) gaInit(); else if (GA) try { GA.setEnabledEventSubmission(false); } catch (e) {} }],
+    ['map', 'Öğretici', [[false, 'KAPALI'], [true, 'AÇIK']], [0, 1, 2].some(i => !(save.tut3 && save.tut3[i])), (v) => { save.tut3 = v ? {} : { 0: 1, 1: 1, 2: 1 }; persist(); }], // 13 Eki: ilk 3 bölümün eğitimi yeniden
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTO'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
   ];
+  if (inGame) rows.splice(5, 1); // öğretici satırı yalnız ana ayarlarda
   if (inGame || !GA_KEYS.game) rows.splice(4, 1); // oyun verisi izni yalnız ana ayarlarda ve ölçüm anahtarı girilince
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
   return rows;
