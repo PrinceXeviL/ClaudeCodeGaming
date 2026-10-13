@@ -10501,8 +10501,8 @@ function uiFrame(px, py, pw, ph, s0) { // pencere çerçevesi; döner: iç kutu 
 }
 // 16 Eki (Caner: yeni menü tasarımı her yere): ortak pencere çerçevesi mor taşla, içeriğin DIŞINA oturur (iç yerleşim bozulmaz);
 // ölçek ekrana sığacak kadar (en çok 0.34)
-function uiFrameAround(x, y, w, h) {
-  const F = UI_FRAME, s = clamp(Math.min(0.34, (H - 6 - h) / 241, (W + 40 - w) / 244), 0.16, 0.34);
+function uiFrameAround(x, y, w, h, sMax = 0.34) {
+  const F = UI_FRAME, s = clamp(Math.min(sMax, (H - 6 - h) / 241, (W + 40 - w) / 244), 0.16, 0.34);
   // ekran kenarına dayalı paneller (ör. kodeks bilgi paneli): taş çerçeve sığmaz, eski kadife kalır
   if (x - F.inL * s < VIS.l - 4 || x + w + F.inR * s > VIS.r + 4 || y - (F.inT - F.top) * s < VIS.t - 30 || y + h + F.inB * s > VIS.b + 4) return null;
   return uiFrame(x - F.inL * s, y - (F.inT - F.top) * s, w + (F.inL + F.inR) * s, h + (F.inT - F.top + F.inB) * s, s);
@@ -13960,10 +13960,11 @@ function drawCodex() {
   ctx.restore();
   // sağ: ayrıntı kartı
   const id = CODEX.sel[tab], known = tab === 'e' ? codexSeen(id) : codexTowerOpen(id);
-  const px = gx + gw + 6, py = 80, pw = Math.min(520, EDGE.r - 12 - px), ph = EDGE.b - 10 - py, pk = clamp((st - 0.2) / 0.3, 0, 1);
+  // 13 Eki (Caner: iki tema çakışıyordu): bilgi paneli de mor taş çerçeveli; çerçeve ekrana sığsın diye panel içeri alındı, çerçeve ince (0,22)
+  const px = gx + gw + 6 + (NECRO ? 30 : 0), py = NECRO ? 104 : 80, pw = Math.min(520, EDGE.r - (NECRO ? 38 : 12) - px), ph = EDGE.b - (NECRO ? 30 : 10) - py, pk = clamp((st - 0.2) / 0.3, 0, 1);
   if (pk <= 0) return;
   ctx.save(); ctx.globalAlpha = pk;
-  if (NECRO) pauseFrame(px, py, pw, ph, 0);
+  if (NECRO) { if (!(uiOk() && uiFrameAround(px, py, pw, ph, 0.22))) velvetFrame(px, py, pw, ph, 0); }
   else {
     roundRect(px + 3, py + 6, pw, ph, 18, 'rgba(0,0,0,0.4)');
     const pg = ctx.createLinearGradient(0, py, 0, py + ph); pg.addColorStop(0, 'rgba(52,34,62,0.97)'); pg.addColorStop(1, 'rgba(20,12,24,0.97)');
@@ -13992,7 +13993,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   const ranked = RANKED.includes(id), r = ranked ? CODEX.rank : 0, type = r ? id + '_' + RANKS[r].id : id, d = ENEMIES[type];
   const k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
   // sol üst: canlı karakter
-  const cx = px + 104, cy = py + 210, im = codexEnemyImg(type);
+  const cx = px + 104, cy = py + 192, im = codexEnemyImg(type);
   codexStage(cx, cy, 170, 190, d.chief ? '255,110,80' : r === 2 ? '255,210,90' : '170,130,255');
   // 15 Eki (Caner): yürüyüş şeridi yüklenmeden çizilmez (önce farklı boyda tek resim görünüp sıçrıyordu); şerit gelince belirir
   const rigN = d.base ? 'enemy_' + d.base : undefined, wantStrip = LAZY['enemy_' + type + '_walk'] || (rigN && LAZY[rigN + '_walk']);
@@ -14001,14 +14002,14 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   if (im && ready) {
     const big = d.chief ? 168 : ['ram', 'catapult', 'cavalry'].includes(id) ? 132 : 150;
     const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k) * (CODEX_SMALL[id] || 1);
-    ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 236); ctx.clip();
+    ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 218); ctx.clip();
     // hepsi aynı görünür hızda yürür: saniyede CODEX_PACE boy kadar yol (adım boyu şeritten), ayaklar kaymaz
     drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * walkRate('enemy_' + type, rigN, CODEX_PACE * hh, hh), walking: true, fly: 0, seed: 0, rig: rigN });
     ctx.restore();
     if (r === 2) drawRankStar(cx, cy - hh - 8);
   }
   // rütbe seçimi
-  if (ranked) ['Er', 'Kıdemli', 'Yüzbaşı'].forEach((lb, i) => codexPill('cxr' + i, px + 12 + [0, 58, 144][i], py + 252, [54, 82, 82][i], lb, r === i, () => { CODEX.rank = i; CODEX.t0 = time; }));
+  if (ranked) ['Er', 'Kıdemli', 'Yüzbaşı'].forEach((lb, i) => codexPill('cxr' + i, px + 8 + [0, 50, 128][i], py + 230, [46, 74, 78][i], lb, r === i, () => { CODEX.rank = i; CODEX.t0 = time; })); // sağdaki rozetlere taşmasın
   // sağ üst: ad ve bilgiler
   const x0 = px + 222; CODEX.statW = Math.min(140, (pw - 236) / 2);
   fitTxt(d.chief ? 'BOSS' : r ? `RÜTBE: ${RANKS[r].name.toLocaleUpperCase('tr')}` : (LEVELS[codexFirstLevel(id)] || {}).ep === 2 ? 'KUTSAL ENGİZİSYON' : 'SOLARIAN İMPARATORLUĞU', x0, py + 26, pw - 236, 12.5, d.chief ? '#ff9a7a' : '#c8a8ff', 'left', '800', FONT_B, false);
@@ -14028,7 +14029,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   if (weak.length) { y += 24; cxp = x0; }
   for (const q of res) { const s2 = `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#a8d8ff', 'rgba(20,60,120,0.6)') + 4; }
   // alt: açıklama, yetenekler, Mortimer'ın notu
-  let by = py + 290;
+  let by = py + 268;
   const desc = enemyDesc(id, ENEMY_DESC[id] || d.desc);
   if (r) { fitTxt(r === 1 ? 'Kıdemli: %60 daha canlı, daha sert vurur, biraz daha zırhlı' : 'Yüzbaşı: 2,5 kat canlı, borazanıyla çevresini hızlandırır', px + 18, by, pw - 36, 13, r === 2 ? '#ffe27a' : '#ff9a8a', 'left', '800', FONT_B, false); by += 20; }
   wrapLines(d.chief ? d.desc : desc, pw - 36, 13.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 13.5, '#f0e2c4', 'left', '700', FONT_B, false); by += 18; });
@@ -14037,7 +14038,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
     by += 2;
     for (const l of sk.slice(0, r ? 2 : 3)) { circle(px + 22, by, 3.5, '#c8a8ff'); fitTxt(l, px + 32, by + 0.5, pw - 50, 12.5, '#e0d4f0', 'left', '700', FONT_B, false, 10); by += 17; }
   }
-  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 6, py + ph - 62), pw);
+  codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 4, py + ph - 58), pw);
 }
 function codexNoteBox(note, px, y, pw) {
   if (!note) return;
@@ -15156,6 +15157,8 @@ function drawMap() {
   const lab = (x, t) => { ctx.save(); ctx.font = `400 13px ${FONT_T}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,4,14,0.95)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.strokeText(t, x, by2 + BR + 14); ctx.fillStyle = '#f2e6c8'; ctx.fillText(t, x, by2 + BR + 14); ctx.restore(); };
   roundBtn('grim', bx2(2), by2, BR, 'grimoire', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, { appear: st - 0.3, tile: 'red', active: freeSouls > 0, activeCol: '190,110,255' }); lab(bx2(2), 'BÜYÜ KİTABI');
   roundBtn('heroes', bx2(1), by2, BR, 'crown', () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
+  // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
+  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'violet' }); lab(bx2(3), 'ÖĞRETİCİ'); }
   const freeStars = starsTotal() - starsSpent();
   roundBtn('upgrades', bx2(0), by2, BR, (r) => fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'gold', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
   const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
