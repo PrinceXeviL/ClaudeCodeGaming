@@ -401,6 +401,10 @@ const SOUND = {
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
   yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  soulorb: { vol: 0.34, gap: 0.15, max: 2, rate: [0.92, 1.1] },     // 15 Eki: Merlin'in ruh küresi (ElevenLabs)
+  soulbolt: { vol: 0.42, gap: 0.5, max: 1, rate: [0.95, 1.05] },    // Merlin: Ruh Yıldırımı
+  gravemist: { vol: 0.4, gap: 1, max: 1, rate: [0.95, 1.05] },      // Merlin: Mezar Sisi
+  timegate: { vol: 0.6, gap: 2, max: 1, rate: [0.97, 1.03] },       // Merlin: Zaman Kapısı
   soulsuck: { vol: 0.32, gap: 0.6, max: 1, rate: [0.9, 1.1] },      // ruh fenere çekilirken (Ruh Hasadı)
   cursegaze: { vol: 0.2, gap: 1.2, max: 1, rate: [0.95, 1.05] },    // Lanet Kulesi gözü kurbanı lanetlerken
   freeze: { vol: 0.4, gap: 0.25, max: 2, rate: [0.92, 1.1] },        // buzlu ok / kılıç düşmanı dondururken
@@ -4300,14 +4304,14 @@ function useSkill(h, id) {
         let nx = null, nd = 80; for (const o of G.enemies) if (!o.dead && !o.under && !hit.has(o)) { const dd = dist(o.x, o.y, e.x, e.y); if (dd < nd) { nd = dd; nx = o; } }
         e = nx;
       }
-      G.effects.push({ kind: 'bolt', pts, col: 'soul', t: 0, dur: 0.35 }); sfx('magic'); shakeScreen(1.5, 0.12);
+      G.effects.push({ kind: 'bolt', pts, col: 'soul', t: 0, dur: 0.35 }); sfx('soulbolt'); shakeScreen(1.5, 0.12);
       return true;
     }
     case 'mist': { // Merlin: en kalabalık yere mor-yeşil mezar sisi
       const c = densest(h.x, h.y, R + 20, 60);
       if (!c || c.n < 3) return false;
       G.zones.push({ x: c.e.x, y: c.e.y, r: 62, dps: 6 + 2 * L, dtype: 'magic', t: 0, life: 4, fxT: 0, kind: 'mist', slowK: 0.45 });
-      G.effects.push({ kind: 'ring', x: c.e.x, y: c.e.y, r: 62, col: '170,110,255', t: 0, dur: 0.5 }); sfx('magic');
+      G.effects.push({ kind: 'ring', x: c.e.x, y: c.e.y, r: 62, col: '170,110,255', t: 0, dur: 0.5 }); sfx('gravemist');
       return true;
     }
     case 'multishot': {
@@ -4332,7 +4336,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
   if (h.def.soul) p.soul = true; // Merlin: yeşil-mor ruh küresi
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
-  sfx(h.def.proj === 'fireball' ? 'magic' : 'arrow');
+  sfx(h.def.soul ? 'soulorb' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
   if (h.learned.arcane && !extra && !HERO_SKILL && (h.shotN = (h.shotN || 0) + 1) % 4 === 0) // Kadim Bilgi: her 4. küre yakındaki iki düşmana daha bölünür
     for (const o of enemiesNear(e.x, e.y, 90, true).filter(o => o !== e).slice(0, 2)) fireHeroShot(h, o, 0.6, { split: true });
 }
@@ -6265,7 +6269,7 @@ function castUlt(h, x, y) {
       const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; stunEnemy(e, U.stun); e.blocker = null;
       G.effects.push({ kind: 'portal', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
     }
-    shakeScreen(4, 0.35); sfx('magic'); setTimeout(() => sfx('whirl'), 120);
+    shakeScreen(4, 0.35); sfx('timegate');
   } else if (h.id === 'zeynep') {
     // Wren'in ölüm çığlığı: iç içe genişleyen ses halkaları, alandaki düşmanlar hasar alır ve sersemler
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x, y, r: U.r * (0.45 + i * 0.3), col: '210,235,255', t: 0, dur: 0.45 + i * 0.15 });
@@ -8551,6 +8555,8 @@ function drawSoldier(s) {
     const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
     s.px = s.x; s.py = s.y;
     const ch = s.hero ? s.def.h * UNIT_K : CHAR_H[name];
+    // 15 Eki (Caner: Merlin uzaklaşınca görünmüyor): koyu mor cübbe koyu zemine karışıyordu; arkasında soluk ruh ışığı hâlesi
+    if (s.hero && s.def.halo) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.5, ch * 0.8, s.def.halo, 0.3 + Math.sin(time * 2) * 0.05); glow(ctx, s.x, s.y - 1, ch * 0.45, '120,255,160', 0.18); ctx.restore(); }
     // komutan: Wan şeritleri geldiyse onlar oynar (saldırı kareleri vuruş döngüsüne bağlı)
     // 12 Eki: bekleme (_idle), koşma (_run: oyuncu uzağa gönderince), yetenek (_cast), savunma (_block) şeritleri; yoksa eski davranış
     const ult = s.hero && s.ultT > 0 && animStrip(name, null, '_skill');
@@ -11105,6 +11111,41 @@ function drawUltGlyph(id, r) {
   } else if (id === 'leonidas') { // bronz hoplit kalkanı ve lambda
     circle(0, 0, r * 0.55, '#b0863a', '#3a2408', 2); circle(0, 0, r * 0.42, null, 'rgba(255,230,160,0.55)', 1.2);
     ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(-r * 0.2, r * 0.24); ctx.lineTo(0, -r * 0.26); ctx.lineTo(r * 0.2, r * 0.24); ctx.stroke();
+  } else if (id === 'merlin') drawMerlinGlyph('timegate', r);
+  ctx.restore();
+}
+// 15 Eki (Caner: "skill'inin resmi yok; simgeler dikkat çekici olmalı"): Merlin'in hareketli simgeleri (güç düğmesi ve yetenek ağacı)
+function drawMerlinGlyph(id, r) {
+  ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const lit = (x, y, rr, col, a) => { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, rr, col, a); ctx.restore(); };
+  if (id === 'timegate') { // zaman kapısı: dönen mor-yeşil girdap, altın dişli halka, ortada saat; yelkovan geriye koşar
+    lit(0, 0, r * 0.8, '160,90,255', 0.75); lit(0, 0, r * 0.35, '120,255,160', 0.6);
+    for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate(-time * 2.6 + k * 2.09); ctx.strokeStyle = k % 2 ? '#9affb8' : '#c89aff'; ctx.lineWidth = r * 0.09;
+      ctx.beginPath(); for (let t = 0; t <= 1.001; t += 0.05) { const a = t * Math.PI * 1.35, rr = r * (0.2 + 0.4 * t); (t ? ctx.lineTo : ctx.moveTo).call(ctx, Math.cos(a) * rr, Math.sin(a) * rr); } ctx.stroke(); ctx.restore(); }
+    ctx.save(); ctx.rotate(time * 0.7); ctx.fillStyle = '#e8bc52'; ctx.strokeStyle = '#3a2408'; ctx.lineWidth = r * 0.03;
+    for (let k = 0; k < 12; k++) { ctx.save(); ctx.rotate(k * Math.PI / 6); ctx.beginPath(); ctx.rect(-r * 0.05, -r * 0.71, r * 0.1, r * 0.12); ctx.fill(); ctx.stroke(); ctx.restore(); }
+    ctx.strokeStyle = '#e8bc52'; ctx.lineWidth = r * 0.07; ctx.beginPath(); ctx.arc(0, 0, r * 0.6, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    circle(0, 0, r * 0.25, '#1a0a24', '#9affb8', r * 0.06);
+    const a1 = -time * 5, a2 = -time * 0.8; ctx.strokeStyle = '#effff0'; ctx.lineWidth = r * 0.06;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.sin(a1) * r * 0.19, -Math.cos(a1) * r * 0.19); ctx.moveTo(0, 0); ctx.lineTo(Math.sin(a2) * r * 0.12, -Math.cos(a2) * r * 0.12); ctx.stroke();
+  } else if (id === 'chainbolt') { // ruh yıldırımı: üç kafatası arasında sıçrayan yeşil şimşek
+    lit(0, 0, r * 0.8, '120,255,160', 0.55);
+    const P = [[-r * 0.5, r * 0.35], [-r * 0.05, -r * 0.3], [r * 0.5, r * 0.25]];
+    for (const [lw, col] of [[r * 0.2, 'rgba(120,255,160,0.55)'], [r * 0.08, '#f2fff4']]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+      P.forEach(([x, y], i) => { if (!i) { ctx.moveTo(x, y); return; } const [px, py] = P[i - 1]; for (let j = 1; j <= 3; j++) { const q = j / 3, jt = j < 3 ? Math.sin(time * 30 + i * 5 + j * 2) * r * 0.1 : 0; ctx.lineTo(px + (x - px) * q + jt, py + (y - py) * q - jt); } }); ctx.stroke(); }
+    for (const [x, y] of P) { circle(x, y, r * 0.15, '#ece4c8', '#1a1020', r * 0.04); ctx.fillStyle = '#1a1020'; ctx.beginPath(); ctx.arc(x - r * 0.05, y - r * 0.01, r * 0.035, 0, 7); ctx.arc(x + r * 0.05, y - r * 0.01, r * 0.035, 0, 7); ctx.fill(); }
+  } else if (id === 'mist') { // mezar sisi: mor bulut, içinde yeşil gözlü kafatası
+    lit(0, 0, r * 0.75, '160,90,230', 0.55);
+    ctx.fillStyle = '#6a3aa8'; ctx.strokeStyle = '#1a0828'; ctx.lineWidth = r * 0.06; ctx.beginPath();
+    for (const [x, y, rr] of [[-r * 0.32, r * 0.1, r * 0.28], [0, -r * 0.08, r * 0.34], [r * 0.34, r * 0.1, r * 0.27], [0, r * 0.22, r * 0.3]]) { ctx.moveTo(x + rr, y); ctx.arc(x, y + Math.sin(time * 2 + x) * r * 0.02, rr, 0, Math.PI * 2); }
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ece4c8'; ctx.beginPath(); ctx.arc(0, -r * 0.02, r * 0.2, Math.PI, 0); ctx.lineTo(r * 0.12, r * 0.2); ctx.lineTo(-r * 0.12, r * 0.2); ctx.closePath(); ctx.fill();
+    for (const ex of [-r * 0.08, r * 0.08]) { circle(ex, r * 0.02, r * 0.05, '#1a1020'); lit(ex, r * 0.02, r * 0.1, '120,255,160', 0.9); }
+  } else if (id === 'arcane') { // kadim bilgi: açık büyü kitabı, üstünde dönen rune gözü
+    lit(0, -r * 0.1, r * 0.7, '160,110,255', 0.5);
+    for (const sd of [-1, 1]) { ctx.fillStyle = '#e8dcbc'; ctx.strokeStyle = '#2a1408'; ctx.lineWidth = r * 0.05; ctx.beginPath(); ctx.moveTo(0, r * 0.15); ctx.quadraticCurveTo(sd * r * 0.3, r * 0.02, sd * r * 0.55, r * 0.12); ctx.lineTo(sd * r * 0.55, r * 0.5); ctx.quadraticCurveTo(sd * r * 0.3, r * 0.4, 0, r * 0.52); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    ctx.save(); ctx.translate(0, -r * 0.28); ctx.rotate(time * 1.5); ctx.strokeStyle = '#9affb8'; ctx.lineWidth = r * 0.05; for (let k = 0; k < 6; k++) { ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.moveTo(r * 0.24, 0); ctx.lineTo(r * 0.32, 0); ctx.stroke(); } ctx.restore();
+    ctx.fillStyle = '#c89aff'; ctx.beginPath(); ctx.ellipse(0, -r * 0.28, r * 0.2, r * 0.12, 0, 0, Math.PI * 2); ctx.fill(); circle(0, -r * 0.28, r * 0.07, '#1a0a24'); lit(0, -r * 0.28, r * 0.16, '120,255,160', 0.8);
   }
   ctx.restore();
 }
@@ -11780,7 +11821,8 @@ const HSK_ICON = {
 function drawHeroSkillIcon(id, x, y, s) {
   if (['bash', 'cry', 'whirl', 'bolt'].includes(id)) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s * 1.6, s * 1.6); drawSkillGlyph(id, 0, 0); ctx.restore();
-  } else if (id === 'revive' || id === 'ninelives') drawIcon('heart', x, y, 24 * s);
+  } else if (id === 'chainbolt' || id === 'mist' || id === 'arcane') { ctx.save(); ctx.translate(x, y); drawMerlinGlyph(id, 22 * s); ctx.restore(); }
+  else if (id === 'revive' || id === 'ninelives') drawIcon('heart', x, y, 24 * s);
   else drawAbilityIcon(HSK_ICON[id] || 'blast', x, y, s);
 }
 

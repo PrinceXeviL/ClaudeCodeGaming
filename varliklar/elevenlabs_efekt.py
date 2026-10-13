@@ -31,6 +31,11 @@ SFX = {
     'xbowh': ('heavy siege crossbow firing, loud thick string thump, heavy mechanism clunk, bolt whooshing away, short, no music', 0.9, 2),
     'armorhit': ('crossbow bolt striking steel plate armor, short sharp metallic clang and ricochet ping, no music', 0.5, 3),
     'rattle': ('skeleton warrior stepping out of a stone crypt, dry bones rattling and clattering, short, no music', 0.9, 2),
+    # 15 Eki (Caner: Merlin'in büyü sesi çok kötü): Merlin'e özel sesler
+    'soulorb': ('dark sorcerer hurling a magic orb of ghostly green and purple energy, short swirling whoosh with a crackling magical spark and an eerie shimmering chime, fantasy game spell, no music', 0.8, 3),
+    'soulbolt': ('eerie green necromantic lightning arcing and chaining between several targets, sharp electric crackle and zaps with a ghostly hiss, fantasy spell, short, no music', 1.0, 2),
+    'gravemist': ('thick cursed graveyard fog rolling in over the ground, low ghostly whoosh with faint sinister whispers, dark magic, short, no music', 1.6, 1),
+    'timegate': ('a magical time portal tearing open, a giant clock ticking rapidly backwards, deep swirling whoosh and a resonant magical boom, epic dark fantasy spell, no music', 2.5, 2),
 }
 
 

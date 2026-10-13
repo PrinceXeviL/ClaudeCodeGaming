@@ -720,7 +720,7 @@ Object.assign(HEROES, {
 });
 // 15 Eki (Caner: "Merlin ölüm büyücüsünü yapalım, çok ihtişamlı"): Mortimer'a düelloda yenilen efsanevi büyücü; menzilli büyü ve kalabalık kontrolü.
 // Görsel: varliklar/ham/nm_merlin.jpg (boynuz taçlı lich; h boynuz ve alevle birlikte, ihtişam için öbür komutanlardan uzun).
-HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü', sprite: 'hero_merlin', h: 40, aura: '160,110,255', cost: 45,
+HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü', sprite: 'hero_merlin', h: 44, halo: '190,150,255', aura: '160,110,255', cost: 45,
   hp: 210, dmg: [18, 26], armor: 0, rate: 1.3, speed: 70, respawn: 18, regen: 8, engage: 0, ranged: 185, proj: 'fireball', soul: true, float: true, splash: 22, magic: true,
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
     { id: 'chainbolt', name: 'Ruh Yıldırımı', cd: 9, desc: 'Yeşil yıldırım 5 düşman arasında sıçrar (uçanlar dahil), zırhı deler' },

@@ -134,6 +134,10 @@ def main():
     for n, cnt, db in [('soulsuck', 3, -24), ('cursegaze', 3, -23), ('freeze', 3, -22), ('blooddrain', 2, -26)]:
         for i in range(1, cnt + 1):
             made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.005, 0.2), db))
+    # 15 Eki: Merlin (ruh küresi, ruh yıldırımı, mezar sisi, zaman kapısı)
+    for n, cnt, db in [('soulorb', 3, -24), ('soulbolt', 2, -22), ('gravemist', 1, -24), ('timegate', 2, -19)]:
+        for i in range(1, cnt + 1):
+            made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.003, 0.25), db))
     for n, cnt, db in [('elephant', 2, -19), ('vulture', 2, -23), ('bonewall', 1, -20), ('raise', 1, -22), ('fear', 1, -22), ('bats', 1, -24)]:
         for i in range(1, cnt + 1):
             made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.005, 0.25), db))
