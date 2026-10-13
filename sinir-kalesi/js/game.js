@@ -458,7 +458,7 @@ const SOUND = {
   step_bone:   { vol: 0.09, gap: 0.08, max: 2, rate: [0.9, 1.15] },   // iskeletlerin kemik takırtılı adımı
   fs_rattle: { vol: 0.09, gap: 2.5, max: 1, rate: [0.9, 1.1] },      // bekleyen iskeletin kemik takırtısı (spookymodem, Kneeling), çok kısık     // kılıç çarpışması (gerçek kayıt, StarNinjas CC0; hafif)
   death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
-  coin:    { vol: 0.22, gap: 0.09, max: 2, rate: [0.95, 1.15] },
+  coin:    { vol: 0.16, gap: 0.06, max: 2, rate: [0.95, 1.15] },   // 13 Eki: sikke sayaca varınca (sık çalar, kısık)
   coins:   { vol: 0.45, gap: 0.25, max: 1 },
   build:   { vol: 0.60, gap: 0.10, max: 1 },
   upgrade: { vol: 0.55, gap: 0.10, max: 1 },
@@ -2606,14 +2606,16 @@ function gainXp(h, amount, quiet) {
 // ----- düşen altınlar -----
 // Düşman ölünce birkaç altın sekerek yere düşer, 5 sn bekler (dokununca hemen toplanır),
 // sonra üstteki altın sayacına uçar; altın, sayaca vardığında hesaba eklenir.
-const COIN_TARGET = { x: 112, y: 25 };
+const COIN_TARGET = { get x() { return EDGE.l + 76 * 1.2; }, get y() { return EDGE.t + 19 * 1.2; } }; // sol üstteki altın simgesi
+// 13 Eki (Caner): sikke yere değip kısa sıçrar, rest sn sonra sayaca uçar (eskiden 4 sn bekliyordu); varınca tıkırdar
+const COIN_FX = { rest: 0.3, vz: [120, 160] };
 function dropCoins(x, y, value, flyNow) {
   const n = clamp(Math.round(value / 4), 1, value >= 100 ? 10 : 6);
   let left = value;
   for (let i = 0; i < n; i++) {
     const v = i === n - 1 ? left : Math.floor(value / n); left -= v;
     const a = rand(0, Math.PI * 2), sp = rand(18, 42);
-    const c = { x, y: y + rand(-3, 3), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.5, z: 6, vz: rand(70, 110), t: rand(0, 0.3), val: v, state: 'drop', spin: rand(0, 6) };
+    const c = { x, y: y + rand(-3, 3), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.5, z: 6, vz: rand(COIN_FX.vz[0], COIN_FX.vz[1]), t: rand(0, 0.3), val: v, state: 'drop', spin: rand(0, 6) };
     G.coins.push(c);
     if (flyNow) { c.z = rand(0, 12); collectCoin(c); c.ft = -i * 0.05; }
   }
@@ -2631,11 +2633,13 @@ function updateCoins(dt) {
       c.vz -= 380 * dt; c.z += c.vz * dt;
       if (c.z <= 0) { c.z = 0; if (Math.abs(c.vz) > 40) c.vz = -c.vz * 0.4; else { c.vz = 0; c.state = 'rest'; } }
     } else if (c.state === 'rest') {
-      if (c.t > 4) collectCoin(c);
+      if (c.t > COIN_FX.rest) collectCoin(c);
     } else {
       c.ft += dt;
       if (c.ft >= 0.65) {
-        c.done = true; G.gold += c.val;
+        c.done = true; G.gold += c.val; G.goldGot = (G.goldGot || 0) + c.val;
+        sfx('coin', 0.95 + Math.min(0.25, (G.coinRun = (time - (G.coinAt || 0) < 0.4 ? (G.coinRun || 0) + 1 : 0)) * 0.03)); G.coinAt = time; // art arda gelenler tizleşerek tıkırdar
+        goldQuip();
       }
     }
   }
@@ -2648,6 +2652,19 @@ function coinFlyPos(c) {
   return { x: u * u * c.fx0 + 2 * u * e * mx + e * e * COIN_TARGET.x, y: u * u * c.fy0 + 2 * u * e * my + e * e * COIN_TARGET.y, k };
 }
 let COIN_IM = null;
+// Solarian güneş damgası: kabartma güneş (ortada disk, sekiz sivri ışın); sikkenin r yarıçapına göre
+function solarStamp(g, x, y, r) {
+  g.save(); g.translate(x, y);
+  const ray = (col, off) => { g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, b = a + Math.PI / 8;
+    g.moveTo(Math.cos(a - 0.2) * r * 0.32 + off, Math.sin(a - 0.2) * r * 0.32 + off); g.lineTo(Math.cos(a) * r * 0.66 + off, Math.sin(a) * r * 0.66 + off); g.lineTo(Math.cos(a + 0.2) * r * 0.32 + off, Math.sin(a + 0.2) * r * 0.32 + off);
+    g.moveTo(Math.cos(b - 0.14) * r * 0.32 + off, Math.sin(b - 0.14) * r * 0.32 + off); g.lineTo(Math.cos(b) * r * 0.5 + off, Math.sin(b) * r * 0.5 + off); g.lineTo(Math.cos(b + 0.14) * r * 0.32 + off, Math.sin(b + 0.14) * r * 0.32 + off); }
+    g.closePath(); g.fillStyle = col; g.fill(); };
+  ray('rgba(255,250,200,0.75)', -r * 0.05); ray('rgba(150,88,8,0.85)', 0); // ışık payı + kabartma
+  g.beginPath(); g.arc(0, 0, r * 0.27, 0, Math.PI * 2); g.fillStyle = '#b07010'; g.fill();
+  g.beginPath(); g.arc(-r * 0.04, -r * 0.04, r * 0.18, 0, Math.PI * 2); g.fillStyle = '#ffe680'; g.fill();
+  g.beginPath(); g.arc(0, 0, r * 0.82, 0, Math.PI * 2); g.strokeStyle = 'rgba(150,90,10,0.6)'; g.lineWidth = Math.max(0.8, r * 0.08); g.stroke();
+  g.restore();
+}
 function drawCoin(x, y, r, spin) {
   if (!COIN_IM) {
     const c = document.createElement('canvas'); c.width = c.height = 32;
@@ -2655,7 +2672,7 @@ function drawCoin(x, y, r, spin) {
     gr.addColorStop(0, '#fff3a0'); gr.addColorStop(0.5, '#ffc928'); gr.addColorStop(1, '#b8780c');
     g.fillStyle = gr; g.strokeStyle = '#6a4206'; g.lineWidth = 3;
     g.beginPath(); g.arc(16, 16, 14, 0, Math.PI * 2); g.fill(); g.stroke();
-    g.strokeStyle = 'rgba(150,90,10,0.7)'; g.lineWidth = 2; g.beginPath(); g.arc(16, 16, 8.5, 0, Math.PI * 2); g.stroke();
+    solarStamp(g, 16, 16, 14);
     g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.ellipse(11, 10, 4, 2.4, -0.6, 0, Math.PI * 2); g.fill();
     COIN_IM = c;
   }
@@ -2667,7 +2684,7 @@ function drawCoinWorld(c) {
   {
     const bob = c.state === 'rest' ? Math.sin(time * 4 + c.spin) * 0.8 : 0;
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(c.x, c.y + 1, 3.2, 1.3, 0, 0, Math.PI * 2); ctx.fill();
-    drawCoin(c.x, c.y - c.z - 3 - bob, 3, c.state === 'rest' ? time * 2 + c.spin : c.spin);
+    drawCoin(c.x, c.y - c.z - 3 - bob, 4, c.state === 'rest' ? time * 2 + c.spin : c.spin);
     const glint = c.state === 'rest' ? Math.sin(time * 3 + c.spin * 2) : 0;
     if (glint > 0.85) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, c.x + 1, c.y - c.z - 5, 6, '255,255,220', (glint - 0.85) * 6); ctx.restore(); }
   }
@@ -2676,7 +2693,7 @@ function drawCoinsFlying() {
   for (const c of G.coins) {
     if (c.state !== 'fly' || c.ft < 0) continue;
     const p = coinFlyPos(c);
-    drawCoin(p.x, p.y, 3 + p.k * 2, c.spin);
+    drawCoin(p.x, p.y, 4.5 + p.k * 3, c.spin);
   }
 }
 // Karşılık: hasar alan iskelet (ve aynı mahzenin boştaki iskeletleri) vuranın üstüne yürür; PROVOKE.r bayraktan en uzak kovalama
@@ -5310,11 +5327,14 @@ const MORT_LINES = {
   maxTower: ['İşte şimdi oldu.', 'Böyle bir kulem olsun isterdim. Dur, var.', 'Mimari harikası. Biraz da ürkütücü.'],
   heroDown: ['Kalk, uyuklama!', 'Ölmek mi? Bizde bu geçici.', 'Kısa bir mola. Hemen döner.'],
   clean: ['Tertemiz. Tek damla çay dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
+  loot: ['Solarian vergisi... ters yönde.', 'İmparatorluğun parası. Artık benim.', 'Bu sikkede güneş var. Ne ironi.', 'Ölüler cüzdan taşımaz. Ben taşırım.', 'Bağışınız için teşekkürler, lejyoner.', 'Hazine bakanlığı: ben.'],
   rich: ['Altınlar mezara gömülmez. Bir şey kur!', 'Kese dolu, kuleler boş. Garip.', 'O altınla iki kule olur. Sadece diyorum.'],
   ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
   streak: ['Mükemmel. Yeni malzeme.', 'Hepsini kemik deposuna!', 'Bir, iki, on... yetmez.', 'İşte buna verimlilik denir.'],
 };
 const MORT_TALK_SKIP = 0.2;
+// 13 Eki (Caner): Mortimer arada bir altınla ilgili laf eder: her ~400 altında bir, %35 şansla
+function goldQuip() { if (!NECRO || !G) return; if ((G.goldGot || 0) >= (G.quipAt ?? (G.quipAt = 400))) { G.quipAt += 400; if (Math.random() < 0.35) mortSay('loot'); } }
 function mortSay(kind, force) {
   if (!NECRO || !G || (!force && G.sayCd > 0)) return;
   const L = MORT_LINES[kind]; if (!L) return;
@@ -10738,7 +10758,7 @@ function drawIcon(name, x, y, s, col = '#fff') {
       ctx.arc(0, 0, 9.5, 0, Math.PI * 2);
       const g = ctx.createLinearGradient(0, -9, 0, 9); g.addColorStop(0, '#fff3a0'); g.addColorStop(0.5, '#ffcc33'); g.addColorStop(1, '#c98410');
       fs(g, 3);
-      ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(150,90,10,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+      solarStamp(ctx, 0, 0, 9.5); // 13 Eki (Caner): Solarian güneş damgalı sikke (imparatorluğun parası)
       ctx.beginPath(); ctx.ellipse(-3, -4, 2.6, 1.5, -0.6, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fill(); break;
     }
     case 'skull':
@@ -11604,16 +11624,17 @@ function hudBar(x, y, w, h) {
 function drawHud() {
   drawItemHud();
   // altın / can değişince sayı zıplar
-  if (G.goldShown !== Math.floor(G.gold)) { if (G.goldShown != null) G.goldPop = time; G.goldShown = Math.floor(G.gold); }
+  { const gd = G.gold - (G.goldRoll ?? G.gold); G.goldRoll = gd < 0 ? G.gold : (G.goldRoll ?? G.gold) + Math.min(gd, Math.max(1, gd * 0.18)); } // 13 Eki: sayaç tıkır tıkır yetişir (harcayınca hemen düşer)
+  if (G.goldShown !== Math.floor(G.goldRoll)) { if (G.goldShown != null && G.goldRoll > G.goldShown) G.goldPop = time; G.goldShown = Math.floor(G.goldRoll); }
   if (G.livesShown !== G.lives) { if (G.livesShown != null) G.livesPop = time; G.livesShown = G.lives; }
-  const pop = (t) => (t != null ? 1 + Math.max(0, 1 - (time - t) / 0.35) * 0.3 : 1);
+  const pop = (t) => (t != null ? 1 + Math.max(0, 1 - (time - t) / 0.25) * 0.18 : 1);
   // sol üst: küçük can + altın şeridi, altında dolan dalga çubuğu (%20 büyük, sol üst köşeye yaslı)
   ctx.save(); ctx.translate(EDGE.l, EDGE.t); ctx.scale(1.2, 1.2);
   hudBar(8, 7, 136, 24);
   drawIcon('heart', 22, 19, 16);
   ctx.save(); ctx.translate(34, 20); ctx.scale(pop(G.livesPop), pop(G.livesPop)); hudNum(G.lives + '', 0, 0, 14, G.lives <= 5 ? '#ff8a7a' : '#fff'); ctx.restore();
   drawIcon('coin', 76, 19, 16);
-  ctx.save(); ctx.translate(88, 20); ctx.scale(pop(G.goldPop), pop(G.goldPop)); hudNum(Math.floor(G.gold) + '', 0, 0, 14, '#ffe27a'); ctx.restore();
+  ctx.save(); ctx.translate(88, 20); ctx.scale(pop(G.goldPop), pop(G.goldPop)); hudNum(Math.floor(G.goldRoll) + '', 0, 0, 14, '#ffe27a'); ctx.restore();
   // dalga çubuğu (12 Eki, Caner): dalga içinde düşmanlar çıktıkça yumuşakça dolar; renk yeşil (kolay) → sarı → turuncu,
   // boss sahadayken kırmızı ve nabız gibi; sağ uçta boss işareti yaklaştıkça ısınır
   const n = G.endless ? 8 : G.lv.waves.length;
