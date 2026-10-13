@@ -70,3 +70,13 @@ Kingdom Rush kalıpları:
 Uygulama yeri: `sinir-kalesi/js/data.js` `shapeWaves` (dalga şekli), `TOTAL`/`TOTAL2` ve `HPMUL`/`HPMUL2` (bölüm başına), denge botu `sinir-kalesi/tools/denge-sayfa.js` (`__bot`, `__measure`, `__tune2`).
 
 Kaynaklar: Kingdom Rush Wiki (Fandom): Southport, Twin Rivers, Silveroak Forest, Sarelgaz's Lair, Gray Ravens (Origins) wave tabloları.
+
+## 5. Güncel durum (13 Eki 2026, yayın 511)
+Sayım: dalgalardaki düşmanlar (boss dahil değil; boss çağrıları, bölünen düşmanlar, destek birlikleri sayılmadı).
+- 1. sefer: 20 bölüm, 190 dalga, **5421 düşman** (bölüm başına ort. 271; 1. bölüm 140 → 20. bölüm 482), 23 tür.
+- 2. sefer: 20 bölüm, 199 dalga, **6090 düşman** (ort. 305; 21. bölüm 272, 23. bölüm 194 → 40. bölüm 472), 25 tür.
+- Bir bölümde 3–18 tür; dalga sayısı 6–14. Bot süresi 6–24 dk (Kripta 24 dk, en uzun).
+Kingdom Rush (1. oyun, wiki): Southport 7 dalga/56, Twin Rivers 13/~350, Silveroak 15/~240, The Citadel 17/436 (12 tür), The Dark Tower 15/441 (16 tür).
+Fark: ortalama ve son bölümler KR'ye yakın; 1. bölümümüz KR'nin 2,5 katı kalabalık; 2. sefer 21-22. bölümler 272-286 ile sert başlıyor.
+Oyuncu yorumları (r/kingdomrush): uzun bölümler ancak ara kayıtla kabul görüyor, kısa ve odaklı bölüm seviliyor; meydan okumalarda "uzayıp gidiyor" şikâyeti;
+Vengeance'ta "büyük dalga nadir, yavaş" şikâyeti (yani kalabalık patlama anları isteniyor); uçan düşman yağmuru sevilmiyor.
