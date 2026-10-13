@@ -729,7 +729,17 @@ HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü'
     { id: 'mist', name: 'Mezar Sisi', cd: 14, desc: 'Kalabalığın üstüne mor sis çöker: 4 sn %45 yavaşlatır, çürütür' },
     { id: 'arcane', name: 'Kadim Bilgi', passive: true, desc: 'Kalıcı: +%20 menzil; her 4. ruh küresi üçe bölünür' },
   ] }] };
+// 16 Eki (Caner: "ok ve bıçak fırlatmada uzman, ihtişamlı, ölü"): Robin, Ölü Orman'ın Hayaleti. Okçu + suikastçı + biraz druid; yanında Ruh Kurdu (görseli gelince).
+HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprite: 'hero_robin', h: 41, aura: '110,255,150', halo: '150,255,170', cost: 60,
+  hp: 260, dmg: [20, 30], armor: 0.15, rate: 1.0, speed: 88, respawn: 16, regen: 9, engage: 0, ranged: 205, proj: 'harrow',
+  paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
+    { id: 'knives', name: 'Bıçak Yelpazesi', cd: 8, desc: 'Yakınındaki 5 düşmana yeşil alevli bıçak fırlatır' },
+    { id: 'bonearrow', name: 'Kemik Ok', cd: 12, desc: 'Yol boyunca önündeki bütün düşmanları delip geçen kemik ok' },
+    { id: 'hunter', name: 'Gölge Avcı', passive: true, desc: 'Kalıcı: %25 kritik vuruş, bosslara +%20 hasar' },
+  ] }] };
 Object.assign(HERO_ULT, {
+  robin: { name: 'Ok Yağmuru', cd: 55, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
+    desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
   merlin: { name: 'Zaman Kapısı', cd: 65, anim: 1.8, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
     desc: 'Seçtiğin alanda zaman kapısı açılır: düşmanlar yolun gerisine fırlatılır, hasar alır, 1 sn sersemler (boss yarı yol)', short: 'Alandaki düşmanları yolda geri ışınlar' },
   spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
@@ -737,7 +747,7 @@ Object.assign(HERO_ULT, {
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
     desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin');
+HERO_ORDER.splice(0, HERO_ORDER.length, 'commander', 'spartacus', 'leonidas', 'merlin', 'robin');
 Object.assign(HERO_ULT.commander, { name: 'Yarasa Sürüsü', bats: true, dps: [14, 18], dur: 3, slow: 0.4, heal: 0.3, n: 14,
   desc: 'Vampir yarasalar alana üşüşür: 3 sn ısırır, yavaşlatır, Drakula ısırıklarla iyileşir',
   short: 'Seçtiğin alana yarasa sürüsü: 3 sn ısırık, yavaşlatma, Drakula iyileşir' });

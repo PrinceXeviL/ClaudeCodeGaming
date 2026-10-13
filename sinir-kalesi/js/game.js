@@ -1844,7 +1844,7 @@ function heroStats(h) {
   h.armor = Math.min(0.8, d.armor + (ir ? 0.1 + 0.05 * ir : 0)); // Demir Duruş / Bronz Kalkan: kademeyle %15..%35
   h.regen = d.regen * HERO_HP * (ir ? 1.4 + 0.2 * ir : 1);
   h.rate = d.rate * (L.shadow ? 0.75 : 1);
-  h.crit = L.shadow ? 0.2 : L.eagle ? 0.25 : 0;
+  h.crit = L.shadow ? 0.2 : L.eagle || L.hunter ? 0.25 : 0; // hunter: Robin'in Gölge Avcı'sı
   h.ranged = (d.ranged || 0) * (L.eagle || L.arcane ? 1.2 : 1); // arcane: Merlin'in Kadim Bilgisi
   h.dodge = L.dodge ? 0.35 : 0;
 }
@@ -4350,6 +4350,22 @@ function useSkill(h, id) {
       G.effects.push({ kind: 'ring', x: c.e.x, y: c.e.y, r: 62, col: '170,110,255', t: 0, dur: 0.5 }); sfx('gravemist');
       return true;
     }
+    case 'knives': { // Robin: en yakın 5 düşmana yeşil alevli bıçak
+      const ts = enemiesNear(h.x, h.y, 135, true).sort((a, b) => dist(a.x, a.y, h.x, h.y) - dist(b.x, b.y, h.x, h.y)).slice(0, 5);
+      if (ts.length < 2) return false;
+      for (const e of ts) fireHeroShot(h, e, 0.9, { kind: 'dagger', soul: true });
+      sfx('whirl'); return true;
+    }
+    case 'bonearrow': { // Robin: yolda en öndeki düşmana doğru, hat üstündeki herkesi delen kemik ok
+      let tg = null, br = 1e9; for (const o of G.enemies) if (!o.dead && !o.under && dist(h.x, h.y - 10, o.x, o.y) <= R && o.p && o.p.total - o.d < br) { br = o.p.total - o.d; tg = o; }
+      if (!tg) return false;
+      const sx = h.x + h.face * 6, sy = h.y - h.def.h * UNIT_K * 0.6, a = Math.atan2(aimY(tg) - sy, tg.x - sx), ex = sx + Math.cos(a) * R * 1.15, ey = sy + Math.sin(a) * R * 1.15;
+      let n = 0;
+      for (const o of G.enemies) { if (o.dead || o.under) continue; const t = clamp(((o.x - sx) * (ex - sx) + (o.y - sy) * (ey - sy)) / ((ex - sx) ** 2 + (ey - sy) ** 2), 0, 1);
+        if (dist(o.x, o.y, sx + (ex - sx) * t, sy + (ey - sy) * t) < 20) { damageEnemy(o, 60 + 12 * L, 'phys'); fxArrowHit(o.x, aimY(o), true); n++; } }
+      G.effects.push({ kind: 'bolt', pts: [[sx, sy], [ex, ey]], col: 'soul', t: 0, dur: 0.25 }); sfx('arrow'); shakeScreen(1.2, 0.1);
+      return n > 0;
+    }
     case 'multishot': {
       const ts = enemiesNear(h.x, h.y, R, true).slice(0, 4);
       if (ts.length < 2) return false;
@@ -4370,6 +4386,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
     dmg: roll(h.dmg) * mult * (crit ? 2 : 1) / (HERO_SKILL ? HERO_POWER : 1), dtype: h.def.magic ? 'magic' : 'phys', arc: h.def.proj === 'dagger' ? 10 : 16, crit,
     poison: h.learned.venom ? 4 + h.lvl * 1.5 : 0, inferno: h.learned.inferno ? 34 : 0 };
   if (h.def.soul) p.soul = true; // Merlin: yeşil-mor ruh küresi
+  if (h.learned.hunter && (e.def.chief || e.def.boss)) p.dmg *= 1.2; // Robin: Gölge Avcı
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
   sfx(h.def.soul ? 'soulorb' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
@@ -6301,6 +6318,11 @@ function castUlt(h, x, y) {
       engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: U.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
     G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.9 }); G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 50, col: '200,150,255', t: 0, dur: 0.5 });
     floatText(q.x, q.y - 40, 'Bu Sparta!', '#ffd34d'); shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200);
+  } else if (U.rain) {
+    // Robin'in ok yağmuru: alana zamana yayılmış zehirli yeşil oklar
+    for (let i = 0; i < U.n; i++) { const [tx, ty] = spot(U.r);
+      G.projectiles.push({ kind: 'rainarrow', sx: tx - 70, sy: ty - 280, tx, ty, t: -i * U.dur / U.n, dur: 0.42, dmg: dmg(), splash: 18, arc: 0, poison: 3, poisonT: 2 }); }
+    for (let i = 0; i < 5; i++) setTimeout(() => sfx('arrow'), i * 600);
   } else if (U.portal) {
     // Merlin'in zaman kapısı: alanda dönen mor-yeşil halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
     G.effects.push({ kind: 'timegate', x, y, r: U.r, t: 0, dur: 1.1 });
@@ -9480,6 +9502,7 @@ function drawProjectile(p) {
     roundRect(-0.9, 0, 1.8, 3, 0.7, '#5a3418');
     ctx.restore();
   } else if (p.kind === 'dagger') {
+    if (p.soul) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 9, '110,255,150', 0.8); ctx.restore(); } // Robin: yeşil alevli bıçak
     ctx.save(); ctx.translate(x, y); ctx.rotate(time * 22);
     ctx.fillStyle = '#e8ecf4'; ctx.strokeStyle = '#2a2e38'; ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(-1.6, 0); ctx.lineTo(0, -7); ctx.lineTo(1.6, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -11109,7 +11132,7 @@ function drawWavePeek() {
 // portre kadrajı: görselin tepesinden (kafa) kare bir parça; kafa bandındaki piksellerin ortasına ortalanır (bir kez hesaplanır)
 const HEAD_CROP = new Map();
 // elle yüz kırpması (görsel kesri: yüz ortası x, y ve kare boyu / boy): tepesinde boynuz, alev ya da asa olan komutanlarda otomatik kırpma yüzü kaçırır
-const HEAD_FIX = { hero_merlin: [0.55, 0.31, 0.34] };
+const HEAD_FIX = { hero_merlin: [0.55, 0.31, 0.34], hero_robin: [0.55, 0.22, 0.32] };
 function headCrop(im, key) {
   if (HEAD_CROP.has(im)) return HEAD_CROP.get(im);
   let c = null;
@@ -11181,6 +11204,13 @@ function drawUltGlyph(id, r) {
     circle(0, 0, r * 0.55, '#b0863a', '#3a2408', 2); circle(0, 0, r * 0.42, null, 'rgba(255,230,160,0.55)', 1.2);
     ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(-r * 0.2, r * 0.24); ctx.lineTo(0, -r * 0.26); ctx.lineTo(r * 0.2, r * 0.24); ctx.stroke();
   } else if (id === 'merlin') drawMerlinGlyph('timegate', r);
+  else if (id === 'robin') { // ok yağmuru: yeşil alevli üç ok iner
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, r * 0.2, r * 0.7, '110,255,150', 0.5); ctx.restore();
+    for (let k = -1; k <= 1; k++) { const y0 = ((time * 1.6 + k * 0.33) % 1) * r * 0.5 - r * 0.25; ctx.save(); ctx.translate(k * r * 0.3, y0); ctx.rotate(Math.PI / 2 + 0.25);
+      ctx.strokeStyle = '#3a2410'; ctx.lineWidth = r * 0.08; ctx.beginPath(); ctx.moveTo(-r * 0.32, 0); ctx.lineTo(r * 0.2, 0); ctx.stroke();
+      ctx.fillStyle = '#9affb0'; ctx.beginPath(); ctx.moveTo(r * 0.34, 0); ctx.lineTo(r * 0.18, -r * 0.09); ctx.lineTo(r * 0.18, r * 0.09); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#4ad26a'; ctx.beginPath(); ctx.moveTo(-r * 0.32, 0); ctx.lineTo(-r * 0.42, -r * 0.08); ctx.lineTo(-r * 0.24, 0); ctx.lineTo(-r * 0.42, r * 0.08); ctx.closePath(); ctx.fill(); ctx.restore(); }
+  }
   ctx.restore();
 }
 // 15 Eki (Caner: "skill'inin resmi yok; simgeler dikkat çekici olmalı"): Merlin'in hareketli simgeleri (güç düğmesi ve yetenek ağacı)
@@ -11884,7 +11914,7 @@ const HSK_ICON = {
   iron: 'shield', charge: 'blade', holy: 'holy', consecrate: 'blast', shieldthrow: 'shield', quake: 'quake', judgment: 'blade',
   fan: 'fan', venom: 'poison', deadly: 'snipe', smoke: 'smoke', trap: 'trap', shadow: 'shadow',
   flamering: 'napalm', inferno: 'napalm', meteor2: 'meteor', icelance: 'frost', freeze: 'frost', frostarmor: 'shield',
-  volley: 'fan', blastarrow: 'napalm', fireaim: 'napalm', multishot: 'fan', pierce: 'snipe', eagle: 'snipe',
+  knives: 'fan', bonearrow: 'snipe', hunter: 'snipe', volley: 'fan', blastarrow: 'napalm', fireaim: 'napalm', multishot: 'fan', pierce: 'snipe', eagle: 'snipe',
   shadowstep: 'shadow', bleed: 'poison', clawstorm: 'blade', dodge: 'smoke', mark: 'snipe',
 };
 function drawHeroSkillIcon(id, x, y, s) {
