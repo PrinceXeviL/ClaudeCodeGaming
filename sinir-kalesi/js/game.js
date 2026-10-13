@@ -140,9 +140,9 @@ function rottenOf(name, im) {
 function rotPixels(a) {
   for (let i = 0; i < a.length; i += 4) {
     const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
-    a[i] = (a[i] * 0.2 + L * 1.25 * 0.8) * 0.72;
-    a[i + 1] = (a[i + 1] * 0.2 + L * 0.1 * 0.8) * 0.72;
-    a[i + 2] = (a[i + 2] * 0.2 + L * 0.14 * 0.8) * 0.72;
+    a[i] = Math.min(255, (a[i] * 0.22 + L * 1.3 * 0.8) * 0.98); // 14 Eki (Caner): daha açık kızıl (önce * 0.72, çok koyuydu)
+    a[i + 1] = (a[i + 1] * 0.22 + L * 0.24 * 0.8) * 0.98;
+    a[i + 2] = (a[i + 2] * 0.22 + L * 0.26 * 0.8) * 0.98;
   }
 }
 // ---------- boyacı iş parçacığı (13 Eki) ----------
@@ -418,7 +418,8 @@ const SOUND = {
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
   yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
-  soulorb: { vol: 0.34, gap: 0.15, max: 2, rate: [0.92, 1.1] },     // 15 Eki: Merlin'in ruh küresi (ElevenLabs)
+  soulorb: { vol: 0.34, gap: 0.15, max: 2, rate: [0.92, 1.1] },
+  bloodbolt: { vol: 0.36, gap: 0.15, max: 2, rate: [0.93, 1.08] },  // 14 Eki: Báthory'nin kan oku (ElevenLabs)     // 15 Eki: Merlin'in ruh küresi (ElevenLabs)
   soulbolt: { vol: 0.42, gap: 0.5, max: 1, rate: [0.95, 1.05] },    // Merlin: Ruh Yıldırımı
   gravemist: { vol: 0.4, gap: 1, max: 1, rate: [0.95, 1.05] },      // Merlin: Mezar Sisi
   timegate: { vol: 0.6, gap: 2, max: 1, rate: [0.97, 1.03] },       // Merlin: Zaman Kapısı
@@ -4454,7 +4455,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
   if (h.def.blood) { p.blood = true; p.owner = h; p.leech = h.learned.thirst ? 0.4 : 0.2; if (h.learned.thirst) p.dmg *= 1.15; } // Báthory: kan oku, can çalar
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
-  sfx(h.def.soul ? 'soulorb' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
+  sfx(h.def.soul ? 'soulorb' : h.def.blood ? 'bloodbolt' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
   if (h.learned.arcane && !extra && !HERO_SKILL && (h.shotN = (h.shotN || 0) + 1) % 4 === 0) // Kadim Bilgi: her 4. küre yakındaki iki düşmana daha bölünür
     for (const o of enemiesNear(e.x, e.y, 90, true).filter(o => o !== e).slice(0, 2)) fireHeroShot(h, o, 0.6, { split: true });
 }
@@ -4895,7 +4896,7 @@ function castNecro(id, x, y) {
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
 // dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
 // sep = birimler arası en az uzaklık (separateUnits)
-const ZOMBIE = { drop: 150, lane: 9, sep: 10 };
+const ZOMBIE = { drop: 150, lane: 9, sep: 15, aggro: 120 }; // 14 Eki (Caner): sep 10 -> 15 (iç içe geçiyorlardı); aggro: düşman bu kadar yakına gelince saldırır, yoksa yerinde bekler
 function separateUnits(dt) {
   const L = G.soldiers.filter(s => !s.dead && !s.wall && !s.hero && !s.big && !s.bow && !(s.born != null && G.t < s.born) && !s.exit);
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
@@ -4978,13 +4979,13 @@ function drawPet(s) {
 const SOLDIER_REACH = 110;
 const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
 function zombieHunt(s) {
-  let best = null, bd = 1e9;
+  let best = null, bd = ZOMBIE.aggro; // 14 Eki (Caner): yalnız yakına gelen düşmana gider; düşman yoksa bulunduğu yerde bekler
   for (const o of G.enemies) {
     if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o)) continue;
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
-  if (!best) return;
+  if (!best) { if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde dur (iteleşmeyle yerini korur)
   // yoldan yürür: önce en yakın yol noktasına çıkar, sonra yol boyunca düşmana doğru adım adım ilerler (yol dışına kesmez);
   // hedef menzile girince normal dövüş seçimi devralır
   const me = nearestOnPaths(G.paths, s.x, s.y);

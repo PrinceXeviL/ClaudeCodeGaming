@@ -35,6 +35,8 @@ SFX = {
     'soulorb': ('dark sorcerer hurling a magic orb of ghostly green and purple energy, short swirling whoosh with a crackling magical spark and an eerie shimmering chime, fantasy game spell, no music', 0.8, 3),
     'soulbolt': ('eerie green necromantic lightning arcing and chaining between several targets, sharp electric crackle and zaps with a ghostly hiss, fantasy spell, short, no music', 1.0, 2),
     'gravemist': ('thick cursed graveyard fog rolling in over the ground, low ghostly whoosh with faint sinister whispers, dark magic, short, no music', 1.6, 1),
+    # 14 Eki (Caner: Báthory'nin standart büyü sesi daha güzel olsun): kan oku
+    'bloodbolt': ('a vampire countess hurling a crimson bolt of blood magic, quick wet swirling whoosh with a thick liquid blood splash, a faint sinister female whisper, sharp and satisfying, dark fantasy game spell, no music', 0.8, 4),
     'timegate': ('a magical time portal tearing open, a giant clock ticking rapidly backwards, deep swirling whoosh and a resonant magical boom, epic dark fantasy spell, no music', 2.5, 2),
 }
 
