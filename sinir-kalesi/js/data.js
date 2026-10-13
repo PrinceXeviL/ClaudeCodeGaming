@@ -558,8 +558,10 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
   // 13 Eki: ilk 4 bölüm büyüsüz/az büyülü sıradan oyuncuya göre (sim: tools yok, scratchpad sade.js) yumuşatıldı: 1.512,1.052,1.174,2.344 -> 0.8,0.6,0.68,1.5
-  const HPMUL = [0.8, 0.6, 0.68, 1.5, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.801, 0.257, 0.354]; // 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
-  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i] }));
+  const HPMUL = [0.5, 0.6, 0.68, 1.5, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.801, 0.257, 0.354]; // 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
+  // 13 Eki (Caner): ilk 3 bölüm öğretici: Kingdom Rush'taki gibi kısa ve seyrek (140/150/165 -> ~80/90/100 düşman)
+  const TOTK1 = [0.57, 0.6, 0.6, 0.8, 0.9]; // 4-5. bölüm ara basamak
+  L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i], totK: TOTK1[i] || 1 }));
   // bölüme özel mekanikler (game.js MECH)
   [null, null, null, null, 'mud', 'mud', null, null, 'graves', null, null, 'graves', 'lake', null, 'lake', 'lake', 'sunbeam', null, null, 'sunbeam'].forEach((m, i) => { if (m) L[i].mech = m; });
   LEVELS.splice(0, LEVELS.length, ...L);
@@ -666,7 +668,7 @@ if (NECRO) {
   const TOTAL2 = [172, 184, 188, 193, 203, 212, 215, 218, 218, 224, 227, 230, 234, 242, 240, 242, 250, 257, 265, 274]; // 20 bölüm (10 Eki) // 10 Eki: önce %30, sonra %20 daha kalabalık (Caner: kuleler güçlü kaldı); ilk değerler 1,56'ya bölünerek bulunur
   // ek dalga ve düşman sayısı çarpanı (restructureWaves eğrisinin üstüne; 11 Eki: 21, 22, 28, 31 can ×3'te bile kayıpsız geçiliyordu.
   // Sebep 5. kademe büyüler: kısa bölümde bekleme süreleri her dalgaya yetiyor. Daha uzun bölüm, dalga başına aynı kalabalık)
-  const ADDN2 = [3, 3, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const ADDN2 = [1, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -2, 0, 0, 0, 0]; // 13 Eki (Caner): 21-22 yumuşak giriş (3 -> 1), 20 dk'yı aşan 28, 31, 33, 36 birkaç dalga kısa
   const GOLDK2 = [0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1, 1.3, 1, 1, 1, 1, 1]; // 32 ve 35: ilk dalgalar (çan rahibi, kırbaççı seli) için kule kurmaya yetsin // 16 Eki: 22, 28, 31'de az altın kalktı (yeni botla ilk dalgalarda çöküyordu) // tek girişli kolay bölümlerde başlangıç altını az (ilk dalgalar gerilsin)
   const TOTK2 = ADDN2.map((a, i) => 1 + a / (6 + Math.round(i / 19 * 6) + (i % 4 === 3 ? 2 : 0)));
   // 16 Eki (Caner: "bütün bölümleri botla oyna, dengesizlikleri düzelt"): tools/denge-botu2.js (gerçekçi oyuncu: yıldızlar, Büyü Kitabı, komutan puanı
@@ -688,8 +690,8 @@ if (NECRO) {
 // kuleler: Mortimer'ın yapıları
 Object.assign(TOWERS.archer, { name: 'Kemik Kulesi', desc: 'Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin' });
 Object.assign(TOWERS.barracks, { name: 'Mahzen', desc: 'Mahzenin kapısından çıkan iskelet savaşçılar yolu keser' }); // 11 Eki: Savaşçı Mezarlığı'ndan yeniden Mahzen'e (Caner)
-Object.assign(TOWERS.mage, { name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır · menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar' }); // Ruh Hasadı: game.js SOUL
-Object.assign(TOWERS.artillery, { name: 'Veba Kazanı', desc: 'Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür' });
+Object.assign(TOWERS.mage, { unlockLevel: 1, name: 'Ruh Feneri', desc: 'Ruh ışını: zırhı deler, yavaşlatır · menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar' }); // Ruh Hasadı: game.js SOUL
+Object.assign(TOWERS.artillery, { unlockLevel: 1, name: 'Veba Kazanı', desc: 'Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür' });
 TOWERS.barracks.levels[0].perk = 'Tencere miğferli 3 iskelet acemi yolu keser';
 TOWERS.barracks.levels[1].perk = 'İskelet muhafızlar: zincir zırh, kalkan, uzun kılıç';
 TOWERS.barracks.levels[2].perk = 'Kemik şövalyeler: kara zırh · vuruşlar %15 can çalar';
@@ -1267,7 +1269,7 @@ if (NECRO) {
 //   menzildeki Kemik Kuleleri: okçu/arbaletçiler daha sert vurur (ally). rise: lanetli ölürse çürümüş ölü olarak dirilme şansı.
 if (NECRO) {
   TOWERS.altar = {
-    name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 2, unique: true,
+    name: 'Lanet Kulesi', icon: 'altar', dmgType: 'none', air: false, support: true, unlockLevel: 3, /* 13 Eki: 3. bölüm komutan ve büyülere ayrıldı */ unique: true,
     desc: 'Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir',
     levels: [
       { cost: 110, range: 130, every: 1.2, linger: 10, curse: 0.1,  res: 0.3,  weak: 0.12, slow: 0.12, fear: 0.06, ally: 0.1,  allyArm: 0.08, rise: 0.08, title: 'Lanet Kulesi',
