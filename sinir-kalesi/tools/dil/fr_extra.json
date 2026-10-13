@@ -197,7 +197,9 @@
 "+%25 can · +%25 hasar": "+25 % de vie · +25 % de dégâts",
 "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Les esprits pourchassent les ennemis de la zone : ils fuient terrorisés pendant 3 s. Les ennemis résistants à la magie et les boss ont moins peur ; les machines n'ont pas peur, mais les chevaux des chars s'affolent et ralentissent",
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 relevé · +10 % de puissance · cadavre +1,5 s",
-"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % de vie · +25 % de dégâts · cadavre +1,5 s"
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % de vie · +25 % de dégâts · cadavre +1,5 s",
+"Savaşa": "Au combat",
+"En fazla 3 büyü götürülür · önce birini çıkar": "3 sorts au maximum · retire-en un d'abord"
 },
 "tpl": [
 [

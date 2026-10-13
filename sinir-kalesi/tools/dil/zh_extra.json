@@ -197,7 +197,9 @@
 "+%25 can · +%25 hasar": "+25% 生命 · +25% 伤害",
 "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "亡魂追逐区域内的敌人：它们惊恐地后退 3 秒。有魔法抗性的敌人和首领受影响较小；机械不会恐惧，但战车的马匹会受惊减速",
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 复活者 · +10% 力量 · 尸体 +1.5 秒",
-"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% 生命 · +25% 伤害 · 尸体 +1.5 秒"
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% 生命 · +25% 伤害 · 尸体 +1.5 秒",
+"Savaşa": "出战",
+"En fazla 3 büyü götürülür · önce birini çıkar": "最多携带 3 个法术 · 先移除一个"
 },
 "tpl": [
 [

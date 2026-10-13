@@ -197,7 +197,9 @@
 "+%25 can · +%25 hasar": "+25 % vida · +25 % daño",
 "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Los espíritus persiguen a los enemigos del área: huyen aterrados durante 3 s. Los resistentes a la magia y los jefes temen menos; las máquinas no temen, pero los caballos de los carros se espantan y frenan",
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 alzado · +10 % poder · cadáver +1,5 s",
-"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % vida · +25 % daño · cadáver +1,5 s"
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % vida · +25 % daño · cadáver +1,5 s",
+"Savaşa": "A la batalla",
+"En fazla 3 büyü götürülür · önce birini çıkar": "Máximo 3 hechizos · quita uno primero"
 },
 "tpl": [
 [

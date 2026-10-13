@@ -392,7 +392,9 @@
 "+%25 can · +%25 hasar": "+25% health · +25% damage",
 "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Spirits chase the enemies in the area: they flee back in terror for 3 s. Magic-resistant enemies and bosses fear less; machines don't fear, but chariot horses panic and slow down",
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 raised · +10% power · corpse +1.5 s",
-"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% health · +25% damage · corpse +1.5 s"
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% health · +25% damage · corpse +1.5 s",
+"Savaşa": "To battle",
+"En fazla 3 büyü götürülür · önce birini çıkar": "Up to 3 spells · remove one first"
 },
 "tpl": [
 [

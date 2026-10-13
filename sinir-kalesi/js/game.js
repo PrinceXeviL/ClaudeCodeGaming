@@ -1719,7 +1719,7 @@ function startLevel(idx, chal = null) {
     const h = makeHero(id, q.x + i * 6, q.y, i);
     G.heroes.push(h); G.soldiers.push(h);
     G.spells['ult' + i] = 0;
-    if (NECRO) { G.spells.nm_raise = 0; G.spells.nm_fear = 0; G.spells.nm_wall = 0; G.spells.nm_burst = 0; G.spells.nm_golem = 0; }
+    if (NECRO) for (const id of loadout()) G.spells[id] = 0; // yalnız savaşa götürülen 3 büyü
   });
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
@@ -4717,7 +4717,21 @@ function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM
   return o;
 }
 const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return TEST_OPEN || u == null || (save.stars[u] || 0) > 0; };
-const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn) : []).concat(G.heroes.map((h, i) => 'ult' + i));
+// 16 Eki (Caner): Mortimer savaşa en çok 3 büyü götürür; hangileri Büyü Kitabı'ndan seçilir (save.loadout). Seçim yoksa ya da eksikse açık büyülerle sırayla dolar.
+const SPELL_SLOTS = 3;
+function loadout() {
+  const open = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn), L = (save.loadout || []).filter(id => open.includes(id));
+  // hiç seçim yapılmadıysa (ya da seçilenlerin hepsi kapalıysa) açık büyülerle sırayla dolar; oyuncu bir büyüyü çıkardıysa boş yer boş kalır
+  if (!save.loadout || !L.length) for (const id of open) if (L.length < SPELL_SLOTS && !L.includes(id)) L.push(id);
+  return L.slice(0, SPELL_SLOTS);
+}
+function toggleLoadout(id) { // seçili büyüyü çıkarır ya da boş yer varsa ekler
+  const L = loadout();
+  if (L.includes(id)) { if (L.length <= 1) return false; save.loadout = L.filter(x => x !== id); }
+  else { if (L.length >= SPELL_SLOTS) return 'full'; save.loadout = L.concat(id); }
+  persist(); return true;
+}
+const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(id => loadout().includes(id)) : []).concat(G.heroes.map((h, i) => 'ult' + i));
 // Oyun içi arayüz ölçüsü (Caner, 10 Eki: telefonda parmakla dokunmak için küçüktü): düğmeler %25 büyük, aralıklar %10 açık,
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
 const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
@@ -12141,6 +12155,7 @@ function soulGem(x, y, r) {
 }
 function drawGrimIcon(x, y, s) { drawIcon('grimoire', x, y, 30 * s); } // kale menüsü düğmesi: haritadaki Büyü Kitabı simgesi
 let grimSel = null;
+let grimMsg = null;
 function drawGrimoire(px, py, pw, ph, k, canBuy) {
   const cx = px + pw / 2, free = soulsFree();
   crimsonRibbon(cx, py + 46, 'BÜYÜ KİTABI', 24, 300);
@@ -12149,6 +12164,7 @@ function drawGrimoire(px, py, pw, ph, k, canBuy) {
   const lx = px + 34, lw = 372;
   roundRect(lx, py + 74, lw, 38, 19, 'rgba(0,0,0,0.45)', '#c9a0ff', 1.8); soulGem(lx + 26, py + 93, 13);
   txt(`${free} büyü puanı`, lx + 50, py + 94, 19, '#ecd8ff', 'left', '400', FONT_T);
+  const LO = loadout(); txt('Savaşa', lx + lw - 58, py + 94, 15, '#c8b898', 'right', '800', FONT_B, false); txt(`${LO.length}/${SPELL_SLOTS}`, lx + lw - 16, py + 94, 19, '#ffe27a', 'right', '400', FONT_T);
   GRIM_IDS.forEach((id, i) => {
     const S = NECRO_SPELLS[id], y = py + 120 + i * 56, a = clamp((k - 0.1 - i * 0.05) / 0.25, 0, 1); if (a <= 0) return;
     const r = grimRank(id), open = necroSpellOn(id), on = grimSel === id, can = open && canBuy && r < 5 && grimPts(id) > 0;
@@ -12158,10 +12174,16 @@ function drawGrimoire(px, py, pw, ph, k, canBuy) {
     ctx.save(); ctx.beginPath(); ctx.arc(lx + 30, y + 25, 19, 0, Math.PI * 2); ctx.clip(); ctx.translate(lx + 30, y + 25); ctx.scale(0.78, 0.78); drawNecroGlyph(id, 24); ctx.restore();
     fitTxt(S.name, lx + 60, y + 18, lw - 62 - 100, UP_FONT.name - 1, '#ffe9b0', 'left', '400', FONT_T);
     txt(open ? `Seviye ${spellLvl(id)}` : `${(S.unlock ?? 0) + 1}. bölümü bitirince açılır`, lx + 60, y + 37, UP_FONT.small, '#c8b898', 'left', '800', FONT_B, false);
-    if (open) upPips(lx + lw - 92, y + 25, 5, r, '#c890ff'); else drawIcon('lock', lx + lw - 30, y + 25, 18);
-    if (can) { glow(ctx, lx + lw - 14, y + 10, 14, '200,140,255', 0.5); circle(lx + lw - 14, y + 10, 8, '#8a3ad8', '#fff', 1.4); }
+    if (open) { upPips(lx + lw - 136, y + 25, 5, r, '#c890ff'); // kademe noktaları, sağda savaşa götürme kutusu
+      const sel = LO.includes(id), bx = lx + lw - 30, by2 = y + 25;
+      circle(bx, by2, 14, sel ? '#2f8a3a' : 'rgba(0,0,0,0.5)', sel ? '#b8ffc0' : '#c9a865', 2);
+      if (sel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(bx - 6, by2); ctx.lineTo(bx - 1.5, by2 + 5); ctx.lineTo(bx + 7, by2 - 5); ctx.stroke(); }
+    } else drawIcon('lock', lx + lw - 30, y + 25, 18);
+    if (can) { glow(ctx, lx + lw - 152, y + 25, 14, '200,140,255', 0.5); circle(lx + lw - 152, y + 25, 7, '#8a3ad8', '#fff', 1.4); } // geliştirilebilir: kademe noktalarının solunda
     ctx.restore();
-    buttons.push({ key: 'gs' + id, x: lx, y, w: lw, h: 50, fn: () => { grimSel = id; sfx('pick'); } });
+    buttons.push({ key: 'gs' + id, x: lx, y, w: lw - 56, h: 50, fn: () => { grimSel = id; sfx('pick'); } });
+    if (open) buttons.push({ key: 'gl' + id, x: lx + lw - 56, y, w: 56, h: 50, fn: () => { grimSel = id; const r2 = toggleLoadout(id);
+      if (r2 === 'full') { grimMsg = { text: 'En fazla 3 büyü götürülür · önce birini çıkar', t: time }; sfx('error'); } else if (r2) sfx('pick'); else sfx('error'); } });
   });
   // sağ sütun: seçilen büyü
   const id = grimSel, S = NECRO_SPELLS[id], r = grimRank(id), open = necroSpellOn(id);
@@ -12187,6 +12209,7 @@ function drawGrimoire(px, py, pw, ph, k, canBuy) {
     sfx('upgrade');
     for (let q = 0; q < 18; q++) { const an = rand(0, Math.PI * 2), v = rand(50, 160); emit(uiParts, { kind: 'glow', add: true, x: rx + rw / 2, y: by, vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 3, col: '200,140,255', s0: 4, s1: 0.5, life: 0.5 }); }
   }, can ? 'green' : 'dark', { size: 17, shine: can });
+  if (grimMsg && time - grimMsg.t < 2.2) txt(grimMsg.text, lx + lw / 2, py + 120 + 5 * 56 + 6, 13, '#ffb0a0', 'center', '800', FONT_B, true);
   if (canBuy) gameButton('grim_reset', lx + lw / 2, py + ph - 52, 180, 44, 'SIFIRLA', () => { save.grim = {}; persist(); sfx('coins'); }, 'red', { icon: 'restart', size: 16 });
 }
 function drawGrimScreen() {

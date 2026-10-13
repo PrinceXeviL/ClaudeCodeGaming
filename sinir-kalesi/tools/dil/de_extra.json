@@ -197,7 +197,9 @@
 "+%25 can · +%25 hasar": "+25 % Leben · +25 % Schaden",
 "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Geister jagen die Feinde im Gebiet: Sie fliehen 3 s lang voller Angst zurück. Magieresistente Feinde und Bosse fürchten sich weniger; Maschinen fürchten sich nicht, aber die Pferde der Streitwagen scheuen und werden langsamer",
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 Erweckter · +10 % Kraft · Leiche +1,5 s",
-"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % Leben · +25 % Schaden · Leiche +1,5 s"
+"+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % Leben · +25 % Schaden · Leiche +1,5 s",
+"Savaşa": "In den Kampf",
+"En fazla 3 büyü götürülür · önce birini çıkar": "Höchstens 3 Zauber · zuerst einen entfernen"
 },
 "tpl": [
 [
