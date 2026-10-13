@@ -2717,7 +2717,7 @@ const CORPSE_T = { base: 6, per: 1.5 };
 const corpseStay = () => CORPSE_T.base + CORPSE_T.per * grimRank('nm_raise');
 // 15 Eki (Caner): süresi dolan ceset büyüye yaramaz ama yerde 'remains' olarak yeni dalga başlayana dek kalır (yerdeki oklar da);
 // en çok REMAINS.cap kalıntı (fazlası en eskiden söner), dalga başında hepsi fade sn'de söner
-const REMAINS = { cap: 40, fade: 0.8, keep: 9999 }; // 16 Eki: 70 -> 40 (telefonda güvenli)
+const REMAINS = { cap: 40, fade: 0.8, keep: 0 }; // 16 Eki: 70 -> 40 (telefonda güvenli). 13 Eki (Caner): keep 0 = ceset süresi (6 sn + kademe) bitince söner, kalıntı kalmaz
 function keepRemains(f) {
   if (f.kind !== 'corpse' || f.air || f.fly || !NECRO || f.dur - (f.lt ?? 0) > 0.12 || !animStrip(f.name, f.rig, '_die')) return; // büyüyle kullanılan ceset kalıntı bırakmaz
   // 16 Eki (Caner): sınır dolunca en zayıf kalıntı söner (güç: düşmanın tam canı, boss x3); yeni gelen hepsinden zayıfsa o kalmaz.
@@ -2728,7 +2728,7 @@ function keepRemains(f) {
     if ((weak.str || 0) > st) return;
     weak.dur = weak.t + REMAINS.fade; weak.fading = true;
   }
-  G.effects.push({ kind: 'remains', name: f.name, rig: f.rig, h: f.h, x: f.x, y: f.y, face: f.face, fly: 0, flung: f.flung, t: 0, dur: REMAINS.keep, str: st, vr: f.vr, vs: f.vs, blood: f.blood });
+  G.effects.push({ kind: 'remains', name: f.name, rig: f.rig, h: f.h, x: f.x, y: f.y, face: f.face, fly: 0, flung: f.flung, t: 0, dur: Math.max(REMAINS.keep, REMAINS.fade), fading: REMAINS.keep <= REMAINS.fade, str: st, vr: f.vr, vs: f.vs, blood: f.blood });
 }
 function clearRemains() { // yeni dalga: kalıntılar ve yerdeki oklar söner
   for (const f of G.effects) if ((f.kind === 'remains' || f.kind === 'stuck' && f.ground && f.dur > STUCK.ground) && !f.fading) { f.dur = f.t + REMAINS.fade; f.fading = true; }
@@ -4899,7 +4899,7 @@ function drawBloodLinks() {
     const live = L.ts.filter(e => !e.dead), a = Math.min(1, L.t / 0.2, (L.life - L.t) / 0.5);
     const pts = live.map(e => [e.x, aimY(e)]); if (L.owner && !L.owner.dead) pts.push([L.owner.x, L.owner.y - L.owner.def.h * UNIT_K * 0.6]);
     ctx.save(); ctx.globalAlpha = a; ctx.lineCap = 'round';
-    for (const [lw, col] of [[4, 'rgba(120,0,16,0.75)'], [1.6, 'rgba(255,90,90,0.9)']]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+    for (const [lw, col] of [[3.2, 'rgba(120,0,16,0.75)'], [1.28, 'rgba(255,90,90,0.9)']]) /* 13 Eki (Caner): iplik %20 ince */ { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
       for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], mx = (x0 + x1) / 2, my = (y0 + y1) / 2 + 10 + Math.sin(time * 6 + i) * 4; ctx.moveTo(x0, y0); ctx.quadraticCurveTo(mx, my, x1, y1); }
       ctx.stroke(); }
     ctx.restore();
