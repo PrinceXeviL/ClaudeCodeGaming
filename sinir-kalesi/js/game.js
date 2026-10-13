@@ -4761,14 +4761,15 @@ const spellIds = () => (G && G.early ? [] : NECRO ? ['nm_raise', 'nm_fear', 'nm_
 // Oyun içi arayüz ölçüsü (Caner, 10 Eki: telefonda parmakla dokunmak için küçüktü): düğmeler %25 büyük, aralıklar %10 açık,
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
 const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
-const SPELL_R = 24 * 1.2 * UI_K, // 13 Eki (Caner): büyü düğmeleri %20 büyük
-      SPELL_STEP = 2 * SPELL_R + 20 * UI_GAP; // 13 Eki (Caner): düğme arası 2 kat
+const SPELL_R = 24 * 1.2 * 0.95 * UI_K, // 13 Eki (Caner): büyü düğmeleri %20 büyük, sonra %5 küçük
+      SPELL_STEP = 2 * SPELL_R + 15 * UI_GAP; // 13 Eki (Caner): düğme arası 2 kat, sonra biraz daralttı
 // 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
 // 13 Eki (Caner): yanlış dokunmasın diye komutan grubu (portre + gücü) solda bir arada, geniş boşluk ve kemik ayraçtan sonra Mortimer'ın büyüleri
 const ULT_GAP = 46 * UI_GAP;
+const HERO_R = 28 * 0.95 * UI_K; // sol alttaki komutan portresi (13 Eki: %5 küçük)
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
 const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, slot = i >= n ? i - n : nu + i, gap = i < n && nu ? ULT_GAP : 0;
-  return { x: EDGE.l + 18 + 2 * 28 * UI_K + 26 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
+  return { x: EDGE.l + 18 + 2 * HERO_R + 22 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
 const hudLeft = () => (spellIds().length ? Math.max(...spellIds().map((_, i) => spellBtn(i).x)) + SPELL_R + 8 : G && G.heroes.length ? HUD.heroes[0].x + HUD.heroes[0].r + 16 : EDGE.l + 18);
 // dokunulan büyü düğmesi: geniş dokunma alanları komşuyla kesişirse en yakın düğme kazanır
@@ -11196,7 +11197,7 @@ function drawRally(x, y) {
 // Arayüz yerleşimi (KR düzeninden esinli): sol üst can/altın + dalga, sağ üst kare düğmeler,
 // sol alt çerçeveli komutan portresi (altında seviye ve can plakası), yanında kare büyü kartları
 const HUD = (() => { // sağ üst düğmeler ve sol alt portre (UI_K ile büyütülmüş); tam ekranda güvenli bölgenin köşelerine yaslanır (EDGE)
-  const rb = 19 * UI_K * 1.1, rm = 16 * UI_K * 1.1, gap = 11 * UI_GAP, hr = 28 * UI_K; // sağ üst düğmeler %10 daha büyük (Caner, 10 Eki)
+  const rb = 19 * UI_K * 1.1, rm = 16 * UI_K * 1.1, gap = 11 * UI_GAP, hr = HERO_R; // sağ üst düğmeler %10 daha büyük (Caner, 10 Eki)
   return {
     get pause() { return { x: EDGE.r - 11 - rb, y: EDGE.t + 11 + rb, r: rb }; },
     get speed() { const p = this.pause; return { x: p.x - 2 * rb - gap, y: p.y, r: rb }; },
