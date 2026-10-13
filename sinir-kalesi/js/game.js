@@ -11932,6 +11932,27 @@ function castlePlace(x, y, im) {
 }
 
 // Kale: Gemini sprite'ı (castle_1..3, hasar evresine göre) yoksa kışlanın en büyük hali yedek olarak kullanılır.
+// kale bir hasar evresi ilerler: taşlar kopup düşer, toz bulutu kalkar (görsel değişimi tozun ardında olur)
+const KEEP_TR = { dur: 1.8, puffs: [[0.3, 0.32], [0.7, 0.36], [0.5, 0.22], [0.22, 0.55], [0.78, 0.58], [0.48, 0.5], [0.35, 0.75], [0.66, 0.78]] };
+function keepCollapse(c, cp, h) {
+  shakeScreen(9, 0.7); sfx('castlehit'); sfx('boom'); sfx('fs_bone');
+  for (let i = 0; i < 46; i++) {
+    const fx = rand(0.15, 0.85), fy = rand(0.2, 0.7), a = rand(Math.PI * 1.1, Math.PI * 1.9), v = rand(40, 150);
+    emit(G.parts, { kind: 'chunk', x: cp.x - cp.w / 2 + fx * cp.w, y: cp.y - h + fy * h, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 440, drag: 0.3,
+      col: ['#5a5266', '#8a8098', '#3a3446', '#d8ccb0'][i % 4], s0: rand(2, 4.2), s1: 1.5, life: rand(0.9, 1.4), vr: rand(-12, 12), floor: c.y + rand(-4, 14) });
+  }
+}
+function drawKeepDust(cp, h) {
+  const T = G.keepTr, u = (time - T.t0) / KEEP_TR.dur; if (u >= 1) { G.keepTr = null; return; }
+  const x0 = cp.x - cp.w / 2, y0 = cp.y - h, s = cp.w / 180;
+  KEEP_TR.puffs.forEach(([fx, fy], i) => {
+    const d = Math.max(0, u - i * 0.03), r = (14 + 40 * Math.sqrt(d)) * s, a = Math.sin(Math.PI * Math.min(1, d * 1.15)) * 0.75;
+    if (a <= 0.01) return;
+    const x = x0 + fx * cp.w + Math.sin(T.seed + i * 2.1) * 10 * s * d, y = y0 + fy * h - 18 * s * d;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(150,138,150,${a})`); g.addColorStop(0.6, `rgba(118,108,122,${a * 0.6})`); g.addColorStop(1, 'rgba(100,92,108,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+  });
+}
 function drawCastle() {
   const c = G.castle, ratio = G.lives / G.maxLives, stage = castleStage();
   const im = castleStageSprite();
@@ -11939,11 +11960,17 @@ function drawCastle() {
   if (im) {
     const cp = castlePlace(c.x, c.y, im);
     ctx.save(); ctx.translate(cp.x + sh, cp.y);
+    // 13 Eki (Caner): hasar evresi ilerleyince yıkılma geçişi: sarsıntı, düşen taşlar, toz bulutu; eski hal tozun ardında söner
+    const kst = G.keepStage ?? stage;
+    if (stage > kst && isKeep(im)) { G.keepTr = { t0: time, prev: spr('castle_keep_' + kst), seed: rand(0, 9) }; keepCollapse(c, cp, cp.w * im.height / im.width); }
+    G.keepStage = stage;
     const IA = im === spr('castle_keep_1') && spr('castle_keep_1_idle') && ANIM_META.castle_keep_1_idle; // 13 Eki: Veo idle döngüsü (alev, pencere, dal) yalnız hasarsız kalede
     if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw; ctx.drawImage(spr('castle_keep_1_idle'), fi * IA.fw, 0, IA.fw, IA.fh, -cp.w / 2, -h, cp.w, h); }
     else drawSprite(ctx, im, 0, 0, cp.w);
+    if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
+    if (G.keepTr) drawKeepDust(cp, cp.w * im.height / im.width);
     drawCastleArchers();
     if (isKeep(im)) drawKeepLights(cp, cp.w * im.height / im.width, sh, [2, 3, 4].find(n => im === spr('castle_keep_' + n)));
     if (NECRO) {
