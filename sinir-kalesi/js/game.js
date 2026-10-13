@@ -5387,7 +5387,7 @@ function tutPlot(type) { // önerilen arsa (13 Eki, Caner): ilk kule yolun ilk �
 function buildStep(type, plotText, menuText) {
   const menuOpen = () => G.sel && G.sel.kind === 'plot';
   return { text: () => (menuOpen() ? menuText : plotText), done: () => G.towers.some(o => o.type === type),
-    at: () => { if (menuOpen()) { const it = currentMenu().find(o => o.id === 'build' && o.type === type); return it && worldToScreen(it.x, it.y - 22); }
+    at: () => { if (menuOpen()) { const it = currentMenu().find(o => o.id === 'build' && o.type === type); return it && worldToScreen(it.x, it.y - 4); }
       const pl = tutPlot(type); return pl && worldToScreen(pl.x, pl.y - 10); } };
 }
 const tutSelUp = () => (G.sel && G.sel.kind === 'tower' && G.sel.tower.lvl < G.sel.tower.def.levels.length - 1 ? G.sel.tower : null); // eğitim: seçili, yükseltilebilir kule
@@ -5407,13 +5407,13 @@ const TUTS = [
     { text: () => (tutSelUp() ? (tutSelUp().type === 'archer' && !tutSelUp().path && tutSelUp().lvl === 0 ? 'Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun' : 'Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir') : 'Altının yetti: kuleye dokunup yükselt'),
       when: () => G.towers.some(o => o.lvl < o.def.levels.length - 1 && G.gold >= o.def.levels[o.lvl + 1].cost) || !!tutSelUp(),
       done: () => G.towers.some(o => o.lvl > 0), timeout: 40,
-      at: () => { const o = tutSelUp(); if (o) { const it = currentMenu().find(m => m.id === 'path' && m.type === 'bow') || currentMenu().find(m => m.id === 'upgrade'); return it && worldToScreen(it.x, it.y - 22); }
+      at: () => { const o = tutSelUp(); if (o) { const it = currentMenu().find(m => m.id === 'path' && m.type === 'bow') || currentMenu().find(m => m.id === 'upgrade'); return it && worldToScreen(it.x, it.y - 4); }
         const u = G.towers.find(o => G.gold >= (o.def.levels[o.lvl + 1] || {}).cost) || G.towers[0]; return u && worldToScreen(u.x, u.y - 46); } },
     { text: () => (G.mode && G.mode.kind === 'rally' ? 'Kesik çizgili alanın içinde yola dokun: askerler oraya yürür' : G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks' ? 'Bayrağa dokun' : 'Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin'),
       when: () => G.wave >= 2 && G.towers.some(o => o.type === 'barracks'), done: () => !!G.tutRally, timeout: 40,
       at: () => { if (G.mode && G.mode.kind === 'rally' && G.mode.tower) { const m = G.mode.tower, a = G.towers.find(o => o.type === 'archer') || m, q = nearestOnPaths(G.paths, a.x, a.y);
           return dist(q.x, q.y, m.x, m.y) <= m.def.levels[m.lvl].range ? worldToScreen(q.x, q.y - 4) : worldToScreen(m.rx, m.ry - 4); }
-        if (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks') { const it = currentMenu().find(o => o.id === 'rally'); return it && worldToScreen(it.x, it.y - 22); }
+        if (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks') { const it = currentMenu().find(o => o.id === 'rally'); return it && worldToScreen(it.x, it.y - 4); }
         const o = G.towers.find(o => o.type === 'barracks'); return o && worldToScreen(o.x, o.y - 46); } },
   ],
   [ // 2. bölüm
