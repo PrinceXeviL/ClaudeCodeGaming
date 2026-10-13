@@ -4735,7 +4735,8 @@ const spellIds = () => (NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', '
 // Oyun içi arayüz ölçüsü (Caner, 10 Eki: telefonda parmakla dokunmak için küçüktü): düğmeler %25 büyük, aralıklar %10 açık,
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
 const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
-const SPELL_R = 24 * UI_K, SPELL_STEP = 2 * SPELL_R + 10 * UI_GAP;
+const SPELL_R = 24 * 1.2 * UI_K, // 13 Eki (Caner): büyü düğmeleri %20 büyük
+      SPELL_STEP = 2 * SPELL_R + 10 * UI_GAP;
 // 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
 const ULT_GAP = 18 * UI_GAP;
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
@@ -4763,7 +4764,7 @@ function castNecro(id, x, y) {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length, hasXY = x != null && y != null;
     const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
       .sort((a, b) => (b.pw || 1) - (a.pw || 1) || a.t - b.t).slice(0, Math.max(0, S.max - alive)); // güçlüler önce
-    if (!bodies.length) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    if (!bodies.length) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, alive >= S.max ? 'Ordun dolu!' : hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
     if (hasXY) G.effects.push({ kind: 'ring', x, y, r: CORPSE_ECO.r, col: '220,60,60', t: 0, dur: 0.5 });
     G.raiseT = 1.2; mortSay('raise', true);
     bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); cnt('raise', bodies.length);
@@ -11552,7 +11553,7 @@ function drawHud() {
     if (!ready) {
       ctx.fillStyle = 'rgba(0,0,0,0.62)';
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, b.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (cd / max)); ctx.fill();
-      txt(Math.ceil(cd) + '', 0, 1, 16, '#fff', 'center', '400', FONT_T);
+      txt(Math.ceil(cd) + '', 0, 1, 19, '#fff', 'center', '400', FONT_T);
     }
     if (peek) { ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, b.r + 6, 0, Math.PI * 2); ctx.stroke(); }
     if (id === 'nm_raise') { // ceset sayacı: diriltilebilir ceset sayısı; güçlü ceset varsa kızıl
@@ -14544,7 +14545,7 @@ const REGION_TINT = { ravenwood: 'rgba(40,30,60,0.2)', plague: 'rgba(90,60,30,0.
 const regionCastle = (E) => E.end;
 // dikey sefer haritası (15 Eki): her mekân ayrı 960x540 dilim olarak çizilir (yol, işaretler dilime kaydırılır), alttan üste dikilir;
 // yalnız yolun gezildiği orta sütun (MAPV.x) tutulur, dikişler MAPV.blend ile harmanlanır. Görsel c.ext = dünya kutusu {x, y, w, h}.
-const MAPV = { x: [130, 830], my: 80, blend: 70, res: 1.5 };
+const MAPV = { x: [130, 830], my: 80, blend: 70, res: 2 }; // yakınlık 2,6 olunca zemin bulanıklaşmasın diye 1,5 → 2
 const mapExt = (bg) => bg.ext || { x: -bg.m.x, y: -bg.m.y, w: W + 2 * bg.m.x, h: H + 2 * bg.m.y };
 function regionBgV(ep, E, R) {
   if (R.done) return R.done;
@@ -14736,7 +14737,7 @@ function drawMapFog2(E, ep, road, X) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 2, // 15 Eki: dikey haritada 2,6 fazla yakındı (aynı anda tek bölüm görünüyordu)
+const MAPCAM = { z: 2.6, // 15 Eki: 2,6 fazla yakın bulunup 2 yapılmıştı; 13 Eki (Caner): %30 daha yakın istendi → 2,6
   tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 100, fric: 7, vmax: 1400, padX: 70, padY: 40 };
 // 15 Eki (Caner): yolun dışındaki boş alanlara gidilmez: sınır = yol, bölüm işaretleri ve şapelin kutusu + pay (ekranda MAPCAM.padX / üst-alt çubuk + padY)
 function mapRoadBox(E) {
@@ -16599,7 +16600,8 @@ function hudTap(x, y) {
       setSel(null);
       // tek dokunuş: hazırsa seçer (diriltme hemen çalışır), alt panelde ne yaptığını yazar; seçiliyken dokunmak bırakır
       if (G.spells[id] > 0) { G.spellPeek = id; G.mode = null; sfx('error'); return true; }
-      if (id === 'nm_raise') tipDone('spell'); // 15 Eki: diriltme de hedefli (haritada cesetlerin olduğu yere dokun)
+      if (id === 'nm_raise') { // 13 Eki (Caner): diriltme hedefsiz: düğmeye dokununca sahadaki cesetler (güçlüler önce) kademenin sınırına kadar kalkar
+        tipDone('spell'); G.mode = null; G.spellPeek = id; castSpell(id); return true; }
       G.mode = G.mode && G.mode.id === id ? null : { kind: 'spell', id };
       if (G.mode) { G.spellPeek = id; sfx('spell'); }
       return true;

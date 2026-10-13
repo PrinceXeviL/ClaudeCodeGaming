@@ -1,5 +1,6 @@
 {
 "exact": {
+"Ordun dolu!": "Твоя армия полна!",
 "ZORLUK": "СЛОЖНОСТЬ",
 "Kolay": "Легко",
 "Normal": "Нормально",
@@ -139,7 +140,7 @@
 "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "Костяной великан охраняет ворота (держит 3 врагов, встаёт через 30 с); 2 лучника-скелета на балконе",
 "Titreşim": "Вибрация",
 "Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Трупы в месте касания встают гниющими мертвецами и 30 с сражаются за тебя · Крупные враги встают сильнее (красное свечение) · Жрецы и фонари освящают трупы, их нельзя поднять",
-"Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü": "Трупы в месте касания встают · крупные сильнее",
+"Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü": "Трупы на поле встают, сильнейшие первыми · крупные враги сильнее",
 "Burada ceset yok!": "Здесь нет трупов!",
 "Güçlü ölü!": "Сильный мертвец!",
 "Kutsandı!": "Освящено!",
@@ -193,7 +194,7 @@
 "HEDİYEYİ AL": "ЗАБРАТЬ ПОДАРОК",
 "Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "Подарок получен! Предметы в боевой сумке. Возвращайся завтра!",
 "OTO": "АВТО",
-"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Трупы там, где ты коснёшься, восстают гниющими мертвецами и сражаются за тебя, пока не падут · Труп крупного врага восстаёт сильнее (светящиеся красным) · Жрецы и фонари освящают трупы, их больше нельзя поднять",
+"Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Коснись, чтобы поднять трупы на поле, сильнейших первыми, сколько позволяет ранг; они сражаются за тебя, пока не падут · Труп крупного врага поднимается сильнее (светятся красным) · Жрецы и фонари освящают трупы — их нельзя поднять",
 "+%25 can · +%25 hasar": "+25% здоровья · +25% урона",
 "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Духи преследуют врагов в области: те в ужасе бегут назад 3 с. Устойчивые к магии и боссы боятся меньше; машины не боятся, но кони колесниц пугаются и замедляются",
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 поднятый · +10% силы · труп +1,5 с",

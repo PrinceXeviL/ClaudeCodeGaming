@@ -59,7 +59,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
           if (run) { const q = at(run.p, Math.min(run.p.total - 10, run.d + 45)); cast('nm_wall', q.x, q.y); } }
         if (ready('nm_fear')) { const [e, n] = dens(ground.filter(e => e.p && e.d / e.p.total > 0.35), 60); if (e && n >= 5) { cast('nm_fear', e.x, e.y); } }
         const corpses = G.effects.filter(f => f.kind === 'corpse' && f.raisable);
-        if (ready('nm_raise')) { const [c, n] = dens(corpses, 90); if (c && n >= 3) { cast('nm_raise', c.x, c.y); } }
+        if (ready('nm_raise') && corpses.length >= 3) cast('nm_raise'); // 13 Eki: diriltme hedefsiz (sahadaki bütün cesetler)
         if (ready('nm_burst')) { const [c, n] = dens(corpses, 100); if (c && n >= 3 && ground.some(e => Math.hypot(e.x - c.x, e.y - c.y) < 110)) { cast('nm_burst', c.x, c.y); } }
         if (ready('nm_golem')) { const [c, n] = dens(corpses, 100); if (c && n >= 3) { cast('nm_golem', c.x, c.y); } }
         if (ready('ult0')) { const [e, n] = dens(live, 60); if (e && n >= 4) { cast('ult0', e.x, e.y); } }

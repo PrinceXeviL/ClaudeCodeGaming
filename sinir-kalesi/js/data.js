@@ -671,7 +671,7 @@ if (NECRO) {
   const TOTK2 = ADDN2.map((a, i) => 1 + a / (6 + Math.round(i / 19 * 6) + (i % 4 === 3 ? 2 : 0)));
   // 16 Eki (Caner: "bütün bölümleri botla oyna, dengesizlikleri düzelt"): tools/denge-botu2.js (gerçekçi oyuncu: yıldızlar, Büyü Kitabı, komutan puanı
   // harcanmış, kuleler yolu en çok gören yerlere, büyüler yerinde). Eski değerlerle 22, 25, 26, 28, 31, 35 kaybediliyor, 24, 34, 37 1-3 canla geçiliyordu.
-  const HPMUL2 = [2.5, 2.0, 1.6, 1.25, 0.55, 0.5, 0.445, 2.1, 1.7, 1.25, 2.1, 2.1, 1.85, 1.5, 0.95, 1.174, 0.85, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
+  const HPMUL2 = [2.5, 2.0, 1.6, 1.25, 0.55, 0.5, 0.445, 2.1, 1.6, 1.25, 2.1, 2.1, 1.85, 1.5, 0.95, 1.174, 0.85, 1.45, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
@@ -784,8 +784,8 @@ const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], dmg: 0.
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
   nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 10, r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
-    desc: 'Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur',
-    short: 'Dokunduğun yerdeki cesetler kalkar · iri düşmanın ölüsü daha güçlü' },
+    desc: 'Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur',
+    short: 'Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü' },
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
     desc: 'Yolun seçtiğin yerinde kemikten duvar yükselir: düşmanları 7 sn durdurur, vurularak kırılabilir',
     short: 'Yola kemik duvar diker: düşmanlar 7 sn takılır (kırılabilir)' },
