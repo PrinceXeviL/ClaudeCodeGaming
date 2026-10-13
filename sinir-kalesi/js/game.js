@@ -4738,11 +4738,15 @@ const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
 const SPELL_R = 24 * 1.2 * UI_K, // 13 Eki (Caner): büyü düğmeleri %20 büyük
       SPELL_STEP = 2 * SPELL_R + 10 * UI_GAP;
 // 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
-const ULT_GAP = 18 * UI_GAP;
+// 13 Eki (Caner): yanlış dokunmasın diye komutan grubu (portre + gücü) solda bir arada, geniş boşluk ve kemik ayraçtan sonra Mortimer'ın büyüleri
+const ULT_GAP = 40 * UI_GAP;
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
-const spellBtn = (i) => { const n = necroCount(); return { x: EDGE.l + 18 + 2 * 28 * UI_K + 16 * UI_GAP + SPELL_R + i * SPELL_STEP + (n && i >= n ? ULT_GAP : 0), y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
+const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, slot = i >= n ? i - n : nu + i, gap = i < n && nu ? ULT_GAP : 0;
+  return { x: EDGE.l + 18 + 2 * 28 * UI_K + 16 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
-const hudLeft = () => spellBtn(spellIds().length - 1).x + SPELL_R + 8;
+const hudLeft = () => Math.max(...spellIds().map((_, i) => spellBtn(i).x)) + SPELL_R + 8;
+// dokunulan büyü düğmesi: geniş dokunma alanları komşuyla kesişirse en yakın düğme kazanır
+function spellAt(x, y) { let best = -1, bd = Infinity; spellIds().forEach((_, i) => { const b = spellBtn(i), d = dist(b.x, b.y, x, y); if (d <= b.r * (1 + UI_HIT) && d - b.r < bd) { bd = d - b.r; best = i; } }); return { i: best, d: bd }; }
 function spellInfo(id) {
   if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * (1 - GRIM.cd * spellRank(id)), necro: S, U: S }; }
   const h = G.heroes[+id.slice(3)], U = HERO_ULT[h.id];
@@ -11272,9 +11276,7 @@ function drawHeroPortrait(h, hb, i) {
   ctx.save(); ctx.translate(hb.x, hb.y); const hs = pressScale('hud_hero' + i); ctx.scale(hs, hs);
   if (selHero) glow(ctx, 0, 0, hb.r * 2, '120,220,255', 0.55 + Math.sin(time * 5) * 0.2);
   circle(0, 5, hb.r + 6, 'rgba(0,0,0,0.45)');
-  const rim = ctx.createLinearGradient(0, -hb.r, 0, hb.r); rim.addColorStop(0, '#d8d2e8'); rim.addColorStop(0.5, '#6e6886'); rim.addColorStop(1, '#2c2640');
-  circle(0, 0, hb.r + 6, rim, '#0a0612', 2);
-  circle(0, 0, hb.r + 4.5, null, 'rgba(255,255,255,0.35)', 1);
+  circle(0, 0, hb.r + 1.5, '#0a0612');
   const bgp = ctx.createRadialGradient(-6, -10, 3, 0, 0, hb.r);
   bgp.addColorStop(0, `rgba(${h.def.aura},0.9)`); bgp.addColorStop(1, '#14181e');
   circle(0, 0, hb.r, bgp);
@@ -11284,15 +11286,15 @@ function drawHeroPortrait(h, hb, i) {
   if (im) { const c = headCrop(im, h.def.sprite); if (c) ctx.drawImage(im, c.x, c.y, c.s, c.s, -hb.r, -hb.r, hb.r * 2, hb.r * 2); else { const ph = hb.r * 3.6; drawSprite(ctx, im, 3, hb.r * 2.35, ph * im.width / im.height); } }
   ctx.restore();
   if (h.dead) { circle(0, 0, hb.r, 'rgba(0,0,0,0.45)'); txt(Math.ceil(h.respawnT) + '', 0, 1, 20, '#fff', 'center', '400', FONT_T); }
-  // alt plaka: solda seviye kutusu, sağda can barı. Portrenin ÜSTÜNE çizilir (11 Eki: çerçevenin altında kalıyordu), alt kenara yaslı
-  const pw = hb.r * 2.3, py = hb.r - 6;
-  hudFrame(-pw / 2, py, pw, 20, 6, false);
-  roundRect(-pw / 2 + 4, py + 4, 15, 12, 3, '#16101f', 'rgba(0,0,0,0.7)', 1);
-  hudNum(h.lvl + '', -pw / 2 + 11.5, py + 10.5, 11, '#f2ecd8', 'center');
-  const bw = pw - 26, bx = -pw / 2 + 22;
-  roundRect(bx, py + 5, bw, 10, 3, '#0e0a14', 'rgba(0,0,0,0.8)', 1);
-  roundRect(bx + 1, py + 6, (bw - 2) * clamp(h.hp / h.maxHp, 0, 1), 6, 2.5, h.hp / h.maxHp > 0.35 ? '#5fd04a' : '#e0503a');
-  if (h.lvl < HERO_MAX) roundRect(bx + 1, py + 12.5, (bw - 2) * clamp(h.xp / xpNeed(h.lvl), 0, 1), 1.8, 0.9, '#ffd34d');
+  // 13 Eki (Caner): can halkası portrenin çevresinde (tepeden saat yönünde dolar), dışında ince altın deneyim halkası; seviye altta küçük rozette
+  const hpK = clamp(h.hp / h.maxHp, 0, 1), A0 = -Math.PI / 2, rr = hb.r + 5;
+  ctx.lineCap = 'butt';
+  ctx.strokeStyle = 'rgba(8,4,14,0.92)'; ctx.lineWidth = 7.5; ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+  if (hpK > 0) { ctx.strokeStyle = hpK > 0.35 ? '#5fd04a' : '#e0503a'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, 0, rr, A0, A0 + Math.PI * 2 * hpK); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(0, 0, rr - 1.4, A0, A0 + Math.PI * 2 * hpK); ctx.stroke(); }
+  circle(0, 0, rr + 3.75, null, '#0a0612', 1.5);
+  if (h.lvl < HERO_MAX) { const xk = clamp(h.xp / xpNeed(h.lvl), 0, 1); if (xk > 0) { ctx.strokeStyle = '#ffd34d'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, rr + 5.5, A0, A0 + Math.PI * 2 * xk); ctx.stroke(); } }
+  circle(0, hb.r + 4, 10, '#16101f', '#d8ccb0', 1.8); hudNum(h.lvl + '', 0, hb.r + 4.5, 11, '#f2ecd8', 'center');
   ctx.restore();
   // seviye rozeti; harcanmamış puan varsa yeşil + (dokununca yetenek ağacı açılır)
   const b = heroBadge(hb);
@@ -11568,8 +11570,8 @@ function drawHud() {
     }
     ctx.restore();
   });
-  { const n = necroCount(); if (n && n < spellIds().length) { // büyüler | komutan gücü ayracı: kemik çubuk
-    const a = spellBtn(n - 1), c = spellBtn(n), mx = (a.x + a.r + c.x - c.r) / 2, y0 = a.y - a.r * 0.8, y1 = a.y + a.r * 0.8;
+  { const n = necroCount(); if (n && n < spellIds().length) { // komutan gücü | büyüler ayracı: kemik çubuk
+    const a = spellBtn(spellIds().length - 1), c = spellBtn(0), mx = (a.x + a.r + c.x - c.r) / 2, y0 = a.y - a.r * 0.8, y1 = a.y + a.r * 0.8;
     ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(10,6,18,0.8)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(mx, y0); ctx.lineTo(mx, y1); ctx.stroke();
     ctx.strokeStyle = '#d8ccb0'; ctx.lineWidth = 2.5; ctx.stroke(); circle(mx, y0, 3, '#d8ccb0', '#0a0612', 1); circle(mx, y1, 3, '#d8ccb0', '#0a0612', 1); ctx.restore();
   } }
@@ -16582,7 +16584,8 @@ function hudTap(x, y) {
   for (let i = 0; i < G.heroes.length; i++) {
     const h = G.heroes[i], hb = HUD.heroes[i], bd = heroBadge(hb);
     if (dist(bd.x, bd.y, x, y) <= bd.r + 6) { tapPop('hb' + i); openSkills(h); return true; }
-    if (hitU(hb)) {
+    const sa = spellAt(x, y);
+    if (hitU(hb) && !(sa.i >= 0 && sa.d < dist(hb.x, hb.y, x, y) - hb.r)) { // büyü düğmesine daha yakınsa portre sayılmaz
       tapPop('hud_hero' + i); G.mode = null;
       setSel((G.sel && G.sel.hero === h) || h.dead ? null : { kind: 'hero', hero: h });
       sfx('select');
@@ -16595,7 +16598,7 @@ function hudTap(x, y) {
     if (G.bagOpen) for (const [i, id] of ITEM_ORDER.entries()) if (hitU(itemBtn(i))) { tapPop('it_' + id); pickItem(id); return true; }
   }
   for (const [i, id] of spellIds().entries()) {
-    if (hitU(spellBtn(i))) {
+    if (i === spellAt(x, y).i) {
       tapPop('hud_' + id);
       setSel(null);
       // tek dokunuş: hazırsa seçer (diriltme hemen çalışır), alt panelde ne yaptığını yazar; seçiliyken dokunmak bırakır
