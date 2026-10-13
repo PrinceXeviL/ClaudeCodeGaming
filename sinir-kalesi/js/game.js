@@ -6289,12 +6289,12 @@ function castUlt(h, x, y) {
     floatText(q.x, q.y - 40, 'Bu Sparta!', '#ffd34d'); shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200);
   } else if (U.portal) {
     // Merlin'in zaman kapısı: alanda dönen mor-yeşil halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
-    G.effects.push({ kind: 'portal', x, y, r: U.r, t: 0, dur: 1.1 });
+    G.effects.push({ kind: 'timegate', x, y, r: U.r, t: 0, dur: 1.1 });
     for (const e of enemiesNear(x, y, U.r, true)) {
       damageEnemy(e, dmg(), 'magic'); if (e.dead || e.under || !e.p) continue;
       const back = U.back * (e.def.chief ? 0.5 : 1); e.d = Math.max(0, e.d - back);
       const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; stunEnemy(e, U.stun); e.blocker = null;
-      G.effects.push({ kind: 'portal', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
+      G.effects.push({ kind: 'timegate', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
     }
     shakeScreen(4, 0.35); sfx('timegate');
   } else if (h.id === 'zeynep') {
@@ -9730,7 +9730,7 @@ function drawEffect(f) {
     ctx.beginPath(); ctx.ellipse(f.x, f.y, r, r * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, top, 16 + 6 * bl, f.col, 0.35 + 0.3 * bl); ctx.globalCompositeOperation = 'source-over';
     drawStar(f.x, top, 6 + 2 * bl, `rgb(${f.col})`); ctx.restore();
-  } else if (f.kind === 'portal') { // zaman kapısı: zıt yönde dönen yarım halkalar, içte mor ışık
+  } else if (f.kind === 'timegate') { // Merlin'in zaman kapısı (16 Eki: 'portal' adı düşman çağırma kapısıyla çakışıyordu, o görünmez olmuştu): zıt yönde dönen yarım halkalar, içte mor ışık
     const a = k < 0.2 ? k / 0.2 : 1 - (k - 0.2) / 0.8, gr = Math.min(1, k * 5);
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(1, 0.5); ctx.globalCompositeOperation = 'lighter';
     glow(ctx, 0, 0, f.r * 1.1, '150,90,255', 0.5 * a); glow(ctx, 0, 0, f.r * 0.45, '140,255,170', 0.5 * a);
@@ -12823,7 +12823,8 @@ function bossAbilities(e, dt) {
   // sefer sonu bossu: canı yarıya inince ikinci lejyon
   if (e.def.legion && e.phase2 && !e.legion2 && e.hp < e.maxHp * 0.5) { e.legion2 = true; bossCastFx(e, 'Son Çağrı!', '255,90,70'); summonLegion(e); shakeScreen(5, 0.4); }
   // Muhafız çağırma: boss'un arkasında açılan geçitten minyonlar çıkar ve onunla yürür
-  if (ab.summon && e.siege === undefined && ready('summon', ab.summon.cd) && G.enemies.filter(o => !o.dead && o.summonedBy === e).length < 8) { // en çok 8 çağrılmış asker
+  // en çok 8 çağrılmış asker aynı anda; 16 Eki: toplamda da sınır (ab.summon.max, yoksa 10). Godfrey her 15 sn'de bitmeyen paladin çağırıyor, bölüm bitmiyordu
+  if (ab.summon && e.siege === undefined && (e.summonN || 0) < (ab.summon.max || 10) && ready('summon', ab.summon.cd) && G.enemies.filter(o => !o.dead && o.summonedBy === e).length < 8) {
     const pi = G.paths.indexOf(e.p), d0 = Math.max(0, e.d - 24), q = pathPos(e.p, d0);
     G.effects.push({ kind: 'portal', x: q.x, y: q.y, t: 0, dur: 1.2, col: e.def.base === 'knight' || e.type === 'dark_shaman' ? '170,90,255' : '120,230,90' });
     for (let i = 0; i < ab.summon.n; i++) {
@@ -12832,7 +12833,7 @@ function bossAbilities(e, dt) {
       m.leader = e; m.form = -22 - i * 12; m.summonedBy = e;
       for (let k = 0; k < 6; k++) emit(G.parts, { kind: 'glow', add: true, x: m.x + rand(-8, 8), y: m.y - rand(0, 20), vy: -rand(20, 50), col: '200,160,255', s0: 4, s1: 0.5, life: 0.6 });
     }
-    bossCastFx(e, 'Çağrı!', '200,140,255'); sfx('portal');
+    e.summonN = (e.summonN || 0) + ab.summon.n; bossCastFx(e, 'Çağrı!', '200,140,255'); sfx('portal');
   }
   if (ab.howl && ready('howl', ab.howl.cd)) {
     for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, e.x, e.y) < ab.howl.r) o.hasteT = 4;

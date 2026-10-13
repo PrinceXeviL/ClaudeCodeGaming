@@ -328,7 +328,7 @@ Object.assign(ENEMIES, {
   signifer:  { name: 'Sancaktar', base: 'legion', h: 31, hp: 150, speed: 21, armor: 0.2, mr: 0, gold: 18, dmg: [3, 6], rate: 1, lives: 1, r: 10, aura: { r: 85, armor: 0.25 }, prop: 'banner' },
   // 1. bölgenin son dört türü (görseller FLUX Kontext ile, Kaggle'da): trample: iskeletleri ezip geçer (kemik duvar durdurur)
   wardog:    { name: 'Savaş Köpeği', h: 15, hp: 70, speed: 46, armor: 0, mr: 0, gold: 6, dmg: [3, 6], rate: 0.7, lives: 1, r: 9 },
-  chariot:   { name: 'Savaş Arabası', h: 36, hp: 300, speed: 28, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 2, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
+  chariot:   { name: 'Savaş Arabası', h: 36, hp: 300, speed: 28, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 1, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
   siegetower:{ name: 'Kuşatma Kulesi', h: 62, hp: 1100, speed: 8, armor: 0.45, mr: 0.1, gold: 60, dmg: [2, 4], rate: 2, lives: 3, r: 20, machine: true, noblock: true, split: ['legion', 6] },
   eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true },
   // leş akbabası: sürüyle uçar; altındaki cesetleri yer (diriltilemez olur) ve kendini iyileştirir
@@ -445,7 +445,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('legion', 12, 0.6), W_('solarcher', 6, 1, 5), W_('assassin', 6, 0.9, 11)],
       [W_('priest', 3, 2.4), W_('gladiator', 8, 0.9, 3), W_('legion', 12, 0.6, 9), W_('assassin', 6, 0.8, 14)],
     ] },
-    { name: 'Yıkık Kilise', theme: 'graveyard', gold: 520, hpMul: 0.9, bossT: 'ironwarden', waves: [
+    { name: 'Yıkık Kilise', theme: 'graveyard', gold: 520, hpMul: 0.84, bossT: 'ironwarden', waves: [
       [W_('legion', 8, 1), W_('heavy', 1, 1, 8)],
       [W_('gladiator', 5, 1.3), W_('assassin', 4, 1.4, 4)],
       [W_('heavy', 2, 2.6), W_('priest', 2, 3, 3), W_('legion', 8, 0.9, 6)],
@@ -455,7 +455,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('heavy', 4, 2), W_('priest', 3, 2.4, 3), W_('legion', 12, 0.6, 8)],
       [W_('heavy', 3, 2.2), W_('gladiator', 8, 0.9, 4), W_('assassin', 8, 0.8, 9), W_('priest', 3, 2.4, 13)],
     ] },
-    { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.92, bossT: 'cavcaptain', waves: [
+    { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.88, bossT: 'cavcaptain', waves: [
       [{ t: 'legion', n: 8, gap: 1 }, { t: 'heavy', n: 1, gap: 1, at: 8 }],
       [{ t: 'cavalry', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
       [{ t: 'heavy', n: 3, gap: 2.4 }, { t: 'priest', n: 2, gap: 3, at: 3 }, { t: 'solarcher', n: 5, gap: 1.2, at: 7 }],
@@ -526,7 +526,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('legion', 8, 1), W_('assassin', 2, 1.5, 6)], [W_('gladiator', 5, 1.1), W_('solarcher', 4, 1.4, 4)], [W_('assassin', 5, 1), W_('legion', 8, 0.9, 4)],
       [W_('legion', 10, 0.8), W_('gladiator', 4, 1.2, 6)], [W_('assassin', 6, 0.9), W_('solarcher', 6, 1, 5)], [W_('gladiator', 6, 1), W_('legion', 10, 0.8, 5)],
       [W_('assassin', 8, 0.8), W_('solarcher', 6, 1, 6), W_('legion', 8, 0.8, 10)], [W_('legion', 12, 0.7), W_('gladiator', 8, 0.9, 5), W_('assassin', 8, 0.8, 10)] ] },
-    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, bossT: 'shadowmaster', comic: 'bekci', waves: [
+    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, hpMul: 0.72, bossT: 'shadowmaster', comic: 'bekci', waves: [
       [W_('legion', 10, 0.9), W_('priest', 1, 1, 6)], [W_('heavy', 2, 2.4), W_('solarcher', 5, 1.2, 4)], [W_('assassin', 6, 1), W_('gladiator', 5, 1.1, 5)],
       [W_('priest', 2, 3), W_('legion', 10, 0.8, 3)], [W_('heavy', 3, 2.2), W_('assassin', 6, 0.9, 6)], [W_('gladiator', 8, 0.9), W_('priest', 2, 3, 6)],
       [W_('heavy', 4, 2), W_('solarcher', 8, 0.9, 4), W_('legion', 10, 0.7, 10)], [W_('assassin', 10, 0.7), W_('heavy', 4, 2, 5), W_('priest', 3, 2.4, 9), W_('gladiator', 8, 0.8, 12)] ] },
@@ -667,9 +667,11 @@ if (NECRO) {
   // ek dalga ve düşman sayısı çarpanı (restructureWaves eğrisinin üstüne; 11 Eki: 21, 22, 28, 31 can ×3'te bile kayıpsız geçiliyordu.
   // Sebep 5. kademe büyüler: kısa bölümde bekleme süreleri her dalgaya yetiyor. Daha uzun bölüm, dalga başına aynı kalabalık)
   const ADDN2 = [3, 3, 0, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  const GOLDK2 = [0.75, 0.75, 1, 1, 1, 1, 1, 0.75, 1, 1, 0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1]; // tek girişli kolay bölümlerde başlangıç altını az (ilk dalgalar gerilsin)
+  const GOLDK2 = [0.75, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.3, 1, 1, 1.3, 1, 1, 1, 1, 1]; // 32 ve 35: ilk dalgalar (çan rahibi, kırbaççı seli) için kule kurmaya yetsin // 16 Eki: 22, 28, 31'de az altın kalktı (yeni botla ilk dalgalarda çöküyordu) // tek girişli kolay bölümlerde başlangıç altını az (ilk dalgalar gerilsin)
   const TOTK2 = ADDN2.map((a, i) => 1 + a / (6 + Math.round(i / 19 * 6) + (i % 4 === 3 ? 2 : 0)));
-  const HPMUL2 = [3, 3, 1.955, 1.834, 0.878, 0.733, 0.445, 3.1, 2.983, 1.418, 3.9, 2.751, 2.215, 1.868, 1.303, 1.174, 1.452, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
+  // 16 Eki (Caner: "bütün bölümleri botla oyna, dengesizlikleri düzelt"): tools/denge-botu2.js (gerçekçi oyuncu: yıldızlar, Büyü Kitabı, komutan puanı
+  // harcanmış, kuleler yolu en çok gören yerlere, büyüler yerinde). Eski değerlerle 22, 25, 26, 28, 31, 35 kaybediliyor, 24, 34, 37 1-3 canla geçiliyordu.
+  const HPMUL2 = [3, 2.0, 1.955, 1.25, 0.55, 0.5, 0.445, 2.1, 1.7, 1.25, 2.1, 2.1, 2.215, 1.5, 0.95, 1.174, 0.85, 1.675, 0.745, 0.801]; // 11 Eki (2): kalıcı gelişimle botla 3 tur (hedef 13→4 can). 11 Eki (3): 21, 22, 28, 31 ek dalga + az altın; 28 ve 31 can ×3,1/×3,9 (bot eşiği keskin: 31'de ×3 kayıpsız, ×4,5 kayıp)
   // her bölüm bir komutanla biter (1. seferdeki gibi): büyük bosslar 3, 6, 9, 12, 15'te; aralarda lejyon subayları ve eski bosslar
   const BOSS2 = ['centurion', 'shadowmaster', 'champion', 'malleus', 'hierophant', 'champion', 'malleus', 'campanus', 'malleus', 'ironwarden', 'campanus', 'ignis',
     'campanus', 'cavcaptain', 'ignis', 'colossus', 'ignis', 'severus', 'colossus', 'cathedral'];
@@ -998,7 +1000,7 @@ if (NECRO) {
       ab: { exorcise: { cd: 10, r: 150, n: 5, say: 'Şeytan Kovma!' }, heal: { cd: 9, amt: 60, r: 90 } } }),
     godfrey: Object.assign({}, OFF, { name: 'Tapınak Komutanı Godfrey', h: 58, hp: 1500, speed: 11, armor: 0.6, mr: 0.15, gold: 160, dmg: [20, 30], lives: 6, hpK: 1,
       desc: 'Kutsanmış Toprak: alevli kılıcını yere saplar, çevresindeki iskeletleri yakar. Yere vurup sersemletir, paladin çağırır',
-      ab: { burn: { cd: 9, r: 75, dps: 12, t: 4, say: 'Kutsanmış Toprak!' }, slam: { cd: 8, r: 64, stun: 1.4, dmg: 30 }, summon: { t: 'paladin', n: 1, cd: 15 } } }),
+      ab: { burn: { cd: 9, r: 75, dps: 12, t: 4, say: 'Kutsanmış Toprak!' }, slam: { cd: 8, r: 64, stun: 1.4, dmg: 30 }, summon: { t: 'paladin', n: 1, cd: 15, max: 5 } } }),
   });
   Object.assign(BOSS_ESCORT, { hubertus: [['hound', 2]], agnes: [['flagellant', 2]], lucia: [['holywater', 1], ['bellpriest', 1]], godfrey: [['paladin', 2]] });
   // final: Katedral (1. evre, kendi çizimi) → Severus (mevcut çizim, çaydanlıklı) → Lanetli Severus
