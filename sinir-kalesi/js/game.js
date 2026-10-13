@@ -2524,7 +2524,7 @@ function killEnemy(e) {
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: e.face, fly: e.def.flying ? 26 : 0, t: 0,
     dur: NECRO ? corpseStay() : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
-    pw: corpsePower(e) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
+    pw: corpsePower(e), str: (e.maxHp || e.def.hp) * (e.def.chief ? 3 : 1) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
   // ölüm şeridi olmayan kuşatma makinesi parçalanıp yığılır, uçan düşman dönerek düşer (ceset yerine bu efekt görünür)
@@ -2719,9 +2719,15 @@ const corpseStay = () => CORPSE_T.base + CORPSE_T.per * grimRank('nm_raise');
 const REMAINS = { cap: 40, fade: 0.8, keep: 9999 }; // 16 Eki: 70 -> 40 (telefonda güvenli)
 function keepRemains(f) {
   if (f.kind !== 'corpse' || f.air || f.fly || !NECRO || f.dur - (f.lt ?? 0) > 0.12 || !animStrip(f.name, f.rig, '_die')) return; // büyüyle kullanılan ceset kalıntı bırakmaz
-  const old = G.effects.filter(o => o.kind === 'remains' && !o.fading);
-  if (old.length >= REMAINS.cap) { old[0].dur = old[0].t + REMAINS.fade; old[0].fading = true; }
-  G.effects.push({ kind: 'remains', name: f.name, rig: f.rig, h: f.h, x: f.x, y: f.y, face: f.face, fly: 0, flung: f.flung, t: 0, dur: REMAINS.keep });
+  // 16 Eki (Caner): sınır dolunca en zayıf kalıntı söner (güç: düşmanın tam canı, boss x3); yeni gelen hepsinden zayıfsa o kalmaz.
+  // Böylece yerde en güçlü düşmanların cesetleri kalır, boş yerleri zayıflar doldurur
+  const old = G.effects.filter(o => o.kind === 'remains' && !o.fading), st = f.str || 0;
+  if (old.length >= REMAINS.cap) {
+    const weak = old.reduce((a, o) => ((o.str || 0) < (a.str || 0) ? o : a), old[0]);
+    if ((weak.str || 0) > st) return;
+    weak.dur = weak.t + REMAINS.fade; weak.fading = true;
+  }
+  G.effects.push({ kind: 'remains', name: f.name, rig: f.rig, h: f.h, x: f.x, y: f.y, face: f.face, fly: 0, flung: f.flung, t: 0, dur: REMAINS.keep, str: st });
 }
 function clearRemains() { // yeni dalga: kalıntılar ve yerdeki oklar söner
   for (const f of G.effects) if ((f.kind === 'remains' || f.kind === 'stuck' && f.ground && f.dur > STUCK.ground) && !f.fading) { f.dur = f.t + REMAINS.fade; f.fading = true; }
