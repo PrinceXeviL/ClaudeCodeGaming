@@ -332,7 +332,7 @@ Object.assign(ENEMIES, {
   siegetower:{ name: 'Kuşatma Kulesi', h: 62, hp: 1100, speed: 8, armor: 0.45, mr: 0.1, gold: 60, dmg: [2, 4], rate: 2, lives: 3, r: 20, machine: true, noblock: true, split: ['legion', 6] },
   eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true, dive: { cd: 7, r: 60, rT: 90, dmg: [10, 16], dur: 1.5, hit: 0.3 } }, // 15 Eki: iskeletlere ve kuledeki okçulara pike (Veo _atk); rT: kuleye uzaklık
   // leş akbabası: sürüyle uçar; altındaki cesetleri yer (diriltilemez olur) ve kendini iyileştirir
-  vulture:   { name: 'Leş Akbabası', h: 33, hp: 120, speed: 27, armor: 0, mr: 0, gold: 11, dmg: [0, 0], rate: 1, lives: 1, r: 11, flying: true, scavenge: { r: 60, every: 2.5, heal: 35 } },
+  vulture:   { name: 'Leş Akbabası', h: 33, hp: 120, speed: 27, armor: 0, mr: 0, gold: 11, dmg: [0, 0], rate: 1, lives: 1, r: 11, flying: true, scavenge: { r: 60, every: 2.5, heal: 35 }, dive: { cd: 8, r: 60, rT: 90, dmg: [8, 12], dur: 1.5, hit: 0.32 } },
   // savaş fili (mini boss): iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar (ranged.top: okun çıktığı yükseklik, boy oranı)
   elephant:  { name: 'Savaş Fili', h: 70, hp: 1500, speed: 11, armor: 0.35, mr: 0.15, gold: 75, dmg: [14, 22], rate: 1.5, lives: 4, r: 20, noblock: true, noraise: true,
     trample: { dmg: 40, r: 22 }, ranged: { r: 140, dmg: [6, 10], rate: 1.5, proj: 'harrow', any: true, moving: true, top: 0.92 } },
