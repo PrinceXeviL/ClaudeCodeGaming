@@ -506,16 +506,20 @@ fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject())).the
       fetch('ses/' + name + '.wav').then(r => r.arrayBuffer()).then(buf => { rawSnd[name] = buf; if (actx) decodeOne(name); }))))
     .catch(() => {}));
 
+// 14 Eki (Caner: telefonda inşa, borazan, savaş, düşman ve büyü sesleri yoktu, yalnız müzik): iOS WebKit yüzlerce sesi aynı anda çözerken
+// çözmeler sessizce düşüyordu (Chrome'da sorun yok). Artık sırayla çözülür (kuyruk); düşen bir kez daha denenir.
+let DECQ = Promise.resolve();
 function decodeOne(name) {
   const buf = rawSnd[name];
   if (!buf) return;
   delete rawSnd[name];
   const kind = name.replace(/_\d+$/, '');
-  const done = (ab) => { (SND[kind] = SND[kind] || []).push(ab); };
-  try {
-    const p = actx.decodeAudioData(buf, done, () => {});
-    if (p && p.catch) p.catch(() => {});
-  } catch (e) {}
+  const done = (ab) => { if (ab) (SND[kind] = SND[kind] || []).push(ab); };
+  const dec = (b) => new Promise((res) => {
+    let fin = false; const ok = (ab) => { if (!fin) { fin = true; res(ab); } }, no = () => { if (!fin) { fin = true; res(null); } };
+    try { const p = actx.decodeAudioData(b, ok, no); if (p && p.then) p.then(ok, no); } catch (e) { no(); }
+  });
+  DECQ = DECQ.then(() => dec(buf.slice(0))).then((ab) => ab || dec(buf)).then(done, () => {}); // kopya: çözme arabelleği boşaltırsa ikinci deneme asıl veriyle
 }
 
 // tarayıcılar sesi ancak ilk dokunuştan sonra açar

@@ -6,7 +6,7 @@ eski dosyası olmayan (kodla üretilen) türler için DB tablosu. Kapsam dışı
 asit patlaması (Caner beğendi) ve zaten ElevenLabs olanlar.
     .venv/bin/python varliklar/elevenlabs_isle.py
 """
-import glob, json, os, subprocess, wave
+import glob, json, os, subprocess, sys, wave
 import numpy as np
 from ses_kayit_isle import FF
 from ses_uret import OUT, SR
@@ -75,8 +75,13 @@ def main():
     b = dec(os.path.join(E, 'g_battle_1.mp3')); X = int(SR * 1.5); L = len(b) - X
     lp = b[:L].copy(); r = np.linspace(0, 1, X); lp[:X] = lp[:X] * r + b[L:L + X] * (1 - r)
     made.append(save('el_battle_1', lp, old_db('battle')))
-    mp = os.path.join(OUT, 'manifest.json'); man = json.load(open(mp))
-    man = sorted({m for m in man if not m.startswith('el_')} | set(made)); json.dump(man, open(mp, 'w'))
+    # 14 Eki: yerine ElevenLabs gelen eski sesler pakete girmez (iPhone yüzlerce sesi çözerken düşürüyordu); dosyaları duruyor.
+    # Geri almak: game.js ELEVEN_ON = false ve bu betiği --eski ile çalıştır (eskiler pakete döner, el_* çıkar).
+    mp = os.path.join(OUT, 'manifest.json'); man = set(json.load(open(mp))) - {m for m in json.load(open(mp)) if m.startswith('el_')}
+    old = {os.path.basename(p)[:-4] for k in list(MAP) + ['battle'] for g in {k, NOW.get(k, k)} for p in glob.glob(os.path.join(OUT, g + '_[0-9]*.wav'))}
+    if '--eski' in sys.argv: man |= old
+    else: man = (man - old) | set(made)
+    json.dump(sorted(man), open(mp, 'w')); print('pakette', len(man), 'ses (eski', len(old), 'dışarıda)' if '--eski' not in sys.argv else '')
     print(len(made), 'ses,', len({m.rsplit('_', 1)[0] for m in made}), 'tür')
 
 
