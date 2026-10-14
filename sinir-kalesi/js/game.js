@@ -2527,10 +2527,12 @@ function aimY(e) {
 // src: hasar kaynağı (arrow/magic/blast/melee); düşmanın zayıflık/direnç çarpanı uygulanır
 // bölüm sonu özeti için: o an vuranın türü (kule, iskelet, dirilen, komutan); çağıran kod ayarlar
 let hitBy = null;
+const DIVE_VULN = 1.5;
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
   if (e.invT > 0) return; // boss evre değiştiriyor
+  if (e.diveT > 0) amount *= DIVE_VULN; // pike yapan kuş savunmasız
   if (hitBy || src) e.lastBy = hitBy || src;
   e.hitG = G.t; // komutan 'Kalkanlar!' için (oyun zamanı)
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
@@ -4104,6 +4106,23 @@ function updateEnemy(e, dt) {
     if (s.dead || s.wall || s.hero || (s.born != null && G.t < s.born) || dist(s.x, s.y, e.x, e.y) > TR.r) continue;
     if ((e.ran || (e.ran = new Set())).has(s)) continue;
     e.ran.add(s); damageSoldier(s, TR.dmg); s.flash = 0.15; impactFx(s.x, s.y - 8, '235,225,200', 0.9); sfx('bash'); if (e.type === 'elephant') sfx('elephant');
+  }
+  // 15 Eki (Caner): uçanlar (def.dive) arada bir altındaki iskelete pike yapar, pençeler, yine havalanır (Veo şeridi _atk).
+  // Dalış boyunca yolda durur ve DIVE_VULN kat hasar alır; pençe hit kesrinde iner (şeridin en alt karesi)
+  const DV = e.def.dive;
+  if (DV) {
+    if (e.diveT > 0) {
+      const p0 = 1 - e.diveT / DV.dur; e.diveT -= dt; const p1 = 1 - e.diveT / DV.dur, S = e.diveS;
+      if (p0 < DV.hit && p1 >= DV.hit && S && !S.dead) { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; impactFx(S.x, S.y - 10, '255,230,180', 0.8); sfx('dogbite', 1.15, 1, e); }
+      if (e.diveT <= 0) { e.diveT = 0; e.diveS = null; e.diveCd = DV.cd * rand(0.8, 1.2); }
+      return;
+    }
+    e.diveCd = (e.diveCd ?? DV.cd * rand(0.4, 1)) - dt;
+    if (e.diveCd <= 0) {
+      let best = null, bd = DV.r;
+      for (const so of G.soldiers) { if (so.dead || so.wall || (so.born != null && G.t < so.born)) continue; const d = dist(so.x, so.y, e.x, e.y); if (d < bd) { bd = d; best = so; } }
+      if (best) { e.diveT = DV.dur; e.diveS = best; sfx('eagle', 1, 1, e); } else e.diveCd = 0.5;
+    }
   }
   // güneş rahibesi: belli aralıklarla çevresindeki cesetleri yakar (diriltilemez) ve dirilen ölülere ışıkla vurur
   const PU = e.def.purify;
@@ -9110,7 +9129,7 @@ function drawEnemy(e) {
 }
 function drawEnemy0(e) {
   const d = e.def;
-  const fly = d.flying ? 26 + Math.sin(e.anim * 3) * 3 : 0;
+  const fly = d.flying ? 26 + Math.sin(e.anim * 3) * 3 - (e.diveT > 0 ? 12 * Math.sin(Math.PI * clamp((1 - e.diveT / d.dive.dur) / 0.6, 0, 1)) : 0) : 0; // pikede yere yaklaşır
   const bob = d.flying ? 0 : Math.abs(Math.sin(e.anim * 9)) * (e.blocker ? 0.5 : 2);
   const x = e.x, y = e.y - fly - bob;
   const name = 'enemy_' + e.type, im = d.base ? enemySprite(e.type) : spr(name);
@@ -9134,7 +9153,7 @@ function drawEnemy0(e) {
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
-      atk: e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
+      atk: e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
