@@ -355,7 +355,16 @@
 "Takılı eşya yok": "Снаряжения нет",
 "Bosslar yenilince eşya düşürür": "Боссы роняют снаряжение",
 "Bir eşyaya dokun, sonra TAK": "Нажми на предмет, затем НАДЕТЬ",
-"Ganimet:": "Добыча:"
+"Ganimet:": "Добыча:",
+"Kule yıkıldı!": "Башня разрушена!",
+"Temizleniyor…": "Расчистка…",
+"Golem nöbette": "Голем на посту",
+"Güneş Topu": "Солнечная пушка",
+"Durup kulelerimize gülle atar, 2,5 sn susturur": "Останавливается и бьёт ядрами по башням, глушит их на 2,5 с",
+"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Её толкают два легионера; бьёт по башням, глушит на 2,5 с. Останови её первой",
+"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Двое толкают льва. Лев плюётся. Вот это семейка.",
+"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Бьёт башни у дороги и может разрушить их; затем идёт к воротам. Останови его первым",
+"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Бросает камни в башни, глушит на 3 с и ранит"
 },
 "tpl": [
 [
@@ -489,6 +498,14 @@
 [
 "{} · EŞYALAR",
 "{} · СНАРЯЖЕНИЕ"
+],
+[
+"Molozu temizle — {} altın",
+"Убрать завал — {} золота"
+],
+[
+"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+"Скелеты расчистят за {} с; затем можно строить"
 ]
 ]
 }

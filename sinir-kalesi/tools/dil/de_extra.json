@@ -355,7 +355,16 @@
 "Takılı eşya yok": "Keine Ausrüstung angelegt",
 "Bosslar yenilince eşya düşürür": "Bosse lassen Ausrüstung fallen",
 "Bir eşyaya dokun, sonra TAK": "Tippe auf einen Gegenstand, dann ANLEGEN",
-"Ganimet:": "Beute:"
+"Ganimet:": "Beute:",
+"Kule yıkıldı!": "Turm zerstört!",
+"Temizleniyor…": "Wird geräumt…",
+"Golem nöbette": "Golem auf Wache",
+"Güneş Topu": "Sonnenkanone",
+"Durup kulelerimize gülle atar, 2,5 sn susturur": "Hält an und beschießt unsere Türme, legt sie 2,5 s lahm",
+"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Zwei Legionäre schieben sie; beschießt unsere Türme, 2,5 s lahm. Halte sie zuerst auf",
+"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Zwei Männer schieben einen Löwen. Der Löwe spuckt. Was für eine Familie.",
+"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Rammt Türme am Weg und kann sie zerstören; dann geht es zum Tor. Halte ihn zuerst auf",
+"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Schleudert Steine auf unsere Türme, 3 s lahm und beschädigt"
 },
 "tpl": [
 [
@@ -489,6 +498,14 @@
 [
 "{} · EŞYALAR",
 "{} · AUSRÜSTUNG"
+],
+[
+"Molozu temizle — {} altın",
+"Trümmer räumen — {} Gold"
+],
+[
+"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+"Skelette räumen in {} s; danach kannst du neu bauen"
 ]
 ]
 }

@@ -547,7 +547,16 @@
 "Takılı eşya yok": "No gear equipped",
 "Bosslar yenilince eşya düşürür": "Bosses drop gear when defeated",
 "Bir eşyaya dokun, sonra TAK": "Tap an item, then EQUIP",
-"Ganimet:": "Loot:"
+"Ganimet:": "Loot:",
+"Kule yıkıldı!": "Tower destroyed!",
+"Temizleniyor…": "Clearing…",
+"Golem nöbette": "Golem on guard",
+"Güneş Topu": "Sun Cannon",
+"Durup kulelerimize gülle atar, 2,5 sn susturur": "Stops to fire cannonballs at our towers, silencing them for 2.5 s",
+"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Pushed by two legionaries; stops to fire at our towers, silencing them for 2.5 s. Stop it first",
+"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Two men push a lion. The lion spits. What a family.",
+"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Stops to batter towers by the road and can destroy them; then marches on the gate. Stop it first",
+"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Stops to hurl stones at our towers, silencing and damaging them for 3 s"
 },
 "tpl": [
 [
@@ -989,6 +998,14 @@
 [
 "{} · EŞYALAR",
 "{} · GEAR"
+],
+[
+"Molozu temizle — {} altın",
+"Clear the rubble — {} gold"
+],
+[
+"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+"Skeletons clear it in {} s; then you can build again"
 ]
 ]
 }

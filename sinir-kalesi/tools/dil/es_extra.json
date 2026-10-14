@@ -355,7 +355,16 @@
 "Takılı eşya yok": "Sin equipo",
 "Bosslar yenilince eşya düşürür": "Los jefes sueltan equipo al caer",
 "Bir eşyaya dokun, sonra TAK": "Toca un objeto y luego EQUIPAR",
-"Ganimet:": "Botín:"
+"Ganimet:": "Botín:",
+"Kule yıkıldı!": "¡Torre destruida!",
+"Temizleniyor…": "Despejando…",
+"Golem nöbette": "Gólem de guardia",
+"Güneş Topu": "Cañón Solar",
+"Durup kulelerimize gülle atar, 2,5 sn susturur": "Se detiene a disparar balas a nuestras torres, las silencia 2,5 s",
+"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Lo empujan dos legionarios; dispara a nuestras torres y las silencia 2,5 s. Detenlo primero",
+"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Dos hombres empujan un león. El león escupe. Menuda familia.",
+"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Golpea las torres junto al camino y puede destruirlas; luego va a la puerta. Detenlo primero",
+"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Lanza piedras a nuestras torres, las silencia 3 s y las daña"
 },
 "tpl": [
 [
@@ -489,6 +498,14 @@
 [
 "{} · EŞYALAR",
 "{} · EQUIPO"
+],
+[
+"Molozu temizle — {} altın",
+"Despejar escombros — {} oro"
+],
+[
+"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+"Los esqueletos lo despejan en {} s; luego puedes construir"
 ]
 ]
 }

@@ -355,7 +355,16 @@
 "Takılı eşya yok": "未装备物品",
 "Bosslar yenilince eşya düşürür": "击败首领会掉落装备",
 "Bir eşyaya dokun, sonra TAK": "点选物品，然后装备",
-"Ganimet:": "战利品："
+"Ganimet:": "战利品：",
+"Kule yıkıldı!": "塔被摧毁！",
+"Temizleniyor…": "清理中…",
+"Golem nöbette": "魔像在站岗",
+"Güneş Topu": "太阳炮",
+"Durup kulelerimize gülle atar, 2,5 sn susturur": "停下向我们的塔开炮，使其沉默2.5秒",
+"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "由两名军团兵推动；向我们的塔开炮，使其沉默2.5秒。先阻止它",
+"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "两个人推着一头狮子。狮子还会吐。好一家子。",
+"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "停下撞击路边的塔并可摧毁它们；然后冲向城门。先阻止它",
+"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "向我们的塔投石，使其沉默3秒并造成伤害"
 },
 "tpl": [
 [
@@ -489,6 +498,14 @@
 [
 "{} · EŞYALAR",
 "{} · 装备"
+],
+[
+"Molozu temizle — {} altın",
+"清理瓦砾 — {} 金币"
+],
+[
+"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+"骷髅在{}秒内清理；之后可重新建塔"
 ]
 ]
 }

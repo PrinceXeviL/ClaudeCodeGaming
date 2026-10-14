@@ -355,7 +355,16 @@
 "Takılı eşya yok": "Aucun équipement",
 "Bosslar yenilince eşya düşürür": "Les boss lâchent de l’équipement",
 "Bir eşyaya dokun, sonra TAK": "Touche un objet, puis ÉQUIPER",
-"Ganimet:": "Butin :"
+"Ganimet:": "Butin :",
+"Kule yıkıldı!": "Tour détruite !",
+"Temizleniyor…": "Déblaiement…",
+"Golem nöbette": "Golem de garde",
+"Güneş Topu": "Canon solaire",
+"Durup kulelerimize gülle atar, 2,5 sn susturur": "S’arrête pour tirer des boulets sur nos tours, les réduit au silence 2,5 s",
+"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Poussé par deux légionnaires ; tire sur nos tours, silence 2,5 s. Arrête-le d’abord",
+"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Deux hommes poussent un lion. Le lion crache. Quelle famille.",
+"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Frappe les tours au bord du chemin et peut les détruire ; puis marche sur la porte. Arrête-le d’abord",
+"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Lance des pierres sur nos tours, silence 3 s et dégâts"
 },
 "tpl": [
 [
@@ -489,6 +498,14 @@
 [
 "{} · EŞYALAR",
 "{} · ÉQUIPEMENT"
+],
+[
+"Molozu temizle — {} altın",
+"Déblayer — {} or"
+],
+[
+"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+"Les squelettes déblaient en {} s ; puis on peut reconstruire"
 ]
 ]
 }
