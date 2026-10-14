@@ -163,11 +163,17 @@ function rottenOf(name, im) {
   return (ROT[name] = c);
 }
 // 14 Eki (Caner): dirilen ölüler kızıl değil, kendi renklerinin koyusu (bizden oldukları başlarındaki ruh alevinden anlaşılır).
-// Asıl rengin %88'i + parlaklığın %12'si (hafif solgun), sonra %60 koyu. Boyacı iş parçacığı da bunu kullanır (toString)
+// 15 Eki (Caner: %10 daha koyu, çürümüş görünsün): ten tonları hastalıklı yeşil-griye kayar, renkler %22 solar,
+// gölgeler morumsu (çürük) olur, sonra %54'e kararır. Yama yama leke yok: şeritte kareler ayrı boyandığı için titrerdi.
+// Boyacı iş parçacığı da bunu kullanır (toString): dışarıdan değişken kullanma
 function rotPixels(a) {
   for (let i = 0; i < a.length; i += 4) {
-    const L = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) * 0.12;
-    a[i] = (a[i] * 0.88 + L) * 0.6; a[i + 1] = (a[i + 1] * 0.88 + L) * 0.6; a[i + 2] = (a[i + 2] * 0.88 + L) * 0.6;
+    let r = a[i], g = a[i + 1], b = a[i + 2];
+    const L = r * 0.3 + g * 0.59 + b * 0.11;
+    const rg = r - g, gb = g - b, skin = rg > 15 && rg < 95 && gb > 6 && gb < 75 ? Math.min(1, (rg - 15) / 25, (95 - rg) / 25, (75 - gb) / 25) * Math.min(1, L / 90) : 0; // yalnız ten tonları (kırmızı kumaş, altın girmez)
+    r += (L * 0.78 - r) * 0.55 * skin; g += (L * 0.98 - g) * 0.55 * skin; b += (L * 0.62 - b) * 0.55 * skin;
+    const D = 1 - Math.min(1, L / 120);
+    a[i] = Math.max(0, (r * 0.78 + L * 0.22 + 6 * D) * 0.54); a[i + 1] = Math.max(0, (g * 0.78 + L * 0.22 - 4 * D) * 0.54); a[i + 2] = Math.max(0, (b * 0.78 + L * 0.22 + 8 * D) * 0.54);
   }
 }
 // ---------- boyacı iş parçacığı (13 Eki) ----------
@@ -614,6 +620,16 @@ function audioCheck() {
   const c = actx, t0 = c.currentTime;
   setTimeout(() => { if (actx === c && (c.state !== 'running' || c.currentTime === t0)) AUDIO_DEAD = true; }, 600);
 }
+// 15 Eki (Caner: 18. bölümün sonunda ses birden kesildi): oyun sürerken de ses bağlamı izlenir. iOS bağlamı kesip (interrupted)
+// ya da saati durdurursa önce resume denenir; olmazsa AUDIO_DEAD → bir sonraki dokunuşta initAudio yeniden kurar
+const AW = { t: 0, ct: -1 };
+function audioWatch(dt) {
+  if (!actx || document.hidden || muted) return;
+  if ((AW.t += dt) < 2) return;
+  AW.t = 0;
+  if (actx.state !== 'running' || actx.currentTime === AW.ct) { console.log('[ses] bağlam durmuş:', actx.state); audioCheck(); }
+  AW.ct = actx.currentTime;
+}
 function audioRebuild() {
   try { actx.close(); } catch (e) {}
   actx = null; master = null; amb = null; NOISE_BUF = null;
@@ -925,6 +941,7 @@ function sfx(kind, rate, volK = 1, pos = SFX_POS) {
   if (!def || (!synth && (!list || !list.length))) return;
   const st = sndState[kind] || (sndState[kind] = { last: -1, playing: 0 });
   const now = actx.currentTime;
+  if (st.playing >= def.max && now - st.last > 4) st.playing = 0; // bitiş haberi gelmeyen ses türü sonsuza dek susmasın
   if (now - st.last < def.gap || st.playing >= def.max) return;
   st.last = now;
   if (synth) { synth(now, list); return; }
@@ -1047,6 +1064,7 @@ function musicHeat(dt) {
   return 0.5 + 0.5 * G.musHeat; // 11 Eki: iOS'ta düzey artık gerçekten uygulanıyor; eski 0,2 taban telefonda müziği duyulmaz yapıyordu
 }
 function updateMusic(dt) {
+  audioWatch(dt);
   if (!MUSIC.started) return;
   const want = musicWanted(), on = !muted && setting('music') && !document.hidden;
   for (const k in MUSIC.tracks) {
@@ -1157,6 +1175,7 @@ const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
 // altınla Ceset Golemi çıkar (vuruşu çevresine de işler), kapının önünü tutar; ölürse respawn sn sonra yeniden kalkar. Mahzen kapağı sistemiyle aynı.
 // rise: mezardan çıkış şeridinin (unit_corpsegolem_rise, 6 kare Gemini) kare süreleri; golem bu süre bitince savaşa girer
 const GRAVE = { cost: 110, respawn: 30, w: 56, from: 4, rise: [0.24, 0.24, 0.28, 0.22, 0.2, 0.5], knight: { hp: 620, dmg: [16, 24], armor: 0.3, rate: 1.2, speed: 34, engage: 80, aoe: 0.5 } }; // 12 Eki (Caner): mezardan Ceset Golemi kalkar; vuruşu çevresine de işler
+const SPOT_GAP = { plot: 95, castle: 135 }; // mezar ve mahzen kapağının kule arsasına / kaleye en az uzaklığı
 const epRel = (lv) => LEVELS.indexOf(lv) - LEVELS.findIndex(l => l.ep === lv.ep); // seferin içindeki sıra (0..19)
 function hatchSpots(lv, paths) {
   if (!NECRO) return [];
@@ -1172,7 +1191,7 @@ function hatchSpots(lv, paths) {
     if (x < 50 || x > W - 50 || y < 80 || y > H - 40) continue;
     if (y > H - 90 && x < 440) continue; // sol alttaki düğmelerin altı
     if (nearestOnPaths(paths, x, y).d < off - 4) continue; // başka yolun üstüne düşmesin
-    if (lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < 56)) continue;
+    if (lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < SPOT_GAP.plot)) continue; // 15 Eki (Caner): kulelere çok yakın olmasın
     if (dist(x, y, lv.castle[0], lv.castle[1]) < 160) continue;
     if (out.some(o => dist(x, y, o[0], o[1]) < 170)) continue;
     out.push([x, y, q.x, q.y]);
@@ -1184,14 +1203,22 @@ function hatchSpots(lv, paths) {
 function castleGraveSpot(lv, paths) {
   if (epRel(lv) < GRAVE.from || !lv.castle) return [];
   const [cx, cy] = lv.castle, R = lv.roadK || ROAD_K, off = 34 + 12 * R;
-  const P = paths.reduce((a, p) => { const e = p.pts[p.pts.length - 1], f = a.pts[a.pts.length - 1]; return dist(e[0], e[1], cx, cy) < dist(f[0], f[1], cx, cy) ? p : a; }, paths[0]);
-  for (let d = P.total - 80; d > P.total - 260; d -= 12) for (const side of [1, -1]) {
-    const q = pathPos(P, d), x = q.x - q.dy * off * side, y = q.y + q.dx * off * side;
-    if (x < 40 || x > W - 40 || y < 90 || y > H - 40 || (y > H - 90 && x < 440)) continue;
-    if (nearestOnPaths(paths, x, y).d < off - 4) continue;
-    if (lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < 52)) continue;
-    if (dist(x, y, cx, cy) < 70) continue;
-    return [[x, y, q.x, q.y, 'grave']];
+  // 15 Eki (Caner): mezar kaleye ve kulelere çok yakındı (70 / 52) → SPOT_GAP. Kaleye giren bütün yollar boyunca aranır,
+  // aralıkları sağlayan yerlerden kaleye en yakını seçilir; hiç yoksa aralıklar biraz gevşetilir
+  for (const k of [1, 0.9, 0.8, 0.7]) {
+    let best = null, bd = 1e9;
+    for (const P of paths) {
+      const e = P.pts[P.pts.length - 1]; if (dist(e[0], e[1], cx, cy) > 160) continue;
+      for (let d = P.total - 60; d > Math.max(40, P.total - 700); d -= 10) for (const side of [1, -1]) {
+        const q = pathPos(P, d), x = q.x - q.dy * off * side, y = q.y + q.dx * off * side;
+        if (x < 40 || x > W - 40 || y < 90 || y > H - 40 || (y > H - 90 && x < 440)) continue;
+        if (nearestOnPaths(paths, x, y).d < off - 4) continue;
+        if (lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < SPOT_GAP.plot * k)) continue;
+        const dc = dist(x, y, cx, cy); if (dc < SPOT_GAP.castle * k || dc >= bd) continue;
+        bd = dc; best = [x, y, q.x, q.y, 'grave'];
+      }
+    }
+    if (best) return [best];
   }
   return [];
 }
@@ -1935,7 +1962,7 @@ function startLevel(idx, chal = null) {
     G.banner = { title: 'YENİ: MEZAR BEKÇİSİ', sub: `Kalenin yanındaki mezara dokun: ${GRAVE.cost} altına Ceset Golemi kalkar, kapıyı tutar.`, t: 0, dur: 5 };
   } else if (G.hatches.some(h => !h.grave) && !save.hatchSeen) {
     save.hatchSeen = true; persist();
-    G.banner = { title: 'YENİ: MAHZEN KAPAĞI', sub: `Kapağa dokun: ${HATCH.cost} altına gulyabani çıkar, yolu tutar. Meşaleciler kapağı mühürler!`, t: 0, dur: 5 };
+    G.banner = { title: 'YENİ: MAHZEN KAPAĞI', sub: `Kapağa dokun: ${HATCH.cost} altına Ceset Golemi çıkar, yolu tutar. Meşaleciler kapağı mühürler!`, t: 0, dur: 5 };
   } else if (NECRO && !G.tut && necroSpellOn('nm_golem') && !save.golemSeen) { // eğitim sürerken tanıtım şeridi çıkmaz
     save.golemSeen = true; persist();
     G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_golem.name, sub: NECRO_SPELLS.nm_golem.short, t: 0, dur: 4.2 };
@@ -5770,7 +5797,7 @@ const MORT_LINES = {
   glor3: ['Parlıyor. Çayımı ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
   // 2. sefer (Cadı Avı)
   start2: ['Cadı avı mı? Yanlış kapıyı çaldınız.', 'Meşaleler, çanlar... Ne kadar gürültücü bir din.', 'Çaydanlığımı geri alana kadar kimse uyumuyor.'],
-  hatch: ['Mahzen açık! Bubu\'nun kuzeni geldi.', 'Gulyabani, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
+  hatch: ['Mahzen açık! Bubu\'nun kuzeni geldi.', 'Golem, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
   sealed: ['Kapağımı mühürledi! Terbiyesiz.', 'O mahzenin kirasını kim ödeyecek?'],
   blood: ['Ay kızardı. Benden utandı herhalde.', 'Kızıl Ay! Kalkın çocuklar, gece bizim.', 'Dua edin bakalım. Ben de güleyim.'],
   light: ['Fener mi? Söndürün şunu, gözüm kamaştı!', 'Işık arabası. Ne kadar da kaba.'],
@@ -12528,7 +12555,7 @@ function infoText() {
   if (G.sel && G.sel.kind === 'hatch' && G.sel.hatch.grave) { const K = GRAVE.knight; return [`Mezar — ${GRAVE.cost} altın`, `Ceset Golemi kalkar (Can ${K.hp} · Hasar ${K.dmg[0]}-${K.dmg[1]} · Zırh %${Math.round(K.armor * 100)}), kalenin kapısını tutar; ölürse ${HATCH.respawn} sn sonra yeniden kalkar.`]; }
   if (G.sel && G.sel.kind === 'hatch') {
     const C = HATCH.ghoul;
-    return [`Mahzen Kapağı — ${HATCH.cost} altın`, `Gulyabani çıkar (Can ${C.hp} · Hasar ${C.dmg[0]}-${C.dmg[1]} · Zırh %${Math.round(C.armor * 100)}), yolu tutar; ölürse ${HATCH.respawn} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!`];
+    return [`Mahzen Kapağı — ${HATCH.cost} altın`, `Ceset Golemi çıkar (Can ${C.hp} · Hasar ${C.dmg[0]}-${C.dmg[1]} · Zırh %${Math.round(C.armor * 100)}), yolu tutar; ölürse ${HATCH.respawn} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!`];
   }
   if (G.sel && G.sel.kind === 'castle') {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
@@ -17954,6 +17981,7 @@ window.__game = {
   rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme
   raiseAll() { G.testRaiseMax = 99; const c = G.effects.filter(f => f.kind === 'corpse' && f.raisable); c.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); return c.length; }, // test: bütün cesetleri dirilt
   spawn(type, pi = 0) { return spawnEnemy(type, pi); }, // test: düşman çıkar
+  spotAudit() { return LEVELS.map((lv, i) => { delete lv._hatch; const ps = (lv.paths || []).map(buildPath); const sp = hatchSpots(lv, ps); return [i, sp.length, sp.map(q => [Math.round(Math.min(...lv.plots.map(pl => dist(q[0], q[1], pl[0], pl[1])))), lv.castle ? Math.round(dist(q[0], q[1], lv.castle[0], lv.castle[1])) : null])]; }); }, // test: mezar/kapak uzaklıkları
   hit(e, n = 1e9) { damageEnemy(e, n, 'phys'); }, // test: düşmana hasar (ölürse ganimet vb. gerçek yoldan)
   netTest(i = 0) { const e = G.enemies.find(q => !q.dead), v = G.soldiers.find(q => !q.dead && !q.wall); if (!e || !v) return false; playSkill(e, NET.skill); throwNet(e, v, 2.5, NET.skill * NET.rel); return true; }, // test: ağ atışı
   bakeThumbs(cols = 8) { // tools/harita-pisir.js: bütün bölüm kartı önizlemeleri tek atlasta
