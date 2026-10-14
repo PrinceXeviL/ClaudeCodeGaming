@@ -2556,6 +2556,7 @@ function aimY(e) {
 // bölüm sonu özeti için: o an vuranın türü (kule, iskelet, dirilen, komutan); çağıran kod ayarlar
 let hitBy = null;
 const DIVE_VULN = 1.5;
+const CANNON_FIRE = 0.8; // Güneş Topu ateş şeridinin süresi (sn); bu sürede durur
 const CONVOY = { gap: 1.8, walk: 1.05 }; // yürürken önündekiyle en az boşluk (yarıçaplar toplamının katı): araçlar gap, ötekiler walk
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
@@ -4092,7 +4093,7 @@ function unitH(u) {
 }
 
 // 14 Eki (Caner: atların sesi yok; eksikler): hayvan ve makine sesleri, ekrandayken ara ara (ilk görünüşte biraz sonra)
-const DOGS = new Set(['wardog', 'hound']), WHIPS = new Set(['flagellant', 'agnes']), WHEELED = new Set(['chariot', 'siegetower', 'lantern', 'catapult', 'ram', 'cathedral']);
+const DOGS = new Set(['wardog', 'hound']), WHIPS = new Set(['flagellant', 'agnes']), WHEELED = new Set(['chariot', 'siegetower', 'lantern', 'catapult', 'ram', 'cathedral', 'cannon']);
 function creatureVoice(e, dt) {
   const t = e.type, b = e.def.base, kind = HORSE.has(t) || HORSE.has(b) ? 'horse' : DOGS.has(t) || DOGS.has(b) ? 'dog' : t === 'eagle' || b === 'eagle' ? 'eagle'
     : (WHEELED.has(t) || WHEELED.has(b)) && !e.blocker && !(e.stun > 0) ? 'wheels' : null;
@@ -4114,7 +4115,7 @@ function updateEnemy(e, dt) {
   if (e.drumT > 0) e.drumT -= dt;
   if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt;
   if (e.captain) updateCaptain(e, dt);
-  if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.cageT > 0) e.cageT -= dt; // özel saldırı anı ve bekleme süresi
+  if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
   if (AU) for (const o of G.enemies) {
@@ -4380,6 +4381,7 @@ function updateEnemy(e, dt) {
   }
   if (e.skillT > 0 && !e.def.machine) return; // özel saldırı / büyü anında durur
   let spd = e.def.speed * G.wspd * (G.bloodT > 0 ? BLOOD.slow : 1) * (G.mod && G.mod.speed || 1) * (e.spdMul || 1) * (e.def.frenzy ? 1 + e.def.frenzy.spd * (1 - e.hp / e.maxHp) : 1) * (e.slowT > 0 ? 1 - e.slowK : 1) * (e.hasteT > 0 ? 1.5 : 1) * (e.drumT > 0 ? 1.3 : 1) * (e.under ? BU.speed : 1);
+  if (e.fireT > 0) spd = 0; // Güneş Topu ateş ederken durur
   if (e.capT > 0) spd *= CAPTAIN.spd; if (e.capRushT > 0) spd *= CAPTAIN.rush; // komutanın yanında biraz hızlı, "Hücum!" ile koşar
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
@@ -9213,7 +9215,7 @@ function drawEnemy0(e) {
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
-      atk: e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
+      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
@@ -9772,7 +9774,7 @@ Object.assign(RIG, {
   unit_skel_1: { legY: 0.72 }, unit_skel_2: { legY: 0.72 }, unit_skel_3: { legY: 0.72 }, unit_skel_4: { legY: 0.72 }, unit_skel_5: { legY: 0.72 },
   enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
   enemy_priest: { legY: 0.82, stride: 0.5 }, enemy_heavy: { legY: 0.74, stride: 0.8 }, enemy_cavalry: { legY: 0.62, stride: 1.2 },
-  enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' },
+  enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' }, enemy_cannon: { solid: 'cart' },
 });
 
 // ----- silah kolu ve gövde iskeleti -----
@@ -10444,10 +10446,10 @@ function drawProjectile(p) {
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.sy + 40, p.ty + 30, k);
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(gx, gy, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
     ctx.save(); ctx.translate(x, y); ctx.rotate(p.spin + time * 8);
-    if (p.sub === 'bomb') {
+    if (p.sub === 'bomb' || p.sub === 'ball') { // ball: Güneş Topu güllesi (fitilsiz)
       const g = ctx.createRadialGradient(-2, -2, 1, 0, 0, 7); g.addColorStop(0, '#6a6e78'); g.addColorStop(1, '#0e0e12');
-      circle(0, 0, 6.5, g, '#000', 1.2);
-      ctx.strokeStyle = '#a07a40'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(3, -5); ctx.quadraticCurveTo(6, -9, 5, -11); ctx.stroke();
+      circle(0, 0, p.sub === 'ball' ? 5.5 : 6.5, g, '#000', 1.2);
+      if (p.sub === 'bomb') ctx.strokeStyle = '#a07a40'; else ctx.strokeStyle = 'rgba(0,0,0,0)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(3, -5); ctx.quadraticCurveTo(6, -9, 5, -11); ctx.stroke();
       ctx.restore();
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + Math.cos(p.spin + time * 8) * 5, y - 10, 6, '255,200,90', 0.9 + Math.sin(time * 50) * 0.1); ctx.restore();
     } else {
@@ -13908,7 +13910,7 @@ function summonLegion(e) {
 // Hepsi kısa bir "büyü anı" oynatır (e.skillT): düşman durur, varsa <ad>_skill şeridi, yoksa saldırı şeridi oynar.
 // kind: net (ağ: kımıldayamaz), bash (kalkan darbesi), burn/poison (süreli hasar), whirl (çevresine savurma), charge (geri savurma)
 const ALT_DUR = 0.65;
-const NO_YELL = new Set(['hound', 'elephant', 'vulture', 'ram', 'catapult']); // insan olmayanlar bağırmaz
+const NO_YELL = new Set(['hound', 'elephant', 'vulture', 'ram', 'catapult', 'cannon']); // insan olmayanlar bağırmaz
 function playSkill(e, dur = ALT_DUR) {
   if (e.skillT > 0) return;
   e.skillT = e.skillDur = dur;
@@ -14146,6 +14148,12 @@ function bossAbilities(e, dt) {
     const t = bossTowerTarget(e, A.r);
     if (!t) { e.abT[kind] = 1; continue; }
     e.abT[kind] = A.cd * (e.cdMul || 1);
+    if (A.cannon) { // Güneş Topu: ateş şeridi (CANNON_FIRE sn) oynar, gülle namlu alevi karesinde düz yayla çıkar
+      e.fireT = CANNON_FIRE; faceTo(e, t.x); const mx = e.x + (e.face || 1) * (e.def.h || 49) * 0.85, my = e.y - (e.def.h || 49) * 0.55;
+      G.projectiles.push({ kind: 'bossthrow', sub: 'ball', sx: mx, sy: my, tx: t.x, ty: t.y - 30, tower: t, stun: A.stun, t: -CANNON_FIRE * 0.22, dur: 0.55, arc: 30, spin: 0 });
+      setTimeout(() => { if (G && !e.dead) { sfx('cannon', 1, 1, e); shakeScreen(2, 0.15); } }, CANNON_FIRE * 220);
+      continue;
+    }
     G.projectiles.push({ kind: 'bossthrow', sub: kind, sx: e.x, sy: e.y - (e.def.h || 40) * 0.7, tx: t.x, ty: t.y - 30, tower: t, stun: A.stun, t: 0, dur: 0.9, arc: 90, spin: rand(0, 6) });
     bossCastFx(e, kind === 'bomb' ? 'Bomba!' : 'Kaya!', '255,200,120'); sfx('whirl');
   }
@@ -14635,7 +14643,7 @@ function upgradeIcon(id, x, y) {
 
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
-const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'siegetower', 'vulture', 'elephant',
+const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'cannon', 'siegetower', 'vulture', 'elephant',
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus1',
   // 2. sefer: Engizisyon
   'hunter', 'hound', 'torch', 'holywater', 'flagellant', 'lantern', 'bellpriest', 'paladin', 'inquisitor', 'saint',
@@ -14677,6 +14685,7 @@ const CODEX_NOTE = {
   signifer: 'Sancağı çok parlak. Gözüm yok ama yine de kamaştı.',
   drummer: 'Ritim duygusu yok. İskeletlerim daha iyi dans eder.',
   catapult: 'Bahçeme taş atıyor. Komşuluk bunu gerektirmez.',
+  cannon: 'İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.',
   centurion: 'Borazanı çok sesli. Çayımı içemiyorum.',
   champion: 'Kalabalığı coşturur. Kalabalık az sonra benim olacak.',
   hierophant: 'Güneşe dua ediyor. Burada güneş öğlene kadar uyur.',
@@ -14824,7 +14833,7 @@ function drawCodex() {
     ctx.save(); ctx.beginPath(); ctx.roundRect(x + 3, y + 3, tw - 6, th - 22, 9); ctx.clip();
     if (tab === 'e') {
       const im = codexEnemyImg(id);
-      if (im) { const ih = (boss ? 112 : id === 'ram' || id === 'catapult' || id === 'cavalry' ? 84 : 98) * (CODEX_SMALL[id] || 1); drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
+      if (im) { const ih = (boss ? 112 : id === 'ram' || id === 'catapult' || id === 'cannon' || id === 'cavalry' ? 84 : 98) * (CODEX_SMALL[id] || 1); drawSprite(ctx, known ? im : silhouette('enemy_' + id, im), x + tw / 2, y + th - 22 + ih * 0.2, ih * im.width / im.height); }
     } else {
       const im = towerIcon(id, 3);
       if (im) drawSprite(ctx, known ? im : silhouette('tower_' + id, im), x + tw / 2, y + th - 24, (th - 26) * im.width / im.height * 0.95);
@@ -14879,7 +14888,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   const ready = !wantStrip || animStrip('enemy_' + type, rigN, '_walk');
   if (!ready) { CODEX.t0 = time; const a = time * 5; ctx.save(); ctx.strokeStyle = 'rgba(200,160,255,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy - 70, 14, a, a + 4); ctx.stroke(); ctx.restore(); } // yükleniyor
   if (im && ready) {
-    const big = d.chief ? 168 : ['ram', 'catapult', 'cavalry'].includes(id) ? 132 : 150;
+    const big = d.chief ? 168 : ['ram', 'catapult', 'cannon', 'cavalry'].includes(id) ? 132 : 150;
     const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k) * (CODEX_SMALL[id] || 1);
     ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 218); ctx.clip();
     // hepsi aynı görünür hızda yürür: saniyede CODEX_PACE boy kadar yol (adım boyu şeritten), ayaklar kaymaz

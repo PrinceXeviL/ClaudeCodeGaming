@@ -318,6 +318,9 @@ Object.assign(ENEMIES, {
   ram:       { name: 'Koçbaşı',             h: 40, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 16, machine: true },
   catapult:  { name: 'Mancınık Arabası',    h: 40, hp: 420, speed: 12, armor: 0.2,  mr: 0,    gold: 38, dmg: [2, 4],   rate: 2,   lives: 2, r: 14, machine: true,
     desc: 'Durup kulelerimize taş atar, 3 sn susturur', ab: { bomb: { cd: 12, stun: 3, r: 200 } } },
+  // 15 Eki (Caner): Güneş Topu. İki lejyonerin ittiği aslan ağızlı top (Veo şeritleri, varliklar/top_veo_isle.py); iten askerler lejyonerle aynı boy
+  cannon:    { name: 'Güneş Topu',          h: 49, hp: 520, speed: 10, armor: 0.3,  mr: 0,    gold: 46, dmg: [2, 4],   rate: 2,   lives: 2, r: 18, machine: true,
+    desc: 'Durup kulelerimize gülle atar, 2,5 sn susturur', ab: { bomb: { cd: 10, stun: 2.5, r: 240, cannon: true } } },
   // yeni birlikler (9 Eki): mevcut görsellerden türer (base + game.js BOSS_LOOK renkleri ve kodla çizilen eşyalar)
   // noblock: iskeletler durduramaz (kemik duvar durdurur). ranged.moving: yürürken atar. split: ölünce dağılır.
   // purify: çevredeki cesetleri yakar, diriltilmiş ölülere vurur. aura: çevredekilere zırh (armor) ya da hız (speed).
@@ -510,7 +513,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [{ t: 'catapult', n: 1, gap: 1 }, { t: 'heavy', n: 3, gap: 2, at: 3 }, { t: 'legion', n: 8, gap: 0.9, at: 8 }],
       [{ t: 'cavalry', n: 5, gap: 1.4 }, { t: 'assassin', n: 6, gap: 1, at: 6 }, { t: 'priest', n: 2, gap: 3, at: 10 }],
       [{ t: 'ram', n: 1, gap: 1 }, { t: 'heavy', n: 4, gap: 2, at: 2 }, { t: 'gladiator', n: 8, gap: 0.9, at: 8 }],
-      [{ t: 'catapult', n: 2, gap: 8 }, { t: 'legion', n: 14, gap: 0.6, at: 2 }, { t: 'solarcher', n: 8, gap: 0.9, at: 8 }],
+      [{ t: 'cannon', n: 2, gap: 8 }, { t: 'legion', n: 14, gap: 0.6, at: 2 }, { t: 'solarcher', n: 8, gap: 0.9, at: 8 }],
       [{ t: 'cavalry', n: 6, gap: 1.2 }, { t: 'heavy', n: 5, gap: 1.8, at: 5 }, { t: 'priest', n: 3, gap: 2.4, at: 8 }, { t: 'assassin', n: 8, gap: 0.8, at: 12 }],
       [{ t: 'ram', n: 2, gap: 6 }, { t: 'catapult', n: 1, gap: 1, at: 4 }, { t: 'gladiator', n: 10, gap: 0.8, at: 6 }, { t: 'legion', n: 14, gap: 0.6, at: 12 }],
       [{ t: 'heavy', n: 6, gap: 1.6 }, { t: 'cavalry', n: 8, gap: 1.1, at: 6 }, { t: 'assassin', n: 10, gap: 0.7, at: 12 }, { t: 'priest', n: 4, gap: 2, at: 14 }],
@@ -536,7 +539,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('ram', 1, 1), W_('cavalry', 5, 1.4, 3), W_('legion', 12, 0.6, 8)], [W_('heavy', 5, 1.8), W_('cavalry', 6, 1.3, 5), W_('priest', 3, 2.4, 8), W_('gladiator', 8, 0.8, 12)] ] },
     { name: 'Kemik Köprü', theme: 'necrogate', gold: 640, bossT: 'ironwarden', comic: 'kopru', waves: [
       [W_('legion', 12, 0.8), W_('solarcher', 6, 1.1, 5)], [W_('catapult', 1, 1), W_('gladiator', 8, 0.9, 3)], [W_('cavalry', 6, 1.3), W_('priest', 2, 3, 6)],
-      [W_('heavy', 5, 1.8), W_('assassin', 8, 0.9, 5)], [W_('ram', 2, 6), W_('legion', 14, 0.6, 2), W_('solarcher', 6, 1, 9)], [W_('catapult', 2, 8), W_('heavy', 5, 1.8, 3), W_('cavalry', 6, 1.2, 9)],
+      [W_('heavy', 5, 1.8), W_('assassin', 8, 0.9, 5)], [W_('ram', 2, 6), W_('legion', 14, 0.6, 2), W_('solarcher', 6, 1, 9)], [W_('cannon', 2, 8), W_('heavy', 5, 1.8, 3), W_('cavalry', 6, 1.2, 9)],
       [W_('assassin', 10, 0.7), W_('gladiator', 10, 0.8, 5), W_('priest', 3, 2.4, 10)], [W_('heavy', 6, 1.6), W_('cavalry', 8, 1.1, 5), W_('legion', 14, 0.6, 10), W_('priest', 4, 2, 14)] ] },
   ];
   [14, 11, 8, 5, 2].forEach((at, k) => { L.splice(at, 0, EK1[4 - k]); old.splice(at, 0, LEVELS_EK1_GEO[4 - k]); });
@@ -1166,7 +1169,7 @@ const SPEC = {
 Object.assign(ENEMY_WK, {
   legion: { magic: 1.2 }, solarcher: { melee: 1.3, arrow: 1.2 }, gladiator: { arrow: 1.2, blast: 1.2 }, assassin: { blast: 1.3, melee: 0.8 },
   priest: { arrow: 1.3 }, heavy: { magic: 1.4, arrow: 0.6 }, cavalry: { melee: 0.8, blast: 1.2 }, ram: { blast: 1.4, arrow: 0.5, magic: 0.8 },
-  catapult: { blast: 1.3, melee: 1.2 },
+  catapult: { blast: 1.3, melee: 1.2 }, cannon: { blast: 1.3, melee: 1.2 },
   wardog: { blast: 1.4, melee: 1.2 }, chariot: { magic: 1.3, melee: 0.6 }, siegetower: { blast: 1.3, arrow: 0.5 }, eagle: { arrow: 1.4, magic: 1.1 }, vulture: { arrow: 1.4, magic: 1.1 }, elephant: { magic: 1.3, arrow: 0.7, melee: 0.8 },
   horsearcher: { arrow: 1.2, magic: 1.2 }, testudo: { arrow: 0.3, blast: 1.8, magic: 1.1 }, sunpriest: { arrow: 1.3, melee: 1.2 },
   signifer: { magic: 1.2, melee: 1.2 }, drummer: { arrow: 1.2, blast: 1.2 }, centurion: { magic: 1.2 }, champion: { arrow: 1.2 }, shadowmaster: { blast: 1.3 }, cavcaptain: { blast: 1.2 },
@@ -1184,6 +1187,7 @@ Object.assign(ENEMY_DESC, {
   cavalry: 'Hızlı atlı, kuleye 2 can götürür. Veba atı ürkütür',
   ram: 'Çok yavaş, çok canlı; kapıya varırsa 3 can götürür. Veba kazanı kullan',
   catapult: 'Durup kulelerimize taş atar, 3 sn susturur. Önce onu durdur',
+  cannon: 'İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur',
   wardog: 'Sürüyle gelir, çok hızlıdır ama canı azdır. Veba kazanı sürüyü dağıtır',
   chariot: 'Çok hızlı; iskeletleri ezip geçer, durduramazlar. Kemik duvar durdurur',
   siegetower: 'Ağır ve yavaş; yıkılınca içinden 6 lejyoner dökülür. Yolun başında yık',
@@ -1332,7 +1336,7 @@ const CLASS_OF = {
   heavy: 'agir', paladin: 'agir', ironwarden: 'agir', gloriosus: 'agir', gloriosus1: 'agir', gloriosus2: 'agir', gloriosus3: 'agir', cavcaptain: 'agir',
   priest: 'kutsal', sunpriest: 'kutsal', holywater: 'kutsal', bellpriest: 'kutsal', inquisitor: 'kutsal', saint: 'kutsal',
   hierophant: 'kutsal', ignis: 'kutsal', severus: 'kutsal', campanus: 'kutsal', colossus: 'kutsal',
-  ram: 'kusatma', catapult: 'kusatma', siegetower: 'kusatma', lantern: 'kusatma', chariot: 'kusatma', cathedral: 'kusatma',
+  ram: 'kusatma', catapult: 'kusatma', cannon: 'kusatma', siegetower: 'kusatma', lantern: 'kusatma', chariot: 'kusatma', cathedral: 'kusatma',
   cavalry: 'canavar', horsearcher: 'canavar', elephant: 'canavar', eagle: 'canavar', vulture: 'canavar',
 };Object.assign(CLASS_OF, CLASS_OF_EXTRA);
 
