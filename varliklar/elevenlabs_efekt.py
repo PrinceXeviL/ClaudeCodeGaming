@@ -111,6 +111,8 @@ SFX = {
     'g4_pick': ('one small bone taps against another bone, crisp hollow wooden click, very short, game ui, no music', 0.5, 4),
     'g4_open': ('a small bundle of hanging bones rattles gently like a wind chime, soft hollow clinks, short, game ui, no music', 0.8, 3),
     'g4_error': ('a dull muted bone knock on thick wood, low and soft, very short, game ui, no music', 0.5, 2),
+    # 14 Eki (Caner: düşman ayak seslerini beğenmedi; Roma askeri, ortaçağ asker yürüyüşü gibi olsun)
+    'g5_step_foot': ('a single firm footstep of a marching roman legionary in hobnailed leather caligae sandals on a packed dirt road, solid heel thud with a light gravel crunch and a faint rustle of leather armor, close, dry, no music', 0.5, 8),
     'g2_upgrade': ('a dark stone tower grows stronger: deep muffled stone grinding and a low magical hum swelling then settling, warm and soft, no metal clangs, no high pitched sounds, no music', 1.5, 3),
 }
 

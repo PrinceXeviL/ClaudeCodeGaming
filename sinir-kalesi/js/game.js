@@ -864,7 +864,7 @@ for (const k of ['arrow', 'arrowhit', 'splash', 'pain', 'dvoice', 'scream', 'dru
   EL_ALIAS[k] = 'el_' + k; SOUND['el_' + k] = { ...(SOUND[k] || {}) };
 }
 // eskiden kodla üretilenler (dosyası yoktu): kayıt için ses düzeyi
-Object.assign(SOUND.el_click, { vol: 0.4 }); Object.assign(SOUND.el_select, { vol: 0.36 }); Object.assign(SOUND.el_pick, { vol: 0.32 });
+Object.assign(SOUND.el_click, { vol: 0.4 }); Object.assign(SOUND.el_select, { vol: 0.324 }); Object.assign(SOUND.el_pick, { vol: 0.288 }); // 14 Eki: seçim sesleri %10 kısık
 SOUND.el_open = { vol: 0.4, gap: 0.1, max: 1 }; Object.assign(SOUND.el_wave, { vol: 0.5 }); Object.assign(SOUND.el_thunder, { vol: 0.55, gap: 0.4, max: 1 });
 for (const k of ['portal', 'roar', 'stomp']) Object.assign(SOUND['el_' + k], { vol: 0.6 });
 Object.assign(SOUND.el_clash, { vol: 0.13, gap: 0.18 }); // 14 Eki (Caner: 1-2 kişilik kavgada ordu gibi): kılıç sesi kısık ve seyrek
@@ -988,9 +988,9 @@ function musicAudio(T) {
 }
 function musicEl(T) {
   if (!T.el && !T.missing) {
-    T.el = musicAudio(T); T.vol = 0;
+    T.el = musicAudio(T); T.vol = 0; musicNode(T.el); // ses yolu baştan (çalarken bağlamak kesinti yapar)
     T.el.addEventListener('error', () => { T.missing = true; T.el = null; });
-    if (T.seam) T.el2 = musicAudio(T);
+    if (T.seam) { T.el2 = musicAudio(T); musicNode(T.el2); }
   }
   return T.el;
 }
@@ -1012,7 +1012,10 @@ function musicSeam(T, dt) {
 function startMusic() {
   if (MUSIC.started) return;
   MUSIC.started = true;
-  const el = musicEl(MUSIC.tracks.menu);
+  const T0 = MUSIC.tracks.menu, el = musicEl(T0);
+  // 14 Eki (Caner: Oyna'ya basınca müzik durup yeniden başlıyor / kısılıyor): ses yolu çalmadan ÖNCE kurulur (çalan öğeyi sonradan
+  // WebAudio'ya bağlamak iOS'ta kesinti yapıyordu) ve menü parçası sıfırdan yükselmeden, doğrudan kendi düzeyinde başlar
+  if (el) { musicNode(el); T0.lin = 1; setMusicVol(el, clamp(T0.gain * setting('mvol'), 0, 1)); }
   // izin yoksa sonraki dokunuşta yeniden denenir
   if (el) el.play().catch((e) => { if (e && e.name === 'NotAllowedError') MUSIC.started = false; });
 }
@@ -5047,11 +5050,19 @@ function minionCmdBtn() {
   const b = spellBtn(i); return { x: b.x, y: b.y - b.r * 1.95, r: Math.max(20 * UI_K, b.r * 0.62) };
 }
 function cmdMinions(x, y) {
-  const n = nearestOnPaths(G.paths, x, y), px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
   const L = G.soldiers.filter(s => s.zombie && !s.dead);
+  // 14 Eki (Caner): düşmana dokunulursa hepsi doğrudan ona saldırır (boş yere dokununca eskisi gibi oraya yürür)
+  let foe = null, fd = 30; for (const e of G.enemies) { if (e.dead || e.under || e.def.flying || e.reviveT > 0) continue; const d = dist(e.x, e.y - 10, x, y); if (d < fd) { fd = d; foe = e; } }
+  if (foe) {
+    for (const s of L) { if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.post = null; s.moving = false; s.order = foe; s.rx = foe.x; s.ry = foe.y; }
+    G.effects.push({ kind: 'ring', x: foe.x, y: foe.y, r: 24, col: '255,80,60', t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: foe.x, y: foe.y, r: 12, col: '140,255,120', t: 0, dur: 0.35 });
+    impactFx(foe.x, foe.y - 14, '255,90,70', 0.9); floatText(foe.x, foe.y - (CHAR_H['enemy_' + foe.type] || 24) - 14, 'Saldır!', '#ff8a7a'); sfx('spell');
+    return;
+  }
+  const n = nearestOnPaths(G.paths, x, y), px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
   L.forEach((s, j) => { const a = j * 2.4, r = j ? 7 + 6 * Math.sqrt(j) : 0; // ayçiçeği dizilişi: üst üste binmesinler
     s.post = { x: clamp(px + Math.cos(a) * r * 1.3, 12, W - 12), y: clamp(py + Math.sin(a) * r * 0.75, 60, H - 12) };
-    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.moving = true; s.rx = s.post.x; s.ry = s.post.y; });
+    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.rx = s.post.x; s.ry = s.post.y; });
   G.effects.push({ kind: 'ring', x: px, y: py, r: 26, col: '140,255,120', t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: px, y: py, r: 14, col: '200,120,255', t: 0, dur: 0.35 });
   floatText(px, py - 24, 'İleri!', '#9aff8a'); sfx('spell');
 }
@@ -5255,6 +5266,8 @@ const SOLDIER_REACH = 110;
 const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
 function zombieHunt(s) {
   if (s.post && s.moving) { s.rx = s.post.x; s.ry = s.post.y; return; } // Mortimer'ın emri: gösterilen yere yürür (yolda kimseyle dövüşmez)
+  if (s.order) { // Mortimer'ın emri: gösterilen düşmana doğrudan yürür; yetişince olağan dövüş seçimi onu tutar
+    const o = s.order; if (o.dead || o.under || o.reviveT > 0) s.order = null; else { s.rx = o.x; s.ry = o.y; if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
   let best = null, bd = ZOMBIE.aggro; // 14 Eki (Caner): yalnız yakına gelen düşmana gider; düşman yoksa bulunduğu yerde bekler
   for (const o of G.enemies) {
     if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o)) continue;
@@ -11227,12 +11240,13 @@ function drawIcon(name, x, y, s, col = '#fff') {
 
 // ---------- menüler (halka menü) ----------
 // Arsa ya da kule seçilince öğeler merkezden yaylanarak sırayla açılır, seçim kalkınca içeri toplanıp kapanır.
+const BUILD_ICON_K = 1.1; // 14 Eki (Caner): inşa menüsündeki kule simgeleri %10 büyük
 const MENU_R = 25, MENU_K = 1.15; // MENU_K: Caner (10 Eki) menü düğmeleri %15 büyük (içerikle birlikte ölçeklenir); arsa menüsünde aralar da %15 açıldı
 function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; if (G && G.early && u != null && G.idx < u) return false; /* öğretici: kuleler sırayla */ return TEST_OPEN || u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
   const types = TOWER_ORDER.filter(type => towerUnlocked(type) && !(TOWERS[type].unique && G.towers.some(o => o.type === type))); // tek kurulan kule (Lanet Kulesi) kuruluysa menüde görünmez, satılınca geri gelir
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
-  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15, y: pl.y - 16 + offs[i][1] * 1.15, cost: TOWERS[type].levels[0].cost }));
+  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15 * BUILD_ICON_K, y: pl.y - 16 + offs[i][1] * 1.15 * BUILD_ICON_K, cost: TOWERS[type].levels[0].cost }));
 }
 // silah büyüsü: kemik kulesi ve mahzen 3. seviyeye gelince açılır (Caner, 10 Eki: uzmanlığı son kademeye çıkarmak gerekmez; kule başına bir büyü)
 const imbueOpen = (t) => NECRO && (t.type === 'archer' || t.type === 'barracks') && t.lvl >= t.def.levels.length - 1;
@@ -11456,7 +11470,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   const ok = itemAffordable(it), R = MENU_R;
   const active = preview && preview.id === it.id && preview.type === it.type;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
-  const s = MENU_K * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
+  const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
   ctx.scale(s, s);
   if (active) glow(ctx, 0, 0, R * 2.2, '255,215,110', 0.6);
   circle(0, 5, R + 3, 'rgba(0,0,0,0.38)');
@@ -11731,7 +11745,7 @@ function waveBtnScreen(pi) {
   const m = 24 * WAVE_BTN_K + 6; // düğme ekrandan taşmasın
   return { x: clamp(q.x, EDGE.l + m, EDGE.r - m), y: clamp(q.y, EDGE.t + m, EDGE.b - m), dx: b.dx, dy: b.dy };
 }
-const WAVE_BTN_K = 1.59; // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük; 15 Eki: %30 daha)
+const WAVE_BTN_K = 1.75; // 14 Eki (Caner): %10 daha // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük; 15 Eki: %30 daha)
 function drawWaveButtons() {
   const show = waveCallable();
   if (show && G.waveShowT == null) G.waveShowT = time;
@@ -17442,7 +17456,7 @@ function hudTap(x, y) {
   // açık menü
   if (!G.mode && G.sel && (G.sel.kind === 'plot' || G.sel.kind === 'tower' || G.sel.kind === 'castle' || G.sel.kind === 'hatch')) {
     for (const it of currentMenu()) {
-      if (dist(it.x, it.y, x, y) <= MENU_R * MENU_K + 8) {
+      if (dist(it.x, it.y, x, y) <= MENU_R * MENU_K * (it.id === 'build' ? BUILD_ICON_K : 1) + 8) {
         const same = G.preview && G.preview.id === it.id && G.preview.type === it.type;
         tapPop('mi' + it.id + (it.type || ''));
         if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }

@@ -18,7 +18,7 @@ MAP = {
     'drum': (['g_drum'], 0.8), 'yell': (['g_yell'], 1.2), 'plaguethrow': (['g_plaguethrow'], 1.2), 'plaguefire': (['g_plaguefire'], 1.5),
     'bonefall': (['iskeletcoken'], 0.9), 'magic': (['g_magic'], 0.8), 'cannon': (['g_cannon'], 1.3), 'boom': (['g_boom'], 1.3),
     'meteor': (['g_meteor'], 2.5), 'clash': (['kemikvurus', 'g_clash'], 0.5),
-    'step_foot': (['g2_step_foot'], 0.3), 'step_gallop': (['g2_step_gallop'], 0.55), 'step_bone': (['g2_step_bone'], 0.3),  # 14 Eki: yeni adımlar
+    'step_foot': (['g5_step_foot'], 0.32), 'step_gallop': (['g2_step_gallop'], 0.55), 'step_bone': (['g2_step_bone'], 0.3),  # 14 Eki: yeni adımlar
     'death': (['g_death'], 0.7), 'coin': (['g_coin'], 0.35), 'coins': (['g_coins'], 1.0), 'build': (['g2_build'], 1.3),  # 14 Eki: daha tok inşa
     'upgrade': (['g2_upgrade'], 1.4), 'leak': (['g_leak'], 1.2), 'wave': (['g_wave'], 1.5), 'win': (['g_win'], 3.0),
     'lose': (['g_lose'], 3.0), 'levelup': (['g_levelup'], 1.2), 'click': (['g_click'], 0.2), 'select': (['g4_select'], 0.35),  # 14 Eki: arayüz kemik sesleri (g4)
