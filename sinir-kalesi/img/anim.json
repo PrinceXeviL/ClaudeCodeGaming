@@ -2292,5 +2292,21 @@
   "base": 0.047,
   "ch": 0.8364,
   "dur": 1.4
+ },
+ "hero_bathory_cast_bloodlink": {
+  "n": 10,
+  "fw": 340,
+  "fh": 328,
+  "base": 0.0245,
+  "ch": 0.6717,
+  "dur": 0.8
+ },
+ "hero_bathory_skill2": {
+  "n": 25,
+  "fw": 340,
+  "fh": 328,
+  "base": 0.0245,
+  "ch": 0.6717,
+  "dur": 2.2
  }
 }

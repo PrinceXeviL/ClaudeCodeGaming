@@ -1,0 +1,9 @@
+Static locked-off camera, no camera movement, no zoom. Plain pure white background for the entire video, no ground, no shadows, no other objects. 2D hand-painted cartoon game art style exactly like the reference image; keep her design, colors and proportions identical. She stays small in the center with wide empty white margins on all sides: nothing (blood, bats, mist) ever leaves the frame.
+
+ACTION 1 (0-3.5 s): BLOOD LINK. The skeletal countess raises her free hand with a sharp, exaggerated cartoon gesture. Four thin glossy crimson blood threads whip out from her fingertips to the left and right, stay inside the frame, pulse and throb as she drains life through them, then snap back into her palm. Her red eyes flare and the heart in her staff beats once. She returns to the exact starting pose.
+
+PAUSE (3.5-4.2 s): She holds the starting pose completely still.
+
+ACTION 2 (4.2-8 s): BLOOD BATS. She lifts the staff high, the heart flashes deep red, and a swarm of about twelve small crimson-black cartoon bats bursts out of the blood pool around her skirt, flapping wildly, spiraling up around her body and above her crown, then dissolving into a puff of dark red mist above her head, still inside the frame. She lowers the staff and ends in the exact starting pose, holding still for the last half second.
+
+Exaggerated, snappy cartoon motion. No text, no people, no ground plane, no color tint over the character.

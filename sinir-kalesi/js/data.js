@@ -770,7 +770,7 @@ const HERO_ULT2 = {
     desc: 'Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir', short: '8 düşmana sıçrayan şimşek' },
   robin: { name: 'Kurt Uluması', cd: 45, anim: 2.2, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
     desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
-  bathory: { name: 'Kan Yarasaları', cd: 50, r: 70, dps: [16, 22], dur: 3, slow: 0.35, heal: 0.4, n: 14, bats: true,
+  bathory: { name: 'Kan Yarasaları', cd: 50, anim: 2.2, r: 70, dps: [16, 22], dur: 3, slow: 0.35, heal: 0.4, n: 14, bats: true,
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
 };
 // pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)

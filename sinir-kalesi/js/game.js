@@ -149,7 +149,7 @@ const easeOutBack = (x) => 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow
 
 // İsabet anında sprite'ın üzerine çizilen beyaz siluet (önbellekli)
 const WHITE = {};
-// dirilen cesetler: aynı görselin solgun, yeşilimsi-gri çürümüş renkli kopyası (önbellekli)
+// dirilen cesetler: aynı görselin koyulaştırılmış kopyası (önbellekli)
 const ROT = {};
 const ROT_WAIT = new Set();
 function rottenOf(name, im) {
@@ -162,17 +162,16 @@ function rottenOf(name, im) {
   g.putImageData(d, 0, 0);
   return (ROT[name] = c);
 }
-// 13 Eki (Caner): dirilen ölüler kızıl (11 Eki: mor); asıl rengin %20'si kalır, karartılmış. Boyacı iş parçacığı da bunu kullanır (toString)
+// 14 Eki (Caner): dirilen ölüler kızıl değil, kendi renklerinin koyusu (bizden oldukları başlarındaki ruh alevinden anlaşılır).
+// Asıl rengin %88'i + parlaklığın %12'si (hafif solgun), sonra %60 koyu. Boyacı iş parçacığı da bunu kullanır (toString)
 function rotPixels(a) {
   for (let i = 0; i < a.length; i += 4) {
-    const L = a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11;
-    a[i] = Math.min(255, (a[i] * 0.22 + L * 1.3 * 0.8) * 0.98); // 14 Eki (Caner): daha açık kızıl (önce * 0.72, çok koyuydu)
-    a[i + 1] = (a[i + 1] * 0.22 + L * 0.24 * 0.8) * 0.98;
-    a[i + 2] = (a[i + 2] * 0.22 + L * 0.26 * 0.8) * 0.98;
+    const L = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) * 0.12;
+    a[i] = (a[i] * 0.88 + L) * 0.6; a[i + 1] = (a[i + 1] * 0.88 + L) * 0.6; a[i + 2] = (a[i + 2] * 0.88 + L) * 0.6;
   }
 }
 // ---------- boyacı iş parçacığı (13 Eki) ----------
-// Rütbe/boss kılığı boyaması, dirilenlerin kızıl şeritleri ve şeritlerin küçük kopyaları (mipmap) ana döngüyü dondurmasın diye
+// Rütbe/boss kılığı boyaması, dirilenlerin koyu şeritleri ve şeritlerin küçük kopyaları (mipmap) ana döngüyü dondurmasın diye
 // Web Worker'da (OffscreenCanvas) yapılır. 12. bölümde savaş ortasında 35-240 ms'lik, ilk dalgada 1 sn'lik takılmalar buradandı.
 // İş bitene kadar şeridin boyasız hâli çizilir. Worker/OffscreenCanvas yoksa (eski tarayıcı) eski eşzamanlı yol çalışır.
 const PAINT = (() => {
@@ -1955,7 +1954,7 @@ function startLevel(idx, chal = null) {
 }
 function bakeNext() {
   const k = G.bakeQ.shift();
-  if (k[0] === 's' || k[0] === 'r') { // tek şerit boya / dirilen ölünün kızıl ölüm şeridi
+  if (k[0] === 's' || k[0] === 'r') { // tek şerit boya / dirilen ölünün koyu ölüm şeridi
     const [, t, sf] = k.split(':'), d = ENEMIES[t]; if (!d) return;
     const rig = d.base ? 'enemy_' + d.base : 'enemy_' + t, suf = k[0] === 'r' ? '_die' : sf;
     if (STRIP_WAIT.has(rig + suf) || (LAZY[rig + suf] && !SPR[rig + suf])) { if ((G.bakeTry = (G.bakeTry || 0) + 1) < 4000) G.bakeQ.push(k); return; } // şerit yükleniyor
@@ -9475,7 +9474,7 @@ function drawSoldier(s) {
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
       const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
-        : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n)) % F.n;
+        : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n * (s.moving && s.hero ? 1.6 : 1))) % F.n; // koşu şeridi yoksa (Merlin süzülür) emirle giderken yürüyüş hızlı oynar
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();

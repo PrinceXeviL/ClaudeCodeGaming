@@ -1,0 +1,9 @@
+Static locked-off camera, no camera movement, no zoom. Flat solid magenta (#FF00FF) background for the entire video, no ground, no shadows on the background, no other objects. 2D hand-painted cartoon game art style, exactly like the reference image; keep the tower's design, colors and proportions identical. The tower stays small and centered with wide empty magenta margins on all sides: nothing (debris, dust, magic) ever leaves the frame.
+
+ACTION 1 (0-3.5 s): DESTRUCTION. A heavy hit shakes the tower. Cracks spread through the stones, the bone railing snaps, skulls pop off and tumble. The top platform tilts and caves in, the stone walls break into big chunky cartoon blocks and bones that fall straight down and bounce once. A thick puff of grey-brown cartoon dust bursts out and quickly settles. Exaggerated, punchy, satisfying cartoon collapse (squash and stretch), not realistic. It ends as a low heap of broken stones, bones and a skull on the round stone base, which stays intact.
+
+PAUSE (3.5-4.2 s): Everything is completely still: only the rubble heap on the base.
+
+ACTION 2 (4.2-8 s): NECROMANTIC REBUILD. Glowing green runes light up on the base, swirling wisps of green, purple and crimson magic rise from the heap. The stones and bones float up one by one, spin and snap into place from bottom to top: walls, bone frame with ropes, the top platform, the bone railing and the skulls last, each with a small bounce. A final soft green flash, then the tower stands exactly as in the reference image and holds still for the last half second.
+
+No people, no text, no ground plane, no color tint over the tower. Magic glows stay small and close to the tower.
