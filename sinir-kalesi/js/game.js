@@ -496,8 +496,10 @@ const sndState = {}; // tür -> { last, playing }
 
 // 11 Eki: kısa sesler tek pakette (ses/paket.wav + paket.json, tools/ses_paket.py): yayın dosya sınırı. Paket yoksa tek tek WAV.
 const SV = window.SURUM ? '?v=' + window.SURUM : '';
-fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject())).then(idx =>
-  fetch('ses/paket.wav' + SV).then(r => r.arrayBuffer()).then(all => { for (const [name, o, n] of idx) { rawSnd[name] = all.slice(o, o + n); if (actx) decodeOne(name); } }))
+fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject())).then(idx => { // 14 Eki: paket parçalı (paket.wav, paket2.wav ...; yayın dosya başı 15 MB)
+  const parts = Math.max(0, ...idx.map(e => e[3] || 0)) + 1;
+  return Promise.all([...Array(parts)].map((_, k) => fetch('ses/paket' + (k ? k + 1 : '') + '.wav' + SV).then(r => (r.ok ? r.arrayBuffer() : Promise.reject()))))
+    .then(all => { for (const [name, o, n, k] of idx) { rawSnd[name] = all[k || 0].slice(o, o + n); if (actx) decodeOne(name); } }); })
   .catch(() => fetch('ses/manifest.json', { cache: 'no-cache' })
     .then(r => (r.ok ? r.json() : []))
     .then(list => Promise.all(list.map(name =>
