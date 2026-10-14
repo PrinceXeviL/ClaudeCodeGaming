@@ -122,3 +122,27 @@ if __name__ == '__main__':
     lo = int(a[a.index('--lo') + 1]) if '--lo' in a else 20
     hi = int(a[a.index('--hi') + 1]) if '--hi' in a else 40
     main(a[1], a[2], st, ln, fps, white='--beyaz' in a, lo=lo, hi=hi)  # --beyaz: beyaz zeminli video
+
+
+def remove_white_fx(a, dark=110, grow=10, gain=1.7, core_r=6, core_max=5000):
+    """Beyaz zeminde parlak efektli kareler (14 Eki, Merlin'in ateşi/şimşeği): remove_white ateş ve şimşek parıltısını opak soluk leke
+    bırakıyordu. Karakterin gövdesi (koyu pikseller, grow px genişletilir) remove_white ile kesilir; gövde dışındaki açık efekt pikselleri
+    beyazın üstüne bindirilmiş gibi ayrıştırılır (renk = (c - 255(1-a)) / a, a = 1 - min/255) ve saydamlık gain ile güçlendirilir."""
+    from scipy import ndimage as nd
+    base = remove_white(a).astype(np.float32)
+    f = a.astype(np.float32); mn = f.min(2)
+    body = nd.binary_fill_holes(nd.binary_dilation(mn < dark, iterations=grow))
+    a0 = np.clip((255 - mn) / 255, 0, 1)
+    col = np.clip((f - 255 * (1 - a0[..., None])) / np.maximum(a0[..., None], 0.02), 0, 255)
+    fx = ~body & (a0 > 0.03)
+    out = base.copy()
+    out[fx, :3] = col[fx]; out[fx, 3] = np.clip(a0[fx] * gain, 0, 1) * 255
+    # alevin / şimşeğin bembeyaz çekirdeği zeminden ayrılamaz: efekt şeklinin içinde kalan (kapanışla dolan) açık pikseller parlak çekirdek
+    sat = (f.max(2) - mn) / np.maximum(f.max(2), 1)
+    glowc = (f.max(2) > 150) & (sat > 0.3)  # efektin renkli parıltısı (koyu cübbe girmez); çekirdek bunun içinde kalan delik
+    holes = nd.binary_fill_holes(glowc) & ~glowc; lab, n = nd.label(holes)  # ateş topunun iri çekirdeği: parıltıyla çevrili küçük delikler (yer halkasının içi gibi büyükler değil)
+    small = np.isin(lab, [i + 1 for i, z in enumerate(nd.sum(holes, lab, range(1, n + 1))) if z < core_max]) if n else holes
+    core = (nd.binary_closing(glowc, iterations=core_r) | small) & (a0 <= 0.3) & (~body | (base[..., 3] < 10))
+    out[core, :3] = f[core]; out[core, 3] = 235
+    out[~body & ~fx & ~core] = 0
+    return out.astype(np.uint8)

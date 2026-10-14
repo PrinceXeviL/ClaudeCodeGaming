@@ -15,7 +15,7 @@ FIG_TOP, FIG_BOT, CX = 16, 690, 623       # bekleme karelerinde alev tepesi, sis
 BOX = (CX - 330, 0, CX + 330, 720)        # ortak kesim kutusu
 TARGET = 300                               # figür boyu (şerit pikseli)
 SETS = {
-    'hero_merlin_skill': list(range(48, 115, 3)) + list(range(132, 163, 3)),   # 14 Eki: Meteor videosu gelene kadar geçici
+    # hero_merlin_skill (Meteor) artık merlin_meteor_isle.py'de
     'hero_merlin_cast_timegate': list(range(48, 115, 3)) + list(range(132, 163, 3)),   # Zaman Kapısı (14 Eki'den beri pasif)
     'hero_merlin_cast': list(range(48, 100, 3)) + list(range(99, 47, -3))[1:],
     'hero_merlin_idle': list(range(162, 235, 2)),
