@@ -1,0 +1,7 @@
+Redraw the old battering ram from image 2 as a new, much more impressive and eye-catching siege weapon, in exactly the same 2D hand-painted cartoon game art style, line weight, colors and level of detail as the cannon war wagon in image 3 (same set, Solarian Empire: red, white and gold, golden sun emblems).
+
+THE LION RAM: a long heavy wooden battering ram log with a big roaring golden lion head at its front tip, hanging on chains under a sturdy wooden frame on four large spoked wheels with golden hubs. The roof is a pitched roof covered with overlapping red legion shields with golden suns, a red-and-gold sun banner on top, iron bands and gold rivets everywhere.
+At the BACK of the frame there is a thick horizontal wooden PUSH BAR at the soldiers' chest height. Two Solarian legionaries exactly like image 1 and the soldiers in image 3 (same size, armor, crested helmet, shields on their backs) stand right behind it, leaning forward hard and GRIPPING THE PUSH BAR WITH BOTH HANDS, clearly pushing. One soldier slightly behind the other.
+The soldiers are the same size as in image 3 relative to the vehicle: the wheels reach their hips, the roof is a bit higher than their crests.
+
+Side view, the lion head points to the RIGHT, the soldiers are at the left end pushing to the right. Whole group visible, feet and all wheels visible. Flat solid magenta (#FF00FF) background, no ground, no shadow, no text. The group is centered and takes about half of the image width, with wide empty magenta space on all sides. 16:9 image.

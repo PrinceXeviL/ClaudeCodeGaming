@@ -863,9 +863,12 @@ for (const k of ['arrow', 'arrowhit', 'splash', 'pain', 'dvoice', 'scream', 'dru
   EL_ALIAS[k] = 'el_' + k; SOUND['el_' + k] = { ...(SOUND[k] || {}) };
 }
 // eskiden kodla üretilenler (dosyası yoktu): kayıt için ses düzeyi
-Object.assign(SOUND.el_click, { vol: 0.4 }); Object.assign(SOUND.el_select, { vol: 0.324 }); Object.assign(SOUND.el_pick, { vol: 0.288 }); // 14 Eki: seçim sesleri %10 kısık
-SOUND.el_open = { vol: 0.4, gap: 0.1, max: 1 }; Object.assign(SOUND.el_wave, { vol: 0.5 }); Object.assign(SOUND.el_thunder, { vol: 0.55, gap: 0.4, max: 1 });
+Object.assign(SOUND.el_click, { vol: 0.32 }); Object.assign(SOUND.el_select, { vol: 0.259 }); Object.assign(SOUND.el_pick, { vol: 0.23 }); // 14 Eki: seçim sesleri %10, sonra menü tıklamaları %20 daha kısık
+SOUND.el_open = { vol: 0.32, gap: 0.1, max: 1 }; Object.assign(SOUND.el_wave, { vol: 0.5 }); Object.assign(SOUND.el_thunder, { vol: 0.55, gap: 0.4, max: 1 });
 for (const k of ['portal', 'roar', 'stomp']) Object.assign(SOUND['el_' + k], { vol: 0.6 });
+// 14 Eki ses denetimi (etkin yükseklik = dosyanın RMS'i + vol): inşa/yükseltme patlamalardan yüksekti (-16,5 dB, top -20,7),
+// her ölümde çalan gövde düşüşü okları bastırıyordu (-24,8 / -32): ~2-3 dB kısıldılar
+Object.assign(SOUND.el_build, { vol: 0.45 }); Object.assign(SOUND.el_upgrade, { vol: 0.42 }); Object.assign(SOUND.el_levelup, { vol: 0.45 }); Object.assign(SOUND.el_death, { vol: 0.15 });
 Object.assign(SOUND.el_clash, { vol: 0.13, gap: 0.18 }); // 14 Eki (Caner: 1-2 kişilik kavgada ordu gibi): kılıç sesi kısık ve seyrek
 // ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
 // piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
@@ -5168,7 +5171,7 @@ const SPELL_R = 24 * 1.2 * 0.95 * UI_K, // 13 Eki (Caner): büyü düğmeleri %2
       SPELL_STEP = 2 * SPELL_R + 15 * UI_GAP; // 13 Eki (Caner): düğme arası 2 kat, sonra biraz daralttı
 // 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
 // 13 Eki (Caner): yanlış dokunmasın diye komutan grubu (portre + gücü) solda bir arada, geniş boşluk ve kemik ayraçtan sonra Mortimer'ın büyüleri
-const ULT_GAP = 46 * UI_GAP;
+const ULT_GAP = 22 * UI_GAP; // 14 Eki: ayraç kalkınca boşluk 46 -> 22 (yine de iki grup ayrı seçilir)
 const HERO_R = 28 * 0.95 * UI_K; // sol alttaki komutan portresi (13 Eki: %5 küçük)
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
 const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, slot = i >= n ? i - n : nu + i, gap = i < n && nu ? ULT_GAP : 0;
@@ -5771,8 +5774,12 @@ function mortSay(kind, force) {
   if (text === G.sayLast && L.length > 1) text = L[(L.indexOf(text) + 1) % L.length];
   if (text.includes('{h}')) { const H = HEROES[team()[0]]; text = text.split('{h}').join(H ? H.name : 'Komutan'); }
   G.say = { text, t: 0, dur: 2.2 + text.length * 0.045 }; G.sayLast = text; G.sayCd = 7;
-  mortMumble(text, kind);
+  // 14 Eki (Caner: "çok konuşuyor, her şeyi seslendirmesin"): balon hep çıkar; ses yalnız önemli anlarda, ötekiler arada bir
+  const imp = MORT_VO_KEY.has(kind), gap = G.t - (G.voiceAt ?? -99);
+  if (imp ? gap > MORT_VO_GAP.imp : gap > MORT_VO_GAP.other && Math.random() < MORT_VO_GAP.p) { G.voiceAt = G.t; mortMumble(text, kind); }
 }
+const MORT_VO_KEY = new Set(['start', 'start2', 'boss', 'bossRage', 'bossDown', 'last', 'low', 'gatebreak', 'firstleak', 'heroDown']);
+const MORT_VO_GAP = { imp: 10, other: 40, p: 0.3 }; // sn: önemli laflar arası en az, sıradan laf için sessizlik ve olasılık
 function updateMortSay(dt) {
   if (!NECRO) return;
   G.sayCd = (G.sayCd || 0) - dt;
@@ -12363,10 +12370,7 @@ function drawHud() {
     }
     ctx.restore();
   });
-  { const n = necroCount(); if (n && n < spellIds().length) { // komutan gücü | büyüler ayracı: kemik çubuk
-    const a = spellBtn(spellIds().length - 1), c = spellBtn(0);
-    drawBoneDivider((a.x + a.r + c.x - c.r) / 2, a.y, a.r * 1.05);
-  } }
+  // 14 Eki (Caner): komutan gücü ile büyüler arasındaki kemik ayraç kaldırıldı (drawBoneDivider duruyor); gruplar arası boşluk ULT_GAP
 
   drawWaveButtons();
   drawWavePeek();
@@ -12567,7 +12571,7 @@ function castlePlace(x, y, im) {
 // kale bir hasar evresi ilerler: taşlar kopup düşer, toz bulutu kalkar (görsel değişimi tozun ardında olur)
 const KEEP_TR = { dur: 1.8, puffs: [[0.3, 0.32], [0.7, 0.36], [0.5, 0.22], [0.22, 0.55], [0.78, 0.58], [0.48, 0.5], [0.35, 0.75], [0.66, 0.78]] };
 function keepCollapse(c, cp, h) {
-  shakeScreen(9, 0.7); sfx('castlehit'); sfx('boom'); sfx('fs_bone');
+  shakeScreen(9, 0.7); sfx('castlehit'); sfx('boom'); sfx('bonefall'); // fs_bone pakette yok (sessizdi)
   for (let i = 0; i < 46; i++) {
     const fx = rand(0.15, 0.85), fy = rand(0.2, 0.7), a = rand(Math.PI * 1.1, Math.PI * 1.9), v = rand(40, 150);
     emit(G.parts, { kind: 'chunk', x: cp.x - cp.w / 2 + fx * cp.w, y: cp.y - h + fy * h, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 440, drag: 0.3,
