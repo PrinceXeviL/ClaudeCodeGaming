@@ -243,6 +243,10 @@ function mipsOf(im) {
     list.push(c); cur = c;
   }
   MIPS.set(im, list);
+  // 14 Eki (Caner: Báthory uzaktan yürürken görünmüyor, yakında görünüyor): iOS WebKit'te bütün canvas'ların belleği bir sınırı aşınca
+  // yeni canvas'lar boş çizilir; uzaktan bakışta küçük kopya (canvas) kullanılıyordu. Kopyalar ImageBitmap'e çevrilip canvas boşaltılır.
+  if (window.createImageBitmap) for (let i = 1; i < list.length; i++) { const c = list[i];
+    createImageBitmap(c).then((b) => { const j = list.indexOf(c); if (j > 0) { list[j] = b; c.width = c.height = 0; } }).catch(() => {}); }
   return list;
 }
 function pickMip(c, im, w) {
@@ -544,8 +548,26 @@ function decodeOne(name) {
 }
 
 // tarayıcılar sesi ancak ilk dokunuştan sonra açar
+// 14 Eki (Caner: telefon kilitlenip dönünce bütün ses gitti): iOS WebKit kilitten sonra ses bağlamını bazen hiç açamıyor ('interrupted' ya da
+// 'running' görünüp saati ilerlemiyor). Dönüşte denetlenir; ölüyse ilk dokunuşta bağlam sıfırdan kurulur (çözülmüş sesler korunur, müzik yeniden bağlanır).
+let AUDIO_DEAD = false;
+function audioCheck() {
+  if (!actx) return;
+  actx.resume().catch(() => {});
+  const c = actx, t0 = c.currentTime;
+  setTimeout(() => { if (actx === c && (c.state !== 'running' || c.currentTime === t0)) AUDIO_DEAD = true; }, 600);
+}
+function audioRebuild() {
+  try { actx.close(); } catch (e) {}
+  actx = null; master = null; amb = null; NOISE_BUF = null;
+  for (const k in sndState) delete sndState[k]; // takılı kalmış "çalıyor" sayaçları
+  for (const T of Object.values(MUSIC.tracks)) { for (const el of [T.el, T.el2, T.old]) if (el) { try { el.pause(); el.removeAttribute('src'); el.load(); } catch (e) {} } T.el = T.el2 = T.old = null; T.lin = 0; }
+  MUSIC_ELS.length = 0;
+  console.log('[ses] bağlam yeniden kuruldu');
+}
 function initAudio() {
-  if (actx) { if (actx.state !== 'running') actx.resume().catch(() => {}); return; } // 14 Eki: iOS arka plandan dönüşte 'interrupted' bırakıyordu (ses kesik kalıyordu)
+  if (actx && (AUDIO_DEAD || actx.state === 'closed' || actx.state === 'interrupted')) { AUDIO_DEAD = false; audioRebuild(); } // dokunuş içinde yeniden kur
+  if (actx) { if (actx.state !== 'running') actx.resume().catch(() => {}); return; }
   try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
   const comp = actx.createDynamicsCompressor();
   comp.threshold.value = -14; comp.ratio.value = 4;
@@ -17457,9 +17479,10 @@ function worldTap(x, y) {
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && screen === 'play' && !overlay) setOverlay('pause');
-  if (!document.hidden && actx && actx.state !== 'running') actx.resume().catch(() => {}); // ana ekrandan dönünce ses geri gelsin
+  if (!document.hidden) audioCheck(); // ana ekrandan / kilitten dönünce ses geri gelsin
 });
-window.addEventListener('pageshow', () => { if (actx && actx.state !== 'running') actx.resume().catch(() => {}); });
+window.addEventListener('pageshow', audioCheck);
+window.addEventListener('focus', audioCheck);
 
 // ---------- döngü ----------
 let last = performance.now();
