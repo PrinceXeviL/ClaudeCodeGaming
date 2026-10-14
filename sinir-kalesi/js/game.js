@@ -748,11 +748,6 @@ function gaProg(st, i, score) { // st: 'Start' | 'Complete' | 'Fail'
 function gaDesign(id, v) { const A = gaInit(); if (!A) return; try { if (v != null) A.addDesignEvent(id, v); else A.addDesignEvent(id); } catch (e) {} }
 const FREESOUND_ON = true; // false: eski sesler (Caner beğenmezse)
 const FS_ALIAS = { clash: 'fs_clash', pain: 'fs_pain', dvoice: 'fs_death', bonefall: 'fs_bone' };
-// 14 Eki (Caner: Envato denemesi): varliklar/envato_isle.py ev_* sesleri; Freesound'dan önce gelir. false: anında eski seslere döner (dosyalar duruyor)
-const ENVATO_ON = true;
-const EV_ALIAS = { clash: 'ev_clash', bash: 'ev_bash', arrowhit: 'ev_arrowhit', bonefall: 'ev_bone', boom: 'ev_boom', cannon: 'ev_cannon', meteor: 'ev_meteor',
-  magic: 'ev_magic', fireball: 'ev_fireball', xbow: 'ev_xbow', xbowh: 'ev_xbowh' };
-for (const [k, v] of Object.entries(EV_ALIAS)) SOUND[v] = { ...(SOUND[k] || SOUND.magic) }; // ses düzeyi ve aralık eskisiyle aynı (dosyalar aynı RMS'e eşitlendi)
 // ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
 // piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
 const STEPS = { foot: { gap: 0.36, cap: 10 }, gallop: { gap: 0.5, cap: 4 }, bone: { gap: 0.33, cap: 6 } };
@@ -777,9 +772,7 @@ function updateSteps(dt) {
 function sfx(kind, rate, volK = 1) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
-  if (ENVATO_ON && EV_ALIAS[kind] && SND[EV_ALIAS[kind]] && SND[EV_ALIAS[kind]].length) kind = EV_ALIAS[kind];
-  else if (kind === 'fireball') kind = 'magic'; // Merlin'in ateş topu: Envato yoksa eski büyü sesi
-  else if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
+  if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
   if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open' || kind === 'whoosh' || kind === 'bonespin') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
@@ -4539,7 +4532,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
   if (h.def.blood) { p.blood = true; p.owner = h; p.leech = h.learned.thirst ? 0.4 : 0.2; if (h.learned.thirst) p.dmg *= 1.15; } // Báthory: kan oku, can çalar
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
-  sfx(h.def.soul ? 'soulorb' : h.def.blood ? 'bloodbolt' : h.def.proj === 'fireball' ? 'fireball' : 'arrow');
+  sfx(h.def.soul ? 'soulorb' : h.def.blood ? 'bloodbolt' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
   if (h.learned.arcane && !extra && !HERO_SKILL && (h.shotN = (h.shotN || 0) + 1) % 4 === 0) // Kadim Bilgi: her 4. küre yakındaki iki düşmana daha bölünür
     for (const o of enemiesNear(e.x, e.y, 90, true).filter(o => o !== e).slice(0, 2)) fireHeroShot(h, o, 0.6, { split: true });
 }
