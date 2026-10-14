@@ -417,7 +417,7 @@ const SOUND = {
   drum:    { vol: 0.26, gap: 0.3, max: 1, rate: [0.96, 1.04] },     // savaş davulu (davulcu)
   horn:    { vol: 0.36, gap: 1, max: 1 },                           // borazancı, ilk dalga (10 Eki: gerçekçi tek uzun savaş borusu)
   hornboss: { vol: 0.42, gap: 2, max: 1 },                          // boss gelirken: iki uzun, derin, ürkütücü üfleme
-  yell:    { vol: 0.5, gap: 2.2, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
+  yell:    { vol: 0.38, gap: 3.5, max: 1, rate: [0.92, 1.08] },      // düşman özel saldırı yaparken savaş narası (Caner'in kaydı, 10 Eki)
   soulorb: { vol: 0.34, gap: 0.15, max: 2, rate: [0.92, 1.1] },
   bloodbolt: { vol: 0.36, gap: 0.15, max: 2, rate: [0.93, 1.08] },  // 14 Eki: Báthory'nin kan oku (ElevenLabs)     // 15 Eki: Merlin'in ruh küresi (ElevenLabs)
   soulbolt: { vol: 0.42, gap: 0.5, max: 1, rate: [0.95, 1.05] },    // Merlin: Ruh Yıldırımı
@@ -430,7 +430,7 @@ const SOUND = {
   plaguethrow: { vol: 0.5, gap: 0.35, max: 2, rate: [0.94, 1.08] }, // Veba Kazanı sıvıyı fırlatırken: fışkırma (Caner'in 'Liquid Craft' kaydı)
   plaguefire: { vol: 0.48, gap: 0.5, max: 2, rate: [0.94, 1.06] }, // Veba Kazanı bomba / ceset atarken: fitil cızırtısı + ateşleme (Caner'in kaydı)
   acidboom: { vol: 0.42, gap: 0.18, max: 3, rate: [0.9, 1.1] },     // Veba Kazanı mermisi düşüp patlar: asit köpürmesi (Caner'in lisanslı sesi, 12 Eki)
-  battle:  { vol: 0.5, full: 4 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
+  battle:  { vol: 0.5, min: 3, full: 10 },                                   // yakın dövüş ortam sesi (döngü): ekranda full kavga olunca tam ses (Caner'in kaydı)
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
   armorhit: { vol: 0.2, gap: 0.08, max: 2, rate: [0.9, 1.12] },     // cıvata zırha çarpar (metal tınlaması)
@@ -496,30 +496,39 @@ const sndState = {}; // tür -> { last, playing }
 
 // 11 Eki: kısa sesler tek pakette (ses/paket.wav + paket.json, tools/ses_paket.py): yayın dosya sınırı. Paket yoksa tek tek WAV.
 const SV = window.SURUM ? '?v=' + window.SURUM : '';
-fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject())).then(idx => { // 14 Eki: paket parçalı (paket.wav, paket2.wav ...; yayın dosya başı 15 MB)
+const SES_LOG = window.__ses = { paket: 'bekliyor', n: 0, dec: 0, fail: 0 }; // tanı: telefonda ses yükleme durumu (konsola da yazar)
+fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject('json ' + r.status))).then(idx => { // 14 Eki: paket parçalı (paket.wav, paket2.wav ...; yayın dosya başı 15 MB)
   const parts = Math.max(0, ...idx.map(e => e[3] || 0)) + 1;
-  return Promise.all([...Array(parts)].map((_, k) => fetch('ses/paket' + (k ? k + 1 : '') + '.wav' + SV).then(r => (r.ok ? r.arrayBuffer() : Promise.reject()))))
-    .then(all => { for (const [name, o, n, k] of idx) { rawSnd[name] = all[k || 0].slice(o, o + n); if (actx) decodeOne(name); } }); })
-  .catch(() => fetch('ses/manifest.json', { cache: 'no-cache' })
+  return Promise.all([...Array(parts)].map((_, k) => fetch('ses/paket' + (k ? k + 1 : '') + '.wav' + SV).then(r => (r.ok || r.status === 0 ? r.arrayBuffer() : Promise.reject('wav ' + r.status)))))
+    .then(all => { SES_LOG.paket = 'tamam ' + all.map(a => a.byteLength).join('+'); SES_LOG.n = idx.length; console.log('[ses] paket', SES_LOG.paket, idx.length);
+      for (const [name, o, n, k] of idx) { rawSnd[name] = all[k || 0].slice(o, o + n); if (actx) decodeOne(name); } }); })
+  .catch((e) => { SES_LOG.paket = 'hata ' + e; console.log('[ses] paket hatası', String(e)); return fetch('ses/manifest.json', { cache: 'no-cache' })
     .then(r => (r.ok ? r.json() : []))
     .then(list => Promise.all(list.map(name =>
       fetch('ses/' + name + '.wav').then(r => r.arrayBuffer()).then(buf => { rawSnd[name] = buf; if (actx) decodeOne(name); }))))
-    .catch(() => {}));
+    .catch(() => {}); });
 
 // 14 Eki (Caner: telefonda inşa, borazan, savaş, düşman ve büyü sesleri yoktu, yalnız müzik): iOS WebKit yüzlerce sesi aynı anda çözerken
-// çözmeler sessizce düşüyordu (Chrome'da sorun yok). Artık sırayla çözülür (kuyruk); düşen bir kez daha denenir.
-let DECQ = Promise.resolve();
+// çözmeler sessizce düşüyordu (Chrome'da sorun yok). Artık kuyrukla çözülür; düşen bir kez daha denenir.
+// Aynı anda en çok DEC_N çözme; yanıt vermeyen çözme DEC_T sn sonra bırakılır (telefonda bir ses takılırsa ötekiler beklemesin).
+const DEC_N = 4, DEC_T = 4000, DECW = []; let decRun = 0;
+function decPump() {
+  while (decRun < DEC_N && DECW.length) { decRun++; DECW.shift()().then(() => { decRun--; decPump(); }); }
+}
 function decodeOne(name) {
   const buf = rawSnd[name];
   if (!buf) return;
   delete rawSnd[name];
   const kind = name.replace(/_\d+$/, '');
-  const done = (ab) => { if (ab) (SND[kind] = SND[kind] || []).push(ab); };
+  const done = (ab) => { if (ab) { (SND[kind] = SND[kind] || []).push(ab); SES_LOG.dec++; } else { SES_LOG.fail++; if (SES_LOG.fail <= 5) console.log('[ses] düşen', name); }
+    if ((SES_LOG.dec + SES_LOG.fail) % 50 === 0 || SES_LOG.dec + SES_LOG.fail === SES_LOG.n) console.log('[ses] çözülen', SES_LOG.dec, 'düşen', SES_LOG.fail, '/', SES_LOG.n); };
   const dec = (b) => new Promise((res) => {
     let fin = false; const ok = (ab) => { if (!fin) { fin = true; res(ab); } }, no = () => { if (!fin) { fin = true; res(null); } };
+    setTimeout(no, DEC_T);
     try { const p = actx.decodeAudioData(b, ok, no); if (p && p.then) p.then(ok, no); } catch (e) { no(); }
   });
-  DECQ = DECQ.then(() => dec(buf.slice(0))).then((ab) => ab || dec(buf)).then(done, () => {}); // kopya: çözme arabelleği boşaltırsa ikinci deneme asıl veriyle
+  DECW.push(() => dec(buf.slice(0)).then((ab) => ab || dec(buf)).then(done, () => done(null))); // kopya: çözme arabelleği boşaltırsa ikinci deneme asıl veriyle
+  decPump();
 }
 
 // tarayıcılar sesi ancak ilk dokunuştan sonra açar
@@ -765,6 +774,7 @@ for (const k of ['arrow', 'arrowhit', 'splash', 'pain', 'dvoice', 'scream', 'dru
 Object.assign(SOUND.el_click, { vol: 0.4 }); Object.assign(SOUND.el_select, { vol: 0.36 }); Object.assign(SOUND.el_pick, { vol: 0.32 });
 SOUND.el_open = { vol: 0.4, gap: 0.1, max: 1 }; Object.assign(SOUND.el_wave, { vol: 0.5 }); Object.assign(SOUND.el_thunder, { vol: 0.55, gap: 0.4, max: 1 });
 for (const k of ['portal', 'roar', 'stomp']) Object.assign(SOUND['el_' + k], { vol: 0.6 });
+Object.assign(SOUND.el_clash, { vol: 0.13, gap: 0.18 }); // 14 Eki (Caner: 1-2 kişilik kavgada ordu gibi): kılıç sesi kısık ve seyrek
 // ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
 // piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
 const STEPS = { foot: { gap: 0.36, cap: 10 }, gallop: { gap: 0.5, cap: 4 }, bone: { gap: 0.33, cap: 6 } };
@@ -1779,7 +1789,7 @@ function startLevel(idx, chal = null) {
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2'], (HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç, _cast_<pasif>: pasifin kendi şeridi)
 
-  keep.add('castle_keep_1_idle'); if (idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
+  keep.add('castle_keep_1_idle'); if (BUBU.on && idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
@@ -6025,9 +6035,9 @@ const ZONE_ITEM = {
 // ----- Bubu (14 Eki, Caner): Mortimer'ın evcil mezar solucanı. Kale tarafında yol kenarındaki çukurda yaşar; dokununca topraktan fırlar,
 // yere dalıp toprağı patlatarak yoldaki düşmanlara vurur (hasar, sersemletme), bir süre kalkık bekler, gömülür, BUBU.cd sn dinlenir.
 // Görsel: Veo videosu (varliklar/bubu_isle.py): bubu_hole, bubu_atk (hit: vuruş karesi), bubu_idle, bubu_down. 4. bölümden itibaren.
-const BUBU = { from: 3, cd: 40, r: 92, dmg: [70, 95], stun: 1.6, h: 80, idle: 4 }; // h: kalkık solucanın boyu (dev görünsün)
+const BUBU = { on: false, from: 3, cd: 40, r: 92, dmg: [70, 95], stun: 1.6, h: 80, idle: 4 }; // h: kalkık solucanın boyu (dev görünsün); on: 14 Eki Caner çıkardı (kod ve görseller duruyor)
 function setupBubu() {
-  G.bubu = null; if (!NECRO || G.idx < BUBU.from || !ANIM_META.bubu_atk) return;
+  G.bubu = null; if (!BUBU.on || !NECRO || G.idx < BUBU.from || !ANIM_META.bubu_atk) return;
   const free = (x, y) => x > 50 && x < W - 50 && y > 110 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 38
     && G.plots.every(p => dist(p.x, p.y, x, y) > 56) && dist(x, y, G.castle.x, G.castle.y - 40) > 95 && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
     && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60) && !(G.zitem && dist(G.zitem.x, G.zitem.y, x, y) < 80);
@@ -16003,7 +16013,7 @@ function weatherAudio() {
   ambLast.t = time;
   if (amb.battle) {
     let n = 0; if (screen === 'play' && G && !muted) for (const e of G.enemies) if (!e.dead && e.blocker && onScreen(e, 0)) n++;
-    const v = n ? SOUND.battle.vol * (overlay ? 0.35 : 1) * clamp(0.5 + 0.5 * n / SOUND.battle.full, 0, 1) : 0;
+    const v = n >= SOUND.battle.min ? SOUND.battle.vol * (BL === SND.el_battle ? 0.75 : 1) * (overlay ? 0.35 : 1) * clamp((n - SOUND.battle.min + 1) / (SOUND.battle.full - SOUND.battle.min + 1), 0.15, 1) : 0; // 14 Eki: 1-2 kavgada ordu sesi yok
     if (Math.abs((ambLast.battle ?? -1) - v) > 0.002) { ambLast.battle = v; amb.battle.gain.setTargetAtTime(v, actx.currentTime, v > 0 ? 0.35 : 0.8); }
   }
   const on = screen === 'play' && G && !muted, k = overlay ? 0.35 : 1;
