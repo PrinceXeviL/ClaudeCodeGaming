@@ -164,13 +164,17 @@ const PAINT = (() => {
         // bütün küçük kopyalar doğrudan çözülmüş bitmap'ten (boyalıysa canvas'ın bitmap kopyasından) üretilir
         const src = ops.length ? await createImageBitmap(c) : bmp, L = [];
         let w = c.width, h = c.height;
-        while (w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const n = new OffscreenCanvas(w, h), ng = n.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.drawImage(src, 0, 0, w, h); L.push(n); }
+        let blank = 0;
+        while (w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const n = new OffscreenCanvas(w, h), ng = n.getContext('2d', { willReadFrequently: true }); ng.imageSmoothingQuality = 'high'; ng.drawImage(src, 0, 0, w, h);
+          // 14 Eki: iPhone'da bazı küçük kopyalar boş çıkıyor (Báthory uzaktan görünmüyordu); boşsa küçük kopyalar bırakılır, oyun asıl görseli küçülterek çizer
+          const d = ng.getImageData(0, 0, Math.min(w, 512), h).data; let a = 0; for (let j = 3; j < d.length; j += 16) if (d[j] > 10) { a = 1; break; }
+          if (!a) { blank = 1; break; } L.push(n); }
         const out = [c.transferToImageBitmap()].concat(L.map(x => x.transferToImageBitmap())); bmp.close(); if (src !== bmp) src.close();
-        postMessage({ id, out }, out);
+        postMessage({ id, out, blank }, out);
       } catch (e) { postMessage({ id, err: String(e) }); } };`;
     const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     w.jobs = new Map(); w.n = 0;
-    w.onmessage = (ev) => { const J = w.jobs.get(ev.data.id); w.jobs.delete(ev.data.id); if (J) J(ev.data.out || null); };
+    w.onmessage = (ev) => { const J = w.jobs.get(ev.data.id); w.jobs.delete(ev.data.id); if (ev.data.blank) console.log('[mip] boş küçük kopya, asıl görsel kullanılacak', ev.data.out && ev.data.out[0] && ev.data.out[0].width); if (J) J(ev.data.out || null); };
     return w;
   } catch (e) { return null; }
 })();
@@ -244,6 +248,8 @@ function mipsOf(im) {
     const g = c.getContext('2d');
     g.imageSmoothingQuality = 'high';
     g.drawImage(cur, 0, 0, c.width, c.height);
+    try { const d = g.getImageData(0, 0, Math.min(c.width, 512), c.height).data; let a = 0; for (let j = 3; j < d.length; j += 16) if (d[j] > 10) { a = 1; break; }
+      if (!a && im.width > 64) { console.log('[mip] boş küçük kopya (ana)', im.width); break; } } catch (e) {} // boşsa asıl görsel kullanılır
     list.push(c); cur = c;
   }
   MIPS.set(im, list);
@@ -253,12 +259,34 @@ function mipsOf(im) {
     createImageBitmap(c).then((b) => { const j = list.indexOf(c); if (j > 0) { list[j] = b; c.width = c.height = 0; } }).catch(() => {}); }
   return list;
 }
+// 14 Eki (Caner: Báthory uzaktan yürürken görünmüyor; telefon kaydı küçük kopyanın boş çizildiğini gösterdi): her küçük kopya ilk kullanıldığında
+// bir kez denetlenir (küçük bir tuvale çizilip saydamlığına bakılır); boşsa o ve daha küçükleri listeden atılır, asıl görsel küçültülerek çizilir.
+const MIP_OK = new WeakSet();
+let mipProbe = null;
+function mipCheck(list, i) {
+  const l = list[i];
+  if (MIP_OK.has(l)) return true;
+  try {
+    // asıl görselle aynı oranda (en çok 256 px) çizilip karşılaştırılır: asılda dolu olan yer kopyada da dolu olmalı (seyrek görsel yanlışlıkla atılmasın)
+    const PW = Math.min(256, list[0].width), PH = Math.max(1, Math.min(64, Math.round(PW * list[0].height / list[0].width)));
+    if (!mipProbe) mipProbe = document.createElement('canvas');
+    mipProbe.width = PW; mipProbe.height = PH * 2;
+    const g = mipProbe.getContext('2d', { willReadFrequently: true }); g.clearRect(0, 0, PW, PH * 2);
+    g.drawImage(list[0], 0, 0, PW, PH); g.drawImage(l, 0, PH, PW, PH);
+    const d = g.getImageData(0, 0, PW, PH * 2).data, half = PW * PH * 4; let a0 = 0, a1 = 0;
+    for (let j = 3; j < half; j += 4) { if (d[j] > 0) a0++; if (d[half + j] > 0) a1++; }
+    const a = !a0 || a1 * 3 >= a0; // asıl da boşsa denetim anlamsız; kopya asılın üçte birinden az doluysa boş sayılır
+    if (!a) { console.log('[mip] boş küçük kopya atıldı', list[0].width, '->', l.width); list.length = i; return false; }
+  } catch (e) {}
+  MIP_OK.add(l); return true;
+}
 function pickMip(c, im, w) {
   const m = c.getTransform(), px = w * Math.hypot(m.a, m.b);
   const list = mipsOf(im);
-  let best = list[0];
-  for (const l of list) { if (l.width >= px * 1.05) best = l; else break; }
-  return best;
+  let bi = 0;
+  for (let i = 1; i < list.length; i++) { if (list[i].width >= px * 1.05) bi = i; else break; }
+  while (bi > 0 && !mipCheck(list, bi)) bi = Math.min(bi, list.length - 1); // boşsa bir üst (daha büyük) kopya ya da asıl görsel
+  return list[bi];
 }
 
 // alt-orta noktaya hizalı çizim (anchorY=0.5 ise merkez)
