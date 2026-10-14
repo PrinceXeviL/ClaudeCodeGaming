@@ -19,12 +19,17 @@ SOURCES = [
     # 14 Eki: önce yerinde yürür (0-110), sonra koşuya geçer; en temiz kapanan döngüler (yürüme 31, koşma 22 kare)
     ('ham/anim/robin_yuru_kos_veo.mp4', 72, 519, 479, {'hero_robin_walk': list(range(42, 73))}),
     ('ham/anim/robin_yuru_kos_veo.mp4', 72, 519, 503, {'hero_robin_run': list(range(139, 161))}),
+    # 14 Eki: çift hareketli video (1280x720): 14-60 normal atış, 72-190 Kemik Ok (yeşil girdap, şok halkası, geri savrulma)
+    # saldırı: dinlenme pozundan çekiş (2. atışın 70-92) + ilk atışın bırakışı ve dönüşü (42-62); 62 ~ 70 döngü kapanır
+    ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 636, {'hero_robin_atk': list(range(70, 93, 2)) + list(range(42, 63, 2))}, (403, 451, 662)),
+    ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 636, {'hero_robin_cast': list(range(72, 97, 4)) + list(range(100, 134, 3)) + list(range(134, 167, 3)) + list(range(169, 191, 4))}, (560, 560, 662)),
 ]
 TARGET = 220                               # figür boyu (şerit pikseli; serit_kucult komutan hedefi)
-EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}}
+EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}, 'hero_robin_cast': {'dur': 2.4}}  # dur: yetenek şeridinin süresi (sn; yoksa HERO_ANIM.cast)
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
-for src, FIG_TOP, FIG_BOT, CX, SETS in SOURCES:
-    BOX = (CX - 330, 0, CX + 370, 548)      # ortak kesim kutusu (göğe kalkan yay ve savrulan pelerin içeride)
+for src, FIG_TOP, FIG_BOT, CX, SETS, *B in SOURCES:
+    L, R, Y1 = B[0] if B else (330, 370, 548)
+    BOX = (CX - L, 0, CX + R, Y1)           # ortak kesim kutusu (göğe kalkan yay ve savrulan pelerin içeride; Kemik Ok'un savrulması için geniş)
     fr = video_isle.frames_of(os.path.join(H0, src), 24)
     k = TARGET / (FIG_BOT - FIG_TOP); x0, y0, x1, y1 = BOX
     FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))

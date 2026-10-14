@@ -4306,7 +4306,7 @@ function heroSkills(h, dt) {
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
-      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45; h.castA = HERO_ANIM.cast;
+      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45; h.castA = h.castD = (ANIM_META[h.def.sprite + '_cast'] || {}).dur || HERO_ANIM.cast; // şeridin kendi süresi (Robin Kemik Ok 2,4 sn)
       floatText(h.x, h.y - 46, sk.name + '!', '#ffe27a');
       const col = h.def.aura;
       G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 26, col, t: 0, dur: 0.4 });
@@ -8981,7 +8981,7 @@ function drawSoldier(s) {
     const hsk = ult || cst || blk || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
-      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
+      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
         : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n)) % F.n;
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
