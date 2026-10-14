@@ -3,6 +3,29 @@
 
 (() => {
 'use strict';
+// 14 Eki güvenlik ağı (Báthory dersi): iOS Safari, drawImage'ın kaynak dikdörtgeni görselin dışına zerre kadar taşarsa HİÇ çizmez
+// (Chrome kırpar). 9 bağımsız değişkenli her çağrıda kaynak dikdörtgen görselin içine kırpılır, hedef aynı oranda daraltılır.
+// window.__clampLog bir diziyse (test) taşan çağrının yeri kaydedilir.
+{
+  const fix = (proto) => {
+    if (!proto || proto.drawImage.__safe) return;
+    const orig = proto.drawImage;
+    const safe = function (im, sx, sy, sw, sh, dx, dy, dw, dh) {
+      if (arguments.length !== 9) return orig.apply(this, arguments);
+      const IW = im.naturalWidth || im.videoWidth || im.width, IH = im.naturalHeight || im.videoHeight || im.height;
+      if (sx >= 0 && sy >= 0 && sx + sw <= IW && sy + sh <= IH) return orig.call(this, im, sx, sy, sw, sh, dx, dy, dw, dh);
+      if (!(sw > 0 && sh > 0 && IW > 0 && IH > 0)) return;
+      const nx = Math.max(0, sx), ny = Math.max(0, sy), nr = Math.min(IW, sx + sw), nb = Math.min(IH, sy + sh);
+      if (nr <= nx || nb <= ny) return;
+      if (window.__clampLog && window.__clampLog.length < 400) window.__clampLog.push([(new Error().stack || '').split('\n')[2], +(sx + sw - IW).toFixed(3), +(sy + sh - IH).toFixed(3), +sx.toFixed(2), +sy.toFixed(2)]);
+      const kx = dw / sw, ky = dh / sh;
+      return orig.call(this, im, nx, ny, nr - nx, nb - ny, dx + (nx - sx) * kx, dy + (ny - sy) * ky, (nr - nx) * kx, (nb - ny) * ky);
+    };
+    safe.__safe = true; proto.drawImage = safe;
+  };
+  fix(window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype);
+  fix(window.OffscreenCanvasRenderingContext2D && OffscreenCanvasRenderingContext2D.prototype);
+}
 
 // ---------- yardımcılar ----------
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -3000,7 +3023,8 @@ function drawBones(f) {
   const sh = im.height / (f.n || BONES.n);
   for (const p of f.parts) {
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot * f.face); ctx.scale(f.face, p.rest ? 0.86 : 1);
-    ctx.drawImage(im, 0, p.k * sh, im.width, sh + 0.5, -f.w / 2, -f.bh / 2, f.w, f.bh + 0.3);
+    const sy = p.k * sh, sH = Math.min(sh + 0.5, im.height - sy); // son parça görselin dışına taşmasın (iOS hiç çizmiyor: bacak kemikleri görünmüyordu)
+    ctx.drawImage(im, 0, sy, im.width, sH, -f.w / 2, -f.bh / 2, f.w, (f.bh + 0.3) * sH / (sh + 0.5));
     ctx.restore();
   }
   ctx.restore();
@@ -8775,7 +8799,8 @@ function drawTowerLive(t, ts) { // kulenin yerel koordinatında: (0,0) tabanın 
     const p = P(b), w = (b[2] - b[0]) * ts.w, h = (b[3] - b[1]) * ts.h, iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, N = 16;
     for (let k = 0; k < N; k++) {
       const u = (k + 0.5) / N, dx = w * (0.075 * Math.pow(u, 1.3) * Math.sin(time * 2.3 + sd + i * 1.7 - u * 3.4) + 0.018 * u * Math.sin(time * 5.1 + i * 2.1 + sd));
-      ctx.drawImage(im, 0, k * ih / N, iw, ih / N + 0.6, p.x + dx, p.y + k * h / N, w, h / N + 0.6);
+      const sy = k * ih / N, sh = Math.min(ih / N + 0.6, ih - sy); // dikişsiz dilimler; son dilim görselin dışına taşmasın (iOS hiç çizmiyor)
+      ctx.drawImage(im, 0, sy, iw, sh, p.x + dx, p.y + k * h / N, w, sh * h / ih);
     }
   });
   if (L.swing) L.swing.forEach((b, i) => { // fener zincirinde hafifçe sallanır, camın içi soluk yanıp söner (duman yok)

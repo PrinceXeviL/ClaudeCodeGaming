@@ -19,7 +19,8 @@ def main():
     man = json.load(open(os.path.join(IMG, 'manifest.json')))
     old = json.load(open(os.path.join(IMG, 'atlas.json'))) if os.path.exists(os.path.join(IMG, 'atlas.json')) else {'items': {}}
     names = sorted({f[:-5] for f in man if f.endswith('.webp')} | set(old['items']))
-    names = [n for n in names if PICK.match(n) and not LAZY.match(n) and n != 'nm_key' and os.path.exists(os.path.join(IMG, n + '.webp'))]
+    strips = set(json.load(open(os.path.join(IMG, 'anim.json'))))  # 14 Eki: animasyon şeritleri (ör. unit_archer2_shot) atlasa girmez
+    names = [n for n in names if PICK.match(n) and not LAZY.match(n) and n not in strips and n != 'nm_key' and os.path.exists(os.path.join(IMG, n + '.webp'))]
     ims = {n: Image.open(os.path.join(IMG, n + '.webp')).convert('RGBA') for n in names}
     names.sort(key=lambda n: -ims[n].height)
     pages, items, x, y, row = [Image.new('RGBA', (PAGE, PAGE), (0, 0, 0, 0))], {}, 0, 0, 0
@@ -34,7 +35,9 @@ def main():
     for f in os.listdir(IMG):
         if re.match(r'^atlas_\d+\.webp$', f): os.remove(os.path.join(IMG, f))
     for i, p in enumerate(pages):
-        bb = p.getbbox(); p = p.crop((0, 0, PAGE, bb[3])) if bb else p  # son sayfanın boş altı kırpılır
+        # sayfanın boş altı kırpılır; sınır, sayfadaki parçaların KAYITLI alt kenarı (14 Eki: görünür piksele göre kırpınca altı saydam parçalar
+        # sayfadan taşıyordu, iOS taşan kaynakta hiç çizmiyor: Ruh Feneri kolu telefonda görünmüyordu)
+        bot = max([e[2] + e[4] for e in items.values() if e[0] == i] or [PAGE]); p = p.crop((0, 0, PAGE, min(PAGE, bot)))
         f = f'atlas_{i + 1}.webp'; p.save(os.path.join(IMG, f), 'WEBP', quality=94, alpha_quality=100, method=6); files.append(f)
     json.dump({'pages': files, 'items': items}, open(os.path.join(IMG, 'atlas.json'), 'w'), separators=(',', ':'))
     man = [m for m in man if m[:-5] not in items]
