@@ -156,13 +156,17 @@ const PAINT = (() => {
       const FN = {};
       onmessage = async (ev) => { const { id, url, ops } = ev.data; try {
         const bmp = await createImageBitmap(await (await fetch(url)).blob()); // indirme ve çözme bu iş parçacığında
-        const c = new OffscreenCanvas(bmp.width, bmp.height), g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0); bmp.close();
+        const c = new OffscreenCanvas(bmp.width, bmp.height), g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0);
         if (ops.length) { const im = g.getImageData(0, 0, c.width, c.height);
           for (const [op, f] of ops) { if (op === 'rot') rotPixels(im.data); else { const F = FN[f] || (FN[f] = { fn: new Function('return ' + f)() }); lutPixels(im.data, c.width, c.height, F); } }
           g.putImageData(im, 0, 0); }
-        const L = [c]; let cur = c;
-        while (cur.width > 48 && cur.height > 48) { const n = new OffscreenCanvas(Math.ceil(cur.width / 2), Math.ceil(cur.height / 2)), ng = n.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.drawImage(cur, 0, 0, n.width, n.height); L.push(n); cur = n; }
-        const out = L.map(x => x.transferToImageBitmap()); postMessage({ id, out }, out);
+        // 14 Eki (iPhone kaydı: Báthory yürüme/koşma küçük kopyaları boş çıkıyordu): iOS'ta büyük OffscreenCanvas kaynak olarak çizilince boş kalabiliyor;
+        // bütün küçük kopyalar doğrudan çözülmüş bitmap'ten (boyalıysa canvas'ın bitmap kopyasından) üretilir
+        const src = ops.length ? await createImageBitmap(c) : bmp, L = [];
+        let w = c.width, h = c.height;
+        while (w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const n = new OffscreenCanvas(w, h), ng = n.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.drawImage(src, 0, 0, w, h); L.push(n); }
+        const out = [c.transferToImageBitmap()].concat(L.map(x => x.transferToImageBitmap())); bmp.close(); if (src !== bmp) src.close();
+        postMessage({ id, out }, out);
       } catch (e) { postMessage({ id, err: String(e) }); } };`;
     const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     w.jobs = new Map(); w.n = 0;
@@ -4981,6 +4985,36 @@ const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, sl
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
 const hudLeft = () => (spellIds().length ? Math.max(...spellIds().map((_, i) => spellBtn(i).x)) + SPELL_R + 8 : G && G.heroes.length ? HUD.heroes[0].x + HUD.heroes[0].r + 16 : EDGE.l + 18);
 // dokunulan büyü düğmesi: geniş dokunma alanları komşuyla kesişirse en yakın düğme kazanır
+// 14 Eki (Caner: "diriltilen düşmanları topluca yönlendirelim; bir tuşa tıklayıp gideceği yeri göstereyim"): diriltme düğmesinin üstünde emir düğmesi
+const minionsAlive = () => (G ? G.soldiers.filter(s => s.zombie && !s.dead).length : 0);
+function minionCmdBtn() {
+  const i = spellIds().indexOf('nm_raise'); if (i < 0 || !minionsAlive()) return null;
+  const b = spellBtn(i); return { x: b.x, y: b.y - b.r * 1.95, r: Math.max(20 * UI_K, b.r * 0.62) };
+}
+function cmdMinions(x, y) {
+  const n = nearestOnPaths(G.paths, x, y), px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
+  const L = G.soldiers.filter(s => s.zombie && !s.dead);
+  L.forEach((s, j) => { const a = j * 2.4, r = j ? 7 + 6 * Math.sqrt(j) : 0; // ayçiçeği dizilişi: üst üste binmesinler
+    s.post = { x: clamp(px + Math.cos(a) * r * 1.3, 12, W - 12), y: clamp(py + Math.sin(a) * r * 0.75, 60, H - 12) };
+    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.moving = true; s.rx = s.post.x; s.ry = s.post.y; });
+  G.effects.push({ kind: 'ring', x: px, y: py, r: 26, col: '140,255,120', t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: px, y: py, r: 14, col: '200,120,255', t: 0, dur: 0.35 });
+  floatText(px, py - 24, 'İleri!', '#9aff8a'); sfx('spell');
+}
+function drawMinionCmd() {
+  const B = minionCmdBtn(); if (!B) return;
+  const on = G.mode && G.mode.kind === 'minions', pop = pressScale('hud_mcmd');
+  ctx.save(); ctx.translate(B.x, B.y); ctx.scale(pop, pop);
+  if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, B.r * 1.8, '140,255,120', 0.45 + Math.sin(time * 6) * 0.12); ctx.restore(); }
+  circle(0, 0, B.r, on ? '#2a5a24' : '#2a1a34', on ? '#9aff8a' : '#e8d8b0', B.r * 0.12);
+  // sancak: kemik direk, yeşil bayrak, üstünde kafatası
+  ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = B.r * 0.12; ctx.beginPath(); ctx.moveTo(-B.r * 0.32, B.r * 0.55); ctx.lineTo(-B.r * 0.32, -B.r * 0.55); ctx.stroke();
+  ctx.fillStyle = '#5ad24a'; ctx.beginPath(); ctx.moveTo(-B.r * 0.3, -B.r * 0.52); ctx.quadraticCurveTo(B.r * 0.2, -B.r * 0.62 + Math.sin(time * 5) * B.r * 0.05, B.r * 0.55, -B.r * 0.42);
+  ctx.lineTo(B.r * 0.42, -B.r * 0.2); ctx.quadraticCurveTo(B.r * 0.1, -B.r * 0.08, -B.r * 0.3, -B.r * 0.12); ctx.closePath(); ctx.fill();
+  circle(B.r * 0.12, B.r * 0.22, B.r * 0.26, '#efe6cc', '#1a1020', B.r * 0.05);
+  ctx.fillStyle = '#1a1020'; ctx.beginPath(); ctx.arc(B.r * 0.03, B.r * 0.2, B.r * 0.06, 0, 7); ctx.arc(B.r * 0.21, B.r * 0.2, B.r * 0.06, 0, 7); ctx.fill();
+  const n = minionsAlive(); circle(B.r * 0.72, -B.r * 0.72, B.r * 0.36, '#c03030', '#1a0a0a', B.r * 0.06); txt(n + '', B.r * 0.72, -B.r * 0.72 + B.r * 0.13, B.r * 0.42, '#fff', 'center', '800', FONT_B, false);
+  ctx.restore();
+}
 function spellAt(x, y) { let best = -1, bd = Infinity; spellIds().forEach((_, i) => { const b = spellBtn(i), d = dist(b.x, b.y, x, y); if (d <= b.r * (1 + UI_HIT) && d - b.r < bd) { bd = d - b.r; best = i; } }); return { i: best, d: bd }; }
 function spellInfo(id) {
   if (NECRO_SPELLS[id]) { const S = NECRO_SPELLS[id]; return { name: S.name, cd: S.cd * (1 - GRIM.cd * spellRank(id)), necro: S, U: S }; }
@@ -5165,13 +5199,14 @@ function drawPet(s) {
 const SOLDIER_REACH = 110;
 const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
 function zombieHunt(s) {
+  if (s.post && s.moving) { s.rx = s.post.x; s.ry = s.post.y; return; } // Mortimer'ın emri: gösterilen yere yürür (yolda kimseyle dövüşmez)
   let best = null, bd = ZOMBIE.aggro; // 14 Eki (Caner): yalnız yakına gelen düşmana gider; düşman yoksa bulunduğu yerde bekler
   for (const o of G.enemies) {
     if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o)) continue;
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
-  if (!best) { if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde dur (iteleşmeyle yerini korur)
+  if (!best) { if (s.post) { s.rx = s.post.x; s.ry = s.post.y; } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler
   // yoldan yürür: önce en yakın yol noktasına çıkar, sonra yol boyunca düşmana doğru adım adım ilerler (yol dışına kesmez);
   // hedef menzile girince normal dövüş seçimi devralır
   const me = nearestOnPaths(G.paths, s.x, s.y);
@@ -12082,6 +12117,7 @@ function drawHud() {
     else if (G.wave > 0 && G.castle.lvl === 0 && G.gold >= CASTLE.levels[1].cost && !tipSeen('castle')) { const q = worldToScreen(G.castle.x, G.castle.y - 70); drawTip(q.x, q.y - 40, 'Kaleye dokun: kaleyi yükselt'); } // 15 Eki: kale menüsü yükseltme
   }
 
+  drawMinionCmd(); // diriltilmiş ölülere emir düğmesi (14 Eki)
   spellIds().forEach((id, i) => {
     const b = spellBtn(i), cd = G.spells[id], info = spellInfo(id), max = info.cd;
     const active = G.mode && G.mode.kind === 'spell' && G.mode.id === id, ready = cd <= 0, peek = G.spellPeek === id;
@@ -12160,7 +12196,7 @@ function drawHud() {
     }
     lines.forEach((l, i) => txt(l, cxp, ly + i * (chips ? 14 : 16), chips ? 12 : 13, chips ? '#d8ccb4' : '#f2e8d4', 'center', '700', FONT_B, false));
   }
-  const hint = G.mode ? (G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : G.mode.kind === 'item' ? `${ITEMS[G.mode.id].name}: patlayacağı yeri seç` : `${spellInfo(G.mode.id).name}: hedefi seç`)
+  const hint = G.mode ? (G.mode.kind === 'minions' ? 'Ölüleri' + ' göndereceğin yeri seç (haritanın her yeri)' : G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : G.mode.kind === 'item' ? `${ITEMS[G.mode.id].name}: patlayacağı yeri seç` : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
     ctx.font = `700 15px ${FONT_B}`;
@@ -17314,6 +17350,7 @@ function hudTap(x, y) {
     if (hitU(bag)) { tapPop('hud_bag'); G.bagOpen = !G.bagOpen; G.mode = null; sfx('pick'); return true; }
     if (G.bagOpen) for (const [i, id] of ITEM_ORDER.entries()) if (hitU(itemBtn(i))) { tapPop('it_' + id); pickItem(id); return true; }
   }
+  { const mc = minionCmdBtn(); if (mc && dist(mc.x, mc.y, x, y) <= mc.r * (1 + UI_HIT)) { tapPop('hud_mcmd'); setSel(null); G.mode = G.mode && G.mode.kind === 'minions' ? null : { kind: 'minions' }; sfx('pick'); return true; } }
   for (const [i, id] of spellIds().entries()) {
     if (i === spellAt(x, y).i) {
       tapPop('hud_' + id);
@@ -17389,6 +17426,8 @@ function worldTap(x, y) {
     const m = G.mode; G.mode = null;
     if (m.kind === 'spell') {
       castSpell(m.id, x, y);
+    } else if (m.kind === 'minions') {
+      cmdMinions(x, y);
     } else if (m.kind === 'item') {
       useItem(m.id, x, y);
     } else if (m.kind === 'rally' && m.castle) {
