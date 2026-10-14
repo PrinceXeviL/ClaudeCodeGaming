@@ -22,10 +22,13 @@ SOURCES = [
     # 14 Eki: çift hareketli video (1280x720): 14-60 normal atış, 72-190 Kemik Ok (yeşil girdap, şok halkası, geri savrulma)
     # saldırı: dinlenme pozundan çekiş (2. atışın 70-92) + ilk atışın bırakışı ve dönüşü (42-62); 62 ~ 70 döngü kapanır
     ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 636, {'hero_robin_atk': list(range(70, 93, 2)) + list(range(42, 63, 2))}, (403, 451, 662)),
+    # 14 Eki: çift hareketli video: 8-66 Kurt Uluması (çömelir, göğe uluyup yeşil dalga, döner), 88-168 ölüm (sendeler, yay düşer, yere yığılır, ruh izleri)
+    ('ham/anim/robin_ulu_olum_veo.mp4', 80, 640, 630, {'hero_robin_skill2': list(range(8, 67, 2))}, (480, 480, 662)),
+    ('ham/anim/robin_ulu_olum_veo.mp4', 80, 640, 630, {'hero_robin_die': list(range(88, 169, 2))}, (403, 451, 705)),
     ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 636, {'hero_robin_cast': list(range(72, 97, 4)) + list(range(100, 134, 3)) + list(range(134, 167, 3)) + list(range(169, 191, 4))}, (560, 560, 662)),
 ]
 TARGET = 220                               # figür boyu (şerit pikseli; serit_kucult komutan hedefi)
-EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}, 'hero_robin_cast': {'dur': 2.4}}  # dur: yetenek şeridinin süresi (sn; yoksa HERO_ANIM.cast)
+EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}, 'hero_robin_cast': {'dur': 2.4}, 'hero_robin_die': {'dur': 2.0}}  # dur: yetenek şeridinin süresi (sn; yoksa HERO_ANIM.cast)
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
 for src, FIG_TOP, FIG_BOT, CX, SETS, *B in SOURCES:
     L, R, Y1 = B[0] if B else (330, 370, 548)

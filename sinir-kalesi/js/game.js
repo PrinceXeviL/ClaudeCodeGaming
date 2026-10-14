@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle|run|cast|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down))$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down))$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -1757,7 +1757,7 @@ function startLevel(idx, chal = null) {
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
-  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block']).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri
+  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2']).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç)
 
   keep.add('castle_keep_1_idle'); if (idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
@@ -2753,7 +2753,7 @@ function damageSoldier(s, amount, src) {
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     if (s.big && ANIM_META[s.big + '_die']) G.effects.push({ kind: 'corpse', name: s.big, rig: s.big, h: s.bh, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: 3 }); // iri birim: Wan çöküş şeridi
     else if (!s.ghoul && !s.big && !s.pet) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
-      h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: CORPSE_DUR });
+      h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: Math.max(CORPSE_DUR, ((s.hero && ANIM_META[cn + '_die'] || {}).dur || 0) + 0.8) });
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.chapel ? s.giant.respawn : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
   }
@@ -6623,7 +6623,7 @@ function castUlt(h, x, y) {
     const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * r; return [x + Math.cos(a) * d, y + Math.sin(a) * d * 0.6];
   };
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
-  h.castT = 0.45; h.ultT = h.ultD = U.anim || ULT_ANIM; // komutanın güç şeridi (varsa) bu sürede bir kez oynar
+  h.castT = 0.45; h.ultT = h.ultD = U.anim || ULT_ANIM; h.ultK = h.act; // komutanın güç şeridi (varsa) bu sürede bir kez oynar; ikinci aktifin kendi şeridi _skill2
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
   if (U.bats) { // Báthory'nin Kan Yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), komutan ısırıklarla iyileşir
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) }); sfx('bats');
@@ -8974,7 +8974,7 @@ function drawSoldier(s) {
     if (s.hero && s.def.halo) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.5, ch * 0.8, s.def.halo, 0.3 + Math.sin(time * 2) * 0.05); glow(ctx, s.x, s.y - 1, ch * 0.45, '120,255,160', 0.18); ctx.restore(); }
     // komutan: Wan şeritleri geldiyse onlar oynar (saldırı kareleri vuruş döngüsüne bağlı)
     // 12 Eki: bekleme (_idle), koşma (_run: oyuncu uzağa gönderince), yetenek (_cast), savunma (_block) şeritleri; yoksa eski davranış
-    const ult = s.hero && s.ultT > 0 && animStrip(name, null, '_skill');
+    const ult = s.hero && s.ultT > 0 && ((s.ultK === 'ult2' && animStrip(name, null, '_skill2')) || animStrip(name, null, '_skill'));
     const cst = !ult && s.hero && s.castA > 0 && animStrip(name, null, '_cast');
     const blk = !ult && !cst && s.hero && s.blockA > 0 && animStrip(name, null, '_block');
     const mov = walking && (s.moving && animStrip(name, null, '_run') || animStrip(name, null, '_walk'));
@@ -9652,7 +9652,7 @@ function drawCorpse(f) {
   const t = f.t, rig = RIG[f.rig || f.name] || { legY: 0.7 };
   const dk = !f.air && !rig.wings && animStrip(f.name, f.rig, '_die');
   if (dk) {
-    const F = ANIM_META[dk], i = f.flung ? F.n - 1 : Math.min(F.n - 1, Math.floor(t / DIE_T * F.n));
+    const F = ANIM_META[dk], i = f.flung ? F.n - 1 : Math.min(F.n - 1, Math.floor(t / (F.dur || DIE_T) * F.n)); // dur: uzun Veo ölümü (Robin)
     ctx.save();
     const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78;
     ctx.globalAlpha = f.kind === 'remains' ? (f.fading ? clamp((f.dur - t) / REMAINS.fade, 0, 1) : 1) : NECRO && !f.fly ? 1 : 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1); // necro: ceset kalıntıya sönmeden geçer

@@ -768,7 +768,7 @@ const HERO_ULT2 = {
     desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
   merlin: { name: 'Ruh Bataklığı', cd: 55, anim: 1.8, r: 74, dps: [16, 24], dur: 6, soulpool: true,
     desc: 'Seçtiğin yerde 6 sn mor ruh bataklığı açılır: düşmanlar %45 yavaşlar ve çürür', short: 'Yavaşlatan, çürüten ruh bataklığı' },
-  robin: { name: 'Kurt Uluması', cd: 45, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
+  robin: { name: 'Kurt Uluması', cd: 45, anim: 2.2, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
     desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
   bathory: { name: 'Kan Yarasaları', cd: 50, r: 70, dps: [16, 22], dur: 3, slow: 0.35, heal: 0.4, n: 14, bats: true,
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
