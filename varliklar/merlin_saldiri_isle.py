@@ -28,3 +28,6 @@ for name, (order, (L, R, y0, y1), extra) in SETS.items():
     if name + '.webp' not in man: man.append(name + '.webp')
     print(name, meta[name], os.path.getsize(os.path.join(IMG, name + '.webp')) // 1024, 'KB')
 json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)
+
+# 14 Eki: kırmızı pelerin astarı koyu maviye
+import subprocess; subprocess.run([sys.executable, os.path.join(H0, "merlin_mavi.py")], check=True)

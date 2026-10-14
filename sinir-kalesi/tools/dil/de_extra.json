@@ -287,7 +287,21 @@
 "KATLİAM!": "GEMETZEL!",
 "YIKIM!": "VERWÜSTUNG!",
 "KIYAMET!": "APOKALYPSE!",
-"MORTİMER'İN GAZABI!": "MORTIMERS ZORN!"
+"MORTİMER'İN GAZABI!": "MORTIMERS ZORN!",
+"Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "Unter der Menge öffnet sich ein Zeittor: Feinde werden den Weg zurückgeschleudert, erleiden Schaden und sind 1 s betäubt (Bosse halb so weit)",
+"Kurbağaya Çevirme": "Froschfluch",
+"Kurbağaya Çevirme!": "Froschfluch!",
+"En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "Verwandelt den stärksten Feind 4 s in einen Frosch: er kann nicht angreifen, hüpft langsam und erleidet 25 % mehr Schaden (keine Bosse)",
+"Meteor": "Meteor",
+"Meteor!": "Meteor!",
+"Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "Ein riesiger Meteor stürzt vom Himmel: gewaltige Explosion, Krater und 4 s brennender Boden",
+"Dev meteor: büyük patlama, yanan zemin": "Riesiger Meteor: gewaltige Explosion, brennender Boden",
+"Zincir Şimşek": "Kettenblitz",
+"Zincir Şimşek!": "Kettenblitz!",
+"Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "Ein Blitz schlägt vom Himmel ein, springt zwischen 8 Feinden (auch Fliegern) und betäubt jeden kurz",
+"8 düşmana sıçrayan şimşek": "Blitz, der zwischen 8 Feinden springt",
+"Vrak!": "Quak!",
+"Zaman Kapısı!": "Zeittor!"
 },
 "tpl": [
 [

@@ -15,7 +15,8 @@ FIG_TOP, FIG_BOT, CX = 16, 690, 623       # bekleme karelerinde alev tepesi, sis
 BOX = (CX - 330, 0, CX + 330, 720)        # ortak kesim kutusu
 TARGET = 300                               # figür boyu (şerit pikseli)
 SETS = {
-    'hero_merlin_skill': list(range(48, 115, 3)) + list(range(132, 163, 3)),
+    'hero_merlin_skill': list(range(48, 115, 3)) + list(range(132, 163, 3)),   # 14 Eki: Meteor videosu gelene kadar geçici
+    'hero_merlin_cast_timegate': list(range(48, 115, 3)) + list(range(132, 163, 3)),   # Zaman Kapısı (14 Eki'den beri pasif)
     'hero_merlin_cast': list(range(48, 100, 3)) + list(range(99, 47, -3))[1:],
     'hero_merlin_idle': list(range(162, 235, 2)),
 }
@@ -30,7 +31,10 @@ for name, order in SETS.items():
         a = video_isle.remove_white(fr[n])[y0:y1, x0:x1]
         out.paste(Image.fromarray(a).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
     out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
-    meta[name] = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4)}
+    meta[name] = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4), **({'dur': 1.4} if name.endswith('_timegate') else {})}
     if name + '.webp' not in man: man.append(name + '.webp')
     print(name, meta[name])
 json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)
+
+# 14 Eki: kırmızı pelerin astarı koyu maviye
+import subprocess; subprocess.run([sys.executable, os.path.join(H0, "merlin_mavi.py")], check=True)

@@ -724,11 +724,11 @@ Object.assign(HEROES, {
 // 15 Eki (Caner: "Merlin ölüm büyücüsünü yapalım, çok ihtişamlı"): Mortimer'a düelloda yenilen efsanevi büyücü; menzilli büyü ve kalabalık kontrolü.
 // Görsel: varliklar/ham/nm_merlin.jpg (boynuz taçlı lich; h boynuz ve alevle birlikte, ihtişam için öbür komutanlardan uzun).
 HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü', sprite: 'hero_merlin', h: 44, halo: '190,150,255', aura: '160,110,255', cost: 45,
-  hp: 210, dmg: [18, 26], armor: 0, rate: 1.3, speed: 70, respawn: 18, regen: 8, engage: 0, ranged: 185, proj: 'fireball', soul: true, float: true, splash: 22, magic: true,
+  hp: 210, dmg: [18, 26], armor: 0, rate: 1.3, speed: 70, respawn: 18, regen: 8, engage: 0, ranged: 185, proj: 'fireball', float: true, splash: 22, magic: true,
+  // 14 Eki (Caner: "Merlin saf bir büyücü: ateş, buz, elektrik"): ateş topu atar; pasifleri Zaman Kapısı ve Kurbağaya Çevirme, aktifleri Meteor ve Zincir Şimşek
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
-    { id: 'chainbolt', name: 'Ruh Yıldırımı', cd: 9, desc: 'Yeşil yıldırım 5 düşman arasında sıçrar (uçanlar dahil), zırhı deler' },
-    { id: 'mist', name: 'Mezar Sisi', cd: 14, desc: 'Kalabalığın üstüne mor sis çöker: 4 sn %45 yavaşlatır, çürütür' },
-    { id: 'arcane', name: 'Kadim Bilgi', passive: true, desc: 'Kalıcı: +%20 menzil; her 4. ruh küresi üçe bölünür' },
+    { id: 'timegate', name: 'Zaman Kapısı', cd: 16, desc: 'Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)' },
+    { id: 'frog', name: 'Kurbağaya Çevirme', cd: 15, desc: 'En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)' },
   ] }] };
 // 16 Eki (Caner: "ok ve bıçak fırlatmada uzman, ihtişamlı, ölü"): Robin, Ölü Orman'ın Hayaleti. Okçu + suikastçı + biraz druid; yanında Ruh Kurdu (görseli gelince).
 HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprite: 'hero_robin', h: 41, aura: '110,255,150', halo: '150,255,170', cost: 60, pet: 'wolf',
@@ -751,8 +751,8 @@ Object.assign(HERO_ULT, {
     desc: 'Seçtiğin yerde 5 sn kaynayan bir kan gölü açılır: düşmanların canını emer ve yavaşlatır, içindeki iskeletler iyileşir', short: 'Can emen, iskeletleri iyileştiren kan gölü' },
   robin: { name: 'Ok Yağmuru', cd: 55, anim: 2.6, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
     desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
-  merlin: { name: 'Zaman Kapısı', cd: 65, anim: 1.8, r: 72, dmg: [40, 60], back: 150, stun: 1, portal: true,
-    desc: 'Seçtiğin alanda zaman kapısı açılır: düşmanlar yolun gerisine fırlatılır, hasar alır, 1 sn sersemler (boss yarı yol)', short: 'Alandaki düşmanları yolda geri ışınlar' },
+  merlin: { name: 'Meteor', cd: 60, anim: 1.8, r: 80, dmg: [110, 150], burn: 14, burnT: 4, meteor: true,
+    desc: 'Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin', short: 'Dev meteor: büyük patlama, yanan zemin' },
   spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
     desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
@@ -766,15 +766,15 @@ const HERO_ULT2 = {
     desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
   leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
     desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
-  merlin: { name: 'Ruh Bataklığı', cd: 55, anim: 1.8, r: 74, dps: [16, 24], dur: 6, soulpool: true,
-    desc: 'Seçtiğin yerde 6 sn mor ruh bataklığı açılır: düşmanlar %45 yavaşlar ve çürür', short: 'Yavaşlatan, çürüten ruh bataklığı' },
+  merlin: { name: 'Zincir Şimşek', cd: 45, anim: 1.5, r: 70, dmg: [60, 80], n: 8, hop: 95, stun: 0.6, storm: true,
+    desc: 'Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir', short: '8 düşmana sıçrayan şimşek' },
   robin: { name: 'Kurt Uluması', cd: 45, anim: 2.2, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
     desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
   bathory: { name: 'Kan Yarasaları', cd: 50, r: 70, dps: [16, 22], dur: 3, slow: 0.35, heal: 0.4, n: 14, bats: true,
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
 };
 // pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)
-const HERO_PASSIVES = { spartacus: ['whirl', 'bash'], leonidas: ['bash', 'iron'], merlin: ['chainbolt', 'arcane'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
+const HERO_PASSIVES = { spartacus: ['whirl', 'bash'], leonidas: ['bash', 'iron'], merlin: ['timegate', 'frog'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
 for (const id in HERO_PASSIVES) if (HEROES[id]) HEROES[id].passives = HERO_PASSIVES[id];
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde

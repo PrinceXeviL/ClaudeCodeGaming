@@ -287,7 +287,21 @@
 "KATLİAM!": "РЕЗНЯ!",
 "YIKIM!": "ОПУСТОШЕНИЕ!",
 "KIYAMET!": "АПОКАЛИПСИС!",
-"MORTİMER'İN GAZABI!": "ГНЕВ МОРТИМЕРА!"
+"MORTİMER'İN GAZABI!": "ГНЕВ МОРТИМЕРА!",
+"Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "Под толпой открываются врата времени: враги отброшены назад по дороге, получают урон и оглушены на 1 с (боссы — вдвое ближе)",
+"Kurbağaya Çevirme": "Лягушачье проклятие",
+"Kurbağaya Çevirme!": "Лягушачье проклятие!",
+"En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "Превращает сильнейшего врага в лягушку на 4 с: не может атаковать, медленно прыгает и получает на 25% больше урона (не на боссов)",
+"Meteor": "Метеор",
+"Meteor!": "Метеор!",
+"Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "С неба падает гигантский метеор: мощный взрыв, кратер и горящая земля на 4 с",
+"Dev meteor: büyük patlama, yanan zemin": "Гигантский метеор: мощный взрыв, горящая земля",
+"Zincir Şimşek": "Цепная молния",
+"Zincir Şimşek!": "Цепная молния!",
+"Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "Молния бьёт с неба, перескакивает между 8 врагами (и летающими) и ненадолго оглушает каждого",
+"8 düşmana sıçrayan şimşek": "Молния, прыгающая между 8 врагами",
+"Vrak!": "Ква!",
+"Zaman Kapısı!": "Врата времени!"
 },
 "tpl": [
 [

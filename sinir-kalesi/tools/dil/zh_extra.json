@@ -287,7 +287,21 @@
 "KATLİAM!": "大屠杀！",
 "YIKIM!": "毁灭！",
 "KIYAMET!": "末日！",
-"MORTİMER'İN GAZABI!": "莫蒂默之怒！"
+"MORTİMER'İN GAZABI!": "莫蒂默之怒！",
+"Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "人群下方开启时间之门：敌人被抛回路上后方，受到伤害并眩晕1秒（首领距离减半）",
+"Kurbağaya Çevirme": "青蛙诅咒",
+"Kurbağaya Çevirme!": "青蛙诅咒！",
+"En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "将最强的敌人变成青蛙4秒：无法攻击，缓慢跳跃，承受多25%伤害（首领除外）",
+"Meteor": "陨石",
+"Meteor!": "陨石！",
+"Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "巨大陨石从天而降：猛烈爆炸、陨坑和持续4秒的燃烧地面",
+"Dev meteor: büyük patlama, yanan zemin": "巨大陨石：猛烈爆炸，燃烧地面",
+"Zincir Şimşek": "连锁闪电",
+"Zincir Şimşek!": "连锁闪电！",
+"Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "闪电从天而降，在8个敌人之间跳跃（包括飞行单位）并短暂眩晕每个目标",
+"8 düşmana sıçrayan şimşek": "在8个敌人间跳跃的闪电",
+"Vrak!": "呱！",
+"Zaman Kapısı!": "时间之门！"
 },
 "tpl": [
 [

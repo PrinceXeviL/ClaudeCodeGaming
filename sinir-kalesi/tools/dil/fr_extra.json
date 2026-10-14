@@ -287,7 +287,21 @@
 "KATLİAM!": "CARNAGE !",
 "YIKIM!": "DÉVASTATION !",
 "KIYAMET!": "APOCALYPSE !",
-"MORTİMER'İN GAZABI!": "COURROUX DE MORTIMER !"
+"MORTİMER'İN GAZABI!": "COURROUX DE MORTIMER !",
+"Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "Une porte temporelle s'ouvre sous la foule : les ennemis sont renvoyés en arrière sur la route, subissent des dégâts et sont étourdis 1 s (boss à mi-distance)",
+"Kurbağaya Çevirme": "Maléfice du crapaud",
+"Kurbağaya Çevirme!": "Maléfice du crapaud !",
+"En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "Transforme l'ennemi le plus fort en grenouille pendant 4 s : il ne peut pas attaquer, sautille lentement et subit 25 % de dégâts en plus (pas les boss)",
+"Meteor": "Météore",
+"Meteor!": "Météore !",
+"Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "Un météore géant tombe du ciel : énorme explosion, cratère et sol en feu pendant 4 s",
+"Dev meteor: büyük patlama, yanan zemin": "Météore géant : énorme explosion, sol en feu",
+"Zincir Şimşek": "Chaîne d'éclairs",
+"Zincir Şimşek!": "Chaîne d'éclairs !",
+"Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "La foudre tombe du ciel, rebondit entre 8 ennemis (volants compris) et étourdit brièvement chacun",
+"8 düşmana sıçrayan şimşek": "Éclair qui rebondit entre 8 ennemis",
+"Vrak!": "Croâ !",
+"Zaman Kapısı!": "Porte temporelle !"
 },
 "tpl": [
 [

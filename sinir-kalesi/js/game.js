@@ -25,7 +25,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down))$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down))$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -1757,7 +1757,7 @@ function startLevel(idx, chal = null) {
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
-  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2']).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç)
+  for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2'], (HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç, _cast_<pasif>: pasifin kendi şeridi)
 
   keep.add('castle_keep_1_idle'); if (idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
@@ -2198,9 +2198,14 @@ function meteorRock() {
 }
 // Göktaşı: yerde hedef işareti, alev kuyruğu, ısı halesi ve dönen kaya
 function drawMeteor(p) {
+  if (p.big) { ctx.save(); const k0 = clamp(p.t / p.dur, 0, 1), q = projPos(p, k0), B = p.big; // dev meteor: kaya ve kuyruk büyük (hedef halkası olağan boyda)
+    ctx.translate(q.x, q.y); ctx.scale(B, B); ctx.translate(-q.x, -q.y); drawMeteor0(p, true); ctx.restore(); drawMeteor0(p, false, true); return; }
+  drawMeteor0(p);
+}
+function drawMeteor0(p, noRing, ringOnly) {
   const k = clamp(p.t / p.dur, 0, 1), pre = p.t < 0 ? clamp(1 + p.t / 0.6, 0, 1) : 1;
   // hedef işareti: düşüşe yaklaştıkça parlaklaşan ve daralan halka
-  {
+  if (!noRing) {
     const a = (p.t < 0 ? pre * 0.5 : 0.5 + 0.5 * k), r = p.splash * (1.1 - 0.3 * k);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     ctx.strokeStyle = `rgba(255,120,40,${0.55 * a})`; ctx.lineWidth = 2;
@@ -2209,7 +2214,7 @@ function drawMeteor(p) {
     glow(ctx, p.tx, p.ty, r * 0.9, '255,110,30', 0.25 * a);
     ctx.restore();
   }
-  if (p.t < 0) return;
+  if (p.t < 0 || ringOnly) return;
   const { x, y } = projPos(p, k), dx = p.tx - p.sx, dy = p.ty - p.sy, l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l;
   // gölge yerde büyür
   ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.25 * k})`; ctx.beginPath(); ctx.ellipse(p.tx, p.ty, 6 + 14 * k, (6 + 14 * k) * 0.4, 0, 0, Math.PI * 2); ctx.fill();
@@ -2371,6 +2376,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (hitBy || src) e.lastBy = hitBy || src;
   e.hitG = G.t; // komutan 'Kalkanlar!' için (oyun zamanı)
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
+  if (e.frogT > 0) amount *= FROG.dmg; // kurbağa fazla hasar alır
   if (src === 'melee' && NECRO) { const L = lightAt(e.x, e.y); if (L) amount *= L.k; } // fener ışığında iskeletler zayıf
   if (src === 'melee' && G.bloodT > 0) amount *= BLOOD.dmg; // Kızıl Ay: ölüler azgın
   e.lastSrc = src || type;
@@ -3762,7 +3768,7 @@ function unitH(u) {
 }
 
 function updateEnemy(e, dt) {
-  const slow = e.slowT > 0 ? 1 - e.slowK : 1;
+  const slow = (e.slowT > 0 ? 1 - e.slowK : 1) * (e.frogT > 0 ? FROG.spd : 1); // kurbağa yavaş zıplar
   e.anim += dt * slow;
   if (e.flash > 0) e.flash -= dt;
   if (e.hitT > 0) e.hitT -= dt;
@@ -3916,6 +3922,10 @@ function updateEnemy(e, dt) {
   }
   if (e.frozenT > 0) e.frozenT -= dt; if (e.frostCdT > 0) e.frostCdT -= dt; // buz (frostHit)
   if (e.stun > 0) { e.stun -= dt; return; } // sersemlemiş: yürümez, vurmaz
+  if (e.frogT > 0) { // kurbağa: kimseye saldırmaz, kimse onu tutmaz; süre bitince eski hâline döner
+    e.frogT -= dt; e.blocker = null; e.inMelee = false;
+    if (e.frogT <= 0) { frogPuff(e); sfx('magic'); }
+  }
   if (e.def.ab) bossAbilities(e, dt);
   if (e.siege !== undefined) { updateSiege(e, dt); return; }
   const b = e.blocker;
@@ -3926,7 +3936,7 @@ function updateEnemy(e, dt) {
   // any: askerleri de hedefler; ammo: sınırlı atış hakkı (ork: 3 balta)
   // hold: menzilde hedef varken durup nişan alır (okçu); önüne kesen olursa yakın dövüşe girmez, onu dibinden vurur
   const RG = e.def.ranged;
-  if (RG && (!e.blocker || RG.hold) && !e.under && (RG.ammo == null || (e.ammo ?? RG.ammo) > 0)) {
+  if (RG && !(e.frogT > 0) && (!e.blocker || RG.hold) && !e.under && (RG.ammo == null || (e.ammo ?? RG.ammo) > 0)) {
     let tgt = e.blocker && RG.hold ? e.blocker : null, bd = tgt ? dist(e.x, e.y, tgt.x, tgt.y) : RG.r;
     if (!tgt) for (const h of RG.any ? G.soldiers : G.heroes) {
       if (h.dead || h.removed || h.wall || (h.born != null && G.t < h.born)) continue;
@@ -3958,6 +3968,7 @@ function updateEnemy(e, dt) {
       }
     } else e.holdT = 0;
   }
+  if (e.atGate && !e.blocker && e.frogT > 0) return; // kurbağa kapıda bekler
   if (e.atGate && !e.blocker) { // kapıya vuruyor
     if (!G.gate || G.gate.hp <= 0) { e.atGate = false; e.inMelee = false; e.p = G.inner || e.p; e.d = 0; return; }
     e.inMelee = true; e.atk = (e.atk ?? 0.3) - dt;
@@ -3996,7 +4007,7 @@ function updateEnemy(e, dt) {
   }
   e.inMelee = false;
   // kahramana saldırı: yanından geçerken durup kahramanla dövüşür
-  if (!e.def.flying && !e.leader && !e.under) {
+  if (!e.def.flying && !e.leader && !e.under && !(e.frogT > 0)) {
     for (const h of G.heroes) {
       if (h.dead || e.def.noblock || dist(e.x, e.y, h.x, h.y) > HERO_AGGRO.r) continue;
       let n = 0;
@@ -4358,7 +4369,7 @@ function heroSkills(h, dt) {
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
-      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45; h.castA = h.castD = (ANIM_META[h.def.sprite + '_cast'] || {}).dur || HERO_ANIM.cast; // şeridin kendi süresi (Robin Kemik Ok 2,4 sn)
+      h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)); h.castT = 0.45; h.castK = sk.id; h.castA = h.castD = (ANIM_META[h.def.sprite + '_cast_' + sk.id] || ANIM_META[h.def.sprite + '_cast'] || {}).dur || HERO_ANIM.cast; // şeridin kendi süresi (Robin Kemik Ok 2,4 sn)
       floatText(h.x, h.y - 46, sk.name + '!', '#ffe27a');
       const col = h.def.aura;
       G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 26, col, t: 0, dur: 0.4 });
@@ -4442,6 +4453,18 @@ function useSkill(h, id) {
         e = nx;
       }
       G.effects.push({ kind: 'bolt', pts, col: 'soul', t: 0, dur: 0.35 }); sfx('soulbolt'); shakeScreen(1.5, 0.12);
+      return true;
+    }
+    case 'timegate': { // Merlin (pasif): en kalabalık yere zaman kapısı, düşmanlar yolun gerisine
+      const c = densest(h.x, h.y, R + 20, 60);
+      if (!c || c.n < 3) return false;
+      timeGate(c.e.x, c.e.y, 62, () => 30 + 8 * L, 110, 1);
+      return true;
+    }
+    case 'frog': { // Merlin (pasif): menzildeki en güçlü (canı en çok) sıradan düşman 4 sn kurbağa
+      let e = null; for (const o of G.enemies) if (frogable(o) && dist(h.x, h.y - 10, o.x, o.y) <= R && (!e || o.hp > e.hp)) e = o;
+      if (!e) return false;
+      frogEnemy(e);
       return true;
     }
     case 'mist': { // Merlin: en kalabalık yere mor-yeşil mezar sisi
@@ -4749,6 +4772,12 @@ function updateProjectile(pr, dt) {
       for (const e of G.enemies) if (!e.dead && dist(e.x, e.y, pr.tx, pr.ty) <= pr.splash) e.rotT = 4;
     }
     if (pr.kind === 'meteor') fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn);
+    if (pr.mburn) { // Merlin'in dev meteoru: yanan zemin, ikinci şok halkası, geniş krater, güçlü sarsıntı
+      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
+      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * 1.7, t: 0, dur: 0.8 });
+      G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true });
+      shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60);
+    }
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
     else fxExplosion(pr.tx, pr.ty, pr.splash, false);
     sfx(pr.kind === 'meteor' ? 'meteor' : NECRO ? 'acidboom' : 'boom');
@@ -6664,6 +6693,72 @@ function marchSoldier(s, dt) {
 }
 
 // Kahraman gücü: seviyeyle hasar %15 artar, yıldız gelişmesiyle +%20
+// Merlin'in zaman kapısı (pasif ve eski güç): alanda dönen halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
+function timeGate(x, y, r, dmg, back, stun) {
+  G.effects.push({ kind: 'timegate', x, y, r, t: 0, dur: 1.1 });
+  for (const e of enemiesNear(x, y, r, true)) {
+    damageEnemy(e, dmg(), 'magic'); if (e.dead || e.under || !e.p) continue;
+    e.d = Math.max(0, e.d - back * (e.def.chief ? 0.5 : 1));
+    const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; stunEnemy(e, stun); e.blocker = null;
+    G.effects.push({ kind: 'timegate', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
+  }
+  shakeScreen(4, 0.35); sfx('timegate');
+}
+// Kurbağaya Çevirme (14 Eki): FROG.t sn kurbağa; saldıramaz, yavaş zıplar (spd), fazla hasar alır (dmg). Boss, makine, uçan ve gömülü olmaz.
+const FROG = { t: 4, spd: 0.5, dmg: 1.25 };
+const frogable = (e) => !e.dead && !e.under && !e.def.chief && !e.def.boss && !e.def.machine && !e.def.flying && !(e.frogT > 0) && !e.leader;
+function frogPuff(e) {
+  for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-9, 9), y: e.y - rand(0, 24), vx: rand(-30, 30), vy: -rand(10, 50), drag: 2,
+    col: i % 2 ? '140,255,120' : '200,160,255', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.7) });
+  G.effects.push({ kind: 'puff', x: e.x, y: e.y - 8, t: 0, dur: 0.5, r: 10 });
+}
+function frogEnemy(e) {
+  e.frogT = FROG.t; e.blocker = null; e.inMelee = false; e.atGate = false;
+  for (const s of G.soldiers) if (s.target === e) s.target = null; // kurbağa kimseyle dövüşmez (askerler ötekilere döner)
+  frogPuff(e); floatText(e.x, e.y - 30, 'Vrak!', '#8cff7a'); sfx('magic');
+}
+// kurbağaya çevrilmiş düşman (14 Eki): iri, ayrıntılı kurbağa (harita kurbağası bu boyda leke gibi kalıyordu); birim ~10 geniş, ayak altı 0
+function drawBigFrog(x, y, dir, air, s) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(dir * s, s); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const dark = '#132a0c';
+  ctx.fillStyle = '#2f6a1e'; ctx.strokeStyle = dark; ctx.lineWidth = 0.55;
+  if (air) { ctx.beginPath(); ctx.moveTo(-3, -2); ctx.lineTo(-8, 0.5); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill(); ctx.stroke(); } // zıplarken arka bacak gerilir
+  else { ctx.beginPath(); ctx.ellipse(-3.2, -1, 2.4, 1.3, 0.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+  const g = ctx.createLinearGradient(0, -7, 0, 0); g.addColorStop(0, '#7cc44a'); g.addColorStop(1, '#2e6a1e');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, -3, 5, 3.2, air ? -0.25 : 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#d8e08a'; ctx.beginPath(); ctx.ellipse(1.6, -1.8, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill(); // açık karın
+  ctx.fillStyle = '#2a5418'; for (const [sx, sy, r] of [[-2, -4.6, 0.6], [-0.4, -5.3, 0.45], [-3.3, -3.2, 0.5]]) { ctx.beginPath(); ctx.arc(sx, sy, r, 0, 7); ctx.fill(); } // benekler
+  if (!air) { ctx.fillStyle = '#3e7a28'; ctx.beginPath(); ctx.ellipse(3.2, -0.4, 1.4, 0.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } // ön ayak
+  for (const ex of [1.2, 3.6]) { // iri, dışa fırlak gözler
+    ctx.fillStyle = '#5aa03a'; ctx.beginPath(); ctx.arc(ex, -5.7, 1.45, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f4e27a'; ctx.beginPath(); ctx.arc(ex + 0.15, -5.85, 1, 0, 7); ctx.fill();
+    ctx.fillStyle = '#120a04'; ctx.beginPath(); ctx.ellipse(ex + 0.25, -5.85, 0.62, 0.3, 0, 0, 7); ctx.fill();
+  }
+  ctx.strokeStyle = dark; ctx.lineWidth = 0.45; ctx.beginPath(); ctx.moveTo(1.4, -3.4); ctx.quadraticCurveTo(3.4, -2.6, 4.9, -3.4); ctx.stroke(); // ağız
+  ctx.restore();
+}
+function drawFrogEnemy(e, dh) {
+  const hop = Math.max(0, Math.sin(G.t * 7 + (e.seed || 0))), s = dh / 9;
+  ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(e.x, e.y + 0.5, 3 * s * (1 - hop * 0.3), 1.1 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  drawBigFrog(e.x, e.y - hop * 4 * s, e.face || 1, hop > 0.4, s * 0.62);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - 3 * s, 5 * s, '140,255,120', 0.18 + 0.08 * Math.sin(G.t * 9)); ctx.restore();
+  hpBar(e.x, e.y - 10 * s, 16, e.hp / e.maxHp, '#e04040'); // zıplayan kurbağanın üstünde kalsın
+}
+// Zincir Şimşek (14 Eki, Merlin'in ikinci gücü): gökten iner, hop px içindeki vurulmamış en yakına n kez sıçrar (uçanlar dahil); her sıçrayış %85
+function stormChain(x, y, U, dmg) {
+  let e = null, bd = U.r; for (const o of G.enemies) if (!o.dead && !o.under) { const d = dist(o.x, o.y, x, y); if (d < bd) { bd = d; e = o; } }
+  if (!e) return false;
+  const pts = [[e.x + rand(-20, 20), e.y - 240]], hit = new Set(); let d0 = dmg();
+  for (let i = 0; i < U.n && e; i++) {
+    hit.add(e); pts.push([e.x, aimY(e)]); damageEnemy(e, d0, 'magic'); stunEnemy(e, U.stun); fxMagicHit(e.x, aimY(e)); d0 *= 0.85;
+    let nx = null, nd = U.hop; for (const o of G.enemies) if (!o.dead && !o.under && !hit.has(o)) { const dd = dist(o.x, o.y, e.x, e.y); if (dd < nd) { nd = dd; nx = o; } }
+    e = nx;
+  }
+  G.effects.push({ kind: 'bolt', pts, t: 0, dur: 0.45 }); G.effects.push({ kind: 'bolt', pts: pts.map(([px, py]) => [px + rand(-4, 4), py + rand(-4, 4)]), t: 0, dur: 0.3 });
+  emit(G.parts, { kind: 'glow', add: true, x: pts[1][0], y: pts[1][1], col: '200,230,255', s0: 40, s1: 10, life: 0.25 });
+  shakeScreen(3.5, 0.25); sfx('thunder'); sfx('soulbolt');
+  return true;
+}
 function castUlt(h, x, y) {
   const U = heroUlt(h), k = (1 + HERO_TREE.ultK * (heroUltRank(h) - 1)) * (1 + 0.015 * (h.lvl - 1)); // güç kademesi (ağaç) ve seviye
   const dmg = () => roll(U.dmg) * k;
@@ -6704,15 +6799,13 @@ function castUlt(h, x, y) {
       G.projectiles.push({ kind: 'rainarrow', sx: tx - 70, sy: ty - 280, tx, ty, t: -i * U.dur / U.n, dur: 0.42, dmg: dmg(), splash: 18, arc: 0, poison: U.poison ?? 3, poisonT: 2, gold: U.gold }); }
     for (let i = 0; i < 5; i++) setTimeout(() => sfx('arrow'), i * 600);
   } else if (U.portal) {
-    // Merlin'in zaman kapısı: alanda dönen mor-yeşil halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
-    G.effects.push({ kind: 'timegate', x, y, r: U.r, t: 0, dur: 1.1 });
-    for (const e of enemiesNear(x, y, U.r, true)) {
-      damageEnemy(e, dmg(), 'magic'); if (e.dead || e.under || !e.p) continue;
-      const back = U.back * (e.def.chief ? 0.5 : 1); e.d = Math.max(0, e.d - back);
-      const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y; stunEnemy(e, U.stun); e.blocker = null;
-      G.effects.push({ kind: 'timegate', x: q.x, y: q.y, r: 22, t: 0, dur: 0.7 });
-    }
-    shakeScreen(4, 0.35); sfx('timegate');
+    timeGate(x, y, U.r, dmg, U.back, U.stun);
+  } else if (U.meteor) {
+    // Merlin'in Meteor'u (14 Eki): yerde uyarı halkası, gökten dev kaya; çarpınca büyük patlama, krater, yanan zemin (drawMeteor big, fxMeteorImpact)
+    G.projectiles.push({ kind: 'meteor', big: 2.2, sx: x - 220, sy: y - 520, tx: x, ty: y, t: -0.55, dur: 0.75, arc: 0, dmg: dmg(), splash: U.r, src: 'blast', spin: rand(0, 6), mburn: [U.burn * k, U.burnT] });
+    sfx('magic'); setTimeout(() => sfx('whirl'), 350);
+  } else if (U.storm) {
+    if (!stormChain(x, y, U, dmg)) { G.effects.push({ kind: 'bolt', pts: [[x, y - 240], [x, y]], t: 0, dur: 0.35 }); sfx('thunder'); }
   } else if (U.soulpool) {
     // Merlin'in Ruh Bataklığı: mor bataklık (drawPlaguePools z.black), yavaşlatır ve çürütür
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'magic', t: 0, life: U.dur, fxT: 0, kind: 'soulpool', pool: true, black: true, slowK: 0.45, infect: 2, seed: rand(0, 9) });
@@ -8671,6 +8764,7 @@ function drawEnemy0(e) {
   const name = 'enemy_' + e.type, im = d.base ? enemySprite(e.type) : spr(name);
   const dh = (d.h || 30) * UNIT_K;
   if (e.under) { drawBurrow(e); return; }
+  if (e.frogT > 0) { drawFrogEnemy(e, dh); return; }
   if (im) {
     const moved = e.px !== undefined && Math.hypot(e.x - e.px, e.y - e.py) > 0.004;
     if (moved) { e.hdx = lerp(e.hdx || 0, e.x - e.px, 0.2); e.hdy = lerp(e.hdy || 0, e.y - e.py, 0.2); }
@@ -9029,7 +9123,7 @@ function drawSoldier(s) {
     // komutan: Wan şeritleri geldiyse onlar oynar (saldırı kareleri vuruş döngüsüne bağlı)
     // 12 Eki: bekleme (_idle), koşma (_run: oyuncu uzağa gönderince), yetenek (_cast), savunma (_block) şeritleri; yoksa eski davranış
     const ult = s.hero && s.ultT > 0 && ((s.ultK === 'ult2' && animStrip(name, null, '_skill2')) || animStrip(name, null, '_skill'));
-    const cst = !ult && s.hero && s.castA > 0 && animStrip(name, null, '_cast');
+    const cst = !ult && s.hero && s.castA > 0 && ((s.castK && ANIM_META[name + '_cast_' + s.castK] && animStrip(name, null, '_cast_' + s.castK)) || animStrip(name, null, '_cast')); // pasifin kendi şeridi varsa o
     const blk = !ult && !cst && s.hero && s.blockA > 0 && animStrip(name, null, '_block');
     const mov = walking && (s.moving && animStrip(name, null, '_run') || animStrip(name, null, '_walk'));
     const hsk = ult || cst || blk || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
@@ -11622,11 +11716,8 @@ function drawUlt2Glyph(id, r) {
     for (let i = -1; i <= 1; i++) { ctx.save(); ctx.translate(i * r * 0.28, 0); ctx.rotate(0.5);
       ctx.strokeStyle = '#6a4a22'; ctx.lineWidth = r * 0.08; ctx.beginPath(); ctx.moveTo(0, -r * 0.55); ctx.lineTo(0, r * 0.55); ctx.stroke();
       ctx.fillStyle = '#e0a83a'; ctx.beginPath(); ctx.moveTo(0, r * 0.72); ctx.lineTo(-r * 0.1, r * 0.48); ctx.lineTo(r * 0.1, r * 0.48); ctx.closePath(); ctx.fill(); ctx.restore(); }
-  } else if (id === 'merlin') { // mor bataklık ve kabarcıklar
-    ctx.save(); ctx.scale(1, 0.5); circle(0, r * 0.45, r * 0.62, '#4a1a7a', '#1a0630', r * 0.05); circle(0, r * 0.45, r * 0.44, '#8a4ad8'); ctx.restore();
-    for (let k = 0; k < 4; k++) { const ph = (time * 0.9 + k / 4) % 1; ctx.globalAlpha = Math.sin(ph * Math.PI); circle(Math.cos(k * 1.9) * r * 0.32, r * 0.18 - ph * r * 0.55, r * (0.06 + 0.04 * (k % 2)), k % 2 ? '#b0ffc0' : '#d8b0ff'); }
-    ctx.globalAlpha = 1;
-  } else if (id === 'bathory') { // kan yarasaları
+  } else if (id === 'merlin') drawMerlinGlyph('storm', r); // zincir şimşek
+  else if (id === 'bathory') { // kan yarasaları
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 0.8, '220,20,40', 0.55); ctx.restore();
     drawBat(-6 * r / 20, -2 * r / 20, 1.1 * r / 20, 1, time * 9, 1); drawBat(7 * r / 20, 4 * r / 20, 0.8 * r / 20, -1, time * 9 + 2, 1);
   }
@@ -11642,7 +11733,7 @@ function drawUltGlyph(id, r) {
   } else if (id === 'leonidas') { // bronz hoplit kalkanı ve lambda
     circle(0, 0, r * 0.55, '#b0863a', '#3a2408', 2); circle(0, 0, r * 0.42, null, 'rgba(255,230,160,0.55)', 1.2);
     ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(-r * 0.2, r * 0.24); ctx.lineTo(0, -r * 0.26); ctx.lineTo(r * 0.2, r * 0.24); ctx.stroke();
-  } else if (id === 'merlin') drawMerlinGlyph('timegate', r);
+  } else if (id === 'merlin') drawMerlinGlyph('meteor', r);
   else if (id === 'bathory') { // kan gölü: kaynayan kızıl göl, ortasında atan kalp
     const pulse = 1 + Math.sin(time * 6) * 0.08;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 0.75, '220,20,40', 0.6); ctx.restore();
@@ -11688,6 +11779,29 @@ function drawMerlinGlyph(id, r) {
     ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#ece4c8'; ctx.beginPath(); ctx.arc(0, -r * 0.02, r * 0.2, Math.PI, 0); ctx.lineTo(r * 0.12, r * 0.2); ctx.lineTo(-r * 0.12, r * 0.2); ctx.closePath(); ctx.fill();
     for (const ex of [-r * 0.08, r * 0.08]) { circle(ex, r * 0.02, r * 0.05, '#1a1020'); lit(ex, r * 0.02, r * 0.1, '120,255,160', 0.9); }
+  } else if (id === 'meteor') { // meteor: alev kuyruklu akkor kaya, altında kızgın krater
+    lit(r * 0.15, r * 0.15, r * 0.85, '255,120,30', 0.6);
+    ctx.save(); ctx.scale(1, 0.4); circle(r * 0.18, r * 1.2, r * 0.5, '#3a1a0a', '#120604', r * 0.05); circle(r * 0.18, r * 1.2, r * 0.32, '#ff7a2a'); ctx.restore();
+    for (const [w, c, L] of [[r * 0.3, 'rgba(255,90,20,0.75)', 0.95], [r * 0.18, 'rgba(255,190,80,0.85)', 0.7], [r * 0.08, 'rgba(255,250,210,0.95)', 0.45]]) {
+      ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(r * 0.05, -r * 0.05); ctx.lineTo(-r * L * 0.75 + Math.sin(time * 24) * r * 0.03, -r * L * 0.75); ctx.stroke(); }
+    const mg = ctx.createRadialGradient(r * 0.05, -r * 0.08, 1, r * 0.12, 0, r * 0.3); mg.addColorStop(0, '#fff2b0'); mg.addColorStop(0.45, '#ff8a2a'); mg.addColorStop(1, '#5a1a0a');
+    ctx.save(); ctx.translate(r * 0.12, 0); ctx.rotate(time * 3); ctx.beginPath(); for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2, rr = r * (0.26 + 0.04 * Math.sin(k * 2.7)); (k ? ctx.lineTo : ctx.moveTo).call(ctx, Math.cos(a) * rr, Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fillStyle = mg; ctx.fill(); ctx.strokeStyle = '#1e0c06'; ctx.lineWidth = r * 0.05; ctx.stroke(); ctx.restore();
+  } else if (id === 'storm') { // zincir şimşek: bulut ve üç hedefe sıçrayan mavi-beyaz şimşek
+    lit(0, 0, r * 0.85, '120,180,255', 0.6);
+    ctx.fillStyle = '#4a5a7a'; ctx.strokeStyle = '#141a2a'; ctx.lineWidth = r * 0.05; ctx.beginPath();
+    for (const [x, y, rr] of [[-r * 0.3, -r * 0.42, r * 0.2], [0, -r * 0.5, r * 0.24], [r * 0.3, -r * 0.42, r * 0.2]]) { ctx.moveTo(x + rr, y); ctx.arc(x, y, rr, 0, Math.PI * 2); }
+    ctx.fill(); ctx.stroke();
+    const P = [[0, -r * 0.3], [-r * 0.3, r * 0.15], [r * 0.05, r * 0.35], [r * 0.45, r * 0.12]];
+    for (const [lw, col] of [[r * 0.2, 'rgba(120,180,255,0.55)'], [r * 0.08, '#f2f8ff']]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
+      P.forEach(([x, y], i) => { if (!i) { ctx.moveTo(x, y); return; } const [px, py] = P[i - 1]; for (let j = 1; j <= 3; j++) { const q = j / 3, jt = j < 3 ? Math.sin(time * 30 + i * 5 + j * 2) * r * 0.08 : 0; ctx.lineTo(px + (x - px) * q + jt, py + (y - py) * q - jt); } }); ctx.stroke(); }
+    for (const [x, y] of P.slice(1)) circle(x, y, r * 0.07, '#ffffff');
+  } else if (id === 'frog') { // kurbağaya çevirme: yeşil kurbağa, üstünde dönen mor büyü yıldızları
+    lit(0, r * 0.1, r * 0.8, '140,255,120', 0.5);
+    ctx.save(); ctx.translate(0, r * 0.32); drawFrog(0, 0, 1, Math.sin(time * 6) > 0.6, r * 0.2); ctx.restore();
+    for (let k = 0; k < 3; k++) { const a = time * 2.4 + k * 2.09, x = Math.cos(a) * r * 0.42, y = -r * 0.32 + Math.sin(a) * r * 0.12;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(time * 4); ctx.fillStyle = k % 2 ? '#d8b0ff' : '#b0ffc0'; ctx.beginPath();
+      for (let j = 0; j < 8; j++) { const rr = j % 2 ? r * 0.05 : r * 0.13, aa = j * Math.PI / 4; (j ? ctx.lineTo : ctx.moveTo).call(ctx, Math.cos(aa) * rr, Math.sin(aa) * rr); } ctx.closePath(); ctx.fill(); ctx.restore(); }
   } else if (id === 'arcane') { // kadim bilgi: açık büyü kitabı, üstünde dönen rune gözü
     lit(0, -r * 0.1, r * 0.7, '160,110,255', 0.5);
     for (const sd of [-1, 1]) { ctx.fillStyle = '#e8dcbc'; ctx.strokeStyle = '#2a1408'; ctx.lineWidth = r * 0.05; ctx.beginPath(); ctx.moveTo(0, r * 0.15); ctx.quadraticCurveTo(sd * r * 0.3, r * 0.02, sd * r * 0.55, r * 0.12); ctx.lineTo(sd * r * 0.55, r * 0.5); ctx.quadraticCurveTo(sd * r * 0.3, r * 0.4, 0, r * 0.52); ctx.closePath(); ctx.fill(); ctx.stroke(); }
@@ -12412,7 +12526,7 @@ const HSK_ICON = {
 function drawHeroSkillIcon(id, x, y, s) {
   if (['bash', 'cry', 'whirl', 'bolt'].includes(id)) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s * 1.6, s * 1.6); drawSkillGlyph(id, 0, 0); ctx.restore();
-  } else if (id === 'chainbolt' || id === 'mist' || id === 'arcane') { ctx.save(); ctx.translate(x, y); drawMerlinGlyph(id, 22 * s); ctx.restore(); }
+  } else if (['chainbolt', 'mist', 'arcane', 'timegate', 'frog'].includes(id)) { ctx.save(); ctx.translate(x, y); drawMerlinGlyph(id, 22 * s); ctx.restore(); }
   else if (id === 'revive' || id === 'ninelives') drawIcon('heart', x, y, 24 * s);
   else drawAbilityIcon(HSK_ICON[id] || 'blast', x, y, s);
 }
@@ -13785,7 +13899,7 @@ function gainSpellXp(id, n) { // büyü yapıldı: XP, seviye atlarsa kalenin ü
 // komutan kaydı: seviye ve XP bölümler arası kalır; sk: yetenek kademeleri, ult: komutan gücü kademesi (1..5)
 function heroRec(id) {
   save.hero = save.hero || {}; const R = (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1, ult2: 0, act: 'ult' });
-  if (!R.v2 && HEROES[id]) { R.v2 = 1; const keep = new Set(heroSkillList(HEROES[id]).map(s => s.id)); for (const k in R.sk) if (!keep.has(k)) delete R.sk[k]; } // 13 Eki: 2 pasif dışındakilerin puanı iade
+  if (!R.v3 && HEROES[id]) { R.v2 = R.v3 = 1; const keep = new Set(heroSkillList(HEROES[id]).map(s => s.id)); for (const k in R.sk) if (!keep.has(k)) delete R.sk[k]; } // 13 Eki: 2 pasif dışındakilerin puanı iade; 14 Eki: Merlin'in yeni pasifleri için bir kez daha
   return R;
 }
 function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return R.lvl - n - (R.ult - 1) - (R.ult2 || 0); } // her seviye 1 puan (1. seviye dahil)

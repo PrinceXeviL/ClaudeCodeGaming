@@ -287,7 +287,21 @@
 "KATLİAM!": "¡MASACRE!",
 "YIKIM!": "¡DEVASTACIÓN!",
 "KIYAMET!": "¡APOCALIPSIS!",
-"MORTİMER'İN GAZABI!": "¡LA IRA DE MORTIMER!"
+"MORTİMER'İN GAZABI!": "¡LA IRA DE MORTIMER!",
+"Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "Un portal del tiempo se abre bajo la multitud: los enemigos son lanzados atrás en el camino, reciben daño y quedan aturdidos 1 s (los jefes la mitad)",
+"Kurbağaya Çevirme": "Maleficio de rana",
+"Kurbağaya Çevirme!": "¡Maleficio de rana!",
+"En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "Convierte al enemigo más fuerte en rana durante 4 s: no puede atacar, salta despacio y recibe un 25 % más de daño (no a jefes)",
+"Meteor": "Meteoro",
+"Meteor!": "¡Meteoro!",
+"Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "Un meteoro gigante cae del cielo: enorme explosión, cráter y suelo en llamas durante 4 s",
+"Dev meteor: büyük patlama, yanan zemin": "Meteoro gigante: enorme explosión, suelo en llamas",
+"Zincir Şimşek": "Cadena de relámpagos",
+"Zincir Şimşek!": "¡Cadena de relámpagos!",
+"Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "Un rayo cae del cielo, salta entre 8 enemigos (también voladores) y aturde brevemente a cada uno",
+"8 düşmana sıçrayan şimşek": "Rayo que salta entre 8 enemigos",
+"Vrak!": "¡Croac!",
+"Zaman Kapısı!": "¡Portal del tiempo!"
 },
 "tpl": [
 [
