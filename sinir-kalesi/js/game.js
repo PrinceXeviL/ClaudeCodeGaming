@@ -677,6 +677,7 @@ function uiSound(kind) {
     g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.09, now + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
     n.connect(bp); bp.connect(g); g.connect(out); n.start(now); n.stop(now + 0.17);
   } else if (kind === 'bonespin') { // kemik halka döner: hızlanıp yavaşlayan hafif kemik takırtısı (15 Eki)
+    uiPop(now, 170, 62, 0.2, 0.42, out); uiPop(now, 95, 48, 0.24, 0.3, out); // 15 Eki (Caner: daha tok): altta boğuk gümleme
     for (let i = 0; i < 7; i++) { const t = now + i * 0.04 + i * i * 0.007; uiTick(t, 1250 - i * 70, 0.05 * (1 - i * 0.09), out); uiTick(t + 0.008, 2600, 0.018, out); }
     uiPop(now + 0.02, 520, 240, 0.05, 0.12, out);
   } else if (kind === 'whoosh') { // geçiş: yükselip alçalan hava hışırtısı ve altta boğuk bir gümleme
@@ -817,7 +818,7 @@ const SYNTH_SFX = { portal: portalSound, roar: roarSound, stomp: stompSound };
 
 // 15 Eki (Caner): titreşimli geri bildirim. Uygulamada Capacitor Haptics (iOS Taptic / Android), tarayıcıda navigator.vibrate.
 // Ayarlardan kapatılabilir (setting 'haptic'). Sesten bağımsız: ses kısıkken de titrer. HAPTIC_SFX: hangi seste ne kadar titreşir
-const HAPTIC_SFX = { click: 'light', select: 'light', pick: 'light', bonespin: 'light', build: 'medium', upgrade: 'medium', spell: 'medium', raise: 'medium', bonewall: 'medium',
+const HAPTIC_SFX = { click: 'light', select: 'light', pick: 'light', bonespin: 'medium', build: 'medium', upgrade: 'medium', spell: 'medium', raise: 'medium', bonewall: 'medium',
   castlehit: 'heavy', hornboss: 'heavy', roar: 'heavy', win: 'success', lose: 'error', error: 'warn', levelup: 'success' };
 let hapticLast = 0;
 function haptic(kind = 'light') {
@@ -11034,25 +11035,28 @@ function tileBtn(key, x, y, r, icon, fn, o, appear) {
 const BONE_RING = { n: 6, spin: 0.5, defer: 0.34 }; // n: halkadaki kemik, spin: dönüş süresi, defer: sayfa dönüş görülünce açılır
 let BONE_DEFER = null; // kemik düğmesine dokunuldu: işlev dönüşün ardından çalışır
 // halkadaki tek kemik: çembere oturan kavisli gövde, iki ucunda çift topuz (eklem); ışık üstten, gölge alttan
-function drawBoneArc(R, a0, a1, w) {
+function drawBoneArc(R, a0, a1, w, col) { // col: [gövde, gölge] (15 Eki, Caner: kemikler düğmenin renginde); yoksa kemik beyazı
+  const body = col ? col[0] : '#e9dcbc', shade = col ? col[1] : 'rgba(120,96,64,0.55)';
   const ends = [a0, a1], knob = (a, rr, fill, stroke) => { for (const sd of [-1, 1]) { const rx = (R + sd * w * 0.36), x = Math.cos(a) * rx, y = Math.sin(a) * rx; ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI * 2); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.6; ctx.stroke(); } } };
   ctx.lineCap = 'butt';
   for (const a of ends) knob(a, w * 0.5, '#1a0c18'); // koyu kontur
   ctx.beginPath(); ctx.arc(0, 0, R, a0, a1); ctx.strokeStyle = '#1a0c18'; ctx.lineWidth = w + 2.6; ctx.stroke();
-  for (const a of ends) knob(a, w * 0.5 - 1.3, '#e9dcbc');
-  ctx.beginPath(); ctx.arc(0, 0, R, a0, a1); ctx.strokeStyle = '#e9dcbc'; ctx.lineWidth = w; ctx.stroke(); // gövde
-  ctx.beginPath(); ctx.arc(0, 0, R + w * 0.28, a0 + 0.05, a1 - 0.05); ctx.strokeStyle = 'rgba(120,96,64,0.55)'; ctx.lineWidth = w * 0.3; ctx.stroke(); // dış gölge
+  for (const a of ends) knob(a, w * 0.5 - 1.3, body);
+  ctx.beginPath(); ctx.arc(0, 0, R, a0, a1); ctx.strokeStyle = body; ctx.lineWidth = w; ctx.stroke(); // gövde
+  ctx.beginPath(); ctx.arc(0, 0, R + w * 0.28, a0 + 0.05, a1 - 0.05); ctx.strokeStyle = shade; ctx.lineWidth = w * 0.3; ctx.stroke(); // dış gölge
   ctx.beginPath(); ctx.arc(0, 0, R - w * 0.2, a0 + 0.08, a1 - 0.08); ctx.strokeStyle = 'rgba(255,255,248,0.75)'; ctx.lineWidth = w * 0.2; ctx.stroke(); // iç parıltı
   for (const a of ends) { const x = Math.cos(a) * (R - w * 0.42), y = Math.sin(a) * (R - w * 0.42); ctx.fillStyle = 'rgba(255,255,250,0.7)'; ctx.beginPath(); ctx.arc(x, y, w * 0.16, 0, Math.PI * 2); ctx.fill(); } // topuz parıltısı
 }
-function drawBoneRing(r, rot, w) {
+function drawBoneRing(r, rot, w, col) {
   const R = r + w * 0.55, N = BONE_RING.n, gap = 0.2;
-  for (let i = 0; i < N; i++) { const a = rot + i / N * Math.PI * 2 - Math.PI / 2 + gap / 2; drawBoneArc(R, a, a + Math.PI * 2 / N - gap, w); }
+  for (let i = 0; i < N; i++) { const a = rot + i / N * Math.PI * 2 - Math.PI / 2 + gap / 2; drawBoneArc(R, a, a + Math.PI * 2 / N - gap, w, col); }
 }
+// kemik halkanın rengi: düğme renginin açık tonu (beyaza %35 yaklaşır ki kemik dokusu ve parıltı okunur)
+const boneTint = (hex) => { const n = parseInt(hex.slice(1), 16), m = (v) => Math.round(v + (255 - v) * 0.35); return `rgb(${m(n >> 16)},${m((n >> 8) & 255)},${m(n & 255)})`; };
 function boneBtn(key, x, y, r, icon, fn, o, appear) {
   const C = TILE[o.tile] || TILE.violet;
   const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = sp < 1 ? (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 / BONE_RING.n * 2 : 0; // iki kemik boyu döner, yavaşlayarak
-  ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
+  ctx.save(); ctx.translate(x, y); const sc = (1 - (1 - pressScale(key)) * 1.7) * appear; ctx.scale(sc, sc); // 15 Eki: basınca daha derin çöker, tok sekme
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
   if (o.sq) { // köşeleri yuvarlatılmış kare (15 Eki, Caner: sefer haritasında yine yuvarlak, kemik halkalı; kare yalnız o.sq ile)
     const R = r * 1.02, cr = R * 0.34, sq = (k, fill, stroke, lw) => roundRect(-R - k, -R - k, 2 * (R + k), 2 * (R + k), cr + k, fill, stroke, lw);
@@ -11080,7 +11084,7 @@ function boneBtn(key, x, y, r, icon, fn, o, appear) {
   ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(0, -r * 0.55, r * 0.85, r * 0.5, 0, 0, Math.PI * 2); ctx.fill();
   const rg = ctx.createRadialGradient(0, r * 0.15, r * 0.3, 0, 0, r * 1.05); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(10,0,20,0.45)'); ctx.fillStyle = rg; ctx.fillRect(-r, -r, 2 * r, 2 * r);
   ctx.restore();
-  drawBoneRing(r, rot, Math.max(5, r * 0.2)); // kemik halka: dokununca döner
+  drawBoneRing(r, rot, Math.max(5, r * 0.2), [boneTint(C[0]), C[1]]); // kemik halka: dokununca döner; düğmenin renginde (15 Eki)
   ctx.shadowColor = 'rgba(10,0,16,0.7)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
   if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.05, '#f6ecd4');
   ctx.restore();
@@ -11092,7 +11096,8 @@ function boneBtn(key, x, y, r, icon, fn, o, appear) {
 const UI_FRAME = { top: 55, cols: [[0, 180, 0], [180, 285, 1], [285, 865, 0], [865, 970, 1], [970, 1150, 0]], inL: 122, inR: 122, inT: 178, inB: 118, medal: 92 };
 const UI_3 = { pill: ['ui_pill', [0, 200], [250, 700], [747, 947], 0, 262], track: ['ui_toggle', [0, 60], [80, 220], 'mirror', 0, 180],
   bar: ['ui_slider', [0, 105], [520, 740], [750, 864], 15, 190] };
-const uiOk = () => NECRO && spr('ui_frame') && spr('ui_pill') && spr('ui_toggle') && spr('ui_slider') && spr('ui_knob');
+const UI_STONE = false; // 15 Eki (Caner): Gemini mor taş tasarımı beğenilmedi, eski kızıl kadife pencerelere dönüldü (görseller img/ui_*.webp'de duruyor)
+const uiOk = () => UI_STONE && NECRO && spr('ui_frame') && spr('ui_pill') && spr('ui_toggle') && spr('ui_slider') && spr('ui_knob');
 function ui3(kind, x, y, w, h) { // yatay 3 dilim: uçlar oranını korur, orta esner ('mirror': sağ uç sol ucun aynası)
   const [n, L, M, R, sy0, sy1] = UI_3[kind], im = spr(n); if (!im) return;
   const R2 = R === 'mirror' ? L : R;
