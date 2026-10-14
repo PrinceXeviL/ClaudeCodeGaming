@@ -8,6 +8,7 @@ Kaynaklar (varliklar/ham/ses/, CC-BY 3.0 — ses/LISANS.txt'te adları yazılı)
 Savaş çığlığı sesi yok (beğenilmedi; dalga başında yalnız yazı balonu çıkar).
 Çalıştır: python3 varliklar/ses_kayit_isle.py
 """
+import shutil
 import json
 import os
 import wave
@@ -101,10 +102,8 @@ def main():
     # 10 Eki (Caner, 4.): "Military Trumpet Battle Call" 2. kaydı (lisanslı): ~2,4 sn çağrı + yankı, ilk 4,5 sn, sonu 1,2 sn'de söner.
     # 10 Eki (Caner, 5.): "Cinematic War Horn 02" (lisanslı): ~2 sn güçlü üfleme + yankı, ilk 5,5 sn, sonu 1,5 sn'de söner.
     # 11 Eki (Caner, 6.): yine "Military Trumpet Battle Call 2", ama biraz kalın: %15 pes (yeniden örnekleme; ~0,15 sn uzar)
-    if os.path.exists(os.path.join(HAM, 'lisansli', 'military_trumpet_call_2.wav')): made.append(save('horn_1', fade(pitch(load('lisansli/military_trumpet_call_2')[:int(SR * 4.5)], 0.85), 0.01, 1.4), -17))
-    elif os.path.exists(os.path.join(HAM, 'lisansli', 'cinematic_war_horn_02.wav')): made.append(save('horn_1', fade(load('lisansli/cinematic_war_horn_02')[:int(SR * 5.5)], 0.01, 1.5), -17))
-    elif os.path.exists(os.path.join(HAM, 'lisansli', 'ancient_battle_horn.wav')): made.append(save('horn_1', fade(load('lisansli/ancient_battle_horn')[:int(SR * 7.5)], 0.01, 1.5), -17))
-    else: made.append(save('horn_1', fade(load_mp3('hornf_3'), 0.01, 0.5), -17))
+    # 14 Eki (Caner): borazan yine ilk sürüm (8 Eki, kendi sentezimiz; Envato kayıtları lisans sorunlu): ham/ses/horn_ilk.wav olduğu gibi
+    shutil.copy(os.path.join(HAM, 'horn_ilk.wav'), os.path.join(OUT, 'horn_1.wav')); made.append('horn_1')
     # yell: Caner'in verdiği "Male Battle Yell" kaydı (lisanslı, ham/ses/lisansli/): düşman özel saldırı yaparken bağırır; ikinci hali biraz kalın
     if os.path.exists(os.path.join(HAM, 'lisansli', 'male_battle_yell.wav')):
         y = fade(load('lisansli/male_battle_yell'), 0.005, 0.15)
