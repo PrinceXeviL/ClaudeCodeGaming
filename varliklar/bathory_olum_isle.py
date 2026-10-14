@@ -9,9 +9,9 @@ H0 = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H0)
 import video_isle
 IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 SRC = 'ham/anim/bathory_saldiri_olum_veo.mp4'
-FIG_TOP, FIG_BOT, CX = 82, 616, 622
+FIG_TOP, FIG_BOT, CX = 82, 616, 643  # CX: gövde ortası bekleme şeridiyle hizalı
 BOX = (CX - 420, 40, CX + 420, 690)
-TARGET = 300
+TARGET = 220  # komutan şerit boyu (serit_kucult.py; telefon belleği)
 name, order = 'hero_bathory_die', list(range(86, 169, 3))   # WebP 16383 px sınırı: 28 kare
 fr = video_isle.frames_of(os.path.join(H0, SRC), 24)
 # Veo sisi gri-beyaz çizdi (prompt kızıl istiyordu) ve beyaz silmede opak leke kalıyor: yığılmış gövdenin (168. kare) dışındaki

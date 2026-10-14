@@ -8847,7 +8847,9 @@ function drawSoldier(s) {
   if (s.pet && !s.dead) { drawPet(s); return; }
   if (s.dead) {
     if (s.hero) {
-      ctx.globalAlpha = 0.5; circle(s.x, s.y - 4, 7, '#888'); ctx.globalAlpha = 1;
+      // gri işaret yalnız ölüm şeridi yoksa (14 Eki: Veo ölümleri bu dairenin altında gri görünüyordu)
+      const lying = G.effects.some(f => (f.kind === 'corpse' || f.kind === 'remains') && f.rig === s.def.sprite);
+      if (!lying) { ctx.globalAlpha = 0.5; circle(s.x, s.y - 4, 7, '#888'); ctx.globalAlpha = 1; }
       txt(Math.ceil(s.respawnT) + '', s.x, s.y - 20, 12, '#fff');
     }
     return;

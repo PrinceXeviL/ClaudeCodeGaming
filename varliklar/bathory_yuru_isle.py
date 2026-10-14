@@ -10,7 +10,7 @@ IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 SRC = 'ham/anim/bathory_yuru_kos_veo.mp4'
 FIG_TOP, FIG_BOT, CX = 78, 662, 600
 BOX = (CX - 330, 30, CX + 330, 700)
-TARGET = 300
+TARGET = 220  # komutan şerit boyu (serit_kucult.py; telefon belleği)
 SETS = {'hero_bathory_walk': (list(range(11, 50)), {'idle': 0, 'stride': 0.8}),
         'hero_bathory_run': (list(range(153, 176)), {})}
 fr = video_isle.frames_of(os.path.join(H0, SRC), 24)
