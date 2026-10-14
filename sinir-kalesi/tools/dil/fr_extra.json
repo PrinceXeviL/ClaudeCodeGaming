@@ -283,7 +283,11 @@
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 relevé · +10 % de puissance · cadavre +1,5 s",
 "+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % de vie · +25 % de dégâts · cadavre +1,5 s",
 "Savaşa": "Au combat",
-"En fazla 3 büyü götürülür · önce birini çıkar": "3 sorts au maximum · retire-en un d'abord"
+"En fazla 3 büyü götürülür · önce birini çıkar": "3 sorts au maximum · retire-en un d'abord",
+"KATLİAM!": "CARNAGE !",
+"YIKIM!": "DÉVASTATION !",
+"KIYAMET!": "APOCALYPSE !",
+"MORTİMER'İN GAZABI!": "COURROUX DE MORTIMER !"
 },
 "tpl": [
 [

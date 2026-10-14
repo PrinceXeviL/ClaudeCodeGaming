@@ -283,7 +283,11 @@
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 复活者 · +10% 力量 · 尸体 +1.5 秒",
 "+%25 can · +%25 hasar · ceset +1,5 sn": "+25% 生命 · +25% 伤害 · 尸体 +1.5 秒",
 "Savaşa": "出战",
-"En fazla 3 büyü götürülür · önce birini çıkar": "最多携带 3 个法术 · 先移除一个"
+"En fazla 3 büyü götürülür · önce birini çıkar": "最多携带 3 个法术 · 先移除一个",
+"KATLİAM!": "大屠杀！",
+"YIKIM!": "毁灭！",
+"KIYAMET!": "末日！",
+"MORTİMER'İN GAZABI!": "莫蒂默之怒！"
 },
 "tpl": [
 [

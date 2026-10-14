@@ -283,7 +283,11 @@
 "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 alzado · +10 % poder · cadáver +1,5 s",
 "+%25 can · +%25 hasar · ceset +1,5 sn": "+25 % vida · +25 % daño · cadáver +1,5 s",
 "Savaşa": "A la batalla",
-"En fazla 3 büyü götürülür · önce birini çıkar": "Máximo 3 hechizos · quita uno primero"
+"En fazla 3 büyü götürülür · önce birini çıkar": "Máximo 3 hechizos · quita uno primero",
+"KATLİAM!": "¡MASACRE!",
+"YIKIM!": "¡DEVASTACIÓN!",
+"KIYAMET!": "¡APOCALIPSIS!",
+"MORTİMER'İN GAZABI!": "¡LA IRA DE MORTIMER!"
 },
 "tpl": [
 [

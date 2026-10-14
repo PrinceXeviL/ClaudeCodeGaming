@@ -2521,6 +2521,57 @@ function drawSoulPulses() { // ruh fenere varınca fener parlar
   for (const t of G.towers) if (t.soulT > 0) { const c = towerEye(t); glow(ctx, c.x, c.y, 22 + 18 * (1 - t.soulT / 0.45), '140,255,210', t.soulT * 1.4); }
   ctx.restore();
 }
+// toplu ölüm sayacı (14 Eki, Caner: oyuncular kalabalığın bir anda erimesini sever): win sn içinde min ve üstü ölüm gelince
+// ölümlerin ortasında "KATLİAM ×N" yazısı büyüyerek çıkar; her basamakta (tiers) ses ve sarsıntı güçlenir
+const COMBO = { win: 0.6, min: 5, show: 1.6, tiers: [[5, 'KATLİAM!', '#ffd34d'], [8, 'YIKIM!', '#ff9a3c'], [12, 'KIYAMET!', '#ff4a4a'], [20, 'MORTİMER\'İN GAZABI!', '#c27bff']] };
+function comboKill(e) {
+  const C = G.combo && G.t - G.combo.last < COMBO.win ? G.combo : (G.combo = { n: 0, sx: 0, sy: 0, tier: -1 });
+  C.n++; C.last = G.t; C.sx += e.x; C.sy += e.y;
+  if (C.n < COMBO.min) return;
+  const ti = COMBO.tiers.reduce((a, t, i) => (C.n >= t[0] ? i : a), 0);
+  G.comboFx = { x: C.sx / C.n, y: C.sy / C.n, n: C.n, ti, t0: G.comboFx && G.comboFx.combo === C ? Math.max(G.comboFx.t0, time - 0.12) : time, combo: C }; // sayı artarken yazı sönmez
+  if (ti > C.tier) { // yeni basamak: daha güçlü ses ve sarsıntı
+    C.tier = ti; sfx(ti >= 2 ? 'stomp' : 'boom'); if (ti >= 1) sfx('levelup'); shakeScreen(2 + ti * 1.5, 0.25 + ti * 0.08);
+    G.comboFx.t0 = time;
+  }
+}
+function drawCombo() {
+  const F = G.comboFx;
+  if (!F) return;
+  const t = time - F.t0; // gerçek zaman (ağır çekimde ve 3x hızda aynı süre)
+  if (t > COMBO.show) { G.comboFx = null; return; }
+  const [, title, col] = COMBO.tiers[F.ti], q = worldToScreen(F.x, F.y - 34);
+  const x = clamp(q.x, VIS.l + 110, VIS.l + VIS.w - 110), y = clamp(q.y, VIS.t + 90, VIS.t + VIS.h - 90);
+  const pop = easeOutBack(clamp(t / 0.22, 0, 1)), a = clamp((COMBO.show - t) / 0.4, 0, 1), s = (0.9 + F.ti * 0.12) * pop;
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y - t * 10); ctx.scale(s, s); ctx.rotate(-0.05);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 95, '255,140,40', 0.24 * a); ctx.restore();
+  txt(title, 0, -9, 30, col, 'center', '400', FONT_T);
+  txt('×' + F.n, 0, 22, 24, '#fff3d6', 'center', '400', FONT_T);
+  ctx.restore();
+}
+// boss ölümü (14 Eki): kısa ağır çekim, altın parlaması, altın yağmuru (sikkeler yüksekten saçılır)
+const SLOWMO = { k: 0.22, hold: 0.9, dur: 1.5 };
+function slowFactor(real) {
+  const S = G && G.slowMo;
+  if (!S) return 1;
+  S.t += real;
+  if (S.t >= SLOWMO.dur) { G.slowMo = null; return 1; }
+  return S.t < SLOWMO.hold ? SLOWMO.k : SLOWMO.k + (1 - SLOWMO.k) * (S.t - SLOWMO.hold) / (SLOWMO.dur - SLOWMO.hold);
+}
+function bossDeathFx(e) {
+  G.slowMo = { t: 0 }; shakeScreen(8, 0.9); sfx('stomp'); sfx('coins');
+  G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 70, col: '255,210,90', t: 0, dur: 0.7 });
+  for (let i = 0; i < 26; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-14, 14), y: e.y - rand(4, 40), vx: rand(-70, 70), vy: -rand(40, 140), drag: 1.6,
+    col: i % 3 ? '255,210,90' : '255,250,210', s0: rand(3, 6), s1: 0.5, life: rand(0.7, 1.3) });
+}
+function drawSlowMo() {
+  const S = G.slowMo;
+  if (!S) return;
+  const k = Math.min(1, S.t / 0.15) * clamp((SLOWMO.dur - S.t) / 0.6, 0, 1);
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, W * 0.66);
+  g.addColorStop(0, 'rgba(255,220,120,0)'); g.addColorStop(1, `rgba(120,80,10,${0.36 * k})`);
+  ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+}
 function killEnemy(e) {
   // mumya: bir kez yarı canla dirilir; patlama (top, göktaşı, napalm) ile ölürse dirilmez
   if (e.def.revive && !e.revived && e.lastSrc !== 'blast') {
@@ -2540,7 +2591,8 @@ function killEnemy(e) {
     G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 });
   }
   if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
-  if (e.def.chief && !e.leaked) giveCrystals(e);
+  if (e.def.chief && !e.leaked) { giveCrystals(e); bossDeathFx(e); }
+  if (!e.leaked) comboKill(e);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
     const r = spawnEnemy(e.def.dismount, G.paths.indexOf(e.p), e.d, e.off);
@@ -2549,7 +2601,7 @@ function killEnemy(e) {
   G.kills = (G.kills || 0) + 1;
   if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
   cnt('kills'); if (e.def.chief) cnt('bosses'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
-  dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)));
+  dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)), false, e.def.chief && !e.leaked ? [26, 1.7] : null); // boss: altın yağmuru
   sfx('death');
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
@@ -2614,13 +2666,13 @@ function gainXp(h, amount, quiet) {
 const COIN_TARGET = { get x() { return EDGE.l + 76 * 1.2; }, get y() { return EDGE.t + 19 * 1.2; } }; // sol üstteki altın simgesi
 // 13 Eki (Caner): sikke yere değip kısa sıçrar, rest sn sonra sayaca uçar (eskiden 4 sn bekliyordu); varınca tıkırdar
 const COIN_FX = { rest: 0.3, vz: [120, 160] };
-function dropCoins(x, y, value, flyNow) {
-  const n = clamp(Math.round(value / 4), 1, value >= 100 ? 10 : 6);
+function dropCoins(x, y, value, flyNow, rain) { // rain = [sikke sayısı, fırlatma çarpanı] (boss altın yağmuru)
+  const n = rain ? Math.min(rain[0], value) : clamp(Math.round(value / 4), 1, value >= 100 ? 10 : 6), up = rain ? rain[1] : 1;
   let left = value;
   for (let i = 0; i < n; i++) {
     const v = i === n - 1 ? left : Math.floor(value / n); left -= v;
-    const a = rand(0, Math.PI * 2), sp = rand(18, 42);
-    const c = { x, y: y + rand(-3, 3), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.5, z: 6, vz: rand(COIN_FX.vz[0], COIN_FX.vz[1]), t: rand(0, 0.3), val: v, state: 'drop', spin: rand(0, 6) };
+    const a = rand(0, Math.PI * 2), sp = rand(18, 42) * (rain ? 1.8 : 1);
+    const c = { x, y: y + rand(-3, 3), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.5, z: 6, vz: rand(COIN_FX.vz[0], COIN_FX.vz[1]) * up, t: rand(0, 0.3), val: v, state: 'drop', spin: rand(0, 6) };
     G.coins.push(c);
     if (flyNow) { c.z = rand(0, 12); collectCoin(c); c.ft = -i * 0.05; }
   }
@@ -16025,9 +16077,11 @@ function drawPlay() {
     g.addColorStop(0, 'rgba(200,20,20,0)'); g.addColorStop(1, `rgba(200,20,20,${0.45 * G.hurt / 0.6})`);
     ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
+  drawSlowMo();
   drawMenu();
   drawEnemyPanel();
   drawHud();
+  drawCombo();
   drawCoinsFlying();
   drawBossBar();
   drawIntro();
@@ -17183,7 +17237,8 @@ function frame(now) {
   }
   if (screen === 'play' && !overlay && !trans && !AD && !(G && G.tut && G.tut.card)) { // eğitim kartı oyunu durdurur
     const hs = G && G.hitStop > 0 ? (G.hitStop -= real, 0.12) : 1; // vuruş donması (11 Eki): ağır vuruşta oyun bir an yavaşlar
-    for (let i = 0; i < speed; i++) update(real * hs);
+    const sm = slowFactor(real); // boss ölümü ağır çekimi (hızlandırma da o an devre dışı)
+    for (let i = 0; i < (sm < 1 ? 1 : speed); i++) update(real * hs * sm);
   }
   if (screen === 'play' && G) { updateCamera(real); weatherVisuals(real); }
   if (screen === 'title' && !trans) warmMap(); // haritanın zemini önceden hazırlanır
