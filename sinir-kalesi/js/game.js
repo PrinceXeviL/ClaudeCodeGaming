@@ -29,7 +29,7 @@ const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
-  if (!/^bubu_/.test(name) && paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir (Bubu doğrudan: boyacı kuyruğunda beklemesin)
+  if (!/^bubu_/.test(name) && !(G && G.loadWait && G.loadWait.crit.has(name)) && paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir (Bubu doğrudan: boyacı kuyruğunda beklemesin)
   const im = new Image();
   im.src = 'img/' + LAZY[name] + (window.SURUM ? '?v=' + window.SURUM : '');
   (im.decode ? im.decode() : new Promise((ok, no) => { im.onload = ok; im.onerror = no; }))
@@ -456,7 +456,7 @@ const SOUND = {
   // 13 Eki (Caner): yürüyüş sesleri (varliklar/adim_sesleri.py: Kenney CC0 + Freesound CC0); updateSteps kalabalığa göre kısık çalar
   step_foot:   { vol: 0.11, gap: 0.07, max: 3, rate: [0.88, 1.12] },  // düşman piyadesinin ayak sesi
   step_gallop: { vol: 0.16, gap: 0.12, max: 2, rate: [0.92, 1.08] },  // süvari / atlı okçu / savaş arabası dörtnalı
-  step_bone:   { vol: 0.09, gap: 0.08, max: 2, rate: [0.9, 1.15] },   // iskeletlerin kemik takırtılı adımı
+  step_bone:   { vol: 0.07, gap: 0.08, max: 2, rate: [0.9, 1.15] },   // iskeletlerin kemik takırtılı adımı (14 Eki: çok hafif)
   fs_rattle: { vol: 0.09, gap: 2.5, max: 1, rate: [0.9, 1.1] },      // bekleyen iskeletin kemik takırtısı (spookymodem, Kneeling), çok kısık     // kılıç çarpışması (gerçek kayıt, StarNinjas CC0; hafif)
   death:   { vol: 0.22, gap: 0.1, max: 2, rate: [0.9, 1.15] },
   coin:    { vol: 0.16, gap: 0.06, max: 2, rate: [0.95, 1.15] },   // 13 Eki: sikke sayaca varınca (sık çalar, kısık)
@@ -487,7 +487,7 @@ const SOUND = {
   roar:    { vol: 1, gap: 1.2, max: 1 },
   stomp:   { vol: 1, gap: 0.22, max: 1 },
   // 14 Eki (Caner: eksik sesler): birim ve yetenek sesleri (ElevenLabs, el_<tür>)
-  horse:   { vol: 0.34, gap: 2.5, max: 1, rate: [0.92, 1.08] },   // süvari atı kişner, horlar
+  horse:   { vol: 0.24, gap: 6, max: 1, rate: [0.92, 1.08] },     // süvari atı kişner, horlar (14 Eki: seyrek, kısık)
   dog:     { vol: 0.34, gap: 1.5, max: 1, rate: [0.94, 1.08] },   // savaş köpeği / tazı havlar
   dogbite: { vol: 0.3, gap: 0.3, max: 2, rate: [0.92, 1.1] },     // köpek ısırır
   eagle:   { vol: 0.3, gap: 3, max: 1, rate: [0.95, 1.05] },      // kartal çığlığı
@@ -523,7 +523,7 @@ fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject('json '
 // 14 Eki (Caner: telefonda inşa, borazan, savaş, düşman ve büyü sesleri yoktu, yalnız müzik): iOS WebKit yüzlerce sesi aynı anda çözerken
 // çözmeler sessizce düşüyordu (Chrome'da sorun yok). Artık kuyrukla çözülür; düşen bir kez daha denenir.
 // Aynı anda en çok DEC_N çözme; yanıt vermeyen çözme DEC_T sn sonra bırakılır (telefonda bir ses takılırsa ötekiler beklemesin).
-const DEC_N = 4, DEC_T = 4000, DECW = []; let decRun = 0;
+const DEC_N = 6, DEC_T = 4000, DECW = []; let decRun = 0;
 function decPump() {
   while (decRun < DEC_N && DECW.length) { decRun++; DECW.shift()().then(() => { decRun--; decPump(); }); }
 }
@@ -545,7 +545,7 @@ function decodeOne(name) {
 
 // tarayıcılar sesi ancak ilk dokunuştan sonra açar
 function initAudio() {
-  if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
+  if (actx) { if (actx.state !== 'running') actx.resume().catch(() => {}); return; } // 14 Eki: iOS arka plandan dönüşte 'interrupted' bırakıyordu (ses kesik kalıyordu)
   try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
   const comp = actx.createDynamicsCompressor();
   comp.threshold.value = -14; comp.ratio.value = 4;
@@ -794,11 +794,16 @@ const HORSE = new Set(['cavalry', 'horsearcher', 'chariot', 'cavcaptain']);
 function updateSteps(dt) {
   if (muted || !G.t) return;
   // 14 Eki (Caner: adım sesleri uyuşmuyor): eskiden kalabalığa göre rastgele aralıkla çalıyordu; artık her birim kendi yürüdüğü yol kadar adım atar
+  // 14 Eki (Caner: 1 at varsa ona göre, 2-5 at varsa ona göre): ekranda yürüyen aynı türden sayısı n; her adım 1,5/√n olasılıkla,
+  // 1/(1+0,12(n-1)) yükseklikte çalar (tek atta her adım tam ses, kalabalıkta ölçülü bir uğultu)
+  const N = G.stepN || (G.stepN = {}), M = G.stepM = { step_foot: 0, step_gallop: 0, step_bone: 0 };
   const step = (u, kind, len) => {
     const d = Math.hypot(u.x - (u.stx ?? u.x), u.y - (u.sty ?? u.y)); u.stx = u.x; u.sty = u.y;
     if (d > len) { u.stD = 0; return; } // ışınlanma / savrulma adım sayılmaz
+    if (d > 0.01 && onScreen(u, 0)) M[kind]++;
     if ((u.stD = (u.stD ?? rand(0, len)) + d) < len) return;
-    u.stD -= len; if (onScreen(u, 0)) sfx(kind, null, 1, u);
+    u.stD -= len; const n = Math.max(1, N[kind] || 1);
+    if (onScreen(u, 0) && Math.random() < 1.5 / Math.sqrt(n)) sfx(kind, null, Math.max(0.45, 1 / (1 + 0.12 * (n - 1))), u);
   };
   for (const e of G.enemies) {
     if (e.dead || e.under) continue;
@@ -807,6 +812,7 @@ function updateSteps(dt) {
     if (HORSE.has(e.type) || HORSE.has(d.base)) step(e, 'step_gallop', h * 1.1); else if (!MUTE_VOICE(e) || e.type === 'wardog') step(e, 'step_foot', h * 0.42);
   }
   for (const s of G.soldiers) if (!s.dead && !s.hero && !s.wall && !s.golem && !s.pet) step(s, 'step_bone', unitH(s) * 0.42);
+  Object.assign(N, M); // sonraki karede kullanılacak sayılar
 }
 // 14 Eki (Caner: "yakınlaştığım yerdeki düşmanların, iskeletlerimin sesini yakınlığa göre daha fazla duyayım"):
 // oyun döngüsü o an işlenen birimi SFX_POS'a koyar; o sırada çalan ses onun ekrandaki yerine göre kısılır/açılır ve sağa-sola kayar.
@@ -1825,6 +1831,12 @@ function startLevel(idx, chal = null) {
   [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
     if (d.base) SUF.forEach(sf => G.bakeQ.push('s:' + t + ':' + sf));
     if (!d.flying && !d.chief && !d.machine && !d.noraise) G.bakeQ.push('r:' + t); });
+  // 14 Eki (Caner: "açılışta yükleme ekranı olsun, her şey yüklensin"): bölüm, şeritler + boyalı kopyalar + sesler bitene kadar başlamaz
+  // 14 Eki (Caner: 17 sn çok, en çok 2-3 sn): yalnız açılışta görünenler beklenir (komutan, kale); düşman ve iskelet şeritleri arkada yüklenir
+  // (ilk dalgaya dek hazır; ortak olanlar zaten menüde önceden yüklendi: preloadCommon)
+  const crit = [...keep].filter(k => LAZY[k] && (/^hero_/.test(k) || /^castle_keep/.test(k)));
+  G.loadWait = { t0: performance.now(), keep: crit, crit: new Set(crit) };
+  crit.forEach(k => { if (STRIP_WAIT.has(k) && !SPR[k]) { STRIP_WAIT.delete(k); loadStrip(k); } }); // boyacı kuyruğundaysa öne al (doğrudan, paralel)
   setupMech();
   setupProps();
   gaProg('Start', idx);
@@ -3833,8 +3845,8 @@ function creatureVoice(e, dt) {
   const t = e.type, b = e.def.base, kind = HORSE.has(t) || HORSE.has(b) ? 'horse' : DOGS.has(t) || DOGS.has(b) ? 'dog' : t === 'eagle' || b === 'eagle' ? 'eagle'
     : (WHEELED.has(t) || WHEELED.has(b)) && !e.blocker && !(e.stun > 0) ? 'wheels' : null;
   if (!kind || (e.vT = (e.vT ?? rand(0.4, 3)) - dt) > 0) return;
-  e.vT = kind === 'wheels' ? rand(2.2, 3.6) : kind === 'dog' ? rand(5, 10) : rand(7, 14);
-  if (onScreen(e, 0)) sfx(kind);
+  e.vT = kind === 'wheels' ? rand(2.2, 3.6) : kind === 'dog' ? rand(5, 10) : kind === 'horse' ? rand(16, 28) : rand(7, 14);
+  if (onScreen(e, 0) && (kind !== 'horse' || Math.random() < 0.5)) sfx(kind); // 14 Eki: at kişnemesi abartı olmasın
 }
 function updateEnemy(e, dt) {
   creatureVoice(e, dt);
@@ -4070,7 +4082,8 @@ function updateEnemy(e, dt) {
         if (A && !A.ranged && (e.altT ??= A.cd * 0.4) <= 0) { e.altT = A.cd; playSkill(e, A.kind === 'net' ? NET.skill : undefined); doAlt(e, A, victim); return; } // özel saldırı
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
         damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
-        sfx(DOGS.has(e.type) || DOGS.has(e.def.base) ? 'dogbite' : WHIPS.has(e.type) || WHIPS.has(e.def.base) ? 'whip' : 'clash'); // köpek ısırır, kırbaçlı şaklatır
+        { const n = Math.max(1, G.meleeN || 1); // 14 Eki: kavga sayısına göre ölçülü (2 kavga: her vuruş, 12 kavga: yarısı ve kısık)
+          if (Math.random() < Math.min(1, 3 / Math.sqrt(n * 2))) sfx(DOGS.has(e.type) || DOGS.has(e.def.base) ? 'dogbite' : WHIPS.has(e.type) || WHIPS.has(e.def.base) ? 'whip' : 'clash', null, Math.max(0.5, 1 / (1 + 0.07 * (n - 1)))); } // köpek ısırır, kırbaçlı şaklatır
       }
     }
     return; // bloklanmış: durur
@@ -16054,6 +16067,7 @@ function weatherAudio() {
   ambLast.t = time;
   if (amb.battle) {
     let n = 0; if (screen === 'play' && G && !muted) for (const e of G.enemies) if (!e.dead && e.blocker && onScreen(e, 0)) n++;
+    if (G) G.meleeN = n; // kılıç seslerinin ölçüsü için
     const v = n >= SOUND.battle.min ? SOUND.battle.vol * (BL === SND.el_battle ? 0.75 : 1) * (overlay ? 0.35 : 1) * clamp((n - SOUND.battle.min + 1) / (SOUND.battle.full - SOUND.battle.min + 1), 0.15, 1) : 0; // 14 Eki: 1-2 kavgada ordu sesi yok
     if (Math.abs((ambLast.battle ?? -1) - v) > 0.002) { ambLast.battle = v; amb.battle.gain.setTargetAtTime(v, actx.currentTime, v > 0 ? 0.35 : 0.8); }
   }
@@ -16149,8 +16163,41 @@ function drawHolyLights() {
     ctx.restore();
   }
 }
+// yükleme ekranı: bekleyen şerit / boya / ses kalmayınca (ya da LOAD_MAX sn sonra) biter; ilerleme yüzdesi
+const LOAD_MAX = 6;
+function loadProgress() {
+  const L = G.loadWait, pend = L.keep.filter(k => STRIP_WAIT.has(k)).length;
+  const total = L.keep.length, done = total - pend; // sesler beklenmez (menüde çözülür; eksikse birkaç sn içinde gelir)
+  return { k: total ? done / total : 1, ready: !pend };
+}
+// ortak şeritler (iskeletler, iri birimler, takımdaki komutan, kale) menüdeyken arkada, boyacıda yüklenir; bölüm açılışı beklemez
+function preloadCommon() {
+  if (preloadCommon.done || !IMG_READY) return; preloadCommon.done = true;
+  const SUF = ['_walk', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'], L = ['castle_keep_1_idle'];
+  for (let i = 1; i <= 8; i++) SUF.forEach(sf => L.push('unit_skel_' + i + sf));
+  for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => L.push(b + sf));
+  for (const id of team()) if (HEROES[id]) ['_idle', '_walk', '_run', '_atk', '_cast', '_skill', '_skill2', '_die', '_block'].concat((HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => L.push(HEROES[id].sprite + sf));
+  L.filter(k => LAZY[k]).forEach(loadStrip);
+}
+function checkLoad() {
+  const P = loadProgress(); G.loadWait.k = Math.max(G.loadWait.k || 0, P.k);
+  if (P.ready || (performance.now() - G.loadWait.t0) / 1000 > LOAD_MAX) { G.loadWait = null; console.log('[yükleme] bitti'); }
+}
+function drawLoading() {
+  const k = G.loadWait.k || 0;
+  ctx.fillStyle = 'rgba(8,5,12,0.94)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  const cx = W / 2, cy = H / 2, bw = Math.min(420, VIS.w - 80);
+  txt('Yükleniyor', cx, cy - 34, 26, '#ffd34d', 'center', '400', FONT_T);
+  roundRect(cx - bw / 2, cy - 8, bw, 16, 8, 'rgba(255,255,255,0.08)', 'rgba(255,211,77,0.5)', 1.5);
+  if (k > 0) roundRect(cx - bw / 2 + 2, cy - 6, Math.max(12, (bw - 4) * k), 12, 6, '#9aff8a');
+  txt(Math.round(k * 100) + '%', cx, cy + 34, 16, '#e8dcc4', 'center', '700', FONT_B, false);
+  for (let i = 0; i < 3; i++) { const a = time * 3 + i * 2.1; circle(cx - 20 + i * 20, cy + 64, 4 + 2 * Math.max(0, Math.sin(a)), 'rgba(154,255,138,' + (0.3 + 0.5 * Math.max(0, Math.sin(a))) + ')'); }
+  const q = G.loadWait.quote || (G.loadWait.quote = MORT_LINES.start[Math.floor(Math.random() * MORT_LINES.start.length)]); // rakipler gibi: yüklenirken bir söz
+  txt(q, cx, cy + 104, 15, '#c8b8e8', 'center', '600', FONT_B, false); // söz ayrı satırda (çeviri sözlüğü tam metni tanısın)
+  txt('— Mortimer', cx, cy + 126, 13, '#9a8ab8', 'center', '600', FONT_B, false);
+}
 function drawPlay() {
-  if (G.bakeQ && G.bakeQ.length) bakeNext();
+  if (G.bakeQ && G.bakeQ.length) { const t0 = performance.now(); do bakeNext(); while (G.loadWait && G.bakeQ.length && performance.now() - t0 < 12); } // yüklenirken karede çok boya
   const sh = G.shakeT > 0 ? G.shakeAmp * (G.shakeT / G.shakeDur) : 0;
   ctx.save();
   if (sh > 0) ctx.translate(rand(-sh, sh), rand(-sh, sh));
@@ -16274,6 +16321,7 @@ function drawPlay() {
   drawBanner();
   drawTut();
   if (overlay) drawOverlay();
+  if (G.loadWait && !G.comic) drawLoading(); // yükleme ekranı (çizgi roman paneli varken o oynar, yükleme arkada sürer)
 }
 
 const TIPS = NECRO ? [
@@ -17099,6 +17147,7 @@ canvas.addEventListener('pointerdown', (ev) => {
   initAudio();
   startMusic();
   if (trans) return;
+  if (screen === 'play' && G && G.loadWait && !G.comic) return; // yükleme ekranı (panel geçilebilir)
   const p = toLogical(ev);
   const ptr = { x: p.x, y: p.y, sx: p.x, sy: p.y, moved: false, hud: false };
   pointers.set(ev.pointerId, ptr);
@@ -17408,7 +17457,9 @@ function worldTap(x, y) {
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && screen === 'play' && !overlay) setOverlay('pause');
+  if (!document.hidden && actx && actx.state !== 'running') actx.resume().catch(() => {}); // ana ekrandan dönünce ses geri gelsin
 });
+window.addEventListener('pageshow', () => { if (actx && actx.state !== 'running') actx.resume().catch(() => {}); });
 
 // ---------- döngü ----------
 let last = performance.now();
@@ -17421,7 +17472,9 @@ function frame(now) {
     if (G) G.bg = renderBackground(G.lv, G.paths, bgRes(), BLEED);
     for (const k in THUMB) delete THUMB[k];
   }
-  if (screen === 'play' && !overlay && !trans && !AD && !(G && G.tut && G.tut.card)) { // eğitim kartı oyunu durdurur
+  if (screen === 'play' && G && G.loadWait && !trans) checkLoad();
+  if (screen !== 'play' && actx) preloadCommon(); // menüdeyken (ilk dokunuştan sonra) ortak şeritler arkada
+  if (screen === 'play' && !overlay && !trans && !AD && !(G && G.tut && G.tut.card) && !(G && G.loadWait)) { // eğitim kartı ve yükleme ekranı oyunu durdurur
     const hs = G && G.hitStop > 0 ? (G.hitStop -= real, 0.12) : 1; // vuruş donması (11 Eki): ağır vuruşta oyun bir an yavaşlar
     const sm = slowFactor(real); // boss ölümü ağır çekimi (hızlandırma da o an devre dışı)
     for (let i = 0; i < (sm < 1 ? 1 : speed); i++) update(real * hs * sm);

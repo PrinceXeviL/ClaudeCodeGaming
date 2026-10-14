@@ -31,7 +31,7 @@ MAP = {
     'wheels': (['g3_wheels'], 1.5), 'bell': (['g3_bell'], 2.2), 'whip': (['g3_whip'], 0.45), 'heal': (['g3_heal'], 1.2),
     'volley': (['g3_volley'], 1.5), 'shout': (['g3_shout'], 1.5), 'herodie': (['g3_herodie'], 1.5),
 }
-LP = {'build': 2400, 'upgrade': 2800, 'select': 4500, 'pick': 4500, 'open': 4500, 'error': 3000}  # tiz kısmı yumuşat (Caner: inşa sesleri tok olsun, rahatsız etmesin)
+LP = {'build': 2400, 'upgrade': 2800, 'select': 4500, 'pick': 4500, 'open': 4500, 'error': 3000, 'step_bone': 3500, 'step_foot': 4000, 'step_gallop': 3500}  # adımlar yumuşak, çok hafif  # tiz kısmı yumuşat (Caner: inşa sesleri tok olsun, rahatsız etmesin)
 NOW = {'clash': 'fs_clash', 'pain': 'fs_pain', 'dvoice': 'fs_death', 'bonefall': 'fs_bone'}  # şu an oyunda çalan (Freesound takma adı)
 DB = {'horse': -18, 'dog': -18, 'dogbite': -18, 'eagle': -19, 'wheels': -21, 'bell': -16, 'whip': -18, 'heal': -18, 'volley': -17, 'shout': -17, 'herodie': -17,
       'wave': -16, 'click': -22, 'select': -22, 'pick': -23, 'open': -20, 'thunder': -14, 'portal': -16, 'roar': -15, 'stomp': -14, 'win': -16, 'lose': -16}
