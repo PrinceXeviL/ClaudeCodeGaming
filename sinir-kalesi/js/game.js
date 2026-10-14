@@ -962,7 +962,7 @@ function painVoice(e) {
 // Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez. Parçalar yüksek masterlandığı için kısık çalınır.
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
-  menu:   { file: 'muzik_menu.mp3',  gain: 0.3 },
+  menu:   { file: 'muzik_menu.mp3',  gain: 0.27 }, // 15 Eki (Caner): %10 kısık
   battle: { file: 'muzik_savas.mp3', gain: 0.15, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
   boss:   { file: 'muzik_boss.mp3',  gain: 0.2, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
@@ -11006,6 +11006,7 @@ function gameButton(key, x, y, w, h, label, fn, style = 'gold', o = {}) {
 const TILE = {
   red: ['#d8464f', '#7a1424', '#4a0814'], violet: ['#7a6c9c', '#3a2f52', '#211a30'], green: ['#4fae6a', '#1d5c34', '#0f3620'],
   purple: ['#a866e6', '#4c1f86', '#2c0f52'], ember: ['#e57a3c', '#8a2a12', '#561608'], gold: ['#f4c050', '#9a5a10', '#5e3406'], blue: ['#5a8ee0', '#1f3a7a', '#12224a'],
+  slate: ['#8e9cb2', '#3c475c', '#222a38'], teal: ['#3cc6b8', '#126e68', '#0a3e3c'], rose: ['#e8689e', '#7c1c4e', '#4a0c2c'], // 15 Eki: haritadaki her düğme ayrı renk
 };
 function tileBtn(key, x, y, r, icon, fn, o, appear) {
   const C = TILE[o.tile] || TILE.violet, rad = r * 0.44;
@@ -11053,7 +11054,7 @@ function boneBtn(key, x, y, r, icon, fn, o, appear) {
   const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = sp < 1 ? (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 / BONE_RING.n * 2 : 0; // iki kemik boyu döner, yavaşlayarak
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
-  if (o.sq || (screen === 'map' && key !== 'back')) { // 14 Eki (Caner): sefer haritasındaki düğmeler köşeleri yuvarlatılmış kare (simgeler sonra Gemini'yle yenilenecek)
+  if (o.sq) { // köşeleri yuvarlatılmış kare (15 Eki, Caner: sefer haritasında yine yuvarlak, kemik halkalı; kare yalnız o.sq ile)
     const R = r * 1.02, cr = R * 0.34, sq = (k, fill, stroke, lw) => roundRect(-R - k, -R - k, 2 * (R + k), 2 * (R + k), cr + k, fill, stroke, lw);
     roundRect(-R - 4, -R + 2, 2 * R + 8, 2 * R + 8, cr + 4, 'rgba(0,0,0,0.42)'); // gölge
     const fr = ctx.createLinearGradient(0, -R - 5, 0, R + 5); fr.addColorStop(0, '#f2e6c8'); fr.addColorStop(0.5, '#b8a47a'); fr.addColorStop(1, '#6e5a3a');
@@ -15963,9 +15964,9 @@ function drawMap() {
   txt(`${total} / ${LEVELS.length * 4}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
   ctx.restore();
   const bx = (i) => px - 14 - RB - i * RS;
-  roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15, tile: 'violet' });
+  roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15, tile: 'slate' });
   roundBtn('codex', bx(1), TY, RB, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2, tile: 'green' });
-  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25, tile: 'purple' });
+  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25, tile: 'teal' });
   { // günün sınavı: takvim düğmesi, bugün yapılmadıysa parlar
     const done = save.daily && save.daily.key === todayKey() && save.daily.done, k = RB / 19;
     if (!done) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx(3), TY, 34, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1); ctx.restore(); }
@@ -15994,9 +15995,9 @@ function drawMap() {
   roundBtn('grim', bx2(2), by2, BR, 'grimoire', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, { appear: st - 0.3, tile: 'red', active: freeSouls > 0, activeCol: '190,110,255' }); lab(bx2(2), 'BÜYÜ KİTABI');
   roundBtn('heroes', bx2(1), by2, BR, 'crown', () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
-  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'violet' }); lab(bx2(3), 'ÖĞRETİCİ'); }
+  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
   const freeStars = starsTotal() - starsSpent();
-  roundBtn('upgrades', bx2(0), by2, BR, (r) => fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'gold', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
+  roundBtn('upgrades', bx2(0), by2, BR, (r) => fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'rose', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
   const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
   if (freeSouls > 0) badge(2, freeSouls, '#8a3ad8');
   if (freeStars > 0) badge(0, freeStars, '#e8434b');
