@@ -104,8 +104,11 @@ fetch('img/anim.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).
 // şeridin i. karesi: ayaklar orijinde, karakter boyu h olacak şekilde
 function drawFrame(img, F, i, h) {
   const k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
-  const m = pickMip(ctx, img, dw * F.n), s = m.width / img.width;
-  ctx.drawImage(m, i * F.fw * s, 0, F.fw * s, F.fh * s, -dw / 2, -dh * (1 - F.base), dw, dh);
+  // 14 Eki (Caner: Báthory uzaktan yürürken görünmüyordu): küçük kopya yukarı yuvarlanmış boyda (9711 -> 4856), oran yalnız genişlikten
+  // alınınca kesilen dikdörtgen yükseklikte görselin 0,01 px dışına taşıyordu; iOS Safari dışa taşan kaynakta HİÇ çizmiyor (Chrome kırpıyor).
+  // Oran eksen eksen alınır, dikdörtgen görselin içinde tutulur.
+  const m = pickMip(ctx, img, dw * F.n), sx = m.width / img.width, sy = m.height / img.height, x0 = i * F.fw * sx;
+  ctx.drawImage(m, x0, 0, Math.min(F.fw * sx, m.width - x0), Math.min(F.fh * sy, m.height), -dw / 2, -dh * (1 - F.base), dw, dh);
 }
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
 const SPR_META = {};
