@@ -486,6 +486,18 @@ const SOUND = {
   portal:  { vol: 1, gap: 0.6, max: 1 },
   roar:    { vol: 1, gap: 1.2, max: 1 },
   stomp:   { vol: 1, gap: 0.22, max: 1 },
+  // 14 Eki (Caner: eksik sesler): birim ve yetenek sesleri (ElevenLabs, el_<tür>)
+  horse:   { vol: 0.34, gap: 2.5, max: 1, rate: [0.92, 1.08] },   // süvari atı kişner, horlar
+  dog:     { vol: 0.34, gap: 1.5, max: 1, rate: [0.94, 1.08] },   // savaş köpeği / tazı havlar
+  dogbite: { vol: 0.3, gap: 0.3, max: 2, rate: [0.92, 1.1] },     // köpek ısırır
+  eagle:   { vol: 0.3, gap: 3, max: 1, rate: [0.95, 1.05] },      // kartal çığlığı
+  wheels:  { vol: 0.24, gap: 1.2, max: 2, rate: [0.9, 1.08] },    // kuşatma arabalarının tekerlek gıcırtısı
+  bell:    { vol: 0.5, gap: 0.8, max: 1, rate: [0.97, 1.03] },    // Çan Rahibi / Campanus çanı
+  whip:    { vol: 0.34, gap: 0.25, max: 2, rate: [0.94, 1.08] },  // kırbaç şaklaması
+  heal:    { vol: 0.4, gap: 1, max: 1 },                          // kutsal iyileştirme
+  volley:  { vol: 0.45, gap: 1, max: 1 },                         // bossun ok / mızrak yağmuru
+  shout:   { vol: 0.45, gap: 2, max: 1, rate: [0.95, 1.05] },     // insan bossun komuta narası
+  herodie: { vol: 0.55, gap: 1, max: 1 },                         // komutan düşer
 };
 let actx = null, master = null;
 let muted = false;
@@ -767,7 +779,8 @@ const ELEVEN_ON = true;
 const EL_ALIAS = {};
 for (const k of ['arrow', 'arrowhit', 'splash', 'pain', 'dvoice', 'scream', 'drum', 'yell', 'plaguethrow', 'plaguefire', 'bonefall', 'magic', 'cannon', 'boom',
   'meteor', 'clash', 'step_foot', 'step_gallop', 'step_bone', 'death', 'coin', 'coins', 'build', 'upgrade', 'leak', 'wave', 'win', 'lose', 'levelup',
-  'click', 'select', 'pick', 'open', 'castlehit', 'bash', 'cry', 'whirl', 'zap', 'error', 'thunder', 'spell', 'reinforce', 'portal', 'roar', 'stomp']) {
+  'click', 'select', 'pick', 'open', 'castlehit', 'bash', 'cry', 'whirl', 'zap', 'error', 'thunder', 'spell', 'reinforce', 'portal', 'roar', 'stomp',
+  'horse', 'dog', 'dogbite', 'eagle', 'wheels', 'bell', 'whip', 'heal', 'volley', 'shout', 'herodie']) {
   EL_ALIAS[k] = 'el_' + k; SOUND['el_' + k] = { ...(SOUND[k] || {}) };
 }
 // eskiden kodla üretilenler (dosyası yoktu): kayıt için ses düzeyi
@@ -777,28 +790,43 @@ for (const k of ['portal', 'roar', 'stomp']) Object.assign(SOUND['el_' + k], { v
 Object.assign(SOUND.el_clash, { vol: 0.13, gap: 0.18 }); // 14 Eki (Caner: 1-2 kişilik kavgada ordu gibi): kılıç sesi kısık ve seyrek
 // ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
 // piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
-const STEPS = { foot: { gap: 0.36, cap: 10 }, gallop: { gap: 0.5, cap: 4 }, bone: { gap: 0.33, cap: 6 } };
 const HORSE = new Set(['cavalry', 'horsearcher', 'chariot', 'cavcaptain']);
 function updateSteps(dt) {
   if (muted || !G.t) return;
-  let nf = 0, nh = 0, nb = 0;
+  // 14 Eki (Caner: adım sesleri uyuşmuyor): eskiden kalabalığa göre rastgele aralıkla çalıyordu; artık her birim kendi yürüdüğü yol kadar adım atar
+  const step = (u, kind, len) => {
+    const d = Math.hypot(u.x - (u.stx ?? u.x), u.y - (u.sty ?? u.y)); u.stx = u.x; u.sty = u.y;
+    if (d > len) { u.stD = 0; return; } // ışınlanma / savrulma adım sayılmaz
+    if ((u.stD = (u.stD ?? rand(0, len)) + d) < len) return;
+    u.stD -= len; if (onScreen(u, 0)) sfx(kind, null, 1, u);
+  };
   for (const e of G.enemies) {
-    if (e.dead || e.under || e.inMelee || e.stun > 0 || !onScreen(e, 0)) continue;
+    if (e.dead || e.under) continue;
     const d = e.def; if (d.flying || d.machine) continue;
-    if (HORSE.has(e.type) || HORSE.has(d.base)) nh++; else if (!MUTE_VOICE(e) || e.type === 'wardog') nf++;
+    const h = CHAR_H['enemy_' + e.type] || 24;
+    if (HORSE.has(e.type) || HORSE.has(d.base)) step(e, 'step_gallop', h * 1.1); else if (!MUTE_VOICE(e) || e.type === 'wardog') step(e, 'step_foot', h * 0.42);
   }
-  for (const s of G.soldiers) { // iskeletler: gerçekten yer değiştirenler
-    const mv = s.lx != null && Math.hypot(s.x - s.lx, s.y - s.ly) > 12 * dt; s.lx = s.x; s.ly = s.y;
-    if (mv && !s.dead && !s.hero && !s.wall && !s.golem && !s.pet && onScreen(s, 0)) nb++;
-  }
-  const S = G.stepT || (G.stepT = { foot: 0, gallop: 0.2, bone: 0.1 });
-  const go = (k, n, kind) => { if (!n) { S[k] = Math.min(S[k], 0.1); return; } if ((S[k] -= dt) > 0) return;
-    const C = STEPS[k]; S[k] = C.gap * rand(0.85, 1.15) / (n > 3 ? 1.35 : 1); sfx(kind, null, 0.45 + 0.55 * Math.min(1, n / C.cap)); };
-  go('foot', nf, 'step_foot'); go('gallop', nh, 'step_gallop'); go('bone', nb, 'step_bone');
+  for (const s of G.soldiers) if (!s.dead && !s.hero && !s.wall && !s.golem && !s.pet) step(s, 'step_bone', unitH(s) * 0.42);
 }
-function sfx(kind, rate, volK = 1) {
+// 14 Eki (Caner: "yakınlaştığım yerdeki düşmanların, iskeletlerimin sesini yakınlığa göre daha fazla duyayım"):
+// oyun döngüsü o an işlenen birimi SFX_POS'a koyar; o sırada çalan ses onun ekrandaki yerine göre kısılır/açılır ve sağa-sola kayar.
+// Arayüz ve genel sesler (NOPOS) konumsuz.
+let SFX_POS = null;
+const NOPOS = new Set(['click', 'select', 'pick', 'open', 'win', 'lose', 'levelup', 'wave', 'horn', 'hornboss', 'coin', 'coins', 'leak', 'error', 'spell', 'build', 'upgrade', 'thunder']);
+const SPATIAL = { edge: 0.5, out: 0.08, wide: 0.7, near: 1.35, pan: 0.45 };
+function spatial(o) {
+  const x = o.x ?? o.tx, y = o.y ?? o.ty;
+  if (x == null || screen !== 'play') return null;
+  const hw = W / 2 / cam.z, hh = H / 2 / cam.z, dx = (x - cam.x - hw) / hw, dy = (y - cam.y - hh) / hh, d = Math.hypot(dx, dy * 0.85);
+  const zf = clamp((cam.z - 1) / Math.max(0.01, ZOOM_MAX - 1), 0, 1);
+  const focus = d <= 1 ? 1 - (1 - SPATIAL.edge) * d : Math.max(SPATIAL.out, SPATIAL.edge - 0.42 * (d - 1));
+  return { k: (1 - zf) * (SPATIAL.wide + (1 - SPATIAL.wide) * focus) + zf * SPATIAL.near * focus, pan: clamp(dx, -1, 1) * SPATIAL.pan };
+}
+function sfx(kind, rate, volK = 1, pos = SFX_POS) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
+  const sp = pos && !NOPOS.has(kind) ? spatial(pos) : null;
+  if (sp) { volK *= sp.k; if (volK < 0.03) return; } // uzaktaki çok kısık ses hiç çalmaz (kanal boşa dolmasın)
   if (ELEVEN_ON && EL_ALIAS[kind] && SND[EL_ALIAS[kind]] && SND[EL_ALIAS[kind]].length) kind = EL_ALIAS[kind];
   else if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
@@ -818,7 +846,8 @@ function sfx(kind, rate, volK = 1) {
   else if (def.rate) src.playbackRate.value = rand(def.rate[0], def.rate[1]);
   const g = actx.createGain();
   g.gain.value = def.vol * volK;
-  src.connect(g); g.connect(master);
+  src.connect(g);
+  if (sp && sp.pan && actx.createStereoPanner) { const pn = actx.createStereoPanner(); pn.pan.value = sp.pan; g.connect(pn); pn.connect(master); } else g.connect(master);
   src.onended = () => { st.playing--; };
   src.start();
 }
@@ -831,11 +860,11 @@ function voicePitch(e) {
   return e.vp;
 }
 const MUTE_VOICE = (e) => !!e.def.machine || ['wardog', 'eagle', 'elephant', 'vulture'].includes(e.type); // makineler ve hayvanlar insan sesiyle bağırmaz
-function deathVoice(e) { if (!MUTE_VOICE(e)) sfx('dvoice', voicePitch(e)); }
+function deathVoice(e) { if (!MUTE_VOICE(e)) sfx('dvoice', voicePitch(e), 1, e); }
 // acı sesi: her düşman en çok ~1,4 sn'de bir, sürekli hasarda (zehir, gaz) çıkmaz
 function painVoice(e) {
   if (MUTE_VOICE(e) || (e.painAt && time - e.painAt < 2) || Math.random() > 0.35) return;
-  e.painAt = time; sfx('pain', voicePitch(e));
+  e.painAt = time; sfx('pain', voicePitch(e), 1, e);
 }
 
 // ----- müzik: üç parça, aralarında yumuşak geçiş -----
@@ -2608,7 +2637,8 @@ function drawSlowMo() {
   g.addColorStop(0, 'rgba(255,220,120,0)'); g.addColorStop(1, `rgba(120,80,10,${0.36 * k})`);
   ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
 }
-function killEnemy(e) {
+function killEnemy(e) { const P = SFX_POS; SFX_POS = e; try { killEnemy0(e); } finally { SFX_POS = P; } } // ölüm sesleri ölenin yerinden
+function killEnemy0(e) {
   // mumya: bir kez yarı canla dirilir; patlama (top, göktaşı, napalm) ile ölürse dirilmez
   if (e.def.revive && !e.revived && e.lastSrc !== 'blast') {
     e.revived = true; e.hp = e.maxHp * e.def.revive; e.reviveT = 1.1; e.blocker = null;
@@ -2825,7 +2855,7 @@ function damageSoldier(s, amount, src) {
       return;
     }
     s.dead = true; s.hp = 0;
-    if (s.hero) mortSay('heroDown');
+    if (s.hero) { mortSay('heroDown'); sfx('herodie', null, 1, s); }
     else if (s.ghoul || s.big || s.pet) { // gulyabani / golem / dev / ruh kurdu çürük bir toz bulutuyla yere çöker
       sfx('bonefall');
       for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-10, 10), y: s.y - rand(2, 26), vx: rand(-30, 30), vy: -rand(10, 40), drag: 2,
@@ -3797,7 +3827,17 @@ function unitH(u) {
   return u.hero ? (u.def && u.def.h ? u.def.h * UNIT_K : 30) : u.militia ? CHAR_H.militia : CHAR_H.soldier; // 12 Eki: CHAR_H.hero tanımsızdı (NaN)
 }
 
+// 14 Eki (Caner: atların sesi yok; eksikler): hayvan ve makine sesleri, ekrandayken ara ara (ilk görünüşte biraz sonra)
+const DOGS = new Set(['wardog', 'hound']), WHIPS = new Set(['flagellant', 'agnes']), WHEELED = new Set(['chariot', 'siegetower', 'lantern', 'catapult', 'ram', 'cathedral']);
+function creatureVoice(e, dt) {
+  const t = e.type, b = e.def.base, kind = HORSE.has(t) || HORSE.has(b) ? 'horse' : DOGS.has(t) || DOGS.has(b) ? 'dog' : t === 'eagle' || b === 'eagle' ? 'eagle'
+    : (WHEELED.has(t) || WHEELED.has(b)) && !e.blocker && !(e.stun > 0) ? 'wheels' : null;
+  if (!kind || (e.vT = (e.vT ?? rand(0.4, 3)) - dt) > 0) return;
+  e.vT = kind === 'wheels' ? rand(2.2, 3.6) : kind === 'dog' ? rand(5, 10) : rand(7, 14);
+  if (onScreen(e, 0)) sfx(kind);
+}
 function updateEnemy(e, dt) {
+  creatureVoice(e, dt);
   const slow = (e.slowT > 0 ? 1 - e.slowK : 1) * (e.frogT > 0 ? FROG.spd : 1); // kurbağa yavaş zıplar
   e.anim += dt * slow;
   if (e.flash > 0) e.flash -= dt;
@@ -4030,7 +4070,7 @@ function updateEnemy(e, dt) {
         if (A && !A.ranged && (e.altT ??= A.cd * 0.4) <= 0) { e.altT = A.cd; playSkill(e, A.kind === 'net' ? NET.skill : undefined); doAlt(e, A, victim); return; } // özel saldırı
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
         damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
-        sfx('clash');
+        sfx(DOGS.has(e.type) || DOGS.has(e.def.base) ? 'dogbite' : WHIPS.has(e.type) || WHIPS.has(e.def.base) ? 'whip' : 'clash'); // köpek ısırır, kırbaçlı şaklatır
       }
     }
     return; // bloklanmış: durur
@@ -6119,7 +6159,7 @@ function fireZoneItem(o) {
   else if (o.id === 'whirl') { near.filter(e => !boss(e)).sort((a, b) => b.hp - a.hp).slice(0, 2).forEach(e => { stunEnemy(e, 1.6); damageEnemy(e, 160, 'true', false, 'blast'); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 22, col: '80,140,200', t: 0, dur: 0.6 }); }); sfx('splash'); }
   else if (o.id === 'obelisk') { for (const e of near) { if (e.def.nocurse) continue; e.curseT = Math.max(e.curseT || 0, 6); e.curseK = Math.max(e.curseK || 0, 0.3); slowEnemy(e, 0.25, 3); } sfx('cursegaze'); }
   else if (o.id === 'bats') { G.zones.push({ x: o.x, y: o.y, r: o.r, dps: 16, dtype: 'phys', t: 0, life: 3, fxT: 0, kind: 'bats', hx: o.x, hy: o.y - 20, hero: null, slow: 0.3, heal: 0, n: 12, seed: rand(0, 9) }); sfx('bats'); }
-  else if (o.id === 'bell') { for (const e of near) stunEnemy(e, boss(e) ? 0.5 : 1.6); sfx('horn'); shakeScreen(1.5, 0.2); }
+  else if (o.id === 'bell') { for (const e of near) stunEnemy(e, boss(e) ? 0.5 : 1.6); sfx('bell'); shakeScreen(1.5, 0.2); }
   else if (o.id === 'bones') { for (const e of near) damageEnemy(e, 60 * (1 - 0.4 * dist(e.x, e.y, o.x, o.y) / o.r), 'phys', false, 'blast'); for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(80, 200); emit(G.parts, { kind: 'chunk', x: o.x, y: o.y - 10, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6 - 60, g: 420, vr: rand(-12, 12), rot: rand(0, 6), col: '#e8dcc0', s0: rand(1.5, 2.8), s1: 1, life: 0.8 }); } sfx('bash'); shakeScreen(2.5, 0.25); }
   else if (o.id === 'altar') { let got = 0; for (const e of near) { const d0 = e.hp; damageEnemy(e, 40, 'true', false, 'blast'); got += Math.max(0, d0 - Math.max(0, e.hp)); }
     for (const s2 of G.soldiers) if (!s2.dead && !s2.wall && dist(s2.x, s2.y, o.x, o.y) < o.r * 1.4) s2.hp = Math.min(s2.maxHp, s2.hp + 40 + got * 0.2); sfx('blooddrain'); }
@@ -6921,12 +6961,13 @@ function update(dt) {
   updateHatches(dt);
   if (G.bossFx && (G.bossFx.t += dt) > G.bossFx.dur) G.bossFx = null;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
-  for (const t of G.towers) updateTower(t, dt);
-  for (const e of G.enemies) if (!e.dead) updateEnemy(e, dt);
-  for (const s of G.soldiers) updateSoldier(s, dt);
+  for (const t of G.towers) { SFX_POS = t; updateTower(t, dt); } // ses konumu: o an işlenen birim (spatial)
+  for (const e of G.enemies) if (!e.dead) { SFX_POS = e; updateEnemy(e, dt); }
+  for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); }
+  SFX_POS = null;
   separateUnits(dt);
-  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; updateProjectile(p, dt); }
-  hitBy = null;
+  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; SFX_POS = p; updateProjectile(p, dt); }
+  hitBy = null; SFX_POS = null;
   HERO_SKILL = false; SKILL_K = 1;
 
   G.enemies = G.enemies.filter(e => !e.dead);
@@ -13543,7 +13584,7 @@ function bossAbilities(e, dt) {
   if (ab.howl && ready('howl', ab.howl.cd)) {
     for (const o of G.enemies) if (!o.dead && dist(o.x, o.y, e.x, e.y) < ab.howl.r) o.hasteT = 4;
     for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: ab.howl.r * (0.5 + i * 0.25), col: '255,90,70', t: -i * 0.12, dur: 0.6 });
-    bossCastFx(e, ab.howl.say || (NECRO ? 'Borazan!' : 'Uluma!'), '255,110,80'); if (!ab.howl.soft) sfx('roar');
+    bossCastFx(e, ab.howl.say || (NECRO ? 'Borazan!' : 'Uluma!'), '255,110,80'); if (!ab.howl.soft) sfx(DOGS.has(e.type) || e.type === 'hubertus' ? 'dog' : 'shout'); // insan boss komuta narası (eskiden canavar kükremesi)
   }
   if (ab.slam && ready('slam', ab.slam.cd)) {
     const hitAny = G.soldiers.some(s => !s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r);
@@ -13552,7 +13593,7 @@ function bossAbilities(e, dt) {
       for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < ab.slam.r) { damageSoldier(s, ab.slam.dmg * (e.dmgMul || 1), e); s.stunT = ab.slam.stun; }
       if (ab.slam.bell) { // çan: altın ses halkaları, toprak sıçramaz
         for (let i = 0; i < 3; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y - 10, r: ab.slam.r * (0.45 + i * 0.28), col: '255,215,120', t: -i * 0.12, dur: 0.6 });
-        bossCastFx(e, ab.slam.say || 'Çan!', '255,215,120'); sfx('horn'); if (e.def.chief) shakeScreen(4, 0.35);
+        bossCastFx(e, ab.slam.say || 'Çan!', '255,215,120'); sfx('bell'); if (e.def.chief) shakeScreen(4, 0.35);
       } else {
       G.effects.push({ kind: 'shock', x: e.x, y: e.y, r: ab.slam.r * 1.3, t: 0, dur: 0.45 });
       G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: ab.slam.r, t: 0, dur: 0.4 });
@@ -13574,7 +13615,7 @@ function bossAbilities(e, dt) {
     if (!vs.length) e.abT.volley = 1;
     else {
       vs.forEach((v, i) => G.projectiles.push({ kind: 'harrow', foe: true, hero: v, from: e, sx: e.x, sy: aimY(e) - 8, tx: v.x, ty: v.y - 12, t: -i * 0.08, dur: 0.45, arc: 40, edmg: ab.volley.dmg * (e.dmgMul || 1), stunHit: ab.volley.stun }));
-      bossCastFx(e, ab.volley.say || 'Mızrak Yağmuru!', '255,210,140');
+      bossCastFx(e, ab.volley.say || 'Mızrak Yağmuru!', '255,210,140'); sfx('volley');
     }
   }
   if (ab.whirl && ready('whirl', ab.whirl.cd)) { // savurma: çevresindeki bütün iskeletlere
@@ -13619,7 +13660,7 @@ function bossAbilities(e, dt) {
       any = true; o.hp = Math.min(o.maxHp, o.hp + ab.heal.amt); G.effects.push({ kind: 'heal', x: o.x, y: o.y, t: 0, dur: 0.6 });
       G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - 30, target: o, x1: o.x, y1: aimY(o), t: 0, dur: 0.35, w: 0.5, col: 'rgb(90,220,110)', seed: rand(0, 99) });
     }
-    if (any) bossCastFx(e, 'Şifa!', '120,255,140');
+    if (any) { bossCastFx(e, 'Şifa!', '120,255,140'); sfx('heal'); }
   }
   if (ab.blink && !e.blocker && e.siege === undefined && ready('blink', ab.blink.cd)) {
     for (let i = 0; i < 16; i++) emit(G.parts, { kind: 'glow', x: e.x + rand(-8, 8), y: e.y - rand(0, 40), vy: -rand(10, 30), col: ab.blink.col || '40,200,140', s0: 6, s1: 12, life: 0.6, a: 0.7 });

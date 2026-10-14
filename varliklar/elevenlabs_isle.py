@@ -18,17 +18,23 @@ MAP = {
     'drum': (['g_drum'], 0.8), 'yell': (['g_yell'], 1.2), 'plaguethrow': (['g_plaguethrow'], 1.2), 'plaguefire': (['g_plaguefire'], 1.5),
     'bonefall': (['iskeletcoken'], 0.9), 'magic': (['g_magic'], 0.8), 'cannon': (['g_cannon'], 1.3), 'boom': (['g_boom'], 1.3),
     'meteor': (['g_meteor'], 2.5), 'clash': (['kemikvurus', 'g_clash'], 0.5),
-    'step_foot': (['g_step_foot'], 0.3), 'step_gallop': (['g_step_gallop'], 0.55), 'step_bone': (['g_step_bone'], 0.3),
-    'death': (['g_death'], 0.7), 'coin': (['g_coin'], 0.35), 'coins': (['g_coins'], 1.0), 'build': (['insa'], 1.1),
-    'upgrade': (['g_upgrade'], 1.2), 'leak': (['g_leak'], 1.2), 'wave': (['g_wave'], 1.5), 'win': (['g_win'], 3.0),
+    'step_foot': (['g2_step_foot'], 0.3), 'step_gallop': (['g2_step_gallop'], 0.55), 'step_bone': (['g2_step_bone'], 0.3),  # 14 Eki: yeni adımlar
+    'death': (['g_death'], 0.7), 'coin': (['g_coin'], 0.35), 'coins': (['g_coins'], 1.0), 'build': (['g2_build'], 1.3),  # 14 Eki: daha tok inşa
+    'upgrade': (['g2_upgrade'], 1.4), 'leak': (['g_leak'], 1.2), 'wave': (['g_wave'], 1.5), 'win': (['g_win'], 3.0),
     'lose': (['g_lose'], 3.0), 'levelup': (['g_levelup'], 1.2), 'click': (['g_click'], 0.2), 'select': (['g_select'], 0.3),
     'pick': (['g_pick'], 0.3), 'open': (['g_open'], 0.6), 'castlehit': (['g_castlehit'], 0.8), 'bash': (['g_bash'], 0.5),
     'cry': (['g_cry'], 1.2), 'whirl': (['g_whirl'], 0.8), 'zap': (['g_zap'], 0.5), 'error': (['g_error'], 0.3),
     'thunder': (['g_thunder'], 2.0), 'spell': (['g_spell'], 0.8), 'reinforce': (['g_reinforce'], 1.2),
     'portal': (['g_portal'], 1.5), 'roar': (['g_roar'], 1.5), 'stomp': (['g_stomp'], 0.8),
+    # 14 Eki: sesi hiç olmayan birim ve yetenekler (yeni türler; game.js'te kendi çağrıları var)
+    'horse': (['g3_horse'], 1.4), 'dog': (['g3_dog'], 1.0), 'dogbite': (['g3_dogbite'], 0.6), 'eagle': (['g3_eagle'], 1.0),
+    'wheels': (['g3_wheels'], 1.5), 'bell': (['g3_bell'], 2.2), 'whip': (['g3_whip'], 0.45), 'heal': (['g3_heal'], 1.2),
+    'volley': (['g3_volley'], 1.5), 'shout': (['g3_shout'], 1.5), 'herodie': (['g3_herodie'], 1.5),
 }
+LP = {'build': 2400, 'upgrade': 2800}  # tiz kısmı yumuşat (Caner: inşa sesleri tok olsun, rahatsız etmesin)
 NOW = {'clash': 'fs_clash', 'pain': 'fs_pain', 'dvoice': 'fs_death', 'bonefall': 'fs_bone'}  # şu an oyunda çalan (Freesound takma adı)
-DB = {'wave': -16, 'click': -22, 'select': -22, 'pick': -23, 'open': -20, 'thunder': -14, 'portal': -16, 'roar': -15, 'stomp': -14, 'win': -16, 'lose': -16}
+DB = {'horse': -18, 'dog': -18, 'dogbite': -18, 'eagle': -19, 'wheels': -21, 'bell': -16, 'whip': -18, 'heal': -18, 'volley': -17, 'shout': -17, 'herodie': -17,
+      'wave': -16, 'click': -22, 'select': -22, 'pick': -23, 'open': -20, 'thunder': -14, 'portal': -16, 'roar': -15, 'stomp': -14, 'win': -16, 'lose': -16}
 
 
 def dec(p):
@@ -58,6 +64,14 @@ def trim(x, maxd):
     return y
 
 
+def lowpass(x, hz):
+    a = 1 - np.exp(-2 * np.pi * hz / SR); y = np.empty_like(x); v = 0.0
+    for _ in range(2):  # iki kat (12 dB/oktav)
+        for i in range(len(x)): v += a * (x[i] - v); y[i] = v
+        x = y.copy(); v = 0.0
+    return y
+
+
 def save(name, y, db):
     y = y * 10 ** ((db - act_rms(y)) / 20); pk = np.abs(y).max()
     if pk > 0.97: y *= 0.97 / pk
@@ -70,7 +84,7 @@ def main():
     made = []
     for kind, (srcs, maxd) in MAP.items():
         db = old_db(kind); files = [p for s in srcs for p in sorted(glob.glob(os.path.join(E, s + '_[0-9]*.mp3')))]
-        for i, p in enumerate(files, 1): made.append(save(f'el_{kind}_{i}', trim(dec(p), maxd), db))
+        for i, p in enumerate(files, 1): made.append(save(f'el_{kind}_{i}', lowpass(trim(dec(p), maxd), LP[kind]) if kind in LP else trim(dec(p), maxd), db))
     # yakın dövüş ortam döngüsü: son 1,5 sn başa karıştırılır (dikişsiz)
     b = dec(os.path.join(E, 'g_battle_1.mp3')); X = int(SR * 1.5); L = len(b) - X
     lp = b[:L].copy(); r = np.linspace(0, 1, X); lp[:X] = lp[:X] * r + b[L:L + X] * (1 - r)

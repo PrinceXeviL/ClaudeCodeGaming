@@ -89,6 +89,24 @@ SFX = {
     'g_portal': ('a dark magic portal tears open, deep swirling whoosh and hum, short, no music', 1.5, 1),
     'g_roar': ('a mighty roar that blasts out as a shockwave, deep and powerful, short, no music', 1.5, 1),
     'g_stomp': ('a giant takes one heavy stomping footstep that shakes the ground, deep boom, no music', 0.8, 2),
+    # 14 Eki (Caner: adım sesleri uyuşmuyor; inşa sesleri daha tok, rahatsız etmeyen, tarzımıza uygun)
+    'g2_step_foot': ('one single footstep of a roman legionary in hobnailed leather sandals on packed dirt, soft crunch with a tiny metal tick, close, dry, no music', 0.5, 6),
+    'g2_step_bone': ('one single step of a skeleton bony foot on packed dirt, soft hollow wooden clack with a faint bone rattle, quiet, close, dry, no music', 0.5, 6),
+    'g2_step_gallop': ('a single galloping stride of a warhorse on packed dirt, four muffled hoof thuds, close, dry, no music', 0.6, 4),
+    'g2_build': ('dark fantasy tower construction: a heavy stone tower settles into the earth with a deep soft thud and a low rumble, gravel and dirt trickling, warm and muted, no metal, no high pitched sounds, no music', 1.5, 4),
+    # 14 Eki (Caner: "atların sesleri yok; eksikleri belirle, her sesi üret"): sesi hiç olmayan birim ve yetenekler
+    'g3_horse': ('a warhorse neighs and snorts, short, no music', 1.5, 3),
+    'g3_dog': ('a fierce war dog barks twice aggressively, short, no music', 1.0, 3),
+    'g3_dogbite': ('a war dog snarls and bites with a vicious snap, short, no music', 0.7, 2),
+    'g3_eagle': ('a large eagle screeches, single sharp cry, no music', 1.0, 2),
+    'g3_wheels': ('heavy wooden siege cart wheels rolling and creaking on a dirt road, short, no music', 1.5, 2),
+    'g3_bell': ('a heavy church bell tolls once, deep resonant ring with a long decay, no music', 2.0, 2),
+    'g3_whip': ('a leather whip cracks sharply through the air, short, no music', 0.5, 3),
+    'g3_heal': ('a holy healing spell, soft angelic choir chime with a warm golden shimmer, short, no music', 1.2, 2),
+    'g3_volley': ('a volley of many arrows released at once, bowstrings snapping and a rushing whoosh overhead, short, no music', 1.5, 2),
+    'g3_shout': ('a roman general shouts a rallying battle command to his troops, powerful commanding yell, no words, short, no music', 1.5, 2),
+    'g3_herodie': ('a heroic undead warrior falls in battle, deep pained groan and a ghostly exhale, no words, short, no music', 1.5, 2),
+    'g2_upgrade': ('a dark stone tower grows stronger: deep muffled stone grinding and a low magical hum swelling then settling, warm and soft, no metal clangs, no high pitched sounds, no music', 1.5, 3),
 }
 
 
