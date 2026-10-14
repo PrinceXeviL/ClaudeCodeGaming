@@ -748,6 +748,19 @@ function gaProg(st, i, score) { // st: 'Start' | 'Complete' | 'Fail'
 function gaDesign(id, v) { const A = gaInit(); if (!A) return; try { if (v != null) A.addDesignEvent(id, v); else A.addDesignEvent(id); } catch (e) {} }
 const FREESOUND_ON = true; // false: eski sesler (Caner beğenmezse)
 const FS_ALIAS = { clash: 'fs_clash', pain: 'fs_pain', dvoice: 'fs_death', bonefall: 'fs_bone' };
+// 14 Eki (Caner: "eleven labs ile yap, eksiksiz olsun tüm sesler"): varliklar/elevenlabs_isle.py el_* sesleri, Freesound'dan önce gelir.
+// false: anında eski seslere döner (dosyalar duruyor). Borazan, Mortimer'ın sesi, asit patlaması ve zaten ElevenLabs olanlar değişmedi.
+const ELEVEN_ON = true;
+const EL_ALIAS = {};
+for (const k of ['arrow', 'arrowhit', 'splash', 'pain', 'dvoice', 'scream', 'drum', 'yell', 'plaguethrow', 'plaguefire', 'bonefall', 'magic', 'cannon', 'boom',
+  'meteor', 'clash', 'step_foot', 'step_gallop', 'step_bone', 'death', 'coin', 'coins', 'build', 'upgrade', 'leak', 'wave', 'win', 'lose', 'levelup',
+  'click', 'select', 'pick', 'open', 'castlehit', 'bash', 'cry', 'whirl', 'zap', 'error', 'thunder', 'spell', 'reinforce', 'portal', 'roar', 'stomp']) {
+  EL_ALIAS[k] = 'el_' + k; SOUND['el_' + k] = { ...(SOUND[k] || {}) };
+}
+// eskiden kodla üretilenler (dosyası yoktu): kayıt için ses düzeyi
+Object.assign(SOUND.el_click, { vol: 0.4 }); Object.assign(SOUND.el_select, { vol: 0.36 }); Object.assign(SOUND.el_pick, { vol: 0.32 });
+SOUND.el_open = { vol: 0.4, gap: 0.1, max: 1 }; Object.assign(SOUND.el_wave, { vol: 0.5 }); Object.assign(SOUND.el_thunder, { vol: 0.55, gap: 0.4, max: 1 });
+for (const k of ['portal', 'roar', 'stomp']) Object.assign(SOUND['el_' + k], { vol: 0.6 });
 // ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
 // piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
 const STEPS = { foot: { gap: 0.36, cap: 10 }, gallop: { gap: 0.5, cap: 4 }, bone: { gap: 0.33, cap: 6 } };
@@ -772,7 +785,8 @@ function updateSteps(dt) {
 function sfx(kind, rate, volK = 1) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (muted || !actx) return;
-  if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
+  if (ELEVEN_ON && EL_ALIAS[kind] && SND[EL_ALIAS[kind]] && SND[EL_ALIAS[kind]].length) kind = EL_ALIAS[kind];
+  else if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
   if ((kind === 'click' || kind === 'select' || kind === 'pick' || kind === 'open' || kind === 'whoosh' || kind === 'bonespin') && uiSound(kind)) return;
   const def = SOUND[kind], list = SND[kind];
@@ -15976,8 +15990,9 @@ function weatherAudio() {
     // yağmur: tiz cızırtı yerine alçak geçiren süzgeçle yumuşak, boğuk bir hışırtı
     amb = { rain: mk('lowpass', 1100, 0.5), wind: mk('lowpass', 420, 0.8) };
   }
-  if (!amb.battle && SND.battle && SND.battle.length) { // kılıç-nara döngüsü: kavga sayısıyla yükselir, kavga bitince söner
-    const src = actx.createBufferSource(); src.buffer = SND.battle[0]; src.loop = true;
+  const BL = ELEVEN_ON && SND.el_battle && SND.el_battle.length ? SND.el_battle : SND.battle; // ElevenLabs döngüsü (yoksa eski kayıt)
+  if (!amb.battle && BL && BL.length) { // kılıç-nara döngüsü: kavga sayısıyla yükselir, kavga bitince söner
+    const src = actx.createBufferSource(); src.buffer = BL[0]; src.loop = true;
     const g = actx.createGain(); g.gain.value = 0; src.connect(g); g.connect(master); src.start(0, rand(0, 10)); amb.battle = g;
   }
   if (time - ambLast.t < 0.2) return;
