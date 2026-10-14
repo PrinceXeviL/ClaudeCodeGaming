@@ -330,7 +330,7 @@ Object.assign(ENEMIES, {
   wardog:    { name: 'Savaş Köpeği', h: 15, hp: 70, speed: 46, armor: 0, mr: 0, gold: 6, dmg: [3, 6], rate: 0.7, lives: 1, r: 9 },
   chariot:   { name: 'Savaş Arabası', h: 36, hp: 300, speed: 28, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 1, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
   siegetower:{ name: 'Kuşatma Kulesi', h: 62, hp: 1100, speed: 8, armor: 0.45, mr: 0.1, gold: 60, dmg: [2, 4], rate: 2, lives: 3, r: 20, machine: true, noblock: true, split: ['legion', 6] },
-  eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true, dive: { cd: 7, r: 60, dmg: [10, 16], dur: 1.5, hit: 0.3 } }, // 15 Eki: iskeletlere pike (Veo _atk)
+  eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true, dive: { cd: 7, r: 60, rT: 90, dmg: [10, 16], dur: 1.5, hit: 0.3 } }, // 15 Eki: iskeletlere ve kuledeki okçulara pike (Veo _atk); rT: kuleye uzaklık
   // leş akbabası: sürüyle uçar; altındaki cesetleri yer (diriltilemez olur) ve kendini iyileştirir
   vulture:   { name: 'Leş Akbabası', h: 33, hp: 120, speed: 27, armor: 0, mr: 0, gold: 11, dmg: [0, 0], rate: 1, lives: 1, r: 11, flying: true, scavenge: { r: 60, every: 2.5, heal: 35 } },
   // savaş fili (mini boss): iskeletleri ezip geçer, sırtındaki okçu yürürken ok atar (ranged.top: okun çıktığı yükseklik, boy oranı)

@@ -2528,6 +2528,7 @@ function aimY(e) {
 // bölüm sonu özeti için: o an vuranın türü (kule, iskelet, dirilen, komutan); çağıran kod ayarlar
 let hitBy = null;
 const DIVE_VULN = 1.5;
+const CONVOY = { gap: 1.8 }; // kuşatma araçları arası en az boşluk (yarıçaplar toplamının katı)
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
@@ -4113,14 +4114,20 @@ function updateEnemy(e, dt) {
   if (DV) {
     if (e.diveT > 0) {
       const p0 = 1 - e.diveT / DV.dur; e.diveT -= dt; const p1 = 1 - e.diveT / DV.dur, S = e.diveS;
-      if (p0 < DV.hit && p1 >= DV.hit && S && !S.dead) { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; impactFx(S.x, S.y - 10, '255,230,180', 0.8); sfx('dogbite', 1.15, 1, e); }
+      if (p0 < DV.hit && p1 >= DV.hit) {
+        if (S && S.towerMan) { if (G.towers.includes(S.t) && !S.a.dead) { hitTowerMan(S.t, S.a, roll(DV.dmg)); impactFx(S.x, S.y - 8, '255,230,180', 0.8); sfx('dogbite', 1.1, 1, e); } } // kuledeki okçu: pençe ıskalamaz
+        else if (S && !S.dead) { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; impactFx(S.x, S.y - 10, '255,230,180', 0.8); sfx('dogbite', 1.15, 1, e); }
+      }
       if (e.diveT <= 0) { e.diveT = 0; e.diveS = null; e.diveCd = DV.cd * rand(0.8, 1.2); }
       return;
     }
     e.diveCd = (e.diveCd ?? DV.cd * rand(0.4, 1)) - dt;
     if (e.diveCd <= 0) {
-      let best = null, bd = DV.r;
+      // hedef: yakındaki iskelet/komutan ya da kuledeki iskelet okçular (15 Eki, Caner: doğrudan okçunun canından gider; TMAN); ikisi de varsa yazı tura
+      let best = null, bd = DV.r, tm = null, td = DV.rT;
       for (const so of G.soldiers) { if (so.dead || so.wall || (so.born != null && G.t < so.born)) continue; const d = dist(so.x, so.y, e.x, e.y); if (d < bd) { bd = d; best = so; } }
+      for (const t of G.towers) { if (!t.ga) continue; const d = dist(t.x, t.y, e.x, e.y); if (d >= td) continue; const A = t.ga.filter(a => a.pr && !a.dead); if (A.length) { td = d; tm = A[Math.floor(Math.random() * A.length)].pr; } }
+      if (tm && (!best || Math.random() < 0.5)) best = tm;
       if (best) { e.diveT = DV.dur; e.diveS = best; sfx('eagle', 1, 1, e); } else e.diveCd = 0.5;
     }
   }
@@ -4364,6 +4371,13 @@ function updateEnemy(e, dt) {
     const q = pathPos(e.p, e.d, e.off), d = dist(e.x, e.y, q.x, q.y), st = Math.max(spd, 12) * dt;
     if (d <= st + 0.5) e.offPath = false;
     else { e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
+  }
+  // 15 Eki (Caner): kalabalık gelen kuşatma araçları iç içe geçmesin: aynı yolda öndeki araca (r1 + r2)·CONVOY.gap kadar
+  // yaklaşan araç yavaşlar, iyice yaklaşınca durur (öndeki takılırsa arkadakiler sıraya girer)
+  if (e.def.machine && e.d > 0) {
+    let gap = Infinity, need = 0;
+    for (const o of G.enemies) { if (o === e || o.dead || o.under || !o.def.machine || o.p !== e.p || o.d <= e.d) continue; const g = o.d - e.d; if (g < gap) { gap = g; need = (o.def.r + e.def.r) * CONVOY.gap; } }
+    if (gap < need) spd *= clamp((gap - need * 0.7) / (need * 0.3), 0, 1);
   }
   e.curSpd = spd * (e.d < 0 ? 1.5 : 1); e.movedAt = G.t; // mermilerin tahminli nişanı için (leadPoint)
   e.d += e.curSpd * dt; // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
@@ -9123,6 +9137,12 @@ function drawBurrow(e) {
 
 // tam ekranda yolun giriş ağzı görünür: düşman çerçeve dışında doğarken ilk adımlarında belirir (birden çıkmasın)
 function drawEnemy(e) {
+  if (e.diveT > 0 && e.diveS && !e._dv) { // pike: kuş hedefe (iskelet ya da kule tepesi) uzanıp geri döner; yoldaki yeri değişmez
+    const S = e.diveS, k = Math.sin(Math.PI * clamp((1 - e.diveT / e.def.dive.dur) / (2 * e.def.dive.hit), 0, 1)), side = S.x < e.x ? 1 : -1;
+    const gx = S.x + side * 10 - e.x, gy = (S.towerMan ? S.y + 14 : S.y) - e.y; // kuledeki okçu: kuşun gövdesi okçunun hizasına iner
+    ctx.save(); ctx.translate(gx * k, gy * k); e._dv = true; try { drawEnemy(e); } finally { e._dv = false; ctx.restore(); }
+    return;
+  }
   const out = e.x < 0 || e.x > W || e.y < 0 || e.y > H;
   if (!out || e.d >= 45 || e.d < 0 || e.p.ext) return drawEnemy0(e); // giriş payından gelen zaten ekran dışından yürür
   ctx.save(); ctx.globalAlpha *= clamp(e.d / 45, 0, 1); drawEnemy0(e); ctx.restore();
