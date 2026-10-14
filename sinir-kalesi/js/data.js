@@ -1117,7 +1117,7 @@ const UPGRADES = [
 ];
 // Oyun tek, sabit zorlukta oynanır
 // gold: başlangıç altını çarpanı, bounty: düşman ödülü ve erken çağrı bonusu çarpanı (kazanç)
-const GAME_DIFF = { hp: 1.2, // 11 Eki (Caner: oyun çok kolay): düşman ve boss canı +%20 (önce +%30 denendi, fazla geldi)
+const GAME_DIFF = { hp: 1.26, // 11 Eki (Caner: oyun çok kolay): düşman ve boss canı +%20 (önce +%30 denendi, fazla geldi); 14 Eki: +%5 daha (1,2 → 1,26)
   gold: 1, bounty: 0.8, lives: 20 }; // tek kahramana geçince düşman canı 1.15'ten 1.0'a indi
 
 // Her kahramanın 3 yeteneği vardır (sade tutmak için); kahraman 4. seviyeye kadar çıkar, her seviyede 1 puan kazanır.
@@ -1432,6 +1432,36 @@ const ITEMS = {
 const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];
 // 15 Eki (Caner): günlük giriş hediyesi. 7 günlük döngü; bir gün kaçırılırsa seri sıfırlanmaz, kaldığı yerden sürer.
 // c: kristal, item: savaş eşyası (ITEMS). Haftada ~8 kristal + 4 eşya (komutanlar 15/30 kristal: bossların payını ezmesin).
+// 14 Eki (Caner): komutan eşyaları. Bosslar düşürür (save.gear), Komutanlar ekranındaki EŞYALAR panosunda komutanın üstüne takılır
+// (save.equip[komutan][yuva] = eşya no). 4 yuva; silah komutana özeldir (Spartaküs kılıç, Leonidas mızrak, Merlin asa, Robin ok, Báthory hançer).
+// Nadirlik 0..3; değerler game.js heroStats'ta uygulanır. Eşya {id, s: yuva, k: silah türü, r: nadirlik}.
+const EQUIP = {
+  slots: ['weapon', 'armor', 'ring', 'amulet'],
+  slotName: { weapon: 'SİLAH', armor: 'ZIRH', ring: 'YÜZÜK', amulet: 'TILSIM' },
+  rar: [
+    { name: 'Sıradan',  col: '#e2dccd', rgb: '226,220,205', w: 50, melt: 1 },
+    { name: 'Nadir',    col: '#5cb4ff', rgb: '92,180,255',  w: 32, melt: 2 },
+    { name: 'Destansı', col: '#c77dff', rgb: '199,125,255', w: 14, melt: 4 },
+    { name: 'Efsanevi', col: '#ffa834', rgb: '255,168,52',  w: 4,  melt: 8 },
+  ],
+  // nadirliğe göre: silah hasar, zırh can + zırh, yüzük güç bekleme süresi (-), tılsım saldırı hızı + can yenileme
+  stat: { weapon: { dmg: [0.08, 0.15, 0.24, 0.35] }, armor: { hp: [0.1, 0.18, 0.28, 0.4], armor: [0.02, 0.04, 0.07, 0.1] },
+    ring: { cd: [0.05, 0.09, 0.14, 0.2] }, amulet: { spd: [0.05, 0.09, 0.14, 0.2], regen: [0.2, 0.35, 0.55, 0.8] } },
+  wpn: { spartacus: 'sword', leonidas: 'spear', merlin: 'staff', robin: 'arrow', bathory: 'dagger' },
+  names: {
+    sword: ['Paslı Gladius', 'Arena Kılıcı', 'Zincirkıran', 'Özgürlüğün Kılıcı'],
+    spear: ['Bronz Mızrak', 'Sparta Mızrağı', 'Falanks Dişi', 'Termopylai Mızrağı'],
+    staff: ['Meşe Asa', 'Kristal Asa', 'Fırtına Asası', 'Avalon Asası'],
+    arrow: ['Kaz Tüylü Oklar', 'Kemik Uçlu Oklar', 'Gölge Okları', 'Sherwood Okları'],
+    dagger: ['Gümüş Hançer', 'Kan Hançeri', 'Kontesin Dişi', 'Csejte Hançeri'],
+    armor: ['Deri Zırh', 'Zincir Zırh', 'Kemik Zırh', 'Ejder Pulu Zırh'],
+    ring: ['Bakır Yüzük', 'Gümüş Yüzük', 'Ruh Yüzüğü', "Mortimer'ın Mührü"],
+    amulet: ['Kemik Tılsım', 'Kurt Dişi Tılsım', 'Ay Tılsımı', 'Kara Ay Tılsımı'],
+  },
+  drop: { boss: 1, final: 2, heroic: 1 }, // boss başına eşya; Kahramanlık meydan okumasında +1
+  luck: { final: 1, usta: 1, heroic: 1 }, // nadirlik zarı bu kadar kez atılır, en iyisi alınır
+  bag: 40, // envanter sınırı: dolunca en düşük nadirlikteki takılı olmayan eşya kristale eritilir
+};
 const DAILY_LOGIN = [{ c: 1 }, { item: 'purse' }, { c: 1 }, { item: 'freeze' }, { c: 2 }, { item: 'tea' }, { c: 4, item: 'bomb' }];
 // 15 Eki (Caner): sefer haritaları dikey: yol alttan girer, kıvrıla kıvrıla yukarı çıkar, Mortimer'ın şapeli en üstte; ilerleyen bölümler yukarıda.
 // Her mekân 960x540'lık bir dilim, alttan üste dizilir (zones[0] en altta). game.js drawRegionMap / regionBg (E.vert) bu düzeni kullanır.

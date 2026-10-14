@@ -496,7 +496,58 @@
 "Zaman Kapısı!": "Time Gate!",
 "Yükleniyor": "Loading",
 "İleri!": "Forward!",
-"Saldır!": "Attack!"
+"Saldır!": "Attack!",
+"SİLAH": "WEAPON",
+"ZIRH": "ARMOR",
+"YÜZÜK": "RING",
+"TILSIM": "AMULET",
+"Sıradan": "Common",
+"Nadir": "Rare",
+"Destansı": "Epic",
+"Efsanevi": "Legendary",
+"Paslı Gladius": "Rusty Gladius",
+"Arena Kılıcı": "Arena Sword",
+"Zincirkıran": "Chainbreaker",
+"Özgürlüğün Kılıcı": "Sword of Freedom",
+"Bronz Mızrak": "Bronze Spear",
+"Sparta Mızrağı": "Spartan Spear",
+"Falanks Dişi": "Phalanx Fang",
+"Termopylai Mızrağı": "Spear of Thermopylae",
+"Meşe Asa": "Oak Staff",
+"Kristal Asa": "Crystal Staff",
+"Fırtına Asası": "Storm Staff",
+"Avalon Asası": "Staff of Avalon",
+"Kaz Tüylü Oklar": "Goose-Feather Arrows",
+"Kemik Uçlu Oklar": "Bone-Tipped Arrows",
+"Gölge Okları": "Shadow Arrows",
+"Sherwood Okları": "Sherwood Arrows",
+"Gümüş Hançer": "Silver Dagger",
+"Kan Hançeri": "Blood Dagger",
+"Kontesin Dişi": "Countess's Fang",
+"Csejte Hançeri": "Csejte Dagger",
+"Deri Zırh": "Leather Armor",
+"Zincir Zırh": "Chainmail",
+"Kemik Zırh": "Bone Armor",
+"Ejder Pulu Zırh": "Dragonscale Armor",
+"Bakır Yüzük": "Copper Ring",
+"Gümüş Yüzük": "Silver Ring",
+"Ruh Yüzüğü": "Soul Ring",
+"Mortimer'ın Mührü": "Mortimer's Seal",
+"Kemik Tılsım": "Bone Amulet",
+"Kurt Dişi Tılsım": "Wolf-Fang Amulet",
+"Ay Tılsımı": "Moon Amulet",
+"Kara Ay Tılsımı": "Black Moon Amulet",
+"YETENEK": "SKILLS",
+"EŞYA": "GEAR",
+"EŞYALAR": "GEAR",
+"TAK": "EQUIP",
+"ÇIKAR": "REMOVE",
+"EMİN MİSİN?": "SURE?",
+"YENİ": "NEW",
+"Takılı eşya yok": "No gear equipped",
+"Bosslar yenilince eşya düşürür": "Bosses drop gear when defeated",
+"Bir eşyaya dokun, sonra TAK": "Tap an item, then EQUIP",
+"Ganimet:": "Loot:"
 },
 "tpl": [
 [
@@ -776,20 +827,12 @@
 "Power +%{}"
 ],
 [
-"Hasar +%{}",
-"Damage +%{}"
-],
-[
 "bekleme -%{}",
 "cooldown -%{}"
 ],
 [
 "{}. kademe",
 "rank {}"
-],
-[
-"Zırh +%{}",
-"Armor +%{}"
 ],
 [
 "can yenilenmesi ×{}",
@@ -906,6 +949,46 @@
 [
 "{} + {}",
 "{} + {}"
+],
+[
+"Hasar +%{}",
+"Damage +{}%"
+],
+[
+"Can +%{}",
+"Health +{}%"
+],
+[
+"Zırh +%{}",
+"Armor +{}%"
+],
+[
+"Güç beklemesi -%{}",
+"Power cooldown -{}%"
+],
+[
+"Saldırı hızı +%{}",
+"Attack speed +{}%"
+],
+[
+"Can yenileme +%{}",
+"Health regen +{}%"
+],
+[
+"ÇANTA {}/{}",
+"BAG {}/{}"
+],
+[
+"ERİT +{}",
+"MELT +{}"
+],
+[
+"Yalnız {} kullanır",
+"Only {} can use it"
+],
+[
+"{} · EŞYALAR",
+"{} · GEAR"
 ]
 ]
 }

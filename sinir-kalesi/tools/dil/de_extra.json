@@ -304,7 +304,58 @@
 "Zaman Kapısı!": "Zeittor!",
 "Yükleniyor": "Wird geladen",
 "İleri!": "Vorwärts!",
-"Saldır!": "Angriff!"
+"Saldır!": "Angriff!",
+"SİLAH": "WAFFE",
+"ZIRH": "RÜSTUNG",
+"YÜZÜK": "RING",
+"TILSIM": "AMULETT",
+"Sıradan": "Gewöhnlich",
+"Nadir": "Selten",
+"Destansı": "Episch",
+"Efsanevi": "Legendär",
+"Paslı Gladius": "Rostiger Gladius",
+"Arena Kılıcı": "Arenaschwert",
+"Zincirkıran": "Kettenbrecher",
+"Özgürlüğün Kılıcı": "Schwert der Freiheit",
+"Bronz Mızrak": "Bronzespeer",
+"Sparta Mızrağı": "Spartanischer Speer",
+"Falanks Dişi": "Phalanxzahn",
+"Termopylai Mızrağı": "Speer der Thermopylen",
+"Meşe Asa": "Eichenstab",
+"Kristal Asa": "Kristallstab",
+"Fırtına Asası": "Sturmstab",
+"Avalon Asası": "Stab von Avalon",
+"Kaz Tüylü Oklar": "Gänsefederpfeile",
+"Kemik Uçlu Oklar": "Knochenspitzpfeile",
+"Gölge Okları": "Schattenpfeile",
+"Sherwood Okları": "Sherwood-Pfeile",
+"Gümüş Hançer": "Silberdolch",
+"Kan Hançeri": "Blutdolch",
+"Kontesin Dişi": "Zahn der Gräfin",
+"Csejte Hançeri": "Csejte-Dolch",
+"Deri Zırh": "Lederrüstung",
+"Zincir Zırh": "Kettenhemd",
+"Kemik Zırh": "Knochenrüstung",
+"Ejder Pulu Zırh": "Drachenschuppenrüstung",
+"Bakır Yüzük": "Kupferring",
+"Gümüş Yüzük": "Silberring",
+"Ruh Yüzüğü": "Seelenring",
+"Mortimer'ın Mührü": "Mortimers Siegel",
+"Kemik Tılsım": "Knochenamulett",
+"Kurt Dişi Tılsım": "Wolfszahnamulett",
+"Ay Tılsımı": "Mondamulett",
+"Kara Ay Tılsımı": "Schwarzmondamulett",
+"YETENEK": "FÄHIGKEIT",
+"EŞYA": "AUSRÜSTUNG",
+"EŞYALAR": "AUSRÜSTUNG",
+"TAK": "ANLEGEN",
+"ÇIKAR": "ABLEGEN",
+"EMİN MİSİN?": "SICHER?",
+"YENİ": "NEU",
+"Takılı eşya yok": "Keine Ausrüstung angelegt",
+"Bosslar yenilince eşya düşürür": "Bosse lassen Ausrüstung fallen",
+"Bir eşyaya dokun, sonra TAK": "Tippe auf einen Gegenstand, dann ANLEGEN",
+"Ganimet:": "Beute:"
 },
 "tpl": [
 [
@@ -398,6 +449,46 @@
 [
 "{} + {}",
 "{} + {}"
+],
+[
+"Hasar +%{}",
+"Schaden +{} %"
+],
+[
+"Can +%{}",
+"Leben +{} %"
+],
+[
+"Zırh +%{}",
+"Rüstung +{} %"
+],
+[
+"Güç beklemesi -%{}",
+"Kraft-Abklingzeit -{} %"
+],
+[
+"Saldırı hızı +%{}",
+"Angriffstempo +{} %"
+],
+[
+"Can yenileme +%{}",
+"Lebensregeneration +{} %"
+],
+[
+"ÇANTA {}/{}",
+"TASCHE {}/{}"
+],
+[
+"ERİT +{}",
+"SCHMELZEN +{}"
+],
+[
+"Yalnız {} kullanır",
+"Nur {} kann es nutzen"
+],
+[
+"{} · EŞYALAR",
+"{} · AUSRÜSTUNG"
 ]
 ]
 }

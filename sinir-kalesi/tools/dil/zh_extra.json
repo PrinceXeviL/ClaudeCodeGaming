@@ -304,7 +304,58 @@
 "Zaman Kapısı!": "时间之门！",
 "Yükleniyor": "加载中",
 "İleri!": "前进！",
-"Saldır!": "进攻！"
+"Saldır!": "进攻！",
+"SİLAH": "武器",
+"ZIRH": "护甲",
+"YÜZÜK": "戒指",
+"TILSIM": "护符",
+"Sıradan": "普通",
+"Nadir": "稀有",
+"Destansı": "史诗",
+"Efsanevi": "传说",
+"Paslı Gladius": "锈蚀短剑",
+"Arena Kılıcı": "竞技场之剑",
+"Zincirkıran": "断链者",
+"Özgürlüğün Kılıcı": "自由之剑",
+"Bronz Mızrak": "青铜长矛",
+"Sparta Mızrağı": "斯巴达长矛",
+"Falanks Dişi": "方阵之牙",
+"Termopylai Mızrağı": "温泉关长矛",
+"Meşe Asa": "橡木法杖",
+"Kristal Asa": "水晶法杖",
+"Fırtına Asası": "风暴法杖",
+"Avalon Asası": "阿瓦隆法杖",
+"Kaz Tüylü Oklar": "鹅羽箭",
+"Kemik Uçlu Oklar": "骨尖箭",
+"Gölge Okları": "暗影之箭",
+"Sherwood Okları": "舍伍德之箭",
+"Gümüş Hançer": "银匕首",
+"Kan Hançeri": "鲜血匕首",
+"Kontesin Dişi": "伯爵夫人之牙",
+"Csejte Hançeri": "切伊泰匕首",
+"Deri Zırh": "皮甲",
+"Zincir Zırh": "锁子甲",
+"Kemik Zırh": "骨甲",
+"Ejder Pulu Zırh": "龙鳞甲",
+"Bakır Yüzük": "铜戒指",
+"Gümüş Yüzük": "银戒指",
+"Ruh Yüzüğü": "灵魂戒指",
+"Mortimer'ın Mührü": "莫蒂默之印",
+"Kemik Tılsım": "骨质护符",
+"Kurt Dişi Tılsım": "狼牙护符",
+"Ay Tılsımı": "月之护符",
+"Kara Ay Tılsımı": "黑月护符",
+"YETENEK": "技能",
+"EŞYA": "装备",
+"EŞYALAR": "装备",
+"TAK": "装备",
+"ÇIKAR": "卸下",
+"EMİN MİSİN?": "确定？",
+"YENİ": "新",
+"Takılı eşya yok": "未装备物品",
+"Bosslar yenilince eşya düşürür": "击败首领会掉落装备",
+"Bir eşyaya dokun, sonra TAK": "点选物品，然后装备",
+"Ganimet:": "战利品："
 },
 "tpl": [
 [
@@ -398,6 +449,46 @@
 [
 "{} + {}",
 "{} + {}"
+],
+[
+"Hasar +%{}",
+"伤害 +{}%"
+],
+[
+"Can +%{}",
+"生命 +{}%"
+],
+[
+"Zırh +%{}",
+"护甲 +{}%"
+],
+[
+"Güç beklemesi -%{}",
+"技能冷却 -{}%"
+],
+[
+"Saldırı hızı +%{}",
+"攻击速度 +{}%"
+],
+[
+"Can yenileme +%{}",
+"生命回复 +{}%"
+],
+[
+"ÇANTA {}/{}",
+"背包 {}/{}"
+],
+[
+"ERİT +{}",
+"熔炼 +{}"
+],
+[
+"Yalnız {} kullanır",
+"仅限{}使用"
+],
+[
+"{} · EŞYALAR",
+"{} · 装备"
 ]
 ]
 }

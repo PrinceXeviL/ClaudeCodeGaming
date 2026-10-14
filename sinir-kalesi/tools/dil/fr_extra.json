@@ -304,7 +304,58 @@
 "Zaman Kapısı!": "Porte temporelle !",
 "Yükleniyor": "Chargement",
 "İleri!": "En avant !",
-"Saldır!": "À l'attaque !"
+"Saldır!": "À l'attaque !",
+"SİLAH": "ARME",
+"ZIRH": "ARMURE",
+"YÜZÜK": "ANNEAU",
+"TILSIM": "AMULETTE",
+"Sıradan": "Commun",
+"Nadir": "Rare",
+"Destansı": "Épique",
+"Efsanevi": "Légendaire",
+"Paslı Gladius": "Glaive rouillé",
+"Arena Kılıcı": "Épée d'arène",
+"Zincirkıran": "Brise-chaînes",
+"Özgürlüğün Kılıcı": "Épée de la liberté",
+"Bronz Mızrak": "Lance de bronze",
+"Sparta Mızrağı": "Lance spartiate",
+"Falanks Dişi": "Croc de phalange",
+"Termopylai Mızrağı": "Lance des Thermopyles",
+"Meşe Asa": "Bâton de chêne",
+"Kristal Asa": "Bâton de cristal",
+"Fırtına Asası": "Bâton des tempêtes",
+"Avalon Asası": "Bâton d'Avalon",
+"Kaz Tüylü Oklar": "Flèches en plume d’oie",
+"Kemik Uçlu Oklar": "Flèches à pointe d’os",
+"Gölge Okları": "Flèches d’ombre",
+"Sherwood Okları": "Flèches de Sherwood",
+"Gümüş Hançer": "Dague d’argent",
+"Kan Hançeri": "Dague de sang",
+"Kontesin Dişi": "Croc de la comtesse",
+"Csejte Hançeri": "Dague de Csejte",
+"Deri Zırh": "Armure de cuir",
+"Zincir Zırh": "Cotte de mailles",
+"Kemik Zırh": "Armure d’os",
+"Ejder Pulu Zırh": "Armure en écailles de dragon",
+"Bakır Yüzük": "Anneau de cuivre",
+"Gümüş Yüzük": "Anneau d’argent",
+"Ruh Yüzüğü": "Anneau des âmes",
+"Mortimer'ın Mührü": "Sceau de Mortimer",
+"Kemik Tılsım": "Amulette d’os",
+"Kurt Dişi Tılsım": "Amulette en croc de loup",
+"Ay Tılsımı": "Amulette lunaire",
+"Kara Ay Tılsımı": "Amulette de lune noire",
+"YETENEK": "TALENT",
+"EŞYA": "ÉQUIPEMENT",
+"EŞYALAR": "ÉQUIPEMENT",
+"TAK": "ÉQUIPER",
+"ÇIKAR": "RETIRER",
+"EMİN MİSİN?": "SÛR ?",
+"YENİ": "NOUVEAU",
+"Takılı eşya yok": "Aucun équipement",
+"Bosslar yenilince eşya düşürür": "Les boss lâchent de l’équipement",
+"Bir eşyaya dokun, sonra TAK": "Touche un objet, puis ÉQUIPER",
+"Ganimet:": "Butin :"
 },
 "tpl": [
 [
@@ -398,6 +449,46 @@
 [
 "{} + {}",
 "{} + {}"
+],
+[
+"Hasar +%{}",
+"Dégâts +{} %"
+],
+[
+"Can +%{}",
+"Vie +{} %"
+],
+[
+"Zırh +%{}",
+"Armure +{} %"
+],
+[
+"Güç beklemesi -%{}",
+"Recharge du pouvoir -{} %"
+],
+[
+"Saldırı hızı +%{}",
+"Vitesse d’attaque +{} %"
+],
+[
+"Can yenileme +%{}",
+"Régénération +{} %"
+],
+[
+"ÇANTA {}/{}",
+"SAC {}/{}"
+],
+[
+"ERİT +{}",
+"FONDRE +{}"
+],
+[
+"Yalnız {} kullanır",
+"Seul {} peut l’utiliser"
+],
+[
+"{} · EŞYALAR",
+"{} · ÉQUIPEMENT"
 ]
 ]
 }
