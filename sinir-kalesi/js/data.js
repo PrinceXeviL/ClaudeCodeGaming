@@ -311,7 +311,7 @@ Object.assign(ENEMIES, {
   legion:    { name: 'Lejyoner',            h: 30, hp: 60,  speed: 24, armor: 0.15, mr: 0,    gold: 8,  dmg: [2, 5],   rate: 1,   lives: 1, r: 9 },
   solarcher: { name: 'Solarian Okçusu',     h: 30, hp: 45,  speed: 26, armor: 0,    mr: 0,    gold: 9,  dmg: [1, 3],   rate: 1,   lives: 1, r: 9, ranged: { r: 130, dmg: [4, 7], rate: 1.8, proj: 'harrow', any: true, hold: true } },
   gladiator: { name: 'Gladyatör',           h: 31, hp: 120, speed: 30, armor: 0,    mr: 0,    gold: 14, dmg: [6, 10],  rate: 0.8, lives: 1, r: 9 },
-  assassin:  { name: 'Suikastçı',           h: 30, hp: 80,  speed: 38, armor: 0,    mr: 0.25, gold: 15, dmg: [5, 9],   rate: 0.8, lives: 1, r: 9, blink: { cd: 9, d: 55 } },
+  assassin:  { name: 'Suikastçı',           h: 27, hp: 80,  speed: 38, armor: 0,    mr: 0.25, gold: 15, dmg: [5, 9],   rate: 0.8, lives: 1, r: 9, blink: { cd: 9, d: 55 } },
   priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true, purify: { r: 70, every: 5, dmg: 0, bless: true } }, // 15 Eki: cesetleri kutsar
   heavy:     { name: 'Ağır Piyade',         h: 33, hp: 380, speed: 14, armor: 0.7,  mr: 0,    gold: 32, dmg: [9, 15],  rate: 1.3, lives: 1, r: 12 },
   cavalry:   { name: 'Solarian Süvarisi',   h: 42, hp: 260, speed: 31, armor: 0.3,  mr: 0,    gold: 28, dmg: [10, 16], rate: 1.1, lives: 2, r: 13 },
@@ -961,7 +961,7 @@ restructureWaves();
 LEVELS.forEach((lv, i) => shapeWaves(lv, i));
 // Destek birlikleri (davulcu, sancaktar) tek başına gelmez: yalnız kalabalık piyade bölüğünün (en az SUPPORT.min kişi) ortasında,
 // bölükle aynı yoldan ve aynı anda yürür. Bölük büyükse (2 x min) ikisi birden; tür sırası bölükten bölüğe değişir.
-const SUPPORT = { min: 10, inf: ['legion', 'legion_k', 'legion_y', 'heavy', 'gladiator'], units: [['drummer', 2], ['signifer', 4]] };
+const SUPPORT = { min: 6, inf: ['legion', 'legion_k', 'legion_y', 'heavy', 'gladiator'], units: [['drummer', 1], ['signifer', 4]] }; // 15 Eki: davulcu daha sık (6+ kişilik bölük, 2. bölümden)
 LEVELS.forEach((lv, li) => {
   if (!lv.ep || lv.ep !== 1) return;
   const avail = SUPPORT.units.filter(([, from]) => li >= from).map(([t]) => t);
@@ -971,11 +971,9 @@ LEVELS.forEach((lv, li) => {
     for (const g of w.slice()) {
       const kinds = g.types || [g.t], inf = kinds.filter(t => SUPPORT.inf.includes(t)).length;
       if (g.n < SUPPORT.min || inf < kinds.length * 0.6) continue; // kalabalık ve çoğu piyade olan bölük
-      const m = Math.min(avail.length, g.n >= SUPPORT.min * 2 ? 2 : 1);
-      for (let j = 0; j < m; j++) {
-        const t = avail[(turn + j) % avail.length];
-        w.push({ t, n: 1, gap: 1, at: (g.at || 0) + g.gap * g.n * (0.35 + 0.3 * j), p: g.p, hpK: g.hpK, escort: true });
-      }
+      // 15 Eki (Caner): davulcu her uygun bölüğün başında (önden 2. sıra); sancaktar yalnız büyük bölüğün ortasında
+      const pick = avail.includes('drummer') ? ['drummer'].concat(g.n >= SUPPORT.min * 2 && avail.includes('signifer') ? ['signifer'] : []) : avail.slice(0, 1);
+      pick.forEach((t, j) => w.push({ t, n: 1, gap: 1, at: (g.at || 0) + g.gap * (t === 'drummer' ? 1.5 : g.n * 0.5), p: g.p, hpK: g.hpK, escort: true }));
       turn++;
     }
   });

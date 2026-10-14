@@ -2083,12 +2083,13 @@ function waveBonusAndStart() {
   }
 }
 
-// hizalı yürüyüş: piyade 3'lü, atlı 2'li sıra; uçan, makine, boss, dizilişli ve iskelete takılmayanlar serbest.
-// 10 Eki: Caner yan yana sıraları istemedi; kapalı (askerler eskisi gibi yolda karışık, tek tek gelir)
-const MARCH_ON = false;
-function marchRow(D, sp) {
-  if (!MARCH_ON || !D || D.flying || D.machine || D.chief || D.noblock || D.formation) return 0;
-  return D.r >= 13 ? 2 : 3;
+// hizalı yürüyüş: 10 Eki'de 3'lü yan yana sıralar beğenilmedi, kapatıldı. 15 Eki (Caner: "lejyonerler daha organize gelsin"):
+// yalnız lejyon piyadesi (MARCH_TYPES) ikili sıra hâlinde, sıkı ve adım adıma yürür; ötekiler eskisi gibi serbest
+const MARCH_ON = true, MARCH_TYPES = new Set(['legion', 'legion_k', 'legion_y', 'heavy', 'signifer', 'drummer']);
+function marchRow(D, sp) { // bölük başına bir kez karar verilir: en az %70'i lejyon piyadesi, içinde boss/araç/uçan yoksa ikili sıra
+  if (sp.R != null) return sp.R;
+  const ts = sp.types || [sp.t], bad = ts.some(t => { const d = ENEMIES[t]; return !d || d.flying || d.machine || d.chief || d.noblock || d.formation; });
+  return (sp.R = MARCH_ON && !bad && ts.filter(t => MARCH_TYPES.has(t)).length >= ts.length * 0.7 ? 2 : 0);
 }
 // savaş çığlığı: dalga başında ve ilk göğüs göğüse çarpışmada (sık değil); sessiz, yalnız yazı balonu
 const SHOUTS = ['Sol Invictus!', 'Hücum!', 'İleri!', 'Kalkanlar!', 'Güneş için!', 'Saf tutun!', 'Ölüme, ileri!'];
@@ -2528,7 +2529,7 @@ function aimY(e) {
 // bölüm sonu özeti için: o an vuranın türü (kule, iskelet, dirilen, komutan); çağıran kod ayarlar
 let hitBy = null;
 const DIVE_VULN = 1.5;
-const CONVOY = { gap: 1.8 }; // kuşatma araçları arası en az boşluk (yarıçaplar toplamının katı)
+const CONVOY = { gap: 1.8, walk: 1.05 }; // yürürken önündekiyle en az boşluk (yarıçaplar toplamının katı): araçlar gap, ötekiler walk
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
@@ -4098,7 +4099,7 @@ function updateEnemy(e, dt) {
     e.beatT = (e.beatT ?? rand(0, DRUM.beat)) - dt;
     if (e.beatT <= 0) {
       e.beatT += DRUM.beat; e.hand = 1 - (e.hand || 0); e.hitAt = G.t; e.beatN = (e.beatN || 0) + 1;
-      if (e.beatN % 2 === 0) { sfx('drum'); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: (AU && AU.r) || 80, col: '255,150,80', t: 0, dur: 0.45 }); }
+      if (e.beatN % 2 === 0) { sfx('drum'); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: (AU && AU.r) || 80, col: '255,150,80', t: 0, dur: 0.45, a: 0.5 }); } // 15 Eki: halka %50 silik
     }
   }
   // savaş arabası: yolundaki iskeletleri ezip geçer (her birine bir kez); kemik duvar durdurur
@@ -4372,12 +4373,24 @@ function updateEnemy(e, dt) {
     if (d <= st + 0.5) e.offPath = false;
     else { e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
   }
-  // 15 Eki (Caner): kalabalık gelen kuşatma araçları iç içe geçmesin: aynı yolda öndeki araca (r1 + r2)·CONVOY.gap kadar
-  // yaklaşan araç yavaşlar, iyice yaklaşınca durur (öndeki takılırsa arkadakiler sıraya girer)
-  if (e.def.machine && e.d > 0) {
-    let gap = Infinity, need = 0;
-    for (const o of G.enemies) { if (o === e || o.dead || o.under || !o.def.machine || o.p !== e.p || o.d <= e.d) continue; const g = o.d - e.d; if (g < gap) { gap = g; need = (o.def.r + e.def.r) * CONVOY.gap; } }
-    if (gap < need) spd *= clamp((gap - need * 0.7) / (need * 0.3), 0, 1);
+  // 15 Eki (Caner): yürürken kimse kimsenin üstüne binmesin. Aynı yolda önündekine (yarıçaplar toplamı × CONVOY) yaklaşan yavaşlar,
+  // iyice yaklaşınca durur; kuşatma araçları daha geniş aralık bırakır. Yanyana şeritteki (off farkı büyük) ve dövüşen öndeki sayılmaz
+  // (dövüşte iç içe girmek olağan); hızlı olan yavaşın arkasında kalırsa yana kayıp geçer.
+  if (!e.def.flying && e.d > 0) {
+    let gap = Infinity, need = 0, lead = null;
+    for (const o of G.enemies) {
+      if (o === e || o.dead || o.under || o.def.flying || o.p !== e.p || o.d <= e.d || o.blocker) continue;
+      const g = o.d - e.d, rr = o.def.r + e.def.r, mach = o.def.machine || e.def.machine, n = rr * (mach ? CONVOY.gap : CONVOY.walk);
+      if (g >= n || (!mach && Math.abs(o.off - e.off) > rr * 0.75)) continue;
+      if (g / n < gap / (need || 1)) { gap = g; need = n; lead = o; }
+    }
+    if (lead) {
+      spd *= clamp((gap - need * 0.6) / (need * 0.4), 0, 1);
+      if (!e.march && !lead.march && e.def.speed > lead.def.speed * 1.15 && !e.def.machine) { // sollama: boş tarafa kayar
+        const lim = 11 * ROAD_K, dir = e.off === lead.off ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(e.off - lead.off);
+        e.off = clamp(e.off + dir * 22 * dt, -lim, lim);
+      }
+    }
   }
   e.curSpd = spd * (e.d < 0 ? 1.5 : 1); e.movedAt = G.t; // mermilerin tahminli nişanı için (leadPoint)
   e.d += e.curSpd * dt; // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
@@ -7254,7 +7267,7 @@ function update(dt) {
       sp.lastPi = pi;
       // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
       const cap = NECRO && i === 0 && sp.n >= 4 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
-      const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 10 * ROAD_K : null);
+      const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * ROAD_K : null);
       if (cap) e.captain = true;
       if (R) e.march = true;
       if (sp.hpK && (!e.def.chief || sp.hpK < 1)) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; } // ikili generaller (chief) de zayıflar
@@ -10667,7 +10680,7 @@ function drawEffect(f) {
       ctx.beginPath(); ctx.arc(0, 0, f.r * (0.45 + i * 0.27) * (0.6 + 0.4 * gr), 0, Math.PI * 1.5); ctx.stroke(); ctx.restore(); }
     ctx.restore();
   } else if (f.kind === 'ring') {
-    ctx.save(); ctx.globalAlpha = 1 - k;
+    ctx.save(); ctx.globalAlpha = (1 - k) * (f.a ?? 1);
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
     ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.3 + 0.7 * k), f.r * (0.3 + 0.7 * k) * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
