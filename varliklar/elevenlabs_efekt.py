@@ -106,6 +106,11 @@ SFX = {
     'g3_volley': ('a volley of many arrows released at once, bowstrings snapping and a rushing whoosh overhead, short, no music', 1.5, 2),
     'g3_shout': ('a roman general shouts a rallying battle command to his troops, powerful commanding yell, no words, short, no music', 1.5, 2),
     'g3_herodie': ('a heroic undead warrior falls in battle, deep pained groan and a ghostly exhale, no words, short, no music', 1.5, 2),
+    # 14 Eki (Caner: arsaya ilk dokunuştaki 2 sesi beğenmedi; arayüz sesleri farklı kemik seslerinden olsun)
+    'g4_select': ('a few small dry bones shuffle and settle softly on wood, hollow gentle clack, very short, game ui, no music', 0.5, 4),
+    'g4_pick': ('one small bone taps against another bone, crisp hollow wooden click, very short, game ui, no music', 0.5, 4),
+    'g4_open': ('a small bundle of hanging bones rattles gently like a wind chime, soft hollow clinks, short, game ui, no music', 0.8, 3),
+    'g4_error': ('a dull muted bone knock on thick wood, low and soft, very short, game ui, no music', 0.5, 2),
     'g2_upgrade': ('a dark stone tower grows stronger: deep muffled stone grinding and a low magical hum swelling then settling, warm and soft, no metal clangs, no high pitched sounds, no music', 1.5, 3),
 }
 

@@ -21,9 +21,9 @@ MAP = {
     'step_foot': (['g2_step_foot'], 0.3), 'step_gallop': (['g2_step_gallop'], 0.55), 'step_bone': (['g2_step_bone'], 0.3),  # 14 Eki: yeni adımlar
     'death': (['g_death'], 0.7), 'coin': (['g_coin'], 0.35), 'coins': (['g_coins'], 1.0), 'build': (['g2_build'], 1.3),  # 14 Eki: daha tok inşa
     'upgrade': (['g2_upgrade'], 1.4), 'leak': (['g_leak'], 1.2), 'wave': (['g_wave'], 1.5), 'win': (['g_win'], 3.0),
-    'lose': (['g_lose'], 3.0), 'levelup': (['g_levelup'], 1.2), 'click': (['g_click'], 0.2), 'select': (['g_select'], 0.3),
-    'pick': (['g_pick'], 0.3), 'open': (['g_open'], 0.6), 'castlehit': (['g_castlehit'], 0.8), 'bash': (['g_bash'], 0.5),
-    'cry': (['g_cry'], 1.2), 'whirl': (['g_whirl'], 0.8), 'zap': (['g_zap'], 0.5), 'error': (['g_error'], 0.3),
+    'lose': (['g_lose'], 3.0), 'levelup': (['g_levelup'], 1.2), 'click': (['g_click'], 0.2), 'select': (['g4_select'], 0.35),  # 14 Eki: arayüz kemik sesleri (g4)
+    'pick': (['g4_pick'], 0.25), 'open': (['g4_open'], 0.7), 'castlehit': (['g_castlehit'], 0.8), 'bash': (['g_bash'], 0.5),
+    'cry': (['g_cry'], 1.2), 'whirl': (['g_whirl'], 0.8), 'zap': (['g_zap'], 0.5), 'error': (['g4_error'], 0.3),
     'thunder': (['g_thunder'], 2.0), 'spell': (['g_spell'], 0.8), 'reinforce': (['g_reinforce'], 1.2),
     'portal': (['g_portal'], 1.5), 'roar': (['g_roar'], 1.5), 'stomp': (['g_stomp'], 0.8),
     # 14 Eki: sesi hiç olmayan birim ve yetenekler (yeni türler; game.js'te kendi çağrıları var)
@@ -31,7 +31,7 @@ MAP = {
     'wheels': (['g3_wheels'], 1.5), 'bell': (['g3_bell'], 2.2), 'whip': (['g3_whip'], 0.45), 'heal': (['g3_heal'], 1.2),
     'volley': (['g3_volley'], 1.5), 'shout': (['g3_shout'], 1.5), 'herodie': (['g3_herodie'], 1.5),
 }
-LP = {'build': 2400, 'upgrade': 2800}  # tiz kısmı yumuşat (Caner: inşa sesleri tok olsun, rahatsız etmesin)
+LP = {'build': 2400, 'upgrade': 2800, 'select': 4500, 'pick': 4500, 'open': 4500, 'error': 3000}  # tiz kısmı yumuşat (Caner: inşa sesleri tok olsun, rahatsız etmesin)
 NOW = {'clash': 'fs_clash', 'pain': 'fs_pain', 'dvoice': 'fs_death', 'bonefall': 'fs_bone'}  # şu an oyunda çalan (Freesound takma adı)
 DB = {'horse': -18, 'dog': -18, 'dogbite': -18, 'eagle': -19, 'wheels': -21, 'bell': -16, 'whip': -18, 'heal': -18, 'volley': -17, 'shout': -17, 'herodie': -17,
       'wave': -16, 'click': -22, 'select': -22, 'pick': -23, 'open': -20, 'thunder': -14, 'portal': -16, 'roar': -15, 'stomp': -14, 'win': -16, 'lose': -16}
