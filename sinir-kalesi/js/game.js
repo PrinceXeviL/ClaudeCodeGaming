@@ -48,7 +48,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_boneball_atk|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_atk|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -7953,7 +7953,7 @@ function towerAnim(t) {
 // 16 Eki: Kemik Gülle Mancınığının Veo atış döngüsü (fırlat, kafatası sallanır, yeni gülle büyüyle kepçeye): her atışta baştan, BONEBALL.anim sn'de (240 kare ~60/sn)
 function boneAnim(t) {
   if (!NECRO || t.type !== 'artillery' || t.spec !== 'corpse') return null;
-  const n = 'tower_artillery_boneball_atk', M = ANIM_META[n]; if (!M) return null;
+  const n = 'tower_artillery_bonemortar_atk', M = ANIM_META[n]; if (!M) return null; // 16 Eki: mancınık animasyonu kaldırıldı (Caner); havan kazanı Veo'su gelince
   const im = spr(n); if (!im) { loadStrip(n); return null; }
   return { im, M, n, dur: BONEBALL.anim, fps: M.n / BONEBALL.anim, noLit: true };
 }
@@ -8280,7 +8280,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_boneball') ? 'tower_artillery_boneball' : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'artillery' && t.spec === 'plague' && spr('tower_artillery_plague') ? 'tower_artillery_plague' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
+  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_bonemortar') ? 'tower_artillery_bonemortar' : NECRO && t.type === 'artillery' && t.spec === 'plague' && spr('tower_artillery_plague') ? 'tower_artillery_plague' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.05 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -8923,7 +8923,7 @@ const CAULDRON_CAT = { launch: [0.74, 0.075], corpseGlow: [0.74, 0.075], falls: 
 // silindi (varliklar/karaveba_isle.py), kodla uçuşur: fog (tabanda dönen mor-yeşil sis), flies (tepede vızıldayan sinek sürüsü)
 const CAULDRON_PLAGUE = { mouth: [0.42, 0.23, 0.175, 0.057], falls: [[[0.41, 0.49], [0.4, 0.73]], [[0.6, 0.47], [0.6, 0.71]]], fallCol: ['220,180,255', '190,110,255'], pool: [0.53, 0.75, 0.18, 0.04],
   braziers: [[0.105, 0.58], [0.78, 0.58]], bcol: '170,80,255', runes: [[0.47, 0.34, 0.15]], fog: [0.5, 0.86, 0.5, 0.1], flies: 16 };
-const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_boneball') ? CAULDRON_BONE : NECRO && t.spec === 'corpse' && spr('tower_artillery_catapult') ? CAULDRON_CAT : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? CAULDRON_PLAGUE : CAULDRON[t.lvl]);
+const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_bonemortar') ? CAULDRON_BONE : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? CAULDRON_PLAGUE : CAULDRON[t.lvl]);
 // veba bombası: dur uçuş süresi, arc kavis yüksekliği, dmg/splash çarpanı, rate bekleme çarpanı, poison zehir çarpanı (gaz değerine), pool zehir gölü süresi, down yere düşme (sn)
 const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Caner: kazan fazla güçlü) dmg 1.3→1.05, splash 1.15→1, rate 1.75→2
   poison: 1.2, pool: 3, down: 1 };
@@ -8981,7 +8981,7 @@ function drawPlagueCoat(e, x, h, fly) {
   if (Math.random() < 0.06) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
 }
 // 16 Eki (Caner): Kemik Gülle Mancınığı. dur uçuş sn, arc kavis, splash alan çarpanı, rate bekleme çarpanı, toss savrulma süresi
-const BONEBALL = { dur: 1.3, arc: 150, splash: 1.15, rate: 1.5, toss: 0.62, anim: 4.0 }; // anim: Veo atış döngüsünün süresi (atış aralığına sığar) // arc: gerçek parabolün tepe yüksekliği (önce yukarı fırlar, sonra düşer)
+const BONEBALL = { dur: 1.35, arc: 190, splash: 1.15, rate: 1.5, toss: 0.62, anim: 4.0, r: 6 }; // 16 Eki (Caner): kazan havan gibi yukarı atar, gülle küçük (r) // anim: Veo atış döngüsünün süresi (atış aralığına sığar) // arc: gerçek parabolün tepe yüksekliği (önce yukarı fırlar, sonra düşer)
 function boneBallHit(pr) {
   const R = pr.splash, cr = pr.rank || {};
   for (const e of G.enemies) {
@@ -9002,8 +9002,8 @@ function boneBallHit(pr) {
   fxPlagueSplash(pr.tx, pr.ty, R * 1.3);
   // gülle kırılır: kemik parçaları (Gemini: nm_bshard_1..5 varsa) döne döne her yana, veba sıvısı fışkırır
   const SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean);
-  for (let i = 0; i < 10; i++) { const a = rand(-Math.PI, 0), v = rand(70, 200);
-    emit(G.parts, SH.length ? { kind: 'sprite', im: SH[i % SH.length], h: rand(7, 12), x: pr.tx + rand(-6, 6), y: pr.ty - 8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, g: 560, vr: rand(-12, 12), rot: rand(0, 6), life: rand(0.9, 1.4), floor: pr.ty + rand(-6, 10) }
+  for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 230); // 16 Eki (Caner): daha çok, daha küçük kemik parçası
+    emit(G.parts, SH.length ? { kind: 'sprite', im: SH[i % SH.length], h: rand(3.5, 7.5), x: pr.tx + rand(-6, 6), y: pr.ty - 8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, g: 560, vr: rand(-12, 12), rot: rand(0, 6), life: rand(0.9, 1.4), floor: pr.ty + rand(-6, 10) }
       : { kind: 'chunk', x: pr.tx + rand(-6, 6), y: pr.ty - 8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, g: 560, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#bfb090', s0: rand(2.2, 3.6), s1: 1.6, life: rand(0.9, 1.4), floor: pr.ty + rand(-6, 10) }); }
   for (let i = 0; i < 30; i++) { const a = rand(-Math.PI, 0), v = rand(60, 230); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-5, 5), y: pr.ty - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 40, g: 520, col: i % 3 ? '#8cff5a' : '#d8ffa0', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.5, 0.9), floor: pr.ty + rand(-4, 12) }); }
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: R, col: '200,255,140', t: 0, dur: 0.45 }); G.effects.push({ kind: 'dust', x: pr.tx, y: pr.ty, t: 0, dur: 0.8 });
@@ -10917,11 +10917,11 @@ function drawProjectile(p) {
       ctx.restore();
     }
   } else if (p.kind === 'vapor' && p.bone) { // 16 Eki: kemik gülle (Gemini nm_boneball varsa), döne döne, çatlaklarından veba damlar
-    const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k), r = 9.5;
+    const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k), r = BONEBALL.r;
     ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.22 * k})`; ctx.beginPath(); ctx.ellipse(gx, gy, 5 + 6 * k, 2.4 + 2.4 * k, 0, 0, Math.PI * 2); ctx.fill();
     for (let i = 1; i <= 5; i++) { if (k - i * 0.035 < 0) break; const q = projPos(p, k - i * 0.035); ctx.globalAlpha = 0.6 - i * 0.1; circle(q.x, q.y + i * 2, 2.2 - i * 0.3, '#8cff5a'); }
     ctx.globalAlpha = 1;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 18, '120,255,90', 0.45); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 12, '120,255,90', 0.45); ctx.restore();
     ctx.save(); ctx.translate(x, y); ctx.rotate(p.spin + k * 7);
     const im = spr('nm_boneball');
     if (im) icoFit(im, 0, 0, r * 0.95);
