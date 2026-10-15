@@ -546,6 +546,8 @@ const SOUND = {
   leak:    { vol: 0.50, gap: 0.40, max: 1 },
   wave:    { vol: 0.55, gap: 0.50, max: 1 },
   win:     { vol: 0.80, gap: 1, max: 1 },
+  winnecro: { vol: 0.85, gap: 2, max: 1 },                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
+  starthud: { vol: 0.6, gap: 0.05, max: 2 },                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
   lose:    { vol: 0.80, gap: 1, max: 1 },
   levelup: { vol: 0.55, gap: 0.5, max: 1 },
   click:   { vol: 0.40, gap: 0.04, max: 2 },
@@ -5049,6 +5051,8 @@ function runHeroSkills(h, dt) {
   for (let i = nz; i < G.zones.length; i++) { G.zones[i].heroSkill = true; G.zones[i].skK = SKILL_K; }
   SKILL_K = 1;
 }
+// 16 Eki (Caner): Báthory'nin Kan Bağı doğuştan pasif: ağaçta puan olmadan da kullanır; puan verilirse kademesi artar
+const HERO_INNATE = { bathory: 'bloodlink' };
 function heroSkills(h, dt) {
   for (const k in h.cds) h.cds[k] -= dt;
   if (h.castT > 0) h.castT -= dt;
@@ -5057,8 +5061,9 @@ function heroSkills(h, dt) {
   if (h.lvlA > 0) h.lvlA -= dt; // seviye atlama / zafer şeridi (16 Eki, Veo _lvlup)
   if (h.blockA > 0) h.blockA -= dt; // savunma şeridi
   for (const p of h.def.paths) for (const sk of p.skills) {
-    if (sk.passive || !h.learned[sk.id] || (h.cds[sk.id] || 0) > 0) continue;
-    const rk = h.learned[sk.id] || 1; SKILL_K = (1 + HERO_TREE.dmg * (rk - 1)) * (h.gearK || 1);
+    const lr = h.learned[sk.id] || (HERO_INNATE[h.id] === sk.id ? 1 : 0); // doğuştan yetenek: puan harcanmadan 1. kademe
+    if (sk.passive || !lr || (h.cds[sk.id] || 0) > 0) continue;
+    const rk = lr; SKILL_K = (1 + HERO_TREE.dmg * (rk - 1)) * (h.gearK || 1);
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
@@ -7757,7 +7762,7 @@ function update(dt) {
     persist();
     for (const h of G.heroes) { const F = !h.dead && ANIM_META[h.def.sprite + '_lvlup']; if (F) h.lvlA = h.lvlD = F.dur || F.n / 24; } // 16 Eki: zafer pozu (Veo _lvlup varsa)
     setOverlay('win');
-    sfx('win'); gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
+    if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
 }
@@ -17782,8 +17787,8 @@ function drawWinSummary(k, px, py, pw, cx) {
   const up = (v, d) => Math.round(v * easeOutQ(clamp((k - 1.0 - d) / 0.8, 0, 1)));
   const mm = Math.floor(G.t / 60), ss = Math.floor(G.t % 60);
   const cell = (x, y, label, val, col) => {
-    fitTxt(label, x, y, w / 2 - 80, 15, '#b8acc8', 'left', '800', FONT_B, false, 11);
-    txt(String(val), x + w / 2 - 30, y, 20, col || '#efe6cc', 'right', '400', FONT_T, false);
+    fitTxt(label, x, y, w / 2 - 80, 17, '#b8acc8', 'left', '800', FONT_B, false, 13); // 16 Eki: telefonda okunur (≥14)
+    txt(String(val), x + w / 2 - 30, y, 22, col || '#efe6cc', 'right', '400', FONT_T, false);
   };
   cell(x0 + 18, y0 + 22, 'Öldürülen düşman', up(G.kills || 0, 0));
   cell(x0 + w / 2 + 18, y0 + 22, 'Süre', k > 1.0 ? `${mm}:${String(ss).padStart(2, '0')}` : '–');
@@ -17797,8 +17802,8 @@ function drawWinSummary(k, px, py, pw, cx) {
   ctx.save(); ctx.translate(cx, y0 + 90); ctx.scale(a, a);
   roundRect(-w / 2 + 10, -16, w - 20, 32, 9, 'rgba(60,140,70,0.25)', 'rgba(140,255,150,0.6)', 1.2);
   uiEm('topkill', -w / 2 + 34, 0, 13) || drawIcon('crown', -w / 2 + 34, 0, 20);
-  txt('En çok öldüren:', -w / 2 + 52, 1, 15, '#cfe8c8', 'left', '800', FONT_B, false);
-  txt(`${name} · ${bn}`, w / 2 - 24, 1, 19, '#b8ff9a', 'right', '400', FONT_T, false);
+  txt('En çok öldüren:', -w / 2 + 52, 1, 16, '#cfe8c8', 'left', '800', FONT_B, false);
+  txt(`${name} · ${bn}`, w / 2 - 24, 1, 20, '#b8ff9a', 'right', '400', FONT_T, false);
   ctx.restore();
 }
 // ---- Necromancer menü kiti (duraklatma menüsünün tasarımı bütün oyuna; Caner, 10 Eki: "çok güzel olmuş, tüm oyuna uyarla") ----
@@ -18106,8 +18111,11 @@ function drawOverlay() {
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
   const pw = big ? 600 : pz ? 480 : sum ? 560 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? 472 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
-  ctx.save(); ctx.globalAlpha = clamp(k / 0.15, 0, 1);
-  ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy);
+  const wn = overlay === 'win' && NECRO; // 16 Eki (Caner: zafer ekranı konsepte uysun): kararma, panel aşağıdan kayar, başlık yere çakılır, yıldızlar tek tek düşer
+  if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.5 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); } }
+  ctx.save(); ctx.globalAlpha = clamp((wn ? k - 0.12 : k) / 0.15, 0, 1);
+  if (wn) { const u = clamp((k - 0.12) / 0.5, 0, 1), sl = 1 - (1 - Math.pow(1 - u, 3)) - Math.sin(u * Math.PI) * 0.05 * (u > 0.6 ? 1 : 0); ctx.translate(0, sl * H * 0.75); }
+  else { ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy); }
   if (overlay === 'win') sunburst(cx, py + 110, 300, NECRO ? '140,255,150' : '255,220,120');
   if (NECRO && pz) { drawPauseMenu(k, cx, cy); ctx.restore(); return; } // duraklatma: kendi tasarımı (drawPauseMenu)
   if (NECRO && overlay === 'psettings') drawPauseMortimer(px, py, ph, k);
@@ -18126,20 +18134,23 @@ function drawOverlay() {
     roundBtn('ov_setback', px + 44, py + 46, 22, 'back', () => setOverlay('pause'), { appear: k - 0.1 });
     settingsRows(px + 16, py + 84, pw - 32, k, true);
   } else if (overlay === 'win') {
-    if (NECRO) plaqueTitle(cx, py + 46, G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', '#a8f0a0', 30);
+    if (NECRO) { const ts = clamp((k - 0.5) / 0.22, 0, 1); if (ts > 0) { // başlık yukarıdan yere çakılır
+      if (ts >= 1 && !G.winSlam) { G.winSlam = true; shakeScreen(5, 0.3); sfx('stomp'); for (let j = 0; j < 26; j++) { const a = rand(-Math.PI, 0), v = rand(90, 260); emit(uiParts, { kind: 'glow', add: true, x: cx + rand(-120, 120), y: py + 56, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '140,255,150' : '200,120,255', s0: rand(4, 8), s1: 1, life: rand(0.5, 0.9) }); } }
+      ctx.save(); ctx.globalAlpha *= ts; const sc = 2.4 - 1.4 * ts * ts; ctx.translate(cx, py + 46); ctx.scale(sc, sc); ctx.translate(-cx, -(py + 46));
+      plaqueTitle(cx, py + 46, G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', '#a8f0a0', 30); ctx.restore(); } }
     else ribbon(cx, py + 4, G.chal ? 300 : 260, G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', 'green', 32);
     for (let s = 0; s < 3; s++) {
       if (G.chal && s !== 1) continue; // meydan okuma: ortada tek yıldız
       const sx = cx + (s - 1) * 82, sy = py + 120 - (s === 1 ? 10 : 0), r = s === 1 ? 36 : 29;
       fancyStar(sx, sy, r, false);
       if (s >= G.stars) continue;
-      const q = clamp((k - 0.45 - s * 0.3) / 0.38, 0, 1);
+      const q = NECRO ? clamp((k - 0.85 - s * 0.36) / 0.26, 0, 1) : clamp((k - 0.45 - s * 0.3) / 0.38, 0, 1);
       if (q <= 0) continue;
       if (!(G.starFx & (1 << s))) {
-        G.starFx |= 1 << s; sfx('coin');
+        G.starFx |= 1 << s; if (NECRO) { sfx('starthud', 1 + 0.12 * s); shakeScreen(1.5 + s, 0.12); } else sfx('coin');
         for (let j = 0; j < 16; j++) {
           const a = rand(0, Math.PI * 2), v = rand(80, 200);
-          emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 2 ? '255,220,100' : '255,255,220', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) });
+          emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: NECRO ? (j % 3 ? '255,220,100' : j % 2 ? '140,255,150' : '200,120,255') : j % 2 ? '255,220,100' : '255,255,220', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) });
         }
       }
       ctx.save(); ctx.translate(sx, sy); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha *= q;
@@ -18162,14 +18173,14 @@ function drawOverlay() {
       L.gear.forEach((it, i) => gearCell(it, -wTot / 2 + 172 + i * 44, 0, 38));
       ctx.restore();
     } else if (NECRO) fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 336 : 228), pw - 60, 15, '#9fd8a0', 'center', '700', FONT_B, false, 12);
-    const appear = k - 1.3, by = sum ? 138 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
+    const appear = k - (NECRO ? 1.75 : 1.3), by = sum ? 138 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
     if (G.idx + 1 < LEVELS.length) {
-      roundBtn('ov_retry', cx - 200, py + 258 + by, 29, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
-      txt('Tekrar', cx - 200, py + 304 + by, 14, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      roundBtn('ov_map', cx - 116, py + 258 + by, 29, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
-      txt('Harita', cx - 116, py + 304 + by, 14, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      gameButton('ov_next', cx + 104, py + 258 + by, 250, 60, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
-        { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 20, glow: '140,255,120' });
+      roundBtn('ov_retry', cx - 212, py + 246 + by, 34, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
+      txt('Tekrar', cx - 212, py + 294 + by, 16, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
+      roundBtn('ov_map', cx - 120, py + 246 + by, 34, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
+      txt('Harita', cx - 120, py + 294 + by, 16, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
+      gameButton('ov_next', cx + 112, py + 250 + by, 270, 72, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
+        { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 22, glow: '140,255,120' });
     } else {
       if (!NECRO) txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
       gameButton('ov_retry', cx - 110, py + 278, 170, 50, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear });
