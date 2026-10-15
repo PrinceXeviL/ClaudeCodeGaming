@@ -2078,13 +2078,13 @@
   "fh": 255
  },
  "hero_bathory_idle": {
-  "base": 0.071,
-  "ch": 0.8613,
+  "base": 0.0219,
+  "ch": 0.9479,
   "fps": 24,
-  "n": 64,
-  "fw": 264,
-  "fh": 255,
-  "cols": 32
+  "n": 231,
+  "fw": 337,
+  "fh": 232,
+  "cols": 47
  },
  "hero_bathory_skill": {
   "base": 0.0681,

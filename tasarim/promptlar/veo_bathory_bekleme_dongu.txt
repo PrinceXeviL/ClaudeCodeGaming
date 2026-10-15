@@ -1,0 +1,7 @@
+Static locked-off camera, no camera movement, no zoom. Plain pure white background for the entire video, no ground, no shadows, no other objects. 2D hand-painted cartoon game art style exactly like the reference image; keep her design, colors and proportions identical. She stays small in the center with wide empty white margins on all sides: nothing ever leaves the frame.
+
+SEAMLESS IDLE LOOP: the vampire countess stands proudly in place, breathing slowly, her gown and tall collar swaying gently. A thin ribbon of liquid blood shaped like a small snake circles slowly around her body exactly ONE full turn at a calm, perfectly even speed: it starts behind her at the left, passes in front of her, goes behind her at the right and comes back to exactly where it started. Her heart scepter glows softly and pulses twice. Calm, elegant, steady motion, no sudden moves, she does not attack.
+
+The last frame is identical to the first frame (same pose, blood ribbon in the same place) so the video loops perfectly.
+
+No text, no people, no ground plane, no color tint over the character.
