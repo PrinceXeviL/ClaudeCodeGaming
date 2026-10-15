@@ -995,6 +995,17 @@ LEVELS.forEach((lv) => lv.waves.forEach((w) => {
 }));
 // Destek birlikleri (davulcu, sancaktar) tek başına gelmez: yalnız kalabalık piyade bölüğünün (en az SUPPORT.min kişi) ortasında,
 // bölükle aynı yoldan ve aynı anda yürür. Bölük büyükse (2 x min) ikisi birden; tür sırası bölükten bölüğe değişir.
+// 16 Eki (Caner: "ışık arabası feneri yalnız başına gelmesin, düşman birlikleri arasında gelsin"): fener arabası iki tövbekâr + iki meşaleci
+// muhafızla doğar (def.escort) ve dalganın en kalabalık bölüğünün ortasında, aynı yoldan yürür. Dalgada başka bölük yoksa (tanıtım, nefes)
+// yanına bir piyade bölüğü eklenir.
+ENEMIES.lantern.escort = [['flagellant', 2], ['torch', 2]];
+LEVELS.forEach((lv) => lv.waves.forEach((w) => {
+  for (const g of w.filter(x => x.t === 'lantern')) {
+    let host = w.filter(x => x !== g && x.t !== 'lantern' && (x.types ? !x.types.includes('lantern') : !(ENEMIES[x.t] || {}).chief && (ENEMIES[x.t] || {}).hp < HEAVY_HP)).sort((a, b) => b.n - a.n)[0];
+    if (!host) { host = { t: 'legion', n: 6 + 2 * g.n, gap: 0.9, p: g.p, at: g.at || 0, hpK: 1 }; w.push(host); }
+    g.p = host.p; g.at = (host.at || 0) + host.gap * Math.min(host.n * 0.4, 8); g.gap = Math.max(g.gap || 0, host.gap * 3);
+  }
+}));
 const SUPPORT = { min: 6, inf: ['legion', 'legion_k', 'legion_y', 'heavy', 'gladiator'], units: [['drummer', 1], ['signifer', 4]] }; // 15 Eki: davulcu daha sık (6+ kişilik bölük, 2. bölümden)
 LEVELS.forEach((lv, li) => {
   if (!lv.ep || lv.ep !== 1) return;

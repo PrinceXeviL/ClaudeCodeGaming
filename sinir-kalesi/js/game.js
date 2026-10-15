@@ -547,7 +547,8 @@ const SOUND = {
   wave:    { vol: 0.55, gap: 0.50, max: 1 },
   win:     { vol: 0.80, gap: 1, max: 1 },
   winnecro: { vol: 0.85, gap: 2, max: 1 },                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
-  starthud: { vol: 0.6, gap: 0.05, max: 2 },
+  starthud: { vol: 0.6, gap: 0.05, max: 3 },
+  starchime: { vol: 0.6, gap: 0.05, max: 3 }, // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
   skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
   lootchime: { vol: 0.5, gap: 0.5, max: 1 },                         // ganimet çıkınca kristal + altın çınlaması                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
   lose:    { vol: 0.80, gap: 1, max: 1 },
@@ -18174,7 +18175,7 @@ function drawOverlay() {
       const q = NECRO ? clamp((k - 0.85 - s * 0.36) / 0.26, 0, 1) : clamp((k - 0.45 - s * 0.3) / 0.38, 0, 1);
       if (q <= 0) continue;
       if (!(G.starFx & (1 << s))) {
-        G.starFx |= 1 << s; if (NECRO) { sfx('starthud', 1 + 0.12 * s); shakeScreen(1.5 + s, 0.12); } else sfx('coin');
+        G.starFx |= 1 << s; if (NECRO) { sfx('starthud', 1 + 0.12 * s); sfx('starchime', [1, 1.26, 1.5][s]); shakeScreen(1.5 + s, 0.12); } else sfx('coin');
         for (let j = 0; j < 16; j++) {
           const a = rand(0, Math.PI * 2), v = rand(80, 200);
           emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: NECRO ? (j % 3 ? '255,220,100' : j % 2 ? '140,255,150' : '200,120,255') : j % 2 ? '255,220,100' : '255,255,220', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) });
