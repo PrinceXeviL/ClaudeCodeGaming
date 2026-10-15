@@ -1,1025 +1,1032 @@
 {
-"exact": {
-"Bubu!": "Bubu!",
-"YENİ: BUBU": "NEW: BUBU",
-"Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "Mortimer's pet worm: tap the pit and it bursts from the ground to crush the road",
-"Bubu! Mama vakti!": "Bubu! Feeding time!",
-"Aferin Bubu. Kim iyi solucan?": "Good Bubu. Who's a good worm?",
-"Bubu ısırmaz. Yutar.": "Bubu doesn't bite. Bubu swallows.",
-"Arena Kükremesi": "Arena Roar",
-"Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Spartacus shakes the arena: enemies in the area take damage and are stunned for 1.5 s",
-"Alanda kükreme: hasar ve 1,5 sn sersemletme": "Roar in an area: damage and 1.5 s stun",
-"Mızrak Yağmuru": "Spear Rain",
-"Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar": "Bronze-tipped spears rain on the chosen area: 2.2 s of heavy damage",
-"Alana 2,2 sn mızrak yağmuru": "2.2 s of spear rain on an area",
-"Ruh Bataklığı": "Soul Bog",
-"Seçtiğin yerde 6 sn mor ruh bataklığı açılır: düşmanlar %45 yavaşlar ve çürür": "A purple soul bog opens for 6 s where you choose: enemies slow by 45% and rot",
-"Yavaşlatan, çürüten ruh bataklığı": "A slowing, rotting soul bog",
-"Kurt Uluması": "Wolf Howl",
-"Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar": "The howl of spirit wolves fills the area: enemies take damage and freeze in fear for 1.3 s",
-"Alanda uluma: hasar ve 1,3 sn sersemletme": "Howl in an area: damage and 1.3 s stun",
-"Kan Yarasaları": "Blood Bats",
-"Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir": "Blood bats swarm the area: they bite and slow for 3 s, Báthory heals from the bites",
-"Alana kan yarasaları: ısırık, yavaşlatma, iyileşme": "Blood bats on an area: bites, slow, healing",
-"AKTİF": "ACTIVE",
-"AKTİF · SAVAŞTA": "ACTIVE · IN BATTLE",
-"PASİF · KALICI": "PASSIVE · PERMANENT",
-"PASİF · OTOMATİK": "PASSIVE · AUTOMATIC",
-"SAVAŞA GÖTÜR": "TAKE TO BATTLE",
-"SAVAŞTA ✓": "IN BATTLE ✓",
-"Güç açılır": "Power unlocked",
-"Atmosfer ışığı": "Atmospheric light",
-"3x oyun hızı · Mortimer'a altın taç": "3x game speed · a golden crown for Mortimer",
-"3x hız: Mortimer'ın Hazinesi": "3x speed: Mortimer's Treasure",
-"Solarian vergisi... ters yönde.": "Solarian tax... in reverse.",
-"İmparatorluğun parası. Artık benim.": "The Empire's money. Mine now.",
-"Bu sikkede güneş var. Ne ironi.": "There's a sun on this coin. How ironic.",
-"Ölüler cüzdan taşımaz. Ben taşırım.": "The dead don't carry wallets. I do.",
-"Bağışınız için teşekkürler, lejyoner.": "Thank you for your donation, legionary.",
-"Hazine bakanlığı: ben.": "Minister of the Treasury: me.",
-"ÖĞRETİCİ": "TUTORIAL",
-"Öğretici": "Tutorial",
-"Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun": "Pick the Archer path (fast shots, hits flyers) or the Crossbow path (heavy hits, pierces armor): tap the icon, tap again to confirm",
-"Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir": "Tap the green arrow, tap again to confirm: the tower gets stronger",
-"Altının yetti: kuleye dokunup yükselt": "You have enough gold: tap a tower to upgrade it",
-"Kesik çizgili alanın içinde yola dokun: askerler oraya yürür": "Tap the road inside the dashed circle: the soldiers walk there",
-"Bayrağa dokun": "Tap the flag",
-"Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin": "Tap the Crypt: you can change where its soldiers wait",
-"Solarian lejyonları Mortimer'ın kulesine yürüyor. Yolda durdurmazsan kaleye ulaşıp can götürürler. Önce iki kule öğreneceğiz.": "Solarian legions are marching on Mortimer's tower. Stop them on the road or they reach the keep and take lives. First, two towers.",
-"Yol kenarındaki boş arsaya dokun: Kemik Kulesi kur": "Tap an empty plot by the road: build a Bone Tower",
-"Kemik Kulesi simgesine dokun, onaylamak için bir daha dokun": "Tap the Bone Tower icon, tap again to confirm",
-"İskelet okçular uzaktan ok yağdırır, uçan düşmanları da vurur. Hafif zırhlı kalabalığa karşı en iyisi.": "Skeleton archers rain arrows from afar and hit flyers too. Best against lightly armored crowds.",
-"Yol kenarındaki boş arsaya dokun: Mahzen kur": "Tap an empty plot by the road: build a Crypt",
-"Mahzen simgesine dokun, onaylamak için bir daha dokun": "Tap the Crypt icon, tap again to confirm",
-"İskelet savaşçılar yola çıkıp düşmanı durdurur. Durdurulan düşmanı okçular rahatça vurur: ikisi birlikte çok güçlü.": "Skeleton warriors step onto the road and block the enemy. Archers shoot blocked foes with ease: together they are strong.",
-"Bayrağa dokun, sonra askerlerin bekleyeceği yere dokun": "Tap the flag, then tap where the soldiers should wait",
-"Mahzene dokun: askerlerin yerini değiştirebilirsin": "Tap the Crypt: you can move its soldiers",
-"Yeni kuleler!": "New towers!",
-"Ruh Feneri ve Veba Kazanı açıldı. Her düşmanın zayıf yanı var: doğru kuleyi doğru yere kur.": "Soul Lantern and Plague Cauldron are unlocked. Every enemy has a weakness: build the right tower in the right place.",
-"Yol kenarındaki boş arsaya dokun: Ruh Feneri kur": "Tap an empty plot by the road: build a Soul Lantern",
-"Ruh Feneri simgesine dokun, onaylamak için bir daha dokun": "Tap the Soul Lantern icon, tap again to confirm",
-"Ruh ışını zırhı deler ve düşmanı yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur.": "The soul beam pierces armor and slows the enemy. Build it against shielded, armored heavy infantry.",
-"Yol kenarındaki boş arsaya dokun: Veba Kazanı kur": "Tap an empty plot by the road: build a Plague Cauldron",
-"Veba Kazanı simgesine dokun, onaylamak için bir daha dokun": "Tap the Plague Cauldron icon, tap again to confirm",
-"Kalabalığın ortasına veba fırlatır: alan hasarı verir, zehirler ve yavaşlatır. Toplu gelen lejyonlara karşı kur.": "Lobs plague into the crowd: area damage, poison and slow. Build it against packed legions.",
-"Hazır olunca kafatasına iki kez dokun: dalga gelsin.": "When ready, tap the skull twice: the wave comes.",
-"Bir düşmana dokun: zayıf ve güçlü yanlarını gör.": "Tap an enemy: see its strengths and weaknesses.",
-"Dalgayı erken çağırırsan ek altın kazanırsın: kafatasına iki kez dokun.": "Call a wave early for bonus gold: tap the skull twice.",
-"Komutan geldi!": "Your commander is here!",
-"Komutanın yolda kendisi savaşır ve seviye atlar. Portresine dokun, sonra haritada gitmesini istediğin yere dokun.": "Your commander fights on the road and levels up. Tap the portrait, then tap where to go on the map.",
-"Haritada gitmesini istediğin yere dokun": "Tap where you want them to go",
-"Sol alttaki komutan portresine dokun": "Tap the commander portrait at the bottom left",
-"Mortimer'ın büyüleri": "Mortimer's spells",
-"Sağdaki üç düğme Mortimer'ın büyüleri. Kullandıktan sonra dolmasını beklersin. Hangi üçünü götüreceğini Büyü Kitabı'nda seçer, orada güçlendirirsin.": "The three buttons on the right are Mortimer's spells. After use they need time to recharge. Pick which three to bring and power them up in the Grimoire.",
-"Kafatasına iki kez dokun: dalga gelsin.": "Tap the skull twice: the wave comes.",
-"Şimdi yolun üstüne dokun: duvar düşmanı durdurur": "Now tap the road: the wall stops the enemy",
-"Kemik Duvarı büyüsüne dokun": "Tap the Bone Wall spell",
-"Kalabalığın üstüne dokun: düşmanlar korkup kaçar": "Tap the crowd: enemies flee in fear",
-"Korku büyüsüne dokun": "Tap the Fear spell",
-"Ölüleri Diriltme büyüsüne dokun: yerdeki cesetler kalkıp senin için savaşır": "Tap Raise the Dead: corpses rise and fight for you",
-"Şimdi hedefe dokun": "Now tap the target",
-"Altın çerçeveli düğme komutanının gücü: dokun, sonra hedefe dokun": "The gold-framed button is your commander's power: tap it, then tap the target",
-"Dört kule, üç büyü ve bir komutan. Gerisi senin elinde: Mortimer'ın kulesini koru!": "Four towers, three spells and a commander. The rest is up to you: defend Mortimer's tower!",
-"Hazırsın!": "You're ready!",
-"Devam etmek için dokun ›": "Tap to continue ›",
-"+1 dirilen · +%25 can · +%25 hasar · ceset +1,5 sn": "+1 raised · +25% health · +25% damage · corpse +1.5 s",
-"Ordun dolu!": "Your army is full!",
-"Yükselt": "Upgrade",
-"Sat": "Sell",
-"altın": "gold",
-"dalga": "waves",
-"sn": "s",
-"Er": "Private",
-"ER": "PRIVATE",
-"Dikenli Patika": "Thorny Path",
-"Kurbağa Adası": "Frog Island",
-"Fener Bekçisinin Mezarı": "The Lamplighter's Grave",
-"Sazlık Kıyı": "Reedy Shore",
-"Kemik Köprü": "Bone Bridge",
-"Avcı Kampı": "Hunters' Camp",
-"Veba Hendeği": "Plague Ditch",
-"Mum Işığı Koridoru": "Candlelit Corridor",
-"Kemik Mahzeni": "Bone Vault",
-"Kızıl Sur": "Crimson Rampart",
-"Dikenli Patika. Kestirme yol, dediler.": "Thorny Path. A shortcut, they said.",
-"Dikenler mi? Lejyon dikenden korkmaz! ...Ay.": "Thorns? The legion fears no thorns! ...Ouch.",
-"O dikenleri ben ektim. Sulamayı da unutmadım.": "I planted those thorns. And I never forget to water them.",
-"Kurbağa Adası. Bataklığın tam ortası.": "Frog Island. The very heart of the marsh.",
-"Çamur, kurbağa, sivrisinek... Arenayı özledim.": "Mud, frogs, mosquitoes... I miss the arena.",
-"Kurbağalar benim dostum. Seni çok sevecekler. Yemek olarak.": "The frogs are my friends. They'll love you. As dinner.",
-"Fener Bekçisinin Mezarı. Bekçi hâlâ nöbette.": "The Lamplighter's Grave. The keeper is still on watch.",
-"Fener sönük. Gölgeler bana yol gösterecek.": "The lamp is out. The shadows will guide me.",
-"Bekçi fenerini sana tutacak. Biraz yakından.": "The keeper will hold his lamp up to you. Rather close.",
-"Sazlık Kıyı. Kara Göl'ün sığ ucu.": "Reedy Shore. The shallow end of the Black Lake.",
-"Atlar suya girmez mi? Girecekler!": "Horses won't go in the water? They will!",
-"Bubu sabahtan beri aç. Tam vaktinde geldiniz.": "Bubu's been hungry since morning. Perfect timing.",
-"Kemik Köprü. Şapele son geçit.": "Bone Bridge. The last crossing to the chapel.",
-"Bu köprü kemikten mi? Benim zırhım daha sağlam.": "A bridge of bones? My armor is sturdier.",
-"Köprüyü eski misafirlerimden yaptım. Sen de güzel bir korkuluk olursun.": "I built this bridge from old guests. You'd make a lovely railing.",
-"Avcı Kampı. Tuzaklar kuruldu.": "Hunters' Camp. The traps are set.",
-"Kemik kokusu! Tuzakları kontrol edin!": "The smell of bones! Check the traps!",
-"Tuzaklarına iskelet koydum. Yanlış tarafı yakalasınlar.": "I put skeletons in their traps. Let them catch the wrong end.",
-"Veba Hendeği. Kimse girmek istemez.": "Plague Ditch. Nobody wants to go in.",
-"Kutsal su her şeyi temizler. Hendeği bile!": "Holy water cleans everything. Even the ditch!",
-"O hendeği yüz yıldır temizletmiyorum. Bırakın kalsın.": "I haven't had that ditch cleaned in a hundred years. Leave it be.",
-"Mum Işığı Koridoru. Batık manastırın kalbi.": "Candlelit Corridor. The heart of the sunken monastery.",
-"Mumlar yandıkça karanlık geri çekilir!": "As long as the candles burn, the dark retreats!",
-"Mumlar erir. Ben kalırım. Basit matematik.": "Candles melt. I stay. Simple math.",
-"Kemik Mahzeni. Katedralin altında, kemikten raflar.": "Bone Vault. Shelves of bone beneath the cathedral.",
-"Bu kemikleri sorguya çekeceğiz. Hepsini.": "We'll interrogate these bones. All of them.",
-"Kemiklerim konuşmaz. Ama ısırır.": "My bones don't talk. But they bite.",
-"Kızıl Sur. Ay Sunağı'na giden son duvar.": "Crimson Rampart. The last wall before the Moon Altar.",
-"DUVAR... DÜŞECEK...": "THE WALL... WILL FALL...",
-"Duvar düşerse arkasında ben varım. Ve çok kızgınım.": "If the wall falls, I'm behind it. And very angry.",
-"Arbaletçi Kulesi": "Crossbow Tower",
-"Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur": "Skeleton crossbowmen on top shoot bone bolts, hit flyers too",
-"Kemik Nişancılar": "Bone Marksmen",
-"Ölüm Nişancıları": "Death Marksmen",
-"Arbaletçiler": "Crossbowmen",
-"Hayalet Arbaletçiler": "Ghost Crossbowmen",
-"Cıvata Yağmuru": "Bolt Storm",
-"Üç arbaletçi menzildeki 8 düşmana birden cıvata yağdırır": "Three crossbowmen rain bolts on 8 enemies in range at once",
-"Üç kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara ek hasar": "Three crimson ghost crossbowmen shoot separate targets, bonus vs flyers",
-"Arbaletçilerim hiç ıskalamaz. Iskalasalar da cıvatayı geri toplarlar.": "My crossbowmen never miss. And when they do, they collect the bolts.",
-"KISIK": "LOW",
-"Görüntü kalitesi": "Graphics quality",
-"HARİTAYA DÖN": "BACK TO MAP",
-"Kemik Kulesi": "Bone Tower",
-"Ağır Arbaletçiler": "Heavy Crossbowmen",
-"Delici Cıvata": "Piercing Bolt",
-"Okçular göğe 18 ok salar, kalabalığın üstüne yağar": "The archers loose 18 arrows into the sky; they rain down on the crowd",
-"Dev bir cıvata hattaki bütün düşmanları delip geçer: ağır hasar, zırhı yok sayar": "A giant bolt pierces every enemy in its line: heavy damage, ignores armor",
-"İki kızıl arbaletçi: yavaş, ağır, zırh delen cıvata": "Two crimson crossbowmen: slow, heavy, armor-piercing bolts",
-"Üç kızıl okçu: çok sık, yüksek kavisli oklar": "Three crimson archers: very rapid, high-arcing arrows",
-"Mahzen": "Crypt",
-"Mahzenler": "Crypts",
-"Mahzenin kapısından çıkan iskelet savaşçılar yolu keser": "Skeleton warriors marching out of the crypt door block the road",
-"SAVAŞ DURUMU": "BATTLE STATUS",
-"Dalga": "Wave",
-"Efektler": "Effects",
-"Mortimer'ın tavsiyesi:": "Mortimer's advice:",
-"Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.": "Plant the crypt's flag at a narrow spot on the road: the skeletons hold the enemy there and the towers hit at leisure.",
-"Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.": "Call waves early and you earn gold. But greed digs graves.",
-"Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.": "Soul Lantern for armored foes, Plague Cauldron for crowds. Mix your towers.",
-"Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.": "The dead you raise are free soldiers. Don't waste corpses on the battlefield.",
-"Kule satmak ayıp değil. Yanlış yere kurmak ayıp.": "Selling a tower is no shame. Building it in the wrong place is.",
-"İpucu: Mahzenden çıkan iskeletler düşmanı yolda durdurur, arbaletçiler arkadan vurur.": "Tip: Skeletons from the crypt stop enemies on the road, crossbowmen shoot from behind.",
-"Fil, akbaba, büyü, borazan ve arbalet efektleri": "Elephant, vulture, spell, war horn and crossbow effects",
-"Çevik arena dövüşçüsü, iskeletleri hızla keser. Ok ve veba işler": "Agile arena fighter, cuts skeletons down fast. Arrows and plague work well",
-"Yakınındakileri iyileştirir, büyüye dirençli. Önce onu okla vur": "Heals those nearby, resists magic. Shoot him with arrows first",
-"Kalkan duvarı: oklar seker. Ruh ışını zırhını deler": "Shield wall: arrows bounce off. The soul beam pierces its armor",
-"Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur": "Flies: skeletons and cauldrons can't hit it. The Bone Tower and Soul Lantern can",
-"Kalkan çatısı: oklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır": "Shield roof: arrows barely work. The plague cauldron breaks it; splits into 3 legionaries on death",
-"Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Kemik Kulesi ve Ruh Feneri vurur": "Flies in flocks, eats corpses: an eaten body can't be raised and the vulture heals. The Bone Tower and Soul Lantern can hit it",
-"Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, ok ve veba iyi işler": "His drum fires up those nearby: they march faster and hit harder. Unarmored: arrows and plague work well",
-"Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Okla erken vur": "Throws holy water flasks: area damage to skeletons where they land. Shoot him early with arrows",
-"Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve ok iyi işler": "Interrogates a tower: it falls silent for 4 s. Skeletons and arrows work well",
-"Durup iskeletlere ok atar. Zırhsız: oklar ve kılıç iyi işler": "Stops to shoot arrows at skeletons. Unarmored: arrows and swords work well",
-"Kalkanı kapımdan geniş. Oklar seker, ruh ışını geçer.": "His shield is wider than my door. Arrows bounce off, the soul beam goes through.",
-"Delici (ok)": "Piercing (arrows)",
-"Veba/Ateş (alan)": "Plague/Fire (area)",
-"Kesici (iskeletler)": "Slashing (skeletons)",
-"Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin": "Skeleton archers on top shoot bone arrows, hit air too · at level 2 you choose the archer or crossbow path",
-"1 iskelet okçu kemik ok atar · uçanları da vurur": "1 skeleton archer shoots bone arrows · hits flyers too",
-"2. kademede yolunu seç: okçular (hızlı, hafif) ya da arbaletçiler (yavaş, ağır)": "At level 2 choose your path: archers (fast, light) or crossbowmen (slow, heavy)",
-"3 nişancı, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil": "3 marksmen, very fast shots · 15% critical hits · much longer range",
-"Kemik Kuleleri": "Bone Towers",
-"Mahzen İskeletleri": "Crypt Skeletons",
-"Delici": "Piercing",
-"Kesici": "Slashing",
-"Veba/Ateş": "Plague/Fire",
-"Hafif": "Light",
-"Ağır zırh": "Heavy armor",
-"Kalkan duvarı": "Shield wall",
-"Kutsal": "Holy",
-"Kuşatma": "Siege",
-"Canavar": "Beast",
-"Zırh sınıfı": "Armor class",
-"Alevli Oklar": "Flaming Arrows",
-"Alevli Kılıçlar": "Flaming Swords",
-"Zehirli Oklar": "Poisoned Arrows",
-"Zehirli Kılıçlar": "Poisoned Swords",
-"Buzlu Oklar": "Frost Arrows",
-"Buzlu Kılıçlar": "Frost Swords",
-"Kanatan Oklar": "Bleeding Arrows",
-"Kanatan Kılıçlar": "Bleeding Swords",
-"Lanetli Oklar": "Cursed Arrows",
-"Lanetli Kılıçlar": "Cursed Swords",
-"Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50": "The enemy hit burns for 3 s: 12 damage per second. Burning enemies can't be healed · +50% against siege engines",
-"Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez": "The enemy hit is poisoned for 5 s: 9 damage per second (45 total) · machines can't be poisoned",
-"Vurduğu düşman 2 sn donar · iri düşmanlar 2, komutanlar 3 vuruşta donar": "The enemy hit freezes for 2 s · big enemies freeze after 2 hits, commanders after 3",
-"Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz": "The enemy hit bleeds for 4 s: 10 damage per second while walking, a third while standing · machines don't bleed",
-"Vurduğu düşman 3 sn lanetlenir: her kaynaktan %20 fazla hasar alır, zırhı ve direnci %30 erir · kutsallarda yarı süre": "The enemy hit is cursed for 3 s: takes 20% more damage from all sources, armor and resistance melt by 30% · half duration on holy foes",
-"kule başına tek büyü": "one enchantment per tower",
-"Silah büyüsü seç": "Choose a weapon enchantment",
-"Oklar her vuruşta düşmana bir etki bırakır": "Arrows leave an effect on the enemy with every hit",
-"Kılıçlar her vuruşta düşmana bir etki bırakır": "Swords leave an effect on the enemy with every hit",
-"alev, zehir, buz, kanama ya da lanet": "fire, poison, frost, bleeding or curse",
-"Silah büyüsü açıldı": "Weapon enchantment unlocked",
-"yandaki düğme": "the button beside it",
-"BÜYÜ": "ENCHANT",
-"Okçu Yolu": "Archer Path",
-"Arbaletçi Yolu": "Crossbow Path",
-"Kemik Okçular": "Bone Archers",
-"Ölüm Okçuları": "Death Archers",
-"Kemik Arbaletçiler": "Bone Crossbowmen",
-"Ölüm Arbaletçileri": "Death Crossbowmen",
-"3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil": "3 archers, very frequent shots · 15% crit · much longer range",
-"3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil": "3 crossbowmen, heavy shots · 15% crit · much longer range",
-"Yükseltirken yolunu seç": "Choose your path when upgrading",
-"okçular ya da arbaletçiler": "archers or crossbowmen",
-"Uzmanlık": "Specialization",
-"Alevli Oklar!": "Flaming Arrows!",
-"Alevli Kılıçlar!": "Flaming Swords!",
-"Zehirli Oklar!": "Poisoned Arrows!",
-"Zehirli Kılıçlar!": "Poisoned Swords!",
-"Buzlu Oklar!": "Frost Arrows!",
-"Buzlu Kılıçlar!": "Frost Swords!",
-"Kanatan Oklar!": "Bleeding Arrows!",
-"Kanatan Kılıçlar!": "Bleeding Swords!",
-"Lanetli Oklar!": "Cursed Arrows!",
-"Lanetli Kılıçlar!": "Cursed Swords!",
-"Hızlı ve hafif: sık ok, uçanlara +%30 · 4. kademede Hayalet Okçular": "Fast and light: frequent arrows, +30% vs flyers · Ghost Archers at level 4",
-"Yavaş ve ağır: sert cıvata, zırhın %35 kadarını deler · 4. kademede Ağır Arbaletçiler": "Slow and heavy: hard-hitting bolts, pierce 35% of armor · Heavy Crossbowmen at level 4",
-"2 iskelet okçu, sık atış · uçanlara +%30 · +menzil": "2 skeleton archers, frequent shots · +30% vs flyers · +range",
-"2 iskelet arbaletçi, ağır cıvata · zırhın %35 kadarını deler · +menzil": "2 skeleton crossbowmen, heavy bolts · pierce 35% of armor · +range",
-"alev, zehir ya da buz": "fire, poison or frost",
-"Haritada yalnız bir Lanet Kulesi kurulabilir": "Only one Curse Tower can be built per map",
-"Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir": "Only one per map. Curses enemies (they take more damage, lose defense, attack slower and may panic) and empowers skeletons and archers",
-"Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer": "Enemies take 10% more damage, lose 30% defense, attack 12% slower · 6% fear · +10% damage for skeletons and archers · the curse lasts 10 s",
-"%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh": "+14% damage taken · defense −40% · attacks 16% slower · 9% fear · +14% damage for skeletons and archers, +12% armor for skeletons",
-"%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death",
-"Dondu!": "Frozen!",
-"menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar": "harvests the souls of enemies dying in range, spells recharge faster",
-"Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 3 seconds while the towers do their work.",
-"BÜYÜ KİTABI": "SPELL BOOK",
-"YETENEKLER": "SKILLS",
-"EN YÜKSEK SEVİYE": "MAX LEVEL",
-"GÜÇ": "POWER",
-"Puanlar kalıcıdır": "Points are permanent",
-"sıfırlama Komutanlar ekranında": "reset on the Commanders screen",
-"Kademeler kalıcıdır": "Ranks are permanent",
-"her kademe beklemeyi %4 kısaltır": "each rank cuts the cooldown by %4",
-"5. kademe yeni bir güç açar": "rank 5 unlocks a new power",
-"Bölüm içinde yalnızca ilk dalgadan önce geliştirilir": "In a level it can only be upgraded before the first wave",
-"Yetenek puanı kazandın": "You earned a skill point",
-"portredeki + simgesine dokun": "tap the + on the portrait",
-"Yetenek açılır": "Skill unlocked",
-"Güç açık": "Power unlocked",
-"GELİŞTİR": "UPGRADE",
-"PUAN YOK": "NO POINTS",
-"EN YÜKSEK KADEME": "MAX RANK",
-"Sıfırlama Komutanlar ekranında": "Reset on the Commanders screen",
-"İlk dalgadan önce geliştirilir": "Upgrade before the first wave",
-"Ruh taşların birikti! Büyü Kitabı'nda büyülerini kalıcı olarak güçlendir": "Your soul stones are piling up! Strengthen your spells for good in the Spell Book",
-"Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca": "Your commander leveled up! Spend the skill point on the Commanders screen",
-"Yetenek puanı! + simgesine dokun": "Skill point! Tap the +",
-"Kaleye dokun: Büyü Kitabı": "Tap the castle: Spell Book",
-"Büyülerin seviye atladı! Büyü Kitabı'nda puanlarını harca": "Your spells leveled up! Spend the points in the Spell Book",
-"ZORLUK": "DIFFICULTY",
-"Kolay": "Easy",
-"Normal": "Normal",
-"Usta": "Veteran",
-"Usta ✓": "Veteran ✓",
-"Düşmanlar zayıf, +5 can": "Weaker enemies, +5 lives",
-"Dengeli": "Balanced",
-"Düşmanlar %40 dayanıklı": "Enemies 40% tougher",
-"TAM OYUNU AÇ": "UNLOCK FULL GAME",
-"sonrası tek seferlik": "then a one-time unlock",
-"TAM OYUN": "FULL GAME",
-"KRİSTAL": "CRYSTALS",
-"Tek seferlik satın alma": "One-time purchase",
-"abonelik yok": "no subscription",
-"reklam yok": "no ads",
-"İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)": "All 40 levels of both campaigns (first 10 levels free)",
-"Bütün bosslar, Gloriosus ve Cadı Avı seferi": "Every boss, Gloriosus and the Witch Hunt campaign",
-"Ödüller (5 canla devam, altınla başla) reklam izlemeden": "Rewards (continue with 5 lives, start with gold) without ads",
-"Kristal yalnız bosslardan düşer": "Crystals drop only from bosses",
-"komutan ve savaş eşyası açar": "unlock commanders and battle items",
-"Kemik Bombası": "Bone Bomb",
-"Seçtiğin yerde patlar, ağır alan hasarı": "Explodes where you choose, heavy area damage",
-"Zaman Kum Saati": "Hourglass of Time",
-"Bütün düşmanlar 5 sn donar": "All enemies freeze for 5 s",
-"Mortimer'ın Çayı": "Mortimer's Tea",
-"+5 can, bütün iskeletler ve komutan iyileşir": "+5 lives, all skeletons and the commander heal",
-"Lanetli Kese": "Cursed Purse",
-"Hemen +250 altın": "+250 gold at once",
-"AÇ": "UNLOCK",
-"Dükkândan kristalle al": "Buy with crystals in the shop",
-"Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)": "Heals nearby allies. Sun Verdict: silences a tower for 4 s (a golden ring appears over it first)",
-"Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır": "Melts into the shadows and reappears further along the road, spreads poison clouds, summons assassins",
-"Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır": "Shield Wall: blocks most arrow and cannon damage for 4 s (magic and soldiers get through). Pounds the ground, summons heavy infantry",
-"İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır": "Arrives in a golden chariot drawn by two armored lions: soldiers cannot stop it and get trampled. Rains catapult fire on towers. When the chariot breaks he fights on foot, and at last with the power of the sun",
-"Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur": "Fights on foot in a rage once his chariot breaks: raises his shield, calls the Praetorian Guard, silences three towers at once with the Imperial Decree",
-"Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter": "Clad in burning armor by the power of the sun: he speeds up and his sword sets everything around him ablaze. If he reaches the castle, it is all over",
-"Güneş Hükmü!": "Sun Verdict!",
-"Gölgeye Karış!": "Into the Shadows!",
-"İmparatorluk Fermanı!": "Imperial Decree!",
-"Güneş Kılıcı!": "Sun Blade!",
-"Güneş Gazabı!": "Wrath of the Sun!",
-"Muhafızlar!": "Guards!",
-"GÜNEŞ BENİMLE!": "THE SUN IS WITH ME!",
-"Araba parçalandı!": "The chariot is wrecked!",
-"GÜNEŞ FORMU": "SUN FORM",
-"Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor": "Gloriosus is on foot: calling his guards, silencing towers by decree",
-"Güneşin gücü Gloriosus'u sardı: hızlandı, kılıcı yakıyor": "The power of the sun engulfs Gloriosus: he is faster and his sword burns",
-"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": "His chariot broke. A little walk is good for his health.",
-"Aslanlar kaçtı. Akıllı hayvanlar.": "The lions ran off. Smart animals.",
-"Yayan general mi? Ne kadar da mütevazı.": "A general on foot? How humble.",
-"Parlıyor. Çayımı ısıtabilir mi acaba?": "He is glowing. Could he warm up my tea?",
-"Güneş formu mu? Ben de gece formundayım.": "Sun form? Well, I am in night form.",
-"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": "He dazzled me. Now I am really angry.",
-"Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.": "Comes in a lion chariot, shouts when on foot, ends up shining like the sun. I will have to beat him three times. Put the kettle on.",
-"Yarasa Sürüsü!": "Bat Swarm!",
-"DÜŞMANLAR": "ENEMIES",
-"SAVAŞA!": "TO BATTLE!",
-"BAŞLA": "START",
-"Önceki bölümü bitir, bu bölüm açılsın": "Finish the previous level to unlock this one",
-"Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.": "Only 3 lives, enemies 20% tougher. No room for mistakes.",
-"Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?": "The waves never end and grow stronger each round. How long can you last?",
-"Veba Kazanı patlaması": "Plague Cauldron explosion",
-"lisanslı ses kütüphanesi": "licensed sound library",
-"Tazı Ustası Hubertus": "Houndmaster Hubertus",
-"Kırbaç Rahibesi Agnes": "Flagellant Abbess Agnes",
-"Şeytan Kovucu Lucia": "Exorcist Lucia",
-"Tapınak Komutanı Godfrey": "Templar Commander Godfrey",
-"Lanetli Severus": "Cursed Severus",
-"LANETLİ SEVERUS": "CURSED SEVERUS",
-"Zincirli beyaz tazılarını salar: tazılar yolda iskeletlerin üstüne atılır. Avcı borusuyla sürüyü hızlandırır": "Unleashes his chained white hounds, which pounce on skeletons on the road. His hunting horn speeds up the pack",
-"Zincir kırbacıyla çevresindeki bütün iskeletleri döver, çığlığıyla kırbaççıları coşturur (hızlanırlar), kırbaççı çağırır": "Lashes every skeleton around her with her chain whip, whips flagellants into a frenzy (they speed up), summons flagellants",
-"Şeytan Kovma: yakındaki dirilmiş ölüleri yok eder, oradaki cesetler artık diriltilemez. Yakındakileri iyileştirir": "Exorcism: destroys nearby raised dead, and corpses there can no longer be raised. Heals nearby allies",
-"Kutsanmış Toprak: alevli kılıcını yere saplar, çevresindeki iskeletleri yakar. Yere vurup sersemletir, paladin çağırır": "Consecrated Ground: plunges his flaming sword into the earth and burns skeletons around him. Pounds the ground to stun, summons paladins",
-"Tepesinde Büyük Engizitör Severus ile gelir. Katedral yıkılınca Severus çaydanlıkla iner, en sonunda çaydanlığın laneti onu ele geçirir": "Arrives with Grand Inquisitor Severus on top. When the cathedral falls, Severus descends with the teapot, and in the end the teapot's curse takes him over",
-"Çaydanlığın laneti onu ele geçirdi: iskeletlerden can emer, yeşil veba alevi saçar, öfkelenince yarı hasar alır. Kaleye ulaşırsa her şey biter": "The teapot's curse has taken him: drains life from skeletons, spreads green plague fire, takes half damage when enraged. If he reaches the castle, it is all over",
-"Kırbaç!": "Lash!",
-"Şeytan Kovma!": "Exorcism!",
-"Kutsanmış Toprak!": "Consecrated Ground!",
-"Lanetli Çay!": "Cursed Tea!",
-"Çaydanlık benim!": "The teapot is mine!",
-"BU GÜÇ... BENİM!": "THIS POWER... IS MINE!",
-"Katedral yıkıldı!": "The cathedral has fallen!",
-"Severus çaydanlığı kaldırıp iniyor: kulelere hüküm yağdırıyor": "Severus descends holding up the teapot: raining judgment on your towers",
-"Çaydanlığın laneti Severus'u ele geçirdi: ölüm yeşili alev saçıyor": "The teapot's curse has seized Severus: he spews deathly green fire",
-"Katedral yıkıldı. Kirasını kim ödeyecek?": "The cathedral fell. Who pays the rent now?",
-"Çaydanlığımı hâlâ tutuyor. Elini yakmasın.": "He is still holding my teapot. Hope he burns his hand.",
-"İniyor! Merdiven yokmuş demek.": "He is coming down! So there were no stairs.",
-"O çaydanlık bana ait. Laneti de.": "That teapot is mine. So is its curse.",
-"Söylemiştim: demlenmeden içilmez.": "I told you: never drink it before it brews.",
-"Yeşil sana yakışmadı, Severus.": "Green is not your color, Severus.",
-"Köpeklerini benden iyi besliyor. Kemik vermeyi denedim, beğenmediler.": "He feeds his dogs better than me. I offered bones; they did not like them.",
-"Kendini kırbaçlamaktan fırsat bulunca beni kırbaçlamaya geliyor. Meşgul bir kadın.": "When she is not whipping herself, she comes to whip me. A busy woman.",
-"Ölülerimi kovuyor. Kira ödemeden kalan tek kiracılarımdı.": "She evicts my dead. They were my only tenants who never paid rent.",
-"Kılıcı yanıyor ama kafası soğuk. İkisinden biri hep yanlış yerde.": "His sword burns but his head stays cold. One of them is always in the wrong place.",
-"Çaydanlığımı çaldı, şimdi çaydanlığım onu çalıyor. Adalet bazen demlenmeyi bekler.": "He stole my teapot; now my teapot is stealing him. Justice sometimes needs time to brew.",
-"Ormanın her kemiği kokuyor, necromancer. Tazılarım çok acıktı!": "Every bone in this forest stinks, necromancer. My hounds are starving!",
-"Kemiklerimi saymaya geldiler. Saymayı biliyorlarsa tabii.": "They came to count my bones. If they can count, that is.",
-"Acı arındırır! Senin kemiklerin de arınacak, necromancer!": "Pain purifies! Your bones will be purified too, necromancer!",
-"Kemiklerim gayet temiz, teşekkürler. Her pazar parlatıyorum.": "My bones are perfectly clean, thank you. I polish them every Sunday.",
-"Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "Back to your graves, dead ones! None of you will rise on this soil.",
-"Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "She is banishing my dead? Careful, this woman could ruin us.",
-"Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "My sword burns with holy fire. Your bone towers will turn to ash!",
-"Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "He brought fire, lovely. Pity I have no teapot to boil water in.",
-"YENİ: MEZAR BEKÇİSİ": "NEW: GRAVE KEEPER",
-"Kalk bakalım, nöbet senin.": "Up you get, your watch now.",
-"Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "You were resting comfortably in your grave, I know. Sorry.",
-"Kapıya kimse girmeyecek. Kimse.": "Nobody gets through that gate. Nobody.",
-"Tabut Duvarı": "Coffin Wall",
-"Ruh Biçimi": "Soul Reaping",
-"Kılıçlar": "Swords",
-"YENİ OYUNCU": "NEW PLAYER",
-"GERÇEK": "REAL",
-"Kalkan Duvarı!": "Shield Wall!",
-"KUTSAL ENGİZİSYON": "HOLY INQUISITION",
-"Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Stop every wave. Finish without losing a life for 3 stars.",
-"Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Stop every wave and guard the castle. Lose fewer lives, earn more stars.",
-"Bölümü bir kez bitir, Sonsuz Gece açılır": "Beat the level once to unlock Endless Night",
-"Altın Güneş Arabası": "Golden Sun Chariot",
-"Güneş Formu": "Sun Form",
-"+%15 dayanıklı · +0,75 sn": "+15% tougher · +0.75 s",
-"+%40 dayanıklı · +2 sn": "+40% tougher · +2 s",
-"Kemik Hisarı": "Bone Citadel",
-"Okçu yok": "No archers",
-"Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer sips his tea. Upgrade: a Bone Giant at the gate, a skeleton archer on the balcony",
-"Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "A Bone Giant guards the gate (blocks 3 enemies, rises again in 30 s); 1 skeleton archer on the balcony",
-"Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "The giant grows: blocks 4 enemies, stuns by pounding the ground, rises in 15 s; 2 skeleton archers on the balcony",
-"Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Tougher colossus; master archers: harder arrows, 15% critical hits",
-"Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Hurls plague: light area damage, then poison every second; victims slow down and their armor rots",
-"Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Plague slurry: light area damage, 4 s poison, 35% slow, armor halved",
-"Kaleye dokun: kaleyi yükselt": "Tap the castle: upgrade it",
-"Kemik torbaları! Kapıyı tutun demedim mi?!": "Bags of bones! Didn't I say hold the gate?!",
-"İskeletler! Uyumak için mezarınız var!": "Skeletons! You have graves for sleeping!",
-"Size yeniden kas mı takayım? Durdurun şunları!": "Shall I give you muscles again? Stop them!",
-"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "You couldn't hold even one enemy. I'll grind you all into bone meal!",
-"Kaburganız boş, kafanız da mı boş?!": "Your ribcages are empty, are your skulls too?!",
-"Kim nöbetteydi? Kafatasını görmek istiyorum!": "Who was on guard? I want to see their skull!",
-"Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "A Bone Giant guards the gate (blocks 3 enemies, rises again in 30 s); 2 skeleton archers on the balcony",
-"Titreşim": "Vibration",
-"Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Corpses where you tap rise as rotting undead and fight for you for 30 s · Big enemies rise stronger (glowing red) · Priests and lanterns bless corpses so they cannot be raised",
-"Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü": "Corpses across the field rise, strongest first · big enemies rise stronger",
-"Burada ceset yok!": "No corpses here!",
-"Güçlü ölü!": "Mighty dead!",
-"Kutsandı!": "Blessed!",
-"Kök Tuzağı": "Root Trap",
-"Kök Tuzağı!": "Root Trap!",
-"Kökler fışkırır, yakındaki düşmanları tutar": "Roots burst out and hold nearby enemies",
-"Kökler fışkırır, yakındaki düşmanları tutar!": "Roots burst out and hold nearby enemies!",
-"Bataklık Gazı": "Swamp Gas",
-"Bataklık Gazı!": "Swamp Gas!",
-"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Toxic gas bursts, enemies are poisoned and slowed",
-"Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Toxic gas bursts, enemies are poisoned and slowed!",
-"Açık Mezar": "Open Grave",
-"Açık Mezar!": "Open Grave!",
-"Mezardan iki ölü kalkar, senin için savaşır": "Two dead rise from the grave and fight for you",
-"Mezardan iki ölü kalkar, senin için savaşır!": "Two dead rise from the grave and fight for you!",
-"Kara Girdap": "Black Whirlpool",
-"Kara Girdap!": "Black Whirlpool!",
-"Girdap en güçlü iki düşmanı suya çeker": "The whirlpool drags the two strongest enemies under",
-"Girdap en güçlü iki düşmanı suya çeker!": "The whirlpool drags the two strongest enemies under!",
-"Lanet Taşı": "Curse Stone",
-"Lanet Taşı!": "Curse Stone!",
-"Yakındaki bütün düşmanlar lanetlenir": "All nearby enemies are cursed",
-"Yakındaki bütün düşmanlar lanetlenir!": "All nearby enemies are cursed!",
-"Yarasa Ağacı": "Bat Tree",
-"Yarasa Ağacı!": "Bat Tree!",
-"Yarasa sürüsü düşmanlara saldırır": "A swarm of bats attacks the enemies",
-"Yarasa sürüsü düşmanlara saldırır!": "A swarm of bats attacks the enemies!",
-"Veba Kuyusu": "Plague Well",
-"Veba Kuyusu!": "Plague Well!",
-"Kuyudan veba bulutu yükselir": "A plague cloud rises from the well",
-"Kuyudan veba bulutu yükselir!": "A plague cloud rises from the well!",
-"Batık Çan": "Sunken Bell",
-"Batık Çan!": "Sunken Bell!",
-"Çan çalar, yakındaki düşmanlar sersemler": "The bell tolls, nearby enemies are stunned",
-"Çan çalar, yakındaki düşmanlar sersemler!": "The bell tolls, nearby enemies are stunned!",
-"Kemik Totemi": "Bone Totem",
-"Kemik Totemi!": "Bone Totem!",
-"Totem patlar, kemik kıymıkları saçılır": "The totem bursts, scattering bone shards",
-"Totem patlar, kemik kıymıkları saçılır!": "The totem bursts, scattering bone shards!",
-"Kan Sunağı": "Blood Altar",
-"Kan Sunağı!": "Blood Altar!",
-"Düşmanların kanını emer, iskeletlerini iyileştirir": "Drains the enemies' blood and heals your skeletons",
-"Düşmanların kanını emer, iskeletlerini iyileştirir!": "Drains the enemies' blood and heals your skeletons!",
-"Oyunu birlikte geliştirelim": "Help us improve the game",
-"Anonim oyun verisi": "Anonymous game data",
-"Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "May we send anonymous game data, like which level was hard or which towers you build? Nobody knows who you are, and you can turn it off anytime in settings.",
-"Liderlik tablosu mağaza sürümünde açılır": "Leaderboards open in the store version",
-"Bulut kaydı yüklendi": "Cloud save loaded",
-"MORTİMER'IN HEDİYESİ": "MORTIMER'S GIFT",
-"Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "Come every day for a new gift. Missing a day does not break the chain.",
-"HEDİYEYİ AL": "CLAIM GIFT",
-"Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "Gift claimed! Items are in your battle bag. Come back tomorrow!",
-"OTO": "AUTO",
-"Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Tap to raise corpses across the field, strongest first, as many as your rank allows; they fight for you until they fall · The corpse of a big enemy rises stronger (the ones glowing red) · Priests and lanterns bless corpses so they can't be raised",
-"+%25 can · +%25 hasar": "+25% health · +25% damage",
-"Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Spirits chase the enemies in the area: they flee back in terror for 3 s. Magic-resistant enemies and bosses fear less; machines don't fear, but chariot horses panic and slow down",
-"+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 raised · +10% power · corpse +1.5 s",
-"+%25 can · +%25 hasar · ceset +1,5 sn": "+25% health · +25% damage · corpse +1.5 s",
-"Savaşa": "To battle",
-"En fazla 3 büyü götürülür · önce birini çıkar": "Up to 3 spells · remove one first",
-"KATLİAM!": "CARNAGE!",
-"YIKIM!": "DEVASTATION!",
-"KIYAMET!": "APOCALYPSE!",
-"MORTİMER'İN GAZABI!": "MORTIMER'S WRATH!",
-"Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "A time gate opens beneath the crowd: enemies are flung back down the road, take damage and are stunned for 1 s (bosses half as far)",
-"Kurbağaya Çevirme": "Frog Hex",
-"Kurbağaya Çevirme!": "Frog Hex!",
-"En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "Turns the strongest enemy into a frog for 4 s: it cannot attack, hops slowly and takes 25% more damage (not bosses)",
-"Meteor": "Meteor",
-"Meteor!": "Meteor!",
-"Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "A giant meteor falls from the sky: huge blast, crater and burning ground for 4 s",
-"Dev meteor: büyük patlama, yanan zemin": "Giant meteor: huge blast, burning ground",
-"Zincir Şimşek": "Chain Lightning",
-"Zincir Şimşek!": "Chain Lightning!",
-"Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "Lightning strikes from the sky, jumps between 8 enemies (flyers too) and briefly stuns each",
-"8 düşmana sıçrayan şimşek": "Lightning that jumps between 8 enemies",
-"Vrak!": "Ribbit!",
-"Zaman Kapısı!": "Time Gate!",
-"Yükleniyor": "Loading",
-"İleri!": "Forward!",
-"Saldır!": "Attack!",
-"SİLAH": "WEAPON",
-"ZIRH": "ARMOR",
-"YÜZÜK": "RING",
-"TILSIM": "AMULET",
-"Sıradan": "Common",
-"Nadir": "Rare",
-"Destansı": "Epic",
-"Efsanevi": "Legendary",
-"Paslı Gladius": "Rusty Gladius",
-"Arena Kılıcı": "Arena Sword",
-"Zincirkıran": "Chainbreaker",
-"Özgürlüğün Kılıcı": "Sword of Freedom",
-"Bronz Mızrak": "Bronze Spear",
-"Sparta Mızrağı": "Spartan Spear",
-"Falanks Dişi": "Phalanx Fang",
-"Termopylai Mızrağı": "Spear of Thermopylae",
-"Meşe Asa": "Oak Staff",
-"Kristal Asa": "Crystal Staff",
-"Fırtına Asası": "Storm Staff",
-"Avalon Asası": "Staff of Avalon",
-"Kaz Tüylü Oklar": "Goose-Feather Arrows",
-"Kemik Uçlu Oklar": "Bone-Tipped Arrows",
-"Gölge Okları": "Shadow Arrows",
-"Sherwood Okları": "Sherwood Arrows",
-"Gümüş Hançer": "Silver Dagger",
-"Kan Hançeri": "Blood Dagger",
-"Kontesin Dişi": "Countess's Fang",
-"Csejte Hançeri": "Csejte Dagger",
-"Deri Zırh": "Leather Armor",
-"Zincir Zırh": "Chainmail",
-"Kemik Zırh": "Bone Armor",
-"Ejder Pulu Zırh": "Dragonscale Armor",
-"Bakır Yüzük": "Copper Ring",
-"Gümüş Yüzük": "Silver Ring",
-"Ruh Yüzüğü": "Soul Ring",
-"Mortimer'ın Mührü": "Mortimer's Seal",
-"Kemik Tılsım": "Bone Amulet",
-"Kurt Dişi Tılsım": "Wolf-Fang Amulet",
-"Ay Tılsımı": "Moon Amulet",
-"Kara Ay Tılsımı": "Black Moon Amulet",
-"YETENEK": "SKILLS",
-"EŞYA": "GEAR",
-"EŞYALAR": "GEAR",
-"TAK": "EQUIP",
-"ÇIKAR": "REMOVE",
-"EMİN MİSİN?": "SURE?",
-"YENİ": "NEW",
-"Takılı eşya yok": "No gear equipped",
-"Bosslar yenilince eşya düşürür": "Bosses drop gear when defeated",
-"Bir eşyaya dokun, sonra TAK": "Tap an item, then EQUIP",
-"Ganimet:": "Loot:",
-"Kule yıkıldı!": "Tower destroyed!",
-"Temizleniyor…": "Clearing…",
-"Golem nöbette": "Golem on guard",
-"Güneş Topu": "Sun Cannon",
-"Durup kulelerimize gülle atar, 2,5 sn susturur": "Stops to fire cannonballs at our towers, silencing them for 2.5 s",
-"İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Pushed by two legionaries; stops to fire at our towers, silencing them for 2.5 s. Stop it first",
-"İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Two men push a lion. The lion spits. What a family.",
-"Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Stops to batter towers by the road and can destroy them; then marches on the gate. Stop it first",
-"Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Stops to hurl stones at our towers, silencing and damaging them for 3 s",
-"Tepesinden 4 okçu ok yağdırır; yıkılınca içinden 15 asker dökülür. Yolun başında yık": "4 archers rain arrows from its top; when destroyed, 15 soldiers pour out. Break it early on the road",
-"Baykuş Bey uyuyordu.": "Sir Owl was sleeping.",
-"Çalıda biri var...": "Someone's in the bush...",
-"Utangaç hayalet: \"Pışt!\"": "Shy ghost: \"Psst!\"",
-"Böö!": "Boo!",
-"Yarasalar havalandı!": "The bats took off!",
-"Kurbağa Kral: \"Öp beni.\"": "Frog King: \"Kiss me.\"",
-"Mantar çığlığı!": "Mushroom scream!",
-"Ölüler el sallıyor.": "The dead are waving.",
-"Zombi sincap cevizini vermiyor.": "Zombie squirrel won't share its acorn.",
-"Kara kedi yolunu kesti.": "A black cat crossed your path.",
-"2. SEFER ▲": "CAMPAIGN 2 ▲",
-"1. SEFER ▼": "CAMPAIGN 1 ▼",
-"Önce bu seferi bitir": "Finish this campaign first"
-},
-"tpl": [
-[
-"{} göndereceğin yeri seç (haritanın her yeri)",
-"Choose where to send {} (anywhere on the map)"
-],
-[
-"{} sn sonra hazır",
-"ready in {} s"
-],
-[
-"{} sn",
-"{} s"
-],
-[
-"{} sn'de kalkar",
-"rises in {} s"
-],
-[
-"{} sn'de bir",
-"every {} s"
-],
-[
-"YENİ BÜYÜ: {}",
-"NEW SPELL: {}"
-],
-[
-"GÜNÜN SINAVI: {}",
-"DAILY TRIAL: {}"
-],
-[
-"BAŞARIM: {}",
-"ACHIEVEMENT: {}"
-],
-[
-"YENİ RÜTBE: {}",
-"NEW RANK: {}"
-],
-[
-"{} açıldı!",
-"{} unlocked!"
-],
-[
-"{} altın",
-"{} gold"
-],
-[
-"+{} altın",
-"+{} gold"
-],
-[
-"SATIN AL · {}",
-"BUY · {}"
-],
-[
-"Rekor {}",
-"Record {}"
-],
-[
-"{} ALTINLA BAŞLA",
-"{} GOLD START"
-],
-[
-"▶ +{} ALTINLA BAŞLA",
-"▶ +{} GOLD START"
-],
-[
-"{}. bölümle açılır",
-"unlocks at level {}"
-],
-[
-"{} · yayın {}",
-"{} · build {}"
-],
-[
-"Güç: {}",
-"Power: {}"
-],
-[
-"Zayıf: {}",
-"Weak: {}"
-],
-[
-"Dirençli: {}",
-"Resistant: {}"
-],
-[
-"{} ceset!",
-"{} corpses!"
-],
-[
-"{}. dalga",
-"wave {}"
-],
-[
-"Dalga {}/{}",
-"Wave {}/{}"
-],
-[
-"DALGA {}/{}",
-"WAVE {}/{}"
-],
-[
-"{}. BÖLÜM",
-"LEVEL {}"
-],
-[
-"{}. SEFER",
-"CAMPAIGN {}"
-],
-[
-"Bölüm {}",
-"Level {}"
-],
-[
-"+%{} hasar",
-"+{}% damage"
-],
-[
-"+%{} menzil",
-"+{}% range"
-],
-[
-"+{} can",
-"+{} lives"
-],
-[
-"{} dalga",
-"{} waves"
-],
-[
-"+%{} hız",
-"+{}% speed"
-],
-[
-"-%{} hasar",
-"-{}% damage"
-],
-[
-"%{} hasar",
-"{}% damage"
-],
-[
-"{} yıldız",
-"{} stars"
-],
-[
-"{} sn kalır",
-"lasts {} s"
-],
-[
-"Seviye {}!",
-"Level {}!"
-],
-[
-"{} Sv.{} · {}",
-"{} Lv.{} · {}"
-],
-[
-"{} seviye {}",
-"{} level {}"
-],
-[
-"{} · {} sn'de bir",
-"{} · every {} s"
-],
-[
-" · Sonraki: {}",
-" · Next: {}"
-],
-[
-"{} — Seviye {}{}",
-"{} — Level {}{}"
-],
-[
-"Yeni: {}",
-"New: {}"
-],
-[
-"{} — Seviye {} (son)",
-"{} — Level {} (max)"
-],
-[
-"{} — Seviye {}",
-"{} — Level {}"
-],
-[
-"{} sn bekleme",
-"{} s cooldown"
-],
-[
-"{} dalga  ·  {}",
-"{} waves  ·  {}"
-],
-[
-"Rekor: {} dalga",
-"Record: {} waves"
-],
-[
-"Sonraki: {}",
-"Next: {}"
-],
-[
-"Kule Hayalet Arbaletçilere dönüşür: 3 kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara +%30 · her atışta {} ek cıvata yakındaki düşmanlara (%{} hasar) · kalabalığa iyi",
-"The tower becomes Ghost Crossbowmen: 3 crimson ghost crossbowmen shoot separate targets, +30% vs flyers · each shot sends {} extra bolts at nearby enemies ({}% damage) · good against crowds"
-],
-[
-"Kule 3 kızıl hayalet okçuya dönüşür: çok sık, yüksek kavisli oklar (ok başına az hasar), uçanlara +%30 · her {}. ok zehirli: 3 sn boyunca saniyede {} hasar",
-"The tower becomes 3 crimson ghost archers: very rapid, high-arcing arrows (low damage per arrow), +30% vs flyers · every {}th arrow is poisoned: {} damage per second for 3 s"
-],
-[
-"Kule 2 kızıl ağır arbaletçiye dönüşür: yavaş ama ağır cıvata, zırhın %{} kadarını deler, vurduğunu geri iter · %{} şansla 3 kat hasar",
-"The tower becomes 2 crimson heavy crossbowmen: slow but heavy bolts, pierce {}% of armor, knock targets back · {}% chance of triple damage"
-],
-[
-"yukarıdaki düğme ({})",
-"the button above ({})"
-],
-[
-"+{} dirilen",
-"+{} raised dead"
-],
-[
-"+%{} güç",
-"+%{} power"
-],
-[
-"+{} sn ömür",
-"+{} s lifetime"
-],
-[
-"+{} sn",
-"+{} s"
-],
-[
-"alan +%{}",
-"area +%{}"
-],
-[
-"korkan %{} fazla hasar alır",
-"feared foes take %{} more damage"
-],
-[
-"+%{} dayanıklı",
-"+%{} sturdier"
-],
-[
-"Patlama {} sn sersemletir",
-"Blast stuns for {} s"
-],
-[
-"Golem %{} sert vurur",
-"Golem hits %{} harder"
-],
-[
-"+%{} can",
-"+%{} health"
-],
-[
-"Seviye {}/{}",
-"Level {}/{}"
-],
-[
-"{} puan",
-"{} points"
-],
-[
-"{} / {} XP",
-"{} / {} XP"
-],
-[
-"Sv. {}",
-"Lv. {}"
-],
-[
-"Güç +%{}",
-"Power +%{}"
-],
-[
-"bekleme -%{}",
-"cooldown -%{}"
-],
-[
-"{}. kademe",
-"rank {}"
-],
-[
-"can yenilenmesi ×{}",
-"regeneration ×{}"
-],
-[
-"{} ruh taşı",
-"{} soul stones"
-],
-[
-"Bekleme {} sn",
-"Cooldown {} s"
-],
-[
-"{} PUAN",
-"{} POINT"
-],
-[
-"Sv. {}'de açılır",
-"Unlocks at Lv. {}"
-],
-[
-"{} TAŞ",
-"{} STONES"
-],
-[
-"{} büyü puanı",
-"{} spell points"
-],
-[
-"Seviye {} · bekleme {} sn",
-"Level {} · cooldown {} s"
-],
-[
-"Büyüyü kullandıkça seviye atlar · Sv. {}'de açılır",
-"Levels up as you cast it · unlocks at Lv. {}"
-],
-[
-"İlk {} bölüm ücretsiz",
-"First {} levels free"
-],
-[
-"Kristalin: {}",
-"Your crystals: {}"
-],
-[
-"+{} KRİSTAL",
-"+{} CRYSTALS"
-],
-[
-"{}: patlayacağı yeri seç",
-"{}: choose where it explodes"
-],
-[
-"{} için {} kristal gerekir (kristal bosslardan düşer)",
-"{} needs {} crystals (crystals drop from bosses)"
-],
-[
-"Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
-"Tap the grave by the castle: for {} gold a Corpse Golem rises and holds the gate."
-],
-[
-"Mezar — {} altın",
-"Grave — {} gold"
-],
-[
-"Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
-"A Corpse Golem rises (HP {} · Damage {}-{} · Armor {}%) and holds the castle gate; if it dies it rises again after {} s."
-],
-[
-"İlk görüldü: {}. bölüm · {}",
-"First seen: level {} · {}"
-],
-[
-"{} okçu · Hasar {}-{} · Atış {}sn",
-"{} archers · Damage {}-{} · Fire {}s"
-],
-[
-"{} · Ok: yükselt · Bayrak: devi gönder",
-"{} · Arrow: upgrade · Flag: send the giant"
-],
-[
-"{}! Seni kapıya süs olsun diye mi diktim?!",
-"{}! Did I put you at the gate as decoration?!"
-],
-[
-"{}, kale yanıyor, sen manzara mı seyrediyorsun?",
-"{}, the castle is burning and you are enjoying the view?"
-],
-[
-"Hey {}! Komutan dediğin önden gider!",
-"Hey {}! A commander leads from the front!"
-],
-[
-"{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
-"{}! If anyone else gets through that gate, I will bury you back in your grave!"
-],
-[
-"{}, seni mezardan çıkardığıma pişman ettirme!",
-"{}, don't make me regret raising you from the grave!"
-],
-[
-"{}: dokun! {}",
-"{}: tap! {}"
-],
-[
-"{}. GÜN",
-"DAY {}"
-],
-[
-"{} kristal",
-"{} crystals"
-],
-[
-"{} + {}",
-"{} + {}"
-],
-[
-"Hasar +%{}",
-"Damage +{}%"
-],
-[
-"Can +%{}",
-"Health +{}%"
-],
-[
-"Zırh +%{}",
-"Armor +{}%"
-],
-[
-"Güç beklemesi -%{}",
-"Power cooldown -{}%"
-],
-[
-"Saldırı hızı +%{}",
-"Attack speed +{}%"
-],
-[
-"Can yenileme +%{}",
-"Health regen +{}%"
-],
-[
-"ÇANTA {}/{}",
-"BAG {}/{}"
-],
-[
-"ERİT +{}",
-"MELT +{}"
-],
-[
-"Yalnız {} kullanır",
-"Only {} can use it"
-],
-[
-"{} · EŞYALAR",
-"{} · GEAR"
-],
-[
-"Molozu temizle — {} altın",
-"Clear the rubble — {} gold"
-],
-[
-"İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
-"Skeletons clear it in {} s; then you can build again"
-]
-]
+ "exact": {
+  "Bubu!": "Bubu!",
+  "YENİ: BUBU": "NEW: BUBU",
+  "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "Mortimer's pet worm: tap the pit and it bursts from the ground to crush the road",
+  "Bubu! Mama vakti!": "Bubu! Feeding time!",
+  "Aferin Bubu. Kim iyi solucan?": "Good Bubu. Who's a good worm?",
+  "Bubu ısırmaz. Yutar.": "Bubu doesn't bite. Bubu swallows.",
+  "Arena Kükremesi": "Arena Roar",
+  "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Spartacus shakes the arena: enemies in the area take damage and are stunned for 1.5 s",
+  "Alanda kükreme: hasar ve 1,5 sn sersemletme": "Roar in an area: damage and 1.5 s stun",
+  "Mızrak Yağmuru": "Spear Rain",
+  "Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar": "Bronze-tipped spears rain on the chosen area: 2.2 s of heavy damage",
+  "Alana 2,2 sn mızrak yağmuru": "2.2 s of spear rain on an area",
+  "Ruh Bataklığı": "Soul Bog",
+  "Seçtiğin yerde 6 sn mor ruh bataklığı açılır: düşmanlar %45 yavaşlar ve çürür": "A purple soul bog opens for 6 s where you choose: enemies slow by 45% and rot",
+  "Yavaşlatan, çürüten ruh bataklığı": "A slowing, rotting soul bog",
+  "Kurt Uluması": "Wolf Howl",
+  "Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar": "The howl of spirit wolves fills the area: enemies take damage and freeze in fear for 1.3 s",
+  "Alanda uluma: hasar ve 1,3 sn sersemletme": "Howl in an area: damage and 1.3 s stun",
+  "Kan Yarasaları": "Blood Bats",
+  "Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir": "Blood bats swarm the area: they bite and slow for 3 s, Báthory heals from the bites",
+  "Alana kan yarasaları: ısırık, yavaşlatma, iyileşme": "Blood bats on an area: bites, slow, healing",
+  "AKTİF": "ACTIVE",
+  "AKTİF · SAVAŞTA": "ACTIVE · IN BATTLE",
+  "PASİF · KALICI": "PASSIVE · PERMANENT",
+  "PASİF · OTOMATİK": "PASSIVE · AUTOMATIC",
+  "SAVAŞA GÖTÜR": "TAKE TO BATTLE",
+  "SAVAŞTA ✓": "IN BATTLE ✓",
+  "Güç açılır": "Power unlocked",
+  "Atmosfer ışığı": "Atmospheric light",
+  "3x oyun hızı · Mortimer'a altın taç": "3x game speed · a golden crown for Mortimer",
+  "3x hız: Mortimer'ın Hazinesi": "3x speed: Mortimer's Treasure",
+  "Solarian vergisi... ters yönde.": "Solarian tax... in reverse.",
+  "İmparatorluğun parası. Artık benim.": "The Empire's money. Mine now.",
+  "Bu sikkede güneş var. Ne ironi.": "There's a sun on this coin. How ironic.",
+  "Ölüler cüzdan taşımaz. Ben taşırım.": "The dead don't carry wallets. I do.",
+  "Bağışınız için teşekkürler, lejyoner.": "Thank you for your donation, legionary.",
+  "Hazine bakanlığı: ben.": "Minister of the Treasury: me.",
+  "ÖĞRETİCİ": "TUTORIAL",
+  "Öğretici": "Tutorial",
+  "Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun": "Pick the Archer path (fast shots, hits flyers) or the Crossbow path (heavy hits, pierces armor): tap the icon, tap again to confirm",
+  "Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir": "Tap the green arrow, tap again to confirm: the tower gets stronger",
+  "Altının yetti: kuleye dokunup yükselt": "You have enough gold: tap a tower to upgrade it",
+  "Kesik çizgili alanın içinde yola dokun: askerler oraya yürür": "Tap the road inside the dashed circle: the soldiers walk there",
+  "Bayrağa dokun": "Tap the flag",
+  "Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin": "Tap the Crypt: you can change where its soldiers wait",
+  "Solarian lejyonları Mortimer'ın kulesine yürüyor. Yolda durdurmazsan kaleye ulaşıp can götürürler. Önce iki kule öğreneceğiz.": "Solarian legions are marching on Mortimer's tower. Stop them on the road or they reach the keep and take lives. First, two towers.",
+  "Yol kenarındaki boş arsaya dokun: Kemik Kulesi kur": "Tap an empty plot by the road: build a Bone Tower",
+  "Kemik Kulesi simgesine dokun, onaylamak için bir daha dokun": "Tap the Bone Tower icon, tap again to confirm",
+  "İskelet okçular uzaktan ok yağdırır, uçan düşmanları da vurur. Hafif zırhlı kalabalığa karşı en iyisi.": "Skeleton archers rain arrows from afar and hit flyers too. Best against lightly armored crowds.",
+  "Yol kenarındaki boş arsaya dokun: Mahzen kur": "Tap an empty plot by the road: build a Crypt",
+  "Mahzen simgesine dokun, onaylamak için bir daha dokun": "Tap the Crypt icon, tap again to confirm",
+  "İskelet savaşçılar yola çıkıp düşmanı durdurur. Durdurulan düşmanı okçular rahatça vurur: ikisi birlikte çok güçlü.": "Skeleton warriors step onto the road and block the enemy. Archers shoot blocked foes with ease: together they are strong.",
+  "Bayrağa dokun, sonra askerlerin bekleyeceği yere dokun": "Tap the flag, then tap where the soldiers should wait",
+  "Mahzene dokun: askerlerin yerini değiştirebilirsin": "Tap the Crypt: you can move its soldiers",
+  "Yeni kuleler!": "New towers!",
+  "Ruh Feneri ve Veba Kazanı açıldı. Her düşmanın zayıf yanı var: doğru kuleyi doğru yere kur.": "Soul Lantern and Plague Cauldron are unlocked. Every enemy has a weakness: build the right tower in the right place.",
+  "Yol kenarındaki boş arsaya dokun: Ruh Feneri kur": "Tap an empty plot by the road: build a Soul Lantern",
+  "Ruh Feneri simgesine dokun, onaylamak için bir daha dokun": "Tap the Soul Lantern icon, tap again to confirm",
+  "Ruh ışını zırhı deler ve düşmanı yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur.": "The soul beam pierces armor and slows the enemy. Build it against shielded, armored heavy infantry.",
+  "Yol kenarındaki boş arsaya dokun: Veba Kazanı kur": "Tap an empty plot by the road: build a Plague Cauldron",
+  "Veba Kazanı simgesine dokun, onaylamak için bir daha dokun": "Tap the Plague Cauldron icon, tap again to confirm",
+  "Kalabalığın ortasına veba fırlatır: alan hasarı verir, zehirler ve yavaşlatır. Toplu gelen lejyonlara karşı kur.": "Lobs plague into the crowd: area damage, poison and slow. Build it against packed legions.",
+  "Hazır olunca kafatasına iki kez dokun: dalga gelsin.": "When ready, tap the skull twice: the wave comes.",
+  "Bir düşmana dokun: zayıf ve güçlü yanlarını gör.": "Tap an enemy: see its strengths and weaknesses.",
+  "Dalgayı erken çağırırsan ek altın kazanırsın: kafatasına iki kez dokun.": "Call a wave early for bonus gold: tap the skull twice.",
+  "Komutan geldi!": "Your commander is here!",
+  "Komutanın yolda kendisi savaşır ve seviye atlar. Portresine dokun, sonra haritada gitmesini istediğin yere dokun.": "Your commander fights on the road and levels up. Tap the portrait, then tap where to go on the map.",
+  "Haritada gitmesini istediğin yere dokun": "Tap where you want them to go",
+  "Sol alttaki komutan portresine dokun": "Tap the commander portrait at the bottom left",
+  "Mortimer'ın büyüleri": "Mortimer's spells",
+  "Sağdaki üç düğme Mortimer'ın büyüleri. Kullandıktan sonra dolmasını beklersin. Hangi üçünü götüreceğini Büyü Kitabı'nda seçer, orada güçlendirirsin.": "The three buttons on the right are Mortimer's spells. After use they need time to recharge. Pick which three to bring and power them up in the Grimoire.",
+  "Kafatasına iki kez dokun: dalga gelsin.": "Tap the skull twice: the wave comes.",
+  "Şimdi yolun üstüne dokun: duvar düşmanı durdurur": "Now tap the road: the wall stops the enemy",
+  "Kemik Duvarı büyüsüne dokun": "Tap the Bone Wall spell",
+  "Kalabalığın üstüne dokun: düşmanlar korkup kaçar": "Tap the crowd: enemies flee in fear",
+  "Korku büyüsüne dokun": "Tap the Fear spell",
+  "Ölüleri Diriltme büyüsüne dokun: yerdeki cesetler kalkıp senin için savaşır": "Tap Raise the Dead: corpses rise and fight for you",
+  "Şimdi hedefe dokun": "Now tap the target",
+  "Altın çerçeveli düğme komutanının gücü: dokun, sonra hedefe dokun": "The gold-framed button is your commander's power: tap it, then tap the target",
+  "Dört kule, üç büyü ve bir komutan. Gerisi senin elinde: Mortimer'ın kulesini koru!": "Four towers, three spells and a commander. The rest is up to you: defend Mortimer's tower!",
+  "Hazırsın!": "You're ready!",
+  "Devam etmek için dokun ›": "Tap to continue ›",
+  "+1 dirilen · +%25 can · +%25 hasar · ceset +1,5 sn": "+1 raised · +25% health · +25% damage · corpse +1.5 s",
+  "Ordun dolu!": "Your army is full!",
+  "Yükselt": "Upgrade",
+  "Sat": "Sell",
+  "altın": "gold",
+  "dalga": "waves",
+  "sn": "s",
+  "Er": "Private",
+  "ER": "PRIVATE",
+  "Dikenli Patika": "Thorny Path",
+  "Kurbağa Adası": "Frog Island",
+  "Fener Bekçisinin Mezarı": "The Lamplighter's Grave",
+  "Sazlık Kıyı": "Reedy Shore",
+  "Kemik Köprü": "Bone Bridge",
+  "Avcı Kampı": "Hunters' Camp",
+  "Veba Hendeği": "Plague Ditch",
+  "Mum Işığı Koridoru": "Candlelit Corridor",
+  "Kemik Mahzeni": "Bone Vault",
+  "Kızıl Sur": "Crimson Rampart",
+  "Dikenli Patika. Kestirme yol, dediler.": "Thorny Path. A shortcut, they said.",
+  "Dikenler mi? Lejyon dikenden korkmaz! ...Ay.": "Thorns? The legion fears no thorns! ...Ouch.",
+  "O dikenleri ben ektim. Sulamayı da unutmadım.": "I planted those thorns. And I never forget to water them.",
+  "Kurbağa Adası. Bataklığın tam ortası.": "Frog Island. The very heart of the marsh.",
+  "Çamur, kurbağa, sivrisinek... Arenayı özledim.": "Mud, frogs, mosquitoes... I miss the arena.",
+  "Kurbağalar benim dostum. Seni çok sevecekler. Yemek olarak.": "The frogs are my friends. They'll love you. As dinner.",
+  "Fener Bekçisinin Mezarı. Bekçi hâlâ nöbette.": "The Lamplighter's Grave. The keeper is still on watch.",
+  "Fener sönük. Gölgeler bana yol gösterecek.": "The lamp is out. The shadows will guide me.",
+  "Bekçi fenerini sana tutacak. Biraz yakından.": "The keeper will hold his lamp up to you. Rather close.",
+  "Sazlık Kıyı. Kara Göl'ün sığ ucu.": "Reedy Shore. The shallow end of the Black Lake.",
+  "Atlar suya girmez mi? Girecekler!": "Horses won't go in the water? They will!",
+  "Bubu sabahtan beri aç. Tam vaktinde geldiniz.": "Bubu's been hungry since morning. Perfect timing.",
+  "Kemik Köprü. Şapele son geçit.": "Bone Bridge. The last crossing to the chapel.",
+  "Bu köprü kemikten mi? Benim zırhım daha sağlam.": "A bridge of bones? My armor is sturdier.",
+  "Köprüyü eski misafirlerimden yaptım. Sen de güzel bir korkuluk olursun.": "I built this bridge from old guests. You'd make a lovely railing.",
+  "Avcı Kampı. Tuzaklar kuruldu.": "Hunters' Camp. The traps are set.",
+  "Kemik kokusu! Tuzakları kontrol edin!": "The smell of bones! Check the traps!",
+  "Tuzaklarına iskelet koydum. Yanlış tarafı yakalasınlar.": "I put skeletons in their traps. Let them catch the wrong end.",
+  "Veba Hendeği. Kimse girmek istemez.": "Plague Ditch. Nobody wants to go in.",
+  "Kutsal su her şeyi temizler. Hendeği bile!": "Holy water cleans everything. Even the ditch!",
+  "O hendeği yüz yıldır temizletmiyorum. Bırakın kalsın.": "I haven't had that ditch cleaned in a hundred years. Leave it be.",
+  "Mum Işığı Koridoru. Batık manastırın kalbi.": "Candlelit Corridor. The heart of the sunken monastery.",
+  "Mumlar yandıkça karanlık geri çekilir!": "As long as the candles burn, the dark retreats!",
+  "Mumlar erir. Ben kalırım. Basit matematik.": "Candles melt. I stay. Simple math.",
+  "Kemik Mahzeni. Katedralin altında, kemikten raflar.": "Bone Vault. Shelves of bone beneath the cathedral.",
+  "Bu kemikleri sorguya çekeceğiz. Hepsini.": "We'll interrogate these bones. All of them.",
+  "Kemiklerim konuşmaz. Ama ısırır.": "My bones don't talk. But they bite.",
+  "Kızıl Sur. Ay Sunağı'na giden son duvar.": "Crimson Rampart. The last wall before the Moon Altar.",
+  "DUVAR... DÜŞECEK...": "THE WALL... WILL FALL...",
+  "Duvar düşerse arkasında ben varım. Ve çok kızgınım.": "If the wall falls, I'm behind it. And very angry.",
+  "Arbaletçi Kulesi": "Crossbow Tower",
+  "Tepedeki iskelet arbaletçiler kemik cıvata atar, havayı da vurur": "Skeleton crossbowmen on top shoot bone bolts, hit flyers too",
+  "Kemik Nişancılar": "Bone Marksmen",
+  "Ölüm Nişancıları": "Death Marksmen",
+  "Arbaletçiler": "Crossbowmen",
+  "Hayalet Arbaletçiler": "Ghost Crossbowmen",
+  "Cıvata Yağmuru": "Bolt Storm",
+  "Üç arbaletçi menzildeki 8 düşmana birden cıvata yağdırır": "Three crossbowmen rain bolts on 8 enemies in range at once",
+  "Üç kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara ek hasar": "Three crimson ghost crossbowmen shoot separate targets, bonus vs flyers",
+  "Arbaletçilerim hiç ıskalamaz. Iskalasalar da cıvatayı geri toplarlar.": "My crossbowmen never miss. And when they do, they collect the bolts.",
+  "KISIK": "LOW",
+  "Görüntü kalitesi": "Graphics quality",
+  "HARİTAYA DÖN": "BACK TO MAP",
+  "Kemik Kulesi": "Bone Tower",
+  "Ağır Arbaletçiler": "Heavy Crossbowmen",
+  "Delici Cıvata": "Piercing Bolt",
+  "Okçular göğe 18 ok salar, kalabalığın üstüne yağar": "The archers loose 18 arrows into the sky; they rain down on the crowd",
+  "Dev bir cıvata hattaki bütün düşmanları delip geçer: ağır hasar, zırhı yok sayar": "A giant bolt pierces every enemy in its line: heavy damage, ignores armor",
+  "İki kızıl arbaletçi: yavaş, ağır, zırh delen cıvata": "Two crimson crossbowmen: slow, heavy, armor-piercing bolts",
+  "Üç kızıl okçu: çok sık, yüksek kavisli oklar": "Three crimson archers: very rapid, high-arcing arrows",
+  "Mahzen": "Crypt",
+  "Mahzenler": "Crypts",
+  "Mahzenin kapısından çıkan iskelet savaşçılar yolu keser": "Skeleton warriors marching out of the crypt door block the road",
+  "SAVAŞ DURUMU": "BATTLE STATUS",
+  "Dalga": "Wave",
+  "Efektler": "Effects",
+  "Mortimer'ın tavsiyesi:": "Mortimer's advice:",
+  "Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.": "Plant the crypt's flag at a narrow spot on the road: the skeletons hold the enemy there and the towers hit at leisure.",
+  "Erken dalga çağırırsan altın kazanırsın. Ama açgözlülük mezar kazdırır.": "Call waves early and you earn gold. But greed digs graves.",
+  "Zırhlı düşmana Ruh Feneri, kalabalığa Veba Kazanı. Kuleleri karıştır.": "Soul Lantern for armored foes, Plague Cauldron for crowds. Mix your towers.",
+  "Dirilttiğin ölüler bedava askerdir. Savaş alanında ceset israf etme.": "The dead you raise are free soldiers. Don't waste corpses on the battlefield.",
+  "Kule satmak ayıp değil. Yanlış yere kurmak ayıp.": "Selling a tower is no shame. Building it in the wrong place is.",
+  "İpucu: Mahzenden çıkan iskeletler düşmanı yolda durdurur, arbaletçiler arkadan vurur.": "Tip: Skeletons from the crypt stop enemies on the road, crossbowmen shoot from behind.",
+  "Fil, akbaba, büyü, borazan ve arbalet efektleri": "Elephant, vulture, spell, war horn and crossbow effects",
+  "Çevik arena dövüşçüsü, iskeletleri hızla keser. Ok ve veba işler": "Agile arena fighter, cuts skeletons down fast. Arrows and plague work well",
+  "Yakınındakileri iyileştirir, büyüye dirençli. Önce onu okla vur": "Heals those nearby, resists magic. Shoot him with arrows first",
+  "Kalkan duvarı: oklar seker. Ruh ışını zırhını deler": "Shield wall: arrows bounce off. The soul beam pierces its armor",
+  "Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur": "Flies: skeletons and cauldrons can't hit it. The Bone Tower and Soul Lantern can",
+  "Kalkan çatısı: oklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır": "Shield roof: arrows barely work. The plague cauldron breaks it; splits into 3 legionaries on death",
+  "Sürüyle uçar, cesetleri yer: yediği ölü diriltilemez, akbaba iyileşir. Kemik Kulesi ve Ruh Feneri vurur": "Flies in flocks, eats corpses: an eaten body can't be raised and the vulture heals. The Bone Tower and Soul Lantern can hit it",
+  "Davuluyla çevresindekileri gaza getirir: daha hızlı yürür, daha sert vururlar. Zırhsız, ok ve veba iyi işler": "His drum fires up those nearby: they march faster and hit harder. Unarmored: arrows and plague work well",
+  "Kutsal su şişesi atar: çarptığı yerdeki iskeletlere alan hasarı. Okla erken vur": "Throws holy water flasks: area damage to skeletons where they land. Shoot him early with arrows",
+  "Bir kuleyi sorguya çeker: 4 sn susar. İskeletler ve ok iyi işler": "Interrogates a tower: it falls silent for 4 s. Skeletons and arrows work well",
+  "Durup iskeletlere ok atar. Zırhsız: oklar ve kılıç iyi işler": "Stops to shoot arrows at skeletons. Unarmored: arrows and swords work well",
+  "Kalkanı kapımdan geniş. Oklar seker, ruh ışını geçer.": "His shield is wider than my door. Arrows bounce off, the soul beam goes through.",
+  "Delici (ok)": "Piercing (arrows)",
+  "Veba/Ateş (alan)": "Plague/Fire (area)",
+  "Kesici (iskeletler)": "Slashing (skeletons)",
+  "Tepedeki iskelet okçular kemik ok atar, havayı da vurur · 2. kademede okçu ya da arbaletçi yolunu seçersin": "Skeleton archers on top shoot bone arrows, hit air too · at level 2 you choose the archer or crossbow path",
+  "1 iskelet okçu kemik ok atar · uçanları da vurur": "1 skeleton archer shoots bone arrows · hits flyers too",
+  "2. kademede yolunu seç: okçular (hızlı, hafif) ya da arbaletçiler (yavaş, ağır)": "At level 2 choose your path: archers (fast, light) or crossbowmen (slow, heavy)",
+  "3 nişancı, çok hızlı atış · %15 kritik vuruş · çok daha uzun menzil": "3 marksmen, very fast shots · 15% critical hits · much longer range",
+  "Kemik Kuleleri": "Bone Towers",
+  "Mahzen İskeletleri": "Crypt Skeletons",
+  "Delici": "Piercing",
+  "Kesici": "Slashing",
+  "Veba/Ateş": "Plague/Fire",
+  "Hafif": "Light",
+  "Ağır zırh": "Heavy armor",
+  "Kalkan duvarı": "Shield wall",
+  "Kutsal": "Holy",
+  "Kuşatma": "Siege",
+  "Canavar": "Beast",
+  "Zırh sınıfı": "Armor class",
+  "Alevli Oklar": "Flaming Arrows",
+  "Alevli Kılıçlar": "Flaming Swords",
+  "Zehirli Oklar": "Poisoned Arrows",
+  "Zehirli Kılıçlar": "Poisoned Swords",
+  "Buzlu Oklar": "Frost Arrows",
+  "Buzlu Kılıçlar": "Frost Swords",
+  "Kanatan Oklar": "Bleeding Arrows",
+  "Kanatan Kılıçlar": "Bleeding Swords",
+  "Lanetli Oklar": "Cursed Arrows",
+  "Lanetli Kılıçlar": "Cursed Swords",
+  "Vurduğu düşman 3 sn yanar: saniyede 12 hasar. Yanan düşman iyileşemez · kuşatma makinelerine +%50": "The enemy hit burns for 3 s: 12 damage per second. Burning enemies can't be healed · +50% against siege engines",
+  "Vurduğu düşman 5 sn zehirlenir: saniyede 9 hasar (toplam 45) · makineler zehirlenmez": "The enemy hit is poisoned for 5 s: 9 damage per second (45 total) · machines can't be poisoned",
+  "Vurduğu düşman 2 sn donar · iri düşmanlar 2, komutanlar 3 vuruşta donar": "The enemy hit freezes for 2 s · big enemies freeze after 2 hits, commanders after 3",
+  "Vurduğu düşman 4 sn kanar: yürüdükçe saniyede 10 hasar, dururken üçte biri · makineler kanamaz": "The enemy hit bleeds for 4 s: 10 damage per second while walking, a third while standing · machines don't bleed",
+  "Vurduğu düşman 3 sn lanetlenir: her kaynaktan %20 fazla hasar alır, zırhı ve direnci %30 erir · kutsallarda yarı süre": "The enemy hit is cursed for 3 s: takes 20% more damage from all sources, armor and resistance melt by 30% · half duration on holy foes",
+  "kule başına tek büyü": "one enchantment per tower",
+  "Silah büyüsü seç": "Choose a weapon enchantment",
+  "Oklar her vuruşta düşmana bir etki bırakır": "Arrows leave an effect on the enemy with every hit",
+  "Kılıçlar her vuruşta düşmana bir etki bırakır": "Swords leave an effect on the enemy with every hit",
+  "alev, zehir, buz, kanama ya da lanet": "fire, poison, frost, bleeding or curse",
+  "Silah büyüsü açıldı": "Weapon enchantment unlocked",
+  "yandaki düğme": "the button beside it",
+  "BÜYÜ": "ENCHANT",
+  "Okçu Yolu": "Archer Path",
+  "Arbaletçi Yolu": "Crossbow Path",
+  "Kemik Okçular": "Bone Archers",
+  "Ölüm Okçuları": "Death Archers",
+  "Kemik Arbaletçiler": "Bone Crossbowmen",
+  "Ölüm Arbaletçileri": "Death Crossbowmen",
+  "3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil": "3 archers, very frequent shots · 15% crit · much longer range",
+  "3 arbaletçi, ağır atış · %15 kritik · çok daha uzun menzil": "3 crossbowmen, heavy shots · 15% crit · much longer range",
+  "Yükseltirken yolunu seç": "Choose your path when upgrading",
+  "okçular ya da arbaletçiler": "archers or crossbowmen",
+  "Uzmanlık": "Specialization",
+  "Alevli Oklar!": "Flaming Arrows!",
+  "Alevli Kılıçlar!": "Flaming Swords!",
+  "Zehirli Oklar!": "Poisoned Arrows!",
+  "Zehirli Kılıçlar!": "Poisoned Swords!",
+  "Buzlu Oklar!": "Frost Arrows!",
+  "Buzlu Kılıçlar!": "Frost Swords!",
+  "Kanatan Oklar!": "Bleeding Arrows!",
+  "Kanatan Kılıçlar!": "Bleeding Swords!",
+  "Lanetli Oklar!": "Cursed Arrows!",
+  "Lanetli Kılıçlar!": "Cursed Swords!",
+  "Hızlı ve hafif: sık ok, uçanlara +%30 · 4. kademede Hayalet Okçular": "Fast and light: frequent arrows, +30% vs flyers · Ghost Archers at level 4",
+  "Yavaş ve ağır: sert cıvata, zırhın %35 kadarını deler · 4. kademede Ağır Arbaletçiler": "Slow and heavy: hard-hitting bolts, pierce 35% of armor · Heavy Crossbowmen at level 4",
+  "2 iskelet okçu, sık atış · uçanlara +%30 · +menzil": "2 skeleton archers, frequent shots · +30% vs flyers · +range",
+  "2 iskelet arbaletçi, ağır cıvata · zırhın %35 kadarını deler · +menzil": "2 skeleton crossbowmen, heavy bolts · pierce 35% of armor · +range",
+  "alev, zehir ya da buz": "fire, poison or frost",
+  "Haritada yalnız bir Lanet Kulesi kurulabilir": "Only one Curse Tower can be built per map",
+  "Haritada tek kurulur. Düşmanları lanetler (fazla hasar alır, savunması düşer, saldırısı yavaşlar, korkabilir), iskeletleri ve okçuları güçlendirir": "Only one per map. Curses enemies (they take more damage, lose defense, attack slower and may panic) and empowers skeletons and archers",
+  "Düşmanlar %10 fazla hasar alır, savunması %30 düşer, saldırısı %12 yavaşlar · %6 korku · iskelet ve okçulara +%10 hasar · lanet 10 sn sürer": "Enemies take 10% more damage, lose 30% defense, attack 12% slower · 6% fear · +10% damage for skeletons and archers · the curse lasts 10 s",
+  "%14 fazla hasar · savunma %40 düşer · saldırı %16 yavaş · %9 korku · iskelet ve okçulara +%14 hasar, iskeletlere +%12 zırh": "+14% damage taken · defense −40% · attacks 16% slower · 9% fear · +14% damage for skeletons and archers, +12% armor for skeletons",
+  "%18 fazla hasar · savunma %50 düşer · saldırı %20 yavaş · %12 korku · iskelet ve okçulara +%18 hasar, iskeletlere +%15 zırh · ölürse %16 dirilir": "+18% damage taken · defense −50% · attacks 20% slower · 12% fear · +18% damage for skeletons and archers, +15% armor for skeletons · 16% rise again on death",
+  "Dondu!": "Frozen!",
+  "menzilinde ölenlerin ruhunu toplar, büyüler çabuk dolar": "harvests the souls of enemies dying in range, spells recharge faster",
+  "Kalabalık bölüğe Korku büyüsü at: 3 saniye geri kaçarlar, kuleler bu arada işini görür.": "Cast Fear on a crowded company: they flee back for 3 seconds while the towers do their work.",
+  "BÜYÜ KİTABI": "SPELL BOOK",
+  "YETENEKLER": "SKILLS",
+  "EN YÜKSEK SEVİYE": "MAX LEVEL",
+  "GÜÇ": "POWER",
+  "Puanlar kalıcıdır": "Points are permanent",
+  "sıfırlama Komutanlar ekranında": "reset on the Commanders screen",
+  "Kademeler kalıcıdır": "Ranks are permanent",
+  "her kademe beklemeyi %4 kısaltır": "each rank cuts the cooldown by %4",
+  "5. kademe yeni bir güç açar": "rank 5 unlocks a new power",
+  "Bölüm içinde yalnızca ilk dalgadan önce geliştirilir": "In a level it can only be upgraded before the first wave",
+  "Yetenek puanı kazandın": "You earned a skill point",
+  "portredeki + simgesine dokun": "tap the + on the portrait",
+  "Yetenek açılır": "Skill unlocked",
+  "Güç açık": "Power unlocked",
+  "GELİŞTİR": "UPGRADE",
+  "PUAN YOK": "NO POINTS",
+  "EN YÜKSEK KADEME": "MAX RANK",
+  "Sıfırlama Komutanlar ekranında": "Reset on the Commanders screen",
+  "İlk dalgadan önce geliştirilir": "Upgrade before the first wave",
+  "Ruh taşların birikti! Büyü Kitabı'nda büyülerini kalıcı olarak güçlendir": "Your soul stones are piling up! Strengthen your spells for good in the Spell Book",
+  "Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca": "Your commander leveled up! Spend the skill point on the Commanders screen",
+  "Yetenek puanı! + simgesine dokun": "Skill point! Tap the +",
+  "Kaleye dokun: Büyü Kitabı": "Tap the castle: Spell Book",
+  "Büyülerin seviye atladı! Büyü Kitabı'nda puanlarını harca": "Your spells leveled up! Spend the points in the Spell Book",
+  "ZORLUK": "DIFFICULTY",
+  "Kolay": "Easy",
+  "Normal": "Normal",
+  "Usta": "Veteran",
+  "Usta ✓": "Veteran ✓",
+  "Düşmanlar zayıf, +5 can": "Weaker enemies, +5 lives",
+  "Dengeli": "Balanced",
+  "Düşmanlar %40 dayanıklı": "Enemies 40% tougher",
+  "TAM OYUNU AÇ": "UNLOCK FULL GAME",
+  "sonrası tek seferlik": "then a one-time unlock",
+  "TAM OYUN": "FULL GAME",
+  "KRİSTAL": "CRYSTALS",
+  "Tek seferlik satın alma": "One-time purchase",
+  "abonelik yok": "no subscription",
+  "reklam yok": "no ads",
+  "İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)": "All 40 levels of both campaigns (first 10 levels free)",
+  "Bütün bosslar, Gloriosus ve Cadı Avı seferi": "Every boss, Gloriosus and the Witch Hunt campaign",
+  "Ödüller (5 canla devam, altınla başla) reklam izlemeden": "Rewards (continue with 5 lives, start with gold) without ads",
+  "Kristal yalnız bosslardan düşer": "Crystals drop only from bosses",
+  "komutan ve savaş eşyası açar": "unlock commanders and battle items",
+  "Kemik Bombası": "Bone Bomb",
+  "Seçtiğin yerde patlar, ağır alan hasarı": "Explodes where you choose, heavy area damage",
+  "Zaman Kum Saati": "Hourglass of Time",
+  "Bütün düşmanlar 5 sn donar": "All enemies freeze for 5 s",
+  "Mortimer'ın Çayı": "Mortimer's Tea",
+  "+5 can, bütün iskeletler ve komutan iyileşir": "+5 lives, all skeletons and the commander heal",
+  "Lanetli Kese": "Cursed Purse",
+  "Hemen +250 altın": "+250 gold at once",
+  "AÇ": "UNLOCK",
+  "Dükkândan kristalle al": "Buy with crystals in the shop",
+  "Yakındakileri iyileştirir. Güneş Hükmü: bir kuleyi 4 sn susturur (önce kulenin üstünde altın halka belirir)": "Heals nearby allies. Sun Verdict: silences a tower for 4 s (a golden ring appears over it first)",
+  "Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır": "Melts into the shadows and reappears further along the road, spreads poison clouds, summons assassins",
+  "Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır": "Shield Wall: blocks most arrow and cannon damage for 4 s (magic and soldiers get through). Pounds the ground, summons heavy infantry",
+  "İki zırhlı aslanın çektiği altın arabasıyla gelir: askerler onu durduramaz, ezilip sersemler. Kulelere mancınık ateşi yağdırır. Araba kırılınca yayan, en sonunda güneşin gücüyle savaşır": "Arrives in a golden chariot drawn by two armored lions: soldiers cannot stop it and get trampled. Rains catapult fire on towers. When the chariot breaks he fights on foot, and at last with the power of the sun",
+  "Arabası kırılınca öfkeyle yayan savaşır: kalkan açar, Pretoryen muhafız çağırır, İmparatorluk Fermanı ile üç kuleyi birden susturur": "Fights on foot in a rage once his chariot breaks: raises his shield, calls the Praetorian Guard, silences three towers at once with the Imperial Decree",
+  "Güneşin gücüyle alev zırha bürünür: hızlanır, kılıcı çevresini yakar. Kaleye ulaşırsa her şey biter": "Clad in burning armor by the power of the sun: he speeds up and his sword sets everything around him ablaze. If he reaches the castle, it is all over",
+  "Güneş Hükmü!": "Sun Verdict!",
+  "Gölgeye Karış!": "Into the Shadows!",
+  "İmparatorluk Fermanı!": "Imperial Decree!",
+  "Güneş Kılıcı!": "Sun Blade!",
+  "Güneş Gazabı!": "Wrath of the Sun!",
+  "Muhafızlar!": "Guards!",
+  "GÜNEŞ BENİMLE!": "THE SUN IS WITH ME!",
+  "Araba parçalandı!": "The chariot is wrecked!",
+  "GÜNEŞ FORMU": "SUN FORM",
+  "Gloriosus yayan kaldı: muhafızlarını çağırıyor, kuleleri fermanla susturuyor": "Gloriosus is on foot: calling his guards, silencing towers by decree",
+  "Güneşin gücü Gloriosus'u sardı: hızlandı, kılıcı yakıyor": "The power of the sun engulfs Gloriosus: he is faster and his sword burns",
+  "Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": "His chariot broke. A little walk is good for his health.",
+  "Aslanlar kaçtı. Akıllı hayvanlar.": "The lions ran off. Smart animals.",
+  "Yayan general mi? Ne kadar da mütevazı.": "A general on foot? How humble.",
+  "Parlıyor. Çayımı ısıtabilir mi acaba?": "He is glowing. Could he warm up my tea?",
+  "Güneş formu mu? Ben de gece formundayım.": "Sun form? Well, I am in night form.",
+  "Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": "He dazzled me. Now I am really angry.",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.": "Comes in a lion chariot, shouts when on foot, ends up shining like the sun. I will have to beat him three times. Put the kettle on.",
+  "Yarasa Sürüsü!": "Bat Swarm!",
+  "DÜŞMANLAR": "ENEMIES",
+  "SAVAŞA!": "TO BATTLE!",
+  "BAŞLA": "START",
+  "Önceki bölümü bitir, bu bölüm açılsın": "Finish the previous level to unlock this one",
+  "Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.": "Only 3 lives, enemies 20% tougher. No room for mistakes.",
+  "Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?": "The waves never end and grow stronger each round. How long can you last?",
+  "Veba Kazanı patlaması": "Plague Cauldron explosion",
+  "lisanslı ses kütüphanesi": "licensed sound library",
+  "Tazı Ustası Hubertus": "Houndmaster Hubertus",
+  "Kırbaç Rahibesi Agnes": "Flagellant Abbess Agnes",
+  "Şeytan Kovucu Lucia": "Exorcist Lucia",
+  "Tapınak Komutanı Godfrey": "Templar Commander Godfrey",
+  "Lanetli Severus": "Cursed Severus",
+  "LANETLİ SEVERUS": "CURSED SEVERUS",
+  "Zincirli beyaz tazılarını salar: tazılar yolda iskeletlerin üstüne atılır. Avcı borusuyla sürüyü hızlandırır": "Unleashes his chained white hounds, which pounce on skeletons on the road. His hunting horn speeds up the pack",
+  "Zincir kırbacıyla çevresindeki bütün iskeletleri döver, çığlığıyla kırbaççıları coşturur (hızlanırlar), kırbaççı çağırır": "Lashes every skeleton around her with her chain whip, whips flagellants into a frenzy (they speed up), summons flagellants",
+  "Şeytan Kovma: yakındaki dirilmiş ölüleri yok eder, oradaki cesetler artık diriltilemez. Yakındakileri iyileştirir": "Exorcism: destroys nearby raised dead, and corpses there can no longer be raised. Heals nearby allies",
+  "Kutsanmış Toprak: alevli kılıcını yere saplar, çevresindeki iskeletleri yakar. Yere vurup sersemletir, paladin çağırır": "Consecrated Ground: plunges his flaming sword into the earth and burns skeletons around him. Pounds the ground to stun, summons paladins",
+  "Tepesinde Büyük Engizitör Severus ile gelir. Katedral yıkılınca Severus çaydanlıkla iner, en sonunda çaydanlığın laneti onu ele geçirir": "Arrives with Grand Inquisitor Severus on top. When the cathedral falls, Severus descends with the teapot, and in the end the teapot's curse takes him over",
+  "Çaydanlığın laneti onu ele geçirdi: iskeletlerden can emer, yeşil veba alevi saçar, öfkelenince yarı hasar alır. Kaleye ulaşırsa her şey biter": "The teapot's curse has taken him: drains life from skeletons, spreads green plague fire, takes half damage when enraged. If he reaches the castle, it is all over",
+  "Kırbaç!": "Lash!",
+  "Şeytan Kovma!": "Exorcism!",
+  "Kutsanmış Toprak!": "Consecrated Ground!",
+  "Lanetli Çay!": "Cursed Tea!",
+  "Çaydanlık benim!": "The teapot is mine!",
+  "BU GÜÇ... BENİM!": "THIS POWER... IS MINE!",
+  "Katedral yıkıldı!": "The cathedral has fallen!",
+  "Severus çaydanlığı kaldırıp iniyor: kulelere hüküm yağdırıyor": "Severus descends holding up the teapot: raining judgment on your towers",
+  "Çaydanlığın laneti Severus'u ele geçirdi: ölüm yeşili alev saçıyor": "The teapot's curse has seized Severus: he spews deathly green fire",
+  "Katedral yıkıldı. Kirasını kim ödeyecek?": "The cathedral fell. Who pays the rent now?",
+  "Çaydanlığımı hâlâ tutuyor. Elini yakmasın.": "He is still holding my teapot. Hope he burns his hand.",
+  "İniyor! Merdiven yokmuş demek.": "He is coming down! So there were no stairs.",
+  "O çaydanlık bana ait. Laneti de.": "That teapot is mine. So is its curse.",
+  "Söylemiştim: demlenmeden içilmez.": "I told you: never drink it before it brews.",
+  "Yeşil sana yakışmadı, Severus.": "Green is not your color, Severus.",
+  "Köpeklerini benden iyi besliyor. Kemik vermeyi denedim, beğenmediler.": "He feeds his dogs better than me. I offered bones; they did not like them.",
+  "Kendini kırbaçlamaktan fırsat bulunca beni kırbaçlamaya geliyor. Meşgul bir kadın.": "When she is not whipping herself, she comes to whip me. A busy woman.",
+  "Ölülerimi kovuyor. Kira ödemeden kalan tek kiracılarımdı.": "She evicts my dead. They were my only tenants who never paid rent.",
+  "Kılıcı yanıyor ama kafası soğuk. İkisinden biri hep yanlış yerde.": "His sword burns but his head stays cold. One of them is always in the wrong place.",
+  "Çaydanlığımı çaldı, şimdi çaydanlığım onu çalıyor. Adalet bazen demlenmeyi bekler.": "He stole my teapot; now my teapot is stealing him. Justice sometimes needs time to brew.",
+  "Ormanın her kemiği kokuyor, necromancer. Tazılarım çok acıktı!": "Every bone in this forest stinks, necromancer. My hounds are starving!",
+  "Kemiklerimi saymaya geldiler. Saymayı biliyorlarsa tabii.": "They came to count my bones. If they can count, that is.",
+  "Acı arındırır! Senin kemiklerin de arınacak, necromancer!": "Pain purifies! Your bones will be purified too, necromancer!",
+  "Kemiklerim gayet temiz, teşekkürler. Her pazar parlatıyorum.": "My bones are perfectly clean, thank you. I polish them every Sunday.",
+  "Ölüler mezarına! Bu topraklarda hiçbiri ayağa kalkmayacak.": "Back to your graves, dead ones! None of you will rise on this soil.",
+  "Ölülerimi kovuyor mu? Dikkat edin, bu kadın işimizi bitirir.": "She is banishing my dead? Careful, this woman could ruin us.",
+  "Kılıcım kutsal ateşle yanıyor. Kemik kalelerin kül olacak!": "My sword burns with holy fire. Your bone towers will turn to ash!",
+  "Ateşi getirmiş, güzel. Çaydanlığım da yok ki suyu kaynatayım.": "He brought fire, lovely. Pity I have no teapot to boil water in.",
+  "YENİ: MEZAR BEKÇİSİ": "NEW: GRAVE KEEPER",
+  "Kalk bakalım, nöbet senin.": "Up you get, your watch now.",
+  "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": "You were resting comfortably in your grave, I know. Sorry.",
+  "Kapıya kimse girmeyecek. Kimse.": "Nobody gets through that gate. Nobody.",
+  "Tabut Duvarı": "Coffin Wall",
+  "Ruh Biçimi": "Soul Reaping",
+  "Kılıçlar": "Swords",
+  "YENİ OYUNCU": "NEW PLAYER",
+  "GERÇEK": "REAL",
+  "Kalkan Duvarı!": "Shield Wall!",
+  "KUTSAL ENGİZİSYON": "HOLY INQUISITION",
+  "Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.": "Stop every wave. Finish without losing a life for 3 stars.",
+  "Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.": "Stop every wave and guard the castle. Lose fewer lives, earn more stars.",
+  "Bölümü bir kez bitir, Sonsuz Gece açılır": "Beat the level once to unlock Endless Night",
+  "Altın Güneş Arabası": "Golden Sun Chariot",
+  "Güneş Formu": "Sun Form",
+  "+%15 dayanıklı · +0,75 sn": "+15% tougher · +0.75 s",
+  "+%40 dayanıklı · +2 sn": "+40% tougher · +2 s",
+  "Kemik Hisarı": "Bone Citadel",
+  "Okçu yok": "No archers",
+  "Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer sips his tea. Upgrade: a Bone Giant at the gate, a skeleton archer on the balcony",
+  "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "A Bone Giant guards the gate (blocks 3 enemies, rises again in 30 s); 1 skeleton archer on the balcony",
+  "Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "The giant grows: blocks 4 enemies, stuns by pounding the ground, rises in 15 s; 2 skeleton archers on the balcony",
+  "Kolos daha dayanıklı; usta okçular: daha sert oklar, %15 kritik vuruş": "Tougher colossus; master archers: harder arrows, 15% critical hits",
+  "Veba fırlatır: hafif alan hasarı, sonra her saniye zehir; vurulanlar yavaşlar, zırhı çürür": "Hurls plague: light area damage, then poison every second; victims slow down and their armor rots",
+  "Veba bulamacı: hafif alan hasarı, 4 sn zehir, %35 yavaşlatma, zırh yarıya iner": "Plague slurry: light area damage, 4 s poison, 35% slow, armor halved",
+  "Kaleye dokun: kaleyi yükselt": "Tap the castle: upgrade it",
+  "Kemik torbaları! Kapıyı tutun demedim mi?!": "Bags of bones! Didn't I say hold the gate?!",
+  "İskeletler! Uyumak için mezarınız var!": "Skeletons! You have graves for sleeping!",
+  "Size yeniden kas mı takayım? Durdurun şunları!": "Shall I give you muscles again? Stop them!",
+  "Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": "You couldn't hold even one enemy. I'll grind you all into bone meal!",
+  "Kaburganız boş, kafanız da mı boş?!": "Your ribcages are empty, are your skulls too?!",
+  "Kim nöbetteydi? Kafatasını görmek istiyorum!": "Who was on guard? I want to see their skull!",
+  "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 2 iskelet okçu": "A Bone Giant guards the gate (blocks 3 enemies, rises again in 30 s); 2 skeleton archers on the balcony",
+  "Titreşim": "Vibration",
+  "Haritada dokunduğun yerdeki cesetler çürümüş ölüler olarak kalkar ve 30 sn senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Corpses where you tap rise as rotting undead and fight for you for 30 s · Big enemies rise stronger (glowing red) · Priests and lanterns bless corpses so they cannot be raised",
+  "Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü": "Corpses across the field rise, strongest first · big enemies rise stronger",
+  "Burada ceset yok!": "No corpses here!",
+  "Güçlü ölü!": "Mighty dead!",
+  "Kutsandı!": "Blessed!",
+  "Kök Tuzağı": "Root Trap",
+  "Kök Tuzağı!": "Root Trap!",
+  "Kökler fışkırır, yakındaki düşmanları tutar": "Roots burst out and hold nearby enemies",
+  "Kökler fışkırır, yakındaki düşmanları tutar!": "Roots burst out and hold nearby enemies!",
+  "Bataklık Gazı": "Swamp Gas",
+  "Bataklık Gazı!": "Swamp Gas!",
+  "Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar": "Toxic gas bursts, enemies are poisoned and slowed",
+  "Zehirli gaz patlar, düşmanlar zehirlenip yavaşlar!": "Toxic gas bursts, enemies are poisoned and slowed!",
+  "Açık Mezar": "Open Grave",
+  "Açık Mezar!": "Open Grave!",
+  "Mezardan iki ölü kalkar, senin için savaşır": "Two dead rise from the grave and fight for you",
+  "Mezardan iki ölü kalkar, senin için savaşır!": "Two dead rise from the grave and fight for you!",
+  "Kara Girdap": "Black Whirlpool",
+  "Kara Girdap!": "Black Whirlpool!",
+  "Girdap en güçlü iki düşmanı suya çeker": "The whirlpool drags the two strongest enemies under",
+  "Girdap en güçlü iki düşmanı suya çeker!": "The whirlpool drags the two strongest enemies under!",
+  "Lanet Taşı": "Curse Stone",
+  "Lanet Taşı!": "Curse Stone!",
+  "Yakındaki bütün düşmanlar lanetlenir": "All nearby enemies are cursed",
+  "Yakındaki bütün düşmanlar lanetlenir!": "All nearby enemies are cursed!",
+  "Yarasa Ağacı": "Bat Tree",
+  "Yarasa Ağacı!": "Bat Tree!",
+  "Yarasa sürüsü düşmanlara saldırır": "A swarm of bats attacks the enemies",
+  "Yarasa sürüsü düşmanlara saldırır!": "A swarm of bats attacks the enemies!",
+  "Veba Kuyusu": "Plague Well",
+  "Veba Kuyusu!": "Plague Well!",
+  "Kuyudan veba bulutu yükselir": "A plague cloud rises from the well",
+  "Kuyudan veba bulutu yükselir!": "A plague cloud rises from the well!",
+  "Batık Çan": "Sunken Bell",
+  "Batık Çan!": "Sunken Bell!",
+  "Çan çalar, yakındaki düşmanlar sersemler": "The bell tolls, nearby enemies are stunned",
+  "Çan çalar, yakındaki düşmanlar sersemler!": "The bell tolls, nearby enemies are stunned!",
+  "Kemik Totemi": "Bone Totem",
+  "Kemik Totemi!": "Bone Totem!",
+  "Totem patlar, kemik kıymıkları saçılır": "The totem bursts, scattering bone shards",
+  "Totem patlar, kemik kıymıkları saçılır!": "The totem bursts, scattering bone shards!",
+  "Kan Sunağı": "Blood Altar",
+  "Kan Sunağı!": "Blood Altar!",
+  "Düşmanların kanını emer, iskeletlerini iyileştirir": "Drains the enemies' blood and heals your skeletons",
+  "Düşmanların kanını emer, iskeletlerini iyileştirir!": "Drains the enemies' blood and heals your skeletons!",
+  "Oyunu birlikte geliştirelim": "Help us improve the game",
+  "Anonim oyun verisi": "Anonymous game data",
+  "Hangi bölümde zorlandığın, hangi kuleleri kurduğun gibi anonim oyun verilerini gönderelim mi? Kim olduğun bilinmez, ayarlardan istediğin zaman kapatabilirsin.": "May we send anonymous game data, like which level was hard or which towers you build? Nobody knows who you are, and you can turn it off anytime in settings.",
+  "Liderlik tablosu mağaza sürümünde açılır": "Leaderboards open in the store version",
+  "Bulut kaydı yüklendi": "Cloud save loaded",
+  "MORTİMER'IN HEDİYESİ": "MORTIMER'S GIFT",
+  "Her gün gel, yeni hediye al. Bir gün kaçırırsan sıra bozulmaz.": "Come every day for a new gift. Missing a day does not break the chain.",
+  "HEDİYEYİ AL": "CLAIM GIFT",
+  "Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!": "Gift claimed! Items are in your battle bag. Come back tomorrow!",
+  "OTO": "AUTO",
+  "Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur": "Tap to raise corpses across the field, strongest first, as many as your rank allows; they fight for you until they fall · The corpse of a big enemy rises stronger (the ones glowing red) · Priests and lanterns bless corpses so they can't be raised",
+  "+%25 can · +%25 hasar": "+25% health · +25% damage",
+  "Ruhlar alandaki düşmanların peşine düşer: korkudan 3 sn geri kaçarlar. Büyü direnci olanlar ve bosslar daha az korkar; makineler korkmaz ama savaş arabalarının atları ürküp yavaşlar": "Spirits chase the enemies in the area: they flee back in terror for 3 s. Magic-resistant enemies and bosses fear less; machines don't fear, but chariot horses panic and slow down",
+  "+1 dirilen · +%10 güç · ceset +1,5 sn": "+1 raised · +10% power · corpse +1.5 s",
+  "+%25 can · +%25 hasar · ceset +1,5 sn": "+25% health · +25% damage · corpse +1.5 s",
+  "Savaşa": "To battle",
+  "En fazla 3 büyü götürülür · önce birini çıkar": "Up to 3 spells · remove one first",
+  "KATLİAM!": "CARNAGE!",
+  "YIKIM!": "DEVASTATION!",
+  "KIYAMET!": "APOCALYPSE!",
+  "MORTİMER'İN GAZABI!": "MORTIMER'S WRATH!",
+  "Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)": "A time gate opens beneath the crowd: enemies are flung back down the road, take damage and are stunned for 1 s (bosses half as far)",
+  "Kurbağaya Çevirme": "Frog Hex",
+  "Kurbağaya Çevirme!": "Frog Hex!",
+  "En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)": "Turns the strongest enemy into a frog for 4 s: it cannot attack, hops slowly and takes 25% more damage (not bosses)",
+  "Meteor": "Meteor",
+  "Meteor!": "Meteor!",
+  "Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin": "A giant meteor falls from the sky: huge blast, crater and burning ground for 4 s",
+  "Dev meteor: büyük patlama, yanan zemin": "Giant meteor: huge blast, burning ground",
+  "Zincir Şimşek": "Chain Lightning",
+  "Zincir Şimşek!": "Chain Lightning!",
+  "Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir": "Lightning strikes from the sky, jumps between 8 enemies (flyers too) and briefly stuns each",
+  "8 düşmana sıçrayan şimşek": "Lightning that jumps between 8 enemies",
+  "Vrak!": "Ribbit!",
+  "Zaman Kapısı!": "Time Gate!",
+  "Yükleniyor": "Loading",
+  "İleri!": "Forward!",
+  "Saldır!": "Attack!",
+  "SİLAH": "WEAPON",
+  "ZIRH": "ARMOR",
+  "YÜZÜK": "RING",
+  "TILSIM": "AMULET",
+  "Sıradan": "Common",
+  "Nadir": "Rare",
+  "Destansı": "Epic",
+  "Efsanevi": "Legendary",
+  "Paslı Gladius": "Rusty Gladius",
+  "Arena Kılıcı": "Arena Sword",
+  "Zincirkıran": "Chainbreaker",
+  "Özgürlüğün Kılıcı": "Sword of Freedom",
+  "Bronz Mızrak": "Bronze Spear",
+  "Sparta Mızrağı": "Spartan Spear",
+  "Falanks Dişi": "Phalanx Fang",
+  "Termopylai Mızrağı": "Spear of Thermopylae",
+  "Meşe Asa": "Oak Staff",
+  "Kristal Asa": "Crystal Staff",
+  "Fırtına Asası": "Storm Staff",
+  "Avalon Asası": "Staff of Avalon",
+  "Kaz Tüylü Oklar": "Goose-Feather Arrows",
+  "Kemik Uçlu Oklar": "Bone-Tipped Arrows",
+  "Gölge Okları": "Shadow Arrows",
+  "Sherwood Okları": "Sherwood Arrows",
+  "Gümüş Hançer": "Silver Dagger",
+  "Kan Hançeri": "Blood Dagger",
+  "Kontesin Dişi": "Countess's Fang",
+  "Csejte Hançeri": "Csejte Dagger",
+  "Deri Zırh": "Leather Armor",
+  "Zincir Zırh": "Chainmail",
+  "Kemik Zırh": "Bone Armor",
+  "Ejder Pulu Zırh": "Dragonscale Armor",
+  "Bakır Yüzük": "Copper Ring",
+  "Gümüş Yüzük": "Silver Ring",
+  "Ruh Yüzüğü": "Soul Ring",
+  "Mortimer'ın Mührü": "Mortimer's Seal",
+  "Kemik Tılsım": "Bone Amulet",
+  "Kurt Dişi Tılsım": "Wolf-Fang Amulet",
+  "Ay Tılsımı": "Moon Amulet",
+  "Kara Ay Tılsımı": "Black Moon Amulet",
+  "YETENEK": "SKILLS",
+  "EŞYA": "GEAR",
+  "EŞYALAR": "GEAR",
+  "TAK": "EQUIP",
+  "ÇIKAR": "REMOVE",
+  "EMİN MİSİN?": "SURE?",
+  "YENİ": "NEW",
+  "Takılı eşya yok": "No gear equipped",
+  "Bosslar yenilince eşya düşürür": "Bosses drop gear when defeated",
+  "Bir eşyaya dokun, sonra TAK": "Tap an item, then EQUIP",
+  "Ganimet:": "Loot:",
+  "Kule yıkıldı!": "Tower destroyed!",
+  "Temizleniyor…": "Clearing…",
+  "Golem nöbette": "Golem on guard",
+  "Güneş Topu": "Sun Cannon",
+  "Durup kulelerimize gülle atar, 2,5 sn susturur": "Stops to fire cannonballs at our towers, silencing them for 2.5 s",
+  "İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur": "Pushed by two legionaries; stops to fire at our towers, silencing them for 2.5 s. Stop it first",
+  "İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.": "Two men push a lion. The lion spits. What a family.",
+  "Yol kenarındaki kulelere durup vurur, yıkabilir; sonra kapıya yürür. Önce onu durdur": "Stops to batter towers by the road and can destroy them; then marches on the gate. Stop it first",
+  "Durup kulelerimize taş atar, 3 sn susturur ve hasar verir": "Stops to hurl stones at our towers, silencing and damaging them for 3 s",
+  "Tepesinden 4 okçu ok yağdırır; yıkılınca içinden 15 asker dökülür. Yolun başında yık": "4 archers rain arrows from its top; when destroyed, 15 soldiers pour out. Break it early on the road",
+  "Baykuş Bey uyuyordu.": "Sir Owl was sleeping.",
+  "Çalıda biri var...": "Someone's in the bush...",
+  "Utangaç hayalet: \"Pışt!\"": "Shy ghost: \"Psst!\"",
+  "Böö!": "Boo!",
+  "Yarasalar havalandı!": "The bats took off!",
+  "Kurbağa Kral: \"Öp beni.\"": "Frog King: \"Kiss me.\"",
+  "Mantar çığlığı!": "Mushroom scream!",
+  "Ölüler el sallıyor.": "The dead are waving.",
+  "Zombi sincap cevizini vermiyor.": "Zombie squirrel won't share its acorn.",
+  "Kara kedi yolunu kesti.": "A black cat crossed your path.",
+  "2. SEFER ▲": "CAMPAIGN 2 ▲",
+  "1. SEFER ▼": "CAMPAIGN 1 ▼",
+  "Önce bu seferi bitir": "Finish this campaign first",
+  "Yeniden kuruluyor…": "Rebuilding…",
+  "Bu kuleden haritada zaten var": "You already have this tower on the map",
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "The tower returns exactly as it was before it fell: level, specialization, abilities"
+ },
+ "tpl": [
+  [
+   "{} göndereceğin yeri seç (haritanın her yeri)",
+   "Choose where to send {} (anywhere on the map)"
+  ],
+  [
+   "{} sn sonra hazır",
+   "ready in {} s"
+  ],
+  [
+   "{} sn",
+   "{} s"
+  ],
+  [
+   "{} sn'de kalkar",
+   "rises in {} s"
+  ],
+  [
+   "{} sn'de bir",
+   "every {} s"
+  ],
+  [
+   "YENİ BÜYÜ: {}",
+   "NEW SPELL: {}"
+  ],
+  [
+   "GÜNÜN SINAVI: {}",
+   "DAILY TRIAL: {}"
+  ],
+  [
+   "BAŞARIM: {}",
+   "ACHIEVEMENT: {}"
+  ],
+  [
+   "YENİ RÜTBE: {}",
+   "NEW RANK: {}"
+  ],
+  [
+   "{} açıldı!",
+   "{} unlocked!"
+  ],
+  [
+   "{} altın",
+   "{} gold"
+  ],
+  [
+   "+{} altın",
+   "+{} gold"
+  ],
+  [
+   "SATIN AL · {}",
+   "BUY · {}"
+  ],
+  [
+   "Rekor {}",
+   "Record {}"
+  ],
+  [
+   "{} ALTINLA BAŞLA",
+   "{} GOLD START"
+  ],
+  [
+   "▶ +{} ALTINLA BAŞLA",
+   "▶ +{} GOLD START"
+  ],
+  [
+   "{}. bölümle açılır",
+   "unlocks at level {}"
+  ],
+  [
+   "{} · yayın {}",
+   "{} · build {}"
+  ],
+  [
+   "Güç: {}",
+   "Power: {}"
+  ],
+  [
+   "Zayıf: {}",
+   "Weak: {}"
+  ],
+  [
+   "Dirençli: {}",
+   "Resistant: {}"
+  ],
+  [
+   "{} ceset!",
+   "{} corpses!"
+  ],
+  [
+   "{}. dalga",
+   "wave {}"
+  ],
+  [
+   "Dalga {}/{}",
+   "Wave {}/{}"
+  ],
+  [
+   "DALGA {}/{}",
+   "WAVE {}/{}"
+  ],
+  [
+   "{}. BÖLÜM",
+   "LEVEL {}"
+  ],
+  [
+   "{}. SEFER",
+   "CAMPAIGN {}"
+  ],
+  [
+   "Bölüm {}",
+   "Level {}"
+  ],
+  [
+   "+%{} hasar",
+   "+{}% damage"
+  ],
+  [
+   "+%{} menzil",
+   "+{}% range"
+  ],
+  [
+   "+{} can",
+   "+{} lives"
+  ],
+  [
+   "{} dalga",
+   "{} waves"
+  ],
+  [
+   "+%{} hız",
+   "+{}% speed"
+  ],
+  [
+   "-%{} hasar",
+   "-{}% damage"
+  ],
+  [
+   "%{} hasar",
+   "{}% damage"
+  ],
+  [
+   "{} yıldız",
+   "{} stars"
+  ],
+  [
+   "{} sn kalır",
+   "lasts {} s"
+  ],
+  [
+   "Seviye {}!",
+   "Level {}!"
+  ],
+  [
+   "{} Sv.{} · {}",
+   "{} Lv.{} · {}"
+  ],
+  [
+   "{} seviye {}",
+   "{} level {}"
+  ],
+  [
+   "{} · {} sn'de bir",
+   "{} · every {} s"
+  ],
+  [
+   " · Sonraki: {}",
+   " · Next: {}"
+  ],
+  [
+   "{} — Seviye {}{}",
+   "{} — Level {}{}"
+  ],
+  [
+   "Yeni: {}",
+   "New: {}"
+  ],
+  [
+   "{} — Seviye {} (son)",
+   "{} — Level {} (max)"
+  ],
+  [
+   "{} — Seviye {}",
+   "{} — Level {}"
+  ],
+  [
+   "{} sn bekleme",
+   "{} s cooldown"
+  ],
+  [
+   "{} dalga  ·  {}",
+   "{} waves  ·  {}"
+  ],
+  [
+   "Rekor: {} dalga",
+   "Record: {} waves"
+  ],
+  [
+   "Sonraki: {}",
+   "Next: {}"
+  ],
+  [
+   "Kule Hayalet Arbaletçilere dönüşür: 3 kızıl hayalet arbaletçi ayrı hedeflere atar, uçanlara +%30 · her atışta {} ek cıvata yakındaki düşmanlara (%{} hasar) · kalabalığa iyi",
+   "The tower becomes Ghost Crossbowmen: 3 crimson ghost crossbowmen shoot separate targets, +30% vs flyers · each shot sends {} extra bolts at nearby enemies ({}% damage) · good against crowds"
+  ],
+  [
+   "Kule 3 kızıl hayalet okçuya dönüşür: çok sık, yüksek kavisli oklar (ok başına az hasar), uçanlara +%30 · her {}. ok zehirli: 3 sn boyunca saniyede {} hasar",
+   "The tower becomes 3 crimson ghost archers: very rapid, high-arcing arrows (low damage per arrow), +30% vs flyers · every {}th arrow is poisoned: {} damage per second for 3 s"
+  ],
+  [
+   "Kule 2 kızıl ağır arbaletçiye dönüşür: yavaş ama ağır cıvata, zırhın %{} kadarını deler, vurduğunu geri iter · %{} şansla 3 kat hasar",
+   "The tower becomes 2 crimson heavy crossbowmen: slow but heavy bolts, pierce {}% of armor, knock targets back · {}% chance of triple damage"
+  ],
+  [
+   "yukarıdaki düğme ({})",
+   "the button above ({})"
+  ],
+  [
+   "+{} dirilen",
+   "+{} raised dead"
+  ],
+  [
+   "+%{} güç",
+   "+%{} power"
+  ],
+  [
+   "+{} sn ömür",
+   "+{} s lifetime"
+  ],
+  [
+   "+{} sn",
+   "+{} s"
+  ],
+  [
+   "alan +%{}",
+   "area +%{}"
+  ],
+  [
+   "korkan %{} fazla hasar alır",
+   "feared foes take %{} more damage"
+  ],
+  [
+   "+%{} dayanıklı",
+   "+%{} sturdier"
+  ],
+  [
+   "Patlama {} sn sersemletir",
+   "Blast stuns for {} s"
+  ],
+  [
+   "Golem %{} sert vurur",
+   "Golem hits %{} harder"
+  ],
+  [
+   "+%{} can",
+   "+%{} health"
+  ],
+  [
+   "Seviye {}/{}",
+   "Level {}/{}"
+  ],
+  [
+   "{} puan",
+   "{} points"
+  ],
+  [
+   "{} / {} XP",
+   "{} / {} XP"
+  ],
+  [
+   "Sv. {}",
+   "Lv. {}"
+  ],
+  [
+   "Güç +%{}",
+   "Power +%{}"
+  ],
+  [
+   "bekleme -%{}",
+   "cooldown -%{}"
+  ],
+  [
+   "{}. kademe",
+   "rank {}"
+  ],
+  [
+   "can yenilenmesi ×{}",
+   "regeneration ×{}"
+  ],
+  [
+   "{} ruh taşı",
+   "{} soul stones"
+  ],
+  [
+   "Bekleme {} sn",
+   "Cooldown {} s"
+  ],
+  [
+   "{} PUAN",
+   "{} POINT"
+  ],
+  [
+   "Sv. {}'de açılır",
+   "Unlocks at Lv. {}"
+  ],
+  [
+   "{} TAŞ",
+   "{} STONES"
+  ],
+  [
+   "{} büyü puanı",
+   "{} spell points"
+  ],
+  [
+   "Seviye {} · bekleme {} sn",
+   "Level {} · cooldown {} s"
+  ],
+  [
+   "Büyüyü kullandıkça seviye atlar · Sv. {}'de açılır",
+   "Levels up as you cast it · unlocks at Lv. {}"
+  ],
+  [
+   "İlk {} bölüm ücretsiz",
+   "First {} levels free"
+  ],
+  [
+   "Kristalin: {}",
+   "Your crystals: {}"
+  ],
+  [
+   "+{} KRİSTAL",
+   "+{} CRYSTALS"
+  ],
+  [
+   "{}: patlayacağı yeri seç",
+   "{}: choose where it explodes"
+  ],
+  [
+   "{} için {} kristal gerekir (kristal bosslardan düşer)",
+   "{} needs {} crystals (crystals drop from bosses)"
+  ],
+  [
+   "Kalenin yanındaki mezara dokun: {} altına Ceset Golemi kalkar, kapıyı tutar.",
+   "Tap the grave by the castle: for {} gold a Corpse Golem rises and holds the gate."
+  ],
+  [
+   "Mezar — {} altın",
+   "Grave — {} gold"
+  ],
+  [
+   "Ceset Golemi kalkar (Can {} · Hasar {}-{} · Zırh %{}), kalenin kapısını tutar; ölürse {} sn sonra yeniden kalkar.",
+   "A Corpse Golem rises (HP {} · Damage {}-{} · Armor {}%) and holds the castle gate; if it dies it rises again after {} s."
+  ],
+  [
+   "İlk görüldü: {}. bölüm · {}",
+   "First seen: level {} · {}"
+  ],
+  [
+   "{} okçu · Hasar {}-{} · Atış {}sn",
+   "{} archers · Damage {}-{} · Fire {}s"
+  ],
+  [
+   "{} · Ok: yükselt · Bayrak: devi gönder",
+   "{} · Arrow: upgrade · Flag: send the giant"
+  ],
+  [
+   "{}! Seni kapıya süs olsun diye mi diktim?!",
+   "{}! Did I put you at the gate as decoration?!"
+  ],
+  [
+   "{}, kale yanıyor, sen manzara mı seyrediyorsun?",
+   "{}, the castle is burning and you are enjoying the view?"
+  ],
+  [
+   "Hey {}! Komutan dediğin önden gider!",
+   "Hey {}! A commander leads from the front!"
+  ],
+  [
+   "{}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!",
+   "{}! If anyone else gets through that gate, I will bury you back in your grave!"
+  ],
+  [
+   "{}, seni mezardan çıkardığıma pişman ettirme!",
+   "{}, don't make me regret raising you from the grave!"
+  ],
+  [
+   "{}: dokun! {}",
+   "{}: tap! {}"
+  ],
+  [
+   "{}. GÜN",
+   "DAY {}"
+  ],
+  [
+   "{} kristal",
+   "{} crystals"
+  ],
+  [
+   "{} + {}",
+   "{} + {}"
+  ],
+  [
+   "Hasar +%{}",
+   "Damage +{}%"
+  ],
+  [
+   "Can +%{}",
+   "Health +{}%"
+  ],
+  [
+   "Zırh +%{}",
+   "Armor +{}%"
+  ],
+  [
+   "Güç beklemesi -%{}",
+   "Power cooldown -{}%"
+  ],
+  [
+   "Saldırı hızı +%{}",
+   "Attack speed +{}%"
+  ],
+  [
+   "Can yenileme +%{}",
+   "Health regen +{}%"
+  ],
+  [
+   "ÇANTA {}/{}",
+   "BAG {}/{}"
+  ],
+  [
+   "ERİT +{}",
+   "MELT +{}"
+  ],
+  [
+   "Yalnız {} kullanır",
+   "Only {} can use it"
+  ],
+  [
+   "{} · EŞYALAR",
+   "{} · GEAR"
+  ],
+  [
+   "Molozu temizle — {} altın",
+   "Clear the rubble — {} gold"
+  ],
+  [
+   "İskeletler {} sn'de temizler; sonra yeniden kule kurulur",
+   "Skeletons clear it in {} s; then you can build again"
+  ],
+  [
+   "Yeniden kur — {} altın",
+   "Rebuild — {} gold"
+  ]
+ ]
 }

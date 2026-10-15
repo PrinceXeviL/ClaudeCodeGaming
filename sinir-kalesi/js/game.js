@@ -3841,6 +3841,10 @@ function upgradeTower(t) {
 const TOWER_HP = { lvl: [640, 880, 1160, 1520], // 16 Eki (Caner: "kuleler çok kolay yıkılıyor"): 2 kat
   type: { barracks: 1.2, artillery: 1.1, archer: 1, mage: 0.9, altar: 1 }, regen: 0.02, calm: 8 };
 const RUBBLE = { cost: 25, time: 2.5 };
+// 16 Eki (Caner): yıkılan kule molozdan son haliyle (kademe, uzmanlık, yetenek kademeleri, büyü, yol, bayrak) yeniden kurulabilir:
+// bedeli kuleye harcananın REBUILD.k katı (5'e yuvarlı), iskeletler REBUILD.time sn'de nekromantik büyüyle toplar. Ya da moloz temizlenip başka kule kurulur.
+const REBUILD = { k: 0.5, time: 2.2 };
+const rebuildCost = (R) => Math.max(5, Math.round(R.snap.spent * REBUILD.k / 5) * 5);
 const towerMaxHp = (t) => Math.round(TOWER_HP.lvl[Math.min(3, t.lvl)] * (TOWER_HP.type[t.type] || 1));
 function towerHp(t) { const m = towerMaxHp(t); if (t.maxHp !== m) { t.hp = t.hp == null ? m : t.hp + Math.max(0, m - (t.maxHp || m)); t.maxHp = m; } } // yükseltmede can farkı eklenir
 function damageTower(t, dmg) {
@@ -3854,7 +3858,7 @@ function collapseTower(t) {
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.towers = G.towers.filter(x => x !== t); t.plot.tower = null;
   if (G.sel && (G.sel.tower === t || G.sel.plot === t.plot)) setSel(null);
-  t.plot.rubble = { type: t.type, seed: rand(0, 1) };
+  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, rx: t.rx, ry: t.ry, spent: t.spent } };
   shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t);
   for (let i = 0; i < 3; i++) G.effects.push({ kind: 'dust', x: t.x + rand(-14, 14), y: t.y - rand(0, 10), t: 0, dur: 0.8 + i * 0.15 });
   for (let i = 0; i < 34; i++) emit(G.parts, { kind: 'chunk', x: t.x + rand(-16, 16), y: t.y - rand(10, h * 0.8), vx: rand(-90, 90), vy: -rand(20, 140), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#5a5466' : '#d8ccb0', s0: rand(1.6, 3.2), s1: 1, life: rand(0.6, 1.1) });
@@ -3865,15 +3869,47 @@ function updateTowerHp(dt) {
     if (t.hitFlash > 0) t.hitFlash -= dt;
     if (t.hp != null && t.hp < t.maxHp && G.t - (t.hitAt ?? -99) > TOWER_HP.calm) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * TOWER_HP.regen * dt);
   }
+  for (const pl of G.plots) if (pl.rubble && pl.rubble.buildT > 0 && (pl.rubble.buildT -= dt) <= 0) finishRebuild(pl);
   for (const pl of G.plots) if (pl.rubble && pl.rubble.clearT > 0 && (pl.rubble.clearT -= dt) <= 0) { pl.rubble = null; G.effects.push({ kind: 'dust', x: pl.x, y: pl.y, t: 0, dur: 0.5 }); sfx('pick'); }
 }
+function rebuildTower(pl) {
+  const R = pl.rubble; if (!R || !R.snap || R.clearT > 0 || R.buildT > 0) return false;
+  if (TOWERS[R.type].unique && G.towers.some(o => o.type === R.type)) { floatText(pl.x, pl.y - 40, 'Bu kuleden haritada zaten var', '#ff9a7a'); return false; }
+  const c = rebuildCost(R); if (G.gold < c) return false;
+  G.gold -= c; R.buildT = REBUILD.time; sfx('build'); gaDesign('kule:yenidenkur:' + R.type);
+  return true;
+}
+function finishRebuild(pl) {
+  const R = pl.rubble, S = R.snap, type = R.type; pl.rubble = null;
+  const t = { type, def: TOWERS[type], lvl: S.lvl, x: pl.x, y: pl.y, cd: 0.3, spent: S.spent, plot: pl, soldiers: [], anim: 0, shotAnim: 0, born: G.t,
+    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra };
+  pl.tower = t; G.towers.push(t); towerHp(t);
+  if (type === 'barracks') {
+    const n = nearestOnPaths(G.paths, t.x, t.y); t.rx = S.rx ?? n.x; t.ry = S.ry ?? n.y;
+    for (let i = 0; i < (t.spec ? 4 : 3); i++) { const sd = makeSoldier(t, i); riseFromGrave(sd); t.soldiers.push(sd); G.soldiers.push(sd); }
+    applySoldierStats(t);
+  }
+  G.effects.push({ kind: 'pillar', x: t.x, y: t.y, col: '140,255,140', t: 0, dur: 0.8 }); G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 });
+  for (let i = 0; i < 22; i++) { const a = rand(0, Math.PI * 2), v = rand(30, 90); emit(G.parts, { kind: 'glow', add: true, x: t.x + rand(-16, 16), y: t.y - rand(0, 50), vx: Math.cos(a) * v * 0.4, vy: -rand(30, 90), drag: 1.5,
+    col: i % 3 ? '140,255,150' : '200,120,255', s0: rand(3, 5), s1: 0.5, life: rand(0.6, 1) }); }
+  floatText(t.x, t.y - 80, towerTitle(t), '#b8ff9a'); sfx('upgrade');
+  if (G.sel && G.sel.plot === pl) setSel(null);
+}
 function clearRubble(pl) {
-  if (!pl.rubble || pl.rubble.clearT > 0 || G.gold < RUBBLE.cost) return false;
+  if (!pl.rubble || pl.rubble.clearT > 0 || pl.rubble.buildT > 0 || G.gold < RUBBLE.cost) return false;
   G.gold -= RUBBLE.cost; pl.rubble.clearT = RUBBLE.time; sfx('build'); return true;
 }
 // 15 Eki: kulenin kendi molozu (Gemini nm6_kule_moloz.jpg, kule türüne göre; Ruh Fenerinin iki çeşidi). Arsanın üstünü örter, temizlenirken solup çöker.
 const RUBBLE_IMG = { w: 90, anchor: 0.6 };
-function drawRubble(pl) { // moloz: taş blokları ve kemikler; temizlenirken azalır, üstünde ilerleme halkası
+function drawRubble(pl) { // 16 Eki: yeniden kurulurken molozun üstünde yeşil-mor büyü, yükselen kemik kıvılcımları ve ilerleme halkası
+  drawRubble0(pl); const R = pl.rubble; if (!R || !(R.buildT > 0)) return;
+  const p = 1 - R.buildT / REBUILD.time;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, pl.x, pl.y - 14, 40 + 20 * p, '120,255,140', 0.25 + 0.25 * p); glow(ctx, pl.x, pl.y - 20, 26, '190,110,255', 0.2); ctx.restore();
+  if (Math.random() < 0.5) emit(G.parts, { kind: 'glow', add: true, x: pl.x + rand(-18, 18), y: pl.y - rand(0, 10), vy: -rand(30, 80), vx: rand(-8, 8), drag: 1, col: Math.random() < 0.7 ? '140,255,150' : '200,120,255', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
+  ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(10,20,10,0.7)'; ctx.beginPath(); ctx.arc(pl.x, pl.y - 34, 9, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = '#8cff8c'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.arc(pl.x, pl.y - 34, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); ctx.stroke(); ctx.restore();
+}
+function drawRubble0(pl) { // moloz: taş blokları ve kemikler; temizlenirken azalır, üstünde ilerleme halkası
   const R = pl.rubble, cl = R.clearT > 0 ? R.clearT / RUBBLE.time : 1; let sd = Math.floor(R.seed * 99991) + 7;
   const rim = spr('nm6_rubble_' + (R.type === 'mage' && R.seed < 0.5 ? 'mage2' : R.type));
   if (rim) {
@@ -11813,7 +11849,8 @@ const BUILD_ICON_K = 1.1; // 14 Eki (Caner): inşa menüsündeki kule simgeleri 
 const MENU_R = 25, MENU_K = 1.15; // MENU_K: Caner (10 Eki) menü düğmeleri %15 büyük (içerikle birlikte ölçeklenir); arsa menüsünde aralar da %15 açıldı
 function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; if (G && G.early && u != null && G.idx < u) return false; /* öğretici: kuleler sırayla */ return TEST_OPEN || u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
-  if (pl.rubble) return pl.rubble.clearT > 0 ? [] : [{ id: 'clear', x: pl.x, y: pl.y - 74, cost: RUBBLE.cost }]; // yıkılan kulenin molozu önce temizlenir
+  if (pl.rubble) return pl.rubble.clearT > 0 || pl.rubble.buildT > 0 ? [] : pl.rubble.snap ? [{ id: 'rebuild', type: pl.rubble.type, x: pl.x - 46, y: pl.y - 66, cost: rebuildCost(pl.rubble) }, { id: 'clear', x: pl.x + 46, y: pl.y - 66, cost: RUBBLE.cost }]
+    : [{ id: 'clear', x: pl.x, y: pl.y - 74, cost: RUBBLE.cost }]; // yıkılan kule: son haliyle yeniden kur ya da molozu temizle
   const types = TOWER_ORDER.filter(type => towerUnlocked(type) && !(TOWERS[type].unique && G.towers.some(o => o.type === type))); // tek kurulan kule (Lanet Kulesi) kuruluysa menüde görünmez, satılınca geri gelir
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
   return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15 * BUILD_ICON_K, y: pl.y - 16 + offs[i][1] * 1.15 * BUILD_ICON_K, cost: TOWERS[type].levels[0].cost }));
@@ -12072,6 +12109,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   } else if (it.id === 'sell' && mi('ico_mn_sell')) {
   } else if (it.id === 'sell') {
     drawIcon('coin', -4, 3, 17); drawIcon('coin', 4, -3, 19);
+  } else if (it.id === 'rebuild') { if (!mi('ico_bd_' + it.type, 0.8)) drawIcon('restart', 0, 0, 24); glow(ctx, 0, 0, 22, '140,255,150', 0.25 + Math.sin(time * 4) * 0.08);
   } else if (it.id === 'clear' && mi('ico_mn_clear')) {
   } else if (it.id === 'clear') { // kürek
     ctx.save(); ctx.rotate(-0.7); ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1608'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(0, 6); ctx.stroke();
@@ -12925,6 +12963,7 @@ function infoText() {
     if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, `${st(N)} · ${N.perk}`];
     return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Ok: yükselt' : L.perk} · Bayrak: ${NECRO ? 'ölüleri' : 'paralı askerleri'} gönder`];
   }
+  if (G.preview && G.preview.id === 'rebuild') { const R = G.sel && G.sel.plot && G.sel.plot.rubble; return [`Yeniden kur — ${R ? rebuildCost(R) : ''} altın`, 'Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler'] ; }
   if (G.preview && G.preview.id === 'clear') return [`Molozu temizle — ${RUBBLE.cost} altın`, `İskeletler ${RUBBLE.time} sn'de temizler; sonra yeniden kule kurulur`];
   if (G.preview && G.preview.id === 'build') {
     const T = TOWERS[G.preview.type], L = T.levels[0];
@@ -18267,6 +18306,7 @@ function hudTap(x, y) {
         else if (it.id === 'imbuepick') { if (buyImbue(G.sel.tower, it.type)) { G.sel.sub = null; G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'sell') { sellTower(G.sel.tower); setSel(null); }
         else if (it.id === 'clear') { if (clearRubble(G.sel.plot)) setSel(null); else sfx('error'); }
+        else if (it.id === 'rebuild') { if (rebuildTower(G.sel.plot)) setSel(null); else sfx('error'); }
         return true;
       }
     }
@@ -18374,6 +18414,7 @@ function worldTap(x, y) {
   for (const pl of G.plots) {
     if (!pl.tower && dist(pl.x, pl.y, x, y) < 32) {
       if (pl.rubble && pl.rubble.clearT > 0) { floatText(pl.x, pl.y - 30, 'Temizleniyor…', '#e8dcc0'); setSel(null); return; }
+      if (pl.rubble && pl.rubble.buildT > 0) { floatText(pl.x, pl.y - 30, 'Yeniden kuruluyor…', '#b8ff9a'); setSel(null); return; }
       if (G.sel && G.sel.plot === pl) { setSel(null); return; }
       setSel({ kind: 'plot', plot: pl }); sfx('select'); return;
     }
@@ -18564,6 +18605,7 @@ window.__game = {
     return { strips: Math.round(strips), other: Math.round(other), white: Math.round(white), rot: Math.round(rot), big: L.sort((a, b) => b[1] - a[1]).slice(0, n), others: n > 15 ? Object.keys(SPR).filter(k => !LAZY_RE.test(k)).map(k => [k, Math.round(mb(SPR[k]))]).sort((a, b) => b[1] - a[1]).slice(0, n) : null };
   },
   collapse: (i) => G.plots[i].tower && collapseTower(G.plots[i].tower), // test: kuleyi yık (moloz)
+  rebuild: (i) => rebuildTower(G.plots[i]), ability: (i, id) => buyAbility(G.plots[i].tower, id), // test: molozdan yeniden kur, uzmanlık al
   mapSpots: () => mapSpots(mapEp).map(o => ({ x: MAPCAM.tx + o.x * MAPCAM.z, y: MAPCAM.ty + o.y * MAPCAM.z, k: SURPRISE.list[o.k].n })), // test: harita sürpriz noktaları (ekran)
   surN: () => (MAPFX.sur || []).length,
   mapEpNow: () => mapEp,
