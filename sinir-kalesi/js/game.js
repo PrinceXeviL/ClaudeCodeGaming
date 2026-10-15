@@ -1768,16 +1768,25 @@ function renderBackground0(lv, paths, res) {
   };
   // vaha gölleri ve çalılar (yerde, gölgesiz)
   const DK = lv.decorK || 1; // dekor yoğunluğu (bölge haritası daha dolu)
+  // 16 Eki (Caner: "haritadaki nesneleri mantıklı yerleştir, rastgele olmasın, doğal olsun"): göl birbirine ve yola yaslanmaz, ağaçlar içine
+  // girmez (pondsAt → props), kenarına (alt yarım daire) sazlık/çalı öbeği ve bir iki taş dizilir
+  const pondsAt = [];
   for (let i = 0, n = 0; i < 300 * DK && n < (th.ponds || 0) * DK; i++) {
-    const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr(th.pondSpr || 's2_pond_2');
-    if (blocked(x, y, 34) || !im) continue;
-    n++;
-    drawSprite(g, im, x, y, 60 + rnd() * 30, 0.5);
-    for (let k = 0; k < 4; k++) { const b = spr(th.bushSpr ? th.bushSpr[k % th.bushSpr.length] : 's2_bush_' + (1 + (k % 2))); if (b) drawSprite(g, b, x + (rnd() - 0.5) * 80, y + 18 + rnd() * 10, 16 + rnd() * 8); }
+    const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr(th.pondSpr || 's2_pond_2'), pw = 60 + rnd() * 30;
+    if (blocked(x, y, 40) || !im || pondsAt.some(o => Math.hypot(o[0] - x, o[1] - y) < 150)) continue;
+    n++; pondsAt.push([x, y, pw * 0.55]);
+    drawSprite(g, im, x, y, pw, 0.5);
+    const a0 = rnd() * 6.283, nb = 3 + Math.floor(rnd() * 2);
+    for (let k = 0; k < nb; k++) { // kıyı: göl elipsinin kenarında, yan yana sazlık öbeği (alt kıyı önde)
+      const a = a0 + k * 0.5 + rnd() * 0.25, b = spr(th.bushSpr ? th.bushSpr[(k + i) % th.bushSpr.length] : 's2_bush_' + (1 + (k % 2)));
+      if (b) drawSprite(g, b, x + Math.cos(a) * pw * 0.48, y + Math.sin(a) * pw * 0.2 + 6, 13 + rnd() * 7);
+    }
+    const rk = th.rockSpr && spr(th.rockSpr[i % th.rockSpr.length]);
+    if (rk) { const a = a0 + Math.PI + rnd(), m = SPR_META[th.rockSpr[i % th.rockSpr.length]], w = m ? m[0] * ROCK_K * (th.rockK || 1) * 0.8 : 14; drawSprite(g, rk, x + Math.cos(a) * pw * 0.5, y + Math.sin(a) * pw * 0.22 + 5, w); }
   }
   const bushSeen = [], brnd = seeded(lv.name.length * 29 + 5); // ayrı tohum: çeşit ve aynalama yerleşimi kaydırmaz
   const rockSeen = [];
-  if (lv.decorK) { // sefer haritası (pişirilmiş zemin): eski düz dağılım kalır; bölüm haritalarında kaya ve çalıyı layoutDecor yerleştirir
+  if (false) { // 16 Eki: sefer haritası da layoutDecor kullanır (eski düz dağılım kapalı)
   for (let i = 0, n = 0; i < 400 * DK && n < (th.bushes || 0) * DK; i++) {
     const x = rnd() * W, y = rnd() * H;
     if (blocked(x, y, 6)) continue;
@@ -1805,7 +1814,7 @@ function renderBackground0(lv, paths, res) {
   // bölümde yol dışı boş kalmasın: tema sayısının ~2 katı ağaç, yarısı küçük kümeler halinde (koru gibi)
   // harabeler (yıkık kilise duvarı, kırık sütunlar, mahzen girişi... nm_ruin_*) ve mezarlık kümeleri: yol dışındaki boşluklara,
   // ağaçlardan önce yerleşir (ağaçlar bunlara binmez)
-  const props = [];
+  const props = pondsAt.slice(); // göllerin üstüne ağaç/harabe binmez
   if (NECRO && (!lv.decorK || th.dense || th.deco)) { // 1. sefer (dense) haritasında da: her mekân parçası tam ekran çizilir, ~1/5'i görünür → 4 kat
     const ruins = (th.ruinSpr || [1, 2, 3, 4, 5, 6].map(n => 'nm_ruin_' + n)).filter(n => spr(n));
     const MK = lv.decorK ? 4 : 1, nR = (ruins.length ? th.ruinN || (th === THEMES.graveyard || th === THEMES.necrogate ? 3 : 2) : 0) * MK, nG = (th === THEMES.graveyard ? 5 : 3) * MK;
@@ -1876,8 +1885,10 @@ function renderBackground0(lv, paths, res) {
   const TGAP = th.dense ? 14 : 18; // orman temalarında ağaçlar daha sık
   const treeOk = (x, y, s) => x > -10 && x < W + 10 && y > 20 && y < H + 10 && !blocked(x, y, s) && !trees.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.5) < TGAP) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < o[2] + 12);
   const extra = []; // bölüm haritası: kaya ve çalılar ağaçlarla birlikte y sırasıyla çizilir (ağaç dibindeki çalı gövdenin önünde kalır)
-  if (!lv.decorK) layoutDecor(lv, paths, th, rnd, blocked, props, trees, treeOk, TN, extra, R);
-  else for (let i = 0; i < 3000 * DK && trees.length < TN; i++) {
+  // 16 Eki: sefer haritası da doğal yerleşim (korular, ağaç dibinde çalı, kaya öbekleri); kaya 1,6 kat (Caner: "hiç kaya göremedim")
+  const thL = lv.decorK ? Object.assign({}, th, { rocks: Math.round(th.rocks * DK * 1.6), bushes: Math.round((th.bushes || 0) * DK) }) : th;
+  layoutDecor(lv, paths, thL, rnd, blocked, props, trees, treeOk, TN, extra, R);
+  if (false) for (let i = 0; i < 3000 * DK && trees.length < TN; i++) {
     const x = rnd() * W, y = rnd() * H, s = 10 + rnd() * 9;
     if (!treeOk(x, y, s)) continue;
     trees.push([x, y, s]);
@@ -16255,6 +16266,17 @@ fetch('img/map_bolge.json' + (window.SURUM ? '?v=' + window.SURUM : ''), { cache
     im.src = 'img/' + P.file + (window.SURUM ? '?v=' + window.SURUM : '');
   }
 }).catch(() => { REGION_PRE.wait = false; });
+// 16 Eki: yüksek çözünürlüklü harita şeritleri (map_bolge<N>_t<k>.webp): yalnız ekrana giren (ve bir şerit ötesi) yüklenir, öteki bölgeninkiler bırakılır
+function drawMapTiles(ep, X, V) {
+  const P = REGION_PRE[ep]; if (!P || !P.tiles || REGION_BG[ep] && REGION_BG[ep].noPre) return;
+  for (const e in REGION_PRE) if (+e !== ep && REGION_PRE[e] && REGION_PRE[e].tiles) for (const t of REGION_PRE[e].tiles) t.img = null; // bellek: öteki bölge
+  const pad = (V[3] - V[1]) * 0.6;
+  for (const t of P.tiles) {
+    if (t.y > V[3] + pad || t.y + t.h < V[1] - pad) continue;
+    if (!t.img) { t.img = new Image(); t.img.src = 'img/' + t.file + (window.SURUM ? '?v=' + window.SURUM : ''); }
+    if (t.img.complete && t.img.naturalWidth && t.y < V[3] && t.y + t.h > V[1]) ctx.drawImage(t.img, X.x, t.y, X.w, t.h);
+  }
+}
 function regionRoad(E) {
   const P = [E.start, ...E.nodes, ...gateApproach([E.nodes[E.nodes.length - 1], E.end]).slice(1)], out = [];
   for (let i = 0; i < P.length - 1; i++) { // Catmull-Rom: noktaların hepsinden geçen yumuşak eğri
@@ -16653,6 +16675,7 @@ function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep]; if (!bg) return;
   const X = mapExt(bg), z = MAPCAM.z, V = [(VIS.l - MAPCAM.tx) / z, (VIS.t - MAPCAM.ty) / z, (VIS.r - MAPCAM.tx) / z, (VIS.b - MAPCAM.ty) / z]; // ekranda görünen dünya kutusu
   ctx.drawImage(bg, X.x, X.y, X.w, X.h);
+  drawMapTiles(ep, X, V);
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
   drawBgLights(R.lights, V);
   drawGraveHands(R.hands, uiParts); drawBanners(R.banners, V);
@@ -18886,11 +18909,22 @@ window.__game = {
     for (let i = 0; i < n; i++) { delete THUMB[i]; thumbOf.at = -1; const t = thumbOf(i, true); g.drawImage(t, (i % cols) * 480, Math.floor(i / cols) * 270); delete THUMB[i]; }
     return { n, w: c.width, h: c.height, data: c.toDataURL('image/webp', 0.88) };
   },
-  bakeRegion(ep, bx, by, res = 2) { // tools/harita-pisir.js: bölge haritası zeminini verilen taşma payıyla baştan sona çizer
-    if (EPISODES[ep - 1].vert) res = Math.min(res, MAPV.res); // dikey harita uzun: bellek için daha düşük çözünürlük
+  bakeRegion(ep, bx, by, res = 2, nT = 0) { // tools/harita-pisir.js: bölge haritası zeminini verilen taşma payıyla baştan sona çizer
+    // 16 Eki (Caner: "harita bulanık"): nT > 0 ise yüksek çözünürlükte çizilir ve nT yatay şeride bölünür (tiles; oyunda yalnız görünen şeritler yüklenir);
+    // data yine MAPV.res'e küçültülmüş tek görsel (şeritler gelene kadar ve yedek)
+    if (EPISODES[ep - 1].vert && !nT) res = Math.min(res, MAPV.res); // dikey harita uzun: bellek için daha düşük çözünürlük
     const B0 = BLEED; BLEED = { x: bx, y: by }; delete REGION_BG[ep]; REGION_BG[ep] = { parts: [], res, noPre: true };
     let c; for (let i = 0; i < 20 && !(c = REGION_BG[ep].done); i++) regionBg(ep);
-    const R = REGION_BG[ep], out = { m: c.m, ext: c.ext, res, w: c.width, h: c.height, lights: R.lights, banners: R.banners, hands: R.hands, data: c.toDataURL('image/webp', 0.9) };
+    const R = REGION_BG[ep], out = { m: c.m, ext: c.ext, res, w: c.width, h: c.height, lights: R.lights, banners: R.banners, hands: R.hands };
+    if (nT && c.ext) {
+      const lo = document.createElement('canvas'), k = MAPV.res / res; lo.width = Math.round(c.width * k); lo.height = Math.round(c.height * k);
+      const lg = lo.getContext('2d'); lg.imageSmoothingQuality = 'high'; lg.drawImage(c, 0, 0, lo.width, lo.height); out.data = lo.toDataURL('image/webp', 0.9); out.res = MAPV.res;
+      out.tiles = []; const bh = Math.ceil(c.height / nT);
+      for (let i = 0; i < nT; i++) {
+        const y0 = i * bh, h = Math.min(bh, c.height - y0), t = document.createElement('canvas'); t.width = c.width; t.height = h;
+        t.getContext('2d').drawImage(c, 0, -y0); out.tiles.push({ y: c.ext.y + y0 / res, h: h / res, data: t.toDataURL('image/webp', 0.88) });
+      }
+    } else out.data = c.toDataURL('image/webp', 0.9);
     BLEED = B0; delete REGION_BG[ep]; return out;
   },
   openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
