@@ -13508,10 +13508,10 @@ function upCard(x, y, w, h, on, dim) {
 function upPips(x, y, n, r, col) { for (let q = 0; q < 5; q++) circle(x + q * 17, y, 6, q < r ? col : 'rgba(0,0,0,0.55)', '#0a0612', 1.3); }
 function upIconRing(x, y, r, gold) { circle(x, y, r + 3, gold ? '#4a2c08' : '#1a0e14', gold ? '#e8bb4a' : '#c9a865', 2.2); }
 // kademe merdiveni: her satır numara, açıklama (iki satıra kadar), sağda fiyat / şart / onay
-function upLadder(x, y, w, rows, cur) {
+function upLadder(x, y, w, rows, cur, rh = 46) { // rh: satır aralığı (16 Eki: yetenek panelinde sık)
   rows.forEach((rw, q) => {
-    const ry = y + q * 46, done = q < cur, next = q === cur;
-    if (next) roundRect(x - 6, ry - 21, w + 12, 42, 12, 'rgba(232,187,74,0.14)', 'rgba(232,187,74,0.55)', 1.4);
+    const ry = y + q * rh, done = q < cur, next = q === cur;
+    if (next) roundRect(x - 6, ry - rh / 2 + 2, w + 12, rh - 4, 12, 'rgba(232,187,74,0.14)', 'rgba(232,187,74,0.55)', 1.4);
     circle(x + 16, ry, 15, done ? '#2f7a22' : next ? '#7a1434' : 'rgba(0,0,0,0.5)', done ? '#b8ff8a' : next ? '#ffd34d' : 'rgba(201,168,101,0.4)', 1.8);
     if (done) drawIcon('check', x + 16, ry, 16); else txt((q + 1) + '', x + 16, ry + 1, 15, next ? '#fff3d0' : '#a89878', 'center', '400', FONT_T);
     const L = wrapLines(rw.text, w - 44 - 78, UP_FONT.rank, '700', FONT_B, 2);
@@ -13526,64 +13526,88 @@ function heroRankNote(sk, r) {
 }
 const ultRankNote = (r) => (r > 1 ? `Güç +%${Math.round(HERO_TREE.ultK * 100 * (r - 1))} · bekleme -%${5 * (r - 1)}` : 'Güç açık');
 let treeSel = {};
+// 16 Eki (Caner: "yetenek paneli kaliteli oyunlardaki gibi olsun"): üç sütun, komutan odası düzeni.
+// Solda canlı portre (bekleme Veo şeridi), seviye mührü, XP, puan; ortada güçler ve yetenekler büyük düğümler (kademe boncukları,
+// kilitliyse "Sv. N"), sağda seçilenin kartı (açıklama, kademe merdiveni, Geliştir).
 function drawHeroTree(id, px, py, pw, ph, k, battle) {
   const d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), cx = px + pw / 2;
   crimsonRibbon(cx, py + 46, d.name, 24, 280);
-  const rows = [{ kind: 'ult', id: 'ult', sk: null }].concat(HERO_ULT2[id] ? [{ kind: 'ult2', id: 'ult2', sk: null }] : [], heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk }))); // 13 Eki: 2 aktif üstte, 2 pasif altta
+  const rows = [{ kind: 'ult', id: 'ult', sk: null }].concat(HERO_ULT2[id] ? [{ kind: 'ult2', id: 'ult2', sk: null }] : [], heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk })));
   const UO = (kind) => (kind === 'ult2' ? HERO_ULT2[id] : HERO_ULT[id]), act = Rr.act === 'ult2' && Rr.ult2 > 0 ? 'ult2' : 'ult';
+  const innate = (row) => row.kind === 'sk' && HERO_INNATE[id] === row.id;
+  const rankOf = (row) => Math.max(treeRank(Rr, row.kind, row.id), innate(row) ? 1 : 0);
   if (!rows.find(r => r.id === treeSel[id])) treeSel[id] = (rows.find(r => treeCan(Rr, r.kind, r.id)) || rows[0]).id;
-  // sol sütun: seviye, XP, puan ve yetenek kartları
-  const lx = px + 34, lw = 372;
-  txt(`Seviye ${Rr.lvl}/${HERO_MAX}`, lx, py + 92, 20, '#f0cf86', 'left', '400', FONT_T);
-  roundRect(lx + lw - 118, py + 76, 118, 32, 16, pts > 0 ? '#2f7a22' : 'rgba(0,0,0,0.45)', pts > 0 ? '#b8ff8a' : 'rgba(201,168,101,0.4)', 1.8);
-  txt(`${pts} puan`, lx + lw - 59, py + 93, 17, pts > 0 ? '#eaffd8' : '#a89878', 'center', '400', FONT_T);
-  const xpK = Rr.lvl >= HERO_MAX ? 1 : clamp(Rr.xp / xpNeed(Rr.lvl), 0, 1);
-  roundRect(lx, py + 116, lw, 18, 9, 'rgba(0,0,0,0.55)', 'rgba(201,168,101,0.5)', 1.2);
-  roundRect(lx + 2, py + 118, (lw - 4) * xpK, 14, 7, '#ffd34d');
-  txt(Rr.lvl >= HERO_MAX ? 'EN YÜKSEK SEVİYE' : `${Math.floor(Rr.xp)} / ${xpNeed(Rr.lvl)} XP`, lx + lw / 2, py + 126, 12.5, '#fff6dc', 'center', '800', FONT_B, true);
-  rows.forEach((row, i) => {
-    const y = py + 146 + i * 62, a = clamp((k - 0.1 - i * 0.05) / 0.25, 0, 1); if (a <= 0) return;
-    const r = treeRank(Rr, row.kind, row.id), ult = row.kind !== 'sk', on = treeSel[id] === row.id, can = treeCan(Rr, row.kind, row.id);
-    ctx.save(); ctx.globalAlpha *= a;
-    upCard(lx, y, lw, 58, on, false);
-    upIconRing(lx + 34, y + 29, 21, ult);
-    ctx.save(); ctx.beginPath(); ctx.arc(lx + 34, y + 29, 21, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha *= r ? 1 : 0.55;
-    if (ult) { ctx.translate(lx + 34, y + 29); heroGlyph(id, 21, row.kind); } else drawHeroSkillIcon(row.id, lx + 34, y + 29, 0.95, id);
+  // ---- sol: portre kartı ----
+  const lx = px + 30, lw = 214, ly = py + 78, lh = ph - 78 - 26;
+  roundRect(lx, ly, lw, lh, 16, 'rgba(8,4,14,0.55)', 'rgba(201,168,101,0.45)', 1.4);
+  { const g = ctx.createRadialGradient(lx + lw / 2, ly + lh * 0.48, 10, lx + lw / 2, ly + lh * 0.48, lw * 0.75); g.addColorStop(0, `rgba(${d.aura || '200,120,255'},0.28)`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(lx, ly, lw, lh); }
+  { const fy = ly + 278; ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(lx + lw / 2, fy + 2, 62, 13, 0, 0, Math.PI * 2); ctx.fill();
+    const ik = animStrip(d.sprite, null, '_idle'), F = ik && ANIM_META[ik];
+    ctx.save(); ctx.beginPath(); ctx.rect(lx + 4, ly + 4, lw - 8, lh - 8); ctx.clip(); ctx.translate(lx + lw / 2, fy);
+    if (F) drawFrame(spr(ik), F, Math.floor(time * (F.fps || 12)) % F.n, 200); else { const im = heroSprite(d); if (im) drawSprite(ctx, im, 0, 0, 200 * im.width / im.height); }
+    ctx.restore(); }
+  // seviye mührü (sol üst), puan rozeti (sağ üst)
+  { const sx = lx + 34, sy = ly + 32, g = ctx.createLinearGradient(0, sy - 26, 0, sy + 26); g.addColorStop(0, '#fff0b0'); g.addColorStop(1, '#a8681a');
+    circle(sx, sy, 26, g, '#2e1606', 2.2); circle(sx, sy, 20, '#3a1420'); txt(String(Rr.lvl), sx, sy + 1, 22, '#ffe9a0', 'center', '400', FONT_T); txt('SEVİYE', sx, sy + 34, 11.5, '#d8c8a8', 'center', '800', FONT_B, false); }
+  if (pts > 0) { const bx = lx + lw - 46, by0 = ly + 26, pu = 1 + 0.06 * Math.sin(time * 5); ctx.save(); ctx.translate(bx, by0); ctx.scale(pu, pu);
+    roundRect(-38, -16, 76, 32, 16, '#2f7a22', '#b8ff8a', 1.8); txt(`${pts} PUAN`, 0, 1, 15, '#eaffd8', 'center', '400', FONT_T); ctx.restore(); }
+  { const xy = ly + lh - 82, xpK = Rr.lvl >= HERO_MAX ? 1 : clamp(Rr.xp / xpNeed(Rr.lvl), 0, 1);
+    roundRect(lx + 14, xy, lw - 28, 18, 9, 'rgba(0,0,0,0.6)', 'rgba(201,168,101,0.5)', 1.2); roundRect(lx + 16, xy + 2, (lw - 32) * xpK, 14, 7, '#ffd34d');
+    txt(Rr.lvl >= HERO_MAX ? 'EN YÜKSEK SEVİYE' : `${Math.floor(Rr.xp)} / ${xpNeed(Rr.lvl)} XP`, lx + lw / 2, xy + 10, 12.5, '#fff6dc', 'center', '800', FONT_B, true);
+    if (!battle) gameButton('tr_reset', lx + lw / 2, ly + lh - 32, 160, 40, 'SIFIRLA', () => { treeReset(Rr); sfx('coins'); }, 'red', { icon: 'restart', size: 15 });
+    else txt('Sıfırlama Komutanlar ekranında', lx + lw / 2, ly + lh - 32, 12.5, '#c8b898', 'center', '700', FONT_B, false); }
+  // ---- orta: düğümler ----
+  const mx = px + 262, mw = 288, ults = rows.filter(r => r.kind !== 'sk'), sks = rows.filter(r => r.kind === 'sk');
+  txt('GÜÇLER', mx + mw / 2, py + 92, 14, '#ffd34d', 'center', '800', FONT_B, false);
+  txt('YETENEKLER', mx + mw / 2, py + 262, 14, '#b8ff8a', 'center', '800', FONT_B, false);
+  ctx.strokeStyle = 'rgba(201,168,101,0.22)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mx + 20, py + 248); ctx.lineTo(mx + mw - 20, py + 248); ctx.stroke();
+  const node = (row, x, y, R, i) => {
+    const a = clamp((k - 0.1 - i * 0.06) / 0.25, 0, 1); if (a <= 0) return;
+    const r = rankOf(row), ult = row.kind !== 'sk', on = treeSel[id] === row.id, can = treeCan(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), locked = r === 0 && need != null && Rr.lvl < need;
+    ctx.save(); ctx.globalAlpha *= a; const ps = pressScale('ts' + row.id) * (on ? 1.06 : 1); ctx.translate(x, y); ctx.scale(ps, ps);
+    if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, R * 1.9, ult ? '255,210,90' : '140,255,150', 0.45 + 0.12 * Math.sin(time * 4)); ctx.restore(); }
+    upIconRing(0, 0, R, ult);
+    if (on) circle(0, 0, R + 6, null, ult ? '#ffe27a' : '#b8ff8a', 2.4);
+    ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha *= r ? 1 : 0.45;
+    if (ult) heroGlyph(id, R, row.kind); else drawHeroSkillIcon(row.id, 0, 0, R / 22, id);
     ctx.restore();
-    fitTxt(ult ? UO(row.kind).name : row.sk.name, lx + 66, y + 20, lw - 66 - 100, UP_FONT.name - 1, r ? '#ffe9b0' : '#c8b898', 'left', '400', FONT_T);
-    txt(ult ? (act === row.kind && r ? 'AKTİF · SAVAŞTA' : 'AKTİF') : row.sk.passive ? 'PASİF · KALICI' : 'PASİF · OTOMATİK', lx + 66, y + 42, UP_FONT.small, ult ? (act === row.kind && r ? '#9fff8a' : '#ffd34d') : '#c8b898', 'left', '800', FONT_B, false);
-    upPips(lx + lw - 92, y + 29, 5, r, ult ? '#ffd34d' : '#b8ff8a');
-    if (can) { glow(ctx, lx + lw - 14, y + 10, 14, '120,255,120', 0.5); circle(lx + lw - 14, y + 10, 8, '#3cbf3c', '#fff', 1.4); }
+    if (locked) { circle(0, 0, R, 'rgba(8,4,12,0.45)'); drawIcon('lock', 0, -3, R * 0.75); txt(`Sv. ${need}`, 0, R * 0.55, 12.5, '#e8d8b8', 'center', '800', FONT_B, true); }
+    for (let q = 0; q < 5; q++) { const aq = Math.PI * (0.5 + (2 - q) * 0.11); circle(Math.cos(aq) * (R + 8), Math.sin(aq) * (R + 8), 4.6, q < r ? (ult ? '#ffd34d' : '#b8ff8a') : 'rgba(0,0,0,0.6)', '#1a0e04', 1.2); }
+    if (can) { glow(ctx, R * 0.74, -R * 0.74, 14, '120,255,120', 0.55); circle(R * 0.74, -R * 0.74, 10, '#3cbf3c', '#fff', 1.6); txt('+', R * 0.74, -R * 0.74 + 1, 15, '#fff', 'center', '400', FONT_T); }
+    if (ult && act === row.kind && r) { roundRect(-30, -R - 20, 60, 16, 8, 'rgba(40,90,30,0.95)', '#9fff8a', 1.2); txt('SAVAŞTA', 0, -R - 12, 10.5, '#d8ffc8', 'center', '800', FONT_B, false); }
+    if (innate(row)) { roundRect(-34, -R - 20, 68, 16, 8, 'rgba(110,20,40,0.95)', '#ff9ab0', 1.2); txt('DOĞUŞTAN', 0, -R - 12, 10, '#ffe0e8', 'center', '800', FONT_B, false); }
     ctx.restore();
-    buttons.push({ key: 'ts' + row.id, x: lx, y, w: lw, h: 58, fn: () => { treeSel[id] = row.id; sfx('pick'); } });
-  });
-  // sağ sütun: seçilenin ayrıntısı
-  const row = rows.find(r => r.id === treeSel[id]), ult = row.kind !== 'sk', r = treeRank(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), can = treeCan(Rr, row.kind, row.id);
-  const rx = px + 430, rw = pw - 430 - 34, ry = py + 76;
-  roundRect(rx, ry, rw, ph - 76 - 30, 16, 'rgba(0,0,0,0.3)', 'rgba(201,168,101,0.4)', 1.2);
-  upIconRing(rx + 42, ry + 40, 26, ult);
-  ctx.save(); ctx.beginPath(); ctx.arc(rx + 42, ry + 40, 26, 0, Math.PI * 2); ctx.clip();
-  if (ult) { ctx.translate(rx + 42, ry + 40); heroGlyph(id, 26, row.kind); } else drawHeroSkillIcon(row.id, rx + 42, ry + 40, 1.2, id);
+    ctx.save(); ctx.globalAlpha *= a; fitTxt(ult ? UO(row.kind).name : row.sk.name, x, y + R + 28, 132, 14.5, r ? '#ffe9b0' : '#c8b898', 'center', '400', FONT_T); ctx.restore();
+    buttons.push({ key: 'ts' + row.id, x: x - R - 14, y: y - R - 14, w: (R + 14) * 2, h: (R + 14) * 2 + 22, fn: () => { treeSel[id] = row.id; sfx('pick'); } });
+  };
+  ults.forEach((row, i) => node(row, mx + mw * (ults.length === 1 ? 0.5 : i ? 0.72 : 0.28), py + 160, 38, i));
+  sks.forEach((row, i) => node(row, mx + mw * ((i + 0.5) / sks.length), py + 330, 33, i + 2));
+  // ---- sağ: seçilenin kartı ----
+  const row = rows.find(r => r.id === treeSel[id]), ult = row.kind !== 'sk', r = rankOf(row), need = treeNext(Rr, row.kind, row.id), can = treeCan(Rr, row.kind, row.id);
+  const rx = px + 566, rw = pw - 566 - 28, ry = py + 78;
+  roundRect(rx, ry, rw, ph - 78 - 26, 16, 'rgba(0,0,0,0.32)', 'rgba(201,168,101,0.45)', 1.2);
+  upIconRing(rx + 40, ry + 40, 26, ult);
+  ctx.save(); ctx.beginPath(); ctx.arc(rx + 40, ry + 40, 26, 0, Math.PI * 2); ctx.clip();
+  if (ult) { ctx.translate(rx + 40, ry + 40); heroGlyph(id, 26, row.kind); } else drawHeroSkillIcon(row.id, rx + 40, ry + 40, 1.2, id);
   ctx.restore();
-  fitTxt(ult ? UO(row.kind).name : row.sk.name, rx + 80, ry + 28, rw - 96, 23, '#ffe9b0', 'left', '400', FONT_T);
-  const DL = wrapLines(ult ? UO(row.kind).desc || '' : row.sk.desc, rw - 96, 13.5, '700', FONT_B, 2);
-  DL.forEach((l, li) => txt(l, rx + 80, ry + 52 + li * 16, 13.5, '#d8c8b0', 'left', '700', FONT_B, false));
+  fitTxt(ult ? UO(row.kind).name : row.sk.name, rx + 76, ry + 30, rw - 88, 21, '#ffe9b0', 'left', '400', FONT_T);
+  txt(ult ? 'GÜÇ' : innate(row) ? 'DOĞUŞTAN · PASİF' : row.sk.passive ? 'PASİF · KALICI' : 'PASİF · OTOMATİK', rx + 76, ry + 52, 12, ult ? '#ffd34d' : '#b8ff8a', 'left', '800', FONT_B, false);
+  const DL = wrapLines(ult ? UO(row.kind).desc || '' : row.sk.desc, rw - 28, 14, '700', FONT_B, 3);
+  DL.forEach((l, li) => txt(l, rx + 14, ry + 84 + li * 17, 14, '#d8c8b0', 'left', '700', FONT_B, false));
   const T = row.kind === 'ult2' ? HERO_TREE.ult2 : ult ? HERO_TREE.ult : HERO_TREE.sk;
   const lad = [1, 2, 3, 4, 5].map(n => ({ text: ult ? (row.kind === 'ult2' && n === 1 ? 'Güç açılır' : ultRankNote(n)) : row.sk.passive && row.sk.id !== 'iron' ? `${n}. kademe` : heroRankNote(row.sk, n),
-    right: (x, y, done) => { if (done) return; txt(`Sv. ${T[n]}`, x, y + 1, 14, Rr.lvl >= T[n] ? '#b8ff8a' : '#a89878', 'center', '800', FONT_B, false); } }));
-  upLadder(rx + 18, ry + 106, rw - 36, lad, r);
-  const by = py + ph - 62, eq = ult && HERO_ULT2[id] && !battle, bxc = eq ? rx + rw * 0.3 : rx + rw / 2; // aktiflerde yanında "savaşa götür"
+    right: (x, y, done) => { if (done) return; txt(`Sv. ${T[n]}`, x, y + 1, 13, Rr.lvl >= T[n] ? '#b8ff8a' : '#a89878', 'center', '800', FONT_B, false); } }));
+  upLadder(rx + 8, ry + 84 + DL.length * 17 + 14, rw - 16, lad, r, 36);
+  const by = py + ph - 58, eq = ult && HERO_ULT2[id] && !battle, bxc = eq ? rx + rw * 0.28 : rx + rw / 2;
   if (eq) { const isAct = act === row.kind && r > 0;
-    gameButton('tr_eq', rx + rw * 0.76, by, 176, 50, isAct ? 'SAVAŞTA ✓' : 'SAVAŞA GÖTÜR', () => { if (isAct) return; if (r <= 0) { sfx('error'); return; } Rr.act = row.kind; persist(); sfx('pick'); }, isAct ? 'dark' : r > 0 ? 'gold' : 'dark', { size: 15 }); }
-  if (need == null) txt('EN YÜKSEK KADEME', bxc, by, 17, '#ffe27a', 'center', '400', FONT_T);
-  else if (Rr.lvl < need) txt(`Sv. ${need}'de açılır`, bxc, by, 16, '#c8b898', 'center', '800', FONT_B, false);
-  else gameButton('tr_buy', bxc, by, eq ? 196 : 230, 50, pts > 0 ? 'GELİŞTİR · 1 PUAN' : 'PUAN YOK', () => {
+    gameButton('tr_eq', rx + rw * 0.76, by, 128, 48, isAct ? 'SAVAŞTA ✓' : 'SAVAŞA', () => { if (isAct) return; if (r <= 0) { sfx('error'); return; } Rr.act = row.kind; persist(); sfx('pick'); }, isAct ? 'dark' : r > 0 ? 'gold' : 'dark', { size: 15 }); }
+  if (need == null) txt('EN YÜKSEK KADEME', bxc, by, 16, '#ffe27a', 'center', '400', FONT_T);
+  else if (Rr.lvl < need) txt(`Sv. ${need}'de açılır`, bxc, by, 15, '#c8b898', 'center', '800', FONT_B, false);
+  else gameButton('tr_buy', bxc, by, eq ? 150 : 230, 50, pts > 0 ? (eq ? 'GELİŞTİR' : 'GELİŞTİR · 1 PUAN') : 'PUAN YOK', () => {
     if (!treeBuy(Rr, row.kind, row.id)) { sfx('error'); return; }
     sfx('upgrade');
     for (let q = 0; q < 18; q++) { const an = rand(0, Math.PI * 2), v = rand(50, 160); emit(uiParts, { kind: 'glow', add: true, x: rx + rw / 2, y: by, vx: Math.cos(an) * v, vy: Math.sin(an) * v, drag: 3, col: '140,255,140', s0: 4, s1: 0.5, life: 0.5 }); }
-  }, can ? 'green' : 'dark', { size: 17, shine: can });
-  if (!battle) gameButton('tr_reset', lx + lw / 2, py + ph - 52, 180, 44, 'SIFIRLA', () => { treeReset(Rr); sfx('coins'); }, 'red', { icon: 'restart', size: 16 });
-  else txt('Sıfırlama Komutanlar ekranında', lx + lw / 2, py + ph - 52, 13.5, '#c8b898', 'center', '700', FONT_B, false);
+  }, can ? 'green' : 'dark', { size: 16, shine: can });
 }
 // ----- Büyü Kitabı (11 Eki): Mortimer'ın büyüleri, Ruh Taşı ile kalıcı 5 kademe -----
 function soulGem(x, y, r) {
