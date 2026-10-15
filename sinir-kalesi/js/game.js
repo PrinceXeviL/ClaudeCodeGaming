@@ -48,7 +48,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_(?:atk|idle)|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_(?:atk|idle)|tower_artillery_plague_(?:call|idle)|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -7970,6 +7970,16 @@ function boneAnim(t) {
   const im = spr(n); if (!im) { loadStrip(n); return null; }
   return { im, M, n, dur: M.n / 24, fps: 24, noLit: true }; // gerçek hızda (24 kare/sn)
 }
+// 16 Eki: Kara Veba Kazanı Veo şeritleri (varliklar/karaveba_veo_isle.py): bekleme döngüsü + sürü çağrısı (çene açılır, kazan taşar, gözler yanar).
+// Çağrı gerçek zamanla (t.call0) bir kez oynar; bitince bekleme döngüsü 0. kareden sürer (dikişsiz). Sürü PCALL_REL sn sonra, taşma anında kalkar.
+const PCALL_REL = 1.0;
+function plagueStrip(t, k) {
+  if (!NECRO || t.type !== 'artillery' || t.spec !== 'plague') return null;
+  const n = 'tower_artillery_plague_' + k, M = ANIM_META[n]; if (!M) return null;
+  const im = spr(n); if (!im) { loadStrip(n); return null; }
+  if (k === 'idle' && ANIM_META.tower_artillery_plague_call && !spr('tower_artillery_plague_call')) loadStrip('tower_artillery_plague_call'); // çağrı şeridi önceden hazır olsun
+  return { im, M, n, dur: M.n / M.fps };
+}
 function boneIdle(t) { // havan kazanının bekleme döngüsü (köpüren sıvı, alevler)
   if (!NECRO || t.type !== 'artillery' || t.spec !== 'corpse') return null;
   const n = 'tower_artillery_bonemortar_idle', M = ANIM_META[n]; if (!M) return null;
@@ -8943,7 +8953,8 @@ const CAULDRON_CAT = { launch: [0.74, 0.075], corpseGlow: [0.74, 0.075], falls: 
 // silindi (varliklar/karaveba_isle.py), kodla uçuşur: fog (tabanda dönen mor-yeşil sis), flies (tepede vızıldayan sinek sürüsü)
 const CAULDRON_PLAGUE = { mouth: [0.42, 0.23, 0.175, 0.057], falls: [[[0.41, 0.49], [0.4, 0.73]], [[0.6, 0.47], [0.6, 0.71]]], fallCol: ['220,180,255', '190,110,255'], pool: [0.53, 0.75, 0.18, 0.04],
   braziers: [[0.105, 0.58], [0.78, 0.58]], bcol: '170,80,255', runes: [[0.47, 0.34, 0.15]], fog: [0.5, 0.86, 0.5, 0.1], flies: 16 };
-const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_bonemortar') ? CAULDRON_BONE : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? CAULDRON_PLAGUE : CAULDRON[t.lvl]);
+const CAULDRON_PLAGUE_VEO = { mouth: CAULDRON_PLAGUE.mouth, veo: true, fog: CAULDRON_PLAGUE.fog, flies: 16 }; // Veo şeridi şelaleyi, mangalları, kaynamayı kendisi oynatır: kodla yalnız sis, sinekler, fışkırma
+const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_bonemortar') ? CAULDRON_BONE : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? (plagueStrip(t, 'idle') ? CAULDRON_PLAGUE_VEO : CAULDRON_PLAGUE) : CAULDRON[t.lvl]);
 // veba bombası: dur uçuş süresi, arc kavis yüksekliği, dmg/splash çarpanı, rate bekleme çarpanı, poison zehir çarpanı (gaz değerine), pool zehir gölü süresi, down yere düşme (sn)
 const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Caner: kazan fazla güçlü) dmg 1.3→1.05, splash 1.15→1, rate 1.75→2
   poison: 1.2, pool: 3, down: 1 };
@@ -9072,7 +9083,7 @@ function drawPlagueCauldron(t, ts) {
   const C = cauldronFx(t); if (!C) return;
   const s = ts.w / 50, M = C.mouth || [0.5, 0.2, 0.1, 0.03], m = cauldronPt(t, ts, M), rx = M[2] * ts.w, ry = M[3] * ts.h, surge = t.shotAnim > 0 ? t.shotAnim / 0.35 : 0, sd = t.x * 0.37;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  if (C.mouth) glow(ctx, m.x, m.y, rx * (1.25 + 0.3 * surge), '130,255,90', 0.22 + 0.07 * Math.sin(time * 2.6 + sd) + 0.4 * surge);
+  if (C.mouth && !C.veo) glow(ctx, m.x, m.y, rx * (1.25 + 0.3 * surge), '130,255,90', 0.22 + 0.07 * Math.sin(time * 2.6 + sd) + 0.4 * surge);
   for (const [i, q0] of (C.eyes || []).entries()) { const q = cauldronPt(t, ts, q0); glow(ctx, q.x, q.y, (3 + surge * 2) * s, '140,255,100', 0.55 + 0.2 * Math.sin(time * 3 + i) + 0.3 * surge); } // kafatası gözleri
   if (C.corpseGlow) { const q = cauldronPt(t, ts, C.corpseGlow), rl = t.gushT > 0 ? 1 - t.gushT / GUSH : 1; glow(ctx, q.x, q.y, 9 * s, '120,255,120', (0.25 + 0.1 * Math.sin(time * 4 + sd)) * rl); } // kepçedeki ceset (atınca söner, yeniden dolar)
   for (const [i, f] of (C.fire || []).entries()) { const q = cauldronPt(t, ts, f), fk = 0.75 + 0.15 * Math.sin(time * 11 + i * 2.1 + sd) + 0.1 * Math.sin(time * 23 + i); glow(ctx, q.x, q.y, 7 * s * fk, f[2], 0.45 * fk); }
@@ -9103,7 +9114,7 @@ function drawPlagueCauldron(t, ts) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, m.x + lean * 0.5, m.y - hh * 0.5, hh * 0.7 + 4, '140,255,90', 0.35 * (1 - k)); ctx.restore();
     if (Math.random() < 0.5) emit(G.parts, { kind: 'dot', x: m.x + lean + rand(-w, w) * 0.4, y: m.y - hh, vx: rand(-30, 30) + lean, vy: -rand(10, 60), g: 420, col: Math.random() < 0.7 ? '#8cff5a' : '#d8ffb0', s0: rand(0.8, 1.6) * s, s1: 0.6, life: rand(0.3, 0.5), floor: m.y + rand(0, 3) });
   }
-  if (C.mouth) for (let i = 0; i < 7; i++) { // ağızdaki kabarcıklar: şişer, patlar, başka yerde yeniden çıkar
+  if (C.mouth && !C.veo) for (let i = 0; i < 7; i++) { // ağızdaki kabarcıklar: şişer, patlar, başka yerde yeniden çıkar
     const sp = 0.5 + ((i * 37) % 10) / 20, u = time * sp + i * 0.31 + sd, ph = u % 1, cyc = Math.floor(u);
     const a = (i * 2.4 + cyc * 1.7) % (Math.PI * 2), rr = 0.25 + 0.6 * (((i * 13 + cyc * 7) % 10) / 10);
     const x = m.x + Math.cos(a) * rx * rr * 0.85, y = m.y + Math.sin(a) * ry * rr * 0.85, r = (0.5 + ph * 1.6) * s * C.mouth[2] / 0.19;
@@ -9527,8 +9538,11 @@ function drawTowerBody(t) {
       const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * (TA.fps || TOWER_ANIM_FPS))), b = M.box, lim = TA.noLit ? TA.im : litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
       const C = M.cols || M.n, sx = lim.width / (M.fw * C), sy = lim.height / (M.fh * Math.ceil(M.n / C)); // satırlı ve telefonda küçültülmüş şerit
       ctx.drawImage(lim, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
-    } else if (boneIdle(t)) { // 16 Eki: Kemik Havan Kazanı boşta: Veo bekleme döngüsü
-      const TI = boneIdle(t), M = TI.M, i = Math.floor(time * M.fps + (t.x % 7)) % M.n, b = M.box, C = M.cols || M.n, sx = TI.im.width / (M.fw * C), sy = TI.im.height / (M.fh * Math.ceil(M.n / C));
+    } else if (t.call0 != null && time - t.call0 < (plagueStrip(t, 'call') || { dur: 0 }).dur) { // Kara Veba: sürü çağrısı
+      const PC = plagueStrip(t, 'call'), M = PC.M, i = Math.min(M.n - 1, Math.floor((time - t.call0) * M.fps)), b = M.box, C = M.cols || M.n, sx = PC.im.width / (M.fw * C), sy = PC.im.height / (M.fh * Math.ceil(M.n / C));
+      ctx.drawImage(PC.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
+    } else if (boneIdle(t) || plagueStrip(t, 'idle')) { // 16 Eki: Kemik Havan / Kara Veba Kazanı boşta: Veo bekleme döngüsü (çağrıdan sonra 0. kareden)
+      const TI = boneIdle(t) || plagueStrip(t, 'idle'), M = TI.M, PD = t.call0 != null && plagueStrip(t, 'call'), i = Math.floor(PD ? (time - t.call0 - PD.dur) * M.fps : time * M.fps + (t.x % 7)) % M.n, b = M.box, C = M.cols || M.n, sx = TI.im.width / (M.fw * C), sy = TI.im.height / (M.fh * Math.ceil(M.n / C));
       ctx.drawImage(TI.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (balLay(t)) drawBallista(t, ts, OF);
     else {
@@ -12830,14 +12844,16 @@ function swarmLaunch(t, dt, L) {
   t.swCd = (t.swCd ?? 1.2) - dt;
   if (t.swCd > 0 || G.swarms.filter(w => w.tw === t).length >= (pl.sw || 1)) return;
   const e = swarmPick(t.x, t.y - 10, L.range * 1.1); if (!e) { t.swCd = 0.4; return; }
-  const h = swarmHome(t);
-  G.swarms.push({ tw: t, e, x: h.x, y: h.y, st: 'go', T: 0, biteT: 0.2, dps: pl.dps, dmg: (L.dmg[0] + L.dmg[1]) / 2 * SWARM.dmgK, seed: rand(0, 99), face: 1 });
-  t.swCd = SWARM.cd; t.gushT = GUSH * 0.5;
-  sfx('flybuzz');
+  const h = swarmHome(t), PC = plagueStrip(t, 'call'), wait = PC && !(t.call0 != null && time - t.call0 < PC.dur) ? PCALL_REL : 0;
+  if (wait) t.call0 = time; // kazan çenesini açar, taşar; sürü taşma anında kalkar
+  G.swarms.push({ tw: t, e, x: h.x, y: h.y, st: 'go', T: -wait, biteT: 0.2, dps: pl.dps, dmg: (L.dmg[0] + L.dmg[1]) / 2 * SWARM.dmgK, seed: rand(0, 99), face: 1, out: !wait });
+  t.swCd = SWARM.cd + wait; if (!wait) { t.gushT = GUSH * 0.5; sfx('flybuzz'); }
 }
 function updateSwarms(dt) {
   for (const w of G.swarms) {
     w.T += dt;
+    if (w.T < 0) continue; // kazan taşarken bekler
+    if (!w.out) { w.out = true; if (G.towers.includes(w.tw)) { const h = swarmHome(w.tw); w.x = h.x; w.y = h.y; w.tw.gushT = GUSH * 0.5; } sfx('flybuzz'); } // taşma anında kalkar
     if (w.st !== 'back' && (!w.e || w.e.dead || w.e.under)) { // hedef öldü: yakındakine sıçra, yoksa dön
       const n = swarmPick(w.x, w.y, SWARM.jump, w.e); if (n) { w.e = n; w.st = 'go'; } else w.st = 'back';
     }
@@ -12863,6 +12879,7 @@ function updateSwarms(dt) {
 }
 function drawSwarms() {
   for (const w of G.swarms) {
+    if (w.T < 0) continue;
     const k = w.st === 'bite' ? 1 : w.st === 'go' ? 0.6 : 0.8, R = 15 * k + 5, s = 2.3, fa = Math.min(1, w.T / 0.3);
     ctx.save(); ctx.globalAlpha = 0.35 * fa; ctx.drawImage(gasBlob(), w.x - R * 1.3 - (w.st === 'bite' ? 0 : 10 * w.face), w.y - R * 0.8, R * 2.6, R * 1.6); ctx.restore(); // sürünün kirli veba pusu
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, w.x, w.y, R + 8, '120,230,90', w.st === 'bite' ? 0.2 : 0.11); ctx.restore();

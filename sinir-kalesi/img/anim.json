@@ -2443,5 +2443,32 @@
   "ch": 0.8886,
   "dur": 3.4,
   "cols": 46
+ },
+ "tower_artillery_plague_call": {
+  "n": 116,
+  "fw": 193,
+  "fh": 222,
+  "tower": true,
+  "box": [
+   -0.0011,
+   -0.0368,
+   1.0011,
+   1.001
+  ],
+  "fps": 24,
+  "cols": 58
+ },
+ "tower_artillery_plague_idle": {
+  "n": 48,
+  "fw": 193,
+  "fh": 222,
+  "tower": true,
+  "box": [
+   -0.0011,
+   -0.0368,
+   1.0011,
+   1.001
+  ],
+  "fps": 24
  }
 }
