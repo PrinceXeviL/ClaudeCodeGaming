@@ -4606,16 +4606,18 @@ function updateEnemy(e, dt) {
   // 15 Eki (Caner): yürürken kimse kimsenin üstüne binmesin. Aynı yolda önündekine (yarıçaplar toplamı × CONVOY) yaklaşan yavaşlar,
   // iyice yaklaşınca durur; kuşatma araçları daha geniş aralık bırakır. Yanyana şeritteki (off farkı büyük) ve dövüşen öndeki sayılmaz
   // (dövüşte iç içe girmek olağan); hızlı olan yavaşın arkasında kalırsa yana kayıp geçer.
-  if (!e.def.flying && e.d > 0) {
+  if (e.cvFree > 0) e.cvFree -= dt;
+  if (!e.def.flying && e.d > 0 && !(e.cvFree > 0)) {
     let gap = Infinity, need = 0, lead = null;
     for (const o of G.enemies) {
-      if (o === e || o.dead || o.under || o.def.flying || o.p !== e.p || o.d <= e.d || o.blocker || o.leader === e || e.leader === o) continue; // 16 Eki: önder ile kendi muhafızı birbirini beklemez (kilitleniyordu)
+      if (o === e || o.dead || o.under || o.def.flying || o.p !== e.p || o.d <= e.d || o.blocker || o.leader || e.leader === o) continue; // önder ile muhafız birbirini beklemez; 15 Eki: muhafızlar kimsenin önünü kesmez (boss → lejyoner → muhafız → boss döngüsel kilitlenmesi, bot 2/29/31/37'de bölüm bitmiyordu)
       const g = o.d - e.d, rr = o.def.r + e.def.r, mach = o.def.machine || e.def.machine, n = rr * (mach ? CONVOY.gap : CONVOY.walk);
       if (g >= n || (!mach && Math.abs(o.off - e.off) > rr * 0.75)) continue;
       if (g / n < gap / (need || 1)) { gap = g; need = n; lead = o; }
     }
     if (lead) {
       spd *= clamp((gap - need * 0.6) / (need * 0.4), 0, 1);
+      e.cvT = spd < 0.5 ? (e.cvT || 0) + dt : 0; if (e.cvT > 2.5) { e.cvT = 0; e.cvFree = 1.5; } // emniyet: 2,5 sn kıpırdayamayan bir süre aralık kuralını atlar (döngüsel bekleme kalmasın)
       if (!e.march && !lead.march && e.def.speed > lead.def.speed * 1.15 && !e.def.machine) { // sollama: boş tarafa kayar
         const lim = 11 * ROAD_K, dir = e.off === lead.off ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(e.off - lead.off);
         e.off = clamp(e.off + dir * 22 * dt, -lim, lim);

@@ -69,7 +69,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
         alive.clear(); for (const e of now) if (e.p) alive.set(e, e.p.total - e.d);
         g.sim(0.5); time += 0.5;
       }
-      const stuck = g.overlay ? null : G.enemies.filter(e => !e.dead).slice(0, 6).map(e => ({ t: e.type, d: e.p ? Math.round(e.d) + '/' + Math.round(e.p.total) : '-', x: Math.round(e.x), y: Math.round(e.y), under: !!e.under, blk: !!e.blocker, st: e.siege, hp: Math.round(e.hp) }));
+      const stuck = g.overlay ? null : G.enemies.filter(e => !e.dead).sort((a, b) => b.d - a.d).slice(0, 6).map(e => ({ t: e.type, d: e.p ? Math.round(e.d) + '/' + Math.round(e.p.total) : '-', x: Math.round(e.x), y: Math.round(e.y), under: !!e.under, blk: !!e.blocker, st: e.siege, hp: Math.round(e.hp), fear: +(e.fearT || 0).toFixed(1), stun: +(e.stun || 0).toFixed(1), spd: +(e.curSpd || 0).toFixed(1), slow: +(e.slowT || 0).toFixed(1), n: G.enemies.filter(o => !o.dead).length }));
       return { lvl, name: G.lv.name, result: g.overlay, stuck, spawners: G.spawners.length, cd: G.waveCountdown, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time), gold: G.gold, towers: G.towers.map(t => t.type[0] + t.lvl).join(''), casts, used, leaks };
     }, { lvl, team, STARS });
     console.log(JSON.stringify(r));

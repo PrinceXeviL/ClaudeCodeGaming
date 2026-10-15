@@ -1503,3 +1503,9 @@ if (typeof NECRO !== 'undefined' && NECRO && EPISODES.length) { vertEpisode(EPIS
 // 15 Eki (Caner): kulelerin menzili ortalama %5 daraldı (bütün kademeler)
 const TOWER_RANGE_K = 0.95;
 for (const T of Object.values(TOWERS)) for (const L of T.levels || []) if (L.range) L.range = Math.round(L.range * TOWER_RANGE_K);
+// 15 Eki (Caner): bütün yeteneklerin bekleme süresi %10 uzun (komutan yetenekleri, komutan güçleri, Mortimer'ın büyüleri)
+const SKILL_CD_K = 1.1;
+{ const up = (o) => { if (o && o.cd) o.cd = Math.round(o.cd * SKILL_CD_K * 10) / 10; };
+  for (const H of Object.values(HEROES)) for (const P of H.paths || []) for (const sk of P.skills || []) up(sk);
+  for (const T of [HERO_ULT, HERO_ULT2, NECRO_SPELLS]) for (const k in T) up(T[k]);
+  for (const k in HERO_SKILLS) { const v = HERO_SKILLS[k]; if (Array.isArray(v)) v.forEach(up); else up(v); } }
