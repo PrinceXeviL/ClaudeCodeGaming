@@ -315,11 +315,11 @@ Object.assign(ENEMIES, {
   priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true, purify: { r: 70, every: 5, dmg: 0, bless: true } }, // 15 Eki: cesetleri kutsar
   heavy:     { name: 'Ağır Piyade',         h: 33, hp: 380, speed: 14, armor: 0.7,  mr: 0,    gold: 32, dmg: [9, 15],  rate: 1.3, lives: 1, r: 12 },
   cavalry:   { name: 'Solarian Süvarisi',   h: 42, hp: 260, speed: 31, armor: 0.3,  mr: 0,    gold: 28, dmg: [10, 16], rate: 1.1, lives: 2, r: 13 },
-  ram:       { name: 'Koçbaşı',             h: 49, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 18, machine: true, bash: { r: 78, dmg: 70, rate: 2 } }, // 15 Eki: yol kenarındaki kulelere vurur
-  catapult:  { name: 'Mancınık Arabası',    h: 40, hp: 420, speed: 12, armor: 0.2,  mr: 0,    gold: 38, dmg: [2, 4],   rate: 2,   lives: 2, r: 14, machine: true,
+  ram:       { name: 'Koçbaşı',             h: 49, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 18, machine: true, noblock: true, escort: [['legion', 2]], bash: { r: 78, dmg: 70, rate: 2 } }, // 15 Eki: yol kenarındaki kulelere vurur // 16 Eki (Caner): koçbaşı iskeletlere saldırmaz, durdurulamaz (iskeletler vurur), iki lejyoner korur
+  catapult:  { name: 'Mancınık Arabası',    h: 40, hp: 420, speed: 12, armor: 0.2,  mr: 0,    gold: 38, dmg: [2, 4],   rate: 2,   lives: 2, r: 14, machine: true, noblock: true, escort: [['legion', 2]],
     desc: 'Durup kulelerimize taş atar, 3 sn susturur ve hasar verir', ab: { bomb: { cd: 12, stun: 3, r: 200, dmg: 90 } } },
   // 15 Eki (Caner): Güneş Topu. İki lejyonerin ittiği aslan ağızlı top (Veo şeritleri, varliklar/top_veo_isle.py); iten askerler lejyonerle aynı boy
-  cannon:    { name: 'Güneş Topu',          h: 49, hp: 520, speed: 10, armor: 0.3,  mr: 0,    gold: 46, dmg: [2, 4],   rate: 2,   lives: 2, r: 18, machine: true,
+  cannon:    { name: 'Güneş Topu',          h: 49, hp: 520, speed: 10, armor: 0.3,  mr: 0,    gold: 46, dmg: [2, 4],   rate: 2,   lives: 2, r: 18, machine: true, noblock: true, escort: [['legion', 2]],
     desc: 'Durup kulelerimize gülle atar, 2,5 sn susturur', ab: { bomb: { cd: 10, stun: 2.5, r: 240, cannon: true, dmg: 120 } } },
   // yeni birlikler (9 Eki): mevcut görsellerden türer (base + game.js BOSS_LOOK renkleri ve kodla çizilen eşyalar)
   // noblock: iskeletler durduramaz (kemik duvar durdurur). ranged.moving: yürürken atar. split: ölünce dağılır.
@@ -564,7 +564,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
   // 13 Eki: ilk 4 bölüm büyüsüz/az büyülü sıradan oyuncuya göre (sim: tools yok, scratchpad sade.js) yumuşatıldı: 1.512,1.052,1.174,2.344 -> 0.8,0.6,0.68,1.5
-  const HPMUL = [0.5, 0.6, 0.68, 1.5, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.62, 0.22, 0.354]; // 16 Eki: 18 ve 19 kuşatma (yıkılabilir kule, 15 askerli kuşatma kulesi) sonrası botta kayıp: 0.801→0.62, 0.257→0.22. 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
+  const HPMUL = [0.5, 0.6, 0.68, 1.5, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.78, 0.512, 0.422, 0.404, 0.62, 0.22, 0.354]; // 16 Eki: 14. bölüm 0.947→0.78 (muhafızlı kuşatma sonrası bot sınırda); 18 ve 19 kuşatma (yıkılabilir kule, 15 askerli kuşatma kulesi) sonrası botta kayıp: 0.801→0.62, 0.257→0.22. 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
   // 13 Eki (Caner): ilk 3 bölüm öğretici: Kingdom Rush'taki gibi kısa ve seyrek (140/150/165 -> ~80/90/100 düşman)
   const TOTK1 = [0.57, 0.6, 0.6, 0.8, 0.9]; // 4-5. bölüm ara basamak
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i], totK: TOTK1[i] || 1 }));
@@ -746,14 +746,14 @@ HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprit
   ] }] };
 // 16 Eki (Caner: "blood magic yapan ihtişamlı, korkunç, sıra dışı büyücü"): Erzsébet Báthory, Kan Kontesi. Menzilli kan büyüsü, can çalma, iskeletlere kan feda eder.
 HEROES.bathory = { name: 'Báthory', role: 'Kan Kontesi · Kan büyüsü', sprite: 'hero_bathory', h: 42, aura: '220,30,50', halo: '255,90,90', cost: 70,
-  hp: 240, dmg: [17, 25], armor: 0.1, rate: 1.15, speed: 72, respawn: 18, regen: 6, engage: 0, ranged: 180, proj: 'fireball', blood: true, magic: true, splash: 16,
+  hp: 240, dmg: [15, 22], armor: 0.1, rate: 1.15, speed: 72, respawn: 18, regen: 6, engage: 0, ranged: 180, proj: 'fireball', blood: true, magic: true, splash: 16, // 16 Eki (Caner: fazla güçlü): hasar 17-25 → 15-22
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
     { id: 'bloodlink', name: 'Kan Bağı', cd: 12, desc: '4 düşmanı kan iplikleriyle bağlar: 5 sn canlarını emer, yavaşlatır; emilen can Báthory\'ye akar' },
     { id: 'sacrifice', name: 'Kan Fedası', cd: 16, desc: 'Canının %15\'ini feda eder: yakındaki iskeletler iyileşir, 6 sn %50 sert vurur' },
-    { id: 'thirst', name: 'Kana Susamışlık', passive: true, desc: 'Kalıcı: kan okları %40 can çalar (normalde %20), +%15 hasar' },
+    { id: 'thirst', name: 'Kana Susamışlık', passive: true, desc: 'Kalıcı: kan okları %30 can çalar (normalde %15), +%10 hasar' },
   ] }] };
 Object.assign(HERO_ULT, {
-  bathory: { name: 'Kan Gölü', cd: 60, anim: 2.0, r: 72, dps: [26, 34], dur: 5, bloodpool: true,
+  bathory: { name: 'Kan Gölü', cd: 60, anim: 2.0, r: 72, dps: [20, 27], dur: 5, bloodpool: true, // 16 Eki: 26-34 → 20-27
     desc: 'Seçtiğin yerde 5 sn kaynayan bir kan gölü açılır: düşmanların canını emer ve yavaşlatır, içindeki iskeletler iyileşir', short: 'Can emen, iskeletleri iyileştiren kan gölü' },
   robin: { name: 'Ok Yağmuru', cd: 55, anim: 2.6, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
     desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
@@ -776,7 +776,7 @@ const HERO_ULT2 = {
     desc: 'Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir', short: '8 düşmana sıçrayan şimşek' },
   robin: { name: 'Kurt Uluması', cd: 45, anim: 2.2, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
     desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
-  bathory: { name: 'Kan Yarasaları', cd: 50, anim: 2.2, r: 70, dps: [16, 22], dur: 3, slow: 0.35, heal: 0.4, n: 14, bats: true,
+  bathory: { name: 'Kan Yarasaları', cd: 50, anim: 2.2, r: 70, dps: [13, 18], dur: 3, slow: 0.35, heal: 0.3, n: 14, bats: true, // 16 Eki: 16-22 → 13-18, iyileşme %40 → %30
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
 };
 // pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)
@@ -965,6 +965,22 @@ function restructureWaves() {
 }
 restructureWaves();
 LEVELS.forEach((lv, i) => shapeWaves(lv, i));
+// 16 Eki (Caner: "10 koçbaşı göndermene gerek yok, az az gönder, yanlarında lejyonerler korusun"): bir grupta en çok SIEGE_CAP.n kuşatma
+// makinesi, aralıklı gelir; fazlasının yerine (makine başı SIEGE_CAP.swap) lejyoner aynı yoldan gelir. Her makine ayrıca 2 muhafız lejyonerle doğar (def.escort).
+const SIEGE_CAP = { types: ['ram', 'catapult', 'cannon', 'siegetower'], n: 2, gap: 8, swap: 2 };
+LEVELS.forEach((lv) => lv.waves.forEach((w) => {
+  for (const g of w.slice()) {
+    if (g.types) { // karışık grup: ilk n makine kalır, gerisi lejyoner olur
+      let k = 0; g.types = g.types.flatMap(t => SIEGE_CAP.types.includes(t) && ++k > SIEGE_CAP.n ? Array(SIEGE_CAP.swap).fill('legion') : [t]); g.n = g.types.length;
+      if (k) g.gap = Math.max(g.gap, 1.4); continue;
+    }
+    if (!SIEGE_CAP.types.includes(g.t)) continue;
+    g.gap = Math.max(g.gap, SIEGE_CAP.gap);
+    if (g.n <= SIEGE_CAP.n) continue;
+    const extra = g.n - SIEGE_CAP.n; g.n = SIEGE_CAP.n;
+    w.push({ t: 'legion', n: extra * SIEGE_CAP.swap, gap: 1.1, p: g.p, at: (g.at || 0) + 2, hpK: g.hpK || 1 });
+  }
+}));
 // Destek birlikleri (davulcu, sancaktar) tek başına gelmez: yalnız kalabalık piyade bölüğünün (en az SUPPORT.min kişi) ortasında,
 // bölükle aynı yoldan ve aynı anda yürür. Bölük büyükse (2 x min) ikisi birden; tür sırası bölükten bölüğe değişir.
 const SUPPORT = { min: 6, inf: ['legion', 'legion_k', 'legion_y', 'heavy', 'gladiator'], units: [['drummer', 1], ['signifer', 4]] }; // 15 Eki: davulcu daha sık (6+ kişilik bölük, 2. bölümden)

@@ -2221,7 +2221,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const def = ENEMIES[type];
   if (type === 'lantern' && !G.saidLight) { G.saidLight = true; setTimeout(() => G && mortSay('light', true), 2500); }
   const p = G.paths[pi] || G.paths[0];
-  const esc = def.chief && BOSS_ESCORT[type];
+  const esc = (def.chief && BOSS_ESCORT[type]) || def.escort; // 16 Eki: kuşatma makineleri lejyoner muhafızlarla gelir
   if (esc && d0 <= 0) d0 += 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
   const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * ROAD_K);
   const q = pathPos(p, d0, off);
@@ -2918,9 +2918,12 @@ function killEnemy0(e) {
     emit(G.parts, { kind: 'glow', x: e.x + rand(-7, 7), y: e.y + rand(-6, 2), vx: rand(-14, 14), vy: rand(-22, -6), drag: 1.5,
       col: '205,195,175', s0: rand(3, 5), s1: rand(9, 13), life: rand(0.5, 0.8), a: 0.5 });
   }
-  for (const h of G.heroes) if (!h.dead) gainXp(h, e.def.gold);
+  for (const h of G.heroes) if (!h.dead) gainXp(h, e.def.gold * HERO_XP.kill);
 }
 // seviye eğrisi (11 Eki): 1. bölümün sonunda ~4. seviye, iki seferin sonunda ~20. seviye (toplam düşman altını ~190 bin XP)
+// 16 Eki (Caner: "komutanlar çok hızlı seviye atlıyor, bütün yetenekleri hemen açıyor"): öldürme XP'si yarıya indi. Tek oynayışta
+// ~5. bölüm 5., 10. bölüm 8., 20. bölüm 13., 40. bölüm 18. seviye (bosslar ve tekrar oynamalarla sonlara doğru 20)
+const HERO_XP = { kill: 0.5 };
 const xpNeed = (lvl) => 80 * lvl * lvl;
 function gainXp(h, amount, quiet) {
   if (h.lvl >= HERO_MAX) return;
@@ -3820,7 +3823,8 @@ function upgradeTower(t) {
 // ---- Kule canı ve yıkılma (15 Eki, Caner): kuşatma araçları önce kulelere saldırır (koçbaşı yanından geçerken vurur, mancınık ve top
 // gülleyle). Canı biten kule olduğu yerde çöker, arsada moloz kalır; yeniden kurmak için önce altınla temizlenir (iskeletler RUBBLE.time sn'de).
 // Vurulmayan kule TOWER_HP.calm sn sonra yavaşça onarılır. Yıkılma/kurulma/idle animasyonları Veo ile sonra (şimdilik kodla toz ve enkaz).
-const TOWER_HP = { lvl: [320, 440, 580, 760], type: { barracks: 1.2, artillery: 1.1, archer: 1, mage: 0.9, altar: 1 }, regen: 0.02, calm: 8 };
+const TOWER_HP = { lvl: [640, 880, 1160, 1520], // 16 Eki (Caner: "kuleler çok kolay yıkılıyor"): 2 kat
+  type: { barracks: 1.2, artillery: 1.1, archer: 1, mage: 0.9, altar: 1 }, regen: 0.02, calm: 8 };
 const RUBBLE = { cost: 25, time: 2.5 };
 const towerMaxHp = (t) => Math.round(TOWER_HP.lvl[Math.min(3, t.lvl)] * (TOWER_HP.type[t.type] || 1));
 function towerHp(t) { const m = towerMaxHp(t); if (t.maxHp !== m) { t.hp = t.hp == null ? m : t.hp + Math.max(0, m - (t.maxHp || m)); t.maxHp = m; } } // yükseltmede can farkı eklenir
@@ -4581,7 +4585,12 @@ function updateEnemy(e, dt) {
   if (e.leader) {
     const L = e.leader;
     if (L.dead || L.p !== e.p || L.siege != null || (L.blocker && L.d - e.d < 60)) e.leader = null; // önder dövüşe tutuldu: muhafız düzeni bozar, yürümeye devam eder
-    else {
+    else if (L.def.machine && !e.blocker && (e.guardT = (e.guardT || 0) - dt) <= 0) { // 16 Eki (Caner): lejyonerler kuşatma aracını korur: araca saldıran askerin üstüne yürür
+      e.guardT = 0.3;
+      const foe = G.soldiers.find(so => !so.dead && !so.wall && so.target === L && dist(so.x, so.y, L.x, L.y) < 45 && dist(so.x, so.y, e.x, e.y) < 90);
+      if (foe) { e.blocker = foe; if (!foe.target || foe.target === L) { foe.target = e; } }
+    }
+    if (e.leader && !e.blocker) {
       const ls = L.blocker ? 0 : L.def.speed * G.wspd * (L.spdMul || 1) * (L.slowT > 0 ? 1 - L.slowK : 1) * (L.hasteT > 0 ? 1.5 : 1) * (L.entryT > 0 ? 0.3 : 1);
       spd = clamp(ls + ((L.d + e.form) - e.d) * 1.5, 0, spd * 1.3);
     }
@@ -4598,7 +4607,7 @@ function updateEnemy(e, dt) {
   if (!e.def.flying && e.d > 0) {
     let gap = Infinity, need = 0, lead = null;
     for (const o of G.enemies) {
-      if (o === e || o.dead || o.under || o.def.flying || o.p !== e.p || o.d <= e.d || o.blocker) continue;
+      if (o === e || o.dead || o.under || o.def.flying || o.p !== e.p || o.d <= e.d || o.blocker || o.leader === e || e.leader === o) continue; // 16 Eki: önder ile kendi muhafızı birbirini beklemez (kilitleniyordu)
       const g = o.d - e.d, rr = o.def.r + e.def.r, mach = o.def.machine || e.def.machine, n = rr * (mach ? CONVOY.gap : CONVOY.walk);
       if (g >= n || (!mach && Math.abs(o.off - e.off) > rr * 0.75)) continue;
       if (g / n < gap / (need || 1)) { gap = g; need = n; lead = o; }
@@ -4850,7 +4859,8 @@ function updateSoldier(s, dt) {
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
       const busy = G.soldiers.reduce((n, x) => n + (x !== s && !x.dead && x.target === o ? 1 : 0), 0); // ona zaten saldıranlar
-      const score = s.zombie || s.aggro ? dist(o.x, o.y, s.x, s.y) + (o.blocker ? 40 : 0) + busy * 30 : (o.blocker ? 1000 : 0) + busy * 400 + (o.p.total - o.d);
+      const nb = o.def.noblock ? 1500 : 0; // 16 Eki: durdurulamayan (koçbaşı, top, kuşatma kulesi) ancak durdurulabilir düşman yoksa seçilir: iskeletler yerini boşaltmasın
+      const score = s.zombie || s.aggro ? dist(o.x, o.y, s.x, s.y) + (o.blocker ? 40 : 0) + busy * 30 + nb : (o.blocker ? 1000 : 0) + busy * 400 + (o.p.total - o.d) + nb;
       if (score < bestScore) { bestScore = score; best = o; }
     }
     if (best) {
@@ -5047,7 +5057,7 @@ function useSkill(h, id) {
       const c = densest(h.x, h.y, R + 10, 70, true);
       if (!c || c.n < 2) return false;
       const ts = enemiesNear(c.e.x, c.e.y, 70, true).slice(0, 4);
-      (G.links ||= []).push({ ts, owner: h, dps: 12 + 3 * L, t: 0, life: 5 });
+      (G.links ||= []).push({ ts, owner: h, dps: 9 + 2.5 * L, t: 0, life: 5 }); // 16 Eki: 12+3L → 9+2,5L (Báthory fazla güçlüydü)
       for (const e of ts) fxBloodHit(e.x, aimY(e));
       sfx('blooddrain'); return true;
     }
@@ -5096,7 +5106,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
     poison: h.learned.venom ? 4 + h.lvl * 1.5 : 0, inferno: h.learned.inferno ? 34 : 0 };
   if (h.def.soul) p.soul = true; // Merlin: yeşil-mor ruh küresi
   if (h.learned.hunter && (e.def.chief || e.def.boss)) p.dmg *= 1.2; // Robin: Gölge Avcı
-  if (h.def.blood) { p.blood = true; p.owner = h; p.leech = h.learned.thirst ? 0.4 : 0.2; if (h.learned.thirst) p.dmg *= 1.15; } // Báthory: kan oku, can çalar
+  if (h.def.blood) { p.blood = true; p.owner = h; p.leech = h.learned.thirst ? 0.3 : 0.15; if (h.learned.thirst) p.dmg *= 1.1; } // 16 Eki: can çalma %20/%40 → %15/%30, susamışlık +%15 → +%10 // Báthory: kan oku, can çalar
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
   sfx(h.def.soul ? 'soulorb' : h.def.blood ? 'bloodbolt' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
@@ -5302,6 +5312,7 @@ function updateProjectile(pr, dt) {
   if (pr.kind === 'bossthrow') {
     const t = pr.tower;
     fxExplosion(pr.tx, pr.ty + 18, 26, false);
+    if (pr.troops) for (const so of G.soldiers) if (!so.dead && !so.wall && dist(so.x, so.y, pr.tx, pr.ty + 30) < CANNON_SPLASH.r) { damageSoldier(so, pr.dmg * CANNON_SPLASH.k); so.stunT = Math.max(so.stunT || 0, 0.6); } // gülle asker öbeğine
     if (t && G.towers.includes(t)) { t.disabledT = Math.max(t.disabledT || 0, pr.stun); t.disabledKind = 'stun'; floatText(t.x, t.y - 60, 'Sersemledi!', '#ffd08a'); if (Math.random() < 0.5) mortSay('stunned'); if (pr.dmg) damageTower(t, pr.dmg); }
     sfx('boom');
     return;
@@ -14225,6 +14236,7 @@ function bossCastFx(e, name, col) {
   }
 }
 // yakındaki (susturulmamış) kulelerden rastgele biri
+const CANNON_SPLASH = { r: 30, k: 0.45 }; // askere atılan gülle: yarıçap ve hasar oranı (kuleye vuruşun %45'i)
 function bossTowerTarget(e, r) {
   const list = G.towers.filter(t => !(t.disabledT > 0) && dist(t.x, t.y, e.x, e.y) <= r);
   return list.length ? list[Math.floor(Math.random() * list.length)] : null;
@@ -14387,12 +14399,17 @@ function bossAbilities(e, dt) {
     if (!A) continue;
     e.abT[kind] = (e.abT[kind] ?? A.cd * 0.6) - dt;
     if (e.abT[kind] > 0) continue;
-    const t = bossTowerTarget(e, A.r);
+    let t = bossTowerTarget(e, A.r);
+    if (!t && A.cannon) { // 16 Eki (Caner): kuşatma araçlarından yalnız top askerleri de hedef alır: menzilde kule yoksa en kalabalık asker öbeğine
+      let best = null, bn = 0;
+      for (const so of G.soldiers) { if (so.dead || so.wall || dist(so.x, so.y, e.x, e.y) > A.r * 0.8) continue; const n = G.soldiers.filter(o => !o.dead && dist(o.x, o.y, so.x, so.y) < CANNON_SPLASH.r).length; if (n > bn) { bn = n; best = so; } }
+      if (best) t = { x: best.x, y: best.y + 30, soldier: true };
+    }
     if (!t) { e.abT[kind] = 1; continue; }
     e.abT[kind] = A.cd * (e.cdMul || 1);
     if (A.cannon) { // Güneş Topu: ateş şeridi (CANNON_FIRE sn) oynar, gülle namlu alevi karesinde düz yayla çıkar
       e.fireT = CANNON_FIRE; faceTo(e, t.x); const mx = e.x + (e.face || 1) * (e.def.h || 49) * 0.85, my = e.y - (e.def.h || 49) * 0.55;
-      G.projectiles.push({ kind: 'bossthrow', sub: 'ball', sx: mx, sy: my, tx: t.x, ty: t.y - 30, tower: t, stun: A.stun, dmg: A.dmg, t: -CANNON_FIRE * 0.22, dur: 0.55, arc: 30, spin: 0 });
+      G.projectiles.push({ kind: 'bossthrow', sub: 'ball', sx: mx, sy: my, tx: t.x, ty: t.y - 30, tower: t.soldier ? null : t, troops: !!t.soldier, stun: A.stun, dmg: A.dmg, t: -CANNON_FIRE * 0.22, dur: 0.55, arc: 30, spin: 0 });
       setTimeout(() => { if (G && !e.dead) { sfx('cannon', 1, 1, e); shakeScreen(2, 0.15); } }, CANNON_FIRE * 220);
       continue;
     }
@@ -14673,6 +14690,12 @@ function gainSpellXp(id, n) { // büyü yapıldı: XP, seviye atlarsa kalenin ü
 function heroRec(id) {
   save.hero = save.hero || {}; const R = (save.hero[id] ||= { lvl: 1, xp: 0, sk: {}, ult: 1, ult2: 0, act: 'ult' });
   if (!R.v3 && HEROES[id]) { R.v2 = R.v3 = 1; const keep = new Set(heroSkillList(HEROES[id]).map(s => s.id)); for (const k in R.sk) if (!keep.has(k)) delete R.sk[k]; } // 13 Eki: 2 pasif dışındakilerin puanı iade; 14 Eki: Merlin'in yeni pasifleri için bir kez daha
+  if (!R.v4) { // 16 Eki: XP yarıya indi; eski kayıttaki seviye, toplanan XP'nin ~%55'iyle yeniden hesaplanır (harcanan puan artarsa ağaç iade edilir)
+    R.v4 = 1; let tot = R.xp || 0; for (let k = 1; k < R.lvl; k++) tot += xpNeed(k);
+    tot *= 0.55; R.lvl = 1; while (R.lvl < HERO_MAX && tot >= xpNeed(R.lvl)) { tot -= xpNeed(R.lvl); R.lvl++; } R.xp = R.lvl >= HERO_MAX ? 0 : Math.floor(tot);
+    if (recPoints(R) < 0) { R.sk = {}; R.ult = 1; R.ult2 = 0; R.act = 'ult'; }
+    persist();
+  }
   return R;
 }
 function recPoints(R) { let n = 0; for (const k in R.sk) n += R.sk[k]; return R.lvl - n - (R.ult - 1) - (R.ult2 || 0); } // her seviye 1 puan (1. seviye dahil)
