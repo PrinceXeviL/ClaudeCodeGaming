@@ -2386,5 +2386,36 @@
    -0.5
   ],
   "cols": 48
+ },
+ "tower_artillery_bonemortar_atk": {
+  "n": 99,
+  "fw": 202,
+  "fh": 444,
+  "tower": true,
+  "box": [
+   -0.0314,
+   -0.7831,
+   1.0314,
+   1.012
+  ],
+  "rel": 0.1818,
+  "relPt": [
+   0.514,
+   0.05
+  ],
+  "cols": 50
+ },
+ "tower_artillery_bonemortar_idle": {
+  "n": 64,
+  "fw": 202,
+  "fh": 444,
+  "tower": true,
+  "box": [
+   -0.0314,
+   -0.7831,
+   1.0314,
+   1.012
+  ],
+  "fps": 24
  }
 }

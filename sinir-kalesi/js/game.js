@@ -48,7 +48,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_atk|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_(?:atk|idle)|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -7955,7 +7955,13 @@ function boneAnim(t) {
   if (!NECRO || t.type !== 'artillery' || t.spec !== 'corpse') return null;
   const n = 'tower_artillery_bonemortar_atk', M = ANIM_META[n]; if (!M) return null; // 16 Eki: mancınık animasyonu kaldırıldı (Caner); havan kazanı Veo'su gelince
   const im = spr(n); if (!im) { loadStrip(n); return null; }
-  return { im, M, n, dur: BONEBALL.anim, fps: M.n / BONEBALL.anim, noLit: true };
+  return { im, M, n, dur: M.n / 24, fps: 24, noLit: true }; // gerçek hızda (24 kare/sn)
+}
+function boneIdle(t) { // havan kazanının bekleme döngüsü (köpüren sıvı, alevler)
+  if (!NECRO || t.type !== 'artillery' || t.spec !== 'corpse') return null;
+  const n = 'tower_artillery_bonemortar_idle', M = ANIM_META[n]; if (!M) return null;
+  const im = spr(n); if (!im) { loadStrip(n); return null; }
+  return { im, M, n };
 }
 const formImg = (t) => { const F = TOWER_FORM[t.type + '_' + t.spec]; return (F && F.img) || `tower_${t.type}_${t.spec}`; }; // img: başka uzmanlığın görselini paylaşır
 const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(formImg(t)) ? TOWER_FORM[t.type + '_' + t.spec] : null);
@@ -9507,6 +9513,9 @@ function drawTowerBody(t) {
       const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * (TA.fps || TOWER_ANIM_FPS))), b = M.box, lim = TA.noLit ? TA.im : litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
       const C = M.cols || M.n, sx = lim.width / (M.fw * C), sy = lim.height / (M.fh * Math.ceil(M.n / C)); // satırlı ve telefonda küçültülmüş şerit
       ctx.drawImage(lim, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
+    } else if (boneIdle(t)) { // 16 Eki: Kemik Havan Kazanı boşta: Veo bekleme döngüsü
+      const TI = boneIdle(t), M = TI.M, i = Math.floor(time * M.fps + (t.x % 7)) % M.n, b = M.box, C = M.cols || M.n, sx = TI.im.width / (M.fw * C), sy = TI.im.height / (M.fh * Math.ceil(M.n / C));
+      ctx.drawImage(TI.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (balLay(t)) drawBallista(t, ts, OF);
     else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), SP = TOWER_SPLIT[ts.name];
