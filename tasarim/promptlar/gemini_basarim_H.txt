@@ -1,0 +1,19 @@
+Image 1 is the menu icon sheet of my dark gothic cartoon tower defense game; image 2 is its achievements screen. Draw a NEW sheet of 16 ACHIEVEMENT ICONS in exactly the same style, line weight and quality as image 1, each one a bold, instantly readable little emblem, centered, no frame, no badge, no background plate:
+1) First Blood: a dagger with one red blood drop
+2) Flawless: a red heart inside a glowing golden halo, without a scratch
+3) Star Hunter: three golden stars in an arc
+4) Heroic: a dented knight shield with a golden laurel
+5) Full Graveyard: a crowded row of tombstones
+6) Rank Breaker: a broken golden general's helmet with a red crest
+7) Coworkers: three skeleton hands rising from a grave
+8) Boo!: a cute grinning ghost scaring with raised arms
+9) Master Mason: a bone wall with a trowel
+10) Tea Time: a steaming teacup with a skull pattern on a saucer
+11) Crow Friend: a black crow perched on a skull
+12) Grave Tip: a zombie hand coming out of the ground holding a gold coin
+13) Miser Wizard: a fat bulging gold sack with a skull seal
+14) Black Tomb: a dark gothic tower with a golden star on top
+15) Encyclopedist: a stack of old books with a magnifying glass
+16) Cursed Legend: a golden crown wrapped in purple and green ghost fire
+
+Arranged in a clean grid of 4 columns and 4 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

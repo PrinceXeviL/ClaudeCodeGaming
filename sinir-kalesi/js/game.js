@@ -6323,7 +6323,8 @@ function achLevelEnd(win) {
   }
   persist();
 }
-function achIcon(icon, r) {
+function achIcon(icon, r, id) {
+  { const im = id && spr('ico_ach_' + id); if (im) { icoFit(im, 0, 0, r * 0.95); return; } } // 16 Eki: Gemini başarım simgesi (nm18_basarim_H)
   ctx.save(); ctx.lineJoin = 'round';
   if (icon === 'skull' || icon === 'raise') drawSkullIcon(0, 0, r * 0.95);
   else if (icon === 'heart') drawIcon('heart', 0, 0, r * 1.4);
@@ -6349,7 +6350,7 @@ function drawAchToast() {
   ctx.save(); ctx.globalAlpha = a;
   const w = 300, x = W / 2 - w / 2;
   crimsonBox(x, y, w, 46, 14);
-  ctx.save(); ctx.translate(x + 26, y + 23); achIcon(T.a.icon, 14); ctx.restore();
+  ctx.save(); ctx.translate(x + 26, y + 23); achIcon(T.a.icon, 14, T.a.id); ctx.restore();
   txt('BAŞARIM: ' + T.a.name, x + 50, y + 15, 14, '#f0cf86', 'left', '400', FONT_T, false);
   txt(T.a.desc, x + 50, y + 32, 11, '#e8e0f0', 'left', '700', FONT_B, false);
   ctx.restore();
@@ -6381,7 +6382,7 @@ function drawAchievements() {
     if (NECRO) { velvetCard(x, y, cw, ch, 12, { border: on ? '#e8c86a' : 'rgba(150,120,140,0.55)', ac: on ? '230,190,110' : null }); if (!on) roundRect(x, y, cw, ch, 12, 'rgba(10,4,12,0.35)'); }
     else roundRect(x, y, cw, ch, 12, on ? '#2c2240' : 'rgba(30,24,40,0.85)', on ? '#e8c86a' : 'rgba(150,140,170,0.4)', on ? 2 : 1.2);
     circle(x + 36, y + ch / 2, 26, on ? '#3e2e58' : '#1c1626', on ? '#e8c86a' : '#4a4058', 1.8);
-    ctx.save(); ctx.translate(x + 36, y + ch / 2); if (!on) ctx.globalAlpha *= 0.45; achIcon(a.icon, 24); ctx.restore();
+    ctx.save(); ctx.translate(x + 36, y + ch / 2); if (!on) ctx.globalAlpha *= 0.45; achIcon(a.icon, 24, a.id); ctx.restore();
     fitTxt(a.name, x + 72, y + 22, cw - 140, 18, on ? '#ffe27a' : '#b8acc8', 'left', '400', FONT_T, false);
     wrapLines(a.desc, cw - 84, 13.5, '700', FONT_B, 2).forEach((l, k) => txt(l, x + 72, y + 42 + k * 16, 13.5, on ? '#e8e0f0' : '#9a90aa', 'left', '700', FONT_B, false));
     if (a.cnt && !on) {
@@ -11682,6 +11683,7 @@ function drawStar(x, y, r, col, stroke = 'rgba(0,0,0,0.5)', lw = 1.5) {
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
 }
 function fancyStar(x, y, r, filled) {
+  if (filled) { const im = spr('ico_ui_star'); if (im) { icoFit(im, x, y, r * 0.95); return; } } // 16 Eki: Gemini yıldız
   ctx.lineJoin = 'round';
   if (!filled) {
     starShape(x, y + 2, r); ctx.fillStyle = 'rgba(80,48,18,0.28)'; ctx.fill();
@@ -11707,7 +11709,11 @@ function sunburst(x, y, r, col) {
 }
 
 // vektör ikonlar (beyaz dolgu, koyu kontur); s ≈ ikonun boyu
+// 16 Eki: Gemini arayüz simgeleri (nm16_arayuz_F, nm17_arayuz_G): varsa kodla çizilen vektör ikonun yerine
+const UI_ICO = { play: 'play', gear: 'gear', next: 'fast', fast: 'fast', pause: 'pause', restart: 'restart', map: 'map', back: 'back', sound: 'sound', mute: 'mute', heart: 'heart', coin: 'coin', lock: 'lock', check: 'check', close: 'close' };
+const uiIco = (n, x, y, s) => { const im = spr('ico_ui_' + n); if (im) icoFit(im, x, y, s * 0.46); return !!im; };
 function drawIcon(name, x, y, s, col = '#fff') {
+  if (UI_ICO[name] && uiIco(UI_ICO[name], x, y, s)) return;
   ctx.save(); ctx.translate(x, y); const k = s / 24; ctx.scale(k, k);
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const fs = (fill = col, lw = 4) => { ctx.strokeStyle = 'rgba(28,15,5,0.9)'; ctx.lineWidth = lw; ctx.stroke(); ctx.fillStyle = fill; ctx.fill(); };
@@ -12724,15 +12730,15 @@ function drawHud() {
     drawSkullIcon(bx2, 45, 6.5); drawCrown(bx2, 33.5, 0.42, 1);
     if (bossOn) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx2, 44, 20, '255,70,40', 0.4 + Math.sin(time * 7) * 0.2); ctx.restore(); }
   }
-  drawIcon('skull', 21, 44, 14);
+  uiIco('wave', 21, 44, 16) || drawIcon('skull', 21, 44, 14);
   ctx.save(); ctx.translate(68, 45); ctx.scale(pop(G.wavePop), pop(G.wavePop)); hudNum(G.endless ? `${G.wave} ∞` : `${G.wave}/${n}`, 0, 0, 12, '#fff', 'center'); ctx.restore();
   { // 13 Eki (Caner): öldürülen düşman sayacı (dalganın altında); rakam birden atlamaz, tıkır tıkır sayar
     const kn = G.killN || 0; G.killRoll = Math.min(kn, (G.killRoll || 0) + Math.max(0.12, (kn - (G.killRoll || 0)) * 0.12));
     const kv = Math.floor(G.killRoll); if (kv !== G.killShown) { if (G.killShown != null) G.killPop = time; G.killShown = kv; }
     hudBar(8, 57, 92, 20);
-    ctx.save(); ctx.translate(21, 67); ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; // çapraz kemik + kafatası
+    if (uiIco('kills', 21, 67, 17)) {} else { ctx.save(); ctx.translate(21, 67); ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; // çapraz kemik + kafatası
     ctx.beginPath(); ctx.moveTo(-6, -5); ctx.lineTo(6, 5); ctx.moveTo(6, -5); ctx.lineTo(-6, 5); ctx.stroke(); ctx.restore();
-    drawSkullIcon(21, 66, 6);
+    drawSkullIcon(21, 66, 6); }
     ctx.save(); ctx.translate(62, 68); ctx.scale(pop(G.killPop), pop(G.killPop)); hudNum(kv + '', 0, 0, 12, '#ffb8a0', 'center'); ctx.restore();
   }
   ctx.restore();
@@ -15114,6 +15120,7 @@ function codexBossHp(type) {
   return Math.round((650 + 400 * Math.max(0, tier)) * (ENEMIES[type].hpK || 1));
 }
 function codexBookIcon(r) {
+  if (uiIco('codex', 0, 0, r * 1.2)) return;
   ctx.save(); ctx.scale(r / 20, r / 20); ctx.lineJoin = 'round';
   // kapak: mor deri, ortada yeşil kafatası mührü
   ctx.fillStyle = '#e8dcbc'; ctx.strokeStyle = 'rgba(28,15,5,0.9)'; ctx.lineWidth = 2.5;
@@ -15711,7 +15718,7 @@ function drawTitle() {
     roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7, tile: 'blue' });
     roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
     roundBtn('t_codex', W - 138, 38, 21, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
-    roundBtn('t_ach', W - 188, 38, 21, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
+    roundBtn('t_ach', W - 188, 38, 21, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
     if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
     return;
@@ -16504,11 +16511,12 @@ function drawMap() {
   const bx = (i) => px - 14 - RB - i * RS;
   roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15, tile: 'slate' });
   roundBtn('codex', bx(1), TY, RB, codexBookIcon, () => go(() => { menuBack = 'map'; screen = 'codex'; CODEX.t0 = time; }), { appear: st - 0.2, tile: 'green' });
-  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25, tile: 'teal' });
+  roundBtn('ach', bx(2), TY, RB, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'map'; screen = 'ach'; screenT = time; }), { appear: st - 0.25, tile: 'teal' });
   { // günün sınavı: takvim düğmesi, bugün yapılmadıysa parlar
     const done = save.daily && save.daily.key === todayKey() && save.daily.done, k = RB / 19;
     if (!done) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx(3), TY, 34, '255,200,90', 0.3 + Math.sin(time * 3) * 0.1); ctx.restore(); }
     roundBtn('daily', bx(3), TY, RB, (r) => {
+      if (uiIco('daily', 0, 0, r * 1.2)) { if (done) drawIcon('check', r * 0.4, r * 0.4, r * 0.75); return; }
       ctx.save(); ctx.scale(k, k);
       roundRect(-9, -8, 18, 17, 3, '#f2ead6', '#2a1608', 1.4); ctx.fillStyle = '#c8322a'; ctx.fillRect(-9, -8, 18, 5);
       txt(new Date().getDate() + '', 0, 3.5, 9, '#2a1608', 'center', '400', FONT_T, false);
@@ -16516,7 +16524,7 @@ function drawMap() {
       ctx.restore();
     }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3, tile: 'ember' });
   }
-  roundBtn('shop', bx(4), TY, RB, (r) => { drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35, tile: 'gold' });
+  roundBtn('shop', bx(4), TY, RB, (r) => { uiIco('shop', 0, 0, r * 1.2) || drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35, tile: 'gold' });
   { const cc = save.crystal || 0; if (cc) { const qx = bx(4) + 2, qy = TY + 24; roundRect(qx - 26, qy - 11, 52, 22, 11, 'rgba(40,16,50,0.95)', '#e0b8ff', 1.5); drawCrystal(qx - 13, qy, 8); txt(cc + '', qx + 9, qy + 0.5, 13, '#fff', 'center', '400', FONT_T); } }
   if (save.achNew) { circle(bx(2) + 18, TY - 18, 9, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', bx(2) + 18, TY - 17.5, 11, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const cx = bx(1) + 18, cy = TY - 18 + Math.sin(time * 5) * 1.5; circle(cx, cy, 9, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', cx, cy + 0.5, 10.5, '#fff', 'center', '400', FONT_T); }
@@ -16531,11 +16539,11 @@ function drawMap() {
   const BR = 30, BS = 104, bx2 = (i) => R0 - 46 - i * BS, by2 = EDGE.b - 58;
   const lab = (x, t) => { ctx.save(); ctx.font = `400 13px ${FONT_T}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,4,14,0.95)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.strokeText(t, x, by2 + BR + 14); ctx.fillStyle = '#f2e6c8'; ctx.fillText(t, x, by2 + BR + 14); ctx.restore(); };
   roundBtn('grim', bx2(2), by2, BR, 'grimoire', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, { appear: st - 0.3, tile: 'red', active: freeSouls > 0, activeCol: '190,110,255' }); lab(bx2(2), 'BÜYÜ KİTABI');
-  roundBtn('heroes', bx2(1), by2, BR, 'crown', () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
+  roundBtn('heroes', bx2(1), by2, BR, (r) => uiIco('heroes', 0, 0, r * 1.15) || drawIcon('crown', 0, 0, r * 1.05), () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
-  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
+  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => uiIco('help', 0, 0, r * 1.15) || txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
   const freeStars = starsTotal() - starsSpent();
-  roundBtn('upgrades', bx2(0), by2, BR, (r) => fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'rose', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
+  roundBtn('upgrades', bx2(0), by2, BR, (r) => uiIco('upgrades', 0, 0, r * 1.15) || fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'rose', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
   const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
   if (freeSouls > 0) badge(2, freeSouls, '#8a3ad8');
   if (freeStars > 0) badge(0, freeStars, '#e8434b');
@@ -18559,6 +18567,7 @@ window.__game = {
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
   wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   towerOn: (type) => towerUnlocked(type), // test: kule bu bölümde kurulabilir mi (öğretici kilidi)
+  goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX,

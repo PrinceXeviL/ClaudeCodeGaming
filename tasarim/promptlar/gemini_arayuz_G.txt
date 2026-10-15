@@ -1,0 +1,15 @@
+Image 1 is the menu icon sheet of my dark gothic cartoon tower defense game; image 2 is a screen of the game. Draw a NEW sheet of 12 ICONS in exactly the same style, line weight and quality as image 1. They sit inside small round dark buttons, so each one must be a single bold, simple, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) Back: a thick bone arrow pointing left
+2) Close: two crossed bones forming an X
+3) Locked: a heavy iron padlock with a skull keyhole
+4) Done: a bold green check mark
+5) Daily Challenge: a tear-off calendar page with a bloody red skull mark on it
+6) Tutorial: a bone-white question mark with a skull as its dot
+7) Heroes: a rotten warrior helmet with a small golden crown on top
+8) Upgrades: a golden star with a green upward arrow
+9) Achievements: a golden trophy cup with a skull on its front
+10) Codex: an old bestiary book with an eye on its cover
+11) Shop: a small treasure chest overflowing with gold and purple crystals
+12) Star: a shiny golden star
+
+Arranged in a clean grid of 4 columns and 3 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines. 16:9 image.
