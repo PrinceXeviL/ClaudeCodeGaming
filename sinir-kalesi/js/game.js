@@ -5840,6 +5840,7 @@ function drawGateBar() {
 }
 // büyü düğmesi simgeleri: diriltme = yerden kalkan iskelet, korku = çığlık atan hayalet
 function drawNecroGlyph(id, r) {
+  { const im = spr('ico_sp_' + id); if (im) { icoFit(im, 0, 0, r * 0.74); return; } } // 16 Eki: Gemini büyü simgeleri (nm11_buyu_simgeleri), yoksa kodla çizim
   if (id === 'nm_wall') {
     // kemik çit: dört kazık, iki kaburga, ortada kafatası
     for (let i = 0; i < 4; i++) { const x = -r * 0.5 + i * r * 0.33, hh = r * (0.7 + (i % 2) * 0.18); roundRect(x - 2, r * 0.45 - hh, 4, hh, 2, '#efe6cc', '#2a1c10', 1); }
@@ -14983,7 +14984,7 @@ function upgradeIcon(id, x, y) {
   if (['archer', 'barracks', 'mage', 'artillery'].includes(id)) {
     const im = towerIcon(id, 2);
     if (im) { ctx.save(); ctx.beginPath(); ctx.arc(x, y, 17, 0, Math.PI * 2); ctx.clip(); drawSprite(ctx, im, x, y + 19, 36 * im.width / im.height); ctx.restore(); }
-  } else if (id === 'spells') { ctx.save(); ctx.translate(x, y); ctx.scale(0.9, 0.9); if (NECRO) drawNecroGlyph('nm_raise', 20); else drawUltGlyph('zeynep', 20); ctx.restore(); } // büyüler: diriltme simgesi
+  } else if (id === 'spells') { ctx.save(); ctx.translate(x, y); ctx.scale(0.9, 0.9); if (NECRO) { const im = spr('ico_sp_book'); if (im) icoFit(im, 0, 0, 17); else drawNecroGlyph('nm_raise', 20); } else drawUltGlyph('zeynep', 20); ctx.restore(); } // büyüler: diriltme simgesi
   else drawIcon('heart', x, y, 20);
 }
 
