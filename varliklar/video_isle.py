@@ -66,7 +66,8 @@ def find_loop(rgb, lo=20, hi=40):
     return best[1], best[2]
 
 
-def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, white=False, lo=20, hi=40):
+def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, white=False, lo=20, hi=40, play_fps=None, keep_size=False):
+    # 16 Eki: keep_size: şerit zaten varsa karakter boyu (piksel) korunur (serit_kucult sonrası telefon belleği); play_fps: oyunda oynatma hızı (meta 'fps')
     rgb = frames_of(os.path.join(ROOT, 'varliklar', src), fps)
     if order is None and (start is None or length is None):
         start, length = find_loop(rgb, lo, hi)
@@ -93,16 +94,17 @@ def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, 
     cx = np.mean([head_x(c, b) for c, b in zip(cells, boxes)])
     half = max(cx - x0, x1 - cx) + pad
     X0 = int(cx - half); X1 = int(cx + half); Y0 = y0 - pad; Y1 = y1 + pad
-    k = min(k, 16000 / ((X1 - X0) * len(cells)))  # WebP en çok 16383 px genişlik: geniş saldırı karelerinde şerit küçülür
-    FW = int(round((X1 - X0) * k)); FH = int(round((Y1 - Y0) * k))
-    out = Image.new('RGBA', (FW * len(cells), FH), (0, 0, 0, 0))
-    for i, c in enumerate(cells):
-        im = Image.fromarray(c[max(0, Y0):Y1, max(0, X0):X1]).resize((FW, FH), Image.LANCZOS)
-        out.paste(im, (i * FW, 0))
-    out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
     meta_p = os.path.join(IMG, 'anim.json')
     meta = json.load(open(meta_p)) if os.path.exists(meta_p) else {}
+    F0 = meta.get(name) if keep_size else None
+    if F0: k = F0['ch'] * F0['fh'] / chH   # eski şeritteki karakter boyu (px)
+    # 16 Eki: genişlik sınırı için küçültme yerine satırlara bölünür (pack); Veo şeritleri her kareyle
+    FW = int(round((X1 - X0) * k)); FH = int(round((Y1 - Y0) * k))
+    out, cols = pack([Image.fromarray(c[max(0, Y0):Y1, max(0, X0):X1]).resize((FW, FH), Image.LANCZOS) for c in cells], FW, FH)
+    out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
     meta[name] = {'n': len(cells), 'fw': FW, 'fh': FH, 'base': round((Y1 - y1) / (Y1 - Y0), 4), 'ch': round(chH / (Y1 - Y0), 4)}
+    if cols: meta[name]['cols'] = cols
+    if play_fps: meta[name]['fps'] = play_fps
     if name.endswith('_walk'):
         # duruş karesi: ayakların en kapalı olduğu kare (oyunda dururken bu gösterilir)
         def legw(c):
@@ -112,16 +114,6 @@ def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, 
     man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
     if name + '.webp' not in man: json.dump(sorted(man + [name + '.webp']), open(man_p, 'w'), indent=0)
     print(name, len(cells), 'kare', FW, 'x', FH, 'şerit', out.size)
-
-
-if __name__ == '__main__':
-    a = sys.argv
-    st = int(a[a.index('--start') + 1]) if '--start' in a else None
-    ln = int(a[a.index('--len') + 1]) if '--len' in a else None
-    fps = int(a[a.index('--fps') + 1]) if '--fps' in a else 24
-    lo = int(a[a.index('--lo') + 1]) if '--lo' in a else 20
-    hi = int(a[a.index('--hi') + 1]) if '--hi' in a else 40
-    main(a[1], a[2], st, ln, fps, white='--beyaz' in a, lo=lo, hi=hi)  # --beyaz: beyaz zeminli video
 
 
 def remove_white_fx(a, dark=110, grow=10, gain=1.7, core_r=6, core_max=5000):
@@ -170,3 +162,13 @@ def save_strip(name, crops, FW, FH, img_dir, meta, man, info, keep=True, quality
     meta[name] = m
     if name + '.webp' not in man: man.append(name + '.webp')
     print(name, {k: m[k] for k in ('n', 'fw', 'fh') if k in m}, 'cols', cols, os.path.getsize(os.path.join(img_dir, name + '.webp')) // 1024, 'KB')
+
+if __name__ == '__main__':
+    a = sys.argv
+    st = int(a[a.index('--start') + 1]) if '--start' in a else None
+    ln = int(a[a.index('--len') + 1]) if '--len' in a else None
+    fps = int(a[a.index('--fps') + 1]) if '--fps' in a else 24
+    lo = int(a[a.index('--lo') + 1]) if '--lo' in a else 20
+    hi = int(a[a.index('--hi') + 1]) if '--hi' in a else 40
+    pf = float(a[a.index('--oyun-fps') + 1]) if '--oyun-fps' in a else None
+    main(a[1], a[2], st, ln, fps, white='--beyaz' in a, lo=lo, hi=hi, play_fps=pf, keep_size='--koru' in a)  # --beyaz: beyaz zeminli video; --koru: eski şeridin boyu; --oyun-fps: oynatma hızı

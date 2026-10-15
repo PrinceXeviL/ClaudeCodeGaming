@@ -12,12 +12,12 @@ from ses_kayit_isle import FF
 
 D = os.path.dirname(os.path.abspath(__file__)); IMG = os.path.join(D, '..', 'sinir-kalesi', 'img')
 VID, N_ST = os.path.join(D, sys.argv[1]), int(sys.argv[2]); OUT = f'castle_keep_{N_ST}_idle'
-FW, FPS = 420, 10.8
+FW, FPS = 420, 21.6   # 16 Eki: her kare (24 fps çıkarılır, %10 yavaş oynar; önce 12 fps / 10,8)
 tmp = tempfile.mkdtemp()
-subprocess.run([FF, '-loglevel', 'error', '-y', '-i', VID, '-vf', 'fps=12', os.path.join(tmp, 'f_%03d.png')], check=True)
+subprocess.run([FF, '-loglevel', 'error', '-y', '-i', VID, '-vf', 'fps=24', os.path.join(tmp, 'f_%03d.png')], check=True)
 fs = sorted(glob.glob(os.path.join(tmp, 'f_*.png')))
 small = [np.asarray(Image.open(f).convert('L').resize((320, 180))).astype(np.float32) for f in fs]
-best = min((np.abs(small[s] - small[s + L]).mean(), L, s) for L in range(24, 37) for s in range(0, len(fs) - L))
+best = min((np.abs(small[s] - small[s + L]).mean(), L, s) for L in range(48, 73) for s in range(0, len(fs) - L))
 _, NF, START = best
 print('döngü', NF, 'kare, başlangıç', START, 'fark', round(float(best[0]), 2))
 
@@ -69,11 +69,13 @@ if '--agac' in sys.argv:
     tm = ndimage.gaussian_filter(tm, 8)
     F = [f * (1 - tm[..., None]) + st[..., :3] * tm[..., None] for f in F]
     alpha = Image.fromarray((np.asarray(alpha).astype(float) * (1 - tm) + st[..., 3] * tm).astype(np.uint8))
-strip = Image.new('RGBA', (FW * NF, FH))
+tiles = []
 for i, f in enumerate(F):
-    fr = Image.fromarray((f * (1 - mk[..., None]) + dim * mk[..., None]).astype(np.uint8)); fr.putalpha(alpha); strip.paste(fr, (i * FW, 0))
+    fr = Image.fromarray((f * (1 - mk[..., None]) + dim * mk[..., None]).astype(np.uint8)); fr.putalpha(alpha); tiles.append(fr)
+sys.path.insert(0, D); import video_isle
+strip, cols = video_isle.pack(tiles, FW, FH)  # 16 Eki: satırlara böl (WebP 16383 px)
 strip.save(os.path.join(IMG, OUT + '.webp'), 'WEBP', quality=88, method=6)
-an = json.load(open(os.path.join(IMG, 'anim.json'))); an[OUT] = {'n': NF, 'fw': FW, 'fh': FH, 'fps': FPS}
+an = json.load(open(os.path.join(IMG, 'anim.json'))); an[OUT] = dict({'n': NF, 'fw': FW, 'fh': FH, 'fps': FPS}, **({'cols': cols} if cols else {}))
 json.dump(an, open(os.path.join(IMG, 'anim.json'), 'w'), indent=1, ensure_ascii=False)
 man = json.load(open(os.path.join(IMG, 'manifest.json')))
 if OUT + '.webp' not in man: json.dump(sorted(man + [OUT + '.webp']), open(os.path.join(IMG, 'manifest.json'), 'w'), indent=0)

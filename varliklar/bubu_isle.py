@@ -18,23 +18,21 @@ BOX = (CX - 370, 0, CX + 360, 576)              # vuruşta saçılan toprak da i
 TARGET = 220
 SETS = {
     'bubu_hole': [40],
-    'bubu_atk': list(range(56, 132, 2)),
-    'bubu_idle': list(range(146, 204, 2)),
-    'bubu_down': list(range(0, 28, 2)),
+    'bubu_atk': list(range(56, 132)),   # 16 Eki: her kare, 24 kare/sn (Veo akıcılık; önce 2'de bir 12 kare/sn)
+    'bubu_idle': list(range(146, 204)),
+    'bubu_down': list(range(0, 28)),
 }
 fr = video_isle.frames_of(os.path.join(H0, 'ham/anim/bubu_veo.mp4'), 24)
 k = TARGET / (FIG_BOT - FIG_TOP); x0, y0, x1, y1 = BOX
 FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
 for name, order in SETS.items():
-    out = Image.new('RGBA', (FW * len(order), FH), (0, 0, 0, 0))
-    for i, n in enumerate(order):
-        a = video_isle.remove_white(fr[n])[y0:y1, x0:x1]
-        out.paste(Image.fromarray(a).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
+    out, cols = video_isle.pack([Image.fromarray(video_isle.remove_white(fr[n])[y0:y1, x0:x1]).resize((FW, FH), Image.LANCZOS) for n in order], FW, FH)
     out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
     meta[name] = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4),
-                  'fx': round((CX - x0) / (x1 - x0), 4), 'fps': 12}
-    if name == 'bubu_atk': meta[name]['hit'] = (94 - 56) // 2   # ağzın yere vurduğu kare
+                  'fx': round((CX - x0) / (x1 - x0), 4), 'fps': 24}
+    if cols: meta[name]['cols'] = cols
+    if name == 'bubu_atk': meta[name]['hit'] = 94 - 56   # ağzın yere vurduğu kare
     if name + '.webp' not in man: man.append(name + '.webp')
     print(name, meta[name], os.path.getsize(os.path.join(IMG, name + '.webp')) // 1024, 'KB')
 json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)

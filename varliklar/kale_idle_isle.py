@@ -9,7 +9,7 @@ from PIL import Image
 from ses_kayit_isle import FF
 
 D = os.path.dirname(os.path.abspath(__file__)); IMG = os.path.join(D, '..', 'sinir-kalesi', 'img')
-FW = 420; START, N, STEP = 106, 30, 2   # video karesi (24 fps), kare sayısı, adım (12 fps)
+FW = 420; START, N, STEP = 106, 60, 1   # video karesi (24 fps), kare sayısı, adım — 16 Eki: her kare (Veo akıcılık; önce 2'de bir)
 tmp = tempfile.mkdtemp()
 subprocess.run([FF, '-loglevel', 'error', '-y', '-i', os.path.join(D, 'ham', 'anim', 'kale_v3_idle.mp4'), '-vf', 'fps=24', os.path.join(tmp, 'f_%03d.png')], check=True)
 fs = sorted(glob.glob(os.path.join(tmp, 'f_*.png')))
@@ -38,10 +38,11 @@ for ex, ey in E: m = np.maximum(m, np.clip(1.6 - np.hypot(xx - ex * FW, (yy - ey
 F = [np.asarray(f).astype(float) for f in frames]
 dim = F[int(np.argmin([(f.mean(2) * m).sum() for f in F]))]
 frames = [Image.fromarray((f * (1 - m[..., None]) + dim * m[..., None]).astype(np.uint8)) for f in F]
-strip = Image.new('RGBA', (FW * N, FH))
-for i, fr in enumerate(frames): fr.putalpha(alpha); strip.paste(fr, (i * FW, 0))
+import sys; sys.path.insert(0, D); import video_isle
+for fr in frames: fr.putalpha(alpha)
+strip, cols = video_isle.pack(frames, FW, FH)  # 16 Eki: 60 kare tek satıra sığmaz (WebP 16383 px) -> satırlar
 strip.save(os.path.join(IMG, 'castle_keep_1_idle.webp'), 'WEBP', quality=88, method=6)
-an = json.load(open(os.path.join(IMG, 'anim.json'))); an['castle_keep_1_idle'] = {'n': N, 'fw': FW, 'fh': FH, 'fps': 10.8}  # 13 Eki (Caner): ateş %10 yavaş
+an = json.load(open(os.path.join(IMG, 'anim.json'))); an['castle_keep_1_idle'] = dict({'n': N, 'fw': FW, 'fh': FH, 'fps': 21.6}, **({'cols': cols} if cols else {}))  # 13 Eki (Caner): ateş %10 yavaş (24 x 0,9)
 json.dump(an, open(os.path.join(IMG, 'anim.json'), 'w'), indent=1, ensure_ascii=False)
 man = json.load(open(os.path.join(IMG, 'manifest.json')))
 if 'castle_keep_1_idle.webp' not in man: man = sorted(man + ['castle_keep_1_idle.webp']); json.dump(man, open(os.path.join(IMG, 'manifest.json'), 'w'), indent=0)

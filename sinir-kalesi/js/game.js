@@ -5911,7 +5911,7 @@ function mortLoud() {
 }
 function updateMortState(dt) {
   const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 });
-  if (G.mortMood && (G.mortMood.t += dt) * MORT_MOOD.fps >= ANIM_META[G.mortMood.n].n) G.mortMood = null;
+  if (G.mortMood && (G.mortMood.t += dt) * (ANIM_META[G.mortMood.n].fps || MORT_MOOD.fps) >= ANIM_META[G.mortMood.n].n) G.mortMood = null; // 16 Eki: şeridin kendi hızı
   M.t += dt;
   if (mortDanger()) M.calm = 0; else M.calm += dt;
   const loud = mortLoud(); if (loud) M.quiet = 0; else M.quiet += dt;
@@ -5936,14 +5936,14 @@ function mortRage() {
 function mortAnim(p) {
   const M = G && G.mort;
   if (p < 0 && G && G.mortMood && M && !['in', 'out', 'goin'].includes(M.st)) { // ruh hali animasyonu (öfke) bitene dek oynar
-    const F = ANIM_META[G.mortMood.n], i = Math.floor(G.mortMood.t * MORT_MOOD.fps);
+    const F = ANIM_META[G.mortMood.n], i = Math.floor(G.mortMood.t * (F.fps || MORT_MOOD.fps));
     if (i < F.n) return { n: G.mortMood.n, i, k: 1, cx: 0.617 };
   }
   if (p >= 0 && G.mortCastN && mortStrip(G.mortCastN)) { const F = ANIM_META[G.mortCastN]; return { n: G.mortCastN, i: Math.min(F.n - 1, Math.floor(p * F.n)), k: 1 }; }
   if (p >= 0 && mortStrip('mortimer_buyu')) return { n: 'mortimer_buyu', i: Math.min(ANIM_META.mortimer_buyu.n - 1, Math.floor(p * ANIM_META.mortimer_buyu.n)), k: 1 };
   if (!M) return null;
   // 15 Eki (Caner): Mortimer oturmaz, balkonun önünde ayakta durur (diriltme şeridinin ilk karesi + nefes); ayakta bekleme videosu gelince o oynar
-  if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_bekle')) return { n: 'mortimer_bekle', i: Math.floor(time * 10) % ANIM_META.mortimer_bekle.n, k: 1, cx: 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
+  if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_bekle')) return { n: 'mortimer_bekle', i: Math.floor(time * (ANIM_META.mortimer_bekle.fps || 10)) % ANIM_META.mortimer_bekle.n, k: 1, cx: 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
   if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_dirilt')) return { n: 'mortimer_dirilt', i: 0, k: 1, breathe: true };
   if ((M.st === 'up' || M.st === 'down') && mortStrip('mortimer_otur')) {
     const q = clamp(M.t / MORT_TRANS, 0, 1), N = ANIM_META.mortimer_otur.n;
@@ -6684,10 +6684,10 @@ function updateBubu(dt) {
   const b = G.bubu; if (!b) return;
   if (G.bubuIntro && !G.banner && !overlay) { G.bubuIntro = false; G.banner = { title: 'YENİ: BUBU', sub: "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin", t: 0, dur: 5 }; }
   b.t += dt; if (b.st === 'hole' && b.cd > 0) b.cd -= dt;
-  const n = (k) => (ANIM_META[k] || { n: 1 }).n / 12;
+  const n = (k) => { const F = ANIM_META[k] || { n: 1 }; return F.n / (F.fps || 12); }; // 16 Eki: şeridin kendi hızı (24 kare/sn)
   if (b.st === 'atk') {
     const F = ANIM_META.bubu_atk;
-    if (!b.hit && b.t >= F.hit / 12) { b.hit = true; bubuStrike(b); }
+    if (!b.hit && b.t >= F.hit / (F.fps || 12)) { b.hit = true; bubuStrike(b); }
     if (b.t >= n('bubu_atk')) { b.st = 'idle'; b.t = 0; }
   } else if (b.st === 'idle' && b.t >= BUBU.idle) { b.st = 'down'; b.t = 0; sfx('bonefall'); } // 16 Eki: fs_bone pakette yok (sessizdi)
   else if (b.st === 'down' && b.t >= n('bubu_down')) { b.st = 'hole'; b.t = 0; b.cd = BUBU.cd; }
@@ -6719,7 +6719,7 @@ function drawBubu() {
   if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, b.x, b.y - 8, 36, '140,255,110', 0.18 + 0.12 * Math.sin(time * 4)); ctx.restore(); }
   const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh;
   ctx.save(); ctx.translate(b.x, b.y); ctx.scale(b.face, 1);
-  const bim = spr(nm), bs = bim.width / (F.fw * F.n); ctx.drawImage(bim, fi * F.fw * bs, 0, F.fw * bs, F.fh * bs, -fw * F.fx, -fh * (1 - F.base), fw, fh);
+  const bim = spr(nm), C = F.cols || F.n, bs = bim.width / (F.fw * C), by = bim.height / (F.fh * Math.ceil(F.n / C)); ctx.drawImage(bim, (fi % C) * F.fw * bs, Math.floor(fi / C) * F.fh * by, F.fw * bs, F.fh * by, -fw * F.fx, -fh * (1 - F.base), fw, fh); // 16 Eki: satırlı şerit
   ctx.restore();
   if (b.st === 'hole') {
     if (!ready) { const k = 1 - b.cd / BUBU.cd; circle(b.x, b.y - 30, 8, 'rgba(20,12,24,0.75)', 'rgba(160,255,140,0.5)', 1.2); ctx.strokeStyle = '#a8ff8a'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(b.x, b.y - 30, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
@@ -13048,7 +13048,7 @@ function drawCastle() {
     if (IN && !spr(IN)) loadStrip(IN);
     if (SN && G.keepIdleN !== IN) { if (G.keepIdleN && G.keepIdleN !== IN) { delete SPR[G.keepIdleN]; STRIP_WAIT.delete(G.keepIdleN); } G.keepIdleN = IN; }
     const IA = IN && spr(IN) && ANIM_META[IN];
-    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw, kim = spr(IN), ks = kim.width / (IA.fw * IA.n); ctx.drawImage(kim, fi * IA.fw * ks, 0, IA.fw * ks, IA.fh * ks, -cp.w / 2, -h, cp.w, h); }
+    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw, kim = spr(IN), C = IA.cols || IA.n, ks = kim.width / (IA.fw * C), ky = kim.height / (IA.fh * Math.ceil(IA.n / C)); ctx.drawImage(kim, (fi % C) * IA.fw * ks, Math.floor(fi / C) * IA.fh * ky, IA.fw * ks, IA.fh * ky, -cp.w / 2, -h, cp.w, h); } // 16 Eki: satırlı şerit (cols)
     else drawSprite(ctx, im, 0, 0, cp.w);
     if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
