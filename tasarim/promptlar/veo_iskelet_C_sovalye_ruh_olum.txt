@@ -1,0 +1,9 @@
+Static locked-off camera, no camera movement, no zoom. Flat solid magenta (#FF00FF) background for the entire video; the background stays perfectly clean and empty: no particles, no dust, no sparkles, no fog, no floating specks. 2D hand-painted cartoon game art style exactly like the reference image; keep the character's design, colors, armor and proportions identical, he keeps facing right the whole time. He stays small in the center with wide empty magenta margins on all sides, especially above: nothing (weapon, shield, bones) ever leaves the frame. Exaggerated, punchy cartoon motion with squash and stretch, crisp clean frames, no motion blur.
+
+ACTION 1 (0-3 s): SOUL REAPER. The undead skeleton knight with two curved blades crouches, then spins around a full circle on the spot like a whirlwind with both blades stretched out, leaving bright purple and green ghostly slash trails that stay close to him, then stops and returns exactly to his reference pose.
+
+PAUSE (3-3.6 s): completely still in the reference pose.
+
+ACTION 2 (3.6-8 s): DEATH. He is struck, staggers, the glow in his eyes fades, both blades drop from his hands, and his skeleton falls apart: the crowned skull drops, the armor plates and bones collapse into a pile on the ground with his torn cloak over them, and a few loose bones bounce and scatter a little around the pile. It ends as a still heap of bones, armor and the two fallen blades lying on the ground for the last second.
+
+No people, no text, no ground plane, no shadows on the background, no color tint over the character.

@@ -2035,7 +2035,7 @@ function startLevel(idx, chal = null) {
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
-  for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
+  for (let i = 1; i <= 8; i++) SUF.concat('_idle', '_dash', '_guard').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2', '_walk_hurt', '_lvlup'], (HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç, _cast_<pasif>: pasifin kendi şeridi)
 
@@ -3112,7 +3112,9 @@ function damageSoldier(s, amount, src) {
     }
     else if (NECRO && !s.wall) { // iskelet dağılır: kemikler ve kafatası saçılır
       sfx('bonefall');
-      boneCollapse(s);
+      const sk = s.skelKey || 'unit_skel_1', DF = ANIM_META[sk + '_die'];
+      if (DF && animStrip(sk, null, '_die')) G.effects.push({ kind: 'corpse', name: sk, rig: sk, h: (SKEL_H[+sk.slice(10)] || 30) * UNIT_K, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: (DF.dur || 2) + 3 }); // 16 Eki: Veo ölümü (kemikler yığılır, dağılır)
+      else boneCollapse(s);
       for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'chunk', x: s.x + rand(-6, 6), y: s.y - rand(4, 20), vx: rand(-55, 55), vy: -rand(50, 130), g: 520, vr: rand(-14, 14), rot: rand(0, 6), col: i % 3 ? '#efe6cc' : '#cbbf9c', s0: rand(1, 2), s1: 1, life: rand(0.5, 0.8) });
       emit(G.parts, { kind: 'glow', add: true, x: s.x, y: s.y - 10, col: '120,255,140', s0: 10, s1: 22, life: 0.35, a: 0.4 });
     }
@@ -4843,7 +4845,7 @@ function updateWall(s, dt) {
 const ELITE_SK = {
   // 16 Eki (Caner): Tabut Duvarı hasarın %80'ini emer, sürerken saldırmaz; Kalkan Hamlesi (dash): r içindeki düşmana tabutla atılır, vurur, sersemletir, geri savurur
   shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.8, r: 48, col: '170,120,255', hp: 0.75,
-    dash: { name: 'Kalkan Hamlesi', cd: 9, min: 24, r: 72, dur: 0.5, hit: 0.7, dmg: 1.8, stun: 1.0, knock: 130 } },
+    dash: { name: 'Kalkan Hamlesi', cd: 9, min: 24, r: 72, dur: 1.2, hit: 0.47, dmg: 1.8, stun: 1.0, knock: 130 } }, // dur/hit: Veo şeridi (unit_skel_4_dash, 73 kare; çarpma 38. kare)
   blade:  { name: 'Ruh Biçimi', cd: 10, dur: 0.75, r: 42, dmg: 2.5, heal: 0.3, col: '200,120,255' },
 };
 function eliteSkill(s, dt) {
