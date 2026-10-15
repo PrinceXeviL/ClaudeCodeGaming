@@ -15096,7 +15096,7 @@ function effLevel(t) {
   if (ab) L = Object.assign({}, L, { rate: L.rate / (1 + ab.buff), dmg: [L.dmg[0] * (1 + ab.dmg), L.dmg[1] * (1 + ab.dmg)] });
   if (t.spec && t.type !== 'barracks') L = Object.assign({}, L, { dmg: [L.dmg[0] * SPEC_BONUS, L.dmg[1] * SPEC_BONUS] });
   // kum fırtınası (hava ya da Fırtına Cini'nin yeteneği) kule menzilini düşürür
-  const wr = (G && G.weather === 'sand' ? WEATHER.sand.range : 1) * (G && G.stormT > 0 ? 0.8 : 1);
+  const wr = (G && (G.weather === 'sand' || G.weather === 'fog') ? WEATHER[G.weather].range : 1) * (G && G.stormT > 0 ? 0.8 : 1);
   if (wr < 1) L = Object.assign({}, L, { range: L.range * wr });
   const r = upgRank(t.type);
   if (!r || t.type === 'barracks') return L;
@@ -17050,7 +17050,27 @@ function drawAtmo() {
   if (G.castle) warm(G.castle.x, G.castle.y - 10, 120, ATMO.warm * 0.9);
   ctx.restore();
 }
+// 16 Eki: sis (WEATHER.fog): ekranda ağır ağır sürüklenen yumuşak sis kümeleri + yerde ince pus. Bulut dokusu bir kez üretilir.
+let WFOG_TEX = null; const WFOG = { banks: null };
+function wfogTex() {
+  if (WFOG_TEX) return WFOG_TEX;
+  const c = document.createElement('canvas'); c.width = 512; c.height = 220; const g = c.getContext('2d');
+  for (let i = 0; i < 14; i++) { const x = 60 + Math.random() * 392, y = 70 + Math.random() * 80, r = 50 + Math.random() * 60, gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, 'rgba(225,232,226,0.55)'); gr.addColorStop(1, 'rgba(225,232,226,0)'); g.fillStyle = gr; g.fillRect(0, 0, 512, 220); }
+  return (WFOG_TEX = c);
+}
+function drawWeatherFog() {
+  const T = wfogTex();
+  if (!WFOG.banks) WFOG.banks = Array.from({ length: 7 }, (_, i) => ({ x: Math.random(), y: 0.12 + i * 0.13 + Math.random() * 0.05, s: 0.9 + Math.random() * 0.8, v: 0.006 + Math.random() * 0.01, a: 0.2 + Math.random() * 0.14 }));
+  ctx.save(); ctx.fillStyle = 'rgba(150,170,160,0.05)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); // genel solgun pus (net görünüm: hafif)
+  for (const b of WFOG.banks) {
+    const w = VIS.w * 0.75 * b.s, h = w * T.height / T.width, x = VIS.l + (((b.x + time * b.v) % 1.3) - 0.3) * VIS.w * 1.0 - w * 0.2, y = VIS.t + b.y * VIS.h - h / 2;
+    ctx.globalAlpha = b.a * (0.85 + 0.15 * Math.sin(time * 0.4 + b.y * 9)); ctx.drawImage(T, x, y, w, h);
+  }
+  ctx.restore();
+}
 function drawWeather() {
+  if (G.weather === 'fog') drawWeatherFog();
   if (G.weather === 'sand' || G.stormT > 0) drawSandstorm(G.stormT > 0 ? 1.6 : 1);
   if (G.weather === 'rain') {
     const fl = flashLevel(WFX.flashT);

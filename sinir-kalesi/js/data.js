@@ -163,6 +163,7 @@ const WEATHER = {
   snow: { speed: 0.8 },
   sand: { speed: 1, range: 0.85 },
   night: { speed: 1 },
+  fog: { speed: 1, range: 0.9 }, // 16 Eki (Caner: sisli bölümler): ağır sis sürüklenir, görüş kısa: kule menzili %10 az
 };
 
 // Dalga: { t: tür, n: adet, gap: sn aralık, at: dalga başından gecikme, p: yol no }
@@ -463,7 +464,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('heavy', 4, 2), W_('priest', 3, 2.4, 3), W_('legion', 12, 0.6, 8)],
       [W_('heavy', 3, 2.2), W_('gladiator', 8, 0.9, 4), W_('assassin', 8, 0.8, 9), W_('priest', 3, 2.4, 13)],
     ] },
-    { name: 'Kara Göl Geçidi', theme: 'blacklake', gold: 560, hpMul: 0.88, bossT: 'cavcaptain', waves: [
+    { name: 'Kara Göl Geçidi', theme: 'blacklake', weather: 'fog', gold: 560, hpMul: 0.88, bossT: 'cavcaptain', waves: [
       [{ t: 'legion', n: 8, gap: 1 }, { t: 'heavy', n: 1, gap: 1, at: 8 }],
       [{ t: 'cavalry', n: 3, gap: 2 }, { t: 'legion', n: 6, gap: 1, at: 5 }],
       [{ t: 'heavy', n: 3, gap: 2.4 }, { t: 'priest', n: 2, gap: 3, at: 3 }, { t: 'solarcher', n: 5, gap: 1.2, at: 7 }],
@@ -530,7 +531,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('legion', 8, 1)], [W_('legion', 6, 1), W_('solarcher', 3, 1.8, 5)], [W_('gladiator', 3, 1.4), W_('legion', 6, 1, 4)],
       [W_('legion', 10, 0.8), W_('solarcher', 4, 1.4, 6)], [W_('gladiator', 5, 1.1), W_('legion', 8, 0.9, 5)], [W_('solarcher', 6, 1), W_('legion', 10, 0.8, 4)],
       [W_('gladiator', 6, 1), W_('solarcher', 5, 1.2, 5), W_('legion', 8, 0.8, 9)], [W_('legion', 12, 0.7), W_('gladiator', 6, 1, 5), W_('solarcher', 6, 1, 9)] ] },
-    { name: 'Kurbağa Adası', theme: 'bog', gold: 420, bossT: 'champion', comic: 'kurbaga', waves: [
+    { name: 'Kurbağa Adası', theme: 'bog', weather: 'fog', gold: 420, bossT: 'champion', comic: 'kurbaga', waves: [
       [W_('legion', 8, 1), W_('assassin', 2, 1.5, 6)], [W_('gladiator', 5, 1.1), W_('solarcher', 4, 1.4, 4)], [W_('assassin', 5, 1), W_('legion', 8, 0.9, 4)],
       [W_('legion', 10, 0.8), W_('gladiator', 4, 1.2, 6)], [W_('assassin', 6, 0.9), W_('solarcher', 6, 1, 5)], [W_('gladiator', 6, 1), W_('legion', 10, 0.8, 5)],
       [W_('assassin', 8, 0.8), W_('solarcher', 6, 1, 6), W_('legion', 8, 0.8, 10)], [W_('legion', 12, 0.7), W_('gladiator', 8, 0.9, 5), W_('assassin', 8, 0.8, 10)] ] },
@@ -538,7 +539,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
       [W_('legion', 10, 0.9), W_('priest', 1, 1, 6)], [W_('heavy', 2, 2.4), W_('solarcher', 5, 1.2, 4)], [W_('assassin', 6, 1), W_('gladiator', 5, 1.1, 5)],
       [W_('priest', 2, 3), W_('legion', 10, 0.8, 3)], [W_('heavy', 3, 2.2), W_('assassin', 6, 0.9, 6)], [W_('gladiator', 8, 0.9), W_('priest', 2, 3, 6)],
       [W_('heavy', 4, 2), W_('solarcher', 8, 0.9, 4), W_('legion', 10, 0.7, 10)], [W_('assassin', 10, 0.7), W_('heavy', 4, 2, 5), W_('priest', 3, 2.4, 9), W_('gladiator', 8, 0.8, 12)] ] },
-    { name: 'Sazlık Kıyı', theme: 'blacklake', gold: 580, bossT: 'cavcaptain', comic: 'sazlik', waves: [
+    { name: 'Sazlık Kıyı', theme: 'blacklake', weather: 'fog', gold: 580, bossT: 'cavcaptain', comic: 'sazlik', waves: [
       [W_('legion', 10, 0.9), W_('cavalry', 2, 2, 7)], [W_('heavy', 3, 2.2), W_('solarcher', 6, 1.1, 4)], [W_('cavalry', 4, 1.6), W_('assassin', 6, 1, 5)],
       [W_('ram', 1, 1), W_('legion', 10, 0.8, 2), W_('priest', 2, 3, 8)], [W_('gladiator', 8, 0.9), W_('cavalry', 4, 1.5, 6)], [W_('heavy', 4, 2), W_('priest', 3, 2.4, 4), W_('assassin', 6, 0.9, 9)],
       [W_('ram', 1, 1), W_('cavalry', 5, 1.4, 3), W_('legion', 12, 0.6, 8)], [W_('heavy', 5, 1.8), W_('cavalry', 6, 1.3, 5), W_('priest', 3, 2.4, 8), W_('gladiator', 8, 0.8, 12)] ] },
@@ -654,13 +655,13 @@ if (NECRO) {
     { name: 'Karantina Kapısı', theme: 'plague', gold: 420, weather: 'rain', waves: mk([['legion', 10, 0.8], ['torch', 3, 2], ['hunter', 4, 1.3]], [['holywater', 2, 2.6]], [['heavy', 2, 2.4]]) },
     { name: 'Boş Pazar', theme: 'plague', gold: 440, waves: mk([['gladiator', 6, 1], ['hunter', 5, 1.2], ['hound', 6, 0.7]], [['flagellant', 3, 1.6], ['holywater', 2, 2.4]], [['heavy', 3, 2.2]]) },
     { name: 'Ölüler Kuyusu', theme: 'plague', gold: 480, bossT: 'campanus', weather: 'rain', waves: mk([['legion', 10, 0.8], ['flagellant', 3, 1.6], ['hunter', 5, 1.2]], [['lantern', 1, 1], ['torch', 3, 2]], [['heavy', 3, 2.2], ['holywater', 3, 2]]) },
-    { name: 'Sazlık Şapel', theme: 'monastery', gold: 500, waves: mk([['legion', 10, 0.8], ['holywater', 3, 2], ['hound', 6, 0.7]], [['bellpriest', 2, 2.6], ['lantern', 1, 1]], [['heavy', 3, 2.2]]) },
+    { name: 'Sazlık Şapel', theme: 'monastery', weather: 'fog', gold: 500, waves: mk([['legion', 10, 0.8], ['holywater', 3, 2], ['hound', 6, 0.7]], [['bellpriest', 2, 2.6], ['lantern', 1, 1]], [['heavy', 3, 2.2]]) },
     { name: 'Su Basmış Avlu', theme: 'monastery', gold: 520, waves: mk([['hunter', 6, 1.1], ['flagellant', 4, 1.4], ['legion', 10, 0.8]], [['paladin', 2, 2.6], ['bellpriest', 2, 2.4]], [['torch', 3, 2]]) },
     { name: 'Çan Kulesi', theme: 'monastery', gold: 560, bossT: 'ignis', waves: mk([['hunter', 6, 1.1], ['paladin', 2, 2.6], ['holywater', 3, 2]], [['inquisitor', 1, 1], ['bellpriest', 2, 2.4]], [['lantern', 1, 1], ['flagellant', 4, 1.3]]) },
     { name: 'Kafatası Kapısı', theme: 'ossuary', gold: 580, waves: mk([['flagellant', 5, 1.3], ['hunter', 6, 1], ['paladin', 3, 2.4]], [['saint', 1, 1], ['inquisitor', 1, 1]], [['lantern', 1, 1], ['torch', 3, 2]]) },
     { name: 'Kemik Avize Salonu', theme: 'ossuary', gold: 600, waves: mk([['legion', 12, 0.7], ['hound', 8, 0.6], ['holywater', 4, 1.8], ['paladin', 3, 2.4]], [['saint', 1, 1], ['bellpriest', 2, 2.2], ['inquisitor', 1, 1]], [['lantern', 1, 1], ['flagellant', 5, 1.2]]) },
     { name: 'Kripta', theme: 'ossuary', gold: 640, bossT: 'colossus', waves: mk([['paladin', 3, 2.2], ['hunter', 6, 1], ['flagellant', 5, 1.2]], [['saint', 2, 4], ['inquisitor', 2, 3]], [['lantern', 1, 1], ['torch', 4, 1.8]]) },
-    { name: 'Sis Yolu', theme: 'bloodmoon', gold: 660, waves: mk([['legion', 12, 0.7], ['cavalry', 5, 1.3], ['hunter', 6, 1], ['heavy', 3, 2]], [['paladin', 3, 2.2], ['flagellant', 5, 1.2], ['holywater', 4, 1.8]], [['saint', 1, 1], ['lantern', 1, 1]]) },
+    { name: 'Sis Yolu', theme: 'bloodmoon', weather: 'fog', gold: 660, waves: mk([['legion', 12, 0.7], ['cavalry', 5, 1.3], ['hunter', 6, 1], ['heavy', 3, 2]], [['paladin', 3, 2.2], ['flagellant', 5, 1.2], ['holywater', 4, 1.8]], [['saint', 1, 1], ['lantern', 1, 1]]) },
     { name: 'Yıkık Kule', theme: 'bloodmoon', gold: 680, waves: mk([['hound', 10, 0.5], ['hunter', 8, 0.9], ['paladin', 3, 2.2], ['torch', 4, 1.6]], [['lantern', 2, 5], ['inquisitor', 2, 3], ['bellpriest', 3, 2]], [['saint', 1, 1], ['siegetower', 1, 1]]) },
     { name: 'Ay Sunağı', theme: 'bloodmoon', gold: 720, bossT: 'cathedral', waves: mk([['legion', 14, 0.6], ['paladin', 4, 2], ['flagellant', 6, 1.1], ['hunter', 8, 0.9]], [['lantern', 1, 1], ['saint', 1, 1], ['inquisitor', 2, 3], ['holywater', 4, 1.8]], [['heavy', 4, 2], ['bellpriest', 3, 2]]) },
   ];
