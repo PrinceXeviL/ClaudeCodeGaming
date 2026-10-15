@@ -582,7 +582,10 @@
   "Kemik Gülle Mancınığı": "Bone Shot Catapult",
   "Veba dolu kemik gülleler atan kazan": "A cauldron that hurls plague-filled bone shots",
   "Gülle Yağmuru": "Shot Barrage",
-  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Hurls 3 small bone shots, each also hits around it"
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Hurls 3 small bone shots, each also hits around it",
+  "Kalkan Hamlesi!": "Shield Dash!",
+  "Tabut Duvarı!": "Coffin Wall!",
+  "Ruh Biçimi!": "Soul Reaper!"
  },
  "tpl": [
   [
@@ -1056,6 +1059,14 @@
   [
    "{} · Savrulanlar {} sn sersemler",
    "{} · Flung enemies are stunned for {} s"
+  ],
+  [
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% armor, +{} health · parries blows, stuns with the shield · hits slow and heavy · 4th skeleton · Coffin Wall: absorbs 80% of damage · Shield Dash: charges an enemy and stuns it"
+  ],
+  [
+   "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
+   "Damage x{} · {}% crit · hits fast, its swing also hits the one beside · 4th skeleton · Soul Reaper: spins with two blades, hits all around, heals"
   ]
  ]
 }

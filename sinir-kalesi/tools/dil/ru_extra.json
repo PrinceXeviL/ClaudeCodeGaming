@@ -390,7 +390,10 @@
   "Kemik Gülle Mancınığı": "Катапульта костяных ядер",
   "Veba dolu kemik gülleler atan kazan": "Котёл, метающий костяные ядра с чумой",
   "Gülle Yağmuru": "Град ядер",
-  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Метает 3 маленьких костяных ядра, каждое бьёт и вокруг"
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Метает 3 маленьких костяных ядра, каждое бьёт и вокруг",
+  "Kalkan Hamlesi!": "Рывок щитом!",
+  "Tabut Duvarı!": "Стена гроба!",
+  "Ruh Biçimi!": "Жнец душ!"
  },
  "tpl": [
   [
@@ -556,6 +559,14 @@
   [
    "{} · Savrulanlar {} sn sersemler",
    "{} · Подброшенные оглушены на {} с"
+  ],
+  [
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% брони, +{} здоровья · парирует удары, оглушает щитом · бьёт медленно и тяжело · 4-й скелет · Стена гроба: поглощает 80% урона · Рывок щитом: бросается на врага и оглушает"
+  ],
+  [
+   "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
+   "Урон x{} · {}% крит · бьёт быстро, взмах задевает соседа · 4-й скелет · Жнец душ: вращается с двумя клинками, бьёт вокруг, лечится"
   ]
  ]
 }

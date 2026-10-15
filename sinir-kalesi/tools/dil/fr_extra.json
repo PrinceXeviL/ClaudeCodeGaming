@@ -390,7 +390,10 @@
   "Kemik Gülle Mancınığı": "Catapulte à boulets d'os",
   "Veba dolu kemik gülleler atan kazan": "Un chaudron qui lance des boulets d'os remplis de peste",
   "Gülle Yağmuru": "Pluie de boulets",
-  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Lance 3 petits boulets d'os, chacun frappe aussi autour"
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Lance 3 petits boulets d'os, chacun frappe aussi autour",
+  "Kalkan Hamlesi!": "Charge au bouclier !",
+  "Tabut Duvarı!": "Mur de cercueil !",
+  "Ruh Biçimi!": "Faucheur d'âmes !"
  },
  "tpl": [
   [
@@ -556,6 +559,14 @@
   [
    "{} · Savrulanlar {} sn sersemler",
    "{} · Les projetés sont étourdis {} s"
+  ],
+  [
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% d'armure, +{} PV · pare les coups, étourdit au bouclier · frappe lentement et fort · 4e squelette · Mur de cercueil : absorbe 80 % des dégâts · Charge au bouclier : fonce sur un ennemi et l'étourdit"
+  ],
+  [
+   "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
+   "Dégâts x{} · {}% critique · frappe vite, son coup touche aussi le voisin · 4e squelette · Faucheur d'âmes : tournoie avec deux lames, frappe tout autour, se soigne"
   ]
  ]
 }

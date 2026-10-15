@@ -390,7 +390,10 @@
   "Kemik Gülle Mancınığı": "骨弹投石机",
   "Veba dolu kemik gülleler atan kazan": "投掷装满瘟疫的骨弹的大锅",
   "Gülle Yağmuru": "弹雨",
-  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "投出 3 颗小骨弹，每颗都会波及周围"
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "投出 3 颗小骨弹，每颗都会波及周围",
+  "Kalkan Hamlesi!": "盾冲！",
+  "Tabut Duvarı!": "棺材之墙！",
+  "Ruh Biçimi!": "灵魂收割！"
  },
  "tpl": [
   [
@@ -556,6 +559,14 @@
   [
    "{} · Savrulanlar {} sn sersemler",
    "{} · 被抛起的敌人眩晕 {} 秒"
+  ],
+  [
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% 护甲，+{} 生命 · 格挡攻击，用盾击晕 · 攻击缓慢沉重 · 第 4 具骷髅 · 棺材之墙：吸收 80% 伤害 · 盾冲：冲向敌人并击晕"
+  ],
+  [
+   "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
+   "伤害 x{} · {}% 暴击 · 攻击迅速，挥砍会波及旁边的敌人 · 第 4 具骷髅 · 灵魂收割：双刃旋转，攻击四周，并恢复生命"
   ]
  ]
 }

@@ -390,7 +390,10 @@
   "Kemik Gülle Mancınığı": "Knochenkugel-Katapult",
   "Veba dolu kemik gülleler atan kazan": "Ein Kessel, der pestgefüllte Knochenkugeln schleudert",
   "Gülle Yağmuru": "Kugelhagel",
-  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Schleudert 3 kleine Knochenkugeln, jede trifft auch ringsum"
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Schleudert 3 kleine Knochenkugeln, jede trifft auch ringsum",
+  "Kalkan Hamlesi!": "Schildstoß!",
+  "Tabut Duvarı!": "Sargwall!",
+  "Ruh Biçimi!": "Seelenmäher!"
  },
  "tpl": [
   [
@@ -556,6 +559,14 @@
   [
    "{} · Savrulanlar {} sn sersemler",
    "{} · Geschleuderte sind {} s betäubt"
+  ],
+  [
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% Rüstung, +{} Leben · pariert Hiebe, betäubt mit dem Schild · schlägt langsam und schwer · 4. Skelett · Sargwall: fängt 80% des Schadens ab · Schildstoß: stürmt auf einen Gegner und betäubt ihn"
+  ],
+  [
+   "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
+   "Schaden x{} · {}% kritisch · schlägt schnell, der Hieb trifft auch den Nachbarn · 4. Skelett · Seelenmäher: wirbelt mit zwei Klingen, trifft ringsum, heilt sich"
   ]
  ]
 }

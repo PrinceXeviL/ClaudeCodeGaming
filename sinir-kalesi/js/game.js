@@ -48,7 +48,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup)x?|castle_keep_\d_idle|tower_artillery_boneball_atk|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_boneball_atk|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -4841,11 +4841,14 @@ function updateWall(s, dt) {
 // Ölüm Şövalyesi (blade) "Ruh Biçimi": iki kılıçla döner, r içindeki herkese dmg x vurur, verdiği hasarın heal kadarını can olarak alır.
 // Animasyon: <ad>_skill şeridi (Bekçi: Gemini kareleri, varliklar/bekci_kare_isle.py) dur süresince bir kez oynar; bu sürede normal saldırı yok.
 const ELITE_SK = {
-  shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.7, r: 48, col: '170,120,255', hp: 0.75 },
+  // 16 Eki (Caner): Tabut Duvarı hasarın %80'ini emer, sürerken saldırmaz; Kalkan Hamlesi (dash): r içindeki düşmana tabutla atılır, vurur, sersemletir, geri savurur
+  shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.8, r: 48, col: '170,120,255', hp: 0.75,
+    dash: { name: 'Kalkan Hamlesi', cd: 9, min: 24, r: 72, dur: 0.5, hit: 0.7, dmg: 1.8, stun: 1.0, knock: 130 } },
   blade:  { name: 'Ruh Biçimi', cd: 10, dur: 0.75, r: 42, dmg: 2.5, heal: 0.3, col: '200,120,255' },
 };
 function eliteSkill(s, dt) {
   const sp = s.tower && s.tower.type === 'barracks' && !s.hero && !s.militia && s.tower.spec, S = ELITE_SK[sp]; if (!S) return false;
+  if (sp === 'shield' && s.wardT > 0 && !(s.skT > 0)) return true; // 16 Eki: Tabut Duvarı sürerken kalkanın arkasında bekler, saldırmaz
   if (s.skCd == null) s.skCd = S.cd * (0.35 + Math.random() * 0.4); // askerler aynı anda kullanmasın
   if (s.skT > 0) { // yetenek oynuyor (süre updateSoldier'da azalır: hedef ölse de animasyon biter)
     if (sp === 'blade' && !s.skHit && s.skT < S.dur * 0.55) { // dönüşün ortasında vuruş
@@ -4869,6 +4872,32 @@ function eliteSkill(s, dt) {
   if (sp === 'shield' ? !(near >= 2 || s.hp < s.maxHp * S.hp) : near < 1) return false;
   s.skCd = S.cd; s.skT = S.dur; s.skHit = false;
   floatText(s.x, s.y - 34, S.name + '!', '#e0c8ff');
+  return true;
+}
+function shieldDash(s, t, dt) { // 16 Eki: Mezar Bekçisinin Kalkan Hamlesi
+  const sp = s.tower && s.tower.type === 'barracks' && !s.hero && !s.militia && s.tower.spec; if (sp !== 'shield') return false;
+  const D = ELITE_SK.shield.dash;
+  if (s.dashT > 0) {
+    s.dashT -= dt; const k = clamp(1 - s.dashT / D.dur, 0, 1), T = s.dashTarget, dir = Math.sign(T.x - s.dashFrom.x) || 1;
+    const ex = T.dead ? s.dashEnd.x : T.x - dir * 12, ey = T.dead ? s.dashEnd.y : T.y + 1; s.dashEnd = { x: ex, y: ey };
+    const e2 = easeOutBack(Math.min(1, k / D.hit)); s.x = lerp(s.dashFrom.x, ex, e2); s.y = lerp(s.dashFrom.y, ey, e2); faceTo(s, T.x);
+    if (!s.dashHit && k >= D.hit) {
+      s.dashHit = true;
+      if (!T.dead) {
+        hitBy = 'melee'; damageEnemy(T, roll(s.dmg) * D.dmg * allyK(s), 'phys', true, 'melee'); hitBy = null;
+        if (!T.dead) { stunEnemy(T, D.stun); if (pushable(T) && !T.def.chief) { T.knockT = KNOCK.t * 1.6; T.knockV = D.knock; T.hopT = Math.max(T.hopT || 0, 0.3); } if (!T.blocker) T.blocker = s; s.target = T; }
+      }
+      impactFx(s.x + dir * 10, s.y - 10, '220,200,170', 1.5); shakeScreen(1.6, 0.12); sfx('bash');
+      for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'chunk', x: s.x + dir * 10, y: s.y - 6, vx: dir * rand(30, 90), vy: -rand(30, 90), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#8a6a4a' : '#d8ccb0', s0: rand(1.4, 2.4), s1: 1, life: rand(0.5, 0.8), floor: s.y + rand(-2, 4) });
+    }
+    if (s.dashT <= 0) { s.dashT = 0; s.post = s.post || null; }
+    return true;
+  }
+  if (s.wardT > 0 || s.skT > 0 || !t || t.dead || t.def.flying || t.under) return false;
+  s.dashCd = (s.dashCd ?? D.cd * rand(0.3, 0.7)) - dt; if (s.dashCd > 0) return false;
+  const d = dist(s.x, s.y, t.x, t.y); if (d < D.min || d > D.r) return false;
+  s.dashT = D.dur; s.dashCd = D.cd; s.dashHit = false; s.dashFrom = { x: s.x, y: s.y }; s.dashTarget = t; s.dashEnd = { x: t.x, y: t.y };
+  floatText(s.x, s.y - 34, D.name + '!', '#e0c8ff'); sfx('whirl');
   return true;
 }
 function updateSoldier(s, dt) {
@@ -4958,6 +4987,7 @@ function updateSoldier(s, dt) {
       const atk = G.soldiers.filter(o => o !== t.blocker && !o.dead && o.target === t), k = atk.indexOf(s), n = atk.length;
       const a = (k + 1) / (n + 1) * Math.PI - Math.PI / 2; spot = { x: t.x + side * 13 * Math.cos(a) + side * 4, y: t.y + 11 * Math.sin(a) };
     }
+    if (shieldDash(s, t, dt)) { s.anim += dt; return; } // Kalkan Hamlesi: hedefe tabutla atılır
     const arrived = moveToward(s, spot.x, spot.y, dt);
     if (arrived || dist(s.x, s.y, t.x, t.y) < 19) {
       faceTo(s, t.x);
@@ -6710,7 +6740,7 @@ const ZONE_ITEM = {
   blacklake: { id: 'whirl', name: 'Kara Girdap', sub: 'Girdap en güçlü iki düşmanı suya çeker', r: 92, cd: 30 },
   necrogate: { id: 'obelisk', name: 'Lanet Taşı', sub: 'Yakındaki bütün düşmanlar lanetlenir', r: 100, cd: 30 },
   ravenwood: { id: 'bats', name: 'Yarasa Ağacı', sub: 'Yarasa sürüsü düşmanlara saldırır', r: 90, cd: 26 },
-  plague:    { id: 'well', name: 'Veba Kuyusu', sub: 'Kuyudan veba bulutu yükselir', r: 86, cd: 26 },
+  // plague: Veba Kuyusu 16 Eki'de kaldırıldı (Caner beğenmedi)
   monastery: { id: 'bell', name: 'Batık Çan', sub: 'Çan çalar, yakındaki düşmanlar sersemler', r: 110, cd: 30 },
   ossuary:   { id: 'bones', name: 'Kemik Totemi', sub: 'Totem patlar, kemik kıymıkları saçılır', r: 84, cd: 26 },
   bloodmoon: { id: 'altar', name: 'Kan Sunağı', sub: 'Düşmanların kanını emer, iskeletlerini iyileştirir', r: 96, cd: 30 },
@@ -9937,7 +9967,8 @@ function drawSoldier(s) {
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
     drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
-      skill: s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null }); // Tabut Duvarı süresince kalkan yerde
+      skill: s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? (animStrip(key, null, '_guard') ? (time * 0.6) % 1 : 0.999) : null,
+      skillSuf: s.dashT > 0 ? '_dash' : s.wardT > 0 && !(s.skT > 0) && sp2 === 'shield' ? '_guard' : null }); // Tabut Duvarı süresince kalkan yerde
     if (fade < 1) ctx.restore();
     if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
       // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur
@@ -10488,7 +10519,7 @@ function drawUnit(name, im, x, y, face, o) {
   const atkOn = o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER;
   const atkKey = atkOn && ((o.atkVar && animStrip(name, o.rig, ['_atk', '_atk2', '_atk3'][o.atkVar % 3])) || animStrip(name, o.rig, '_atk'));
   // özel saldırı / büyü anı: <ad>_skill şeridi (yoksa saldırı şeridi) baştan sona bir kez oynar
-  const skillKey = o.skill != null && (animStrip(name, o.rig, '_skill') || animStrip(name, o.rig, '_atk'));
+  const skillKey = o.skill != null && ((o.skillSuf && animStrip(name, o.rig, o.skillSuf)) || animStrip(name, o.rig, '_skill') || animStrip(name, o.rig, '_atk')); // skillSuf: Veo şeridi (_dash, _guard) varsa o
   if (skillKey) { fName = skillKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.skill * ANIM_META[fName].n)); }
   else if (atkKey) {
     fName = atkKey;
