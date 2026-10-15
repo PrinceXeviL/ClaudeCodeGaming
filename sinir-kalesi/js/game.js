@@ -4874,7 +4874,7 @@ function eliteSkill(s, dt) {
   if ((s.skCd -= dt) > 0 || !s.target) return false;
   const near = G.enemies.filter(o => !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, s.x, s.y) < S.r).length;
   if (sp === 'shield' ? !(near >= 2 || s.hp < s.maxHp * S.hp) : near < 1) return false;
-  s.skCd = S.cd; s.skT = S.dur; s.skHit = false;
+  s.skCd = S.cd; s.skT = S.dur; s.skHit = false; s.guardT0 = G.t; // guardT0: Tabut Duvarı Veo şeridinin başlangıcı
   floatText(s.x, s.y - 34, S.name + '!', '#e0c8ff');
   return true;
 }
@@ -9984,8 +9984,9 @@ function drawSoldier(s) {
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
     drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
       atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
-      skill: s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? (animStrip(key, null, '_guard') ? (time * 0.6) % 1 : 0.999) : null,
-      skillSuf: s.dashT > 0 ? '_dash' : s.wardT > 0 && !(s.skT > 0) && sp2 === 'shield' ? '_guard' : null }); // Tabut Duvarı süresince kalkan yerde
+      skill: s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) && ANIM_META[key + '_guard'] && animStrip(key, null, '_guard') ? clamp((G.t - (s.guardT0 ?? G.t)) / (ANIM_META[key + '_guard'].dur || 3.4), 0, 0.999)
+        : s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null,
+      skillSuf: s.dashT > 0 ? '_dash' : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) ? '_guard' : null }); // 16 Eki: Tabut Duvarı Veo şeridi baştan sona (çakış -> siper -> kalkış) // Tabut Duvarı süresince kalkan yerde
     if (fade < 1) ctx.restore();
     if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
       // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur

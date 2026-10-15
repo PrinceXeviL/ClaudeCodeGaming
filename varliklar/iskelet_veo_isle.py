@@ -15,6 +15,8 @@ import video_isle
 IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 CFG = {
     'A': dict(src='iskelet_A_bekci_hamle_olum_veo.mp4', unit='unit_skel_4', sets={'_dash': (range(4, 77), {}), '_die': (range(120, 179), {'dur': round(59 / 24, 2)})}),
+    # B: yürüyüş döngüsü temiz kapanmadı (dikiş farkı adımın ~2 katı) -> eski yürüyüş kalır; yalnız Tabut Duvarı (çakış, siper, sarsılma, kalkış)
+    'B': dict(src='iskelet_B_bekci_tabut_yuruyus_veo.mp4', unit='unit_skel_4', sets={'_guard': (range(4, 95), {'dur': 3.4})}),
 }
 def cut(a):
     c = video_isle.remove_magenta(a); al = c[..., 3]
