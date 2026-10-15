@@ -1274,7 +1274,7 @@ const THEMES = {
   // Sefer 2 (Cadı Avı): Kuzgun Ormanı, Veba Köyü, Batık Manastır, Kemik Katedrali, Kızıl Ay Tepesi.
   // ruinSpr/ruinK: yol dışındaki büyük yapılar (harabe yerleşimiyle), ruinN: kaç tane. 11 Eki: engizisyon dekorları nm4_* (Gemini nm4_engizisyon_dekor.jpg),
   // deco: sefer haritasında da dekor (1. seferdeki dense gibi); nm4_banner bezi her karede dalgalanır (BANNER)
-  ravenwood: { tex: 'cursed', tint: 'rgba(30,20,40,0.28)', grass: '#30362a', grass2: '#1a1e16', patch: ['#30362a', '#1a1e16'], trees: 28, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a4c3e', '#9e8c76', '#2a2016'], tuft: ['#3a4a2a', '#56663a'], stone: ['#605e5a', '#908c84'], light: 'rgba(200,170,120,0.06)', amb: '160,200,140', flowers: 0,
+  ravenwood: { tex: 'cursed', tint: 'rgba(30,20,40,0.28)', grass: '#30362a', grass2: '#1a1e16', patch: ['#30362a', '#1a1e16'], trees: 40, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a4c3e', '#9e8c76', '#2a2016'], tuft: ['#3a4a2a', '#56663a'], stone: ['#605e5a', '#908c84'], light: 'rgba(200,170,120,0.06)', amb: '160,200,140', flowers: 0,
     treeSpr: ['nm_tree_1', 'nm_tree_3', 'nm_tree_4', 'nm2_ravtree'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow', 'nm2_stake'], treeK: 0.95, rockK: 1.1, bushSpr: ['nm_bush', 'nm_shroom'], bushes: 8,
     ruinSpr: ['nm2_gallows', 'nm2_stake', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_board', 'nm4_wagon', 'nm4_barrels', 'nm4_cross'], ruinK: 0.22, ruinN: 8, deco: true },
   plague:    { tex: 'village', tint: 'rgba(40,30,20,0.15)', grass: '#4a3a2a', grass2: '#2a2018', patch: ['#4a3a2a', '#2a2018'], trees: 10, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5e5446', '#a89a84', '#2c241a'], tuft: ['#4a4a2a', '#66663a'], stone: ['#6a645a', '#9c968a'], light: 'rgba(255,190,120,0.06)', amb: '220,200,150', flowers: 0,
@@ -1461,6 +1461,82 @@ function pickVaried(pool, x, y, placed, rnd) {
 function drawVaried(g, im, x, y, w, flip) { // aynalı çizim (fırında bir kez)
   if (flip > 0) { drawSprite(g, im, x, y, w); return; }
   g.save(); g.translate(x, y); g.scale(-1, 1); drawSprite(g, im, 0, 0, w); g.restore();
+}
+// 16 Eki (Caner: "etraftaki detay nesneler mantıklı yoğunlukta olsun, dağılımı sanatsal güzel görünsün"): bölüm haritasında dekor düz rastgele
+// serpilmez. Yoğunluk alanı (decorField): yoldan uzaklaştıkça artar (yol kenarı açık kalır), harita kenarına doğru biraz artar (koru çerçeve gibi),
+// düşük frekanslı gürültü koruları ve açıklıkları ayırır. Ağaçlar koru tohumundan öbek öbek (yoğun yerde büyük koru, seyrek yerde tek ağaç);
+// kayalar 1-3'lük gruplar (yarısı koru kenarında); çalı/mantarın yarısı ağaç diplerinde, kalanı yol kenarında ikişer.
+const DECOR = { cell: 170, road: 110, edge: 0.5, grove: [0, 6], rockNear: 0.5, bushTree: 0.55, verge: [6, 46] };
+function decorField(lv, paths, R) {
+  const r = seeded(lv.name.length * 71 + lv.plots.length * 13), C = DECOR.cell, nx = Math.ceil(W / C) + 3, ny = Math.ceil(H / C) + 3, V = [];
+  for (let i = 0; i < nx * ny; i++) V.push(r());
+  const sm = t => t * t * (3 - 2 * t), at = (i, j) => V[clamp(j, 0, ny - 1) * nx + clamp(i, 0, nx - 1)];
+  const noise = (x, y) => { const u = x / C + 1, v = y / C + 1, i = Math.floor(u), j = Math.floor(v), fu = sm(u - i), fv = sm(v - j);
+    return lerp(lerp(at(i, j), at(i + 1, j), fu), lerp(at(i, j + 1), at(i + 1, j + 1), fu), fv); };
+  const edge0 = 40 + 23 * (R - 1);
+  return (x, y) => {
+    const fr = 0.45 + 0.55 * sm(clamp((nearestOnPaths(paths, x, y).d - edge0) / DECOR.road, 0, 1));
+    const e = clamp(Math.min(x, W - x, y * 1.7, (H - y) * 1.7) / (H * 0.45), 0, 1), fe = 1 + DECOR.edge * (1 - e);
+    return fr * fe * (0.2 + 1.1 * sm(clamp((noise(x, y) - 0.22) / 0.56, 0, 1)));
+  };
+}
+function layoutDecor(lv, paths, th, rnd, blocked, props, trees, treeOk, TN, extra, R) {
+  const F = decorField(lv, paths, R);
+  for (let i = 0; i < 9000 && trees.length < TN; i++) { // korular
+    const x = rnd() * W, y = rnd() * H, f = F(x, y);
+    if (rnd() > f * 1.25) continue;
+    const s = 12 + rnd() * 7; if (!treeOk(x, y, s)) continue;
+    trees.push([x, y, s]);
+    const n = Math.round(DECOR.grove[0] + (DECOR.grove[1] - DECOR.grove[0]) * clamp(f, 0, 1) * (0.4 + rnd() * 0.6));
+    for (let k = 0, tries = 0; k < n && tries < n * 6 && trees.length < TN; tries++) {
+      const a = rnd() * 6.283, rr = 20 + rnd() * 20 + k * 3, x2 = x + Math.cos(a) * rr, y2 = y + Math.sin(a) * rr * 0.6, s2 = 9 + rnd() * 7;
+      if (treeOk(x2, y2, s2)) { trees.push([x2, y2, s2]); k++; }
+    }
+  }
+  const main = trees.filter(t => t[0] > 0 && t[0] < W && t[1] > 0 && t[1] < H), small = [], pickTree = () => main[Math.floor(rnd() * main.length)];
+  const free = (x, y, pad) => !blocked(x, y, pad) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < o[2] + pad)
+    && !small.some(o => Math.hypot(o[1] - x, o[2] - y) < 8 + pad * 0.5) && !main.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.6) < 7);
+  for (let i = 0, n = 0; i < 900 && n < th.rocks; i++) { // kaya grupları: büyük taş + 0-2 küçük
+    let x, y;
+    if (main.length && rnd() < DECOR.rockNear) { const t = pickTree(), a = rnd() * 6.283; x = t[0] + Math.cos(a) * (18 + rnd() * 16); y = t[1] + 4 + Math.abs(Math.sin(a)) * 10; }
+    else { x = rnd() * W; y = rnd() * H; if (rnd() > 0.25 + F(x, y) * 0.6) continue; }
+    const sz = 6 + rnd() * 7; if (!free(x, y, sz)) continue;
+    small.push(['r', x, y, sz]); n++;
+    for (let k = 0, m = Math.floor(rnd() * 3); k < m; k++) {
+      const x2 = x + (rnd() < 0.5 ? -1 : 1) * (sz * 0.9 + rnd() * 6), y2 = y + (rnd() - 0.3) * 6, s2 = sz * (0.4 + rnd() * 0.25);
+      if (free(x2, y2, s2)) { small.push(['r', x2, y2, s2]); n++; }
+    }
+  }
+  for (let i = 0, n = 0; i < 900 && n < (th.bushes || 0); i++) { // çalı ve mantar: ağaç dibinde ya da yol kenarında
+    let x, y;
+    if (main.length && rnd() < DECOR.bushTree) { const t = pickTree(); x = t[0] + (rnd() < 0.5 ? -1 : 1) * (7 + rnd() * 10); y = t[1] + 3 + rnd() * 6; }
+    else { const p = paths[Math.floor(rnd() * paths.length)], q = pathPos(p, rnd() * p.total, (rnd() < 0.5 ? -1 : 1) * (40 + 23 * (R - 1) + DECOR.verge[0] + rnd() * (DECOR.verge[1] - DECOR.verge[0]))); x = q.x; y = q.y; }
+    const bw = 12 + rnd() * 9; if (!free(x, y, 4)) continue;
+    small.push(['b', x, y, bw]); n++;
+    if (rnd() < 0.45) { const x2 = x + (rnd() < 0.5 ? -1 : 1) * (bw * 0.6 + rnd() * 4), y2 = y + rnd() * 4; if (free(x2, y2, 3)) { small.push(['b', x2, y2, bw * 0.75]); n++; } }
+  }
+  // boşluk doldurma: 85 px'lik ızgarada çevresi (55 px) bomboş kalan yere küçük bir öbek (kaya grubu, çalı ikilisi ya da tek ağaç);
+  // yollar arasındaki adacıklar ve geniş açıklıklar ölü görünmesin, ama yine de düz serpilmesin (her boşluğa değil, ~%75'ine; yer olmazsa 3 kez kaydırılır)
+  const near = (x, y, r) => trees.some(t => Math.hypot(t[0] - x, t[1] - y) < r) || small.some(o => Math.hypot(o[1] - x, o[2] - y) < r * 0.8) || props.some(o => Math.hypot(o[0] - x, o[1] - y) < r + o[2] * 0.5);
+  for (let gy = 60; gy < H - 20; gy += 85) for (let gx = 45; gx < W - 20; gx += 85) {
+    if (rnd() > 0.75) continue;
+    for (let k = 0; k < 4; k++) {
+      const x = gx + (rnd() - 0.5) * 60, y = gy + (rnd() - 0.5) * 50, pick = rnd();
+      if (near(x, y, 55)) break;
+      if (pick < 0.3 && treeOk(x, y, 12)) { trees.push([x, y, 10 + rnd() * 6]); break; }
+      if (pick < 0.68) { const sz = 6 + rnd() * 5; if (!free(x, y, sz)) continue; small.push(['r', x, y, sz]); const x2 = x + (rnd() < 0.5 ? -1 : 1) * (sz + rnd() * 5); if (free(x2, y + 2, 3)) small.push(['r', x2, y + 2, sz * 0.5]); break; }
+      const bw = 12 + rnd() * 8; if (!free(x, y, 4)) continue; small.push(['b', x, y, bw]); if (free(x + bw * 0.7, y + 3, 3)) small.push(['b', x + bw * 0.7, y + 3, bw * 0.7]); break;
+    }
+  }
+  extra.push(...small); // test: ağaç / hedef / küçük dekor
+}
+function drawSmallDecor(g, kind, x, y, s, th, seen, vr) {
+  const fl = vr() < 0.5 ? -1 : 1;
+  if (kind === 'b') { const bn = th.bushSpr ? pickVaried(th.bushSpr, x, y, seen.b, vr) : 's2_bush_1', b = spr(bn); if (b) { drawVaried(g, b, x, y + 4, s, fl); bgLight(th.bushSpr && bn, x, y + 4, s, fl); } return; }
+  const name = th.rockSpr ? pickVaried(th.rockSpr, x, y, seen.r, vr) : null, im = name && spr(name); if (!im) return;
+  const m = SPR_META[name], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (s / 8) : s * 3;
+  g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3 * fl, y + s * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
+  drawVaried(g, im, x, y + s * 0.5, w, fl); bgLight(name, x, y + s * 0.5, w, fl);
 }
 const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dünya)
 // Zemin taşma payı (tam ekran): renderBackground'a m verilirse zemin çerçevenin dışına m.x/m.y kadar taşar (yol, çimen,
@@ -1678,6 +1754,8 @@ function renderBackground0(lv, paths, res) {
     for (let k = 0; k < 4; k++) { const b = spr(th.bushSpr ? th.bushSpr[k % th.bushSpr.length] : 's2_bush_' + (1 + (k % 2))); if (b) drawSprite(g, b, x + (rnd() - 0.5) * 80, y + 18 + rnd() * 10, 16 + rnd() * 8); }
   }
   const bushSeen = [], brnd = seeded(lv.name.length * 29 + 5); // ayrı tohum: çeşit ve aynalama yerleşimi kaydırmaz
+  const rockSeen = [];
+  if (lv.decorK) { // sefer haritası (pişirilmiş zemin): eski düz dağılım kalır; bölüm haritalarında kaya ve çalıyı layoutDecor yerleştirir
   for (let i = 0, n = 0; i < 400 * DK && n < (th.bushes || 0) * DK; i++) {
     const x = rnd() * W, y = rnd() * H;
     if (blocked(x, y, 6)) continue;
@@ -1685,7 +1763,6 @@ function renderBackground0(lv, paths, res) {
     const bw = 12 + rnd() * 10; if (!b) continue; n++; drawVaried(g, b, x, y + 4, bw, fl); bgLight(th.bushSpr && bn, x, y + 4, bw, fl);
   }
   // kayalar
-  const rockSeen = [];
   for (let i = 0, n = 0; i < 400 * DK && n < th.rocks * DK; i++) {
     const x = rnd() * W, y = rnd() * H, s = 4 + rnd() * 9;
     if (blocked(x, y, s)) continue;
@@ -1700,6 +1777,7 @@ function renderBackground0(lv, paths, res) {
     g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 2, y + 3, s, s * 0.5, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#8d8a80'; g.beginPath(); g.ellipse(x, y, s, s * 0.7, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#b3b0a5'; g.beginPath(); g.ellipse(x - s * 0.25, y - s * 0.25, s * 0.5, s * 0.35, 0, 0, Math.PI * 2); g.fill();
+  }
   }
   // ağaçlar
   // bölümde yol dışı boş kalmasın: tema sayısının ~2 katı ağaç, yarısı küçük kümeler halinde (koru gibi)
@@ -1775,7 +1853,9 @@ function renderBackground0(lv, paths, res) {
   const trees = side.slice(), TN = th.trees * DK * (lv.decorK ? 1 : TREE_MUL) + side.length;
   const TGAP = th.dense ? 14 : 18; // orman temalarında ağaçlar daha sık
   const treeOk = (x, y, s) => x > -10 && x < W + 10 && y > 20 && y < H + 10 && !blocked(x, y, s) && !trees.some(t => Math.hypot(t[0] - x, (t[1] - y) * 1.5) < TGAP) && !props.some(o => Math.hypot(o[0] - x, o[1] - y) < o[2] + 12);
-  for (let i = 0; i < 3000 * DK && trees.length < TN; i++) {
+  const extra = []; // bölüm haritası: kaya ve çalılar ağaçlarla birlikte y sırasıyla çizilir (ağaç dibindeki çalı gövdenin önünde kalır)
+  if (!lv.decorK) layoutDecor(lv, paths, th, rnd, blocked, props, trees, treeOk, TN, extra, R);
+  else for (let i = 0; i < 3000 * DK && trees.length < TN; i++) {
     const x = rnd() * W, y = rnd() * H, s = 10 + rnd() * 9;
     if (!treeOk(x, y, s)) continue;
     trees.push([x, y, s]);
@@ -1788,7 +1868,9 @@ function renderBackground0(lv, paths, res) {
   const treeSeen = [], vr = seeded(lv.name.length * 53 + 11); // ayrı tohum: seçim ve aynalama yerleşimi kaydırmaz
   // fenerli ağaç (nm_tree_2) dikkat çeker: havuzda tek sayılır, çevresinde başka fenerli varsa seçilmez
   const treePool = th.treeSpr ? th.treeSpr.filter((n, i, a) => n !== 'nm_tree_2' || a.indexOf(n) === i) : null;
-  for (const [x, y, s] of trees) {
+  const order = trees.map(t => ['t', t[0], t[1], t[2]]).concat(extra).sort((a, b) => a[2] - b[2]), seen = { r: rockSeen, b: bushSeen };
+  for (const [kind, x, y, s] of order) {
+    if (kind !== 't') { drawSmallDecor(g, kind, x, y, s, th, seen, brnd); continue; }
     let treeName = treePool ? pickVaried(treePool, x, y, treeSeen, vr) : 'tree_' + (1 + Math.floor((x * 7 + y * 13) % 3));
     if (treeName === 'nm_tree_2' && (vr() < 0.5 || treeSeen.some(o => o[2] === 'nm_tree_2' && o !== treeSeen[treeSeen.length - 1] && Math.hypot(o[0] - x, o[1] - y) < 160))) {
       const alt = treePool.filter(n => n !== 'nm_tree_2'); if (alt.length) treeSeen[treeSeen.length - 1][2] = treeName = alt[Math.floor(vr() * alt.length)];
@@ -2802,6 +2884,7 @@ function killEnemy0(e) {
   cnt('kills'); if (e.def.chief) cnt('bosses'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
   dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)), false, e.def.chief && !e.leaked ? [44, 2.1] : null); // boss: altın yağmuru (14 Eki: daha bol)
   sfx('death');
+  if (e.def.machine && !e.leaked) sfx('castlehit', rand(0.8, 0.95), 0.8, e); // 16 Eki: kuşatma makinesi parçalanırken tahta çatırtısı
   deathVoice(e);
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: (e.face || 1) * (NECRO && Math.random() < 0.45 ? -1 : 1), fly: e.def.flying ? 26 : 0, t: 0, // 16 Eki: ölenler hep aynı yöne düşmesin
@@ -6537,7 +6620,7 @@ function updateBubu(dt) {
     const F = ANIM_META.bubu_atk;
     if (!b.hit && b.t >= F.hit / 12) { b.hit = true; bubuStrike(b); }
     if (b.t >= n('bubu_atk')) { b.st = 'idle'; b.t = 0; }
-  } else if (b.st === 'idle' && b.t >= BUBU.idle) { b.st = 'down'; b.t = 0; sfx('fs_bone'); }
+  } else if (b.st === 'idle' && b.t >= BUBU.idle) { b.st = 'down'; b.t = 0; sfx('bonefall'); } // 16 Eki: fs_bone pakette yok (sessizdi)
   else if (b.st === 'down' && b.t >= n('bubu_down')) { b.st = 'hole'; b.t = 0; b.cd = BUBU.cd; }
 }
 function bubuStrike(b) {

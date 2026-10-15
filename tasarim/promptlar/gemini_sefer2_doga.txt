@@ -1,0 +1,18 @@
+Image 1 shows the art style of my game's nature decoration objects (dark gothic cartoon, thick dark outlines, rich muted colors, slight top-down 3/4 view). Image 2 shows the objects of my second campaign "Witch Hunt": a fanatical holy inquisition (crimson cloth, golden sun emblem) hunts a necromancer through farmland, villages and old forests in LATE AUTUMN at dusk.
+
+Draw a NEW sheet of 12 NATURE and COUNTRYSIDE objects for this second campaign, in exactly the same style, line weight and quality as image 1, but with a clearly different, WARMER AUTUMN mood instead of the dead green-and-purple swamp forest: rusty orange, deep red, ochre and golden-brown leaves, dry straw yellow, warm brown wood, warm grey stone. No glowing green, no skulls, no bones.
+Arranged in a clean 4x3 grid, each object centered in its own cell with plenty of empty magenta space around it, nothing touching the cell edges or each other:
+1) a big old autumn oak tree with a thick trunk and a full crown of rusty orange and brown leaves
+2) a gnarled autumn maple tree with deep red and orange leaves, a few leaves falling
+3) a tall dark green fir tree with a slightly crooked top
+4) a half-bare autumn birch tree with a white trunk and only a few golden yellow leaves left
+5) a fresh axe-cut tree stump with a woodcutter's axe stuck in it and wood chips around
+6) a stacked pile of chopped firewood logs
+7) a round golden hay bale with a pitchfork leaning on it
+8) a ragged scarecrow on a pole with a straw hat and an old coat, standing among a few orange pumpkins
+9) two warm grey boulders with fallen orange leaves and a little dry grass
+10) a round autumn shrub with orange-red leaves and small red berries
+11) a fallen hollow tree trunk covered with fallen leaves and a few brown mushrooms
+12) a tuft of tall dry golden wheat and grass
+
+Every tree is drawn at the same scale as the trees in image 1 (about the same height); small objects are proportionally smaller. Side-lit by warm low evening light from the upper left. Plain flat magenta (#FF00FF) background everywhere, no ground plane, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

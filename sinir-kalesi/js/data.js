@@ -564,7 +564,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // düşman canı çarpanı: tarayıcı botuyla ölçüldü (hedef: bot 1. bölümü ~19, 15. bölümü ~7 canla bitirir; 1-3 öğretici, tavanlı)
   // 10 Eki akşam: fil, akbaba ve karışık yürüyüş sonrası yeniden ölçüldü (tools/denge-sayfa.js, bölüm başına 4 tur)
   // 13 Eki: ilk 4 bölüm büyüsüz/az büyülü sıradan oyuncuya göre (sim: tools yok, scratchpad sade.js) yumuşatıldı: 1.512,1.052,1.174,2.344 -> 0.8,0.6,0.68,1.5
-  const HPMUL = [0.5, 0.6, 0.68, 1.5, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.801, 0.257, 0.354]; // 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
+  const HPMUL = [0.5, 0.6, 0.68, 1.5, 0.737, 1.221, 0.688, 0.396, 0.317, 0.42, 0.602, 0.73, 0.624, 0.947, 0.512, 0.422, 0.404, 0.62, 0.22, 0.354]; // 16 Eki: 18 ve 19 kuşatma (yıkılabilir kule, 15 askerli kuşatma kulesi) sonrası botta kayıp: 0.801→0.62, 0.257→0.22. 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
   // 13 Eki (Caner): ilk 3 bölüm öğretici: Kingdom Rush'taki gibi kısa ve seyrek (140/150/165 -> ~80/90/100 düşman)
   const TOTK1 = [0.57, 0.6, 0.6, 0.8, 0.9]; // 4-5. bölüm ara basamak
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i], totK: TOTK1[i] || 1 }));
