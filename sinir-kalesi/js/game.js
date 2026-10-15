@@ -15787,11 +15787,12 @@ function drawMapTrail(nodes, ids) {
     }
   }
 }
+const MAP_NODE_K = 1.1; // 15 Eki (Caner): bölüm işaretleri %10 büyük
 function drawMapNode(i, x, y, num, last, at, locked = null) {
   const p = clamp(at / 0.4, 0, 1);
   if (p <= 0) return;
   const unlocked = locked == null ? levelUnlocked(i) : !locked, st = save.stars[i] || 0, current = unlocked && st === 0;
-  const e = easeOutBack(p), key = 'node' + i, sc = pressScale(key) * e;
+  const e = easeOutBack(p), key = 'node' + i, sc = pressScale(key) * e * MAP_NODE_K;
   ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
   ctx.fillStyle = 'rgba(10,6,2,0.4)'; ctx.beginPath(); ctx.ellipse(0, 13, 17, 5.5, 0, 0, Math.PI * 2); ctx.fill();
   if (!unlocked) { // kilitli (sisin kenarında görünen sonraki bölümler): büyük, dokununca ne gerektiğini söyler
@@ -15799,7 +15800,7 @@ function drawMapNode(i, x, y, num, last, at, locked = null) {
     circle(0, 0, 13.5, '#2e2a26');
     drawIcon('lock', 0, 0, 18);
     ctx.restore();
-    buttons.push({ key, x: x - 26, y: y - 26, w: 52, h: 52, fn: () => { mapNote = { text: 'Önceki bölümü bitir, bu bölüm açılsın', t: time }; sfx('error'); } });
+    buttons.push({ key, x: x - 29, y: y - 29, w: 58, h: 58, fn: () => { mapNote = { text: 'Önceki bölümü bitir, bu bölüm açılsın', t: time }; sfx('error'); } });
     return;
   }
   if (current) glow(ctx, 0, 0, 44, '255,210,100', 0.45 + Math.sin(time * 4) * 0.15);
@@ -15835,7 +15836,7 @@ function drawMapNode(i, x, y, num, last, at, locked = null) {
     roundRect(x - w / 2, y + 26, w, 20, 10, 'rgba(30,16,6,0.85)', '#d4ab5a', 1.4);
     txt(name, x, y + 36.5, 13, '#ffe9a8', 'center', '400', FONT_T, false);
   }
-  buttons.push({ key, x: x - 22, y: y - 40, w: 50, h: 64, fn: () => { mapSel = i; mapSelT = time; mapMode = 'c'; sfx('open'); } });
+  buttons.push({ key, x: x - 24, y: y - 44, w: 55, h: 70, fn: () => { mapSel = i; mapSelT = time; mapMode = 'c'; sfx('open'); } });
 }
 
 // ----- bölge haritası -----
@@ -16063,7 +16064,7 @@ function drawMapFog2(E, ep, road, X) {
 }
 // 15 Eki (Caner): sefer haritası yakın planda (MAPCAM.z), parmakla sağa sola / yukarı aşağı kaydırılır; açılışta sıradaki bölüm
 // üst ve alt düğme çubuklarının arasındaki alanın ortasına gelir. Ekran = dünya * z + (tx, ty); zemin taşma payının dışına çıkılmaz.
-const MAPCAM = { z: 2.86, /* 14 Eki (Caner): %10 daha yakın */ // 15 Eki: 2,6 fazla yakın bulunup 2 yapılmıştı; 13 Eki (Caner): %30 daha yakın istendi → 2,6
+const MAPCAM = { z: 3.15, /* 15 Eki (Caner): %10 daha yakın (2,86 → 3,15); 14 Eki: %10 daha yakın */ over: 0, overT: 0, enter: null, switchAt: 130, // 15 Eki: 2,6 fazla yakın bulunup 2 yapılmıştı; 13 Eki (Caner): %30 daha yakın istendi → 2,6
   tx: 0, ty: 0, vx: 0, vy: 0, key: null, bar: 100, fric: 7, vmax: 1400, padX: 70, padY: 40 };
 // 15 Eki (Caner): yolun dışındaki boş alanlara gidilmez: sınır = yol, bölüm işaretleri ve şapelin kutusu + pay (ekranda MAPCAM.padX / üst-alt çubuk + padY)
 function mapRoadBox(E) {
@@ -16082,7 +16083,27 @@ function mapCamClamp(X, E) {
     ly = Math.max(ly, VIS.b - pb - B.y1 * z); hy = Math.min(hy, VIS.t + pt - B.y0 * z);
   }
   MAPCAM.tx = lx > hx ? (lx + hx) / 2 : clamp(MAPCAM.tx, lx, hx); // yol ekrana sığıyorsa ortalanır
+  // 15 Eki (Caner: "1. sefer bitince yukarı kaydıra kaydıra 2. sefere geçelim"): sınıra dayanıp kaydırmaya devam edilince taşma birikir (over > 0: yukarı,
+  // < 0: aşağı); MAPCAM.switchAt'ı aşınca komşu sefere geçilir (yukarı = sonraki, aşağı = önceki). Bırakınca taşma söner.
+  if (MAPCAM.drag && ly <= hy) { const up = MAPCAM.ty - hy, dn = MAPCAM.ty - ly; if (up > 0) MAPCAM.over = Math.max(0, MAPCAM.over) + up; else if (dn < 0) MAPCAM.over = Math.min(0, MAPCAM.over) + dn; }
+  else if (!MAPCAM.drag) MAPCAM.over *= 0.8;
   MAPCAM.ty = ly > hy ? (ly + hy) / 2 : clamp(MAPCAM.ty, ly, hy);
+}
+function mapEpScroll() { // sefer geçişi: taşma eşiği aşılınca komşu sefere geç; o arada üstte/altta hangi sefere gidileceği yazar
+  const o = MAPCAM.over, ne = mapEp + (o > 0 ? 1 : -1), k = Math.min(1, Math.abs(o) / MAPCAM.switchAt);
+  if (Math.abs(o) < 6 || ne < 1 || ne > EPISODES.length || !EPISODES[ne - 1].zones) return;
+  const open = epUnlocked(ne);
+  if (k >= 1 && open && MAPCAM.drag) { // geç
+    mapEp = ne; mapSel = null; screenT = time; MAPCAM.enter = o > 0 ? 'bottom' : 'top'; MAPCAM.over = 0; MAPCAM.drag = false; MAPCAM.vx = MAPCAM.vy = 0; sfx('pick'); haptic('medium');
+    return;
+  }
+  const y = o > 0 ? 196 : EDGE.b - MAPCAM.bar - 18; // üstte bölge adı kurdelesinin (y 130) altında
+  ctx.save(); ctx.globalAlpha = Math.min(1, k * 1.3);
+  const label = open ? (o > 0 ? ne + '. SEFER ▲' : ne + '. SEFER ▼') : 'Önce bu seferi bitir';
+  roundRect(W / 2 - 118, y - 20, 236, 40, 20, 'rgba(24,10,14,0.82)', open ? '#e2a93c' : '#7a6a5a', 2);
+  if (open) { ctx.fillStyle = 'rgba(226,169,60,0.35)'; ctx.fillRect(W / 2 - 112, y + 13, 224 * k, 3); }
+  txt(label, W / 2, y, 17, open ? '#ffd98a' : '#c8b8a0');
+  ctx.restore();
 }
 function mapCamFocus(E, ep, X) {
   const ids = epLevels(ep); let k = ids.findIndex(i => levelUnlocked(i) && !(save.stars[i] > 0));
@@ -16359,7 +16380,7 @@ function drawMap() {
   const st = time - screenT;
   if (E.zones) {
     const bgI = regionBg(mapEp), bm = bgI ? mapExt(bgI) : { x: 0, y: 0, w: W, h: E.mapH || H }, key = mapEp + ':' + screenT;
-    if (MAPCAM.key !== key && bgI) { MAPCAM.key = key; mapCamFocus(E, mapEp, bm); }
+    if (MAPCAM.key !== key && bgI) { MAPCAM.key = key; mapCamFocus(E, mapEp, bm); if (MAPCAM.enter) { MAPCAM.ty = MAPCAM.enter === 'bottom' ? -1e9 : 1e9; mapCamClamp(bm, E); MAPCAM.enter = null; } } // kaydırarak gelindiyse yolun ucundan başlar
     const dtm = Math.min(0.05, time - (MAPCAM.last || time)); MAPCAM.last = time;
     if (!MAPCAM.drag && (Math.abs(MAPCAM.vx) > 2 || Math.abs(MAPCAM.vy) > 2)) { // bırakınca süzülür
       MAPCAM.tx += MAPCAM.vx * dtm; MAPCAM.ty += MAPCAM.vy * dtm; const f = Math.exp(-MAPCAM.fric * dtm); MAPCAM.vx *= f; MAPCAM.vy *= f;
@@ -16368,6 +16389,7 @@ function drawMap() {
     ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
     drawRegionMap(E, mapEp, st);
     ctx.restore();
+    mapEpScroll();
   }
   else { const bg = spr(E.bg) || spr('title_bg'); if (bg) coverImage(bg, 1); else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); } }
   // üstte başlık için koyu bant, kenarlarda hafif vinyet
@@ -18458,6 +18480,7 @@ window.__game = {
   collapse: (i) => G.plots[i].tower && collapseTower(G.plots[i].tower), // test: kuleyi yık (moloz)
   mapSpots: () => mapSpots(mapEp).map(o => ({ x: MAPCAM.tx + o.x * MAPCAM.z, y: MAPCAM.ty + o.y * MAPCAM.z, k: SURPRISE.list[o.k].n })), // test: harita sürpriz noktaları (ekran)
   surN: () => (MAPFX.sur || []).length,
+  mapEpNow: () => mapEp,
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
