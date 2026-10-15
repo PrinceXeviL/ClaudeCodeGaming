@@ -9598,8 +9598,53 @@ function drawPhalanx(s) {
   }
   if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 42, 26, s.hp / s.maxHp, '#d8b0ff');
 }
+// 15 Eki (Caner: "kemik duvarını yeniden daha güzel tasarlayalım; dev diş ve kemik parçaları her biri bağımsız topraktan çıkıp 2 düşman boyu yükselsin"):
+// Gemini nm8_bw_* parçaları (eğri diş, kırık diş, kazık, kırık öbeği, iğne). Her parça ayrı, önden görünüşlü: yolun yönü ne olursa olsun yola dik dizilir.
+// Önce toprak yarılır (yeşil ışıklı çatlak), sonra parçalar karışık sırayla zemin çizgisinin altından fırlar (easeOutBack), süre bitince gömülür.
+const BW8 = { parts: ['nm8_bw_fang', 'nm8_bw_tooth', 'nm8_bw_stake', 'nm8_bw_shards', 'nm8_bw_needle'], n: 11, h: 56, rows: [-8, 7], gap: 0.05, rise: 0.34, start: 0.1 }; // 15 Eki (Caner): daha çok parça, iki sıra zikzak
+function boneWall8(s) {
+  if (s.bw8) return s.bw8;
+  const r = seeded(Math.floor(s.seed * 9973) + 31), L = [];
+  for (let i = 0; i < BW8.n; i++) {
+    const u = (i / (BW8.n - 1) - 0.5) * BWALL.span * 1.05 + (r() - 0.5) * 2, row = BW8.rows[i % 2] + (r() - 0.5) * 1.5; // zikzak: sırayla ön ve arka sıra
+    const name = BW8.parts[Math.floor(r() * BW8.parts.length)], k = (name === 'nm8_bw_needle' ? 1.08 : 0.86 + r() * 0.2) * (i % 2 ? 0.92 : 1);
+    L.push({ u, row, name, k, fl: r() < 0.5 ? -1 : 1, t0: BW8.start + r() * 0.12 + Math.abs(i - (BW8.n - 1) / 2) * BW8.gap });
+  }
+  return (s.bw8 = L);
+}
+function drawBoneWall8(s) {
+  const age = G.t - s.born, dmg = 1 - s.hp / s.maxHp, nx = -s.dy, ny = s.dx, sink = s.life < BWALL.sink ? 1 - Math.max(0, s.life) / BWALL.sink : 0;
+  const P = (u, v = 0) => [s.x + nx * u + s.dx * v, s.y + ny * u + s.dy * v], G0 = boneWallGeom(s), ck = clamp(age / BWALL.crackT, 0, 1) * (1 - sink);
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const pts of G0.cr) { // yarılan toprak
+    const n = Math.max(2, Math.ceil(pts.length * ck)); ctx.beginPath(); pts.slice(0, n).forEach(([u, v], j) => { const [x, y] = P(u, v); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.strokeStyle = 'rgba(20,12,6,0.85)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(110,255,130,${(0.35 + 0.25 * Math.sin(time * 6 + s.seed)) * ck})`; ctx.lineWidth = 1.2; ctx.stroke(); ctx.restore();
+  }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 6, 42, '110,255,130', 0.2 * ck + (s.flash > 0 ? s.flash * 3 : 0)); ctx.restore();
+  shadow(s.x, s.y + 3, 14 + Math.abs(nx) * BWALL.span * 0.55, 7 + Math.abs(ny) * BWALL.span * 0.3);
+  const L = boneWall8(s).map(o => ({ o, q: P(o.u, o.row) })).sort((a, b) => a.q[1] - b.q[1]); // arkadaki önce
+  let top = s.y;
+  for (const { o, q } of L) {
+    const im = spr(o.name); if (!im) continue;
+    const k = clamp((age - o.t0) / BW8.rise, 0, 1);
+    if (k > 0 && !o.out) { o.out = true; for (let j = 0; j < 5; j++) emit(G.parts, { kind: 'chunk', x: q[0] + rand(-4, 4), y: q[1], vx: rand(-50, 50), vy: -rand(80, 180), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: j % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9) }); G.effects.push({ kind: 'dust', x: q[0], y: q[1], t: 0, dur: 0.4 }); }
+    if (k <= 0) continue;
+    const rise = easeOutBack(k) * (1 - sink), h = BW8.h * o.k * (1 - dmg * 0.12), w = h * im.width / im.height, base = q[1] + h * 0.06; // görselin altındaki toprak öbeği zemine oturur
+    if (rise <= 0.01) continue;
+    ctx.save(); ctx.beginPath(); ctx.rect(q[0] - w, base - h * 1.4, w * 2, h * 1.4 + 1); ctx.clip(); // zemin çizgisinin altı görünmez: topraktan çıkar
+    ctx.translate(q[0] + (s.flash > 0 ? rand(-1, 1) : 0), base + (1 - rise) * h); ctx.scale(o.fl, 1);
+    ctx.drawImage(im, -w / 2, -h, w, h);
+    if (s.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(0.5, s.flash * 3); ctx.drawImage(im, -w / 2, -h, w, h); }
+    ctx.restore();
+    top = Math.min(top, base - h * rise);
+  }
+  ctx.restore();
+  if (s.hp < s.maxHp && !sink) hpBar(s.x, top - 4, 22, s.hp / s.maxHp, '#e8dcb8');
+}
 function drawBoneWall(s) {
   if (s.phalanx) { drawPhalanx(s); return; }
+  if (spr('nm8_bw_fang')) { drawBoneWall8(s); return; }
   const age = G.t - s.born, dmg = 1 - s.hp / s.maxHp, G0 = boneWallGeom(s);
   const nx = -s.dy, ny = s.dx; // yola dik yön: duvar yolun bir kenarından öbürüne uzanır
   const sink = s.life < BWALL.sink ? 1 - Math.max(0, s.life) / BWALL.sink : 0; // süre bitince gömülür

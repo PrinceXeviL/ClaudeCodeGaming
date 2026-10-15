@@ -1,0 +1,16 @@
+Image 1 shows the art style of my dark gothic cartoon necromancer game (thick dark outlines, rich muted colors, bone white with green necromantic glow). Image 2 is my old "Bone Wall" spell, which I want to replace.
+
+New design: the Bone Wall is made of SEPARATE giant bone pieces that each burst out of the ground on their own and stand side by side across the road, like a row of monstrous fangs. Draw a sheet of 10 such SEPARATE pieces, each one standing upright and complete from its tip down to a rough, jagged, broken base (as if the rest is still buried underground), seen from the front with a slight top-down 3/4 view, so the same piece looks right whatever direction the road goes:
+1) a huge curved fang tooth, slightly yellowed, with a crack
+2) another huge fang tooth, straighter, chipped tip
+3) a tall sharpened bone spike, like a stake carved from a femur
+4) a pair of curved rib bones crossing each other
+5) a giant claw-like curved bone hook
+6) a thick jagged bone shard with a smaller shard beside it
+7) a monstrous molar tooth with three roots pointing up like spikes
+8) a twisted horn-like bone spike with a faint green rune glowing on it
+9) a short wide jawbone fragment with three teeth
+10) a slim tall needle-like bone spike
+All pieces are bone white to old ivory with dark brown cracks, a little dark earth stuck to their lower part, and a very faint green glow in the cracks. All pieces have about the same height except 9 (shorter) and 10 (taller); each is about twice as tall as it is wide.
+
+Arranged in one or two clean rows, each piece centered in its own area with plenty of empty magenta space around it, nothing touching. Plain flat magenta (#FF00FF) background everywhere, no ground, no shadows on the background, no text, no letters, no labels. 16:9 image.
