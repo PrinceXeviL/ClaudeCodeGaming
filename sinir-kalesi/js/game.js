@@ -12049,7 +12049,8 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R - 1, 0, Math.PI * 2); ctx.clip();
   if (!ok) ctx.globalAlpha = a * 0.45;
   const mi = (n, k = 0.6, dy = 0) => { const im = spr(n); if (im) icoFit(im, 0, dy, R * k); return !!im; }; // 16 Eki: Gemini menü simgeleri (nm15_kule_menu), yoksa kodla çizim
-  if (it.id === 'build') {
+  if (it.id === 'build' && mi('ico_bd_' + it.type, 0.8)) { // 16 Eki: Gemini kule kurma simgesi (nm20_kule_kurma_J)
+  } else if (it.id === 'build') {
     const im = towerIcon(it.type, 1);
     if (im) drawSprite(ctx, im, 0, R - 2, 42 * im.width / im.height);
     else drawTowerShape(it.type, 0, 12, 0, 0.46);
@@ -12347,6 +12348,7 @@ function drawWaveButtons() {
     if (G.wavePeek && G.wavePeek.pi === pi) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 26, '255,210,90', 0.45 + Math.sin(time * 8) * 0.15); ctx.restore(); }
     ctx.rotate(ang);
     ctx.drawImage(wavePinIcon(), -24, -24, 48, 48);
+    { const im = spr('ico_ui_wavecall'); if (im) { ctx.rotate(-ang); const bg = ctx.createRadialGradient(-3, -4, 1, 0, 0, 11); bg.addColorStop(0, '#e8443a'); bg.addColorStop(1, '#5a0a08'); circle(0, 0, 10, bg); icoFit(im, 0, 0, 8.4); } } // 16 Eki: savaş borusu (kafatası yerine)
     ctx.restore();
     // erken çağrı ödülü: işaretin altında minik hap
     if (bonus > 0) {

@@ -1,0 +1,9 @@
+Image 1 is the emblem sheet of my dark gothic cartoon tower defense game; image 2 shows its five towers, left to right: Bone Tower, Crypt, Soul Lantern, Plague Cauldron, Curse Obelisk. Draw a NEW sheet of 6 BUILD ICONS in exactly the same style, line weight and quality as image 1. These sit inside round buttons in the tower build menu, so each must be a bold, bright, instantly readable close-up of that tower, seen slightly from above, keeping its shape and colors from image 2 but simplified and with stronger contrast and glow, centered, no frame, no badge, no background plate, no ground under it:
+1) Bone Tower: the tall bone tower with a skeleton crossbowman on top
+2) Crypt: the gothic crypt entrance with green light inside the open door and a skull above it
+3) Soul Lantern: the hanging soul lantern on its pole, glowing cyan-green spirit inside
+4) Plague Cauldron: the bubbling green plague cauldron with a skull face and bones around it
+5) Curse Obelisk: the dark obelisk with a glowing purple rune and purple curse mist
+6) Call Wave: a bone war horn with a small red skull banner tied to it
+
+Arranged in a clean grid of 3 columns and 2 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

@@ -78,6 +78,7 @@ SHEETS = [
     ('nm7_orman_surpriz.jpg', ['nm7_owl', 'nm7_eyes', 'nm7_ghost', 'nm7_ghost2', 'nm7_bats', 'nm7_frog', 'nm7_shroom', 'nm7_hand', 'nm7_squirrel', 'nm7_cat'], 'decor'),  # 15 Eki: sefer haritası orman sürprizleri
     ('nm8_kemik_duvar_parca.jpg', ['nm8_bw_fang', 'nm8_bw_tooth', 'nm8_bw_stake', None, None, 'nm8_bw_shards', None, None, None, 'nm8_bw_needle'], 'decor'),  # 15 Eki: yeni Kemik Duvarı parçaları (Caner 5'ini seçti)
     ('nm9_esya_simgeleri.jpg', ['ico_gear_sword', 'ico_gear_spear', 'ico_gear_staff', 'ico_gear_arrow', None, 'ico_gear_dagger', 'ico_gear_armor', 'ico_gear_ring', 'ico_gear_amulet', None, 'ico_bomb', 'ico_kumsaati', 'ico_tea', 'ico_kese', 'ico_crystal'], 'decor'),  # 15 Eki: eşya ve dükkân simgeleri (kodla çizilenlerin yerine)
+    ('nm20_kule_kurma_J.jpg', ['ico_bd_archer', 'ico_bd_barracks', 'ico_bd_mage', 'ico_bd_artillery', 'ico_bd_altar', 'ico_ui_wavecall'], 'decor'),  # 16 Eki: kule kurma menüsü simgeleri + dalga çağırma borusu
     ('nm19_amblem_I.jpg', ['ico_em_treasure', 'ico_em_defeat', 'ico_em_boss', 'ico_em_revive', 'ico_em_topkill', 'ico_em_starempty'], 'decor'),  # 16 Eki: büyük amblemler (dükkân hazinesi, yenilgi, boss, ikinci şans, en çok öldüren, boş yıldız)
     ('nm16_arayuz_F.jpg', ['ico_ui_heart', 'ico_ui_coin', 'ico_ui_wave', 'ico_ui_kills', 'ico_ui_pause', 'ico_ui_fast', 'ico_ui_sound', 'ico_ui_mute', 'ico_ui_gear', 'ico_ui_play', 'ico_ui_restart', 'ico_ui_map'], 'decor'),  # 16 Eki: HUD ve oyun düğmeleri
     ('nm17_arayuz_G.jpg', ['ico_ui_back', 'ico_ui_close', 'ico_ui_lock', 'ico_ui_check', 'ico_ui_daily', 'ico_ui_help', 'ico_ui_heroes', 'ico_ui_upgrades', 'ico_ui_ach', 'ico_ui_codex', 'ico_ui_shop', 'ico_ui_star'], 'decor'),  # 16 Eki: menü düğmeleri
@@ -111,6 +112,7 @@ BOXES = {
     'nm7_orman_surpriz.jpg': [(25, 28, 322, 368), (382, 22, 712, 298), (822, 45, 1018, 250), (1135, 40, 1318, 248), (782, 278, 1018, 492), (1122, 278, 1322, 488), (60, 505, 292, 745), (400, 368, 652, 722), (762, 512, 1018, 735), (1096, 482, 1348, 745)],
     'nm8_kemik_duvar_parca.jpg': [(80, 40, 375, 528), (485, 40, 765, 528), (870, 28, 1125, 532), (1200, 45, 1565, 520), (1595, 35, 1945, 515), (80, 585, 390, 1068), (505, 605, 765, 1062), (895, 580, 1120, 1068), (1185, 635, 1605, 1062), (1685, 570, 1895, 1072)],
     'nm9_esya_simgeleri.jpg': [(8, 6, 392, 379), (408, 6, 792, 379), (808, 6, 1192, 379), (1208, 6, 1592, 379), (1608, 6, 1992, 379), (8, 391, 392, 734), (408, 391, 792, 734), (808, 391, 1192, 734), (1208, 391, 1592, 734), (1608, 391, 1992, 734), (8, 746, 392, 1110), (408, 746, 792, 1110), (808, 746, 1192, 1110), (1208, 746, 1592, 1110), (1608, 746, 1992, 1110)],
+    'nm20_kule_kurma_J.jpg': [(6, 6, 452, 378), (464, 6, 911, 378), (923, 6, 1370, 378), (6, 382, 452, 762), (464, 382, 911, 762), (923, 382, 1370, 762)],
     'nm19_amblem_I.jpg': [(6, 6, 452, 380), (464, 6, 911, 380), (923, 6, 1370, 380), (6, 384, 452, 762), (464, 384, 911, 762), (923, 384, 1370, 762)],
     'nm16_arayuz_F.jpg': [(10, 8, 490, 382), (510, 8, 990, 382), (1010, 8, 1490, 382), (1510, 8, 1990, 382), (10, 388, 490, 752), (510, 388, 990, 752), (1010, 388, 1490, 752), (1510, 388, 1990, 752), (10, 758, 490, 1110), (510, 758, 990, 1110), (1010, 758, 1490, 1110), (1510, 758, 1990, 1110)],
     'nm17_arayuz_G.jpg': [(10, 8, 490, 382), (510, 8, 990, 382), (1010, 8, 1490, 382), (1510, 8, 1990, 382), (10, 388, 490, 752), (510, 388, 990, 752), (1010, 388, 1490, 752), (1510, 388, 1990, 752), (10, 758, 490, 1110), (510, 758, 990, 1110), (1010, 758, 1490, 1110), (1510, 758, 1990, 1110)],
@@ -125,7 +127,7 @@ BOXES = {
 }
 # meta (dünya boyu) çarpanı: 2x çözünürlüklü sayfa, diğer dekor sayfalarıyla aynı ölçekte (ruinK) dursun
 META_K = {'nm4_engizisyon_dekor.jpg': 0.5}
-BOX_EDGE_DROP = {'nm19_amblem_I.jpg', 'nm16_arayuz_F.jpg', 'nm15_kule_menu.jpg', 'nm14_komutan_D.jpg', 'nm13_komutan_C.jpg', 'nm12_yetenek_B.jpg', 'nm11_buyu_simgeleri.jpg', 'nm10_yetenek_A.jpg', 'nm9_esya_simgeleri.jpg', 'nm8_kemik_duvar_parca.jpg', 'nm7_orman_surpriz.jpg', 'nm6_kule_moloz.jpg', 'nm5_sefer2_doga.jpg', 'nm_boss_D.jpg', 'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
+BOX_EDGE_DROP = {'nm20_kule_kurma_J.jpg', 'nm19_amblem_I.jpg', 'nm16_arayuz_F.jpg', 'nm15_kule_menu.jpg', 'nm14_komutan_D.jpg', 'nm13_komutan_C.jpg', 'nm12_yetenek_B.jpg', 'nm11_buyu_simgeleri.jpg', 'nm10_yetenek_A.jpg', 'nm9_esya_simgeleri.jpg', 'nm8_kemik_duvar_parca.jpg', 'nm7_orman_surpriz.jpg', 'nm6_kule_moloz.jpg', 'nm5_sefer2_doga.jpg', 'nm_boss_D.jpg', 'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
 # renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
 # (10 Eki: Caner hayalet okçuları kırmızı istedi)
 HUE_TOP = {}  # (eski Hayalet Okçular kulesindeki okçuların rengi; yeni kulede okçular ayrı çiziliyor)
