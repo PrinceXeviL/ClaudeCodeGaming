@@ -12102,6 +12102,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
 
 // kule yeteneklerinin ikonları (menü düğmesinde ve kule altındaki rozetlerde)
 function drawAbilityIcon(id, x, y, s) {
+  { const im = spr('ico_ab_' + id); if (im) { icoFit(im, x, y, 10.5 * s); return; } } // 15 Eki: Gemini yetenek simgesi (nm10_yetenek_*), yoksa kodla çizim
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const dark = 'rgba(20,10,4,0.9)';
   if (id === 'poison') {

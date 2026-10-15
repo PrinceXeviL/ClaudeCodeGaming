@@ -1,0 +1,9 @@
+Image 1 is the ability icon sheet of my dark gothic cartoon tower defense game; image 2 is Mortimer, the necromancer hero. Draw a NEW sheet of 6 SPELL ICONS for Mortimer's necromancy spells in exactly the same style, line weight and quality as image 1, but a little richer and more magical: these are the big main spell buttons. Colors: sickly green, deep purple and blood crimson magic together (not only green). Each icon is one bold, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) Raise the Dead: a skeletal hand bursting up out of a cracked grave mound, green and purple soul fire swirling around it
+2) Bone Wall: a jagged row of giant sharp bones and fangs erupting from cracked earth, dirt chunks flying
+3) Fear: a screaming purple ghost with hollow glowing eyes rushing forward, trailing wispy green and crimson tendrils
+4) Corpse Golem: the head and shoulders of a hulking monster stitched together from many corpses, bones poking out, glowing green eyes, crimson stitches
+5) Corpse Explosion: a bloated corpse bursting apart in a big green and crimson blast with flying bones and a skull
+6) Spellbook: Mortimer's open black grimoire with a skull on the cover, purple and green magic rising from its pages
+
+Arranged in a clean grid of 3 columns and 2 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

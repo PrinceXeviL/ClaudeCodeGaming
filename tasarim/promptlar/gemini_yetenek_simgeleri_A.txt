@@ -1,0 +1,15 @@
+Image 1 is the icon sheet of my dark gothic cartoon tower defense game; image 2 shows its five towers. Draw a NEW sheet of 12 ABILITY ICONS in exactly the same style, line weight, colors and quality as image 1. These icons are shown very small (about 32 pixels) inside round dark badges, so each one must be a single bold, simple, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) Sword Master: two crossed bone swords
+2) Shield Wall: a big round bone shield with a skull boss, a smaller shield behind it
+3) Ghost Archers: a ghostly glowing green bow with a spectral arrow nocked
+4) Heavy Crossbows: a heavy bone crossbow shooting three bolts in a fan
+5) Bone Ballista: a giant sharpened bone bolt flying forward with speed lines
+6) Corpse Catapult: a small catapult arm flinging a skull
+7) Black Plague: a black cauldron with dark green poison smoke shaped like a skull rising from it
+8) Soul Drain: a purple crystal sucking in swirling green soul wisps
+9) Soul Cage: a small iron cage on a chain with a pale ghost inside
+10) Blood Rite: a ritual dagger dripping a big red blood drop
+11) Black Curse: a black eye with a purple iris and dark curse tendrils around it
+12) Double Shot: two bone arrows flying side by side
+
+Arranged in a clean grid of 4 columns and 3 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.
