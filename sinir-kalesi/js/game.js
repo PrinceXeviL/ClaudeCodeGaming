@@ -16584,7 +16584,8 @@ function drawMapSurprises(dt) {
 // rüzgârla süzülen bulutlar (img/cloud_l1..3 açık, cloud_d1..3 fırtına; ham/nm24_harita_bulut.jpg). Her bulut yere yumuşak gölge düşürür;
 // fırtına bulutunun altında yağmur yağar (gölgede su halkaları), ara ara buluttan yere şimşek çakar (parlama + uzak gök gürültüsü).
 // Bulutlar bölüm bayraklarının altında kalır (bayraklar sonra çizilir). CLOUD_MAP: sayı, boy, hız, gölge kayması (dünya birimi), saydamlık.
-const CLOUD_MAP = { per: 46, darkK: 0.4, w: [58, 112], v: [3, 6], sh: [18, 28], aL: 0.8, aD: 0.88, rain: 26, bolt: [4, 10] };
+// 16 Eki (2, Caner: "bulutlar çok büyük; en büyüğü %50 küçük, diğerleri 2-3'ü yan yana, %70 küçük"): büyük bulut tek başına (w), küçükler öbek öbek (ws, 2-3 tane)
+const CLOUD_MAP = { per: 40, darkK: 0.4, bigK: 0.35, w: [42, 56], ws: [17, 28], v: [3, 6], sh: [12, 22], aL: 0.8, aD: 0.88, rain: 26, bolt: [4, 10] };
 const CLOUD_SH = {};
 function cloudShadow(n) { // bulutun kara silueti (gölge), yarı çözünürlük
   if (CLOUD_SH[n]) return CLOUD_SH[n];
@@ -16599,9 +16600,14 @@ function drawMapClouds(ep, X, V, dt) {
   if (!MAPFX[key]) { // bölgenin boyunca dağıt (tohumlu: her açılışta aynı düzen)
     let sd = 7 + ep * 13; const rnd = () => ((sd = (sd * 9301 + 49297) % 233280) / 233280);
     MAPFX[key] = [];
-    for (let y = X.y + 40; y < X.y + X.h; y += C.per * (0.7 + rnd() * 0.6)) {
-      const dark = rnd() < C.darkK, n = (dark ? 'cloud_d' : 'cloud_l') + (1 + Math.floor(rnd() * 3));
-      MAPFX[key].push({ n, dark, x: X.x - 300 + (MAPFX[key].length * 0.381 % 1) * (X.w + 600), y, w: lerp(C.w[0], C.w[1], rnd()) * (n.endsWith('3') ? 0.6 : n.endsWith('2') ? 0.8 : 1), v: lerp(C.v[0], C.v[1], rnd()), sh: lerp(C.sh[0], C.sh[1], rnd()), bolt: 2 + rnd() * 6, seed: rnd() * 99 });
+    for (let y = X.y + 40, r = 0; y < X.y + X.h; y += C.per * (0.7 + rnd() * 0.6), r++) {
+      const dark = rnd() < C.darkK, big = rnd() < C.bigK, x0 = X.x - 300 + (r * 0.381 % 1) * (X.w + 600), v = lerp(C.v[0], C.v[1], rnd());
+      const pre = dark ? 'cloud_d' : 'cloud_l', mk = (n, x, yy, w) => MAPFX[key].push({ n, dark, x, y: yy, w, v, sh: lerp(C.sh[0], C.sh[1], rnd()) * w / C.w[1], bolt: 2 + rnd() * 6, seed: rnd() * 99 });
+      if (big) mk(pre + '1', x0, y, lerp(C.w[0], C.w[1], rnd()));
+      else { // öbek: 2-3 küçük bulut yan yana, aynı rüzgârla
+        const n = 2 + (rnd() < 0.5 ? 1 : 0); let x = x0;
+        for (let k = 0; k < n; k++) { const w = lerp(C.ws[0], C.ws[1], rnd()); mk(pre + (2 + Math.floor(rnd() * 2)), x, y + (rnd() - 0.5) * 14, w); x += w * (0.75 + rnd() * 0.3); }
+      }
     }
   }
   const L = MAPFX[key], span = X.w + 600;
@@ -16614,7 +16620,8 @@ function drawMapClouds(ep, X, V, dt) {
     if (S) { ctx.save(); ctx.globalAlpha = c.dark ? 0.32 : 0.18; ctx.drawImage(S, gx, gy, w, h); ctx.restore(); } // yerdeki gölge
     if (c.dark) { // yağmur: buluttan yere eğik ince çizgiler, gölgede halkalar
       ctx.save(); ctx.strokeStyle = 'rgba(175,195,235,0.5)'; ctx.lineWidth = 0.7; ctx.beginPath();
-      for (let i = 0; i < C.rain; i++) {
+      const nR = Math.round(C.rain * w / C.w[1]);
+      for (let i = 0; i < nR; i++) {
         const u = ((i * 0.618 + c.seed) % 1), px = x + w * (0.15 + 0.7 * u), py0 = y + h * (0.35 + 0.3 * ((i * 0.37) % 1)), ph = (time * 1.6 + i * 0.13) % 1;
         const fx = px + c.sh * 0.6 * ph, fy = py0 + c.sh * ph;
         ctx.moveTo(fx, fy); ctx.lineTo(fx + 1.4, fy + 4.5);
