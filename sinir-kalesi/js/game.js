@@ -48,7 +48,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup)x?|castle_keep_\d_idle|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup)x?|castle_keep_\d_idle|tower_artillery_boneball_atk|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -4235,8 +4235,10 @@ function updateTower(t, dt) {
     }
     const rel = AA ? AA.M.rel * AA.dur : 0; // fırlatma gecikmesi: hedefin o ana kadarki ilerleyişi de hesaba katılır
     if (NECRO && t.spec === 'corpse' && cr) { // 16 Eki: Kemik Gülle: içi veba dolu tek ağır gülle; çarptığı yerdekileri havaya savurur, kırılır, veba gölü bırakır
-      const ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * BONEBALL.dur, f = e.blocker ? e : pathPos(e.p, ta, e.off);
-      G.projectiles.push({ kind: 'vapor', bone: true, ballistic: true, src: 'blast', sx, sy: sy - 6, gy: t.y, target: null, tx: f.x, ty: f.y, t: -0.05, dur: BONEBALL.dur, dmg: roll(L.dmg) * cr.mult, dtype: 'phys',
+      const BA = boneAnim(t), rl = BA ? BA.M.rel * BA.dur : 0; let bx = sx, by = sy - 6;
+      if (BA && ts) { bx = t.x + (BA.M.relPt[0] - 0.5) * ts.w; by = ts.bottom + (BA.M.relPt[1] - 1) * ts.h; t.animT = 0; } // Veo şeridi: kol fırlatınca çıkar
+      const ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * (BONEBALL.dur + rl), f = e.blocker ? e : pathPos(e.p, ta, e.off);
+      G.projectiles.push({ kind: 'vapor', bone: true, ballistic: true, src: 'blast', sx: bx, sy: by, gy: t.y, target: null, tx: f.x, ty: f.y, t: -0.05 - rl, dur: BONEBALL.dur, dmg: roll(L.dmg) * cr.mult, dtype: 'phys',
         arc: BONEBALL.arc, splash: L.splash * BONEBALL.splash, rank: cr, gas: (L.dmg[0] + L.dmg[1]) * 0.09 * cr.pool, path: e.blocker ? null : e.p, along: ta, spin: rand(0, 6), tower: t });
       t.cd = L.rate * BONEBALL.rate; t.gushT = GUSH; t.aimX = f.x; t.aimY = f.y; sfx('plaguefire'); sfx('whirl');
       return;
@@ -7918,6 +7920,13 @@ function towerAnim(t) {
   const im = spr(n); if (!im) { loadStrip(n); return null; }
   return { im, M, n, dur: M.n / TOWER_ANIM_FPS };
 }
+// 16 Eki: Kemik Gülle Mancınığının Veo atış döngüsü (fırlat, kafatası sallanır, yeni gülle büyüyle kepçeye): her atışta baştan, BONEBALL.anim sn'de (240 kare ~60/sn)
+function boneAnim(t) {
+  if (!NECRO || t.type !== 'artillery' || t.spec !== 'corpse') return null;
+  const n = 'tower_artillery_boneball_atk', M = ANIM_META[n]; if (!M) return null;
+  const im = spr(n); if (!im) { loadStrip(n); return null; }
+  return { im, M, n, dur: BONEBALL.anim, fps: M.n / BONEBALL.anim, noLit: true };
+}
 const formImg = (t) => { const F = TOWER_FORM[t.type + '_' + t.spec]; return (F && F.img) || `tower_${t.type}_${t.spec}`; }; // img: başka uzmanlığın görselini paylaşır
 const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(formImg(t)) ? TOWER_FORM[t.type + '_' + t.spec] : null);
 const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
@@ -8942,7 +8951,7 @@ function drawPlagueCoat(e, x, h, fly) {
   if (Math.random() < 0.06) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
 }
 // 16 Eki (Caner): Kemik Gülle Mancınığı. dur uçuş sn, arc kavis, splash alan çarpanı, rate bekleme çarpanı, toss savrulma süresi
-const BONEBALL = { dur: 1.3, arc: 150, splash: 1.15, rate: 1.45, toss: 0.62 }; // arc: gerçek parabolün tepe yüksekliği (önce yukarı fırlar, sonra düşer)
+const BONEBALL = { dur: 1.3, arc: 150, splash: 1.15, rate: 1.5, toss: 0.62, anim: 4.0 }; // anim: Veo atış döngüsünün süresi (atış aralığına sığar) // arc: gerçek parabolün tepe yüksekliği (önce yukarı fırlar, sonra düşer)
 function boneBallHit(pr) {
   const R = pr.splash, cr = pr.rank || {};
   for (const e of G.enemies) {
@@ -9462,10 +9471,11 @@ function drawTowerBody(t) {
     const OF = towerForm(t), MV = mahzenView(t), fl = MV ? MV.fl : OF && OF.flip && t.face === -1 ? -1 : 1;
     const recoil = OF && OF.tip && !balLay(t) && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
     ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
-    const TA = towerAnim(t);
+    const TA = towerAnim(t) || boneAnim(t);
     if (TA && t.animT != null && t.animT < TA.dur) { // atış animasyonu: şeridin karesi, görselle aynı yere oturur
-      const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * TOWER_ANIM_FPS)), b = M.box, lim = litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
-      ctx.drawImage(lim, i * M.fw, 0, M.fw, M.fh, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
+      const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * (TA.fps || TOWER_ANIM_FPS))), b = M.box, lim = TA.noLit ? TA.im : litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
+      const C = M.cols || M.n, sx = lim.width / (M.fw * C), sy = lim.height / (M.fh * Math.ceil(M.n / C)); // satırlı ve telefonda küçültülmüş şerit
+      ctx.drawImage(lim, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (balLay(t)) drawBallista(t, ts, OF);
     else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), SP = TOWER_SPLIT[ts.name];

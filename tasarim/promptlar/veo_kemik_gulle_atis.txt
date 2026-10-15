@@ -1,0 +1,7 @@
+Static locked-off camera, no camera movement, no zoom. Flat solid magenta (#FF00FF) background for the entire video, no ground, no shadows on the background, no other objects. 2D hand-painted cartoon game art style, exactly like the reference image; keep the tower's design, colors and proportions identical. The tower stays in the same place and size the whole time; nothing except the thrown ball ever leaves the frame.
+
+ACTION (0-3 s): FIRE. The giant thigh-bone catapult arm whips forward and up with a powerful snap, the rib-bone cradle flings the big bone ball high up and out of the top of the frame, the arm bounces against the frame, the skull counterweight swings down, the whole tower shudders, green plague drops splash from the cradle. Punchy, exaggerated cartoon motion with squash and stretch.
+
+ACTION (3-8 s): RELOAD. The arm slowly swings back down into its cocked position, creaking. A new glowing bone ball made of fused bones and small skulls rises out of the green plague cauldron on a swirl of green and purple magic and settles into the rib-bone cradle, dripping green slime. Everything ends exactly as in the reference image and holds still for the last half second.
+
+The last frame is identical to the first frame. No people, no text, no ground plane, no color tint over the tower.
