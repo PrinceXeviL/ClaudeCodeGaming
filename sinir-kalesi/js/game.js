@@ -11686,6 +11686,7 @@ function fancyStar(x, y, r, filled) {
   if (filled) { const im = spr('ico_ui_star'); if (im) { icoFit(im, x, y, r * 0.95); return; } } // 16 Eki: Gemini yıldız
   ctx.lineJoin = 'round';
   if (!filled) {
+    if (uiEm('starempty', x, y + 1, r * 1.05)) return;
     starShape(x, y + 2, r); ctx.fillStyle = 'rgba(80,48,18,0.28)'; ctx.fill();
     ctx.strokeStyle = 'rgba(80,48,18,0.45)'; ctx.lineWidth = 2; ctx.stroke();
     return;
@@ -11711,6 +11712,7 @@ function sunburst(x, y, r, col) {
 // vektör ikonlar (beyaz dolgu, koyu kontur); s ≈ ikonun boyu
 // 16 Eki: Gemini arayüz simgeleri (nm16_arayuz_F, nm17_arayuz_G): varsa kodla çizilen vektör ikonun yerine
 const UI_ICO = { play: 'play', gear: 'gear', next: 'fast', fast: 'fast', pause: 'pause', restart: 'restart', map: 'map', back: 'back', sound: 'sound', mute: 'mute', heart: 'heart', coin: 'coin', lock: 'lock', check: 'check', close: 'close' };
+const uiEm = (n, x, y, r) => { const im = spr('ico_em_' + n); if (im) icoFit(im, x, y, r / 1.2); return !!im; }; // 16 Eki: büyük amblemler (nm19_amblem_I), r: yarıçap
 const uiIco = (n, x, y, s) => { const im = spr('ico_ui_' + n); if (im) icoFit(im, x, y, s * 0.46); return !!im; };
 function drawIcon(name, x, y, s, col = '#fff') {
   if (UI_ICO[name] && uiIco(UI_ICO[name], x, y, s)) return;
@@ -12727,7 +12729,7 @@ function drawHud() {
   if (!G.endless) { // sağ uçta boss işareti: kafatası + taç, son dalgaya yaklaştıkça ısınır
     const hot = bossOn ? 1 : clamp((wk - 0.6) / 0.35, 0, 1), bx2 = 8 + BW + 12;
     circle(bx2, 44, 11, `rgba(${40 + 170 * hot | 0},${18 + 10 * hot | 0},${16},0.95)`, hot > 0.5 ? '#ff9a7a' : '#c9a865', 1.6);
-    drawSkullIcon(bx2, 45, 6.5); drawCrown(bx2, 33.5, 0.42, 1);
+    if (!uiEm('boss', bx2, 42, 10.5)) { drawSkullIcon(bx2, 45, 6.5); drawCrown(bx2, 33.5, 0.42, 1); }
     if (bossOn) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, bx2, 44, 20, '255,70,40', 0.4 + Math.sin(time * 7) * 0.2); ctx.restore(); }
   }
   uiIco('wave', 21, 44, 16) || drawIcon('skull', 21, 44, 14);
@@ -13754,7 +13756,7 @@ function drawShop() {
   ctx.restore();
   if (pk < 0.9) return;
   if (shopTab === 'kristal') { drawCrystalShop(px, py, pw, ph); return; }
-  ctx.save(); ctx.translate(W / 2, py + 72); drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); ctx.restore();
+  ctx.save(); ctx.translate(W / 2, py + 72); if (!uiEm('treasure', 0, -6, 54)) { drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); } ctx.restore();
   txt("TAM OYUN · MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
   txt('Tek seferlik satın alma · abonelik yok · reklam yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
   const rows = ['İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)', 'Bütün bosslar, Gloriosus ve Cadı Avı seferi', 'Ödüller (5 canla devam, altınla başla) reklam izlemeden', '3x oyun hızı · Mortimer\'a altın taç'];
@@ -14667,8 +14669,8 @@ function drawBossBarAt(b) {
   circle(mx, my + 2, 18, 'rgba(0,0,0,0.45)');
   const mg = ctx.createRadialGradient(mx - 5, my - 6, 2, mx, my, 18); mg.addColorStop(0, b.phase2 ? '#d8402a' : '#7a2a1a'); mg.addColorStop(1, '#1a0604');
   circle(mx, my, 17, mg, '#e8bb52', 2.4);
-  drawIcon('skull', mx, my + 1, 19, '#f4ead8');
-  drawCrown(mx, my - 19, 0.85, 1);
+  if (!uiEm('boss', mx, my - 3, 19)) { drawIcon('skull', mx, my + 1, 19, '#f4ead8');
+  drawCrown(mx, my - 19, 0.85, 1); }
   if (b.phase2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my, 30, '255,80,40', 0.35 + Math.sin(time * 8) * 0.12); ctx.restore(); }
   // ad şeridi ve bar yazıları
   ctx.font = `400 14px ${FONT_T}`;
@@ -17611,7 +17613,7 @@ function drawWinSummary(k, px, py, pw, cx) {
   const a = easeOutBack(clamp((k - 1.6) / 0.4, 0, 1)), name = best === 'hero' ? ((G.heroes[0] && G.heroes[0].def.name) || 'Komutan') : KILLER_NAME[best] || best;
   ctx.save(); ctx.translate(cx, y0 + 90); ctx.scale(a, a);
   roundRect(-w / 2 + 10, -16, w - 20, 32, 9, 'rgba(60,140,70,0.25)', 'rgba(140,255,150,0.6)', 1.2);
-  drawIcon('crown', -w / 2 + 34, 0, 20);
+  uiEm('topkill', -w / 2 + 34, 0, 13) || drawIcon('crown', -w / 2 + 34, 0, 20);
   txt('En çok öldüren:', -w / 2 + 52, 1, 15, '#cfe8c8', 'left', '800', FONT_B, false);
   txt(`${name} · ${bn}`, w / 2 - 24, 1, 19, '#b8ff9a', 'right', '400', FONT_T, false);
   ctx.restore();
@@ -17993,7 +17995,7 @@ function drawOverlay() {
   } else if (overlay === 'lose') {
     if (NECRO) plaqueTitle(cx, py + 46, G.endless ? 'SONSUZ GECE BİTTİ' : 'KALE DÜŞTÜ', '#ff9a8a', 28); else ribbon(cx, py + 4, 280, 'KALE DÜŞTÜ', 'red', 28);
     ctx.save(); ctx.translate(cx, py + 110); ctx.rotate(Math.sin(time * 2) * 0.05);
-    drawIcon('skull', 0, 0, 64); ctx.restore();
+    uiEm('defeat', 0, -6, 50) || drawIcon('skull', 0, 0, 64); ctx.restore();
     if (G.endless) {
       txt(`${G.wave} dalga dayandın`, cx, py + 164, 22, '#e8dcc0', 'center', '400', FONT_T, false);
       txt(G.endNew ? 'YENİ REKOR!' : `Rekor: ${G.endBest} dalga`, cx, py + 192, 15, G.endNew ? '#ffe27a' : '#a89cb8', 'center', '400', FONT_T, false);
