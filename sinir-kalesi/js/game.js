@@ -8915,8 +8915,9 @@ const CAULDRON = [
 // Ceset Mancınığı (4. kademe, tower_artillery_catapult): ağız yok; cesetler mancınığın kepçesinden (launch) çıkar, kepçedeki ceset yeşil parlar
 // 16 Eki: Kemik Gülle Mancınığı (Gemini nm21_kemik_gulle -> tower_artillery_boneball): gülle sol üstteki kaburga kepçeden (launch) fırlar,
 // kafatasının ağzından iki veba şelalesi akar, iki yanda yeşil mangal alevi
-const CAULDRON_BONE = { launch: [0.18, 0.12], corpseGlow: [0.18, 0.12], falls: [[[0.5, 0.64], [0.5, 0.815]], [[0.69, 0.61], [0.69, 0.775]]], pool: [0.49, 0.825, 0.1, 0.025],
-  braziers: [[0.107, 0.725], [0.864, 0.705]], runes: [[0.47, 0.545, 0.05], [0.67, 0.535, 0.04], [0.385, 0.68, 0.035]] };
+// 16 Eki (2): mancınık yerine Kemik Havan Kazanı (nm22_kemik_havan -> tower_artillery_bonemortar): gülle havanın yukarı bakan ağzından (mouth) fırlar
+const CAULDRON_BONE = { mouth: [0.514, 0.133, 0.115, 0.035], falls: [[[0.47, 0.5], [0.47, 0.735]], [[0.665, 0.47], [0.665, 0.705]]], pool: [0.54, 0.745, 0.2, 0.04],
+  braziers: [[0.13, 0.64], [0.87, 0.64]], runes: [[0.57, 0.373, 0.12], [0.33, 0.575, 0.05]] };
 const CAULDRON_CAT = { launch: [0.74, 0.075], corpseGlow: [0.74, 0.075], falls: [[[0.335, 0.5], [0.31, 0.76]], [[0.5, 0.5], [0.5, 0.74]]], pool: [0.4, 0.76, 0.28, 0.05],
   braziers: [[0.075, 0.665], [0.635, 0.8]], runes: [[0.39, 0.43, 0.05], [0.66, 0.43, 0.05], [0.54, 0.65, 0.04]] };
 // Kara Veba Kazanı (4. kademe, 11 Eki, Caner'in görseli tower_artillery_plague): mor-yeşil veba, mor şelaleler; görseldeki sis ve sinekler
