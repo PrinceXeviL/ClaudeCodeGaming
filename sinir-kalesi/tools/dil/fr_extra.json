@@ -385,7 +385,12 @@
   "ÇIPLAK KEMİK": "OS À NU",
   "Çıplak Kemik": "Os à nu",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 vie · seulement 2 types de tours · pas de sorts de Mortimer",
-  "3 yıldızla açılır": "Se débloque avec 3 étoiles"
+  "3 yıldızla açılır": "Se débloque avec 3 étoiles",
+  "Kemik Gülle": "Boulet d'os",
+  "Kemik Gülle Mancınığı": "Catapulte à boulets d'os",
+  "Veba dolu kemik gülleler atan kazan": "Un chaudron qui lance des boulets d'os remplis de peste",
+  "Gülle Yağmuru": "Pluie de boulets",
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Lance 3 petits boulets d'os, chacun frappe aussi autour"
  },
  "tpl": [
   [
@@ -543,6 +548,14 @@
   [
    "{} ve {}",
    "{} et {}"
+  ],
+  [
+   "Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x{} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır",
+   "La tour devient une Catapulte à boulets d'os : lance un énorme boulet d'os rempli de peste (x{} dégâts) · Les ennemis à l'impact sont projetés en l'air et dispersés, le boulet se brise et laisse une flaque de peste toxique"
+  ],
+  [
+   "{} · Savrulanlar {} sn sersemler",
+   "{} · Les projetés sont étourdis {} s"
   ]
  ]
 }

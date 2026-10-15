@@ -1,0 +1,8 @@
+Image 1 is the Plague Cauldron tower of my dark gothic cartoon tower defense game (top level); image 2 is its old catapult upgrade, which I want to replace. Draw a NEW sheet in exactly the same hand-painted style, line weight, colors and quality as image 1:
+
+1) (large, on the left half of the sheet) THE BONE SHOT CATAPULT TOWER: the same round stone platform and giant horned skull cauldron as image 1 with glowing green plague pouring from the skull's mouth, but mounted on top is a heavy catapult. Its throwing arm is one giant cracked thigh bone bound with chains and rope, pulled back and cocked, and at its end a cradle made of curved rib bones holds a big round BONE BALL. Bone counterweight with skulls, spine-bone frame, dripping green slime, small green flames. Seen from the same 3/4 top-down angle as image 1, standing upright, complete, nothing cut off.
+2) THE BONE BALL alone: a heavy round ball made of fused bones, ribs and a few small skulls, with glowing cracks, filled with bubbling green plague liquid that shows through the gaps.
+3-7) FIVE BROKEN SHARDS of that bone ball, each separate: a curved rib piece, a half skull, a cracked bone chunk, a small spine piece, a jagged bone plate, each with a few green liquid drips.
+8) A PUDDLE of glowing toxic green plague liquid splashed on the ground, seen from slightly above, irregular shape with bubbles and a few bone bits in it.
+
+Layout: the tower big on the left half; items 2-8 smaller, arranged in a clean grid on the right half. Every item separate with plenty of empty space around it, nothing touching. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels. 16:9 image.

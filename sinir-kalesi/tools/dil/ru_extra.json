@@ -385,7 +385,12 @@
   "ÇIPLAK KEMİK": "ГОЛЫЕ КОСТИ",
   "Çıplak Kemik": "Голые кости",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 жизнь · только 2 вида башен · без заклинаний Мортимера",
-  "3 yıldızla açılır": "Открывается за 3 звезды"
+  "3 yıldızla açılır": "Открывается за 3 звезды",
+  "Kemik Gülle": "Костяное ядро",
+  "Kemik Gülle Mancınığı": "Катапульта костяных ядер",
+  "Veba dolu kemik gülleler atan kazan": "Котёл, метающий костяные ядра с чумой",
+  "Gülle Yağmuru": "Град ядер",
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Метает 3 маленьких костяных ядра, каждое бьёт и вокруг"
  },
  "tpl": [
   [
@@ -543,6 +548,14 @@
   [
    "{} ve {}",
    "{} и {}"
+  ],
+  [
+   "Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x{} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır",
+   "Башня становится Катапультой костяных ядер: метает огромное костяное ядро с чумой (x{} урона) · Враги в месте падения взлетают в воздух и разлетаются, ядро разбивается и оставляет ядовитую чумную лужу"
+  ],
+  [
+   "{} · Savrulanlar {} sn sersemler",
+   "{} · Подброшенные оглушены на {} с"
   ]
  ]
 }

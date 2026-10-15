@@ -385,7 +385,12 @@
   "ÇIPLAK KEMİK": "HUESOS DESNUDOS",
   "Çıplak Kemik": "Huesos desnudos",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 vida · solo 2 tipos de torre · sin hechizos de Mortimer",
-  "3 yıldızla açılır": "Se desbloquea con 3 estrellas"
+  "3 yıldızla açılır": "Se desbloquea con 3 estrellas",
+  "Kemik Gülle": "Bala de hueso",
+  "Kemik Gülle Mancınığı": "Catapulta de balas de hueso",
+  "Veba dolu kemik gülleler atan kazan": "Un caldero que lanza balas de hueso llenas de plaga",
+  "Gülle Yağmuru": "Lluvia de balas",
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Lanza 3 pequeñas balas de hueso, cada una golpea a su alrededor"
  },
  "tpl": [
   [
@@ -543,6 +548,14 @@
   [
    "{} ve {}",
    "{} y {}"
+  ],
+  [
+   "Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x{} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır",
+   "La torre se convierte en Catapulta de balas de hueso: lanza una enorme bala de hueso llena de plaga (x{} daño) · Los enemigos donde cae salen volando y se dispersan, la bala se rompe y deja un charco de plaga tóxica"
+  ],
+  [
+   "{} · Savrulanlar {} sn sersemler",
+   "{} · Los lanzados quedan aturdidos {} s"
   ]
  ]
 }

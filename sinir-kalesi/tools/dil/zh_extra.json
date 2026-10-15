@@ -385,7 +385,12 @@
   "ÇIPLAK KEMİK": "赤骨",
   "Çıplak Kemik": "赤骨",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 条命 · 仅 2 种塔 · 莫蒂默不能施法",
-  "3 yıldızla açılır": "获得 3 星解锁"
+  "3 yıldızla açılır": "获得 3 星解锁",
+  "Kemik Gülle": "骨弹",
+  "Kemik Gülle Mancınığı": "骨弹投石机",
+  "Veba dolu kemik gülleler atan kazan": "投掷装满瘟疫的骨弹的大锅",
+  "Gülle Yağmuru": "弹雨",
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "投出 3 颗小骨弹，每颗都会波及周围"
  },
  "tpl": [
   [
@@ -543,6 +548,14 @@
   [
    "{} ve {}",
    "{}和{}"
+  ],
+  [
+   "Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x{} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır",
+   "塔变为骨弹投石机：投出装满瘟疫的巨大骨弹（x{} 伤害）· 落点的敌人被抛向空中四散，骨弹碎裂并留下有毒的瘟疫水洼"
+  ],
+  [
+   "{} · Savrulanlar {} sn sersemler",
+   "{} · 被抛起的敌人眩晕 {} 秒"
   ]
  ]
 }

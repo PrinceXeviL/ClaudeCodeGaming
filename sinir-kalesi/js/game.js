@@ -2357,6 +2357,8 @@ function drawParts(list, add) {
     if (p.kind === 'streak') {
       ctx.strokeStyle = p.col; ctx.lineWidth = s; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.04, p.y - p.vy * 0.04); ctx.stroke();
+    } else if (p.kind === 'sprite') { // 16 Eki: görselli parça (kemik gülle kırıkları)
+      ctx.globalAlpha = Math.min(1, a * 3); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); icoFit(p.im, 0, 0, p.h / 2.4 * 2); ctx.restore();
     } else if (p.kind === 'chunk') {
       ctx.globalAlpha = Math.min(1, a * 2.5);
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);
@@ -4232,16 +4234,11 @@ function updateTower(t, dt) {
       if (AA) t.animT = 0;
     }
     const rel = AA ? AA.M.rel * AA.dur : 0; // fırlatma gecikmesi: hedefin o ana kadarki ilerleyişi de hesaba katılır
-    if (NECRO && t.spec === 'corpse' && cr) { // Ceset Mancınığı: bir seferde 2-3 zombi cesedi; çarptığını savurur, sonra veba saçan zombi olarak kalkar
-      const foes = G.enemies.filter(o => !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, t.x, t.y) <= L.range);
-      for (let i = 0; i < (cr.n || 2); i++) {
-        const o = i === 0 ? e : foes[Math.floor(Math.random() * foes.length)] || e;
-        const ta = o.blocker ? 0 : o.d + o.def.speed * G.wspd * 0.75 + (i ? rand(-22, 22) : 0), f = o.blocker ? o : pathPos(o.p, ta, clamp(o.off + rand(-6, 6), -14, 14));
-        G.projectiles.push({ kind: 'vapor', src: 'blast', sx, sy: sy - 6, gy: t.y, target: null, tx: f.x, ty: f.y, t: -0.1 - i * 0.14, dur: 0.75 + i * 0.05, dmg: roll(L.dmg) * CORPSE.dmg, dtype: 'phys',
-          arc: 80 + i * 14, splash: L.splash * 0.8, stun: 0, gas: (L.dmg[0] + L.dmg[1]) * 0.05, big: true, path: o.blocker ? null : o.p, along: ta,
-          body: { name: CORPSE.bodies[Math.floor(Math.random() * CORPSE.bodies.length)], rig: null, h: 24, face: Math.random() < 0.5 ? -1 : 1 }, zombie: cr, tower: t });
-      }
-      t.cd = L.rate * CORPSE.rate; t.gushT = GUSH; t.aimX = e.x; t.aimY = e.y; sfx('plaguefire');
+    if (NECRO && t.spec === 'corpse' && cr) { // 16 Eki: Kemik Gülle: içi veba dolu tek ağır gülle; çarptığı yerdekileri havaya savurur, kırılır, veba gölü bırakır
+      const ta = e.blocker ? 0 : e.d + e.def.speed * G.wspd * BONEBALL.dur, f = e.blocker ? e : pathPos(e.p, ta, e.off);
+      G.projectiles.push({ kind: 'vapor', bone: true, ballistic: true, src: 'blast', sx, sy: sy - 6, gy: t.y, target: null, tx: f.x, ty: f.y, t: -0.05, dur: BONEBALL.dur, dmg: roll(L.dmg) * cr.mult, dtype: 'phys',
+        arc: BONEBALL.arc, splash: L.splash * BONEBALL.splash, rank: cr, gas: (L.dmg[0] + L.dmg[1]) * 0.09 * cr.pool, path: e.blocker ? null : e.p, along: ta, spin: rand(0, 6), tower: t });
+      t.cd = L.rate * BONEBALL.rate; t.gushT = GUSH; t.aimX = f.x; t.aimY = f.y; sfx('plaguefire'); sfx('whirl');
       return;
     }
     // ceset mancınığı: menzildeki bir cesedi cephane yapar; dönüşmüş mancınık ceset yoksa kendi ceset yığınını atar
@@ -4638,6 +4635,7 @@ function updateEnemy(e, dt) {
       if (n < HERO_AGGRO.max) { e.blocker = h; return; }
     }
   }
+  if (e.tossT > 0) { e.tossT -= dt; if (e.tossOff != null) e.off += (e.tossOff - e.off) * Math.min(1, dt * 6); } // kemik gülle: havada (çizimde yükseklik)
   // geri itme: sert vuruş ya da patlama düşmanı yolda kısa süre geriye savurur (hız sönerek azalır)
   if (e.knockT > 0) {
     e.knockT -= dt;
@@ -5399,6 +5397,7 @@ function updateProjectile(pr, dt) {
     sfx('boom');
     return;
   }
+  if (pr.kind === 'vapor' && pr.bone) { boneBallHit(pr); return; }
   if (pr.kind === 'vapor' && pr.lob) { plagueBomb(pr); return; }
   if (pr.kind === 'vapor') {
     const veba = !pr.body && !pr.zombie; // ceset mancınığı eskisi gibi sert vurur
@@ -8242,7 +8241,7 @@ function formPoint(t, ts, p) {
 }
 function towerSprite(t) {
   const F = towerForm(t);
-  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'artillery' && t.spec === 'plague' && spr('tower_artillery_plague') ? 'tower_artillery_plague' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
+  const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_boneball') ? 'tower_artillery_boneball' : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_catapult') ? 'tower_artillery_catapult' : NECRO && t.type === 'artillery' && t.spec === 'plague' && spr('tower_artillery_plague') ? 'tower_artillery_plague' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
   const m = SPR_META[name];
   const w = (m ? m[0] * TOWER_K * (NECRO && t.type === 'archer' ? 1.05 : 1) : 74 * BUILD_K) * (F ? F.w : xb && name === 'tower_archer_fan' ? XBOW.lvW[t.lvl] : 1), h = w * im.height / im.width;
@@ -8875,13 +8874,17 @@ const CAULDRON = [
     braziers: [[0.115, 0.6], [0.885, 0.6]], runes: [[0.6, 0.335, 0.2], [0.33, 0.56, 0.05]] },
 ];
 // Ceset Mancınığı (4. kademe, tower_artillery_catapult): ağız yok; cesetler mancınığın kepçesinden (launch) çıkar, kepçedeki ceset yeşil parlar
+// 16 Eki: Kemik Gülle Mancınığı (Gemini nm21_kemik_gulle -> tower_artillery_boneball): gülle sol üstteki kaburga kepçeden (launch) fırlar,
+// kafatasının ağzından iki veba şelalesi akar, iki yanda yeşil mangal alevi
+const CAULDRON_BONE = { launch: [0.18, 0.12], corpseGlow: [0.18, 0.12], falls: [[[0.5, 0.64], [0.5, 0.815]], [[0.69, 0.61], [0.69, 0.775]]], pool: [0.49, 0.825, 0.1, 0.025],
+  braziers: [[0.107, 0.725], [0.864, 0.705]], runes: [[0.47, 0.545, 0.05], [0.67, 0.535, 0.04], [0.385, 0.68, 0.035]] };
 const CAULDRON_CAT = { launch: [0.74, 0.075], corpseGlow: [0.74, 0.075], falls: [[[0.335, 0.5], [0.31, 0.76]], [[0.5, 0.5], [0.5, 0.74]]], pool: [0.4, 0.76, 0.28, 0.05],
   braziers: [[0.075, 0.665], [0.635, 0.8]], runes: [[0.39, 0.43, 0.05], [0.66, 0.43, 0.05], [0.54, 0.65, 0.04]] };
 // Kara Veba Kazanı (4. kademe, 11 Eki, Caner'in görseli tower_artillery_plague): mor-yeşil veba, mor şelaleler; görseldeki sis ve sinekler
 // silindi (varliklar/karaveba_isle.py), kodla uçuşur: fog (tabanda dönen mor-yeşil sis), flies (tepede vızıldayan sinek sürüsü)
 const CAULDRON_PLAGUE = { mouth: [0.42, 0.23, 0.175, 0.057], falls: [[[0.41, 0.49], [0.4, 0.73]], [[0.6, 0.47], [0.6, 0.71]]], fallCol: ['220,180,255', '190,110,255'], pool: [0.53, 0.75, 0.18, 0.04],
   braziers: [[0.105, 0.58], [0.78, 0.58]], bcol: '170,80,255', runes: [[0.47, 0.34, 0.15]], fog: [0.5, 0.86, 0.5, 0.1], flies: 16 };
-const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_catapult') ? CAULDRON_CAT : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? CAULDRON_PLAGUE : CAULDRON[t.lvl]);
+const cauldronFx = (t) => (NECRO && t.spec === 'corpse' && spr('tower_artillery_boneball') ? CAULDRON_BONE : NECRO && t.spec === 'corpse' && spr('tower_artillery_catapult') ? CAULDRON_CAT : NECRO && t.spec === 'plague' && spr('tower_artillery_plague') ? CAULDRON_PLAGUE : CAULDRON[t.lvl]);
 // veba bombası: dur uçuş süresi, arc kavis yüksekliği, dmg/splash çarpanı, rate bekleme çarpanı, poison zehir çarpanı (gaz değerine), pool zehir gölü süresi, down yere düşme (sn)
 const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Caner: kazan fazla güçlü) dmg 1.3→1.05, splash 1.15→1, rate 1.75→2
   poison: 1.2, pool: 3, down: 1 };
@@ -8938,6 +8941,35 @@ function drawPlagueCoat(e, x, h, fly) {
   ctx.globalAlpha = pa;
   if (Math.random() < 0.06) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
 }
+// 16 Eki (Caner): Kemik Gülle Mancınığı. dur uçuş sn, arc kavis, splash alan çarpanı, rate bekleme çarpanı, toss savrulma süresi
+const BONEBALL = { dur: 1.3, arc: 150, splash: 1.15, rate: 1.45, toss: 0.62 }; // arc: gerçek parabolün tepe yüksekliği (önce yukarı fırlar, sonra düşer)
+function boneBallHit(pr) {
+  const R = pr.splash, cr = pr.rank || {};
+  for (const e of G.enemies) {
+    if (e.dead || e.def.flying || e.under) continue;
+    const d = dist(e.x, e.y, pr.tx, pr.ty); if (d > R) continue;
+    const k = 1 - d / R;
+    NO_KNOCK = true; damageEnemy(e, pr.dmg * (0.55 + 0.45 * k), 'phys', false, 'blast'); NO_KNOCK = false;
+    if (e.dead) continue;
+    poisonEnemy(e, pr.dmg * 0.08, 4); e.coatT = 4;
+    if (!e.def.chief && !e.def.machine && e.siege === undefined) { // havaya savrulur: merkezden dışa, yolda geriye; yere düşünce kısa sersemler
+      e.tossT = e.tossD = BONEBALL.toss * (0.8 + 0.4 * k); e.tossH = (cr.h || 30) * (0.55 + 0.45 * k);
+      const side = Math.sign((e.off || 0) - 0) || (Math.random() < 0.5 ? -1 : 1); e.tossOff = clamp((e.off || 0) + side * rand(5, 11), -14, 14);
+      if (pushable(e) && !e.blocker) { e.knockT = e.tossD; e.knockV = 70 + 90 * k; }
+      stunEnemy(e, e.tossD + (cr.stun || 0) * k);
+    }
+  }
+  G.zones.push({ x: pr.tx, y: pr.ty, r: R * 0.75, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: LOB.pool * 1.2, fxT: 0, src: 'blast', kind: 'plague', pool: true, seed: rand(0, 6), boneball: true });
+  fxPlagueSplash(pr.tx, pr.ty, R * 1.3);
+  // gülle kırılır: kemik parçaları (Gemini: nm_bshard_1..5 varsa) döne döne her yana, veba sıvısı fışkırır
+  const SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean);
+  for (let i = 0; i < 10; i++) { const a = rand(-Math.PI, 0), v = rand(70, 200);
+    emit(G.parts, SH.length ? { kind: 'sprite', im: SH[i % SH.length], h: rand(7, 12), x: pr.tx + rand(-6, 6), y: pr.ty - 8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, g: 560, vr: rand(-12, 12), rot: rand(0, 6), life: rand(0.9, 1.4), floor: pr.ty + rand(-6, 10) }
+      : { kind: 'chunk', x: pr.tx + rand(-6, 6), y: pr.ty - 8, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 60, g: 560, vr: rand(-12, 12), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#bfb090', s0: rand(2.2, 3.6), s1: 1.6, life: rand(0.9, 1.4), floor: pr.ty + rand(-6, 10) }); }
+  for (let i = 0; i < 30; i++) { const a = rand(-Math.PI, 0), v = rand(60, 230); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-5, 5), y: pr.ty - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 40, g: 520, col: i % 3 ? '#8cff5a' : '#d8ffa0', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.5, 0.9), floor: pr.ty + rand(-4, 12) }); }
+  G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: R, col: '200,255,140', t: 0, dur: 0.45 }); G.effects.push({ kind: 'dust', x: pr.tx, y: pr.ty, t: 0, dur: 0.8 });
+  shakeScreen(4, 0.25); sfx('boom'); sfx('bonefall'); sfx('acidboom');
+}
 function plagueBomb(pr) {
   for (const e of G.enemies) {
     if (e.dead || e.def.flying) continue;
@@ -8959,6 +8991,7 @@ function plagueBomb(pr) {
 function drawPlaguePools() {
   for (const z of G.zones) {
     if (!z.pool) continue;
+    if (z.boneball && spr('nm_bonepool')) { const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a > 0) { const im = spr('nm_bonepool'), w = z.r * 1.75 * (0.6 + 0.4 * Math.min(1, z.t / 0.3)); ctx.save(); ctx.globalAlpha = a * 0.92; ctx.drawImage(im, z.x - w / 2, z.y - w * im.height / im.width / 2, w, w * im.height / im.width); ctx.restore(); } continue; } // 16 Eki: kemik gülle gölü (Gemini)
     const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a <= 0) continue;
     const rx = z.r * (0.6 + 0.4 * Math.min(1, z.t / 0.3));
     ctx.save(); ctx.globalAlpha = a * 0.7; ctx.translate(z.x, z.y); ctx.scale(1, 0.45);
@@ -9550,7 +9583,7 @@ function drawEnemy0(e) {
       rise: e.reviveT > 0 ? 0.25 + 0.75 * (1 - e.reviveT / 1.1) : e.emergeT > 0 ? 1 - e.emergeT / 0.35 * 0.85 : null,
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0 && !d.crew) && !(e.reviveT > 0), // kuşatma kulesi okçular atarken de yürür
-      fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
+      fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0),
       atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
@@ -10842,6 +10875,19 @@ function drawProjectile(p) {
       ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#241c14'; ctx.lineWidth = 1.4; ctx.stroke();
       ctx.restore();
     }
+  } else if (p.kind === 'vapor' && p.bone) { // 16 Eki: kemik gülle (Gemini nm_boneball varsa), döne döne, çatlaklarından veba damlar
+    const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k), r = 9.5;
+    ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.22 * k})`; ctx.beginPath(); ctx.ellipse(gx, gy, 5 + 6 * k, 2.4 + 2.4 * k, 0, 0, Math.PI * 2); ctx.fill();
+    for (let i = 1; i <= 5; i++) { if (k - i * 0.035 < 0) break; const q = projPos(p, k - i * 0.035); ctx.globalAlpha = 0.6 - i * 0.1; circle(q.x, q.y + i * 2, 2.2 - i * 0.3, '#8cff5a'); }
+    ctx.globalAlpha = 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 18, '120,255,90', 0.45); ctx.restore();
+    ctx.save(); ctx.translate(x, y); ctx.rotate(p.spin + k * 7);
+    const im = spr('nm_boneball');
+    if (im) icoFit(im, 0, 0, r * 0.95);
+    else { const g = ctx.createRadialGradient(-3, -3, 1, 0, 0, r); g.addColorStop(0, '#f6eed8'); g.addColorStop(1, '#a8987a'); circle(0, 0, r, g, '#2a2018', 1.6);
+      ctx.strokeStyle = '#6ad83a'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-6, -2); ctx.lineTo(-1, 1); ctx.lineTo(3, -4); ctx.moveTo(0, 2); ctx.lineTo(2, 7); ctx.stroke();
+      ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = 1.2; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(0, 0, r * (0.45 + i * 0.18), i, i + 1.6); ctx.stroke(); } }
+    ctx.restore();
   } else if (p.kind === 'vapor' && p.lob) {
     // veba damlası (top değil): uçuş yönünde uzayan, kenarları dalgalanan dağınık sıvı öbeği; çevresinde kopuk damlacıklar, arkasından damlar
     const gx = lerp(p.sx, p.tx, k), gy = lerp(p.gy ?? p.sy + 40, p.ty, k);

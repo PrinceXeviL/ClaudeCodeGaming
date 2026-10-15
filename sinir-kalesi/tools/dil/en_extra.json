@@ -577,7 +577,12 @@
   "ÇIPLAK KEMİK": "BARE BONES",
   "Çıplak Kemik": "Bare Bones",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 life · only 2 tower types · no Mortimer spells",
-  "3 yıldızla açılır": "Unlocks with 3 stars"
+  "3 yıldızla açılır": "Unlocks with 3 stars",
+  "Kemik Gülle": "Bone Shot",
+  "Kemik Gülle Mancınığı": "Bone Shot Catapult",
+  "Veba dolu kemik gülleler atan kazan": "A cauldron that hurls plague-filled bone shots",
+  "Gülle Yağmuru": "Shot Barrage",
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Hurls 3 small bone shots, each also hits around it"
  },
  "tpl": [
   [
@@ -1043,6 +1048,14 @@
   [
    "{} ve {}",
    "{} and {}"
+  ],
+  [
+   "Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x{} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır",
+   "The tower becomes a Bone Shot Catapult: hurls a giant plague-filled bone shot (x{} damage) · Enemies where it lands are flung into the air and scattered, the shot shatters and leaves a toxic plague pool"
+  ],
+  [
+   "{} · Savrulanlar {} sn sersemler",
+   "{} · Flung enemies are stunned for {} s"
   ]
  ]
 }

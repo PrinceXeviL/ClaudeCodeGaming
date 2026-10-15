@@ -385,7 +385,12 @@
   "ÇIPLAK KEMİK": "NACKTE KNOCHEN",
   "Çıplak Kemik": "Nackte Knochen",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 Leben · nur 2 Turmarten · keine Zauber von Mortimer",
-  "3 yıldızla açılır": "Wird mit 3 Sternen freigeschaltet"
+  "3 yıldızla açılır": "Wird mit 3 Sternen freigeschaltet",
+  "Kemik Gülle": "Knochenkugel",
+  "Kemik Gülle Mancınığı": "Knochenkugel-Katapult",
+  "Veba dolu kemik gülleler atan kazan": "Ein Kessel, der pestgefüllte Knochenkugeln schleudert",
+  "Gülle Yağmuru": "Kugelhagel",
+  "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Schleudert 3 kleine Knochenkugeln, jede trifft auch ringsum"
  },
  "tpl": [
   [
@@ -543,6 +548,14 @@
   [
    "{} ve {}",
    "{} und {}"
+  ],
+  [
+   "Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x{} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır",
+   "Der Turm wird zum Knochenkugel-Katapult: schleudert eine riesige pestgefüllte Knochenkugel (x{} Schaden) · Gegner am Einschlag werden in die Luft geschleudert und verstreut, die Kugel zerbricht und hinterlässt eine giftige Pestlache"
+  ],
+  [
+   "{} · Savrulanlar {} sn sersemler",
+   "{} · Geschleuderte sind {} s betäubt"
   ]
  ]
 }

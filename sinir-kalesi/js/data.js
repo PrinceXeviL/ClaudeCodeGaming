@@ -67,8 +67,10 @@ const TOWERS = {
     abilities: [
       // Ceset Mancınığı: menzildeki cesedi cephane yapar · Kara Veba: vurduğu düşman ölünce veba yanındakilere bulaşır
       // necro (10 Eki, Caner): bir seferde n zombi cesedi atar; cesetler çarptığını savurur, sonra veba saçan zombi olarak kalkar (hp, zdmg, dps vuruş zehri, life sn)
-      { id: 'corpse', name: 'Ceset Mancınığı', desc: (r) => `Kule Ceset Mancınığına dönüşür: veba yerine bir seferde ${r.n} zombi cesedi fırlatır · Cesetler çarptığı düşmanları savurur, sonra ayağa kalkıp ${r.life} sn savaşır, vuruşları veba bulaştırır`,
-        ranks: [{ cost: 170, mult: 1.6, n: 2, hp: 70, zdmg: [5, 9], dps: 4, life: 10 }, { cost: 230, mult: 1.9, n: 3, hp: 90, zdmg: [7, 11], dps: 6, life: 12 }, { cost: 290, mult: 2.3, n: 3, hp: 120, zdmg: [9, 14], dps: 8, life: 15 }] },
+      // 16 Eki (Caner): Ceset Mancınığı yerine Kemik Gülle (id 'corpse' kayıt uyumu için kaldı): içi veba dolu dev kemik gülle;
+      // çarptığı yerdekileri havaya savurur (h: savrulma yüksekliği px), gülle kırılır, yerde zehirli veba gölü kalır (pool: göl gücü çarpanı)
+      { id: 'corpse', name: 'Kemik Gülle', desc: (r) => `Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x${r.mult} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır` + (r.stun ? ` · Savrulanlar ${r.stun} sn sersemler` : ''),
+        ranks: [{ cost: 170, mult: 2.0, h: 30, pool: 1, stun: 0 }, { cost: 230, mult: 2.5, h: 36, pool: 1.3, stun: 0 }, { cost: 290, mult: 3.0, h: 44, pool: 1.6, stun: 1 }] },
       { id: 'plague', name: 'Kara Veba', desc: (r) => `Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır`,
         ranks: [{ cost: 200, dps: 7 }, { cost: 260, dps: 12 }, { cost: 320, dps: 18 }] },
     ],
@@ -1171,7 +1173,7 @@ const TOWER_EXTRA = {
   fan:    { name: 'Delici Cıvata',    cost: 240, cd: 10, desc: 'Dev bir cıvata hattaki bütün düşmanları delip geçer: ağır hasar, zırhı yok sayar' },
   drain:  { name: 'Ruh Dalgası',      cost: 230, cd: 8,  desc: 'En güçlü düşmanın çevresinde ruh patlar; yakındaki iskeletler iyileşir' },
   ghost:  { name: 'Hayalet Zincirler', cost: 240, cd: 9, desc: '4 düşmanı hayalet zincirleriyle bağlar: 1,6 sn sersemletir' },
-  corpse: { name: 'Ceset Yağmuru',    cost: 250, cd: 11, desc: '3 ek ceset yığını fırlatır, her biri çevresine de vurur' },
+  corpse: { name: 'Gülle Yağmuru',    cost: 250, cd: 11, desc: '3 küçük kemik gülle fırlatır, her biri çevresine de vurur' },
   plague: { name: 'Veba Sisi',        cost: 230, cd: 10, desc: 'Kalabalığın üstüne veba sisi çöker: 5 sn güçlü zehir' },
   rite:   { name: 'Kan Ayini',        cost: 220, cd: 14, desc: 'Menzildeki iskeletler %40 iyileşir, 6 sn %50 sert vurur' },
   blight: { name: 'Çürük Dokunuş',    cost: 240, cd: 9,  desc: 'Menzildeki herkes 5 sn ağır lanetlenir ve zehirlenir' },
@@ -1181,7 +1183,7 @@ const SPEC = {
   bow:    { title: 'Hayalet Okçular', who: 'Üç kızıl okçu: çok sık, yüksek kavisli oklar' },
   drain:  { title: 'Ruh Emici', who: 'Kristalden ışın: aynı hedefe güçlenir, canı iskeletlere aktarır' }, // 10 Eki: 4. kademe
   ghost:  { title: 'Ruh Kafesi', who: 'En güçlüyü kafese kapatır, kafesten hayaletler salar' },
-  corpse: { title: 'Ceset Mancınığı', who: 'Cesetleri cephane yapan kazan' },
+  corpse: { title: 'Kemik Gülle Mancınığı', who: 'Veba dolu kemik gülleler atan kazan' },
   plague: { title: 'Kara Veba Kazanı', who: 'Ölümle yayılan kara veba' },
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
   blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
