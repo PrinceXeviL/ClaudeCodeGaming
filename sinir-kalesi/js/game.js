@@ -48,7 +48,7 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down))$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block)x?|castle_keep_\d_idle|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -131,7 +131,9 @@ function drawFrame(img, F, i, h) {
   // alınınca kesilen dikdörtgen yükseklikte görselin 0,01 px dışına taşıyordu; iOS Safari dışa taşan kaynakta HİÇ çizmiyor (Chrome kırpıyor).
   // Oran eksen eksen alınır, dikdörtgen görselin içinde tutulur.
   // 16 Eki: uzun şerit (kuşatma araçlarının yıkılması) birkaç satıra bölünebilir: F.cols satır başına kare
-  const C = F.cols || F.n, m = pickMip(ctx, img, dw * C), sx = m.width / img.width, sy = m.height / img.height, x0 = (i % C) * F.fw * sx, y0 = Math.floor(i / C) * F.fh * sy;
+  // 15 Eki: şerit telefonda küçültülmüş yüklenebilir (STRIP_K): kare yeri görselin gerçek boyuna oranlanır (meta fw/fh asıl şerit pikseli)
+  if (!MIPS.has(img)) MIPS.set(img, [img]); // 15 Eki (bellek): kare kare çizilen görsele küçük kopya üretilmez (Mortimer, kule atışı, kale döngüsü dahil)
+  const C = F.cols || F.n, R = Math.ceil(F.n / C), m = pickMip(ctx, img, dw * C), sx = m.width / (F.fw * C), sy = m.height / (F.fh * R), x0 = (i % C) * F.fw * sx, y0 = Math.floor(i / C) * F.fh * sy;
   ctx.drawImage(m, x0, y0, Math.min(F.fw * sx, m.width - x0), Math.min(F.fh * sy, m.height - y0), -dw / 2, -dh * (1 - F.base), dw, dh);
 }
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
@@ -188,9 +190,9 @@ const PAINT = (() => {
     // şeritler zaten ekrandaki boya yakın (karakter 160-220 px), küçültülerek çizilir
     const src = `const NOMIP = true; const clamp = (v, a, b) => (v < a ? a : v > b ? b : v); ${rgb2hsl} ${hsl2rgb} ${rotPixels} ${lutPixels}
       const FN = {};
-      onmessage = async (ev) => { const { id, url, ops } = ev.data; try {
+      onmessage = async (ev) => { const { id, url, ops } = ev.data; try { // k: küçültme oranı (şerit, telefonda)
         const bmp = await createImageBitmap(await (await fetch(url)).blob()); // indirme ve çözme bu iş parçacığında
-        const c = new OffscreenCanvas(bmp.width, bmp.height), g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(bmp, 0, 0);
+        const sk = ev.data.k || 1, c = new OffscreenCanvas(Math.max(1, Math.round(bmp.width * sk)), Math.max(1, Math.round(bmp.height * sk))), g = c.getContext('2d', { willReadFrequently: true }); g.imageSmoothingQuality = 'high'; g.drawImage(bmp, 0, 0, c.width, c.height);
         if (ops.length) { const im = g.getImageData(0, 0, c.width, c.height);
           for (const [op, f] of ops) { if (op === 'rot') rotPixels(im.data); else { const F = FN[f] || (FN[f] = { fn: new Function('return ' + f)() }); lutPixels(im.data, c.width, c.height, F); } }
           g.putImageData(im, 0, 0); }
@@ -214,13 +216,15 @@ const PAINT = (() => {
 })();
 // şerit dosyasını (LAZY adı) boyacıda yükletir, ops: [['lut', işlev], ['rot']] sırayla uygulanır, küçük kopyalarla döner.
 // done(bitmap) iş bitince; başarısızsa done(null) (çağıran eski eşzamanlı yola düşer). Boyacı yoksa false
+// 15 Eki (Caner: 20. bölümde oyun kapanıyordu; ölçüm: kalabalık bölümde şeritler ~900 MB): telefonda animasyon şeritleri %75 boyutla çözülür (bellek ~%44 az)
+const STRIP_K = (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 0.75 : 1;
 let PAINT_OK = true; // ilk başarısızlıkta (ör. özel adres şeması fetch'e kapalı) eski yola geçilir
 function paintAsync(file, ops, done) {
   const path = LAZY[file] || (SPR[file] && SPR[file].src && !SPR[file].src.startsWith('data:') ? file + '.webp' : null); // şerit ya da tek dosyalı görsel
   if (!PAINT || !PAINT_OK || !path) return false;
   const id = ++PAINT.n, url = new URL('img/' + path + (window.SURUM ? '?v=' + window.SURUM : ''), location.href).href;
   PAINT.jobs.set(id, (out) => { if (!out) { PAINT_OK = false; done(null); return; } MIPS.set(out[0], out); done(out[0]); });
-  PAINT.postMessage({ id, url, ops: ops.map(([o, f]) => [o, f ? f.toString() : null]) });
+  PAINT.postMessage({ id, url, ops: ops.map(([o, f]) => [o, f ? f.toString() : null]), k: LAZY[file] ? STRIP_K : 1 });
   return true;
 }
 const recolorOf = (type) => { const d = ENEMIES[type]; return d && (BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank])); };
@@ -422,7 +426,8 @@ safeProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibili
 document.body.appendChild(safeProbe);
 // Çizim çözünürlüğü: ekranın gerçek piksel yoğunluğu (en çok 3). 1.5 sınırı yakınlaşınca her şeyi bulanıklaştırıyordu (Caner, 10 Eki).
 // Kare hızı düşerse çözünürlük kademeli olarak azaltılır, toparlanınca geri yükseltilir.
-const QMAX = Math.min(window.devicePixelRatio || 1, 3);
+// 15 Eki (performans): dokunmatik cihazda (iPhone dpr 3) çizim yoğunluğu en çok 2,5: boyanan piksel ~%30 az, keskinlik farkı zor seçilir
+const QMAX = Math.min(window.devicePixelRatio || 1, (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 2.5 : 3);
 let quality = setting('gfx') === 'low' ? 0.75 : QMAX;
 // Otomatik kalite (10 Eki düzeltmesi): eskiden kare aralığına bakıyordu; iPhone Düşük Güç kipinde (30 fps sınırı) aralık hep uzun
 // olduğundan çözünürlük 0.85'e iner, birimler bulanıklaşırdı (Caner: "düşmanlar ve askerlerim net değil"). Artık karenin gerçek iş
@@ -436,8 +441,9 @@ function adaptQuality(real) {
   if (perf.t < 2) return;
   const avg = perf.acc / perf.n, work = perf.work / perf.n;
   perf.acc = perf.work = perf.n = perf.t = 0;
-  if (avg > 1 / 42 && work > 0.02 && quality > QMIN) { quality = Math.max(QMIN, quality * 0.85); perf.good = 0; resize(); }
-  else if (work < 0.01 && quality < QMAX) { if (++perf.good >= 2) { quality = Math.min(QMAX, quality * 1.15); perf.good = 0; resize(); } }
+  if (avg > 1 / 42 && work > 0.02 && quality > QMIN) { quality = Math.max(QMIN, quality * 0.85); perf.good = 0; perf.drop = time; resize(); }
+  // 15 Eki (performans): kalite düşünce bir dakika yükselmez, yükselmek için 4 rahat pencere (8 sn) gerekir: kalabalıkta gidip gelip her seferinde tuvali yeniden kurmasın (takılma)
+  else if (work < 0.01 && quality < QMAX && time - (perf.drop ?? -99) > 60) { if (++perf.good >= 4) { quality = Math.min(QMAX, quality * 1.15); perf.good = 0; resize(); } }
   else perf.good = 0;
 }
 function resize() {
@@ -2024,6 +2030,7 @@ function startLevel(idx, chal = null) {
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2'], (HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç, _cast_<pasif>: pasifin kendi şeridi)
 
+  for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); if (BUBU.on && idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
@@ -5912,7 +5919,7 @@ function updateMortState(dt) {
   else if (M.st === 'panic' && M.calm > 3) { M.st = M.quiet > 6 ? 'goin' : 'down'; M.t = 0; }
   else if (M.st === 'down' && M.t > MORT_TRANS) { M.st = 'tea'; M.t = 0; }
 }
-const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : null);
+const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : (ANIM_META[n] && loadStrip(n), null)); // yüklü değilse yükletir (haritada çay)
 // 15 Eki: ruh hali animasyonları (Veo, tek seferlik): kale vurulunca öfke (ayak vurur, yumruk sallar). MORT_MOOD: kare/sn, tekrar bekleme (sn)
 const MORT_MOOD = { fps: 10, cd: 14 };
 function mortRage() {
@@ -6705,7 +6712,7 @@ function drawBubu() {
   if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, b.x, b.y - 8, 36, '140,255,110', 0.18 + 0.12 * Math.sin(time * 4)); ctx.restore(); }
   const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh;
   ctx.save(); ctx.translate(b.x, b.y); ctx.scale(b.face, 1);
-  ctx.drawImage(spr(nm), fi * F.fw, 0, F.fw, F.fh, -fw * F.fx, -fh * (1 - F.base), fw, fh);
+  const bim = spr(nm), bs = bim.width / (F.fw * F.n); ctx.drawImage(bim, fi * F.fw * bs, 0, F.fw * bs, F.fh * bs, -fw * F.fx, -fh * (1 - F.base), fw, fh);
   ctx.restore();
   if (b.st === 'hole') {
     if (!ready) { const k = 1 - b.cd / BUBU.cd; circle(b.x, b.y - 30, 8, 'rgba(20,12,24,0.75)', 'rgba(160,255,140,0.5)', 1.2); ctx.strokeStyle = '#a8ff8a'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(b.x, b.y - 30, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
@@ -7725,12 +7732,17 @@ function shadow(x, y, rx, ry) {
 }
 // küçük, yuvarlak uçlu (hap biçimli) can barı
 const HP_K = 0.657; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: iki kez %5 küçüldü; 15 Eki: %10 daha (düşman, dost, komutan)
+const HPBAR_C = new Map();
 function hpBar(x, y, w, frac, col = '#4cd34c') {
   frac = clamp(frac, 0, 1); w *= HP_K;
   const h = 3.2 * HP_K, r = h / 2 + 1.1 * HP_K;
   const b = 1.1 * HP_K; // dış çerçeve payı
-  roundRect(x - w / 2 - b, y - b, w + 2 * b, h + 2 * b, r, 'rgba(14,8,3,0.78)');
-  roundRect(x - w / 2, y, w, h, h / 2, '#5a1712');
+  // 15 Eki (performans): çerçeve + koyu zemin genişliğe göre bir kez çizilip saklanır (kalabalıkta kare başına ~190 dolgu buradandı)
+  const key = Math.round(w * 4), K = 4; let F = HPBAR_C.get(key);
+  if (!F) { F = document.createElement('canvas'); F.width = Math.ceil((w + 2 * b) * K) + 2; F.height = Math.ceil((h + 2 * b) * K) + 2; const g = F.getContext('2d'); g.scale(K, K); g.translate(b + 0.25, b + 0.25);
+    const rr = (x0, y0, ww, hh, rad, col) => { const q = Math.min(rad, hh / 2, ww / 2); g.beginPath(); g.moveTo(x0 + q, y0); g.arcTo(x0 + ww, y0, x0 + ww, y0 + hh, q); g.arcTo(x0 + ww, y0 + hh, x0, y0 + hh, q); g.arcTo(x0, y0 + hh, x0, y0, q); g.arcTo(x0, y0, x0 + ww, y0, q); g.closePath(); g.fillStyle = col; g.fill(); };
+    rr(-b, -b, w + 2 * b, h + 2 * b, r, 'rgba(14,8,3,0.78)'); rr(0, 0, w, h, h / 2, '#5a1712'); HPBAR_C.set(key, F); }
+  ctx.drawImage(F, x - w / 2 - b - 0.25, y - b - 0.25, F.width / K, F.height / K);
   if (frac > 0) {
     roundRect(x - w / 2, y, Math.max(h, w * frac), h, h / 2, col);
     ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(x - w / 2 + 1, y + 0.4, Math.max(0, w * frac - 2), h * 0.35);
@@ -7991,8 +8003,8 @@ function bodyRatio(im) {
 // konturlu şerit karesi (drawFrame gibi; kontur şeridin tamamına bir kez çizilir, kare komşu karenin kontur payını da alır)
 function drawFrameOutlined(img, F, i, h) {
   const O = outlined(img, Math.max(3, Math.round(7 * F.fh / 300))), p = O.pad, k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
-  const C = F.cols || F.n;
-  ctx.drawImage(O, (i % C) * F.fw, Math.floor(i / C) * F.fh, F.fw + 2 * p, F.fh + 2 * p, -dw / 2 - p * k, -dh * (1 - F.base) - p * k, dw + 2 * p * k, dh + 2 * p * k);
+  const C = F.cols || F.n, os = (O.width - 2 * p) / (F.fw * C), ko = k / os; // küçültülmüş şeritte kontur da küçük
+  ctx.drawImage(O, (i % C) * F.fw * os, Math.floor(i / C) * F.fh * os, F.fw * os + 2 * p, F.fh * os + 2 * p, -dw / 2 - p * ko, -dh * (1 - F.base) - p * ko, dw + 2 * p * ko, dh + 2 * p * ko);
 }
 function xbowTip(t, ts, a) { // atış pozunda okun / cıvatanın çıktığı nokta (dünya koordinatı)
   const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = menH(t), w = im ? h * im.width / im.height : h * 0.89;
@@ -13010,7 +13022,7 @@ function drawCastle() {
     if (IN && !spr(IN)) loadStrip(IN);
     if (SN && G.keepIdleN !== IN) { if (G.keepIdleN && G.keepIdleN !== IN) { delete SPR[G.keepIdleN]; STRIP_WAIT.delete(G.keepIdleN); } G.keepIdleN = IN; }
     const IA = IN && spr(IN) && ANIM_META[IN];
-    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw; ctx.drawImage(spr(IN), fi * IA.fw, 0, IA.fw, IA.fh, -cp.w / 2, -h, cp.w, h); }
+    if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw, kim = spr(IN), ks = kim.width / (IA.fw * IA.n); ctx.drawImage(kim, fi * IA.fw * ks, 0, IA.fw * ks, IA.fh * ks, -cp.w / 2, -h, cp.w, h); }
     else drawSprite(ctx, im, 0, 0, cp.w);
     if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
@@ -18526,6 +18538,7 @@ window.__game = {
   mapSpots: () => mapSpots(mapEp).map(o => ({ x: MAPCAM.tx + o.x * MAPCAM.z, y: MAPCAM.ty + o.y * MAPCAM.z, k: SURPRISE.list[o.k].n })), // test: harita sürpriz noktaları (ekran)
   surN: () => (MAPFX.sur || []).length,
   mapEpNow: () => mapEp,
+  stripScale: () => { const o = {}; for (const k in SPR) if (LAZY_RE.test(k) && ANIM_META[k]) { const F = ANIM_META[k], C = F.cols || F.n; o[k] = +(SPR[k].width / (F.fw * C)).toFixed(2); } const v = Object.values(o); return { n: v.length, kucuk: v.filter(x => x < 0.9).length, PAINT_OK, STRIP_K }; },
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
