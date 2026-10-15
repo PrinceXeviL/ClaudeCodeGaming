@@ -6142,7 +6142,7 @@ function tutPlot(type) { // önerilen arsa (13 Eki, Caner): ilk kule yolun ilk �
 function buildStep(type, plotText, menuText) {
   const menuOpen = () => G.sel && G.sel.kind === 'plot';
   return { text: () => (menuOpen() ? menuText : plotText), done: () => G.towers.some(o => o.type === type),
-    at: () => { if (menuOpen()) { const it = currentMenu().find(o => o.id === 'build' && o.type === type); return it && worldToScreen(it.x, it.y - 4); }
+    at: () => { if (menuOpen()) { const it = currentMenu().find(o => o.id === 'build' && o.type === type); return it && { x: it.x, y: it.y - 4 }; }
       const pl = tutPlot(type); return pl && worldToScreen(pl.x, pl.y - 10); } };
 }
 const tutSelUp = () => (G.sel && G.sel.kind === 'tower' && G.sel.tower.lvl < G.sel.tower.def.levels.length - 1 ? G.sel.tower : null); // eğitim: seçili, yükseltilebilir kule
@@ -6162,13 +6162,13 @@ const TUTS = [
     { text: () => (tutSelUp() ? (tutSelUp().type === 'archer' && !tutSelUp().path && tutSelUp().lvl === 0 ? 'Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun' : 'Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir') : 'Altının yetti: kuleye dokunup yükselt'),
       when: () => G.towers.some(o => o.lvl < o.def.levels.length - 1 && G.gold >= o.def.levels[o.lvl + 1].cost) || !!tutSelUp(),
       done: () => G.towers.some(o => o.lvl > 0), timeout: 40,
-      at: () => { const o = tutSelUp(); if (o) { const it = currentMenu().find(m => m.id === 'path' && m.type === 'bow') || currentMenu().find(m => m.id === 'upgrade'); return it && worldToScreen(it.x, it.y - 4); }
+      at: () => { const o = tutSelUp(); if (o) { const it = currentMenu().find(m => m.id === 'path' && m.type === 'bow') || currentMenu().find(m => m.id === 'upgrade'); return it && { x: it.x, y: it.y - 4 }; }
         const u = G.towers.find(o => G.gold >= (o.def.levels[o.lvl + 1] || {}).cost) || G.towers[0]; return u && worldToScreen(u.x, u.y - 46); } },
     { text: () => (G.mode && G.mode.kind === 'rally' ? 'Kesik çizgili alanın içinde yola dokun: askerler oraya yürür' : G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks' ? 'Bayrağa dokun' : 'Mahzene dokun: askerlerin bekleyeceği yeri değiştirebilirsin'),
       when: () => G.wave >= 2 && G.towers.some(o => o.type === 'barracks'), done: () => !!G.tutRally, timeout: 40,
       at: () => { if (G.mode && G.mode.kind === 'rally' && G.mode.tower) { const m = G.mode.tower, a = G.towers.find(o => o.type === 'archer') || m, q = nearestOnPaths(G.paths, a.x, a.y);
           return dist(q.x, q.y, m.x, m.y) <= m.def.levels[m.lvl].range ? worldToScreen(q.x, q.y - 4) : worldToScreen(m.rx, m.ry - 4); }
-        if (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks') { const it = currentMenu().find(o => o.id === 'rally'); return it && worldToScreen(it.x, it.y - 4); }
+        if (G.sel && G.sel.kind === 'tower' && G.sel.tower.type === 'barracks') { const it = currentMenu().find(o => o.id === 'rally'); return it && { x: it.x, y: it.y - 4 }; }
         const o = G.towers.find(o => o.type === 'barracks'); return o && worldToScreen(o.x, o.y - 46); } },
   ],
   [ // 2. bölüm
@@ -16095,7 +16095,10 @@ const mapToScreen = (x, y) => [x * MAPCAM.z + MAPCAM.tx, y * MAPCAM.z + MAPCAM.t
 // 15 Eki (Caner: "sefer haritasında yolun çevresindeki ormana dokununca etkileşime geçecek esprili ve korkunç şeyler olsun"): yol, bölüm işareti
 // ve düğmeler dışında haritaya dokununca nm7_* figürlerinden biri (Gemini nm7_orman_surpriz.jpg) ağacın arkasından fırlar, kendi hareketini yapar,
 // sesini çıkarır, üstünde Mortimer'ın kısa bir lafı belirir, sonra geri saklanır. Sıra karışık destedir (aynısı arka arkaya gelmez).
-const SURPRISE = { life: 2.1, h: 24, road: 26, node: 34, max: 3, list: [
+// 15 Eki (Caner: "her tıkladığımızda çıkmasın, uygun yerlere yerleştir, boyutları mantıklı olsun"): her bölgede yola yakın (ama yol üstünde değil),
+// birbirinden uzak gizli noktalar (spots); her noktanın kendi figürü var, yalnız oraya dokununca çıkar, sonra bir süre (cd) saklı kalır.
+// Keşfedilsin diye ara sıra (hint) görünen bir noktada çalıda iki küçük göz parlayıp söner.
+const SURPRISE = { life: 2.1, h: 12, road: [42, 95], gap: 110, node: 46, hit: 22, cd: 30, per: 0.7, hint: [6, 11], max: 3, list: [
   { n: 'nm7_owl', a: 'blink', s: ['eagle', 0.6, 0.6], say: 'Baykuş Bey uyuyordu.' },
   { n: 'nm7_eyes', a: 'eyes', s: ['mlaugh', 0.75, 0.5], say: 'Çalıda biri var...' },
   { n: 'nm7_ghost', a: 'float', s: ['fear', 1.2, 0.45], say: 'Utangaç hayalet: "Pışt!"' },
@@ -16107,17 +16110,34 @@ const SURPRISE = { life: 2.1, h: 24, road: 26, node: 34, max: 3, list: [
   { n: 'nm7_squirrel', a: 'jitter', s: ['rattle', 1.5, 0.5], say: 'Zombi sincap cevizini vermiyor.' },
   { n: 'nm7_cat', a: 'hiss', s: ['dogbite', 1.7, 0.6], say: 'Kara kedi yolunu kesti.' },
 ] };
+function mapSpots(ep) {
+  const C = (MAPFX.spots ||= {}); if (C[ep]) return C[ep];
+  const R = REGION_BG[ep], E = EPISODES[ep - 1]; if (!R || !R.road || !E || !E.nodes) return [];
+  const rnd = seeded(ep * 7919 + 13), out = [], want = Math.round(E.nodes.length * SURPRISE.per), deck = SURPRISE.list.map((_, i) => i);
+  for (let k = deck.length - 1; k > 0; k--) { const j = Math.floor(rnd() * (k + 1)); [deck[k], deck[j]] = [deck[j], deck[k]]; }
+  for (let i = 0; i < 600 && out.length < want; i++) {
+    const p = R.road[Math.floor(rnd() * R.road.length)], q = pathPos(p, rnd() * p.total, (rnd() < 0.5 ? -1 : 1) * (SURPRISE.road[0] + rnd() * (SURPRISE.road[1] - SURPRISE.road[0])));
+    if (nearestOnPaths(R.road, q.x, q.y).d < SURPRISE.road[0] - 4 || E.nodes.some(n => dist(n[0], n[1], q.x, q.y) < SURPRISE.node) || out.some(o => dist(o.x, o.y, q.x, q.y) < SURPRISE.gap)) continue;
+    out.push({ x: q.x, y: q.y, k: deck[out.length % deck.length], cd: 0 });
+  }
+  return (C[ep] = out);
+}
 function mapForestTap(sx, sy) {
-  const ep = mapEp, R = REGION_BG[ep], E = EPISODES[ep - 1]; if (!R || !R.road || !E || !E.nodes) return false;
   const z = MAPCAM.z, x = (sx - MAPCAM.tx) / z, y = (sy - MAPCAM.ty) / z;
-  if (R.road.some(p => nearestOnPaths([p], x, y).d < SURPRISE.road) || E.nodes.some(n => dist(n[0], n[1], x, y) < SURPRISE.node)) return false;
+  const sp = mapSpots(mapEp).find(o => dist(o.x, o.y, x, y) < SURPRISE.hit / Math.min(1.5, z) + 6); if (!sp || sp.cd > time) return false;
+  const S = SURPRISE.list[sp.k]; if (!spr(S.n)) return false;
   const L = (MAPFX.sur ||= []); if (L.length >= SURPRISE.max) L.shift();
-  if (!MAPFX.surDeck || !MAPFX.surDeck.length) { MAPFX.surDeck = SURPRISE.list.map((_, i) => i).sort(() => Math.random() - 0.5); if (MAPFX.surDeck[0] === MAPFX.surLast) MAPFX.surDeck.push(MAPFX.surDeck.shift()); }
-  const k = MAPFX.surDeck.shift(), S = SURPRISE.list[k]; MAPFX.surLast = k;
-  if (!spr(S.n)) return false;
-  L.push({ S, x, y, t: 0, f: Math.random() < 0.5 ? -1 : 1 });
+  sp.cd = time + SURPRISE.cd; L.push({ S, x: sp.x, y: sp.y, t: 0, f: sp.x < W / 2 ? 1 : -1 });
   sfx(S.s[0], S.s[1], S.s[2], null); haptic('light');
   return true;
+}
+function drawMapHint(V) { // gizli noktada çalıda iki küçük göz parlayıp söner (keşfettirmek için)
+  const H = (MAPFX.hint ||= { next: time + 4, at: null, t: 0 });
+  if (!H.at && time > H.next) { const list = mapSpots(mapEp).filter(o => o.cd < time && o.x > V[0] && o.x < V[2] && o.y > V[1] && o.y < V[3]); H.next = time + SURPRISE.hint[0] + Math.random() * (SURPRISE.hint[1] - SURPRISE.hint[0]); if (list.length) { H.at = list[Math.floor(Math.random() * list.length)]; H.t = time; } }
+  if (!H.at) return; const u = (time - H.t) / 0.9; if (u >= 1) { H.at = null; return; }
+  const a = Math.sin(u * Math.PI) * (u > 0.45 && u < 0.55 ? 0.2 : 1), x = H.at.x, y = H.at.y - 5;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x - 1.6, y, 2.4, '255,220,90', a * 0.9); glow(ctx, x + 1.6, y, 2.4, '255,220,90', a * 0.9); ctx.restore();
+  ctx.fillStyle = `rgba(255,236,150,${a})`; ctx.beginPath(); ctx.arc(x - 1.6, y, 0.6, 0, Math.PI * 2); ctx.arc(x + 1.6, y, 0.6, 0, Math.PI * 2); ctx.fill();
 }
 function drawMapSurprises(dt) {
   const L = MAPFX.sur; if (!L || !L.length) return;
@@ -16137,7 +16157,7 @@ function drawMapSurprises(dt) {
     const h = SURPRISE.h * (S.n === 'nm7_hand' || S.n === 'nm7_owl' ? 1.25 : 1), w = h * im.width / im.height;
     ctx.save(); ctx.globalAlpha *= al; ctx.translate(o.x + dx, o.y + dy); ctx.rotate(rot); ctx.scale(sx * o.f, sy);
     ctx.drawImage(im, -w / 2, -h, w, h); ctx.restore();
-    if (t > 0.25 && t < T - 0.2) { ctx.save(); ctx.globalAlpha *= Math.min(1, (t - 0.25) / 0.2) * Math.min(1, (T - 0.2 - t) / 0.3); txt(S.say, o.x, o.y - h - 5 - Math.min(1, t) * 3, 5.5, '#f4e6c8'); ctx.restore(); }
+    if (t > 0.25 && t < T - 0.2) { ctx.save(); ctx.globalAlpha *= Math.min(1, (t - 0.25) / 0.2) * Math.min(1, (T - 0.2 - t) / 0.3); txt(S.say, o.x, o.y - h - 4 - Math.min(1, t) * 2, 4.6, '#f4e6c8'); ctx.restore(); }
   }
 }
 function drawRegionMap(E, ep, st) {
@@ -16148,7 +16168,7 @@ function drawRegionMap(E, ep, st) {
   drawBgLights(R.lights, V);
   drawGraveHands(R.hands, uiParts); drawBanners(R.banners, V);
   MAPFX.fog = drawMapFog2(E, ep, road, X);
-  drawMapSurprises(dt);
+  drawMapHint(V); drawMapSurprises(dt);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
   const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
@@ -18186,6 +18206,7 @@ function worldTap(x, y) {
       } else {
         floatText(x, y, 'Menzil dışı', '#f66');
         sfx('error');
+        G.mode = m; // 15 Eki (Caner): uyarıdan sonra seçim iptal olmaz, başka yer seçilebilir (bayrağa yeniden dokunmak gerekmez)
       }
     }
     return;
@@ -18435,6 +18456,8 @@ window.__game = {
     return { strips: Math.round(strips), other: Math.round(other), white: Math.round(white), rot: Math.round(rot), big: L.sort((a, b) => b[1] - a[1]).slice(0, n), others: n > 15 ? Object.keys(SPR).filter(k => !LAZY_RE.test(k)).map(k => [k, Math.round(mb(SPR[k]))]).sort((a, b) => b[1] - a[1]).slice(0, n) : null };
   },
   collapse: (i) => G.plots[i].tower && collapseTower(G.plots[i].tower), // test: kuleyi yık (moloz)
+  mapSpots: () => mapSpots(mapEp).map(o => ({ x: MAPCAM.tx + o.x * MAPCAM.z, y: MAPCAM.ty + o.y * MAPCAM.z, k: SURPRISE.list[o.k].n })), // test: harita sürpriz noktaları (ekran)
+  surN: () => (MAPFX.sur || []).length,
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
