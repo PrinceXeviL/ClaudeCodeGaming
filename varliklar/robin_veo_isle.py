@@ -24,25 +24,26 @@ SOURCES = [
     ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 636, {'hero_robin_atk': list(range(70, 93, 2)) + list(range(42, 63, 2))}, (403, 451, 662)),
     # 14 Eki: çift hareketli video: 8-66 Kurt Uluması (çömelir, göğe uluyup yeşil dalga, döner), 88-168 ölüm (sendeler, yay düşer, yere yığılır, ruh izleri)
     ('ham/anim/robin_ulu_olum_veo.mp4', 80, 640, 651, {'hero_robin_skill2': list(range(8, 67, 2))}, (480, 480, 662)),
-    ('ham/anim/robin_ulu_olum_veo.mp4', 80, 640, 630, {'hero_robin_die': list(range(88, 169, 3))}, (403, 451, 705)),
+    ('ham/anim/robin_ulu_olum_veo.mp4', 80, 640, 630, {'hero_robin_die': list(range(88, 169))}, (403, 451, 705)),
     ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 661, {'hero_robin_cast': list(range(72, 97, 4)) + list(range(100, 134, 3)) + list(range(134, 167, 3)) + list(range(169, 191, 4))}, (560, 560, 662)),
 ]
 TARGET = 220                               # figür boyu (şerit pikseli; serit_kucult komutan hedefi)
-EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}, 'hero_robin_cast': {'dur': 2.4}, 'hero_robin_die': {'dur': 2.0}}  # dur: yetenek şeridinin süresi (sn; yoksa HERO_ANIM.cast)
+EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}, 'hero_robin_cast': {'dur': 2.4}, 'hero_robin_die': {'dur': round(81 / 24, 2)}}  # 16 Eki: ölüm her kareyle (Veo akıcılık)
+ONLY = set(sys.argv[1:])  # ör. hero_robin_die: yalnız o şerit  # dur: yetenek şeridinin süresi (sn; yoksa HERO_ANIM.cast)
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
 for src, FIG_TOP, FIG_BOT, CX, SETS, *B in SOURCES:
+    if ONLY and not ONLY & set(SETS): continue
     L, R, Y1 = B[0] if B else (330, 370, 548)
     BOX = (CX - L, 0, CX + R, Y1)           # ortak kesim kutusu (göğe kalkan yay ve savrulan pelerin içeride; Kemik Ok'un savrulması için geniş)
     fr = video_isle.frames_of(os.path.join(H0, src), 24)
     k = TARGET / (FIG_BOT - FIG_TOP); x0, y0, x1, y1 = BOX
     FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
     for name, order in SETS.items():
-        out = Image.new('RGBA', (FW * len(order), FH), (0, 0, 0, 0))
-        for i, n in enumerate(order):
-            a = video_isle.remove_white(fr[n])[y0:y1, max(0, x0):x1]
-            out.paste(Image.fromarray(a).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
+        if ONLY and name not in ONLY: continue
+        out, cols = video_isle.pack([Image.fromarray(video_isle.remove_white(fr[n])[y0:y1, max(0, x0):x1]).resize((FW, FH), Image.LANCZOS) for n in order], FW, FH)
         out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
         meta[name] = dict({'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4)}, **EXTRA.get(name, {}))
+        if cols: meta[name]['cols'] = cols
         if name + '.webp' not in man: man.append(name + '.webp')
         print(name, meta[name], os.path.getsize(os.path.join(IMG, name + '.webp')) // 1024, 'KB')
 json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)

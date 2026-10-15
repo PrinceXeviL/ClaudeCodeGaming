@@ -1,0 +1,9 @@
+Static locked-off camera, no camera movement, no zoom. Flat solid magenta (#FF00FF) background for the entire video, no ground, no shadows on the background, no other objects. 2D hand-painted cartoon game art style, exactly like the reference image; keep the tower's design, colors and proportions identical. The tower stays small and centered with wide empty magenta margins on all sides: nothing (debris, dust, magic) ever leaves the frame.
+
+ACTION 1 (0-2.5 s): HIT REACTION. A heavy unseen impact strikes the tower from the left side: the whole tower shudders, squashes and leans a little, a few small stones, bone chips and a small puff of dust pop off, a crack appears, then it wobbles back with a little bounce and stands exactly as in the reference image again.
+
+PAUSE (2.5-3.2 s): everything completely still, the tower exactly as in the reference image.
+
+ACTION 2 (3.2-8 s): DESTRUCTION. A second, much heavier hit. Cracks spread through the whole tower, its parts snap, skulls and bones pop off and tumble. The top tilts and caves in, the walls break into big chunky cartoon blocks and bones that fall straight down and bounce once. A thick puff of grey-brown cartoon dust bursts out and quickly settles. Exaggerated, punchy, satisfying cartoon collapse (squash and stretch), not realistic. It ends as a low heap of broken pieces on the spot where the tower stood, completely still for the last second.
+
+No people, no text, no ground plane, no color tint over the tower. Dust stays close to the tower.

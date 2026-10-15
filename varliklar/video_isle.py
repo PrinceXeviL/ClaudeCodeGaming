@@ -146,3 +146,12 @@ def remove_white_fx(a, dark=110, grow=10, gain=1.7, core_r=6, core_max=5000):
     out[core, :3] = f[core]; out[core, 3] = 235
     out[~body & ~fx & ~core] = 0
     return out.astype(np.uint8)
+
+
+def pack(tiles, FW, FH, limit=16000):
+    """16 Eki: kareleri şeride dizer; WebP 16383 px sınırını aşarsa satırlara böler.
+    Döner: (görsel, cols) — cols yalnız birden çok satır varsa anim.json'a 'cols' olarak yazılır (game.js drawFrame okur)."""
+    n = len(tiles); rows = max(1, -(-FW * n // limit)); cols = -(-n // rows)
+    out = Image.new('RGBA', (FW * cols, FH * rows), (0, 0, 0, 0))
+    for i, t in enumerate(tiles): out.paste(t, ((i % cols) * FW, (i // cols) * FH))
+    return out, (cols if rows > 1 else None)

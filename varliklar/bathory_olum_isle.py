@@ -12,7 +12,7 @@ SRC = 'ham/anim/bathory_saldiri_olum_veo.mp4'
 FIG_TOP, FIG_BOT, CX = 82, 616, 643  # CX: gövde ortası bekleme şeridiyle hizalı
 BOX = (CX - 420, 40, CX + 420, 690)
 TARGET = 220  # komutan şerit boyu (serit_kucult.py; telefon belleği)
-name, order = 'hero_bathory_die', list(range(86, 169, 3))   # WebP 16383 px sınırı: 28 kare
+name, order = 'hero_bathory_die', list(range(86, 169))   # 16 Eki: her kare (Veo akıcılık kuralı), sığmazsa satırlara bölünür
 fr = video_isle.frames_of(os.path.join(H0, SRC), 24)
 # Veo sisi gri-beyaz çizdi (prompt kızıl istiyordu) ve beyaz silmede opak leke kalıyor: yığılmış gövdenin (168. kare) dışındaki
 # açık renkli, doygunluğu düşük pikseller yarı saydam koyu kızıl sise çevrilir
@@ -28,13 +28,12 @@ def mist(a, n):
     return f.astype(np.uint8)
 k = TARGET / (FIG_BOT - FIG_TOP); x0, y0, x1, y1 = BOX
 FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
-out = Image.new('RGBA', (FW * len(order), FH), (0, 0, 0, 0))
-for i, n in enumerate(order):
-    a = mist(video_isle.remove_white(fr[n]), n)[y0:y1, x0:x1]
-    out.paste(Image.fromarray(a).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
+tiles = [Image.fromarray(mist(video_isle.remove_white(fr[n]), n)[y0:y1, x0:x1]).resize((FW, FH), Image.LANCZOS) for n in order]
+out, cols = video_isle.pack(tiles, FW, FH)
 out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
-meta[name] = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4), 'dur': 2.2}
+meta[name] = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4), 'dur': round(len(order) / 24, 2)}
+if cols: meta[name]['cols'] = cols
 if name + '.webp' not in man: man.append(name + '.webp')
 print(name, meta[name], os.path.getsize(os.path.join(IMG, name + '.webp')) // 1024, 'KB')
 json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)

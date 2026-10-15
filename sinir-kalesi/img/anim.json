@@ -395,11 +395,12 @@
   "ch": 0.9202
  },
  "enemy_eagle_atk": {
-  "n": 27,
+  "n": 79,
   "fw": 418,
   "fh": 346,
   "base": 0.2953,
-  "ch": 0.4332
+  "ch": 0.4332,
+  "cols": 27
  },
  "enemy_gladiator_atk2": {
   "n": 32,
@@ -2200,12 +2201,13 @@
   "ch": 0.8459
  },
  "hero_robin_die": {
-  "n": 27,
+  "n": 81,
   "fw": 336,
   "fh": 277,
   "base": 0.0922,
   "ch": 0.7943,
-  "dur": 2.0
+  "dur": 3.38,
+  "cols": 41
  },
  "hero_bathory_walk": {
   "n": 39,
@@ -2224,12 +2226,13 @@
   "ch": 0.8716
  },
  "hero_bathory_die": {
-  "n": 28,
+  "n": 83,
   "fw": 346,
   "fh": 268,
   "base": 0.1138,
   "ch": 0.8215,
-  "dur": 2.2
+  "dur": 3.46,
+  "cols": 42
  },
  "hero_merlin_atk": {
   "n": 33,
@@ -2239,12 +2242,13 @@
   "ch": 0.8492
  },
  "hero_merlin_die": {
-  "n": 25,
+  "n": 49,
   "fw": 343,
   "fh": 279,
   "base": 0.1014,
   "ch": 0.7886,
-  "dur": 2.0
+  "dur": 2.04,
+  "cols": 25
  },
  "hero_merlin_cast_timegate": {
   "n": 34,
@@ -2295,11 +2299,12 @@
   "dur": 2.2
  },
  "enemy_vulture_atk": {
-  "n": 25,
+  "n": 73,
   "fw": 348,
   "fh": 316,
   "base": 0.1574,
-  "ch": 0.4745
+  "ch": 0.4745,
+  "cols": 37
  },
  "enemy_cannon_walk": {
   "n": 36,

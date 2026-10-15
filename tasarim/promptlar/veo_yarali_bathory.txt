@@ -1,0 +1,9 @@
+Static locked-off camera, no camera movement, no zoom. Plain pure white background for the entire video, no ground, no shadows, no other objects. 2D hand-painted cartoon game art style exactly like the reference image; keep the character's design, colors and proportions identical. The character stays small in the center with wide empty white margins on all sides, especially above: nothing (weapon, magic, effects) ever leaves the frame. The character keeps facing the same direction as in the reference image the whole time.
+
+ACTION 1 (0-4 s): WOUNDED WALK IN PLACE, a seamless loop of two full limping steps. The vampire countess is badly hurt: hunched forward, one leg dragging and limping on every second step, one hand pressed against a wounded side, head low, staggering slightly and swaying, leaning on her heart scepter like a cane, her long gown dragging, blood dripping from the wound, her crown slightly tilted. Slow, heavy, exaggerated cartoon limp. It does not travel across the frame; it stays in the same spot. At 4 s it is back exactly in the reference pose.
+
+PAUSE (4-4.6 s): completely still in the reference pose.
+
+ACTION 2 (4.6-8 s): LEVEL UP VICTORY POSE. She straightens up proudly, raises her heart scepter high and laughs; a crimson whirl of blood drops and small bats spins around her for a moment, her gown and collar flaring. Then it settles back exactly into the reference pose and holds still for the last half second. Snappy, exaggerated, joyful cartoon motion.
+
+No text, no people, no ground plane, no color tint over the character.

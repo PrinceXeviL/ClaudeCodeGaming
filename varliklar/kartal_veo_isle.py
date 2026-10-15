@@ -13,7 +13,7 @@ IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img'); BAK = os.path.join(H0, 'cik
 SRC = 'ham/anim/kartal_ucus_dalis_veo.mp4'
 BOX = (335, 76, 895, 540)       # bütün karelerin (dalışın en alt ve en geniş anı dahil) kutusu, video pikseli
 TARGET = 150                    # uçuştaki ortanca kuş boyu (şerit pikseli)
-SETS = {'enemy_eagle_walk': list(range(25, 40)), 'enemy_eagle_atk': list(range(100, 179, 3))}
+SETS = {'enemy_eagle_walk': list(range(25, 40)), 'enemy_eagle_atk': list(range(100, 179))}
 fr = video_isle.frames_of(os.path.join(H0, SRC), 24)
 cut = lambda n: np.asarray(video_isle.remove_magenta(fr[n]))
 hs, bots = [], []
@@ -26,14 +26,16 @@ os.makedirs(BAK, exist_ok=True)
 for name, order in SETS.items():
     p = os.path.join(IMG, name + '.webp')
     if os.path.exists(p) and not os.path.exists(os.path.join(BAK, name + '.webp')): shutil.copy(p, BAK)
-    out = Image.new('RGBA', (FW * len(order), FH), (0, 0, 0, 0))
-    for i, n in enumerate(order):
+    tiles = []
+    for n in order:
         c = cut(n); keep = video_isle.biggest_mask(c[..., 3]); c[..., 3] = np.where(keep | ((c[..., 3] > 0) & (c[..., 3] <= 128)), c[..., 3], 0)
-        out.paste(Image.fromarray(c[y0:y1, x0:x1]).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
+        tiles.append(Image.fromarray(c[y0:y1, x0:x1]).resize((FW, FH), Image.LANCZOS))
+    out, cols = video_isle.pack(tiles, FW, FH)  # 16 Eki: dalış her kareyle (Veo akıcılık), sığmazsa satırlara
     out.save(p, 'WEBP', quality=86, method=6)
     old = meta.get(name, {})
     m = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - max(bots)) / (y1 - y0), 4), 'ch': round(chH / (y1 - y0), 4)}
     for kk in ('idle', 'sh', 'stride'):
         if kk in old: m[kk] = old[kk] if kk != 'idle' else 0
+    if cols: m['cols'] = cols
     meta[name] = m; print(name, m, out.size)
 json.dump(meta, open(meta_p, 'w'), indent=1)
