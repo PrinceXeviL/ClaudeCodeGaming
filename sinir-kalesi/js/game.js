@@ -2309,7 +2309,7 @@ function glow(c, x, y, r, col, a = 1) {
   c.globalAlpha = pa;
 }
 function emit(list, o) {
-  if (list.length > 900) return;
+  if (list.length > 520 || (list.length > 260 && Math.random() < (list.length - 260) / 260)) return; // 16 Eki (performans): kalabalıkta yeni parçacık seyrelir (eskiden 900'e dek hepsi)
   list.push(Object.assign({ t: 0, vx: 0, vy: 0, g: 0, drag: 0, s0: 2, s1: 0, a: 1, kind: 'dot' }, o));
 }
 function updateParts(list, dt) {
@@ -8814,16 +8814,27 @@ const ARTI_SPEC = { corpse: { range: 1.2, dmg: 1 }, plague: { dmg: 1.05, gas: 1.
 const cauldronPt = (t, ts, q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom - ts.h + q[1] * ts.h });
 // bomba düştü: alan hasarı, düşmanlar patlamadan uzağa savrulur (yakındakiler bir an yere düşer), yerde bulaşıcı zehir gölü kalır
 // veba kaplaması (15 Eki, Caner): vurulan düşmanın gövdesine yapışan yeşil veba lekeleri, ara ara damlar; zehir süresince solar
-function drawPlagueCoat(e, x, h, fly) {
-  const a = clamp(e.coatT / 1.2, 0, 1) * 0.85, r = seeded(Math.floor(e.off * 97 + 13));
-  ctx.save(); ctx.globalAlpha *= a;
+// 16 Eki (performans): kabarcıklar her karede 18 şekil çiziliyordu (kalabalıkta kare başına ~380 dolgu); şimdi boy ve tohuma göre bir kez
+// küçük bir tuvale çizilir (önbellek), karede tek drawImage. Hafif soluma: tuval dikeyde ±%3 nefes alır.
+const COAT_C = new Map();
+function coatTex(h, v) {
+  const H = Math.round(h / 4) * 4, key = H + '|' + v; let c = COAT_C.get(key); if (c) return c;
+  const K = 3, r = seeded(v * 97 + 13), W2 = H * 0.6; c = document.createElement('canvas'); c.width = Math.ceil(W2 * K); c.height = Math.ceil(H * K);
+  const g = c.getContext('2d'); g.scale(K, K);
   for (let i = 0; i < 6; i++) {
-    const bx = x + (r() - 0.5) * h * 0.36, by = e.y - fly - h * (0.18 + r() * 0.62) + Math.sin(time * 2 + i) * 0.4, br = h * (0.05 + r() * 0.05);
-    ctx.fillStyle = 'rgba(40,90,20,0.7)'; ctx.beginPath(); ctx.ellipse(bx, by + br * 0.25, br * 1.1, br * 0.9, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = i % 3 ? 'rgba(140,230,80,0.85)' : 'rgba(170,110,230,0.8)'; ctx.beginPath(); ctx.ellipse(bx, by, br, br * 0.8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(235,255,210,0.8)'; ctx.beginPath(); ctx.arc(bx - br * 0.35, by - br * 0.3, br * 0.25, 0, Math.PI * 2); ctx.fill();
+    const bx = W2 / 2 + (r() - 0.5) * H * 0.36, by = H - H * (0.18 + r() * 0.62), br = H * (0.05 + r() * 0.05);
+    g.fillStyle = 'rgba(40,90,20,0.7)'; g.beginPath(); g.ellipse(bx, by + br * 0.25, br * 1.1, br * 0.9, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = i % 3 ? 'rgba(140,230,80,0.85)' : 'rgba(170,110,230,0.8)'; g.beginPath(); g.ellipse(bx, by, br, br * 0.8, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(235,255,210,0.8)'; g.beginPath(); g.arc(bx - br * 0.35, by - br * 0.3, br * 0.25, 0, Math.PI * 2); g.fill();
   }
-  ctx.restore();
+  if (COAT_C.size > 60) COAT_C.delete(COAT_C.keys().next().value);
+  COAT_C.set(key, c); return c;
+}
+function drawPlagueCoat(e, x, h, fly) {
+  const a = clamp(e.coatT / 1.2, 0, 1) * 0.85, c = coatTex(h, Math.floor(e.off * 97) & 3), H = Math.round(h / 4) * 4, br = 1 + Math.sin(time * 2 + e.off) * 0.03;
+  const pa = ctx.globalAlpha; ctx.globalAlpha = pa * a;
+  ctx.drawImage(c, x - H * 0.3, e.y - fly - H * br, H * 0.6, H * br);
+  ctx.globalAlpha = pa;
   if (Math.random() < 0.06) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
 }
 function plagueBomb(pr) {
@@ -9220,7 +9231,7 @@ function drawTowerLive(t, ts) { // kulenin yerel koordinatında: (0,0) tabanın 
   const P = (f) => ({ x: (f[0] - 0.5) * ts.w, y: (f[1] - 1) * ts.h }), sd = t.x * 0.031 + t.y * 0.017;
   if (L.flags) L.flags.forEach((b, i) => {
     const im = spr(ts.name + '_flag' + (i + 1)); if (!im) return;
-    const p = P(b), w = (b[2] - b[0]) * ts.w, h = (b[3] - b[1]) * ts.h, iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, N = 16;
+    const p = P(b), w = (b[2] - b[0]) * ts.w, h = (b[3] - b[1]) * ts.h, iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, N = 8; // 16 Eki (performans): 16 → 8 dilim
     for (let k = 0; k < N; k++) {
       const u = (k + 0.5) / N, dx = w * (0.075 * Math.pow(u, 1.3) * Math.sin(time * 2.3 + sd + i * 1.7 - u * 3.4) + 0.018 * u * Math.sin(time * 5.1 + i * 2.1 + sd));
       const sy = k * ih / N, sh = Math.min(ih / N + 0.6, ih - sy); // dikişsiz dilimler; son dilim görselin dışına taşmasın (iOS hiç çizmiyor)
@@ -9283,21 +9294,32 @@ function frontLit(name, FI, lit) {
   g.globalCompositeOperation = 'destination-in'; g.drawImage(FI, 0, 0);
   FRONT_LIT.set(name, c); return c;
 }
+const LIT_C = new Map();
+function towerLitTex(t, ts) {
+  const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col, W0 = ts.w, H0 = ts.h, key = lc.join() + '|' + Math.round(W0) + '|' + Math.round(H0);
+  let L = LIT_C.get(key); if (L) return L;
+  const x0 = -W0 * 0.8, y0 = -H0 * 0.32 - W0 * 0.8, w = W0 * 1.6, h = -y0 + W0 * 0.45, K = 2;
+  const mk = () => { const c = document.createElement('canvas'); c.width = Math.ceil(w * K); c.height = Math.ceil(h * K); const g = c.getContext('2d'); g.scale(K, K); g.translate(-x0, -y0); return [c, g]; };
+  const [sc, sg] = mk(), sh = sg.createRadialGradient(0, -2, 2, 0, -2, W0 * 0.62);
+  sh.addColorStop(0, `rgba(8,4,12,${TOWER_LIT.shade})`); sh.addColorStop(1, 'rgba(8,4,12,0)');
+  sg.translate(0, -2); sg.scale(1, 0.42); sg.fillStyle = sh; sg.beginPath(); sg.arc(0, 0, W0 * 0.62, 0, Math.PI * 2); sg.fill();
+  const [lcv, lg] = mk(); lg.globalCompositeOperation = 'lighter';
+  glow(lg, 0, -H0 * 0.32, W0 * 0.78, lc[0], TOWER_LIT.back); // arkadan: siluet zeminden ayrılır
+  glow(lg, -W0 * 0.2, -3, W0 * 0.42, lc[0], TOWER_LIT.pool);
+  glow(lg, W0 * 0.2, -3, W0 * 0.42, lc[1], TOWER_LIT.pool);
+  L = { sh: sc, li: lcv, x0, y0, w, h }; LIT_C.set(key, L); return L;
+}
+const PERF_OFF = new Set(); // test: çizim katmanlarını tek tek kapatıp maliyet ölçmek için (__game.perfOff)
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
-    if (NECRO) { // temas gölgesi (binayı zemine oturtur) ve ayağındaki soluk ışık havuzu
-      const sh = ctx.createRadialGradient(t.x, ts.bottom - 2, 2, t.x, ts.bottom - 2, ts.w * 0.62);
-      sh.addColorStop(0, `rgba(8,4,12,${TOWER_LIT.shade})`); sh.addColorStop(1, 'rgba(8,4,12,0)');
-      ctx.save(); ctx.translate(t.x, ts.bottom - 2); ctx.scale(1, 0.42); ctx.translate(-t.x, -(ts.bottom - 2));
-      ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(t.x, ts.bottom - 2, ts.w * 0.62, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      const lc = TOWER_LIT.cols[t.type] || TOWER_LIT.col;
-      glow(ctx, t.x, ts.bottom - ts.h * 0.32, ts.w * 0.78, lc[0], TOWER_LIT.back); // arkadan: siluet zeminden ayrılır
-      glow(ctx, t.x - ts.w * 0.2, ts.bottom - 3, ts.w * 0.42, lc[0], TOWER_LIT.pool);
-      glow(ctx, t.x + ts.w * 0.2, ts.bottom - 3, ts.w * 0.42, lc[1], TOWER_LIT.pool);
-      ctx.restore();
-      drawTowerFog(t, ts, false);
+    if (NECRO && !PERF_OFF.has('tlight')) { // temas gölgesi (binayı zemine oturtur) ve ayağındaki soluk ışık havuzu
+      const L = towerLitTex(t, ts); // 16 Eki (performans): gölge ve ışık havuzu kule başına bir kez çizilir (her karede degrade + 3 parıltı yerine 2 drawImage)
+      ctx.drawImage(L.sh, t.x + L.x0, ts.bottom + L.y0, L.w, L.h);
+      const op = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(L.li, t.x + L.x0, ts.bottom + L.y0, L.w, L.h);
+      ctx.globalCompositeOperation = op;
+      if (!PERF_OFF.has('tfog')) drawTowerFog(t, ts, false);
     }
     const age = G.t - (t.born ?? -9);
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
@@ -9314,16 +9336,16 @@ function drawTowerBody(t) {
     else {
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), SP = TOWER_SPLIT[ts.name];
       if (SP) drawSplitTower(t, ts, lit || ts.im, SP); else drawSprite(ctx, lit || ts.im, 0, 0, ts.w);
-      if (NECRO && xbowCount(t)) drawTowerLive(t, ts); // bayraklar dalgalanır, rünlerin rengi döner
+      if (NECRO && xbowCount(t) && !PERF_OFF.has('tlive')) drawTowerLive(t, ts); // bayraklar dalgalanır, rünlerin rengi döner
       if (NECRO && t.type === 'mage') drawLanternArm(t, ts); // Ruh Feneri: sallanan fener / feneri kaldıran kol
     }
     ctx.restore();
-    if (NECRO && t.type === 'archer' && xbowCount(t)) drawBoneTowerFx(t, ts, 'back'); // parıltının arka yarısı okçuların altında kalır
-    if (xbowCount(t) && pop >= 0.99) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
+    if (NECRO && t.type === 'archer' && xbowCount(t) && !PERF_OFF.has('tfx')) drawBoneTowerFx(t, ts, 'back'); // parıltının arka yarısı okçuların altında kalır
+    if (xbowCount(t) && pop >= 0.99 && !PERF_OFF.has('men')) drawXbowMen(t, ts, () => { // korkuluk çizgisinin altını yeniden çiz
       const lit = NECRO && litOf(ts.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col), C = xbowCfg(t).clip, FI = xbowCfg(t).front && spr(ts.name + '_front');
       if (FI) { // ayrı ön korkuluk katmanı: parmaklıkların arasından okçular görünür
         ctx.drawImage(frontLit(ts.name, FI, lit), t.x - ts.w / 2, ts.bottom - ts.h, ts.w, ts.w * FI.height / FI.width);
-        if (NECRO && t.type === 'archer') drawBoneTowerFx(t, ts, 'front');
+        if (NECRO && t.type === 'archer' && !PERF_OFF.has('tfx')) drawBoneTowerFx(t, ts, 'front');
         return;
       }
       if (!C) return; // ön korkuluk yok: ayaklar platformun üstünde görünür
@@ -9334,8 +9356,8 @@ function drawTowerBody(t) {
       if (NECRO && t.type === 'archer') drawBoneTowerFx(t, ts, 'front'); // run, göz, ön alev: yalnız korkuluk ve gövde bölgesinde, okçuların üstüne taşmaz
       ctx.restore();
     });
-    drawNecroTowerFx(t, ts);
-    drawTowerFog(t, ts, true);
+    if (!PERF_OFF.has('nfx')) drawNecroTowerFx(t, ts);
+    if (!PERF_OFF.has('tfog')) drawTowerFog(t, ts, true);
     if (t.ab) {
       const ids = t.def.abilities.filter(a => t.ab[a.id]);
       ids.forEach((a, i) => {
@@ -10160,7 +10182,7 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
     for (let i = 0; i < N; i++) {
       const ya = i / N, yb = (i + 1) / N, oA = bend * (1 - ya) * (1 - ya), oB = bend * (1 - yb) * (1 - yb);
       const cA = -h + ya * h, cB = -h + yb * h, sh = (oA - oB) / (cA - cB);
-      ctx.save(); ctx.transform(1, 0, sh, 1, oB - cB * sh, 0); part(0, Math.max(0, ya - 0.004), 1, Math.min(1, yb + 0.004), 0, 0); ctx.restore();
+      const MS = ctx.getTransform(); ctx.transform(1, 0, sh, 1, oB - cB * sh, 0); part(0, Math.max(0, ya - 0.004), 1, Math.min(1, yb + 0.004), 0, 0); ctx.setTransform(MS);
     }
     ctx.restore();
     return;
@@ -10179,8 +10201,8 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
   const xs = rig.xs ?? 0.5, ov = 0.1, legLen = (1 - legY) * h, hy = -h + legY * h;
   const leg = (x0, x1, step, lift) => {
     const hx = -w / 2 + (x0 + x1) / 2 * w;
-    ctx.save(); ctx.translate(hx + step * w * 0.35, hy - lift * h); ctx.rotate(-Math.atan2(step * w * 0.65, legLen)); ctx.translate(-hx, -hy);
-    part(x0, legY - 0.03, x1, 1, 0, 0); ctx.restore();
+    const M0 = ctx.getTransform(); ctx.translate(hx + step * w * 0.35, hy - lift * h); ctx.rotate(-Math.atan2(step * w * 0.65, legLen)); ctx.translate(-hx, -hy);
+    part(x0, legY - 0.03, x1, 1, 0, 0); ctx.setTransform(M0); // 16 Eki: save/restore yerine (kalabalıkta kare başına yüzlerce kez; Safari'de pahalı)
   };
   leg(0, xs + ov, P.stepB, P.liftB);                                     // arka bacak
   leg(xs - ov, 1, P.stepF, P.liftF);                                     // ön bacak
@@ -10188,11 +10210,11 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
   const hipY = -h * (1 - legY), bend = (P.bend || 0) * h, top = legY + 0.04;
   ctx.save(); ctx.translate(0, hipY + P.bodyDy); ctx.rotate(P.rot); ctx.scale(P.sx, P.sy); ctx.translate(0, -hipY);
   const off = (y) => { const s = clamp((legY - y) / legY, 0, 1); return bend * s * s; };
-  const N = quality < 0.9 ? 3 : 5; // düşük grafik kalitesinde daha az dilim
+  const N = quality < 0.9 ? 3 : 5, MB = ctx.getTransform(); // düşük grafik kalitesinde daha az dilim
   for (let i = 0; i < N; i++) {
     const ya = top * i / N, yb = top * (i + 1) / N, oA = off(ya), oB = off(yb);
     const cA = -h + ya * h, cB = -h + yb * h, sh = (oA - oB) / (cA - cB);
-    ctx.save(); ctx.transform(1, 0, sh, 1, oB - cB * sh, 0); part(0, Math.max(0, ya - 0.004), 1, Math.min(1, yb + 0.004), 0, 0); ctx.restore();
+    ctx.transform(1, 0, sh, 1, oB - cB * sh, 0); part(0, Math.max(0, ya - 0.004), 1, Math.min(1, yb + 0.004), 0, 0); ctx.setTransform(MB);
   }
   if (cut) for (const A of cut.arms) {
     // kol, omzun bulunduğu gövde diliminin kaymasıyla birlikte gider ve omuzdan döner
@@ -10200,8 +10222,8 @@ function drawRigTo(ctx, im, w, h, legY, P, rig, arms) {
     let ang = (a.ph ? P.arm2 : P.arm) * (a.amp ?? 1);
     if (ang > 0) ang *= a.ov ?? 1; // aşağı sarkan silah: vuruş dinlenme duruşunda biter, geriye savrulmaz
     const am = pickMip(ctx, A.c, w);
-    ctx.save(); ctx.translate(px + off(a.p[1]), py); ctx.rotate(ang); ctx.translate(-px, -py);
-    ctx.drawImage(am, -w / 2, -h, w, h); ctx.restore();
+    ctx.translate(px + off(a.p[1]), py); ctx.rotate(ang); ctx.translate(-px, -py);
+    ctx.drawImage(am, -w / 2, -h, w, h); ctx.setTransform(MB);
   }
   ctx.restore();
 }
@@ -18313,6 +18335,7 @@ window.__game = {
     return out.toDataURL();
   },
   music: MUSIC,
+  perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
   path: (i, p) => buyPath(G.plots[i].tower, p), imbue: (i, k) => buyImbue(G.plots[i].tower, k), // test: Kemik Kulesi yolu ve silah büyüsü
