@@ -126,6 +126,10 @@ def main():
         made.append(save('plaguethrow_1', lq, -19)); made.append(save('plaguethrow_2', pitch(lq, 0.88), -19))
     made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
     # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
+    # 16 Eki: iskelet sesleri (kelimesiz): seçince, bayrağa gönderince, öldürünce kahkaha
+    for n, cnt, db in [('skelsel', 3, -24), ('skelmove', 3, -24), ('skellaugh', 3, -25)]:
+        for i in range(1, cnt + 1):
+            made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.003, 0.12), db))
     for n, cnt, db in [('xbow', 3, -23), ('xbowh', 2, -20), ('armorhit', 3, -25), ('rattle', 2, -25)]:
         for i in range(1, cnt + 1):
             made.append(save(f'{n}_{i}', fade(load_mp3(f'{n}_{i}'), 0.002, 0.08), db))

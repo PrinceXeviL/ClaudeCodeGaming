@@ -511,6 +511,10 @@ const SOUND = {
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
   armorhit: { vol: 0.2, gap: 0.08, max: 2, rate: [0.9, 1.12] },     // cıvata zırha çarpar (metal tınlaması)
   rattle:  { vol: 0.2, gap: 0.25, max: 1, rate: [0.92, 1.1] },      // iskelet mahzenden çıkarken kemik takırtısı
+  // 16 Eki (Caner): iskelet sesleri (ElevenLabs, kelimesiz): Mahzen seçilince, bayrağa gönderilince, öldürünce kahkaha
+  skelsel:  { vol: 0.42, gap: 0.7, max: 1, rate: [0.9, 1.1] },
+  skelmove: { vol: 0.42, gap: 0.9, max: 1, rate: [0.92, 1.08] },
+  skellaugh: { vol: 0.3, gap: 7, max: 1, rate: [0.9, 1.1] },
   // ElevenLabs efektleri (varliklar/elevenlabs_efekt.py): yeni birimler ve Mortimer'ın büyüleri
   elephant: { vol: 0.5, gap: 3, max: 1, rate: [0.95, 1.05] },     // savaş fili böğürmesi (gelişte, ezerken)
   vulture:  { vol: 0.32, gap: 2.5, max: 1, rate: [0.92, 1.1] },   // akbaba çığlığı (gelişte, ceset yerken)
@@ -2874,6 +2878,7 @@ function drawSlowMo() {
 }
 function killEnemy(e) { const P = SFX_POS; SFX_POS = e; try { killEnemy0(e); } finally { SFX_POS = P; } } // ölüm sesleri ölenin yerinden
 function killEnemy0(e) {
+  if (e.lastSrc === 'melee' && NECRO && Math.random() < 0.18) sfx('skellaugh'); // 16 Eki: iskelet öldürünce arada kıkırdar (seyrek)
   // mumya: bir kez yarı canla dirilir; patlama (top, göktaşı, napalm) ile ölürse dirilmez
   if (e.def.revive && !e.revived && e.lastSrc !== 'blast') {
     e.revived = true; e.hp = e.maxHp * e.def.revive; e.reviveT = 1.1; e.blocker = null;
@@ -11990,6 +11995,7 @@ function setSel(sel) {
   if (same) return;
   if (old && (old.kind === 'plot' || old.kind === 'tower' || old.kind === 'castle' || old.kind === 'hatch')) G.menuClose = { layout: menuLayout(old), t: time, preview: G.preview };
   G.sel = sel; G.preview = null; G.menuT = time;
+  if (sel && sel.kind === 'tower' && sel.tower.type === 'barracks' && sel.tower.soldiers.some(q => !q.dead)) sfx('skelsel'); // iskeletler "emredersin"
 }
 
 function drawMenu() {
@@ -18362,7 +18368,7 @@ function worldTap(x, y) {
         t.rx = px; t.ry = py; G.tutRally = true;
         for (const s of t.soldiers) { releaseSoldier(s); s.moving = true; }
         G.effects.push({ kind: 'ring', x: px, y: py, r: 22, col: '120,180,255', t: 0, dur: 0.4 });
-        sfx('click');
+        sfx('click'); sfx('skelmove');
       } else {
         floatText(x, y, 'Menzil dışı', '#f66');
         sfx('error');

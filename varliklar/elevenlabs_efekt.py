@@ -31,6 +31,10 @@ SFX = {
     'xbowh': ('heavy siege crossbow firing, loud thick string thump, heavy mechanism clunk, bolt whooshing away, short, no music', 0.9, 2),
     'armorhit': ('crossbow bolt striking steel plate armor, short sharp metallic clang and ricochet ping, no music', 0.5, 3),
     'rattle': ('skeleton warrior stepping out of a stone crypt, dry bones rattling and clattering, short, no music', 0.9, 2),
+    # 16 Eki (Caner): iskeletlere kısa sesler (kelimesiz: dile bağlı değil). Seçince / bayrağa gönderince / öldürünce kahkaha
+    'skelsel': ('a cartoon skeleton soldier answering an order, short raspy hollow undead grunt like hrrah, with a quick clack of its jaw bones and a dry bone rattle, funny, game voice, no words, no music', 0.8, 3),
+    'skelmove': ('a small group of cartoon skeleton warriors marching off with a raspy hollow undead battle cry, bones clattering, short, funny, no words, no music', 1.0, 3),
+    'skellaugh': ('a cartoon skeleton cackling a short creepy hollow laugh, jaw bones clacking, heh heh heh, funny, no words, no music', 0.9, 3),
     # 15 Eki (Caner: Merlin'in büyü sesi çok kötü): Merlin'e özel sesler
     'soulorb': ('dark sorcerer hurling a magic orb of ghostly green and purple energy, short swirling whoosh with a crackling magical spark and an eerie shimmering chime, fantasy game spell, no music', 0.8, 3),
     'soulbolt': ('eerie green necromantic lightning arcing and chaining between several targets, sharp electric crackle and zaps with a ghostly hiss, fantasy spell, short, no music', 1.0, 2),
