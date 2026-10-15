@@ -1386,13 +1386,13 @@
   "stride": 0.885
  },
  "enemy_ram_die": {
-  "n": 91,
+  "n": 67,
   "fw": 390,
   "fh": 189,
   "base": 0.1902,
   "ch": 0.6333,
-  "cols": 31,
-  "dur": 3.8
+  "cols": 34,
+  "dur": 2.8
  },
  "enemy_catapult_die": {
   "n": 33,
@@ -2318,13 +2318,13 @@
   "ch": 0.6784
  },
  "enemy_cannon_die": {
-  "n": 81,
+  "n": 51,
   "fw": 478,
   "fh": 199,
   "base": 0.1103,
   "ch": 0.6784,
-  "cols": 27,
-  "dur": 3.4
+  "cols": 26,
+  "dur": 2.1
  },
  "enemy_siegetower_walk": {
   "n": 34,
@@ -2336,12 +2336,12 @@
   "stride": 1.2
  },
  "enemy_siegetower_die": {
-  "n": 89,
+  "n": 65,
   "fw": 449,
   "fh": 224,
   "base": 0.145,
   "ch": 0.6683,
-  "cols": 30,
-  "dur": 3.7
+  "cols": 33,
+  "dur": 2.7
  }
 }
