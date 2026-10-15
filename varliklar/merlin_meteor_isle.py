@@ -12,29 +12,30 @@ import video_isle
 IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 FIG_TOP, FIG_BOT = 77, 629
 TARGET = 220
-fwd = list(range(14, 75, 3))
+fwd = list(range(14, 75))   # 16 Eki: her kare (Veo akıcılık)
+ONLY = set(sys.argv[1:])  # 16 Eki: ad verilirse yalnız o şeritler yeniden kesilir (ötekiler olduğu gibi kalır)
 SOURCES = [
     ('ham/anim/merlin_suzulme_meteor_veo.mp4', 630, {
         'hero_merlin_walk': (fwd + fwd[-2:0:-1], (300, 300, 0, 650), {'idle': 0, 'stride': 0.8}, False),
         'hero_merlin_skill': (list(range(98, 181, 2)), (380, 380, 0, 650), {}, {'core_r': 12, 'grow': 5})}),
     ('ham/anim/merlin_simsek_kurbaga_veo.mp4', 628, {
         'hero_merlin_skill2': (list(range(6, 71, 2)), (380, 380, 0, 660), {}, {'core_r': 2}),
-        'hero_merlin_cast_frog': (list(range(88, 141, 2)), (330, 330, 0, 660), {'dur': 1.4}, {'core_r': 3})}),
+        'hero_merlin_cast_frog': (list(range(88, 141)), (330, 330, 0, 660), {'dur': 1.4}, {'core_r': 3})}),
 ]
 k = TARGET / (FIG_BOT - FIG_TOP)
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
+DONE = []
 for src, CX, SETS in SOURCES:
+    if ONLY and not ONLY & set(SETS): continue
     fr = video_isle.frames_of(os.path.join(H0, src), 24)
     for name, (order, (L, R, y0, y1), extra, fx) in SETS.items():
+        if ONLY and name not in ONLY: continue
         x0, x1 = CX - L, CX + R
         FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
-        out = Image.new('RGBA', (FW * len(order), FH), (0, 0, 0, 0))
-        for i, n in enumerate(order):
-            a = (video_isle.remove_white_fx(fr[n], **fx) if fx else video_isle.remove_white(fr[n]))[y0:y1, x0:x1]  # fx: efekt ayarı (çekirdek kapanış yarıçapı)
-            out.paste(Image.fromarray(a).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
-        out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
-        meta[name] = dict({'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4)}, **extra)
-        if name + '.webp' not in man: man.append(name + '.webp')
-        print(name, meta[name], os.path.getsize(os.path.join(IMG, name + '.webp')) // 1024, 'KB')
+        crops = [(video_isle.remove_white_fx(fr[n], **fx) if fx else video_isle.remove_white(fr[n]))[y0:y1, x0:x1] for n in order]  # fx: efekt ayarı (çekirdek kapanış yarıçapı)
+        video_isle.save_strip(name, crops, FW, FH, IMG, meta, man, dict({'base': round((y1 - FIG_BOT) / (y1 - y0), 4), 'ch': round((FIG_BOT - FIG_TOP) / (y1 - y0), 4)}, **extra))
+        DONE.append(name)
 json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)
-subprocess.run([sys.executable, os.path.join(H0, 'merlin_mavi.py')], check=True, stdout=subprocess.DEVNULL)  # video zaten mavi; kalan kırmızı kırıntılar için
+import merlin_mavi  # 16 Eki: yalnız yeniden kesilen şeritler (hepsini yeniden kaydetmek kaliteyi düşürür)
+for _n in DONE:
+    _p = os.path.join(IMG, _n + '.webp'); merlin_mavi.mavi(Image.open(_p)).save(_p, 'WEBP', quality=88, method=6)

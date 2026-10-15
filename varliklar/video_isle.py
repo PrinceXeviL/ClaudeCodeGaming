@@ -155,3 +155,18 @@ def pack(tiles, FW, FH, limit=16000):
     out = Image.new('RGBA', (FW * cols, FH * rows), (0, 0, 0, 0))
     for i, t in enumerate(tiles): out.paste(t, ((i % cols) * FW, (i // cols) * FH))
     return out, (cols if rows > 1 else None)
+
+
+def save_strip(name, crops, FW, FH, img_dir, meta, man, info, keep=True, quality=86):
+    """16 Eki (Veo akıcılık): kesilmiş kareleri (numpy RGBA) şerit olarak yazar. keep: şerit zaten varsa onun kare boyu korunur
+    (serit_kucult sonradan küçültmüş olabilir; telefon belleği). Eski meta anahtarları (dur, idle, stride...) korunur, info üstüne yazar."""
+    F0 = meta.get(name) if keep else None
+    if F0: FW, FH = F0['fw'], F0['fh']
+    out, cols = pack([Image.fromarray(c).resize((FW, FH), Image.LANCZOS) for c in crops], FW, FH)
+    out.save(os.path.join(img_dir, name + '.webp'), 'WEBP', quality=quality, method=6)
+    m = {k: v for k, v in (F0 or {}).items() if k not in ('n', 'fw', 'fh', 'cols')}
+    m.update(info); m.update(n=len(crops), fw=FW, fh=FH)
+    if cols: m['cols'] = cols
+    meta[name] = m
+    if name + '.webp' not in man: man.append(name + '.webp')
+    print(name, {k: m[k] for k in ('n', 'fw', 'fh') if k in m}, 'cols', cols, os.path.getsize(os.path.join(img_dir, name + '.webp')) // 1024, 'KB')

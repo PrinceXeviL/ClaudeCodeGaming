@@ -2059,32 +2059,35 @@
   "ch": 0.9361
  },
  "hero_merlin_idle": {
-  "n": 37,
-  "fw": 216,
-  "fh": 235,
   "base": 0.0417,
-  "ch": 0.9361
+  "ch": 0.9361,
+  "fps": 24,
+  "n": 73,
+  "fw": 216,
+  "fh": 235
  },
  "hero_bathory_atk": {
-  "n": 21,
-  "fw": 264,
-  "fh": 255,
   "base": 0.071,
-  "ch": 0.8613
+  "ch": 0.8613,
+  "n": 28,
+  "fw": 264,
+  "fh": 255
  },
  "hero_bathory_idle": {
-  "n": 21,
-  "fw": 264,
-  "fh": 255,
   "base": 0.071,
-  "ch": 0.8613
+  "ch": 0.8613,
+  "fps": 24,
+  "n": 40,
+  "fw": 264,
+  "fh": 255
  },
  "hero_bathory_skill": {
-  "n": 25,
+  "base": 0.0681,
+  "ch": 0.8236,
+  "n": 50,
   "fw": 390,
   "fh": 267,
-  "base": 0.0681,
-  "ch": 0.8236
+  "cols": 25
  },
  "hero_bathory_cast": {
   "n": 24,
@@ -2112,18 +2115,21 @@
   "fps": 10.8
  },
  "hero_robin_skill": {
-  "n": 34,
+  "base": 0.031,
+  "ch": 0.8376,
+  "n": 68,
   "fw": 336,
   "fh": 263,
-  "base": 0.031,
-  "ch": 0.8376
+  "cols": 34
  },
  "hero_robin_idle": {
-  "n": 40,
+  "base": 0.031,
+  "ch": 0.8376,
+  "fps": 24,
+  "n": 80,
   "fw": 336,
   "fh": 263,
-  "base": 0.031,
-  "ch": 0.8376
+  "cols": 40
  },
  "hero_robin_walk": {
   "n": 31,
@@ -2186,19 +2192,21 @@
   "ch": 0.8459
  },
  "hero_robin_cast": {
-  "n": 36,
-  "fw": 440,
-  "fh": 260,
   "base": 0.0332,
   "ch": 0.8459,
-  "dur": 2.4
+  "dur": 2.4,
+  "n": 60,
+  "fw": 440,
+  "fh": 260,
+  "cols": 30
  },
  "hero_robin_skill2": {
-  "n": 30,
+  "base": 0.0332,
+  "ch": 0.8459,
+  "n": 59,
   "fw": 377,
   "fh": 260,
-  "base": 0.0332,
-  "ch": 0.8459
+  "cols": 30
  },
  "hero_robin_die": {
   "n": 81,
@@ -2259,13 +2267,14 @@
   "dur": 1.4
  },
  "hero_merlin_walk": {
-  "n": 40,
-  "fw": 239,
-  "fh": 259,
   "base": 0.0323,
   "ch": 0.8492,
   "idle": 0,
-  "stride": 0.8
+  "stride": 0.8,
+  "n": 120,
+  "fw": 239,
+  "fh": 259,
+  "cols": 60
  },
  "hero_merlin_skill2": {
   "n": 33,
@@ -2275,12 +2284,12 @@
   "ch": 0.8364
  },
  "hero_merlin_cast_frog": {
-  "n": 27,
-  "fw": 263,
-  "fh": 263,
   "base": 0.047,
   "ch": 0.8364,
-  "dur": 1.4
+  "dur": 1.4,
+  "n": 53,
+  "fw": 263,
+  "fh": 263
  },
  "hero_bathory_cast_bloodlink": {
   "n": 10,
@@ -2291,12 +2300,13 @@
   "dur": 0.8
  },
  "hero_bathory_skill2": {
-  "n": 25,
-  "fw": 340,
-  "fh": 328,
   "base": 0.0245,
   "ch": 0.6717,
-  "dur": 2.2
+  "dur": 2.2,
+  "n": 73,
+  "fw": 340,
+  "fh": 328,
+  "cols": 37
  },
  "enemy_vulture_atk": {
   "n": 73,

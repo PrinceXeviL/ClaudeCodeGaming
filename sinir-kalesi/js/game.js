@@ -9892,7 +9892,7 @@ function drawSoldier(s) {
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
       const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
-        : hsk.endsWith('_idle') ? Math.floor(time * 12 + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n * (s.moving && s.hero ? 1.6 : 1))) % F.n; // koşu şeridi yoksa (Merlin süzülür) emirle giderken yürüyüş hızlı oynar
+        : hsk.endsWith('_idle') ? Math.floor(time * (F.fps || 12) + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n * (s.moving && s.hero ? 1.6 : 1))) % F.n; // koşu şeridi yoksa (Merlin süzülür) emirle giderken yürüyüş hızlı oynar
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
