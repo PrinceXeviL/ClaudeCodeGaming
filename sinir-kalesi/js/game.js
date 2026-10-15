@@ -11863,7 +11863,10 @@ function drawStar(x, y, r, col, stroke = 'rgba(0,0,0,0.5)', lw = 1.5) {
   starShape(x, y, r); ctx.fillStyle = col; ctx.fill();
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
 }
+// 16 Eki (Caner: "zafer yıldızları amatörce"): büyük yıldızlar Gemini çizimi (nm23_zafer_yildiz): ruh taşlı altın yıldız ve taş yuvası.
+// Küçük boylarda (r < 20, kart/harita) ayrıntı ezilir: eski simge kalır.
 function fancyStar(x, y, r, filled) {
+  if (r >= 20) { const im = spr(filled ? 'ico_win_star' : 'ico_win_starempty'); if (im) { icoFit(im, x, y, r * (filled ? 0.98 : 1.04)); return; } }
   if (filled) { const im = spr('ico_ui_star'); if (im) { icoFit(im, x, y, r * 0.95); return; } } // 16 Eki: Gemini yıldız
   ctx.lineJoin = 'round';
   if (!filled) {
@@ -11881,6 +11884,26 @@ function fancyStar(x, y, r, filled) {
   starShape(x - r * 0.08, y - r * 0.12, r * 0.5); ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
 }
 
+// kazanılan yıldızın canlılığı: ortadaki ruh taşı yeşil atar, ara ara yıldızın üstünden çapraz bir parıltı bandı geçer (yalnız yıldızın içinde)
+let SHINE_C = null;
+function starShine(r, age) {
+  const im = spr('ico_win_star'); if (!im) return;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const pu = 0.5 + 0.5 * Math.sin(age * 3.2);
+  glow(ctx, 0, -r * 0.02, r * (0.32 + 0.08 * pu), '90,255,120', 0.35 + 0.3 * pu); // ruh taşı
+  if (age < 0.6) glow(ctx, 0, 0, r * 1.6, '255,220,120', 0.5 * (1 - age / 0.6)); // oturma parlaması
+  const cyc = (age + 0.25) % 2.6, ph = cyc / 0.55; // her 2,6 sn'de bir, 0,55 sn süren geçiş
+  if (ph < 1) {
+    const S = 128; SHINE_C = SHINE_C || Object.assign(document.createElement('canvas'), { width: S, height: S }); const c = SHINE_C.getContext('2d');
+    c.globalCompositeOperation = 'source-over'; c.clearRect(0, 0, S, S);
+    const bx = -S * 0.4 + ph * S * 1.8, g = c.createLinearGradient(bx - S * 0.18, 0, bx + S * 0.18, S * 0.35);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,252,225,0.85)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g; c.fillRect(0, 0, S, S);
+    c.globalCompositeOperation = 'destination-in'; c.drawImage(im, 0, 0, S, S * im.height / im.width);
+    const w = r * 0.98 * 2.4; ctx.drawImage(SHINE_C, -w / 2, -w / 2, w, w);
+  }
+  ctx.restore();
+}
 function sunburst(x, y, r, col) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(time * 0.25); ctx.globalCompositeOperation = 'lighter';
   const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
@@ -18259,7 +18282,7 @@ function drawOverlay() {
     else ribbon(cx, py + 4, G.chal ? 300 : 260, G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', 'green', 32);
     for (let s = 0; s < 3; s++) {
       if (G.chal && s !== 1) continue; // meydan okuma: ortada tek yıldız
-      const sx = cx + (s - 1) * 82, sy = py + (NECRO ? 114 : 120) - (s === 1 ? 10 : 0), r = s === 1 ? 36 : 29;
+      const sx = cx + (s - 1) * 82, sy = py + (NECRO ? 120 : 120) - (s === 1 ? 10 : 0), r = s === 1 ? 36 : 29;
       fancyStar(sx, sy, r, false);
       if (s >= G.stars) continue;
       const q = NECRO ? clamp((k - 0.85 - s * 0.36) / 0.26, 0, 1) : clamp((k - 0.45 - s * 0.3) / 0.38, 0, 1);
@@ -18273,6 +18296,7 @@ function drawOverlay() {
       }
       ctx.save(); ctx.translate(sx, sy); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha *= q;
       fancyStar(0, 0, r, true);
+      if (q >= 1 && spr('ico_win_star')) starShine(r, k - (NECRO ? 0.85 : 0.45) - s * 0.36);
       ctx.restore();
     }
     const lt = `Kalan can: ${G.lives}/${G.maxLives}`;
