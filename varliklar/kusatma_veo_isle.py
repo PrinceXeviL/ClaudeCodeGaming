@@ -4,6 +4,10 @@ Her araç: SRC, bayrak tepesi / tekerlek altı (FIG_TOP, GROUND), yürüme döng
 Ölçek: iten asker lejyoner boyunda (h 30) olacak şekilde data.js'te h; şerit pikseli TARGET (grup boyu).
   kule:    kule_yuru_yikim_veo.mp4 (grup 401 px → h 89; durağan enemy_siegetower.webp Gemini çizimi kalır)
   kocbasi: kocbasi_yuru_yikim_veo.mp4 (grup 323 px, iten asker ~197 px → h 49; durağan enemy_ram.webp videonun ilk karesinden)
+  top:     top_yuru_ates_yikim_veo.mp4 (1024x576; 0-98 iter, 100-118 ateş, 120-200 parçalanır; grup 289 px → h 49; durağan görsel top_veo_isle.py'den kalır)
+16 Eki (Caner: "kare kare gibi kasılıyor"): yavaş araçta yürüyüş döngüsü 1,4 sn'ye uzar (walkRate sınırı); tek döngü (14-18 kare) orada
+saniyede 10-13 kare oynuyordu. Artık videonun 2-3 döngüsü art arda alınır (≈24 kare/sn). Yıkılma videonun HER karesinden, gerçek hızında (dur = kare / 24; eskiden her 4-5. kare, 8-10 kare/sn);
+şerit 16383 px'e sığmazsa satırlara bölünür (anim.json 'cols', game.js drawFrame satır başına kare sayısını okur). Bellek: ölüm şeridi ~25-35 MB (yalnız o aracın çıktığı bölümde yüklenir).
     .venv/bin/python varliklar/kusatma_veo_isle.py kule kocbasi
 """
 import json, os, sys
@@ -15,9 +19,11 @@ import video_isle
 IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 CFG = {
     'kule': dict(src='kule_yuru_yikim_veo.mp4', name='enemy_siegetower', top=172, ground=573, still=None,
-                 walk=(range(13, 30), (390, 150, 890, 592), 300), die=(range(104, 197, 5), (40, 60, 1240, 660), 230, 2.4)),
+                 walk=(range(13, 47), (390, 150, 890, 592), 240), die=(range(108, 197), (40, 60, 1240, 660), 150, 3.7)),
     'kocbasi': dict(src='kocbasi_yuru_yikim_veo.mp4', name='enemy_ram', top=240, ground=563, still=0,
-                    walk=(range(45, 59), (280, 220, 980, 580), 180), die=(range(104, 201, 5), (130, 150, 1180, 660), 150, 2.2)),
+                    walk=(range(45, 87), (280, 220, 980, 580), 150), die=(range(110, 201), (130, 150, 1180, 660), 120, 3.8)),
+    'top': dict(src='top_yuru_ates_yikim_veo.mp4', name='enemy_cannon', top=160, ground=449, still=None,
+                walk=(range(11, 47), (250, 150, 774, 456), 180), die=(range(120, 201), (0, 70, 1024, 496), 135, 3.4)),
 }
 def cut(fr, n):
     a = np.array(video_isle.remove_magenta(fr[n])); f = a[..., :3].astype(np.int16)
@@ -32,11 +38,12 @@ for key in sys.argv[1:] or list(CFG):
     for suf, spec in (('_walk', C['walk']), ('_die', C['die'])):
         order, (x0, y0, x1, y1), T = list(spec[0]), spec[1], spec[2]; name = C['name'] + suf
         k = T / (G - T0); FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
-        assert FW * len(order) <= 16383, (name, FW * len(order))
-        out = Image.new('RGBA', (FW * len(order), FH), (0, 0, 0, 0))
-        for i, n in enumerate(order): out.paste(Image.fromarray(cut(fr, n)[y0:y1, x0:x1]).resize((FW, FH), Image.LANCZOS), (i * FW, 0))
+        rows = -(-FW * len(order) // 16000); cols = -(-len(order) // rows)
+        out = Image.new('RGBA', (FW * cols, FH * rows), (0, 0, 0, 0))
+        for i, n in enumerate(order): out.paste(Image.fromarray(cut(fr, n)[y0:y1, x0:x1]).resize((FW, FH), Image.LANCZOS), ((i % cols) * FW, (i // cols) * FH))
         out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
         m = {'n': len(order), 'fw': FW, 'fh': FH, 'base': round((y1 - G) / (y1 - y0), 4), 'ch': round((G - T0) / (y1 - y0), 4)}
+        if rows > 1: m['cols'] = cols
         if suf == '_walk': m.update({'idle': 0, 'stride': 1.2})
         else: m['dur'] = spec[3]
         meta[name] = m

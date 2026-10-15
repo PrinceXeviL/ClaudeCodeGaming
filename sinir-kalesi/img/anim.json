@@ -245,9 +245,9 @@
   "stride": 1.186
  },
  "enemy_ram_walk": {
-  "n": 14,
-  "fw": 390,
-  "fh": 201,
+  "n": 42,
+  "fw": 325,
+  "fh": 167,
   "base": 0.0472,
   "ch": 0.8972,
   "idle": 0,
@@ -1386,12 +1386,13 @@
   "stride": 0.885
  },
  "enemy_ram_die": {
-  "n": 20,
-  "fw": 488,
-  "fh": 237,
+  "n": 91,
+  "fw": 390,
+  "fh": 189,
   "base": 0.1902,
   "ch": 0.6333,
-  "dur": 2.2
+  "cols": 31,
+  "dur": 3.8
  },
  "enemy_catapult_die": {
   "n": 33,
@@ -2301,13 +2302,13 @@
   "ch": 0.4745
  },
  "enemy_cannon_walk": {
-  "n": 18,
+  "n": 36,
   "fw": 326,
   "fh": 191,
   "base": 0.0229,
   "ch": 0.9444,
   "idle": 0,
-  "stride": 1.6
+  "stride": 1.2
  },
  "enemy_cannon_atk": {
   "n": 19,
@@ -2317,28 +2318,30 @@
   "ch": 0.6784
  },
  "enemy_cannon_die": {
-  "n": 21,
-  "fw": 638,
-  "fh": 265,
+  "n": 81,
+  "fw": 478,
+  "fh": 199,
   "base": 0.1103,
   "ch": 0.6784,
-  "dur": 2.0
+  "cols": 27,
+  "dur": 3.4
  },
  "enemy_siegetower_walk": {
-  "n": 17,
-  "fw": 374,
-  "fh": 331,
+  "n": 34,
+  "fw": 299,
+  "fh": 265,
   "base": 0.043,
   "ch": 0.9072,
   "idle": 0,
   "stride": 1.2
  },
  "enemy_siegetower_die": {
-  "n": 19,
-  "fw": 688,
-  "fh": 344,
+  "n": 89,
+  "fw": 449,
+  "fh": 224,
   "base": 0.145,
   "ch": 0.6683,
-  "dur": 2.4
+  "cols": 30,
+  "dur": 3.7
  }
 }

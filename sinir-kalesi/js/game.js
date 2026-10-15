@@ -130,8 +130,9 @@ function drawFrame(img, F, i, h) {
   // 14 Eki (Caner: Báthory uzaktan yürürken görünmüyordu): küçük kopya yukarı yuvarlanmış boyda (9711 -> 4856), oran yalnız genişlikten
   // alınınca kesilen dikdörtgen yükseklikte görselin 0,01 px dışına taşıyordu; iOS Safari dışa taşan kaynakta HİÇ çizmiyor (Chrome kırpıyor).
   // Oran eksen eksen alınır, dikdörtgen görselin içinde tutulur.
-  const m = pickMip(ctx, img, dw * F.n), sx = m.width / img.width, sy = m.height / img.height, x0 = i * F.fw * sx;
-  ctx.drawImage(m, x0, 0, Math.min(F.fw * sx, m.width - x0), Math.min(F.fh * sy, m.height), -dw / 2, -dh * (1 - F.base), dw, dh);
+  // 16 Eki: uzun şerit (kuşatma araçlarının yıkılması) birkaç satıra bölünebilir: F.cols satır başına kare
+  const C = F.cols || F.n, m = pickMip(ctx, img, dw * C), sx = m.width / img.width, sy = m.height / img.height, x0 = (i % C) * F.fw * sx, y0 = Math.floor(i / C) * F.fh * sy;
+  ctx.drawImage(m, x0, y0, Math.min(F.fw * sx, m.width - x0), Math.min(F.fh * sy, m.height - y0), -dw / 2, -dh * (1 - F.base), dw, dh);
 }
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
 const SPR_META = {};
@@ -255,9 +256,9 @@ const WHITE_FR = new Map();
 function drawWhiteFrame(name, img, F, i, h) {
   const key = name + '#' + i; let c = WHITE_FR.get(key);
   if (!c) {
-    const s0 = img.width / (F.fw * F.n), H = Math.min(F.fh, 180), k = H / F.fh;
+    const C = F.cols || F.n, s0 = img.width / (F.fw * C), H = Math.min(F.fh, 180), k = H / F.fh;
     c = document.createElement('canvas'); c.width = Math.max(1, Math.round(F.fw * k)); c.height = H;
-    const g = c.getContext('2d'); g.drawImage(img, i * F.fw * s0, 0, F.fw * s0, F.fh * s0, 0, 0, c.width, c.height);
+    const g = c.getContext('2d'); g.drawImage(img, (i % C) * F.fw * s0, Math.floor(i / C) * F.fh * s0, F.fw * s0, F.fh * s0, 0, 0, c.width, c.height);
     g.globalCompositeOperation = 'source-in'; g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
     WHITE_FR.set(key, c); if (WHITE_FR.size > 180) WHITE_FR.delete(WHITE_FR.keys().next().value);
   }
@@ -3165,6 +3166,21 @@ function siegeCrewOut(e) {
   });
   shakeScreen(5, 0.45);
 }
+// 16 Eki (Caner: "kuşlar askerlere saldırıyor, bizimkiler boş durmasın"): yerdeki birimler uçana vuramaz (Kingdom Rush'taki gibi), ama kartal/akbaba
+// pikeyle aşağı indiği an hedef aldığı yakın dövüşçü ve yanındakiler (iskelet, golem, dirilen ölü, komutan) bir kez karşılık verir.
+// Kalkanı karşılayan tam vurur; yanındakiler yarım. Okçu iskelet ve kuledekiler zaten oklarıyla vurur.
+const DIVE_COUNTER = { r: 30, side: 0.5, block: 1.25, max: 3 };
+function diveCounter(e, S, blk) {
+  if (e.dead || S.dead || S.ranged || S.bow || S.wall || S.stunT > 0) return;
+  const hitters = [S].concat(G.soldiers.filter(o => o !== S && !o.dead && !o.wall && !o.bow && !o.ranged && !(o.stunT > 0) && dist(o.x, o.y, S.x, S.y) < DIVE_COUNTER.r)).slice(0, DIVE_COUNTER.max);
+  hitters.forEach((o, i) => { // oyun duraklasa da tutarlı kalsın diye gecikmesiz (aynı karede)
+    if (e.dead) return;
+    faceTo(o, e.x);
+    const k = (o === S ? (blk ? DIVE_COUNTER.block : 1) : DIVE_COUNTER.side) * (o.buffT > 0 ? 1.5 : 1) * allyK(o);
+    damageEnemy(e, roll(o.dmg || [4, 8]) * k, 'phys', false, o.hero ? null : 'melee');
+    if (i === 0) { impactFx(e.x, e.y - 20, '255,240,210', 0.7); sfx('clash', 1.05, 1, e); }
+  });
+}
 function machineWreck(e) {
   const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
   if (!im) return;
@@ -4303,7 +4319,12 @@ function updateEnemy(e, dt) {
       const p0 = 1 - e.diveT / DV.dur; e.diveT -= dt; const p1 = 1 - e.diveT / DV.dur, S = e.diveS;
       if (p0 < DV.hit && p1 >= DV.hit) {
         if (S && S.towerMan) { if (G.towers.includes(S.t) && !S.a.dead) { hitTowerMan(S.t, S.a, roll(DV.dmg)); impactFx(S.x, S.y - 8, '255,230,180', 0.8); sfx('dogbite', 1.1, 1, e); } } // kuledeki okçu: pençe ıskalamaz
-        else if (S && !S.dead) { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; impactFx(S.x, S.y - 10, '255,230,180', 0.8); sfx('dogbite', 1.15, 1, e); }
+        else if (S && !S.dead) {
+          const blk = S.block > 0 && Math.random() < Math.min(0.6, S.block * 2); // kalkanlı iskelet pençeyi kalkanla karşılayabilir
+          if (blk) { floatText(S.x, S.y - 30, 'Blok!', '#cfe3ff'); sfx('clash', 1.2, 1, S); } else { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; sfx('dogbite', 1.15, 1, e); }
+          impactFx(S.x, S.y - 10, '255,230,180', 0.8);
+          diveCounter(e, S, blk);
+        }
       }
       if (e.diveT <= 0) { e.diveT = 0; e.diveS = null; e.diveCd = DV.cd * rand(0.8, 1.2); }
       return;
@@ -5563,7 +5584,7 @@ function castNecro(id, x, y) {
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
 // dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
 // sep = birimler arası en az uzaklık (separateUnits)
-const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200 }; // 14 Eki (Caner): menzil ~10 adam (bir düşman ~20 birim geniş) = 200; drop: kovaladığını bu uzaklıkta bırakır // 14 Eki (Caner): sep 10 -> 15 (iç içe geçiyorlardı); aggro: düşman bu kadar yakına gelince saldırır, yoksa yerinde bekler
+const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150 }; // 14 Eki (Caner): menzil ~10 adam (bir düşman ~20 birim geniş) = 200; drop: kovaladığını bu uzaklıkta bırakır // 14 Eki (Caner): sep 10 -> 15 (iç içe geçiyorlardı); aggro: düşman bu kadar yakına gelince saldırır, yoksa yerinde bekler
 function separateUnits(dt) {
   const L = G.soldiers.filter(s => !s.dead && !s.wall && !s.hero && !s.big && !s.bow && !(s.born != null && G.t < s.born) && !s.exit);
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
@@ -5656,6 +5677,9 @@ function zombieHunt(s) {
     if (d < bd) { bd = d; best = o; }
   }
   if (!best) { if (s.post) { s.rx = s.post.x; s.ry = s.post.y; } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler
+  // 16 Eki (Caner: "bir düşmanı öldürünce önce gönderdiğim yere dönüyor, sonra saldırıyor"): yakındaki düşmana yola ya da emir yerine
+  // dönmeden doğrudan yürür ve onu hedef alır; yol boyunca yürüme yalnız uzaktaki düşman için
+  if (bd <= ZOMBIE.direct && !(s.born != null && G.t < s.born)) { s.target = best; if (!best.blocker && !best.def.noblock) best.blocker = s; s.rx = s.x; s.ry = s.y; return; }
   // yoldan yürür: önce en yakın yol noktasına çıkar, sonra yol boyunca düşmana doğru adım adım ilerler (yol dışına kesmez);
   // hedef menzile girince normal dövüş seçimi devralır
   const me = nearestOnPaths(G.paths, s.x, s.y);
@@ -7936,7 +7960,8 @@ function bodyRatio(im) {
 // konturlu şerit karesi (drawFrame gibi; kontur şeridin tamamına bir kez çizilir, kare komşu karenin kontur payını da alır)
 function drawFrameOutlined(img, F, i, h) {
   const O = outlined(img, Math.max(3, Math.round(7 * F.fh / 300))), p = O.pad, k = h / (F.ch * F.fh), dw = F.fw * k, dh = F.fh * k;
-  ctx.drawImage(O, i * F.fw, 0, F.fw + 2 * p, F.fh + 2 * p, -dw / 2 - p * k, -dh * (1 - F.base) - p * k, dw + 2 * p * k, dh + 2 * p * k);
+  const C = F.cols || F.n;
+  ctx.drawImage(O, (i % C) * F.fw, Math.floor(i / C) * F.fh, F.fw + 2 * p, F.fh + 2 * p, -dw / 2 - p * k, -dh * (1 - F.base) - p * k, dw + 2 * p * k, dh + 2 * p * k);
 }
 function xbowTip(t, ts, a) { // atış pozunda okun / cıvatanın çıktığı nokta (dünya koordinatı)
   const M = menOf(t), f = xbowFoot(t, ts, a), im = spr(M.pre + M.pose), h = menH(t), w = im ? h * im.width / im.height : h * 0.89;
