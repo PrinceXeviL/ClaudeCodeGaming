@@ -7545,7 +7545,7 @@ function castUlt(h, x, y) {
     floatText(q.x, q.y - 40, 'Bu Sparta!', '#ffd34d'); shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200);
   } else if (U.bloodpool) {
     // Báthory'nin kan gölü: can emer, yavaşlatır, içindeki iskeletleri iyileştirir (çizim drawPlaguePools: z.blood)
-    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'magic', t: 0, life: U.dur, fxT: 0, kind: 'bloodpool', pool: true, blood: true, slowK: 0.3, heal: 14, hero: h, seed: rand(0, 9) });
+    G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'magic', t: 0, life: U.dur, fxT: 0, kind: 'bloodpool', pool: true, blood: true, slowK: 0.3, heal: U.heal || 14, hero: h, seed: rand(0, 9) });
     for (let i = 0; i < 14; i++) fxBloodHit(x + rand(-U.r, U.r) * 0.6, y + rand(-U.r, U.r) * 0.3);
     shakeScreen(3, 0.3); sfx('blooddrain'); setTimeout(() => sfx('splash'), 150);
   } else if (U.rain) {
