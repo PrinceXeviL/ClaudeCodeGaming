@@ -29,14 +29,15 @@ function smoothPts(pts, step = 5) {
 function cum(pts) { const c = [0]; for (let i = 1; i < pts.length; i++) c.push(c[i - 1] + dist(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1])); return c; }
 function at(pts, c, d) { let i = 1; while (i < pts.length - 1 && c[i] < d) i++; const a = pts[i - 1], b = pts[i], L = c[i] - c[i - 1] || 1, t = (d - c[i - 1]) / L; return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; }
 // oyundaki waveButtonPos ile aynı kural
-const hudBlock = (x, y) => x < 26 || x > W - 26 || y < 26 || y > H - 26 || (x < 300 && y < 64) || (x > W - 180 && y < 74) || (x < 280 && y > H - 92);
+const hudBlock = (x, y) => x < 26 || x > W - 26 || y < 26 || y > H - 26 || (x < 300 && y < 92) || (x > W - 190 && y < 80) || (x < 480 && y > H - 132) || (x > W - 100 && y > H - 100); // 16 Eki: güncel arayüz
 function waveBtn(pts) { const c = cum(pts), T = c[c.length - 1]; let d = 0, q = at(pts, c, 0); while (d < T - 40 && hudBlock(q[0], q[1])) { d += 3; q = at(pts, c, d); } return at(pts, c, d + 8); }
 // arsa kuralı: kule gövdesi (arsanın 80 px yukarısı, ±32 px yana) üst arayüze ve dalga düğmesine taşmasın
 function bad(x, y, btns) {
   const top = y - 80;
   if (top < 74 && (x < 300 || x > W - 200)) return 'üst arayüz';     // sol üst göstergeler / sağ üst düğmeler
   if (top < 40) return 'ekran üstü';
-  if (y > H - 110 && x < 330) return 'sol alt arayüz';              // kahraman / güç düğmeleri
+  if (y > H - 120 && x < 480) return 'sol alt arayüz';              // kahraman / güç düğmeleri (16 Eki: yetenek çubuğu genişledi)
+  if (y > H - 100 && x > W - 110) return 'sağ alt çanta';
   if (x < 36 || x > W - 36 || y > H - 30) return 'kenar';
   for (const b of btns) if (dist(x, y - 30, b[0], b[1]) < 80 || dist(x, y, b[0], b[1]) < 70) return 'dalga düğmesi';
   return null;
@@ -46,7 +47,7 @@ LEVELS.forEach((lv, li) => {
   const ps = lv.paths.map(p => smoothPts(p)), btns = ps.map(waveBtn);
   const dPath = (x, y) => Math.min(...ps.map(p => Math.min(...p.map(q => Math.hypot(q[0] - x, q[1] - y)))));
   const castleBad = (x, y) => Math.abs(x - lv.castle[0]) < 90 && y > lv.castle[1] - 140 && y < lv.castle[1] + 50;
-  const plots = lv.plots.map(p => p.slice());
+  const plots = lv.plots.map(p => p.slice()); lv._orig = lv.plots.map(p => p.slice());
   plots.forEach((pl, k) => {
     const why = bad(pl[0], pl[1], btns) || (dPath(pl[0], pl[1]) < ROAD_MIN ? 'yola yakın' : null);
     if (!why) return;
@@ -71,7 +72,13 @@ LEVELS.forEach((lv, li) => {
 for (const f of fixes) console.log(`${f.li + 1}. bölüm arsa ${f.k}: [${f.from}] (${f.why}) -> ${f.to ? '[' + f.to + ']' : 'YER YOK'}`);
 if (process.argv[3] === '--apply') {
   let src = fs.readFileSync(process.argv[2], 'utf8'), n = 0;
-  src = src.replace(/plots: \[\[[^\n]*?\]\],/g, (m) => { const P = LEVELS[n++]._fixed; return 'plots: ' + JSON.stringify(P).replace(/,/g, ', ').replace(/\], \[/g, '], [') + ','; });
+  // 16 Eki: oyundaki bölüm sırası dosyadakinden farklı (LEVELS.splice): her kaynak arsa dizisi, aynı arsalara sahip bölüme göre eşlenir
+  const used = new Set();
+  src = src.replace(/plots: (\[\[[^\n]*?\]\])(?=,| \})/g, (m, a) => {
+    const key = JSON.stringify(JSON.parse(a)), i = LEVELS.findIndex((l, k) => !used.has(k) && JSON.stringify(l._orig) === key);
+    if (i < 0) return m; used.add(i); n++;
+    return 'plots: ' + JSON.stringify(LEVELS[i]._fixed);
+  });
   fs.writeFileSync(process.argv[2], src); console.log(n + ' bölümün arsaları yazıldı');
 } else if (process.argv[3]) fs.writeFileSync(process.argv[3], JSON.stringify(LEVELS.map(l => l._fixed)));
 if (!fixes.length) console.log("Tüm arsalar uygun.");

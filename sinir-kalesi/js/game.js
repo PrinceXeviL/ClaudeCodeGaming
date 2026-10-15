@@ -12491,7 +12491,7 @@ function waveButtonPos(pi) {
   // HUD'a çarpmayan güvenli bölge (tam ekranda görünen kenarlara göre). Caner (10 Eki): düğme biraz daha geride, yolun ağzında dursun:
   // yolun ekran dışından gelen uzantısından başlar, kenara ve HUD'a değmeyen ilk noktaya oturur
   const E = EDGE, m = 24 * WAVE_BTN_K + 8, blocked = (x, y) => // kenar payı düğme boyuna göre x < E.l + m || x > E.r - m || y < E.t + m || y > E.b - m ||
-    (x < E.l + 300 && y < E.t + 84) || (x > E.r - 190 && y < E.t + 80) || (x < E.l + 290 && y > E.b - 100);
+    (x < E.l + 300 && y < E.t + 92) || (x > E.r - 190 && y < E.t + 80) || (x < E.l + 480 && y > E.b - 132) || (x > E.r - 100 && y > E.b - 100); // 16 Eki: yetenek çubuğu genişledi, sağ altta çanta
   let d = -entryLead(p), q = pathPos(p, d);
   while (d < p.total - 40 && blocked(q.x, q.y)) { d += 3; q = pathPos(p, d); }
   return (G.waveBtn[pi] = { x: q.x, y: q.y, dx: q.dx, dy: q.dy });
