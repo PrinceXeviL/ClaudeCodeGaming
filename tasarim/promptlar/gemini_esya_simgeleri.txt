@@ -1,0 +1,18 @@
+Images 1 and 2 show the art style of my dark gothic cartoon tower defense game (thick dark outlines, rich colors, bone white, gold, purple and green necromantic glow).
+
+Draw a sheet of 13 ITEM ICONS for the inventory and shop of this game, in exactly the same style, line weight and quality. Each icon is a single object, centered, seen at a slight 3/4 angle, bold readable silhouette that still reads well when very small (like 40 pixels), no frame, no background plate:
+1) a gladiator short sword with a bronze hilt and a red leather grip
+2) a Spartan spear with a bronze leaf-shaped head and a dark wooden shaft
+3) a necromancer's staff topped with a horned skull holding a glowing purple crystal
+4) a single green-fletched arrow with a bone arrowhead glowing faintly green
+5) a curved blood-red ritual dagger with a black handle and a small ruby
+6) a dark iron chest armor (breastplate) with bone and gold trim and a small skull emblem
+7) a black iron ring with a glowing green gem shaped like a skull
+8) a bone amulet on a chain: a round pendant with a glowing purple eye
+9) a round bone bomb: a skull-shaped bomb with a lit fuse and green sparks
+10) an hourglass with a dark wooden frame and glowing blue-white sand, frost on the glass
+11) a steaming teacup with a saucer, dark porcelain with a tiny skull pattern (the necromancer's tea)
+12) a fat leather coin pouch tied with a cord, gold coins spilling out of the top
+13) a faceted soul crystal: a seven-sided purple-violet gem with a green glowing soul inside and small sparkles
+
+Arranged in a clean grid of 4 columns (the last row has one icon), each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

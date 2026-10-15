@@ -12,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
 PAGE, PAD = 2048, 2
 SKIP = re.compile(r'^nm_bwall_')  # 15 Eki: eski Kemik Duvarı (yerine nm8_bw_*), bellekte yer tutmasın
-PICK = re.compile(r'^(nm\d?_|plot$|tower_.+_(arm|front|rune|flag\d|sw\d)$|unit_(archer\d|ghostarcher|ghostxbow|xbow\d)(_\w+)?$)')
+PICK = re.compile(r'^(nm\d?_|ico_|plot$|tower_.+_(arm|front|rune|flag\d|sw\d)$|unit_(archer\d|ghostarcher|ghostxbow|xbow\d)(_\w+)?$)')
 LAZY = re.compile(r'^(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|die|idle|run|cast|block)x?$')
 
 

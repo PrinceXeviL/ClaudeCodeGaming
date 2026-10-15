@@ -3385,8 +3385,10 @@ const GEAR_PAINT = {
 };
 function drawGearIcon(it, x, y, r, rot = 0) {
   const k = typeof it === 'string' ? it : gearIcon(it), im = icoImg('gear_' + k) || iconArt('gear_' + k, GEAR_PAINT[k]);
-  ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(rot); ctx.drawImage(im, -r * 1.2, -r * 1.2, r * 2.4, r * 2.4); ctx.restore();
+  ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(rot); icoFit(im, 0, 0, r); ctx.restore();
 }
+// 15 Eki: Gemini simgeleri (ico_*, nm9_esya_simgeleri.jpg) kare değil: en-boy oranı korunarak r * 2,4'lük kareye sığar
+function icoFit(im, x, y, r) { const S = r * 2.4, k = S / Math.max(im.width, im.height), w = im.width * k, h = im.height * k; ctx.drawImage(im, x - w / 2, y - h / 2, w, h); }
 // kristal simgesi: mor-yeşil altıgen taş
 // 15 Eki (Caner: kristal, kese ve kum saati daha güzel çizilsin): ayrıntılı simgeler bir kez 192 px tuvale çizilir (ICON_C), sonra ölçeklenip basılır.
 // Gemini kotası açılınca bunlar boyalı görsellerle değiştirilebilir (aynı ad: img/ico_<ad>.webp varsa o kullanılır).
@@ -3397,8 +3399,8 @@ function iconArt(name, paint) {
   g.translate(S / 2, S / 2); g.lineJoin = 'round'; g.lineCap = 'round'; paint(g, S * 0.4);
   return (ICON_C[name] = c);
 }
-const icoImg = (name) => spr('ico_' + name);
-function drawIconArt(name, paint, x, y, r) { const im = icoImg(name) || iconArt(name, paint); ctx.drawImage(im, x - r * 1.2, y - r * 1.2, r * 2.4, r * 2.4); }
+const icoImg = (name) => spr('ico_' + (name === 'kristal' ? 'crystal' : name));
+function drawIconArt(name, paint, x, y, r) { const im = icoImg(name) || iconArt(name, paint); icoFit(im, x, y, r); }
 // ruh kristali: yedi yüzlü taş, yüzeyler ayrı tonlarda, içinde yeşil ruh ışığı, kenar parıltıları ve yıldız pırıltısı
 function paintCrystal(g, R) {
   const glowR = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.15); glowR.addColorStop(0, 'rgba(190,120,255,0.55)'); glowR.addColorStop(1, 'rgba(190,120,255,0)');
@@ -3492,6 +3494,7 @@ function drawCrystalOld(x, y, r) {
 }
 // eşya simgeleri (kodla): kemik bombası, kum saati, çay fincanı, kese
 function drawItemIcon(id, x, y, r) {
+  if ((id === 'bomb' || id === 'tea') && icoImg(id)) { icoFit(icoImg(id), x, y, r * 1.05); return; } // 15 Eki: Gemini simgesi
   if (id === 'purse') { drawIconArt('kese', paintPurse, x, y, r * 1.1); return; }
   if (id === 'freeze') { drawIconArt('kumsaati', paintHourglass, x, y, r * 1.1); return; }
   ctx.save(); ctx.translate(x, y); const k = r / 20; ctx.scale(k, k); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
