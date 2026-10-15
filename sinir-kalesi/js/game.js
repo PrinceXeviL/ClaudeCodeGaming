@@ -11990,6 +11990,7 @@ function drawImbueIcon(k, x, y, s) {
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
   if (!k) { IMBUE_ORDER.forEach((q, i) => { const a = -Math.PI / 2 + i * Math.PI * 2 / IMBUE_ORDER.length + time * 0.8; ctx.save(); ctx.translate(Math.cos(a) * 9, Math.sin(a) * 9); drawImbueIcon(q, 0, 0, 0.42); ctx.restore(); }); ctx.restore(); return; }
   const I = IMBUE[k]; glow(ctx, 0, 0, 18, I.col, 0.45 + Math.sin(time * 4) * 0.1);
+  { const im = spr('ico_im_' + k); if (im) { icoFit(im, 0, 0, 12); ctx.restore(); return; } } // 16 Eki: Gemini büyü simgesi
   ctx.lineJoin = 'round'; ctx.lineWidth = 2; ctx.strokeStyle = '#140a06';
   const fill = (c) => { ctx.fillStyle = c; ctx.fill(); ctx.stroke(); };
   ctx.beginPath();
@@ -12039,10 +12040,12 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   circle(0, 0, R, body);
   ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R - 1, 0, Math.PI * 2); ctx.clip();
   if (!ok) ctx.globalAlpha = a * 0.45;
+  const mi = (n, k = 0.6, dy = 0) => { const im = spr(n); if (im) icoFit(im, 0, dy, R * k); return !!im; }; // 16 Eki: Gemini menü simgeleri (nm15_kule_menu), yoksa kodla çizim
   if (it.id === 'build') {
     const im = towerIcon(it.type, 1);
     if (im) drawSprite(ctx, im, 0, R - 2, 42 * im.width / im.height);
     else drawTowerShape(it.type, 0, 12, 0, 0.46);
+  } else if (it.id === 'upgrade' && mi('ico_mn_upgrade')) {
   } else if (it.id === 'upgrade') {
     ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(12, 0); ctx.lineTo(5, 0); ctx.lineTo(5, 12); ctx.lineTo(-5, 12); ctx.lineTo(-5, 0); ctx.lineTo(-12, 0); ctx.closePath();
     const g = ctx.createLinearGradient(0, -14, 0, 12); g.addColorStop(0, '#d4ff9a'); g.addColorStop(1, '#3a9a22');
@@ -12050,10 +12053,12 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   } else if (it.id === 'ability') {
     drawAbilityIcon(it.type, 0, -1, 1);
   } else if (it.id === 'max') {
-    fancyStar(0, -3, 13, true);
+    if (!mi('ico_mn_max', 0.5, -4)) fancyStar(0, -3, 13, true);
     txt('MAX', 0, 12, 10, '#fff', 'center', '400', FONT_T);
+  } else if (it.id === 'sell' && mi('ico_mn_sell')) {
   } else if (it.id === 'sell') {
     drawIcon('coin', -4, 3, 17); drawIcon('coin', 4, -3, 19);
+  } else if (it.id === 'clear' && mi('ico_mn_clear')) {
   } else if (it.id === 'clear') { // kürek
     ctx.save(); ctx.rotate(-0.7); ctx.lineCap = 'round'; ctx.strokeStyle = '#2a1608'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(0, 6); ctx.stroke();
     ctx.strokeStyle = '#a8743a'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#c8ccd4'; ctx.strokeStyle = '#2a2a30'; ctx.lineWidth = 1.5;
@@ -12063,13 +12068,14 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   } else if (it.id === 'extra') {
     glow(ctx, 0, 0, 20, '255,215,110', 0.3 + Math.sin(time * 4) * 0.08); drawAbilityIcon(it.type, 0, -1, 0.85); fancyStar(9, -10, 5, true);
   } else if (it.id === 'ghoul') {
-    glow(ctx, 0, 2, 20, '140,255,120', 0.35); drawSkullIcon(0, 1, 15);
+    glow(ctx, 0, 2, 20, '140,255,120', 0.35); if (!mi('ico_mn_ghoul')) drawSkullIcon(0, 1, 15);
   } else if (it.id === 'path') { // okçu yolu: yay; arbaletçi yolu: arbalet
-    drawPathIcon(it.type, 0, 0, 1);
+    if (!mi('ico_mn_path_' + it.type)) drawPathIcon(it.type, 0, 0, 1);
   } else if (it.id === 'imbue' || it.id === 'imbuepick') {
     drawImbueIcon(it.type, 0, 0, 1);
   } else if (it.id === 'imback') {
-    drawIcon('back', 0, 0, 22);
+    if (!mi('ico_mn_back', 0.5)) drawIcon('back', 0, 0, 22);
+  } else if (it.id === 'rally' && mi('ico_mn_rally')) {
   } else if (it.id === 'rally') {
     ctx.strokeStyle = '#2a1a0a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-5, 13); ctx.lineTo(-5, -12); ctx.stroke();
     const w = Math.sin(time * 6) * 2;

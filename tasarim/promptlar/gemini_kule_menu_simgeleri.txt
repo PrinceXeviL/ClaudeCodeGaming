@@ -1,0 +1,15 @@
+Image 1 is the ability icon sheet of my dark gothic cartoon tower defense game; image 2 shows the round tower menu buttons in the game. Draw a NEW sheet of 12 MENU ICONS for those round buttons in exactly the same style, line weight and quality as image 1. These are shown small inside round dark badges, so each one must be a single bold, simple, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) Upgrade: a big glowing green upward arrow carved from bone
+2) Sell: a small stack of gold coins with one skull-stamped coin on top
+3) Clear: a gravedigger's shovel stuck in a mound of dirt
+4) Rally Point: a tattered blue banner flag on a bone pole
+5) Fire Enchant: a bold flame tongue, orange with a green core
+6) Poison Enchant: a big glossy green poison drop with small bubbles
+7) Frost Enchant: an icy pale blue snowflake crystal
+8) Archer Path: a long curved bone bow with an arrow nocked
+9) Crossbow Path: a heavy dark wooden crossbow loaded with a bolt
+10) Ghoul: the grinning skull head of a ghoul with green glowing eyes
+11) Max Level: a golden star with a small skull in its center
+12) Back: a curved bone arrow pointing back to the left
+
+Arranged in a clean grid of 4 columns and 3 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.
