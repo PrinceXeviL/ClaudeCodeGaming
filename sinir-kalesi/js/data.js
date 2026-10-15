@@ -968,8 +968,15 @@ LEVELS.forEach((lv, i) => shapeWaves(lv, i));
 // 16 Eki (Caner: "10 koçbaşı göndermene gerek yok, az az gönder, yanlarında lejyonerler korusun"): bir grupta en çok SIEGE_CAP.n kuşatma
 // makinesi, aralıklı gelir; fazlasının yerine (makine başı SIEGE_CAP.swap) lejyoner aynı yoldan gelir. Her makine ayrıca 2 muhafız lejyonerle doğar (def.escort).
 const SIEGE_CAP = { types: ['ram', 'catapult', 'cannon', 'siegetower'], n: 2, gap: 8, swap: 2 };
+// 15 Eki (Caner: "ağ atan Van Helsing gibi adam baya güçlü, çok kalabalık gelmesine gerek yok"): Cadı Avcısı bir grupta en çok UNIT_CAP.n tane;
+// fazlası Meşaleci olur (toplam sayı korunur). Önce bir dalgada 45-84 avcı geliyordu.
+const UNIT_CAP = { hunter: { n: 3, swap: 'torch' } };
 LEVELS.forEach((lv) => lv.waves.forEach((w) => {
   for (const g of w.slice()) {
+    for (const t in UNIT_CAP) { const C = UNIT_CAP[t];
+      if (g.types) { let k = 0; g.types = g.types.map(x => (x === t && ++k > C.n ? C.swap : x)); }
+      else if (g.t === t && g.n > C.n) { const extra = g.n - C.n; g.n = C.n; w.push({ t: C.swap, n: extra, gap: g.gap, p: g.p, at: g.at || 0, hpK: g.hpK || 1 }); }
+    }
     if (g.types) { // karışık grup: ilk n makine kalır, gerisi lejyoner olur
       let k = 0; g.types = g.types.flatMap(t => SIEGE_CAP.types.includes(t) && ++k > SIEGE_CAP.n ? Array(SIEGE_CAP.swap).fill('legion') : [t]); g.n = g.types.length;
       if (k) g.gap = Math.max(g.gap, 1.4); continue;
