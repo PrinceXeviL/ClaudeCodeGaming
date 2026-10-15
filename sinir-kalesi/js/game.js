@@ -56,7 +56,7 @@ function loadStrip(name) {
   const im = new Image();
   im.src = 'img/' + LAZY[name] + (window.SURUM ? '?v=' + window.SURUM : '');
   (im.decode ? im.decode() : new Promise((ok, no) => { im.onload = ok; im.onerror = no; }))
-    .then(() => { if (STRIP_WAIT.has(name)) { SPR[name] = im; mipsOf(im); } }) // küçük kopyalar da şimdi (ilk çizimde takılmasın)
+    .then(() => { if (STRIP_WAIT.has(name)) { SPR[name] = im; MIPS.set(im, [im]); } }) // 15 Eki: şeride küçük kopya yok (bellek; iOS kapatıyordu)
     .catch(() => {})
     .finally(() => STRIP_WAIT.delete(name));
 }
@@ -160,7 +160,7 @@ function rottenOf(name, im) {
   const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
   const d = g.getImageData(0, 0, c.width, c.height);
   rotPixels(d.data);
-  g.putImageData(d, 0, 0);
+  g.putImageData(d, 0, 0); MIPS.set(c, [c]); // şerit kopyası: küçük kopya yok (bellek)
   return (ROT[name] = c);
 }
 // 14 Eki (Caner): dirilen ölüler kızıl değil, kendi renklerinin koyusu (bizden oldukları başlarındaki ruh alevinden anlaşılır).
@@ -184,7 +184,9 @@ function rotPixels(a) {
 const PAINT = (() => {
   try {
     if (typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined' || typeof createImageBitmap === 'undefined') return null;
-    const src = `const clamp = (v, a, b) => (v < a ? a : v > b ? b : v); ${rgb2hsl} ${hsl2rgb} ${rotPixels} ${lutPixels}
+    // 15 Eki (Caner: 20. bölümde oyun birden kapandı): şeritlerin küçük kopyaları (+%33 bellek, iOS'un boşaltamadığı ImageBitmap) artık üretilmez;
+    // şeritler zaten ekrandaki boya yakın (karakter 160-220 px), küçültülerek çizilir
+    const src = `const NOMIP = true; const clamp = (v, a, b) => (v < a ? a : v > b ? b : v); ${rgb2hsl} ${hsl2rgb} ${rotPixels} ${lutPixels}
       const FN = {};
       onmessage = async (ev) => { const { id, url, ops } = ev.data; try {
         const bmp = await createImageBitmap(await (await fetch(url)).blob()); // indirme ve çözme bu iş parçacığında
@@ -197,7 +199,7 @@ const PAINT = (() => {
         const src = ops.length ? await createImageBitmap(c) : bmp, L = [];
         let w = c.width, h = c.height;
         let blank = 0;
-        while (w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const n = new OffscreenCanvas(w, h), ng = n.getContext('2d', { willReadFrequently: true }); ng.imageSmoothingQuality = 'high'; ng.drawImage(src, 0, 0, w, h);
+        while (!NOMIP && w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const n = new OffscreenCanvas(w, h), ng = n.getContext('2d', { willReadFrequently: true }); ng.imageSmoothingQuality = 'high'; ng.drawImage(src, 0, 0, w, h);
           // 14 Eki: iPhone'da bazı küçük kopyalar boş çıkıyor (Báthory uzaktan görünmüyordu); boşsa küçük kopyalar bırakılır, oyun asıl görseli küçülterek çizer
           const d = ng.getImageData(0, 0, Math.min(w, 512), h).data; let a = 0; for (let j = 3; j < d.length; j += 16) if (d[j] > 10) { a = 1; break; }
           if (!a) { blank = 1; break; } L.push(n); }
@@ -18358,6 +18360,12 @@ window.__game = {
     return out.toDataURL();
   },
   music: MUSIC,
+  memInfo(n = 15) { // test: çözülmüş görsel belleği (MB): şeritler, diğer görseller, beyaz ve çürük kopyalar
+    const mb = (im) => im && im.width ? im.width * im.height * 4 / 1048576 : 0, L = [];
+    let strips = 0, other = 0; for (const k in SPR) { const v = mb(SPR[k]); if (LAZY_RE.test(k)) { strips += v; L.push([k, Math.round(v)]); } else other += v; }
+    let white = 0; for (const k in WHITE) white += mb(WHITE[k]); let rot = 0; for (const k in ROT) rot += mb(ROT[k]);
+    return { strips: Math.round(strips), other: Math.round(other), white: Math.round(white), rot: Math.round(rot), big: L.sort((a, b) => b[1] - a[1]).slice(0, n), others: n > 15 ? Object.keys(SPR).filter(k => !LAZY_RE.test(k)).map(k => [k, Math.round(mb(SPR[k]))]).sort((a, b) => b[1] - a[1]).slice(0, n) : null };
+  },
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),

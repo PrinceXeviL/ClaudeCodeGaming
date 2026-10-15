@@ -921,7 +921,7 @@ LEVELS.forEach((lv) => {
 // 3) testere dişi: her 4. dalga "nefes": az sayıda seçkin düşman (sayıları ölçeklenmez, canı x1,5); sonra yükseliş sürer
 // 4) tanıtım: bir tür seferde ilk kez geldiği dalgada yalnız gelir; tema: ortadaki dalga tek fikirli (hızlı / zırhlı / uçan / menzilli)
 // 5) iki ve daha çok girişli haritada tek gruplu dalgalar girişlere bölünür, bir dalga ters taraftan "baskın" olarak gelir
-const WAVES_V2 = { n0: 6, n1: 12, fin: 2, tot: { 1: [140, 470], 2: [180, 500] }, growK: 6, breathEvery: 4, breathW: 0.35, eliteHp: 1.5 };
+const WAVES_V2 = { foesK: 1.1, n0: 6, n1: 12, fin: 2, tot: { 1: [140, 470], 2: [180, 500] }, growK: 6, breathEvery: 4, breathW: 0.35, eliteHp: 1.5 };
 const waveCat = (t) => { const d = ENEMIES[t] || {}; return d.flying ? 'fly' : d.speed >= 34 ? 'fast' : d.armor >= 0.4 ? 'armor' : d.ranged ? 'ranged' : null; };
 function restructureWaves() {
   const seen = new Set(['legion']), epIdx = {};
@@ -929,7 +929,7 @@ function restructureWaves() {
     const ep = lv.ep || 1, k = epIdx[ep] = (epIdx[ep] ?? -1) + 1, p = k / 19, fin = k % 4 === 3;
     const N = WAVES_V2.n0 + Math.round(p * (WAVES_V2.n1 - WAVES_V2.n0)) + (fin ? WAVES_V2.fin : 0) + (lv.addN || 0);
     const [t0, t1] = WAVES_V2.tot[ep] || WAVES_V2.tot[1];
-    lv.total = Math.round(t0 * Math.pow(t1 / t0, p) * (lv.totK || 1));
+    lv.total = Math.round(t0 * Math.pow(t1 / t0, p) * (lv.totK || 1) * WAVES_V2.foesK); // 15 Eki (Caner): bölüm başı %10 daha çok düşman
     const T = lv.waves, clone = (w) => w.map(g => Object.assign({}, g));
     const W = []; for (let j = 0; j < N; j++) W.push(clone(T[Math.round(j * (T.length - 1) / (N - 1))]));
     const heavyG = (g) => (ENEMIES[g.t] || {}).hp >= HEAVY_HP || (ENEMIES[g.t] || {}).elite;
@@ -1500,3 +1500,6 @@ function vertEpisode(E, ph, flip) {
   E.start = [MAP_V.x + flip * 40, MH + 70]; E.end = [MAP_V.x, 150];
 }
 if (typeof NECRO !== 'undefined' && NECRO && EPISODES.length) { vertEpisode(EPISODES[0], 0.4, 1); if (EPISODES[1]) vertEpisode(EPISODES[1], 1.9, -1); }
+// 15 Eki (Caner): kulelerin menzili ortalama %5 daraldı (bütün kademeler)
+const TOWER_RANGE_K = 0.95;
+for (const T of Object.values(TOWERS)) for (const L of T.levels || []) if (L.range) L.range = Math.round(L.range * TOWER_RANGE_K);

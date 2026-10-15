@@ -8,7 +8,7 @@ Her araç: SRC, bayrak tepesi / tekerlek altı (FIG_TOP, GROUND), yürüme döng
 16 Eki (Caner: "kare kare gibi kasılıyor"): yavaş araçta yürüyüş döngüsü 1,4 sn'ye uzar (walkRate sınırı); tek döngü (14-18 kare) orada
 saniyede 10-13 kare oynuyordu. Artık videonun 2-3 döngüsü art arda alınır (≈24 kare/sn). Yıkılma videonun HER karesinden, gerçek hızında (dur = kare / 24; eskiden her 4-5. kare, 8-10 kare/sn);
 şerit 16383 px'e sığmazsa satırlara bölünür (anim.json 'cols', game.js drawFrame satır başına kare sayısını okur). 16 Eki (Caner: "ilk patlamadan sonra bekliyor, sonra tekrar patlıyor"): videolardaki ilk küçük darbe ve duraklama atılır, yıkılma asıl (son) parçalanmayla başlar
-(kule 132, koçbaşı 134, top 150). Bellek: ölüm şeridi ~25-35 MB (yalnız o aracın çıktığı bölümde yüklenir).
+(kule 132, koçbaşı 134, top 150). 15 Eki (20. bölümde iPhone belleği taştı): çözünürlük ~%20 düştü, kare sayısı aynı. Bellek: ölüm şeridi ~12-17 MB (yalnız o aracın çıktığı bölümde yüklenir).
     .venv/bin/python varliklar/kusatma_veo_isle.py kule kocbasi
 """
 import json, os, sys
@@ -20,11 +20,11 @@ import video_isle
 IMG = os.path.join(H0, '..', 'sinir-kalesi', 'img')
 CFG = {
     'kule': dict(src='kule_yuru_yikim_veo.mp4', name='enemy_siegetower', top=172, ground=573, still=None,
-                 walk=(range(13, 47), (390, 150, 890, 592), 240), die=(range(132, 197), (40, 60, 1240, 660), 150, 2.7)),
+                 walk=(range(13, 47), (390, 150, 890, 592), 200), die=(range(132, 197), (40, 60, 1240, 660), 122, 2.7)),
     'kocbasi': dict(src='kocbasi_yuru_yikim_veo.mp4', name='enemy_ram', top=240, ground=563, still=0,
-                    walk=(range(45, 87), (280, 220, 980, 580), 150), die=(range(134, 201), (130, 150, 1180, 660), 120, 2.8)),
+                    walk=(range(45, 87), (280, 220, 980, 580), 140), die=(range(134, 201), (130, 150, 1180, 660), 100, 2.8)),
     'top': dict(src='top_yuru_ates_yikim_veo.mp4', name='enemy_cannon', top=160, ground=449, still=None,
-                walk=(range(11, 47), (250, 150, 774, 456), 180), die=(range(150, 201), (0, 70, 1024, 496), 135, 2.1)),
+                walk=(range(11, 47), (250, 150, 774, 456), 180), die=(range(150, 201), (0, 70, 1024, 496), 110, 2.1)),
 }
 def cut(fr, n):
     a = np.array(video_isle.remove_magenta(fr[n])); f = a[..., :3].astype(np.int16)
