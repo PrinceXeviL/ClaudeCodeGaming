@@ -806,7 +806,7 @@ const GRIM = {
 const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], ult2: [0, 3, 6, 10, 14, 18], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // ult2: ikinci aktif (13 Eki) // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
-  nm_raise: { name: 'Ölüleri Diriltme', cd: 45, corpse: 6, col: '190,80,255', max: 3, /* 13 Eki (Caner): 1. seviyede en çok 3 ölü, her kademe +1 (5. kademede 8) */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
+  nm_raise: { name: 'Ölüleri Diriltme', cd: 38, /* 16 Eki (Caner): 45 → 38, biraz daha sık */ corpse: 6, col: '190,80,255', max: 3, /* 13 Eki (Caner): 1. seviyede en çok 3 ölü, her kademe +1 (5. kademede 8) */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
     desc: 'Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur',
     short: 'Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü' },
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
