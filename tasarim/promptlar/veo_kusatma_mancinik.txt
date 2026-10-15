@@ -11,6 +11,6 @@ ACTION 2 (3.5-5 s): THROW: the soldiers stop; the throwing arm snaps forward and
 
 PAUSE (5-5.4 s): everything holds still.
 
-ACTION 3 (5.4-8 s): DESTRUCTION: a heavy invisible hit shakes the vehicle; the A-frame snaps and topples, the throwing arm breaks in two, the rope coils burst; the wheels break and fall off, planks and splinters burst outward in a big cartoon explosion of dust and wood chips, and the two legionaries are knocked back, fall to the ground and lie still, defeated. It ends as a broken wreck lying low on the ground with the two fallen soldiers beside it, a little dust settling, completely still for the last half second.
+ACTION 3 (5.4-8 s): DESTRUCTION in ONE single continuous burst, no small first explosion and no pause: the whole wagon bursts apart at once, the A-frame snaps and topples, the throwing arm breaks in two, the rope coils burst; the wheels break and fall off, planks and splinters burst outward in a big cartoon explosion of dust and wood chips, and the two legionaries are knocked back, fall to the ground and lie still, defeated. It ends as a broken wreck lying low on the ground with the two fallen soldiers beside it, a little dust settling, completely still for the last half second.
 
 Exaggerated, punchy, satisfying cartoon motion (squash and stretch), not realistic, no blood. No text, no other people, no ground plane, no color tint, no snow, no floating specks.
