@@ -1,0 +1,11 @@
+Image 1 shows the five towers of my dark gothic cartoon tower defense game, left to right: (1) Bone Tower: a stone pillar wrapped in bones with a bone-railed balcony and a red skull banner; (2) Crypt: a small stone crypt with a green glowing gate and skeletons; (3) Soul Lantern: a hooded reaper statue on a rune pillar with hanging skulls and grave hands; (4) Plague Cauldron: a huge horned skull with a bubbling green cauldron on top; (5) Curse Tower: a rune obelisk with a floating spell book and purple braziers. Image 2 shows the empty round building plot (stone ring) they stand on.
+
+Draw the RUBBLE of each of these five towers after it has been destroyed by siege weapons: what is left lying on the round stone plot after the tower collapsed in place. Same art style, line weight, colors and slight top-down 3/4 view as image 1; each rubble pile sits on the same round stone plot ring as image 2 (the ring is cracked and partly covered), and is LOW and FLAT: a broken stump of the tower's base at most a quarter of the tower's height, surrounded by a pile of broken stones, planks and that tower's own pieces:
+1) Bone Tower rubble: the broken stone stump with snapped bones, scattered skulls, a torn red skull banner on the ground, broken balcony railing pieces
+2) Crypt rubble: collapsed crypt walls and roof slabs, the iron gate fallen flat, broken bones, the green glow faintly leaking from cracks
+3) Soul Lantern rubble: the reaper statue toppled and broken in half lying across the plot, its lantern cracked, the rune pillar stump, grave hands half buried
+4) Plague Cauldron rubble: the giant skull cracked open and tipped over, the cauldron overturned, a small puddle of green ooze spilled, broken horns
+5) Curse Tower rubble: the obelisk snapped near the base, rune blocks scattered, the spell book lying closed on the ground, the braziers knocked over and cold
+Thin dust in the air is not needed. No flames, no smoke clouds, no people, no skeletons standing.
+
+Arranged in one clean row of five, in the same order, evenly spaced, each centered in its own area with plenty of empty magenta space around it, nothing touching. All five at the same scale as the towers in image 1 (the plot rings the same size). Plain flat magenta (#FF00FF) background everywhere, no ground plane, no shadows on the background, no text, no letters, no labels. 16:9 image.

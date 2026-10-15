@@ -3860,8 +3860,22 @@ function clearRubble(pl) {
   if (!pl.rubble || pl.rubble.clearT > 0 || G.gold < RUBBLE.cost) return false;
   G.gold -= RUBBLE.cost; pl.rubble.clearT = RUBBLE.time; sfx('build'); return true;
 }
+// 15 Eki: kulenin kendi molozu (Gemini nm6_kule_moloz.jpg, kule türüne göre; Ruh Fenerinin iki çeşidi). Arsanın üstünü örter, temizlenirken solup çöker.
+const RUBBLE_IMG = { w: 90, anchor: 0.6 };
 function drawRubble(pl) { // moloz: taş blokları ve kemikler; temizlenirken azalır, üstünde ilerleme halkası
   const R = pl.rubble, cl = R.clearT > 0 ? R.clearT / RUBBLE.time : 1; let sd = Math.floor(R.seed * 99991) + 7;
+  const rim = spr('nm6_rubble_' + (R.type === 'mage' && R.seed < 0.5 ? 'mage2' : R.type));
+  if (rim) {
+    if (cl < 1) drawPlot(pl); // temizlenirken altından arsa görünür
+    const w = RUBBLE_IMG.w * BUILD_K, sink = 1 - cl;
+    ctx.save(); ctx.globalAlpha *= 0.15 + 0.85 * cl;
+    const hh = w * rim.height / rim.width, bot = pl.y + 2 + hh * (1 - RUBBLE_IMG.anchor) + 1;
+    ctx.beginPath(); ctx.rect(pl.x - w, bot - hh - 4, w * 2, hh + 4); ctx.clip(); // çökerken alt kenardan aşağı taşmasın
+    drawSprite(ctx, rim, pl.x, pl.y + 2 + sink * w * 0.25, w, RUBBLE_IMG.anchor);
+    ctx.restore();
+    if (R.clearT > 0) { ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(20,10,20,0.7)'; ctx.beginPath(); ctx.arc(pl.x, pl.y - 30, 9, 0, Math.PI * 2); ctx.stroke(); ctx.strokeStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(pl.x, pl.y - 30, 9, -Math.PI / 2, -Math.PI / 2 + (1 - cl) * Math.PI * 2); ctx.stroke(); ctx.restore(); if (Math.random() < 0.3) emit(G.parts, { kind: 'dot', x: pl.x + rand(-14, 14), y: pl.y - rand(0, 8), vx: rand(-20, 20), vy: -rand(10, 40), g: 120, col: '#9a8a7a', s0: 1.4, s1: 0.5, life: 0.5 }); }
+    return;
+  }
   const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   ctx.save(); ctx.translate(pl.x, pl.y);
   ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(0, 3, 30, 12, 0, 0, Math.PI * 2); ctx.fill();
@@ -18370,6 +18384,7 @@ window.__game = {
     let white = 0; for (const k in WHITE) white += mb(WHITE[k]); let rot = 0; for (const k in ROT) rot += mb(ROT[k]);
     return { strips: Math.round(strips), other: Math.round(other), white: Math.round(white), rot: Math.round(rot), big: L.sort((a, b) => b[1] - a[1]).slice(0, n), others: n > 15 ? Object.keys(SPR).filter(k => !LAZY_RE.test(k)).map(k => [k, Math.round(mb(SPR[k]))]).sort((a, b) => b[1] - a[1]).slice(0, n) : null };
   },
+  collapse: (i) => G.plots[i].tower && collapseTower(G.plots[i].tower), // test: kuleyi yık (moloz)
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
