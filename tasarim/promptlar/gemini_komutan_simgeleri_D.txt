@@ -1,0 +1,15 @@
+Image 1 is the ability icon sheet of my dark gothic cartoon tower defense game; image 2 shows its five undead heroes, left to right: Spartacus (zombie gladiator with chains), Leonidas (zombie Spartan with bronze shield and spear), Merlin (undead wizard), Robin (undead archer in a green hood), Bathory (vampire countess in red). Draw a NEW sheet of 12 HERO SKILL ICONS in exactly the same style, line weight and quality as image 1. Each icon is one bold, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) Chain Swing (Spartacus): a single iron chain swinging in an arc with a hook at its end
+2) Gladiator Net (Spartacus): a thrown rope net with lead weights and a trident behind it
+3) Arena Charge (Spartacus): a rotten gladiator shoulder pad rushing forward with dust and speed lines
+4) Spartan Kick (Leonidas): a bronze greave leg kicking forward with an impact burst
+5) Spartan Roar (Leonidas): a crested bronze Spartan helmet with golden shout shockwaves
+6) Time Gate (Merlin): a swirling purple magic portal with an hourglass in its center
+7) Frog Curse (Merlin): a surprised green frog with a tiny wizard hat, purple sparkles
+8) Knife Fan (Robin): five throwing knives spreading out in a fan
+9) Bone Arrow (Robin): a sharp bone arrow with green fletching piercing forward
+10) Shadow Hunter (Robin): a hooded archer silhouette in shadow with glowing green eyes
+11) Blood Sacrifice (Bathory): an ornate golden chalice overflowing with blood
+12) Bloodthirst (Bathory): a pair of vampire fangs dripping blood
+
+Arranged in a clean grid of 4 columns and 3 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

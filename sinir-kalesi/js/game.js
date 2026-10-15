@@ -12496,7 +12496,7 @@ function drawUlt2Glyph(id, r) {
   }
   ctx.restore();
 }
-const heroGlyph = (id, r, act) => (act === 'ult2' ? drawUlt2Glyph(id, r) : id === 'zeynep' ? drawNecroGlyph('nm_scream', r) : drawUltGlyph(id, r));
+const heroGlyph = (id, r, act) => (spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')) ? icoFit(spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')), 0, 0, r * 0.74) : act === 'ult2' ? drawUlt2Glyph(id, r) : id === 'zeynep' ? drawNecroGlyph('nm_scream', r) : drawUltGlyph(id, r));
 // kahraman gücü düğmesinin simgesi
 function drawUltGlyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -13295,7 +13295,8 @@ const HSK_ICON = {
   knives: 'fan', bonearrow: 'snipe', hunter: 'snipe', bloodlink: 'poison', sacrifice: 'blast', thirst: 'poison', volley: 'fan', blastarrow: 'napalm', fireaim: 'napalm', multishot: 'fan', pierce: 'snipe', eagle: 'snipe',
   shadowstep: 'shadow', bleed: 'poison', clawstorm: 'blade', dodge: 'smoke', mark: 'snipe',
 };
-function drawHeroSkillIcon(id, x, y, s) {
+function drawHeroSkillIcon(id, x, y, s, hero) {
+  { const im = hero && spr('ico_hs_' + hero + '_' + id); if (im) { icoFit(im, x, y, 15.5 * s); return; } } // 16 Eki: komutana özel Gemini yetenek simgesi (nm14_komutan_D)
   if (['bash', 'cry', 'whirl', 'bolt'].includes(id)) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s * 1.6, s * 1.6); drawSkillGlyph(id, 0, 0); ctx.restore();
   } else if (['chainbolt', 'mist', 'arcane', 'timegate', 'frog'].includes(id)) { ctx.save(); ctx.translate(x, y); drawMerlinGlyph(id, 22 * s); ctx.restore(); }
@@ -13366,7 +13367,7 @@ function drawHeroTree(id, px, py, pw, ph, k, battle) {
     upCard(lx, y, lw, 58, on, false);
     upIconRing(lx + 34, y + 29, 21, ult);
     ctx.save(); ctx.beginPath(); ctx.arc(lx + 34, y + 29, 21, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha *= r ? 1 : 0.55;
-    if (ult) { ctx.translate(lx + 34, y + 29); heroGlyph(id, 21, row.kind); } else drawHeroSkillIcon(row.id, lx + 34, y + 29, 0.95);
+    if (ult) { ctx.translate(lx + 34, y + 29); heroGlyph(id, 21, row.kind); } else drawHeroSkillIcon(row.id, lx + 34, y + 29, 0.95, id);
     ctx.restore();
     fitTxt(ult ? UO(row.kind).name : row.sk.name, lx + 66, y + 20, lw - 66 - 100, UP_FONT.name - 1, r ? '#ffe9b0' : '#c8b898', 'left', '400', FONT_T);
     txt(ult ? (act === row.kind && r ? 'AKTİF · SAVAŞTA' : 'AKTİF') : row.sk.passive ? 'PASİF · KALICI' : 'PASİF · OTOMATİK', lx + 66, y + 42, UP_FONT.small, ult ? (act === row.kind && r ? '#9fff8a' : '#ffd34d') : '#c8b898', 'left', '800', FONT_B, false);
@@ -13381,7 +13382,7 @@ function drawHeroTree(id, px, py, pw, ph, k, battle) {
   roundRect(rx, ry, rw, ph - 76 - 30, 16, 'rgba(0,0,0,0.3)', 'rgba(201,168,101,0.4)', 1.2);
   upIconRing(rx + 42, ry + 40, 26, ult);
   ctx.save(); ctx.beginPath(); ctx.arc(rx + 42, ry + 40, 26, 0, Math.PI * 2); ctx.clip();
-  if (ult) { ctx.translate(rx + 42, ry + 40); heroGlyph(id, 26, row.kind); } else drawHeroSkillIcon(row.id, rx + 42, ry + 40, 1.2);
+  if (ult) { ctx.translate(rx + 42, ry + 40); heroGlyph(id, 26, row.kind); } else drawHeroSkillIcon(row.id, rx + 42, ry + 40, 1.2, id);
   ctx.restore();
   fitTxt(ult ? UO(row.kind).name : row.sk.name, rx + 80, ry + 28, rw - 96, 23, '#ffe9b0', 'left', '400', FONT_T);
   const DL = wrapLines(ult ? UO(row.kind).desc || '' : row.sk.desc, rw - 96, 13.5, '700', FONT_B, 2);

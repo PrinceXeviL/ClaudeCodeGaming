@@ -1,0 +1,15 @@
+Image 1 is the ability icon sheet of my dark gothic cartoon tower defense game; image 2 shows its five undead heroes, left to right: Spartacus (zombie gladiator with chains), Leonidas (zombie Spartan with bronze shield and spear), Merlin (undead wizard), Robin (undead archer in a green hood), Bathory (vampire countess in red). Draw a NEW sheet of 12 HERO POWER ICONS in exactly the same style, line weight and quality as image 1, a little richer since these are the big hero power buttons. Each icon is one bold, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) Chain Storm (Spartacus): heavy iron chains whirling in a circle with a spiked iron ball, motion streaks
+2) Arena Roar (Spartacus): a roaring zombie gladiator helmet with crimson sound shockwaves
+3) Phalanx (Leonidas): a row of three overlapping round bronze Spartan shields with spears pointing forward
+4) Spear Rain (Leonidas): many bronze spears falling diagonally from above
+5) Meteor (Merlin): a blazing purple and green magic meteor falling with a fire trail
+6) Chain Lightning (Merlin): a jagged purple-white lightning bolt splitting into three branches
+7) Arrow Rain (Robin): a volley of green-fletched arrows falling from above
+8) Wolf Howl (Robin): the head of a ghostly spectral wolf howling, pale green mist
+9) Blood Pool (Bathory): a bubbling pool of dark blood with a skull rising out of it
+10) Blood Bats (Bathory): three crimson vampire bats flying out of a blood drop
+11) Bronze Shield (Leonidas): one big round bronze Spartan shield with a lambda sign, glowing edge
+12) Blood Link (Bathory): two blood drops tied together by a thin crimson thread forming a heart
+
+Arranged in a clean grid of 4 columns and 3 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.
