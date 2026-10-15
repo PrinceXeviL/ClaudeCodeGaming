@@ -127,7 +127,7 @@ def main():
     made.append(save('hornboss_1', fade(pitch(load_mp3('hornb_1'), 0.85), 0.01, 0.5), -17))
     # eksik savaş efektleri: arbalet atışı, ağır arbalet, zırha çarpan cıvata, mahzenden çıkan iskeletin kemik takırtısı
     # 16 Eki: nekromantik zafer müziği ve yıldız vuruşu
-    for n, cnt, db in [('winnecro', 2, -18), ('starthud', 3, -21)]:
+    for n, cnt, db in [('winnecro', 2, -18), ('starthud', 3, -21), ('skelcheer', 2, -21), ('lootchime', 2, -22)]:
         for i in range(1, cnt + 1):
             x = load_mp3(f'{n}_{i}'); made.append(save(f'{n}_{i}', fade(x, 0.003, min(0.4, len(x) / SR * 0.4)), db))
     # 16 Eki: iskelet sesleri (kelimesiz): seçince, bayrağa gönderince, öldürünce kahkaha

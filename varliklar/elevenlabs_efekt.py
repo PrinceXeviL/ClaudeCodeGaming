@@ -34,6 +34,8 @@ SFX = {
     # 16 Eki (Caner): iskeletlere kısa sesler (kelimesiz: dile bağlı değil). Seçince / bayrağa gönderince / öldürünce kahkaha
     # 16 Eki (Caner: zafer ekranı konsepte uysun): nekromantik zafer müziği ve yıldız vuruşu
     'winnecro': ('short dark gothic victory fanfare for a necromancer game: a swelling church pipe organ chord with an eerie ghostly choir singing aaah, triumphant but sinister, ending with one deep resonant bell toll, no drums, no words', 3.5, 2),
+    'skelcheer': ('a small crowd of cartoon skeletons cheering victoriously, hollow raspy hooray-like cheers and cackles with bones rattling and clacking, celebration after winning a battle, short, funny, no words, no music', 2.2, 2),
+    'lootchime': ('a magical treasure reward sound: bright crystal chime sparkle with a few clinking gold coins, short and satisfying, game loot pickup, no music', 1.0, 2),
     'starthud': ('a magical star slamming into place: a deep hollow bone thud with a bright eerie green magic chime sparkle on top, short, satisfying game reward sound, no music', 0.7, 3),
     'skelsel': ('a cartoon skeleton soldier answering an order, short raspy hollow undead grunt like hrrah, with a quick clack of its jaw bones and a dry bone rattle, funny, game voice, no words, no music', 0.8, 3),
     'skelmove': ('a small group of cartoon skeleton warriors marching off with a raspy hollow undead battle cry, bones clattering, short, funny, no words, no music', 1.0, 3),
