@@ -585,7 +585,8 @@
   "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Hurls 3 small bone shots, each also hits around it",
   "Kalkan Hamlesi!": "Shield Dash!",
   "Tabut Duvarı!": "Coffin Wall!",
-  "Ruh Biçimi!": "Soul Reaper!"
+  "Ruh Biçimi!": "Soul Reaper!",
+  "Veba Sinekleri": "Plague Flies"
  },
  "tpl": [
   [
@@ -1067,6 +1068,10 @@
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
    "Damage x{} · {}% crit · hits fast, its swing also hits the one beside · 4th skeleton · Soul Reaper: spins with two blades, hits all around, heals"
+  ],
+  [
+   "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
+   "The tower becomes a Black Plague Cauldron: purple-green plague, bigger gas cloud · Hit enemies are infected ({} poison per second): when an infected enemy dies the plague spreads to those nearby · Plague Flies: {} fly swarms at a time attack enemies (flyers too), poisoning and infecting whoever they bite"
   ]
  ]
 }

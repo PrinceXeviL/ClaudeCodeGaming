@@ -393,7 +393,8 @@
   "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Schleudert 3 kleine Knochenkugeln, jede trifft auch ringsum",
   "Kalkan Hamlesi!": "Schildstoß!",
   "Tabut Duvarı!": "Sargwall!",
-  "Ruh Biçimi!": "Seelenmäher!"
+  "Ruh Biçimi!": "Seelenmäher!",
+  "Veba Sinekleri": "Pestfliegen"
  },
  "tpl": [
   [
@@ -567,6 +568,10 @@
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
    "Schaden x{} · {}% kritisch · schlägt schnell, der Hieb trifft auch den Nachbarn · 4. Skelett · Seelenmäher: wirbelt mit zwei Klingen, trifft ringsum, heilt sich"
+  ],
+  [
+   "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
+   "Der Turm wird zum Schwarzen Pestkessel: violett-grüne Pest, größere Gaswolke · Getroffene werden infiziert ({} Gift pro Sekunde): stirbt ein Infizierter, springt die Pest auf Nahestehende über · Pestfliegen: {} Fliegenschwärme gleichzeitig greifen Feinde an (auch Flieger) und vergiften und infizieren, wen sie beißen"
   ]
  ]
 }

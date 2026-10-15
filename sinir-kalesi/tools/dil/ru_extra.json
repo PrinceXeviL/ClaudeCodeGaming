@@ -393,7 +393,8 @@
   "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Метает 3 маленьких костяных ядра, каждое бьёт и вокруг",
   "Kalkan Hamlesi!": "Рывок щитом!",
   "Tabut Duvarı!": "Стена гроба!",
-  "Ruh Biçimi!": "Жнец душ!"
+  "Ruh Biçimi!": "Жнец душ!",
+  "Veba Sinekleri": "Чумные мухи"
  },
  "tpl": [
   [
@@ -567,6 +568,10 @@
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
    "Урон x{} · {}% крит · бьёт быстро, взмах задевает соседа · 4-й скелет · Жнец душ: вращается с двумя клинками, бьёт вокруг, лечится"
+  ],
+  [
+   "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
+   "Башня становится Котлом Чёрной Чумы: фиолетово-зелёная чума, облако газа больше · Поражённые заражаются ({} яда в секунду): когда заражённый умирает, чума переходит на соседей · Чумные мухи: одновременно {} роя нападают на врагов (и летающих), отравляя и заражая укушенных"
   ]
  ]
 }

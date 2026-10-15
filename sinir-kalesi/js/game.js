@@ -548,7 +548,8 @@ const SOUND = {
   win:     { vol: 0.80, gap: 1, max: 1 },
   winnecro: { vol: 0.85, gap: 2, max: 1 },                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
   starthud: { vol: 0.6, gap: 0.05, max: 3 },
-  starchime: { vol: 0.6, gap: 0.05, max: 3 }, // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
+  starchime: { vol: 0.6, gap: 0.05, max: 3 },
+  flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
   skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
   lootchime: { vol: 0.5, gap: 0.5, max: 1 },                         // ganimet çıkınca kristal + altın çınlaması                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
   lose:    { vol: 0.80, gap: 1, max: 1 },
@@ -2017,7 +2018,7 @@ function startLevel(idx, chal = null) {
     heroes: [],
     spells: {}, mercT: null,
     sel: null, preview: null, mode: null, menuT: 0, menuClose: null, waveBtn: {},
-    musicOn: !NECRO, ghosts: [], souls: [], stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
+    musicOn: !NECRO, ghosts: [], souls: [], swarms: [], stars: 0, t: 0, starFx: 0, stats: { by: {}, raised: 0, spells: 0 },
     castle: { x: lv.castle[0], y: lv.castle[1], shake: 0, flash: 0, smokeT: 0, lvl: 0, archers: [] },
     hurt: 0, banner: null,
     weather: lv.weather || null, wspd: (WEATHER[lv.weather] || {}).speed ?? 1,
@@ -4171,6 +4172,7 @@ function updateTower(t, dt) {
   if (t.type === 'altar') { updateAltar(t, dt); return; }
   const L = effLevel(t);
   if (t.type === 'archer') { updateObelisk(t, dt, L); return; }
+  if (NECRO && t.type === 'artillery' && t.spec === 'plague') swarmLaunch(t, dt, L);
   // Hayalet Çağırıcı: yolda düşmanlara doğru süzülen hayalet; değdiğini yakar ve korkutur
   const gh = t.type === 'mage' && abRank(t, 'ghost');
   if (gh) {
@@ -7644,7 +7646,8 @@ function update(dt) {
   updateHatches(dt);
   if (G.bossFx && (G.bossFx.t += dt) > G.bossFx.dur) G.bossFx = null;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
-  for (const t of G.towers) { SFX_POS = t; updateTower(t, dt); } // ses konumu: o an işlenen birim (spatial)
+  for (const t of G.towers) { SFX_POS = t; updateTower(t, dt); }
+  updateSwarms(dt); // ses konumu: o an işlenen birim (spatial)
   for (const e of G.enemies) if (!e.dead) { SFX_POS = e; updateEnemy(e, dt); }
   for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); }
   SFX_POS = null;
@@ -9119,7 +9122,8 @@ function drawPlagueCauldron(t, ts) {
   }
   if (C.flies) { // sinek sürüsü: kazanın çevresinde vızıldar, kanatları titrer, ara ara yön değiştirir
     const c0 = cauldronPt(t, ts, [0.5, 0.42]), RX = ts.w * 0.48, RY = ts.h * 0.32;
-    for (let i = 0; i < C.flies; i++) {
+    const nF = Math.max(4, C.flies - 5 * G.swarms.filter(w => w.tw === t).length); // dışarıdaki sürüler kazandan eksilir
+    for (let i = 0; i < nF; i++) {
       const u = time * (0.5 + (i % 5) * 0.11) + i * 1.37 + sd, x = c0.x + Math.sin(u * 1.3 + i) * RX * (0.6 + 0.4 * Math.sin(u * 0.37 + i)) + Math.sin(time * 23 + i * 5) * 0.8 * s,
         y = c0.y + Math.sin(u * 1.9 + i * 0.7) * RY * (0.7 + 0.3 * Math.cos(u * 0.5)) + Math.cos(time * 19 + i * 3) * 0.8 * s, wf = Math.sin(time * 60 + i) > 0 ? 1 : 0.4;
       ctx.globalAlpha = 0.45 * wf; ctx.fillStyle = '#d8e8ff'; ctx.beginPath(); ctx.ellipse(x - 0.7 * s, y - 0.6 * s, 0.8 * s, 0.4 * s, -0.5, 0, Math.PI * 2); ctx.ellipse(x + 0.7 * s, y - 0.6 * s, 0.8 * s, 0.4 * s, 0.5, 0, Math.PI * 2); ctx.fill();
@@ -12805,6 +12809,75 @@ function drawSpecter(x, y, s, face, ph, a) {
   ctx.fillStyle = '#1a0628'; ctx.beginPath(); ctx.ellipse(-1, -8, 1.3, 1.8, 0, 0, Math.PI * 2); ctx.ellipse(3, -8, 1.3, 1.8, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(1.5, -3.5, 1.4, 2.2 + Math.sin(ph * 1.3) * 0.6, 0, 0, Math.PI * 2); ctx.fill(); // uluyan ağız
   ctx.restore();
+}
+// 16 Eki (Caner: "çevresindeki sinekleri düşmana saldırtalım, vebalı sineklerin ısırdığı düşman zehirlenir"): Kara Veba Kazanı sinek sürüsü.
+// Kazanın çevresinde vızıldayan sineklerden her SWARM.cd sn'de bir bölük kopar (aynı anda en çok uzmanlık kademesi kadar), menzildeki
+// düşmana uçar (uçanlar da), çevresinde döner, SWARM.bite sn'de bir ısırır: hasar + zehir + veba (ölünce yanındakilere bulaşır).
+// Hedef ölürse SWARM.jump içindeki düşmana sıçrar; süre bitince kazana döner. Makineler zehirlenmez (ısırık hasarı işler).
+const SWARM = { cd: 4.2, life: 5, bite: 0.55, n: 16, v: 165, jump: 80, dmgK: 0.1, poisonT: 4 };
+function swarmHome(t) { const ts = towerSprite(t); return ts ? cauldronPt(t, ts, [0.5, 0.42]) : { x: t.x, y: t.y - 40 }; }
+function swarmPick(x, y, r, not) {
+  let best = null, bs = -1e9;
+  for (const e of G.enemies) {
+    if (e.dead || e.under || e === not || dist(e.x, e.y, x, y) > r) continue;
+    const sc = -(G.swarms.some(w => w.e === e) ? 200 : 0) - (e.plagueT > 0 ? 60 : 0) + e.d * 0.05 + (e.def.flying ? 30 : 0); // sürüsüz, vebasız, öndeki; uçana öncelik
+    if (sc > bs) { bs = sc; best = e; }
+  }
+  return best;
+}
+function swarmLaunch(t, dt, L) {
+  const pl = abRank(t, 'plague'); if (!pl) return;
+  t.swCd = (t.swCd ?? 1.2) - dt;
+  if (t.swCd > 0 || G.swarms.filter(w => w.tw === t).length >= (pl.sw || 1)) return;
+  const e = swarmPick(t.x, t.y - 10, L.range * 1.1); if (!e) { t.swCd = 0.4; return; }
+  const h = swarmHome(t);
+  G.swarms.push({ tw: t, e, x: h.x, y: h.y, st: 'go', T: 0, biteT: 0.2, dps: pl.dps, dmg: (L.dmg[0] + L.dmg[1]) / 2 * SWARM.dmgK, seed: rand(0, 99), face: 1 });
+  t.swCd = SWARM.cd; t.gushT = GUSH * 0.5;
+  sfx('flybuzz');
+}
+function updateSwarms(dt) {
+  for (const w of G.swarms) {
+    w.T += dt;
+    if (w.st !== 'back' && (!w.e || w.e.dead || w.e.under)) { // hedef öldü: yakındakine sıçra, yoksa dön
+      const n = swarmPick(w.x, w.y, SWARM.jump, w.e); if (n) { w.e = n; w.st = 'go'; } else w.st = 'back';
+    }
+    if (w.st !== 'back' && w.T > SWARM.life) w.st = 'back';
+    const alive = G.towers.includes(w.tw), to = w.st === 'back' ? (alive ? swarmHome(w.tw) : { x: w.x, y: w.y - 40 }) : { x: w.e.x, y: aimY(w.e) - 4 };
+    const dx = to.x - w.x, dy = to.y - w.y, d = Math.hypot(dx, dy);
+    if (Math.abs(dx) > 2) w.face = dx > 0 ? 1 : -1;
+    if (w.st === 'bite') { w.x += dx * Math.min(1, dt * 8); w.y += dy * Math.min(1, dt * 8); }
+    else { const st = Math.min(d, SWARM.v * G.wspd * dt * (w.st === 'back' ? 1.2 : 1)); if (d > 0.1) { w.x += dx / d * st; w.y += dy / d * st; } }
+    if (w.st === 'go' && d < 10) w.st = 'bite';
+    if (w.st === 'back' && (d < 8 || !alive && w.T > SWARM.life + 1.5)) { w.done = true; continue; }
+    if (w.st === 'bite') {
+      w.biteT -= dt;
+      if (w.biteT <= 0) {
+        w.biteT = SWARM.bite; const e = w.e;
+        hitBy = 'tower'; damageEnemy(e, w.dmg, 'phys', true, 'blast'); hitBy = null;
+        if (!e.dead) { poisonEnemy(e, w.dps, SWARM.poisonT, 'blast'); if (!immuneTo(e, 'poison')) { e.plagueT = 4; e.plagueDps = w.dps; } }
+        for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: e.x + rand(-6, 6), y: aimY(e) + rand(-6, 6), vx: rand(-30, 30), vy: rand(-40, 0), g: 200, col: i % 2 ? '#8cff5a' : '#b070ff', s0: rand(1, 1.6), s1: 0.6, life: rand(0.3, 0.5) });
+      }
+    }
+  }
+  if (G.swarms.some(w => w.done)) G.swarms = G.swarms.filter(w => !w.done);
+}
+function drawSwarms() {
+  for (const w of G.swarms) {
+    const k = w.st === 'bite' ? 1 : w.st === 'go' ? 0.6 : 0.8, R = 15 * k + 5, s = 2.3, fa = Math.min(1, w.T / 0.3);
+    ctx.save(); ctx.globalAlpha = 0.35 * fa; ctx.drawImage(gasBlob(), w.x - R * 1.3 - (w.st === 'bite' ? 0 : 10 * w.face), w.y - R * 0.8, R * 2.6, R * 1.6); ctx.restore(); // sürünün kirli veba pusu
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, w.x, w.y, R + 8, '120,230,90', w.st === 'bite' ? 0.2 : 0.11); ctx.restore();
+    for (let i = 0; i < SWARM.n; i++) {
+      const sp = (i % 2 ? 1 : -1) * (5 + (i % 4) * 1.3), ph = w.seed + i * 2.399, rr = R * (0.35 + 0.65 * ((i * 0.618) % 1));
+      // yolculukta sürü uzar (arkada kuyruk), ısırırken hedefin çevresinde hızla döner
+      const lag = w.st === 'bite' ? 0 : (i / SWARM.n) * 22 * -w.face;
+      const x = w.x + lag + Math.cos(ph + time * sp) * rr + Math.sin(time * 31 + i * 5) * 0.9, y = w.y + Math.sin(ph + time * sp * 1.3) * rr * 0.6 + Math.cos(time * 27 + i * 3) * 0.9;
+      const wf = Math.sin(time * 60 + i) > 0 ? 1 : 0.4;
+      ctx.globalAlpha = 0.5 * wf; ctx.fillStyle = '#d8e8ff'; ctx.beginPath(); ctx.ellipse(x - 0.7 * s, y - 0.6 * s, 0.9 * s, 0.45 * s, -0.5, 0, Math.PI * 2); ctx.ellipse(x + 0.7 * s, y - 0.6 * s, 0.9 * s, 0.45 * s, 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = fa; ctx.fillStyle = i % 4 ? '#120a0e' : '#26340f'; ctx.beginPath(); ctx.ellipse(x, y, 0.95 * s, 0.7 * s, 0, 0, Math.PI * 2); ctx.fill(); // tombul gövde
+      if (i % 3 === 0) circle(x + 0.35 * s, y - 0.2 * s, 0.32 * s, '#9dff6a'); else circle(x + 0.4 * s, y - 0.2 * s, 0.22 * s, '#c03030'); // vebalı yeşil parıltı / kızıl göz
+    }
+    ctx.globalAlpha = 1;
+  }
 }
 function drawBatSwarms() {
   for (const z of G.zones) {
@@ -17389,7 +17462,7 @@ function drawPlay() {
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
   drawGasClouds();
-  drawBloodLinks(); drawBatSwarms();
+  drawBloodLinks(); drawBatSwarms(); drawSwarms();
   drawFearGhosts();
   for (const p of G.projectiles) drawProjectile(p);
   drawSouls();

@@ -393,7 +393,8 @@
   "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Lanza 3 pequeñas balas de hueso, cada una golpea a su alrededor",
   "Kalkan Hamlesi!": "¡Embestida de escudo!",
   "Tabut Duvarı!": "¡Muro de ataúd!",
-  "Ruh Biçimi!": "¡Segador de almas!"
+  "Ruh Biçimi!": "¡Segador de almas!",
+  "Veba Sinekleri": "Moscas de la Peste"
  },
  "tpl": [
   [
@@ -567,6 +568,10 @@
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
    "Daño x{} · {}% crítico · golpea rápido, su tajo alcanza al de al lado · 4.º esqueleto · Segador de almas: gira con dos espadas, golpea alrededor, se cura"
+  ],
+  [
+   "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
+   "La torre se convierte en el Caldero de la Peste Negra: peste verde-púrpura, nube de gas mayor · Los alcanzados quedan infectados ({} de veneno por segundo): al morir un infectado, la peste se contagia a los cercanos · Moscas de la Peste: {} enjambres a la vez atacan a los enemigos (también voladores), envenenan e infectan a quien muerden"
   ]
  ]
 }

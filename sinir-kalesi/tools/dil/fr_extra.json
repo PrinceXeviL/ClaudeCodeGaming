@@ -393,7 +393,8 @@
   "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "Lance 3 petits boulets d'os, chacun frappe aussi autour",
   "Kalkan Hamlesi!": "Charge au bouclier !",
   "Tabut Duvarı!": "Mur de cercueil !",
-  "Ruh Biçimi!": "Faucheur d'âmes !"
+  "Ruh Biçimi!": "Faucheur d'âmes !",
+  "Veba Sinekleri": "Mouches de la Peste"
  },
  "tpl": [
   [
@@ -567,6 +568,10 @@
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
    "Dégâts x{} · {}% critique · frappe vite, son coup touche aussi le voisin · 4e squelette · Faucheur d'âmes : tournoie avec deux lames, frappe tout autour, se soigne"
+  ],
+  [
+   "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
+   "La tour devient le Chaudron de Peste Noire : peste vert-violet, nuage de gaz plus grand · Les ennemis touchés sont infectés ({} de poison par seconde) : à la mort d'un infecté, la peste se propage aux voisins · Mouches de la Peste : {} essaims à la fois attaquent les ennemis (volants compris), empoisonnent et infectent ceux qu'ils piquent"
   ]
  ]
 }

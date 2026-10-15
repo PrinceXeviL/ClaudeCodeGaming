@@ -393,7 +393,8 @@
   "3 küçük kemik gülle fırlatır, her biri çevresine de vurur": "投出 3 颗小骨弹，每颗都会波及周围",
   "Kalkan Hamlesi!": "盾冲！",
   "Tabut Duvarı!": "棺材之墙！",
-  "Ruh Biçimi!": "灵魂收割！"
+  "Ruh Biçimi!": "灵魂收割！",
+  "Veba Sinekleri": "瘟疫蝇群"
  },
  "tpl": [
   [
@@ -567,6 +568,10 @@
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
    "伤害 x{} · {}% 暴击 · 攻击迅速，挥砍会波及旁边的敌人 · 第 4 具骷髅 · 灵魂收割：双刃旋转，攻击四周，并恢复生命"
+  ],
+  [
+   "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
+   "塔变为黑死病药釜：紫绿色瘟疫，毒气云更大 · 被击中者感染瘟疫（每秒{}点毒伤）：感染者死亡时瘟疫传给附近敌人 · 瘟疫蝇群：同时{}群苍蝇攻击敌人（含飞行单位），被叮咬者中毒并感染瘟疫"
   ]
  ]
 }

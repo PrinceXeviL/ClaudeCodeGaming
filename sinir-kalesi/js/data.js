@@ -71,8 +71,9 @@ const TOWERS = {
       // çarptığı yerdekileri havaya savurur (h: savrulma yüksekliği px), gülle kırılır, yerde zehirli veba gölü kalır (pool: göl gücü çarpanı)
       { id: 'corpse', name: 'Kemik Gülle', desc: (r) => `Kule Kemik Gülle Mancınığına dönüşür: içi veba dolu dev kemik gülle atar (x${r.mult} hasar) · Çarptığı yerdeki düşmanlar havaya savrulup dağılır, gülle kırılır, yerde zehirli veba gölü kalır` + (r.stun ? ` · Savrulanlar ${r.stun} sn sersemler` : ''),
         ranks: [{ cost: 170, mult: 2.0, h: 30, pool: 1, stun: 0 }, { cost: 230, mult: 2.5, h: 36, pool: 1.3, stun: 0 }, { cost: 290, mult: 3.0, h: 44, pool: 1.6, stun: 1 }] },
-      { id: 'plague', name: 'Kara Veba', desc: (r) => `Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır`,
-        ranks: [{ cost: 200, dps: 7 }, { cost: 260, dps: 12 }, { cost: 320, dps: 18 }] },
+      // 16 Eki (Caner): sinek sürüsü: kazanın sinekleri bölük bölük düşmana saldırır (sw: aynı anda kaç sürü), ısırdığını zehirler ve vebalar
+      { id: 'plague', name: 'Kara Veba', desc: (r) => `Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede ${r.dps} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda ${r.sw} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar`,
+        ranks: [{ cost: 200, dps: 7, sw: 1 }, { cost: 260, dps: 12, sw: 2 }, { cost: 320, dps: 18, sw: 3 }] },
     ],
   },
 };
