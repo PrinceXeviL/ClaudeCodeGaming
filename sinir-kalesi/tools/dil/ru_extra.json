@@ -381,7 +381,11 @@
   "Önce bu seferi bitir": "Сначала заверши этот поход",
   "Yeniden kuruluyor…": "Восстановление…",
   "Bu kuleden haritada zaten var": "Эта башня уже есть на карте",
-  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "Башня возвращается такой, какой была до разрушения: уровень, специализация, умения"
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "Башня возвращается такой, какой была до разрушения: уровень, специализация, умения",
+  "ÇIPLAK KEMİK": "ГОЛЫЕ КОСТИ",
+  "Çıplak Kemik": "Голые кости",
+  "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 жизнь · только 2 вида башен · без заклинаний Мортимера",
+  "3 yıldızla açılır": "Открывается за 3 звезды"
  },
  "tpl": [
   [
@@ -527,6 +531,18 @@
   [
    "Yeniden kur — {} altın",
    "Восстановить — {} золота"
+  ],
+  [
+   "Tek can · yalnız {} · büyü yok",
+   "Одна жизнь · только {} · без заклинаний"
+  ],
+  [
+   "Tek can, yalnız {}, Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.",
+   "Одна жизнь, только {}, Мортимер не колдует. Один прорыв — и поражение."
+  ],
+  [
+   "{} ve {}",
+   "{} и {}"
   ]
  ]
 }

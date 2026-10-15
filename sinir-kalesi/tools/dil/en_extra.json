@@ -573,7 +573,11 @@
   "Önce bu seferi bitir": "Finish this campaign first",
   "Yeniden kuruluyor…": "Rebuilding…",
   "Bu kuleden haritada zaten var": "You already have this tower on the map",
-  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "The tower returns exactly as it was before it fell: level, specialization, abilities"
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "The tower returns exactly as it was before it fell: level, specialization, abilities",
+  "ÇIPLAK KEMİK": "BARE BONES",
+  "Çıplak Kemik": "Bare Bones",
+  "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 life · only 2 tower types · no Mortimer spells",
+  "3 yıldızla açılır": "Unlocks with 3 stars"
  },
  "tpl": [
   [
@@ -1027,6 +1031,18 @@
   [
    "Yeniden kur — {} altın",
    "Rebuild — {} gold"
+  ],
+  [
+   "Tek can · yalnız {} · büyü yok",
+   "One life · only {} · no spells"
+  ],
+  [
+   "Tek can, yalnız {}, Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.",
+   "One life, only {}, Mortimer cannot cast. A single leak loses the battle."
+  ],
+  [
+   "{} ve {}",
+   "{} and {}"
   ]
  ]
 }

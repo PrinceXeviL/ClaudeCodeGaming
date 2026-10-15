@@ -381,7 +381,11 @@
   "Önce bu seferi bitir": "Termina primero esta campaña",
   "Yeniden kuruluyor…": "Reconstruyendo…",
   "Bu kuleden haritada zaten var": "Ya tienes esta torre en el mapa",
-  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "La torre vuelve tal como era antes de caer: nivel, especialización, habilidades"
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "La torre vuelve tal como era antes de caer: nivel, especialización, habilidades",
+  "ÇIPLAK KEMİK": "HUESOS DESNUDOS",
+  "Çıplak Kemik": "Huesos desnudos",
+  "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 vida · solo 2 tipos de torre · sin hechizos de Mortimer",
+  "3 yıldızla açılır": "Se desbloquea con 3 estrellas"
  },
  "tpl": [
   [
@@ -527,6 +531,18 @@
   [
    "Yeniden kur — {} altın",
    "Reconstruir — {} oro"
+  ],
+  [
+   "Tek can · yalnız {} · büyü yok",
+   "Una vida · solo {} · sin hechizos"
+  ],
+  [
+   "Tek can, yalnız {}, Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.",
+   "Una vida, solo {}, Mortimer no puede lanzar hechizos. Una sola fuga te hace perder."
+  ],
+  [
+   "{} ve {}",
+   "{} y {}"
   ]
  ]
 }

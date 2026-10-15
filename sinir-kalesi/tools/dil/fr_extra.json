@@ -381,7 +381,11 @@
   "Önce bu seferi bitir": "Termine d'abord cette campagne",
   "Yeniden kuruluyor…": "Reconstruction…",
   "Bu kuleden haritada zaten var": "Cette tour est déjà sur la carte",
-  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "La tour revient telle qu'elle était avant de tomber : niveau, spécialisation, compétences"
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "La tour revient telle qu'elle était avant de tomber : niveau, spécialisation, compétences",
+  "ÇIPLAK KEMİK": "OS À NU",
+  "Çıplak Kemik": "Os à nu",
+  "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 vie · seulement 2 types de tours · pas de sorts de Mortimer",
+  "3 yıldızla açılır": "Se débloque avec 3 étoiles"
  },
  "tpl": [
   [
@@ -527,6 +531,18 @@
   [
    "Yeniden kur — {} altın",
    "Reconstruire — {} or"
+  ],
+  [
+   "Tek can · yalnız {} · büyü yok",
+   "Une vie · seulement {} · pas de sorts"
+  ],
+  [
+   "Tek can, yalnız {}, Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.",
+   "Une vie, seulement {}, Mortimer ne peut pas lancer de sorts. Une seule fuite et c'est perdu."
+  ],
+  [
+   "{} ve {}",
+   "{} et {}"
   ]
  ]
 }

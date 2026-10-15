@@ -1951,7 +1951,12 @@ const CHAL = {
   e: { name: 'SONSUZ GECE', short: 'Sonsuz', hp: 1, lives: 20, endless: true, desc: 'Dalgalar bitmez, her turda güçlenir · rekorunu kır' },
   // Günün meydan okuması: her gün tarihe göre seçilen bölüm + bir zorlaştırıcı (DAILY_MODS)
   d: { name: 'GÜNÜN SINAVI', short: 'Günlük', hp: 1, lives: 20, daily: true },
+  // 16 Eki: Çıplak Kemik (3 yıldızla açılır): tek can, yalnız iki kule türü (bölüme göre), Mortimer büyü yapamaz. 1 ek yıldız (save.ch[i].i)
+  i: { name: 'ÇIPLAK KEMİK', short: 'Çıplak Kemik', hp: 1, lives: 1, iron: true, desc: '1 can · yalnız 2 kule türü · Mortimer büyüsü yok' },
 };
+// Çıplak Kemik'te bölüme göre izinli iki kule (biri mutlaka havayı vurur: Kemik Kulesi ya da Ruh Feneri)
+const IRON_PAIRS = [['archer', 'artillery'], ['mage', 'barracks'], ['archer', 'barracks'], ['mage', 'artillery'], ['archer', 'mage']];
+const ironTowers = (idx) => IRON_PAIRS[(idx * 3 + 1) % IRON_PAIRS.length];
 // sonsuz mod: dalga k, bölümün (k mod N). dalgasından kopyalanır; her tur (N dalga) +%18 can, +%12 kalabalık
 const ENDLESS = { hp: 0.18, n: 0.12 };
 function endlessExtend() {
@@ -1981,7 +1986,7 @@ function dailyPick() {
   const pool = open.length ? open : [0];
   return { key, idx: pool[h % pool.length], mod: DAILY_MODS[(h >> 4) % DAILY_MODS.length] };
 }
-function chalStars() { let n = 0; for (const k in save.ch || {}) n += save.ch[k].h ? 1 : 0; return n; }
+function chalStars() { let n = 0; for (const k in save.ch || {}) n += (save.ch[k].h ? 1 : 0) + (save.ch[k].i ? 1 : 0); return n; } // Kahramanlık + Çıplak Kemik
 function startLevel(idx, chal = null) {
   mapSel = null; musicRestartBattle();
   const lv = LEVELS[idx];
@@ -2065,6 +2070,10 @@ function startLevel(idx, chal = null) {
     G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_burst.name, sub: NECRO_SPELLS.nm_burst.short, t: 0, dur: 4.2 };
   }
   if (chal === 'e') { G.endless = true; G.baseWaves = lv.waves; G.lv = Object.assign({}, lv, { waves: lv.waves.map(w => JSON.parse(JSON.stringify(w))) }); endlessExtend(); }
+  if (chal === 'i') { // Çıplak Kemik
+    G.mod = { id: 'iron', nospell: true }; const T = ironTowers(idx).map(t => TOWERS[t].name).join(' ve ');
+    G.banner = { title: 'ÇIPLAK KEMİK', sub: `Tek can · yalnız ${T} · büyü yok`, t: 0, dur: 4 };
+  }
   if (chal === 'd') { // günün sınavı: zorlaştırıcı
     const D = dailyPick(); G.daily = D; G.mod = D.mod;
     if (D.mod.gold) G.gold = Math.round(G.gold * D.mod.gold);
@@ -11847,7 +11856,7 @@ function drawIcon(name, x, y, s, col = '#fff') {
 // Arsa ya da kule seçilince öğeler merkezden yaylanarak sırayla açılır, seçim kalkınca içeri toplanıp kapanır.
 const BUILD_ICON_K = 1.1; // 14 Eki (Caner): inşa menüsündeki kule simgeleri %10 büyük
 const MENU_R = 25, MENU_K = 1.15; // MENU_K: Caner (10 Eki) menü düğmeleri %15 büyük (içerikle birlikte ölçeklenir); arsa menüsünde aralar da %15 açıldı
-function towerUnlocked(type) { const u = TOWERS[type].unlockLevel; if (G && G.early && u != null && G.idx < u) return false; /* öğretici: kuleler sırayla */ return TEST_OPEN || u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
+function towerUnlocked(type) { if (screen === 'play' && G && G.chal === 'i' && !ironTowers(G.idx).includes(type)) return false; const u = TOWERS[type].unlockLevel; if (G && G.early && u != null && G.idx < u) return false; /* öğretici: kuleler sırayla */ return TEST_OPEN || u == null || !G || G.idx >= u || (save.stars[u - 1] || 0) > 0; }
 function plotMenuItems(pl) {
   if (pl.rubble) return pl.rubble.clearT > 0 || pl.rubble.buildT > 0 ? [] : pl.rubble.snap ? [{ id: 'rebuild', type: pl.rubble.type, x: pl.x - 46, y: pl.y - 66, cost: rebuildCost(pl.rubble) }, { id: 'clear', x: pl.x + 46, y: pl.y - 66, cost: RUBBLE.cost }]
     : [{ id: 'clear', x: pl.x, y: pl.y - 74, cost: RUBBLE.cost }]; // yıkılan kule: son haliyle yeniden kur ya da molozu temizle
@@ -12811,7 +12820,7 @@ function drawHud() {
   drawMinionCmd(); // diriltilmiş ölülere emir düğmesi (14 Eki)
   spellIds().forEach((id, i) => {
     const b = spellBtn(i), cd = G.spells[id], info = spellInfo(id), max = info.cd;
-    const active = G.mode && G.mode.kind === 'spell' && G.mode.id === id, ready = cd <= 0, peek = G.spellPeek === id;
+    const active = G.mode && G.mode.kind === 'spell' && G.mode.id === id, ready = cd <= 0 && !(info.necro && G.mod && G.mod.nospell), peek = G.spellPeek === id; // büyüsüz gecede (Çıplak Kemik, günlük) büyüler sönük
     const col = info.hero ? info.hero.def.aura : info.necro ? info.necro.col : '120,200,255';
     ctx.save(); ctx.translate(b.x, b.y); const s = pressScale('hud_' + id) * (peek ? 1.12 : 1); ctx.scale(s, s);
     if (active) glow(ctx, 0, 0, b.r * 2.3, '255,220,120', 0.7 + Math.sin(time * 8) * 0.2);
@@ -12832,7 +12841,8 @@ function drawHud() {
     else if (info.necro) drawNecroGlyph(id, b.r);
     ctx.restore();
     ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.ellipse(0, -b.r * 0.5, b.r * 0.6, b.r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
-    if (!ready) {
+    if (!ready && cd <= 0) { circle(0, 0, b.r, 'rgba(10,6,14,0.66)'); drawIcon('lock', 0, 0, b.r * 0.9); } // büyüsüz gece: kilitli
+    else if (!ready) {
       ctx.fillStyle = 'rgba(0,0,0,0.62)';
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, b.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (cd / max)); ctx.fill();
       txt(Math.ceil(cd) + '', 0, 1, 19, '#fff', 'center', '400', FONT_T);
@@ -16554,7 +16564,7 @@ function drawMap() {
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
   roundRect(px, TY - 25, pw, 50, 25, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
   fancyStar(px + 24, TY, 15, true);
-  txt(`${total} / ${LEVELS.length * 4}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
+  txt(`${total} / ${LEVELS.length * 5}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
   ctx.restore();
   const bx = (i) => px - 14 - RB - i * RS;
   roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15, tile: 'slate' });
@@ -16638,6 +16648,7 @@ function levelFoes(lv) { // bölümde çıkan düşman türleri (rütbeliler as�
 function modeIcon(m, x, y, s) {
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
   if (m === 'c') { fancyStar(0, 1, 15, true); }
+  else if (m === 'i') { const im = spr('ico_ui_close'); if (im) icoFit(im, 0, 0, 14); else { ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-11, -11); ctx.lineTo(11, 11); ctx.moveTo(11, -11); ctx.lineTo(-11, 11); ctx.stroke(); } drawSkullIcon(0, 0, 6); }
   else if (m === 'h') {
     ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(12, -9.5); ctx.lineTo(11, 4); ctx.quadraticCurveTo(7, 12, 0, 16); ctx.quadraticCurveTo(-7, 12, -11, 4); ctx.lineTo(-12, -9.5); ctx.closePath();
     ctx.fillStyle = '#e04a3a'; ctx.fill(); ctx.strokeStyle = '#1a0606'; ctx.lineWidth = 2.4; ctx.stroke(); drawSkullIcon(0, -1, 6);
@@ -16654,11 +16665,12 @@ function drawLevelCard(i, cx, cy, at) {
   const lv = LEVELS[i], e = easeOutBack(p), w = CARD.w, h = CARD.h;
   const unlocked = levelUnlocked(i), st = save.stars[i] || 0, num = epLevels(epOf(i)).indexOf(i) + 1;
   const current = unlocked && st === 0, fy = cy + (1 - e) * 60, x0 = cx - w / 2, y0 = fy - h / 2;
-  const best = (save.endless || {})[i] || 0, hDone = !!(save.ch && save.ch[i] && save.ch[i].h);
+  const best = (save.endless || {})[i] || 0, hDone = !!(save.ch && save.ch[i] && save.ch[i].h), iDone = !!(save.ch && save.ch[i] && save.ch[i].i);
   const MODES = [
     { m: 'c', name: 'Sefer', open: true, stat: st ? st + '/3 yıldız' : 'Yeni', desc: st ? 'Bütün dalgaları durdur. Can kaybetmeden bitirirsen 3 yıldız.' : 'Bütün dalgaları durdur, kaleyi koru. Az can kaybedersen çok yıldız.' },
     { m: 'h', name: 'Kahramanlık', open: TEST_OPEN || st >= 3, stat: hDone ? 'Tamam' : (TEST_OPEN || st >= 3) ? 'Açık' : '3 yıldızla', desc: 'Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.', lock: '3 yıldız al, Kahramanlık açılır' },
     { m: 'e', name: 'Sonsuz Gece', open: TEST_OPEN || st > 0, stat: best ? 'Rekor ' + best : (TEST_OPEN || st > 0) ? 'Açık' : 'Kilitli', desc: 'Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?' + (best ? ' Rekorun: ' + best + ' dalga.' : ''), lock: 'Bölümü bir kez bitir, Sonsuz Gece açılır' },
+    { m: 'i', name: 'Çıplak Kemik', open: TEST_OPEN || st >= 3, stat: iDone ? 'Tamam' : (TEST_OPEN || st >= 3) ? 'Açık' : '3 yıldızla', desc: 'Tek can, yalnız ' + ironTowers(i).map(t => TOWERS[t].name).join(' ve ') + ', Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.', lock: '3 yıldızla açılır' },
   ];
   if (!MODES.find(o => o.m === mapMode)) mapMode = 'c';
   const M = MODES.find(o => o.m === mapMode);
@@ -16696,16 +16708,16 @@ function drawLevelCard(i, cx, cy, at) {
   }
   if (foes.length > nShow) txt('+' + (foes.length - nShow), tx + 22 + nShow * 50, ty + th + 107, 16, '#f2ecd8', 'center', '400', FONT_T);
   // sağ: mod kutuları
-  const rx = x0 + 370, rw = w - 370 - 28, tile = (rw - 2 * 10) / 3, tyy = ty;
+  const rx = x0 + 370, rw = w - 370 - 28, tile = (rw - (MODES.length - 1) * 8) / MODES.length, tyy = ty;
   txt('OYUN MODU', rx, tyy - 2, 13, '#d8c0a0', 'left', '800', FONT_B, false);
   MODES.forEach((o, k) => {
-    const bx = rx + k * (tile + 10), by = tyy + 12, bh = 80, sel = o.m === mapMode, key = 'mode_' + o.m + i, sc2 = pressScale(key);
+    const bx = rx + k * (tile + 8), by = tyy + 12, bh = 80, sel = o.m === mapMode, key = 'mode_' + o.m + i, sc2 = pressScale(key);
     ctx.save(); ctx.translate(bx + tile / 2, by + bh / 2); ctx.scale(sc2, sc2); ctx.translate(-(bx + tile / 2), -(by + bh / 2));
-    if (sel) glow(ctx, bx + tile / 2, by + bh / 2, tile * 0.75, o.m === 'h' ? '255,90,70' : o.m === 'e' ? '170,110,255' : '255,210,110', 0.3 + Math.sin(time * 3) * 0.08);
+    if (sel) glow(ctx, bx + tile / 2, by + bh / 2, tile * 0.75, o.m === 'h' ? '255,90,70' : o.m === 'e' ? '170,110,255' : o.m === 'i' ? '230,220,200' : '255,210,110', 0.3 + Math.sin(time * 3) * 0.08);
     roundRect(bx, by, tile, bh, 14, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? '#ffd34d' : '#6a4a5a', sel ? 3 : 2);
     modeIcon(o.m, bx + tile / 2, by + 27, 0.95);
     fitTxt(o.name, bx + tile / 2, by + 55, tile - 10, 14, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true);
-    fitTxt(o.stat, bx + tile / 2, by + 71, tile - 10, 12, o.m === 'h' && hDone ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
+    fitTxt(o.stat, bx + tile / 2, by + 71, tile - 10, 12, (o.m === 'h' && hDone) || (o.m === 'i' && iDone) ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
     if (!o.open) { roundRect(bx, by, tile, bh, 14, 'rgba(10,6,14,0.62)'); drawIcon('lock', bx + tile / 2, by + 30, 24); }
     ctx.restore();
     buttons.push({ key, x: bx, y: by, w: tile, h: bh, fn: () => { if (mapMode !== o.m) { mapMode = o.m; sfx('pick'); } } });
@@ -16739,7 +16751,7 @@ function drawLevelCard(i, cx, cy, at) {
     ctx.restore();
   } else {
     // büyük SAVAŞ düğmesi + (Sefer'de) ödüllü reklamla +altın
-    const bxc = rx + rw / 2, byc = y0 + h - 104, lbl = mapMode === 'c' ? (st ? 'TEKRAR' : 'SAVAŞA!') : mapMode === 'h' ? 'MEYDAN OKU' : 'BAŞLA';
+    const bxc = rx + rw / 2, byc = y0 + h - 104, lbl = mapMode === 'c' ? (st ? 'TEKRAR' : 'SAVAŞA!') : mapMode === 'h' || mapMode === 'i' ? 'MEYDAN OKU' : 'BAŞLA';
     ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
     if (needsPremium(i)) { // tam oyun kilidi: dükkâna götürür
       gameButton('play' + i, bxc, byc, rw, 64, 'TAM OYUNU AÇ · ' + MONET.price, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), 'gold', { icon: 'lock', shine: true, size: 18 });
@@ -16749,7 +16761,7 @@ function drawLevelCard(i, cx, cy, at) {
     gameButton('play' + i, bxc, byc, rw, 64, lbl, () => {
       if (!M.open) { mapNote = { text: M.lock, t: time }; sfx('error'); return; }
       go(() => startLevel(i, mapMode === 'c' ? undefined : mapMode));
-    }, !M.open ? 'gold' : mapMode === 'h' ? 'red' : mapMode === 'e' ? 'blue' : 'green', { icon: mapMode === 'c' && st ? 'restart' : 'play', shine: current && mapMode === 'c', size: 22 });
+    }, !M.open ? 'gold' : mapMode === 'h' || mapMode === 'i' ? 'red' : mapMode === 'e' ? 'blue' : 'green', { icon: mapMode === 'c' && st ? 'restart' : 'play', shine: current && mapMode === 'c', size: 22 });
     if (mapMode === 'c') gameButton('boost' + i, bxc, y0 + h - 40, rw, 44, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA',
       () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 14 });
     ctx.restore();

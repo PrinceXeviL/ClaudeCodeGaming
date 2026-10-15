@@ -381,7 +381,11 @@
   "Önce bu seferi bitir": "请先完成本战役",
   "Yeniden kuruluyor…": "重建中…",
   "Bu kuleden haritada zaten var": "地图上已有这座塔",
-  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "塔恢复到倒塌前的样子：等级、专精、技能"
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "塔恢复到倒塌前的样子：等级、专精、技能",
+  "ÇIPLAK KEMİK": "赤骨",
+  "Çıplak Kemik": "赤骨",
+  "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 条命 · 仅 2 种塔 · 莫蒂默不能施法",
+  "3 yıldızla açılır": "获得 3 星解锁"
  },
  "tpl": [
   [
@@ -527,6 +531,18 @@
   [
    "Yeniden kur — {} altın",
    "重建 — {} 金币"
+  ],
+  [
+   "Tek can · yalnız {} · büyü yok",
+   "一条命 · 仅 {} · 无法术"
+  ],
+  [
+   "Tek can, yalnız {}, Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.",
+   "一条命，仅 {}，莫蒂默无法施法。漏一个就输。"
+  ],
+  [
+   "{} ve {}",
+   "{}和{}"
   ]
  ]
 }

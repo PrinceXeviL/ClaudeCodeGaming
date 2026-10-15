@@ -381,7 +381,11 @@
   "Önce bu seferi bitir": "Beende zuerst diesen Feldzug",
   "Yeniden kuruluyor…": "Wird wieder aufgebaut…",
   "Bu kuleden haritada zaten var": "Diesen Turm gibt es schon auf der Karte",
-  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "Der Turm kehrt genau so zurück, wie er vor dem Einsturz war: Stufe, Spezialisierung, Fähigkeiten"
+  "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "Der Turm kehrt genau so zurück, wie er vor dem Einsturz war: Stufe, Spezialisierung, Fähigkeiten",
+  "ÇIPLAK KEMİK": "NACKTE KNOCHEN",
+  "Çıplak Kemik": "Nackte Knochen",
+  "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 Leben · nur 2 Turmarten · keine Zauber von Mortimer",
+  "3 yıldızla açılır": "Wird mit 3 Sternen freigeschaltet"
  },
  "tpl": [
   [
@@ -527,6 +531,18 @@
   [
    "Yeniden kur — {} altın",
    "Wiederaufbauen — {} Gold"
+  ],
+  [
+   "Tek can · yalnız {} · büyü yok",
+   "Ein Leben · nur {} · keine Zauber"
+  ],
+  [
+   "Tek can, yalnız {}, Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.",
+   "Ein Leben, nur {}, Mortimer kann nicht zaubern. Ein einziger Durchbruch kostet den Sieg."
+  ],
+  [
+   "{} ve {}",
+   "{} und {}"
   ]
  ]
 }
