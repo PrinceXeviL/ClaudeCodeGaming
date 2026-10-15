@@ -16580,6 +16580,68 @@ function drawMapSurprises(dt) {
     if (t > 0.25 && t < T - 0.2) { ctx.save(); ctx.globalAlpha *= Math.min(1, (t - 0.25) / 0.2) * Math.min(1, (T - 0.2 - t) / 0.3); txt(S.say, o.x, o.y - h - 4 - Math.min(1, t) * 2, 4.6, '#f4e6c8'); ctx.restore(); }
   }
 }
+// 16 Eki (Caner: "kuşbakışı bakıyoruz; bulutlar olsun, karanlık bulutlardan yağmur ve şimşek, aydınlık bulutlar da"): haritanın üstünden
+// rüzgârla süzülen bulutlar (img/cloud_l1..3 açık, cloud_d1..3 fırtına; ham/nm24_harita_bulut.jpg). Her bulut yere yumuşak gölge düşürür;
+// fırtına bulutunun altında yağmur yağar (gölgede su halkaları), ara ara buluttan yere şimşek çakar (parlama + uzak gök gürültüsü).
+// Bulutlar bölüm bayraklarının altında kalır (bayraklar sonra çizilir). CLOUD_MAP: sayı, boy, hız, gölge kayması (dünya birimi), saydamlık.
+const CLOUD_MAP = { per: 46, darkK: 0.4, w: [58, 112], v: [3, 6], sh: [18, 28], aL: 0.8, aD: 0.88, rain: 26, bolt: [4, 10] };
+const CLOUD_SH = {};
+function cloudShadow(n) { // bulutun kara silueti (gölge), yarı çözünürlük
+  if (CLOUD_SH[n]) return CLOUD_SH[n];
+  const im = spr(n); if (!im) return null;
+  const c = document.createElement('canvas'); c.width = Math.ceil(im.width / 2); c.height = Math.ceil(im.height / 2);
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0, c.width, c.height); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#0a0612'; g.fillRect(0, 0, c.width, c.height);
+  return (CLOUD_SH[n] = c);
+}
+function drawMapClouds(ep, X, V, dt) {
+  if (!spr('cloud_l1') || PERF_OFF.has('mcloud')) return;
+  const C = CLOUD_MAP, key = 'clouds' + ep;
+  if (!MAPFX[key]) { // bölgenin boyunca dağıt (tohumlu: her açılışta aynı düzen)
+    let sd = 7 + ep * 13; const rnd = () => ((sd = (sd * 9301 + 49297) % 233280) / 233280);
+    MAPFX[key] = [];
+    for (let y = X.y + 40; y < X.y + X.h; y += C.per * (0.7 + rnd() * 0.6)) {
+      const dark = rnd() < C.darkK, n = (dark ? 'cloud_d' : 'cloud_l') + (1 + Math.floor(rnd() * 3));
+      MAPFX[key].push({ n, dark, x: X.x - 300 + (MAPFX[key].length * 0.381 % 1) * (X.w + 600), y, w: lerp(C.w[0], C.w[1], rnd()) * (n.endsWith('3') ? 0.6 : n.endsWith('2') ? 0.8 : 1), v: lerp(C.v[0], C.v[1], rnd()), sh: lerp(C.sh[0], C.sh[1], rnd()), bolt: 2 + rnd() * 6, seed: rnd() * 99 });
+    }
+  }
+  const L = MAPFX[key], span = X.w + 600;
+  for (const c of L) {
+    c.x += c.v * dt; if (c.x > X.x + X.w + 300) c.x -= span; // rüzgâr: soldan sağa, sonra baştan
+    const im = spr(c.n); if (!im) continue;
+    const w = c.w, h = w * im.height / im.width, x = c.x - w / 2, y = c.y - h / 2 + Math.sin(time * 0.25 + c.seed) * 3, gx = x + c.sh * 0.6, gy = y + c.sh;
+    if (gx > V[2] || gx + w < V[0] || y > V[3] + 20 || gy + h < V[1]) continue; // görünmüyor
+    const S = cloudShadow(c.n);
+    if (S) { ctx.save(); ctx.globalAlpha = c.dark ? 0.32 : 0.18; ctx.drawImage(S, gx, gy, w, h); ctx.restore(); } // yerdeki gölge
+    if (c.dark) { // yağmur: buluttan yere eğik ince çizgiler, gölgede halkalar
+      ctx.save(); ctx.strokeStyle = 'rgba(175,195,235,0.5)'; ctx.lineWidth = 0.7; ctx.beginPath();
+      for (let i = 0; i < C.rain; i++) {
+        const u = ((i * 0.618 + c.seed) % 1), px = x + w * (0.15 + 0.7 * u), py0 = y + h * (0.35 + 0.3 * ((i * 0.37) % 1)), ph = (time * 1.6 + i * 0.13) % 1;
+        const fx = px + c.sh * 0.6 * ph, fy = py0 + c.sh * ph;
+        ctx.moveTo(fx, fy); ctx.lineTo(fx + 1.4, fy + 4.5);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(190,210,245,0.45)'; ctx.lineWidth = 0.5;
+      for (let i = 0; i < 6; i++) { const ph = (time * 1.1 + i / 6 + c.seed) % 1, u = (i * 0.41 + c.seed) % 1; ctx.globalAlpha = 1 - ph; ctx.beginPath(); ctx.ellipse(gx + w * (0.2 + 0.6 * u), gy + h * (0.4 + 0.25 * ((i * 0.7) % 1)), 1 + ph * 4, 0.5 + ph * 2, 0, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.restore();
+      c.bolt -= dt;
+      if (c.bolt <= 0) { c.bolt = lerp(C.bolt[0], C.bolt[1], Math.random()); c.flash = time; c.bx = x + w * rand(0.3, 0.7); c.by = y + h * rand(0.45, 0.6); c.bseed = Math.random() * 99; if (x < V[2] && x + w > V[0]) sfx('thunder', rand(0.85, 1.05), 0.35); }
+    }
+    ctx.save(); ctx.globalAlpha = c.dark ? C.aD : C.aL; ctx.drawImage(im, x, y, w, h); ctx.restore();
+    if (c.dark && c.flash != null && time - c.flash < 0.45) { // şimşek: buluttan yere kırık çizgi, bulut içten aydınlanır
+      const k = (time - c.flash) / 0.45, on = k < 0.12 || (k > 0.22 && k < 0.34);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, c.bx, c.by, w * 0.55, '200,190,255', (on ? 0.55 : 0.2) * (1 - k));
+      if (on) {
+        let px = c.bx, py = c.by, sd2 = c.bseed; const tx = c.bx + c.sh * 0.6, ty = c.by + c.sh + h * 0.2;
+        ctx.strokeStyle = 'rgba(235,225,255,0.95)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(px, py);
+        for (let j = 1; j <= 7; j++) { sd2 = (sd2 * 9301 + 49297) % 233280; const q = j / 7; px = lerp(c.bx, tx, q) + (j < 7 ? (sd2 / 233280 - 0.5) * 9 : 0); py = lerp(c.by, ty, q); ctx.lineTo(px, py); }
+        ctx.stroke(); ctx.strokeStyle = 'rgba(170,120,255,0.5)'; ctx.lineWidth = 3.5; ctx.stroke();
+        glow(ctx, tx, ty, 14, '220,210,255', 0.6);
+      }
+      ctx.restore();
+    }
+  }
+}
 function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep]; if (!bg) return;
   const X = mapExt(bg), z = MAPCAM.z, V = [(VIS.l - MAPCAM.tx) / z, (VIS.t - MAPCAM.ty) / z, (VIS.r - MAPCAM.tx) / z, (VIS.b - MAPCAM.ty) / z]; // ekranda görünen dünya kutusu
@@ -16656,6 +16718,7 @@ function drawRegionMap(E, ep, st) {
   ctx.restore();
   // 14 Eki (Caner): uçan kargalar kaldırıldı
   mapAmbient(E, V, dt);
+  drawMapClouds(ep, X, V, dt);
 }
 // yarasa: kısa gövde, hızlı çırpan zar kanatlar, kanat uçlarında parmak kemikleri; zikzaklı uçar
 function drawBatMap(x, y, dir, ph, s) { // harita ve dekor yarasası (13 Eki: adı drawBat ile çakışıyordu, güç simgesindeki yarasalar bozuk çıkıyordu)

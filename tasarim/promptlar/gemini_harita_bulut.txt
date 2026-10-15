@@ -1,0 +1,6 @@
+Image 1 is the campaign map of my dark gothic cartoon tower defense game, seen from a high bird's-eye view looking straight down. Draw a sheet of 6 CLOUDS for this map in exactly the same hand-painted cartoon style, line weight and colors, seen from DIRECTLY ABOVE (top-down, like looking down at clouds from an airplane), so they can drift over the map:
+
+Top row, 3 LIGHT CLOUDS: soft fluffy cumulus clouds, pale cream-white with gentle lavender shading in the hollows, clear simple cartoon shapes made of round puffs, a thin soft darker outline, different sizes and shapes (one big wide cloud, one medium, one small).
+Bottom row, 3 DARK STORM CLOUDS: heavy thunder clouds, deep blue-grey to purple-black with lighter grey tops on the puffs, a few faint purple-green glows deep inside, menacing, clear cartoon shapes made of round puffs with a soft darker outline, different sizes (one big, one medium, one small). No lightning, no rain drawn (I animate those in the game).
+
+Every cloud is a solid opaque painted shape with clean edges (no wispy transparent edges, no mist, no fog), separate from the others, centered in its own cell with plenty of empty magenta space around, nothing touching the edges or each other. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no ground, no map, no text, no letters. 16:9 image.
