@@ -1,5 +1,5 @@
 """Kalenin Veo idle döngüsü (13 Eki, Caner): ham/anim/kale_v3_idle.mp4 (beyaz zemin, sabit kamera) -> img/castle_keep_1_idle.webp şeridi.
-Veo görseli ~%13 yakınlaştırmış: kale kutusu referansla (~/Downloads/kale_yeni/4_kale_veo_yatay.jpg) eşlenip castle_keep_1 kadrajına oturtulur.
+Veo görseli ~%13 yakınlaştırmış: kale kutusu referansla ("Game Lab/indirilenler/referanslar/kale_yeni/4_kale_veo_yatay.jpg") eşlenip castle_keep_1 kadrajına oturtulur.
 Saydamlık castle_keep_1'in maskesinden (kenarlar titremesin); 12 fps, en temiz kapanan 30 kare (2,5 sn). Yalnız 1. evrede çizilir.
     .venv/bin/python varliklar/kale_idle_isle.py
 """

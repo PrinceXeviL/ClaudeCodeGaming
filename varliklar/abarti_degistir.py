@@ -1,6 +1,6 @@
 """Abartılı şeritleri (<ad>x) asıl şeridin yerine geçirir ve karşılaştırma GIF'i üretir (12 Eki).
 
-    python3 varliklar/abarti_degistir.py gif  <ad> [<ad> ...]     → ~/Downloads/abarti_karsilastirma/N_<ad>.gif (solda eski, sağda abartılı)
+    python3 varliklar/abarti_degistir.py gif  <ad> [<ad> ...]     → ~/Downloads/GameLab/abarti_karsilastirma/N_<ad>.gif (solda eski, sağda abartılı)
     python3 varliklar/abarti_degistir.py gec  <ad> [<ad> ...]     → <ad>x.webp asıl <ad>.webp olur (eski: varliklar/cikti/abarti_eski/), anim.json
                                                                     ve manifest güncellenir, serit_netlestir uygulanır
     python3 varliklar/abarti_degistir.py geri <ad> [<ad> ...]     → eski şeridi geri koyar (abartılı varliklar/cikti/abarti_red/ içine)
@@ -13,7 +13,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG = os.path.join(ROOT, 'sinir-kalesi', 'img')
 OLD = os.path.join(ROOT, 'varliklar', 'cikti', 'abarti_eski')
 RED = os.path.join(ROOT, 'varliklar', 'cikti', 'abarti_red')
-GIFS = os.path.expanduser('~/Downloads/abarti_karsilastirma')
+GIFS = os.path.expanduser('~/Downloads/GameLab/abarti_karsilastirma')
 BG = (62, 74, 52, 255)
 
 

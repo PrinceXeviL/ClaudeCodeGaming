@@ -332,7 +332,10 @@ Object.assign(ENEMIES, {
   // 1. bölgenin son dört türü (görseller FLUX Kontext ile, Kaggle'da): trample: iskeletleri ezip geçer (kemik duvar durdurur)
   wardog:    { name: 'Savaş Köpeği', h: 15, hp: 70, speed: 46, armor: 0, mr: 0, gold: 6, dmg: [3, 6], rate: 0.7, lives: 1, r: 9 },
   chariot:   { name: 'Savaş Arabası', h: 36, hp: 300, speed: 28, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 1, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
-  siegetower:{ name: 'Kuşatma Kulesi', h: 62, hp: 1100, speed: 8, armor: 0.45, mr: 0.1, gold: 60, dmg: [2, 4], rate: 2, lives: 3, r: 20, machine: true, noblock: true, split: ['legion', 6] },
+  // 15 Eki (Caner): yeni Güneş Kuşatma Kulesi; tepede 4 güçlü okçu ok yağdırır, yıkılınca içinden onlarca asker yarı canın biraz üstünde (bazıları tam canla) dökülür
+  siegetower:{ name: 'Kuşatma Kulesi', h: 89, hp: 1250, speed: 8, armor: 0.45, mr: 0.1, gold: 70, dmg: [2, 4], rate: 2, lives: 3, r: 26, machine: true, noblock: true,
+    ranged: { r: 165, dmg: [7, 11], rate: 0.55, proj: 'harrow', any: true, moving: true, top: 0.95 },
+    crew: { top: ['solarcher', 4], in: [['legion', 6], ['legion_k', 3], ['heavy', 2]], hp: [0.55, 0.68], full: 0.3 } },
   eagle:     { name: 'İmparatorluk Kartalı', h: 24, hp: 95, speed: 31, armor: 0, mr: 0.1, gold: 10, dmg: [0, 0], rate: 1, lives: 1, r: 10, flying: true, dive: { cd: 7, r: 60, rT: 90, dmg: [10, 16], dur: 1.5, hit: 0.3 } }, // 15 Eki: iskeletlere ve kuledeki okçulara pike (Veo _atk); rT: kuleye uzaklık
   // leş akbabası: sürüyle uçar; altındaki cesetleri yer (diriltilemez olur) ve kendini iyileştirir
   vulture:   { name: 'Leş Akbabası', h: 33, hp: 120, speed: 27, armor: 0, mr: 0, gold: 11, dmg: [0, 0], rate: 1, lives: 1, r: 11, flying: true, scavenge: { r: 60, every: 2.5, heal: 35 }, dive: { cd: 8, r: 60, rT: 90, dmg: [8, 12], dur: 1.5, hit: 0.32 } },
@@ -1190,7 +1193,7 @@ Object.assign(ENEMY_DESC, {
   cannon: 'İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur',
   wardog: 'Sürüyle gelir, çok hızlıdır ama canı azdır. Veba kazanı sürüyü dağıtır',
   chariot: 'Çok hızlı; iskeletleri ezip geçer, durduramazlar. Kemik duvar durdurur',
-  siegetower: 'Ağır ve yavaş; yıkılınca içinden 6 lejyoner dökülür. Yolun başında yık',
+  siegetower: 'Tepesinden 4 okçu ok yağdırır; yıkılınca içinden 15 asker dökülür. Yolun başında yık',
   eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur',
   horsearcher: 'Koşarken iskeletlere ok atar, iskeletler onu durduramaz. Kemik duvar durdurur',
   testudo: 'Kalkan çatısı: oklar neredeyse işlemez. Veba kazanı dağıtır; ölünce 3 lejyonere ayrılır',

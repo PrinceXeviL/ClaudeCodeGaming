@@ -1930,7 +1930,7 @@ function startLevel(idx, chal = null) {
   const types = new Set();
   lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
-  [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
+  [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle').forEach(sf => keep.add('unit_skel_' + i + sf));
@@ -2788,6 +2788,7 @@ function killEnemy0(e) {
     for (let k = 0; k < n; k++) { const m = spawnEnemy(t, pi, Math.max(dLo(e.p), e.d - 4 + k * 5), e.off + (k - 1) * 7); m.hopT = 0.4; }
     G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 });
   }
+  if (e.def.crew && !e.leaked) siegeCrewOut(e);
   if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
   if (e.def.chief && !e.leaked) { bossLoot(e, giveCrystals(e)); bossDeathFx(e); G.winHold = Math.max(G.winHold || 0, WIN_HOLD); } // 14 Eki (Caner): zafer ekranı hemen gelmez; ölüm, altın, kristal ve eşya görünür
   if (!e.leaked) comboKill(e);
@@ -3070,6 +3071,17 @@ function drawBones(f) {
   ctx.restore();
 }
 // kuşatma makinesi yıkılır: görsel yatay dilimlere bölünür, dilimler yana savrulup devrilerek yere yığılır; tahta kıymıkları ve toz
+// 15 Eki (Caner): Kuşatma Kulesi yıkılınca içindekiler ve tepedeki okçular yarı canın biraz üstünde (bazıları tam canla) dökülür
+function siegeCrewOut(e) {
+  const C = e.def.crew, pi = G.paths.indexOf(e.p), list = [];
+  for (const [t, n] of [...C.in, C.top]) for (let i = 0; i < n; i++) list.push(t);
+  list.forEach((t, k) => {
+    const m = spawnEnemy(t, pi, Math.max(dLo(e.p), e.d + rand(-26, 22)), (((k % 5) - 2) * 6 + rand(-2, 2)) * ROAD_K);
+    if (Math.random() >= C.full) m.hp = m.maxHp * rand(C.hp[0], C.hp[1]);
+    m.hopT = 0.4; m.anim = rand(0, 10);
+  });
+  shakeScreen(5, 0.45);
+}
 function machineWreck(e) {
   const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
   if (!im) return;
@@ -4376,8 +4388,10 @@ function updateEnemy(e, dt) {
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
         const AR = e.def.alt && e.def.alt.ranged && (e.altT ??= e.def.alt.cd * 0.4) <= 0 ? e.def.alt : null; // özel atış: ağ ya da ateşli ok
         if (AR) { e.altT = AR.cd; playSkill(e, AR.kind === 'net' ? NET.skill : undefined); }
+        const CA = e.def.crew && siegeArcher(e, e.crewK = ((e.crewK ?? -1) + 1) % e.def.crew.top[1]); // kuşatma kulesi: tepedeki okçular sırayla atar
+        if (CA) { (e.crewShot ??= [])[e.crewK] = G.t; (e.crewF ??= [])[e.crewK] = tgt.x < CA.x ? -1 : 1; }
         if (AR && AR.kind === 'net') throwNet(e, tgt, AR.stun, NET.skill * NET.rel); else
-        G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: e.x + e.face * 6, sy: RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
+        G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: CA ? CA.x : e.x + e.face * 6, sy: CA ? CA.y - 16 : RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       // durur: yürümez, kılıç sallamaz. Kimse önünü kesmiyorsa en çok HOLD.max sn durur, sonra HOLD.walk sn atış yaparak yürür
@@ -9265,6 +9279,21 @@ function drawEnemy(e) {
   if (!out || e.d >= 45 || e.d < 0 || e.p.ext) return drawEnemy0(e); // giriş payından gelen zaten ekran dışından yürür
   ctx.save(); ctx.globalAlpha *= clamp(e.d / 45, 0, 1); drawEnemy0(e); ctx.restore();
 }
+// Kuşatma kulesinin tepe platformu: okçuların yeri (kule görselinin eni/boyu oranında; görsel sağa bakar)
+const SIEGE_CREW = { u: [-0.11, -0.02, 0.07, 0.16], foot: 0.72, h: 0.85 }; // foot: mazgalların ardında belden yukarısı görünür; h: okçu boyu (lejyoner oranı)
+function siegeArcher(e, k) {
+  const im = spr('enemy_siegetower'), h = CHAR_H.enemy_siegetower, w = im ? h * im.width / im.height : h;
+  return { x: e.x + (e.face || 1) * SIEGE_CREW.u[k % SIEGE_CREW.u.length] * w, y: e.y - h * SIEGE_CREW.foot };
+}
+function drawSiegeCrew(e, h, tim) {
+  const n = e.def.crew.top[1], im = spr('enemy_solarcher'); if (!im || !tim) return;
+  const w = h * tim.width / tim.height, ah = (CHAR_H.enemy_solarcher || 30) * SIEGE_CREW.h;
+  for (let k = 0; k < n; k++) {
+    const x = e.x + (e.face || 1) * SIEGE_CREW.u[k] * w, y = e.y - h * SIEGE_CREW.foot + Math.sin(time * 9 + k) * 0.3, st = e.crewShot && e.crewShot[k], dt = st != null ? G.t - st : 9;
+    drawUnit('enemy_solarcher', im, x, y, (e.crewF && e.crewF[k]) || e.face || 1, { h: ah, phase: 0, walking: false, fly: 0, noShadow: true, seed: k * 1.7 + e.off,
+      atk: dt < 0.62 ? dt - 0.17 : null, flash: e.flash });
+  }
+}
 function drawEnemy0(e) {
   const d = e.def;
   const fly = d.flying ? 26 + Math.sin(e.anim * 3) * 3 - (e.diveT > 0 ? 12 * Math.sin(Math.PI * clamp((1 - e.diveT / d.dive.dur) / 0.6, 0, 1)) : 0) : 0; // pikede yere yaklaşır
@@ -9291,11 +9320,12 @@ function drawEnemy0(e) {
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0) && !(e.reviveT > 0),
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0),
-      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
+      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
+    if (d.crew) drawSiegeCrew(e, uo.h, im);
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
@@ -9850,7 +9880,7 @@ Object.assign(RIG, {
   unit_skel_1: { legY: 0.72 }, unit_skel_2: { legY: 0.72 }, unit_skel_3: { legY: 0.72 }, unit_skel_4: { legY: 0.72 }, unit_skel_5: { legY: 0.72 },
   enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
   enemy_priest: { legY: 0.82, stride: 0.5 }, enemy_heavy: { legY: 0.74, stride: 0.8 }, enemy_cavalry: { legY: 0.62, stride: 1.2 },
-  enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' }, enemy_cannon: { solid: 'cart' },
+  enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' }, enemy_cannon: { solid: 'cart' }, enemy_siegetower: { solid: 'cart' },
 });
 
 // ----- silah kolu ve gövde iskeleti -----

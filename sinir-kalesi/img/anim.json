@@ -361,16 +361,6 @@
   "base": 0.015,
   "ch": 0.9298
  },
- "enemy_siegetower_walk": {
-  "n": 8,
-  "fw": 144,
-  "fh": 166,
-  "base": 0.0146,
-  "ch": 0.9612,
-  "idle": 5,
-  "sh": 1,
-  "stride": 0.802
- },
  "enemy_eagle_walk": {
   "n": 15,
   "fw": 418,
@@ -525,13 +515,6 @@
   "ch": 0.4745,
   "sh": 1,
   "stride": 1.414
- },
- "enemy_siegetower_die": {
-  "n": 33,
-  "fw": 306,
-  "fh": 173,
-  "base": 0.0141,
-  "ch": 0.9236
  },
  "enemy_hunter_atk": {
   "n": 32,

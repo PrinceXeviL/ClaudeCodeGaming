@@ -1,6 +1,6 @@
 """Mezardan çıkış: Ceset Golemi'nin 6 karelik kalkış şeridi (12 Eki, Caner: "kare kare kaliteli olmalı").
 
-Ham: varliklar/ham/mezar_cikis/kare1..6.jpg (Gemini, magenta zemin, her kare ayrı görsel; poz kılavuzları Downloads/mezar_cikis).
+Ham: varliklar/ham/mezar_cikis/kare1..6.jpg (Gemini, magenta zemin, her kare ayrı görsel; poz kılavuzları "Game Lab/indirilenler/referanslar/mezar_cikis").
 Kareler toprak yığınının tabanına göre hizalanır (Gemini golemi her karede aynı boyda çiziyor, ölçek değişmez).
 3. karede Gemini kılavuzdaki kahverengi zemin bandını da çizdi: kenar sütunları magenta olmayan alt satırlar atılır.
 Çıktı: sinir-kalesi/img/unit_corpsegolem_rise.webp + anim.json kaydı. Ayak çizgisi (base) 6. karede golemin bastığı yer,
