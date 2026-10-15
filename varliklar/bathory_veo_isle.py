@@ -18,7 +18,8 @@ SETS = {
     # saldırı: atış döngüsü bırakmadan hemen sonra başlar (oyunda ok atış anında çıkar): kurdeleler kaybolmuş -> geri gelir -> ele toplanır -> küre büyür
     # 16 Eki: 6 karede bir (oyunda 1,15 sn'ye sığar: ~24 kare/sn; önce 8-10'da bir, 18 kare/sn)
     'hero_bathory_atk': list(range(148, 231, 6)) + list(range(44, 123, 6)),
-    'hero_bathory_idle': list(range(0, 40)),   # 16 Eki: her kare, oyunda 24 kare/sn
+    # 16 Eki (Caner: "başı sonu farklı"): videodaki bekleme kapanmıyor (kan yılanı hızlanarak saldırıya geçiyor) -> ileri-geri: 0-32-1, dikişsiz
+    'hero_bathory_idle': list(range(0, 33)) + list(range(31, 0, -1)),
 }
 ONLY = set(sys.argv[1:])  # 16 Eki: ad verilirse yalnız o şeritler yeniden kesilir
 
