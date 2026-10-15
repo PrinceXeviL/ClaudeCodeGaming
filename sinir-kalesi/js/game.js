@@ -1565,9 +1565,28 @@ const RUIN_K = 0.12; // harabe görsellerinin ölçeği (görsel pikseli -> dün
 // ağaçlar dahil). Yol maskeleri de bu kutuya göre çizilir (bgBox). Tuvalin payı c.m'de saklanır, çizen ona göre yerleştirir.
 let BGM = { x: 0, y: 0 };
 const bgBox = () => ({ x: -BGM.x, y: -BGM.y, w: W + 2 * BGM.x, h: H + 2 * BGM.y });
+// 16 Eki (Caner: "karlı bölüm 1-2 tane"): karlı bölümün zemini: soğuk ak örtü + yol dışında yumuşak kar birikintileri, yol kenarında kar seti
+function snowCover(c, lv, paths, res) {
+  const g = c.getContext('2d'), B = bgBox(), rnd = seeded(lv.name.length * 71 + 3);
+  g.save(); g.setTransform(res, 0, 0, res, -B.x * res, -B.y * res);
+  g.fillStyle = 'rgba(214,226,246,0.3)'; g.fillRect(B.x, B.y, B.w, B.h); // soğuk ışık
+  // kar örtüsü: küçük, soluk birikintiler sık sık üst üste biner (kesintisiz, kenarları düzensiz örtü); kümelenme için öbek merkezleri
+  const C = []; for (let i = 0; i < 26; i++) C.push([B.x + rnd() * B.w, B.y + rnd() * B.h, 60 + rnd() * 90]);
+  for (let i = 0; i < 1700; i++) {
+    const c0 = C[Math.floor(rnd() * C.length)], a = rnd() * 6.283, rr = Math.sqrt(rnd()) * c0[2];
+    const x = c0[0] + Math.cos(a) * rr, y = c0[1] + Math.sin(a) * rr * 0.6, r = 6 + rnd() * 16;
+    if (nearestOnPaths(paths, x, y).d < 34 + r * 0.3) continue; // yol çiğnenmiş, açık kalır
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(250,252,255,0.3)'); gr.addColorStop(1, 'rgba(244,248,255,0)');
+    g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, r, r * 0.6, 0, 0, Math.PI * 2); g.fill();
+  }
+  for (const p of paths) for (let d = 0; d < p.total; d += 7) for (const s of [-1, 1]) { // yol kenarında kürünmüş kar seti
+    const q = pathPos(p, d, s * (34 + rnd() * 6)); g.fillStyle = `rgba(248,251,255,${0.25 + rnd() * 0.2})`; g.beginPath(); g.ellipse(q.x, q.y, 6 + rnd() * 5, 3 + rnd() * 2, 0, 0, Math.PI * 2); g.fill();
+  }
+  g.restore();
+}
 function renderBackground(lv, paths, res = 2, m = null) {
   BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
-  try { const c = renderBackground0(lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; }
+  try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; }
 }
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
 // Dekor ışıkları (11 Eki, Caner): sıradan ışıklar (mum, fener) sıcak sarı, büyülü şeyler (mantar, mahzen, kütük gözü) yeşil; noktalar img/lights.json (varliklar/isik_isle.py)
@@ -17163,9 +17182,9 @@ function initWeather() {
     const L = WEATHER.rain.lightning;
     WFX.next = rand(2, L[0]);
   } else if (G.weather === 'snow') {
-    for (let i = 0; i < 190; i++) {
+    for (let i = 0; i < 330; i++) {
       const layer = i % 3; // 0 uzak (küçük, yavaş) .. 2 yakın (büyük, hızlı)
-      WFX.flakes.push({ x: rand(0, W), y: rand(0, H), r: [0.9, 1.5, 2.4][layer] * rand(0.8, 1.2), v: [14, 24, 38][layer] * rand(0.8, 1.2),
+      WFX.flakes.push({ x: rand(0, W), y: rand(0, H), r: [1.3, 2.1, 3.3][layer] * rand(0.8, 1.2), // 16 Eki: iri ve sık v: [14, 24, 38][layer] * rand(0.8, 1.2),
         sway: rand(4, 14), f: rand(0.6, 1.6), ph: rand(0, 7), layer });
     }
   }
