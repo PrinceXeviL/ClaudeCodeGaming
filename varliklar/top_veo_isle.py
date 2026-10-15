@@ -21,6 +21,9 @@ WIDE = (0, 70, 1024, 496)
 SETS = {'enemy_cannon_walk': (list(range(11, 29)), NARROW), 'enemy_cannon_atk': (list(range(100, 119)), WIDE),
         'enemy_cannon_die': (list(range(120, 201, 4)), WIDE)}
 fr = video_isle.frames_of(os.path.join(H0, SRC), 24)
+S = fr[0].shape[1] / 1024   # 16 Eki: tam çözünürlüklü video (1280) gelince koordinatlar ölçeklenir
+FIG_TOP, GROUND, NARROW, WIDE = video_isle.sc(FIG_TOP, S), video_isle.sc(GROUND, S), video_isle.sc(NARROW, S), video_isle.sc(WIDE, S)
+SETS = {k: (o, NARROW if b == (250, 150, 774, 456) else WIDE) for k, (o, b) in SETS.items()}
 k = TARGET / (GROUND - FIG_TOP)
 def cut(n):
     a = np.array(video_isle.remove_magenta(fr[n]))
@@ -40,7 +43,7 @@ for name, (order, (x0, y0, x1, y1)) in SETS.items():
     if name + '.webp' not in man: man.append(name + '.webp')
     print(name, m, out.size)
 # durağan görsel: itmenin ilk karesi, gruba sıkı kesilmiş
-a = cut(11)[FIG_TOP - 4:GROUND + 3, 250:774]; ys, xs = np.nonzero(a[..., 3] > 30); a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+a = cut(11)[FIG_TOP - 4:GROUND + 3, NARROW[0]:NARROW[2]]; ys, xs = np.nonzero(a[..., 3] > 30); a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
 st = Image.fromarray(a); st = st.resize((int(st.width * 380 / st.height), 380), Image.LANCZOS); st.save(os.path.join(IMG, 'enemy_cannon.webp'), 'WEBP', quality=88, method=6)
 if 'enemy_cannon.webp' not in man: man.append('enemy_cannon.webp')
 mp = os.path.join(IMG, 'meta.json'); mt = json.load(open(mp)); mt['enemy_cannon'] = [st.width, st.height]; json.dump(mt, open(mp, 'w'), indent=0)

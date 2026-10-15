@@ -15,6 +15,7 @@ BOX = (272, 28, 748, 460)       # bütün karelerin (dalışın en alt ve en gen
 TARGET = 150                    # uçuştaki ortanca kuş boyu (şerit pikseli)
 SETS = {'enemy_vulture_walk': list(range(33, 50)), 'enemy_vulture_atk': list(range(104, 177))}
 fr = video_isle.frames_of(os.path.join(H0, SRC), 24)
+BOX = video_isle.sc(BOX, fr[0].shape[1] / 1024)   # 16 Eki: kutu 1024 genişliğe göre; tam çözünürlüklü video (1280) gelince ölçeklenir
 cut = lambda n: np.asarray(video_isle.remove_magenta(fr[n]))
 hs, bots = [], []
 for n in SETS['enemy_vulture_walk']:

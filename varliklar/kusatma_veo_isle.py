@@ -23,7 +23,7 @@ CFG = {
                  walk=(range(13, 47), (390, 150, 890, 592), 200), die=(range(132, 197), (40, 60, 1240, 660), 122, 2.7)),
     'kocbasi': dict(src='kocbasi_yuru_yikim_veo.mp4', name='enemy_ram', top=240, ground=563, still=0,
                     walk=(range(45, 87), (280, 220, 980, 580), 140), die=(range(134, 201), (130, 150, 1180, 660), 100, 2.8)),
-    'top': dict(src='top_yuru_ates_yikim_veo.mp4', name='enemy_cannon', top=160, ground=449, still=None,
+    'top': dict(src='top_yuru_ates_yikim_veo.mp4', name='enemy_cannon', top=160, ground=449, still=None, ref=1024,  # ref: koordinatların yazıldığı genişlik
                 walk=(range(11, 47), (250, 150, 774, 456), 180), die=(range(150, 201), (0, 70, 1024, 496), 110, 2.1)),
 }
 def cut(fr, n):
@@ -35,9 +35,10 @@ def cut(fr, n):
     return a
 meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
 for key in sys.argv[1:] or list(CFG):
-    C = CFG[key]; fr = video_isle.frames_of(os.path.join(H0, 'ham', 'anim', C['src']), 24); G, T0 = C['ground'], C['top']
+    C = CFG[key]; fr = video_isle.frames_of(os.path.join(H0, 'ham', 'anim', C['src']), 24); S = fr[0].shape[1] / C.get('ref', fr[0].shape[1])
+    G, T0 = video_isle.sc(C['ground'], S), video_isle.sc(C['top'], S)
     for suf, spec in (('_walk', C['walk']), ('_die', C['die'])):
-        order, (x0, y0, x1, y1), T = list(spec[0]), spec[1], spec[2]; name = C['name'] + suf
+        order, (x0, y0, x1, y1), T = list(spec[0]), video_isle.sc(spec[1], S), spec[2]; name = C['name'] + suf
         k = T / (G - T0); FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
         rows = -(-FW * len(order) // 16000); cols = -(-len(order) // rows)
         out = Image.new('RGBA', (FW * cols, FH * rows), (0, 0, 0, 0))

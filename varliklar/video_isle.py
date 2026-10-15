@@ -163,6 +163,11 @@ def save_strip(name, crops, FW, FH, img_dir, meta, man, info, keep=True, quality
     if name + '.webp' not in man: man.append(name + '.webp')
     print(name, {k: m[k] for k in ('n', 'fw', 'fh') if k in m}, 'cols', cols, os.path.getsize(os.path.join(img_dir, name + '.webp')) // 1024, 'KB')
 
+
+def sc(v, S):
+    """16 Eki: 1024 genişlikli (WhatsApp) videoya göre yazılmış koordinatları tam çözünürlüklü videoya ölçekler."""
+    return type(v)(int(round(x * S)) for x in v) if isinstance(v, (tuple, list)) else int(round(v * S))
+
 if __name__ == '__main__':
     a = sys.argv
     st = int(a[a.index('--start') + 1]) if '--start' in a else None

@@ -27,6 +27,7 @@ SOURCES = [
     ('ham/anim/robin_ulu_olum_veo.mp4', 80, 640, 630, {'hero_robin_die': list(range(88, 169))}, (403, 451, 705)),
     ('ham/anim/robin_atk_kemik_veo.mp4', 80, 640, 661, {'hero_robin_cast': list(range(72, 191, 2))}, (560, 560, 662)),
 ]
+REF = {'ham/anim/robin_okyagmuru_veo.mp4': 1024, 'ham/anim/robin_yuru_kos_veo.mp4': 1024}   # koordinatların yazıldığı video genişliği
 TARGET = 220                               # figür boyu (şerit pikseli; serit_kucult komutan hedefi)
 EXTRA = {'hero_robin_walk': {'idle': 0, 'stride': 0.5}, 'hero_robin_cast': {'dur': 2.4}, 'hero_robin_die': {'dur': round(81 / 24, 2)}, 'hero_robin_idle': {'fps': 24}}  # 16 Eki: ölüm her kareyle (Veo akıcılık)
 ONLY = set(sys.argv[1:])  # ör. hero_robin_die: yalnız o şerit  # dur: yetenek şeridinin süresi (sn; yoksa HERO_ANIM.cast)
@@ -36,6 +37,9 @@ for src, FIG_TOP, FIG_BOT, CX, SETS, *B in SOURCES:
     L, R, Y1 = B[0] if B else (330, 370, 548)
     BOX = (CX - L, 0, CX + R, Y1)           # ortak kesim kutusu (göğe kalkan yay ve savrulan pelerin içeride; Kemik Ok'un savrulması için geniş)
     fr = video_isle.frames_of(os.path.join(H0, src), 24)
+    S = fr[0].shape[1] / REF.get(src, fr[0].shape[1])   # 16 Eki: 1024'e göre yazılmış koordinatlar tam çözünürlüklü videoya
+    FIG_TOP, FIG_BOT, CX, L, R, Y1 = (video_isle.sc(v, S) for v in (FIG_TOP, FIG_BOT, CX, L, R, Y1))
+    BOX = (CX - L, 0, CX + R, Y1)
     k = TARGET / (FIG_BOT - FIG_TOP); x0, y0, x1, y1 = BOX
     FW, FH = int(round((x1 - x0) * k)), int(round((y1 - y0) * k))
     for name, order in SETS.items():
