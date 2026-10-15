@@ -16092,6 +16092,54 @@ function mapCamFocus(E, ep, X) {
   MAPCAM.tx = cx - n[0] * z; MAPCAM.ty = cy - n[1] * z; MAPCAM.vx = MAPCAM.vy = 0; mapCamClamp(X, E);
 }
 const mapToScreen = (x, y) => [x * MAPCAM.z + MAPCAM.tx, y * MAPCAM.z + MAPCAM.ty];
+// 15 Eki (Caner: "sefer haritasında yolun çevresindeki ormana dokununca etkileşime geçecek esprili ve korkunç şeyler olsun"): yol, bölüm işareti
+// ve düğmeler dışında haritaya dokununca nm7_* figürlerinden biri (Gemini nm7_orman_surpriz.jpg) ağacın arkasından fırlar, kendi hareketini yapar,
+// sesini çıkarır, üstünde Mortimer'ın kısa bir lafı belirir, sonra geri saklanır. Sıra karışık destedir (aynısı arka arkaya gelmez).
+const SURPRISE = { life: 2.1, h: 24, road: 26, node: 34, max: 3, list: [
+  { n: 'nm7_owl', a: 'blink', s: ['eagle', 0.6, 0.6], say: 'Baykuş Bey uyuyordu.' },
+  { n: 'nm7_eyes', a: 'eyes', s: ['mlaugh', 0.75, 0.5], say: 'Çalıda biri var...' },
+  { n: 'nm7_ghost', a: 'float', s: ['fear', 1.2, 0.45], say: 'Utangaç hayalet: "Pışt!"' },
+  { n: 'nm7_ghost2', a: 'float', s: ['scream', 1.3, 0.6], say: 'Böö!' },
+  { n: 'nm7_bats', a: 'fly', s: ['bats', 1, 0.6], say: 'Yarasalar havalandı!' },
+  { n: 'nm7_frog', a: 'hop', s: ['splash', 1.6, 0.6], say: 'Kurbağa Kral: "Öp beni."' },
+  { n: 'nm7_shroom', a: 'shake', s: ['scream', 1.7, 0.6], say: 'Mantar çığlığı!' },
+  { n: 'nm7_hand', a: 'wave', s: ['rattle', 1, 0.8], say: 'Ölüler el sallıyor.' },
+  { n: 'nm7_squirrel', a: 'jitter', s: ['rattle', 1.5, 0.5], say: 'Zombi sincap cevizini vermiyor.' },
+  { n: 'nm7_cat', a: 'hiss', s: ['dogbite', 1.7, 0.6], say: 'Kara kedi yolunu kesti.' },
+] };
+function mapForestTap(sx, sy) {
+  const ep = mapEp, R = REGION_BG[ep], E = EPISODES[ep - 1]; if (!R || !R.road || !E || !E.nodes) return false;
+  const z = MAPCAM.z, x = (sx - MAPCAM.tx) / z, y = (sy - MAPCAM.ty) / z;
+  if (R.road.some(p => nearestOnPaths([p], x, y).d < SURPRISE.road) || E.nodes.some(n => dist(n[0], n[1], x, y) < SURPRISE.node)) return false;
+  const L = (MAPFX.sur ||= []); if (L.length >= SURPRISE.max) L.shift();
+  if (!MAPFX.surDeck || !MAPFX.surDeck.length) { MAPFX.surDeck = SURPRISE.list.map((_, i) => i).sort(() => Math.random() - 0.5); if (MAPFX.surDeck[0] === MAPFX.surLast) MAPFX.surDeck.push(MAPFX.surDeck.shift()); }
+  const k = MAPFX.surDeck.shift(), S = SURPRISE.list[k]; MAPFX.surLast = k;
+  if (!spr(S.n)) return false;
+  L.push({ S, x, y, t: 0, f: Math.random() < 0.5 ? -1 : 1 });
+  sfx(S.s[0], S.s[1], S.s[2], null); haptic('light');
+  return true;
+}
+function drawMapSurprises(dt) {
+  const L = MAPFX.sur; if (!L || !L.length) return;
+  MAPFX.sur = L.filter(o => (o.t += dt) < SURPRISE.life);
+  for (const o of MAPFX.sur) {
+    const S = o.S, im = spr(S.n); if (!im) continue;
+    const T = SURPRISE.life, t = o.t, pop = t < 0.3 ? easeOutBack(t / 0.3) : t > T - 0.35 ? Math.max(0, (T - t) / 0.35) : 1;
+    let dx = 0, dy = 0, rot = 0, sx = 1, sy = pop, al = 1;
+    if (S.a === 'blink') sy *= Math.sin(t * 7) > 0.92 ? 0.9 : 1;
+    else if (S.a === 'eyes') al = 0.65 + 0.35 * Math.abs(Math.sin(t * 5));
+    else if (S.a === 'float') { dy = -t * 9 - Math.sin(t * 4) * 2; dx = Math.sin(t * 3) * 3; al = Math.min(1, (T - t) / 0.6); sy = Math.max(sy, 0.6); }
+    else if (S.a === 'fly') { dx = t * 34 * o.f; dy = -t * 40; al = Math.min(1, (T - t) / 0.8); sy = Math.max(sy, 0.6); }
+    else if (S.a === 'hop') dy = -Math.abs(Math.sin(t * 6)) * 6 * Math.min(1, t / 0.3);
+    else if (S.a === 'shake' || S.a === 'jitter') dx = Math.sin(t * (S.a === 'shake' ? 60 : 35)) * (S.a === 'shake' ? 1.4 : 0.8);
+    else if (S.a === 'wave') rot = Math.sin(t * 8) * 0.22;
+    else if (S.a === 'hiss') { dx = Math.sin(t * 50) * 0.8; sx = 1 + 0.06 * Math.abs(Math.sin(t * 10)); }
+    const h = SURPRISE.h * (S.n === 'nm7_hand' || S.n === 'nm7_owl' ? 1.25 : 1), w = h * im.width / im.height;
+    ctx.save(); ctx.globalAlpha *= al; ctx.translate(o.x + dx, o.y + dy); ctx.rotate(rot); ctx.scale(sx * o.f, sy);
+    ctx.drawImage(im, -w / 2, -h, w, h); ctx.restore();
+    if (t > 0.25 && t < T - 0.2) { ctx.save(); ctx.globalAlpha *= Math.min(1, (t - 0.25) / 0.2) * Math.min(1, (T - 0.2 - t) / 0.3); txt(S.say, o.x, o.y - h - 5 - Math.min(1, t) * 3, 5.5, '#f4e6c8'); ctx.restore(); }
+  }
+}
 function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep]; if (!bg) return;
   const X = mapExt(bg), z = MAPCAM.z, V = [(VIS.l - MAPCAM.tx) / z, (VIS.t - MAPCAM.ty) / z, (VIS.r - MAPCAM.tx) / z, (VIS.b - MAPCAM.ty) / z]; // ekranda görünen dünya kutusu
@@ -16100,6 +16148,7 @@ function drawRegionMap(E, ep, st) {
   drawBgLights(R.lights, V);
   drawGraveHands(R.hands, uiParts); drawBanners(R.banners, V);
   MAPFX.fog = drawMapFog2(E, ep, road, X);
+  drawMapSurprises(dt);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));
   const node = E.nodes[Math.min(cur, E.nodes.length - 1)], stop = Math.max(60, nearestOnPaths(R.road, node[0], node[1]).along - 26);
@@ -17959,6 +18008,7 @@ function endPointer(ev, cancel) {
   if (pointers.size < 2) pinch = null;
   if (cancel || ptr.hud || ptr.moved || wasPinch || trans) return;
   if (screen === 'play' && !overlay) { const w = screenToWorld(ptr.sx, ptr.sy); worldTap(w.x, w.y); }
+  else if (screen === 'map' && !overlay && mapSel == null && EPISODES[mapEp - 1] && EPISODES[mapEp - 1].zones) mapForestTap(ptr.sx, ptr.sy); // ormana dokunuş: sürpriz
 }
 window.addEventListener('pointerup', (ev) => endPointer(ev, false));
 window.addEventListener('pointercancel', (ev) => endPointer(ev, true));

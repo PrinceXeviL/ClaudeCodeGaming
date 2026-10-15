@@ -75,6 +75,7 @@ SHEETS = [
     ('nm5_sefer2_doga.jpg', ['nm5_oak', 'nm5_maple', 'nm5_fir', 'nm5_birch', 'nm5_stump', 'nm5_logs', 'nm5_hay', 'nm5_scarecrow', 'nm5_thorn',
                              'nm5_rock', 'nm5_shrub', 'nm5_hollow', 'nm5_wheat'], 'decor'),  # 15 Eki: 2. sefer sonbahar doğası (ağaç, kütük, odun, saman, korkuluk, kaya, çalı, buğday)
     ('nm6_kule_moloz.jpg', ['nm6_rubble_archer', 'nm6_rubble_barracks', 'nm6_rubble_mage2', 'nm6_rubble_mage', 'nm6_rubble_artillery', 'nm6_rubble_altar'], 'decor'),  # 15 Eki: yıkılan kulelerin molozu (Ruh Feneri iki çeşit)
+    ('nm7_orman_surpriz.jpg', ['nm7_owl', 'nm7_eyes', 'nm7_ghost', 'nm7_ghost2', 'nm7_bats', 'nm7_frog', 'nm7_shroom', 'nm7_hand', 'nm7_squirrel', 'nm7_cat'], 'decor'),  # 15 Eki: sefer haritası orman sürprizleri
     ('nm_boss_E.jpg', ['enemy_severus3'], 'unit'),  # 12 Eki: Lanetli Severus (2. sefer finalinin 3. evresi)
     ('nm_boss_D.jpg', ['enemy_hubertus', 'enemy_agnes', 'enemy_lucia', 'enemy_godfrey'], 'unitgrid'),  # 12 Eki: 2. sefer komutanları (Tazı Ustası, Kırbaç Rahibesi, Şeytan Kovucu, Tapınak Komutanı)
     ('nm_boss_C.jpg', ['enemy_gloriosus1', 'enemy_gloriosus2', 'enemy_gloriosus3'], 'unit'),  # 11 Eki: Gloriosus 3 evre (aslanlı altın araba, yayan, Güneş Formu)
@@ -95,11 +96,12 @@ BOXES = {
     'nm5_sefer2_doga.jpg': [(40, 15, 610, 505), (655, 25, 1135, 475), (1185, 15, 1510, 492), (1560, 15, 1955, 497), (80, 515, 390, 742), (470, 535, 925, 768),
                             (1005, 488, 1350, 758), (1368, 468, 1668, 798), (1688, 538, 1948, 752), (55, 798, 442, 1102), (538, 808, 872, 1098), (932, 802, 1488, 1098), (1615, 782, 1952, 1102)],
     'nm6_kule_moloz.jpg': [(40, 75, 610, 572), (675, 75, 1290, 568), (1335, 85, 1965, 562), (35, 610, 668, 1102), (695, 625, 1295, 1108), (1335, 595, 1965, 1102)],
+    'nm7_orman_surpriz.jpg': [(25, 28, 322, 368), (382, 22, 712, 298), (822, 45, 1018, 250), (1135, 40, 1318, 248), (782, 278, 1018, 492), (1122, 278, 1322, 488), (60, 505, 292, 745), (400, 368, 652, 722), (762, 512, 1018, 735), (1096, 482, 1348, 745)],
     'nm_boss_D.jpg': [(0, 0, 1036, 1010), (1036, 0, 2048, 1010), (0, 1010, 1000, 2048), (1000, 1010, 2048, 2048)],  # 2x2 (2048 kare)
 }
 # meta (dünya boyu) çarpanı: 2x çözünürlüklü sayfa, diğer dekor sayfalarıyla aynı ölçekte (ruinK) dursun
 META_K = {'nm4_engizisyon_dekor.jpg': 0.5}
-BOX_EDGE_DROP = {'nm6_kule_moloz.jpg', 'nm5_sefer2_doga.jpg', 'nm_boss_D.jpg', 'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
+BOX_EDGE_DROP = {'nm7_orman_surpriz.jpg', 'nm6_kule_moloz.jpg', 'nm5_sefer2_doga.jpg', 'nm_boss_D.jpg', 'nm2_dekor_A.jpg', 'nm3_orman_dekor.jpg', 'nm4_engizisyon_dekor.jpg'}
 # renk değiştirme: görselin üstten şu oranlık kısmında yeşil/mor parlak tonlar verilen renk tonuna (derece) döner
 # (10 Eki: Caner hayalet okçuları kırmızı istedi)
 HUE_TOP = {}  # (eski Hayalet Okçular kulesindeki okçuların rengi; yeni kulede okçular ayrı çiziliyor)

@@ -1,0 +1,14 @@
+Image 1 shows the art style of my dark gothic cartoon game's decoration objects (thick dark outlines, rich muted colors, slight top-down 3/4 view, green and purple necromantic glow). Image 2 is a piece of the campaign map: a dark cursed forest around a winding road.
+
+On this campaign map the player can tap the forest and a small funny-or-spooky surprise pops out for a moment. Draw a sheet of 9 such small surprise characters and objects, in exactly the same style, line weight and quality as image 1, each one small enough to hide behind a tree or a bush:
+1) a fat grumpy owl sitting on a short dead branch, huge round orange eyes, feathers puffed up
+2) a pair of glowing yellow eyes and white teeth grinning out of a dark thorny bush (only the bush, the eyes and the grin are visible)
+3) a small cute but creepy ghost peeking out sideways with a shy smile, pale blue-white, with a tiny chain on its wrist
+4) a skeleton hand sticking out of a small dirt mound, waving hello
+5) a flock of five small black bats flying out together in a loose cluster
+6) a small green frog wearing a tiny golden crown, sitting on a mushroom, looking smug
+7) a red-capped toadstool mushroom with a face, mouth wide open screaming
+8) a scrawny zombie squirrel with stitches and one button eye, holding an acorn
+9) a black cat with glowing green eyes and an arched back, hissing
+
+Arranged in a clean 3x3 grid, each one centered in its own cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all at a similar small scale (about a third of the height of the trees in image 1). Plain flat magenta (#FF00FF) background everywhere, no ground plane except where described, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.
