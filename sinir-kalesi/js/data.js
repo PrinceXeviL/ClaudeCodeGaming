@@ -315,7 +315,7 @@ Object.assign(ENEMIES, {
   priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true, purify: { r: 70, every: 5, dmg: 0, bless: true } }, // 15 Eki: cesetleri kutsar
   heavy:     { name: 'Ağır Piyade',         h: 33, hp: 380, speed: 14, armor: 0.7,  mr: 0,    gold: 32, dmg: [9, 15],  rate: 1.3, lives: 1, r: 12 },
   cavalry:   { name: 'Solarian Süvarisi',   h: 42, hp: 260, speed: 31, armor: 0.3,  mr: 0,    gold: 28, dmg: [10, 16], rate: 1.1, lives: 2, r: 13 },
-  ram:       { name: 'Koçbaşı',             h: 40, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 16, machine: true, bash: { r: 78, dmg: 70, rate: 2 } }, // 15 Eki: yol kenarındaki kulelere vurur
+  ram:       { name: 'Koçbaşı',             h: 49, hp: 700, speed: 9,  armor: 0.45, mr: 0.1,  gold: 55, dmg: [2, 4],   rate: 2,   lives: 3, r: 18, machine: true, bash: { r: 78, dmg: 70, rate: 2 } }, // 15 Eki: yol kenarındaki kulelere vurur
   catapult:  { name: 'Mancınık Arabası',    h: 40, hp: 420, speed: 12, armor: 0.2,  mr: 0,    gold: 38, dmg: [2, 4],   rate: 2,   lives: 2, r: 14, machine: true,
     desc: 'Durup kulelerimize taş atar, 3 sn susturur ve hasar verir', ab: { bomb: { cd: 12, stun: 3, r: 200, dmg: 90 } } },
   // 15 Eki (Caner): Güneş Topu. İki lejyonerin ittiği aslan ağızlı top (Veo şeritleri, varliklar/top_veo_isle.py); iten askerler lejyonerle aynı boy
