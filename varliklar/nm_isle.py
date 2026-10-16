@@ -78,6 +78,7 @@ SHEETS = [
     ('nm7_orman_surpriz.jpg', ['nm7_owl', 'nm7_eyes', 'nm7_ghost', 'nm7_ghost2', 'nm7_bats', 'nm7_frog', 'nm7_shroom', 'nm7_hand', 'nm7_squirrel', 'nm7_cat'], 'decor'),  # 15 Eki: sefer haritası orman sürprizleri
     ('nm8_kemik_duvar_parca.jpg', ['nm8_bw_fang', 'nm8_bw_tooth', 'nm8_bw_stake', None, None, 'nm8_bw_shards', None, None, None, 'nm8_bw_needle'], 'decor'),  # 15 Eki: yeni Kemik Duvarı parçaları (Caner 5'ini seçti)
     ('nm9_esya_simgeleri.jpg', ['ico_gear_sword', 'ico_gear_spear', 'ico_gear_staff', 'ico_gear_arrow', None, 'ico_gear_dagger', 'ico_gear_armor', 'ico_gear_ring', 'ico_gear_amulet', None, 'ico_bomb', 'ico_kumsaati', 'ico_tea', 'ico_kese', 'ico_crystal'], 'decor'),  # 15 Eki: eşya ve dükkân simgeleri (kodla çizilenlerin yerine)
+    ('nm28_merlin_kasirga.jpg', ['ico_hu_merlin2', None, None, None], 'decor'),  # 16 Eki: Merlin'in Kasırga Fırtınası simgesi (4 seçenekten 1.; eski zincir şimşek varliklar/cikti/eski_simge)
     ('nm22_kemik_havan.jpg', ['tower_artillery_bonemortar'], 'decor'),  # 16 Eki: Kemik Havan Kazanı (Kemik Gülle uzmanlığı; mancınık yerine)
     ('nm21_kemik_gulle.jpg', ['tower_artillery_boneball', 'nm_boneball', 'nm_bshard_1', 'nm_bshard_2', 'nm_bshard_3', 'nm_bshard_4', 'nm_bshard_5', 'nm_bshard_6', 'nm_bonepool'], 'decor'),  # 16 Eki: Kemik Gülle Mancınığı (kule, gülle, kırıklar, veba gölü)
     ('nm20_kule_kurma_J.jpg', ['ico_bd_archer', 'ico_bd_barracks', 'ico_bd_mage', 'ico_bd_artillery', 'ico_bd_altar', 'ico_ui_wavecall'], 'decor'),  # 16 Eki: kule kurma menüsü simgeleri + dalga çağırma borusu

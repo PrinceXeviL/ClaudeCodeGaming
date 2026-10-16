@@ -1,0 +1,6 @@
+Image 1 is the hero power icon sheet of my dark gothic cartoon tower defense game; image 2 is the hero Merlin (undead wizard, purple and green magic). Merlin has a new power: TORNADO STORM. Draw a NEW sheet with 4 different versions of its icon, in exactly the same style, line weight, colors and quality as the icons in image 1. Each icon is one bold, instantly readable symbol, centered, no frame, no badge, no background plate:
+1) a dark purple storm cloud with a twisting tornado funnel coming down from it, small rocks and bones swirling around the funnel, a thin green lightning bolt at the side
+2) a swirling purple-grey tornado funnel seen slightly from below, a tiny Roman legionary soldier spinning helplessly inside it, green magic sparks
+3) a spiral vortex tornado with purple and toxic green wind streaks, a skull-shaped storm cloud on top
+4) a tall tornado funnel with debris (stones, a broken shield, a spear) flying out of it in a circle, purple storm cloud above, green lightning
+Arranged in a clean grid of 2 columns and 2 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no labels, no grid lines. 16:9 image.

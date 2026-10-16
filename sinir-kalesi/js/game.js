@@ -13336,7 +13336,7 @@ function drawUlt2Glyph(id, r) {
   }
   ctx.restore();
 }
-const ICO_OLD = new Set(['ico_hu_merlin2']); // 16 Eki: Merlin'in ikinci gücü değişti (Zincir Şimşek → Kasırga), eski resim kullanılmaz
+const ICO_OLD = new Set(); // eskimiş simge resimleri (yenisi gelene dek kodla çizilir). 16 Eki: ico_hu_merlin2 artık Kasırga Fırtınası (nm28)
 const heroGlyph = (id, r, act) => (spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')) && !ICO_OLD.has('ico_hu_' + id + (act === 'ult2' ? '2' : '')) ? icoFit(spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')), 0, 0, r * 0.74) : act === 'ult2' ? drawUlt2Glyph(id, r) : id === 'zeynep' ? drawNecroGlyph('nm_scream', r) : drawUltGlyph(id, r));
 // kahraman gücü düğmesinin simgesi
 function drawUltGlyph(id, r) {
