@@ -2560,8 +2560,8 @@ let METEOR_ROCK = null, SOUL_ROCK = null;
 function meteorRock(soul) {
   if (soul) { if (SOUL_ROCK) return SOUL_ROCK; }
   else if (METEOR_ROCK) return METEOR_ROCK;
-  const c = document.createElement('canvas'); c.width = c.height = 64;
-  const g = c.getContext('2d'); g.translate(32, 32);
+  const c = document.createElement('canvas'); c.width = c.height = 128; // 16 Eki: 2x çözünürlük (büyütülünce pikselli görünmesin)
+  const g = c.getContext('2d'); g.scale(2, 2); g.translate(32, 32);
   const pts = [];
   for (let i = 0; i < 11; i++) { const a = i / 11 * Math.PI * 2, r = 22 + Math.sin(i * 2.7) * 4 + (i % 3) * 1.5; pts.push([Math.cos(a) * r, Math.sin(a) * r]); }
   const path = () => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
@@ -2651,6 +2651,35 @@ function fxSoulMeteorImpact(x, y, r, first) {
   for (let i = 0; i < 7; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
   G.decals.push({ x, y, r: r * 1.05, t: 0, life: 12, hot: true });
 }
+// 16 Eki (Caner: "yerde obruk açılsın, hafif bir süre sonra geçsin"): ruh meteorunun açtığı çukur. Hızla açılır (open sn), çatlakları ve dibi
+// mor-yeşil ışıldar (sönerek), kenarında taş halkası; life sonunda close sn'de toprakla kapanır (küçülüp solar).
+const CRATER = { life: 7, open: 0.16, close: 1.4 };
+function drawCrater(d) {
+  const o = clamp(d.t / CRATER.open, 0, 1), c = clamp((d.life - d.t) / CRATER.close, 0, 1), s = (1 - (1 - o) ** 3) * (0.55 + 0.45 * c), a = c, r = d.r * s;
+  if (r < 1) return;
+  const glowK = Math.max(0, 1 - d.t / 3.5);
+  ctx.save(); ctx.translate(d.x, d.y); ctx.scale(1, 0.5);
+  ctx.globalAlpha = a;
+  const rim = ctx.createRadialGradient(0, 0, r * 0.6, 0, 0, r * 1.35); rim.addColorStop(0, 'rgba(40,26,20,0.7)'); rim.addColorStop(1, 'rgba(40,26,20,0)');
+  ctx.fillStyle = rim; ctx.beginPath(); ctx.arc(0, 0, r * 1.35, 0, Math.PI * 2); ctx.fill(); // savrulmuş toprak
+  const pit = ctx.createRadialGradient(0, r * 0.18, r * 0.05, 0, 0, r); pit.addColorStop(0, '#07030a'); pit.addColorStop(0.7, '#1a0f16'); pit.addColorStop(1, '#3a2a22');
+  ctx.fillStyle = pit; ctx.beginPath();
+  for (let i = 0; i <= 18; i++) { const an = i / 18 * Math.PI * 2, rr = r * (0.9 + 0.1 * Math.sin(an * 3 + d.seed)); ctx[i ? 'lineTo' : 'moveTo'](Math.cos(an) * rr, Math.sin(an) * rr); }
+  ctx.closePath(); ctx.fill();
+  if (glowK > 0) { // dipte ve çatlaklarda sönen ruh ateşi
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const gg = ctx.createRadialGradient(0, r * 0.1, 0, 0, 0, r * 0.75); gg.addColorStop(0, `rgba(130,255,160,${0.55 * glowK})`); gg.addColorStop(0.5, `rgba(150,80,255,${0.35 * glowK})`); gg.addColorStop(1, 'rgba(150,80,255,0)');
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(0, 0, r * 0.75, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = `rgba(150,255,170,${0.75 * glowK})`; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+    for (let i = 0; i < 7; i++) { const an = d.seed + i * 0.9, l0 = r * 0.95, l1 = r * (1.25 + 0.25 * Math.sin(i * 1.7 + d.seed));
+      ctx.beginPath(); ctx.moveTo(Math.cos(an) * l0, Math.sin(an) * l0); ctx.lineTo(Math.cos(an + 0.12) * (l0 + l1) / 2, Math.sin(an + 0.12) * (l0 + l1) / 2); ctx.lineTo(Math.cos(an - 0.05) * l1, Math.sin(an - 0.05) * l1); ctx.stroke(); }
+    ctx.restore();
+  }
+  ctx.strokeStyle = 'rgba(20,12,10,0.8)'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.ellipse(0, 0, r * 0.98, r * 0.98, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke(); // ön kenar gölgesi
+  for (let i = 0; i < 9; i++) { const an = d.seed * 1.3 + i * 0.7, rr = r * (1.02 + 0.12 * ((i * 0.37) % 1)); // kenar taşları
+    ctx.fillStyle = i % 2 ? '#5a4a40' : '#3e322c'; ctx.beginPath(); ctx.ellipse(Math.cos(an) * rr, Math.sin(an) * rr, 2.6 + (i % 3), 1.8 + (i % 2), an, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
 // Göktaşı: yerde hedef işareti, alev kuyruğu, ısı halesi ve dönen kaya
 function drawMeteor(p) {
   if (p.big) { ctx.save(); const k0 = clamp(p.t / p.dur, 0, 1), q = projPos(p, k0), B = p.big; // dev meteor: kaya ve kuyruk büyük (hedef halkası olağan boyda)
@@ -2682,8 +2711,8 @@ function drawMeteor0(p, noRing, ringOnly) {
     g.addColorStop(0, `rgba(${col},0.9)`); g.addColorStop(1, `rgba(${col},0)`);
     ctx.fillStyle = g; ctx.beginPath();
     ctx.moveTo(x + nx * w, y + ny * w);
-    ctx.quadraticCurveTo(x - ux * len * 0.5 + nx * w * 0.6 + Math.sin(time * 30) * 2, y - uy * len * 0.5 + ny * w * 0.6, x - ux * len, y - uy * len);
-    ctx.quadraticCurveTo(x - ux * len * 0.5 - nx * w * 0.6, y - uy * len * 0.5 - ny * w * 0.6 + Math.cos(time * 27) * 2, x - nx * w, y - ny * w);
+    ctx.quadraticCurveTo(x - ux * len * 0.5 + nx * w * 0.6 + Math.sin(time * (SO ? 9 : 30) + (p.spin || 0)) * (SO ? 1.4 : 2), y - uy * len * 0.5 + ny * w * 0.6, x - ux * len, y - uy * len);
+    ctx.quadraticCurveTo(x - ux * len * 0.5 - nx * w * 0.6, y - uy * len * 0.5 - ny * w * 0.6 + Math.cos(time * (SO ? 8 : 27) + (p.spin || 0)) * (SO ? 1.4 : 2), x - nx * w, y - ny * w);
     ctx.closePath(); ctx.fill();
   }
   if (SO) { glow(ctx, x, y, 42, '150,70,255', 0.7); glow(ctx, x, y, 22, '110,255,150', 0.8); glow(ctx, x, y, 10, '240,255,240', 0.9); }
@@ -2693,11 +2722,7 @@ function drawMeteor0(p, noRing, ringOnly) {
   ctx.drawImage(meteorRock(SO), -12, -12, 24, 24);
   ctx.restore();
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + ux * 6, y + uy * 6, 9, SO ? '200,255,210' : '255,200,120', 0.7); ctx.restore();
-  if (SO && speed > 0 && !overlay) { // kıvılcımlar ve kayadan kopan ufak parçalar (Caner: "meteordan ufak ufak parçalar saçılsın")
-    const cols = ['120,255,150', '190,120,255', '255,80,90'];
-    if (Math.random() < 0.9) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-5, 5), y: y + rand(-5, 5), vx: -ux * rand(20, 60) + rand(-30, 30), vy: -uy * rand(20, 60) + rand(-30, 30), drag: 2, col: cols[Math.floor(rand(0, 3))], s0: rand(2, 4), s1: 0.4, life: rand(0.3, 0.6) });
-    if (Math.random() < 0.35) emit(G.parts, { kind: 'chunk', x, y, vx: -ux * rand(30, 70) + rand(-40, 40), vy: -uy * rand(10, 40) + rand(-20, 10), g: 420, drag: 0.4, vr: rand(-14, 14), rot: rand(0, 6), col: Math.random() < 0.5 ? '#3a2448' : '#7aff9a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9), floor: p.ty + rand(-14, 14) });
-  }
+
 }
 function fxMagicCharge(x, y) {
   emit(G.parts, { kind: 'glow', add: true, x, y, col: '170,210,255', s0: 30, s1: 8, life: 0.2 });
@@ -5530,6 +5555,12 @@ function updateProjectile(pr, dt) {
         pr.fxT = 0.03;
         if (NECRO) emit(G.parts, { kind: 'dot', x: q.x, y: q.y, vx: rand(-8, 8), vy: rand(0, 20), g: 160, col: '#7ae04a', s0: 1.6, s1: 0.8, life: 0.4 });
         else emit(G.parts, { kind: 'glow', x: q.x, y: q.y, vx: rand(-5, 5), vy: -8, col: '130,124,118', s0: 2.5, s1: 7, life: 0.5, a: 0.4 });
+      } else if (pr.kind === 'meteor' && pr.mini) { // Merlin'in ruh meteoru: mor-yeşil-kızıl kıvılcım, mor duman, kayadan kopan ufak parçalar (zamana bağlı, kare hızından bağımsız)
+        pr.fxT = 0.012; const C = ['150,80,255', '110,255,150', '255,80,100'];
+        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-5, 5), y: q.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-30, 5), drag: 2, col: C[Math.floor(rand(0, 2.4))], s0: rand(8, 13), s1: 1.5, life: rand(0.25, 0.45) });
+        if (Math.random() < 0.5) emit(G.parts, { kind: 'glow', x: q.x + rand(-3, 3), y: q.y, vx: rand(-10, 10), vy: rand(-20, -6), drag: 0.8, col: Math.random() < 0.5 ? '50,28,64' : '80,54,96', s0: rand(5, 8), s1: rand(14, 20), life: rand(0.7, 1.1), a: 0.45, fadeIn: 0.1 });
+        if (Math.random() < 0.3) emit(G.parts, { kind: 'chunk', x: q.x, y: q.y, vx: rand(-60, 60), vy: rand(-40, 20), g: 420, drag: 0.4, vr: rand(-14, 14), rot: rand(0, 6), col: Math.random() < 0.5 ? '#3a2448' : '#7aff9a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9), floor: pr.ty + rand(-14, 14) });
+        if (Math.random() < 0.5) emit(G.parts, { kind: 'streak', add: true, x: q.x, y: q.y, vx: rand(-60, 60), vy: rand(-70, 20), g: 240, col: Math.random() < 0.5 ? '#b8ffb0' : '#d8a8ff', s0: 1.4, s1: 0.2, life: rand(0.25, 0.45) });
       } else if (pr.kind === 'meteor') {
         pr.fxT = 0.01;
         emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-5, 5), y: q.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-35, 5), drag: 2, col: Math.random() < 0.5 ? '255,120,30' : '255,200,90', s0: rand(10, 15), s1: 2, life: rand(0.3, 0.5) });
@@ -5657,9 +5688,10 @@ function updateProjectile(pr, dt) {
     if (pr.kind === 'meteor') { if (pr.mini) fxSoulMeteorImpact(pr.tx, pr.ty, pr.splash, pr.first); else fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn); }
     if (pr.mburn) for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, pr.tx, pr.ty); if (d <= pr.splash * 1.15) flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
     if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
-      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
-      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8 });
-      G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true });
+      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
+      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
+      G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true, soul: pr.mini });
+      if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(0.55, 0.7), t: 0, life: CRATER.life, seed: rand(0, 99) }); // obruk
       if (pr.mini) { shakeScreen(pr.first ? 7 : 4, 0.28); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
       else { shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60); }
     }
@@ -7998,7 +8030,7 @@ function update(dt) {
         continue;
       }
       emit(G.parts, { kind: 'glow', add: true, x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vy: -rand(20, 45),
-        col: holy ? (Math.random() < 0.5 ? '255,240,170' : '255,255,230') : (Math.random() < 0.5 ? '255,140,40' : '255,200,80'), s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) });
+        col: holy ? (Math.random() < 0.5 ? '255,240,170' : '255,255,230') : z.soul ? ['150,80,255', '110,255,150', '200,120,255'][Math.floor(rand(0, 3))] : (Math.random() < 0.5 ? '255,140,40' : '255,200,80'), s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) }); // soul: Merlin'in ruh ateşi (mor-yeşil)
     }
   }
   G.zones = G.zones.filter(z => z.t < z.life);
@@ -11511,7 +11543,7 @@ function drawEffect(f) {
   } else if (f.kind === 'ring') {
     ctx.save(); ctx.globalAlpha = (1 - k) * (f.a ?? 1);
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
-    ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.3 + 0.7 * k), f.r * (0.3 + 0.7 * k) * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
+    const ek = 1 - (1 - k) ** 3; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.3 + 0.7 * ek), f.r * (0.3 + 0.7 * ek) * 0.45, 0, 0, Math.PI * 2); ctx.stroke(); // 16 Eki: yavaşlayarak açılır (akıcı)
     ctx.restore();
   } else if (f.kind === 'whirl') {
     ctx.save(); ctx.translate(f.x, f.y); ctx.globalAlpha = 1 - k;
@@ -11584,7 +11616,7 @@ function drawEffect(f) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 18; i++) {
       const a = i / 18 * Math.PI * 2, fx = f.x + Math.cos(a) * r, fy = f.y + Math.sin(a) * r * 0.45;
-      glow(ctx, fx, fy - 4, 10 * (1 - k) + 3, i % 2 ? '255,130,40' : '255,200,90', 1 - k);
+      glow(ctx, fx, fy - 4, 10 * (1 - k) + 3, f.soul ? (i % 2 ? '150,80,255' : '110,255,150') : i % 2 ? '255,130,40' : '255,200,90', 1 - k);
     }
     ctx.restore();
   } else if (f.kind === 'shock') {
@@ -18092,6 +18124,7 @@ function drawPlay() {
   drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   drawGraveHands(G.bg.hands, G.parts); drawBanners(G.bg.banners, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   for (const d of G.decals) {
+    if (d.kind === 'crater') { drawCrater(d); continue; }
     if (d.kind === 'splat') {
       // veba birikintisi: yere dökülmüş sıvı; hızla yayılır, yavaşça solar (yer düzlemine yatık)
       if (d.t < 0) continue;
@@ -18105,7 +18138,7 @@ function drawPlay() {
     ctx.drawImage(scorchTex(), d.x - d.r, d.y - d.r * 0.5, d.r * 2, d.r);
     if (d.hot && d.t < 3) {
       ctx.globalAlpha = 1; ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      glow(ctx, d.x, d.y, d.r * 0.7, '255,110,30', (1 - d.t / 3) * (0.55 + Math.sin(time * 9 + d.x) * 0.1));
+      glow(ctx, d.x, d.y, d.r * 0.7, d.soul ? '150,80,255' : '255,110,30', (1 - d.t / 3) * (0.55 + Math.sin(time * 9 + d.x) * 0.1));
       ctx.restore();
     }
   }
