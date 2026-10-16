@@ -432,7 +432,8 @@
   "Bir bölümü son canınla kazan": "Gana un nivel con tu última vida",
   "Bir bölümde her dalgayı erken çağır": "Llama antes cada oleada en un nivel",
   "Aynı anda 25 dost ölü ve iskelet": "25 muertos y esqueletos aliados a la vez",
-  "5. bölümden sonra hiç büyü yapmadan kazan": "Gana tras el nivel 5 sin lanzar hechizos"
+  "5. bölümden sonra hiç büyü yapmadan kazan": "Gana tras el nivel 5 sin lanzar hechizos",
+  "Kristal Avcısı": "Cazador de Cristales"
  },
  "tpl": [
   [
@@ -742,6 +743,10 @@
   [
    "AL +{}",
    "RECLAMAR +{}"
+  ],
+  [
+   "Bosslardan toplam {} kristal topla",
+   "Reúne {} cristales de jefes en total"
   ]
  ]
 }

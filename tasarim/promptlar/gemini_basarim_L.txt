@@ -1,0 +1,21 @@
+Image 1 is the achievement icon sheet of my dark gothic cartoon tower defense game "Don't Mess with the Necromancer" (the exact art style, line weight, colors and quality I want); image 2 shows the round medallion frames these icons will sit inside. Draw a NEW sheet of 12 ACHIEVEMENT ICONS in exactly the style of image 1, rich and premium:
+
+Row 1:
+1) CONQUEROR: Mortimer's black banner with a green skull planted on a conquered hilltop, a broken golden sun-emblem shield lying at its foot.
+2) BARE BONES: a single bare skull with one thin crack, resting on a pile of a few bones, one small red heart-shaped gem beside it (one life only).
+3) ENDLESS NIGHT: an ornate hourglass with black sand, a crescent moon and a few stars swirling around it, purple glow.
+4) CLEAR SKIES: a falling eagle with bone arrows stuck in it, feathers flying, tumbling down out of a dark sky.
+
+Row 2:
+5) SIEGE BREAKER: a smashed wooden battering ram with a broken golden lion head, splinters and a bent wheel.
+6) IMPATIENT WIZARD: a bone war horn blowing a burst of green sound waves, a small hourglass knocked over next to it.
+7) COMMANDER'S RISE: a glowing green upward arrow made of bone rising through a golden laurel crown, sparkles.
+8) COMMANDER POWER: a clenched skeletal fist bursting with crimson and green energy, cracks of power radiating out.
+
+Row 3:
+9) CORPSE POPPER: a bloated green corpse bursting in a cartoon explosion of green goo and bones.
+10) GOLEM MASTER: a hulking stitched corpse golem made of many bodies, roaring with fists raised, green glowing eyes.
+11) BOOKWORM: a cute green bookworm with a tiny skull face crawling out of an old open spellbook with glowing runes.
+12) BLACK BOOK: Mortimer's spellbook floating open, purple and green magic runes rising from its pages, five little glowing orbs around it.
+
+Each icon is a single bold centered object (or a tight little scene) that reads clearly at small size inside a ROUND medallion: compact, roughly circular silhouette, no frame, no ring, no badge, no background plate around it. All 12 at a similar size, each centered in its own cell of a clean grid of 4 columns and 3 rows, with plenty of empty magenta space around, nothing touching the cell edges or each other. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines. 16:9 image.

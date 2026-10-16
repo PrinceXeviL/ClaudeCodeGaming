@@ -1,0 +1,21 @@
+Image 1 is the achievement icon sheet of my dark gothic cartoon tower defense game "Don't Mess with the Necromancer" (the exact art style, line weight, colors and quality I want); image 2 shows the round medallion frames these icons will sit inside. Draw a NEW sheet of 12 ACHIEVEMENT ICONS in exactly the style of image 1, rich and premium:
+
+Row 1:
+1) MORTIMER THE ARCHITECT: a skeletal hand holding a bone hammer over a small half-built bone tower with scaffolding.
+2) FROM THE ASHES: a small dark tower rising back up out of a pile of rubble and grey ash, green magic sparks swirling it back together.
+3) CRYPT KEEPER: an open stone crypt hatch with a huge green-eyed corpse golem hand climbing out of it.
+4) FLY SWARM: a thick buzzing swarm of fat black plague flies with tiny green glints, around a little green plague droplet.
+
+Row 2:
+5) WEAPON ENCHANTER: a bone sword and a bone arrow crossed, wrapped in swirling purple, green and fiery orange enchantment flames.
+6) CRYSTAL HUNTER: a cracked golden commander's crown lying on its side, spilling a pile of glowing purple soul crystals.
+7) NO PRINCE: a fat grumpy green frog wearing a tiny dented golden sun-knight helmet, sitting on a lily pad.
+8) FOREST LOOKOUT: a spyglass made of bone looking at a small treasure map with a skull X mark, a little black cat peeking behind it.
+
+Row 3:
+9) BY A HAIR: a single cracked red heart hanging by one thin thread, about to snap, a tiny bead of sweat.
+10) HASTY DEAD: a running skeleton with a pocket watch in its hand, motion lines behind it, tongue out in a hurry.
+11) ARMY OF THE DEAD: a dense crowd of many small skeleton warriors raising swords and shields together, green glow behind them.
+12) SPELL-LESS NECROMANCER: Mortimer's spellbook locked shut with a chain and padlock, Mortimer's skeletal hand shrugging next to it.
+
+Each icon is a single bold centered object (or a tight little scene) that reads clearly at small size inside a ROUND medallion: compact, roughly circular silhouette, no frame, no ring, no badge, no background plate around it. All 12 at a similar size, each centered in its own cell of a clean grid of 4 columns and 3 rows, with plenty of empty magenta space around, nothing touching the cell edges or each other. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines. 16:9 image.

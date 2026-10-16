@@ -48,11 +48,11 @@ const SPR = {};
 const spr = (name) => SPR[name] || null;
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_(?:atk|idle)|tower_artillery_plague_(?:call|idle)|bubu_(atk|idle|down)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_(?:atk|idle)|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
-  if (!/^bubu_/.test(name) && !(G && G.loadWait && G.loadWait.crit.has(name)) && paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir (Bubu doğrudan: boyacı kuyruğunda beklemesin)
+  if (!(G && G.loadWait && G.loadWait.crit.has(name)) && paintAsync(name, [], (b) => { if (b && STRIP_WAIT.has(name)) SPR[name] = b; STRIP_WAIT.delete(name); if (!b) loadStrip(name); })) return; // 13 Eki: boyacıda yüklenir (Bubu doğrudan: boyacı kuyruğunda beklemesin)
   const im = new Image();
   im.src = 'img/' + LAZY[name] + (window.SURUM ? '?v=' + window.SURUM : '');
   (im.decode ? im.decode() : new Promise((ok, no) => { im.onload = ok; im.onerror = no; }))
@@ -2079,7 +2079,7 @@ function startLevel(idx, chal = null) {
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2', '_walk_hurt', '_lvlup'], (HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç, _cast_<pasif>: pasifin kendi şeridi)
 
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
-  keep.add('castle_keep_1_idle'); if (BUBU.on && idx >= BUBU.from) ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(n => keep.add(n)); // Bubu // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
+  keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
@@ -3310,7 +3310,7 @@ function giveCrystals(e) {
   let n = e.def.final ? CRYSTAL.final : CRYSTAL.boss;
   if (G.chal === 'h') n *= CRYSTAL.heroic;
   if (G.diffKey === 'usta') n *= CRYSTAL.usta;
-  n = Math.round(n); save.crystal = (save.crystal || 0) + n; G.crystalGain = (G.crystalGain || 0) + n; persist();
+  n = Math.round(n); save.crystal = (save.crystal || 0) + n; G.crystalGain = (G.crystalGain || 0) + n; persist(); cnt('crystal', n);
   floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 40) - 14, `+${n} KRİSTAL`, '#e0b8ff');
   for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(40, 120); emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, col: i % 2 ? '200,140,255' : '140,255,200', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) }); }
   sfx('coins');
@@ -6166,7 +6166,7 @@ const MORT_LINES = {
   glor3: ['Parlıyor. Çayımı ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
   // 2. sefer (Cadı Avı)
   start2: ['Cadı avı mı? Yanlış kapıyı çaldınız.', 'Meşaleler, çanlar... Ne kadar gürültücü bir din.', 'Çaydanlığımı geri alana kadar kimse uyumuyor.'],
-  hatch: ['Mahzen açık! Bubu\'nun kuzeni geldi.', 'Golem, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
+  hatch: ['Mahzen açık! Misafir geldi.', 'Golem, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
   sealed: ['Kapağımı mühürledi! Terbiyesiz.', 'O mahzenin kirasını kim ödeyecek?'],
   blood: ['Ay kızardı. Benden utandı herhalde.', 'Kızıl Ay! Kalkın çocuklar, gece bizim.', 'Dua edin bakalım. Ben de güleyim.'],
   light: ['Fener mi? Söndürün şunu, gözüm kamaştı!', 'Işık arabası. Ne kadar da kaba.'],
@@ -6181,7 +6181,7 @@ const MORT_LINES = {
   boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
-  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'],
+  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, gölün sahibi!'],
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
@@ -6200,7 +6200,6 @@ const MORT_LINES = {
   maxTower: ['İşte şimdi oldu.', 'Böyle bir kulem olsun isterdim. Dur, var.', 'Mimari harikası. Biraz da ürkütücü.'],
   heroDown: ['Kalk, uyuklama!', 'Ölmek mi? Bizde bu geçici.', 'Kısa bir mola. Hemen döner.'],
   clean: ['Tertemiz. Tek damla çay dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
-  bubu: ['Bubu! Mama vakti!', 'Aferin Bubu. Kim iyi solucan?', 'Bubu ısırmaz. Yutar.'],
   loot: ['Solarian vergisi... ters yönde.', 'İmparatorluğun parası. Artık benim.', 'Bu sikkede güneş var. Ne ironi.', 'Ölüler cüzdan taşımaz. Ben taşırım.', 'Bağışınız için teşekkürler, lejyoner.', 'Hazine bakanlığı: ben.'],
   rich: ['Altınlar mezara gömülmez. Bir şey kur!', 'Kese dolu, kuleler boş. Garip.', 'O altınla iki kule olur. Sadece diyorum.'],
   ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
@@ -6437,6 +6436,7 @@ const ACH = [
   { id: 'early', cat: 'battle', name: 'Sabırsız Büyücü', desc: 'Dalgayı {n} kez erken çağır', icon: 'coin', k: 'early', t: [25, 100, 300] },
   { id: 'herolvl', cat: 'battle', name: 'Komutanın Yükselişi', desc: 'Bir komutanı {n}. seviyeye çıkar', icon: 'shield', m: 'herolvl', t: [5, 10, 20] },
   { id: 'ult', cat: 'battle', name: 'Komutan Gücü', desc: 'Komutan gücünü {n} kez kullan', icon: 'crown', k: 'ult', t: [25, 100, 300] },
+  { id: 'crystal', cat: 'battle', name: 'Kristal Avcısı', desc: 'Bosslardan toplam {n} kristal topla', icon: 'coin', k: 'crystal', t: [10, 50, 150] }, // 16 Eki: Bubu'nun yerine
   // ---- Ölüler ve Büyüler ----
   { id: 'raise', cat: 'necro', name: 'Mesai Arkadaşları', desc: 'Toplam {n} ölüyü dirilt', icon: 'raise', k: 'raise', t: [100, 500, 2000] },
   { id: 'fear', cat: 'necro', name: 'Böö!', desc: 'Korku büyüsüyle {n} düşman kaçır', icon: 'fear', k: 'fear', t: [50, 250, 1000] },
@@ -6457,7 +6457,6 @@ const ACH = [
   { id: 'tea', cat: 'fun', name: 'Çay Saati', desc: "Mortimer'a {n} kez çay içir", icon: 'tea', k: 'tea', t: [10, 50, 150] },
   { id: 'crow', cat: 'fun', name: 'Kargalar Dostu', desc: '{n} kargayı ürküt', icon: 'crow', k: 'crow', t: [15, 60, 200] },
   { id: 'tip', cat: 'fun', name: 'Mezar Bahşişi', desc: 'Mezardaki elden {n} kez bahşiş al', icon: 'coin', k: 'tip', t: [1, 5, 20] },
-  { id: 'bubu', cat: 'fun', name: "Bubu'nun Dostu", desc: "Bubu'yu {n} kez rahatsız et", icon: 'skull', k: 'bubu', t: [5, 25, 100] },
   { id: 'frog', cat: 'fun', name: 'Prens Değil', desc: '{n} düşmanı kurbağaya çevir', icon: 'crow', k: 'frog', t: [25, 100, 400] },
   { id: 'surprise', cat: 'fun', name: 'Orman Gözcüsü', desc: 'Haritada {n} sürpriz bul', icon: 'crow', k: 'surprise', t: [5, 20, 50] },
   { id: 'hoard', cat: 'fun', name: 'Cimri Büyücü', desc: 'Bir bölümde 2000 altın biriktir', icon: 'coin', t: [1] },
@@ -6518,7 +6517,7 @@ function achLevelEnd(win) {
 // Kara Defter'de yeni başarımlar için oyundaki simge setlerinden (kendi ico_ach_<id> çizimi olmayanlar)
 const ACH_ICO = { conquer: 'ico_ui_map', iron: 'ico_em_defeat', endless: 'ico_kumsaati', fly: 'ico_ach_crow', mach: 'ico_bomb', early: 'ico_ui_wavecall',
   herolvl: 'ico_ui_heroes', ult: 'ico_em_topkill', burst: 'ico_sp_nm_burst', golem: 'ico_sp_nm_golem', spells: 'ico_ab_shadow', grim: 'ico_sp_book',
-  build: 'ico_bd_archer', rebuild: 'ico_mn_clear', hatch: 'ico_mn_ghoul', flies: 'ico_ab_plague', imbue: 'ico_im_fire', bubu: 'ico_em_boss',
+  build: 'ico_bd_archer', rebuild: 'ico_mn_clear', hatch: 'ico_mn_ghoul', flies: 'ico_ab_plague', imbue: 'ico_im_fire',
   frog: 'ico_hs_merlin_frog', surprise: 'ico_em_treasure', conquer2: 'ico_ui_map', sec_onelife: 'ico_ui_heart', sec_rush: 'ico_ui_fast', sec_army: 'ico_sp_nm_raise', sec_nospell: 'ico_ui_lock' };
 function achIcon(icon, r, id) {
   { const im = id && (spr('ico_ach_' + id) || (ACH_ICO[id] && spr(ACH_ICO[id]))); if (im) { icoFit(im, 0, 0, r * 0.95); return; } } // 16 Eki: Gemini başarım simgesi (nm18_basarim_H)
@@ -6788,12 +6787,11 @@ function setupProps() {
   for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
   const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
   G.teaT = 0;
-  setupZoneItem(); setupBubu();
+  setupZoneItem();
 }
 function updateProps(dt) {
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
-  updateBubu(dt);
   for (const o of G.props || []) {
     o.t += dt;
     if (o.kind === 'crow') {
@@ -6804,7 +6802,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
-  if (tapZoneItem(x, y) || tapBubu(x, y)) return true;
+  if (tapZoneItem(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -6850,7 +6848,7 @@ function crowCaw() {
   }
 }
 function drawProps(air) {
-  if (!air) { drawZoneItem(); drawBubu(); }
+  if (!air) drawZoneItem();
   for (const o of G.props || []) {
     if (o.kind === 'crow') {
       const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
@@ -6908,68 +6906,7 @@ const ZONE_ITEM = {
   ossuary:   { id: 'bones', name: 'Kemik Totemi', sub: 'Totem patlar, kemik kıymıkları saçılır', r: 84, cd: 26 },
   bloodmoon: { id: 'altar', name: 'Kan Sunağı', sub: 'Düşmanların kanını emer, iskeletlerini iyileştirir', r: 96, cd: 30 },
 };
-// ----- Bubu (14 Eki, Caner): Mortimer'ın evcil mezar solucanı. Kale tarafında yol kenarındaki çukurda yaşar; dokununca topraktan fırlar,
-// yere dalıp toprağı patlatarak yoldaki düşmanlara vurur (hasar, sersemletme), bir süre kalkık bekler, gömülür, BUBU.cd sn dinlenir.
-// Görsel: Veo videosu (varliklar/bubu_isle.py): bubu_hole, bubu_atk (hit: vuruş karesi), bubu_idle, bubu_down. 4. bölümden itibaren.
-const BUBU = { on: false, from: 3, cd: 40, r: 92, dmg: [70, 95], stun: 1.6, h: 80, idle: 4 }; // h: kalkık solucanın boyu (dev görünsün); on: 14 Eki Caner çıkardı (kod ve görseller duruyor)
-function setupBubu() {
-  G.bubu = null; if (!BUBU.on || !NECRO || G.idx < BUBU.from || !ANIM_META.bubu_atk) return;
-  const free = (x, y) => x > 50 && x < W - 50 && y > 110 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 38
-    && G.plots.every(p => dist(p.x, p.y, x, y) > 56) && dist(x, y, G.castle.x, G.castle.y - 40) > 95 && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
-    && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60) && !(G.zitem && dist(G.zitem.x, G.zitem.y, x, y) < 80);
-  for (const f of [0.8, 0.72, 0.86, 0.64, 0.9, 0.56]) for (const P of G.paths) {
-    const q = pathPos(P, P.total * f), L = Math.hypot(q.dx, q.dy) || 1;
-    for (const sd of [1, -1]) { const x = q.x - q.dy / L * 52 * sd, y = q.y + q.dx / L * 44 * sd; if (free(x, y)) { G.bubu = { x, y, st: 'hole', t: 0, cd: 8, face: x < q.x ? 1 : -1 }; ['bubu_atk', 'bubu_idle', 'bubu_down'].forEach(loadStrip);
-      if (!save.bubuSeen) { save.bubuSeen = 1; persist(); G.bubuIntro = true; } return; } } // şeritler baştan yüklensin (dokununca beklemesin)
-  }
-}
-function bubuFrame(name) { const F = ANIM_META[name]; if (!spr(name)) loadStrip(name); return F && spr(name) ? F : null; }
-function updateBubu(dt) {
-  const b = G.bubu; if (!b) return;
-  if (G.bubuIntro && !G.banner && !overlay) { G.bubuIntro = false; G.banner = { title: 'YENİ: BUBU', sub: "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin", t: 0, dur: 5 }; }
-  b.t += dt; if (b.st === 'hole' && b.cd > 0) b.cd -= dt;
-  const n = (k) => { const F = ANIM_META[k] || { n: 1 }; return F.n / (F.fps || 12); }; // 16 Eki: şeridin kendi hızı (24 kare/sn)
-  if (b.st === 'atk') {
-    const F = ANIM_META.bubu_atk;
-    if (!b.hit && b.t >= F.hit / (F.fps || 12)) { b.hit = true; bubuStrike(b); }
-    if (b.t >= n('bubu_atk')) { b.st = 'idle'; b.t = 0; }
-  } else if (b.st === 'idle' && b.t >= BUBU.idle) { b.st = 'down'; b.t = 0; sfx('bonefall'); } // 16 Eki: fs_bone pakette yok (sessizdi)
-  else if (b.st === 'down' && b.t >= n('bubu_down')) { b.st = 'hole'; b.t = 0; b.cd = BUBU.cd; }
-}
-function bubuStrike(b) {
-  const q = nearestOnPaths(G.paths, b.x, b.y), cx = (b.x + q.x) / 2, cy = (b.y + q.y) / 2;
-  for (const e of G.enemies) {
-    if (e.dead || e.under || e.def.flying || dist(e.x, e.y, cx, cy) > BUBU.r) continue;
-    damageEnemy(e, roll(BUBU.dmg), 'phys', false, 'blast'); if (!e.dead) stunEnemy(e, e.def.chief ? BUBU.stun * 0.4 : BUBU.stun);
-  }
-  for (let i = 0; i < 26; i++) { const a = rand(Math.PI * 1.05, Math.PI * 1.95), v = rand(80, 220);
-    emit(G.parts, { kind: 'chunk', x: cx + rand(-20, 20), y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 440, col: ['#5a4430', '#7a6448', '#e8dcc0', '#3a2a1e'][i % 4], s0: rand(2, 3.6), s1: 1.5, life: rand(0.6, 1), vr: rand(-12, 12), floor: cy + rand(-6, 10) }); }
-  G.effects.push({ kind: 'ring', x: cx, y: cy, r: BUBU.r, col: '150,255,110', t: 0, dur: 0.55 }); G.effects.push({ kind: 'dust', x: cx, y: cy, t: 0, dur: 0.9 });
-  shakeScreen(7, 0.5); sfx('stomp'); sfx('boom'); haptic('heavy');
-}
-function tapBubu(x, y) {
-  const b = G.bubu; if (!b || dist(x, y, b.x, b.y - 14) > 34) return false;
-  if (b.st !== 'hole') return true;
-  if (b.cd > 0) { floatText(b.x, b.y - 50, Math.ceil(b.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
-  b.st = 'atk'; b.t = 0; b.hit = false; floatText(b.x, b.y - 70, 'Bubu!', '#b8ff8a'); sfx('roar'); tipDone('bubu'); gaDesign('bubu');
-  if (!(save.cnt && save.cnt.bubu)) mortSay('bubu', true); cnt('bubu');
-  return true;
-}
-function drawBubu() {
-  const b = G.bubu; if (!b) return;
-  const name = b.st === 'hole' ? 'bubu_hole' : 'bubu_' + b.st, F = bubuFrame(name) || bubuFrame('bubu_hole'); if (!F) return;
-  const nm = bubuFrame(name) ? name : 'bubu_hole', fi = nm === 'bubu_hole' ? 0 : nm === 'bubu_idle' ? Math.floor(time * F.fps) % F.n : Math.min(F.n - 1, Math.floor(b.t * F.fps));
-  const ready = b.st === 'hole' && b.cd <= 0;
-  if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, b.x, b.y - 8, 36, '140,255,110', 0.18 + 0.12 * Math.sin(time * 4)); ctx.restore(); }
-  const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh;
-  ctx.save(); ctx.translate(b.x, b.y); ctx.scale(b.face, 1);
-  const bim = spr(nm), C = F.cols || F.n, bs = bim.width / (F.fw * C), by = bim.height / (F.fh * Math.ceil(F.n / C)); ctx.drawImage(bim, (fi % C) * F.fw * bs, Math.floor(fi / C) * F.fh * by, F.fw * bs, F.fh * by, -fw * F.fx, -fh * (1 - F.base), fw, fh); // 16 Eki: satırlı şerit
-  ctx.restore();
-  if (b.st === 'hole') {
-    if (!ready) { const k = 1 - b.cd / BUBU.cd; circle(b.x, b.y - 30, 8, 'rgba(20,12,24,0.75)', 'rgba(160,255,140,0.5)', 1.2); ctx.strokeStyle = '#a8ff8a'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(b.x, b.y - 30, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
-    else { const by = b.y - 32 + Math.sin(time * 4) * 2; circle(b.x, by, 9, 'rgba(26,12,22,0.9)', '#f2e6c8', 1.5); drawIcon('play', b.x + 0.5, by, 9, '#f2e6c8'); }
-  }
-}
+// 16 Eki (Caner: "Bubu'yu iptal et, sil"): Mortimer'ın evcil solucanı Bubu kaldırıldı (kod, şeritler ve başarım; git geçmişinde)
 function setupZoneItem() {
   const Z = NECRO && ZONE_ITEM[G.lv.theme]; G.zitem = null; if (!Z) return;
   const free = (x, y) => x > 50 && x < W - 50 && y > 100 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 40
@@ -17907,7 +17844,7 @@ const COMICS = {
   sazlik: [
     { bg: 'gece', cap: 'Sazlık Kıyı. Kara Göl\'ün sığ ucu.', act: [{ s: 'e:cavalry', x: 0.28, y: 0.92, h: 0.5, walk: 1 }, { s: 'e:cavcaptain', x: 0.68, y: 0.95, h: 0.64, walk: 1 }],
       say: [{ who: 'Süvari Kaptanı Aurelius', text: 'Atlar suya girmez mi? Girecekler!', x: 0.45, y: 0.19, to: [0.66, 0.34] }] },
-    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Bubu sabahtan beri aç. Tam vaktinde geldiniz.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
+    { bg: 'balkon', mort: 'stand', say: [{ who: 'Mortimer', text: 'Mahzendekiler sabahtan beri aç. Tam vaktinde geldiniz.', x: 0.3, y: 0.1, to: [0.5, 0.36] }] },
   ],
   kopru: [
     { bg: 'gun', cap: 'Kemik Köprü. Şapele son geçit.', act: [{ s: 'e:heavy', x: 0.22, y: 0.92, h: 0.44, walk: 1 }, { s: 'e:ironwarden', x: 0.62, y: 0.95, h: 0.64, walk: 1 }],
