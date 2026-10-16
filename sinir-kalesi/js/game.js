@@ -2689,13 +2689,13 @@ function drawSoulFlames() {
   for (const z of G.zones) {
     if (z.kind !== 'flames') continue;
     const A = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.9); if (A <= 0) continue;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y, z.r * 1.1, '120,255,150', 0.16 * A); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y, z.r * 1.1, '255,140,50', 0.16 * A); ctx.restore(); // 16 Eki (Caner): yerdeki ateş turuncu
     for (const f of z.fl) {
       const g0 = clamp((z.t - f.t0) / 0.25, 0, 1) * A; if (g0 <= 0) continue;
       const x = z.x + f.dx, y = z.y + f.dy, ph = f.ph + time * 9, hh = f.h * g0 * (0.85 + 0.15 * Math.sin(ph * 1.4) + 0.08 * Math.sin(ph * 3.1)), ww = f.w * (0.9 + 0.1 * Math.sin(ph * 2.2));
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - hh * 0.35, ww * 2.6, '120,255,160', 0.3 * g0); ctx.restore(); // hale (ışık)
-      ctx.save(); // gövde normal karışımla: mor dış, yeşil orta, açık yeşil çekirdek (beyaza dönmesin)
-      for (const [k, col, a] of [[1, '118,48,210', 0.9], [0.72, '70,215,110', 0.95], [0.4, '190,255,200', 0.95]]) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - hh * 0.35, ww * 2.6, '255,150,60', 0.3 * g0); ctx.restore(); // hale (ışık)
+      ctx.save(); // gövde normal karışımla: koyu kızıl dış, turuncu orta, açık sarı çekirdek (beyaza dönmesin)
+      for (const [k, col, a] of [[1, '196,48,18', 0.9], [0.72, '255,136,28', 0.95], [0.4, '255,226,140', 0.95]]) {
         const H = hh * k, Wd = ww * k, tip = Math.sin(ph) * Wd * 0.45 + Math.sin(ph * 1.7) * Wd * 0.2;
         ctx.fillStyle = `rgba(${col},${a * g0})`; ctx.beginPath(); ctx.moveTo(x - Wd, y);
         ctx.quadraticCurveTo(x - Wd * 1.05, y - H * 0.45, x + tip, y - H);
@@ -2707,7 +2707,7 @@ function drawSoulFlames() {
   }
 }
 function drawSoulRune(p, pre, k) {
-  const r = p.ringR || p.splash, a = p.t < 0 ? pre : 1, rot = time * 0.9;
+  const r = (p.ringR || p.splash) * 0.65, a = p.t < 0 ? pre : 1, rot = time * 0.9; // 16 Eki (Caner): yerdeki rün halkası küçük
   ctx.save(); ctx.translate(p.tx, p.ty); ctx.scale(1, 0.45);
   const dk = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.25); dk.addColorStop(0, `rgba(20,0,30,${0.32 * a})`); dk.addColorStop(1, 'rgba(20,0,30,0)'); ctx.fillStyle = dk; ctx.fillRect(-r * 1.3, -r * 1.3, r * 2.6, r * 2.6);
   ctx.globalCompositeOperation = 'lighter';
@@ -2946,24 +2946,25 @@ const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'bla
 // ---- çizgi film kanı (16 Eki, Caner: "kırmızı kan olsun, kurallara uygun en yüksek"): isabette 2-5 küçük damla (sert vuruşta yere minik leke),
 // ölünce ayağının dibinde kısa süre kalan küçük kan lekesi. Parçalanma, büyük kan gölü yok (ESRB "Mild Blood" sınırı). Ayarlardan kapatılır (blood).
 // Heykeller taş tozu, makineler tahta kıymığı saçar (ayardan bağımsız). Süreli hasarlar (zehir, yanma) kan saçmaz.
-const BLOOD_FX = { cd: 0.12, big: 0.1, splat: 9, cols: ['#8a0c16', '#b8141f', '#d8303a'] };
+const BLOOD_FX = { cd: 0.1, big: 0.06, splat: 14, cols: ['#8a0c16', '#c0121e', '#e8303a'] }; // 16 Eki (Caner: "kanı görmüyorum bile"): damlalar iri ve çok, sıçrama bulutu, leke uzun
 const BLOOD_STONE = new Set(['colossus', 'saint']);
 function bleedKind(e) { const t = (e.def.base || e.type).replace(/_(k|y)$/, ''); return e.def.machine || e.siege !== undefined ? 'wood' : BLOOD_STONE.has(t) ? 'stone' : 'blood'; }
 function bloodHit(e, dealt) {
   if ((e.bloodCd || 0) > G.t || dealt <= 0) return;
   const kind = bleedKind(e); if (kind === 'blood' && !setting('blood')) return;
   e.bloodCd = G.t + BLOOD_FX.cd;
-  const h = CHAR_H['enemy_' + e.type] || 30, r = dealt / Math.max(1, e.maxHp), n = clamp(Math.round(3 + r * 20), 3, 6), y0 = e.y - h * (e.def.flying ? 0.4 : 0.55) - (e.def.flying ? 26 : 0);
+  const h = CHAR_H['enemy_' + e.type] || 30, r = dealt / Math.max(1, e.maxHp), n = clamp(Math.round(5 + r * 24), 5, 10), y0 = e.y - h * (e.def.flying ? 0.4 : 0.55) - (e.def.flying ? 26 : 0);
+  if (kind === 'blood') G.parts.push({ kind: 'dot', x: e.x + rand(-2, 2), y: y0, vx: 0, vy: -8, g: 0, drag: 0, col: '#c0121e', s0: 4.5 + r * 8, s1: 7 + r * 10, a: 0.75, life: 0.16, t: 0 }); // isabet anında kızıl sıçrama
   for (let i = 0; i < n; i++) {
     const col = kind === 'blood' ? BLOOD_FX.cols[i % 3] : kind === 'wood' ? (i % 2 ? '#7a5434' : '#a8804e') : (i % 2 ? '#b8b0a4' : '#d8d0c4');
-    emit(G.parts, { kind: 'dot', x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx: rand(-55, 55), vy: -rand(40, 110), g: 560, col, s0: rand(1.5, 2.7), s1: 1, life: rand(0.45, 0.7), floor: e.y + rand(-3, 4) });
+    G.parts.push({ kind: 'dot', x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx: rand(-70, 70), vy: -rand(50, 130), g: 560, drag: 0, col, s0: rand(2.4, 3.8), s1: 1.4, a: 1, life: rand(0.55, 0.85), floor: e.y + rand(-3, 4), t: 0 }); // seyreltmeden (kalabalık kipi de)
   }
-  if (kind === 'blood' && r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, x: e.x + rand(-6, 6), y: e.y + rand(-2, 3), r: rand(3, 5), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 3 });
+  if (kind === 'blood' && r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, x: e.x + rand(-6, 6), y: e.y + rand(-2, 3), r: rand(4, 7), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 6 });
 }
 function bloodDeath(e) {
   if (bleedKind(e) !== 'blood' || !setting('blood') || e.def.flying || e.leaked) return;
   const h = CHAR_H['enemy_' + e.type] || 30;
-  G.decals.push({ kind: 'splat', red: true, x: e.x + rand(-4, 4), y: e.y + 1, r: clamp(h * 0.28, 6, 14), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
+  G.decals.push({ kind: 'splat', red: true, x: e.x + rand(-4, 4), y: e.y + 1, r: clamp(h * 0.36, 8, 18), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
 }
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
@@ -8266,7 +8267,7 @@ function update(dt) {
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
-      if (z.kind === 'flames') { z.fxT = 0.16; const f = z.fl[Math.floor(rand(0, z.fl.length))]; if (z.t < z.life - 0.6) emit(G.parts, { kind: 'glow', add: true, x: z.x + f.dx + rand(-2, 2), y: z.y + f.dy - f.h * 0.8, vx: rand(-8, 8), vy: -rand(25, 50), drag: 1, col: Math.random() < 0.5 ? '130,255,160' : '190,120,255', s0: rand(1.4, 2.4), s1: 0.3, life: rand(0.4, 0.7) }); continue; } // kıvılcım
+      if (z.kind === 'flames') { z.fxT = 0.16; const f = z.fl[Math.floor(rand(0, z.fl.length))]; if (z.t < z.life - 0.6) emit(G.parts, { kind: 'glow', add: true, x: z.x + f.dx + rand(-2, 2), y: z.y + f.dy - f.h * 0.8, vx: rand(-8, 8), vy: -rand(25, 50), drag: 1, col: Math.random() < 0.5 ? '255,190,80' : '255,110,40', s0: rand(1.4, 2.4), s1: 0.3, life: rand(0.4, 0.7) }); continue; } // kıvılcım (16 Eki: turuncu)
       if (z.kind === 'chains') { z.fxT = 0.1; emit(G.parts, { kind: 'chunk', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-40, 40), vy: -rand(40, 90), g: 420, col: '#6a5a4a', s0: 1.6, s1: 1, life: 0.4, vr: rand(-8, 8) }); continue; }
       if (bats) { z.fxT = 0.12; if (live) emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5 - 6, vy: rand(10, 30), g: 140, col: '#b01020', s0: 1.4, s1: 0.5, life: 0.4 }); continue; }
       if (z.kind === 'soulpool') { z.fxT = 0.06; emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.45, vx: rand(-6, 6), vy: -rand(6, 18), col: Math.random() < 0.6 ? '170,110,255' : '120,230,150', s0: rand(4, 7), s1: rand(8, 12), life: rand(0.6, 1) }); continue; }
@@ -17283,11 +17284,14 @@ function mapRoadBox(E) {
   y0 = Math.min(y0, E.end[1] - 120); // şapel yolun ucundan yukarı uzanır
   return (E._box = { x0, x1, y0, y1 });
 }
-function mapCamClamp(X, E) {
+function mapCamClamp(X, E, NB) {
   const z = MAPCAM.z;
-  let lx = VIS.r - (X.x + X.w) * z, hx = VIS.l - X.x * z, ly = VIS.b - (X.y + X.h) * z, hy = VIS.t - X.y * z; // zeminin kutusu
+  let X0 = X.y, X1 = X.y + X.h, B = E ? mapRoadBox(E) : null;
+  // 16 Eki (Caner: "iki seferi tek büyük haritada birleştir"): açık komşu seferin zemini ve yolu da kaydırma sınırına girer (NB: mapNeighbors)
+  if (NB && B) { B = Object.assign({}, B); for (const n of NB) if (n.open) { X0 = Math.min(X0, n.X.y + n.dy); X1 = Math.max(X1, n.X.y + n.X.h + n.dy); B.y0 = Math.min(B.y0, n.B.y0 + n.dy); B.y1 = Math.max(B.y1, n.B.y1 + n.dy); } }
+  let lx = VIS.r - (X.x + X.w) * z, hx = VIS.l - X.x * z, ly = VIS.b - X1 * z, hy = VIS.t - X0 * z; // zeminin kutusu
   if (E) {
-    const B = mapRoadBox(E), px = MAPCAM.padX, pt = MAPCAM.bar + MAPCAM.padY, pb = MAPCAM.bar + MAPCAM.padY;
+    const px = MAPCAM.padX, pt = MAPCAM.bar + MAPCAM.padY, pb = MAPCAM.bar + MAPCAM.padY;
     lx = Math.max(lx, VIS.r - px - B.x1 * z); hx = Math.min(hx, VIS.l + px - B.x0 * z);
     ly = Math.max(ly, VIS.b - pb - B.y1 * z); hy = Math.min(hy, VIS.t + pt - B.y0 * z);
   }
@@ -17298,10 +17302,54 @@ function mapCamClamp(X, E) {
   else if (!MAPCAM.drag) MAPCAM.over *= 0.8;
   MAPCAM.ty = ly > hy ? (ly + hy) / 2 : clamp(MAPCAM.ty, ly, hy);
 }
-function mapEpScroll() { // sefer geçişi: taşma eşiği aşılınca komşu sefere geç; o arada üstte/altta hangi sefere gidileceği yazar
+let G_MAPNB = null; // son çizilen karedeki komşu seferler (bölüm işaretleri için)
+// 16 Eki (Caner: "iki seferi tek büyük haritada birleştir"): seferler dikey haritalar olarak üst üste durur: sonraki sefer (yolun devamı) üstte,
+// önceki altta; zeminler aynı genişlikte (ext). Komşu sefer yanında çizilir; açıksa oraya kaydırılır, kilitliyse sisli (önce bu seferi bitir).
+function mapNeighbors(X) {
+  const out = [];
+  for (const [ne, sgn] of [[mapEp + 1, -1], [mapEp - 1, 1]]) {
+    const E2 = EPISODES[ne - 1]; if (!E2 || !E2.zones || !E2.vert) continue;
+    const bg = regionBg(ne); if (!bg) continue; const X2 = mapExt(bg);
+    const dy = sgn < 0 ? X.y - (X2.y + X2.h) : X.y + X.h - X2.y, dx = X.x - X2.x;
+    out.push({ ep: ne, bg, X: X2, B: mapRoadBox(E2), dx, dy, open: epUnlocked(ne), up: sgn < 0 });
+  }
+  return out;
+}
+function drawMapNeighbor(n, wide) {
+  ctx.save(); ctx.translate(n.dx, n.dy); const X = n.X;
+  if (wide) for (const ax of [X.x, X.x + X.w]) { ctx.save(); ctx.translate(2 * ax, 0); ctx.scale(-1, 1); ctx.drawImage(n.bg, X.x, X.y, X.w, X.h); ctx.restore(); }
+  ctx.drawImage(n.bg, X.x, X.y, X.w, X.h);
+  const R = REGION_BG[n.ep]; if (R && R.lights) { const z = MAPCAM.z, V = [(VIS.l - MAPCAM.tx) / z - n.dx, (VIS.t - MAPCAM.ty) / z - n.dy, (VIS.r - MAPCAM.tx) / z - n.dx, (VIS.b - MAPCAM.ty) / z - n.dy]; drawBgLights(R.lights, V); }
+  // sis: kilitli seferin tamamı; açık seferde ilk açılmamış bölümün ötesi (yukarıdaki seferde yukarısı, aşağıdakinde zaten açık)
+  const ids = epLevels(n.ep), E2 = EPISODES[n.ep - 1];
+  let yF = null; if (!n.open) yF = X.y + X.h; else { const k = ids.findIndex(i => !levelUnlocked(i)); if (k >= 0 && n.up) yF = E2.nodes[Math.min(k, E2.nodes.length - 1)][1] - 110; }
+  if (yF != null) { const soft = 150, x0 = X.x - X.w, w = X.w * 3;
+    ctx.fillStyle = `rgba(${FOG2.col},${FOG2.a})`; ctx.fillRect(x0, X.y, w, Math.max(0, yF - soft - X.y));
+    const gr = ctx.createLinearGradient(0, yF - soft, 0, yF + soft * 0.4); gr.addColorStop(0, `rgba(${FOG2.col},${FOG2.a})`); gr.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = gr; ctx.fillRect(x0, yF - soft, w, soft * 1.4); }
+  ctx.restore();
+}
+function drawMapSeam(n, X) { // iki seferin birleştiği kuşak: dikişi örten bulut ve sis bandı, ortasında sefer adı
+  const y = n.up ? X.y : X.y + X.h, x0 = X.x - X.w, w = X.w * 3;
+  const gr = ctx.createLinearGradient(0, y - 90, 0, y + 90); gr.addColorStop(0, `rgba(${FOG2.col},0)`); gr.addColorStop(0.5, `rgba(${FOG2.col},0.78)`); gr.addColorStop(1, `rgba(${FOG2.col},0)`);
+  ctx.fillStyle = gr; ctx.fillRect(x0, y - 90, w, 180);
+  for (let i = 0; i < 8; i++) { const t = time * 0.3 + i * 1.9, cx = X.x + X.w * ((i + 0.5) / 8) + Math.sin(t) * 16, cy = y + Math.sin(t * 1.2) * 10, rr = 70 + 12 * Math.sin(t * 0.7);
+    const g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr); g2.addColorStop(0, `rgba(${FOG2.col},0.55)`); g2.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = g2; ctx.fillRect(cx - rr, cy - rr, 2 * rr, 2 * rr); }
+  const E2 = EPISODES[(n.up ? n.ep : mapEp) - 1]; // kuşağın üstündeki seferin adı
+  if (E2) { ctx.save(); ctx.translate(X.x + X.w / 2, y); ctx.scale(1 / Math.max(1, MAPCAM.z * 0.55), 1 / Math.max(1, MAPCAM.z * 0.55)); crimsonRibbon(0, 0, (n.up && !n.open ? '🔒 ' : '') + E2.name, 26, 360); ctx.restore(); }
+}
+function mapEpCross(E, X, NB) { // kameranın ortası komşu seferin zeminine geçtiyse asıl harita o olur; kamera aynı görüntüde kalır
+  const z = MAPCAM.z, cy = ((EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2 - MAPCAM.ty) / z;
+  for (const n of NB) {
+    if (!n.open || (n.up ? cy > X.y - 40 : cy < X.y + X.h + 40)) continue; // 40: sınırda gidip gelmesin
+    MAPCAM.ty += n.dy * z; MAPCAM.tx += n.dx * z; mapEp = n.ep; mapSel = null; MAPCAM.key = mapEp + ':' + screenT; MAPCAM.over = 0; mapFogC = null;
+    return true;
+  }
+  return false;
+}
+function mapEpScroll() { // 16 Eki: seferler tek haritada; taşma yalnız kilitli komşu sefer sınırında ("önce bu seferi bitir") gösterilir
   const o = MAPCAM.over, ne = mapEp + (o > 0 ? 1 : -1), k = Math.min(1, Math.abs(o) / MAPCAM.switchAt);
   if (Math.abs(o) < 6 || ne < 1 || ne > EPISODES.length || !EPISODES[ne - 1].zones) return;
-  const open = epUnlocked(ne);
+  const open = epUnlocked(ne); if (open) return;
   if (k >= 1 && open && MAPCAM.drag) { // geç
     mapEp = ne; mapSel = null; screenT = time; MAPCAM.enter = o > 0 ? 'bottom' : 'top'; MAPCAM.over = 0; MAPCAM.drag = false; MAPCAM.vx = MAPCAM.vy = 0; sfx('pick'); haptic('medium');
     return;
@@ -17687,14 +17735,19 @@ function drawMap() {
       MAPCAM.tx += MAPCAM.vx * dtm; MAPCAM.ty += MAPCAM.vy * dtm; const f = Math.exp(-MAPCAM.fric * dtm); MAPCAM.vx *= f; MAPCAM.vy *= f;
     }
     mapIntro(E, bm);
-    mapCamClamp(bm, E);
+    const NB = mapNeighbors(bm);
+    mapCamClamp(bm, E, NB);
+    if (!MAPCAM.intro && !drawMap.cross && mapEpCross(E, bm, NB)) { drawMap.cross = true; try { return drawMap(); } finally { drawMap.cross = false; } } // kamera komşu sefere geçti: o sefer asıl harita olur (görüntü kaymaz)
     // 16 Eki (Caner: "açılışta sağ ve sol karanlıkta kalıyor"): harita ekrandan darsa (açılış yakınlaşmasının uzak görünümü) zemin iki yana
     // aynalanarak sürer, aynalı kısım dışa doğru kararır (orman yanlara devam eder gibi)
     const Lx = bm.x * MAPCAM.z + MAPCAM.tx, Rx = (bm.x + bm.w) * MAPCAM.z + MAPCAM.tx, wide = Lx > VIS.l + 1 || Rx < VIS.r - 1;
     ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
     if (wide && bgI) for (const ax of [bm.x, bm.x + bm.w]) { ctx.save(); ctx.translate(2 * ax, 0); ctx.scale(-1, 1); ctx.drawImage(bgI, bm.x, bm.y, bm.w, bm.h); ctx.restore(); }
+    for (const n of NB) drawMapNeighbor(n, wide);
     drawRegionMap(E, mapEp, st);
+    for (const n of NB) drawMapSeam(n, bm);
     ctx.restore();
+    G_MAPNB = NB;
     if (wide) for (const [x0, dir] of [[Lx, -1], [Rx, 1]]) { // aynalı yanlar: harita kenarında hafif, ekran kenarına doğru koyu
       const x1 = dir < 0 ? VIS.l : VIS.r; if (dir < 0 ? x0 <= x1 : x0 >= x1) continue;
       const xs = x0 - dir * 24, g = ctx.createLinearGradient(xs, 0, x1, 0); // kenarın biraz içinden başlar: dikiş çizgisi seçilmesin
@@ -17719,6 +17772,11 @@ function drawMap() {
       drawMapNode(i, sx, sy, lvlNo(i), k === ids.length - 1, at, fogTest() ? k > 0 : !levelUnlocked(i)); return; }
     drawMapNode(i, nodes[k][0], nodes[k][1], lvlNo(i), k === ids.length - 1, st - 0.15 - k * 0.05);
   });
+  if (E.zones) for (const n of G_MAPNB || []) { // komşu seferin bölüm işaretleri (dokununca o bölümün kartı açılır)
+    const ids2 = epLevels(n.ep), E2 = EPISODES[n.ep - 1];
+    ids2.forEach((i, k) => { const nd = E2.nodes[k]; if (!nd) return; const [sx, sy] = mapToScreen(nd[0] + n.dx, nd[1] + n.dy); if (sy < VIS.t - 60 || sy > VIS.b + 60) return;
+      if (!n.open && k > 0) return; drawMapNode(i, sx, sy, lvlNo(i), k === ids2.length - 1, st - 0.15, !levelUnlocked(i)); });
+  }
   if (MAPFX.banner && time - MAPFX.banner.t0 < 3.2) { // yeni bölge kurdelesi
     const bt = time - MAPFX.banner.t0, a = clamp(Math.min(bt / 0.3, (3.2 - bt) / 0.5), 0, 1), e = easeOutBack(clamp(bt / 0.45, 0, 1));
     ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, 130); ctx.scale(e, e); crimsonRibbon(0, 0, MAPFX.banner.text, 28, 380); ctx.restore();
@@ -18885,16 +18943,19 @@ const KILLER_NAME = { curse: 'Lanet Kuleleri', arrow: 'Kemik Kuleleri', magic: '
 function vaultSettle(firstWin) {
   G.vault = null;
   if (G.chal === 'd' || G.endless) return;
+  // 16 Eki (Caner: "kasa olsun ama orada birikenleri kristale çevirelim"): kalan altın kasada BİRİKİR (save.vault, bölümden bölüme); her VAULT.per altın
+  // 1 kristale döner (bölüm başına en çok cap), artan kasada kalır (en çok VAULT.keep). Tekrar oynanan bölümde kasaya giren altın replay oranında.
   const left = Math.max(0, Math.floor(G.gold)), boss = Math.min(left, Math.floor(G.bossGold || 0)), val = left + boss * (VAULT.boss - 1);
-  let c = Math.min(VAULT.cap, Math.floor(val / VAULT.per)); if (!firstWin) c = Math.round(c * VAULT.replay);
-  G.vault = { gold: left, boss, c, replay: !firstWin, t0: null, n: 0, done: false };
-  if (c > 0 && !G.admin) { save.crystal = (save.crystal || 0) + c; cnt('crystal', c); persist(); } // denemede yalnız gösterilir
+  const add = Math.round(val * (firstWin ? 1 : VAULT.replay)), bank0 = Math.floor(save.vault || 0), tot = bank0 + add;
+  const c = Math.min(VAULT.cap, Math.floor(tot / VAULT.per)), bank1 = Math.min(tot - c * VAULT.per, VAULT.keep);
+  G.vault = { gold: left, add, bank0, bank1, boss, c, replay: !firstWin, t0: null, n: 0, done: false };
+  if (!G.admin) { save.vault = bank1; if (c > 0) { save.crystal = (save.crystal || 0) + c; cnt('crystal', c); } persist(); } // denemede yalnız gösterilir
 }
 function drawVault(k, cx, y) {
   const V = G.vault; if (!V || k < 1.35) return;
   if (V.t0 == null) V.t0 = time;
   const u = clamp((time - V.t0 - 0.25) / 1.3, 0, 1), e = 1 - (1 - u) ** 3, a = easeOutBack(clamp((time - V.t0) / 0.35, 0, 1));
-  const g = Math.round(V.gold * (1 - e * (V.c > 0 ? 1 : 0))), n = Math.floor(V.c * e + 1e-6);
+  const g = Math.round(V.add * (1 - e)), n = Math.floor(V.c * e + 1e-6), bank = Math.round(lerp(V.bank0, V.bank1, e)); // altın kasaya akar, dolan her VAULT.per kristale döner
   if (n > V.n) { V.n = n; sfx('coin', 1 + n * 0.06); }
   if (u >= 1 && !V.done) { V.done = true; if (V.c > 0) sfx('lootchime'); }
   const w = 470, x0 = cx - w / 2;
@@ -18910,6 +18971,12 @@ function drawVault(k, cx, y) {
       emit(uiParts, { kind: 'glow', add: true, x: gx + rand(-4, 4), y: y + rand(-4, 4), vx: (x0 + 352 - gx) * rand(1.6, 2.2), vy: -rand(20, 60), drag: 2.2, col: Math.random() < 0.6 ? '255,220,110' : '210,150,255', s0: rand(3, 5), s1: 1, life: 0.45 });
     }
   } else fitTxt(`${VAULT.per} altında 1 kristal`, x0 + 344, y + 1, 112, 14, '#a89878', 'left', '800', FONT_B, false, 11);
+  { // kasadaki birikim: bir sonraki kristale dolum çubuğu
+    const bw = w - 60, bx = x0 + 30, by = y + 30, f = clamp(bank / VAULT.per, 0, 1); // yazı çubuğun içinde (altına koyunca düğmelere biniyordu)
+    roundRect(bx, by - 8, bw, 16, 8, 'rgba(10,6,18,0.8)', 'rgba(212,171,90,0.6)', 1);
+    if (f > 0) roundRect(bx + 1, by - 7, Math.max(14, (bw - 2) * f), 14, 7, 'rgba(212,171,90,0.75)');
+    txt(`Kasada ${bank} / ${VAULT.per}`, cx, by + 0.5, 12, '#fff2d0', 'center', '800', FONT_B, true);
+  }
   ctx.restore();
 }
 // ---- zafer kutlaması (16 Eki): zafer paneli CELEB.dur sn gecikir. İlk sürüm (zıplama, "Yaşasın!" yazıları, tezahürat) Caner'e saçma geldi:

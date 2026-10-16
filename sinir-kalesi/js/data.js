@@ -1472,7 +1472,7 @@ const CRYSTAL = { boss: 2, final: 8, heroic: 2, usta: 1.5 };
 // 16 Eki (Caner: "bölüm bitince kalan altının anlamı olmuyor"; araştırma: PvZ kalan savunma bonusu + BTD6 tekrar oynamada %20): Mortimer'ın Kasası.
 // Zaferde kalan altın Ruh Kristali'ne döner: per altın = 1 kristal, bölüm başına en çok cap; boss'tan düşüp harcanmayan altın boss kat sayılır;
 // bölüm (o modda) daha önce kazanıldıysa replay oranı. Günün Sınavı ve Sonsuz Gece'de yok.
-const VAULT = { per: 200, cap: 3, replay: 0.2, boss: 2 }; // 150/5 kristal ekonomisini 2-3 katlıyordu (boss 2, komutan 60): 40 bölümde en çok 120
+const VAULT = { per: 200, cap: 3, replay: 0.2, boss: 2, keep: 400 }; // keep: kasada biriken en çok altın (16 Eki: birikim) // 150/5 kristal ekonomisini 2-3 katlıyordu (boss 2, komutan 60): 40 bölümde en çok 120
 // 16 Eki (Caner: "bana özel bir bölüm, 2 dalga oynayınca bitsin, son güncellemeleri orada denerim; yayında kaldırırız"): Deneme Alanı.
 // Haritada yalnız TEST_OPEN açıkken görünür (game.js chal 'a'); ilerleme, yıldız, başarım ve kristal kaydedilmez.
 const ADMIN_TEST = { level: 'Kara Göl Geçidi', gold: 1500, lives: 20, waves: [

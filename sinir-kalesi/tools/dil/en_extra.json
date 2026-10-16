@@ -1318,6 +1318,10 @@
   [
    "{} altında 1 kristal",
    "1 crystal per {} gold"
+  ],
+  [
+   "Kasada {} / {}",
+   "Vault: {} / {}"
   ]
  ]
 }
