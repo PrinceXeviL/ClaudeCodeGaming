@@ -588,7 +588,9 @@
   "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "sperrt alle 8 s den stärksten Feind 2 s in einen Käfig",
   "Ruh!": "Seele!",
   "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Seelenblitz aus gesammelten Seelen: das Skelett des Getroffenen wird sichtbar",
-  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Seelendiebe saugen die Seele des Feindes aus: sie durchdringen Rüstung und verlangsamen. Baue ihn gegen gepanzerte schwere Infanterie mit Schilden. Ab Stufe 3 schlagen gesammelte Seelen als Blitz ein."
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Seelendiebe saugen die Seele des Feindes aus: sie durchdringen Rüstung und verlangsamen. Baue ihn gegen gepanzerte schwere Infanterie mit Schilden. Ab Stufe 3 schlagen gesammelte Seelen als Blitz ein.",
+  "+3 dirilen · +%10 güç · ceset +2 sn": "+3 Erweckte · +10 % Kraft · Leiche +2 s",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 Erweckte · +25 % Leben · +25 % Schaden · Leiche +2 s"
  },
  "tpl": [
   [

@@ -588,7 +588,9 @@
   "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "toutes les 8 s, enferme l’ennemi le plus fort 2 s dans une cage",
   "Ruh!": "Âme !",
   "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Éclair d’âmes des âmes accumulées : le squelette de l’ennemi frappé apparaît",
-  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Les voleurs d’âmes aspirent l’âme de l’ennemi : ils percent l’armure et ralentissent. À construire contre l’infanterie lourde blindée à bouclier. Au rang 3, les âmes accumulées frappent en éclair."
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Les voleurs d’âmes aspirent l’âme de l’ennemi : ils percent l’armure et ralentissent. À construire contre l’infanterie lourde blindée à bouclier. Au rang 3, les âmes accumulées frappent en éclair.",
+  "+3 dirilen · +%10 güç · ceset +2 sn": "+3 relevés · +10 % de puissance · cadavre +2 s",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 relevés · +25 % de vie · +25 % de dégâts · cadavre +2 s"
  },
  "tpl": [
   [

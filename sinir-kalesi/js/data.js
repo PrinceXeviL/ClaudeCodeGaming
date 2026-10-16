@@ -801,9 +801,10 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 // her seviye o büyüye 1 puan verir; puan, büyünün 5 kademesinden sıradakini açar. Her kademe beklemeyi %4 kısaltır, 5. kademe yeni etki.
 // lv: seviye eşikleri (toplam XP; 2..6. seviye), cast: büyü başına XP + per × etkilenen düşman (en çok 10). ~55 XP/bölüm: 1. seferin
 // sonunda 5. kademe. Sonradan açılan büyü geç kalmasın: açıldığı bölüm × catchup XP ile başlar (Genesis: geç açılanlar ek XP'li gelir).
+const RAISE_MAX = [4, 7, 10, 13, 16, 20]; // Ölüleri Diriltme: kademeye göre aynı anda en çok dirilen (game.js spellStats)
 const GRIM = {
   lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
-  nm_raise: ['+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%10 güç · ceset +1,5 sn', '+1 dirilen · +%25 can · +%25 hasar · ceset +1,5 sn'], // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
+  nm_raise: ['+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn'], // 16 Eki (Caner): en çok 4/7/10/13/16/20 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],
@@ -814,7 +815,7 @@ const GRIM = {
 const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], ult2: [0, 3, 6, 10, 14, 18], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // ult2: ikinci aktif (13 Eki) // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
-  nm_raise: { name: 'Ölüleri Diriltme', cd: 38, /* 16 Eki (Caner): 45 → 38, biraz daha sık */ corpse: 6, col: '190,80,255', max: 3, /* 13 Eki (Caner): 1. seviyede en çok 3 ölü, her kademe +1 (5. kademede 8) */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
+  nm_raise: { name: 'Ölüleri Diriltme', cd: 30.4, /* 16 Eki (2, Caner): bekleme %20 kısa (38 → 30,4) */ /* 16 Eki (Caner): 45 → 38, biraz daha sık */ corpse: 6, col: '190,80,255', max: 4, /* 13 Eki: 1. seviyede 3, kademe başına +1 (en çok 8); 16 Eki (Caner: "en son seviyede 20"): kademelere göre RAISE_MAX */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
     desc: 'Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur',
     short: 'Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü' },
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
