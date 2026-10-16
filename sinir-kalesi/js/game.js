@@ -1004,7 +1004,7 @@ function painVoice(e) {
 // Tarayıcılar ilk dokunuştan önce ses çalmaya izin vermez. Parçalar yüksek masterlandığı için kısık çalınır.
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
-  menu:   { file: 'muzik_menu.mp3',  gain: 0.27 }, // 15 Eki (Caner): %10 kısık
+  menu:   { file: 'muzik_menu.mp3',  gain: 0.32 }, // 15 Eki (Caner): %10 kısık. 16 Eki (Caner: başı kısık, coştuğu yerler aşırı yüksek): parça dengelendi (dynaudnorm + kompresör + loudnorm; fark 18 → 5,7 dB, orijinal varliklar/ham/ses/muzik_orijinal), ortalama düştüğü için 0,27 → 0,32
   battle: { file: 'muzik_savas.mp3', gain: 0.15, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
   boss:   { file: 'muzik_boss.mp3',  gain: 0.2, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
