@@ -553,7 +553,8 @@ const SOUND = {
   flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı
   achieve: { vol: 0.55, gap: 1, max: 1 }, // Kara Defter: başarım kademesi açıldı
   titlego: { vol: 0.75, gap: 1, max: 1 }, // başlıktan haritaya ruh girdabı
-  titlesoft: { vol: 0.42, gap: 1, max: 1 }, // başlıktan haritaya sade geçiş
+  titlesoft: { vol: 0.62, gap: 1, max: 1 }, // başlıktan haritaya sade geçiş (16 Eki: duyulmuyordu, 0,42 → 0,62)
+  mapfly: { vol: 0.5, gap: 2, max: 1 }, // harita açılış yakınlaşması: kamera süzülürken alçak gece rüzgârı
   flyswarm: { vol: 0.32, gap: 0.6, max: 2, rate: [0.9, 1.12] }, // sürü düşmanın çevresinde vızıldarken // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
   skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
   lootchime: { vol: 0.5, gap: 0.5, max: 1 },                         // ganimet çıkınca kristal + altın çınlaması                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
@@ -1055,6 +1056,10 @@ function musicSeam(T, dt) {
 }
 function startMusic() {
   if (MUSIC.started) return;
+  // 16 Eki (Caner: "oynaya basınca müzik bir an kesiliyor"): ses bağlamı müzik çalmadan ÖNCE kurulur ve çalışır olmalı. Önce müzik düz ses öğesi
+  // olarak başlayıp ilk dokunuşta (OYNA) bağlam kurulunca çalan öğe WebAudio'ya bağlanıyordu, iOS bunu kısa bir kesintiyle yapıyor.
+  initAudio();
+  if (actx && actx.state !== 'running') { actx.resume().then(() => { if (actx && actx.state === 'running') startMusic(); }).catch(() => {}); return; } // dokunuşu bekler
   MUSIC.started = true;
   const T0 = MUSIC.tracks.menu, el = musicEl(T0);
   // 14 Eki (Caner: Oyna'ya basınca müzik durup yeniden başlıyor / kısılıyor): ses yolu çalmadan ÖNCE kurulur (çalan öğeyi sonradan
@@ -16670,6 +16675,7 @@ function mapIntro(E, X) {
     MAPCAM.intro = { t0: time, z1: MAPCAM.z, z0: Math.max(0.9, (VIS.r - VIS.l) / X.w * MAP_INTRO.fit), n, f0: [X.x + X.w / 2, Math.min(X.y + X.h - 200, n[1] + MAP_INTRO.lead)] }; return mapIntro(E, X); // açılmış (aşağıdaki) bölümlerden kaldığın bölüme doğru çıkar; sisli yukarıdan başlamaz
   }
   const k = clamp((time - I.t0 - MAP_INTRO.delay) / MAP_INTRO.dur, 0, 1), e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
+  if (!I.snd && k > 0) { I.snd = true; sfx('mapfly', 0.8); } // uçuş sesi (yavaş çalınır: ~3 sn, daha alçak)
   const z = lerp(I.z0, I.z1, e), fx = lerp(I.f0[0], I.n[0], e), fy = lerp(I.f0[1], I.n[1], e);
   const cx = (VIS.l + VIS.r) / 2, cy = (EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2;
   MAPCAM.z = z; MAPCAM.tx = cx - fx * z; MAPCAM.ty = cy - fy * z; MAPCAM.vx = MAPCAM.vy = 0;
