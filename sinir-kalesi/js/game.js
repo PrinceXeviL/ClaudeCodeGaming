@@ -580,6 +580,7 @@ const SOUND = {
   starthud: { vol: 0.6, gap: 0.05, max: 3 },
   starchime: { vol: 0.6, gap: 0.05, max: 3 },
   flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı
+  gearon: { vol: 0.6, gap: 0.3, max: 1 }, // 16 Eki: komutana eşya takıldı (ElevenLabs: kemik toka + büyü parıltısı)
   achieve: { vol: 0.55, gap: 1, max: 1 }, // Kara Defter: başarım kademesi açıldı
   titlego: { vol: 0.75, gap: 1, max: 1 }, // başlıktan haritaya ruh girdabı
   titlesoft: { vol: 0.62, gap: 1, max: 1 }, // başlıktan haritaya sade geçiş (16 Eki: duyulmuyordu, 0,42 → 0,62)
@@ -7961,8 +7962,9 @@ function update(dt) {
 
 // ================= ÇİZİM =================
 // Başlıklar ve butonlar için sert, oyunvari Russo One; metinler için kalın, yuvarlak Rubik (ikisi de Türkçe + Kiril; fonts/ içinde gömülü).
-const FONT_T = '"Russo One", "Arial Black", system-ui, sans-serif';
-const FONT_B = '"Rubik", system-ui, -apple-system, "Segoe UI", sans-serif';
+// 16 Eki (Caner: yazı tipi 5. seçenek Baloo 2): başlık BalooT (hep 800), metin BalooB; Kiril harfler yığındaki Russo One / Rubik'ten gelir
+const FONT_T = '"BalooT", "Russo One", "Arial Black", system-ui, sans-serif';
+const FONT_B = '"BalooB", "Rubik", system-ui, -apple-system, "Segoe UI", sans-serif';
 if (document.fonts && document.fonts.load) {
   document.fonts.load(`40px ${FONT_T}`).catch(() => {});
   document.fonts.load(`800 20px ${FONT_B}`).catch(() => {});
@@ -14309,7 +14311,7 @@ const CREDITS = [
     ['Müzik', 'Google Gemini (Lyria) ile üretildi']]],
   ['SES', [['Ses efektleri', 'Kenney · kenney.nl · CC0'], ['Düşman acı ve ölüm sesleri', 'Michel Baradari · CC-BY 3.0'],
     ['', '"11 male human pain/death sounds" · opengameart.org'], ['Kılıç sesleri', 'StarNinjas · opengameart.org · CC0'], ['Veba Kazanı patlaması', 'lisanslı ses kütüphanesi'], ['Mortimer\'ın sesi', 'ElevenLabs · Callum (yapay zekâ seslendirme)'], ['Fil, akbaba, büyü, borazan ve arbalet efektleri', 'ElevenLabs Sound Effects · elevenlabs.io'], ['Diğer sesler', 'oyunda sentezlendi']]],
-  ['YAZI TİPİ', [['Metal Mania · Russo One · Rubik', 'SIL Open Font License']]],
+  ['YAZI TİPİ', [['Baloo 2 · Metal Mania · Russo One · Rubik', 'SIL Open Font License']]],
 ];
 function drawCredits() {
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
@@ -14384,7 +14386,7 @@ function drawHeroOverlays() {
     buttons.length = 0; const k = time - gearT, pw = 900, ph = 490, px = W / 2 - pw / 2, py = H / 2 - ph / 2 + 10;
     ctx.fillStyle = `rgba(8,4,16,${0.7 * clamp(k / 0.25, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
     const e = easeOutBack(clamp(k / 0.4, 0, 1)); ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(e, e); ctx.translate(-W / 2, -H / 2);
-    pauseFrame(px, py, pw, ph); drawGearPanel(gearHeroId, px, py, pw, ph, k);
+    pauseFrame(px, py, pw, ph); drawGearPanel(gearHeroId, px, py, pw, ph, k); drawGearFly();
     roundBtn('hg_close', px + pw - 34, py + 34, 22, 'close', () => { gearHeroId = null; }, { style: 'red', appear: k - 0.2 });
     ctx.restore();
   }
@@ -14478,11 +14480,42 @@ function drawHeroPage(id) {
 }
 let heroTreeId = null, heroTreeT = 0;
 // ---- EŞYALAR panosu (14 Eki): solda komutan ve 4 yuva, sağda çanta (sayfalı ızgara), altta seçili eşyanın ayrıntısı ----
-let gearHeroId = null, gearT = 0, gearSel = null, gearPage = 0, gearMeltAt = -9;
+let gearHeroId = null, gearT = 0, gearSel = null, gearPage = 0, gearMeltAt = -9, gearHint = null;
 const gearNewFor = (hid) => (save.gear || []).filter(g => g.nw && gearFits(g, hid) && !gearWearer(g)).length;
-function equipGear(hid, it) {
+function equipGear(hid, it, quiet) {
   const w = gearWearer(it); if (w) delete save.equip[w][it.s];
-  save.equip = save.equip || {}; (save.equip[hid] = save.equip[hid] || {})[it.s] = it.id; persist(); sfx('levelup');
+  save.equip = save.equip || {}; (save.equip[hid] = save.equip[hid] || {})[it.s] = it.id; persist(); if (!quiet) sfx('levelup');
+}
+// 16 Eki (Caner: "eşyaya dokun, sonra komutanın üstündeki boş yere dokun; takılınca animasyon ve ses"): eşya çantadan yuvaya
+// süzülerek uçar (yay çizer, büyüyüp küçülür), yuvaya oturunca ruh halkaları + yeşil/mor/kızıl kıvılcım ve 'gearon' sesi.
+const GEAR_POS = {}, GEAR_FLY = { dur: 0.42 };
+let gearFly = null;
+function gearEquipFly(hid, it, from, to) {
+  equipGear(hid, it, true); gearSel = it.id; it.nw = 0; gearHint = null; persist();
+  gearFly = { id: it.id, x0: from[0], y0: from[1], x1: to[0], y1: to[1], t0: time, done: false };
+  sfx('pick');
+}
+function drawGearFly() {
+  const F = gearFly; if (!F) return;
+  const it = gearOf(F.id); if (!it) { gearFly = null; return; }
+  const k = clamp((time - F.t0) / GEAR_FLY.dur, 0, 1), e = k * k * (3 - 2 * k);
+  if (k < 1) {
+    const x = lerp(F.x0, F.x1, e), y = lerp(F.y0, F.y1, e) - Math.sin(e * Math.PI) * 70, sc = 1 + Math.sin(e * Math.PI) * 0.45, R = EQUIP.rar[it.r];
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 46 * sc, R.rgb, 0.5); ctx.restore();
+    if (Math.random() < 0.7) emit(uiParts, { kind: 'glow', add: true, x: x + rand(-8, 8), y: y + rand(-8, 8), vx: rand(-20, 20), vy: rand(-20, 20), drag: 3, col: R.rgb, s0: rand(3, 5), s1: 0.5, life: 0.4 });
+    ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(e * Math.PI) * 0.35); drawGearIcon(it, 0, 0, 24 * sc); ctx.restore();
+    return;
+  }
+  if (!F.done) { F.done = true; sfx('gearon'); haptic('medium');
+    const cols = ['120,255,150', '200,140,255', '255,80,90', EQUIP.rar[it.r].rgb]; // necro renkleri: yeşil + mor + kızıl (+ nadirlik)
+    for (let i = 0; i < 34; i++) { const an = rand(0, Math.PI * 2), v = rand(60, 200); emit(uiParts, { kind: 'glow', add: true, x: F.x1, y: F.y1, vx: Math.cos(an) * v, vy: Math.sin(an) * v - 30, drag: 3, col: cols[i % 4], s0: rand(3, 6), s1: 0.5, life: rand(0.45, 0.85) }); } }
+  const t = time - F.t0 - GEAR_FLY.dur; if (t > 0.7) { gearFly = null; return; }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (let q = 0; q < 2; q++) { const tq = clamp((t - q * 0.12) / 0.5, 0, 1); if (tq <= 0) continue;
+    ctx.globalAlpha = (1 - tq) * 0.9; ctx.strokeStyle = q ? 'rgba(200,140,255,1)' : 'rgba(140,255,170,1)'; ctx.lineWidth = 4 * (1 - tq) + 1;
+    ctx.beginPath(); ctx.arc(F.x1, F.y1, 30 + tq * 46, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.globalAlpha = Math.max(0, 1 - t / 0.5); glow(ctx, F.x1, F.y1, 60, EQUIP.rar[it.r].rgb, 0.55);
+  ctx.restore();
 }
 function unequipGear(hid, it) { if (save.equip && save.equip[hid] && save.equip[hid][it.s] === it.id) { delete save.equip[hid][it.s]; persist(); sfx('pick'); } }
 function meltGear(it) {
@@ -14505,12 +14538,18 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
   ctx.fillStyle = bg; ctx.fillRect(Lx - 140, py + 80, 280, 260);
   const im = heroSprite(d);
   if (im) { const ih = 190, iw = ih * im.width / im.height; ctx.drawImage(im, Lx - iw / 2, py + 312 - ih + Math.sin(time * 2) * 2, iw, ih); }
+  const SI = gearOf(gearSel), canPut = SI && gearFits(SI, hid) && gearWearer(SI) !== hid;
   for (const sl of EQUIP.slots) {
-    const [x, y] = slotXY[sl], it = gearOf(E[sl]);
+    const [x, y] = slotXY[sl], flying = gearFly && !gearFly.done && gearFly.x1 === x && gearFly.y1 === y, it = flying ? null : gearOf(E[sl]), want = canPut && SI.s === sl;
+    if (want) { const pu = 0.5 + 0.5 * Math.sin(time * 6); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 62, EQUIP.rar[SI.r].rgb, 0.25 + 0.25 * pu); ctx.restore();
+      roundRect(x - 45 - pu * 2, y - 45 - pu * 2, 90 + pu * 4, 90 + pu * 4, 14, null, '#b8ff8a', 2.5); }
     gearCell(it, x, y, 78, it && gearSel === it.id);
     if (!it) { ctx.save(); ctx.globalAlpha *= 0.22; drawGearIcon(sl === 'weapon' ? EQUIP.wpn[hid] : sl, x, y, 22); ctx.restore(); }
     txt(EQUIP.slotName[sl], x, y + 52, 13, it ? EQUIP.rar[it.r].col : '#b8acc8', 'center', '800', FONT_B, false);
-    buttons.push({ key: 'gs_' + sl, x: x - 42, y: y - 42, w: 84, h: 84, fn: () => { gearSel = it ? it.id : null; sfx('pick'); } });
+    buttons.push({ key: 'gs_' + sl, x: x - 42, y: y - 42, w: 84, h: 84, fn: () => {
+      if (want) { gearEquipFly(hid, SI, GEAR_POS[SI.id] || [x, y], [x, y]); return; } // seçili eşya bu yuvaya takılır
+      if (canPut) { sfx('error'); gearHint = { t: time, text: `Bu eşya ${EQUIP.slotName[SI.s]} yuvasına takılır` }; return; }
+      gearSel = it ? it.id : null; sfx('pick'); } });
   }
   const B = gearBonus(hid), lines = Object.keys(GEAR_TXT).filter(q => B[q] > 0).map(q => GEAR_TXT[q].replace('{}', Math.round(B[q] * 100)));
   if (!lines.length) txt('Takılı eşya yok', Lx, py + 360, 15, '#9a8eac', 'center', '700', FONT_B, false);
@@ -14530,6 +14569,7 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
     const it = bag[gearPage * per + i], x = gx + (i % C) * cs + cs / 2 - 4, y = gy + Math.floor(i / C) * cs + cs / 2;
     gearCell(it, x, y, cs - 8, it && gearSel === it.id, it && !gearFits(it, hid));
     if (!it) continue;
+    GEAR_POS[it.id] = [x, y];
     const w = gearWearer(it);
     if (w) { circle(x + 24, y - 24, 9, `rgb(${HEROES[w].aura})`, '#1a0e20', 2); txt(HEROES[w].name[0], x + 24, y - 23, 11, '#fff', 'center', '800', FONT_B, false); }
     if (it.nw && gearFits(it, hid)) txt('YENİ', x, y + 26, 11, '#9dff8a', 'center', '800', FONT_B, true);
@@ -14539,16 +14579,17 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
   // ayrıntı
   const dy = py + 352, dw = C * cs - 8, it = gearOf(gearSel);
   roundRect(gx - 4, dy, dw, 116, 12, 'rgba(10,6,18,0.6)', 'rgba(207,196,168,0.35)', 1.2);
-  if (!it) { fitTxt('Bir eşyaya dokun, sonra TAK', gx - 4 + dw / 2, dy + 58, dw - 30, 15, '#9a8eac', 'center', '700', FONT_B, false, 11); return; }
+  if (gearHint && time - gearHint.t < 2) { fitTxt(gearHint.text, gx - 4 + dw / 2, dy - 14, dw - 10, 14, '#ff9a8a', 'center', '800', FONT_B, false, 11); }
+  if (!it) { fitTxt('Bir eşyaya dokun, sonra komutandaki yuvaya dokun', gx - 4 + dw / 2, dy + 58, dw - 30, 15, '#9a8eac', 'center', '700', FONT_B, false, 11); return; }
   const R = EQUIP.rar[it.r], fits = gearFits(it, hid), mine = gearWearer(it) === hid;
   gearCell(it, gx + 40, dy + 44, 62, false, !fits);
-  fitTxt(gearName(it), gx + 82, dy + 22, 170, 19, R.col, 'left', '400', FONT_T, false, 11);
-  fitTxt(`${R.name} · ${EQUIP.slotName[it.s]}`, gx + 82, dy + 44, 170, 13, '#b8acc8', 'left', '800', FONT_B, false, 9);
-  gearDesc(it).forEach((l, i) => fitTxt(l, gx + 82, dy + 68 + i * 20, 170, 14, '#b8ff9a', 'left', '800', FONT_B, false, 9));
+  fitTxt(gearName(it), gx + 82, dy + 22, 146, 19, R.col, 'left', '400', FONT_T, false, 11);
+  fitTxt(`${R.name} · ${EQUIP.slotName[it.s]}`, gx + 82, dy + 44, 146, 13, '#b8acc8', 'left', '800', FONT_B, false, 9);
+  gearDesc(it).forEach((l, i) => fitTxt(l, gx + 82, dy + 68 + i * 20, 146, 14, '#b8ff9a', 'left', '800', FONT_B, false, 9));
   if (!fits) { const o = HERO_ORDER.find(h => EQUIP.wpn[h] === it.k); fitTxt(`Yalnız ${HEROES[o].name} kullanır`, gx + 40 - 30, dy + 98, 150, 12, '#ff9a8a', 'left', '800', FONT_B, false, 8); }
   const bx = gx - 4 + dw - 72;
   if (mine) gameButton('g_off', bx, dy + 32, 124, 44, 'ÇIKAR', () => unequipGear(hid, it), 'wood', { size: 15 });
-  else if (fits) gameButton('g_on', bx, dy + 32, 124, 44, 'TAK', () => equipGear(hid, it), 'green', { size: 16, shine: true });
+  else if (fits) gameButton('g_on', bx, dy + 32, 124, 44, 'TAK', () => gearEquipFly(hid, it, GEAR_POS[it.id] || [gx + 40, dy + 44], slotXY[it.s]), 'green', { size: 16, shine: true });
   const sure = time - gearMeltAt < 2.5;
   gameButton('g_melt', bx, dy + 84, 124, 40, sure ? 'EMİN MİSİN?' : `ERİT +${R.melt}`, () => { if (time - gearMeltAt < 2.5) { meltGear(it); gearMeltAt = -9; } else gearMeltAt = time; }, 'red', { size: sure ? 12 : 14 });
   if (!sure) drawIconArt('crystal', paintCrystal, bx + 50, dy + 82, 8);
@@ -15974,7 +16015,7 @@ if (document.fonts) {
   if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { FONT_VER++; }); // yazı tipleri sonradan gelirse önbellekli yazılar yenilenir
   // yazı tipi sayfası beklemeden yüklendiği için (index.html media=print) yüzler sonradan tanımlanır: gelene kadar yarım saniyede bir dene
   const fontPoll = setInterval(() => {
-    Promise.all(['80px "Metal Mania"', '40px "Russo One"', '800 20px "Rubik"'].map(f => document.fonts.load(f))).then(r => {
+    Promise.all(['80px "Metal Mania"', '40px "BalooT"', '700 20px "BalooB"'].map(f => document.fonts.load(f))).then(r => {
       if (r.every(x => x.length)) { clearInterval(fontPoll); FONT_VER++; }
     }).catch(() => {});
   }, 500);
