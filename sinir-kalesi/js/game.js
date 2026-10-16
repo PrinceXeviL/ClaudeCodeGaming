@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|bubu_(?:idle|atk)|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -2161,7 +2161,6 @@ function startLevel(idx, chal = null) {
 
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
-  if (BUBU.on && NECRO && idx >= BUBU.from) ['bubu_idle', 'bubu_atk'].forEach(n => keep.add(n)); // 16 Eki: yeni Bubu
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
@@ -4820,7 +4819,6 @@ function updateEnemy(e, dt) {
       }
     }
   }
-  if (bubuHold(e, dt)) return; // Bubu'nun ağzında / havada
   if (twistStep(e, dt)) return; // kasırgada dönüyor (havada)
   if (flingStep(e, dt)) return; // meteor savurması: havada (balistik); sersemleme, blok, dirilme bekler
   if (e.reviveT > 0) { e.reviveT -= dt; return; } // diriliyor: yerinden kalkar
@@ -6486,8 +6484,7 @@ const MORT_LINES = {
   boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
-  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'], // göl solucanı Bubu (kodla çizilen dokunaç) kalıyor; silinen Veo Bubu'su değil
-  bubu: ['Bubu! Getir!', 'Aferin Bubu. Kim iyi solucan?', 'Bubu ısırmaz. Fırlatır.'], // 16 Eki: yeni Bubu
+  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, gölün sahibi!'],
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
@@ -7106,106 +7103,6 @@ function propSpot(rnd, pad) {
   }
   return null;
 }
-// ----- Bubu (16 Eki, Caner: yeniden, sıfırdan tasarım): Mortimer'ın evcil mezar yılan-solucanı. Kale tarafında yol kenarındaki çukurda hep
-// dışarıda bekler (salınır). Dokununca yoldaki bir düşmanı kafasından kapar, havaya kaldırır, yolun gerisine (girişe doğru) uzağa fırlatır:
-// düştüğü yerde hasar, çevresine küçük hasar, sersemletme. Boss, makine, uçan kapılmaz. BUBU.cd sn dinlenir.
-// Görsel: Gemini (varliklar/ham/nm_bubu2.jpg) + Veo (varliklar/bubu2_isle.py): bubu_idle (döngü), bubu_atk; meta: mouth (karede ağzın yeri),
-// entry (bekleme döngüsünden kesintisiz giriş: idle sonu → atk 0, idle 27 → atk 26), bite (çene kapanır), throw (bırakır), back (bitince idle karesi).
-const BUBU = { on: true, from: 3, cd: 30, h: 96, reach: 100, back: 170, dmg: [90, 130], splash: 42, splashK: 0.35, stun: 1.4, flyT: 0.9, arc: 90, pull: 50 };
-function setupBubu() {
-  G.bubu = null; if (!BUBU.on || !NECRO || G.idx < BUBU.from || !ANIM_META.bubu_atk || !ANIM_META.bubu_idle) return;
-  const free = (x, y) => x > 60 && x < W - 60 && y > BUBU.h + 40 && y < H - 60 && !(x < 520 && y > H - 130) && nearestOnPaths(G.paths, x, y).d > 38
-    && G.plots.every(p => dist(p.x, p.y, x, y) > 60 && !(Math.abs(p.x - x) < 70 && p.y < y + 20 && p.y > y - BUBU.h - 30)) && dist(x, y, G.castle.x, G.castle.y - 40) > 100 // gövdesi arsaya, kuleye binmesin && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
-    && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60) && !(G.zitem && dist(G.zitem.x, G.zitem.y, x, y) < 80);
-  const FS = [0.78, 0.7, 0.85, 0.62, 0.9]; for (let f = 0.5; f < 0.96; f += 0.03) FS.push(f); // kale tarafı önce
-  for (const f of FS) for (const P of G.paths) for (const off of [54, 72]) {
-    const q = pathPos(P, P.total * f), L = Math.hypot(q.dx, q.dy) || 1;
-    for (const sd of [1, -1]) { const x = q.x - q.dy / L * off * sd, y = q.y + q.dx / L * off * 0.82 * sd;
-      if (free(x, y)) { G.bubu = { x, y, st: 'idle', it: 0, t: 0, cd: 6, want: false, face: x < q.x ? 1 : -1 }; ['bubu_idle', 'bubu_atk'].forEach(loadStrip);
-        if (!save.bubuSeen2) { save.bubuSeen2 = 1; persist(); G.bubuIntro = true; } return; } }
-  }
-}
-const bubuOk = (e) => !e.dead && !e.under && !e.def.flying && !e.def.machine && !e.def.chief && !e.def.boss && e.siege === undefined && !e.bbPh && !(e.twT > 0) && e.flZ == null && !(e.kdT > 0);
-function bubuTarget(b) { let best = null, bd = BUBU.reach; for (const e of G.enemies) if (bubuOk(e)) { const d = dist(e.x, e.y, b.x, b.y); if (d < bd) { bd = d; best = e; } } return best; }
-function bubuMouth(b, name, i) { // şerit karesinde ağzın dünya konumu
-  const F = ANIM_META[name], m = F.mouth && F.mouth[Math.min(F.n - 1, i)]; if (!m) return { x: b.x, y: b.y - BUBU.h * 0.7 };
-  const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh;
-  return { x: b.x + b.face * (-fw * F.fx + m[0] * fw), y: b.y - fh * (1 - F.base) + m[1] * fh };
-}
-function updateBubu(dt) {
-  const b = G.bubu; if (!b) return;
-  if (G.bubuIntro && !G.banner && !overlay && !G.comic) { G.bubuIntro = false; G.banner = { title: 'YENİ: BUBU', sub: "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın", t: 0, dur: 5 }; }
-  const FI = ANIM_META.bubu_idle, FA = ANIM_META.bubu_atk;
-  if (b.cd > 0 && b.st === 'idle') b.cd -= dt;
-  if (b.st === 'idle') {
-    const i0 = Math.floor(b.it * 24) % FI.n; b.it += dt; const i1 = Math.floor(b.it * 24) % FI.n;
-    if (b.want) { // bekleme döngüsünün uygun karesinde saldırıya geçer (dikişsiz)
-      const e0 = (FA.entry || [0])[1] ?? 0, crossEnd = i1 < i0, crossMid = e0 && i0 < e0 + 1 && i1 >= e0 + 1;
-      if (crossEnd || crossMid) { b.st = 'atk'; b.want = false; b.fiF = crossEnd ? 0 : e0; b.fi = -1; }
-    }
-    return;
-  }
-  b.fiF += dt * (b.fiF < FA.bite - 12 ? 48 : 24); const fi = Math.min(FA.n - 1, Math.floor(b.fiF)); // hamle öncesi kareler iki kat hızlı (her kare yine çizilir)
-  if (fi >= FA.bite - 12 && !b.prey && !b.missed) { // dalış: dokunuşta kilitlenen av (yoksa en yakını)
-    const L = b.lock, e = L && bubuOk(L) && dist(L.x, L.y, b.x, b.y) < BUBU.reach * 1.7 ? L : bubuTarget(b); b.lock = null; if (e) { b.prey = e; e.bbPh = 'pull'; e.bbB = b; e.bbX0 = e.x; e.bbY0 = e.y; e.bbT = 0; e.blocker = null; e.inMelee = false; for (const s of G.soldiers) if (s.target === e) s.target = null; } else b.missed = true;
-  }
-  if (b.prey && fi >= FA.bite && b.prey.bbPh === 'pull') { b.prey.bbPh = 'hold'; sfx('bash'); haptic('light'); }
-  if (b.prey && fi >= FA.throw && b.prey.bbPh === 'hold') { // fırlat: yolun gerisine
-    const e = b.prey, td = Math.max(0, e.d - BUBU.back * rand(0.85, 1.1)), q = pathPos(e.p, td, e.off || 0);
-    e.bbPh = 'fly'; e.bbT = 0; e.bbX0 = e.x; e.bbY0 = e.y; e.bbZ0 = e.flZ || 0; e.bbTX = q.x; e.bbTY = q.y; e.bbTD = td; e.spinV = (b.face || 1) * rand(9, 13);
-    sfx('whirl'); b.prey = null;
-  }
-  b.fi = fi;
-  if (b.fiF >= FA.n) { b.st = 'idle'; b.it = (FA.back || 0) / 24; b.cd = BUBU.cd; b.missed = false; }
-}
-function bubuHold(e, dt) { // ağızdaki / havadaki düşman (true: yürüme yok)
-  if (!e.bbPh) return false;
-  const b = e.bbB, H0 = CHAR_H['enemy_' + e.type] || 30;
-  if (e.bbPh === 'pull' || e.bbPh === 'hold') {
-    if (!b || G.bubu !== b) { e.bbPh = null; e.flZ = null; e.spinA = 0; return false; }
-    const m = bubuMouth(b, 'bubu_atk', b.fi), gy = b.y + 3, z = Math.max(0, gy - m.y - H0 * 0.92); // kafası ağızda
-    if (e.bbPh === 'pull') { e.bbT += dt; const u = clamp(e.bbT / 0.42, 0, 1), k = u * u * (3 - 2 * u); e.x = lerp(e.bbX0, m.x, k); e.y = lerp(e.bbY0, gy, k); e.flZ = Math.max(0.01, z * k); }
-    else { e.x = m.x; e.y = gy; e.flZ = Math.max(0.01, z); e.spinA = Math.sin(G.t * 14) * 0.25; }
-    return true;
-  }
-  if (e.bbPh === 'fly') {
-    e.bbT += dt; const u = clamp(e.bbT / BUBU.flyT, 0, 1);
-    e.x = lerp(e.bbX0, e.bbTX, u); e.y = lerp(e.bbY0, e.bbTY, u); e.flZ = Math.max(0.01, lerp(e.bbZ0, 0, u) + Math.sin(u * Math.PI) * BUBU.arc); e.spinA = (e.spinA || 0) + e.spinV * dt;
-    if (u >= 1) { // yere çakılır
-      e.bbPh = null; e.flZ = null; e.spinA = 0; e.d = e.bbTD; e.x = e.bbTX; e.y = e.bbTY; e.blocker = null;
-      HERO_SKILL = true; damageEnemy(e, roll(BUBU.dmg), 'phys', false, 'blast');
-      for (const o of G.enemies) if (o !== e && !o.dead && !o.def.flying && dist(o.x, o.y, e.x, e.y) < BUBU.splash) damageEnemy(o, roll(BUBU.dmg) * BUBU.splashK, 'phys', false, 'blast');
-      HERO_SKILL = false; if (!e.dead) stunEnemy(e, BUBU.stun);
-      G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.8 }); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: BUBU.splash, col: '200,150,255', t: 0, dur: 0.45 });
-      for (let i = 0; i < 14; i++) { const a = rand(Math.PI * 1.05, Math.PI * 1.95), v = rand(60, 160); emit(G.parts, { kind: 'chunk', x: e.x + rand(-8, 8), y: e.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 440, col: ['#5a4430', '#7a6448', '#3a2a1e'][i % 3], s0: rand(1.8, 3), s1: 1.2, life: rand(0.5, 0.8), vr: rand(-12, 12), floor: e.y + rand(-4, 4) }); }
-      shakeScreen(5, 0.35); sfx('stomp'); haptic('heavy');
-    }
-    return true;
-  }
-  return false;
-}
-function tapBubu(x, y) {
-  const b = G.bubu; if (!b || dist(x, y, b.x + b.face * 6, b.y - BUBU.h * 0.45) > 46) return false;
-  if (b.st !== 'idle' || b.want) return true;
-  if (b.cd > 0) { floatText(b.x, b.y - BUBU.h - 6, Math.ceil(b.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
-  if (!bubuTarget(b)) { floatText(b.x, b.y - BUBU.h - 6, 'Yakında düşman yok', '#c8c8c8'); sfx('error'); return true; }
-  b.want = true; b.lock = bubuTarget(b); floatText(b.x, b.y - BUBU.h - 6, 'Bubu!', '#d8a8ff'); sfx('roar'); tipDone('bubu'); gaDesign('bubu');
-  if (!(save.cnt && save.cnt.bubu)) mortSay('bubu', true); cnt('bubu');
-  return true;
-}
-function drawBubu() {
-  const b = G.bubu; if (!b) return;
-  const atk = b.st === 'atk', name = atk ? 'bubu_atk' : 'bubu_idle', F = ANIM_META[name], im = spr(name); if (!F || !im) { if (!im) loadStrip(name); return; }
-  const fi = atk ? Math.max(0, b.fi || 0) : Math.floor(b.it * 24) % F.n, ready = !atk && b.cd <= 0;
-  if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, b.x, b.y - 6, 40, '190,120,255', 0.16 + 0.1 * Math.sin(time * 4)); ctx.restore(); }
-  const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh, C = F.cols || F.n, bs = im.width / (F.fw * C), by = im.height / (F.fh * Math.ceil(F.n / C));
-  ctx.save(); ctx.translate(b.x, b.y); ctx.scale(b.face, 1);
-  ctx.drawImage(im, (fi % C) * F.fw * bs, Math.floor(fi / C) * F.fh * by, F.fw * bs, F.fh * by, -fw * F.fx, -fh * (1 - F.base), fw, fh);
-  ctx.restore();
-  if (!atk && !b.want) { const iy = b.y - BUBU.h - 8 + Math.sin(time * 4) * 2;
-    if (b.cd > 0) { const k = 1 - b.cd / BUBU.cd; circle(b.x, iy, 9, 'rgba(20,12,24,0.75)', 'rgba(200,160,255,0.5)', 1.2); ctx.strokeStyle = '#d0a8ff'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(b.x, iy, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
-    else { circle(b.x, iy, 10, 'rgba(26,12,30,0.9)', '#f2e6c8', 1.5); drawIcon('play', b.x + 0.5, iy, 10, '#f2e6c8'); } }
-}
 function setupProps() {
   let seed = (G.idx + 7) * 7919;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -7213,12 +7110,11 @@ function setupProps() {
   for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
   const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
   G.teaT = 0;
-  setupZoneItem(); setupBubu();
+  setupZoneItem();
 }
 function updateProps(dt) {
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
-  updateBubu(dt);
   for (const o of G.props || []) {
     o.t += dt;
     if (o.kind === 'crow') {
@@ -7229,7 +7125,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
-  if (tapZoneItem(x, y) || tapBubu(x, y)) return true;
+  if (tapZoneItem(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -7275,7 +7171,7 @@ function crowCaw() {
   }
 }
 function drawProps(air) {
-  if (!air) { drawZoneItem(); drawBubu(); }
+  if (!air) drawZoneItem();
   for (const o of G.props || []) {
     if (o.kind === 'crow') {
       const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
@@ -7333,7 +7229,7 @@ const ZONE_ITEM = {
   ossuary:   { id: 'bones', name: 'Kemik Totemi', sub: 'Totem patlar, kemik kıymıkları saçılır', r: 84, cd: 26 },
   bloodmoon: { id: 'altar', name: 'Kan Sunağı', sub: 'Düşmanların kanını emer, iskeletlerini iyileştirir', r: 96, cd: 30 },
 };
-// 16 Eki (Caner: "Bubu'yu iptal et, sil"): Mortimer'ın evcil solucanı Bubu kaldırıldı (kod, şeritler ve başarım; git geçmişinde)
+// 16 Eki (Caner: "Bubu'yu iptal et, sil"): Mortimer'ın evcil solucanı Bubu kaldırıldı; akşam yeniden tasarlanan Bubu da (Caner: "hiçbir şeyini beğenmedim") tamamen silindi (git geçmişinde)
 function setupZoneItem() {
   const Z = NECRO && ZONE_ITEM[G.lv.theme]; G.zitem = null; if (!Z) return;
   const free = (x, y) => x > 50 && x < W - 50 && y > 100 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 40

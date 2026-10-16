@@ -1,11 +1,6 @@
 {
  "exact": {
-  "Bubu!": "Bubu!",
-  "YENİ: BUBU": "NEW: BUBU",
   "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "Mortimer's pet worm: tap the pit and it bursts from the ground to crush the road",
-  "Bubu! Mama vakti!": "Bubu! Feeding time!",
-  "Aferin Bubu. Kim iyi solucan?": "Good Bubu. Who's a good worm?",
-  "Bubu ısırmaz. Yutar.": "Bubu doesn't bite. Bubu swallows.",
   "Arena Kükremesi": "Arena Roar",
   "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Spartacus shakes the arena: enemies in the area take damage and are stunned for 1.5 s",
   "Alanda kükreme: hasar ve 1,5 sn sersemletme": "Roar in an area: damage and 1.5 s stun",
@@ -112,7 +107,6 @@
   "Bekçi fenerini sana tutacak. Biraz yakından.": "The keeper will hold his lamp up to you. Rather close.",
   "Sazlık Kıyı. Kara Göl'ün sığ ucu.": "Reedy Shore. The shallow end of the Black Lake.",
   "Atlar suya girmez mi? Girecekler!": "Horses won't go in the water? They will!",
-  "Bubu sabahtan beri aç. Tam vaktinde geldiniz.": "Bubu's been hungry since morning. Perfect timing.",
   "Kemik Köprü. Şapele son geçit.": "Bone Bridge. The last crossing to the chapel.",
   "Bu köprü kemikten mi? Benim zırhım daha sağlam.": "A bridge of bones? My armor is sturdier.",
   "Köprüyü eski misafirlerimden yaptım. Sen de güzel bir korkuluk olursun.": "I built this bridge from old guests. You'd make a lovely railing.",
@@ -614,7 +608,6 @@
   "Mahzen Bekçisi": "Crypt Keeper",
   "Sinek Sürüsü": "Fly Swarm",
   "Silah Büyücüsü": "Weapon Enchanter",
-  "Bubu'nun Dostu": "Bubu's Buddy",
   "Prens Değil": "No Prince",
   "Orman Gözcüsü": "Forest Lookout",
   "Kıl Payı": "By a Hair",
@@ -683,11 +676,7 @@
   "Kasırga Fırtınası!": "Tornado Storm!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "A tornado drops from the storm cloud and moves back along the road: caught enemies spin into the air, take damage and get flung away (heavies and bosses are knocked down), lightning strikes from the cloud",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "A tornado moving along the road: spins and flings whoever it catches",
-  "DENEME ALANI": "TEST AREA",
-  "Yakında düşman yok": "No enemy nearby",
-  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Mortimer's pet worm: tap it to grab an enemy by the head and hurl him far away",
-  "Bubu! Getir!": "Bubu! Fetch!",
-  "Bubu ısırmaz. Fırlatır.": "Bubu doesn't bite. He throws."
+  "DENEME ALANI": "TEST AREA"
  },
  "tpl": [
   [

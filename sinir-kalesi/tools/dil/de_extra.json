@@ -1,11 +1,6 @@
 {
  "exact": {
-  "Bubu!": "Bubu!",
-  "YENİ: BUBU": "NEU: BUBU",
   "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "Mortimers Haustierwurm: tippe auf die Grube, er bricht aus dem Boden und zermalmt den Weg",
-  "Bubu! Mama vakti!": "Bubu! Fütterungszeit!",
-  "Aferin Bubu. Kim iyi solucan?": "Brav, Bubu. Wer ist ein guter Wurm?",
-  "Bubu ısırmaz. Yutar.": "Bubu beißt nicht. Bubu verschlingt.",
   "Arena Kükremesi": "Arenagebrüll",
   "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Spartacus lässt die Arena beben: Feinde im Bereich nehmen Schaden und sind 1,5 s betäubt",
   "Alanda kükreme: hasar ve 1,5 sn sersemletme": "Gebrüll im Bereich: Schaden und 1,5 s Betäubung",
@@ -422,7 +417,6 @@
   "Mahzen Bekçisi": "Gruftwächter",
   "Sinek Sürüsü": "Fliegenschwarm",
   "Silah Büyücüsü": "Waffenverzauberer",
-  "Bubu'nun Dostu": "Bubus Kumpel",
   "Prens Değil": "Kein Prinz",
   "Orman Gözcüsü": "Waldspäher",
   "Kıl Payı": "Haaresbreite",
@@ -491,11 +485,7 @@
   "Kasırga Fırtınası!": "Tornadosturm!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Aus der Sturmwolke senkt sich ein Tornado und zieht den Weg zurück: Gefangene Feinde wirbeln in die Luft, nehmen Schaden und werden fortgeschleudert (Schwere und Bosse stürzen zu Boden), aus der Wolke zucken Blitze",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornado auf dem Weg: wirbelt Gefangene herum und schleudert sie fort",
-  "DENEME ALANI": "TESTBEREICH",
-  "Yakında düşman yok": "Kein Feind in der Nähe",
-  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Mortimers Haustierwurm: tippe, er packt einen Feind am Kopf und schleudert ihn weit weg",
-  "Bubu! Getir!": "Bubu! Hol!",
-  "Bubu ısırmaz. Fırlatır.": "Bubu beißt nicht. Er wirft."
+  "DENEME ALANI": "TESTBEREICH"
  },
  "tpl": [
   [

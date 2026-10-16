@@ -1,11 +1,6 @@
 {
  "exact": {
-  "Bubu!": "Bubu !",
-  "YENİ: BUBU": "NOUVEAU : BUBU",
   "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "Le ver de compagnie de Mortimer : touche la fosse, il jaillit du sol et écrase la route",
-  "Bubu! Mama vakti!": "Bubu ! À la soupe !",
-  "Aferin Bubu. Kim iyi solucan?": "Bravo Bubu. Qui est un bon ver ?",
-  "Bubu ısırmaz. Yutar.": "Bubu ne mord pas. Il avale.",
   "Arena Kükremesi": "Rugissement de l'Arène",
   "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Spartacus fait trembler l'arène : les ennemis de la zone subissent des dégâts et sont étourdis 1,5 s",
   "Alanda kükreme: hasar ve 1,5 sn sersemletme": "Rugissement en zone : dégâts et 1,5 s d'étourdissement",
@@ -422,7 +417,6 @@
   "Mahzen Bekçisi": "Gardien de la Crypte",
   "Sinek Sürüsü": "Essaim de Mouches",
   "Silah Büyücüsü": "Enchanteur d'Armes",
-  "Bubu'nun Dostu": "Copain de Bubu",
   "Prens Değil": "Pas un Prince",
   "Orman Gözcüsü": "Guetteur des Bois",
   "Kıl Payı": "De Justesse",
@@ -491,11 +485,7 @@
   "Kasırga Fırtınası!": "Tempête tornade !",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Une tornade descend du nuage d'orage et remonte la route : les ennemis happés tournoient dans les airs, subissent des dégâts et sont projetés (les lourds et les boss sont renversés), la foudre tombe du nuage",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornade qui avance sur la route : fait tournoyer et projette ceux qu’elle happe",
-  "DENEME ALANI": "ZONE DE TEST",
-  "Yakında düşman yok": "Aucun ennemi à proximité",
-  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Le ver de compagnie de Mortimer : touche-le pour qu'il attrape un ennemi par la tête et l'envoie au loin",
-  "Bubu! Getir!": "Bubu ! Rapporte !",
-  "Bubu ısırmaz. Fırlatır.": "Bubu ne mord pas. Il lance."
+  "DENEME ALANI": "ZONE DE TEST"
  },
  "tpl": [
   [

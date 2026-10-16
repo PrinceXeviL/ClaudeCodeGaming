@@ -1,11 +1,6 @@
 {
  "exact": {
-  "Bubu!": "¡Bubu!",
-  "YENİ: BUBU": "NUEVO: BUBU",
   "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "El gusano mascota de Mortimer: toca el hoyo y saldrá del suelo para aplastar el camino",
-  "Bubu! Mama vakti!": "¡Bubu! ¡Hora de comer!",
-  "Aferin Bubu. Kim iyi solucan?": "Bien, Bubu. ¿Quién es un buen gusano?",
-  "Bubu ısırmaz. Yutar.": "Bubu no muerde. Traga.",
   "Arena Kükremesi": "Rugido de la Arena",
   "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "Espartaco hace temblar la arena: los enemigos del área reciben daño y quedan aturdidos 1,5 s",
   "Alanda kükreme: hasar ve 1,5 sn sersemletme": "Rugido en un área: daño y 1,5 s de aturdimiento",
@@ -422,7 +417,6 @@
   "Mahzen Bekçisi": "Guardián de la Cripta",
   "Sinek Sürüsü": "Enjambre de Moscas",
   "Silah Büyücüsü": "Encantador de Armas",
-  "Bubu'nun Dostu": "Amigo de Bubu",
   "Prens Değil": "No Es Príncipe",
   "Orman Gözcüsü": "Vigía del Bosque",
   "Kıl Payı": "Por un Pelo",
@@ -491,11 +485,7 @@
   "Kasırga Fırtınası!": "¡Tormenta de tornado!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Un tornado baja de la nube de tormenta y retrocede por el camino: los enemigos atrapados giran en el aire, reciben daño y salen despedidos (los pesados y jefes caen al suelo), la nube lanza rayos",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornado que avanza por el camino: hace girar y lanza a quien atrapa",
-  "DENEME ALANI": "ZONA DE PRUEBAS",
-  "Yakında düşman yok": "No hay enemigos cerca",
-  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "El gusano mascota de Mortimer: tócalo para que agarre a un enemigo por la cabeza y lo lance lejos",
-  "Bubu! Getir!": "¡Bubu! ¡Trae!",
-  "Bubu ısırmaz. Fırlatır.": "Bubu no muerde. Lanza."
+  "DENEME ALANI": "ZONA DE PRUEBAS"
  },
  "tpl": [
   [

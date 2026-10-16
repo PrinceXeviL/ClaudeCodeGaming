@@ -1,11 +1,6 @@
 {
  "exact": {
-  "Bubu!": "布布！",
-  "YENİ: BUBU": "新：布布",
   "Mortimer'ın evcil solucanı: çukura dokun, topraktan fırlayıp yoldakileri ezsin": "莫蒂默的宠物蠕虫：点击坑洞，它会破土而出碾压路上的敌人",
-  "Bubu! Mama vakti!": "布布！开饭啦！",
-  "Aferin Bubu. Kim iyi solucan?": "乖布布。谁是好虫虫？",
-  "Bubu ısırmaz. Yutar.": "布布不咬人。它直接吞。",
   "Arena Kükremesi": "竞技场怒吼",
   "Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler": "斯巴达克斯震撼竞技场：区域内敌人受到伤害并眩晕 1.5 秒",
   "Alanda kükreme: hasar ve 1,5 sn sersemletme": "区域怒吼：伤害并眩晕 1.5 秒",
@@ -422,7 +417,6 @@
   "Mahzen Bekçisi": "墓穴守卫",
   "Sinek Sürüsü": "蝇群",
   "Silah Büyücüsü": "武器附魔师",
-  "Bubu'nun Dostu": "布布的朋友",
   "Prens Değil": "不是王子",
   "Orman Gözcüsü": "森林瞭望者",
   "Kıl Payı": "千钧一发",
@@ -491,11 +485,7 @@
   "Kasırga Fırtınası!": "龙卷风暴！",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "龙卷风从雷云中降下，沿道路向后移动：被卷入的敌人旋转升空、受到伤害并被甩飞（重甲与首领被掀翻），云中劈下闪电",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "沿路移动的龙卷风：卷起并甩飞敌人",
-  "DENEME ALANI": "测试区",
-  "Yakında düşman yok": "附近没有敌人",
-  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "莫蒂默的宠物蠕虫：点击它，咬住敌人的脑袋远远甩出去",
-  "Bubu! Getir!": "布布！叼回来！",
-  "Bubu ısırmaz. Fırlatır.": "布布不咬人。它扔人。"
+  "DENEME ALANI": "测试区"
  },
  "tpl": [
   [
