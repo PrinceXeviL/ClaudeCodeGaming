@@ -2077,6 +2077,8 @@ const CHAL = {
   i: { name: 'ÇIPLAK KEMİK', short: 'Çıplak Kemik', hp: 1, lives: 1, iron: true, desc: '1 can · yalnız 2 kule türü · Mortimer büyüsü yok' },
   // 16 Eki: Deneme Alanı (yalnız TEST_OPEN; data.js ADMIN_TEST): 2 dalga, son eklenenler; hiçbir şey kaydedilmez
   a: { name: 'DENEME BİTTİ', short: 'Deneme', hp: 1, lives: ADMIN_TEST.lives, admin: true, desc: '2 dalga · son güncellemeler · kayıt yok' },
+  // 16 Eki: haritadaki ÖĞRETİCİ: tek bölümde senaryolu eğitim (TUTOR); hiçbir şey kaydedilmez
+  o: { name: 'EĞİTİM TAMAM', short: 'Eğitim', hp: 1, lives: 20, admin: true, desc: 'Senaryolu eğitim · kayıt yok' },
 };
 const adminIdx = () => Math.max(0, LEVELS.findIndex(l => l.name === ADMIN_TEST.level));
 // Çıplak Kemik'te bölüme göre izinli iki kule (biri mutlaka havayı vurur: Kemik Kulesi ya da Ruh Feneri)
@@ -2151,7 +2153,7 @@ function startLevel(idx, chal = null) {
   if (NECRO && !G.early) for (const id of loadout()) G.spells[id] = 0; // yalnız savaşa götürülen 3 büyü
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
-  (chal === 'a' ? ADMIN_TEST.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
+  (chal === 'a' ? ADMIN_TEST.waves : chal === 'o' ? TUTOR.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'];
@@ -2196,6 +2198,10 @@ function startLevel(idx, chal = null) {
   }
   if (chal === 'a') { G.admin = true; G.lv = Object.assign({}, lv, { waves: JSON.parse(JSON.stringify(ADMIN_TEST.waves)) }); G.gold = ADMIN_TEST.gold;
     G.banner = { title: 'DENEME ALANI', sub: '2 dalga · son güncellemeler · ilerleme kaydedilmez', t: 0, dur: 3.5 }; }
+  if (chal === 'o') { // öğretici: senaryolu dalgalar yalnız eğitim adımı isteyince gelir (waveCallable), sayaç kendiliğinden işlemez
+    G.admin = true; G.tutorial = true; G.lv = Object.assign({}, lv, { waves: JSON.parse(JSON.stringify(TUTOR.waves)) }); G.gold = TUTOR.gold; G.banner = null;
+    G.spells = {}; for (const id of TUTOR.spells) G.spells[id] = 0; G.tutItems = { bomb: 1 }; G.heroes.forEach((h, i) => { G.spells['ult' + i] = 0; });
+    G.tut = { i: 0, t: 0, w: 0, on: false, steps: TUTOR_STEPS }; G.tutLv = false; }
   if (chal === 'e') { G.endless = true; G.baseWaves = lv.waves; G.lv = Object.assign({}, lv, { waves: lv.waves.map(w => JSON.parse(JSON.stringify(w))) }); endlessExtend(); }
   if (chal === 'i') { // Çıplak Kemik
     G.mod = { id: 'iron', nospell: true }; const T = ironTowers(idx).map(t => TOWERS[t].name).join(' ve ');
@@ -2208,7 +2214,7 @@ function startLevel(idx, chal = null) {
   }
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
-  if (NECRO && chal !== 'a') {
+  if (NECRO && chal !== 'a' && chal !== 'o') {
     const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.ep === 2 && idx === LEVELS.findIndex(l => l.ep === 2) ? 'intro2' : lv.comic && COMICS[lv.comic] && !seen[lv.comic] ? lv.comic : lv.boss;
     if (COMICS[key] && !seen[key]) startComic(key);
   }
@@ -3865,7 +3871,7 @@ function drawItemIcon(id, x, y, r) {
 }
 const itemBag = () => ({ x: EDGE.r - 16 - SPELL_R, y: EDGE.b - 14 - SPELL_R, r: SPELL_R });
 const itemBtn = (i) => { const b = itemBag(); return { x: b.x - (i + 1) * (SPELL_R * 2 + 8), y: b.y, r: SPELL_R * 0.92 }; };
-const itemCount = (id) => (save.items && save.items[id]) || 0;
+const itemCount = (id) => (G && G.tutorial ? (G.tutItems && G.tutItems[id]) || 0 : (save.items && save.items[id]) || 0); // öğretici: kendi (kaydedilmeyen) eşyaları
 function pickItem(id) {
   if (itemCount(id) <= 0) { floatText(itemBag().x - 120, itemBag().y - 50, 'Dükkândan kristalle al', '#e0b8ff'); sfx('error'); return; }
   if (ITEMS[id].target) { G.mode = { kind: 'item', id }; G.bagOpen = false; G.spellPeek = null; sfx('spell'); return; }
@@ -3873,7 +3879,7 @@ function pickItem(id) {
 }
 function useItem(id, x, y) {
   const I = ITEMS[id]; if (!I || itemCount(id) <= 0) return;
-  save.items[id]--; persist(); G.bagOpen = false;
+  if (G.tutorial) G.tutItems[id]--; else { save.items[id]--; persist(); } G.bagOpen = false;
   if (id === 'bomb') {
     for (const e of G.enemies) if (!e.dead && !e.under && dist(e.x, e.y, x, y) < I.r) { hitBy = 'item'; damageEnemy(e, I.dmg * (e.def.chief ? 0.5 : 1), 'magic', false, 'blast'); hitBy = null; }
     G.effects.push({ kind: 'shock', x, y, r: I.r * 1.3, t: 0, dur: 0.5 }); G.effects.push({ kind: 'firering', x, y, r: I.r, t: 0, dur: 0.6 });
@@ -5919,7 +5925,7 @@ function toggleLoadout(id) { // seçili büyüyü çıkarır ya da boş yer vars
   else { if (L.length >= SPELL_SLOTS) return 'full'; save.loadout = L.concat(id); }
   persist(); return true;
 }
-const spellIds = () => (G && G.early ? [] : NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(id => loadout().includes(id)) : []).concat(G.heroes.map((h, i) => 'ult' + i));
+const spellIds = () => (G && G.early ? [] : G && G.tutorial ? TUTOR.spells : NECRO ? ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(id => loadout().includes(id)) : []).concat(G.heroes.map((h, i) => 'ult' + i)); // öğretici: hep aynı üç büyü
 // Oyun içi arayüz ölçüsü (Caner, 10 Eki: telefonda parmakla dokunmak için küçüktü): düğmeler %25 büyük, aralıklar %10 açık,
 // dokunma alanı görünenden %40 geniş (UI_HIT); sol üst can/altın şeridi ve boss can çubuğu da büyütüldü
 const UI_K = 1.25, UI_GAP = 1.1, UI_HIT = 0.4;
@@ -6663,6 +6669,14 @@ const tutSelUp = () => (G.sel && G.sel.kind === 'tower' && G.sel.tower.lvl < G.s
 const tutSpell = (id) => !spellIds().includes(id) || G.spells[id] > 0; // götürülmeyen büyü atlanır
 const spellMode = (id) => G.mode && G.mode.kind === 'spell' && G.mode.id === id;
 const tutFoes = () => G.enemies.filter(e => !e.dead && !e.under && e.x > 20 && e.x < W - 20);
+// dokununca seçilecek düşman: ekranın içinde, önünde altın, komutan ya da kule olmayan, en yavaş (ok üstünde dursun)
+function tutTapFoe() {
+  let b = null;
+  for (const e of tutFoes()) { if (e.siege !== undefined || e.def.flying) continue; const q = worldToScreen(e.x, e.y); if (q.x < VIS.l + 60 || q.x > VIS.r - 60 || q.y < VIS.t + 90 || q.y > VIS.b - 80) continue;
+    if (G.coins.some(c => dist(c.x, c.y, e.x, e.y - 12) < 26) || G.heroes.some(h => !h.dead && dist(h.x, h.y - 10, e.x, e.y - 12) < 30)) continue;
+    if (!b || (e.blocker && !b.blocker) || (!!e.blocker === !!b.blocker && e.d < b.d)) b = e; }
+  return b;
+}
 function tutCrowd() { const L = tutFoes(); let b = null, bn = 0; for (const e of L) { const n = L.filter(o => dist(o.x, o.y, e.x, e.y) < 80).length; if (n > bn) { bn = n; b = e; } } return b; }
 const WAVE_STEP = (text) => ({ text, done: () => G.wave > 0, at: () => { const ps = nextWavePaths(); return ps.length && waveCallable() ? waveBtnScreen(ps[0]) : null; } });
 const TUTS = [
@@ -6693,7 +6707,7 @@ const TUTS = [
     { card: true, icon: 'artillery', title: 'Veba Kazanı', text: 'Kalabalığın ortasına veba fırlatır: alan hasarı verir, zehirler ve yavaşlatır. Toplu gelen lejyonlara karşı kur.' },
     WAVE_STEP('Hazır olunca kafatasına iki kez dokun: dalga gelsin.'),
     { text: 'Bir düşmana dokun: zayıf ve güçlü yanlarını gör.', when: () => tutFoes().length > 0, done: () => G.sel && G.sel.kind === 'enemy', timeout: 16,
-      at: () => { const e = tutFoes()[0]; return e && worldToScreen(e.x, e.y - 34); } },
+      at: () => { const e = tutTapFoe(); if (!e) return null; const h = CHAR_H['enemy_' + e.type] || 26; return worldToScreen(e.x, e.y - h * 0.45 - (e.def.flying ? 26 : 0)); } }, // 16 Eki: ok, dokunmanın düşmanı seçtiği noktada (worldTap ile aynı)
     { text: 'Dalgayı erken çağırırsan ek altın kazanırsın: kafatasına iki kez dokun.', when: () => G.wave >= 1 && waveCallable() && nextWavePaths().length > 0, done: () => G.wave >= 3, timeout: 12,
       at: () => { const ps = nextWavePaths(); return ps.length ? waveBtnScreen(ps[0]) : null; } },
   ],
@@ -6715,24 +6729,104 @@ const TUTS = [
     { card: true, icon: 'skull', title: 'Hazırsın!', text: "Dört kule, üç büyü ve bir komutan. Gerisi senin elinde: Mortimer'ın kulesini koru!" },
   ],
 ];
+// ----- ÖĞRETİCİ bölüm (16 Eki, Caner: "haritadaki öğretici tek bölümde her şeyi öğretsin, düşmanlar senaryoya göre gelsin") -----
+// Ölü Orman'ın yolunda 6 kısa dalga; her dalga bir şey öğretir ve yalnız o adıma gelince çağrılabilir (waveCallable). Altın adım adım verilir (enter).
+// Bitince zafer ekranı (EĞİTİM TAMAM) → haritaya; hiçbir şey kaydedilmez (G.admin). Test: node tools/ogretici-test.js (oku tıklayarak dener).
+const TUTOR = { idx: 0, gold: 80, spells: ['nm_raise', 'nm_fear', 'nm_wall'], waves: [
+  [{ t: 'legion', n: 4, gap: 1.8, hpK: 0.6 }], // 1: okçular yoldan geçeni vurur
+  [{ t: 'legion', n: 6, gap: 1.2, hpK: 0.7 }, { t: 'gladiator', n: 2, gap: 2.2, at: 5, hpK: 0.6 }], // 2: Mahzen yolu tutar
+  [{ t: 'heavy', n: 3, gap: 2.6, hpK: 0.55 }], // 3: zırhlıya Ruh Feneri
+  [{ t: 'legion', n: 14, gap: 0.45, hpK: 0.6 }], // 4: kalabalığa Veba Kazanı ve büyüler
+  [{ t: 'legion', n: 8, gap: 0.8, hpK: 0.7 }, { t: 'hound', n: 4, gap: 0.9, at: 4, hpK: 0.7 }], // 5: komutan
+  [{ t: 'legion', n: 8, gap: 0.9, hpK: 0.8 }, { t: 'centurion', n: 1, gap: 1, at: 6 }], // 6: son dalga ve yüzbaşı
+] };
+const tutGold = (n) => () => { if (G.gold < n) G.gold = n; };
+const tutCost = (t) => (typeof buildCost === 'function' ? buildCost(t) : TOWERS[t].levels[0].cost);
+const tutClear = (k) => () => G.wave >= k && !G.spawners.some(sp => sp.left > 0) && !G.enemies.some(e => !e.dead);
+const TWAVE = (k, text) => ({ text, wave: true, done: () => G.wave >= k, at: () => { const ps = nextWavePaths(); return ps.length && waveCallable() ? waveBtnScreen(ps[0]) : null; } });
+const tutArcher = () => G.towers.find(o => o.type === 'archer');
+const tutMenuAt = (f) => { const it = currentMenu().find(f); return it && { x: it.x, y: it.y - 4 }; };
+const tutTowerAt = (o) => o && worldToScreen(o.x, o.y - 30);
+const tutSelIs = (o) => G.sel && G.sel.kind === 'tower' && G.sel.tower === o;
+function tutSpecGold() { // Kemik Kulesi'ni en üst kademeye çıkarıp bir uzmanlık alacak kadar altın
+  const o = tutArcher(); if (!o) return; let need = 0;
+  for (let l = o.lvl + 1; l < o.def.levels.length; l++) need += priceK(o.def.levels[l].cost, o.stackK || 1) * (NECRO && !o.path && l === 1 ? 1.3 : 1);
+  const ab = (o.def.abilities || [])[0]; if (ab) need += priceK(ab.ranks[0].cost, o.stackK || 1); tutGold(Math.ceil(need) + 20)();
+}
+const TUTOR_STEPS = [
+  { card: true, icon: 'skull', title: "Mortimer'ın Okulu", text: "Solarian lejyonları şapelime yürüyor. Sana savunmayı bu bölümde baştan sona öğreteyim: kuleler, askerler, büyüler, komutan ve eşyalar. Hiçbir şey kaydedilmez." },
+  Object.assign({}, TUTS[0][1], { enter: () => tutGold(tutCost('archer'))() }),
+  TUTS[0][2],
+  TWAVE(1, 'Kafatasına dokun: gelecek düşmanları gör. Bir daha dokun: dalga gelsin.'),
+  { text: 'Okçular yoldan geçenleri vuruyor. Ölen düşman altın bırakır.', done: tutClear(1) },
+  Object.assign({}, TUTS[0][3], { enter: () => tutGold(tutCost('barracks'))() }),
+  TUTS[0][4],
+  Object.assign({}, TUTS[0][7], { when: () => G.towers.some(o => o.type === 'barracks'), timeout: 45 }),
+  TWAVE(2, 'Kafatasına iki kez dokun: ikinci dalga gelsin. Mahzen askerleri onları yolda tutacak.'),
+  { text: 'Askerler düşmanı durdurur, okçular vurur. İkisi birlikte çok güçlü.', done: tutClear(2) },
+  Object.assign({}, TUTS[0][6], { enter: () => { const o = tutArcher() || G.towers[0]; if (o) tutGold(Math.max(140, upCost(o) || 0))(); }, timeout: 60 }),
+  { text: () => (G.sel && G.sel.kind === 'castle' ? 'Yükselt simgesine dokun, onaylamak için bir daha dokun' : 'Şapel de güçlenir: şapele dokun'), done: () => G.castle.lvl > 0, timeout: 60,
+    enter: () => { const N = CASTLE.levels[G.castle.lvl + 1]; if (N) tutGold(N.cost)(); },
+    at: () => (G.sel && G.sel.kind === 'castle' ? tutMenuAt(o => o.id === 'upgrade' && o.type === 'castle') : worldToScreen(G.castle.x - 10, G.castle.y - 40)) },
+  { card: true, icon: 'skull', title: 'Şapel', text: 'Güçlenen şapelin okçuları yaklaşan düşmanı vurur. Düşman kapıya ulaşırsa can götürür; canın biterse bölüm kaybedilir.' },
+  Object.assign({}, TUTS[1][1], { enter: () => tutGold(tutCost('mage'))() }),
+  TUTS[1][2],
+  TWAVE(3, 'Zırhlı ağır piyade geliyor: kafatasına iki kez dokun.'),
+  Object.assign({}, TUTS[1][6], { timeout: 20 }),
+  { text: 'Ruh Feneri zırhı deler ve yavaşlatır. Hepsini bitir.', done: tutClear(3) },
+  Object.assign({}, TUTS[1][3], { enter: () => tutGold(tutCost('artillery'))() }),
+  TUTS[1][4],
+  TUTS[2][2],
+  TWAVE(4, 'Büyük bir kalabalık geliyor: kafatasına iki kez dokun.'),
+  Object.assign({}, TUTS[2][4], { skip: tutClear(4), timeout: 30 }),
+  Object.assign({}, TUTS[2][5], { skip: tutClear(4) }),
+  Object.assign({}, TUTS[2][6], { skip: () => tutClear(4)() && !G.effects.some(f => f.kind === 'corpse' && f.raisable) }),
+  { text: 'Kalabalığı bitir.', done: tutClear(4) },
+  // kule uzmanlığı: en üst kademe + uzmanlık yeteneği
+  { text: () => { const o = tutArcher(); if (!tutSelIs(o)) return 'Kemik Kulesi\'ne dokun: en üst kademeye çıkaralım';
+      return currentMenu().some(m => m.id === 'path') ? 'Okçu yolunu seç: simgeye dokun, onaylamak için bir daha dokun' : 'Yükselt simgesine dokun, onaylamak için bir daha dokun'; },
+    enter: tutSpecGold, done: () => { const o = tutArcher(); return !o || o.lvl >= o.def.levels.length - 1; }, timeout: 90,
+    at: () => { const o = tutArcher(); if (!tutSelIs(o)) return tutTowerAt(o); return tutMenuAt(m => m.id === 'path' && m.type === 'bow') || tutMenuAt(m => m.id === 'upgrade'); } },
+  { text: () => (tutSelIs(tutArcher()) ? 'En üst kademede uzmanlık seç: bir yeteneğe dokun, onaylamak için bir daha dokun' : 'Kemik Kulesi\'ne dokun: uzmanlık seç'),
+    enter: tutSpecGold, done: () => { const o = tutArcher(); return !o || !!o.spec || Object.keys(o.ab || {}).length > 0; }, timeout: 60,
+    at: () => { const o = tutArcher(); if (!tutSelIs(o)) return tutTowerAt(o); return tutMenuAt(m => m.id === 'ability' && m.cost != null); } },
+  { card: true, icon: 'archer', title: 'Uzmanlık', text: 'Her kule en üst kademede iki uzmanlıktan birini seçer; seçtiğin yetenekler yükseldikçe güçlenir. Kuleyi satarsan harcadığının bir kısmı geri gelir.' },
+  TUTS[2][0],
+  Object.assign({}, TUTS[2][1], { at: () => { if (G.sel && G.sel.kind === 'hero') { const P = G.paths[0], q = pathPos(P, P.total * 0.3); return worldToScreen(q.x, q.y); }
+    return HUD.heroes[0] && { x: HUD.heroes[0].x, y: HUD.heroes[0].y }; } }),
+  { card: true, icon: 'hero', title: 'Komutanın yetenekleri', text: 'Pasif yetenekleri kendiliğinden çalışır. Altın çerçeveli düğme komutanının gücüdür: dolunca sen kullanırsın. Seviye atladıkça puan kazanır, puanları Komutanlar ekranında harcarsın.' },
+  TWAVE(5, 'Kafatasına iki kez dokun: komutanın da savaşsın.'),
+  Object.assign({}, TUTS[2][7], { when: () => G.heroes.length && tutFoes().length >= 3, timeout: 30 }),
+  { text: 'Dalga bitmeden kafatasına iki kez dokunursan sonraki dalga erken gelir ve ek altın kazanırsın.', wave: true, done: () => G.wave >= 6,
+    at: () => { const ps = nextWavePaths(); return ps.length && waveCallable() ? waveBtnScreen(ps[0]) : null; } },
+  { text: () => (G.mode && G.mode.kind === 'item' ? 'Kalabalığın üstüne dokun: bomba patlar' : G.bagOpen ? 'Kemik Bombası\'na dokun' : 'Sağ alttaki çantaya dokun: savaş eşyaların burada'),
+    when: () => tutFoes().length >= 4 || G.mode && G.mode.kind === 'item', done: () => !(G.tutItems.bomb > 0), timeout: 40,
+    at: () => { if (G.mode && G.mode.kind === 'item') { const e = tutCrowd(); return e && worldToScreen(e.x, e.y - 12); } if (G.bagOpen) return itemBtn(ITEM_ORDER.indexOf('bomb')); return itemBag(); } },
+  { text: 'Son dalga! Yüzbaşıyı durdur, şapeli koru.', done: tutClear(6) },
+  { card: true, icon: 'hero', title: 'Komutanlar', text: "Haritadaki KOMUTANLAR'da bir karta dokun: komutanın sayfası açılır. Basılı tut: savaşa o gelir. Sayfada yetenek puanlarını harcar, iki gücünden birini seçer, çantasından eşya takarsın." },
+  { card: true, icon: 'spells', title: 'Büyü Kitabı', text: "BÜYÜ KİTABI'nda Mortimer'ın büyülerinden hangi üçünü götüreceğini seçer, büyü puanlarıyla güçlendirirsin." },
+  { card: true, icon: 'skull', title: 'Gelişmeler ve kristal', text: "Bölümlerden kazandığın yıldızlarla GELİŞMELER'de kuleleri kalıcı güçlendirirsin. Boss'lar kristal ve eşya düşürür: kristalle yeni komutan ve savaş eşyası alırsın." },
+  { card: true, icon: 'skull', title: 'Hazırsın!', text: "Kuleler, askerler, büyüler, komutan ve eşyalar: hepsini denedin. Şimdi sefere çık, Mortimer'ın şapelini koru!" },
+];
 function tutEval() { // sıradaki adıma geç; kart adımında oyun durur
   const T = G.tut; if (!T) return;
-  while (T.i < T.steps.length && !T.steps[T.i].card && T.steps[T.i].done()) { T.i++; T.t = 0; T.w = 0; }
+  while (T.i < T.steps.length && !T.steps[T.i].card && (T.steps[T.i].done() || T.steps[T.i].skip && T.steps[T.i].skip())) { T.why = T.steps[T.i].done() ? 'yapıldı' : 'atlandı'; T.i++; T.t = 0; T.w = 0; } // skip: adım artık anlamsız (ör. dalga bitti)
   if (T.i >= T.steps.length) { G.tut = null; return; } // 13 Eki (Caner): bölüm kazanılınca kaydedilir; kaybedip ya da yeniden başlayınca eğitim yine çıkar
   const S = T.steps[T.i]; T.card = !!S.card; if (T.card && T.c0 == null) T.c0 = time;
+  if (T.ent !== T.i) { T.ent = T.i; if (S.enter) S.enter(); } // adıma girerken (öğretici: o adım için altın)
 }
 function updateTut(dt) {
   const T = G.tut; if (!T) return;
   tutEval(); if (!G.tut || T.card) return;
   const S = T.steps[T.i];
-  if (S.when && !S.when()) { T.on = false; if ((T.w += dt) > EARLY.wait) { T.i++; T.t = 0; T.w = 0; } return; } // hiç gelmeyen koşul eğitimi kilitlemez
+  if (S.when && !S.when()) { T.on = false; if ((T.w += dt) > (G.tutorial ? 25 : EARLY.wait)) { T.why = 'koşul gelmedi'; T.i++; T.t = 0; T.w = 0; } return; } // hiç gelmeyen koşul eğitimi kilitlemez
   T.on = true; T.t += dt;
-  if (S.timeout && T.t > S.timeout) { T.i++; T.t = 0; T.w = 0; }
+  if (S.timeout && T.t > S.timeout) { T.why = 'süre doldu'; T.i++; T.t = 0; T.w = 0; }
 }
 function tutCardTap() { // kart açıkken her dokunuş kartı kapatır (ilk 0,4 sn hariç: yanlışlıkla geçilmesin)
   const T = G && G.tut; if (!T || !T.card || overlay) return false;
   if (time - T.c0 < 0.4) return true;
-  T.i++; T.t = 0; T.w = 0; T.c0 = null; T.card = false; sfx('pick'); tutEval(); return true;
+  T.why = 'kart'; T.i++; T.t = 0; T.w = 0; T.c0 = null; T.card = false; sfx('pick'); tutEval(); return true;
 }
 function drawTutCard(S, T) {
   const a = clamp((time - T.c0) / 0.25, 0, 1), e = easeOutBack(a);
@@ -8332,7 +8426,7 @@ function update(dt) {
   }
   updateTut(dt);
 
-  if (G.waveCountdown != null && G.wave > 0) {
+  if (G.waveCountdown != null && G.wave > 0 && !G.tutorial) {
     // önceki dalga bitmeden yenisi gelmesin: sahada düşman varken sayaç durur, 1-2 kaçak kalınca yavaş işler
     const alive = G.spawners.length ? 99 : G.enemies.reduce((n, e) => n + (e.dead ? 0 : 1), 0);
     G.waveCountdown -= dt * (alive === 0 ? 1 : alive <= 2 ? 0.35 : 0);
@@ -8490,7 +8584,7 @@ function update(dt) {
   }
   if (G.gold >= 2000) achGive('hoard');
   if (G.winHold > 0) G.winHold -= dt;
-  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
+  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !(G.tutorial && G.tut) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
     const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
     vaultSettle(firstWin);
     if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
@@ -13318,6 +13412,7 @@ function earlyBonus() {
 const WAVE_CALL_AT = 0.3;
 function waveCallable() {
   if (G.wave >= G.lv.waves.length) return false;
+  if (G.tutorial) { const T = G.tut, S = T && T.steps[T.i]; return !!(S && S.wave && !T.card && T.on); } // öğretici: dalga yalnız eğitim adımı isteyince
   if (G.wave === 0) return true;
   if (G.waveCountdown == null) return false;
   const left = G.spawners.reduce((a, sp) => a + Math.max(0, sp.left), 0) + G.enemies.reduce((a, e) => a + (e.dead ? 0 : 1), 0);
@@ -18143,7 +18238,7 @@ function drawMap() {
   roundBtn('grim', bx2(2), by2, BR, 'grimoire', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, { appear: st - 0.3, tile: 'red', active: freeSouls > 0, activeCol: '190,110,255' }); lab(bx2(2), 'BÜYÜ KİTABI');
   roundBtn('heroes', bx2(1), by2, BR, (r) => uiIco('heroes', 0, 0, r * 1.15) || drawIcon('crown', 0, 0, r * 1.05), () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
-  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => uiIco('help', 0, 0, r * 1.15) || txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
+  if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => uiIco('help', 0, 0, r * 1.15) || txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => go(() => startLevel(TUTOR.idx, 'o')), { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
   // 16 Eki (Caner): Deneme Alanı düğmesi (admin; yalnız TEST_OPEN, mağaza sürümünde görünmez)
   if (TEST_OPEN) { roundBtn('admintest', bx2(NECRO ? 4 : 3), by2, BR, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => startLevel(adminIdx(), 'a')), { appear: st - 0.2, tile: 'ember' }); lab(bx2(NECRO ? 4 : 3), 'DENEME'); }
   const freeStars = starsTotal() - starsSpent();
@@ -19706,7 +19801,7 @@ function drawOverlay() {
       const yb = py + ph - 66;
       gameButton('ov_retry', cx - 219, yb, 150, 56, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear, size: 17 });
       gameButton('ov_map', cx - 55, yb, 150, 56, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'blue', { icon: 'map', appear: appear - 0.06, size: 17 });
-      gameButton('ov_next', cx + 164, yb, 262, 62, G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.admin ? startLevel(G.idx, 'a') : startLevel(G.idx + 1)), 'green', { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 21, glow: '140,255,120' });
+      gameButton('ov_next', cx + 164, yb, 262, 62, G.tutorial ? 'HARİTAYA DÖN' : G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.tutorial ? (screen = 'map', setOverlay(null)) : G.admin ? startLevel(G.idx, 'a') : startLevel(G.idx + 1)), 'green', { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 21, glow: '140,255,120' });
     } else if (G.idx + 1 < LEVELS.length) {
       roundBtn('ov_retry', cx - 212, py + 246 + by, 34, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
       txt('Tekrar', cx - 212, py + 294 + by, 16, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
@@ -19999,12 +20094,6 @@ function hudTap(x, y) {
 
 // Dünya koordinatlı dokunuş (parmak kaymadan kalkınca): altın, hedefleme, kahraman, düşman, kule, arsa
 function worldTap(x, y) {
-  // yerdeki altınlar: dokununca çevredekilerle birlikte hemen toplanır
-  for (const c of G.coins) {
-    if (c.state === 'fly' || dist(c.x, c.y - c.z - 3, x, y) > 16) continue;
-    for (const o of G.coins) if (o.state !== 'fly' && dist(o.x, o.y, c.x, c.y) < 55) collectCoin(o);
-    return;
-  }
   // hedefleme modları
   if (G.mode) {
     const m = G.mode; G.mode = null;
@@ -20038,6 +20127,12 @@ function worldTap(x, y) {
         G.mode = m; // 15 Eki (Caner): uyarıdan sonra seçim iptal olmaz, başka yer seçilebilir (bayrağa yeniden dokunmak gerekmez)
       }
     }
+    return;
+  }
+  // yerdeki altınlar: dokununca çevredekilerle birlikte hemen toplanır (16 Eki: hedefleme kipinden sonra; büyü/bomba altının üstüne de atılır)
+  for (const c of G.coins) {
+    if (c.state === 'fly' || dist(c.x, c.y - c.z - 3, x, y) > 16) continue;
+    for (const o of G.coins) if (o.state !== 'fly' && dist(o.x, o.y, c.x, c.y) < 55) collectCoin(o);
     return;
   }
   const wasHero = G.sel && G.sel.kind === 'hero' && G.sel.hero;
@@ -20207,6 +20302,11 @@ window.__game = {
       }
     } else out.data = c.toDataURL('image/webp', 0.9);
     BLEED = B0; delete REGION_BG[ep]; return out;
+  },
+  tutState() { // test (tools/ogretici-test.js): eğitimin adımı, yazısı ve okun ekran + pencere (client) noktası
+    const T = G && G.tut; if (!T) return { overlay, none: true, wave: G && G.wave };
+    const S = T.steps[T.i], at = !T.card && T.on && S && S.at ? S.at() : null;
+    return { i: T.i, n: T.steps.length, card: !!T.card, on: !!T.on, text: S ? (typeof S.text === 'function' ? S.text() : S.text) : null, why: T.why, at, cl: at && { x: at.x * view.scale + view.ox, y: at.y * view.scale + view.oy }, wave: G.wave, gold: G.gold, overlay, sel: G.sel && G.sel.kind, mode: G.mode && G.mode.kind };
   },
   giveGear(hid, n = 1, tries = 3) { const out = []; for (let i = 0; i < n; i++) out.push(addGear(makeGear(hid, tries))); persist(); return out.map(g => gearName(g)); }, // test: komutana eşya
   openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
