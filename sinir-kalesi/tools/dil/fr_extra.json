@@ -598,7 +598,14 @@
   "Öğreticiye git": "Aller au tutoriel",
   "OYNADIM": "OUI",
   "Doğrudan sefere başla": "Commencer la campagne",
-  "EĞİTİMİ ATLA ›": "PASSER ›"
+  "EĞİTİMİ ATLA ›": "PASSER ›",
+  "Kan Sülüğü": "Sangsue",
+  "Kan Sülüğü Mabedi": "Sanctuaire de la Sangsue",
+  "Düşmandan can çalıp iskeletleri sürekli yenileyen kan sülüğü": "Vole la vie des ennemis et soigne sans cesse vos squelettes",
+  "Düşmanı her alanda zayıflatan güçlü lanetler": "Des malédictions puissantes qui affaiblissent l’ennemi en tout",
+  "ölenlerin kalkma şansı +%10": "+%10 de chances que les morts se relèvent",
+  "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 relevés · +10 % de puissance · cadavre +1,65 s",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 relevés · +25 % de vie · +25 % de dégâts · cadavre +1,65 s"
  },
  "tpl": [
   [
@@ -960,6 +967,22 @@
   [
    "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
    "toutes les {} s libère un fantôme : {} dégâts, {} s de peur"
+  ],
+  [
+   "Kule Kan Sülüğüne dönüşür: her düşmandan saniyede {} can çeker, iskeletlere verir",
+   "La tour devient Sangsue : draine {} PV par seconde à chaque ennemi et les donne aux squelettes"
+  ],
+  [
+   "Menzildeki iskeletlerin canı saniyede %{} yenilenir",
+   "Les squelettes à portée régénèrent {} % de vie par seconde"
+  ],
+  [
+   "Kule Kara Lanet Mabedine dönüşür: bütün lanetler %{} daha güçlü (hasar, savunma, yavaşlatma, korku)",
+   "La tour devient Sanctuaire de la Malédiction noire : toutes les malédictions {} % plus fortes (dégâts, défense, ralentissement, peur)"
+  ],
+  [
+   "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
+   "Quand un maudit meurt, la malédiction saute sur les {} ennemis les plus proches"
   ]
  ]
 }

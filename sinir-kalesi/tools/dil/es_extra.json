@@ -598,7 +598,14 @@
   "Öğreticiye git": "Ir al tutorial",
   "OYNADIM": "SÍ",
   "Doğrudan sefere başla": "Empezar la campaña",
-  "EĞİTİMİ ATLA ›": "SALTAR ›"
+  "EĞİTİMİ ATLA ›": "SALTAR ›",
+  "Kan Sülüğü": "Sanguijuela",
+  "Kan Sülüğü Mabedi": "Santuario Sanguijuela",
+  "Düşmandan can çalıp iskeletleri sürekli yenileyen kan sülüğü": "Roba vida a los enemigos y cura sin parar a tus esqueletos",
+  "Düşmanı her alanda zayıflatan güçlü lanetler": "Maldiciones poderosas que debilitan al enemigo en todo",
+  "ölenlerin kalkma şansı +%10": "+%10 de probabilidad de que los muertos se levanten",
+  "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 resucitados · +10% de poder · cadáver +1,65 s",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 resucitados · +25% de vida · +25% de daño · cadáver +1,65 s"
  },
  "tpl": [
   [
@@ -960,6 +967,22 @@
   [
    "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
    "cada {} s suelta un fantasma: {} de daño, {} s de miedo"
+  ],
+  [
+   "Kule Kan Sülüğüne dönüşür: her düşmandan saniyede {} can çeker, iskeletlere verir",
+   "La torre se convierte en Sanguijuela: drena {} de vida por segundo a cada enemigo y se la da a los esqueletos"
+  ],
+  [
+   "Menzildeki iskeletlerin canı saniyede %{} yenilenir",
+   "Los esqueletos en alcance regeneran un {}% de vida por segundo"
+  ],
+  [
+   "Kule Kara Lanet Mabedine dönüşür: bütün lanetler %{} daha güçlü (hasar, savunma, yavaşlatma, korku)",
+   "La torre se convierte en Santuario de la Maldición Negra: todas las maldiciones un {}% más fuertes (daño, defensa, ralentización, miedo)"
+  ],
+  [
+   "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
+   "Al morir un maldito, la maldición salta a los {} enemigos más cercanos"
   ]
  ]
 }

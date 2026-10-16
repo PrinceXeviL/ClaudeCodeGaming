@@ -598,7 +598,14 @@
   "Öğreticiye git": "前往教学",
   "OYNADIM": "玩过",
   "Doğrudan sefere başla": "直接开始征程",
-  "EĞİTİMİ ATLA ›": "跳过教学 ›"
+  "EĞİTİMİ ATLA ›": "跳过教学 ›",
+  "Kan Sülüğü": "血蛭",
+  "Kan Sülüğü Mabedi": "血蛭神殿",
+  "Düşmandan can çalıp iskeletleri sürekli yenileyen kan sülüğü": "吸取敌人生命，持续治疗你的骷髅",
+  "Düşmanı her alanda zayıflatan güçlü lanetler": "全方位削弱敌人的强力诅咒",
+  "ölenlerin kalkma şansı +%10": "死者复活几率+%10",
+  "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 复活 · +10% 力量 · 尸体 +1.65 秒",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 复活 · +25% 生命 · +25% 伤害 · 尸体 +1.65 秒"
  },
  "tpl": [
   [
@@ -960,6 +967,22 @@
   [
    "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
    "每{}秒放出幽灵：{}伤害，恐惧{}秒"
+  ],
+  [
+   "Kule Kan Sülüğüne dönüşür: her düşmandan saniyede {} can çeker, iskeletlere verir",
+   "塔变为血蛭：每秒从每个敌人吸取{}生命并给予骷髅"
+  ],
+  [
+   "Menzildeki iskeletlerin canı saniyede %{} yenilenir",
+   "范围内骷髅每秒恢复{}%生命"
+  ],
+  [
+   "Kule Kara Lanet Mabedine dönüşür: bütün lanetler %{} daha güçlü (hasar, savunma, yavaşlatma, korku)",
+   "塔变为黑咒神殿：所有诅咒增强{}%（伤害、防御、减速、恐惧）"
+  ],
+  [
+   "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
+   "被诅咒者死亡时，诅咒跳到最近的{}名敌人"
   ]
  ]
 }

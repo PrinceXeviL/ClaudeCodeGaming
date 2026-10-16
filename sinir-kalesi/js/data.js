@@ -815,7 +815,7 @@ const GRIM = {
 const HERO_TREE = { sk: [0, 1, 4, 8, 12, 16], ult: [0, 1, 4, 8, 12, 16], ult2: [0, 3, 6, 10, 14, 18], dmg: 0.15, cd: 0.05, ultK: 0.15 }; // ult2: ikinci aktif (13 Eki) // 11 Eki denge: kademe başı %15 (önce %25: komutan bölümleri tek başına taşıyordu)
 const NECRO_SPELLS = {
   // cesetler ölümden sonra corpse sn yerde yatar; büyü o an yerdeki cesetleri iskelet minyon olarak kaldırır
-  nm_raise: { name: 'Ölüleri Diriltme', cd: 30.4, /* 16 Eki (2, Caner): bekleme %20 kısa (38 → 30,4) */ /* 16 Eki (Caner): 45 → 38, biraz daha sık */ corpse: 6, col: '190,80,255', max: 4, /* 13 Eki: 1. seviyede 3, kademe başına +1 (en çok 8); 16 Eki (Caner: "en son seviyede 20"): kademelere göre RAISE_MAX */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
+  nm_raise: { name: 'Ölüleri Diriltme', cd: 41.8, /* 16 Eki (2, Caner: "cooldown %10 uzasın"; önce %20 kısa denmişti): 38 → 41,8 */ /* 16 Eki (Caner): 45 → 38, biraz daha sık */ corpse: 6, col: '190,80,255', max: 4, /* 13 Eki: 1. seviyede 3, kademe başına +1 (en çok 8); 16 Eki (Caner: "en son seviyede 20"): kademelere göre RAISE_MAX */ r: 95, minion: { hp: 80, dmg: [4, 8], armor: 0.1, life: Infinity }, // 15 Eki (Caner): dirilenler bölüm sonuna dek, ölene kadar savaşır
     desc: 'Dokununca sahadaki cesetler, güçlüler önce, kademene göre kalkar ve ölene dek senin için savaşır · İri düşmanın ölüsü daha güçlü kalkar (kızıl parlayanlar) · Rahipler ve fenerler cesetleri kutsar, diriltilemez olur',
     short: 'Sahadaki cesetler kalkar, güçlüler önce · iri düşmanın ölüsü daha güçlü' },
   nm_wall:  { name: 'Kemik Duvarı', cd: 30, hp: 420, life: 7, col: '235,225,200',
@@ -1392,14 +1392,16 @@ if (NECRO) {
     ],
     abilities: [
       // Kan Ayini (11 Eki, Caner: "kırmızı versiyon drain life ile uyumlu"): drain sn başına her düşmandan çekilen can, heal: emilenin iskeletlere giden oranı
-      { id: 'rite', name: 'Kan Ayini', desc: (r) => `Kule Kan Mabedine dönüşür: düşmanların canını emer, iskeletleri iyileştirir · Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar · Her düşmandan saniyede ${r.drain} can çeker`,
-        ranks: [{ cost: 150, rate: 0.15, dmg: 0.1, drain: 5, heal: 0.6 }, { cost: 200, rate: 0.25, dmg: 0.18, drain: 8, heal: 0.6 }, { cost: 260, rate: 0.35, dmg: 0.25, drain: 12, heal: 0.6 }] },
-      { id: 'blight', name: 'Kara Lanet', desc: (r) => `Kule Kara Lanet Mabedine dönüşür: lanetliler ölünce +%10 kalkma şansı · Lanetli ölünce lanet en yakın ${r.n} düşmana sıçrar (menzil dışında da, 4 sn)`,
-        ranks: [{ cost: 140, n: 2 }, { cost: 190, n: 3 }, { cost: 240, n: 4 }] },
+      // 16 Eki (Caner): Kan Sülüğü: düşmandan can çalar, iskeletlere verir; menzildeki iskeletlerin canı sürekli yenilenir (regen: saniyede azami canın payı)
+      { id: 'rite', name: 'Kan Sülüğü', desc: (r) => `Kule Kan Sülüğüne dönüşür: her düşmandan saniyede ${r.drain} can çeker, iskeletlere verir · Menzildeki iskeletlerin canı saniyede %${Math.round(r.regen * 100)} yenilenir · Menzildeki kulelere +%${Math.round(r.rate * 100)} atış hızı ve +%${Math.round(r.dmg * 100)} hasar`,
+        ranks: [{ cost: 150, rate: 0.15, dmg: 0.1, drain: 5, heal: 0.6, regen: 0.02 }, { cost: 200, rate: 0.25, dmg: 0.18, drain: 8, heal: 0.6, regen: 0.03 }, { cost: 260, rate: 0.35, dmg: 0.25, drain: 12, heal: 0.6, regen: 0.045 }] },
+      // 16 Eki (Caner): Kara Lanet: daha güçlü lanetler, düşmanı her alanda zayıflatır (boost: bütün lanet etkileri bu kadar güçlü)
+      { id: 'blight', name: 'Kara Lanet', desc: (r) => `Kule Kara Lanet Mabedine dönüşür: bütün lanetler %${Math.round(r.boost * 100)} daha güçlü (hasar, savunma, yavaşlatma, korku) · Lanetli ölünce lanet en yakın ${r.n} düşmana sıçrar · ölenlerin kalkma şansı +%10`,
+        ranks: [{ cost: 140, n: 2, boost: 0.35 }, { cost: 190, n: 3, boost: 0.5 }, { cost: 240, n: 4, boost: 0.7 }] },
     ],
   };
   TOWER_ORDER.push('altar');
-  Object.assign(SPEC, { rite: { title: 'Kan Ayini Mabedi', who: 'Kulelere hız ve güç veren kan ritüeli' }, blight: { title: 'Kara Lanet Mabedi', who: 'Ölümle yayılan lanet' } });
+  Object.assign(SPEC, { rite: { title: 'Kan Sülüğü Mabedi', who: 'Düşmandan can çalıp iskeletleri sürekli yenileyen kan sülüğü' }, blight: { title: 'Kara Lanet Mabedi', who: 'Düşmanı her alanda zayıflatan güçlü lanetler' } }); // 16 Eki (Caner): Lanet Kulesi yeniden
 }
 
 // necro teması: yıldız gelişmeleri ve hasar türü adları (eski kule/kale adlarının yerine)

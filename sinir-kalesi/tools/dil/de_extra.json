@@ -598,7 +598,14 @@
   "Öğreticiye git": "Zum Tutorial",
   "OYNADIM": "JA",
   "Doğrudan sefere başla": "Direkt zum Feldzug",
-  "EĞİTİMİ ATLA ›": "TRAINING ÜBERSPRINGEN ›"
+  "EĞİTİMİ ATLA ›": "TRAINING ÜBERSPRINGEN ›",
+  "Kan Sülüğü": "Blutegel",
+  "Kan Sülüğü Mabedi": "Blutegel-Schrein",
+  "Düşmandan can çalıp iskeletleri sürekli yenileyen kan sülüğü": "Stiehlt Feinden Leben und heilt deine Skelette ständig",
+  "Düşmanı her alanda zayıflatan güçlü lanetler": "Mächtige Flüche, die Feinde in jeder Hinsicht schwächen",
+  "ölenlerin kalkma şansı +%10": "+%10 Chance, dass Tote aufstehen",
+  "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 Erweckte · +10 % Kraft · Leiche +1,65 s",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 Erweckte · +25 % Leben · +25 % Schaden · Leiche +1,65 s"
  },
  "tpl": [
   [
@@ -960,6 +967,22 @@
   [
    "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
    "alle {} s entlässt er einen Geist: {} Schaden, {} s Furcht"
+  ],
+  [
+   "Kule Kan Sülüğüne dönüşür: her düşmandan saniyede {} can çeker, iskeletlere verir",
+   "Turm wird zum Blutegel: saugt jedem Feind {} Leben pro Sekunde aus und gibt es den Skeletten"
+  ],
+  [
+   "Menzildeki iskeletlerin canı saniyede %{} yenilenir",
+   "Skelette in Reichweite regenerieren {} % Leben pro Sekunde"
+  ],
+  [
+   "Kule Kara Lanet Mabedine dönüşür: bütün lanetler %{} daha güçlü (hasar, savunma, yavaşlatma, korku)",
+   "Turm wird zum Schrein des schwarzen Fluchs: alle Flüche {} % stärker (Schaden, Verteidigung, Verlangsamung, Furcht)"
+  ],
+  [
+   "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
+   "Stirbt ein Verfluchter, springt der Fluch auf die {} nächsten Feinde"
   ]
  ]
 }

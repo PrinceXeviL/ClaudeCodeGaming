@@ -5507,7 +5507,7 @@ function updateSoldier(s, dt) {
     const arrived = moveToward(s, home.x, home.y, dt);
     if (s.hero && !arrived) heroDust(s, dt);
     if (arrived) {
-      s.moving = false;
+      if (!(s.zombie && s.post && dist(s.x, s.y, s.post.x, s.post.y) > 4)) s.moving = false; // 16 Eki: dirilen yol boyunca ara adımlarla yürür; emir yerine varınca durur
       if (s.hero && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.regen * dt);
       // askerler savaşmadığında yaralarını sarar (saniyede canının %8'i)
       else if (!s.hero && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt);
@@ -6084,10 +6084,12 @@ function cmdMinions(x, y) {
     impactFx(foe.x, foe.y - 14, '255,90,70', 0.9); floatText(foe.x, foe.y - (CHAR_H['enemy_' + foe.type] || 24) - 14, 'Saldır!', '#ff8a7a'); sfx('spell');
     return;
   }
-  const n = nearestOnPaths(G.paths, x, y), px = n.d < 30 ? n.x : x, py = n.d < 30 ? n.y : y;
-  L.forEach((s, j) => { const a = j * 2.4, r = j ? 7 + 6 * Math.sqrt(j) : 0; // ayçiçeği dizilişi: üst üste binmesinler
-    s.post = { x: clamp(px + Math.cos(a) * r * 1.3, 12, W - 12), y: clamp(py + Math.sin(a) * r * 0.75, 60, H - 12) };
-    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.rx = s.post.x; s.ry = s.post.y; });
+  // 16 Eki (Caner: "yönlendirirken takılıyorlar; yalnız yoldan gitsinler, yol dışına çıkmasınlar"): gösterilen yer hep yolun üstüne oturur,
+  // askerler yolun üstünde sıralanır (yol boyunca öne-arkaya ve şeritlere dağılır); oraya yol boyunca yürürler (zombieRoadTo)
+  const n = nearestOnPaths(G.paths, x, y), px = n.x, py = n.y;
+  L.forEach((s, j) => { const row = Math.floor(j / 3), col = j % 3, al = n.along + (row % 2 ? -1 : 1) * Math.ceil(row / 2) * 11, lane = (col - 1) * ZOMBIE.lane * 0.9;
+    const q = pathPos(n.p, clamp(al, SOLDIER_REACH, n.p.total - 10), lane); s.post = { x: q.x, y: q.y, p: n.p, along: clamp(al, SOLDIER_REACH, n.p.total - 10), lane };
+    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.zlane = lane; zombieRoadTo(s, s.post.x, s.post.y); });
   G.effects.push({ kind: 'ring', x: px, y: py, r: 26, col: '140,255,120', t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: px, y: py, r: 14, col: '200,120,255', t: 0, dur: 0.35 });
   floatText(px, py - 24, 'İleri!', '#9aff8a'); sfx('spell');
 }
@@ -6306,16 +6308,16 @@ function drawPet(s) {
 const SOLDIER_REACH = 110;
 const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
 function zombieHunt(s) {
-  if (s.post && s.moving) { s.rx = s.post.x; s.ry = s.post.y; return; } // Mortimer'ın emri: gösterilen yere yürür (yolda kimseyle dövüşmez)
-  if (s.order) { // Mortimer'ın emri: gösterilen düşmana doğrudan yürür; yetişince olağan dövüş seçimi onu tutar
-    const o = s.order; if (o.dead || o.under || o.reviveT > 0) s.order = null; else { s.rx = o.x; s.ry = o.y; if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
+  if (s.post && s.moving) { if (zombieRoadTo(s, s.post.x, s.post.y)) s.moving = false; return; } // Mortimer'ın emri: gösterilen yere yol boyunca yürür (yolda kimseyle dövüşmez)
+  if (s.order) { // Mortimer'ın emri: gösterilen düşmana yol boyunca yürür (yakındaysa doğrudan); yetişince olağan dövüş seçimi onu tutar
+    const o = s.order; if (o.dead || o.under || o.reviveT > 0) s.order = null; else { if (dist(o.x, o.y, s.x, s.y) < 40) { s.rx = o.x; s.ry = o.y; } else zombieRoadTo(s, o.x, o.y); if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
   let best = null, bd = ZOMBIE.aggro; // 14 Eki (Caner): yalnız yakına gelen düşmana gider; düşman yoksa bulunduğu yerde bekler
   for (const o of G.enemies) {
     if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o)) continue;
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
-  if (!best) { if (s.post) { s.rx = s.post.x; s.ry = s.post.y; } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler
+  if (!best) { if (s.post) { if (dist(s.x, s.y, s.post.x, s.post.y) > 12) zombieRoadTo(s, s.post.x, s.post.y); else { s.rx = s.post.x; s.ry = s.post.y; } } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler; 16 Eki: yerinden itildiyse yol boyunca döner
   // 16 Eki (Caner: "bir düşmanı öldürünce önce gönderdiğim yere dönüyor, sonra saldırıyor"): yakındaki düşmana yola ya da emir yerine
   // dönmeden doğrudan yürür ve onu hedef alır; yol boyunca yürüme yalnız uzaktaki düşman için
   if (bd <= ZOMBIE.direct && !(s.born != null && G.t < s.born)) { s.target = best; if (!best.blocker && !best.def.noblock) best.blocker = s; s.rx = s.x; s.ry = s.y; return; }
@@ -6326,6 +6328,24 @@ function zombieHunt(s) {
   if (me.d > 8 + Math.abs(s.zlane)) { const q0 = pathPos(me.p, me.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return; }
   const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, Math.max(SOLDIER_REACH, me.along + clamp(tg.along - me.along, -30, 30)), s.zlane); // girişe yürümez
   s.rx = q.x; s.ry = q.y;
+}
+// 16 Eki (Caner: "yalnız yoldan gitsinler, yol dışına çıkamasınlar, çıkarlarsa yola dönsünler"): dirilenin yol boyunca yürüyüşü.
+// Rota emir anında bir kez planlanır (zRoute): hedef başka koldaysa önce kendi kolunda kavşağa, sonra hedefin kolunda hedefe. Her adımda
+// izlediği koldan çıkmışsa önce o kolun en yakın noktasına döner. true: vardı
+function zRoute(s, tx, ty) {
+  const me = nearestOnPaths(G.paths, s.x, s.y), T = nearestOnPaths(G.paths, tx, ty);
+  if (T.p === me.p) return { tx, ty, legs: [{ p: T.p, a: T.along }], i: 0 };
+  let ja = me.along, bd = 1e9; for (let a = 0; a <= me.p.total; a += 6) { const q = pathPos(me.p, a, 0), k = nearestOnPaths([T.p], q.x, q.y); if (k.d < bd) { bd = k.d; ja = a; } }
+  return { tx, ty, legs: [{ p: me.p, a: ja }, { p: T.p, a: T.along }], i: 0 };
+}
+function zombieRoadTo(s, tx, ty) {
+  s.zlane ??= rand(-1, 1) * ZOMBIE.lane;
+  if (!s.zr || dist(s.zr.tx, s.zr.ty, tx, ty) > 20) s.zr = zRoute(s, tx, ty); // yürüyen hedefte rota yalnız hedef 20 birim kayınca yenilenir
+  const R = s.zr, leg = R.legs[R.i], last = R.i === R.legs.length - 1, cur = nearestOnPaths([leg.p], s.x, s.y);
+  if (cur.d > 10 + Math.abs(s.zlane)) { const q0 = pathPos(leg.p, cur.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return false; } // yoldan çıkmış: yola dön
+  const dA = leg.a - cur.along;
+  if (Math.abs(dA) < 3) { if (!last) { R.i++; return zombieRoadTo(s, tx, ty); } s.rx = tx; s.ry = ty; return dist(s.x, s.y, tx, ty) < 3; }
+  const q = pathPos(leg.p, cur.along + clamp(dA, -24, 24), s.zlane); s.rx = q.x; s.ry = q.y; return false;
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 // 15 Eki (Caner): ceset ekonomisi. İri düşmanın ölüsü daha güçlü kalkar: güç = sqrt(düşman canı / CORPSE_ECO.base) (alt/üst sınırlı).
@@ -9793,13 +9813,14 @@ function drawTower(t) {
 // ---- Lanet Kulesi canlandırması (10 Eki, Caner: "en kaliteli şekilde hareketlendir, korkutucu olsun") ----
 // Görsel nm_lanet_kulesi.jpg (3 kademe). Noktalar [x oranı, alttan yükseklik oranı]. eye: [cx, up, rx, ry] boyalı gözün yeri;
 // üstüne kodla canlı göz çizilir (iris, yarık bebek en yakın düşmana bakar, ara ara kırpar, korkuttuğunda kızarır).
+// 16 Eki (Caner: Lanet Kulesi yeniden, nm33): her kademede büyük göz. eye: [x, alttan y, iris yarıçapı x, y, göz akı / iris oranı]
 const ALTAR_FX = [
-  { eye: [0.5, 0.86, 0.095, 0.06], candles: [[0.43, 0.295], [0.28, 0.232], [0.658, 0.31], [0.722, 0.232], [0.668, 0.2]], runes: { x: 0.585, y0: 0.42, y1: 0.76, col: '190,110,255' }, smoke: [0.5, 0.95] },
-  { book: true, braziers: [[0.17, 0.35], [0.83, 0.35]], skullEyes: [[0.578, 0.63], [0.672, 0.63]], runes: { x: 0.41, y0: 0.3, y1: 0.46, col: '120,150,255' } },
-  { eye: [0.505, 0.62, 0.09, 0.075], braziers: [[0.225, 0.3], [0.78, 0.3]], skullEyes: [[0.488, 0.322], [0.522, 0.322]], floor: [0.5, 0.16, 0.36, 0.1] },
+  { eye: [0.6, 0.815, 0.105, 0.038, 1.15], candles: [[0.12, 0.3], [0.17, 0.22], [0.2, 0.17], [0.33, 0.13], [0.79, 0.2], [0.85, 0.3]], runes: { x: 0.36, y0: 0.42, y1: 0.66, col: '190,110,255' } },
+  { eye: [0.5, 0.875, 0.125, 0.034, 1.15], braziers: [[0.12, 0.42], [0.88, 0.42]], skullEyes: [[0.475, 0.69], [0.525, 0.69]], runes: { x: 0.5, y0: 0.44, y1: 0.62, col: '170,120,255' } },
+  { eye: [0.53, 0.535, 0.082, 0.034, 2.1], floor: [0.5, 0.13, 0.3, 0.08] },
 ];
 // görseli yatay bir çizgiden ikiye bölen katmanlar: üstteki (kitap) ayrı salınır. cut: alttan yükseklik oranı
-const TOWER_SPLIT = { tower_altar_2: { cut: 0.765, bob: 2.6, tilt: 0.035 } };
+const TOWER_SPLIT = {}; // 16 Eki: 2. kademenin kitabı kalktı (yeni Lanet Kulesi)
 const SPLIT_CACHE = new WeakMap();
 function splitOf(im, cut) {
   let S = SPLIT_CACHE.get(im); if (S) return S;
@@ -9818,9 +9839,9 @@ function drawSplitTower(t, ts, im, SP) {
 }
 // 4. kademe (10 Eki, Caner'in görseli; tower_altar_rite / _blight): göz 3. kademedeki yerinde. fcol/bcol: zemin sisi ve mangal rengi,
 // red: göz hep kızıl (Kan Ayini), drops: havada süzülen kan damlaları, pool: altarın önündeki kan havuzu [x, alttan y, yarıçap]
-const ALTAR_FORM = {
-  tower_altar_rite: { eye: [0.5, 0.655, 0.09, 0.065], red: true, braziers: [[0.215, 0.27], [0.785, 0.27]], bcol: '255,50,40', skullEyes: [[0.485, 0.345], [0.515, 0.345]], floor: [0.5, 0.15, 0.34, 0.08], fcol: ['255,40,40', '170,10,30'], drops: [0.5, 0.62, 0.32], pool: [0.5, 0.13, 0.16] },
-  tower_altar_blight: { eye: [0.495, 0.655, 0.08, 0.07], braziers: [[0.215, 0.27], [0.78, 0.27]], bcol: '170,70,255', skullEyes: [[0.485, 0.31], [0.515, 0.31]], floor: [0.5, 0.15, 0.36, 0.1], fcol: ['130,40,220', '60,10,120'], ooze: [0.495, 0.58] },
+const ALTAR_FORM = { // 16 Eki: Kan Sülüğü (rite) ve Kara Lanet (blight), yeni çizim
+  tower_altar_rite: { eye: [0.47, 0.585, 0.08, 0.035, 2.1], red: true, skullEyes: [[0.17, 0.27], [0.23, 0.27], [0.71, 0.27], [0.77, 0.27]], floor: [0.47, 0.12, 0.32, 0.08], fcol: ['255,40,40', '170,10,30'], drops: [0.47, 0.5, 0.22], pool: [0.47, 0.12, 0.16] },
+  tower_altar_blight: { eye: [0.47, 0.585, 0.155, 0.064, 1.1], floor: [0.5, 0.15, 0.36, 0.1], fcol: ['130,40,220', '60,10,120'], ooze: [0.47, 0.52] },
 };
 function drawAltarFx(t, ts) {
   const F = ALTAR_FORM[ts.name] || ALTAR_FX[t.lvl], s = ts.w / 50; if (!F) return;
@@ -9877,13 +9898,21 @@ function drawCurseEye(t, ts, E, P, L) {
   const beat = Math.pow(Math.max(0, Math.sin(time * 2.6 + t.x)), 6);
   ctx.save();
   const pop = clamp(1 - (time - (t.gazeHit ?? -9)) / 0.35, 0, 1); // lanet anında göz bir an daha da açılır
-  if (rg > 0 || pop > 0) { const k = 1 + 0.65 * rg + 0.3 * pop * pop; ctx.translate(c.x, c.y); ctx.scale(k, k); ctx.translate(-c.x, -c.y); } // öfkeyle büyür (15 Eki: daha belirgin)
+  if (rg > 0 || pop > 0) { const k = 1 + 0.2 * rg + 0.08 * pop * pop; ctx.translate(c.x, c.y); ctx.scale(k, k); ctx.translate(-c.x, -c.y); } // 16 Eki (Caner): lanetlerken %20 büyür
+  if (rg > 0.05 && E[4] > 1.3) { // göz akına kızıl damarlar yayılır (öfke)
+    const SR = E[4]; ctx.save(); ctx.strokeStyle = `rgba(200,20,30,${0.75 * rg})`; ctx.lineCap = 'round';
+    for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2 + t.x * 0.1, r0 = SR * 0.98, r1 = 1.05 + 0.12 * Math.sin(i * 3.1);
+      ctx.lineWidth = (0.9 - 0.25 * (i % 3)) * s; ctx.beginPath(); ctx.moveTo(c.x + Math.cos(a) * rx * r0, c.y + Math.sin(a) * ry * r0);
+      ctx.quadraticCurveTo(c.x + Math.cos(a + 0.18) * rx * (r0 + r1) / 2, c.y + Math.sin(a + 0.18) * ry * (r0 + r1) / 2, c.x + Math.cos(a - 0.05) * rx * r1, c.y + Math.sin(a - 0.05) * ry * r1); ctx.stroke(); }
+    ctx.restore(); }
   ctx.beginPath(); ctx.ellipse(c.x, c.y, rx * 0.9, ry * 0.9, 0, 0, Math.PI * 2); ctx.clip();
   const g = ctx.createRadialGradient(c.x + t.eyeX * rx * 0.25, c.y + t.eyeY * ry * 0.2, 1, c.x, c.y, rx);
   g.addColorStop(0, red ? '#ffb0b0' : '#f0c8ff'); g.addColorStop(0.45, red ? '#ff3040' : '#a24dff'); g.addColorStop(1, red ? '#5a0610' : '#2a0850');
   ctx.fillStyle = g; ctx.fillRect(c.x - rx, c.y - ry, rx * 2, ry * 2);
-  const px = c.x + t.eyeX * rx * 0.42, py = c.y + t.eyeY * ry * 0.3, pw = rx * (0.13 + 0.12 * beat) * (1 - 0.45 * rg), ph = ry * 0.78; // atışta açılır, öfkede incelir
-  ctx.beginPath(); ctx.moveTo(px, py - ph); ctx.quadraticCurveTo(px + pw * 1.6, py, px, py + ph); ctx.quadraticCurveTo(px - pw * 1.6, py, px, py - ph); ctx.fillStyle = '#12041c'; ctx.fill();
+  // 16 Eki (Caner: "ortadaki yuvarlak çok belli olsun"): yuvarlak, belirgin göz bebeği + açık iris halkası; bebek kurbana döner, öfkede daralır
+  const px = c.x + t.eyeX * rx * 0.3, py = c.y + t.eyeY * ry * 0.25, pr = Math.min(rx, ry) * (0.5 + 0.06 * beat) * (1 - 0.22 * rg);
+  ctx.fillStyle = red ? 'rgba(255,170,150,0.6)' : 'rgba(228,185,255,0.6)'; ctx.beginPath(); ctx.arc(px, py, pr * 1.42, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#0c0212'; ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.ellipse(c.x - rx * 0.32, c.y - ry * 0.38, rx * 0.12, ry * 0.12, 0, 0, Math.PI * 2); ctx.fill();
   if (bk > 0) { // göz kapakları: koyu taş renginde yukarıdan ve aşağıdan kapanır
     ctx.fillStyle = '#1e1426'; ctx.fillRect(c.x - rx, c.y - ry, rx * 2, ry * bk * 1.02); ctx.fillRect(c.x - rx, c.y + ry - ry * bk * 1.02, rx * 2, ry * bk * 1.02);
@@ -16454,24 +16483,30 @@ function updateAltar(t, dt) {
     const BF = towerForm(t);
     // girişte bir kez korku şansı (bosslar ve makineler korkmaz); korkan geri kaçar
     if (!e.altarRoll) { e.altarRoll = true;
-      if (L.fear && !e.def.chief && !e.def.machine && e.siege === undefined && Math.random() < L.fear) {
+      if (L.fear && !e.def.chief && !e.def.machine && e.siege === undefined && Math.random() < L.fear * (bl ? 1 + (bl.boost || 0) : 1)) {
         e.fearT = Math.max(e.fearT || 0, 1.6); e.fearMax = 1.6; e.hopT = 0.4; floatText(e.x, e.y - 30, '!', '#d8a8ff'); t.scareT = time + 1; // göz kızarır
         for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-6, 6), y: e.y - rand(6, 26), vy: -rand(20, 50), col: '170,110,255', s0: 3, s1: 0.4, life: 0.6 });
       }
     }
-    e.curseT = Math.max(e.curseT || 0, L.linger || 0.4); e.curseK = Math.max(e.curseK || 0, L.curse); // alandan çıkınca lanet 10 sn daha sürer (11 Eki: curseK ve curseRise yorumun içinde kalmıştı, çalışmıyordu)
+    const KB = bl ? 1 + (bl.boost || 0) : 1; // Kara Lanet: bütün lanet etkileri güçlenir
+    e.curseT = Math.max(e.curseT || 0, L.linger || 0.4); e.curseK = Math.max(e.curseK || 0, L.curse * KB); // alandan çıkınca lanet 10 sn daha sürer (11 Eki: curseK ve curseRise yorumun içinde kalmıştı, çalışmıyordu)
     e.curseRise = Math.max(e.curseRise || 0, L.rise + (t.spec === 'blight' ? 0.1 : 0) + (BF && BF.rise || 0));
-    e.curseRes = Math.max(e.curseRes || 0, L.res || 0); e.curseWeak = Math.max(e.curseWeak || 0, L.weak || 0);
+    e.curseRes = Math.max(e.curseRes || 0, Math.min(0.9, (L.res || 0) * KB)); e.curseWeak = Math.max(e.curseWeak || 0, Math.min(0.6, (L.weak || 0) * KB));
     e.drumT = 0; e.armT = 0; // davul ve sancak coşkusu söner
     if (bl) e.blightN = Math.max(e.blightN || 0, bl.n);
-    slowEnemy(e, L.slow, 0.4);
+    slowEnemy(e, Math.min(0.6, L.slow * KB), 0.4);
   }
   const ri = abRank(t, 'rite');
-  if (ri && !(t.disabledT > 0)) { // Kan Ayini: menzildeki düşmanların canını emer, emilen can yakındaki iskeletlere akar
+  if (ri && ri.regen && !(t.disabledT > 0)) for (const s of G.soldiers) { // Kan Sülüğü: menzildeki iskeletlerin canı sürekli yenilenir
+    if (s.dead || s.wall || s.hero || s.hp >= s.maxHp || dist(s.x, s.y, t.x, t.y) > L.range) continue;
+    s.hp = Math.min(s.maxHp, s.hp + s.maxHp * ri.regen * dt);
+    if (Math.random() < dt * 1.5) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-5, 5), y: s.y - rand(4, 20), vy: -rand(12, 26), col: '255,50,60', s0: 2.2, s1: 0.4, life: 0.6 });
+  }
+  if (ri && !(t.disabledT > 0)) { // Kan Sülüğü: menzildeki düşmanların canını emer, emilen can yakındaki iskeletlere akar
     t.drainCd = (t.drainCd ?? 0.5) - dt;
     if (t.drainCd <= 0) {
       t.drainCd = 0.5; let got = 0;
-      const ts = towerSprite(t), eye = ts ? { x: t.x, y: ts.bottom - 0.655 * ts.h } : { x: t.x, y: t.y - 60 };
+      const ts = towerSprite(t), EF = ts && (ALTAR_FORM[ts.name] || ALTAR_FX[t.lvl]), eye = ts && EF && EF.eye ? { x: t.x + (EF.eye[0] - 0.5) * ts.w, y: ts.bottom - EF.eye[1] * ts.h } : { x: t.x, y: t.y - 60 };
       for (const e of G.enemies) {
         if (e.dead || e.under || e.def.machine || dist(e.x, e.y, t.x, t.y) > L.range) continue;
         const hp0 = e.hp; damageEnemy(e, ri.drain * 0.5, 'true', true, 'magic'); got += hp0 - Math.max(0, e.hp);
@@ -20477,6 +20512,7 @@ window.__game = {
     } else out.data = c.toDataURL('image/webp', 0.9);
     BLEED = B0; delete REGION_BG[ep]; return out;
   },
+  cmdMinions: (x, y) => cmdMinions(x, y), roadDist: (x, y) => nearestOnPaths(G.paths, x, y).d, // test: dirilenlere emir, yola uzaklık
   tutState() { // test (tools/ogretici-test.js): eğitimin adımı, yazısı ve okun ekran + pencere (client) noktası
     const T = G && G.tut; if (!T) return { overlay, none: true, wave: G && G.wave };
     const S = T.steps[T.i], at = !T.card && T.on && S && S.at ? S.at() : null;

@@ -598,7 +598,14 @@
   "Öğreticiye git": "К обучению",
   "OYNADIM": "ДА",
   "Doğrudan sefere başla": "Сразу в поход",
-  "EĞİTİMİ ATLA ›": "ПРОПУСТИТЬ ›"
+  "EĞİTİMİ ATLA ›": "ПРОПУСТИТЬ ›",
+  "Kan Sülüğü": "Кровавая пиявка",
+  "Kan Sülüğü Mabedi": "Святилище пиявки",
+  "Düşmandan can çalıp iskeletleri sürekli yenileyen kan sülüğü": "Крадёт жизнь врагов и постоянно лечит скелетов",
+  "Düşmanı her alanda zayıflatan güçlü lanetler": "Сильные проклятия, ослабляющие врага во всём",
+  "ölenlerin kalkma şansı +%10": "+%10 к шансу подъёма павших",
+  "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 поднятых · +10% силы · труп +1,65 с",
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 поднятых · +25% здоровья · +25% урона · труп +1,65 с"
  },
  "tpl": [
   [
@@ -960,6 +967,22 @@
   [
    "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
    "каждые {} с выпускает призрака: {} урона, {} с страха"
+  ],
+  [
+   "Kule Kan Sülüğüne dönüşür: her düşmandan saniyede {} can çeker, iskeletlere verir",
+   "Башня становится Кровавой пиявкой: высасывает {} здоровья в секунду из каждого врага и отдаёт скелетам"
+  ],
+  [
+   "Menzildeki iskeletlerin canı saniyede %{} yenilenir",
+   "Скелеты в радиусе восстанавливают {}% здоровья в секунду"
+  ],
+  [
+   "Kule Kara Lanet Mabedine dönüşür: bütün lanetler %{} daha güçlü (hasar, savunma, yavaşlatma, korku)",
+   "Башня становится Святилищем чёрного проклятия: все проклятия сильнее на {}% (урон, защита, замедление, страх)"
+  ],
+  [
+   "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
+   "Когда проклятый умирает, проклятие перескакивает на {} ближайших врагов"
   ]
  ]
 }
