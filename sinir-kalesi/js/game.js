@@ -17692,7 +17692,7 @@ const ZONE_FX = { cursed: 'fireflies', bog: 'rain', graveyard: 'storm', blacklak
 const zoneBand = (E, k) => { const c = E.mapH - k * MAP_V.step - MAP_V.h / 2; return [c - MAP_V.step * 0.62, c + MAP_V.step * 0.62]; };
 const hsh = (i, s) => { const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
 // 16 Eki (Caner: "mekânlar haritada görünsün"): her mekânın ortasında, yolun boş tarafında o yeri tanıtan işaret (fenerli kuru meşe, kemik kapı, kızıl ay...)
-const MAP_MARK = { w: 150, side: 205 }; // w: genişlik (dünya), side: haritanın ortasından yana uzaklık
+const MAP_MARK = { w: 72, side: 165, chapel: 110 }; // w: genişlik (dünya), side: haritanın ortasından yana uzaklık; chapel: haritadaki şapel. 16 Eki (Caner): yoldaki askerlere (8.5) göre orantılı
 function drawMapLandmarks(E, ep, V) {
   if (!E.zones || !E.vert) return; const per = Math.ceil(E.nodes.length / E.zones.length);
   for (let k = 0; k < E.zones.length; k++) {
@@ -17740,7 +17740,7 @@ function drawMapZoneLabels(E, ep) { // açılmış mekânın adı: yer işaretin
   for (let k = 0; k < E.zones.length; k++) {
     const i0 = ids[k * per], nd = E.nodes[k * per]; if (i0 == null || !nd || (!levelUnlocked(i0) && !fogTest())) continue;
     const L = landmarkPos(E, k); let x, y; if (L) { x = L.x; y = L.y + 16; } else { const [y0] = zoneBand(E, k); y = Math.max(nd[1] + 34, y0 + 30); x = nd[0] < 480 ? nd[0] + 120 : nd[0] - 120; }
-    const z = MAPCAM.z; ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); ctx.globalAlpha = 0.92; crimsonRibbon(0, 0, E.zones[k][1], 20, 0); ctx.restore();
+    const z = MAPCAM.z; ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); ctx.globalAlpha = 0.92; crimsonRibbon(0, 0, E.zones[k][1], 16, 0); ctx.restore();
   }
 }
 function drawRegionMap(E, ep, st) {
@@ -17773,15 +17773,15 @@ function drawRegionMap(E, ep, st) {
   // şapel (haritada biraz büyük) ve balkonda kuru kafalı Mortimer: çay içer, arkasında ruh ışığı
   const ch = spr('castle_1'), mort = spr('mortimer'), fogged = MAPFX.fog && MAPFX.fog.vis < epLevels(ep).length;
   if (ch && fogged) { // sisin içinde: şapel kara siluet, yalnız yeşil pencereleri soluk yanar
-    const cw = 150, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh, L = chapelFogLayers(ch);
+    const cw = MAP_MARK.chapel, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh, L = chapelFogLayers(ch);
     drawSprite(ctx, L.dark, cx, cy, cw);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.5 + 0.2 * Math.sin(time * 1.5); drawSprite(ctx, L.win, cx, cy, cw); ctx.restore();
   } else if (ch) {
-    const cw = 150, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh;
+    const cw = MAP_MARK.chapel, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh;
     drawSprite(ctx, ch, cx, cy, cw);
     const S = MORT_STAGE[1];
     if (mort) {
-      const mx = cx - cw / 2 + S.at[0] * cw, my = cy - chh + S.at[1] * chh, mh = 36 + Math.sin(time * 1.6) * 0.4;
+      const mx = cx - cw / 2 + S.at[0] * cw, my = cy - chh + S.at[1] * chh, mh = cw * 0.24 + Math.sin(time * 1.6) * 0.4;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       glow(ctx, mx, my - mh * 0.55, mh * 1.4, '150,90,255', 0.45 + Math.sin(time * 2) * 0.1);
       glow(ctx, mx, my - mh * 0.55, mh * 0.75, '120,255,140', 0.35 + Math.sin(time * 2.6) * 0.08);
