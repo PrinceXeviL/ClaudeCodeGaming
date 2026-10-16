@@ -590,7 +590,15 @@
   "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "以积攒的灵魂释放灵魂闪电：被击中的敌人会显出骨架",
   "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "窃魂者吸取敌人的灵魂：穿透护甲并减速。用来对付持盾的重甲步兵。第3级时，积攒的灵魂化作闪电。",
   "+3 dirilen · +%10 güç · ceset +2 sn": "+3 复活 · +10% 力量 · 尸体 +2 秒",
-  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 复活 · +25% 生命 · +25% 伤害 · 尸体 +2 秒"
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 复活 · +25% 生命 · +25% 伤害 · 尸体 +2 秒",
+  "HOŞ GELDİN!": "欢迎！",
+  "Daha önce kule savunma oyunu oynadın mı?": "你以前玩过塔防游戏吗？",
+  "Oynamadıysan Mortimer sana tek bölümde her şeyi öğretsin. İstediğin an atlayabilirsin.": "如果没有，就让莫蒂默在一关里教你一切。随时可以跳过。",
+  "OYNAMADIM": "没玩过",
+  "Öğreticiye git": "前往教学",
+  "OYNADIM": "玩过",
+  "Doğrudan sefere başla": "直接开始征程",
+  "EĞİTİMİ ATLA ›": "跳过教学 ›"
  },
  "tpl": [
   [

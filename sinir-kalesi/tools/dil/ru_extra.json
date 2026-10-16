@@ -590,7 +590,15 @@
   "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Молния душ из накопленных душ: у поражённого врага виден скелет",
   "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Похитители душ высасывают душу врага: пробивают броню и замедляют. Стройте против тяжёлой пехоты со щитами и бронёй. На 3-й ступени накопленные души бьют молнией.",
   "+3 dirilen · +%10 güç · ceset +2 sn": "+3 поднятых · +10% силы · труп +2 с",
-  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 поднятых · +25% здоровья · +25% урона · труп +2 с"
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 поднятых · +25% здоровья · +25% урона · труп +2 с",
+  "HOŞ GELDİN!": "ДОБРО ПОЖАЛОВАТЬ!",
+  "Daha önce kule savunma oyunu oynadın mı?": "Вы раньше играли в tower defense?",
+  "Oynamadıysan Mortimer sana tek bölümde her şeyi öğretsin. İstediğin an atlayabilirsin.": "Если нет, Мортимер научит всему за один уровень. Можно пропустить в любой момент.",
+  "OYNAMADIM": "НЕТ",
+  "Öğreticiye git": "К обучению",
+  "OYNADIM": "ДА",
+  "Doğrudan sefere başla": "Сразу в поход",
+  "EĞİTİMİ ATLA ›": "ПРОПУСТИТЬ ›"
  },
  "tpl": [
   [

@@ -4660,7 +4660,7 @@ function updateTower(t, dt) {
       } else t.cageCd = 0.5;
     }
   }
-  if (NECRO && t.type === 'mage' && typeof SOUL_LAMP !== 'undefined') { updateSoulLamp(t, dt, L); return; } // 16 Eki: ruh hırsızları + şimşek (ışın yerine)
+  if (NECRO && t.type === 'mage' && typeof SOUL_LAMP !== 'undefined' && SOUL_LAMP.on) { updateSoulLamp(t, dt, L); return; } // 16 Eki: ruh hırsızları + şimşek (ışın yerine)
   t.cd -= dt;
   if (t.cd > 0) return;
   let e = findTarget(t, L.range, t.def.air);
@@ -6779,8 +6779,10 @@ function drawMortSay() {
 // when (ne zaman görünür), done (bitti mi), at (okun ekran noktası), timeout (görünürken bu kadar sn sonra geçilir).
 // save.tut3[bölüm] = 1 olunca o bölümün eğitimi bir daha çıkmaz. 1-2. bölümün ilk oynanışında komutan ve büyüler yok (G.early).
 const EARLY = { n: 2, wait: 90 };
-const tutDue = (idx) => NECRO && idx < 3 && !(save.tut3 && save.tut3[idx]);
-const earlyLock = (idx) => NECRO && idx < EARLY.n && (tutDue(idx) || !((save.stars[EARLY.n] || 0) > 0));
+// 16 Eki (Caner: "detaylı öğretici var, oyun bölümlerinde eğitici olmasın"): 1-3. bölümlerin eğitimi ve ilk oynanış kilidi kapalı (TUTS öğretici bölümde kullanılır)
+const TUT_IN_LEVELS = false;
+const tutDue = (idx) => TUT_IN_LEVELS && NECRO && idx < 3 && !(save.tut3 && save.tut3[idx]);
+const earlyLock = (idx) => TUT_IN_LEVELS && NECRO && idx < EARLY.n && (tutDue(idx) || !((save.stars[EARLY.n] || 0) > 0));
 function tutPlot(type) { // önerilen arsa (13 Eki, Caner): ilk kule yolun ilk üçte birine; sonrakiler var olan kulelerin hemen yanına
   // (Mahzen'in askerleri okçuların menzilinde düşmanı tutsun; kuleler birbirini desteklesin), yolu gören arsalardan
   const free = G.plots.filter(pl => !pl.tower);
@@ -6834,7 +6836,7 @@ const TUTS = [
   [ // 2. bölüm
     { card: true, icon: 'skull', title: 'Yeni kuleler!', text: 'Ruh Feneri ve Veba Kazanı açıldı. Her düşmanın zayıf yanı var: doğru kuleyi doğru yere kur.' },
     buildStep('mage', 'Yol kenarındaki boş arsaya dokun: Ruh Feneri kur', 'Ruh Feneri simgesine dokun, onaylamak için bir daha dokun'),
-    { card: true, icon: 'mage', title: 'Ruh Feneri', text: 'Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.' },
+    { card: true, icon: 'mage', title: 'Ruh Feneri', text: 'Ruh ışını zırhı deler ve düşmanı yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur.' },
     buildStep('artillery', 'Yol kenarındaki boş arsaya dokun: Veba Kazanı kur', 'Veba Kazanı simgesine dokun, onaylamak için bir daha dokun'),
     { card: true, icon: 'artillery', title: 'Veba Kazanı', text: 'Kalabalığın ortasına veba fırlatır: alan hasarı verir, zehirler ve yavaşlatır. Toplu gelen lejyonlara karşı kur.' },
     WAVE_STEP('Hazır olunca kafatasına iki kez dokun: dalga gelsin.'),
@@ -17298,6 +17300,30 @@ function claimLogin() {
   mapNote = { text: 'Hediye alındı! Eşyalar savaş çantanda. Yarın yine gel!', t: time };
   for (let i = 0; i < 26; i++) { const a = rand(0, Math.PI * 2), v = rand(60, 200); emit(uiParts, { kind: 'glow', add: true, x: W / 2, y: H / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, col: i % 2 ? '200,140,255' : '255,220,120', s0: rand(2.5, 4.5), s1: 0.4, life: rand(0.6, 1.1) }); }
 }
+// 16 Eki (Caner): ilk kez oynayana öğretici önerilir, zorunlu değil. "Oynamadım" öğreticiyi açar (içinde ATLA var), "Oynadım" sefere bırakır.
+const TDASK = { t0: null };
+function drawTdAsk() {
+  if (TDASK.t0 == null) TDASK.t0 = time;
+  const a = clamp((time - TDASK.t0) / 0.3, 0, 1), k = easeOutBack(clamp((time - TDASK.t0 - 0.2) / 0.4, 0, 1));
+  ctx.fillStyle = `rgba(6,3,10,${0.62 * a})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  buttons.push({ key: 'tdask_bg', x: VIS.l, y: VIS.t, w: VIS.w, h: VIS.h, fn: () => {} }); // alttaki düğmelere dokunulmasın
+  if (k <= 0.01) return;
+  const pw = Math.min(640, VIS.w - 40), ph = 300, px = W / 2 - pw / 2, py = H / 2 - ph / 2;
+  ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(k, k); ctx.translate(-W / 2, -H / 2);
+  pauseFrame(px, py, pw, ph, 0);
+  crimsonRibbon(W / 2, py + 4, 'HOŞ GELDİN!', 22, Math.min(360, pw - 40));
+  txt('Daha önce kule savunma oyunu oynadın mı?', W / 2, py + 70, 19, '#f4e3b2', 'center', '800', FONT_B, false);
+  fitTxt("Oynamadıysan Mortimer sana tek bölümde her şeyi öğretsin. İstediğin an atlayabilirsin.", W / 2, py + 104, pw - 60, 15, '#d8c8b0', 'center', '700', FONT_B, false, 12);
+  ctx.restore();
+  if (k > 0.9) {
+    const go1 = () => { save.tdAsked = 1; persist(); sfx('open'); go(() => startLevel(TUTOR.idx, 'o')); };
+    const go2 = () => { save.tdAsked = 1; persist(); sfx('pick'); TDASK.t0 = null; };
+    gameButton('tdask_no', W / 2 - pw * 0.24, py + ph - 100, pw * 0.42, 66, 'OYNAMADIM', go1, 'green', { size: 18, shine: true, breathe: true });
+    txt('Öğreticiye git', W / 2 - pw * 0.24, py + ph - 52, 14, '#b8ff9a', 'center', '800', FONT_B, false);
+    gameButton('tdask_yes', W / 2 + pw * 0.24, py + ph - 100, pw * 0.42, 66, 'OYNADIM', go2, 'wood', { size: 18 });
+    txt('Doğrudan sefere başla', W / 2 + pw * 0.24, py + ph - 52, 14, '#e8dcc0', 'center', '800', FONT_B, false);
+  }
+}
 function drawLoginBonus(st) {
   if (LOGIN_UI.t0 == null || time - LOGIN_UI.t0 > 999) LOGIN_UI.t0 = time;
   const k = easeOutBack(clamp((time - LOGIN_UI.t0 - 0.3) / 0.4, 0, 1)), L = save.login || { day: 0 }, cur = L.day % DAILY_LOGIN.length;
@@ -18401,7 +18427,8 @@ function drawMap() {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.4, H), vx: rand(-6, 6), vy: rand(-14, -5),
       col: '255,210,140', s0: rand(1.5, 2.8), s1: 0.5, life: rand(3, 5), a: 0.7, fadeIn: 0.3 });
   }
-  if (mapSel == null && !trans && !MAPCAM.intro && loginDue()) drawLoginBonus(st); // açılış yakınlaşması bitince
+  if (mapSel == null && !trans && !MAPCAM.intro && NECRO && !save.tdAsked) drawTdAsk(); // 16 Eki: ilk açılışta öğretici önerisi (hediyeden önce)
+  else if (mapSel == null && !trans && !MAPCAM.intro && loginDue()) drawLoginBonus(st); // açılış yakınlaşması bitince
   // bölüm kartı (bayrağa dokununca): arka plan kararır, dışına dokununca kapanır
   if (mapSel != null) {
     const k = clamp((time - mapSelT) / 0.2, 0, 1);
@@ -19122,6 +19149,7 @@ function drawPlay() {
   drawIntro();
   drawBanner();
   drawTut();
+  if (G.tutorial && !overlay) gameButton('tut_skip', W / 2, EDGE.t + 30, 150, 44, 'EĞİTİMİ ATLA ›', () => { save.tdAsked = 1; persist(); go(() => { screen = 'map'; setOverlay(null); }); }, 'wood', { size: 14 }); // 16 Eki: öğretici atlanabilir, haritaya döner
   if (overlay) drawOverlay();
   if (G.loadWait && !G.comic) drawLoading(); // yükleme ekranı (çizgi roman paneli varken o oynar, yükleme arkada sürer)
 }

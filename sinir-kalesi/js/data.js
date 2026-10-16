@@ -1647,13 +1647,14 @@ TOWERS.mage.levels[2].dmg = TOWERS.mage.levels[2].dmg.map(v => Math.round(v * 0.
 // 16 Eki (Caner): Ruh Feneri yeniden. 1-2. kademe tek saldırı: ruh hırsızları uçar, düşmanın ruhunu emer (büyü hasarı, yavaşlatır), ruh küresini
 // fenere taşır; ruhlar fenerde birikir. 3. kademede ikinci saldırı: biriken ruhlarla şimşek (eski ruh ışını görünümünde) (çarpılan 1 sn röntgen iskelet olur).
 // Uzmanlık: Ruh Emici +1 hırsız/kademe ve emilen can iskeletlere; Ruh Kafesi şimşeği 1/2/3 düşmana sıçratır. Mantık game.js updateSoulLamp.
-const SOUL_LAMP = { thieves: [1, 2, 2], speed: 140, drainT: 0.75, slow: 0.3, share3: 0.55, cap: 10,
+// 16 Eki (Caner: "hayaletlerin ruh çalması saçma, eski haline al, sonra baştan yapacağız"): on: false, kule eski ruh ışınıyla saldırır
+const SOUL_LAMP = { on: false, thieves: [1, 2, 2], speed: 140, drainT: 0.75, slow: 0.3, share3: 0.55, cap: 10,
   zap: { cost: 2, cd: 1.4, dmgK: 0.95, jumpR: 75, jumpK: 0.7, xray: 0.9 } };
-Object.assign(TOWERS.mage, { desc: 'Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır · 3. kademede biriken ruhlarla şimşek çarpar' });
+if (SOUL_LAMP.on) { Object.assign(TOWERS.mage, { desc: 'Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır · 3. kademede biriken ruhlarla şimşek çarpar' });
 TOWERS.mage.levels[0].perk = 'Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler';
 TOWERS.mage.levels[1].perk = 'İki ruh hırsızı · emilen düşman %30 yavaşlar';
-TOWERS.mage.levels[2].perk = 'Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür';
-{ const A = TOWERS.mage.abilities, dr = A.find(a => a.id === 'drain'), gh = A.find(a => a.id === 'ghost');
+TOWERS.mage.levels[2].perk = 'Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür'; }
+if (SOUL_LAMP.on) { const A = TOWERS.mage.abilities, dr = A.find(a => a.id === 'drain'), gh = A.find(a => a.id === 'ghost');
   if (dr) dr.desc = (r) => `Kule Ruh Emiciye dönüşür: +${dr.ranks.indexOf(r) + 1} ruh hırsızı · emilen canın %${Math.round(r.heal * 100)}'i yakındaki iskeletleri iyileştirir`;
   if (gh) { gh.ranks.forEach((r, i) => { r.jumps = i + 1; });
     gh.desc = (r) => `Kule Ruh Kafesine dönüşür: şimşek ${r.jumps} düşmana daha sıçrar · 8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır · ${r.cd} sn'de bir hayalet salar: ${r.dmg} hasar, ${r.fear} sn korku`; } }

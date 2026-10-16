@@ -590,7 +590,15 @@
   "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Rayo de almas con las almas reunidas: se ve el esqueleto del enemigo alcanzado",
   "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Los ladrones de almas absorben el alma del enemigo: perforan armaduras y ralentizan. Constrúyelo contra la infantería pesada acorazada con escudos. En el nivel 3, las almas reunidas caen como rayo.",
   "+3 dirilen · +%10 güç · ceset +2 sn": "+3 resucitados · +10% de poder · cadáver +2 s",
-  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 resucitados · +25% de vida · +25% de daño · cadáver +2 s"
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn": "+4 resucitados · +25% de vida · +25% de daño · cadáver +2 s",
+  "HOŞ GELDİN!": "¡BIENVENIDO!",
+  "Daha önce kule savunma oyunu oynadın mı?": "¿Has jugado antes a un juego de defensa de torres?",
+  "Oynamadıysan Mortimer sana tek bölümde her şeyi öğretsin. İstediğin an atlayabilirsin.": "Si no, deja que Mortimer te enseñe todo en un solo nivel. Puedes saltarlo cuando quieras.",
+  "OYNAMADIM": "NO",
+  "Öğreticiye git": "Ir al tutorial",
+  "OYNADIM": "SÍ",
+  "Doğrudan sefere başla": "Empezar la campaña",
+  "EĞİTİMİ ATLA ›": "SALTAR ›"
  },
  "tpl": [
   [
