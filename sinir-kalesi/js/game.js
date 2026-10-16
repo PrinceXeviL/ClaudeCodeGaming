@@ -8144,7 +8144,7 @@ function update(dt) {
   }
   if (G.gold >= 2000) achGive('hoard');
   if (G.winHold > 0) G.winHold -= dt;
-  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !G.loot.length && !G.coins.some(c => !c.done)) { // sikkeler sayaca varsın (kasa hesabı)
+  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
     const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
     vaultSettle(firstWin);
     if (G.chal === 'd') { save.daily = { key: G.daily.key, done: true, n: ((save.daily && save.daily.n) || 0) + 1 }; G.stars = 1; }
@@ -8157,9 +8157,8 @@ function update(dt) {
     heroEndXp(true);
     if (G.tutLv) { save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); } // eğitimli bölüm kazanıldı: eğitimi bir daha gösterme
     persist();
-    for (const h of G.heroes) { const F = !h.dead && ANIM_META[h.def.sprite + '_lvlup']; if (F) h.lvlA = h.lvlD = F.dur || F.n / 24; } // 16 Eki: zafer pozu (Veo _lvlup varsa)
     setOverlay('win');
-    if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; G.winCheerT = G.t + 2.5; } else sfx('win'); // sonra Mortimer kahkahası, iskelet tezahüratı // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
+    if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } else sfx('win'); // sonra Mortimer kahkahası, iskelet tezahüratı // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
 }
@@ -8579,16 +8578,17 @@ function drawXbowMen(t, ts, redraw) {
   const A = xbowMen(t), h = menH(t), M = menOf(t), ghost = !!t.spec, pre = M.pre;
   for (const a of A.slice().sort((p, q) => p.d - q.d)) { // arkadaki önce
     if (a.dead) continue;
-    const f = xbowFoot(t, ts, a), up = a.kickT > -M.hold, rv = a.reviveT > 0 ? 1 - a.reviveT / 0.6 : 1;
+    const CK = celebK(), f = xbowFoot(t, ts, a), up = a.kickT > -M.hold || CK > 0, rv = a.reviveT > 0 ? 1 - a.reviveT / 0.6 : 1; // kutlamada yay kalkık
     if (ghost) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.15, h * 0.45, '255,60,80', 0.2 + (up ? 0.12 : 0)); ctx.restore(); }
     else if (t.lvl >= 2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - h * 0.45, h * 0.6, '255,215,165', 0.09 * rv); ctx.restore(); } // soluk sıcak arka ışık: koyu platformda gövde seçilsin
     const rise = a.aimT > 0 ? (1 - a.aimT / M.aim) : 1; // nişana kalkış / yay germe (0..1)
     let pose = up ? M.pose : '';
     const sinceRel = M.kick - a.kickT; // bırakmadan bu yana geçen süre
     if (M.seq && up) pose = a.aimT > 0 ? M.seq.find(q => rise <= q[0])[1] : sinceRel < M.rel ? M.relPose || '_rel' : M.load && sinceRel < M.rel + M.load ? loadPose(pre, (sinceRel - M.rel) / M.load) : ''; // germe/nişan sırası, bırakma pozu, (arbalette) kurma
+    if (CK) pose = M.pose; // kutlama: yay/arbalet kalkık pozda
     const im = spr(pre + pose) || spr(up ? pre + M.pose : pre); if (!im) continue;
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1); if (rv < 1) { ctx.globalAlpha *= rv; ctx.translate(0, (1 - rv) * h * 0.25); } // yeniden kalkan okçu belirir
-    const bob = a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012; // yürürken sekme, dururken nefes
+    const bob = (a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012) + (CK ? Math.max(0, Math.sin(time * CELEB.rate + a.d * 3 + t.x * 0.1)) * h * 0.14 * CK : 0); // yürürken sekme, dururken nefes; kutlamada zıplar
     const kk = a.aimT <= 0 && a.kickT > 0 ? a.kickT / M.kick : 0; // bırakınca geri tepme (geri ve yukarı)
     let lean = a.walking ? Math.sin(a.anim * 9) * 0.04 : up ? (1 - rise) * 0.12 - kk * 0.1 : 0, sx = 1, sy = 1, back = 0;
     if (M.bow && up) { // okçu: pozlar germeyi gösterir; üstüne tam gerilimde hafif titreme, bırakınca küçük ileri sekme
@@ -8600,7 +8600,7 @@ function drawXbowMen(t, ts, redraw) {
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = null; // 11 Eki (2): eski yürüme şeritleri (Kaggle Wan, 168 px, 3. kademede eski tasarım) kalktı; yürürken de net Gemini çizimi + adım sekmesi
     // 11 Eki (Caner): koyu kontur kaldırıldı, yoldaki iskeletler gibi düz çizilir
-    const shot = M.bow && !a.walking && archShot(pre, up && a.aimT > 0 ? rise : null, up && a.aimT <= 0 ? sinceRel : null, M.kick + M.hold);
+    const shot = !CK && M.bow && !a.walking && archShot(pre, up && a.aimT > 0 ? rise : null, up && a.aimT <= 0 ? sinceRel : null, M.kick + M.hold);
     if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
     else if (shot) drawFrame(shot.im, shot.F, shot.i, h * bodyRatio(spr(pre)) * 1.04); // Veo şeridi (boy: gövde, miğfer dahil)
     else { const w0 = h * im.width / im.height; drawSprite(ctx, im, 0, 0, w0);
@@ -10316,6 +10316,12 @@ function drawBoneWall(s) {
   if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 46, 22, s.hp / s.maxHp, '#e8dcb8');
 }
 function drawSoldier(s) {
+  const C = celebK();
+  if (!C || s.dead || s.wall || s.hero) { drawSoldier0(s); return; }
+  const ph = time * CELEB.rate + (s.slot || 0) * 1.3 + s.x * 0.05, hop = Math.max(0, Math.sin(ph)) * CELEB.hop * C; // kutlama: zıplar, silahı kalkıp iner
+  ctx.save(); ctx.translate(0, -hop); CHEER_ATK = -ATK_PREP * (0.55 + 0.4 * Math.sin(ph * 0.5 + 1)); drawSoldier0(s); CHEER_ATK = null; ctx.restore();
+}
+function drawSoldier0(s) {
   if (s.wall) { drawBoneWall(s); return; }
   if (s.pet && !s.dead) { drawPet(s); return; }
   if (s.dead) {
@@ -10342,13 +10348,13 @@ function drawSoldier(s) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.55, s.golem ? '150,255,110' : '170,120,255', 0.2); ctx.restore();
     unitShadow(s.x, s.y + 1, ch, 1.05);
     // Wan şeritleri geldiyse onlar oynar (saldırı: vuruş döngüsüne bağlı kare, yürüyüş: 16 fps); yoksa çizimden hareket
-    const sk = rise == null && ((fighting && animStrip(s.big, null, '_atk')) || (walking && animStrip(s.big, null, '_walk')));
+    const sk = rise == null && (((fighting || CHEER_ATK != null) && animStrip(s.big, null, '_atk')) || (walking && animStrip(s.big, null, '_walk')));
     if (sk) {
-      const F = ANIM_META[sk], i = sk.endsWith('_atk') ? Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n) : Math.floor(s.anim * 16) % F.n;
+      const F = ANIM_META[sk], i = sk.endsWith('_atk') ? (CHEER_ATK != null ? Math.floor((0.15 + 0.2 * (0.5 + 0.5 * Math.sin(time * CELEB.rate * 0.5))) * F.n) : Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n)) : Math.floor(s.anim * 16) % F.n;
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(sk), F, i, ch); ctx.restore();
       if (window.__animLog && s.logId != null) window.__animLog.push([s.logId, sk, i, s.face || 1, walking, '', +s.x.toFixed(2), +s.y.toFixed(2)]);
     } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
-      atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: 0.7 });
+      atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: 0.7 });
     if (s.golem && s.life < 4) { ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 10); glow(ctx, s.x, s.y - ch * 0.5, ch * 0.5, '150,255,110', 0.3); ctx.restore(); } // dağılmak üzere
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 22, s.hp / s.maxHp, s.golem ? '#9dff6a' : '#d8c8a8');
     return;
@@ -10377,7 +10383,7 @@ function drawSoldier(s) {
       const lean = fc * (0.1 + 0.035 * Math.sin(time * 1.7 + sd) + lurch + (fighting ? 0.06 * Math.max(0, Math.sin(atkPhase(s.rate, s.atk) * Math.PI)) : 0)) + Math.sin(time * 2.3 + sd) * 0.04;
       ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(lean); ctx.translate(-s.x, -s.y);
       drawUnit(key, im, s.x, s.y, fc, { logId: s.logId, h: ch, rig: s.zrig || s.zname, phase: s.anim * walkRate(s.zname, s.zrig, s.speed * G.wspd, ch), walking, fly: 0, rise,
-        atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
+        atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       ctx.restore();
       // başının üstünde soluk mor ruh alevi: bizim tarafta olduğu belli olsun
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x + Math.sin(lean) * ch, s.y - ch - 3, 5 + Math.sin(time * 6 + s.slot) * 1, '200,80,255', 0.55); ctx.restore();
@@ -10405,7 +10411,7 @@ function drawSoldier(s) {
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
     drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
-      atk: fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
+      atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
       skill: s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) && ANIM_META[key + '_guard'] && animStrip(key, null, '_guard') ? clamp((G.t - (s.guardT0 ?? G.t)) / (ANIM_META[key + '_guard'].dur || 3.4), 0, 0.999)
         : s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null,
       skillSuf: s.dashT > 0 ? '_dash' : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) ? '_guard' : null }); // 16 Eki: Tabut Duvarı Veo şeridi baştan sona (çakış -> siper -> kalkış) // Tabut Duvarı süresince kalkan yerde
@@ -18725,6 +18731,23 @@ function drawVault(k, cx, y) {
   } else fitTxt(`${VAULT.per} altında 1 kristal`, x0 + 344, y + 1, 112, 14, '#a89878', 'left', '800', FONT_B, false, 11);
   ctx.restore();
 }
+// ---- zafer kutlaması (16 Eki, Caner: "zaferde bütün iskeletler, okçular, savaşçılar, golem, komutanlar sevinsin, ellerini kaldırıp bağırsınlar"):
+// zafer paneli CELEB.dur sn gecikir; askerler yerinde zıplar ve silahını ritimle kaldırıp indirir (saldırı pozunun kurulma anı), kuledeki okçular
+// yayını kaldırıp zıplar, komutan zafer pozunu oynar, iskelet tezahüratı ve "Yaşasın!" yazıları. Kutlama, zafer panelinin arkasında da sürer.
+const CELEB = { dur: 2.2, hop: 7, rate: 7.5, words: ['Yaşasın!', 'Zafer!', 'Hurra!', 'Kemikler kazandı!', 'Mortimer!', 'Yaşasın ölüler!'] };
+let CHEER_ATK = null;
+function celebStart() { // true: kutlama sürüyor (zafer paneli bekler)
+  if (G.celebT0 == null) {
+    G.celebT0 = G.t; G.celebTime = time; sfx('skelcheer');
+    for (const h of G.heroes) { const F = !h.dead && ANIM_META[h.def.sprite + '_lvlup']; if (F) h.lvlA = h.lvlD = F.dur || F.n / 24; } // komutanın zafer pozu (Veo _lvlup)
+    const L = []; for (const q of G.soldiers.filter(q => !q.dead && !q.wall && !q.hero && !q.pet).sort(() => Math.random() - 0.5)) if (L.length < 5 && L.every(o => Math.hypot(o.x - q.x, o.y - q.y) > 55)) L.push(q); // yazılar üst üste binmesin
+    G.cheerQ = L.map((q, i) => ({ q, t: G.t + 0.15 + i * 0.3, w: CELEB.words[(i + G.idx) % CELEB.words.length] }));
+    return true;
+  }
+  for (const c of G.cheerQ || []) if (!c.done && G.t >= c.t) { c.done = true; if (!c.q.dead) floatText(c.q.x, c.q.y - (c.q.zh || c.q.bh || 30) - 10, c.w, '#b8ff9a'); }
+  return G.t - G.celebT0 < CELEB.dur;
+}
+const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / 0.25, 0, 1) : 0);
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 44, w = pw - 88, y0 = py + 190;
   roundRect(x0, y0, w, 112, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);
