@@ -6576,6 +6576,23 @@ function claimAch(a, x, y) {
   ACH_FX.push({ x, y, t: time, txt: '+' + n + ' KRİSTAL' });
   for (let i = 0; i < 22; i++) { const an = rand(0, Math.PI * 2), v = rand(60, 170); emit(uiParts, { kind: 'glow', add: true, x, y, vx: Math.cos(an) * v, vy: Math.sin(an) * v - 50, drag: 2.5, col: i % 3 ? '200,140,255' : '255,220,120', s0: rand(3, 6), s1: 1, life: rand(0.5, 0.9) }); }
 }
+// Kara Defter kartı: koyu kadife zemin, üstte ince ışık, kademe renginde ince kenar; alınacak ödülde yeşil parlayan kenar ve alttan ışık
+function achCard(x, y, w, h, st) {
+  const R = 14, col = st === 'claim' ? '#8fe070' : st ? ACH_TCOL[st] : 'rgba(150,125,160,0.45)';
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.roundRect(x + 2, y + 4, w, h, R); ctx.fill(); // gölge
+  const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, st ? '#3a1a32' : '#261622'); g.addColorStop(1, st ? '#1e0c1a' : '#140a12');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, w, h, R); ctx.fill();
+  ctx.save(); ctx.clip();
+  if (st === 'claim') { const gg = ctx.createLinearGradient(0, y + h, 0, y); gg.addColorStop(0, 'rgba(110,230,90,0.22)'); gg.addColorStop(0.7, 'rgba(110,230,90,0)'); ctx.fillStyle = gg; ctx.fillRect(x, y, w, h); }
+  else if (st === 3) { const gg = ctx.createLinearGradient(0, y + h, 0, y); gg.addColorStop(0, 'rgba(255,200,90,0.13)'); gg.addColorStop(0.7, 'rgba(255,200,90,0)'); ctx.fillStyle = gg; ctx.fillRect(x, y, w, h); }
+  const rg = ctx.createRadialGradient(x + 54, y + h / 2, 4, x + 54, y + h / 2, 56); rg.addColorStop(0, 'rgba(0,0,0,0.35)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(x, y, 120, h); // madalyonun altı koyu
+  ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(x, y, w, 1.5); // üst ışık
+  ctx.restore();
+  ctx.strokeStyle = col; ctx.lineWidth = st === 'claim' ? 2.2 : 1.6; ctx.beginPath(); ctx.roundRect(x + 0.8, y + 0.8, w - 1.6, h - 1.6, R); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,240,220,0.06)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x + 4, y + 4, w - 8, h - 8, R - 3); ctx.stroke(); // iç ince çizgi
+  ctx.restore();
+}
 function drawAchievements() {
   achMigrate(); achMetrics();
   const st = time - screenT;
@@ -6600,9 +6617,10 @@ function drawAchievements() {
   const cat = ACH_CATS.find(c => c[0] === achTab);
   txt(cat[1], EDGE.l + 100, 84, 16, '#e8c86a', 'left', '400', FONT_T, false);
   { const L = ACH.filter(a => achTab === 'all' || a.cat === achTab), g2 = L.reduce((s2, a) => s2 + achTier(a), 0), a2 = L.reduce((s2, a) => s2 + a.t.length, 0); txt(`${g2} / ${a2}`, EDGE.r - 20, 84, 14, '#b8acc8', 'right', '800', FONT_B, false); }
-  // kartlar: 2 sütun, kaydırılır; alınacak ödülü olanlar başta
+  // kartlar: 2 sütun, kaydırılır; alınacak ödülü olanlar başta. 16 Eki (Caner: "yazılar çerçeveye iyi otursun"): liste kartı kendi sade çerçevesiyle
+  // (büyük pencerelerin süslü kadife çerçevesi küçük kartta yazının üstüne biniyordu); sabit iç boşluk, sütunlar: madalyon | yazı | ödül
   const list = ACH.filter(a => achTab === 'all' || a.cat === achTab).slice().sort((p, q) => (achClaimable(q) > 0) - (achClaimable(p) > 0));
-  const X0 = EDGE.l + 98, AW = EDGE.r - 14 - X0, cols = 2, gx = 10, cw = (AW - gx) / cols, ch = 100, gy = 8, Y0 = 96, AH = EDGE.b - 6 - Y0;
+  const X0 = EDGE.l + 98, AW = EDGE.r - 14 - X0, cols = 2, gx = 12, cw = (AW - gx) / cols, ch = 104, gy = 10, Y0 = 98, AH = EDGE.b - 6 - Y0;
   const sy = scrollArea('ach', X0 - 4, Y0, AW + 8, AH, Math.ceil(list.length / cols) * (ch + gy)), y0 = Y0 - sy;
   ctx.save(); ctx.beginPath(); ctx.rect(X0 - 8, Y0, AW + 16, AH); ctx.clip();
   list.forEach((a, i) => {
@@ -6610,31 +6628,33 @@ function drawAchievements() {
     const ap = clamp((st - 0.1 - i * 0.02) / 0.25, 0, 1); if (ap <= 0 || y > Y0 + AH || y + ch < Y0) return;
     const tier = achTier(a), max = a.t.length, done = tier >= max, secret = a.hidden && !tier, cl = achClaimable(a), tr = max === 1 && tier ? 3 : tier;
     ctx.save(); ctx.globalAlpha = ap;
-    velvetCard(x, y, cw, ch, 12, { border: cl > 0 ? '#9dff6a' : tier ? ACH_TCOL[tr] : 'rgba(150,120,140,0.5)', ac: cl > 0 ? '120,255,110' : done ? '230,190,110' : null });
-    if (!tier) roundRect(x, y, cw, ch, 12, 'rgba(10,4,12,0.3)');
-    achMedal(a, tier, x + 50, y + ch / 2, 38);
-    const tx = x + 96, tw = cw - 96 - 92;
-    fitTxt(secret ? '???' : a.name, tx, y + 24, tw, 18, tier ? ACH_TCOL[tr] : '#c8bcd8', 'left', '400', FONT_T, false, 14);
-    const desc = secret ? 'Gizli başarım: Mortimer bunu kimseye söylemez' : achDesc(a, tier);
-    wrapLines(desc, tw + 30, 13.5, '700', FONT_B, 2).forEach((l, k) => txt(l, tx, y + 46 + k * 16, 13.5, tier ? '#e8e0f0' : '#a89eb8', 'left', '700', FONT_B, false));
-    if (max > 1) { // kademe noktaları: kemik / gümüş / altın
-      for (let k = 0; k < 3; k++) { const px = tx + tw - 30 + k * 15, on = k < tier; circle(px, y + 22, 6, on ? ACH_TCOL[k + 1] : 'rgba(20,12,28,0.9)', on ? '#2a1406' : 'rgba(150,130,160,0.6)', 1.4); }
-      if (!done && !secret) { // ilerleme çubuğu
-        const nx = a.t[tier], prev = tier ? a.t[tier - 1] : 0, v = achVal(a), f = clamp((v - prev) / (nx - prev), 0, 1), by = y + ch - 16, bw = tw - 4;
-        roundRect(tx, by, bw, 9, 4.5, '#120c1a', 'rgba(230,210,170,0.35)', 1);
-        if (f > 0) { const g = ctx.createLinearGradient(tx, 0, tx + bw, 0); g.addColorStop(0, '#5fa83c'); g.addColorStop(1, '#b8ff8a'); roundRect(tx, by, Math.max(9, bw * f), 9, 4.5, g); }
-        txt(`${Math.min(v, nx).toLocaleString('tr-TR')} / ${nx.toLocaleString('tr-TR')}`, tx + bw, by - 7, 12, '#b8acc8', 'right', '800', FONT_B, false);
-      }
-    }
-    // sağda ödül: alınacak varsa "AL" düğmesi, yoksa sıradaki ödül (soluk) ya da tamam işareti
-    const rx = x + cw - 46, ry = y + ch / 2;
+    achCard(x, y, cw, ch, cl > 0 ? 'claim' : tier ? tr : 0);
+    const P = 14, MX = x + P + 40, cy = y + ch / 2, RW = 84, tx = x + P + 84, tr0 = x + cw - P - RW - 8, tw = tr0 - tx; // madalyon merkezi, yazı sütunu, ödül sütunu
+    achMedal(a, tier, MX, cy, 37);
+    // ad + kademe noktaları (aynı satır, ad noktalara değmez)
+    const pipW = max > 1 ? 50 : 0;
+    fitTxt(secret ? '???' : a.name, tx, y + P + 12, tw - pipW, 18, tier ? ACH_TCOL[tr] : '#d0c4de', 'left', '400', FONT_T, false, 13);
+    if (max > 1) for (let k = 0; k < 3; k++) { const px = tr0 - 38 + k * 16, on = k < tier; circle(px, y + P + 12, 5.5, on ? ACH_TCOL[k + 1] : 'rgba(16,8,22,0.9)', on ? '#2a1406' : 'rgba(160,140,175,0.55)', 1.3); }
+    // açıklama: en çok 2 satır, ilerleme çubuğu varsa 1 satır daha kısa alan
+    const desc = secret ? 'Gizli başarım: Mortimer bunu kimseye söylemez' : achDesc(a, tier), bar = max > 1 && !done && !secret;
+    wrapLines(desc, tw, 13, '700', FONT_B, bar ? 1 : 2).forEach((l, k) => txt(l, tx, y + P + 34 + k * 16, 13, tier ? '#ece4f2' : '#a99fba', 'left', '700', FONT_B, false));
+    if (bar) { // ilerleme: kemik renkli ince çubuk, sayı çubuğun sağında
+      const nx = a.t[tier], prev = tier ? a.t[tier - 1] : 0, v = achVal(a), f = clamp((v - prev) / (nx - prev), 0, 1), by = y + ch - P - 14;
+      const label = `${Math.min(v, nx).toLocaleString('tr-TR')} / ${nx.toLocaleString('tr-TR')}`; const bw = tw - 104; // sayıya sabit alan: bütün çubuklar aynı boy
+      roundRect(tx, by, bw, 9, 4.5, 'rgba(12,6,18,0.9)', 'rgba(230,210,170,0.3)', 1);
+      if (f > 0) { const g = ctx.createLinearGradient(tx, 0, tx + bw, 0); g.addColorStop(0, '#4f9a32'); g.addColorStop(1, '#b8ff8a'); roundRect(tx + 1, by + 1, Math.max(7, (bw - 2) * f), 7, 3.5, g); }
+      txt(label, tx + tw, by + 5, 12, '#c4b8d4', 'right', '800', FONT_B, false);
+    } else if (done && max > 1) txt('Bütün kademeler tamam', tx, y + ch - P - 8, 12, '#d8c890', 'left', '800', FONT_B, false);
+    // ödül sütunu: alınacak varsa yeşil düğme, yoksa soluk önizleme ya da tamam işareti
+    const rx = x + cw - P - RW / 2, ry = cy;
+    ctx.strokeStyle = 'rgba(230,200,150,0.14)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(rx - RW / 2 - 4, y + 16); ctx.lineTo(rx - RW / 2 - 4, y + ch - 16); ctx.stroke(); // ince ayraç
     if (cl > 0) {
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, rx, ry, 44, '140,255,120', 0.25 + 0.12 * Math.sin(time * 4 + i)); ctx.restore();
-      gameButton('achcl_' + a.id, rx, ry + 2, 76, 66, '', () => claimAch(a, rx, ry), 'green', { breathe: true, appear: ap });
-      const im = spr('ico_ach_chest'); if (im) icoFit(im, rx, ry - 6, 17);
-      txt('AL +' + achReward(a, (save.achC && save.achC[a.id]) || 0), rx, ry + 22, 14, '#fff', 'center', '400', FONT_T, false);
-    } else if (done) { const im = spr('ico_ui_check'); if (im) icoFit(im, rx, ry, 16); }
-    else { ctx.save(); ctx.globalAlpha *= 0.6; const im = spr('ico_crystal'); if (im) icoFit(im, rx - 22, ry, 11); txt('+' + achReward(a, tier), rx - 8, ry + 1, 15, '#e0b8ff', 'left', '400', FONT_T, false); ctx.restore(); }
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, rx, ry, 46, '140,255,120', 0.22 + 0.1 * Math.sin(time * 4 + i)); ctx.restore();
+      gameButton('achcl_' + a.id, rx, ry, RW - 6, 70, '', () => claimAch(a, rx, ry), 'green', { breathe: true, appear: ap });
+      const im = spr('ico_ach_chest'); if (im) icoFit(im, rx, ry - 8, 16);
+      txt('AL +' + achReward(a, (save.achC && save.achC[a.id]) || 0), rx, ry + 20, 14, '#fff', 'center', '400', FONT_T, false);
+    } else if (done) { const im = spr('ico_ui_check'); if (im) icoFit(im, rx, ry, 17); else txt('✓', rx, ry, 26, '#8fd06a'); }
+    else { ctx.save(); ctx.globalAlpha *= 0.6; const im = spr('ico_crystal'); if (im) icoFit(im, rx - 12, ry, 12); txt('+' + achReward(a, tier), rx + 4, ry + 1, 16, '#e0b8ff', 'left', '400', FONT_T, false); ctx.restore(); }
     ctx.restore();
   });
   ctx.restore();
