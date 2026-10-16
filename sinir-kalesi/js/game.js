@@ -16659,7 +16659,7 @@ function mapEpScroll() { // sefer geçişi: taşma eşiği aşılınca komşu se
 }
 // açılış yakınlaşması: harita genişliğini gösteren uzak görünümden (z0) kaldığın bölümün işaretine (normal yakınlık) süzülür.
 // Geçiş açılırken başlar (MAP_INTRO.delay), dokunup sürükleyince hemen biter.
-const MAP_INTRO = { delay: 0.25, dur: 2.9, lead: 420, fit: 0.92 }; // lead: başlangıç noktası bölümün bu kadar aşağısı (geçilmiş bölümler); fit: harita genişliğine sığdırmanın katı
+const MAP_INTRO = { delay: 0.25, dur: 3.1, lead: 420, fit: 0.7 }; // lead: başlangıç noktası bölümün bu kadar aşağısı (geçilmiş bölümler); fit: harita genişliğine sığdırmanın katı
 function mapIntro(E, X) {
   const I = MAPCAM.intro; if (!I) return;
   if (I.pending) {
@@ -17033,6 +17033,14 @@ function drawMap() {
     ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
     drawRegionMap(E, mapEp, st);
     ctx.restore();
+    { // harita ekrandan darsa (açılış yakınlaşmasında uzak görünüm) yanlar sert siyah kalmasın: kenarlar yumuşak gölgeyle karışır
+      const L = bm.x * MAPCAM.z + MAPCAM.tx, Rr = (bm.x + bm.w) * MAPCAM.z + MAPCAM.tx, F = 90;
+      for (const [x0, dir] of [[L, 1], [Rr, -1]]) {
+        if (dir > 0 ? x0 <= VIS.l + 1 : x0 >= VIS.r - 1) continue;
+        const g = ctx.createLinearGradient(x0, 0, x0 + dir * F, 0); g.addColorStop(0, 'rgba(6,3,10,1)'); g.addColorStop(1, 'rgba(6,3,10,0)');
+        ctx.fillStyle = g; ctx.fillRect(Math.min(x0, x0 + dir * F), VIS.t, F, VIS.h);
+      }
+    }
     mapEpScroll();
   }
   else { const bg = spr(E.bg) || spr('title_bg'); if (bg) coverImage(bg, 1); else { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); } }
