@@ -1560,7 +1560,7 @@ function drawSmallDecor(g, kind, x, y, s, th, seen, vr) {
   const fl = vr() < 0.5 ? -1 : 1;
   if (kind === 'b') { const bn = th.bushSpr ? pickVaried(th.bushSpr, x, y, seen.b, vr) : 's2_bush_1', b = spr(bn); if (b) { drawVaried(g, b, x, y + 4, s, fl); bgLight(th.bushSpr && bn, x, y + 4, s, fl); } return; }
   const name = th.rockSpr ? pickVaried(th.rockSpr, x, y, seen.r, vr) : null, im = name && spr(name); if (!im) return;
-  const m = SPR_META[name], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (s / 8) : s * 3;
+  const m = SPR_META[name], w = (m ? m[0] * ROCK_K * (th.rockK || 1) * (s / 8) : s * 3) * (BG_ISMAP && name === 'nm_crow' ? 0.4 : 1); // 16 Eki (Caner): haritada sabit kargalar uçan kuşlara ve askerlere göre devdi: %60 küçük
   g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3 * fl, y + s * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
   drawVaried(g, im, x, y + s * 0.5, w, fl); bgLight(name, x, y + s * 0.5, w, fl);
 }
@@ -1588,8 +1588,9 @@ function snowCover(c, lv, paths, res) {
   }
   g.restore();
 }
+let BG_ISMAP = false; // sefer haritası zemini çiziliyor (lv.decorK)
 function renderBackground(lv, paths, res = 2, m = null) {
-  BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
+  BG_ISMAP = !!lv.decorK; BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
   try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; }
 }
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
@@ -1932,6 +1933,7 @@ function renderBackground0(lv, paths, res) {
     if (treeName === 'nm_tree_2' && (vr() < 0.5 || treeSeen.some(o => o[2] === 'nm_tree_2' && o !== treeSeen[treeSeen.length - 1] && Math.hypot(o[0] - x, o[1] - y) < 160))) {
       const alt = treePool.filter(n => n !== 'nm_tree_2'); if (alt.length) treeSeen[treeSeen.length - 1][2] = treeName = alt[Math.floor(vr() * alt.length)];
     }
+    if (BG_ISMAP && treeName === 'nm2_ravtree') treeName = 'nm_tree_4'; // 16 Eki (Caner): kuzgun ağacının dalındaki çizili kargalar haritada devdi: haritada kargasız ağaç
     const treeIm = spr(treeName), fl = vr() < 0.5 ? -1 : 1, sk = VARY.size[0] + vr() * (VARY.size[1] - VARY.size[0]);
     if (treeIm) {
       const m = SPR_META[treeName], w = m ? m[0] * TREE_K * (th.treeK || 1) * (0.75 + (s - 10) / 9 * 0.4) * sk : s * 3.4;
@@ -11610,7 +11612,7 @@ const TT = { in: 0.5, hold: 0.12, out: 0.7 };
 function goTitle(fn) {
   if (trans) return;
   trans = { t: 0, fn, fired: false, big: false, kind: 'title' };
-  sfx('titlesoft');
+  sfx('titlesoft'); MAPCAM.intro = { pending: true }; // 16 Eki (Caner): OYNA'dan sonraki ilk açılışta harita uzaktan açılır, kaldığın bölüme yakınlaşır
 }
 function drawTransTitle() {
   const t = trans.t, cx = W / 2, cy = (VIS.t + VIS.b) / 2, RM = Math.hypot(VIS.w, VIS.h) / 2;
@@ -16655,6 +16657,22 @@ function mapEpScroll() { // sefer geçişi: taşma eşiği aşılınca komşu se
   txt(label, W / 2, y, 17, open ? '#ffd98a' : '#c8b8a0');
   ctx.restore();
 }
+// açılış yakınlaşması: harita genişliğini gösteren uzak görünümden (z0) kaldığın bölümün işaretine (normal yakınlık) süzülür.
+// Geçiş açılırken başlar (MAP_INTRO.delay), dokunup sürükleyince hemen biter.
+const MAP_INTRO = { delay: 0.25, dur: 2.9, lead: 420, fit: 0.92 }; // lead: başlangıç noktası bölümün bu kadar aşağısı (geçilmiş bölümler); fit: harita genişliğine sığdırmanın katı
+function mapIntro(E, X) {
+  const I = MAPCAM.intro; if (!I) return;
+  if (I.pending) {
+    const ids = epLevels(mapEp); let k = ids.findIndex(i => levelUnlocked(i) && !(save.stars[i] > 0)); if (k < 0) { k = 0; ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; }); }
+    const n = E.nodes[Math.min(k, E.nodes.length - 1)];
+    MAPCAM.intro = { t0: time, z1: MAPCAM.z, z0: Math.max(0.9, (VIS.r - VIS.l) / X.w * MAP_INTRO.fit), n, f0: [X.x + X.w / 2, Math.min(X.y + X.h - 200, n[1] + MAP_INTRO.lead)] }; return mapIntro(E, X); // açılmış (aşağıdaki) bölümlerden kaldığın bölüme doğru çıkar; sisli yukarıdan başlamaz
+  }
+  const k = clamp((time - I.t0 - MAP_INTRO.delay) / MAP_INTRO.dur, 0, 1), e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
+  const z = lerp(I.z0, I.z1, e), fx = lerp(I.f0[0], I.n[0], e), fy = lerp(I.f0[1], I.n[1], e);
+  const cx = (VIS.l + VIS.r) / 2, cy = (EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2;
+  MAPCAM.z = z; MAPCAM.tx = cx - fx * z; MAPCAM.ty = cy - fy * z; MAPCAM.vx = MAPCAM.vy = 0;
+  if (k >= 1 || MAPCAM.drag) { MAPCAM.z = I.z1; MAPCAM.intro = null; if (MAPCAM.drag) mapCamFocus(E, mapEp, X); }
+}
 function mapCamFocus(E, ep, X) {
   const ids = epLevels(ep); let k = ids.findIndex(i => levelUnlocked(i) && !(save.stars[i] > 0));
   if (k < 0) { k = 0; ids.forEach((i, j) => { if (levelUnlocked(i)) k = j; }); }
@@ -17010,6 +17028,7 @@ function drawMap() {
     if (!MAPCAM.drag && (Math.abs(MAPCAM.vx) > 2 || Math.abs(MAPCAM.vy) > 2)) { // bırakınca süzülür
       MAPCAM.tx += MAPCAM.vx * dtm; MAPCAM.ty += MAPCAM.vy * dtm; const f = Math.exp(-MAPCAM.fric * dtm); MAPCAM.vx *= f; MAPCAM.vy *= f;
     }
+    mapIntro(E, bm);
     mapCamClamp(bm, E);
     ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
     drawRegionMap(E, mapEp, st);
@@ -17107,7 +17126,7 @@ function drawMap() {
     emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.4, H), vx: rand(-6, 6), vy: rand(-14, -5),
       col: '255,210,140', s0: rand(1.5, 2.8), s1: 0.5, life: rand(3, 5), a: 0.7, fadeIn: 0.3 });
   }
-  if (mapSel == null && !trans && loginDue()) drawLoginBonus(st);
+  if (mapSel == null && !trans && !MAPCAM.intro && loginDue()) drawLoginBonus(st); // açılış yakınlaşması bitince
   // bölüm kartı (bayrağa dokununca): arka plan kararır, dışına dokununca kapanır
   if (mapSel != null) {
     const k = clamp((time - mapSelT) / 0.2, 0, 1);
