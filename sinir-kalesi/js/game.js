@@ -15980,7 +15980,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   if (ranked) ['Er', 'Kıdemli', 'Yüzbaşı'].forEach((lb, i) => codexPill('cxr' + i, px + 8 + [0, 50, 128][i], py + 230, [46, 74, 78][i], lb, r === i, () => { CODEX.rank = i; CODEX.t0 = time; })); // sağdaki rozetlere taşmasın
   // sağ üst: ad ve bilgiler
   const x0 = px + 222; CODEX.statW = Math.min(140, (pw - 236) / 2);
-  fitTxt(d.chief ? 'BOSS' : r ? `RÜTBE: ${RANKS[r].name.toLocaleUpperCase('tr')}` : (LEVELS[codexFirstLevel(id)] || {}).ep === 2 ? 'KUTSAL ENGİZİSYON' : 'SOLARIAN İMPARATORLUĞU', x0, py + 26, pw - 236, 12.5, d.chief ? '#ff9a7a' : '#c8a8ff', 'left', '800', FONT_B, false);
+  fitTxt(d.chief ? 'BOSS' : r ? `RÜTBE: ${RANKS[r].name.toLocaleUpperCase('tr')}` : (LEVELS[codexFirstLevel(id)] || {}).ep === 2 ? 'KUTSAL ENGİZİSYON' : 'SOLARIAN İMPARATORLUĞU', x0, py + 26, pw - 272, 12.5, d.chief ? '#ff9a7a' : '#c8a8ff', 'left', '800', FONT_B, false);
   const nl = wrapLines(d.name, pw - 236, 22, '400', FONT_T, 2);
   nl.forEach((l, i) => txt(l, x0, py + 48 + i * 24, 22, '#fff', 'left', '400', FONT_T));
   let y = py + 54 + nl.length * 24;
