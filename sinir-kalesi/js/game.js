@@ -15884,7 +15884,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   nl.forEach((l, i) => txt(l, x0, py + 48 + i * 24, 22, '#fff', 'left', '400', FONT_T));
   let y = py + 54 + nl.length * 24;
   const fl = codexFirstLevel(id);
-  if (fl >= 0) { fitTxt(`İlk görüldü: ${epLevels(epOf(fl)).indexOf(fl) + 1}. bölüm · ${LEVELS[fl].name}`, x0, y, pw - 236, 12.5, '#b8a8c8', 'left', '700', FONT_B, false, 10); y += 20; }
+  if (fl >= 0) { fitTxt(`İlk görüldü: ${lvlNo(fl)}. bölüm · ${LEVELS[fl].name}`, x0, y, pw - 236, 12.5, '#b8a8c8', 'left', '700', FONT_B, false, 10); y += 20; }
   const hp = d.chief ? codexBossHp(id) : d.hp;
   const stats = [['Can', hp + ''], ['Zırh', `%${Math.round(d.armor * 100)}`], ['Büyü dir.', `%${Math.round(d.mr * 100)}`],
     ['Hız', speedName(d.speed)], ['Hasar', `${d.dmg[0]}–${d.dmg[1]}`], ['Can kaybı', d.lives + ''], ['Altın', d.gold + '']];
@@ -16406,6 +16406,8 @@ const DIFF2 = ['Orta', 'Orta', 'Zor', 'Zor', 'Zor', 'Zor', 'Çok zor', 'Çok zor
 // ----- seferler -----
 const epLevels = (ep) => LEVELS.map((lv, i) => i).filter(i => LEVELS[i].ep === ep);
 const epOf = (i) => LEVELS[i].ep || 1;
+// 16 Eki (Caner: "2. seferde 1. bölüm aslında 21. bölüm"): bölüm numarası seferler boyunca sürer
+function lvlNo(i) { let n = 0; for (let e = 1; e < epOf(i); e++) n += epLevels(e).length; return n + epLevels(epOf(i)).indexOf(i) + 1; }
 // sefer, önceki seferin son bölümü bitince açılır
 function epUnlocked(ep) {
   if (ep <= 1 || TEST_OPEN) return true;
@@ -16806,10 +16808,10 @@ function mapEpScroll() { // sefer geçişi: taşma eşiği aşılınca komşu se
   }
   const y = o > 0 ? 196 : EDGE.b - MAPCAM.bar - 18; // üstte bölge adı kurdelesinin (y 130) altında
   ctx.save(); ctx.globalAlpha = Math.min(1, k * 1.3);
-  const label = open ? (o > 0 ? ne + '. SEFER ▲' : ne + '. SEFER ▼') : 'Önce bu seferi bitir';
-  roundRect(W / 2 - 118, y - 20, 236, 40, 20, 'rgba(24,10,14,0.82)', open ? '#e2a93c' : '#7a6a5a', 2);
-  if (open) { ctx.fillStyle = 'rgba(226,169,60,0.35)'; ctx.fillRect(W / 2 - 112, y + 13, 224 * k, 3); }
-  txt(label, W / 2, y, 17, open ? '#ffd98a' : '#c8b8a0');
+  const label = open ? EPISODES[ne - 1].name + (o > 0 ? ' ▲' : ' ▼') : 'Önce bu seferi bitir'; // 16 Eki: sefer adıyla
+  roundRect(W / 2 - 140, y - 20, 280, 40, 20, 'rgba(24,10,14,0.82)', open ? '#e2a93c' : '#7a6a5a', 2);
+  if (open) { ctx.fillStyle = 'rgba(226,169,60,0.35)'; ctx.fillRect(W / 2 - 134, y + 13, 268 * k, 3); }
+  fitTxt(label, W / 2, y, 256, 17, open ? '#ffd98a' : '#c8b8a0', 'center', '400', FONT_T, false, 12);
   ctx.restore();
 }
 // açılış yakınlaşması: harita genişliğini gösteren uzak görünümden (z0) kaldığın bölümün işaretine (normal yakınlık) süzülür.
@@ -17214,8 +17216,8 @@ function drawMap() {
     if (FG) { if (k >= FG.vis) return; const gk = FG.g(k); if (gk < 0.35) return;
       const rv = MAPFX.rev, at = rv && k >= rv.from ? (time - rv.t0 - FOG2.delay - (k - rv.from) * FOG2.gap - 0.35) : st - 0.15 - k * 0.05;
       const [sx, sy] = mapToScreen(nodes[k][0], nodes[k][1]);
-      drawMapNode(i, sx, sy, k + 1, k === ids.length - 1, at, fogTest() ? k > 0 : !levelUnlocked(i)); return; }
-    drawMapNode(i, nodes[k][0], nodes[k][1], k + 1, k === ids.length - 1, st - 0.15 - k * 0.05);
+      drawMapNode(i, sx, sy, lvlNo(i), k === ids.length - 1, at, fogTest() ? k > 0 : !levelUnlocked(i)); return; }
+    drawMapNode(i, nodes[k][0], nodes[k][1], lvlNo(i), k === ids.length - 1, st - 0.15 - k * 0.05);
   });
   if (MAPFX.banner && time - MAPFX.banner.t0 < 3.2) { // yeni bölge kurdelesi
     const bt = time - MAPFX.banner.t0, a = clamp(Math.min(bt / 0.3, (3.2 - bt) / 0.5), 0, 1), e = easeOutBack(clamp(bt / 0.45, 0, 1));
@@ -17227,15 +17229,13 @@ function drawMap() {
   // sağda yıldız sayacı ve 5 yuvarlak düğme (ayarlar, kodeks, başarımlar, günün sınavı, dükkân), aradaki boşlukta sefer adı
   const TY = EDGE.t + 42, RB = 29, RS = 68, L0 = EDGE.l, R0 = EDGE.r; // 11 Eki: düğmeler ~60 birim (telefonda ~44 pt)
   roundBtn('back', L0 + 42, TY, 30, 'back', () => go(() => { screen = 'title'; mapSel = null; }), { appear: st - 0.1 });
-  const tabX = (k) => L0 + 148 + k * 126;
-  if (EPISODES.length > 1) EPISODES.forEach((ep, k) => {
-    const n = k + 1, x = tabX(k), open = epUnlocked(n), on = n === mapEp, key = 'ep' + n;
-    gameButton(key, x, TY, 118, 54, n + '. SEFER', null, on ? 'gold' : open ? 'wood' : 'dark', { appear: st - 0.3, size: 17, icon: open ? null : 'lock' });
-    buttons.push({ key, x: x - 60, y: TY - 30, w: 120, h: 62, fn: () => {
-      if (!open) { sfx('error'); return; }
-      if (mapEp !== n) { mapEp = n; mapSel = null; screenT = time; sfx('pick'); }
-    } });
-  });
+  // 16 Eki (Caner): "1. SEFER / 2. SEFER" yerine seferin adı; dokununca seferler listesi açılır (drawEpMenu), bölüm numaraları seferler boyunca sürer (lvlNo)
+  if (EPISODES.length > 1) {
+    const bw = 270, bxc = L0 + 92 + bw / 2;
+    gameButton('epsel', bxc, TY, bw, 54, E.name, () => { epMenuT = epMenuT < 0 ? time : -1; sfx('pick'); }, 'gold', { appear: st - 0.3, size: 17 });
+    ctx.save(); ctx.globalAlpha *= clamp((st - 0.3) / 0.25, 0, 1); const cx = bxc + bw / 2 - 24, up = epMenuT >= 0 ? -1 : 1;
+    ctx.beginPath(); ctx.moveTo(cx - 7, TY - 3 * up); ctx.lineTo(cx + 7, TY - 3 * up); ctx.lineTo(cx, TY + 5 * up); ctx.closePath(); ctx.fillStyle = '#ffe9b0'; ctx.fill(); ctx.restore();
+  }
   const total = starsTotal(), pw = 142, px = R0 - 16 - pw;
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
   roundRect(px, TY - 25, pw, 50, 25, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
@@ -17264,7 +17264,7 @@ function drawMap() {
   if ((save.codexNew || []).length) { const cx = bx(1) + 18, cy = TY - 18 + Math.sin(time * 5) * 1.5; circle(cx, cy, 9, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', cx, cy + 0.5, 10.5, '#fff', 'center', '400', FONT_T); }
   // sefer adı: sekmelerle sağ düğmeler arasındaki boşlukta (dar ekranda küçülür, sığmazsa ikinci satıra iner)
   // 11 Eki: sefer adı üst satırda sekmelerle düğmelerin arasına sıkışıyordu (telefonda üst üste) → sol altta, alt düğmelerle aynı hizada
-  { const cw = Math.min(240, R0 - 650 - L0 - 80); if (cw > 140) { ctx.save(); ctx.translate(L0 + 46 + cw / 2, EDGE.b - 40); ctx.scale(rk, rk); ribbon(0, 0, cw, E.name.toLocaleUpperCase('tr'), mapEp === 1 ? 'red' : 'gold', 18); ctx.restore(); } }
+  // 16 Eki: sefer adı artık sol üstteki seçici düğmede (alttaki kurdele kalktı)
   // kahramanlar ve gelişmeler (sağ alt, ekran köşesine yaslı)
   const fresh = HERO_ORDER.filter(id => heroUnlocked(id) && !(save.seenHeroes || [HERO_ORDER[0]]).includes(id)), BY = EDGE.b - 40;
   // 11 Eki: Büyü Kitabı eklendi, üç düğme yan yana (Büyü Kitabı · Komutanlar · Gelişmeler)
@@ -17309,6 +17309,35 @@ function drawMap() {
     txt(mapNote.text, W / 2, 85.5, 15, '#f2ecd8', 'center', '700', FONT_B, false);
     ctx.restore();
   }
+  drawEpMenu(); // sefer seçici en üstte
+}
+
+// ---- sefer seçici (16 Eki): sol üstteki ada dokununca açılır; her sefer adı, bölüm aralığı ve yıldızıyla. Kilitli sefer açılmaz. ----
+let epMenuT = -1;
+function drawEpMenu() {
+  if (epMenuT < 0 || screen !== 'map') return;
+  buttons.push({ key: 'ep_close', x: VIS.l, y: VIS.t, w: VIS.w, h: VIS.h, fn: () => { epMenuT = -1; } }); // dışarı dokununca kapanır
+  const k = clamp((time - epMenuT) / 0.22, 0, 1), e = easeOutBack(k), x = EDGE.l + 92, y = EDGE.t + 78, w = 300, rh = 70, h = EPISODES.length * rh + 18;
+  ctx.save(); ctx.globalAlpha *= k; ctx.translate(x, y); ctx.scale(1, 0.6 + 0.4 * e); ctx.translate(-x, -y);
+  roundRect(x + 4, y + 8, w, h, 16, 'rgba(0,0,0,0.45)');
+  roundRect(x, y, w, h, 16, 'rgba(26,8,20,0.97)', '#d4ab5a', 2); roundRect(x + 4, y + 4, w - 8, h - 8, 13, null, 'rgba(201,168,101,0.28)', 1);
+  EPISODES.forEach((ep, j) => {
+    const n = j + 1, ry = y + 9 + j * rh, open = epUnlocked(n), on = n === mapEp, ids = epLevels(n);
+    const stars = ids.reduce((a, i) => a + (save.stars[i] || 0), 0), key = 'epm' + n;
+    if (on) roundRect(x + 8, ry + 2, w - 16, rh - 6, 12, 'rgba(232,187,74,0.16)', 'rgba(232,187,74,0.6)', 1.4);
+    const ps = pressScale(key); ctx.save(); ctx.translate(x + w / 2, ry + rh / 2); ctx.scale(ps, ps); ctx.translate(-x - w / 2, -ry - rh / 2);
+    fitTxt(ep.name, x + 22, ry + 24, w - 90, 19, open ? '#ffe9b0' : '#a89878', 'left', '400', FONT_T, false, 13);
+    fitTxt(ids.length ? `Bölüm ${lvlNo(ids[0])}–${lvlNo(ids[ids.length - 1])}` : '', x + 22, ry + 49, 130, 14, '#c8b898', 'left', '800', FONT_B, false, 11);
+    fancyStar(x + 166, ry + 48, 8, true); txt(`${stars} / ${ids.length * 5}`, x + 180, ry + 49, 14, '#ffe27a', 'left', '800', FONT_B, false);
+    if (!open) drawIcon('lock', x + w - 36, ry + rh / 2 - 2, 26);
+    else if (on) drawIcon('check', x + w - 36, ry + rh / 2 - 2, 24);
+    ctx.restore();
+    buttons.push({ key, x: x + 6, y: ry, w: w - 12, h: rh - 4, fn: () => {
+      if (!open) { sfx('error'); return; }
+      epMenuT = -1; if (mapEp !== n) { mapEp = n; mapSel = null; screenT = time; MAPCAM.over = 0; sfx('pick'); }
+    } });
+  });
+  ctx.restore();
 }
 
 // Bölüm kartı (11 Eki, Caner: "çok sıkışık, rakiplerden esinlen, mobilde rahat basılsın"). Kingdom Rush düzeni: geniş panel,
@@ -17339,7 +17368,7 @@ function drawLevelCard(i, cx, cy, at) {
   const p = clamp(at / 0.4, 0, 1);
   if (p <= 0) return;
   const lv = LEVELS[i], e = easeOutBack(p), w = CARD.w, h = CARD.h;
-  const unlocked = levelUnlocked(i), st = save.stars[i] || 0, num = epLevels(epOf(i)).indexOf(i) + 1;
+  const unlocked = levelUnlocked(i), st = save.stars[i] || 0, num = lvlNo(i), first = epLevels(epOf(i)).indexOf(i) === 0;
   const current = unlocked && st === 0, fy = cy + (1 - e) * 60, x0 = cx - w / 2, y0 = fy - h / 2;
   const best = (save.endless || {})[i] || 0, hDone = !!(save.ch && save.ch[i] && save.ch[i].h), iDone = !!(save.ch && save.ch[i] && save.ch[i].i);
   const MODES = [
@@ -17423,7 +17452,7 @@ function drawLevelCard(i, cx, cy, at) {
     roundRect(x0, y0, w, h, 24, 'rgba(18,10,4,0.66)');
     drawIcon('lock', cx, fy - 20, 60);
     txt('Kilitli', cx, fy + 34, 28, '#f0e2c4', 'center', '400', FONT_T);
-    txt(num === 1 ? 'Önceki bölgeyi tamamla' : 'Önceki bölümü tamamla', cx, fy + 62, 16, '#cdb894', 'center', '700', FONT_B, false);
+    txt(first ? 'Önceki bölgeyi tamamla' : 'Önceki bölümü tamamla', cx, fy + 62, 16, '#cdb894', 'center', '700', FONT_B, false);
     ctx.restore();
   } else {
     // büyük SAVAŞ düğmesi + (Sefer'de) ödüllü reklamla +altın
