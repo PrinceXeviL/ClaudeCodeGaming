@@ -386,7 +386,7 @@ if (NECRO && !save.lv20 && save.stars && save.stars.length) {
 }
 save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { atmo: true, vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
+const SETTINGS_DEF = { blood: true, atmo: true, vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 // 16 Eki: hafif kip (zayıf Android ya da elle DÜŞÜK kalite): şeritler %55 boyutla çözülür (bellek ~yarı), çizim yoğunluğu en çok 1,5, parçacık yarı.
@@ -2486,8 +2486,9 @@ function fxPlagueSplash(x, y, r) {
 }
 // birikinti dokuları (birkaç çeşit, bir kez üretilir): düzensiz gövde, uzanan kollar, uçlarda damlalar, açık iç ton ve parlak benekler
 const SPLAT_N = 4, SPLATS = [];
-function splatTex(v) {
-  if (SPLATS[v]) return SPLATS[v];
+function splatTex(v, red) {
+  const key = red ? 'r' + v : v; if (SPLATS[key]) return SPLATS[key];
+  const C0 = red ? ['#7a0a14', '#a8141f', '#d8303a'] : ['#3a7a20', '#5aa832', '#86d24e']; // red: kan lekesi (koyu, orta, parlak)
   const S = 96, c = document.createElement('canvas'); c.width = c.height = S;
   const g = c.getContext('2d'), rnd = seeded(31 + v * 17), C = S / 2;
   const blob = (r0, col, jit) => {
@@ -2495,20 +2496,20 @@ function splatTex(v) {
     for (let i = 0; i <= 20; i++) { const a = i / 20 * Math.PI * 2, rr = r0 * (1 + (rnd() - 0.5) * jit); i ? g.lineTo(C + Math.cos(a) * rr, C + Math.sin(a) * rr) : g.moveTo(C + Math.cos(a) * rr, C + Math.sin(a) * rr); }
     g.closePath(); g.fill();
   };
-  blob(S * 0.26, '#3a7a20', 0.45);
+  blob(S * 0.26, C0[0], 0.45);
   for (let i = 0, n = 5 + Math.floor(rnd() * 3); i < n; i++) { // kollar
     const a = rnd() * Math.PI * 2, L = S * (0.22 + rnd() * 0.18), w = S * (0.05 + rnd() * 0.04);
-    g.save(); g.translate(C, C); g.rotate(a); g.fillStyle = '#3a7a20';
+    g.save(); g.translate(C, C); g.rotate(a); g.fillStyle = C0[0];
     g.beginPath(); g.moveTo(0, -w); g.quadraticCurveTo(L * 0.6, -w * 0.5, L, 0); g.quadraticCurveTo(L * 0.6, w * 0.5, 0, w); g.closePath(); g.fill();
     g.beginPath(); g.arc(L + w * 0.6, 0, w * 0.75, 0, Math.PI * 2); g.fill();
     g.restore();
   }
-  for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, d = S * (0.3 + rnd() * 0.16); g.fillStyle = '#3a7a20'; g.beginPath(); g.arc(C + Math.cos(a) * d, C + Math.sin(a) * d, S * (0.012 + rnd() * 0.02), 0, Math.PI * 2); g.fill(); }
-  blob(S * 0.17, '#5aa832', 0.5);
-  blob(S * 0.08, '#86d24e', 0.6);
-  g.fillStyle = 'rgba(220,255,190,0.85)';
+  for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, d = S * (0.3 + rnd() * 0.16); g.fillStyle = C0[0]; g.beginPath(); g.arc(C + Math.cos(a) * d, C + Math.sin(a) * d, S * (0.012 + rnd() * 0.02), 0, Math.PI * 2); g.fill(); }
+  blob(S * 0.17, C0[1], 0.5);
+  blob(S * 0.08, C0[2], 0.6);
+  g.fillStyle = red ? 'rgba(255,200,200,0.6)' : 'rgba(220,255,190,0.85)';
   for (let i = 0; i < 4; i++) { g.beginPath(); g.ellipse(C - S * 0.08 + rnd() * S * 0.1, C - S * 0.08 + rnd() * S * 0.08, S * 0.018, S * 0.01, -0.5, 0, Math.PI * 2); g.fill(); }
-  return (SPLATS[v] = c);
+  return (SPLATS[key] = c);
 }
 function fxExplosion(x, y, r, big) {
   const P = G.parts, m = big ? 1.5 : 1;
@@ -2897,6 +2898,28 @@ const DIVE_VULN = 1.5;
 const CANNON_FIRE = 0.8; // Güneş Topu ateş şeridinin süresi (sn); bu sürede durur
 const CONVOY = { gap: 1.8, walk: 1.05 }; // yürürken önündekiyle en az boşluk (yarıçaplar toplamının katı): araçlar gap, ötekiler walk
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
+// ---- çizgi film kanı (16 Eki, Caner: "kırmızı kan olsun, kurallara uygun en yüksek"): isabette 2-5 küçük damla (sert vuruşta yere minik leke),
+// ölünce ayağının dibinde kısa süre kalan küçük kan lekesi. Parçalanma, büyük kan gölü yok (ESRB "Mild Blood" sınırı). Ayarlardan kapatılır (blood).
+// Heykeller taş tozu, makineler tahta kıymığı saçar (ayardan bağımsız). Süreli hasarlar (zehir, yanma) kan saçmaz.
+const BLOOD_FX = { cd: 0.12, big: 0.1, splat: 9, cols: ['#8a0c16', '#b8141f', '#d8303a'] };
+const BLOOD_STONE = new Set(['colossus', 'saint']);
+function bleedKind(e) { const t = (e.def.base || e.type).replace(/_(k|y)$/, ''); return e.def.machine || e.siege !== undefined ? 'wood' : BLOOD_STONE.has(t) ? 'stone' : 'blood'; }
+function bloodHit(e, dealt) {
+  if ((e.bloodCd || 0) > G.t || dealt <= 0) return;
+  const kind = bleedKind(e); if (kind === 'blood' && !setting('blood')) return;
+  e.bloodCd = G.t + BLOOD_FX.cd;
+  const h = CHAR_H['enemy_' + e.type] || 30, r = dealt / Math.max(1, e.maxHp), n = clamp(Math.round(3 + r * 20), 3, 6), y0 = e.y - h * (e.def.flying ? 0.4 : 0.55) - (e.def.flying ? 26 : 0);
+  for (let i = 0; i < n; i++) {
+    const col = kind === 'blood' ? BLOOD_FX.cols[i % 3] : kind === 'wood' ? (i % 2 ? '#7a5434' : '#a8804e') : (i % 2 ? '#b8b0a4' : '#d8d0c4');
+    emit(G.parts, { kind: 'dot', x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx: rand(-55, 55), vy: -rand(40, 110), g: 560, col, s0: rand(1.5, 2.7), s1: 1, life: rand(0.45, 0.7), floor: e.y + rand(-3, 4) });
+  }
+  if (kind === 'blood' && r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, x: e.x + rand(-6, 6), y: e.y + rand(-2, 3), r: rand(3, 5), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 3 });
+}
+function bloodDeath(e) {
+  if (bleedKind(e) !== 'blood' || !setting('blood') || e.def.flying || e.leaked) return;
+  const h = CHAR_H['enemy_' + e.type] || 30;
+  G.decals.push({ kind: 'splat', red: true, x: e.x + rand(-4, 4), y: e.y + 1, r: clamp(h * 0.28, 6, 14), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
+}
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
   if (e.invT > 0) return; // boss evre değiştiriyor
@@ -2933,6 +2956,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
   dmgNum(e, dealt, quiet);
+  if (!quiet && !raw) bloodHit(e, dealt); // çizgi film kanı / taş tozu / kıymık
   if (!quiet) knockback(e, dealt, src);
   if (!quiet) { e.flash = 0.1; e.hitT = NO_KNOCK ? 0 : 0.18; if (e.hp > 0) painVoice(e); } // veba: geriye sarsılma yok
   e.hitAt = time;
@@ -3119,7 +3143,7 @@ function killEnemy0(e) {
     sfx('magic');
     return;
   }
-  e.dead = true;
+  e.dead = true; bloodDeath(e);
   harvestSoul(e);
   // testudo: kalkan çatısı dağılır, içinden lejyonerler çıkıp yürümeye devam eder
   if (e.def.split && !e.leaked) {
@@ -14402,6 +14426,7 @@ function settingsList(inGame) {
     ['map', 'Öğretici', [[false, 'KAPALI'], [true, 'AÇIK']], [0, 1, 2].some(i => !(save.tut3 && save.tut3[i])), (v) => { save.tut3 = v ? {} : { 0: 1, 1: 1, 2: 1 }; persist(); }], // 13 Eki: ilk 3 bölümün eğitimi yeniden
     ['gear', 'Atmosfer ışığı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('atmo'), (v) => setSetting('atmo', v)], // 13 Eki: deneme (14. bölüm)
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTO'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
+    ['heart', 'Kan efektleri', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('blood'), (v) => setSetting('blood', v)], // 16 Eki: çizgi film kanı (ebeveyn / yaş derecesi için kapatılabilir)
   ];
   if (inGame) rows.splice(5, 1); // öğretici satırı yalnız ana ayarlarda
   if (inGame || !GA_KEYS.game) rows.splice(4, 1); // oyun verisi izni yalnız ana ayarlarda ve ölçüm anahtarı girilince
@@ -18192,7 +18217,7 @@ function drawPlay() {
       if (d.t < 0) continue;
       const k = Math.min(1, (d.life - d.t) / 1.2), grow = d.small ? 1 : 0.55 + 0.45 * Math.min(1, d.t / 0.12);
       ctx.save(); ctx.translate(d.x, d.y); ctx.scale(1, 0.48); ctx.rotate(d.rot);
-      ctx.globalAlpha = 0.72 * k; const R = d.r * 1.7 * grow; ctx.drawImage(splatTex(d.v), -R, -R, R * 2, R * 2);
+      ctx.globalAlpha = (d.red ? 0.8 : 0.72) * k; const R = d.r * 1.7 * grow; ctx.drawImage(splatTex(d.v, d.red), -R, -R, R * 2, R * 2);
       ctx.restore();
       continue;
     }
