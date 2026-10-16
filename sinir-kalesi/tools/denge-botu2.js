@@ -40,7 +40,8 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
         // harcama
         for (let guard = 0; guard < 8; guard++) {
           const opts = [];
-          const fi = order.find(i => !G.plots[i].tower);
+          const fi = order.find(i => !G.plots[i].tower && !G.plots[i].rubble);
+          for (const i of order) if (G.plots[i].rubble && !(G.plots[i].rubble.buildT > 0) && !(G.plots[i].rubble.clearT > 0)) opts.push({ c: 60, f: () => g.rebuild(i) }); // 16 Eki: yıkılan kulenin molozu (yoksa bot moloza kurmaya çalışıp takılıyordu)
           if (fi != null) { const t = plan[G.towers.length % plan.length]; opts.push({ c: (g.buildCost ? g.buildCost(t) : TOWERS[t].levels[0].cost) * 1.3, f: () => g.build(fi, t) }); }
           for (const i of order) { const t = G.plots[i].tower; if (!t) continue;
             if (t.type === 'archer' && NECRO && !t.path && t.lvl === 0) { const pp = (xbow++ % 2) ? 'xbow' : 'bow'; opts.push({ c: 140, f: () => g.path(i, pp) }); continue; }

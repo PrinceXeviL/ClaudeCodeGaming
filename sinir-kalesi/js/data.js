@@ -740,7 +740,7 @@ HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü'
   // 14 Eki (Caner: "Merlin saf bir büyücü: ateş, buz, elektrik"): ateş topu atar; pasifleri Zaman Kapısı ve Kurbağaya Çevirme, aktifleri Meteor ve Zincir Şimşek
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
     { id: 'timegate', name: 'Zaman Kapısı', cd: 16, desc: 'Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)' },
-    { id: 'frog', name: 'Kurbağaya Çevirme', cd: 15, desc: 'En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)' },
+    { id: 'frog', name: 'Kurbağaya Çevirme', cd: 15, desc: 'En güçlü düşmanı 30 sn kurbağa yapar: saldıramaz, yavaş zıplar, 3 kat hasar alır (boss olmaz)' },
   ] }] };
 // 16 Eki (Caner: "elinden yeşil bir şey çıkıp kayboluyor, sonra sarı bir top çıkıyor"): saldırı şeridindeki yeşil ruh topu atılır (soul), elinden çıkar (shotAt);
 // atış anı şeridin bırakma karesine denk gelir (anim.json hero_merlin_atk.order)
@@ -755,11 +755,11 @@ HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprit
   ] }] };
 // 16 Eki (Caner: "blood magic yapan ihtişamlı, korkunç, sıra dışı büyücü"): Erzsébet Báthory, Kan Kontesi. Menzilli kan büyüsü, can çalma, iskeletlere kan feda eder.
 HEROES.bathory = { name: 'Báthory', role: 'Kan Kontesi · Kan büyüsü', sprite: 'hero_bathory', h: 42, aura: '220,30,50', halo: '255,90,90', cost: 70,
-  hp: 240, dmg: [15, 22], armor: 0.1, rate: 1.15, speed: 72, respawn: 18, regen: 6, engage: 0, ranged: 180, proj: 'fireball', blood: true, magic: true, splash: 16, // 16 Eki (Caner: fazla güçlü): hasar 17-25 → 15-22
+  hp: 240, dmg: [15, 22], armor: 0.1, rate: 1.15, speed: 72, respawn: 18, regen: 6, engage: 0, ranged: 180, proj: 'fireball', blood: true, magic: true, splash: 16, share: { r: 130, k: 0.5, kThirst: 0.8 }, /* 16 Eki (Caner): pasif: çaldığı can yakındaki iskeletleri de iyileştirir (k: çalınan canın payı) */ // 16 Eki (Caner: fazla güçlü): hasar 17-25 → 15-22
   paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
     { id: 'bloodlink', name: 'Kan Bağı', cd: 12, desc: '4 düşmanı kan iplikleriyle bağlar: 5 sn canlarını emer, yavaşlatır; emilen can Báthory\'ye akar' },
     { id: 'sacrifice', name: 'Kan Fedası', cd: 16, desc: 'Canının %15\'ini feda eder: yakındaki iskeletler iyileşir, 6 sn %50 sert vurur' },
-    { id: 'thirst', name: 'Kana Susamışlık', passive: true, desc: 'Kalıcı: kan okları %30 can çalar (normalde %15), +%10 hasar' },
+    { id: 'thirst', name: 'Kana Susamışlık', passive: true, desc: 'Kalıcı: kan okları %30 can çalar (normalde %15), +%10 hasar; çalınan can yakındaki iskeletleri %80 iyileştirir (normalde %50)' },
   ] }] };
 Object.assign(HERO_ULT, {
   bathory: { name: 'Kan Gölü', cd: 60, anim: 2.0, r: 72, dps: [18, 24.3], dur: 5, bloodpool: true, heal: 12.6, // 16 Eki: 26-34 → 20-27; 16 Eki (2, Caner: "%10 düşür"): 18-24,3, iskelet iyileştirme 14 → 12,6
@@ -1558,6 +1558,17 @@ const EQUIP = {
   stat: { weapon: { dmg: [0.08, 0.15, 0.24, 0.35] }, armor: { hp: [0.1, 0.18, 0.28, 0.4], armor: [0.02, 0.04, 0.07, 0.1] },
     ring: { cd: [0.05, 0.09, 0.14, 0.2] }, amulet: { spd: [0.05, 0.09, 0.14, 0.2], regen: [0.2, 0.35, 0.55, 0.8] } },
   wpn: { spartacus: 'sword', leonidas: 'spear', merlin: 'staff', robin: 'arrow', bathory: 'dagger' },
+  // 16 Eki (Caner): eşyalar komutanın sınıfına göre; düşen eşya doğrudan savaştaki komutanın çantasına gider (eşya.h = sahibi, eşya.c = sınıf)
+  cls: { spartacus: 'warrior', leonidas: 'warrior', merlin: 'mage', bathory: 'bloodmage', robin: 'ranger' },
+  clsName: { warrior: 'Savaşçı', mage: 'Büyücü', bloodmage: 'Kan Büyücüsü', ranger: 'Suikastçı Okçu' },
+  clsNames: { // savaşçı names'teki zırh/yüzük/tılsımı kullanır
+    mage: { armor: ['Keten Cübbe', 'Yıldızlı Cübbe', 'Fırtına Cübbesi', 'Avalon Cübbesi'], ring: ['Bakır Mühür', 'Ay Taşı Yüzüğü', 'Rün Yüzüğü', "Merlin'in Mührü"],
+      amulet: ['Baykuş Tüyü', 'Kristal Kolye', 'Ejder Gözü', 'Avalon Tılsımı'] },
+    bloodmage: { armor: ['Kadife Elbise', 'Kan Korsesi', 'Gece Pelerini', 'Csejte Elbisesi'], ring: ['Yakut Yüzük', 'Kan Damlası Yüzüğü', 'Yarasa Yüzüğü', 'Kontesin Mührü'],
+      amulet: ['Kemik Broş', 'Kan Kolyesi', 'Yarasa Tılsımı', 'Kızıl Ay Kolyesi'] },
+    ranger: { armor: ['Deri Yelek', 'Yeşil Pelerin', 'Gölge Pelerini', 'Sherwood Pelerini'], ring: ['Okçu Yüzüğü', 'Kurt Pençesi Yüzüğü', 'Avcı Mührü', 'Sherwood Yüzüğü'],
+      amulet: ['Tüy Tılsım', 'Kurt Dişi Kolye', 'Gölge Tılsımı', 'Orman Ruhu Tılsımı'] },
+  },
   names: {
     sword: ['Paslı Gladius', 'Arena Kılıcı', 'Zincirkıran', 'Özgürlüğün Kılıcı'],
     spear: ['Bronz Mızrak', 'Sparta Mızrağı', 'Falanks Dişi', 'Termopylai Mızrağı'],
@@ -1570,7 +1581,7 @@ const EQUIP = {
   },
   drop: { boss: 1, final: 2, heroic: 1 }, // boss başına eşya; Kahramanlık meydan okumasında +1
   luck: { final: 1, usta: 1, heroic: 1 }, // nadirlik zarı bu kadar kez atılır, en iyisi alınır
-  bag: 40, // envanter sınırı: dolunca en düşük nadirlikteki takılı olmayan eşya kristale eritilir
+  bag: 40, // komutan başına envanter sınırı (16 Eki): dolunca o komutanın en düşük nadirlikteki takılı olmayan eşyası kristale erir
 };
 const DAILY_LOGIN = [{ c: 1 }, { item: 'purse' }, { c: 1 }, { item: 'freeze' }, { c: 2 }, { item: 'tea' }, { c: 4, item: 'bomb' }];
 // 15 Eki (Caner): sefer haritaları dikey: yol alttan girer, kıvrıla kıvrıla yukarı çıkar, Mortimer'ın şapeli en üstte; ilerleyen bölümler yukarıda.
@@ -1589,6 +1600,10 @@ function vertEpisode(E, ph, flip) {
   E.start = [MAP_V.x + flip * 40, MH + 70]; E.end = [MAP_V.x, 150];
 }
 if (typeof NECRO !== 'undefined' && NECRO && EPISODES.length) { vertEpisode(EPISODES[0], 0.4, 1); if (EPISODES[1]) vertEpisode(EPISODES[1], 1.9, -1); }
+// 16 Eki (Caner: "sefer haritası tek parça olsun, 20. bölümden sonra şapel görünmesin, direkt 21'e geçsin"): son sefer dışında yol şapelde bitmez,
+// haritanın üst kenarından çıkıp sonraki seferin girişine bağlanır (sonraki sefer üstte; dünyada 1700 yukarıda: ext.h). Şapel yalnız en sonda.
+if (typeof NECRO !== 'undefined' && NECRO) for (let i = 0; i < EPISODES.length - 1; i++) { const A = EPISODES[i], B = EPISODES[i + 1];
+  if (A.vert && B.vert) { A.through = true; A.end = [B.start[0], B.start[1] - (A.mapH + 160)]; } }
 // 15 Eki (Caner): kulelerin menzili ortalama %5 daraldı (bütün kademeler)
 const TOWER_RANGE_K = 0.95;
 for (const T of Object.values(TOWERS)) for (const L of T.levels || []) if (L.range) L.range = Math.round(L.range * TOWER_RANGE_K);

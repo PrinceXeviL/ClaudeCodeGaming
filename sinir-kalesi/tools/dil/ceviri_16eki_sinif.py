@@ -1,0 +1,66 @@
+import json, sys
+D = sys.argv[1]
+T = {
+'Ayrıntı için karta dokun · savaşa seçmek için basılı tut': {
+ 'en':'Tap a card for details · hold to take it into battle','de':'Tippe für Details · halte gedrückt, um ihn in die Schlacht zu nehmen','es':'Toca para ver detalles · mantén pulsado para llevarlo a la batalla','fr':'Touchez pour les détails · maintenez pour l’emmener au combat','ru':'Коснитесь для подробностей · удерживайте, чтобы взять в бой','zh':'点击查看详情 · 长按选择出战'},
+'SEÇİLİYOR': {'en':'SELECTING','de':'WIRD GEWÄHLT','es':'ELIGIENDO','fr':'SÉLECTION','ru':'ВЫБОР','zh':'选择中'},
+'Savaşçı': {'en':'Warrior','de':'Krieger','es':'Guerrero','fr':'Guerrier','ru':'Воин','zh':'战士'},
+'Büyücü': {'en':'Mage','de':'Magier','es':'Mago','fr':'Mage','ru':'Маг','zh':'法师'},
+'Kan Büyücüsü': {'en':'Blood Mage','de':'Blutmagierin','es':'Maga de sangre','fr':'Mage de sang','ru':'Маг крови','zh':'血法师'},
+'Suikastçı Okçu': {'en':'Assassin Archer','de':'Assassinen-Bogenschütze','es':'Arquero asesino','fr':'Archer assassin','ru':'Лучник-убийца','zh':'刺客弓手'},
+'Keten Cübbe': {'en':'Linen Robe','de':'Leinenrobe','es':'Túnica de lino','fr':'Robe de lin','ru':'Льняная мантия','zh':'亚麻长袍'},
+'Yıldızlı Cübbe': {'en':'Starry Robe','de':'Sternenrobe','es':'Túnica estrellada','fr':'Robe étoilée','ru':'Звёздная мантия','zh':'星辰长袍'},
+'Fırtına Cübbesi': {'en':'Storm Robe','de':'Sturmrobe','es':'Túnica de tormenta','fr':'Robe de tempête','ru':'Мантия бури','zh':'风暴长袍'},
+'Avalon Cübbesi': {'en':'Robe of Avalon','de':'Robe von Avalon','es':'Túnica de Avalon','fr':'Robe d’Avalon','ru':'Мантия Авалона','zh':'阿瓦隆长袍'},
+'Bakır Mühür': {'en':'Copper Seal','de':'Kupfersiegel','es':'Sello de cobre','fr':'Sceau de cuivre','ru':'Медная печать','zh':'铜印'},
+'Ay Taşı Yüzüğü': {'en':'Moonstone Ring','de':'Mondsteinring','es':'Anillo de piedra lunar','fr':'Anneau de pierre de lune','ru':'Кольцо с лунным камнем','zh':'月光石戒指'},
+'Rün Yüzüğü': {'en':'Rune Ring','de':'Runenring','es':'Anillo rúnico','fr':'Anneau runique','ru':'Рунное кольцо','zh':'符文戒指'},
+"Merlin'in Mührü": {'en':"Merlin's Seal",'de':'Merlins Siegel','es':'Sello de Merlín','fr':'Sceau de Merlin','ru':'Печать Мерлина','zh':'梅林之印'},
+'Baykuş Tüyü': {'en':'Owl Feather','de':'Eulenfeder','es':'Pluma de búho','fr':'Plume de hibou','ru':'Совиное перо','zh':'猫头鹰羽毛'},
+'Kristal Kolye': {'en':'Crystal Pendant','de':'Kristallanhänger','es':'Colgante de cristal','fr':'Pendentif de cristal','ru':'Хрустальный кулон','zh':'水晶吊坠'},
+'Ejder Gözü': {'en':'Dragon Eye','de':'Drachenauge','es':'Ojo de dragón','fr':'Œil de dragon','ru':'Драконий глаз','zh':'龙之眼'},
+'Avalon Tılsımı': {'en':'Charm of Avalon','de':'Amulett von Avalon','es':'Amuleto de Avalon','fr':'Talisman d’Avalon','ru':'Талисман Авалона','zh':'阿瓦隆护符'},
+'Kadife Elbise': {'en':'Velvet Gown','de':'Samtkleid','es':'Vestido de terciopelo','fr':'Robe de velours','ru':'Бархатное платье','zh':'天鹅绒长裙'},
+'Kan Korsesi': {'en':'Blood Corset','de':'Blutkorsett','es':'Corsé de sangre','fr':'Corset de sang','ru':'Кровавый корсет','zh':'血之束腰'},
+'Gece Pelerini': {'en':'Night Cloak','de':'Nachtumhang','es':'Capa nocturna','fr':'Cape de nuit','ru':'Ночной плащ','zh':'夜之斗篷'},
+'Csejte Elbisesi': {'en':'Csejte Gown','de':'Csejte-Kleid','es':'Vestido de Csejte','fr':'Robe de Csejte','ru':'Платье Чахтице','zh':'切伊泰长裙'},
+'Yakut Yüzük': {'en':'Ruby Ring','de':'Rubinring','es':'Anillo de rubí','fr':'Anneau de rubis','ru':'Рубиновое кольцо','zh':'红宝石戒指'},
+'Kan Damlası Yüzüğü': {'en':'Blood Drop Ring','de':'Blutstropfenring','es':'Anillo gota de sangre','fr':'Anneau goutte de sang','ru':'Кольцо капли крови','zh':'血滴戒指'},
+'Yarasa Yüzüğü': {'en':'Bat Ring','de':'Fledermausring','es':'Anillo de murciélago','fr':'Anneau de chauve-souris','ru':'Кольцо летучей мыши','zh':'蝙蝠戒指'},
+'Kontesin Mührü': {'en':"Countess's Seal",'de':'Siegel der Gräfin','es':'Sello de la condesa','fr':'Sceau de la comtesse','ru':'Печать графини','zh':'伯爵夫人之印'},
+'Kemik Broş': {'en':'Bone Brooch','de':'Knochenbrosche','es':'Broche de hueso','fr':'Broche d’os','ru':'Костяная брошь','zh':'骨胸针'},
+'Kan Kolyesi': {'en':'Blood Necklace','de':'Blutkette','es':'Collar de sangre','fr':'Collier de sang','ru':'Кровавое ожерелье','zh':'血之项链'},
+'Yarasa Tılsımı': {'en':'Bat Charm','de':'Fledermausamulett','es':'Amuleto de murciélago','fr':'Talisman de chauve-souris','ru':'Талисман летучей мыши','zh':'蝙蝠护符'},
+'Kızıl Ay Kolyesi': {'en':'Blood Moon Necklace','de':'Blutmondkette','es':'Collar de luna roja','fr':'Collier de lune rouge','ru':'Ожерелье кровавой луны','zh':'血月项链'},
+'Deri Yelek': {'en':'Leather Vest','de':'Lederweste','es':'Chaleco de cuero','fr':'Gilet de cuir','ru':'Кожаный жилет','zh':'皮背心'},
+'Yeşil Pelerin': {'en':'Green Cloak','de':'Grüner Umhang','es':'Capa verde','fr':'Cape verte','ru':'Зелёный плащ','zh':'绿色斗篷'},
+'Gölge Pelerini': {'en':'Shadow Cloak','de':'Schattenumhang','es':'Capa de sombra','fr':'Cape d’ombre','ru':'Плащ тени','zh':'暗影斗篷'},
+'Sherwood Pelerini': {'en':'Sherwood Cloak','de':'Sherwood-Umhang','es':'Capa de Sherwood','fr':'Cape de Sherwood','ru':'Плащ Шервуда','zh':'舍伍德斗篷'},
+'Okçu Yüzüğü': {'en':"Archer's Ring",'de':'Schützenring','es':'Anillo de arquero','fr':'Anneau d’archer','ru':'Кольцо лучника','zh':'弓手戒指'},
+'Kurt Pençesi Yüzüğü': {'en':'Wolf Claw Ring','de':'Wolfsklauenring','es':'Anillo garra de lobo','fr':'Anneau griffe de loup','ru':'Кольцо волчьего когтя','zh':'狼爪戒指'},
+'Avcı Mührü': {'en':"Hunter's Seal",'de':'Jägersiegel','es':'Sello del cazador','fr':'Sceau du chasseur','ru':'Печать охотника','zh':'猎人之印'},
+'Sherwood Yüzüğü': {'en':'Sherwood Ring','de':'Sherwood-Ring','es':'Anillo de Sherwood','fr':'Anneau de Sherwood','ru':'Кольцо Шервуда','zh':'舍伍德戒指'},
+'Tüy Tılsım': {'en':'Feather Charm','de':'Federamulett','es':'Amuleto de pluma','fr':'Talisman de plume','ru':'Талисман из пера','zh':'羽毛护符'},
+'Kurt Dişi Kolye': {'en':'Wolf Fang Necklace','de':'Wolfszahnkette','es':'Collar de colmillo de lobo','fr':'Collier croc de loup','ru':'Ожерелье из волчьего клыка','zh':'狼牙项链'},
+'Gölge Tılsımı': {'en':'Shadow Charm','de':'Schattenamulett','es':'Amuleto de sombra','fr':'Talisman d’ombre','ru':'Талисман тени','zh':'暗影护符'},
+'Orman Ruhu Tılsımı': {'en':'Forest Spirit Charm','de':'Waldgeistamulett','es':'Amuleto del espíritu del bosque','fr':'Talisman de l’esprit de la forêt','ru':'Талисман духа леса','zh':'森林之灵护符'},
+'Kalıcı: kan okları %30 can çalar (normalde %15), +%10 hasar; çalınan can yakındaki iskeletleri %80 iyileştirir (normalde %50)': {
+ 'en':'Permanent: blood bolts steal 30% life (normally 15%), +10% damage; stolen life heals nearby skeletons by 80% of it (normally 50%)',
+ 'de':'Dauerhaft: Blutgeschosse stehlen 30 % Leben (sonst 15 %), +10 % Schaden; gestohlenes Leben heilt nahe Skelette zu 80 % (sonst 50 %)',
+ 'es':'Permanente: los proyectiles de sangre roban 30% de vida (normalmente 15%), +10% de daño; la vida robada cura un 80% a los esqueletos cercanos (normalmente 50%)',
+ 'fr':'Permanent : les traits de sang volent 30 % de vie (15 % normalement), +10 % de dégâts ; la vie volée soigne les squelettes proches à 80 % (50 % normalement)',
+ 'ru':'Постоянно: кровавые снаряды крадут 30% здоровья (обычно 15%), +10% урона; украденное здоровье лечит ближних скелетов на 80% (обычно 50%)',
+ 'zh':'永久：血弹吸取30%生命（通常15%），伤害+10%；吸取的生命以80%治疗附近骷髅（通常50%）'},
+'En güçlü düşmanı 30 sn kurbağa yapar: saldıramaz, yavaş zıplar, 3 kat hasar alır (boss olmaz)': {
+ 'en':'Turns the strongest enemy into a frog for 30 s: it cannot attack, hops slowly, takes triple damage (not bosses)',
+ 'de':'Verwandelt den stärksten Feind 30 s in einen Frosch: greift nicht an, hüpft langsam, nimmt dreifachen Schaden (keine Bosse)',
+ 'es':'Convierte al enemigo más fuerte en rana durante 30 s: no ataca, salta despacio, recibe el triple de daño (no jefes)',
+ 'fr':'Change l’ennemi le plus fort en grenouille pendant 30 s : il n’attaque pas, saute lentement, subit le triple de dégâts (pas les boss)',
+ 'ru':'Превращает сильнейшего врага в лягушку на 30 с: не атакует, медленно прыгает, получает тройной урон (не боссы)',
+ 'zh':'将最强的敌人变成青蛙30秒：无法攻击，缓慢跳跃，受到三倍伤害（首领除外）'},
+}
+for l in ['en','de','es','fr','ru','zh']:
+    p = f'{D}/{l}_extra.json'; d = json.load(open(p))
+    for k, v in T.items(): d['exact'][k] = v[l]
+    json.dump(d, open(p, 'w'), ensure_ascii=False, indent=1)
+print('ok', len(T))

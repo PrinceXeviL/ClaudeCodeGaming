@@ -3564,6 +3564,18 @@ function releaseSoldier(s) {
   s.target = null;
 }
 
+// 16 Eki (Caner): Báthory'nin pasifi: düşmandan çaldığı can yakındaki iskeletleri de iyileştirir; ondan iskelete kan ipliği akar
+function bloodShare(h, amt) {
+  const S = h.def && h.def.share; if (!S || !(amt > 0)) return; const k = h.learned && h.learned.thirst ? S.kThirst : S.k;
+  for (const s of G.soldiers) {
+    if (s === h || s.dead || s.hero || s.wall || s.hp >= s.maxHp || dist(s.x, s.y, h.x, h.y) > S.r) continue;
+    s.hp = Math.min(s.maxHp, s.hp + amt * k);
+    if (G.t - (s.shareFx || -9) < 0.7 || CROWD) continue; s.shareFx = G.t;
+    for (let i = 0; i < 5; i++) { const q = i / 5, x = h.x + (s.x - h.x) * q, y = h.y - 24 + (s.y - 14 - h.y + 24) * q;
+      emit(G.parts, { kind: 'glow', add: true, x, y, vx: (s.x - h.x) * 0.9, vy: (s.y - h.y) * 0.9 - 10, col: i % 2 ? '255,60,70' : '200,20,40', s0: rand(2.2, 3.2), s1: 0.6, life: 0.32 + q * 0.2 }); }
+    G.effects.push({ kind: 'heal', x: s.x, y: s.y, t: 0, dur: 0.5 });
+  }
+}
 function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 }); }
 // ---- Boss kristali ve savaş eşyaları (12 Eki, data.js CRYSTAL / ITEMS) ----
 function giveCrystals(e) {
@@ -3579,9 +3591,17 @@ function giveCrystals(e) {
 }
 // ---- Komutan eşyaları (14 Eki, Caner: "bosslardan zırh, kılıç, asa, yüzük, ok düşsün; komutanların üstüne takayım") — data.js EQUIP ----
 const gearOf = (id) => id != null && save.gear ? save.gear.find(g => g.id === id) : null;
-const gearName = (it) => EQUIP.names[it.s === 'weapon' ? it.k : it.s][it.r];
+const gearName = (it) => { const C = it.c && EQUIP.clsNames[it.c]; return C && C[it.s] ? C[it.s][it.r] : EQUIP.names[it.s === 'weapon' ? it.k : it.s][it.r]; };
 const gearIcon = (it) => (it.s === 'weapon' ? it.k : it.s);
-const gearFits = (it, hid) => it.s !== 'weapon' || EQUIP.wpn[hid] === it.k; // silah yalnız kendi komutanına
+const gearFits = (it, hid) => it.h ? it.h === hid : it.s !== 'weapon' || EQUIP.wpn[hid] === it.k; // 16 Eki: eşya yalnız sahibine (eskiler: silah kendi komutanına)
+const gearClsName = (hid) => EQUIP.clsName[EQUIP.cls[hid]] || '';
+// 16 Eki: eski kayıttaki sahipsiz eşyalar sahiplenir: takan komutan, silahsa silahın komutanı, değilse savaşa giden komutan
+function gearMigrate() {
+  if (save.gearCls || !save.gear) return;
+  const def = (team && team()[0]) || HERO_ORDER[0];
+  for (const g of save.gear) if (!g.h) { g.h = gearWearer(g) || (g.s === 'weapon' ? HERO_ORDER.find(x => EQUIP.wpn[x] === g.k) : null) || def; g.c = EQUIP.cls[g.h]; }
+  save.gearCls = 1; persist();
+}
 const gearWearer = (it) => { const E = save.equip || {}; for (const h in E) for (const sl in E[h]) if (E[h][sl] === it.id) return h; return null; };
 function heroGear(hid) { const E = (save.equip && save.equip[hid]) || {}; return EQUIP.slots.map(sl => gearOf(E[sl])).filter(Boolean); }
 function gearBonus(hid) {
@@ -3598,14 +3618,13 @@ function rollRarity(tries) {
 }
 function makeGear(hid, tries) {
   const x = Math.random(), s = x < 0.34 ? 'weapon' : x < 0.58 ? 'armor' : x < 0.79 ? 'ring' : 'amulet';
-  const own = HERO_ORDER.filter(id => EQUIP.wpn[id] && heroUnlocked(id));
-  const wh = hid && EQUIP.wpn[hid] && Math.random() < 0.7 ? hid : own.length ? own[randi(0, own.length - 1)] : HERO_ORDER[0]; // silah çoğunlukla savaştaki komutana
-  return { s, k: s === 'weapon' ? EQUIP.wpn[wh] : null, r: rollRarity(tries) };
+  const wh = hid && EQUIP.wpn[hid] ? hid : HERO_ORDER.find(id => EQUIP.wpn[id] && heroUnlocked(id)) || HERO_ORDER[0]; // 16 Eki: hep savaştaki komutana, onun sınıfında
+  return { s, k: s === 'weapon' ? EQUIP.wpn[wh] : null, r: rollRarity(tries), h: wh, c: EQUIP.cls[wh] };
 }
 function addGear(it) {
-  save.gear = save.gear || []; save.gearN = (save.gearN || 0) + 1; it.id = save.gearN; it.nw = 1; save.gear.push(it);
-  while (save.gear.length > EQUIP.bag) { // çanta dolu: en zayıf, takılı olmayan eşya kristale erir
-    const free = save.gear.filter(g => !gearWearer(g)).sort((a, b) => a.r - b.r || a.id - b.id)[0];
+  save.gear = save.gear || []; gearMigrate(); save.gearN = (save.gearN || 0) + 1; it.id = save.gearN; it.nw = 1; save.gear.push(it);
+  while (save.gear.filter(g => g.h === it.h).length > EQUIP.bag) { // komutanın çantası dolu: en zayıf, takılı olmayan eşyası kristale erir
+    const free = save.gear.filter(g => g.h === it.h && !gearWearer(g)).sort((a, b) => a.r - b.r || a.id - b.id)[0];
     if (!free) break; save.gear.splice(save.gear.indexOf(free), 1); save.crystal = (save.crystal || 0) + EQUIP.rar[free.r].melt;
   }
   return it;
@@ -5483,8 +5502,8 @@ function useSkill(h, id) {
       timeGate(c.e.x, c.e.y, TG.r, () => 30 + 8 * L, TG.back, 1);
       return true;
     }
-    case 'frog': { // Merlin (pasif): menzildeki en güçlü (canı en çok) sıradan düşman 4 sn kurbağa
-      let e = null; for (const o of G.enemies) if (frogable(o) && dist(h.x, h.y - 10, o.x, o.y) <= R && (!e || o.hp > e.hp)) e = o;
+    case 'frog': { // Merlin (pasif): menzildeki en güçlü (en yüksek can, eşitse en zırhlı) düşman FROG.t sn kurbağa
+      let e = null; for (const o of G.enemies) if (frogable(o) && dist(h.x, h.y - 10, o.x, o.y) <= R && (!e || o.maxHp > e.maxHp || o.maxHp === e.maxHp && (o.def.armor || 0) > (e.def.armor || 0))) e = o;
       if (!e) return false;
       frogEnemy(e);
       return true;
@@ -5827,7 +5846,7 @@ function updateProjectile(pr, dt) {
     const e = pr.target;
     if (pr.kind === 'bolt') fxMagicHit(pr.tx, pr.ty, pr.frost);
     else if (pr.kind === 'fireball') { if (pr.soul) fxMagicHit(pr.tx, pr.ty); else if (pr.blood) fxBloodHit(pr.tx, pr.ty); else fxFireHit(pr.tx, pr.ty, pr.inferno); }
-    if (pr.leech && pr.owner && !pr.owner.dead) pr.owner.hp = Math.min(pr.owner.maxHp, pr.owner.hp + pr.dmg * pr.leech); // Báthory can çalar
+    if (pr.leech && pr.owner && !pr.owner.dead) { pr.owner.hp = Math.min(pr.owner.maxHp, pr.owner.hp + pr.dmg * pr.leech); bloodShare(pr.owner, pr.dmg * pr.leech); } // Báthory can çalar, iskeletlerle paylaşır
     else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
     if (pr.kind === 'arrow') sfx(e.def.armor >= 0.5 ? 'armorhit' : 'arrowhit'); // zırhlıya saplanan cıvata metal tınlar
@@ -8026,7 +8045,7 @@ function timeGate(x, y, r, dmg, back, stun) {
   shakeScreen(4, 0.35); sfx('timegate');
 }
 // Kurbağaya Çevirme (14 Eki): FROG.t sn kurbağa; saldıramaz, yavaş zıplar (spd), fazla hasar alır (dmg). Boss, makine, uçan ve gömülü olmaz.
-const FROG = { t: 4, spd: 0.5, dmg: 1.25 };
+const FROG = { t: 30, spd: 0.5, dmg: 3 }; // 16 Eki (Caner): 30 sn kurbağa, öldürmesi çok kolay (3 kat hasar)
 const frogable = (e) => !e.dead && !e.under && !e.def.chief && !e.def.boss && !e.def.machine && !e.def.flying && !(e.frogT > 0) && !e.leader;
 function frogPuff(e) {
   for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-9, 9), y: e.y - rand(0, 24), vx: rand(-30, 30), vy: -rand(10, 50), drag: 2,
@@ -12070,6 +12089,7 @@ function scrollArea(key, x, y, w, h, content) {
 }
 const inScroll = (key, y, h) => { const a = scrollAreas.find(q => q.key === key); return !a || (y + h > a.y && y < a.y + a.h); };
 const press = { key: null, t: 0, b: null, id: null };
+const HOLD_PRESS = 0.5; // 16 Eki (Caner): basılı tutma süresi (sn); düğmede hold varsa bu kadar tutunca hold çalışır, bırakınca fn çalışmaz
 const pops = {}; // anahtar -> bırakıldığı an (yaylanma animasyonu)
 function pressScale(key) {
   if (press.key === key) return 1 - 0.09 * clamp((time - press.t) / 0.07, 0, 1);
@@ -15000,7 +15020,7 @@ function drawHeroes() {
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', 'blue', 26); ctx.restore();
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
   const tm = team();
-  txt(NECRO ? 'Savaşa bir komutan götürürsün · ayrıntı için karta dokun' : 'Savaşa bir kahraman götürürsün · ayrıntı için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
+  txt(NECRO ? 'Ayrıntı için karta dokun · savaşa seçmek için basılı tut' : 'Savaşa bir kahraman götürürsün · ayrıntı için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
   // 16 Eki: 6+ komutanda kartlar ekrana sığacak kadar küçülür (dokunma alanları da aynı oranla)
   const HS = Math.min(1, (VIS.w - 24) / (HERO_ORDER.length * 182)), hb0 = buttons.length, HY = 330;
   ctx.save(); ctx.translate(W / 2, HY); ctx.scale(HS, HS); ctx.translate(-W / 2, -HY);
@@ -15048,7 +15068,7 @@ function drawHeroPage(id) {
   menuBackdrop(st);
   roundBtn('back', 44, 44, 23, 'back', () => { heroPageId = null; screenT = time - 1; sfx('pick'); }, { appear: st - 0.1 });
   { const rk = easeOutBack(clamp(st / 0.4, 0, 1)); ctx.save(); ctx.translate(W / 2, 50); ctx.scale(rk, rk); crimsonRibbon(0, 0, d.name, 26, 300); ctx.restore(); }
-  fitTxt(d.role, W / 2, 94, 380, 15, '#f0e2c4', 'center', '700', FONT_B, false, 12);
+  fitTxt(`${gearClsName(id)} · ${d.role.split(' · ')[0]}`, W / 2, 94, 420, 15, '#f0e2c4', 'center', '700', FONT_B, false, 12); // 16 Eki: sınıfı da yazar
   if (HERO_ORDER.length > 1) {
     roundBtn('hp_prev', W / 2 - 236, 52, 27, (r) => { ctx.save(); ctx.scale(-1, 1); drawIcon('play', 0, 0, r * 1.05); ctx.restore(); }, () => stepHeroPage(-1), { appear: st - 0.15 });
     roundBtn('hp_next', W / 2 + 236, 52, 27, 'play', () => stepHeroPage(1), { appear: st - 0.15 });
@@ -15116,7 +15136,7 @@ function drawHeroPage(id) {
 let heroTreeId = null, heroTreeT = 0;
 // ---- EŞYALAR panosu (14 Eki): solda komutan ve 4 yuva, sağda çanta (sayfalı ızgara), altta seçili eşyanın ayrıntısı ----
 let gearHeroId = null, gearT = 0, gearSel = null, gearPage = 0, gearMeltAt = -9, gearHint = null;
-const gearNewFor = (hid) => (save.gear || []).filter(g => g.nw && gearFits(g, hid) && !gearWearer(g)).length;
+const gearNewFor = (hid) => { gearMigrate(); return (save.gear || []).filter(g => g.nw && gearFits(g, hid) && !gearWearer(g)).length; };
 function equipGear(hid, it, quiet) {
   const w = gearWearer(it); if (w) delete save.equip[w][it.s];
   save.equip = save.equip || {}; (save.equip[hid] = save.equip[hid] || {})[it.s] = it.id; persist(); if (!quiet) sfx('levelup');
@@ -15166,7 +15186,7 @@ function gearCell(it, x, y, s, sel, dim) { // kare yuva: nadirlik renginde çer�
 }
 function drawGearPanel(hid, px, py, pw, ph, k) {
   const d = HEROES[hid], E = (save.equip && save.equip[hid]) || {}, cx = px + pw / 2;
-  txt(`${d.name} · EŞYALAR`, cx, py + 44, 26, '#f0e2c4', 'center', '400', FONT_T);
+  gearMigrate(); txt(`${d.name} · ${gearClsName(hid)}`, cx, py + 44, 26, '#f0e2c4', 'center', '400', FONT_T); // 16 Eki: sınıfı başlıkta
   // sol: komutan ve yuvalar
   const Lx = px + 225, slotXY = { weapon: [Lx - 132, py + 150], armor: [Lx - 132, py + 262], ring: [Lx + 132, py + 150], amulet: [Lx + 132, py + 262] };
   const bg = ctx.createRadialGradient(Lx, py + 210, 10, Lx, py + 210, 130); bg.addColorStop(0, `rgba(${d.aura},0.45)`); bg.addColorStop(1, `rgba(${d.aura},0)`);
@@ -15190,10 +15210,10 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
   if (!lines.length) txt('Takılı eşya yok', Lx, py + 360, 15, '#9a8eac', 'center', '700', FONT_B, false);
   lines.forEach((l, i) => fitTxt(l, Lx - 150 + (i % 2) * 160, py + 352 + Math.floor(i / 2) * 26, 150, 16, '#b8ff9a', 'left', '800', FONT_B, false, 11));
   // sağ: çanta
-  const bag = (save.gear || []).filter(g => gearWearer(g) !== hid).sort((a, b) => gearFits(b, hid) - gearFits(a, hid) || b.r - a.r || b.id - a.id);
+  const bag = (save.gear || []).filter(g => gearFits(g, hid) && gearWearer(g) !== hid).sort((a, b) => b.r - a.r || b.id - a.id); // 16 Eki: yalnız bu komutanın çantası
   const C = 5, Rw = 3, per = C * Rw, pages = Math.max(1, Math.ceil(bag.length / per)), gx = px + 470, gy = py + 108, cs = 76;
   gearPage = clamp(gearPage, 0, pages - 1);
-  txt(`ÇANTA ${(save.gear || []).length}/${EQUIP.bag}`, gx, py + 84, 17, '#e8dcc0', 'left', '800', FONT_B, false);
+  txt(`ÇANTA ${(save.gear || []).filter(g => gearFits(g, hid)).length}/${EQUIP.bag}`, gx, py + 84, 17, '#e8dcc0', 'left', '800', FONT_B, false);
   if (pages > 1) {
     txt(`${gearPage + 1}/${pages}`, gx + C * cs - 76, py + 84, 15, '#b8acc8', 'center', '800', FONT_B, false);
     roundBtn('gp_prev', gx + C * cs - 120, py + 84, 20, 'back', () => { gearPage = (gearPage + pages - 1) % pages; }, { appear: k - 0.2 });
@@ -15221,7 +15241,7 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
   fitTxt(gearName(it), gx + 82, dy + 22, 146, 19, R.col, 'left', '400', FONT_T, false, 11);
   fitTxt(`${R.name} · ${EQUIP.slotName[it.s]}`, gx + 82, dy + 44, 146, 13, '#b8acc8', 'left', '800', FONT_B, false, 9);
   gearDesc(it).forEach((l, i) => fitTxt(l, gx + 82, dy + 68 + i * 20, 146, 14, '#b8ff9a', 'left', '800', FONT_B, false, 9));
-  if (!fits) { const o = HERO_ORDER.find(h => EQUIP.wpn[h] === it.k); fitTxt(`Yalnız ${HEROES[o].name} kullanır`, gx + 40 - 30, dy + 98, 150, 12, '#ff9a8a', 'left', '800', FONT_B, false, 8); }
+  if (!fits) { const o = it.h || HERO_ORDER.find(h => EQUIP.wpn[h] === it.k) || HERO_ORDER[0]; fitTxt(`Yalnız ${HEROES[o].name} kullanır`, gx + 40 - 30, dy + 98, 150, 12, '#ff9a8a', 'left', '800', FONT_B, false, 8); }
   const bx = gx - 4 + dw - 72;
   if (mine) gameButton('g_off', bx, dy + 32, 124, 44, 'ÇIKAR', () => unequipGear(hid, it), 'wood', { size: 15 });
   else if (fits) gameButton('g_on', bx, dy + 32, 124, 44, 'TAK', () => gearEquipFly(hid, it, GEAR_POS[it.id] || [gx + 40, dy + 44], slotXY[it.s]), 'green', { size: 16, shine: true });
@@ -15288,8 +15308,14 @@ function drawHeroCard(id, cx, cy, at, tm) {
   }
   ctx.restore();
   if (!unlocked && d.cost) buttons.push({ key: 'hbuy' + id, x: cx - 62, y: fy - h / 2 + 254, w: 124, h: 46, fn: () => buyHero(id) });
-  buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h: d.cost && !unlocked ? 250 : h, fn: () => openHeroPage(id) }); // 16 Eki: komutan sayfası (kilitliye de bakılır)
+  // 16 Eki (Caner): dokununca komutanın sayfası (kilitliye de bakılır), basılı tutunca savaşa seçilir; tutarken kartın altında dolan çubuk
+  if (unlocked && !sel && press.key === key) { const k = clamp((time - press.t) / HOLD_PRESS, 0, 1), by = fy + h / 2 - 30;
+    roundRect(cx - 70, by - 13, 140, 26, 13, 'rgba(0,0,0,0.75)', '#b8ff8a', 1.6); if (k > 0.04) roundRect(cx - 68, by - 11, 136 * k, 22, 11, '#3f9a2c');
+    txt('SEÇİLİYOR', cx, by + 1, 14, '#eaffd8', 'center', '800', FONT_B, false); }
+  if (heroPickFx && heroPickFx.id === id && time - heroPickFx.t < 0.6) { const q = (time - heroPickFx.t) / 0.6; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, fy, w * (0.6 + q * 0.6), d.aura || '180,255,140', 0.7 * (1 - q)); ctx.restore(); }
+  buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h: d.cost && !unlocked ? 250 : h, fn: () => openHeroPage(id), hold: unlocked ? () => { if (!sel) { toggleHero(id); heroPickFx = { id, t: time }; } else sfx('pick'); } : null });
 }
+let heroPickFx = null;
 function toggleHero(id) {
   if (team()[0] === id) return;
   save.team = [id]; persist(); sfx('select');
@@ -17243,7 +17269,7 @@ function drawMapTiles(ep, X, V) {
   }
 }
 function regionRoad(E) {
-  const P = [E.start, ...E.nodes, ...gateApproach([E.nodes[E.nodes.length - 1], E.end]).slice(1)], out = [];
+  const P = E.through ? [E.start, ...E.nodes, [E.end[0], E.end[1] + 90], E.end] : [E.start, ...E.nodes, ...gateApproach([E.nodes[E.nodes.length - 1], E.end]).slice(1)], out = []; // through: kapı yok, yol üst kenardan sonraki sefere çıkar
   for (let i = 0; i < P.length - 1; i++) { // Catmull-Rom: noktaların hepsinden geçen yumuşak eğri
     const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)];
     for (let k = 0; k < 8; k++) {
@@ -17255,7 +17281,7 @@ function regionRoad(E) {
   return out;
 }
 const REGION_TINT = { ravenwood: 'rgba(40,30,60,0.2)', plague: 'rgba(90,60,30,0.2)', monastery: 'rgba(20,80,80,0.22)', ossuary: 'rgba(90,60,120,0.22)', bloodmoon: 'rgba(150,20,30,0.25)', cursed: 'rgba(90,110,40,0.08)', bog: 'rgba(30,120,100,0.2)', graveyard: 'rgba(110,100,140,0.2)', blacklake: 'rgba(20,40,100,0.28)', necrogate: 'rgba(120,30,90,0.2)' };
-const regionCastle = (E) => E.end;
+const regionCastle = (E) => E.through ? [-9999, -9999] : E.end;
 // dikey sefer haritası (15 Eki): her mekân ayrı 960x540 dilim olarak çizilir (yol, işaretler dilime kaydırılır), alttan üste dikilir;
 // yalnız yolun gezildiği orta sütun (MAPV.x) tutulur, dikişler MAPV.blend ile harmanlanır. Görsel c.ext = dünya kutusu {x, y, w, h}.
 const MAPV = { x: [130, 830], my: 80, blend: 70, res: 2 }; // yakınlık 2,6 olunca zemin bulanıklaşmasın diye 1,5 → 2
@@ -17269,7 +17295,7 @@ function regionBgV(ep, E, R) {
   if (R.parts.length < Z) {
     const k = R.parts.length, offY = MH - k * MAP_V.step - H, sh = (q) => [q[0], q[1] - offY];
     const road = [buildPath(regionRoad(E).map(sh))];
-    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes.map(sh), castle: k === Z - 1 ? sh(E.end) : [-9999, -9999], roadK: 0.62, decorK: 1.9 }, road, rs, { x: 0, y: my });
+    const part = renderBackground({ name: 'bolge' + ep + '_' + k, theme: E.zones[k][0], plots: E.nodes.map(sh), castle: k === Z - 1 && !E.through ? sh(E.end) : [-9999, -9999], roadK: 0.62, decorK: 1.9 }, road, rs, { x: 0, y: my });
     const tint = REGION_TINT[E.zones[k][0]];
     if (tint) { const pg = part.getContext('2d'); pg.setTransform(1, 0, 0, 1, 0, 0); pg.fillStyle = tint; pg.fillRect(0, 0, part.width, part.height); }
     const mine = (o) => o.y >= (k < Z - 1 ? H - MAP_V.step - 20 : -20) && o.y < H + 20 && o.x > MAPV.x[0] && o.x < MAPV.x[1], up = (o) => Object.assign({}, o, { y: o.y + offY });
@@ -17511,7 +17537,8 @@ function drawMapSeam(n, X) { // iki seferin birleştiği kuşak: dikişi örten 
   for (let i = 0; i < 8; i++) { const t = time * 0.3 + i * 1.9, cx = X.x + X.w * ((i + 0.5) / 8) + Math.sin(t) * 16, cy = y + Math.sin(t * 1.2) * 10, rr = 70 + 12 * Math.sin(t * 0.7);
     const g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr); g2.addColorStop(0, `rgba(${FOG2.col},0.55)`); g2.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = g2; ctx.fillRect(cx - rr, cy - rr, 2 * rr, 2 * rr); }
   const E2 = EPISODES[(n.up ? n.ep : mapEp) - 1]; // kuşağın üstündeki seferin adı
-  if (E2) { ctx.save(); ctx.translate(X.x + X.w / 2, y); ctx.scale(1 / Math.max(1, MAPCAM.z * 0.55), 1 / Math.max(1, MAPCAM.z * 0.55)); crimsonRibbon(0, 0, (n.up && !n.open ? '🔒 ' : '') + E2.name, 26, 360); ctx.restore(); }
+  // 16 Eki (Caner: tek parça harita): kuşakta sefer kurdelesi yok; adı üstteki başlıkta. Kilitliyse küçük kilitli yazı
+  if (E2 && n.up && !n.open) { ctx.save(); ctx.translate(X.x + X.w / 2, y); ctx.scale(1 / Math.max(1, MAPCAM.z * 0.55), 1 / Math.max(1, MAPCAM.z * 0.55)); zoneTitle('🔒 ' + E2.name); ctx.restore(); }
 }
 function mapEpCross(E, X, NB) { // kameranın ortası komşu seferin zeminine geçtiyse asıl harita o olur; kamera aynı görüntüde kalır
   const z = MAPCAM.z, cy = ((EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2 - MAPCAM.ty) / z;
@@ -17816,7 +17843,7 @@ function drawRegionMap(E, ep, st) {
     ctx.restore();
   }
   // şapel (haritada biraz büyük) ve balkonda kuru kafalı Mortimer: çay içer, arkasında ruh ışığı
-  const ch = spr('castle_1'), mort = spr('mortimer'), fogged = MAPFX.fog && MAPFX.fog.vis < epLevels(ep).length;
+  const ch = !E.through && spr('castle_1'), mort = spr('mortimer'), fogged = MAPFX.fog && MAPFX.fog.vis < epLevels(ep).length; // şapel yalnız son seferin ucunda
   if (ch && fogged) { // sisin içinde: şapel kara siluet, yalnız yeşil pencereleri soluk yanar
     const cw = MAP_MARK.chapel, chh = cw * ch.height / ch.width, cx = E.end[0], cy = E.end[1] + 0.17 * chh, L = chapelFogLayers(ch);
     drawSprite(ctx, L.dark, cx, cy, cw);
@@ -20070,6 +20097,7 @@ function frame(now) {
   last = now; time += real;
   SPR_NOW = time; if (++SPR_TICK % 60 === 0) stripTrim(); // telefonda şerit bütçesi (60 karede bir)
   MAKE_BUDGET = 2; // karede en çok 2 pahalı hazırlık (mip, beyaz parlama karesi)
+  if (press.b && press.b.hold && time - press.t >= HOLD_PRESS) { const b = press.b; pops[press.key] = time; press.key = null; press.b = null; b.hold(); }
   adaptQuality(real);
   if (bgDirty && time - bgDirty > 0.3) {
     bgDirty = 0;
@@ -20160,6 +20188,7 @@ window.__game = {
     } else out.data = c.toDataURL('image/webp', 0.9);
     BLEED = B0; delete REGION_BG[ep]; return out;
   },
+  giveGear(hid, n = 1, tries = 3) { const out = []; for (let i = 0; i < n; i++) out.push(addGear(makeGear(hid, tries))); persist(); return out.map(g => gearName(g)); }, // test: komutana eşya
   openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
   cut: (n) => spr(n) && ARMS[n] ? cutImage(spr(n), ARMS[n]) : null, ARMS,
   // arsa denetimi (test): yolun çizilen şekline (koyu kenar dahil) taşan arsaları bulur, en yakın uygun yeri önerir
