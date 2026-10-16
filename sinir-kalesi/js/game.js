@@ -2576,6 +2576,32 @@ function meteorRock() {
   g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.ellipse(-8, -10, 7, 4, -0.6, 0, Math.PI * 2); g.fill();
   return (METEOR_ROCK = c);
 }
+// 16 Eki (Caner: "meteorun çarptığı yerdeki zayıf, küçük düşmanlar gerçekçi fizikle savrulsun"): balistik savrulma. Çarpma noktasından dışarı:
+// yol boyunca ileri ya da geri (hangi taraftaysa), yana kayar, havada döner; yerçekimiyle düşer, bir kez seker, toz kalkar, kısa sersemler.
+// Yalnız hafif ve küçük düşmanlar (boss, ağır zırh, makine, uçan değil; boyu FLING.h altında). Merkeze yakın olan daha yükseğe ve uzağa.
+const FLING = { g: 620, vz: [170, 330], vd: [60, 170], side: 14, spin: [5, 12], h: 40, bounce: 0.3, stun: 0.5 };
+function flingEnemy(e, x, y, k) {
+  if (e.dead || !pushable(e) || e.def.boss || e.def.acl === 'agir' || (CHAR_H['enemy_' + e.type] || 30) > FLING.h || e.flZ != null) return;
+  const q = pathPos(e.p, e.d, e.off), nx = -q.dy, ny = q.dx, rx = e.x - x, ry = e.y - y;
+  const along = Math.sign(rx * q.dx + ry * q.dy) || (Math.random() < 0.5 ? 1 : -1), side = Math.sign(rx * nx + ry * ny) || (Math.random() < 0.5 ? 1 : -1);
+  e.flZ = 0.01; e.flVz = lerp(FLING.vz[0], FLING.vz[1], k) * rand(0.85, 1.1); e.flVd = along * lerp(FLING.vd[0], FLING.vd[1], k) * rand(0.8, 1.15);
+  e.flOff = clamp((e.off || 0) + side * FLING.side * (0.4 + 0.6 * k), -16, 16); e.spinV = (along > 0 ? 1 : -1) * lerp(FLING.spin[0], FLING.spin[1], k); e.spinA = 0; e.flB = false;
+  e.blocker = null; e.inMelee = false;
+}
+function flingStep(e, dt) { // savrulan düşmanın hareketi (true: bu karede yürüme yok)
+  if (e.flZ == null) return false;
+  e.flVz -= FLING.g * dt; e.flZ += e.flVz * dt; e.spinA += e.spinV * dt;
+  const L = e.p.cum[e.p.cum.length - 1] - 4; e.d = clamp(e.d + e.flVd * dt, 0, L); e.flVd *= Math.max(0, 1 - 0.8 * dt);
+  e.off += (e.flOff - e.off) * Math.min(1, dt * 5);
+  if (e.flZ <= 0) {
+    G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.45 });
+    if (!e.flB && e.flVz < -110) { e.flB = true; e.flZ = 0.01; e.flVz = -e.flVz * FLING.bounce; e.flVd *= 0.45; e.spinV *= 0.35; }
+    else { e.flZ = null; e.spinA = 0; stunEnemy(e, FLING.stun); }
+  }
+  const p2 = pathPos(e.p, e.d, e.off); e.x = p2.x; e.y = p2.y;
+  return true;
+}
+const METEOR_RAIN = { n: 8, gap: 0.13, spread: 0.85, r: 0.45, size: [0.95, 1.3], dmg: 0.42, burn: 0.4 }; // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
 // Göktaşı: yerde hedef işareti, alev kuyruğu, ısı halesi ve dönen kaya
 function drawMeteor(p) {
   if (p.big) { ctx.save(); const k0 = clamp(p.t / p.dur, 0, 1), q = projPos(p, k0), B = p.big; // dev meteor: kaya ve kuyruk büyük (hedef halkası olağan boyda)
@@ -2585,8 +2611,8 @@ function drawMeteor(p) {
 function drawMeteor0(p, noRing, ringOnly) {
   const k = clamp(p.t / p.dur, 0, 1), pre = p.t < 0 ? clamp(1 + p.t / 0.6, 0, 1) : 1;
   // hedef işareti: düşüşe yaklaştıkça parlaklaşan ve daralan halka
-  if (!noRing) {
-    const a = (p.t < 0 ? pre * 0.5 : 0.5 + 0.5 * k), r = p.splash * (1.1 - 0.3 * k);
+  if (!noRing && !p.noRing) {
+    const a = (p.t < 0 ? pre * 0.5 : 0.5 + 0.5 * k), r = (p.ringR || p.splash) * (1.1 - 0.3 * k);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     ctx.strokeStyle = `rgba(255,120,40,${0.55 * a})`; ctx.lineWidth = 2;
     ctx.setLineDash([6, 5]); ctx.lineDashOffset = -time * 30;
@@ -4603,6 +4629,7 @@ function updateEnemy(e, dt) {
       }
     }
   }
+  if (flingStep(e, dt)) return; // meteor savurması: havada (balistik); sersemleme, blok, dirilme bekler
   if (e.reviveT > 0) { e.reviveT -= dt; return; } // diriliyor: yerinden kalkar
   if (e.hopT > 0) e.hopT -= dt;
   if (e.emergeT > 0) e.emergeT -= dt;
@@ -5572,11 +5599,13 @@ function updateProjectile(pr, dt) {
       for (const e of G.enemies) if (!e.dead && dist(e.x, e.y, pr.tx, pr.ty) <= pr.splash) e.rotT = 4;
     }
     if (pr.kind === 'meteor') fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn);
-    if (pr.mburn) { // Merlin'in dev meteoru: yanan zemin, ikinci şok halkası, geniş krater, güçlü sarsıntı
-      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
-      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * 1.7, t: 0, dur: 0.8 });
+    if (pr.mburn) for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, pr.tx, pr.ty); if (d <= pr.splash * 1.15) flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur
+    if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
+      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
+      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8 });
       G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true });
-      shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60);
+      if (pr.mini) { shakeScreen(pr.first ? 7 : 4, 0.28); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
+      else { shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60); }
     }
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
     else fxExplosion(pr.tx, pr.ty, pr.splash, false);
@@ -7736,7 +7765,14 @@ function castUlt(h, x, y) {
     timeGate(x, y, U.r, dmg, U.back, U.stun);
   } else if (U.meteor) {
     // Merlin'in Meteor'u (14 Eki): yerde uyarı halkası, gökten dev kaya; çarpınca büyük patlama, krater, yanan zemin (drawMeteor big, fxMeteorImpact)
-    G.projectiles.push({ kind: 'meteor', big: 2.2, sx: x - 220, sy: y - 520, tx: x, ty: y, t: -0.55, dur: 0.75, arc: 0, dmg: dmg(), splash: U.r, src: 'blast', spin: rand(0, 6), mburn: [U.burn * k, U.burnT] });
+    // 16 Eki (Caner): tek dev kaya yerine 7-8 küçük meteor yağmuru (METEOR_RAIN): alana yayılır, aralıklı düşer; her biri küçük patlama, krater, yanan zemin.
+    // Toplam güç korunur: alandaki düşmana ortalama ~2,5 meteor değer (hasar payı M.dmg), yanma payı M.burn. Hedef halkası (U.r) son düşene kadar görünür.
+    const M = METEOR_RAIN, n = M.n, last = n - 1;
+    for (let i = 0; i < n; i++) {
+      const a = i === 0 ? 0 : rand(0, Math.PI * 2), rr = i === 0 ? 0 : U.r * Math.sqrt(rand(0.15, 1)) * M.spread, tx = x + Math.cos(a) * rr, ty = y + Math.sin(a) * rr * 0.55;
+      G.projectiles.push({ kind: 'meteor', big: rand(M.size[0], M.size[1]), mini: true, first: i === 0, ringR: i === last ? U.r : 0, noRing: i !== last, sx: tx - 200 + rand(-50, 50), sy: ty - 500, tx, ty,
+        t: -0.5 - i * M.gap, dur: 0.6, arc: 0, dmg: dmg() * M.dmg, splash: U.r * M.r, src: 'blast', spin: rand(0, 6), mburn: [U.burn * k * M.burn, U.burnT] });
+    }
     sfx('magic'); setTimeout(() => sfx('whirl'), 350);
   } else if (U.storm) {
     if (!stormChain(x, y, U, dmg)) { G.effects.push({ kind: 'bolt', pts: [[x, y - 240], [x, y]], t: 0, dur: 0.35 }); sfx('thunder'); }
@@ -9854,7 +9890,7 @@ function drawEnemy0(e) {
       rise: e.reviveT > 0 ? 0.25 + 0.75 * (1 - e.reviveT / 1.1) : e.emergeT > 0 ? 1 - e.emergeT / 0.35 * 0.85 : null,
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0 && !d.crew) && !(e.reviveT > 0), // kuşatma kulesi okçular atarken de yürür
-      fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0),
+      fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0) + (e.flZ > 0 ? e.flZ : 0),
       atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
@@ -9862,6 +9898,7 @@ function drawEnemy0(e) {
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
     if (d.crew) drawSiegeCrew(e, uo.h, im);
     if (d.formation) drawFormation(e, name, im, ux, uo);
+    else if (e.spinA) { const cy = e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);

@@ -764,7 +764,7 @@ Object.assign(HERO_ULT, {
   robin: { name: 'Ok Yağmuru', cd: 55, anim: 2.6, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
     desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
   merlin: { name: 'Meteor', cd: 60, anim: 1.8, r: 80, dmg: [110, 150], burn: 14, burnT: 4, meteor: true,
-    desc: 'Gökten dev bir meteor düşer: büyük patlama, krater ve 4 sn yanan zemin', short: 'Dev meteor: büyük patlama, yanan zemin' },
+    desc: 'Gökten 8 küçük meteor yağar: alana yayılan patlamalar, kraterler ve 4 sn yanan zemin', short: 'Meteor yağmuru: 8 patlama, yanan zemin' },
   spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
     desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },
   leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
