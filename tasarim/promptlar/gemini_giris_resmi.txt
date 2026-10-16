@@ -1,0 +1,12 @@
+Redraw image 1 as a new title screen key art, same cartoon style, same colors, same lighting, 16:9 landscape, very high detail.
+
+KEEP from image 1: the skeleton necromancer in the red hooded robe on the bone throne (left), drinking tea from a teacup, fluffy black slippers, scythe, hourglass, green and purple ghost flames around the throne; the haunted chapel with green windows on the hill; the big full moon top right; the graveyard with skeletons rising from the ground in the foreground. Keep the empty dark sky area top-center (room for the game logo) and a calm empty area bottom-center (room for the PLAY button).
+
+CHANGE the army on the right: a huge, dramatic, eye-catching golden-red sun-empire army marching toward the necromancer, filling the right half from the horizon to the middle ground. It must contain EVERY enemy from images 2 and 3, each one clearly readable with its own silhouette:
+- soldiers: legionaries with sun shields, sun archers, gladiator, hooded assassin, little priest, heavy shield knight, lancer cavalry, war dog, chariot, drummer, witch-hunter crossbowman, torch bearer, white hound, holy-water monk, flagellant, lantern cart, bell priest, paladin, inquisitor, white stone saint statue
+- siege machines in the back: battering ram wagon, catapult, lion-head cannon, siege tower, war elephant with tower on its back, golden eagle and vulture flying low over the army
+- bosses BIG and in front of the army, lit by torches: centurion, lion-mask champion, masked shadow master, cavalry captain, golden sun general on a white horse, sun pope with golden staff, iron warden, bell-carrying monk with hammer, fire nun, white stone colossus, cardinal with a teapot, the cathedral on wheels, golden lion chariot, burning golden warrior, hunter with two white hounds, whip nun, incense nun with a book, crusader knight with flaming sword, green-glowing undead pope
+Bosses closest to the viewer and biggest, regular soldiers behind them, siege machines and many torches and red sun banners in the far back. Warm orange torch light on the army against the cold teal-purple night, strong contrast. The army looks powerful but the necromancer looks relaxed and unimpressed.
+
+SKY: NO birds, NO bats, NO crows, nothing flying in the sky. Clean sky with clouds and the moon only.
+No text, no letters, no logo, no crosses anywhere (gravestones are plain rounded stones, banners show only a sun symbol).

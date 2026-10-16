@@ -17141,19 +17141,20 @@ function drawSkullIcon(x, y, r) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, -r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); glow(ctx, r * 0.3, -r * 0.1, r * 0.35, '120,255,140', 0.8); ctx.restore();
   ctx.restore();
 }
-// yeni giriş görseli (Mortimer tahtında çay içiyor, lejyon geliyor): ışıklar görseldeki yerlerine (0..1) bağlı canlandırılır
+// giriş görseli v2 (17 Eki: sağda bütün Solarian ordusu, bosslar önde): ışıklar görseldeki yerlerine (0..1) bağlı canlandırılır
 const KEY_FX = {
-  eyes: [[0.187, 0.307], [0.208, 0.309]], skull: [[0.175, 0.11], [0.198, 0.112]], cup: [0.348, 0.378], moon: [0.915, 0.122],
-  torch: [[0.48, 0.517], [0.549, 0.491], [0.635, 0.487], [0.695, 0.463], [0.735, 0.564], [0.755, 0.457], [0.78, 0.469], [0.781, 0.664],
-    [0.844, 0.666], [0.885, 0.451], [0.905, 0.683], [0.93, 0.472], [0.931, 0.562], [0.968, 0.51]],
-  win: [[0.325, 0.26], [0.352, 0.263], [0.365, 0.164], [0.392, 0.228], [0.375, 0.355], [0.425, 0.254], [0.445, 0.178], [0.445, 0.276], [0.445, 0.362]],
+  eyes: [[0.187, 0.304], [0.207, 0.305]], skull: [[0.175, 0.104], [0.197, 0.106]], cup: [0.348, 0.378], moon: [0.914, 0.083],
+  torch: [[0.48, 0.517], [0.569, 0.632], [0.635, 0.487], [0.697, 0.462], [0.734, 0.562], [0.757, 0.46], [0.887, 0.448], [0.924, 0.442],
+    [0.931, 0.479], [0.932, 0.562], [0.966, 0.509], [0.983, 0.503]],
+  win: [[0.326, 0.257], [0.345, 0.251], [0.357, 0.263], [0.358, 0.159], [0.376, 0.159], [0.376, 0.263], [0.376, 0.354], [0.39, 0.247],
+    [0.392, 0.325], [0.406, 0.18], [0.422, 0.253], [0.428, 0.329], [0.443, 0.175], [0.443, 0.362], [0.444, 0.274]],
   flame: [[0.042, 0.583, 70, '110,255,120'], [0.05, 0.72, 50, '190,120,255'], [0.333, 0.507, 46, '110,255,120'], [0.381, 0.645, 50, '190,120,255']],
   // görselin kendisi dalgalandırılan bölgeler [x0, y0, x1, y1, genlik(kaynak px), sıklık, hız]: tahtın yanındaki büyü alevleri, çay buharı
   // tür: 'fire' yalnız yeşil/mor alev pikselleri, 'steam' yalnız açık renkli buhar pikselleri kıpırdar (kol, cübbe, fincan yerinde kalır)
   warp: [[0.0, 0.40, 0.075, 0.70, 5, 0.05, 5, 'fire'], [0.025, 0.62, 0.105, 0.80, 4, 0.06, 4.5, 'fire'], [0.305, 0.43, 0.36, 0.525, 4, 0.07, 5.5, 'fire'],
     [0.365, 0.42, 0.425, 0.64, 5, 0.05, 4.6, 'fire'], [0.33, 0.28, 0.36, 0.352, 3, 0.13, 3, 'steam']],
-  // yürüyüş yerinde dönen uzak kargalar: yalnız göğün sağ yarısında, küçük, uzaklaşıp kaybolur
-  crowSky: [0.5, 0.97, 0.06, 0.24],
+  // yarasalar şapelin çan kulesinden sürü hâlinde çıkar; tekler göğün her yerinden geçer
+  belfry: [0.405, 0.15],
 };
 // dalgalanan bölge: görselin dikdörtgeni yatay şeritlere bölünür, her şerit yukarı doğru akan bir dalga kadar kayar,
 // kenarlar yumuşak maskeyle asıl resme karışır (dikiş görünmez). Kaynak piksel uzayında önbellekli tuval.
@@ -17218,6 +17219,7 @@ function drawKeyArt(bg) {
   const ox = VIS.l + (VIS.w - iw) / 2 + Math.sin(time * 0.07) * 6, oy = VIS.t + (VIS.h - ih) / 2 + Math.cos(time * 0.09) * 3, s = iw / W;
   ctx.drawImage(bg.width > iw * 1.5 ? pickMip(ctx, bg, iw) : bg, ox, oy, iw, ih);
   const P = (f) => [ox + f[0] * iw, oy + f[1] * ih];
+  TITLE_C.keyP = { ox, oy, iw, ih };
   for (const [i, r] of KEY_FX.warp.entries()) keyWarp(bg, ox, oy, iw, ih, r, i);
   for (const [i, f] of KEY_FX.torch.entries()) keyTorch(bg, ox, oy, iw, ih, f, i);
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -17253,24 +17255,56 @@ function drawKeyArt(bg) {
   }
   ctx.restore();
 }
-// uzak kargalar: göğün sağında belirir, yavaşça süzülüp küçülerek uzaklaşır ve kaybolur (Mortimer'ın önünden geçmez)
-function drawSkyCrows() {
-  const [x0, x1, y0, y1] = KEY_FX.crowSky;
-  TITLE_C.sky = (TITLE_C.sky || []).filter(c => time - c.t0 < c.life);
-  if (!TITLE_C.skyT || time > TITLE_C.skyT) {
-    TITLE_C.skyT = time + rand(2.5, 5);
-    if (TITLE_C.sky.length < 4) TITLE_C.sky.push({ x: W * rand(x0 + 0.05, x1 - 0.1), y: H * rand(y0, y1), vx: rand(-14, 14) || 8, vy: rand(-4, 2), t0: time, life: rand(6, 9), s: rand(0.55, 0.85), ph: rand(0, 6) });
+// yarasalar (17 Eki, Caner: "durağan kuşları sil, gerçek hareket eden ufak yarasalar"): kanatlar perdeli, hızlı çırpar,
+// uçuş yolu yarasa gibi zikzaklı (iki dalga + ara sıra ani dalış). Şapelden 3-6'lık sürü çıkar, arada tek yarasa göğü geçer.
+function spawnTitleBat(x, y, dir, k) {
+  TITLE_C.bats.push({ x, y, cx: x, vx: dir * rand(70, 120), vy: rand(-9, 3), t0: time, life: rand(7, 11), s: k * rand(0.75, 1.15), ph: rand(0, 6),
+    f: rand(9, 12), a1: rand(8, 18), w1: rand(1.2, 2.2), a2: rand(2, 5), w2: rand(5, 8), dive: rand(2, 5) });
+}
+function drawTitleBat(x, y, k, fl, dir) {
+  // fl: kanat açısı -1 (aşağı) .. 1 (yukarı); kanat ucu ve bilek yukarı/aşağı iner, perde kenarı üç kavisli
+  ctx.save(); ctx.translate(x, y); ctx.scale(k * dir, k);
+  ctx.beginPath();
+  for (const sd of [-1, 1]) {
+    const wy = -fl * 7, ty = -fl * 9 + 2;
+    ctx.moveTo(sd * 1.5, -1);
+    ctx.quadraticCurveTo(sd * 5, wy - 2, sd * 8, wy);
+    ctx.quadraticCurveTo(sd * 11, ty - 1, sd * 14, ty);
+    ctx.quadraticCurveTo(sd * 12, ty + 2.5, sd * 11, ty + 4.5);
+    ctx.quadraticCurveTo(sd * 9.5, wy + 2.5, sd * 7.5, wy + 4.5);
+    ctx.quadraticCurveTo(sd * 5.5, wy + 2.5, sd * 4.5, 3);
+    ctx.quadraticCurveTo(sd * 3, 1.5, sd * 1.5, 2);
+    ctx.closePath();
   }
-  ctx.save(); ctx.fillStyle = '#120f18';
-  for (const c of TITLE_C.sky) {
-    const u = (time - c.t0) / c.life, x = c.x + c.vx * (time - c.t0), y = c.y + c.vy * (time - c.t0) + Math.sin(time * 1.3 + c.ph) * 2;
-    if (x < W * x0) continue;
-    const k = c.s * (1 - 0.6 * u), fl = Math.sin(time * 8 + c.ph);
-    ctx.globalAlpha = Math.min(1, u * 5, (1 - u) * 3) * 0.85;
-    ctx.save(); ctx.translate(x, y); ctx.scale(k * (c.vx < 0 ? -1 : 1), k);
-    ctx.beginPath(); ctx.moveTo(-9, -fl * 4); ctx.quadraticCurveTo(-4, -2 - fl * 2, 0, 0); ctx.quadraticCurveTo(4, -2 - fl * 2, 9, -fl * 4);
-    ctx.quadraticCurveTo(4, 0.5 - fl, 0, 2); ctx.quadraticCurveTo(-4, 0.5 - fl, -9, -fl * 4); ctx.closePath(); ctx.fill();
-    ctx.restore();
+  ctx.ellipse(0, 0.5, 2.1, 3.2, 0, 0, Math.PI * 2);
+  ctx.moveTo(-1.6, -2); ctx.lineTo(-1.2, -4.8); ctx.lineTo(-0.3, -2.6); ctx.lineTo(0.3, -2.6); ctx.lineTo(1.2, -4.8); ctx.lineTo(1.6, -2); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ff4a3a'; ctx.fillRect(-1.3, -1.2, 0.9, 0.9); ctx.fillRect(0.4, -1.2, 0.9, 0.9); ctx.fillStyle = '#120a18';
+  ctx.restore();
+}
+function drawTitleBats() {
+  const B = TITLE_C.bats || (TITLE_C.bats = []), KP = TITLE_C.keyP;
+  TITLE_C.bats = B.filter(b => time - b.t0 < b.life && b.cx > -40 && b.cx < W + 40);
+  if (KP && (!TITLE_C.flockT || time > TITLE_C.flockT)) { // şapel kulesinden sürü
+    TITLE_C.flockT = time + rand(6, 10);
+    const bx = KP.ox + KEY_FX.belfry[0] * KP.iw, by = KP.oy + KEY_FX.belfry[1] * KP.ih, dir = Math.random() < 0.7 ? 1 : -1, n = 3 + Math.floor(rand(0, 4));
+    for (let i = 0; i < n; i++) spawnTitleBat(bx + rand(-22, 22), by + rand(-10, 14), dir, rand(1.5, 1.85));
+    for (let i = TITLE_C.bats.length - n; i < TITLE_C.bats.length; i++) TITLE_C.bats[i].t0 += (i - TITLE_C.bats.length + n) * rand(0.2, 0.35); // sürü art arda çıkar
+  }
+  if (!TITLE_C.batT || time > TITLE_C.batT) { // tek geçen yarasa (uzakta: küçük, yavaş)
+    TITLE_C.batT = time + rand(3, 6);
+    const l = Math.random() < 0.5;
+    spawnTitleBat(l ? -20 : W + 20, H * rand(0.06, 0.3), l ? 1 : -1, rand(0.95, 1.2));
+  }
+  ctx.save(); ctx.fillStyle = '#120a18'; ctx.strokeStyle = 'rgba(170,120,220,0.45)'; ctx.lineJoin = 'round';
+  for (const b of TITLE_C.bats) {
+    const t = time - b.t0; if (t < 0) { b.cx = b.x; continue; }
+    const dv = Math.max(0, Math.sin(t * 0.9 + b.ph)) ** 6 * 24; // ara sıra kısa dalış
+    const x = b.x + b.vx * t, y = b.y + b.vy * t + Math.sin(t * b.w1 + b.ph) * b.a1 + Math.sin(t * b.w2 + b.ph * 2) * b.a2 + dv;
+    b.cx = x;
+    const fl = Math.sin(time * b.f * 2 + b.ph), k = b.s * Math.min(1, 0.4 + t * 1.5);
+    ctx.globalAlpha = Math.min(1, t * 3, (b.life - t) * 2) * 0.92;
+    ctx.lineWidth = 1 / k; drawTitleBat(x, y, k, fl, b.vx > 0 ? 1 : -1);
   }
   ctx.restore();
 }
@@ -17329,8 +17363,8 @@ function drawNecroTitle(st) {
     const k = time - TITLE_C.flash, a = (k < 0.08 ? 1 : k < 0.16 ? 0.3 : k < 0.24 ? 0.8 : Math.max(0, 1 - (k - 0.24) / 0.26)) * 0.22;
     ctx.fillStyle = `rgba(210,220,255,${a})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
-  // gökte geçen kargalar
-  if (key) drawSkyCrows(key);
+  // gökte uçan yarasalar (eski görselde kargalar)
+  if (key) drawTitleBats();
   else {
   TITLE_C.crows = (TITLE_C.crows || []).filter(c => c.x > -60 && c.x < W + 60);
   if (!TITLE_C.crowT || time > TITLE_C.crowT) { TITLE_C.crowT = time + rand(5, 9); const l = Math.random() < 0.5; TITLE_C.crows.push({ x: l ? -40 : W + 40, y: rand(150, 260), v: (l ? 1 : -1) * rand(60, 90), ph: rand(0, 6), t: time }); }
