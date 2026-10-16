@@ -16169,7 +16169,7 @@ function drawNecroTitle(st) {
   // logo: düşerek gelir, sonra hafifçe süzülür
   const e = easeOutBack(clamp(st / 0.8, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.3, 0, 1);
-  if (key) drawTitleLogo(W * 0.6, 114 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.64 * (0.85 + 0.15 * e)); // sağ üst düğmelerin altında kalsın
+  if (key) drawTitleLogo(W * 0.57, 156 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.62 * (0.85 + 0.15 * e)); // sağ üst düğmelerin altında kalsın (16 Eki: düğmeler büyüdü, logo aşağıda)
   else drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
   ctx.restore();
   necroPlayButton('play', W / 2, 452, 230, 56, 'OYNA', () => goTitle(() => { screen = 'map'; }), st - 0.6);
@@ -16180,10 +16180,12 @@ function drawNecroTitle(st) {
 function drawTitle() {
     const st = time - screenT;
     drawNecroTitle(st);
-    roundBtn('snd', W - 38, 38, 21, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7, tile: 'blue' });
-    roundBtn('settings', W - 88, 38, 21, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
-    roundBtn('t_codex', W - 138, 38, 21, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
-    roundBtn('t_ach', W - 188, 38, 21, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
+    // 16 Eki (Caner: "sağ üstteki simgeler çok ufak, logo üst üste binmesin"): r 21 → 30 (dokunma ≥ 60), ekranın gerçek sağ üst köşesine yaslı
+    const TB = (i) => [EDGE.r - 46 - i * 70, EDGE.t + 44];
+    roundBtn('snd', ...TB(0), 30, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7, tile: 'blue' });
+    roundBtn('settings', ...TB(1), 30, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
+    roundBtn('t_codex', ...TB(2), 30, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
+    roundBtn('t_ach', ...TB(3), 30, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
     if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
     return;
