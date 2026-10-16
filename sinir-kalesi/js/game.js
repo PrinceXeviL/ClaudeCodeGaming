@@ -13870,11 +13870,6 @@ let treeSel = {};
 function drawHeroTree(id, px, py, pw, ph, k, battle) {
   const d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), cx = px + pw / 2;
   crimsonRibbon(cx, py + 46, d.name, 24, 280);
-  const rows = [{ kind: 'ult', id: 'ult', sk: null }].concat(HERO_ULT2[id] ? [{ kind: 'ult2', id: 'ult2', sk: null }] : [], heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk })));
-  const UO = (kind) => (kind === 'ult2' ? HERO_ULT2[id] : HERO_ULT[id]), act = Rr.act === 'ult2' && Rr.ult2 > 0 ? 'ult2' : 'ult';
-  const innate = (row) => row.kind === 'sk' && HERO_INNATE[id] === row.id;
-  const rankOf = (row) => Math.max(treeRank(Rr, row.kind, row.id), innate(row) ? 1 : 0);
-  if (!rows.find(r => r.id === treeSel[id])) treeSel[id] = (rows.find(r => treeCan(Rr, r.kind, r.id)) || rows[0]).id;
   // ---- sol: portre kartı ----
   const lx = px + 30, lw = 214, ly = py + 78, lh = ph - 78 - 26;
   roundRect(lx, ly, lw, lh, 16, 'rgba(8,4,14,0.55)', 'rgba(201,168,101,0.45)', 1.4);
@@ -13894,11 +13889,22 @@ function drawHeroTree(id, px, py, pw, ph, k, battle) {
     txt(Rr.lvl >= HERO_MAX ? 'EN YÜKSEK SEVİYE' : `${Math.floor(Rr.xp)} / ${xpNeed(Rr.lvl)} XP`, lx + lw / 2, xy + 10, 12.5, '#fff6dc', 'center', '800', FONT_B, true);
     if (!battle) gameButton('tr_reset', lx + lw / 2, ly + lh - 32, 160, 40, 'SIFIRLA', () => { treeReset(Rr); sfx('coins'); }, 'red', { icon: 'restart', size: 15 });
     else txt('Sıfırlama Komutanlar ekranında', lx + lw / 2, ly + lh - 32, 12.5, '#c8b898', 'center', '700', FONT_B, false); }
+  drawHeroSkills(id, px + 262, py + 78, pw - 262 - 28, ph - 104, k, battle, { mw: 288, top: 0 });
+}
+// 16 Eki: güç ve yetenek düğümleri + seçilenin ayrıntısı (savaş içi yetenek panosu ve komutan sayfası ortak kullanır).
+// x0,y0,w0,h0: alan; o.mw: düğüm sütunu genişliği, o.top: düğümlerin alanın üstünden aşağı kayması (ayrıntı sütunu tam boy)
+function drawHeroSkills(id, x0, y0, w0, h0, k, battle, o) {
+  const d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr);
+  const rows = [{ kind: 'ult', id: 'ult', sk: null }].concat(HERO_ULT2[id] ? [{ kind: 'ult2', id: 'ult2', sk: null }] : [], heroSkillList(d).map(sk => ({ kind: 'sk', id: sk.id, sk })));
+  const UO = (kind) => (kind === 'ult2' ? HERO_ULT2[id] : HERO_ULT[id]), act = Rr.act === 'ult2' && Rr.ult2 > 0 ? 'ult2' : 'ult';
+  const innate = (row) => row.kind === 'sk' && HERO_INNATE[id] === row.id;
+  const rankOf = (row) => Math.max(treeRank(Rr, row.kind, row.id), innate(row) ? 1 : 0);
+  if (!rows.find(r => r.id === treeSel[id])) treeSel[id] = (rows.find(r => treeCan(Rr, r.kind, r.id)) || rows[0]).id;
   // ---- orta: düğümler ----
-  const mx = px + 262, mw = 288, ults = rows.filter(r => r.kind !== 'sk'), sks = rows.filter(r => r.kind === 'sk');
-  txt('GÜÇLER', mx + mw / 2, py + 92, 14, '#ffd34d', 'center', '800', FONT_B, false);
-  txt('YETENEKLER', mx + mw / 2, py + 262, 14, '#b8ff8a', 'center', '800', FONT_B, false);
-  ctx.strokeStyle = 'rgba(201,168,101,0.22)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mx + 20, py + 248); ctx.lineTo(mx + mw - 20, py + 248); ctx.stroke();
+  const mx = x0, mw = o.mw, T0 = y0 + o.top, ults = rows.filter(r => r.kind !== 'sk'), sks = rows.filter(r => r.kind === 'sk');
+  txt('GÜÇLER', mx + mw / 2, T0 + 14, 14, '#ffd34d', 'center', '800', FONT_B, false);
+  txt('YETENEKLER', mx + mw / 2, T0 + 184, 14, '#b8ff8a', 'center', '800', FONT_B, false);
+  ctx.strokeStyle = 'rgba(201,168,101,0.22)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mx + 20, T0 + 170); ctx.lineTo(mx + mw - 20, T0 + 170); ctx.stroke();
   const node = (row, x, y, R, i) => {
     const a = clamp((k - 0.1 - i * 0.06) / 0.25, 0, 1); if (a <= 0) return;
     const r = rankOf(row), ult = row.kind !== 'sk', on = treeSel[id] === row.id, can = treeCan(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), locked = r === 0 && need != null && Rr.lvl < need;
@@ -13915,15 +13921,15 @@ function drawHeroTree(id, px, py, pw, ph, k, battle) {
     if (ult && act === row.kind && r) { roundRect(-30, -R - 20, 60, 16, 8, 'rgba(40,90,30,0.95)', '#9fff8a', 1.2); txt('SAVAŞTA', 0, -R - 12, 10.5, '#d8ffc8', 'center', '800', FONT_B, false); }
     if (innate(row)) { roundRect(-34, -R - 20, 68, 16, 8, 'rgba(110,20,40,0.95)', '#ff9ab0', 1.2); txt('DOĞUŞTAN', 0, -R - 12, 10, '#ffe0e8', 'center', '800', FONT_B, false); }
     ctx.restore();
-    ctx.save(); ctx.globalAlpha *= a; fitTxt(ult ? UO(row.kind).name : row.sk.name, x, y + R + 28, 132, 14.5, r ? '#ffe9b0' : '#c8b898', 'center', '400', FONT_T); ctx.restore();
+    ctx.save(); ctx.globalAlpha *= a; fitTxt(ult ? UO(row.kind).name : row.sk.name, x, y + R + 28, Math.min(132, mw * 0.4), 14.5, r ? '#ffe9b0' : '#c8b898', 'center', '400', FONT_T); ctx.restore();
     buttons.push({ key: 'ts' + row.id, x: x - R - 14, y: y - R - 14, w: (R + 14) * 2, h: (R + 14) * 2 + 22, fn: () => { treeSel[id] = row.id; sfx('pick'); } });
   };
-  ults.forEach((row, i) => node(row, mx + mw * (ults.length === 1 ? 0.5 : i ? 0.72 : 0.28), py + 160, 38, i));
-  sks.forEach((row, i) => node(row, mx + mw * ((i + 0.5) / sks.length), py + 330, 33, i + 2));
+  ults.forEach((row, i) => node(row, mx + mw * (ults.length === 1 ? 0.5 : i ? 0.72 : 0.28), T0 + 82, 38, i));
+  sks.forEach((row, i) => node(row, mx + mw * ((i + 0.5) / sks.length), T0 + 252, 33, i + 2));
   // ---- sağ: seçilenin kartı ----
   const row = rows.find(r => r.id === treeSel[id]), ult = row.kind !== 'sk', r = rankOf(row), need = treeNext(Rr, row.kind, row.id), can = treeCan(Rr, row.kind, row.id);
-  const rx = px + 566, rw = pw - 566 - 28, ry = py + 78;
-  roundRect(rx, ry, rw, ph - 78 - 26, 16, 'rgba(0,0,0,0.32)', 'rgba(201,168,101,0.45)', 1.2);
+  const rx = x0 + mw + 16, rw = x0 + w0 - rx, ry = y0;
+  roundRect(rx, ry, rw, h0, 16, 'rgba(0,0,0,0.32)', 'rgba(201,168,101,0.45)', 1.2);
   upIconRing(rx + 40, ry + 40, 26, ult);
   ctx.save(); ctx.beginPath(); ctx.arc(rx + 40, ry + 40, 26, 0, Math.PI * 2); ctx.clip();
   if (ult) { ctx.translate(rx + 40, ry + 40); heroGlyph(id, 26, row.kind); } else drawHeroSkillIcon(row.id, rx + 40, ry + 40, 1.2, id);
@@ -13936,7 +13942,8 @@ function drawHeroTree(id, px, py, pw, ph, k, battle) {
   const lad = [1, 2, 3, 4, 5].map(n => ({ text: ult ? (row.kind === 'ult2' && n === 1 ? 'Güç açılır' : ultRankNote(n)) : row.sk.passive && row.sk.id !== 'iron' ? `${n}. kademe` : heroRankNote(row.sk, n),
     right: (x, y, done) => { if (done) return; txt(`Sv. ${T[n]}`, x, y + 1, 13, Rr.lvl >= T[n] ? '#b8ff8a' : '#a89878', 'center', '800', FONT_B, false); } }));
   upLadder(rx + 8, ry + 84 + DL.length * 17 + 14, rw - 16, lad, r, 36);
-  const by = py + ph - 58, eq = ult && HERO_ULT2[id] && !battle, bxc = eq ? rx + rw * 0.28 : rx + rw / 2;
+  const by = y0 + h0 - 32, eq = ult && HERO_ULT2[id] && !battle, bxc = eq ? rx + rw * 0.28 : rx + rw / 2;
+  if (o.view) { txt('Komutanı açınca geliştirilir', rx + rw / 2, by, 15, '#c8b898', 'center', '800', FONT_B, false); return; } // kilitli komutan: yalnız bakılır
   if (eq) { const isAct = act === row.kind && r > 0;
     gameButton('tr_eq', rx + rw * 0.76, by, 128, 48, isAct ? 'SAVAŞTA ✓' : 'SAVAŞA', () => { if (isAct) return; if (r <= 0) { sfx('error'); return; } Rr.act = row.kind; persist(); sfx('pick'); }, isAct ? 'dark' : r > 0 ? 'gold' : 'dark', { size: 15 }); }
   if (need == null) txt('EN YÜKSEK KADEME', bxc, by, 16, '#ffe27a', 'center', '400', FONT_T);
@@ -14342,6 +14349,7 @@ function drawCredits() {
 }
 
 function drawHeroes() {
+  if (heroPageId) { drawHeroPage(heroPageId); drawHeroOverlays(); return; } // 16 Eki: komutanın kendi sayfası
   const st = time - screenT, bg = spr(NECRO ? 'nm_title' : 'title_bg');
   if (NECRO) menuBackdrop(st);
   else {
@@ -14355,21 +14363,23 @@ function drawHeroes() {
   ctx.save(); ctx.translate(W / 2, 54); ctx.scale(rk, rk); ribbon(0, 0, 300, NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR', 'blue', 26); ctx.restore();
   roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = 'map'; }), { appear: st - 0.1 });
   const tm = team();
-  txt(NECRO ? 'Savaşa bir komutan götürürsün · seçmek için karta dokun' : 'Savaşa bir kahraman götürürsün · seçmek için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
+  txt(NECRO ? 'Savaşa bir komutan götürürsün · ayrıntı için karta dokun' : 'Savaşa bir kahraman götürürsün · ayrıntı için karta dokun', W / 2, 98, 14, '#f0e2c4', 'center', '700', FONT_B, false);
   // 16 Eki: 6+ komutanda kartlar ekrana sığacak kadar küçülür (dokunma alanları da aynı oranla)
   const HS = Math.min(1, (VIS.w - 24) / (HERO_ORDER.length * 182)), hb0 = buttons.length, HY = 330;
   ctx.save(); ctx.translate(W / 2, HY); ctx.scale(HS, HS); ctx.translate(-W / 2, -HY);
   HERO_ORDER.forEach((id, i) => drawHeroCard(id, W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, 296, st - 0.1 - i * 0.08, tm));
-  // her açık komutanın altında yetenek ağacı düğmesi (11 Eki: kalıcı seviye ve yetenekler)
-  HERO_ORDER.forEach((id, i) => { if (!heroUnlocked(id)) return; const x = W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, pts = recPoints(heroRec(id));
-    // 14 Eki: yetenek ve eşya düğmeleri yan yana (her biri parmak boyu)
-    gameButton('ht' + id, x - 42, 494, 80, 42, 'YETENEK', () => { heroTreeId = id; heroTreeT = time; sfx('open'); }, pts > 0 ? 'green' : 'wood', { appear: st - 0.3 - i * 0.05, size: 13, shine: pts > 0 });
-    if (pts > 0) { circle(x - 6, 476, 11, '#3cbf3c', '#fff', 1.5); txt(pts + '', x - 6, 477, 12, '#fff', 'center', '400', FONT_T); }
-    const nw = gearNewFor(id);
-    gameButton('hg' + id, x + 42, 494, 80, 42, 'EŞYA', () => { gearHeroId = id; gearT = time; gearSel = null; gearPage = 0; sfx('open'); }, nw ? 'green' : 'wood', { appear: st - 0.32 - i * 0.05, size: 13, shine: nw > 0 });
-    if (nw) { circle(x + 78, 476, 11, '#d83a3a', '#fff', 1.5); txt(nw + '', x + 78, 477, 12, '#fff', 'center', '400', FONT_T); } });
+  // 16 Eki (Caner: her komutanın kendi sayfası): kartın altında harcanmamış puan / yeni eşya hatırlatması; ayrıntılar sayfada
+  HERO_ORDER.forEach((id, i) => { if (!heroUnlocked(id)) return; const x = W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, pts = recPoints(heroRec(id)), nw = gearNewFor(id);
+    const L = [pts > 0 ? `${pts} puan` : null, nw ? `${nw} yeni eşya` : null].filter(Boolean); if (!L.length) return;
+    const pu = 1 + 0.04 * Math.sin(time * 4 + i); ctx.save(); ctx.translate(x, 488); ctx.scale(pu, pu);
+    roundRect(-80, -16, 160, 32, 16, 'rgba(30,70,24,0.95)', '#b8ff8a', 1.8); fitTxt(L.join(' · '), 0, 1, 146, 15, '#eaffd8', 'center', '800', FONT_B, false, 11); ctx.restore(); });
   ctx.restore();
   for (let i = hb0; i < buttons.length; i++) { const bt = buttons[i]; bt.x = W / 2 + (bt.x - W / 2) * HS; bt.y = HY + (bt.y - HY) * HS; bt.w *= HS; bt.h *= HS; }
+  drawHeroOverlays();
+  save.seenHeroes = save.seenHeroes || [HERO_ORDER[0]];
+  for (const id of HERO_ORDER) if (heroUnlocked(id) && !save.seenHeroes.includes(id)) { save.seenHeroes.push(id); persist(); }
+}
+function drawHeroOverlays() {
   if (gearHeroId) { // eşya panosu (14 Eki)
     buttons.length = 0; const k = time - gearT, pw = 900, ph = 490, px = W / 2 - pw / 2, py = H / 2 - ph / 2 + 10;
     ctx.fillStyle = `rgba(8,4,16,${0.7 * clamp(k / 0.25, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
@@ -14386,8 +14396,85 @@ function drawHeroes() {
     roundBtn('ht_close', px + pw - 34, py + 34, 22, 'close', () => { heroTreeId = null; }, { style: 'red', appear: k - 0.2 });
     ctx.restore();
   }
-  save.seenHeroes = save.seenHeroes || [HERO_ORDER[0]];
-  for (const id of HERO_ORDER) if (heroUnlocked(id) && !save.seenHeroes.includes(id)) { save.seenHeroes.push(id); persist(); }
+}
+// ---- KOMUTAN SAYFASI (16 Eki, Caner: "her komutanın kendine ait sayfası: sağda kendisi, altında envanteri, yetenek seçme yeri; yazılar üst üste gelmesin") ----
+// Sol: seviye, XP, puan, sıfırla + güç/yetenek düğümleri ve seçilenin ayrıntısı (drawHeroSkills). Sağ: canlı komutan (bekleme şeridi), değerler,
+// 4 eşya yuvası (dokununca çanta), ÇANTA ve SAVAŞA GÖTÜR. Üstte adı ve komutanlar arası oklar. Bütün yazılar ≥14 px.
+let heroPageId = null, heroPageT = 0;
+function openHeroPage(id) { heroPageId = id; heroPageT = time; heroTreeId = gearHeroId = null; sfx('open'); }
+function stepHeroPage(dir) { const i = HERO_ORDER.indexOf(heroPageId), n = HERO_ORDER.length; heroPageId = HERO_ORDER[(i + dir + n) % n]; heroPageT = time - 0.25; sfx('pick'); }
+function heroStatBars(d) {
+  return [['Can', d.hp / 520, '#e8434b'], ['Saldırı', ((d.dmg[0] + d.dmg[1]) / 2 / d.rate) / 28, '#ffb347'], ['Hız', d.speed / 135, '#5ad0ff'], ['Menzil', (d.ranged || 40) / 215, '#9be06a']];
+}
+function drawHeroPage(id) {
+  const st = time - heroPageT, d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), open = heroUnlocked(id), sel = team()[0] === id;
+  menuBackdrop(st);
+  roundBtn('back', 44, 44, 23, 'back', () => { heroPageId = null; screenT = time - 1; sfx('pick'); }, { appear: st - 0.1 });
+  { const rk = easeOutBack(clamp(st / 0.4, 0, 1)); ctx.save(); ctx.translate(W / 2, 50); ctx.scale(rk, rk); crimsonRibbon(0, 0, d.name, 26, 300); ctx.restore(); }
+  fitTxt(d.role, W / 2, 94, 380, 15, '#f0e2c4', 'center', '700', FONT_B, false, 12);
+  if (HERO_ORDER.length > 1) {
+    roundBtn('hp_prev', W / 2 - 236, 52, 27, (r) => { ctx.save(); ctx.scale(-1, 1); drawIcon('play', 0, 0, r * 1.05); ctx.restore(); }, () => stepHeroPage(-1), { appear: st - 0.15 });
+    roundBtn('hp_next', W / 2 + 236, 52, 27, 'play', () => stepHeroPage(1), { appear: st - 0.15 });
+  }
+  const k = st, a = clamp(st / 0.3, 0, 1);
+  ctx.save(); ctx.globalAlpha *= a;
+  // ---- sol: seviye başlığı + yetenekler ----
+  const LX = 22, LY = 114, LW = 572, LH = 412, MW = 250;
+  roundRect(LX, LY, MW, LH, 16, 'rgba(8,4,14,0.55)', 'rgba(201,168,101,0.45)', 1.4);
+  { const sx = LX + 36, sy = LY + 40, g = ctx.createLinearGradient(0, sy - 26, 0, sy + 26); g.addColorStop(0, '#fff0b0'); g.addColorStop(1, '#a8681a');
+    circle(sx, sy, 26, g, '#2e1606', 2.2); circle(sx, sy, 20, '#3a1420'); txt(String(Rr.lvl), sx, sy + 1, 22, '#ffe9a0', 'center', '400', FONT_T);
+    const bx = LX + 72, bw = MW - 72 - 14, xpK = Rr.lvl >= HERO_MAX ? 1 : clamp(Rr.xp / xpNeed(Rr.lvl), 0, 1);
+    roundRect(bx, LY + 16, bw, 24, 12, 'rgba(0,0,0,0.6)', 'rgba(201,168,101,0.5)', 1.2); if (xpK > 0) roundRect(bx + 2, LY + 18, Math.max(20, (bw - 4) * xpK), 20, 10, '#d8a020');
+    fitTxt(Rr.lvl >= HERO_MAX ? 'EN YÜKSEK SEVİYE' : `${Math.floor(Rr.xp)} / ${xpNeed(Rr.lvl)} XP`, bx + bw / 2, LY + 29, bw - 12, 14, '#fff6dc', 'center', '800', FONT_B, true, 11);
+    if (pts > 0 && open) { const pu = 1 + 0.05 * Math.sin(time * 5); ctx.save(); ctx.translate(bx + 34, LY + 62); ctx.scale(pu, pu);
+      roundRect(-34, -15, 68, 30, 15, '#2f7a22', '#b8ff8a', 1.8); txt(`${pts} PUAN`, 0, 1, 15, '#eaffd8', 'center', '400', FONT_T); ctx.restore(); }
+    else txt(open ? 'Puan yok' : 'Kilitli', bx + 34, LY + 63, 14, '#a89878', 'center', '800', FONT_B, false);
+    if (open) gameButton('tr_reset', bx + bw - 43, LY + 62, 86, 36, 'SIFIRLA', () => { treeReset(Rr); sfx('coins'); }, 'red', { size: 14, appear: st - 0.2 }); }
+  drawHeroSkills(id, LX, LY, LW, LH, k, false, { mw: MW, top: 80, view: !open });
+  // ---- sağ: komutan, değerler, eşyalar ----
+  const RX = 606, RY = 114, RW = 332, RH = 412, cx = RX + RW / 2, feet = RY + 184;
+  roundRect(RX, RY, RW, RH, 16, 'rgba(8,4,14,0.55)', 'rgba(201,168,101,0.45)', 1.4);
+  ctx.save(); ctx.beginPath(); ctx.roundRect(RX + 2, RY + 2, RW - 4, 200, 14); ctx.clip();
+  { const g = ctx.createRadialGradient(cx, feet - 80, 10, cx, feet - 70, 170); g.addColorStop(0, `rgba(${d.aura || '200,120,255'},0.42)`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(RX, RY, RW, 204); }
+  { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= 0.5 + 0.15 * Math.sin(time * 2); ctx.strokeStyle = `rgba(${d.aura || '200,120,255'},0.6)`; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(cx, feet + 2, 92, 16, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+  ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.beginPath(); ctx.ellipse(cx, feet + 2, 70, 12, 0, 0, Math.PI * 2); ctx.fill();
+  const P = d.pet && PET[d.pet] && PET[d.pet][Rr.lvl >= PET.lvl2 ? 1 : 0], pim = P && (spr(P.img) || spr(PET[d.pet][0].img)), hx = pim ? cx + 34 : cx; // evcil hayvanı (Robin'in kurdu) solda, komutan biraz sağda
+  if (pim) { const ph = 84, pw2 = ph * pim.width / pim.height, br = Math.sin(time * 2.4) * 1.2;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(cx - 86, feet + 6, pw2 * 0.34, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(cx - 86, feet + 6 - br); if (!open) ctx.filter = 'brightness(0.18) saturate(0)'; drawSprite(ctx, pim, 0, 0, pw2); ctx.restore(); }
+  { const ik = animStrip(d.sprite, null, '_idle'), F = ik && ANIM_META[ik];
+    ctx.save(); ctx.translate(hx, feet); if (!open) ctx.filter = 'brightness(0.18) saturate(0)';
+    if (F) drawFrame(spr(ik), F, Math.floor(time * (F.fps || 12)) % F.n, 172); else { const im = heroSprite(d); if (im) drawSprite(ctx, im, 0, 0, 172 * im.width / im.height); }
+    ctx.restore(); }
+  if (!open) drawIcon('lock', cx, feet - 80, 46);
+  ctx.restore();
+  heroStatBars(d).forEach(([lab, v, col], j) => {
+    const x = RX + 16 + (j % 2) * 158, y = RY + 222 + Math.floor(j / 2) * 26;
+    txt(lab, x, y, 14, '#d8c8b0', 'left', '800', FONT_B, false);
+    roundRect(x + 62, y - 4, 82, 9, 4.5, 'rgba(0,0,0,0.5)'); roundRect(x + 62, y - 4, 82 * clamp(open ? v : 0.08, 0.08, 1), 9, 4.5, col);
+  });
+  { const E = (save.equip && save.equip[id]) || {}, y = RY + 300, cs = 62;
+    EQUIP.slots.forEach((sl, j) => {
+      const x = RX + 47 + j * 79, it = gearOf(E[sl]);
+      gearCell(it, x, y, cs, false, !open);
+      if (!it) { ctx.save(); ctx.globalAlpha *= 0.25; drawGearIcon(sl === 'weapon' ? EQUIP.wpn[id] : sl, x, y, 18); ctx.restore(); }
+      fitTxt(EQUIP.slotName[sl], x, y + 44, 76, 14, it ? EQUIP.rar[it.r].col : '#b8acc8', 'center', '800', FONT_B, false, 11);
+      if (open) buttons.push({ key: 'hp_slot_' + sl, x: x - 36, y: y - 36, w: 72, h: 72, fn: () => { gearHeroId = id; gearT = time; gearSel = it ? it.id : null; gearPage = 0; sfx('open'); } });
+    }); }
+  { const by = RY + RH - 30;
+    if (open) {
+      const nw = gearNewFor(id);
+      gameButton('hp_bag', RX + 86, by, 148, 42, 'ÇANTA', () => { gearHeroId = id; gearT = time; gearSel = null; gearPage = 0; sfx('open'); }, nw ? 'green' : 'wood', { size: 15, shine: nw > 0, appear: st - 0.25 });
+      if (nw) { circle(RX + 152, by - 20, 12, '#d83a3a', '#fff', 1.5); txt(nw + '', RX + 152, by - 19, 14, '#fff', 'center', '400', FONT_T); }
+      if (sel) gameButton('hp_sel', RX + RW - 86, by, 148, 42, 'SAVAŞTA ✓', () => {}, 'dark', { size: 15, appear: st - 0.25 });
+      else gameButton('hp_sel', RX + RW - 86, by, 148, 42, 'SAVAŞA GÖTÜR', () => toggleHero(id), 'gold', { size: 14, shine: true, appear: st - 0.25 });
+    } else if (d.cost) {
+      const ok = (save.crystal || 0) >= d.cost;
+      gameButton('hp_buy', cx, by, 220, 44, `AÇ · ${d.cost}`, () => buyHero(id), ok ? 'green' : 'dark', { size: 16, shine: ok, appear: st - 0.25 });
+    } else txt(`${d.unlock}. bölümü bitirince açılır`, cx, by, 15, '#cdb894', 'center', '800', FONT_B, false);
+  }
+  ctx.restore();
 }
 let heroTreeId = null, heroTreeT = 0;
 // ---- EŞYALAR panosu (14 Eki): solda komutan ve 4 yuva, sağda çanta (sayfalı ızgara), altta seçili eşyanın ayrıntısı ----
@@ -14438,7 +14525,7 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
     roundBtn('gp_prev', gx + C * cs - 120, py + 84, 20, 'back', () => { gearPage = (gearPage + pages - 1) % pages; }, { appear: k - 0.2 });
     roundBtn('gp_next', gx + C * cs - 30, py + 84, 20, 'play', () => { gearPage = (gearPage + 1) % pages; }, { appear: k - 0.2 });
   }
-  if (!bag.length) fitTxt('Bosslar yenilince eşya düşürür', gx + C * cs / 2 - 4, gy + cs * 1.4, C * cs - 20, 16, '#9a8eac', 'center', '700', FONT_B, false, 11);
+  const emptyBag = !bag.length;
   for (let i = 0; i < per; i++) {
     const it = bag[gearPage * per + i], x = gx + (i % C) * cs + cs / 2 - 4, y = gy + Math.floor(i / C) * cs + cs / 2;
     gearCell(it, x, y, cs - 8, it && gearSel === it.id, it && !gearFits(it, hid));
@@ -14448,6 +14535,7 @@ function drawGearPanel(hid, px, py, pw, ph, k) {
     if (it.nw && gearFits(it, hid)) txt('YENİ', x, y + 26, 11, '#9dff8a', 'center', '800', FONT_B, true);
     buttons.push({ key: 'gi_' + it.id, x: x - cs / 2 + 2, y: y - cs / 2 + 2, w: cs - 4, h: cs - 4, fn: () => { gearSel = it.id; it.nw = 0; persist(); sfx('pick'); } });
   }
+  if (emptyBag) { const mx = gx + C * cs / 2 - 4, my = gy + cs * 1.5; roundRect(mx - 150, my - 22, 300, 44, 22, 'rgba(14,8,22,0.94)', 'rgba(201,168,101,0.5)', 1.4); fitTxt('Bosslar yenilince eşya düşürür', mx, my + 1, 276, 16, '#d8c8e8', 'center', '700', FONT_B, false, 11); } // 16 Eki: yuva çizgilerinin üstünde okunsun
   // ayrıntı
   const dy = py + 352, dw = C * cs - 8, it = gearOf(gearSel);
   roundRect(gx - 4, dy, dw, 116, 12, 'rgba(10,6,18,0.6)', 'rgba(207,196,168,0.35)', 1.2);
@@ -14499,7 +14587,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   // değer çubukları
   const bars = !unlocked ? [] : [['Can', d.hp / 520, '#e8434b'], ['Saldırı', ((d.dmg[0] + d.dmg[1]) / 2 / d.rate) / 28, '#ffb347'], ['Hız', d.speed / 135, '#5ad0ff'], ['Menzil', (d.ranged || 40) / 215, '#9be06a']];
   bars.forEach(([lab, v, col], j) => {
-    const by = y0 + 228 + j * 14;
+    const by = y0 + 224 + j * 13; // 16 Eki: son satır köşe süsüne binmesin
     txt(lab, x0 + 22, by, 11.5, '#6a4420', 'left', '800', FONT_B, false);
     roundRect(x0 + 70, by - 3.5, 82, 7, 3.5, NECRO ? 'rgba(0,0,0,0.45)' : 'rgba(60,40,20,0.25)');
     roundRect(x0 + 70, by - 3.5, 82 * clamp(v, 0.08, 1), 7, 3.5, col);
@@ -14508,7 +14596,6 @@ function drawHeroCard(id, cx, cy, at, tm) {
   if (!unlocked) { /* rozet yok */ }
   else if (d.ranged) { roundRect(-44, y0 + 288 + by2, 88, 20, 10, '#2a5fb8'); txt('MENZİLLİ', 0, y0 + 298 + by2, 11.5, '#fff', 'center', '800', FONT_B, false); }
   else { roundRect(-56, y0 + 288 + by2, 112, 20, 10, '#8a3a1a'); txt('YAKIN DÖVÜŞ', 0, y0 + 298 + by2, 11.5, '#fff', 'center', '800', FONT_B, false); }
-  if (unlocked) fitTxt('Güç: ' + (heroRec(id).act === 'ult2' && heroRec(id).ult2 > 0 && HERO_ULT2[id] ? HERO_ULT2[id] : HERO_ULT[id]).name, 0, y0 + 316 + by2 * 1.6, w - 36, 12, '#5a3410', 'center', '800', FONT_B, false);
   if (sel) { circle(w / 2 - 20, y0 + 22, 13, '#3cbf3c', '#fff', 2); drawIcon('check', w / 2 - 20, y0 + 22, 16); }
   if (unlocked) { const Rr = heroRec(id); roundRect(x0 + 14, y0 + 140, 58, 22, 11, 'rgba(10,6,18,0.85)', '#e8bb4a', 1.5); txt(`Sv. ${Rr.lvl}`, x0 + 43, y0 + 151.5, 12, '#ffe27a', 'center', '400', FONT_T); } // kalıcı seviye
   if (unlocked && !(save.seenHeroes || [HERO_ORDER[0]]).includes(id)) { roundRect(x0 + 14, y0 + 14, 50, 18, 9, '#e8434b', '#fff', 1.5); txt('YENİ', x0 + 39, y0 + 23, 10, '#fff', 'center', '400', FONT_T); }
@@ -14525,7 +14612,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   }
   ctx.restore();
   if (!unlocked && d.cost) buttons.push({ key: 'hbuy' + id, x: cx - 62, y: fy - h / 2 + 254, w: 124, h: 46, fn: () => buyHero(id) });
-  if (unlocked) buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h, fn: () => toggleHero(id) });
+  buttons.push({ key, x: cx - w / 2, y: fy - h / 2, w, h: d.cost && !unlocked ? 250 : h, fn: () => openHeroPage(id) }); // 16 Eki: komutan sayfası (kilitliye de bakılır)
 }
 function toggleHero(id) {
   if (team()[0] === id) return;
