@@ -486,7 +486,12 @@
   "Hurra!": "Juhu!",
   "Kemikler kazandı!": "Die Knochen siegen!",
   "Mortimer!": "Mortimer!",
-  "Yaşasın ölüler!": "Hoch die Toten!"
+  "Yaşasın ölüler!": "Hoch die Toten!",
+  "Kasırga Fırtınası": "Tornadosturm",
+  "Kasırga Fırtınası!": "Tornadosturm!",
+  "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Aus der Sturmwolke senkt sich ein Tornado und zieht den Weg zurück: Gefangene Feinde wirbeln in die Luft, nehmen Schaden und werden fortgeschleudert (Schwere und Bosse stürzen zu Boden), aus der Wolke zucken Blitze",
+  "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornado auf dem Weg: wirbelt Gefangene herum und schleudert sie fort",
+  "DENEME ALANI": "TESTBEREICH"
  },
  "tpl": [
   [

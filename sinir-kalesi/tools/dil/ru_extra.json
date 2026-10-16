@@ -486,7 +486,12 @@
   "Hurra!": "Ура-а!",
   "Kemikler kazandı!": "Кости победили!",
   "Mortimer!": "Мортимер!",
-  "Yaşasın ölüler!": "Да здравствуют мёртвые!"
+  "Yaşasın ölüler!": "Да здравствуют мёртвые!",
+  "Kasırga Fırtınası": "Ураганная буря",
+  "Kasırga Fırtınası!": "Ураганная буря!",
+  "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Из грозовой тучи опускается смерч и движется назад по дороге: пойманные враги кружатся в воздухе, получают урон и разлетаются (тяжёлые и боссы падают), из тучи бьют молнии",
+  "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Смерч на дороге: закручивает пойманных и разбрасывает",
+  "DENEME ALANI": "ТЕСТОВАЯ ЗОНА"
  },
  "tpl": [
   [

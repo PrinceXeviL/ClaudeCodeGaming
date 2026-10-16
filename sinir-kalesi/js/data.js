@@ -778,8 +778,9 @@ const HERO_ULT2 = {
     desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
   leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
     desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
-  merlin: { name: 'Zincir Şimşek', cd: 45, anim: 1.5, r: 70, dmg: [60, 80], n: 8, hop: 95, stun: 0.6, storm: true,
-    desc: 'Gökten şimşek iner, 8 düşman arasında sıçrar (uçanlar dahil) ve her birini kısa sersemletir', short: '8 düşmana sıçrayan şimşek' },
+  // 16 Eki (Caner: "tornadolu fırtına olabilir; tornadoya kapılan düşman dönerek etrafa saçılır, savrulur"): Zincir Şimşek yerine Kasırga Fırtınası (game.js TORNADO)
+  merlin: { name: 'Kasırga Fırtınası', cd: 45, anim: 1.5, r: 70, dmg: [40, 55], dur: 4, n: 12, tornado: true,
+    desc: 'Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar', short: 'Yolda ilerleyen kasırga: kapılanı döndürüp savurur' },
   robin: { name: 'Kurt Uluması', cd: 45, anim: 2.2, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
     desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
   bathory: { name: 'Kan Yarasaları', cd: 50, anim: 2.2, r: 70, dps: [13, 18], dur: 3, slow: 0.35, heal: 0.3, n: 14, bats: true, // 16 Eki: 16-22 → 13-18, iyileşme %40 → %30

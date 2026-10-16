@@ -285,7 +285,11 @@ function whiteOf(name, im) {
 const WHITE_FR = new Map();
 function drawWhiteFrame(name, img, F, i, h) {
   const key = name + '#' + i; let c = WHITE_FR.get(key);
+  if (!c && MAKE_BUDGET <= 0) { // 16 Eki: bu karede hazırlık bütçesi bitti: aynı kare 'lighter' ile üstüne çizilir (açılır, beyaza yakın parlar)
+    const op = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter'; drawFrame(img, F, i, h); ctx.globalCompositeOperation = op; return;
+  }
   if (!c) {
+    MAKE_BUDGET--;
     const C = F.cols || F.n, s0 = img.width / (F.fw * C), H = Math.min(F.fh, 180), k = H / F.fh;
     c = document.createElement('canvas'); c.width = Math.max(1, Math.round(F.fw * k)); c.height = H;
     const g = c.getContext('2d'); g.drawImage(img, (i % C) * F.fw * s0, Math.floor(i / C) * F.fh * s0, F.fw * s0, F.fh * s0, 0, 0, c.width, c.height);
@@ -299,26 +303,34 @@ function drawWhiteFrame(name, img, F, i, h) {
 // Her görselin yarıya yarıya küçültülmüş kopyaları (mipmap) bir kez hazırlanır; çizimde ekrandaki
 // piksel boyuna en yakın (ondan büyük) kopya seçilir, böylece sprite'lar her boyda keskin kalır.
 const MIPS = new WeakMap();
+// 16 Eki (kalabalık takılması, Caner): kopyalar ilk çizimde hazırlanıyordu ve getImageData ekran kartındaki tuvali okuyup bütün çizimi
+// bekletiyordu (meteorla aynı anda vurulan 40 düşmanda tek kare 0,8-1,3 sn). Tuvaller artık işlemci tarafında (willReadFrequently) ve
+// karede en çok MAKE_BUDGET pahalı hazırlık yapılır; bütçe bitince o kare asıl görsel çizilir, kopya sonraki karede hazırlanır.
+let MAKE_BUDGET = 2;
 function mipsOf(im) {
   let list = MIPS.get(im);
   if (list) return list;
+  if (MAKE_BUDGET <= 0) return [im];
+  if (window.__mipLog && MAKE_BUDGET < 50) window.__mipLog.push([im.width, im.height, im.constructor.name, new Error().stack.split('\n').slice(3, 6).map(x => x.trim().split(' ')[1]).join('<')]); // test: savaşta geç hazırlanan kopya
+  MAKE_BUDGET--;
   list = [im];
   let cur = im;
   while (cur.width > 48 && cur.height > 48) {
     const c = document.createElement('canvas');
     c.width = Math.ceil(cur.width / 2); c.height = Math.ceil(cur.height / 2);
-    const g = c.getContext('2d');
+    const g = c.getContext('2d', { willReadFrequently: true });
     g.imageSmoothingQuality = 'high';
     g.drawImage(cur, 0, 0, c.width, c.height);
+    // boş kopya denetimi burada, kopya işlemci tarafındayken (ucuz); sonra ImageBitmap'e dönünce okumak ekran kartını bekletir (mipCheck'e gerek kalmaz)
     try { const d = g.getImageData(0, 0, Math.min(c.width, 512), c.height).data; let a = 0; for (let j = 3; j < d.length; j += 16) if (d[j] > 10) { a = 1; break; }
-      if (!a && im.width > 64) { console.log('[mip] boş küçük kopya (ana)', im.width); break; } } catch (e) {} // boşsa asıl görsel kullanılır
-    list.push(c); cur = c;
+      if (!a && im.width > 64) { console.log('[mip] boş küçük kopya (ana)', im.width); break; } } catch (e) {}
+    MIP_OK.add(c); list.push(c); cur = c;
   }
   MIPS.set(im, list);
   // 14 Eki (Caner: Báthory uzaktan yürürken görünmüyor, yakında görünüyor): iOS WebKit'te bütün canvas'ların belleği bir sınırı aşınca
   // yeni canvas'lar boş çizilir; uzaktan bakışta küçük kopya (canvas) kullanılıyordu. Kopyalar ImageBitmap'e çevrilip canvas boşaltılır.
   if (window.createImageBitmap) for (let i = 1; i < list.length; i++) { const c = list[i];
-    createImageBitmap(c).then((b) => { const j = list.indexOf(c); if (j > 0) { list[j] = b; c.width = c.height = 0; } }).catch(() => {}); }
+    createImageBitmap(c).then((b) => { const j = list.indexOf(c); if (j > 0) { list[j] = b; if (MIP_OK.has(c)) MIP_OK.add(b); c.width = c.height = 0; } }).catch(() => {}); }
   return list;
 }
 // 14 Eki (Caner: Báthory uzaktan yürürken görünmüyor; telefon kaydı küçük kopyanın boş çizildiğini gösterdi): her küçük kopya ilk kullanıldığında
@@ -342,12 +354,20 @@ function mipCheck(list, i) {
   } catch (e) {}
   MIP_OK.add(l); return true;
 }
+// bölüm açılışında (yükleme sırasında) bir görselin bütün küçük kopyaları hazırlanıp denetlenir: savaşta ilk çizimde takılmasın
+function warmMips(im) {
+  if (!im) return; const b = MAKE_BUDGET; MAKE_BUDGET = 99;
+  try { const L = mipsOf(im); for (let i = 1; i < L.length; i++) if (!mipCheck(L, i)) break; } finally { MAKE_BUDGET = b; }
+}
 function pickMip(c, im, w) {
   const m = c.getTransform(), px = w * Math.hypot(m.a, m.b);
   const list = mipsOf(im);
   let bi = 0;
   for (let i = 1; i < list.length; i++) { if (list[i].width >= px * 1.05) bi = i; else break; }
-  while (bi > 0 && !mipCheck(list, bi)) bi = Math.min(bi, list.length - 1); // boşsa bir üst (daha büyük) kopya ya da asıl görsel
+  while (bi > 0 && !MIP_OK.has(list[bi])) { // boşsa bir üst (daha büyük) kopya ya da asıl görsel
+    if (MAKE_BUDGET <= 0) { bi = 0; break; } // 16 Eki: bu karede denetim bütçesi bitti: asıl görsel (denetim sonraki karede)
+    MAKE_BUDGET--; if (mipCheck(list, bi)) break; bi = Math.min(bi, list.length - 1);
+  }
   return list[bi];
 }
 
@@ -2198,8 +2218,8 @@ function bakeNext() {
   }
   else { const d = HEROES[k.slice(2)]; if (!d) return; name = rigName = d.sprite; im = heroSprite(d); }
   const arms = im && armsOf(name, rigName, im);
-  if (!arms) return;
-  cutImage(im, arms); cutImage(whiteOf(name, im), arms);
+  if (!arms) { warmMips(im); return; }
+  warmMips(cutImage(im, arms).body); warmMips(cutImage(whiteOf(name, im), arms).body); warmMips(im); // 16 Eki: küçük kopyalar da şimdi (savaşta takılmasın)
 }
 
 function setOverlay(o) {
@@ -2421,8 +2441,12 @@ function glow(c, x, y, r, col, a = 1) {
   c.globalAlpha = pa;
 }
 let LITE_P = liteMode(); // hafif kip parçacık sınırı (ayar değişince setSetting günceller)
+// 16 Eki (Caner: "kalabalıkta, yetenek kullanırken kasıyor"): kalabalık kipi. Sahada çok birim varken (CROWD) süs parçacıkları ve ayak tozu
+// seyrelir, yarı saydam birimler ara tuvale çizilmez (her birimde ekran kartını bekletiyordu). Oyun mantığı ve hasar değişmez.
+let CROWD = false;
+const CROWD_N = 55; // düşman + asker sayısı bu eşiği aşınca
 function emit(list, o) {
-  const P = LITE_P ? 130 : 260; // hafif kipte yarı
+  const P = (LITE_P ? 130 : 260) * (CROWD ? 0.6 : 1); // hafif kipte yarı, kalabalıkta %40 az
   if (list.length > 2 * P || (list.length > P && Math.random() < (list.length - P) / P)) return; // 16 Eki (performans): kalabalıkta yeni parçacık seyrelir (eskiden 900'e dek hepsi)
   list.push(Object.assign({ t: 0, vx: 0, vy: 0, g: 0, drag: 0, s0: 2, s1: 0, a: 1, kind: 'dot' }, o));
 }
@@ -4609,6 +4633,7 @@ function slashFx(x, y, face, col = '#ffffff', size = 1) {
 
 // Yürüyen düşmanın ayağından kalkan hafif toz (karda kar serpintisi, yağmurda çamur sıçraması)
 function footDust(e) {
+  if (CROWD && !(e.def.chief || e.def.boss) && Math.random() < 0.75) return; // kalabalık kipi: ayak tozu seyrelir
   const k = (CHAR_H['enemy_' + e.type] || 20) / 20;
   const col = G.weather === 'snow' ? '246,250,255' : G.weather === 'rain' ? '96,78,54' : '214,194,158';
   const n = e.def.chief || e.def.boss ? 3 : 1;
@@ -4778,6 +4803,7 @@ function updateEnemy(e, dt) {
       }
     }
   }
+  if (twistStep(e, dt)) return; // kasırgada dönüyor (havada)
   if (flingStep(e, dt)) return; // meteor savurması: havada (balistik); sersemleme, blok, dirilme bekler
   if (e.reviveT > 0) { e.reviveT -= dt; return; } // diriliyor: yerinden kalkar
   if (e.hopT > 0) e.hopT -= dt;
@@ -7864,7 +7890,7 @@ function drawBigFrog(x, y, dir, air, s) {
   ctx.restore();
 }
 function drawFrogEnemy(e, dh) {
-  const hop = Math.max(0, Math.sin(G.t * 7 + (e.seed || 0))), s = dh / 9;
+  const hop = Math.max(0, Math.sin(G.t * 7 + (e.seed || 0))), s = dh / 18; // 16 Eki (Caner): kurbağa %50 küçük (dh / 9 → dh / 18)
   ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(e.x, e.y + 0.5, 3 * s * (1 - hop * 0.3), 1.1 * s, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
   drawBigFrog(e.x, e.y - hop * 4 * s, e.face || 1, hop > 0.4, s * 0.62);
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - 3 * s, 5 * s, '140,255,120', 0.18 + 0.08 * Math.sin(G.t * 9)); ctx.restore();
@@ -7884,6 +7910,129 @@ function stormChain(x, y, U, dmg) {
   emit(G.parts, { kind: 'glow', add: true, x: pts[1][0], y: pts[1][1], col: '200,230,255', s0: 40, s1: 10, life: 0.25 });
   shakeScreen(3.5, 0.25); sfx('thunder'); sfx('soulbolt');
   return true;
+}
+// ---- Kasırga Fırtınası (16 Eki, Merlin'in ikinci gücü; Caner: "tornadoya kapılan düşman dönerek etrafa saçılır, savrulur") ----
+// Bulut oluşur, huni iner, yolda düşmanların geldiği yöne (geriye) ilerler. Huniye değen hafif düşman (en çok U.n) havalanıp huninin
+// çevresinde döner (hold sn), sonra rastgele yöne fırlatılır (flingStep ile düşer, seker, yola oturur, sersemler) ve hasar alır.
+// Ağır/büyük düşman, boss: havalanmaz, yere devrilir (FLING.kd) ve %60 hasar alır. Uçanlar: hasar. Buluttan aralıkla şimşek çakar.
+const TORNADO = { speed: 26, catchR: 22, hold: 0.95, liftH: 70, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
+function tornadoCast(x, y, U, dmg) {
+  const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60;
+  G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
+    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0 });
+  shakeScreen(3, 0.3); sfx('thunder'); setTimeout(() => sfx('whirl'), 250);
+}
+const tornadoGrow = (z) => clamp((z.t - 0.2) / 0.45, 0, 1) * clamp((z.dur + 0.6 - z.t) / 0.45, 0, 1); // huni iner / çekilir
+function tornadoStep(z, dt) {
+  const T = TORNADO, live = z.t < z.dur && tornadoGrow(z) > 0.85;
+  if (z.p && z.t > 0.4 && z.t < z.dur) { z.d = Math.max(0, z.d - T.speed * dt); const q = pathPos(z.p, z.d, Math.sin(z.t * 1.7 + z.seed) * 7); z.x = q.x; z.y = q.y; }
+  if ((z.whT -= dt) <= 0 && z.t < z.dur) { z.whT = 1.3; sfx('whirl'); }
+  if (live) for (const e of G.enemies) {
+    if (e.dead || e.under || z.hit.has(e) || e.twT > 0 || e.flZ != null || e.kdT > 0) continue;
+    if (Math.hypot(e.x - z.x, (e.y - z.y) / 0.55) > T.catchR + (e.def.r || 10) * 0.5) continue;
+    z.hit.add(e); HERO_SKILL = true;
+    if (e.def.flying) { damageEnemy(e, z.dmg(), 'magic'); HERO_SKILL = false; continue; }
+    const heavy = e.def.chief || e.def.boss || e.def.machine || e.siege !== undefined || e.def.acl === 'agir' || (CHAR_H['enemy_' + e.type] || 30) > FLING.h;
+    if (heavy || z.got >= z.n) { // devrilir
+      damageEnemy(e, z.dmg() * T.heavyK, 'magic');
+      if (!e.dead && !e.def.machine && e.siege === undefined) { e.blocker = null; e.inMelee = false; e.kdD = e.kdT = FLING.kd.fall + FLING.kd.lie + FLING.kd.rise; e.kdSide = e.x >= z.x ? 1 : -1; }
+      HERO_SKILL = false; continue;
+    }
+    z.got++; HERO_SKILL = false;
+    e.twT = T.hold * rand(0.85, 1.15); e.twH = T.liftH * rand(0.45, 1); e.twZ = z; e.twA = Math.atan2((e.y - z.y) / 0.45, e.x - z.x); e.twR = Math.min(T.orbit * 1.6, Math.hypot(e.x - z.x, (e.y - z.y) / 0.45)); e.flZ = null;
+    e.blocker = null; e.inMelee = false; for (const s of G.soldiers) if (s.target === e) s.target = null;
+  }
+  if (live && (z.boltT -= dt) <= 0) { // buluttan şimşek: kasırga çevresindeki rastgele bir düşmana
+    z.boltT = T.boltEvery * rand(0.8, 1.2);
+    const near = G.enemies.filter(e => !e.dead && !e.under && !(e.twT > 0) && Math.hypot(e.x - z.x, e.y - z.y) < T.boltR);
+    const e = near[Math.floor(rand(0, near.length))];
+    if (e) { const cx = z.x + rand(-20, 20), cy = z.y - T.H - 14;
+      G.effects.push({ kind: 'bolt', col: 'soul', pts: [[cx, cy], [lerp(cx, e.x, 0.5) + rand(-14, 14), lerp(cy, aimY(e), 0.5)], [e.x, aimY(e)]], t: 0, dur: 0.32 });
+      HERO_SKILL = true; damageEnemy(e, z.dmg() * T.boltK, 'magic'); HERO_SKILL = false; stunEnemy(e, T.boltStun); fxMagicHit(e.x, aimY(e)); z.flashT = 0.18; sfx('soulbolt'); }
+  }
+  if (z.flashT > 0) z.flashT -= dt;
+  if (z.fxT <= 0 && tornadoGrow(z) > 0.3) { // tabanda dönen toz ve kopan parçalar
+    z.fxT = CROWD ? 0.09 : 0.045; const a = rand(0, Math.PI * 2), rr = rand(8, 20);
+    emit(G.parts, { kind: Math.random() < 0.35 ? 'chunk' : 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.4, vx: -Math.sin(a) * 60 + rand(-10, 10), vy: -rand(30, 80), g: 60, drag: 1.5,
+      col: Math.random() < 0.5 ? '150,130,170' : '120,200,140', s0: rand(2, 4), s1: rand(5, 9), life: rand(0.5, 0.9), vr: rand(-9, 9) });
+  }
+}
+function twistStep(e, dt) { // kasırgaya kapılan düşman: huninin çevresinde dönerek yükselir, sonra savrulur (true: yürüme yok)
+  if (!(e.twT > 0)) return false;
+  const T = TORNADO, z = e.twZ; e.twT -= dt; const u = clamp(1 - e.twT / T.hold, 0, 1);
+  e.twZh = (e.twH || T.liftH) * Math.sin(Math.min(1, u * 1.25) * Math.PI / 2); // her biri başka yüksekliğe: sarmal
+  const fw = lerp(6, 38, Math.pow(clamp(e.twZh / T.H, 0, 1), 1.45)); // o yükseklikte huninin yarıçapı
+  e.twA += dt * (7 + 7 * u); const R = lerp(e.twR || T.orbit, fw * 0.9 + 3, Math.min(1, u * 2.5));
+  e.x = z.x + Math.cos(e.twA) * R; e.y = z.y + Math.sin(e.twA) * R * 0.27 + 1;
+  e.spinA = (e.spinA || 0) + dt * 7; if ((e.twFl = (e.twFl || 0) + dt) > 0.08) { e.twFl = 0; e.face = -(e.face || 1); } // fırıl fırıl
+  e.blocker = null; e.inMelee = false;
+  if (e.twT <= 0) {
+    e.twT = 0; const a = e.twA + Math.PI / 2 + rand(-0.6, 0.6), v = rand(T.v[0], T.v[1]); // teğet yönde fırlar
+    e.flZ = Math.max(0.01, e.twZh); e.twZh = 0; e.flVx = Math.cos(a) * v; e.flVy = Math.sin(a) * v * 0.55; e.flVz = rand(T.vz[0], T.vz[1]);
+    e.spinV = (Math.random() < 0.5 ? -1 : 1) * rand(6, 10); e.flB = false;
+    HERO_SKILL = true; damageEnemy(e, z.dmg(), 'magic'); HERO_SKILL = false;
+    emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - e.flZ - 10, col: '170,130,255', s0: 10, s1: 3, life: 0.3 });
+  }
+  return true;
+}
+// huni: üst üste dönen yarı saydam halkalar (aşağı daralır, yılan gibi kıvrılır), içinde parlak çizgiler; tepede koyu fırtına bulutu.
+// back: birimlerin altında taban gölgesi ve toz halkası; ön: huni ve bulut (birimlerin önünde, saydam)
+const PUFF = {};
+function puffTex(col) { // dolu, kenarı yumuşak öbek (bulut, duman): glowTex'ten daha geniş dolu çekirdek
+  if (!PUFF[col]) { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, `rgba(${col},1)`); gr.addColorStop(0.55, `rgba(${col},0.92)`); gr.addColorStop(0.8, `rgba(${col},0.45)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); PUFF[col] = c; }
+  return PUFF[col];
+}
+function drawTornadoes(back) {
+  for (const z of G.zones) {
+    if (z.kind !== 'tornado') continue;
+    const T = TORNADO, cl = Math.min(1, z.t / 0.35, (z.life - z.t) / 0.5), gr = tornadoGrow(z); if (cl <= 0) continue;
+    const top = z.y - T.H, bot = top + T.H * gr, t = z.t;
+    if (back) {
+      if (gr <= 0) continue;
+      ctx.save(); ctx.globalAlpha = 0.35 * gr; ctx.fillStyle = '#1a1022'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.55 * gr; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+      for (let i = 0; i < 3; i++) { const a0 = t * 7 + i * 2.1; ctx.strokeStyle = i % 2 ? 'rgba(200,180,220,0.8)' : 'rgba(150,230,160,0.7)';
+        ctx.beginPath(); ctx.ellipse(z.x, z.y, 18 + i * 5, (18 + i * 5) * 0.32, 0, a0, a0 + 2.2); ctx.stroke(); }
+      ctx.restore(); continue;
+    }
+    ctx.save();
+    const N = 16, sway = (u) => Math.sin(t * 2.2 + z.seed + u * 3.2) * 9 * u + Math.sin(t * 5.3 + u * 7) * 2.5 * u;
+    const ring = (i) => { const u = i / N; return { u, y: bot - (bot - top) * u, w: lerp(6, 38, Math.pow(u, 1.45)), x: z.x + sway(u), a0: (t * (12 - u * 6) + i * 0.9) % (Math.PI * 2) }; };
+    const arcs = (front) => { // halkanın arka yarısı (üst kavis) birimlerin arkasında, ön yarısı önünde: derinlik
+      ctx.lineCap = 'round';
+      for (let i = 0; i <= N; i++) { const R = ring(i), c0 = Math.round(70 + 90 * (1 - R.u)), sh = front ? 1 : 0.6;
+        ctx.strokeStyle = `rgba(${Math.round((c0 + 25) * sh)},${Math.round(c0 * sh)},${Math.round((c0 + 45) * sh)},${(front ? 0.7 : 0.5) * cl})`; ctx.lineWidth = 2 + R.u * 3;
+        const s0 = front ? 0 : Math.PI, a = R.a0; ctx.beginPath(); ctx.ellipse(R.x, R.y, R.w, R.w * 0.27, 0, s0 + (a % 1.2), s0 + Math.PI - 0.2 + (a % 1.2) * 0.3); ctx.stroke();
+        if (front && i % 3 === 1) { ctx.strokeStyle = `rgba(${i % 2 ? '170,255,190' : '220,180,255'},${0.65 * cl})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(R.x, R.y, R.w * 0.92, R.w * 0.24, 0, a * 0.5 % Math.PI, a * 0.5 % Math.PI + 0.9); ctx.stroke(); }
+      }
+      for (let k = 0; k < 9; k++) { // savrulan kırıntılar (taş, dal, kemik)
+        const u = ((k * 0.137 + t * 0.35) % 1), R = ring(Math.round(u * N)), a = t * (9 - u * 4) + k * 2.3, sn = Math.sin(a);
+        if ((sn >= 0) !== front) continue;
+        ctx.save(); ctx.translate(R.x + Math.cos(a) * R.w * 1.05, R.y + sn * R.w * 0.28); ctx.rotate(a * 2); ctx.fillStyle = k % 3 ? '#4a3a32' : '#d8ccb4'; ctx.fillRect(-1.6, -0.9, 3.2, 1.8); ctx.restore();
+      }
+    };
+    if (gr > 0) {
+      const L = [], Rr = [];
+      for (let i = 0; i <= N; i++) { const R = ring(i); L.push([R.x - R.w, R.y]); Rr.push([R.x + R.w, R.y]); }
+      const g = ctx.createLinearGradient(0, top, 0, bot); g.addColorStop(0, 'rgba(46,34,66,0.62)'); g.addColorStop(0.55, 'rgba(92,78,118,0.4)'); g.addColorStop(1, 'rgba(150,136,150,0.3)');
+      ctx.globalAlpha = cl; ctx.fillStyle = g; ctx.beginPath(); L.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); for (let i = Rr.length - 1; i >= 0; i--) ctx.lineTo(Rr[i][0], Rr[i][1]); ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1; arcs(false);
+    }
+    ctx.restore();
+    for (const e of G.enemies) if (e.twT > 0 && e.twZ === z && !e.dead) { const o = e.twZh || 0; e.flZ = o; drawEnemy(e); e.flZ = null; } // kapılanlar huninin içinde
+    ctx.save();
+    if (gr > 0) { arcs(true); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x + sway(0.5), lerp(bot, top, 0.5), 34, '150,100,255', 0.14 * cl * gr); glow(ctx, z.x, bot - 4, 18, '130,255,160', 0.12 * cl * gr); ctx.globalCompositeOperation = 'source-over'; }
+    // fırtına bulutu: yumuşak kabarık öbekler (koyu mor-gri; üstleri açık), şimşekte içten yeşil-beyaz parlar
+    const fl = z.flashT > 0 ? z.flashT / 0.18 : 0, cy = top - 8;
+    ctx.globalAlpha = cl;
+    for (const [dx, dy, r0, c] of [[-40, 6, 22, 0], [40, 7, 20, 0], [-22, 2, 26, 0], [22, 1, 26, 0], [0, -2, 30, 0], [0, 10, 34, 2], [-30, -6, 18, 1], [8, -12, 22, 1], [32, -5, 16, 1]]) {
+      const ox = Math.sin(t * 0.8 + dx * 0.1) * 2.5, oy = Math.cos(t * 0.7 + dx) * 1.5, r = r0 * (0.85 + 0.15 * Math.min(1, z.t / 0.4));
+      ctx.drawImage(puffTex(c === 1 ? '96,82,120' : c === 2 ? '22,14,32' : '50,38,68'), z.x + dx + ox - r, cy + dy + oy - r * 0.7, r * 2, r * 1.4);
+    }
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x + Math.sin(z.seed + t * 3) * 14, cy, 50, fl > 0 ? '190,255,200' : '140,80,220', (0.1 + 0.55 * fl) * cl); ctx.globalCompositeOperation = 'source-over';
+    ctx.restore();
+  }
 }
 function castUlt(h, x, y) {
   const U = heroUlt(h), k = (1 + HERO_TREE.ultK * (heroUltRank(h) - 1)) * (1 + 0.015 * (h.lvl - 1)) * (h.gearK || 1); // güç kademesi (ağaç) ve seviye
@@ -7944,6 +8093,8 @@ function castUlt(h, x, y) {
         t: tt, dur: rand(0.5, 0.65), arc: 0, dmg: dmg() * M.dmg, splash: U.r * M.r, src: 'blast', spin: rand(0, 6), mburn: [U.burn * k * M.burn, U.burnT] });
     }
     sfx('magic'); setTimeout(() => sfx('whirl'), 350);
+  } else if (U.tornado) {
+    tornadoCast(x, y, U, dmg);
   } else if (U.storm) {
     if (!stormChain(x, y, U, dmg)) { G.effects.push({ kind: 'bolt', pts: [[x, y - 240], [x, y]], t: 0, dur: 0.35 }); sfx('thunder'); }
   } else if (U.soulpool) {
@@ -8082,6 +8233,7 @@ function update(dt) {
   updateSouls(dt);
   for (const z of G.zones) {
     z.t += dt; z.fxT -= dt;
+    if (z.kind === 'tornado') { tornadoStep(z, dt); continue; }
     HERO_SKILL = !!z.heroSkill; SKILL_K = z.skK || 1;
     const bats = z.kind === 'bats', live = !bats || z.t > 0.35; // yarasalar önce uçup gelir
     if (live) for (const e of G.enemies) if (!e.dead && (bats || !e.def.flying) && dist(e.x, e.y, z.x, z.y) <= z.r) {
@@ -10822,7 +10974,7 @@ function cutImage(im, arms) {
 const RIGBUF = document.createElement('canvas'), RIGBUF_G = RIGBUF.getContext('2d');
 function drawRig(im, w, h, legY, P, rig, arms) {
   const al = ctx.globalAlpha;
-  if (al > 0.99 || rig.wings) { drawRigTo(ctx, im, w, h, legY, P, rig, arms); return; }
+  if (al > 0.99 || rig.wings || CROWD) { drawRigTo(ctx, im, w, h, legY, P, rig, arms); return; } // kalabalıkta ara tuval yok (kenar çizgisi az belirgin, takılma yok)
   const m = ctx.getTransform();
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   for (const [lx, ly] of [[-w * 1.3, -h * 1.5], [w * 1.3, -h * 1.5], [-w * 1.3, h * 0.4], [w * 1.3, h * 0.4]]) {
@@ -11072,7 +11224,7 @@ function gearSprite(lvl) {
 function buildGear(base, lvl) {
   const W0 = base.width, H0 = base.height, P = Math.round(H0 * 0.1);
   const c = document.createElement('canvas'); c.width = W0; c.height = H0 + P;
-  const g = c.getContext('2d');
+  const g = c.getContext('2d', { willReadFrequently: true }); // getImageData ekran kartını bekletmesin (16 Eki)
   g.drawImage(base, 0, P);
   const d = g.getImageData(0, 0, c.width, c.height), a = d.data;
   const m = document.createElement('canvas'); m.width = c.width; m.height = c.height;
@@ -13115,7 +13267,7 @@ function headCrop(im, key) {
   try {
     const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, k = Math.min(1, 200 / H);
     const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(W * k)); cv.height = Math.max(1, Math.round(H * k));
-    const g = cv.getContext('2d'); g.drawImage(im, 0, 0, cv.width, cv.height);
+    const g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, cv.width, cv.height);
     const d = g.getImageData(0, 0, cv.width, cv.height).data, w = cv.width, h = cv.height;
     let y0 = -1; for (let y = 0; y < h && y0 < 0; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 60) { y0 = y; break; }
     if (y0 >= 0) {
@@ -13184,7 +13336,8 @@ function drawUlt2Glyph(id, r) {
   }
   ctx.restore();
 }
-const heroGlyph = (id, r, act) => (spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')) ? icoFit(spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')), 0, 0, r * 0.74) : act === 'ult2' ? drawUlt2Glyph(id, r) : id === 'zeynep' ? drawNecroGlyph('nm_scream', r) : drawUltGlyph(id, r));
+const ICO_OLD = new Set(['ico_hu_merlin2']); // 16 Eki: Merlin'in ikinci gücü değişti (Zincir Şimşek → Kasırga), eski resim kullanılmaz
+const heroGlyph = (id, r, act) => (spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')) && !ICO_OLD.has('ico_hu_' + id + (act === 'ult2' ? '2' : '')) ? icoFit(spr('ico_hu_' + id + (act === 'ult2' ? '2' : '')), 0, 0, r * 0.74) : act === 'ult2' ? drawUlt2Glyph(id, r) : id === 'zeynep' ? drawNecroGlyph('nm_scream', r) : drawUltGlyph(id, r));
 // kahraman gücü düğmesinin simgesi
 function drawUltGlyph(id, r) {
   ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -13248,15 +13401,16 @@ function drawMerlinGlyph(id, r) {
     const mg = ctx.createRadialGradient(r * 0.05, -r * 0.08, 1, r * 0.12, 0, r * 0.3); mg.addColorStop(0, '#fff2b0'); mg.addColorStop(0.45, '#ff8a2a'); mg.addColorStop(1, '#5a1a0a');
     ctx.save(); ctx.translate(r * 0.12, 0); ctx.rotate(time * 3); ctx.beginPath(); for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2, rr = r * (0.26 + 0.04 * Math.sin(k * 2.7)); (k ? ctx.lineTo : ctx.moveTo).call(ctx, Math.cos(a) * rr, Math.sin(a) * rr); }
     ctx.closePath(); ctx.fillStyle = mg; ctx.fill(); ctx.strokeStyle = '#1e0c06'; ctx.lineWidth = r * 0.05; ctx.stroke(); ctx.restore();
-  } else if (id === 'storm') { // zincir şimşek: bulut ve üç hedefe sıçrayan mavi-beyaz şimşek
-    lit(0, 0, r * 0.85, '120,180,255', 0.6);
-    ctx.fillStyle = '#4a5a7a'; ctx.strokeStyle = '#141a2a'; ctx.lineWidth = r * 0.05; ctx.beginPath();
-    for (const [x, y, rr] of [[-r * 0.3, -r * 0.42, r * 0.2], [0, -r * 0.5, r * 0.24], [r * 0.3, -r * 0.42, r * 0.2]]) { ctx.moveTo(x + rr, y); ctx.arc(x, y, rr, 0, Math.PI * 2); }
+  } else if (id === 'storm') { // 16 Eki: kasırga fırtınası: koyu bulut, altında dönen huni, yanında yeşil şimşek
+    lit(0, -r * 0.1, r * 0.9, '170,120,255', 0.5);
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 7; i++) { const u = i / 6, y = -r * 0.32 + u * r * 0.78, w = r * (0.5 - u * 0.4), sx = Math.sin(time * 3 + u * 3) * r * 0.06 * u;
+      ctx.strokeStyle = `rgba(${Math.round(150 + 60 * u)},${Math.round(140 + 40 * u)},${Math.round(200 - 30 * u)},0.9)`; ctx.lineWidth = r * (0.12 - u * 0.05);
+      ctx.beginPath(); ctx.ellipse(sx, y, w, w * 0.28, 0, (time * 5 + i) % (Math.PI * 2), (time * 5 + i) % (Math.PI * 2) + Math.PI * 1.4); ctx.stroke(); }
+    ctx.fillStyle = '#3a2c52'; ctx.strokeStyle = '#120a1e'; ctx.lineWidth = r * 0.05; ctx.beginPath();
+    for (const [x, y, rr] of [[-r * 0.32, -r * 0.5, r * 0.2], [0, -r * 0.6, r * 0.25], [r * 0.32, -r * 0.5, r * 0.2]]) { ctx.moveTo(x + rr, y); ctx.arc(x, y, rr, 0, Math.PI * 2); }
     ctx.fill(); ctx.stroke();
-    const P = [[0, -r * 0.3], [-r * 0.3, r * 0.15], [r * 0.05, r * 0.35], [r * 0.45, r * 0.12]];
-    for (const [lw, col] of [[r * 0.2, 'rgba(120,180,255,0.55)'], [r * 0.08, '#f2f8ff']]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
-      P.forEach(([x, y], i) => { if (!i) { ctx.moveTo(x, y); return; } const [px, py] = P[i - 1]; for (let j = 1; j <= 3; j++) { const q = j / 3, jt = j < 3 ? Math.sin(time * 30 + i * 5 + j * 2) * r * 0.08 : 0; ctx.lineTo(px + (x - px) * q + jt, py + (y - py) * q - jt); } }); ctx.stroke(); }
-    for (const [x, y] of P.slice(1)) circle(x, y, r * 0.07, '#ffffff');
+    if (Math.sin(time * 4) > 0.2) { ctx.strokeStyle = '#c8ffd0'; ctx.lineWidth = r * 0.06; ctx.beginPath(); ctx.moveTo(r * 0.36, -r * 0.36); ctx.lineTo(r * 0.5, -r * 0.08); ctx.lineTo(r * 0.4, -r * 0.06); ctx.lineTo(r * 0.56, r * 0.22); ctx.stroke(); }
   } else if (id === 'frog') { // kurbağaya çevirme: yeşil kurbağa, üstünde dönen mor büyü yıldızları
     lit(0, r * 0.1, r * 0.8, '140,255,120', 0.5);
     ctx.save(); ctx.translate(0, r * 0.32); drawFrog(0, 0, 1, Math.sin(time * 6) > 0.6, r * 0.2); ctx.restore();
@@ -15013,7 +15167,7 @@ function enemySprite(type) {
   const base = spr('enemy_' + d.base);
   if (!base) return null;
   const c = document.createElement('canvas'); c.width = base.width; c.height = base.height;
-  const g = c.getContext('2d'); g.drawImage(base, 0, 0);
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(base, 0, 0); // 16 Eki: getImageData ekran kartını bekletmesin
   const im = g.getImageData(0, 0, c.width, c.height), a = im.data, f = BOSS_LOOK[type] || (d.rank && RANK_LOOK[d.rank]), cw = c.width, ch = c.height;
   if (f) for (let i = 0; i < a.length; i += 4) {
     if (a[i + 3] < 10) continue;
@@ -16478,7 +16632,7 @@ function keyWarp(bg, ox, oy, iw, ih, r, i) {
   if (!o || o.w !== sw) {
     const c = document.createElement('canvas'); c.width = sw; c.height = sh;
     const m = document.createElement('canvas'); m.width = sw; m.height = sh;
-    const mg = m.getContext('2d'); mg.drawImage(bg, sx, sy, sw, sh, 0, 0, sw, sh);
+    const mg = m.getContext('2d', { willReadFrequently: true }); mg.drawImage(bg, sx, sy, sw, sh, 0, 0, sw, sh);
     const D = mg.getImageData(0, 0, sw, sh), px = D.data, key = new Uint8Array(sw * sh), E = Math.ceil(r[4]) + 1;
     for (let j = 0, q = 0; j < sw * sh; j++, q += 4) { // renk anahtarı: bu piksel alev/buhar mı
       const R = px[q], Gc = px[q + 1], B = px[q + 2], mx = Math.max(R, Gc, B), mn = Math.min(R, Gc, B);
@@ -18217,16 +18371,17 @@ function drawLoading() {
   txt('— Mortimer', cx, cy + 126, 13, '#9a8ab8', 'center', '600', FONT_B, false);
 }
 function drawPlay() {
+  CROWD = G.enemies.length + G.soldiers.length > CROWD_N;
   if (G.bakeQ && G.bakeQ.length) { const t0 = performance.now(); do bakeNext(); while (G.loadWait && G.bakeQ.length && performance.now() - t0 < 12); } // yüklenirken karede çok boya
   const sh = G.shakeT > 0 ? G.shakeAmp * (G.shakeT / G.shakeDur) : 0;
   ctx.save();
   if (sh > 0) ctx.translate(rand(-sh, sh), rand(-sh, sh));
   ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
   const bm = G.bg.m || { x: 0, y: 0 };
-  ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
-  drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
+  if (!PERF_OFF.has('bg')) ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
+  if (!PERF_OFF.has('bgl')) drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   drawGraveHands(G.bg.hands, G.parts); drawBanners(G.bg.banners, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
-  for (const d of G.decals) {
+  for (const d of PERF_OFF.has('decal') ? [] : G.decals) {
     if (d.kind === 'crater') { drawCrater(d); continue; }
     if (d.kind === 'splat') {
       // veba birikintisi: yere dökülmüş sıvı; hızla yayılır, yavaşça solar (yer düzlemine yatık)
@@ -18246,7 +18401,7 @@ function drawPlay() {
     }
   }
   ctx.globalAlpha = 1;
-  drawGround();
+  if (!PERF_OFF.has('ground')) drawGround();
   drawHolyLights();
   for (const pl of G.plots) if (!pl.tower) (pl.rubble ? drawRubble(pl) : drawPlot(pl));
   drawHatches();
@@ -18279,18 +18434,18 @@ function drawPlay() {
   // derinlik sıralı varlıklar
   const ents = [];
   for (const t of G.towers) ents.push([t.y, 0, t]);
-  for (const e of G.enemies) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]);
+  for (const e of G.enemies) if (!(e.twT > 0)) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]); // kasırgadakiler drawTornadoes'ta
   for (const s of G.soldiers) ents.push([s.exit && s.tower ? s.tower.y + 0.5 : s.y, 2, s]); // kapıdan çıkan iskelet binanın önünde
   for (const c of G.coins) if (c.state !== 'fly') ents.push([c.y, 4, c]);
   for (const o of G.loot) ents.push([o.y, 6, o]);
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  drawPlaguePools(); drawSoulFlames();
+  drawPlaguePools(); drawSoulFlames(); drawTornadoes(true);
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
-  for (const [, k, o] of ents) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
+  for (const [, k, o] of ents) if (!PERF_OFF.has('ent' + k)) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
   drawGasClouds();
-  drawBloodLinks(); drawBatSwarms(); drawSwarms();
+  drawBloodLinks(); drawBatSwarms(); drawSwarms(); drawTornadoes(false);
   drawFearGhosts();
   for (const p of G.projectiles) drawProjectile(p);
   drawSouls();
@@ -18300,8 +18455,8 @@ function drawPlay() {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 18, '190,140,255', 0.5); ctx.restore();
     drawNecroGlyph('nm_fear', 10); ctx.restore();
   }
-  for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
-  drawPartsAll(G.parts);
+  if (!PERF_OFF.has('fx')) for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
+  if (!PERF_OFF.has('parts')) drawPartsAll(G.parts);
   drawMechFx();
   drawProps(true);
   drawDmgNums();
@@ -18316,8 +18471,8 @@ function drawPlay() {
   drawMenuRange();
   drawEnemyRing();
   ctx.restore();
-  drawWeather();
-  drawAtmo();
+  if (!PERF_OFF.has('weather')) drawWeather();
+  if (!PERF_OFF.has('atmo')) drawAtmo();
   drawBloodMoon();
   if (G.bossFx) {
     // boss girişi: ekran kenarları kızıl karanlığa bürünür, nabız gibi atar, sonra açılır
@@ -18335,7 +18490,7 @@ function drawPlay() {
   drawSlowMo();
   drawMenu();
   drawEnemyPanel();
-  drawHud();
+  if (!PERF_OFF.has('hud')) drawHud();
   drawCombo();
   drawCoinsFlying();
   drawBossBar();
@@ -19568,6 +19723,7 @@ function frame(now) {
   const w0 = performance.now(), real = Math.min(0.05, (now - last) / 1000);
   last = now; time += real;
   SPR_NOW = time; if (++SPR_TICK % 60 === 0) stripTrim(); // telefonda şerit bütçesi (60 karede bir)
+  MAKE_BUDGET = 2; // karede en çok 2 pahalı hazırlık (mip, beyaz parlama karesi)
   adaptQuality(real);
   if (bgDirty && time - bgDirty > 0.3) {
     bgDirty = 0;
@@ -19703,11 +19859,12 @@ window.__game = {
     return out;
   },
   // kare maliyeti ölçümü (test): n kare boyunca güncelleme ve tam sahne çizimi süresini ölçer (ms; ortalama ve en kötü %5)
-  perf(n = 120) {
+  perf(n = 120, sync = false) {
     const U = [], D = [], { dpr, scale, ox, oy } = view;
     for (let i = 0; i < n; i++) {
       const t0 = performance.now(); update(1 / 60); const t1 = performance.now();
-      ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawPlay(); ctx.restore();
+      MAKE_BUDGET = 2; ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawPlay(); ctx.restore();
+      if (sync) ctx.getImageData(0, 0, 1, 1); // test: ekran kartının işini de bekle (GPU süresi dahil)
       U.push(t1 - t0); D.push(performance.now() - t1);
     }
     const st = (a) => { const b = [...a].sort((x, y) => x - y); return { ort: +(a.reduce((x, y) => x + y) / a.length).toFixed(2), p95: +b[Math.floor(b.length * 0.95)].toFixed(2) }; };
