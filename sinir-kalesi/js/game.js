@@ -2555,53 +2555,102 @@ function fxMeteorImpact(x, y, r, burn) {
   if (burn) G.zones.push({ x, y, r: r * 0.6, dps: 8, t: 0, life: 2.5, fxT: 0, src: 'blast' });
   shakeScreen(7, 0.45);
 }
-// Göktaşının kayası (bir kez çizilir): çatlaklarından akkor ışık sızan, köşeli koyu kaya
-let METEOR_ROCK = null;
-function meteorRock() {
-  if (METEOR_ROCK) return METEOR_ROCK;
+// Göktaşının kayası (bir kez çizilir): çatlaklarından akkor ışık sızan, köşeli koyu kaya. soul: Merlin'in ruh meteoru (mor kaya, yeşil çatlak)
+let METEOR_ROCK = null, SOUL_ROCK = null;
+function meteorRock(soul) {
+  if (soul) { if (SOUL_ROCK) return SOUL_ROCK; }
+  else if (METEOR_ROCK) return METEOR_ROCK;
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d'); g.translate(32, 32);
   const pts = [];
   for (let i = 0; i < 11; i++) { const a = i / 11 * Math.PI * 2, r = 22 + Math.sin(i * 2.7) * 4 + (i % 3) * 1.5; pts.push([Math.cos(a) * r, Math.sin(a) * r]); }
   const path = () => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
   const gr = g.createRadialGradient(-7, -8, 2, 0, 0, 26);
-  gr.addColorStop(0, '#8a6a58'); gr.addColorStop(0.55, '#4a3428'); gr.addColorStop(1, '#1e140e');
+  if (soul) { gr.addColorStop(0, '#7a5a8a'); gr.addColorStop(0.55, '#3a2448'); gr.addColorStop(1, '#140a1c'); }
+  else { gr.addColorStop(0, '#8a6a58'); gr.addColorStop(0.55, '#4a3428'); gr.addColorStop(1, '#1e140e'); }
   path(); g.fillStyle = gr; g.fill(); g.lineWidth = 2.5; g.strokeStyle = '#140a06'; g.stroke();
   g.save(); path(); g.clip();
-  g.strokeStyle = '#ffb040'; g.lineWidth = 2.2; g.lineCap = 'round'; g.shadowColor = '#ff7a20'; g.shadowBlur = 6;
+  g.strokeStyle = soul ? '#b8ff9a' : '#ffb040'; g.lineWidth = 2.2; g.lineCap = 'round'; g.shadowColor = soul ? '#5aff7a' : '#ff7a20'; g.shadowBlur = 6;
   for (const seg of [[[-14, -4], [-4, 2], [3, -6], [12, -2]], [[-6, 10], [2, 6], [8, 12]], [[4, -16], [6, -8]]]) {
     g.beginPath(); seg.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
   }
   g.restore();
   g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.ellipse(-8, -10, 7, 4, -0.6, 0, Math.PI * 2); g.fill();
-  return (METEOR_ROCK = c);
+  return soul ? (SOUL_ROCK = c) : (METEOR_ROCK = c);
 }
-// 16 Eki (Caner: "meteorun çarptığı yerdeki zayıf, küçük düşmanlar gerçekçi fizikle savrulsun"): balistik savrulma. Çarpma noktasından dışarı:
-// yol boyunca ileri ya da geri (hangi taraftaysa), yana kayar, havada döner; yerçekimiyle düşer, bir kez seker, toz kalkar, kısa sersemler.
-// Yalnız hafif ve küçük düşmanlar (boss, ağır zırh, makine, uçan değil; boyu FLING.h altında). Merkeze yakın olan daha yükseğe ve uzağa.
-const FLING = { g: 620, vz: [170, 330], vd: [60, 170], side: 14, spin: [5, 12], h: 40, bounce: 0.3, stun: 0.5 };
+// 16 Eki (Caner: "meteorun çarptığı yerdeki zayıf, küçük düşmanlar gerçekçi fizikle savrulsun"; sonra: "çok aşırı savrulmasın, çember gibi farklı yönlere";
+// "büyük düşmanlar da yere düşsün"): hafif/küçük düşman çarpma noktasından dışarı, her yöne (ekranda çember) alçak bir yayla savrulur, havada döner,
+// yerçekimiyle düşer, bir kez seker, toz kalkar, en yakın yol noktasına oturur, kısa sersemler. Ağır/büyük düşman (boss dahil) ayaklarının üstünden
+// yana devrilir, yerde yatar, kalkar (kd). Makine, uçan, kuşatma devrilmez.
+const FLING = { g: 620, vz: [80, 150], v: [26, 62], spin: [3, 7], h: 40, bounce: 0.3, stun: 0.4, kd: { fall: 0.22, lie: 0.5, rise: 0.32, ang: 1.35 } };
 function flingEnemy(e, x, y, k) {
-  if (e.dead || !pushable(e) || e.def.boss || e.def.acl === 'agir' || (CHAR_H['enemy_' + e.type] || 30) > FLING.h || e.flZ != null) return;
-  const q = pathPos(e.p, e.d, e.off), nx = -q.dy, ny = q.dx, rx = e.x - x, ry = e.y - y;
-  const along = Math.sign(rx * q.dx + ry * q.dy) || (Math.random() < 0.5 ? 1 : -1), side = Math.sign(rx * nx + ry * ny) || (Math.random() < 0.5 ? 1 : -1);
-  e.flZ = 0.01; e.flVz = lerp(FLING.vz[0], FLING.vz[1], k) * rand(0.85, 1.1); e.flVd = along * lerp(FLING.vd[0], FLING.vd[1], k) * rand(0.8, 1.15);
-  e.flOff = clamp((e.off || 0) + side * FLING.side * (0.4 + 0.6 * k), -16, 16); e.spinV = (along > 0 ? 1 : -1) * lerp(FLING.spin[0], FLING.spin[1], k); e.spinA = 0; e.flB = false;
+  if (e.dead || e.def.machine || e.def.flying || e.siege !== undefined || e.under || e.flZ != null || e.kdT > 0) return;
+  let ax = e.x - x, ay = (e.y - y) / 0.55, l = Math.hypot(ax, ay);
+  if (l < 3) { const a = rand(0, Math.PI * 2); ax = Math.cos(a); ay = Math.sin(a); l = 1; }
+  ax /= l; ay /= l; const side = ax >= 0 ? 1 : -1;
   e.blocker = null; e.inMelee = false;
+  if (e.def.chief || e.def.boss || e.def.acl === 'agir' || (CHAR_H['enemy_' + e.type] || 30) > FLING.h) { // ağır: devrilir
+    e.kdD = e.kdT = FLING.kd.fall + FLING.kd.lie + FLING.kd.rise; e.kdSide = side; return;
+  }
+  const v = lerp(FLING.v[0], FLING.v[1], k) * rand(0.8, 1.15);
+  e.flZ = 0.01; e.flVz = lerp(FLING.vz[0], FLING.vz[1], k) * rand(0.85, 1.1); e.flVx = ax * v; e.flVy = ay * v * 0.55;
+  e.spinV = side * lerp(FLING.spin[0], FLING.spin[1], k); e.spinA = 0; e.flB = false;
 }
-function flingStep(e, dt) { // savrulan düşmanın hareketi (true: bu karede yürüme yok)
+function snapToPath(e) { // savrulup inen düşman: kendi yolunun en yakın noktasına (yanal pay en çok 18)
+  let bd = 1e9, bD = e.d; for (let d = Math.max(0, e.d - 120); d <= e.d + 120; d += 3) { const q = pathPos(e.p, d, 0), dd = (q.x - e.x) ** 2 + (q.y - e.y) ** 2; if (dd < bd) { bd = dd; bD = d; } }
+  const q = pathPos(e.p, bD, 0); e.d = bD; e.off = clamp((e.x - q.x) * -q.dy + (e.y - q.y) * q.dx, -18, 18);
+}
+function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yürüme, vuruş yok)
+  if (e.kdT > 0) {
+    const K = FLING.kd; e.kdT -= dt; const t = e.kdD - e.kdT;
+    if (t < K.fall && t + dt >= K.fall) G.effects.push({ kind: 'dust', x: e.x + e.kdSide * 14, y: e.y, t: 0, dur: 0.5 }); // yere çarptı
+    const f = t < K.fall ? (t / K.fall) ** 2 : t < K.fall + K.lie ? 1 : clamp(e.kdT / K.rise, 0, 1);
+    e.spinA = e.kdSide * K.ang * f; if (e.kdT <= 0) { e.kdT = 0; e.spinA = 0; }
+    return true;
+  }
   if (e.flZ == null) return false;
   e.flVz -= FLING.g * dt; e.flZ += e.flVz * dt; e.spinA += e.spinV * dt;
-  const L = e.p.cum[e.p.cum.length - 1] - 4; e.d = clamp(e.d + e.flVd * dt, 0, L); e.flVd *= Math.max(0, 1 - 0.8 * dt);
-  e.off += (e.flOff - e.off) * Math.min(1, dt * 5);
+  e.x += e.flVx * dt; e.y += e.flVy * dt;
   if (e.flZ <= 0) {
-    G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.45 });
-    if (!e.flB && e.flVz < -110) { e.flB = true; e.flZ = 0.01; e.flVz = -e.flVz * FLING.bounce; e.flVd *= 0.45; e.spinV *= 0.35; }
-    else { e.flZ = null; e.spinA = 0; stunEnemy(e, FLING.stun); }
+    G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.4 });
+    if (!e.flB && e.flVz < -90) { e.flB = true; e.flZ = 0.01; e.flVz = -e.flVz * FLING.bounce; e.flVx *= 0.4; e.flVy *= 0.4; e.spinV *= 0.3; }
+    else { e.flZ = null; e.spinA = 0; snapToPath(e); stunEnemy(e, FLING.stun); }
   }
-  const p2 = pathPos(e.p, e.d, e.off); e.x = p2.x; e.y = p2.y;
   return true;
 }
 const METEOR_RAIN = { n: 8, gap: 0.13, spread: 0.85, r: 0.45, size: [0.95, 1.3], dmg: 0.42, burn: 0.4 }; // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
+// Merlin'in ruh meteoru (16 Eki, Caner: "daha kaliteli, ihtişamlı"): hedefte dönen çift rün çemberi + alan kararır; çarpmada parlama, ışık sütunu,
+// iki şok halkası (yeşil, mor), saçılan kaya parçaları, yükselen kıvılcımlar, mor duman
+function drawSoulRune(p, pre, k) {
+  const r = p.ringR || p.splash, a = p.t < 0 ? pre : 1, rot = time * 0.9;
+  ctx.save(); ctx.translate(p.tx, p.ty); ctx.scale(1, 0.45);
+  const dk = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.25); dk.addColorStop(0, `rgba(20,0,30,${0.32 * a})`); dk.addColorStop(1, 'rgba(20,0,30,0)'); ctx.fillStyle = dk; ctx.fillRect(-r * 1.3, -r * 1.3, r * 2.6, r * 2.6);
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.lineWidth = 2.4; ctx.strokeStyle = `rgba(120,255,150,${0.6 * a})`; ctx.beginPath(); ctx.arc(0, 0, r * 1.05, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = 1.6; ctx.strokeStyle = `rgba(190,120,255,${0.55 * a})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.82, 0, Math.PI * 2); ctx.stroke();
+  for (let i = 0; i < 12; i++) { const an = rot + i * Math.PI / 6; ctx.save(); ctx.rotate(an); ctx.strokeStyle = `rgba(${i % 2 ? '190,120,255' : '120,255,150'},${0.7 * a})`; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(r * 0.86, 0); ctx.lineTo(r * 1.0, -6); ctx.lineTo(r * 1.0, 6); ctx.closePath(); ctx.stroke(); ctx.restore(); }
+  ctx.save(); ctx.rotate(-rot * 1.4); ctx.strokeStyle = `rgba(255,90,110,${0.5 * a})`; ctx.lineWidth = 1.6; ctx.beginPath();
+  for (let i = 0; i <= 5; i++) { const an = i * Math.PI * 4 / 5 - Math.PI / 2; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(an) * r * 0.62, Math.sin(an) * r * 0.62); } ctx.stroke(); ctx.restore(); // içte kızıl beş köşe
+  glow(ctx, 0, 0, r * 0.9, '150,80,255', 0.18 * a + 0.06 * Math.sin(time * 6));
+  ctx.restore();
+}
+function fxSoulMeteorImpact(x, y, r, first) {
+  const P = G.parts, cols = ['120,255,150', '190,120,255', '255,80,90'];
+  emit(P, { kind: 'glow', add: true, x, y: y - 8, col: '240,255,240', s0: r * 1.6, s1: r * 2.1, life: 0.14, a: 0.95 }); // parlama
+  emit(P, { kind: 'glow', add: true, x, y: y - 8, col: '150,80,255', s0: r * 1.1, s1: r * 2.4, life: 0.4, a: 0.7 });
+  G.effects.push({ kind: 'beam', x, y, t: 0, dur: 0.35, col: '170,255,190', w: 18 }); // kısa ışık sütunu
+  G.effects.push({ kind: 'ring', x, y, r: r * 2.2, col: '120,255,150', t: 0, dur: 0.45 });
+  G.effects.push({ kind: 'ring', x, y, r: r * 1.6, col: '190,120,255', t: 0, dur: 0.6, a: 0.9 });
+  for (let i = 0; i < 18; i++) { // kaya parçaları her yöne saçılır, yere düşüp seker
+    const a = rand(0, Math.PI * 2), v = rand(70, 210);
+    emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(60, 150), g: 520, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
+      col: i % 3 === 0 ? '#7aff9a' : i % 3 === 1 ? '#3a2448' : '#5a3a68', s0: rand(2, 4.4), s1: 1.6, life: rand(0.8, 1.3), floor: y + rand(-14, 16) });
+  }
+  for (let i = 0; i < 22; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.5, y: y + rand(-r, r) * 0.25, vx: rand(-40, 40), vy: -rand(40, 140), drag: 1.4, col: cols[i % 3], s0: rand(2, 4.5), s1: 0.4, life: rand(0.6, 1.2) });
+  for (let i = 0; i < 7; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
+  G.decals.push({ x, y, r: r * 1.05, t: 0, life: 12, hot: true });
+}
 // Göktaşı: yerde hedef işareti, alev kuyruğu, ısı halesi ve dönen kaya
 function drawMeteor(p) {
   if (p.big) { ctx.save(); const k0 = clamp(p.t / p.dur, 0, 1), q = projPos(p, k0), B = p.big; // dev meteor: kaya ve kuyruk büyük (hedef halkası olağan boyda)
@@ -2611,7 +2660,8 @@ function drawMeteor(p) {
 function drawMeteor0(p, noRing, ringOnly) {
   const k = clamp(p.t / p.dur, 0, 1), pre = p.t < 0 ? clamp(1 + p.t / 0.6, 0, 1) : 1;
   // hedef işareti: düşüşe yaklaştıkça parlaklaşan ve daralan halka
-  if (!noRing && !p.noRing) {
+  if (p.mini && !noRing && !p.noRing) { drawSoulRune(p, pre, k); }
+  else if (!noRing && !p.noRing) {
     const a = (p.t < 0 ? pre * 0.5 : 0.5 + 0.5 * k), r = (p.ringR || p.splash) * (1.1 - 0.3 * k);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     ctx.strokeStyle = `rgba(255,120,40,${0.55 * a})`; ctx.lineWidth = 2;
@@ -2624,10 +2674,10 @@ function drawMeteor0(p, noRing, ringOnly) {
   const { x, y } = projPos(p, k), dx = p.tx - p.sx, dy = p.ty - p.sy, l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l;
   // gölge yerde büyür
   ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.25 * k})`; ctx.beginPath(); ctx.ellipse(p.tx, p.ty, 6 + 14 * k, (6 + 14 * k) * 0.4, 0, 0, Math.PI * 2); ctx.fill();
-  // alev kuyruğu
+  // alev kuyruğu (ruh meteoru: mor dış, yeşil iç, ak çekirdek; daha uzun)
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  const TL = 95, nx = -uy, ny = ux;
-  for (const [w, col, len] of [[15, '255,90,20', TL], [9, '255,170,60', TL * 0.75], [4.5, '255,245,200', TL * 0.45]]) {
+  const SO = p.mini, TL = SO ? 150 : 95, nx = -uy, ny = ux;
+  for (const [w, col, len] of SO ? [[17, '150,70,255', TL], [10, '90,255,140', TL * 0.7], [5, '235,255,230', TL * 0.42]] : [[15, '255,90,20', TL], [9, '255,170,60', TL * 0.75], [4.5, '255,245,200', TL * 0.45]]) {
     const g = ctx.createLinearGradient(x, y, x - ux * len, y - uy * len);
     g.addColorStop(0, `rgba(${col},0.9)`); g.addColorStop(1, `rgba(${col},0)`);
     ctx.fillStyle = g; ctx.beginPath();
@@ -2636,12 +2686,18 @@ function drawMeteor0(p, noRing, ringOnly) {
     ctx.quadraticCurveTo(x - ux * len * 0.5 - nx * w * 0.6, y - uy * len * 0.5 - ny * w * 0.6 + Math.cos(time * 27) * 2, x - nx * w, y - ny * w);
     ctx.closePath(); ctx.fill();
   }
-  glow(ctx, x, y, 34, '255,120,30', 0.85); glow(ctx, x, y, 16, '255,230,170', 0.9);
+  if (SO) { glow(ctx, x, y, 42, '150,70,255', 0.7); glow(ctx, x, y, 22, '110,255,150', 0.8); glow(ctx, x, y, 10, '240,255,240', 0.9); }
+  else { glow(ctx, x, y, 34, '255,120,30', 0.85); glow(ctx, x, y, 16, '255,230,170', 0.9); }
   ctx.restore();
   ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 5);
-  ctx.drawImage(meteorRock(), -12, -12, 24, 24);
+  ctx.drawImage(meteorRock(SO), -12, -12, 24, 24);
   ctx.restore();
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + ux * 6, y + uy * 6, 9, '255,200,120', 0.7); ctx.restore();
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + ux * 6, y + uy * 6, 9, SO ? '200,255,210' : '255,200,120', 0.7); ctx.restore();
+  if (SO && speed > 0 && !overlay) { // kıvılcımlar ve kayadan kopan ufak parçalar (Caner: "meteordan ufak ufak parçalar saçılsın")
+    const cols = ['120,255,150', '190,120,255', '255,80,90'];
+    if (Math.random() < 0.9) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-5, 5), y: y + rand(-5, 5), vx: -ux * rand(20, 60) + rand(-30, 30), vy: -uy * rand(20, 60) + rand(-30, 30), drag: 2, col: cols[Math.floor(rand(0, 3))], s0: rand(2, 4), s1: 0.4, life: rand(0.3, 0.6) });
+    if (Math.random() < 0.35) emit(G.parts, { kind: 'chunk', x, y, vx: -ux * rand(30, 70) + rand(-40, 40), vy: -uy * rand(10, 40) + rand(-20, 10), g: 420, drag: 0.4, vr: rand(-14, 14), rot: rand(0, 6), col: Math.random() < 0.5 ? '#3a2448' : '#7aff9a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9), floor: p.ty + rand(-14, 14) });
+  }
 }
 function fxMagicCharge(x, y) {
   emit(G.parts, { kind: 'glow', add: true, x, y, col: '170,210,255', s0: 30, s1: 8, life: 0.2 });
@@ -5598,8 +5654,8 @@ function updateProjectile(pr, dt) {
       G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.6, dps: pr.plague, t: 0, life: 2.5, fxT: 0, src: 'blast', kind: 'plague' });
       for (const e of G.enemies) if (!e.dead && dist(e.x, e.y, pr.tx, pr.ty) <= pr.splash) e.rotT = 4;
     }
-    if (pr.kind === 'meteor') fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn);
-    if (pr.mburn) for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, pr.tx, pr.ty); if (d <= pr.splash * 1.15) flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur
+    if (pr.kind === 'meteor') { if (pr.mini) fxSoulMeteorImpact(pr.tx, pr.ty, pr.splash, pr.first); else fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn); }
+    if (pr.mburn) for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, pr.tx, pr.ty); if (d <= pr.splash * 1.15) flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
     if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
       G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
       G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8 });
@@ -9898,7 +9954,7 @@ function drawEnemy0(e) {
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
     if (d.crew) drawSiegeCrew(e, uo.h, im);
     if (d.formation) drawFormation(e, name, im, ux, uo);
-    else if (e.spinA) { const cy = e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner
+    else if (e.spinA) { const cy = e.kdT > 0 ? e.y - uo.fly - 2 : e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.kdT > 0 ? e.spinA : e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner (devrilen: ayaklarının üstünden, savrulan: gövde ortasından)
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);
@@ -11448,6 +11504,10 @@ function drawEffect(f) {
       ctx.strokeStyle = `rgba(${i % 2 ? '140,255,170' : '190,120,255'},${0.85 * a})`; ctx.lineWidth = 3 - i * 0.6;
       ctx.beginPath(); ctx.arc(0, 0, f.r * (0.45 + i * 0.27) * (0.6 + 0.4 * gr), 0, Math.PI * 1.5); ctx.stroke(); ctx.restore(); }
     ctx.restore();
+  } else if (f.kind === 'beam') { // 16 Eki: meteor çarpmasında kısa ışık sütunu
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; const a = (1 - k) * 0.85, w = f.w * (1 - 0.5 * k), hgt = 150 * (0.6 + 0.4 * k);
+    const g = ctx.createLinearGradient(0, f.y - hgt, 0, f.y); g.addColorStop(0, `rgba(${f.col},0)`); g.addColorStop(1, `rgba(${f.col},${a})`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(f.x - w * 0.3, f.y - hgt); ctx.lineTo(f.x + w * 0.3, f.y - hgt); ctx.lineTo(f.x + w, f.y); ctx.lineTo(f.x - w, f.y); ctx.closePath(); ctx.fill(); ctx.restore();
   } else if (f.kind === 'ring') {
     ctx.save(); ctx.globalAlpha = (1 - k) * (f.a ?? 1);
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
