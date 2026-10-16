@@ -37,6 +37,9 @@ SFX = {
     'skelcheer': ('a small crowd of cartoon skeletons cheering victoriously, hollow raspy hooray-like cheers and cackles with bones rattling and clacking, celebration after winning a battle, short, funny, no words, no music', 2.2, 2),
     # 16 Eki (Caner: "hurray diye sevinen iskeletler saçma; gerçek asker gibi ağır kutlasın, savaş narası"): skelcheer yerine
     'skelwarcry': ('an army of undead skeleton warriors roaring one deep heavy battle war cry in unison, guttural raspy hollow voices like soldiers shouting a victorious HUAH, with weapons and shields clashing and bones rattling, powerful, serious, not funny, no words, no music', 2.6, 3),
+    # 16 Eki (Caner: "zafer sesini sevmedim, rahatsız etmeyen bir şey; iskeletler hep bir ağızdan kalabalık coşkusu"): winnecro ve skelwarcry yerine
+    'winsoft': ('short gentle victory jingle for a dark fantasy cartoon game: a few soft warm bell tones and a light music box melody rising, a quiet low choir hum underneath, calm, pleasant and satisfying, soft volume, no organ, no drums, no shouting, no voices', 3.0, 3),
+    'skelcrowd': ('a big crowd of undead skeleton soldiers cheering together in unison after winning a battle, one big joyful roaring HEY shout from many hollow raspy voices at once like a stadium crowd, then excited cheering and whistling, swords and shields raised and clanking, bones rattling, no music, no words', 2.6, 3),
     'lootchime': ('a magical treasure reward sound: bright crystal chime sparkle with a few clinking gold coins, short and satisfying, game loot pickup, no music', 1.0, 2),
     'starchime': ('one bright magical bell chime ding with sparkling shimmer tail, single clear high note, cute and rewarding, mobile game star earned sound, no music, no voice', 0.8, 2),
     'flybuzz': ('an angry swarm of buzzing plague flies rising and darting away, loud close insect buzz swelling then flying off, gross and creepy, short, no music', 1.3, 2),

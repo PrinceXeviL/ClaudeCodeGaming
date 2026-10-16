@@ -607,7 +607,9 @@ const SOUND = {
   leak:    { vol: 0.50, gap: 0.40, max: 1 },
   wave:    { vol: 0.55, gap: 0.50, max: 1 },
   win:     { vol: 0.80, gap: 1, max: 1 },
-  winnecro: { vol: 0.85, gap: 2, max: 1 },                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
+  winnecro: { vol: 0.85, gap: 2, max: 1 },
+  winsoft: { vol: 0.7, gap: 2, max: 1 },                           // 16 Eki (Caner: winnecro rahatsız ediyordu): yumuşak zafer cıngılı (ElevenLabs)
+  skelcrowd: { vol: 0.8, gap: 2, max: 1 },                         // 16 Eki: zaferde iskelet kalabalığının hep bir ağızdan coşkusu (ElevenLabs)                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
   starthud: { vol: 0.6, gap: 0.05, max: 3 },
   starchime: { vol: 0.6, gap: 0.05, max: 3 },
   flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı
@@ -8715,7 +8717,7 @@ function update(dt) {
   if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !(G.tutorial && G.tut) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
     const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
     vaultSettle(firstWin);
-    if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
+    if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winsoft'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
     if (G.chal === 'd') { save.daily = { key: G.daily.key, done: true, n: ((save.daily && save.daily.n) || 0) + 1 }; G.stars = 1; }
     else if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
     else {
@@ -8727,7 +8729,7 @@ function update(dt) {
     if (G.tutLv) { save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); } // eğitimli bölüm kazanıldı: eğitimi bir daha gösterme
     persist();
     setOverlay('win');
-    if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
+    if (NECRO) { sfx('winsoft'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
     gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
@@ -10894,7 +10896,9 @@ function drawSoldier1(s) {
   const C = celebK();
   if (!C || s.dead || s.wall || s.hero) { drawSoldier0(s); return; }
   const P = celebPump(); // kutlama: silah ağır ağır kalkar (C), herkes birlikte göğe kaldırır (P); zıplama yok
-  CHEER_ATK = -ATK_PREP * (0.35 * C + 0.6 * P * C); drawSoldier0(s); CHEER_ATK = null;
+  // 16 Eki (Caner: "bir elini yukarı kaldırsın, kılıcı havada tutsun"): iskelet kuklalarında ayrı kutlama duruşu (CHEER_POSE, drawUnit): gövde dik,
+  // silahlı kol başın üstünde havada, coşkuda hep birlikte biraz daha yukarı itilir. Şeritli iri birimler (CHEER_ATK) saldırının kurulma karesini tutar.
+  CHEER_ATK = -ATK_PREP * (0.35 * C + 0.6 * P * C); CHEER_POSE = { c: C, p: P, seed: s.slot || 0 }; drawSoldier0(s); CHEER_ATK = null; CHEER_POSE = null;
 }
 function drawSoldier0(s) {
   if (s.wall) { drawBoneWall(s); return; }
@@ -11490,6 +11494,10 @@ function drawUnit(name, im, x, y, face, o) {
   let ox = 0, oy = -o.fly, ghost = 0, glowK = 0;
   if (rig.wings && o.wings != null) {
     P.flap = pose(FLAP, o.wings * 14 / TAU, Q).f; oy -= P.flap * 2.5;
+  } else if (CHEER_POSE && o.atk === CHEER_ATK) { // zafer kutlaması: silahlı kol havada, gövde dik ve hafif gerili; hep birlikte coşku itişi
+    const c = CHEER_POSE.c, pu = CHEER_POSE.p, sh = Math.sin(time * 9 + CHEER_POSE.seed * 1.7) * 0.05 * pu;
+    P.rot = -0.05 * c + sh * 0.3; P.sy = 1 + 0.035 * c + 0.02 * pu; P.sx = 1 - 0.015 * c; P.bodyDy = -0.025 * h * pu;
+    P.arm = -(2.05 + 0.45 * pu) * c + sh; P.arm2 = -0.35 * c; P.bend = -0.025 * c;
   } else if (o.atk != null && o.atk > -ATK_PREP && o.atk < ATK_AFTER) {
     // 12 pozlu saldırı (ATK_POSE): sezdirme → kurulma → gerilim → savuruş → darbe → sekme → devam → toparlanma
     const u = h / 24, t = o.atk, A = pose(ATK_POSE, t, Q); // öne atılma mesafesi birim boyuyla orantılı
@@ -11541,7 +11549,9 @@ function drawUnit(name, im, x, y, face, o) {
   const atkKey = atkOn && ((o.atkVar && animStrip(name, o.rig, ['_atk', '_atk2', '_atk3'][o.atkVar % 3])) || animStrip(name, o.rig, '_atk'));
   // özel saldırı / büyü anı: <ad>_skill şeridi (yoksa saldırı şeridi) baştan sona bir kez oynar
   const skillKey = o.skill != null && ((o.skillSuf && animStrip(name, o.rig, o.skillSuf)) || animStrip(name, o.rig, '_skill') || animStrip(name, o.rig, '_atk')); // skillSuf: Veo şeridi (_dash, _guard) varsa o
-  if (skillKey) { fName = skillKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.skill * ANIM_META[fName].n)); }
+  const chB = CHEER_POSE && o.atk === CHEER_ATK && animStrip(name, o.rig, '_atk'), chM = chB && ANIM_META[chB].cheer, chK = chM && animStrip(name, o.rig, chM[0]);
+  if (chK) { fName = chK; fi = Math.max(0, Math.round(chM[1] * CHEER_POSE.c) - (CHEER_POSE.p > 0.55 ? 1 : 0)); } // 16 Eki: kutlama: şeridin kılıç-havada karesine kalkar, orada tutar (varliklar/kutlama_kare.py)
+  else if (skillKey) { fName = skillKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.skill * ANIM_META[fName].n)); }
   else if (atkKey) {
     fName = atkKey;
     const T = ANIM_META[fName].n === 8 ? ATK_FRAME_T : null;
@@ -19522,14 +19532,14 @@ function drawVault(k, cx, y) {
 // "gerçek asker gibi ağır kutlasın, ellerini kaldırıp iskeletçe savaş narası atsın, 3 sn sürsün". Askerler silahını ağır ağır kaldırır (saldırı pozunun
 // kurulma anı), hep birlikte (aynı tempoda) iki kez göğe kaldırıp narayı basar; zıplama yok. Kuledeki okçular yayını kaldırır, komutan zafer pozunu oynar.
 const CELEB = { dur: 3, rise: 0.55, cry: 0.45, pump: 1.25 }; // rise: kaldırış süresi, cry: naranın başladığı an, pump: birlikte kaldırma aralığı
-let CHEER_ATK = null;
+let CHEER_ATK = null, CHEER_POSE = null;
 function celebStart() { // true: kutlama sürüyor (zafer paneli bekler)
   if (G.celebT0 == null) {
     G.celebT0 = G.t; G.celebTime = time; G.cryT = G.t + CELEB.cry;
     for (const h of G.heroes) { const F = !h.dead && ANIM_META[h.def.sprite + '_lvlup']; if (F) h.lvlA = h.lvlD = F.dur || F.n / 24; } // komutanın zafer pozu (Veo _lvlup)
     return true;
   }
-  if (G.cryT && G.t >= G.cryT) { G.cryT = 0; sfx('skelwarcry'); shakeScreen(2.5, 0.4); }
+  if (G.cryT && G.t >= G.cryT) { G.cryT = 0; sfx('skelcrowd'); shakeScreen(1.5, 0.3); }
   return G.t - G.celebT0 < CELEB.dur;
 }
 const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / CELEB.rise, 0, 1) : 0);
