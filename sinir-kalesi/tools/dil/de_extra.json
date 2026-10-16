@@ -435,7 +435,46 @@
   "5. bölümden sonra hiç büyü yapmadan kazan": "Gewinne nach Level 5 ohne einen Zauber",
   "Kristal Avcısı": "Kristalljäger",
   "Bütün kademeler tamam": "Alle Stufen abgeschlossen",
-  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Je mehr Türme einer Art, desto teurer jeder neue"
+  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Je mehr Türme einer Art, desto teurer jeder neue",
+  "YÜKSELT": "AUFWERTEN",
+  "EN ÜST": "MAX",
+  "ALINDI": "GEKAUFT",
+  "UZMANLIK": "SPEZIALISIERUNG",
+  "HAZIR": "BEREIT",
+  "Kuleyi sat": "Turm verkaufen",
+  "Diğer yol kapanır · +%20 güç": "Der andere Pfad schließt sich · +20% Kraft",
+  "Haritada hedefe dokun": "Tippe auf ein Ziel auf der Karte",
+  "Zırh": "Rüstung",
+  "Büyü dir.": "Magieres.",
+  "Yavaş": "Langsam",
+  "Orta": "Mittel",
+  "Hızlı": "Schnell",
+  "Çok hızlı": "Sehr schnell",
+  "Uçar": "Fliegt",
+  "BOSS": "BOSS",
+  "Kara ve havayı vurur": "Trifft Boden und Luft",
+  "2. kademede okçu ya da arbaletçi yolu": "Ab Stufe 2: Bogen- oder Armbrustpfad",
+  "İskelet savaşçılar yolu keser": "Skelettkrieger blockieren den Weg",
+  "Zırhı deler": "Durchdringt Rüstung",
+  "Yavaşlatır": "Verlangsamt",
+  "Ruh toplar, büyüler çabuk dolar": "Sammelt Seelen, Zauber laden schneller",
+  "Alan hasarı": "Flächenschaden",
+  "Zehir ve yavaşlatma": "Gift und Verlangsamung",
+  "Zırhı çürütür": "Zersetzt Rüstung",
+  "Haritada tek kurulur": "Nur einer pro Karte",
+  "Düşmanı lanetler, korkutur": "Verflucht und erschreckt Feinde",
+  "İskeletleri güçlendirir": "Stärkt Skelette",
+  "Bir eşyaya dokun, sonra komutandaki yuvaya dokun": "Tippe auf einen Gegenstand, dann auf einen Platz am Kommandanten",
+  "Komutanı açınca geliştirilir": "Schalte den Kommandanten frei, um aufzuwerten",
+  "Puan yok": "Keine Punkte",
+  "Kilitli": "Gesperrt",
+  "ÇANTA": "TASCHE",
+  "SIFIRLA": "ZURÜCKSETZEN",
+  "Savaşa bir komutan götürürsün · ayrıntı için karta dokun": "Du nimmst einen Kommandanten mit in die Schlacht · tippe auf eine Karte für Details",
+  "Davetsiz Misafirler": "Ungebetene Gäste",
+  "Cadı Avı": "Hexenjagd",
+  "Bayrak: devi gönder": "Flagge: Riesen schicken",
+  "Ok: yükselt": "Pfeil: aufwerten"
  },
  "tpl": [
   [
@@ -749,6 +788,30 @@
   [
    "Bosslardan toplam {} kristal topla",
    "Sammle insgesamt {} Kristalle von Bossen"
+  ],
+  [
+   "{} okçu",
+   "{} Bogenschützen"
+  ],
+  [
+   "Bu eşya {} yuvasına takılır",
+   "Dieser Gegenstand gehört in den Platz {}"
+  ],
+  [
+   "Bölüm {}–{}",
+   "Level {}–{}"
+  ],
+  [
+   "{} puan",
+   "{} Punkte"
+  ],
+  [
+   "{} yeni eşya",
+   "{} neue Gegenstände"
+  ],
+  [
+   "{} PUAN",
+   "{} PKT"
   ]
  ]
 }

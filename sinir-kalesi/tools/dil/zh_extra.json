@@ -206,7 +206,7 @@
   "+%15 dayanıklı · +0,75 sn": "耐久+15% · +0.75秒",
   "+%40 dayanıklı · +2 sn": "耐久+40% · +2秒",
   "Kemik Hisarı": "白骨城堡",
-  "Okçu yok": "没有弓箭手",
+  "Okçu yok": "无弓手",
   "Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "莫蒂默在喝茶。升级：城门出现白骨巨人，阳台出现骷髅弓箭手",
   "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "白骨巨人守卫城门（阻挡3名敌人，30秒后复活）；阳台上1名骷髅弓箭手",
   "Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "巨人变大：阻挡4名敌人，捶地眩晕，15秒后复活；阳台上2名骷髅弓箭手",
@@ -435,7 +435,46 @@
   "5. bölümden sonra hiç büyü yapmadan kazan": "第5关之后不施法获胜",
   "Kristal Avcısı": "水晶猎人",
   "Bütün kademeler tamam": "所有等级已完成",
-  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "同类塔越多，每座新塔越贵"
+  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "同类塔越多，每座新塔越贵",
+  "YÜKSELT": "升级",
+  "EN ÜST": "最高",
+  "ALINDI": "已购买",
+  "UZMANLIK": "专精",
+  "HAZIR": "就绪",
+  "Kuleyi sat": "出售防御塔",
+  "Diğer yol kapanır · +%20 güç": "另一条路线关闭 · 力量+20%",
+  "Haritada hedefe dokun": "点击地图上的目标",
+  "Zırh": "护甲",
+  "Büyü dir.": "魔抗",
+  "Yavaş": "慢",
+  "Orta": "中",
+  "Hızlı": "快",
+  "Çok hızlı": "很快",
+  "Uçar": "飞行",
+  "BOSS": "首领",
+  "Kara ve havayı vurur": "可攻击地面和空中",
+  "2. kademede okçu ya da arbaletçi yolu": "2级时选择弓手或弩手路线",
+  "İskelet savaşçılar yolu keser": "骷髅战士阻挡道路",
+  "Zırhı deler": "穿透护甲",
+  "Yavaşlatır": "减速",
+  "Ruh toplar, büyüler çabuk dolar": "收集灵魂，法术更快充能",
+  "Alan hasarı": "范围伤害",
+  "Zehir ve yavaşlatma": "中毒与减速",
+  "Zırhı çürütür": "腐蚀护甲",
+  "Haritada tek kurulur": "每张地图仅限一座",
+  "Düşmanı lanetler, korkutur": "诅咒并恐吓敌人",
+  "İskeletleri güçlendirir": "强化骷髅",
+  "Bir eşyaya dokun, sonra komutandaki yuvaya dokun": "点击物品，再点击指挥官的槽位",
+  "Komutanı açınca geliştirilir": "解锁指挥官后可升级",
+  "Puan yok": "无点数",
+  "Kilitli": "已锁定",
+  "ÇANTA": "背包",
+  "SIFIRLA": "重置",
+  "Savaşa bir komutan götürürsün · ayrıntı için karta dokun": "你可带一名指挥官出战 · 点击卡片查看详情",
+  "Davetsiz Misafirler": "不速之客",
+  "Cadı Avı": "猎巫",
+  "Bayrak: devi gönder": "旗帜：派出巨人",
+  "Ok: yükselt": "箭头：升级"
  },
  "tpl": [
   [
@@ -749,6 +788,30 @@
   [
    "Bosslardan toplam {} kristal topla",
    "从首领身上累计收集{}颗水晶"
+  ],
+  [
+   "{} okçu",
+   "{} 名弓手"
+  ],
+  [
+   "Bu eşya {} yuvasına takılır",
+   "此物品装备在{}槽位"
+  ],
+  [
+   "Bölüm {}–{}",
+   "关卡 {}–{}"
+  ],
+  [
+   "{} puan",
+   "{} 点"
+  ],
+  [
+   "{} yeni eşya",
+   "{} 件新物品"
+  ],
+  [
+   "{} PUAN",
+   "{} 点"
   ]
  ]
 }

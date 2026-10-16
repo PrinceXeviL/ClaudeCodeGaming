@@ -206,7 +206,7 @@
   "+%15 dayanıklı · +0,75 sn": "+15 % plus résistant · +0,75 s",
   "+%40 dayanıklı · +2 sn": "+40 % plus résistant · +2 s",
   "Kemik Hisarı": "Citadelle d'Os",
-  "Okçu yok": "Pas d'archers",
+  "Okçu yok": "Aucun archer",
   "Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer boit son thé. Amélioration : Géant d'Os à la porte, archer squelette au balcon",
   "Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn'de kalkar); balkonda 1 iskelet okçu": "Un Géant d'Os garde la porte (bloque 3 ennemis, se relève en 30 s) ; 1 archer squelette au balcon",
   "Dev büyür: 4 düşmanı durdurur, yeri döverek sersemletir, 15 sn'de kalkar; balkonda 2 iskelet okçu": "Le géant grandit : bloque 4 ennemis, étourdit en frappant le sol, se relève en 15 s ; 2 archers squelettes au balcon",
@@ -435,7 +435,46 @@
   "5. bölümden sonra hiç büyü yapmadan kazan": "Gagne après le niveau 5 sans lancer de sort",
   "Kristal Avcısı": "Chasseur de Cristaux",
   "Bütün kademeler tamam": "Tous les paliers terminés",
-  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Plus il y a de tours du même type, plus chaque nouvelle coûte cher"
+  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Plus il y a de tours du même type, plus chaque nouvelle coûte cher",
+  "YÜKSELT": "AMÉLIORER",
+  "EN ÜST": "MAX",
+  "ALINDI": "ACQUIS",
+  "UZMANLIK": "SPÉCIALITÉ",
+  "HAZIR": "PRÊT",
+  "Kuleyi sat": "Vendre la tour",
+  "Diğer yol kapanır · +%20 güç": "L'autre voie se ferme · +20% de puissance",
+  "Haritada hedefe dokun": "Touchez une cible sur la carte",
+  "Zırh": "Armure",
+  "Büyü dir.": "Rés. magique",
+  "Yavaş": "Lent",
+  "Orta": "Moyen",
+  "Hızlı": "Rapide",
+  "Çok hızlı": "Très rapide",
+  "Uçar": "Vole",
+  "BOSS": "BOSS",
+  "Kara ve havayı vurur": "Frappe sol et air",
+  "2. kademede okçu ya da arbaletçi yolu": "Au rang 2 : voie archers ou arbalétriers",
+  "İskelet savaşçılar yolu keser": "Des guerriers squelettes bloquent la route",
+  "Zırhı deler": "Perce l'armure",
+  "Yavaşlatır": "Ralentit",
+  "Ruh toplar, büyüler çabuk dolar": "Récolte des âmes, sorts rechargés plus vite",
+  "Alan hasarı": "Dégâts de zone",
+  "Zehir ve yavaşlatma": "Poison et ralentissement",
+  "Zırhı çürütür": "Pourrit l'armure",
+  "Haritada tek kurulur": "Une seule par carte",
+  "Düşmanı lanetler, korkutur": "Maudit et effraie les ennemis",
+  "İskeletleri güçlendirir": "Renforce les squelettes",
+  "Bir eşyaya dokun, sonra komutandaki yuvaya dokun": "Touchez un objet, puis un emplacement du commandant",
+  "Komutanı açınca geliştirilir": "Débloquez le commandant pour améliorer",
+  "Puan yok": "Aucun point",
+  "Kilitli": "Verrouillé",
+  "ÇANTA": "SAC",
+  "SIFIRLA": "RÉINIT.",
+  "Savaşa bir komutan götürürsün · ayrıntı için karta dokun": "Vous emmenez un commandant au combat · touchez une carte pour les détails",
+  "Davetsiz Misafirler": "Invités surprise",
+  "Cadı Avı": "Chasse aux sorcières",
+  "Bayrak: devi gönder": "Drapeau : envoyer le géant",
+  "Ok: yükselt": "Flèche : améliorer"
  },
  "tpl": [
   [
@@ -749,6 +788,30 @@
   [
    "Bosslardan toplam {} kristal topla",
    "Récolte {} cristaux sur les boss au total"
+  ],
+  [
+   "{} okçu",
+   "{} archers"
+  ],
+  [
+   "Bu eşya {} yuvasına takılır",
+   "Cet objet va dans l'emplacement {}"
+  ],
+  [
+   "Bölüm {}–{}",
+   "Niveaux {}–{}"
+  ],
+  [
+   "{} puan",
+   "{} points"
+  ],
+  [
+   "{} yeni eşya",
+   "{} nouveaux objets"
+  ],
+  [
+   "{} PUAN",
+   "{} PTS"
   ]
  ]
 }

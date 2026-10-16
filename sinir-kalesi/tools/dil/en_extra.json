@@ -627,7 +627,46 @@
   "5. bölümden sonra hiç büyü yapmadan kazan": "Win after level 5 without casting a spell",
   "Kristal Avcısı": "Crystal Hunter",
   "Bütün kademeler tamam": "All tiers complete",
-  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "The more towers of one kind, the pricier each new one"
+  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "The more towers of one kind, the pricier each new one",
+  "YÜKSELT": "UPGRADE",
+  "EN ÜST": "MAX",
+  "ALINDI": "OWNED",
+  "UZMANLIK": "SPECIALTY",
+  "HAZIR": "READY",
+  "Kuleyi sat": "Sell tower",
+  "Diğer yol kapanır · +%20 güç": "The other path closes · +20% power",
+  "Haritada hedefe dokun": "Tap a target on the map",
+  "Zırh": "Armor",
+  "Büyü dir.": "Magic res.",
+  "Yavaş": "Slow",
+  "Orta": "Medium",
+  "Hızlı": "Fast",
+  "Çok hızlı": "Very fast",
+  "Uçar": "Flies",
+  "BOSS": "BOSS",
+  "Kara ve havayı vurur": "Hits ground and air",
+  "2. kademede okçu ya da arbaletçi yolu": "At tier 2: archer or crossbow path",
+  "İskelet savaşçılar yolu keser": "Skeleton warriors block the road",
+  "Zırhı deler": "Pierces armor",
+  "Yavaşlatır": "Slows",
+  "Ruh toplar, büyüler çabuk dolar": "Gathers souls, spells recharge faster",
+  "Alan hasarı": "Area damage",
+  "Zehir ve yavaşlatma": "Poison and slow",
+  "Zırhı çürütür": "Rots armor",
+  "Haritada tek kurulur": "Only one per map",
+  "Düşmanı lanetler, korkutur": "Curses and frightens enemies",
+  "İskeletleri güçlendirir": "Empowers skeletons",
+  "Bir eşyaya dokun, sonra komutandaki yuvaya dokun": "Tap an item, then a slot on the commander",
+  "Komutanı açınca geliştirilir": "Unlock the commander to upgrade",
+  "Puan yok": "No points",
+  "Kilitli": "Locked",
+  "ÇANTA": "BAG",
+  "SIFIRLA": "RESET",
+  "Savaşa bir komutan götürürsün · ayrıntı için karta dokun": "You take one commander into battle · tap a card for details",
+  "Davetsiz Misafirler": "Uninvited Guests",
+  "Cadı Avı": "Witch Hunt",
+  "Bayrak: devi gönder": "Flag: send the giant",
+  "Ok: yükselt": "Arrow: upgrade"
  },
  "tpl": [
   [
@@ -1249,6 +1288,22 @@
   [
    "Bosslardan toplam {} kristal topla",
    "Collect {} crystals from bosses in total"
+  ],
+  [
+   "{} okçu",
+   "{} archers"
+  ],
+  [
+   "Bu eşya {} yuvasına takılır",
+   "This item goes in the {} slot"
+  ],
+  [
+   "Bölüm {}–{}",
+   "Levels {}–{}"
+  ],
+  [
+   "{} yeni eşya",
+   "{} new items"
   ]
  ]
 }

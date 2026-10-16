@@ -435,7 +435,46 @@
   "5. bölümden sonra hiç büyü yapmadan kazan": "Выиграй после 5-го уровня без единого заклинания",
   "Kristal Avcısı": "Охотник за кристаллами",
   "Bütün kademeler tamam": "Все ступени пройдены",
-  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Чем больше башен одного типа, тем дороже каждая новая"
+  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Чем больше башен одного типа, тем дороже каждая новая",
+  "YÜKSELT": "УЛУЧШИТЬ",
+  "EN ÜST": "МАКС",
+  "ALINDI": "КУПЛЕНО",
+  "UZMANLIK": "СПЕЦИАЛИЗАЦИЯ",
+  "HAZIR": "ГОТОВО",
+  "Kuleyi sat": "Продать башню",
+  "Diğer yol kapanır · +%20 güç": "Другой путь закроется · +20% силы",
+  "Haritada hedefe dokun": "Коснитесь цели на карте",
+  "Zırh": "Броня",
+  "Büyü dir.": "Сопр. магии",
+  "Yavaş": "Медленно",
+  "Orta": "Средне",
+  "Hızlı": "Быстро",
+  "Çok hızlı": "Очень быстро",
+  "Uçar": "Летает",
+  "BOSS": "БОСС",
+  "Kara ve havayı vurur": "Бьёт по земле и воздуху",
+  "2. kademede okçu ya da arbaletçi yolu": "На 2-м уровне: путь лучников или арбалетчиков",
+  "İskelet savaşçılar yolu keser": "Скелеты-воины перекрывают дорогу",
+  "Zırhı deler": "Пробивает броню",
+  "Yavaşlatır": "Замедляет",
+  "Ruh toplar, büyüler çabuk dolar": "Собирает души, заклинания быстрее",
+  "Alan hasarı": "Урон по области",
+  "Zehir ve yavaşlatma": "Яд и замедление",
+  "Zırhı çürütür": "Разъедает броню",
+  "Haritada tek kurulur": "Только одна на карте",
+  "Düşmanı lanetler, korkutur": "Проклинает и пугает врагов",
+  "İskeletleri güçlendirir": "Усиливает скелетов",
+  "Bir eşyaya dokun, sonra komutandaki yuvaya dokun": "Коснитесь предмета, затем ячейки командира",
+  "Komutanı açınca geliştirilir": "Откройте командира для улучшения",
+  "Puan yok": "Нет очков",
+  "Kilitli": "Закрыто",
+  "ÇANTA": "СУМКА",
+  "SIFIRLA": "СБРОС",
+  "Savaşa bir komutan götürürsün · ayrıntı için karta dokun": "В бой идёт один командир · коснитесь карты для подробностей",
+  "Davetsiz Misafirler": "Незваные гости",
+  "Cadı Avı": "Охота на ведьм",
+  "Bayrak: devi gönder": "Флаг: отправить гиганта",
+  "Ok: yükselt": "Стрелка: улучшить"
  },
  "tpl": [
   [
@@ -749,6 +788,30 @@
   [
    "Bosslardan toplam {} kristal topla",
    "Собери всего {} кристаллов с боссов"
+  ],
+  [
+   "{} okçu",
+   "{} лучника"
+  ],
+  [
+   "Bu eşya {} yuvasına takılır",
+   "Этот предмет ставится в ячейку {}"
+  ],
+  [
+   "Bölüm {}–{}",
+   "Уровни {}–{}"
+  ],
+  [
+   "{} puan",
+   "{} очков"
+  ],
+  [
+   "{} yeni eşya",
+   "{} новых предметов"
+  ],
+  [
+   "{} PUAN",
+   "{} ОЧК"
   ]
  ]
 }

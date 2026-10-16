@@ -5674,6 +5674,7 @@ const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
 const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, slot = i >= n ? i - n : nu + i, gap = i < n && nu ? ULT_GAP : 0;
   return { x: EDGE.l + 18 + 2 * HERO_R + 22 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
+const hudRight = () => itemBag().x - SPELL_R - 10; // 16 Eki: alt bilgi kartları sağdaki çanta düğmesine binmesin
 const hudLeft = () => (spellIds().length ? Math.max(...spellIds().map((_, i) => spellBtn(i).x)) + SPELL_R + 8 : G && G.heroes.length ? HUD.heroes[0].x + HUD.heroes[0].r + 16 : EDGE.l + 18);
 // dokunulan büyü düğmesi: geniş dokunma alanları komşuyla kesişirse en yakın düğme kazanır
 // 14 Eki (Caner: "diriltilen düşmanları topluca yönlendirelim; bir tuşa tıklayıp gideceği yeri göstereyim"): diriltme düğmesinin üstünde emir düğmesi
@@ -12304,48 +12305,68 @@ function drawEnemyRing() {
   ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, Math.max(12, eh * 0.45), Math.max(5, eh * 0.18), 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
 }
 function drawEnemyPanel() {
+  // 16 Eki (Caner: "kısa, basit, simgeli, profesyonel"): portre + ad + rütbe/sınıf etiketi, can çubuğu, simgeli değerler,
+  // zayıflık (yeşil ▲) ve direnç (mavi ▼) hasar türü simgesiyle, en çok 2 satır açıklama. Yazılar ≥ 13 px.
   const e = G.sel && G.sel.kind === 'enemy' && G.sel.enemy;
   if (!e) return;
   if (e.dead || e.siege !== undefined) { G.sel = null; return; }
   G.enemyPanelR = null;
   if (infoText()) return; // büyü/kule açıklaması aynı alt şeridi kullanır: o açıkken kart çekilir
-  const d = e.def, dl = wrapLines(enemyDesc(e.type, d.desc || ENEMY_DESC[e.type]), ENEMY_PANEL.w - 82, 9.5, '700', FONT_B, 4);
-  // zayıflık / direnç etiketleri: ikisi bir satıra sığmazsa direnç alt satıra iner
-  const wk = d.wk || {}, cls = NECRO && ARMOR_CLASS[d.acl] ? ARMOR_CLASS[d.acl].name + ' · ' : '', tagS = [[cls + 'Zayıf:', Object.keys(wk).filter(q => wk[q] > 1)], ['Dirençli:', Object.keys(wk).filter(q => wk[q] < 1)]]
-    .map(([label, list]) => label + ' ' + (list.length ? list.map(q => `${WK_NAME[q]} ${wk[q] > 1 ? '+' : '−'}%${Math.round(Math.abs(wk[q] - 1) * 100)}`).join(', ') : 'yok'));
-  ctx.font = `800 9.5px ${FONT_B}`; const tagW = tagS.map(t => ctx.measureText(t).width + 12);
-  const tagRows = tagW[0] + 5 + tagW[1] <= ENEMY_PANEL.w - 82 ? 1 : 2, ex = Math.max(0, dl.length - 1) * 11 + (tagRows - 1) * 18;
-  const P = { x: clamp(W / 2 - ENEMY_PANEL.w / 2, hudLeft(), W - ENEMY_PANEL.w - 10), y: ENEMY_PANEL.y - ex, w: ENEMY_PANEL.w, h: ENEMY_PANEL.h + ex }; G.enemyPanelR = P; const k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
-  const eh = CHAR_H['enemy_' + e.type] || 26, fy = d.flying ? 26 : 0;
+  const d = e.def, w = Math.min(420, hudRight() - hudLeft()), x0c = 84, cw = w - x0c - 16;
+  const dl = wrapLines(enemyDesc(e.type, d.desc || ENEMY_DESC[e.type]), cw, 13, '700', FONT_B, 2);
+  const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
+  const SPD = d.speed < 18 ? 'Yavaş' : d.speed < 30 ? 'Orta' : d.speed < 45 ? 'Hızlı' : 'Çok hızlı';
+  const st = [['shield', `%${Math.round(d.armor * 100)}`, 'Zırh'], ['magic', `%${Math.round(d.mr * 100)}`, 'Büyü dir.'], ['boot', SPD, null], ['heart', `-${d.lives}`, null]];
+  if (d.flying) st.push(['wing', 'Uçar', null]);
+  const wkRow = weak.map(q => [q, 1]).concat(res.map(q => [q, -1]));
+  const ph = 100 + (wkRow.length ? 28 : 0) + dl.length * 17 + 6;
+  const P = { x: clamp(W / 2 - w / 2, hudLeft(), hudRight() - w), y: EDGE.b - 8 - ph, w, h: ph }; G.enemyPanelR = P;
+  const k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
   ctx.save(); ctx.translate(P.x + P.w / 2, P.y + P.h / 2); ctx.scale(k, k); ctx.translate(-(P.x + P.w / 2), -(P.y + P.h / 2));
-  roundRect(P.x + 2, P.y + 4, P.w, P.h, 14, 'rgba(0,0,0,0.3)');
+  roundRect(P.x + 3, P.y + 6, P.w, P.h, 16, 'rgba(0,0,0,0.38)');
   const g = ctx.createLinearGradient(0, P.y, 0, P.y + P.h);
-  g.addColorStop(0, d.chief ? 'rgba(90,24,16,0.95)' : 'rgba(58,40,24,0.95)'); g.addColorStop(1, 'rgba(22,12,6,0.95)');
-  roundRect(P.x, P.y, P.w, P.h, 14, g, d.chief ? '#ff7a5a' : '#d4ab5a', 1.6);
+  g.addColorStop(0, d.chief ? 'rgba(100,20,18,0.97)' : 'rgba(76,15,36,0.97)'); g.addColorStop(0.6, 'rgba(51,16,46,0.97)'); g.addColorStop(1, 'rgba(30,11,38,0.97)');
+  roundRect(P.x, P.y, P.w, P.h, 16, g, d.chief ? '#ff7a5a' : '#d4ab5a', 2); roundRect(P.x + 4, P.y + 4, P.w - 8, P.h - 8, 12, null, 'rgba(201,168,101,0.28)', 1);
   // portre
-  const cx = P.x + 36, cy = P.y + P.h / 2;
-  circle(cx, cy, 27, '#1a120a', d.chief ? '#ff7a5a' : '#c9a35a', 2);
+  const pcx = P.x + 44, pcy = P.y + 52;
+  circle(pcx, pcy, 32, '#1a0e14', d.chief ? '#ff7a5a' : '#c9a35a', 2.4);
   const im = enemySprite(e.type) || spr('enemy_' + e.type);
-  if (im) { ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, 25.5, 0, Math.PI * 2); ctx.clip(); const ih = d.chief ? 64 : 48; drawSprite(ctx, im, cx, cy + ih * 0.55, ih * im.width / im.height); ctx.restore(); }
-  const x0 = P.x + 72;
-  txt(d.name, x0, P.y + 15, 15, '#fff', 'left', '400', FONT_T);
-  if (d.chief || d.boss) { ctx.font = `400 15px ${FONT_T}`; const nw = ctx.measureText(d.name).width; roundRect(x0 + nw + 6, P.y + 8, 34, 14, 7, '#c8392c'); txt('BOSS', x0 + nw + 23, P.y + 15.5, 9, '#fff', 'center', '800', FONT_B, false); }
-  // can barı
-  const fr = clamp(e.hp / e.maxHp, 0, 1), bw = P.w - 84;
-  roundRect(x0, P.y + 24, bw, 9, 4.5, 'rgba(0,0,0,0.5)');
-  if (fr > 0) roundRect(x0, P.y + 24, Math.max(9, bw * fr), 9, 4.5, fr > 0.5 ? '#5bd35b' : fr > 0.25 ? '#f2c230' : '#ef4a3a');
-  txt(`${Math.ceil(e.hp)} / ${Math.round(e.maxHp)}`, x0 + bw / 2, P.y + 29, 8.5, '#fff', 'center', '800', FONT_B, false);
+  if (im) { ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, 30, 0, Math.PI * 2); ctx.clip(); const ih = d.chief ? 76 : 58; drawSprite(ctx, im, pcx, pcy + ih * 0.55, ih * im.width / im.height); ctx.restore(); }
+  const x0 = P.x + x0c;
+  // ad + etiket (boss / rütbe / zırh sınıfı)
+  const lab = d.chief || d.boss ? ['BOSS', '#c8392c', '#ffd0c8'] : d.rank && RANKS[d.rank] ? [RANKS[d.rank].name.toLocaleUpperCase('tr'), 'rgba(232,187,74,0.22)', '#ffd98a'] : NECRO && ARMOR_CLASS[d.acl] ? [ARMOR_CLASS[d.acl].name, 'rgba(0,0,0,0.35)', '#d8c8b0'] : null;
+  ctx.font = `800 13px ${FONT_B}`; const lw = lab ? ctx.measureText(TR(lab[0])).width + 18 : 0;
+  const nw = fitTxt(d.name, x0, P.y + 21, cw - (lw ? lw + 8 : 0), 18, '#fff', 'left', '400', FONT_T, false, 12);
+  if (lab) { ctx.font = `400 18px ${FONT_T}`; const tw = Math.min(ctx.measureText(TR(d.name)).width, cw - lw - 8), lx = x0 + tw + 8; roundRect(lx, P.y + 10, lw, 22, 11, lab[1], 'rgba(255,255,255,0.25)', 1); txt(lab[0], lx + lw / 2, P.y + 22, 13, lab[2], 'center', '800', FONT_B, false); }
+  // can çubuğu
+  const fr = clamp(e.hp / e.maxHp, 0, 1);
+  roundRect(x0, P.y + 36, cw, 16, 8, 'rgba(0,0,0,0.55)', 'rgba(255,255,255,0.12)', 1);
+  if (fr > 0) roundRect(x0 + 1, P.y + 37, Math.max(14, (cw - 2) * fr), 14, 7, fr > 0.5 ? '#4fc24f' : fr > 0.25 ? '#e8b82a' : '#e0453a');
+  txt(`${Math.min(Math.ceil(e.hp), Math.ceil(e.maxHp))} / ${Math.ceil(e.maxHp)}`, x0 + cw / 2, P.y + 44.5, 12.5, '#fff', 'center', '800', FONT_B, true);
   // değerler
-  const st = [`Zırh %${Math.round(d.armor * 100)}`, `Büyü dir. %${Math.round(d.mr * 100)}`, `Hız ${d.speed}`, `Can kaybı ${d.lives}`];
-  if (d.flying) st.push('Uçar');
-  txt(st.join(' · '), x0, P.y + 44, 9.5, '#f0e2c4', 'left', '700', FONT_B, false);
-  [['#ffd08a', 'rgba(150,60,10,0.6)'], ['#a8d8ff', 'rgba(20,60,120,0.6)']].forEach(([col, bg], i) => {
-    const tx = i && tagRows === 1 ? x0 + tagW[0] + 5 : x0, ty = P.y + 52 + (i && tagRows === 2 ? 18 : 0);
-    roundRect(tx, ty, tagW[i], 15, 7.5, bg, col, 1);
-    txt(tagS[i], tx + tagW[i] / 2, ty + 8, 9.5, col, 'center', '800', FONT_B, false);
+  ctx.font = `800 14px ${FONT_B}`; let cx = x0; const cy = P.y + 70;
+  st.forEach(([gl, v, lb]) => {
+    const t = lb ? `${TR(lb)} ${v}` : v, ww = 28 + ctx.measureText(TR(t)).width;
+    roundRect(cx, cy - 11, ww, 22, 11, 'rgba(0,0,0,0.38)', 'rgba(212,171,90,0.45)', 1.2);
+    ctx.save(); ctx.translate(cx + 13, cy); ctx.scale(1.25, 1.25); statGlyph(gl, 0, 0); ctx.restore();
+    txt(t, cx + 24, cy + 1, 14, '#f8eed8', 'left', '800', FONT_B, false); cx += ww + 6; ctx.font = `800 14px ${FONT_B}`;
   });
-  const dy = P.y + 79 + (tagRows - 1) * 18;
-  dl.forEach((l, i) => txt(l, x0, dy + i * 11, 9.5, '#cdbb98', 'left', '700', FONT_B, false));
+  // zayıflık / direnç: hasar türü simgesi + oran
+  let ry = P.y + 98;
+  if (wkRow.length) {
+    let wx = x0; ctx.font = `800 14px ${FONT_B}`;
+    wkRow.forEach(([q, sgn]) => {
+      const t = `${TR(WK_NAME[q])} ${sgn > 0 ? '+' : '−'}%${Math.round(Math.abs(wk[q] - 1) * 100)}`, ww = 44 + ctx.measureText(t).width;
+      if (wx + ww > x0 + cw + 2) return;
+      const col = sgn > 0 ? '#9fe870' : '#8ac8ff';
+      roundRect(wx, ry - 11, ww, 22, 11, sgn > 0 ? 'rgba(40,90,30,0.55)' : 'rgba(20,50,100,0.55)', col, 1.2);
+      ctx.fillStyle = col; ctx.beginPath(); if (sgn > 0) { ctx.moveTo(wx + 9, ry + 4); ctx.lineTo(wx + 15, ry - 5); ctx.lineTo(wx + 21, ry + 4); } else { ctx.moveTo(wx + 9, ry - 4); ctx.lineTo(wx + 15, ry + 5); ctx.lineTo(wx + 21, ry - 4); } ctx.closePath(); ctx.fill();
+      ctx.save(); ctx.translate(wx + 31, ry); ctx.scale(1.2, 1.2); statGlyph(q === 'arrow' ? 'arrow' : q === 'melee' ? 'sword' : q, 0, 0); ctx.restore();
+      txt(t, wx + 40, ry + 1, 14, col, 'left', '800', FONT_B, false); wx += ww + 6; ctx.font = `800 14px ${FONT_B}`;
+    });
+    ry += 28;
+  }
+  dl.forEach((l, i) => txt(l, x0, ry - 2 + i * 17, 13, '#d8ccb4', 'left', '700', FONT_B, false));
   ctx.restore();
 }
 
@@ -13318,33 +13339,7 @@ function drawHud() {
 
   // bilgi paneli
   const info = infoText();
-  if (info) {
-    // sol alttaki portre ve büyü düğmeleriyle sağ kenar arasına sığar; uzun açıklama satırlara bölünür (ekrandan taşmasın)
-    const left = hudLeft(), maxW = EDGE.r - left - 10, chips = info[2] || null;
-    ctx.font = `700 13px ${FONT_B}`;
-    const lines = info[1] ? wrapLines(info[1], maxW - 30, chips ? 12 : 13, '700', FONT_B, chips ? 2 : 3) : [];
-    let tw = 0; for (const l of lines) tw = Math.max(tw, ctx.measureText(l).width);
-    ctx.font = `400 16px ${FONT_T}`; tw = Math.max(tw, ctx.measureText(info[0]).width);
-    ctx.font = `800 12px ${FONT_B}`; const cw = chips ? chips.map(c => ctx.measureText(String(c[1])).width + 22) : []; const chipsW = cw.reduce((a, b) => a + b + 8, 0);
-    tw = Math.max(tw, chipsW);
-    const w = clamp(tw + 40, 260, maxW), ph = 30 + (chips ? 20 : 0) + lines.length * (chips ? 14 : 16), y0 = H - 10 - ph;
-    const x0 = clamp(W / 2 - w / 2, left, W - w - 10), cxp = x0 + w / 2;
-    roundRect(x0 + 2, y0 + 5, w, ph, 15, 'rgba(0,0,0,0.3)');
-    const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(62,44,26,0.96)'); g.addColorStop(1, 'rgba(24,16,8,0.96)');
-    roundRect(x0, y0, w, ph, 15, g, '#d4ab5a', 2);
-    txt(info[0], cxp, y0 + 16, 16, '#ffd34d', 'center', '400', FONT_T);
-    let ly = y0 + 34;
-    if (chips) { // simgeli değerler: koyu kapsüller içinde, ortalı
-      let cx = cxp - chipsW / 2 + 4;
-      chips.forEach((c, i) => {
-        roundRect(cx, ly - 8, cw[i], 16, 8, 'rgba(0,0,0,0.35)', 'rgba(212,171,90,0.45)', 1);
-        statGlyph(c[0], cx + 9, ly); txt(String(c[1]), cx + 17, ly + 0.5, 12, '#f8eed8', 'left', '800', FONT_B, false);
-        cx += cw[i] + 8;
-      });
-      ly += 19;
-    }
-    lines.forEach((l, i) => txt(l, cxp, ly + i * (chips ? 14 : 16), chips ? 12 : 13, chips ? '#d8ccb4' : '#f2e8d4', 'center', '700', FONT_B, false));
-  }
+  if (info) drawInfoCard(info);
   const hint = G.mode ? (G.mode.kind === 'minions' ? 'Ölüleri' + ' göndereceğin yeri seç (haritanın her yeri)' : G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : G.mode.kind === 'item' ? `${ITEMS[G.mode.id].name}: patlayacağı yeri seç` : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
@@ -13353,6 +13348,65 @@ function drawHud() {
     roundRect(W / 2 - w / 2, 58 + bob, w, 28, 14, 'rgba(24,16,8,0.88)', '#d4ab5a', 1.5);
     txt(hint, W / 2, 73 + bob, 15, '#fff', 'center', '700', FONT_B, false);
   }
+}
+
+
+// ---- alt bilgi kartı (16 Eki, Caner: "daha kısa, basit, anlaşılır; simge kullan, profesyonel"): kadife kart, başlık satırında ad + etiket + fiyat,
+// simgeli değerler (yükseltmede yalnız değişenler: eski → yeni), açıklama en çok 3 kısa madde (uzun cümle " · " ayraçlarından bölünür). Yazılar ≥ 13 px.
+// kurma kartında kulenin kısa tanımı (16 Eki: uzun cümle yerine 2-3 madde)
+const TOWER_SHORT = { archer: 'Kara ve havayı vurur · 2. kademede okçu ya da arbaletçi yolu', barracks: 'İskelet savaşçılar yolu keser', mage: 'Zırhı deler · Yavaşlatır · Ruh toplar, büyüler çabuk dolar',
+  artillery: 'Alan hasarı · Zehir ve yavaşlatma · Zırhı çürütür', altar: 'Haritada tek kurulur · Düşmanı lanetler, korkutur · İskeletleri güçlendirir' };
+function infoParse(info) {
+  let title = TR(info[0]), cost = null, tag = null;
+  const X = info[3] || {};
+  let m = title.match(/^(.*) — (\d+) altın$/); if (m) { title = m[1]; cost = +m[2]; }
+  m = title.match(/^Yükselt → (.*)$/); if (m) { title = m[1]; tag = 'YÜKSELT'; }
+  m = title.match(/^(.*) — Seviye (\d+)( \(son\))?$/); if (m) { title = m[1]; tag = `Sv. ${m[2]}${m[3] ? ' · SON' : ''}`; }
+  m = title.match(/^(.*) — En üst kademe$/); if (m) { title = m[1]; tag = 'EN ÜST'; }
+  m = title.match(/^(.*) \(alındı\)$/); if (m) { title = m[1]; tag = 'ALINDI'; }
+  const segs = (info[1] ? TR(info[1]) : '').split(/ · |; |\. (?=[A-ZÇĞİÖŞÜ])/).map(q => q.trim()).filter(Boolean);
+  const bullets = segs.slice(0, 3).map(q => q[0].toLocaleUpperCase('tr') + q.slice(1));
+  if (X.note) bullets.push(X.note);
+  return { title, cost, tag: X.tag || tag, tagCol: X.tagCol, refund: X.refund, chips: info[2] || null, delta: X.delta && X.delta.length ? X.delta : null, bullets: bullets.slice(0, 3) };
+}
+function drawInfoCard(info) {
+  const I = infoParse(info), left = hudLeft(), maxW = hudRight() - left, TS = 18, CS = 14, BS = 14;
+  ctx.font = `400 ${TS}px ${FONT_T}`; const tW = ctx.measureText(I.title).width;
+  ctx.font = `800 13px ${FONT_B}`; const tagW = I.tag ? ctx.measureText(I.tag).width + 18 : 0;
+  ctx.font = `400 15px ${FONT_T}`; const costW = I.cost != null ? ctx.measureText(String(I.cost)).width + 34 : I.refund != null ? ctx.measureText('+' + I.refund).width + 34 : 0;
+  const headW = tW + (tagW ? tagW + 8 : 0) + (costW ? costW + 10 : 0);
+  ctx.font = `800 ${CS}px ${FONT_B}`;
+  const chips = I.delta ? I.delta.map(([g, a, b]) => ({ g, a: String(a), b: String(b) })) : (I.chips || []).map(c => ({ g: c[0], b: String(c[1]) }));
+  chips.forEach(c => { c.w = 26 + ctx.measureText(c.b).width + (c.a != null ? ctx.measureText(c.a).width + 24 : 0); });
+  const chipsW = chips.reduce((a, c) => a + c.w + 8, chips.length ? -8 : 0);
+  const w = clamp(Math.max(headW, chipsW, 280) + 40, 300, Math.min(maxW, 560)), bw = w - 36;
+  const bl = I.bullets; // her madde tek satır: sığmazsa fitTxt küçültür
+  const ph = 36 + (chips.length ? 26 : 0) + bl.length * 19 + 8, y0 = EDGE.b - 8 - ph, x0 = clamp(W / 2 - w / 2, left, hudRight() - w), cx = x0 + w / 2;
+  roundRect(x0 + 3, y0 + 6, w, ph, 16, 'rgba(0,0,0,0.38)');
+  const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(76,15,36,0.97)'); g.addColorStop(0.6, 'rgba(51,16,46,0.97)'); g.addColorStop(1, 'rgba(30,11,38,0.97)');
+  roundRect(x0, y0, w, ph, 16, g, '#d4ab5a', 2); roundRect(x0 + 4, y0 + 4, w - 8, ph - 8, 12, null, 'rgba(201,168,101,0.28)', 1);
+  // başlık satırı: ad · etiket · fiyat (ortalı grup)
+  let hx = cx - Math.min(headW, bw) / 2; const hy = y0 + 20;
+  const tFit = Math.min(tW, bw - (tagW ? tagW + 8 : 0) - (costW ? costW + 10 : 0));
+  fitTxt(I.title, hx, hy, tFit, TS, '#ffe9b0', 'left', '400', FONT_T, false, 12); hx += tFit;
+  if (tagW) { hx += 8; roundRect(hx, hy - 11, tagW, 22, 11, I.tagCol || 'rgba(232,187,74,0.2)', I.tagCol ? '#b8ff8a' : 'rgba(232,187,74,0.7)', 1.2); txt(I.tag, hx + tagW / 2, hy + 1, 13, I.tagCol ? '#eaffd8' : '#ffd98a', 'center', '800', FONT_B, false); hx += tagW; }
+  if (costW) { hx += 10; const ok = I.refund != null || G.gold >= I.cost; roundRect(hx, hy - 12, costW, 24, 12, 'rgba(10,4,12,0.75)', ok ? '#e8bb4a' : '#d9453a', 1.6); drawIcon('coin', hx + 13, hy, 13);
+    txt(I.refund != null ? '+' + I.refund : String(I.cost), hx + 25, hy + 1, 15, I.refund != null ? '#b8ff8a' : ok ? '#ffe9a0' : '#ff8070', 'left', '400', FONT_T); }
+  let ly = y0 + 46;
+  if (chips.length) { // simgeli değerler (yükseltmede: eski → yeni, yeni yeşil)
+    let x = cx - Math.min(chipsW, bw) / 2;
+    chips.forEach(c => {
+      roundRect(x, ly - 11, c.w, 22, 11, 'rgba(0,0,0,0.38)', c.a != null ? 'rgba(140,255,150,0.55)' : 'rgba(212,171,90,0.45)', 1.2);
+      ctx.save(); ctx.translate(x + 13, ly); ctx.scale(1.25, 1.25); statGlyph(c.g, 0, 0); ctx.restore();
+      let tx = x + 24;
+      if (c.a != null) { txt(c.a, tx, ly + 1, CS, '#c8b8a0', 'left', '800', FONT_B, false); ctx.font = `800 ${CS}px ${FONT_B}`; tx += ctx.measureText(TR(c.a)).width + 6;
+        ctx.fillStyle = '#9fe870'; ctx.beginPath(); ctx.moveTo(tx, ly - 4); ctx.lineTo(tx + 9, ly); ctx.lineTo(tx, ly + 4); ctx.closePath(); ctx.fill(); tx += 16; }
+      txt(c.b, tx, ly + 1, CS, c.a != null ? '#b8ff8a' : '#f8eed8', 'left', '800', FONT_B, false);
+      x += c.w + 8;
+    });
+    ly += 26;
+  }
+  bl.forEach((b, i) => { const y = ly + i * 19 - 2; circle(x0 + 24, y, 2.6, '#c9a865'); fitTxt(b, x0 + 32, y + 1, bw - 14, BS, i === 0 ? '#f2e8d4' : '#d8ccb4', 'left', '700', FONT_B, false, 11); });
 }
 
 // Ekranın üstünde kısa duyuru (yeni yetenek, yetenek bilgisi)
@@ -13402,7 +13456,7 @@ function infoText() {
   const pk = G.spellPeek || (G.mode && G.mode.kind === 'spell' && G.mode.id);
   if (pk) {
     const I = spellInfo(pk), cd = G.spells[pk];
-    return [I.name, `${I.U.short || I.U.desc} · ${cd > 0 ? Math.ceil(cd) + ' sn sonra hazır' : 'Haritada hedefe dokun'}`];
+    return [I.name, `${I.U.short || I.U.desc}`, null, { tag: cd > 0 ? `${Math.ceil(cd)} sn` : 'HAZIR', tagCol: cd > 0 ? null : '#2f7a22', note: cd > 0 ? null : 'Haritada hedefe dokun' }];
   }
   if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'extra') {
     const E = TOWER_EXTRA[G.preview.type], t = G.sel.tower;
@@ -13416,9 +13470,11 @@ function infoText() {
   if (G.sel && G.sel.kind === 'castle') {
     const c = G.castle, L = CASTLE.levels[c.lvl], N = CASTLE.levels[c.lvl + 1];
     if (NECRO) { // kale ağacı: Kara Şapel → Kemik Devi → Kemik Kolos → Kemik Hisarı (dev kapıda, okçular balkonda)
-      const st = (X) => X.archers ? `${X.archers} okçu · Hasar ${X.dmg[0]}-${X.dmg[1]} · Atış ${X.rate}sn` : 'Okçu yok';
-      if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, `${st(N)} · ${N.perk}`];
-      return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${st(L)} · ${N ? 'Ok: yükselt' : L.perk}${c.lvl ? ' · Bayrak: devi gönder' : ''}`];
+      // 16 Eki: değerler simgeli; yükseltmede yalnız değişenler (eski → yeni)
+      const ch = (X) => X.archers ? [['arrow', `${X.archers} okçu`], ['sword', `${X.dmg[0]}-${X.dmg[1]}`], ['clock', RATE_WORD(X.rate)]] : [['arrow', 'Okçu yok']];
+      if (G.preview && G.preview.id === 'upgrade' && N) { const O = ch(L), delta = ch(N).map(q => { const o = O.find(z => z[0] === q[0]); return o && o[1] !== q[1] ? [q[0], o[1], q[1]] : null; }).filter(Boolean);
+        return [`Yükselt → ${N.title} — ${N.cost} altın`, N.perk, delta.length ? null : ch(N), { delta }]; }
+      return [`${L.title} — Seviye ${c.lvl + 1}${N ? '' : ' (son)'}`, `${N ? 'Ok: yükselt' : L.perk}${c.lvl ? ' · Bayrak: devi gönder' : ''}`, ch(L)];
     }
     const st = (X) => `${X.archers} okçu · Hasar ${X.dmg[0]}-${X.dmg[1]} · Menzil ${CASTLE.range} · Atış ${X.rate}sn`;
     if (G.preview && G.preview.id === 'upgrade' && N) return [`Yükselt → ${N.title} — ${N.cost} altın`, `${st(N)} · ${N.perk}`];
@@ -13429,7 +13485,7 @@ function infoText() {
   if (G.preview && G.preview.id === 'build') {
     const T = TOWERS[G.preview.type], L = T.levels[0];
     if (G.preview.blocked) return [T.name, 'Haritada yalnız bir Lanet Kulesi kurulabilir'];
-    return [`${T.name} — ${L.cost} altın`, T.desc || '', towerChips(G.preview.type, L)];
+    return [`${T.name} — ${buildCost(G.preview.type)} altın`, (NECRO && TOWER_SHORT[G.preview.type]) || T.desc || '', towerChips(G.preview.type, L)];
   }
   if (G.sel && G.sel.kind === 'tower') {
     const t = G.sel.tower, PD = t.path && ARCHER_PATH[t.path];
@@ -13445,14 +13501,16 @@ function infoText() {
     if (G.sel.sub === 'imbue') return ['Silah büyüsü seç', `${t.type === 'archer' ? 'Oklar' : 'Kılıçlar'} her vuruşta düşmana bir etki bırakır: alev, zehir ya da buz`];
     if (G.preview && G.preview.id === 'upgrade') {
       const L = t.def.levels[t.lvl + 1];
-      return [`Yükselt → ${towerTitle(t, t.lvl + 1)} — ${L.cost} altın`, `Yeni: ${(PD && PD.perks[t.lvl + 1]) || L.perk}`, towerChips(t.type, PD ? Object.assign({}, L, { rate: L.rate * PD.rate, dmg: L.dmg.map(v => v * PD.dmg) }) : L)];
+      const NC = towerChips(t.type, PD ? Object.assign({}, L, { rate: L.rate * PD.rate, dmg: L.dmg.map(v => v * PD.dmg) }) : L), OC = towerChips(t.type, effLevel(t));
+      const delta = NC.map(c => { const o = OC.find(q => q[0] === c[0]); return o && String(o[1]) !== String(c[1]) ? [c[0], o[1], c[1]] : null; }).filter(Boolean); // 16 Eki: yalnız değişen değerler (eski → yeni)
+      return [`Yükselt → ${towerTitle(t, t.lvl + 1)} — ${upCost(t)} altın`, `${(PD && PD.perks[t.lvl + 1]) || L.perk}`, delta.length ? null : NC, { delta }];
     }
-    if (G.preview && G.preview.id === 'sell') return ['Sat', `${Math.floor(t.spent * SELL_RATIO)} altın geri al`];
+    if (G.preview && G.preview.id === 'sell') return ['Kuleyi sat', '', null, { refund: Math.floor(t.spent * SELL_RATIO) }];
     if (G.preview && G.preview.id === 'ability') {
       const a = G.preview.ab, r = (t.ab && t.ab[a.id]) || 0;
       if (r >= a.ranks.length) return [`${a.name} — En üst kademe`, a.desc(a.ranks[r - 1])];
-      if (!t.spec) return [`${SPEC[a.id].title}: ${a.name} — ${a.ranks[r].cost} altın`, `${a.desc(a.ranks[r])} · ${SPEC[a.id].who} · Uzmanlık +%20 güç verir, diğer yol kapanır`];
-      return [`${a.name} ${r + 1}/${a.ranks.length} — ${a.ranks[r].cost} altın`, a.desc(a.ranks[r])];
+      if (!t.spec) return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: 'UZMANLIK', note: 'Diğer yol kapanır · +%20 güç' }];
+      return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: `${r + 1}/${a.ranks.length}` }];
     }
     const L = t.def.levels[t.lvl];
     const C = towerChips(t.type, effLevel(t));
@@ -13494,6 +13552,8 @@ function statGlyph(k, x, y) {
   else if (k === 'shield') { ctx.moveTo(0, -5); ctx.lineTo(4.5, -3); ctx.lineTo(3.5, 2); ctx.lineTo(0, 5); ctx.lineTo(-3.5, 2); ctx.lineTo(-4.5, -3); ctx.closePath(); st('#9fd0ff', 1.4); }
   else if (k === 'blast') { for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 2.4 : 5; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); st('#ffb060', 1.3); }
   else if (k === 'magic') { ctx.moveTo(0, -5); ctx.lineTo(1.4, -1.4); ctx.lineTo(5, 0); ctx.lineTo(1.4, 1.4); ctx.lineTo(0, 5); ctx.lineTo(-1.4, 1.4); ctx.lineTo(-5, 0); ctx.lineTo(-1.4, -1.4); ctx.closePath(); st('#c8a0ff', 1.3); }
+  else if (k === 'arrow') { ctx.moveTo(-5, 5); ctx.lineTo(4, -4); st('#e8d8b8', 1.5); ctx.beginPath(); ctx.moveTo(4, -4); ctx.lineTo(0.5, -3.5); ctx.moveTo(4, -4); ctx.lineTo(3.5, -0.5); st('#e8d8b8', 1.5); ctx.beginPath(); ctx.moveTo(-5, 5); ctx.lineTo(-5, 2.5); ctx.moveTo(-5, 5); ctx.lineTo(-2.5, 5); st('#c86a4a', 1.3); }
+  else if (k === 'boot') { ctx.moveTo(-5, -4); ctx.lineTo(-1, 0); ctx.lineTo(-5, 4); st('#9fd8ff', 1.6); ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(4, 0); ctx.lineTo(0, 4); st('#9fd8ff', 1.6); } // hız: çift ok
   else if (k === 'wing') { ctx.moveTo(-5, 2); ctx.quadraticCurveTo(-1, -5, 5, -3); ctx.quadraticCurveTo(1, -1, 2, 3); ctx.quadraticCurveTo(-1, 1, -5, 2); st('#b8f0c8', 1.2); }
   else if (k === 'heart' || k === 'skull') { ctx.restore(); drawIcon(k, x, y, 11, k === 'heart' ? '#ff6a6a' : '#d8c0ff'); return; }
   ctx.restore();

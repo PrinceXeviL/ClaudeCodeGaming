@@ -435,7 +435,46 @@
   "5. bölümden sonra hiç büyü yapmadan kazan": "Gana tras el nivel 5 sin lanzar hechizos",
   "Kristal Avcısı": "Cazador de Cristales",
   "Bütün kademeler tamam": "Todos los niveles completados",
-  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Cuantas más torres del mismo tipo, más cara cada nueva"
+  "Aynı kuleden çoğaldıkça her yenisi daha pahalı": "Cuantas más torres del mismo tipo, más cara cada nueva",
+  "YÜKSELT": "MEJORAR",
+  "EN ÜST": "MÁX",
+  "ALINDI": "COMPRADO",
+  "UZMANLIK": "ESPECIALIDAD",
+  "HAZIR": "LISTO",
+  "Kuleyi sat": "Vender torre",
+  "Diğer yol kapanır · +%20 güç": "El otro camino se cierra · +20% de poder",
+  "Haritada hedefe dokun": "Toca un objetivo en el mapa",
+  "Zırh": "Armadura",
+  "Büyü dir.": "Res. mágica",
+  "Yavaş": "Lento",
+  "Orta": "Media",
+  "Hızlı": "Rápido",
+  "Çok hızlı": "Muy rápido",
+  "Uçar": "Vuela",
+  "BOSS": "JEFE",
+  "Kara ve havayı vurur": "Ataca tierra y aire",
+  "2. kademede okçu ya da arbaletçi yolu": "En el nivel 2: camino de arqueros o ballesteros",
+  "İskelet savaşçılar yolu keser": "Guerreros esqueleto bloquean el camino",
+  "Zırhı deler": "Perfora armadura",
+  "Yavaşlatır": "Ralentiza",
+  "Ruh toplar, büyüler çabuk dolar": "Recoge almas, los hechizos se recargan antes",
+  "Alan hasarı": "Daño en área",
+  "Zehir ve yavaşlatma": "Veneno y ralentización",
+  "Zırhı çürütür": "Pudre la armadura",
+  "Haritada tek kurulur": "Solo una por mapa",
+  "Düşmanı lanetler, korkutur": "Maldice y asusta a los enemigos",
+  "İskeletleri güçlendirir": "Fortalece a los esqueletos",
+  "Bir eşyaya dokun, sonra komutandaki yuvaya dokun": "Toca un objeto y luego una ranura del comandante",
+  "Komutanı açınca geliştirilir": "Desbloquea al comandante para mejorar",
+  "Puan yok": "Sin puntos",
+  "Kilitli": "Bloqueado",
+  "ÇANTA": "BOLSA",
+  "SIFIRLA": "REINICIAR",
+  "Savaşa bir komutan götürürsün · ayrıntı için karta dokun": "Llevas un comandante a la batalla · toca una carta para ver detalles",
+  "Davetsiz Misafirler": "Invitados no deseados",
+  "Cadı Avı": "Caza de brujas",
+  "Bayrak: devi gönder": "Bandera: envía al gigante",
+  "Ok: yükselt": "Flecha: mejorar"
  },
  "tpl": [
   [
@@ -749,6 +788,30 @@
   [
    "Bosslardan toplam {} kristal topla",
    "Reúne {} cristales de jefes en total"
+  ],
+  [
+   "{} okçu",
+   "{} arqueros"
+  ],
+  [
+   "Bu eşya {} yuvasına takılır",
+   "Este objeto va en la ranura {}"
+  ],
+  [
+   "Bölüm {}–{}",
+   "Niveles {}–{}"
+  ],
+  [
+   "{} puan",
+   "{} puntos"
+  ],
+  [
+   "{} yeni eşya",
+   "{} objetos nuevos"
+  ],
+  [
+   "{} PUAN",
+   "{} PTS"
   ]
  ]
 }
