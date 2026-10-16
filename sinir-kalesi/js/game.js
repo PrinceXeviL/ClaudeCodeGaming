@@ -553,6 +553,7 @@ const SOUND = {
   flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı
   achieve: { vol: 0.55, gap: 1, max: 1 }, // Kara Defter: başarım kademesi açıldı
   titlego: { vol: 0.75, gap: 1, max: 1 }, // başlıktan haritaya ruh girdabı
+  titlesoft: { vol: 0.42, gap: 1, max: 1 }, // başlıktan haritaya sade geçiş
   flyswarm: { vol: 0.32, gap: 0.6, max: 2, rate: [0.9, 1.12] }, // sürü düşmanın çevresinde vızıldarken // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
   skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
   lootchime: { vol: 0.5, gap: 0.5, max: 1 },                         // ganimet çıkınca kristal + altın çınlaması                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
@@ -11603,72 +11604,22 @@ function drawTransGate() {
   ctx.restore();
 }
 // 15 Eki (Caner): Mortimer silüeti yalnız gerekli yerlerde: bölüm başlarken ve bölümden çıkarken. Öteki geçişler kısa karartma.
-// 16 Eki (Caner: "oyna tuşuna basınca sefer ekranına geçiş çok kötü, ses ve görüntü; dikkat çekici olsun"): başlıktan haritaya Mortimer'ın ruh
-// girdabı. Kapanış: kenarlardan içe kapanan karanlık, kenarında dönen yeşil-mor ruh ateşi, girdaba çekilen hayaletler; ortada rünlü mühür parlar;
-// açılış: ışık patlaması, halka genişleyip haritayı açar, ön planda bulutlar iki yana aralanır. Ses: titlego (ElevenLabs).
-const TT = { in: 0.85, hold: 0.3, out: 1.15 };
-const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
+// 16 Eki (Caner: "oyna tuşuna basınca geçiş kötü"; ilk ruh girdabı denemesi "çok sesli, beğenmedim; basit, minimal, rahatlatıcı tek ses"):
+// yumuşak kenarlı karanlık kenarlardan ortaya kapanır, harita ortadan dışa açılır. Ses: titlesoft (tek, kısa, sakin).
+const TT = { in: 0.5, hold: 0.12, out: 0.7 };
 function goTitle(fn) {
   if (trans) return;
-  trans = { t: 0, fn, fired: false, big: false, kind: 'title', seed: Math.random() * 9 };
-  sfx('titlego'); haptic('medium');
+  trans = { t: 0, fn, fired: false, big: false, kind: 'title' };
+  sfx('titlesoft');
 }
 function drawTransTitle() {
-  const T = trans, t = T.t, cx = W / 2, cy = (VIS.t + VIS.b) / 2, RM = Math.hypot(VIS.w, VIS.h) / 2 + 30;
-  const close = t < TT.in, open = t >= TT.in + TT.hold;
-  const k = close ? Math.pow(t / TT.in, 1.7) : open ? 1 - easeOutCubic(clamp((t - TT.in - TT.hold) / TT.out, 0, 1)) : 1; // 1: kapalı
-  const R = RM * (1 - k);
-  ctx.save();
-  // karanlık: delikli örtü
-  ctx.fillStyle = '#06030a'; ctx.beginPath(); ctx.rect(VIS.l - 4, VIS.t - 4, VIS.w + 8, VIS.h + 8);
-  if (R > 1) ctx.arc(cx, cy, R, 0, Math.PI * 2, true);
-  ctx.fill('evenodd');
-  // halkanın kenarında dönen ruh ateşi (kapanırken güçlenir, açılırken söner)
-  if (R > 4 && k > 0.02) {
-    const a0 = time * (close ? 3.2 : -2.4) + T.seed, inten = close ? 0.5 + 0.5 * k : 0.25 + 0.75 * k;
-    ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < 46; i++) {
-      const a = a0 + i / 46 * Math.PI * 2, wob = Math.sin(time * 9 + i * 1.7) * 6, rr = R + wob;
-      glow(ctx, cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, 26 + 14 * Math.sin(i * 2.3 + time * 5), i % 3 ? '120,255,140' : '190,110,255', 0.5 * inten);
-    }
-    for (let arm = 0; arm < 4; arm++) { // girdap kolları: içe kıvrılan ince ışık sarmalları
-      ctx.strokeStyle = arm % 2 ? `rgba(190,120,255,${0.35 * inten})` : `rgba(130,255,150,${0.35 * inten})`; ctx.lineWidth = 5; ctx.beginPath();
-      for (let j = 0; j <= 24; j++) { const q = j / 24, a = a0 * 1.3 + arm * Math.PI / 2 + q * 2.2, rr = R * (1 + q * 0.6); const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-      ctx.stroke();
-    }
-    ctx.globalCompositeOperation = 'source-over';
-  }
-  // girdaba çekilen hayaletler (kapanırken)
-  if (close) for (let i = 0; i < 9; i++) {
-    const q = clamp(k * 1.2 - i * 0.04, 0, 1), a = T.seed + i * 0.7 + q * 4.5, rr = RM * (1.05 - q) * (0.75 + (i % 3) * 0.12);
-    if (q <= 0 || q >= 1) continue;
-    drawSpecter(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.8, 1.4 + 0.8 * (1 - q), Math.cos(a) > 0 ? -1 : 1, time * 8 + i, Math.min(1, (1 - q) * 3));
-  }
-  // mühür: tam karanlıkta dönen rün halkası ve Mortimer'ın kafatası, açılışın ilk anında ışık patlaması
-  const sk = !close && !open ? clamp((t - TT.in) / TT.hold, 0, 1) : open ? 1 - clamp((t - TT.in - TT.hold) / 0.35, 0, 1) : 0;
-  if (sk > 0) {
-    const sc = (open ? 1 + (1 - sk) * 1.6 : 0.7 + 0.3 * easeOutBack(sk)) * 1.45, al = open ? sk : Math.min(1, sk * 2);
-    ctx.save(); ctx.translate(cx, cy); ctx.scale(sc, sc); ctx.globalAlpha = al;
-    ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 120, '120,255,140', 0.45); glow(ctx, 0, 0, 70, '200,130,255', 0.4); ctx.globalCompositeOperation = 'source-over';
-    ctx.rotate(time * 0.8);
-    ctx.strokeStyle = 'rgba(170,255,180,0.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 58, 0, Math.PI * 2); ctx.stroke();
-    ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 46, 0, Math.PI * 2); ctx.stroke();
-    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; ctx.save(); ctx.rotate(a); ctx.translate(0, -52); ctx.beginPath(); ctx.moveTo(-4, -3); ctx.lineTo(0, 4); ctx.lineTo(4, -3); ctx.moveTo(0, -4); ctx.lineTo(0, 4); ctx.stroke(); ctx.restore(); } // rünler
-    ctx.rotate(-time * 0.8);
-    { const sk2 = spr('ico_em_boss'); if (sk2) icoFit(sk2, 0, 0, 26); else drawSkullIcon(0, 0, 26); }
-    ctx.restore();
-  }
-  if (open) { // ışık patlaması + iki yana aralanan bulutlar
-    const q = clamp((t - TT.in - TT.hold) / TT.out, 0, 1), e = easeOutCubic(q);
-    if (q < 0.35) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(190,255,200,${0.45 * (1 - q / 0.35)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); ctx.globalCompositeOperation = 'source-over'; }
-    const cl = ['cloud_l1', 'cloud_l2', 'cloud_l1', 'cloud_l2'];
-    for (let i = 0; i < 4; i++) {
-      const im = spr(cl[i]); if (!im) continue;
-      const side = i < 2 ? -1 : 1, w = VIS.w * (0.75 - (i % 2) * 0.15), h = w * im.height / im.width, x = cx + side * (w * 0.32 + e * VIS.w * 0.75) - w / 2, y = cy - h / 2 + ((i % 2) ? 1 : -1) * VIS.h * 0.22;
-      ctx.globalAlpha = 0.95 * (1 - e * 0.6); ctx.drawImage(im, x, y, w, h);
-    }
-    ctx.globalAlpha = 1;
-  }
+  const t = trans.t, cx = W / 2, cy = (VIS.t + VIS.b) / 2, RM = Math.hypot(VIS.w, VIS.h) / 2;
+  const k = t < TT.in ? (t / TT.in) ** 2 : t < TT.in + TT.hold ? 1 : 1 - (1 - (1 - clamp((t - TT.in - TT.hold) / TT.out, 0, 1)) ** 2); // 1: tam karanlık
+  const r0 = RM * 1.25 * (1 - k), feather = RM * 0.45;
+  const g = ctx.createRadialGradient(cx, cy, Math.max(0, r0 - feather), cx, cy, Math.max(1, r0));
+  g.addColorStop(0, 'rgba(6,3,10,0)'); g.addColorStop(1, 'rgba(6,3,10,1)');
+  ctx.save(); ctx.fillStyle = g; ctx.fillRect(VIS.l - 2, VIS.t - 2, VIS.w + 4, VIS.h + 4);
+  if (k > 0.98) { ctx.fillStyle = '#06030a'; ctx.fillRect(VIS.l - 2, VIS.t - 2, VIS.w + 4, VIS.h + 4); }
   ctx.restore();
 }
 function go(fn) {

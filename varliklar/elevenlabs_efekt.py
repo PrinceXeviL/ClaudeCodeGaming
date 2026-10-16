@@ -41,6 +41,7 @@ SFX = {
     'flyswarm': ('a dense swarm of fat plague flies buzzing around a victim, continuous loud close insect buzzing with wing flutter, gross, steady, no music', 1.8, 2),
     'achieve': ('dark fantasy achievement unlocked jingle: a short triumphant spooky fanfare with a deep church bell, a bright magical chime sparkle and a ghostly choir swell, rewarding, game UI, no voice', 1.6, 2),
     'titlego': ('dark fantasy game start transition: a deep rushing whoosh pulled into a swirling ghostly vortex, eerie spirit choir rising quickly, then one heavy magical boom with a shimmering tail, cinematic, no voice words', 2.4, 2),
+    'titlesoft': ('a soft calm magical transition: one gentle airy whoosh fading into a single warm low chime, soothing, relaxing, quiet, short, no music, no voice', 1.2, 1),
     'starthud': ('a magical star slamming into place: a deep hollow bone thud with a bright eerie green magic chime sparkle on top, short, satisfying game reward sound, no music', 0.7, 3),
     'skelsel': ('a cartoon skeleton soldier answering an order, short raspy hollow undead grunt like hrrah, with a quick clack of its jaw bones and a dry bone rattle, funny, game voice, no words, no music', 0.8, 3),
     'skelmove': ('a small group of cartoon skeleton warriors marching off with a raspy hollow undead battle cry, bones clattering, short, funny, no words, no music', 1.0, 3),
