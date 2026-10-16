@@ -1006,11 +1006,13 @@ function painVoice(e) {
 // Savaş ve boss parçaları 10 Eki'de iki kez kısıldı (Caner: oyun içi müzik yüksek; toplam ~%40).
 const MUSIC = { started: false, tracks: {
   menu:   { file: 'muzik_menu.mp3',  gain: 0.32 }, // 15 Eki (Caner): %10 kısık. 16 Eki (Caner: başı kısık, coştuğu yerler aşırı yüksek): parça dengelendi (dynaudnorm + kompresör + loudnorm; fark 18 → 5,7 dB, orijinal varliklar/ham/ses/muzik_orijinal), ortalama düştüğü için 0,27 → 0,32
-  battle: { file: 'muzik_savas.mp3', gain: 0.15, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
-  boss:   { file: 'muzik_boss.mp3',  gain: 0.2, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
+  battle: { file: 'muzik_savas.mp3', gain: 0.26, seam: true }, // The Gates Tremble (10 Eki; eski: The Necromancer's Parade). Döngü 110 BPM ölçü başlarından kesildi (2,24–130,98 sn, son ölçü başla harmanlandı)
+  boss:   { file: 'muzik_boss.mp3',  gain: 0.36, seam: true, fade: 6, fromStart: true }, // The Harpsichord's Final Grin (10 Eki; eski: Bones on the Battlements). Kayıt 19,5. sn'den (0:20 hazırlığı), 160 BPM ölçü başlarından döngü (19,5–165 sn). fade: kısıktan açılış (sn), fromStart: her boss'ta baştan
+  // 16 Eki: savaş/boss parçaları da menü gibi dengelendi (dynaudnorm + kompresör + loudnorm, 3 kopya art arda işlenip ortadaki alındı: döngü dikişi korunur;
+  // fark 4-9 → 2,5-4,4 dB; orijinaller varliklar/ham/ses/muzik_orijinal). Ortalama ~4,7 dB düştü, kazançlar aynı ortalama duyulacak kadar yükseltildi (0,15→0,26, 0,2→0,36)
   // 2. sefer (Cadı Avı): dosya yoksa 1. seferin parçası çalar
-  battle2: { file: 'muzik_savas2.mp3', gain: 0.15, seam: true }, // The Gravekeeper's Morning Commute (11 Eki): 120 BPM, sessiz giriş atlanır, 8–112 sn döngü
-  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.2, seam: true, fade: 6, fromStart: true }, // The Belfry's Malice (11 Eki): ~143 BPM, 6,7–174,4 sn döngü; her boss'ta baştan, kısıktan açılır
+  battle2: { file: 'muzik_savas2.mp3', gain: 0.25, seam: true }, // The Gravekeeper's Morning Commute (11 Eki): 120 BPM, sessiz giriş atlanır, 8–112 sn döngü
+  boss2:   { file: 'muzik_boss2.mp3',  gain: 0.36, seam: true, fade: 6, fromStart: true }, // The Belfry's Malice (11 Eki): ~143 BPM, 6,7–174,4 sn döngü; her boss'ta baştan, kısıktan açılır
 } };
 // seam: dikişsiz döngü. Dosyanın sonu başıyla önceden harmanlanmıştır (ffmpeg); tarayıcının loop'u MP3'te kısa bir
 // boşluk bırakabildiği için iki ses öğesi sırayla çalar: biri bitmeden 0,3 sn önce öteki baştan başlar, eskisi söner.
