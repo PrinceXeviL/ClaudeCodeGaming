@@ -604,7 +604,7 @@ if (NECRO) {
     holywater:  { name: 'Kutsal Su Taşıyıcı', h: 32, hp: 160, speed: 18, armor: 0, mr: 0.3, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30, noTower: true } }, // 16 Eki (Caner): kuledeki iskeletlere atmaz (durup yolu tıkıyordu)
     flagellant: { name: 'Kırbaçlı Tövbekâr', h: 31, hp: 220, speed: 22, armor: 0, mr: 0, gold: 16, dmg: [6, 10], rate: 0.8, lives: 1, r: 10, frenzy: { spd: 0.9, dmg: 1.2 } },
-    lantern:    { name: 'Fener Arabası', h: 40, hp: 650, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 }, purify: { r: 95, every: 5, dmg: 0, bless: true } }, // 15 Eki: fener cesetleri kutsar
+    lantern:    { name: 'Fener Arabası', h: 40, hp: 520, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 }, purify: { r: 95, every: 5, dmg: 0, bless: true } }, // 15 Eki: fener cesetleri kutsar · 16 Eki (Caner): can 650 → 520 (-%20)
     bellpriest: { name: 'Çan Rahibi', h: 32, hp: 170, speed: 18, armor: 0, mr: 0.4, gold: 18, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ab: { slam: { cd: 7, r: 80, stun: 1.4, dmg: 4, say: 'Çan!', bell: true } } },
     paladin:    { name: 'Paladin', h: 36, hp: 520, speed: 13, armor: 0.5, mr: 0.45, gold: 36, dmg: [10, 16], rate: 1.2, lives: 2, r: 12, elite: true },
@@ -1430,6 +1430,7 @@ if (NECRO) {
     });
     if (r === 2) ENEMIES[t + '_y'].ab = Object.assign({}, d.ab, { howl: { cd: 11, r: 85, say: 'Borazan!', soft: true } });
   }
+  ENEMIES.heavy_y.hp = Math.round(ENEMIES.heavy_y.hp * 0.7); // 16 Eki (Caner): Ağır Piyade Yüzbaşı %30 daha az canlı
   // dalgalara rütbe dağıtımı (tohumlu, her oynanışta aynı): 2. bölümden itibaren kıdemliler, 5. bölümde yüzbaşılar.
   // Kıdemli oranı bölüm ve dalga ilerledikçe artar; yüzbaşı her dalgada 1-3 tane.
   LEVELS.forEach((lv, idx) => {
@@ -1468,6 +1469,14 @@ const CRYSTAL = { boss: 2, final: 8, heroic: 2, usta: 1.5 };
 // Zaferde kalan altın Ruh Kristali'ne döner: per altın = 1 kristal, bölüm başına en çok cap; boss'tan düşüp harcanmayan altın boss kat sayılır;
 // bölüm (o modda) daha önce kazanıldıysa replay oranı. Günün Sınavı ve Sonsuz Gece'de yok.
 const VAULT = { per: 200, cap: 3, replay: 0.2, boss: 2 }; // 150/5 kristal ekonomisini 2-3 katlıyordu (boss 2, komutan 60): 40 bölümde en çok 120
+// 16 Eki (Caner: "bana özel bir bölüm, 2 dalga oynayınca bitsin, son güncellemeleri orada denerim; yayında kaldırırız"): Deneme Alanı.
+// Haritada yalnız TEST_OPEN açıkken görünür (game.js chal 'a'); ilerleme, yıldız, başarım ve kristal kaydedilmez.
+const ADMIN_TEST = { level: 'Kara Göl Geçidi', gold: 1500, lives: 20, waves: [
+  [{ t: 'legion', n: 10, gap: 0.7 }, { t: 'holywater', n: 3, gap: 1.8, at: 4 }, { t: 'heavy', n: 3, gap: 2, at: 8 },
+   { t: 'lantern', n: 1, gap: 1, at: 12 }, { t: 'flagellant', n: 2, gap: 1.2, at: 12.5 }, { t: 'torch', n: 2, gap: 1.4, at: 13 }],
+  [{ t: 'heavy_y', n: 2, gap: 3, at: 0 }, { t: 'legion_y', n: 1, gap: 1, at: 2 }, { t: 'hound', n: 6, gap: 0.6, at: 3 },
+   { t: 'cavalry', n: 3, gap: 1.4, at: 6 }, { t: 'lantern', n: 1, gap: 1, at: 9 }, { t: 'legion', n: 8, gap: 0.6, at: 10 }, { t: 'centurion', n: 1, gap: 1, at: 15 }],
+] };
 for (const t of ['gloriosus3', 'cathedral']) if (ENEMIES[t]) ENEMIES[t].final = true;
 Object.assign(HEROES.spartacus, { cost: 0, unlock: null }); // 14 Eki: başlangıç komutanı (ücretsiz) // komutan kristalle açılır (eski unlock bölümü yerine)
 Object.assign(HEROES.leonidas, { cost: 30 });

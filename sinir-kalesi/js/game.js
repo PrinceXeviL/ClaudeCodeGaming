@@ -2038,7 +2038,10 @@ const CHAL = {
   d: { name: 'GÜNÜN SINAVI', short: 'Günlük', hp: 1, lives: 20, daily: true },
   // 16 Eki: Çıplak Kemik (3 yıldızla açılır): tek can, yalnız iki kule türü (bölüme göre), Mortimer büyü yapamaz. 1 ek yıldız (save.ch[i].i)
   i: { name: 'ÇIPLAK KEMİK', short: 'Çıplak Kemik', hp: 1, lives: 1, iron: true, desc: '1 can · yalnız 2 kule türü · Mortimer büyüsü yok' },
+  // 16 Eki: Deneme Alanı (yalnız TEST_OPEN; data.js ADMIN_TEST): 2 dalga, son eklenenler; hiçbir şey kaydedilmez
+  a: { name: 'DENEME BİTTİ', short: 'Deneme', hp: 1, lives: ADMIN_TEST.lives, admin: true, desc: '2 dalga · son güncellemeler · kayıt yok' },
 };
+const adminIdx = () => Math.max(0, LEVELS.findIndex(l => l.name === ADMIN_TEST.level));
 // Çıplak Kemik'te bölüme göre izinli iki kule (biri mutlaka havayı vurur: Kemik Kulesi ya da Ruh Feneri)
 const IRON_PAIRS = [['archer', 'artillery'], ['mage', 'barracks'], ['archer', 'barracks'], ['mage', 'artillery'], ['archer', 'mage']];
 const ironTowers = (idx) => IRON_PAIRS[(idx * 3 + 1) % IRON_PAIRS.length];
@@ -2111,7 +2114,7 @@ function startLevel(idx, chal = null) {
   if (NECRO && !G.early) for (const id of loadout()) G.spells[id] = 0; // yalnız savaşa götürülen 3 büyü
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
-  lv.waves.forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
+  (chal === 'a' ? ADMIN_TEST.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
   const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'];
@@ -2154,6 +2157,8 @@ function startLevel(idx, chal = null) {
     save.burstSeen = true; persist();
     G.banner = { title: 'YENİ BÜYÜ: ' + NECRO_SPELLS.nm_burst.name, sub: NECRO_SPELLS.nm_burst.short, t: 0, dur: 4.2 };
   }
+  if (chal === 'a') { G.admin = true; G.lv = Object.assign({}, lv, { waves: JSON.parse(JSON.stringify(ADMIN_TEST.waves)) }); G.gold = ADMIN_TEST.gold;
+    G.banner = { title: 'DENEME ALANI', sub: '2 dalga · son güncellemeler · ilerleme kaydedilmez', t: 0, dur: 3.5 }; }
   if (chal === 'e') { G.endless = true; G.baseWaves = lv.waves; G.lv = Object.assign({}, lv, { waves: lv.waves.map(w => JSON.parse(JSON.stringify(w))) }); endlessExtend(); }
   if (chal === 'i') { // Çıplak Kemik
     G.mod = { id: 'iron', nospell: true }; const T = ironTowers(idx).map(t => TOWERS[t].name).join(' ve ');
@@ -2166,7 +2171,7 @@ function startLevel(idx, chal = null) {
   }
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
-  if (NECRO) {
+  if (NECRO && chal !== 'a') {
     const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.ep === 2 && idx === LEVELS.findIndex(l => l.ep === 2) ? 'intro2' : lv.comic && COMICS[lv.comic] && !seen[lv.comic] ? lv.comic : lv.boss;
     if (COMICS[key] && !seen[key]) startComic(key);
   }
@@ -3523,7 +3528,8 @@ function giveCrystals(e) {
   let n = e.def.final ? CRYSTAL.final : CRYSTAL.boss;
   if (G.chal === 'h') n *= CRYSTAL.heroic;
   if (G.diffKey === 'usta') n *= CRYSTAL.usta;
-  n = Math.round(n); save.crystal = (save.crystal || 0) + n; G.crystalGain = (G.crystalGain || 0) + n; persist(); cnt('crystal', n);
+  n = Math.round(n); G.crystalGain = (G.crystalGain || 0) + n;
+  if (!G.admin) { save.crystal = (save.crystal || 0) + n; persist(); cnt('crystal', n); } // Deneme Alanı: gösterilir, kaydedilmez
   floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 40) - 14, `+${n} KRİSTAL`, '#e0b8ff');
   for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(40, 120); emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, col: i % 2 ? '200,140,255' : '140,255,200', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) }); }
   sfx('coins');
@@ -3572,7 +3578,7 @@ function bossLoot(e, crystals) {
     G.loot.push(Object.assign(o, { x: e.x, y: e.y + rand(-3, 3), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.5, z: 14, vz: rand(170, 250), t: -d, st: 'wait', spin: rand(0, 6) })); };
   for (let i = 0; i < Math.min(10, crystals + 2); i++) pop({ kind: 'crystal', sp: 1.6 }, 0.25 + i * 0.06);
   for (let i = 0; i < n; i++) {
-    const it = addGear(makeGear(hid, tries)); G.lootGot.gear.push(it);
+    const it = G.admin ? makeGear(hid, tries) : addGear(makeGear(hid, tries)); G.lootGot.gear.push(it);
     pop({ kind: 'gear', it, sp: 0.8 }, 0.9 + i * 0.35);
   }
   persist();
@@ -8140,13 +8146,14 @@ function update(dt) {
 
   if (G.lives <= 0 && !overlay) {
     if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); svcScore('endless', Object.values(save.endless).reduce((a, b) => a + b, 0)); } // tablo: bütün bölümlerdeki en iyi dalgaların toplamı
-    heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave);
+    if (G.admin) { setOverlay('lose'); sfx('lose'); } else { heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave); }
   }
   if (G.gold >= 2000) achGive('hoard');
   if (G.winHold > 0) G.winHold -= dt;
   if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
     const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
     vaultSettle(firstWin);
+    if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
     if (G.chal === 'd') { save.daily = { key: G.daily.key, done: true, n: ((save.daily && save.daily.n) || 0) + 1 }; G.stars = 1; }
     else if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
     else {
@@ -8158,7 +8165,8 @@ function update(dt) {
     if (G.tutLv) { save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); } // eğitimli bölüm kazanıldı: eğitimi bir daha gösterme
     persist();
     setOverlay('win');
-    if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } else sfx('win'); // sonra Mortimer kahkahası, iskelet tezahüratı // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
+    if (NECRO) { sfx('winnecro'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
+    gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
 }
@@ -17599,6 +17607,8 @@ function drawMap() {
   roundBtn('heroes', bx2(1), by2, BR, (r) => uiIco('heroes', 0, 0, r * 1.15) || drawIcon('crown', 0, 0, r * 1.05), () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
   if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => uiIco('help', 0, 0, r * 1.15) || txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => { save.tut3 = {}; persist(); go(() => startLevel(epLevels(1)[0])); }, { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
+  // 16 Eki (Caner): Deneme Alanı düğmesi (admin; yalnız TEST_OPEN, mağaza sürümünde görünmez)
+  if (TEST_OPEN) { roundBtn('admintest', bx2(NECRO ? 4 : 3), by2, BR, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => startLevel(adminIdx(), 'a')), { appear: st - 0.2, tile: 'ember' }); lab(bx2(NECRO ? 4 : 3), 'DENEME'); }
   const freeStars = starsTotal() - starsSpent();
   roundBtn('upgrades', bx2(0), by2, BR, (r) => uiIco('upgrades', 0, 0, r * 1.15) || fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'rose', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
   const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
@@ -18707,7 +18717,7 @@ function vaultSettle(firstWin) {
   const left = Math.max(0, Math.floor(G.gold)), boss = Math.min(left, Math.floor(G.bossGold || 0)), val = left + boss * (VAULT.boss - 1);
   let c = Math.min(VAULT.cap, Math.floor(val / VAULT.per)); if (!firstWin) c = Math.round(c * VAULT.replay);
   G.vault = { gold: left, boss, c, replay: !firstWin, t0: null, n: 0, done: false };
-  if (c > 0) { save.crystal = (save.crystal || 0) + c; cnt('crystal', c); persist(); }
+  if (c > 0 && !G.admin) { save.crystal = (save.crystal || 0) + c; cnt('crystal', c); persist(); } // denemede yalnız gösterilir
 }
 function drawVault(k, cx, y) {
   const V = G.vault; if (!V || k < 1.35) return;
@@ -19148,7 +19158,7 @@ function drawOverlay() {
       const yb = py + ph - 66;
       gameButton('ov_retry', cx - 219, yb, 150, 56, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear, size: 17 });
       gameButton('ov_map', cx - 55, yb, 150, 56, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'blue', { icon: 'map', appear: appear - 0.06, size: 17 });
-      gameButton('ov_next', cx + 164, yb, 262, 62, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green', { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 21, glow: '140,255,120' });
+      gameButton('ov_next', cx + 164, yb, 262, 62, G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.admin ? startLevel(G.idx, 'a') : startLevel(G.idx + 1)), 'green', { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 21, glow: '140,255,120' });
     } else if (G.idx + 1 < LEVELS.length) {
       roundBtn('ov_retry', cx - 212, py + 246 + by, 34, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
       txt('Tekrar', cx - 212, py + 294 + by, 16, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
