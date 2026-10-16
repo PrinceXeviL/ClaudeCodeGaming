@@ -4479,7 +4479,7 @@ function updateTower(t, dt) {
       if (!e.blocker) { const f = pathPos(e.p, ta, e.off); tx = f.x; ty = f.y; }
       G.projectiles.push({ kind: 'vapor', lob: true, src: 'blast', sx, sy: sy - 8, gy: t.y, target: null, tx, ty, t: -0.12, dur: LOB.dur, dmg: roll(L.dmg) * LOB.dmg * (AF && AF.dmg || 1), dtype: 'phys',
         arc: LOB.arc, splash: L.splash * LOB.splash, stun: t.lvl >= 2 ? 0.3 : 0, gas: (L.dmg[0] + L.dmg[1]) * 0.09 * (AF && AF.gas || 1), path: e.blocker ? null : e.p, along: ta,
-        black: t.spec === 'plague', plague: pl ? pl.dps : 0, body: null, spin: rand(0, 6) });
+        black: t.spec === 'plague', plague: pl ? pl.dps : 0, body: null, spin: rand(0, 6), plvl: t.lvl, pspec: !!t.spec });
       t.cd = L.rate * LOB.rate; t.aimX = tx; t.aimY = ty; t.gushT = GUSH;
       for (let i = 0; i < 14; i++) emit(G.parts, { kind: 'dot', x: sx + rand(-5, 5), y: sy - rand(0, 8), vx: rand(-45, 45), vy: -rand(70, 170), g: 460, col: i % 3 ? '#8cff5a' : '#c6ff9a', s0: rand(1, 1.8), s1: 0.8, life: rand(0.4, 0.7), floor: sy + rand(2, 8) });
       sfx('plaguefire'); sfx('plaguethrow');
@@ -9300,6 +9300,7 @@ const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Cane
   poison: 1.2, pool: 3, down: 1 };
 // 15 Eki (Caner: kazan fazla güçlü): çarpma anında çok az alan hasarı (hit), sonra saniyede vuruşun dot kadarı zehir (dotT sn),
 // vurulanlar ve gazın içindekiler yavaşlar (slow oranı, slowT sn); gaz bulutunun hasarı gas ile çarpılır
+const POOL_LV = [3, 5, 6.5], POOL_SPEC = 1; // veba birikintisinin yolda kalma süresi (sn): kule kademesine göre (Kaynayan = 2. kademe), uzmanlıkta +1
 const PLAGUE_HIT = { hit: 0.14, dot: 0.09, dotT: 4, slow: 0.35, slowT: 2.5, gas: 0.35 }; // 15 Eki (2): hâlâ güçlüydü, bir kez daha kısıldı; düşman geri tepmez, üstü vebayla kaplanır (coat)
 const SPRAY_RATE = 1.6, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
 // Ceset Mancınığı (4. kademe): rate bekleme çarpanı, dmg cesedin çarpma hasarı çarpanı, max kule başına ayaktaki zombi, bodies fırlatılan cesetler
@@ -9389,11 +9390,14 @@ function plagueBomb(pr) {
     if (!e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = PLAGUE_HIT.dotT; }
     if (pr.plague && !e.dead) { poisonEnemy(e, pr.plague, 4); e.plagueT = 4; e.plagueDps = pr.plague; } // kara veba
   }
-  G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: LOB.pool, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) });
+  // 16 Eki (Caner: "kaynayan veba kazanı yüksek seviyede attığı zehir yolda daha uzun kalsın, üstünden geçen saniyede zehir hasarı alsın"):
+  // birikinti süresi kademeyle (POOL_LV, uzmanlıkta +POOL_SPEC), içinden geçene bulaşan zehir kademe başına +%40
+  const pl2 = POOL_LV[pr.plvl ?? 0] + (pr.pspec ? POOL_SPEC : 0), inf = 1 + 0.4 * (pr.plvl ?? 0);
+  G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) });
   fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2);
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
   for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
-  for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: LOB.pool * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
+  for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
