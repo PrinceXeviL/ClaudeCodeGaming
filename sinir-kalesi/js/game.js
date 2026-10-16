@@ -2635,7 +2635,7 @@ function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yü
   }
   return true;
 }
-const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.5, 0.72], dmg: 0.42, burn: 0.3, minD: 0.22, crater: [0.42, 0.56] }; // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
+const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.42, burn: 0.3, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.35, slow: [0.4, 2] }; // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
 // Merlin'in ruh meteoru (16 Eki, Caner: "daha kaliteli, ihtişamlı"): hedefte dönen çift rün çemberi + alan kararır; çarpmada parlama, ışık sütunu,
 // iki şok halkası (yeşil, mor), saçılan kaya parçaları, yükselen kıvılcımlar, mor duman
 function drawSoulRune(p, pre, k) {
@@ -2654,18 +2654,18 @@ function drawSoulRune(p, pre, k) {
 }
 function fxSoulMeteorImpact(x, y, r, first) {
   const P = G.parts, cols = ['120,255,150', '190,120,255', '255,80,90'];
-  emit(P, { kind: 'glow', add: true, x, y: y - 8, col: '240,255,240', s0: r * 1.6, s1: r * 2.1, life: 0.14, a: 0.95 }); // parlama
-  emit(P, { kind: 'glow', add: true, x, y: y - 8, col: '150,80,255', s0: r * 1.1, s1: r * 2.4, life: 0.4, a: 0.7 });
-  G.effects.push({ kind: 'beam', x, y, t: 0, dur: 0.35, col: '170,255,190', w: 18 }); // kısa ışık sütunu
-  G.effects.push({ kind: 'ring', x, y, r: r * 2.2, col: '120,255,150', t: 0, dur: 0.45 });
-  G.effects.push({ kind: 'ring', x, y, r: r * 1.6, col: '190,120,255', t: 0, dur: 0.6, a: 0.9 });
-  for (let i = 0; i < 18; i++) { // kaya parçaları her yöne saçılır, yere düşüp seker
-    const a = rand(0, Math.PI * 2), v = rand(70, 210);
-    emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(60, 150), g: 520, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
-      col: i % 3 === 0 ? '#7aff9a' : i % 3 === 1 ? '#3a2448' : '#5a3a68', s0: rand(2, 4.4), s1: 1.6, life: rand(0.8, 1.3), floor: y + rand(-14, 16) });
+  // 16 Eki (2) (Caner: "parça efektini azalt, yolun dışına çok çıkmasın"): daha küçük parlama ve halkalar, az ve kısa saçılan parça
+  emit(P, { kind: 'glow', add: true, x, y: y - 6, col: '240,255,240', s0: r * 1.0, s1: r * 1.3, life: 0.12, a: 0.85 }); // parlama
+  emit(P, { kind: 'glow', add: true, x, y: y - 6, col: '150,80,255', s0: r * 0.8, s1: r * 1.5, life: 0.3, a: 0.6 });
+  if (first) G.effects.push({ kind: 'beam', x, y, t: 0, dur: 0.3, col: '170,255,190', w: 12 }); // kısa ışık sütunu (yalnız ilkinde)
+  G.effects.push({ kind: 'ring', x, y, r: r * 1.5, col: '120,255,150', t: 0, dur: 0.4, a: 0.8 });
+  for (let i = 0; i < 7; i++) { // kaya parçaları her yöne saçılır, yere düşüp seker (az, kısa)
+    const a = rand(0, Math.PI * 2), v = rand(40, 110);
+    emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(30, 80), g: 560, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
+      col: i % 3 === 0 ? '#7aff9a' : i % 3 === 1 ? '#3a2448' : '#5a3a68', s0: rand(1.4, 2.8), s1: 1.2, life: rand(0.6, 1), floor: y + rand(-8, 10) });
   }
-  for (let i = 0; i < 22; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.5, y: y + rand(-r, r) * 0.25, vx: rand(-40, 40), vy: -rand(40, 140), drag: 1.4, col: cols[i % 3], s0: rand(2, 4.5), s1: 0.4, life: rand(0.6, 1.2) });
-  for (let i = 0; i < 7; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
+  for (let i = 0; i < 9; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.4, y: y + rand(-r, r) * 0.2, vx: rand(-25, 25), vy: -rand(30, 90), drag: 1.4, col: cols[i % 3], s0: rand(1.6, 3.2), s1: 0.4, life: rand(0.5, 0.9) });
+  for (let i = 0; i < 3; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
   G.decals.push({ x, y, r: r * 1.05, t: 0, life: 12, hot: true });
 }
 // 16 Eki (Caner: "yerde obruk açılsın, hafif bir süre sonra geçsin"): ruh meteorunun açtığı çukur. Hızla açılır (open sn), çatlakları ve dibi
@@ -5573,11 +5573,11 @@ function updateProjectile(pr, dt) {
         if (NECRO) emit(G.parts, { kind: 'dot', x: q.x, y: q.y, vx: rand(-8, 8), vy: rand(0, 20), g: 160, col: '#7ae04a', s0: 1.6, s1: 0.8, life: 0.4 });
         else emit(G.parts, { kind: 'glow', x: q.x, y: q.y, vx: rand(-5, 5), vy: -8, col: '130,124,118', s0: 2.5, s1: 7, life: 0.5, a: 0.4 });
       } else if (pr.kind === 'meteor' && pr.mini) { // Merlin'in ruh meteoru: mor-yeşil-kızıl kıvılcım, mor duman, kayadan kopan ufak parçalar (zamana bağlı, kare hızından bağımsız)
-        pr.fxT = 0.012; const C = ['150,80,255', '110,255,150', '255,80,100'];
-        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-5, 5), y: q.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-30, 5), drag: 2, col: C[Math.floor(rand(0, 2.4))], s0: rand(8, 13), s1: 1.5, life: rand(0.25, 0.45) });
-        if (Math.random() < 0.5) emit(G.parts, { kind: 'glow', x: q.x + rand(-3, 3), y: q.y, vx: rand(-10, 10), vy: rand(-20, -6), drag: 0.8, col: Math.random() < 0.5 ? '50,28,64' : '80,54,96', s0: rand(5, 8), s1: rand(14, 20), life: rand(0.7, 1.1), a: 0.45, fadeIn: 0.1 });
-        if (Math.random() < 0.3) emit(G.parts, { kind: 'chunk', x: q.x, y: q.y, vx: rand(-60, 60), vy: rand(-40, 20), g: 420, drag: 0.4, vr: rand(-14, 14), rot: rand(0, 6), col: Math.random() < 0.5 ? '#3a2448' : '#7aff9a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9), floor: pr.ty + rand(-14, 14) });
-        if (Math.random() < 0.5) emit(G.parts, { kind: 'streak', add: true, x: q.x, y: q.y, vx: rand(-60, 60), vy: rand(-70, 20), g: 240, col: Math.random() < 0.5 ? '#b8ffb0' : '#d8a8ff', s0: 1.4, s1: 0.2, life: rand(0.25, 0.45) });
+        pr.fxT = 0.03; const C = ['150,80,255', '110,255,150', '255,80,100']; // 16 Eki (2): seyrek, küçük (Caner: "parça efektini azalt")
+        emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3), y: q.y + rand(-3, 3), vx: rand(-15, 15), vy: rand(-20, 5), drag: 2, col: C[Math.floor(rand(0, 2.4))], s0: rand(4, 7), s1: 1, life: rand(0.2, 0.35) });
+        if (Math.random() < 0.25) emit(G.parts, { kind: 'glow', x: q.x + rand(-3, 3), y: q.y, vx: rand(-10, 10), vy: rand(-20, -6), drag: 0.8, col: Math.random() < 0.5 ? '50,28,64' : '80,54,96', s0: rand(5, 8), s1: rand(14, 20), life: rand(0.7, 1.1), a: 0.45, fadeIn: 0.1 });
+        if (Math.random() < 0.08) emit(G.parts, { kind: 'chunk', x: q.x, y: q.y, vx: rand(-40, 40), vy: rand(-30, 15), g: 420, drag: 0.4, vr: rand(-14, 14), rot: rand(0, 6), col: Math.random() < 0.5 ? '#3a2448' : '#7aff9a', s0: rand(1, 1.8), s1: 0.8, life: rand(0.4, 0.7), floor: pr.ty + rand(-8, 8) });
+        if (Math.random() < 0.15) emit(G.parts, { kind: 'streak', add: true, x: q.x, y: q.y, vx: rand(-60, 60), vy: rand(-70, 20), g: 240, col: Math.random() < 0.5 ? '#b8ffb0' : '#d8a8ff', s0: 1.4, s1: 0.2, life: rand(0.25, 0.45) });
       } else if (pr.kind === 'meteor') {
         pr.fxT = 0.01;
         emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-5, 5), y: q.y + rand(-5, 5), vx: rand(-25, 25), vy: rand(-35, 5), drag: 2, col: Math.random() < 0.5 ? '255,120,30' : '255,200,90', s0: rand(10, 15), s1: 2, life: rand(0.3, 0.5) });
@@ -5703,7 +5703,9 @@ function updateProjectile(pr, dt) {
       for (const e of G.enemies) if (!e.dead && dist(e.x, e.y, pr.tx, pr.ty) <= pr.splash) e.rotT = 4;
     }
     if (pr.kind === 'meteor') { if (pr.mini) fxSoulMeteorImpact(pr.tx, pr.ty, pr.splash, pr.first); else fxMeteorImpact(pr.tx, pr.ty, pr.splash, pr.burn); }
-    if (pr.mburn) for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, pr.tx, pr.ty); if (d <= pr.splash * 1.15) flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
+    if (pr.mburn) for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, pr.tx, pr.ty); if (d > pr.splash * 1.15) continue;
+      if (pr.mini) { stunEnemy(e, METEOR_RAIN.stun * (e.def.chief ? 0.5 : 1)); slowEnemy(e, METEOR_RAIN.slow[0], METEOR_RAIN.slow[1]); } // sersemler, yavaşlar
+      flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
     if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
       G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
       G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
@@ -7877,6 +7879,8 @@ function castUlt(h, x, y) {
       let tx = x, ty = y;
       for (let tr = 0; tr < 12; tr++) { // düzensiz dağılım: birbirine fazla yaklaşmayan rastgele noktalar
         const a = rand(0, Math.PI * 2), rr = U.r * Math.sqrt(Math.random()) * M.spread; tx = x + Math.cos(a) * rr; ty = y + Math.sin(a) * rr * 0.55;
+        const nq = nearestOnPaths(G.paths, tx, ty); // yola çek: yol ortasından en çok M.road dışarı
+        if (nq.d > M.road) { const kq = M.road / nq.d; tx = nq.x + (tx - nq.x) * kq; ty = nq.y + (ty - nq.y) * kq; }
         if (spots.every(([qx, qy]) => Math.hypot(qx - tx, (qy - ty) / 0.55) > U.r * M.minD)) break;
       }
       spots.push([tx, ty]); tt -= rand(M.gap[0], M.gap[1]);
