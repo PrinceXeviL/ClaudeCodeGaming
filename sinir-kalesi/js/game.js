@@ -12524,8 +12524,11 @@ function drawEnemyPanel() {
 
 // 16 Eki (Caner: "Robin'i seçip bir yere gönderince ses yok; bütün komutanlarda düzelt"): komutanın kendi sesi (ElevenLabs, sözsüz):
 // hsel_<id> seçince (homurtu, ıslık, kıkırtı...), hmove_<id> gönderince (adım, zincir, yarasa, kurt havlaması...)
-function heroBark(h, k) { const n = k + '_' + h.id; if (SOUND[n]) sfx(n, null, 1, h); }
-for (const id of ['spartacus', 'leonidas', 'merlin', 'robin', 'bathory']) { SOUND['hsel_' + id] = { vol: 0.55, gap: 0.5, max: 1 }; SOUND['hmove_' + id] = { vol: 0.5, gap: 0.6, max: 1 }; }
+// 16 Eki (Caner: "Robin'in sesini beğenmedim, ulumasın, ıslık çalmasın"): BARK_V sürümü (hsel_robin2: iskelet okçu homurtusu + yay gerilmesi,
+// hmove_robin2: yaprakta adım + sadak + pelerin); eski dosyalar duruyor
+const BARK_V = { robin: '2' };
+function heroBark(h, k) { const n = k + '_' + h.id + (BARK_V[h.id] || ''); if (SOUND[n]) sfx(n, null, 1, h); }
+for (const id of ['spartacus', 'leonidas', 'merlin', 'robin', 'bathory']) { const v = BARK_V[id] || ''; SOUND['hsel_' + id + v] = { vol: 0.55, gap: 0.5, max: 1 }; SOUND['hmove_' + id + v] = { vol: 0.5, gap: 0.6, max: 1 }; }
 function setSel(sel) {
   const old = G.sel;
   const same = old && sel && old.kind === sel.kind && old.plot === sel.plot && old.tower === sel.tower && old.hero === sel.hero && old.enemy === sel.enemy;

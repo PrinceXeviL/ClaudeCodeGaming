@@ -53,6 +53,9 @@ SFX = {
     'hmove_merlin': ('an old wizard walks off with a wooden staff tapping the ground and a soft swirl of magic sparkles, no words', 1.1, 2),
     'hsel_robin': ('a confident rogue archer gives a short sharp whistle, a bowstring creaks, game unit selected, no words', 1.1, 2),
     'hmove_robin': ('light quick footsteps on dry leaves, arrows rattling in a quiver and a wolf gives one short eager bark, no words', 1.1, 2),
+    # 16 Eki (Caner: "Robin'in sesini hiç beğenmedim, ulumasın, ıslık çalmasın"): yeni sürüm (eskiler duruyor)
+    'hsel_robin2': ('an undead skeleton archer answers with one low raspy determined grunt, dry bones creak and a bowstring is drawn tight with a tense wooden creak, game unit selected, no words, no whistle, no howl, no animals, no music', 1.0, 3),
+    'hmove_robin2': ('quick light footsteps on dry crunchy autumn leaves, a leather quiver full of arrows rattles and a cloak swishes, game unit order acknowledged, no voice, no whistle, no animals, no music', 1.0, 3),
     'hsel_bathory': ('a vampire countess gives a soft eerie amused laugh, a few bats flutter around, game unit selected, no words', 1.1, 2),
     'hmove_bathory': ('a silk gown swishes as a vampire glides away, a flock of bats flutters past with a soft whoosh, no words', 1.1, 2),
     'starthud': ('a magical star slamming into place: a deep hollow bone thud with a bright eerie green magic chime sparkle on top, short, satisfying game reward sound, no music', 0.7, 3),
