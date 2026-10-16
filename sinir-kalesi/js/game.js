@@ -9418,7 +9418,7 @@ function boneBallHit(pr) {
     if (!e.def.chief && !e.def.machine && e.siege === undefined) { // havaya savrulur: merkezden dışa, yolda geriye; yere düşünce kısa sersemler
       e.tossT = e.tossD = BONEBALL.toss * (0.8 + 0.4 * k); e.tossH = (cr.h || 30) * (0.55 + 0.45 * k);
       const side = Math.sign((e.off || 0) - 0) || (Math.random() < 0.5 ? -1 : 1); e.tossOff = clamp((e.off || 0) + side * rand(5, 11), -14, 14);
-      if (pushable(e) && !e.blocker) { e.knockT = e.tossD; e.knockV = 70 + 90 * k; }
+      // 16 Eki (Caner: "düşmanları baya geriye atıyor, olmasın"): geri itme kalktı; yalnız yerinde kısa sıçrar ve sersemler
       stunEnemy(e, e.tossD + (cr.stun || 0) * k);
     }
   }
