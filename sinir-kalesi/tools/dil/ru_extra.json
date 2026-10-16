@@ -579,7 +579,16 @@
   "EĞİTİM TAMAM": "ОБУЧЕНИЕ ЗАВЕРШЕНО",
   "HARİTAYA DÖN": "НА КАРТУ",
   "Eğitim": "Обучение",
-  "Senaryolu eğitim · kayıt yok": "Обучение по сценарию · без сохранения"
+  "Senaryolu eğitim · kayıt yok": "Обучение по сценарию · без сохранения",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır": "Похитители душ высасывают душу врага: пробивают броню, замедляют",
+  "3. kademede biriken ruhlarla şimşek çarpar": "на 3-й ступени накопленные души бьют молнией",
+  "Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler": "Похититель душ: высасывает душу врага, магический урон пробивает броню",
+  "İki ruh hırsızı": "Два похитителя душ",
+  "emilen düşman %30 yavaşlar": "истощаемые враги замедляются на %30",
+  "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "каждые 8 с запирает сильнейшего врага в клетку на 2 с",
+  "Ruh!": "Душа!",
+  "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Молния душ из накопленных душ: у поражённого врага виден скелет",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Похитители душ высасывают душу врага: пробивают броню и замедляют. Стройте против тяжёлой пехоты со щитами и бронёй. На 3-й ступени накопленные души бьют молнией."
  },
  "tpl": [
   [
@@ -925,6 +934,22 @@
   [
    "Kasada {} / {}",
    "В сейфе: {} / {}"
+  ],
+  [
+   "Kule Ruh Emiciye dönüşür: +{} ruh hırsızı",
+   "Башня становится Пожирателем душ: +{} похититель душ"
+  ],
+  [
+   "emilen canın %{}'i yakındaki iskeletleri iyileştirir",
+   "{}% высосанного здоровья лечит ближних скелетов"
+  ],
+  [
+   "Kule Ruh Kafesine dönüşür: şimşek {} düşmana daha sıçrar",
+   "Башня становится Клеткой душ: молния перескакивает ещё на {} врагов"
+  ],
+  [
+   "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
+   "каждые {} с выпускает призрака: {} урона, {} с страха"
   ]
  ]
 }

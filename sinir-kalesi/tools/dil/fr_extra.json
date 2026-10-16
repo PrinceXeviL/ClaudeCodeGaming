@@ -579,7 +579,16 @@
   "EĞİTİM TAMAM": "ENTRAÎNEMENT TERMINÉ",
   "HARİTAYA DÖN": "RETOUR À LA CARTE",
   "Eğitim": "Entraînement",
-  "Senaryolu eğitim · kayıt yok": "Entraînement guidé · non sauvegardé"
+  "Senaryolu eğitim · kayıt yok": "Entraînement guidé · non sauvegardé",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır": "Les voleurs d’âmes aspirent l’âme de l’ennemi : perce l’armure, ralentit",
+  "3. kademede biriken ruhlarla şimşek çarpar": "au rang 3, les âmes accumulées frappent en éclair",
+  "Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler": "Voleur d’âmes : aspire l’âme de l’ennemi, les dégâts magiques percent l’armure",
+  "İki ruh hırsızı": "Deux voleurs d’âmes",
+  "emilen düşman %30 yavaşlar": "les ennemis aspirés sont ralentis de %30",
+  "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "toutes les 8 s, enferme l’ennemi le plus fort 2 s dans une cage",
+  "Ruh!": "Âme !",
+  "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Éclair d’âmes des âmes accumulées : le squelette de l’ennemi frappé apparaît",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Les voleurs d’âmes aspirent l’âme de l’ennemi : ils percent l’armure et ralentissent. À construire contre l’infanterie lourde blindée à bouclier. Au rang 3, les âmes accumulées frappent en éclair."
  },
  "tpl": [
   [
@@ -925,6 +934,22 @@
   [
    "Kasada {} / {}",
    "Coffre : {} / {}"
+  ],
+  [
+   "Kule Ruh Emiciye dönüşür: +{} ruh hırsızı",
+   "La tour devient Suceur d’âmes : +{} voleur d’âmes"
+  ],
+  [
+   "emilen canın %{}'i yakındaki iskeletleri iyileştirir",
+   "{} % de la vie aspirée soigne les squelettes proches"
+  ],
+  [
+   "Kule Ruh Kafesine dönüşür: şimşek {} düşmana daha sıçrar",
+   "La tour devient Cage d’âmes : l’éclair rebondit sur {} ennemis de plus"
+  ],
+  [
+   "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
+   "toutes les {} s libère un fantôme : {} dégâts, {} s de peur"
   ]
  ]
 }

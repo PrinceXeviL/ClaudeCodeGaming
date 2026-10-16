@@ -2497,7 +2497,7 @@ function drawParts(list, add) {
     } else if (p.kind === 'sprite') { // 16 Eki: görselli parça (kemik gülle kırıkları)
       ctx.globalAlpha = Math.min(1, a * 3); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); icoFit(p.im, 0, 0, p.h / 2.4 * 2); ctx.restore();
     } else if (p.kind === 'bdrop') { // kan damlası görseli: ucu gidişin tersine
-      const im = p.im; if (!im) continue; ctx.globalAlpha = Math.min(1, a * 3); const hh = s * 2, ww = hh * im.width / im.height;
+      const im = p.im; if (!im) continue; ctx.globalAlpha = Math.min(1, a * 3); const sp = Math.hypot(p.vx, p.vy), ww = s * 2, hh = ww * (1 + Math.min(1.6, sp / 160)); // hızlıyken uzar
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) - Math.PI / 2); ctx.drawImage(im, -ww / 2, -hh / 2, ww, hh); ctx.restore();
     } else if (p.kind === 'chunk') {
       ctx.globalAlpha = Math.min(1, a * 2.5);
@@ -2962,10 +2962,12 @@ function bleedKind(e) { const t = (e.def.base || e.type).replace(/_(k|y)$/, '');
 // 16 Eki (Caner: "kan pikselleri amatör"): Gemini kan sayfası (varliklar/kan_isle.py, nm32_*): isabette sıçrama görseli, savrulan damla görselleri
 // (yere değince minik leke), ölünce yer lekesi görseli. Görsel yoksa eski çizim (nokta ve doku) kalır.
 const BLOOD_SPR = { spray: ['nm32_bspray', 'nm32_bcrescent'], heavy: ['nm32_bstar'], small: ['nm32_bpuff'], drop: ['nm32_drop_round', 'nm32_drop_tear', 'nm32_drop_tear', 'nm32_drop_streak'],
-  pool: ['nm32_splat_pool', 'nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'], spot: ['nm32_splat_spots', 'nm32_drop_cluster'], dur: 0.26 };
+  pool: ['nm32_splat_pool', 'nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'], spot: ['nm32_splat_spots', 'nm32_drop_cluster'], dur: 0.16,
+  // 16 Eki (Caner: "adamın kafası kadar damla, en az 10 kat küçük"): dünya ölçüleri (lejyoner ~30 boy, kafası ~6): damla ~1, sıçrama ~5, ölüm lekesi gövdenin yarısı
+  dropS: [0.45, 0.8], sprayK: 0.17, heavyK: 0.26, spotW: 2.6, hitSpotW: 5, poolK: 0.42 };
 const bloodPick = (L) => spr(L[Math.floor(Math.random() * L.length)]);
 function bloodDropFloor(p) { // damla yere değdi: minik leke
-  if (Math.random() < 0.45) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: p.x, y: p.y, r: rand(2.2, 3.4), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 5 });
+  if (Math.random() < 0.35) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: p.x, y: p.y, w: BLOOD_SPR.spotW * rand(0.7, 1.2), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 4 });
 }
 function bloodHit(e, dealt) {
   if ((e.bloodCd || 0) > G.t || dealt <= 0) return;
@@ -2975,10 +2977,10 @@ function bloodHit(e, dealt) {
   const sim = kind === 'blood' && bloodPick(BLOOD_SPR.drop);
   if (sim) { // görselli kan: sıçrama + damlalar
     const sp = bloodPick(r > BLOOD_FX.big * 2 ? BLOOD_SPR.heavy : r > BLOOD_FX.big ? BLOOD_SPR.spray : BLOOD_SPR.small);
-    if (sp) G.effects.push({ kind: 'bspray', im: sp, x: e.x + rand(-2, 2), y: y0 + 4, w: h * (r > BLOOD_FX.big ? 1.15 : 0.7) * (0.85 + Math.random() * 0.3), face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.35, 0.35), t: 0, dur: BLOOD_SPR.dur });
-    for (let i = 0; i < Math.min(n, CROWD ? 4 : 7); i++) { const vx = rand(-75, 75), vy = -rand(60, 140);
-      G.parts.push({ kind: 'bdrop', im: bloodPick(BLOOD_SPR.drop), x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx, vy, g: 560, drag: 0, s0: rand(3.2, 5.2), s1: 3, a: 1, life: rand(0.6, 0.9), floor: e.y + rand(-3, 4), onFloor: bloodDropFloor, t: 0 }); }
-    if (r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: e.x + rand(-6, 6), y: e.y + rand(-2, 3), r: rand(5, 8), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 6 });
+    if (sp) G.effects.push({ kind: 'bspray', im: sp, x: e.x + rand(-2, 2), y: y0 + 2, w: h * (r > BLOOD_FX.big * 2 ? BLOOD_SPR.heavyK : BLOOD_SPR.sprayK) * rand(0.85, 1.15), face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.35, 0.35), t: 0, dur: BLOOD_SPR.dur });
+    for (let i = 0; i < Math.min(n, CROWD ? 3 : 6); i++) { const vx = rand(-55, 55), vy = -rand(40, 110);
+      G.parts.push({ kind: 'bdrop', im: spr('nm32_drop_round'), x: e.x + rand(-3, 3), y: y0 + rand(-3, 3), vx, vy, g: 520, drag: 0, s0: rand(BLOOD_SPR.dropS[0], BLOOD_SPR.dropS[1]), s1: 0.4, a: 1, life: rand(0.5, 0.8), floor: e.y + rand(-3, 4), onFloor: bloodDropFloor, t: 0 }); }
+    if (r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: e.x + rand(-5, 5), y: e.y + rand(-2, 3), w: BLOOD_SPR.hitSpotW * rand(0.8, 1.2), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 6 });
     return;
   }
   if (kind === 'blood') G.parts.push({ kind: 'dot', x: e.x + rand(-2, 2), y: y0, vx: 0, vy: -8, g: 0, drag: 0, col: '#c0121e', s0: 4.5 + r * 8, s1: 7 + r * 10, a: 0.75, life: 0.16, t: 0 }); // isabet anında kızıl sıçrama
@@ -2991,7 +2993,7 @@ function bloodHit(e, dealt) {
 function bloodDeath(e) {
   if (bleedKind(e) !== 'blood' || !setting('blood') || e.def.flying || e.leaked) return;
   const h = CHAR_H['enemy_' + e.type] || 30;
-  G.decals.push({ kind: 'splat', red: true, spr: 'pool', si: Math.floor(Math.random() * BLOOD_SPR.pool.length), flip: Math.random() < 0.5, x: e.x + rand(-4, 4), y: e.y + 1, r: clamp(h * 0.36, 8, 18), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
+  G.decals.push({ kind: 'splat', red: true, spr: 'pool', si: Math.floor(Math.random() * BLOOD_SPR.pool.length), flip: Math.random() < 0.5, w: h * BLOOD_SPR.poolK * rand(0.85, 1.15), x: e.x + rand(-3, 3), y: e.y + 1, r: clamp(h * 0.36, 8, 18), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
 }
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
@@ -4511,6 +4513,105 @@ function updateExtra(t, dt) {
     G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '140,60,200', t: 0, dur: 0.6 }); sfx('portal');
   }
 }
+// ---- Ruh Feneri (16 Eki, Caner): ruh hırsızları ve biriken ruhlarla şimşek (data.js SOUL_LAMP) ----
+function lampSrc(t) {
+  const ts = towerSprite(t); if (!ts) return { x: t.x, y: t.y - 40 };
+  const MF = towerForm(t), o = lanternRig(t, ts) ? towerEye(t, ts) : MF ? formPoint(t, ts, MF.src) : towerEye(t, ts); return { x: o.x, y: o.y + 6 };
+}
+function lampThieves(t) { const dr = abRank(t, 'drain'); return SOUL_LAMP.thieves[Math.min(t.lvl, 2)] + (dr ? t.def.abilities.find(a => a.id === 'drain').ranks.indexOf(dr) + 1 : 0); }
+function lampTarget(t, R, q) { // hırsız başına ayrı hedef: başka hırsızın emdiği düşman ikinci seçenek
+  const busy = new Set(t.thieves.filter(o => o !== q && o.e && o.st !== 'home').map(o => o.e));
+  let best = null, bs = -1e9;
+  for (const e of G.enemies) { if (e.dead || e.under || (e.def.flying && !t.def.air) || dist(e.x, e.y, t.x, t.y - 10) > R) continue;
+    const sc = (e.d || 0) - (busy.has(e) ? 400 : 0); if (sc > bs) { bs = sc; best = e; } }
+  return best;
+}
+function updateSoulLamp(t, dt, L) {
+  const S = SOUL_LAMP, n = lampThieves(t), src = lampSrc(t), share = t.lvl >= 2 ? S.share3 : 1, dr = abRank(t, 'drain');
+  t.souls = t.souls || 0; t.thieves = t.thieves || [];
+  while (t.thieves.length < n) t.thieves.push({ st: 'home', x: src.x, y: src.y, t: 0, cd: rand(0, 0.5), face: 1, tower: t });
+  for (const q of t.thieves) {
+    q.t += dt;
+    if (q.st === 'home') {
+      q.x = src.x; q.y = src.y; q.cd -= dt; if (q.cd > 0) continue;
+      const e = lampTarget(t, L.range, q); if (!e) { q.cd = 0.3; continue; }
+      const cyc = 2 * dist(src.x, src.y, e.x, aimY(e)) / S.speed + S.drainT; // eski ışının saniyedeki hasarı korunur (yol süresi dahil)
+      q.e = e; q.st = 'out'; q.t = 0; q.face = e.x >= src.x ? 1 : -1; t.lastFire = G.t;
+      q.dmg = (L.dmg[0] + L.dmg[1]) / 2 * cyc / L.rate / n * share * rand(0.85, 1.15);
+      continue;
+    }
+    if (q.st === 'out') {
+      if (!q.e || q.e.dead || q.e.under) { const e2 = lampTarget(t, L.range * 1.15, q); if (e2) q.e = e2; else { q.st = 'back'; continue; } }
+      const tx = q.e.x, ty = aimY(q.e), dx = tx - q.x, dy = ty - q.y, dd = Math.hypot(dx, dy), v = S.speed * dt; q.face = dx >= 0 ? 1 : -1;
+      if (dd <= v + 4) { q.st = 'drain'; q.t = 0; } else { q.x += dx / dd * v; q.y += dy / dd * v; }
+      continue;
+    }
+    if (q.st === 'drain') {
+      const e = q.e;
+      if (!e || e.dead || e.under) { q.st = 'back'; q.orb = !!e && e.dead; q.t = 0; continue; } // öldüyse ruhu yine de götürür
+      q.x = e.x - q.face * 7; q.y = aimY(e) - 3;
+      const hp0 = e.hp; hitBy = 'magic'; damageEnemy(e, q.dmg * dt / S.drainT, 'magic', true, 'magic'); hitBy = null;
+      if (t.lvl >= 1 && !e.dead) slowEnemy(e, S.slow, 0.25);
+      if (dr) { const got = (hp0 - Math.max(0, e.hp)) * dr.heal; for (const s of G.soldiers) if (!s.dead && !s.wall && !s.hero && s.hp < s.maxHp && dist(s.x, s.y, e.x, e.y) < 75) s.hp = Math.min(s.maxHp, s.hp + got); }
+      if (q.t >= S.drainT || e.dead) { q.st = 'back'; q.orb = true; q.t = 0; if (e.dead) floatText(e.x, e.y - 30, 'Ruh!', '#e8d0ff'); }
+      continue;
+    }
+    if (q.st === 'back') {
+      const dx = src.x - q.x, dy = src.y - q.y, dd = Math.hypot(dx, dy), v = S.speed * 1.15 * dt; q.face = dx >= 0 ? 1 : -1;
+      if (dd <= v + 3) { if (q.orb) { t.souls = Math.min(S.cap, t.souls + 1); t.soulPop = G.t; } q.orb = false; q.e = null; q.st = 'home'; q.cd = 0.12; }
+      else { q.x += dx / dd * v; q.y += dy / dd * v; }
+    }
+  }
+  t.zapCd = (t.zapCd ?? S.zap.cd) - dt;
+  if (t.lvl >= 2 && t.souls >= S.zap.cost && t.zapCd <= 0) { // 3. kademe: biriken ruhlarla şimşek
+    const e = findTarget(t, L.range, t.def.air);
+    if (e) { t.zapCd = S.zap.cd; t.souls -= S.zap.cost; lampZap(t, src, e, L); }
+  }
+}
+function lampZap(t, src, e, L) {
+  const S = SOUL_LAMP.zap, gh = abRank(t, 'ghost'), jumps = gh ? gh.jumps || 0 : 0, hit = new Set([e]);
+  let from = src, cur = e, dmg = (L.dmg[0] + L.dmg[1]) / 2 * S.dmgK * rand(0.9, 1.1);
+  // 16 Eki (Caner: "önceki hali zaten şimşek gibiydi, önceki haline çevir"): eski ruh ışınının görünümü (tek renk, ince, kaynakta parlama)
+  const MF = towerForm(t), dr = abRank(t, 'drain'), col = NECRO ? (MF ? MF.col : dr ? 'rgb(120,255,150)' : 'rgb(170,130,255)') : undefined;
+  const bolt = (a, b) => G.effects.push({ kind: 'zap', x0: a.x, y0: a.y - 8, target: b.e, x1: b.x, y1: b.y, t: 0, dur: 0.28, w: 1 + t.lvl * 0.25, seed: rand(0, 99), col });
+  fxMagicCharge(src.x, src.y - 8);
+  for (let i = 0; i <= jumps && cur; i++) {
+    bolt(from, { x: cur.x, y: aimY(cur), e: cur });
+    hitBy = 'magic'; damageEnemy(cur, dmg, 'magic', false, 'magic'); hitBy = null;
+    if (cur.siege === undefined && !cur.def.machine) cur.xrayT = S.xray;
+    from = { x: cur.x, y: aimY(cur) }; dmg *= S.jumpK;
+    let nx = null, nd = S.jumpR; for (const o of G.enemies) if (!o.dead && !o.under && !hit.has(o)) { const d2 = dist(o.x, o.y, cur.x, cur.y); if (d2 < nd) { nd = d2; nx = o; } }
+    cur = nx; if (cur) hit.add(cur);
+  }
+  const MA = towerAnim(t); if (MA && !(t.animT != null && t.animT < MA.dur)) t.animT = 0;
+  t.shotAnim = 0.2; t.lastFire = G.t; sfx('zap');
+}
+function drawSoulThieves() { // ruh hırsızları ve fenerin çevresinde dönen biriken ruhlar
+  const out = spr('nm31_thief_out'), drn = spr('nm31_thief_drain'), bk = spr('nm31_thief_back'), orb = spr('nm31_soul_orb');
+  for (const t of G.towers) {
+    if (t.type !== 'mage' || !t.thieves) continue;
+    if (orb && t.souls > 0) { const c = lampSrc(t); // biriken ruhlar fenerin çevresinde döner
+      for (let i = 0; i < t.souls; i++) { const a = time * 1.6 + i * Math.PI * 2 / t.souls + t.x * 0.01, x = c.x + Math.cos(a) * 15, y = c.y - 4 + Math.sin(a) * 6, pop = t.soulPop && G.t - t.soulPop < 0.3 && i === t.souls - 1 ? 1.5 : 1;
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 7, '200,150,255', 0.35); ctx.restore(); ctx.drawImage(orb, x - 3.5 * pop, y - 3.5 * pop, 7 * pop, 7 * pop); } }
+    for (const q of t.thieves) {
+      if (q.st === 'home') continue;
+      const im = q.st === 'drain' ? drn : q.st === 'back' ? bk : out; if (!im) continue;
+      const w = q.st === 'drain' ? 21 : 19, h = w * im.height / im.width, bob = Math.sin(time * 7 + t.x) * 1.5, f = q.st === 'back' ? -q.face : q.face; // dönüş görseli sola bakar
+      ctx.save(); ctx.translate(q.x, q.y + bob); ctx.scale(f, 1);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, q.st === 'drain' ? 16 : 11, '190,140,255', q.st === 'drain' ? 0.45 : 0.28); ctx.restore();
+      ctx.globalAlpha = 0.95; ctx.drawImage(im, -w * 0.6, -h * 0.55, w, h); ctx.restore();
+      if (q.st === 'drain' && q.e && !q.e.dead) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; // emilen ruh: düşmandan hırsıza akan kızıl-mor iz
+        for (let i = 0; i < 3; i++) { const k = ((time * 2.2 + i / 3) % 1); glow(ctx, lerp(q.e.x, q.x, k), lerp(aimY(q.e), q.y, k), 4, i % 2 ? '255,80,110' : '210,160,255', 0.6 * (1 - k)); } ctx.restore(); }
+    }
+  }
+}
+function drawXray(e, x, y, dh) { // şimşekle çarpılan düşman: 1 sn çizgi film röntgen iskeleti (yanıp söner)
+  const beast = e.def.quad || /hound|wardog|wolf/.test(e.type), im = spr(beast ? 'nm31_xray_beast' : 'nm31_xray_human'); if (!im) return false;
+  const h = dh * (beast ? 0.85 : 1.08), w = h * im.width / im.height;
+  ctx.save(); ctx.translate(x, y); ctx.scale(e.face < 0 ? -1 : 1, 1);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -h * 0.5, h * 0.7, '200,140,255', 0.5); ctx.restore();
+  ctx.drawImage(im, -w / 2, -h, w, h); ctx.restore(); return true;
+}
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
   if (t.gushT > 0) t.gushT -= dt; // veba kazanı: ağızdan fışkıran sıvı sütunu
@@ -4555,6 +4656,7 @@ function updateTower(t, dt) {
       } else t.cageCd = 0.5;
     }
   }
+  if (NECRO && t.type === 'mage' && typeof SOUL_LAMP !== 'undefined') { updateSoulLamp(t, dt, L); return; } // 16 Eki: ruh hırsızları + şimşek (ışın yerine)
   t.cd -= dt;
   if (t.cd > 0) return;
   let e = findTarget(t, L.range, t.def.air);
@@ -4733,7 +4835,7 @@ function updateEnemy(e, dt) {
   if (e.drumT > 0) e.drumT -= dt;
   if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt;
   if (e.captain) updateCaptain(e, dt);
-  if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; // özel saldırı anı ve bekleme süresi
+  if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; if (e.xrayT > 0) e.xrayT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
   if (AU) for (const o of G.enemies) {
@@ -6151,8 +6253,8 @@ function updatePets(dt) {
 }
 function fxBloodHit(x, y) { // kan sıçraması
   const sp = setting('blood') && bloodPick(BLOOD_SPR.small); // 16 Eki: görselli küçük sıçrama (Báthory'nin kan okları)
-  if (sp) { G.effects.push({ kind: 'bspray', im: sp, x, y: y + 4, w: 18, face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.4, 0.4), t: 0, dur: BLOOD_SPR.dur });
-    for (let i = 0; i < 4; i++) G.parts.push({ kind: 'bdrop', im: bloodPick(BLOOD_SPR.drop), x, y, vx: rand(-60, 60), vy: -rand(40, 110), g: 420, drag: 0, s0: rand(2.6, 4), s1: 2.4, a: 1, life: rand(0.35, 0.55), t: 0 });
+  if (sp) { G.effects.push({ kind: 'bspray', im: sp, x, y: y + 2, w: 5, face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.4, 0.4), t: 0, dur: BLOOD_SPR.dur });
+    for (let i = 0; i < 4; i++) G.parts.push({ kind: 'bdrop', im: spr('nm32_drop_round'), x, y, vx: rand(-50, 50), vy: -rand(30, 90), g: 420, drag: 0, s0: rand(BLOOD_SPR.dropS[0], BLOOD_SPR.dropS[1]), s1: 0.4, a: 1, life: rand(0.35, 0.55), t: 0 });
     G.effects.push({ kind: 'ring', x, y, r: 12, col: '220,30,50', t: 0, dur: 0.3 }); return; }
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'dot', x, y, vx: rand(-70, 70), vy: -rand(30, 110), g: 380, col: i % 2 ? '#a0101e' : '#e0303a', s0: rand(1.4, 2.4), s1: 0.6, life: rand(0.35, 0.6) });
   G.effects.push({ kind: 'ring', x, y, r: 12, col: '220,30,50', t: 0, dur: 0.3 });
@@ -6701,7 +6803,9 @@ function tutTapFoe() {
     if (!b || (e.blocker && !b.blocker) || (!!e.blocker === !!b.blocker && e.d < b.d)) b = e; }
   return b;
 }
-function tutCrowd() { const L = tutFoes(); let b = null, bn = 0; for (const e of L) { const n = L.filter(o => dist(o.x, o.y, e.x, e.y) < 80).length; if (n > bn) { bn = n; b = e; } } return b; }
+// kalabalığın ortası (büyü/eşya hedefi). 16 Eki: ok, düğmelerin üstüne düşmesin: ekran kenarındaki (dalga düğmesi, alt sıra) düşmanlar seçilmez
+function tutCrowd() { const L = tutFoes(), ok = (e) => { const q = worldToScreen(e.x, e.y); return q.x > VIS.l + 120 && q.x < VIS.r - 120 && q.y > VIS.t + 110 && q.y < VIS.b - 120 && !nextWavePaths().some(pi => { const b = waveBtnScreen(pi); return b && dist(b.x, b.y, q.x, q.y) < 70; }); };
+  let b = null, bn = 0; for (const e of L) { if (!ok(e)) continue; const n = L.filter(o => dist(o.x, o.y, e.x, e.y) < 80).length; if (n > bn) { bn = n; b = e; } } return b; }
 const WAVE_STEP = (text) => ({ text, done: () => G.wave > 0, at: () => { const ps = nextWavePaths(); return ps.length && waveCallable() ? waveBtnScreen(ps[0]) : null; } });
 const TUTS = [
   [ // 1. bölüm
@@ -6726,7 +6830,7 @@ const TUTS = [
   [ // 2. bölüm
     { card: true, icon: 'skull', title: 'Yeni kuleler!', text: 'Ruh Feneri ve Veba Kazanı açıldı. Her düşmanın zayıf yanı var: doğru kuleyi doğru yere kur.' },
     buildStep('mage', 'Yol kenarındaki boş arsaya dokun: Ruh Feneri kur', 'Ruh Feneri simgesine dokun, onaylamak için bir daha dokun'),
-    { card: true, icon: 'mage', title: 'Ruh Feneri', text: 'Ruh ışını zırhı deler ve düşmanı yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur.' },
+    { card: true, icon: 'mage', title: 'Ruh Feneri', text: 'Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.' },
     buildStep('artillery', 'Yol kenarındaki boş arsaya dokun: Veba Kazanı kur', 'Veba Kazanı simgesine dokun, onaylamak için bir daha dokun'),
     { card: true, icon: 'artillery', title: 'Veba Kazanı', text: 'Kalabalığın ortasına veba fırlatır: alan hasarı verir, zehirler ve yavaşlatır. Toplu gelen lejyonlara karşı kur.' },
     WAVE_STEP('Hazır olunca kafatasına iki kez dokun: dalga gelsin.'),
@@ -10511,6 +10615,7 @@ function drawEnemy0(e) {
   const dh = (d.h || 30) * UNIT_K;
   if (e.under) { drawBurrow(e); return; }
   if (e.frogT > 0) { drawFrogEnemy(e, dh); return; }
+  if (e.xrayT > 0 && Math.floor(e.xrayT / 0.08) % 2 === 0 && drawXray(e, x, y, dh)) return; // 16 Eki: Ruh Feneri şimşeği
   if (im) {
     const moved = e.px !== undefined && Math.hypot(e.x - e.px, e.y - e.py) > 0.004;
     if (moved) { e.hdx = lerp(e.hdx || 0, e.x - e.px, 0.2); e.hdy = lerp(e.hdy || 0, e.y - e.py, 0.2); }
@@ -18893,7 +18998,7 @@ function drawPlay() {
       if (d.t < 0) continue;
       const k = Math.min(1, (d.life - d.t) / 1.2), grow = d.small ? 1 : 0.55 + 0.45 * Math.min(1, d.t / 0.12);
       const sim = d.spr && (d.spr === 'pool' ? spr(BLOOD_SPR.pool[d.si || 0]) : spr(BLOOD_SPR.spot[d.flip ? 1 : 0]));
-      if (sim) { const w = d.r * 3.4 * grow, h = w * sim.height / sim.width; ctx.save(); ctx.translate(d.x, d.y); if (d.flip) ctx.scale(-1, 1); ctx.globalAlpha = 0.92 * k; ctx.drawImage(sim, -w / 2, -h / 2, w, h); ctx.restore(); continue; } // görselli kan lekesi (zaten yere yatık çizili)
+      if (sim) { const w = (d.w || d.r * 3.4) * grow, h = w * sim.height / sim.width; ctx.save(); ctx.translate(d.x, d.y); if (d.flip) ctx.scale(-1, 1); ctx.globalAlpha = 0.92 * k; ctx.drawImage(sim, -w / 2, -h / 2, w, h); ctx.restore(); continue; } // görselli kan lekesi (zaten yere yatık çizili)
       ctx.save(); ctx.translate(d.x, d.y); ctx.scale(1, 0.48); ctx.rotate(d.rot);
       ctx.globalAlpha = (d.red ? 0.8 : 0.72) * k; const R = d.r * 1.7 * grow; ctx.drawImage(splatTex(d.v, d.red), -R, -R, R * 2, R * 2);
       ctx.restore();
@@ -18955,7 +19060,7 @@ function drawPlay() {
   drawBloodLinks(); drawBatSwarms(); drawSwarms(); drawTornadoes(false);
   drawFearGhosts();
   for (const p of G.projectiles) drawProjectile(p);
-  drawSouls();
+  drawSouls(); drawSoulThieves();
   for (const g of G.ghosts) { // hayaletler
     const a = Math.min(1, g.t / 0.25, (g.d - g.end) / 30);
     ctx.save(); ctx.globalAlpha = 0.85 * a; ctx.translate(g.x, g.y - 18 + Math.sin(time * 6 + g.end) * 2);

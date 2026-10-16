@@ -579,7 +579,16 @@
   "EĞİTİM TAMAM": "ENTRENAMIENTO COMPLETO",
   "HARİTAYA DÖN": "VOLVER AL MAPA",
   "Eğitim": "Entrenamiento",
-  "Senaryolu eğitim · kayıt yok": "Entrenamiento guiado · no se guarda"
+  "Senaryolu eğitim · kayıt yok": "Entrenamiento guiado · no se guarda",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır": "Los ladrones de almas absorben el alma del enemigo: perfora armaduras, ralentiza",
+  "3. kademede biriken ruhlarla şimşek çarpar": "en el nivel 3, las almas reunidas caen como rayo",
+  "Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler": "Ladrón de almas: absorbe el alma del enemigo, el daño mágico perfora armaduras",
+  "İki ruh hırsızı": "Dos ladrones de almas",
+  "emilen düşman %30 yavaşlar": "los enemigos absorbidos se ralentizan un %30",
+  "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "cada 8 s enjaula 2 s al enemigo más fuerte",
+  "Ruh!": "¡Alma!",
+  "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Rayo de almas con las almas reunidas: se ve el esqueleto del enemigo alcanzado",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Los ladrones de almas absorben el alma del enemigo: perforan armaduras y ralentizan. Constrúyelo contra la infantería pesada acorazada con escudos. En el nivel 3, las almas reunidas caen como rayo."
  },
  "tpl": [
   [
@@ -925,6 +934,22 @@
   [
    "Kasada {} / {}",
    "Cofre: {} / {}"
+  ],
+  [
+   "Kule Ruh Emiciye dönüşür: +{} ruh hırsızı",
+   "La torre se convierte en Absorbealmas: +{} ladrón de almas"
+  ],
+  [
+   "emilen canın %{}'i yakındaki iskeletleri iyileştirir",
+   "el {}% de la vida absorbida cura a los esqueletos cercanos"
+  ],
+  [
+   "Kule Ruh Kafesine dönüşür: şimşek {} düşmana daha sıçrar",
+   "La torre se convierte en Jaula de Almas: el rayo salta a {} enemigos más"
+  ],
+  [
+   "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
+   "cada {} s suelta un fantasma: {} de daño, {} s de miedo"
   ]
  ]
 }

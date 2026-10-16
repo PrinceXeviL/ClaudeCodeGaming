@@ -768,7 +768,16 @@
   "Kuleler, askerler, büyüler, komutan ve eşyalar: hepsini denedin. Şimdi sefere çık, Mortimer'ın şapelini koru!": "Towers, soldiers, spells, commander and items: you've tried them all. Now set out on the campaign and protect Mortimer's chapel!",
   "EĞİTİM TAMAM": "TRAINING COMPLETE",
   "Eğitim": "Training",
-  "Senaryolu eğitim · kayıt yok": "Guided training · not saved"
+  "Senaryolu eğitim · kayıt yok": "Guided training · not saved",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır": "Soul thieves drain the enemy's soul: pierces armor, slows",
+  "3. kademede biriken ruhlarla şimşek çarpar": "at tier 3, stored souls strike as lightning",
+  "Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler": "Soul thief: drains the enemy's soul, magic damage pierces armor",
+  "İki ruh hırsızı": "Two soul thieves",
+  "emilen düşman %30 yavaşlar": "drained enemies are slowed by %30",
+  "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "every 8 s cages the strongest enemy for 2 s",
+  "Ruh!": "Soul!",
+  "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Soul lightning from stored souls: the struck enemy's skeleton shows",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Soul thieves drain the enemy's soul: they pierce armor and slow. Build it against shielded, armored heavy infantry. At tier 3, stored souls strike as lightning."
  },
  "tpl": [
   [
@@ -1414,6 +1423,22 @@
   [
    "Kasada {} / {}",
    "Vault: {} / {}"
+  ],
+  [
+   "Kule Ruh Emiciye dönüşür: +{} ruh hırsızı",
+   "Tower becomes a Soul Drainer: +{} soul thief"
+  ],
+  [
+   "emilen canın %{}'i yakındaki iskeletleri iyileştirir",
+   "{}% of drained life heals nearby skeletons"
+  ],
+  [
+   "Kule Ruh Kafesine dönüşür: şimşek {} düşmana daha sıçrar",
+   "Tower becomes a Soul Cage: lightning jumps to {} more enemies"
+  ],
+  [
+   "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
+   "every {} s releases a ghost: {} damage, {} s fear"
   ]
  ]
 }

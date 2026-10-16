@@ -579,7 +579,16 @@
   "EĞİTİM TAMAM": "TRAINING ABGESCHLOSSEN",
   "HARİTAYA DÖN": "ZURÜCK ZUR KARTE",
   "Eğitim": "Training",
-  "Senaryolu eğitim · kayıt yok": "Geführtes Training · nicht gespeichert"
+  "Senaryolu eğitim · kayıt yok": "Geführtes Training · nicht gespeichert",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır": "Seelendiebe saugen die Seele des Feindes aus: durchdringt Rüstung, verlangsamt",
+  "3. kademede biriken ruhlarla şimşek çarpar": "ab Stufe 3 schlagen gesammelte Seelen als Blitz ein",
+  "Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler": "Seelendieb: saugt die Seele des Feindes aus, Magieschaden durchdringt Rüstung",
+  "İki ruh hırsızı": "Zwei Seelendiebe",
+  "emilen düşman %30 yavaşlar": "ausgesaugte Feinde werden um %30 verlangsamt",
+  "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "sperrt alle 8 s den stärksten Feind 2 s in einen Käfig",
+  "Ruh!": "Seele!",
+  "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "Seelenblitz aus gesammelten Seelen: das Skelett des Getroffenen wird sichtbar",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "Seelendiebe saugen die Seele des Feindes aus: sie durchdringen Rüstung und verlangsamen. Baue ihn gegen gepanzerte schwere Infanterie mit Schilden. Ab Stufe 3 schlagen gesammelte Seelen als Blitz ein."
  },
  "tpl": [
   [
@@ -925,6 +934,22 @@
   [
    "Kasada {} / {}",
    "Tresor: {} / {}"
+  ],
+  [
+   "Kule Ruh Emiciye dönüşür: +{} ruh hırsızı",
+   "Turm wird zum Seelensauger: +{} Seelendieb"
+  ],
+  [
+   "emilen canın %{}'i yakındaki iskeletleri iyileştirir",
+   "{} % des ausgesaugten Lebens heilen nahe Skelette"
+  ],
+  [
+   "Kule Ruh Kafesine dönüşür: şimşek {} düşmana daha sıçrar",
+   "Turm wird zum Seelenkäfig: Blitz springt auf {} weitere Feinde über"
+  ],
+  [
+   "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
+   "alle {} s entlässt er einen Geist: {} Schaden, {} s Furcht"
   ]
  ]
 }

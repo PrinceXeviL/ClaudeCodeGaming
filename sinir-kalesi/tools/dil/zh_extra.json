@@ -579,7 +579,16 @@
   "EĞİTİM TAMAM": "教学完成",
   "HARİTAYA DÖN": "返回地图",
   "Eğitim": "教学",
-  "Senaryolu eğitim · kayıt yok": "引导教学 · 不保存"
+  "Senaryolu eğitim · kayıt yok": "引导教学 · 不保存",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır": "窃魂者吸取敌人的灵魂：穿透护甲并减速",
+  "3. kademede biriken ruhlarla şimşek çarpar": "第3级时，积攒的灵魂化作闪电",
+  "Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler": "窃魂者：吸取敌人灵魂，魔法伤害穿透护甲",
+  "İki ruh hırsızı": "两名窃魂者",
+  "emilen düşman %30 yavaşlar": "被吸取的敌人减速%30",
+  "8 sn'de bir en güçlü düşmanı 2 sn kafese kapatır": "每8秒将最强的敌人囚禁2秒",
+  "Ruh!": "灵魂！",
+  "Biriken ruhlarla ruh şimşeği: çarpılan düşmanın iskeleti görünür": "以积攒的灵魂释放灵魂闪电：被击中的敌人会显出骨架",
+  "Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır. Kalkanlı, zırhlı ağır piyadeye karşı kur. 3. kademede biriken ruhlarla şimşek çarpar.": "窃魂者吸取敌人的灵魂：穿透护甲并减速。用来对付持盾的重甲步兵。第3级时，积攒的灵魂化作闪电。"
  },
  "tpl": [
   [
@@ -925,6 +934,22 @@
   [
    "Kasada {} / {}",
    "金库：{} / {}"
+  ],
+  [
+   "Kule Ruh Emiciye dönüşür: +{} ruh hırsızı",
+   "塔变为噬魂者：+{}名窃魂者"
+  ],
+  [
+   "emilen canın %{}'i yakındaki iskeletleri iyileştirir",
+   "吸取生命的{}%治疗附近骷髅"
+  ],
+  [
+   "Kule Ruh Kafesine dönüşür: şimşek {} düşmana daha sıçrar",
+   "塔变为灵魂之笼：闪电额外弹跳{}名敌人"
+  ],
+  [
+   "{} sn'de bir hayalet salar: {} hasar, {} sn korku",
+   "每{}秒放出幽灵：{}伤害，恐惧{}秒"
   ]
  ]
 }
