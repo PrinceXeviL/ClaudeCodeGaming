@@ -17,6 +17,8 @@ CFG = {
     'A': dict(src='iskelet_A_bekci_hamle_olum_veo.mp4', unit='unit_skel_4', sets={'_dash': (range(4, 77), {}), '_die': (range(120, 179), {'dur': round(59 / 24, 2)})}),
     # B: yürüyüş döngüsü temiz kapanmadı (dikiş farkı adımın ~2 katı) -> eski yürüyüş kalır; yalnız Tabut Duvarı (çakış, siper, sarsılma, kalkış)
     'B': dict(src='iskelet_B_bekci_tabut_yuruyus_veo.mp4', unit='unit_skel_4', sets={'_guard': (range(4, 95), {'dur': 3.4})}),
+    # C (16 Eki): Ölüm Şövalyesi: Ruh Biçimi (eğilme, iki kılıçla tam dönüş, poza dönüş) + ölüm (sendeleme sonu, dağılma, kemik yığını)
+    'C': dict(src='olum_sovalyesi_ruh_olum.mp4', unit='unit_skel_5', sets={'_skill': (range(6, 64), {}), '_die': (range(104, 173), {'dur': round(69 / 24, 2)})}),
 }
 def cut(a):
     c = video_isle.remove_magenta(a); al = c[..., 3]

@@ -4899,7 +4899,7 @@ const ELITE_SK = {
   shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.6, // 16 Eki denge: 0,8 → 0,6
     r: 48, col: '170,120,255', hp: 0.75,
     dash: { name: 'Kalkan Hamlesi', cd: 9, min: 24, r: 72, dur: 1.2, hit: 0.47, dmg: 1.8, stun: 1.0, knock: 130 } }, // dur/hit: Veo şeridi (unit_skel_4_dash, 73 kare; çarpma 38. kare)
-  blade:  { name: 'Ruh Biçimi', cd: 10, dur: 0.75, r: 42, dmg: 2.5, heal: 0.3, col: '200,120,255' },
+  blade:  { name: 'Ruh Biçimi', cd: 10, dur: 1.5, /* 16 Eki: Veo şeridi (58 kare, unit_skel_5_skill) görünsün diye 0,75 → 1,5 */ r: 42, dmg: 2.5, heal: 0.3, col: '200,120,255' },
 };
 function eliteSkill(s, dt) {
   const sp = s.tower && s.tower.type === 'barracks' && !s.hero && !s.militia && s.tower.spec, S = ELITE_SK[sp]; if (!S) return false;
