@@ -17530,15 +17530,35 @@ function drawMapNeighbor(n, wide) {
     const gr = ctx.createLinearGradient(0, yF - soft, 0, yF + soft * 0.4); gr.addColorStop(0, `rgba(${FOG2.col},${FOG2.a})`); gr.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = gr; ctx.fillRect(x0, yF - soft, w, soft * 1.4); }
   ctx.restore();
 }
-function drawMapSeam(n, X) { // iki seferin birleştiği kuşak: dikişi örten bulut ve sis bandı, ortasında sefer adı
-  const y = n.up ? X.y : X.y + X.h, x0 = X.x - X.w, w = X.w * 3;
-  const gr = ctx.createLinearGradient(0, y - 90, 0, y + 90); gr.addColorStop(0, `rgba(${FOG2.col},0)`); gr.addColorStop(0.5, `rgba(${FOG2.col},0.78)`); gr.addColorStop(1, `rgba(${FOG2.col},0)`);
-  ctx.fillStyle = gr; ctx.fillRect(x0, y - 90, w, 180);
-  for (let i = 0; i < 8; i++) { const t = time * 0.3 + i * 1.9, cx = X.x + X.w * ((i + 0.5) / 8) + Math.sin(t) * 16, cy = y + Math.sin(t * 1.2) * 10, rr = 70 + 12 * Math.sin(t * 0.7);
-    const g2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr); g2.addColorStop(0, `rgba(${FOG2.col},0.55)`); g2.addColorStop(1, `rgba(${FOG2.col},0)`); ctx.fillStyle = g2; ctx.fillRect(cx - rr, cy - rr, 2 * rr, 2 * rr); }
-  const E2 = EPISODES[(n.up ? n.ep : mapEp) - 1]; // kuşağın üstündeki seferin adı
-  // 16 Eki (Caner: tek parça harita): kuşakta sefer kurdelesi yok; adı üstteki başlıkta. Kilitliyse küçük kilitli yazı
-  if (E2 && n.up && !n.open) { ctx.save(); ctx.translate(X.x + X.w / 2, y); ctx.scale(1 / Math.max(1, MAPCAM.z * 0.55), 1 / Math.max(1, MAPCAM.z * 0.55)); zoneTitle('🔒 ' + E2.name); ctx.restore(); }
+// 16 Eki (Caner: "seferler arası geçiş çok kötü, başlıkla olabilir"): iki seferin dikişi kuşbakışı bulut kuşağının altında kalır;
+// yol bulutların altından geçer, kuşağın ortasında sonraki seferin başlığı (SEFER II · Cadı Avı). Koyu sis bandı yerine açık pus.
+const MAP_SEAM = { h: 110, n: 9, w: 230 }; // h: pusun yarı yüksekliği, n: bir sıradaki bulut, w: bulut genişliği (dünya)
+function drawMapSeam(n, X) {
+  const y = n.up ? X.y : X.y + X.h, x0 = X.x - X.w, w = X.w * 3, z = MAPCAM.z;
+  const gr = ctx.createLinearGradient(0, y - MAP_SEAM.h, 0, y + MAP_SEAM.h);
+  gr.addColorStop(0, 'rgba(70,58,88,0)'); gr.addColorStop(0.5, 'rgba(70,58,88,0.55)'); gr.addColorStop(1, 'rgba(70,58,88,0)');
+  ctx.fillStyle = gr; ctx.fillRect(x0, y - MAP_SEAM.h, w, MAP_SEAM.h * 2);
+  const C = ['cloud_l1', 'cloud_l2', 'cloud_l3'].map(spr).filter(Boolean), D = ['cloud_d1', 'cloud_d2', 'cloud_d3'].map(spr).filter(Boolean);
+  const row = (L, dy, a, k, sp, seed) => { if (!L.length) return; ctx.save(); ctx.globalAlpha *= a;
+    for (let i = 0; i < MAP_SEAM.n + 2; i++) { const im = L[(i + seed) % L.length], cw = MAP_SEAM.w * k * (0.8 + hsh(i, seed) * 0.45), ch = cw * im.height / im.width;
+      const span = X.w + MAP_SEAM.w * 2, cx = X.x - MAP_SEAM.w + ((i / MAP_SEAM.n) * span + time * sp + hsh(i, seed + 3) * 40) % span, cy = y + dy + (hsh(i, seed + 7) - 0.5) * 34 + Math.sin(time * 0.4 + i) * 3;
+      ctx.drawImage(im, cx - cw / 2, cy - ch / 2, cw, ch); }
+    ctx.restore(); };
+  row(D.length ? D : C, -26, 0.85, 1.05, 3, 1); row(C, 18, 0.95, 1, -4, 5); row(C, -4, 0.9, 0.8, 6, 9);
+  const ep = n.up ? n.ep : mapEp, E2 = EPISODES[ep - 1]; if (!E2) return; // kuşağın üstündeki seferin başlığı
+  const lock = n.up && !n.open, s = 1 / Math.max(1, z * 0.5);
+  ctx.save(); ctx.translate(X.x + X.w / 2, y); ctx.scale(s, s);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.font = `400 15px ${FONT_T}`; ctx.strokeStyle = 'rgba(22,10,6,0.9)'; ctx.lineWidth = 4; ctx.strokeText(`${ep}. SEFER`, 0, -26); ctx.fillStyle = '#d9b46a'; ctx.fillText(`${ep}. SEFER`, 0, -26);
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+  ctx.font = `400 30px ${FONT_T}`; ctx.lineWidth = 6; ctx.strokeText(E2.name, 0, 4); ctx.shadowColor = 'transparent'; ctx.fillStyle = '#f4e3b2'; ctx.fillText(E2.name, 0, 4);
+  const hw = ctx.measureText(E2.name).width / 2;
+  for (const sg of [-1, 1]) { const a0 = sg * (hw + 10), a1 = sg * (hw + 44);
+    ctx.strokeStyle = 'rgba(22,10,6,0.9)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(a0, 4); ctx.lineTo(a1, 4); ctx.stroke();
+    ctx.strokeStyle = '#d9b46a'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(a0, 4); ctx.lineTo(a1, 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a1 + sg * 7, 4); ctx.lineTo(a1, -1); ctx.lineTo(a1 - sg * 7, 4); ctx.lineTo(a1, 9); ctx.closePath(); ctx.fillStyle = '#d9b46a'; ctx.fill(); ctx.strokeStyle = 'rgba(22,10,6,0.9)'; ctx.lineWidth = 1.6; ctx.stroke(); }
+  if (lock) { ctx.font = `800 14px ${FONT_B}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(22,10,6,0.9)'; ctx.strokeText('Önce bu seferi bitir', 0, 34); ctx.fillStyle = '#ffb0a0'; ctx.fillText('Önce bu seferi bitir', 0, 34); drawIcon('lock', 0, -52, 22); }
+  ctx.restore();
 }
 function mapEpCross(E, X, NB) { // kameranın ortası komşu seferin zeminine geçtiyse asıl harita o olur; kamera aynı görüntüde kalır
   const z = MAPCAM.z, cy = ((EDGE.t + MAPCAM.bar + EDGE.b - MAPCAM.bar) / 2 - MAPCAM.ty) / z;
