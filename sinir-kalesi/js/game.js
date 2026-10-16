@@ -6181,7 +6181,7 @@ const MORT_LINES = {
   boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
-  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, gölün sahibi!'],
+  lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'], // göl solucanı Bubu (kodla çizilen dokunaç) kalıyor; silinen Veo Bubu'su değil
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
@@ -6518,7 +6518,7 @@ function achLevelEnd(win) {
 const ACH_ICO = { conquer: 'ico_ui_map', iron: 'ico_em_defeat', endless: 'ico_kumsaati', fly: 'ico_ach_crow', mach: 'ico_bomb', early: 'ico_ui_wavecall',
   herolvl: 'ico_ui_heroes', ult: 'ico_em_topkill', burst: 'ico_sp_nm_burst', golem: 'ico_sp_nm_golem', spells: 'ico_ab_shadow', grim: 'ico_sp_book',
   build: 'ico_bd_archer', rebuild: 'ico_mn_clear', hatch: 'ico_mn_ghoul', flies: 'ico_ab_plague', imbue: 'ico_im_fire',
-  frog: 'ico_hs_merlin_frog', surprise: 'ico_em_treasure', conquer2: 'ico_ui_map', sec_onelife: 'ico_ui_heart', sec_rush: 'ico_ui_fast', sec_army: 'ico_sp_nm_raise', sec_nospell: 'ico_ui_lock' };
+  frog: 'ico_hs_merlin_frog', surprise: 'ico_em_treasure', conquer2: 'ico_ui_map', crystal: 'ico_crystal', sec_onelife: 'ico_ui_heart', sec_rush: 'ico_ui_fast', sec_army: 'ico_sp_nm_raise', sec_nospell: 'ico_ui_lock' };
 function achIcon(icon, r, id) {
   { const im = id && (spr('ico_ach_' + id) || (ACH_ICO[id] && spr(ACH_ICO[id]))); if (im) { icoFit(im, 0, 0, r * 0.95); return; } } // 16 Eki: Gemini başarım simgesi (nm18_basarim_H)
   ctx.save(); ctx.lineJoin = 'round';
