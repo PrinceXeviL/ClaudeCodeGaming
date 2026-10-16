@@ -609,7 +609,9 @@ const SOUND = {
   win:     { vol: 0.80, gap: 1, max: 1 },
   winnecro: { vol: 0.85, gap: 2, max: 1 },
   winsoft: { vol: 0.7, gap: 2, max: 1 },                           // 16 Eki (Caner: winnecro rahatsız ediyordu): yumuşak zafer cıngılı (ElevenLabs)
-  skelcrowd: { vol: 0.8, gap: 2, max: 1 },                         // 16 Eki: zaferde iskelet kalabalığının hep bir ağızdan coşkusu (ElevenLabs)                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
+  skelcrowd: { vol: 0.8, gap: 2, max: 1 },                         // 16 Eki: zaferde iskelet kalabalığının hep bir ağızdan coşkusu (ElevenLabs)
+  winbone: { vol: 0.75, gap: 2, max: 1 },                          // 16 Eki (Caner seçti): kemik ksilofonlu, şakacı ürkütücü zafer cıngılı
+  skelghoul: { vol: 0.85, gap: 2, max: 1 },                        // 16 Eki (Caner seçti): iskelet ve hortlakların hırıltılı hep birlikte coşkusu                         // 16 Eki: nekromantik zafer (org, hayalet koro, çan; ElevenLabs)
   starthud: { vol: 0.6, gap: 0.05, max: 3 },
   starchime: { vol: 0.6, gap: 0.05, max: 3 },
   flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı
@@ -8717,7 +8719,7 @@ function update(dt) {
   if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !(G.tutorial && G.tut) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
     const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
     vaultSettle(firstWin);
-    if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winsoft'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
+    if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winbone'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
     if (G.chal === 'd') { save.daily = { key: G.daily.key, done: true, n: ((save.daily && save.daily.n) || 0) + 1 }; G.stars = 1; }
     else if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
     else {
@@ -8729,7 +8731,7 @@ function update(dt) {
     if (G.tutLv) { save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); } // eğitimli bölüm kazanıldı: eğitimi bir daha gösterme
     persist();
     setOverlay('win');
-    if (NECRO) { sfx('winsoft'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
+    if (NECRO) { sfx('winbone'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
     gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
@@ -19539,7 +19541,7 @@ function celebStart() { // true: kutlama sürüyor (zafer paneli bekler)
     for (const h of G.heroes) { const F = !h.dead && ANIM_META[h.def.sprite + '_lvlup']; if (F) h.lvlA = h.lvlD = F.dur || F.n / 24; } // komutanın zafer pozu (Veo _lvlup)
     return true;
   }
-  if (G.cryT && G.t >= G.cryT) { G.cryT = 0; sfx('skelcrowd'); shakeScreen(1.5, 0.3); }
+  if (G.cryT && G.t >= G.cryT) { G.cryT = 0; sfx('skelghoul'); shakeScreen(1.5, 0.3); }
   return G.t - G.celebT0 < CELEB.dur;
 }
 const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / CELEB.rise, 0, 1) : 0);
