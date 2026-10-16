@@ -562,8 +562,8 @@
    "{} · Les projetés sont étourdis {} s"
   ],
   [
-   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
-   "+{}% d'armure, +{} PV · pare les coups, étourdit au bouclier · frappe lentement et fort · 4e squelette · Mur de cercueil : absorbe 80 % des dégâts · Charge au bouclier : fonce sur un ennemi et l'étourdit"
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %60'ını emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% d'armure, +{} PV · pare les coups, étourdit au bouclier · frappe lentement et fort · 4e squelette · Mur de cercueil : absorbe 60 % des dégâts · Charge au bouclier : fonce sur un ennemi et l'étourdit"
   ],
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",

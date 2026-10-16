@@ -562,8 +562,8 @@
    "{} · Los lanzados quedan aturdidos {} s"
   ],
   [
-   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
-   "+{}% armadura, +{} vida · desvía golpes, aturde con el escudo · golpea lento y fuerte · 4.º esqueleto · Muro de ataúd: absorbe el 80% del daño · Embestida de escudo: carga contra un enemigo y lo aturde"
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %60'ını emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% armadura, +{} vida · desvía golpes, aturde con el escudo · golpea lento y fuerte · 4.º esqueleto · Muro de ataúd: absorbe el 60% del daño · Embestida de escudo: carga contra un enemigo y lo aturde"
   ],
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",

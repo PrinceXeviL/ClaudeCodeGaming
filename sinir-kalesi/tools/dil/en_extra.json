@@ -1062,8 +1062,8 @@
    "{} · Flung enemies are stunned for {} s"
   ],
   [
-   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
-   "+{}% armor, +{} health · parries blows, stuns with the shield · hits slow and heavy · 4th skeleton · Coffin Wall: absorbs 80% of damage · Shield Dash: charges an enemy and stuns it"
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %60'ını emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% armor, +{} health · parries blows, stuns with the shield · hits slow and heavy · 4th skeleton · Coffin Wall: absorbs 60% of damage · Shield Dash: charges an enemy and stuns it"
   ],
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",

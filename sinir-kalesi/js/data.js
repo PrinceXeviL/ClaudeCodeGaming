@@ -33,7 +33,7 @@ const TOWERS = {
       { cost: 150, range: 140, hp: 150, dmg: [8, 13], armor: 0.3,  respawn: 8,  perk: 'Altın şövalye zırhı · vuruşlar %15 can çalar' },
     ],
     abilities: [
-      { id: 'shield', name: 'Kalkan Duvarı', desc: (r) => `+%${Math.round(r.armor * 100)} zırh, +${r.hp} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir`,
+      { id: 'shield', name: 'Kalkan Duvarı', desc: (r) => `+%${Math.round(r.armor * 100)} zırh, +${r.hp} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %60'ını emer · Kalkan Hamlesi: düşmana atılıp sersemletir`,
         ranks: [{ cost: 140, armor: 0.1, hp: 30 }, { cost: 190, armor: 0.18, hp: 60 }, { cost: 240, armor: 0.25, hp: 100 }] },
       { id: 'blade', name: 'Kılıç Ustası', desc: (r) => `Hasar x${r.mult} · %${Math.round(r.crit * 100)} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir`,
         ranks: [{ cost: 160, mult: 1.3, crit: 0.1 }, { cost: 220, mult: 1.6, crit: 0.15 }, { cost: 280, mult: 2, crit: 0.2 }] },
@@ -1533,3 +1533,31 @@ const SKILL_CD_K = 1.1;
   for (const H of Object.values(HEROES)) for (const P of H.paths || []) for (const sk of P.skills || []) up(sk);
   for (const T of [HERO_ULT, HERO_ULT2, NECRO_SPELLS]) for (const k in T) up(T[k]);
   for (const k in HERO_SKILLS) { const v = HERO_SKILLS[k]; if (Array.isArray(v)) v.forEach(up); else up(v); } }
+// ----- Denge turu (16 Eki, Caner: "2 gelişmiş kule + birkaç mahzenle rahat geçiyorum; en güçlü/güçsüz kuleleri bul, denge kur") -----
+// tools/denge-deney.js ile 10 strateji × 16 bölüm (iki sefer): "2 Ruh Feneri + mahzen" 16/16 ve ort. 17 canla geçiyordu (en güçlü),
+// Veba Kazanı tek başına 8/16 (en zayıf hasar kulesi; karışık oyunda öldürmelerin %1'i), karışık oyunda bölüm sonunda ort. 2650 altın artıyordu.
+// BAL.tower: kule hasar çarpanı (tüm kademeler), BAL.hp: düşman canı çarpanı, BAL.bounty: düşman ödülü ve erken çağrı bonusu çarpanı.
+const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 0.9 }, hp: 1.25, bounty: 0.875, hero: { bathory: 0.95 }, heroCd: { merlin: 1.15, bathory: 1.15 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
+for (const t in BAL.tower) for (const L of TOWERS[t].levels) if (L.dmg) L.dmg = L.dmg.map(v => Math.round(v * BAL.tower[t]));
+GAME_DIFF.hp *= BAL.hp; GAME_DIFF.bounty *= BAL.bounty;
+for (const h in BAL.hero) if (HEROES[h] && HEROES[h].dmg) HEROES[h].dmg = HEROES[h].dmg.map(v => Math.round(v * BAL.hero[h]));
+for (const h in BAL.heroCd) for (const P of (HEROES[h] && HEROES[h].paths) || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * BAL.heroCd[h] * 10) / 10;
+// 16 Eki (7. tur): 40 bölüm × 3 yapılandırma tam test (karışık+Spartaküs, karışık+Merlin, 2 Ruh Feneri+mahzen+Merlin). Üçünün de tam canla geçtiği
+// bölümlerde can artar, karışık oyunun kaybettiklerinde azalır (BAL.lvl: bölüm sırası → can çarpanı). Kuzgun Tepesi (1): ödül kesintisinden sonra
+// bot 2-3 kule kurabiliyordu, üç yapılandırma da kaybetti: can %20 az, +60 başlangıç altını.
+BAL.lvl = { 1: 0.8, 2: 1.25, 3: 1.2, 5: 1.15, 7: 1.2, 8: 1.05, 10: 1.05, 11: 0.9, 12: 1.25, 13: 0.92, 14: 1.2, 16: 1.2, 17: 0.92, 18: 1.25,
+  20: 1.15, 24: 1.1, 26: 1.25, 27: 1.05, 28: 1.05, 30: 1.15, 31: 0.95, 32: 0.9 };
+for (const i in BAL.lvl) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl[i];
+if (LEVELS[1]) LEVELS[1].gold += 60;
+// 8. tur: bölüm canı "2 Ruh Feneri + mahzen" stratejisini etkilemedi (hâlâ ort. 16 can): asıl güç mahzenlerin düşmanı kapıda tutması.
+// Mahzen iskeletlerinin canı %20 az (BAL.barracksHp); Tabut Duvarı emişi %80 → %60 (game.js ELITE_SK.shield.red)
+BAL.barracksHp = 0.9; // 9. tur: 0,8 güçlü stratejiyi etkilemedi, karışık oyunu zayıflattı
+for (const L of TOWERS.barracks.levels) L.hp = Math.round(L.hp * BAL.barracksHp);
+// 9. tur: tam testte her stratejiyle (Merlin'li karışık dahil) tam canla geçilen bölümler: eski can çarpanları zayıf bota göre çok düşük kalmış
+BAL.lvl2 = { 2: 1.5, 3: 1.4, 4: 1.2, 5: 1.1, 6: 1.2, 7: 1.4, 10: 1.1, 12: 1.1, 14: 1.05, 16: 1.3, 18: 1.6, 21: 1.1, 24: 1.3, 25: 1.05, 26: 1.5, 27: 1.2, 29: 1.2, 31: 1.1, 33: 1.3 };
+for (const i in BAL.lvl2) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl2[i];
+// 10. tur: Spartaküs (ücretsiz başlangıç komutanı) karışık oyunda 40'ta 20 kazanıyor, ort. 5,5 can (Merlin 35/40, 11,7): güçlenir
+BAL.spartacus = { dmg: 1.35, hp: 1.3, cd: 0.85, ult: 1.4 }; // 11. tur: 1,2/1,15/1,2 ile 22/40, ort. 7 can (yetmedi)
+{ const S = HEROES.spartacus, B = BAL.spartacus; S.dmg = S.dmg.map(v => Math.round(v * B.dmg)); S.hp = Math.round(S.hp * B.hp);
+  for (const P of S.paths || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * B.cd * 10) / 10;
+  const U = HERO_ULT.spartacus; if (U && U.dps) U.dps = U.dps.map(v => Math.round(v * B.ult)); }

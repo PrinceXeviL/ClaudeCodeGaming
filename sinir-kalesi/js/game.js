@@ -4882,7 +4882,8 @@ function updateWall(s, dt) {
 // Animasyon: <ad>_skill şeridi (Bekçi: Gemini kareleri, varliklar/bekci_kare_isle.py) dur süresince bir kez oynar; bu sürede normal saldırı yok.
 const ELITE_SK = {
   // 16 Eki (Caner): Tabut Duvarı hasarın %80'ini emer, sürerken saldırmaz; Kalkan Hamlesi (dash): r içindeki düşmana tabutla atılır, vurur, sersemletir, geri savurur
-  shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.8, r: 48, col: '170,120,255', hp: 0.75,
+  shield: { name: 'Tabut Duvarı', cd: 12, dur: 1.2, ward: 3, red: 0.6, // 16 Eki denge: 0,8 → 0,6
+    r: 48, col: '170,120,255', hp: 0.75,
     dash: { name: 'Kalkan Hamlesi', cd: 9, min: 24, r: 72, dur: 1.2, hit: 0.47, dmg: 1.8, stun: 1.0, knock: 130 } }, // dur/hit: Veo şeridi (unit_skel_4_dash, 73 kare; çarpma 38. kare)
   blade:  { name: 'Ruh Biçimi', cd: 10, dur: 0.75, r: 42, dmg: 2.5, heal: 0.3, col: '200,120,255' },
 };
@@ -5190,9 +5191,9 @@ function useSkill(h, id) {
       return true;
     }
     case 'timegate': { // Merlin (pasif): en kalabalık yere zaman kapısı, düşmanlar yolun gerisine
-      const c = densest(h.x, h.y, R + 20, 60);
-      if (!c || c.n < 3) return false;
-      timeGate(c.e.x, c.e.y, 62, () => 30 + 8 * L, 110, 1);
+      const c = densest(h.x, h.y, R + 20, 60), TG = MERLIN_GATE;
+      if (!c || c.n < TG.min) return false;
+      timeGate(c.e.x, c.e.y, TG.r, () => 30 + 8 * L, TG.back, 1);
       return true;
     }
     case 'frog': { // Merlin (pasif): menzildeki en güçlü (canı en çok) sıradan düşman 4 sn kurbağa
@@ -7480,6 +7481,8 @@ function marchSoldier(s, dt) {
 
 // Kahraman gücü: seviyeyle hasar %15 artar, yıldız gelişmesiyle +%20
 // Merlin'in zaman kapısı (pasif ve eski güç): alanda dönen halkalar; düşmanlar yutulup yolun gerisinde ikinci bir kapıdan düşer
+// 16 Eki (denge deneyi): Merlin'li karışık oyun 16/16 ve ort. 16,6 canla geçiyordu (öteki komutanlardan 4-6 can rahat): geri atma 110 → 70, alan 62 → 52, en az 3 → 4 düşman
+const MERLIN_GATE = { r: 52, back: 70, min: 4 };
 function timeGate(x, y, r, dmg, back, stun) {
   G.effects.push({ kind: 'timegate', x, y, r, t: 0, dur: 1.1 });
   for (const e of enemiesNear(x, y, r, true)) {

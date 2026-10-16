@@ -562,8 +562,8 @@
    "{} · 被抛起的敌人眩晕 {} 秒"
   ],
   [
-   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %80'ini emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
-   "+{}% 护甲，+{} 生命 · 格挡攻击，用盾击晕 · 攻击缓慢沉重 · 第 4 具骷髅 · 棺材之墙：吸收 80% 伤害 · 盾冲：冲向敌人并击晕"
+   "+%{} zırh, +{} can · darbeleri savuşturur, kalkanla sersemletir · ağır ve yavaş vurur · 4. iskelet · Tabut Duvarı: hasarın %60'ını emer · Kalkan Hamlesi: düşmana atılıp sersemletir",
+   "+{}% 护甲，+{} 生命 · 格挡攻击，用盾击晕 · 攻击缓慢沉重 · 第 4 具骷髅 · 棺材之墙：吸收 60% 伤害 · 盾冲：冲向敌人并击晕"
   ],
   [
    "Hasar x{} · %{} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir",
