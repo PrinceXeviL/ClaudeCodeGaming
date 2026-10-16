@@ -5534,7 +5534,7 @@ function useSkill(h, id) {
 
 // menzilli kahramanın atışı: Gölge Avcı bıçak, Ateş Bilgesi ateş topu fırlatır
 function fireHeroShot(h, e, mult = 1, extra) {
-  const sx = h.x + h.face * 6, sy = h.y - h.def.h * UNIT_K * 0.6, d = dist(sx, sy, e.x, e.y);
+  const SA = h.def.shotAt, CHh = h.def.h * UNIT_K, sx = h.x + (h.face || 1) * (SA ? SA[0] * CHh : 6), sy = h.y - (SA ? SA[1] : 0.6) * CHh, d = dist(sx, sy, e.x, e.y); // shotAt: şeritte topun bırakıldığı yer (boy kesri)
   const crit = h.crit && Math.random() < h.crit;
   const sp = h.def.proj === 'dagger' ? 460 : h.def.proj === 'harrow' ? 480 : 320;
   const p = { kind: h.def.proj, sx, sy, target: e, tx: e.x, ty: aimY(e), t: 0, dur: clamp(d / sp, 0.15, 0.7),
@@ -10642,7 +10642,7 @@ function drawSoldier0(s) {
     const hsk = ult || cst || blk || lup || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
-      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : lup ? prog(s.lvlA, s.lvlD) : hsk.endsWith('_atk') ? prog(s.atk, s.rate)
+      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : lup ? prog(s.lvlA, s.lvlD) : hsk.endsWith('_atk') ? (F.order ? F.order[Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.order.length)] : prog(s.atk, s.rate))
         : hsk.endsWith('_idle') || hsk.endsWith('_walk_hurt') ? Math.floor(time * (F.fps || 12) + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n * (s.moving && s.hero ? 1.6 : 1))) % F.n; // koşu şeridi yoksa (Merlin süzülür) emirle giderken yürüyüş hızlı oynar
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
@@ -11519,7 +11519,7 @@ function drawProjectile(p) {
   } else if (p.kind === 'fireball') {
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     if (p.blood) { glow(ctx, x, y, 15, '200,20,40', 0.9); glow(ctx, x, y, 6, '255,120,110', 1); }
-    else if (p.soul) { glow(ctx, x, y, 16, '150,90,255', 0.9); glow(ctx, x, y, 8, '140,255,170', 1); glow(ctx, x, y, 3.5, '240,255,240', 1); }
+    else if (p.soul) { glow(ctx, x, y, 17, '90,255,140', 0.85); glow(ctx, x, y, 9, '170,255,190', 1); glow(ctx, x, y, 4, '245,255,245', 1); glow(ctx, x, y, 22, '150,90,255', 0.25); } // 16 Eki: Merlin'in şeridindeki yeşil ruh ateşi (mor hale)
     else { glow(ctx, x, y, 16, '255,120,40', 0.9); glow(ctx, x, y, 7, '255,240,190', 1); }
     ctx.restore();
   } else if (p.kind === 'bossthrow') {

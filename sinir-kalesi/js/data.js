@@ -742,6 +742,9 @@ HEROES.merlin = { name: 'Merlin', role: 'Ölüm Büyücüsü · Menzilli büyü'
     { id: 'timegate', name: 'Zaman Kapısı', cd: 16, desc: 'Kalabalığın altında zaman kapısı açılır: düşmanlar yolun gerisine fırlar, hasar alır, 1 sn sersemler (boss yarı yol)' },
     { id: 'frog', name: 'Kurbağaya Çevirme', cd: 15, desc: 'En güçlü düşmanı 4 sn kurbağa yapar: saldıramaz, yavaş zıplar, %25 fazla hasar alır (boss olmaz)' },
   ] }] };
+// 16 Eki (Caner: "elinden yeşil bir şey çıkıp kayboluyor, sonra sarı bir top çıkıyor"): saldırı şeridindeki yeşil ruh topu atılır (soul), elinden çıkar (shotAt);
+// atış anı şeridin bırakma karesine denk gelir (anim.json hero_merlin_atk.order)
+Object.assign(HEROES.merlin, { soul: true, shotAt: [0.38, 0.79] });
 // 16 Eki (Caner: "ok ve bıçak fırlatmada uzman, ihtişamlı, ölü"): Robin, Ölü Orman'ın Hayaleti. Okçu + suikastçı + biraz druid; yanında Ruh Kurdu (görseli gelince).
 HEROES.robin = { name: 'Robin', role: "Ölü Orman'ın Hayaleti · Okçu", sprite: 'hero_robin', h: 41, aura: '110,255,150', halo: '150,255,170', cost: 60, pet: 'wolf',
   hp: 260, dmg: [20, 30], armor: 0.15, rate: 1.0, speed: 88, respawn: 16, regen: 9, engage: 0, ranged: 205, proj: 'harrow',
