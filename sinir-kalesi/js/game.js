@@ -17032,16 +17032,18 @@ function drawMap() {
     }
     mapIntro(E, bm);
     mapCamClamp(bm, E);
+    // 16 Eki (Caner: "açılışta sağ ve sol karanlıkta kalıyor"): harita ekrandan darsa (açılış yakınlaşmasının uzak görünümü) zemin iki yana
+    // aynalanarak sürer, aynalı kısım dışa doğru kararır (orman yanlara devam eder gibi)
+    const Lx = bm.x * MAPCAM.z + MAPCAM.tx, Rx = (bm.x + bm.w) * MAPCAM.z + MAPCAM.tx, wide = Lx > VIS.l + 1 || Rx < VIS.r - 1;
     ctx.save(); ctx.translate(MAPCAM.tx, MAPCAM.ty); ctx.scale(MAPCAM.z, MAPCAM.z);
+    if (wide && bgI) for (const ax of [bm.x, bm.x + bm.w]) { ctx.save(); ctx.translate(2 * ax, 0); ctx.scale(-1, 1); ctx.drawImage(bgI, bm.x, bm.y, bm.w, bm.h); ctx.restore(); }
     drawRegionMap(E, mapEp, st);
     ctx.restore();
-    { // harita ekrandan darsa (açılış yakınlaşmasında uzak görünüm) yanlar sert siyah kalmasın: kenarlar yumuşak gölgeyle karışır
-      const L = bm.x * MAPCAM.z + MAPCAM.tx, Rr = (bm.x + bm.w) * MAPCAM.z + MAPCAM.tx, F = 90;
-      for (const [x0, dir] of [[L, 1], [Rr, -1]]) {
-        if (dir > 0 ? x0 <= VIS.l + 1 : x0 >= VIS.r - 1) continue;
-        const g = ctx.createLinearGradient(x0, 0, x0 + dir * F, 0); g.addColorStop(0, 'rgba(6,3,10,1)'); g.addColorStop(1, 'rgba(6,3,10,0)');
-        ctx.fillStyle = g; ctx.fillRect(Math.min(x0, x0 + dir * F), VIS.t, F, VIS.h);
-      }
+    if (wide) for (const [x0, dir] of [[Lx, -1], [Rx, 1]]) { // aynalı yanlar: harita kenarında hafif, ekran kenarına doğru koyu
+      const x1 = dir < 0 ? VIS.l : VIS.r; if (dir < 0 ? x0 <= x1 : x0 >= x1) continue;
+      const xs = x0 - dir * 24, g = ctx.createLinearGradient(xs, 0, x1, 0); // kenarın biraz içinden başlar: dikiş çizgisi seçilmesin
+      g.addColorStop(0, 'rgba(6,3,10,0)'); g.addColorStop(0.3, 'rgba(6,3,10,0.4)'); g.addColorStop(1, 'rgba(6,3,10,0.82)');
+      ctx.fillStyle = g; ctx.fillRect(Math.min(xs, x1), VIS.t, Math.abs(x1 - xs), VIS.h);
     }
     mapEpScroll();
   }
