@@ -5782,6 +5782,7 @@ function separateUnits(dt) {
 const PET = { lvl2: 6, respawn: 12, wolf: [
   { img: 'pet_wolf_1', name: 'Ruh Kurdu', hp: 220, dmg: [10, 16], rate: 0.9, h: 28 },
   { img: 'pet_wolf_2', name: 'Kadim Ruh Kurdu', hp: 420, dmg: [18, 28], rate: 0.8, h: 37, stun: 0.4 }] };
+const PET_FOLLOW = { far: 58, near: 22, wr: 40, wander: [2.5, 5.5], engage: 90 }; // far: sahibi bu kadar uzaklaşınca peşinden gider
 function updatePets(dt) {
   for (const h of G.heroes) {
     if (!h.def.pet) continue;
@@ -5800,7 +5801,15 @@ function updatePets(dt) {
       p.form = form; p.pet = P; p.hp = Math.min(P.hp, p.hp + P.hp - p.maxHp); p.maxHp = P.hp; p.dmg = P.dmg.slice(); p.rate = P.rate;
       floatText(p.x, p.y - 40, P.name + '!', '#9affb0'); G.effects.push({ kind: 'ring', x: p.x, y: p.y, r: 34, col: '110,255,150', t: 0, dur: 0.6 }); sfx('roar');
     }
-    p.rx = h.x - (h.face || 1) * 16; p.ry = h.y + 5; // sahibinin arkasında bekler
+    // 16 Eki (Caner: "kurt Robin'e yapışık hareket ediyor, ondan bağımsız; takip etsin ama mantıklı"): kurdun kendi yeri (p.home) var.
+    // Sahibi PET_FOLLOW.far'dan uzaklaşınca arkasında/yanında yeni bir yer seçip kendi hızıyla koşar (gecikmeli takip); sahibi dururken
+    // çevresinde dolaşıp koklanır. Yakındaki düşmana kendisi saldırır (asker yapay zekâsı: engage).
+    const F = PET_FOLLOW, Hm = p.home || (p.home = { x: p.x, y: p.y, side: Math.random() < 0.5 ? -1 : 1, wT: rand(F.wander[0], F.wander[1]) });
+    if (!h.dead) {
+      if (dist(Hm.x, Hm.y, h.x, h.y) > F.far) { Hm.side = -Hm.side; Hm.x = h.x - (h.face || 1) * rand(24, 34); Hm.y = h.y + Hm.side * rand(10, 18); Hm.wT = rand(F.wander[0], F.wander[1]); }
+      else if (!h.moving && (Hm.wT -= dt) <= 0) { const a = rand(0, Math.PI * 2), r = rand(F.near, F.wr); Hm.x = h.x + Math.cos(a) * r; Hm.y = h.y + 6 + Math.sin(a) * r * 0.5; Hm.wT = rand(F.wander[0], F.wander[1]); }
+    }
+    p.rx = clamp(Hm.x, 10, W - 10); p.ry = clamp(Hm.y, 60, H - 10); p.engage = F.engage;
   }
 }
 function fxBloodHit(x, y) { // kan sıçraması
@@ -12290,6 +12299,10 @@ function drawEnemyPanel() {
   ctx.restore();
 }
 
+// 16 Eki (Caner: "Robin'i seçip bir yere gönderince ses yok; bütün komutanlarda düzelt"): komutanın kendi sesi (ElevenLabs, sözsüz):
+// hsel_<id> seçince (homurtu, ıslık, kıkırtı...), hmove_<id> gönderince (adım, zincir, yarasa, kurt havlaması...)
+function heroBark(h, k) { const n = k + '_' + h.id; if (SOUND[n]) sfx(n, null, 1, h); }
+for (const id of ['spartacus', 'leonidas', 'merlin', 'robin', 'bathory']) { SOUND['hsel_' + id] = { vol: 0.55, gap: 0.5, max: 1 }; SOUND['hmove_' + id] = { vol: 0.5, gap: 0.6, max: 1 }; }
 function setSel(sel) {
   const old = G.sel;
   const same = old && sel && old.kind === sel.kind && old.plot === sel.plot && old.tower === sel.tower && old.hero === sel.hero && old.enemy === sel.enemy;
@@ -18815,7 +18828,7 @@ function hudTap(x, y) {
     if (hitU(hb) && !(sa.i >= 0 && sa.d < dist(hb.x, hb.y, x, y) - hb.r)) { // büyü düğmesine daha yakınsa portre sayılmaz
       tapPop('hud_hero' + i); G.mode = null;
       setSel((G.sel && G.sel.hero === h) || h.dead ? null : { kind: 'hero', hero: h });
-      sfx('select');
+      sfx('select'); if (G.sel && G.sel.hero === h) heroBark(h, 'hsel');
       return true;
     }
   }
@@ -18939,13 +18952,13 @@ function worldTap(x, y) {
     const h = wasHero;
     if (dist(h.x, h.y - 8, x, y) < 18) return;
     h.rx = clamp(x, 10, W - 10); h.ry = clamp(y, 60, H - 10);
-    releaseSoldier(h); h.moving = true; G.tutMoved = true;
+    releaseSoldier(h); h.moving = true; G.tutMoved = true; heroBark(h, 'hmove'); sfx('pick');
     G.effects.push({ kind: 'ring', x: h.rx, y: h.ry, r: 20, col: '120,220,255', t: 0, dur: 0.45 });
     return;
   }
   // kahramanı seç
   for (const h of G.heroes) {
-    if (!h.dead && dist(h.x, h.y - 10, x, y) < 22) { setSel({ kind: 'hero', hero: h }); sfx('select'); return; }
+    if (!h.dead && dist(h.x, h.y - 10, x, y) < 22) { setSel({ kind: 'hero', hero: h }); sfx('select'); heroBark(h, 'hsel'); return; }
   }
   // düşman: dokununca özellik paneli
   {
