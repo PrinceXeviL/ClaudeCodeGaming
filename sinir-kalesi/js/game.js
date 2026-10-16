@@ -5791,7 +5791,7 @@ function updateProjectile(pr, dt) {
         G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
         G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * 1.7, t: 0, dur: 0.8 });
       }
-      G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true, soul: pr.mini });
+      G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: pr.mini ? 2.5 : 16, hot: true, soul: pr.mini }); // 16 Eki (Caner): meteor yağmurunun kararması 1-2 sn'de geçer
       if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(METEOR_RAIN.crater[0], METEOR_RAIN.crater[1]), t: 0, life: CRATER.life + rand(-1, 1), seed: rand(0, 99) }); // her bilye kendi ufak krateri
       if (pr.mini) { shakeScreen(pr.first ? 6 : 2.5, 0.22); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
       else { shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60); }
