@@ -2480,7 +2480,7 @@ function updateParts(list, dt) {
     p.vx *= d; p.vy *= d; p.vy += p.g * dt;
     p.x += p.vx * dt; p.y += p.vy * dt;
     if (p.vr) p.rot = (p.rot || 0) + p.vr * dt;
-    if (p.floor != null && p.y > p.floor) { p.y = p.floor; p.vy *= -0.3; p.vx *= 0.5; p.vr = (p.vr || 0) * 0.5; }
+    if (p.floor != null && p.y > p.floor) { p.y = p.floor; p.vy *= -0.3; p.vx *= 0.5; p.vr = (p.vr || 0) * 0.5; if (p.onFloor) { p.onFloor(p); p.onFloor = null; p.t = p.life; } } // onFloor: kan damlası yere değince leke bırakıp söner
   }
   return list.filter(p => p.t < p.life);
 }
@@ -2496,6 +2496,9 @@ function drawParts(list, add) {
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.04, p.y - p.vy * 0.04); ctx.stroke();
     } else if (p.kind === 'sprite') { // 16 Eki: görselli parça (kemik gülle kırıkları)
       ctx.globalAlpha = Math.min(1, a * 3); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); icoFit(p.im, 0, 0, p.h / 2.4 * 2); ctx.restore();
+    } else if (p.kind === 'bdrop') { // kan damlası görseli: ucu gidişin tersine
+      const im = p.im; if (!im) continue; ctx.globalAlpha = Math.min(1, a * 3); const hh = s * 2, ww = hh * im.width / im.height;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) - Math.PI / 2); ctx.drawImage(im, -ww / 2, -hh / 2, ww, hh); ctx.restore();
     } else if (p.kind === 'chunk') {
       ctx.globalAlpha = Math.min(1, a * 2.5);
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);
@@ -2956,11 +2959,28 @@ const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'bla
 const BLOOD_FX = { cd: 0.1, big: 0.06, splat: 14, cols: ['#8a0c16', '#c0121e', '#e8303a'] }; // 16 Eki (Caner: "kanı görmüyorum bile"): damlalar iri ve çok, sıçrama bulutu, leke uzun
 const BLOOD_STONE = new Set(['colossus', 'saint']);
 function bleedKind(e) { const t = (e.def.base || e.type).replace(/_(k|y)$/, ''); return e.def.machine || e.siege !== undefined ? 'wood' : BLOOD_STONE.has(t) ? 'stone' : 'blood'; }
+// 16 Eki (Caner: "kan pikselleri amatör"): Gemini kan sayfası (varliklar/kan_isle.py, nm32_*): isabette sıçrama görseli, savrulan damla görselleri
+// (yere değince minik leke), ölünce yer lekesi görseli. Görsel yoksa eski çizim (nokta ve doku) kalır.
+const BLOOD_SPR = { spray: ['nm32_bspray', 'nm32_bcrescent'], heavy: ['nm32_bstar'], small: ['nm32_bpuff'], drop: ['nm32_drop_round', 'nm32_drop_tear', 'nm32_drop_tear', 'nm32_drop_streak'],
+  pool: ['nm32_splat_pool', 'nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'], spot: ['nm32_splat_spots', 'nm32_drop_cluster'], dur: 0.26 };
+const bloodPick = (L) => spr(L[Math.floor(Math.random() * L.length)]);
+function bloodDropFloor(p) { // damla yere değdi: minik leke
+  if (Math.random() < 0.45) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: p.x, y: p.y, r: rand(2.2, 3.4), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 5 });
+}
 function bloodHit(e, dealt) {
   if ((e.bloodCd || 0) > G.t || dealt <= 0) return;
   const kind = bleedKind(e); if (kind === 'blood' && !setting('blood')) return;
   e.bloodCd = G.t + BLOOD_FX.cd;
   const h = CHAR_H['enemy_' + e.type] || 30, r = dealt / Math.max(1, e.maxHp), n = clamp(Math.round(5 + r * 24), 5, 10), y0 = e.y - h * (e.def.flying ? 0.4 : 0.55) - (e.def.flying ? 26 : 0);
+  const sim = kind === 'blood' && bloodPick(BLOOD_SPR.drop);
+  if (sim) { // görselli kan: sıçrama + damlalar
+    const sp = bloodPick(r > BLOOD_FX.big * 2 ? BLOOD_SPR.heavy : r > BLOOD_FX.big ? BLOOD_SPR.spray : BLOOD_SPR.small);
+    if (sp) G.effects.push({ kind: 'bspray', im: sp, x: e.x + rand(-2, 2), y: y0 + 4, w: h * (r > BLOOD_FX.big ? 1.15 : 0.7) * (0.85 + Math.random() * 0.3), face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.35, 0.35), t: 0, dur: BLOOD_SPR.dur });
+    for (let i = 0; i < Math.min(n, CROWD ? 4 : 7); i++) { const vx = rand(-75, 75), vy = -rand(60, 140);
+      G.parts.push({ kind: 'bdrop', im: bloodPick(BLOOD_SPR.drop), x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx, vy, g: 560, drag: 0, s0: rand(3.2, 5.2), s1: 3, a: 1, life: rand(0.6, 0.9), floor: e.y + rand(-3, 4), onFloor: bloodDropFloor, t: 0 }); }
+    if (r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: e.x + rand(-6, 6), y: e.y + rand(-2, 3), r: rand(5, 8), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 6 });
+    return;
+  }
   if (kind === 'blood') G.parts.push({ kind: 'dot', x: e.x + rand(-2, 2), y: y0, vx: 0, vy: -8, g: 0, drag: 0, col: '#c0121e', s0: 4.5 + r * 8, s1: 7 + r * 10, a: 0.75, life: 0.16, t: 0 }); // isabet anında kızıl sıçrama
   for (let i = 0; i < n; i++) {
     const col = kind === 'blood' ? BLOOD_FX.cols[i % 3] : kind === 'wood' ? (i % 2 ? '#7a5434' : '#a8804e') : (i % 2 ? '#b8b0a4' : '#d8d0c4');
@@ -2971,7 +2991,7 @@ function bloodHit(e, dealt) {
 function bloodDeath(e) {
   if (bleedKind(e) !== 'blood' || !setting('blood') || e.def.flying || e.leaked) return;
   const h = CHAR_H['enemy_' + e.type] || 30;
-  G.decals.push({ kind: 'splat', red: true, x: e.x + rand(-4, 4), y: e.y + 1, r: clamp(h * 0.36, 8, 18), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
+  G.decals.push({ kind: 'splat', red: true, spr: 'pool', si: Math.floor(Math.random() * BLOOD_SPR.pool.length), flip: Math.random() < 0.5, x: e.x + rand(-4, 4), y: e.y + 1, r: clamp(h * 0.36, 8, 18), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
 }
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
@@ -6130,6 +6150,10 @@ function updatePets(dt) {
   }
 }
 function fxBloodHit(x, y) { // kan sıçraması
+  const sp = setting('blood') && bloodPick(BLOOD_SPR.small); // 16 Eki: görselli küçük sıçrama (Báthory'nin kan okları)
+  if (sp) { G.effects.push({ kind: 'bspray', im: sp, x, y: y + 4, w: 18, face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.4, 0.4), t: 0, dur: BLOOD_SPR.dur });
+    for (let i = 0; i < 4; i++) G.parts.push({ kind: 'bdrop', im: bloodPick(BLOOD_SPR.drop), x, y, vx: rand(-60, 60), vy: -rand(40, 110), g: 420, drag: 0, s0: rand(2.6, 4), s1: 2.4, a: 1, life: rand(0.35, 0.55), t: 0 });
+    G.effects.push({ kind: 'ring', x, y, r: 12, col: '220,30,50', t: 0, dur: 0.3 }); return; }
   for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'dot', x, y, vx: rand(-70, 70), vy: -rand(30, 110), g: 380, col: i % 2 ? '#a0101e' : '#e0303a', s0: rand(1.4, 2.4), s1: 0.6, life: rand(0.35, 0.6) });
   G.effects.push({ kind: 'ring', x, y, r: 12, col: '220,30,50', t: 0, dur: 0.3 });
 }
@@ -12076,6 +12100,9 @@ function drawEffect(f) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; const a = (1 - k) * 0.85, w = f.w * (1 - 0.5 * k), hgt = 150 * (0.6 + 0.4 * k);
     const g = ctx.createLinearGradient(0, f.y - hgt, 0, f.y); g.addColorStop(0, `rgba(${f.col},0)`); g.addColorStop(1, `rgba(${f.col},${a})`);
     ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(f.x - w * 0.3, f.y - hgt); ctx.lineTo(f.x + w * 0.3, f.y - hgt); ctx.lineTo(f.x + w, f.y); ctx.lineTo(f.x - w, f.y); ctx.closePath(); ctx.fill(); ctx.restore();
+  } else if (f.kind === 'bspray') { // kan sıçraması görseli: hızla açılır, söner
+    const im = f.im, e = 1 - (1 - Math.min(1, k * 1.6)) ** 2, w = f.w * (0.5 + 0.55 * e), h = w * im.height / im.width;
+    ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.scale(f.face, 1); ctx.globalAlpha = k < 0.55 ? 1 : 1 - (k - 0.55) / 0.45; ctx.drawImage(im, -w / 2, -h * 0.6, w, h); ctx.restore();
   } else if (f.kind === 'ring') {
     ctx.save(); ctx.globalAlpha = (1 - k) * (f.a ?? 1);
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
@@ -18865,6 +18892,8 @@ function drawPlay() {
       // veba birikintisi: yere dökülmüş sıvı; hızla yayılır, yavaşça solar (yer düzlemine yatık)
       if (d.t < 0) continue;
       const k = Math.min(1, (d.life - d.t) / 1.2), grow = d.small ? 1 : 0.55 + 0.45 * Math.min(1, d.t / 0.12);
+      const sim = d.spr && (d.spr === 'pool' ? spr(BLOOD_SPR.pool[d.si || 0]) : spr(BLOOD_SPR.spot[d.flip ? 1 : 0]));
+      if (sim) { const w = d.r * 3.4 * grow, h = w * sim.height / sim.width; ctx.save(); ctx.translate(d.x, d.y); if (d.flip) ctx.scale(-1, 1); ctx.globalAlpha = 0.92 * k; ctx.drawImage(sim, -w / 2, -h / 2, w, h); ctx.restore(); continue; } // görselli kan lekesi (zaten yere yatık çizili)
       ctx.save(); ctx.translate(d.x, d.y); ctx.scale(1, 0.48); ctx.rotate(d.rot);
       ctx.globalAlpha = (d.red ? 0.8 : 0.72) * k; const R = d.r * 1.7 * grow; ctx.drawImage(splatTex(d.v, d.red), -R, -R, R * 2, R * 2);
       ctx.restore();
