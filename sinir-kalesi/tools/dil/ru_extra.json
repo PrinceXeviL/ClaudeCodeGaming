@@ -478,7 +478,8 @@
   "Gökten 8 küçük meteor yağar: alana yayılan patlamalar, kraterler ve 4 sn yanan zemin": "С неба падают 8 малых метеоров: взрывы по площади, кратеры и 4 с горящей земли",
   "Meteor yağmuru: 8 patlama, yanan zemin": "Метеоритный дождь: 8 взрывов, горящая земля",
   "Gökten ruh ateşli demir bilyeler yağar: dağınık patlamalar, ufak kraterler ve 4 sn yanan zemin": "С неба падают железные шары с огнём душ: разбросанные взрывы, маленькие кратеры и 4 с горящей земли",
-  "Meteor yağmuru: dağınık patlamalar, yanan zemin": "Метеоритный дождь: разбросанные взрывы, горящая земля"
+  "Meteor yağmuru: dağınık patlamalar, yanan zemin": "Метеоритный дождь: разбросанные взрывы, горящая земля",
+  "Mortimer'ın Kasası": "Сокровищница Мортимера"
  },
  "tpl": [
   [
@@ -816,6 +817,10 @@
   [
    "{} PUAN",
    "{} ОЧК"
+  ],
+  [
+   "{} altında 1 kristal",
+   "1 кристалл за {} золота"
   ]
  ]
 }

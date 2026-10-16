@@ -478,7 +478,8 @@
   "Gökten 8 küçük meteor yağar: alana yayılan patlamalar, kraterler ve 4 sn yanan zemin": "Llueven 8 meteoritos del cielo: explosiones repartidas, cráteres y 4 s de suelo en llamas",
   "Meteor yağmuru: 8 patlama, yanan zemin": "Lluvia de meteoros: 8 explosiones, suelo en llamas",
   "Gökten ruh ateşli demir bilyeler yağar: dağınık patlamalar, ufak kraterler ve 4 sn yanan zemin": "Llueven del cielo bolas de hierro con fuego de almas: explosiones dispersas, pequeños cráteres y 4 s de suelo en llamas",
-  "Meteor yağmuru: dağınık patlamalar, yanan zemin": "Lluvia de meteoros: explosiones dispersas, suelo en llamas"
+  "Meteor yağmuru: dağınık patlamalar, yanan zemin": "Lluvia de meteoros: explosiones dispersas, suelo en llamas",
+  "Mortimer'ın Kasası": "La Bóveda de Mortimer"
  },
  "tpl": [
   [
@@ -816,6 +817,10 @@
   [
    "{} PUAN",
    "{} PTS"
+  ],
+  [
+   "{} altında 1 kristal",
+   "1 cristal por cada {} de oro"
   ]
  ]
 }

@@ -3118,7 +3118,8 @@ function killEnemy0(e) {
   G.kills = (G.kills || 0) + 1;
   if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
   cnt('kills'); if (e.def.chief) cnt('bosses'); if (e.def.flying) cnt('fly'); if (e.def.machine) cnt('mach'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
-  dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)), false, e.def.chief && !e.leaked ? [44, 2.1] : null); // boss: altın yağmuru (14 Eki: daha bol)
+  { const gv = Math.max(1, Math.round(e.def.gold * diff().bounty)); if (e.def.chief && !e.leaked) G.bossGold = (G.bossGold || 0) + gv; // kasa: boss altını ayrı sayılır
+  dropCoins(e.x, e.y, gv, false, e.def.chief && !e.leaked ? [44, 2.1] : null); } // boss: altın yağmuru (14 Eki: daha bol)
   sfx('death');
   if (e.def.machine && !e.leaked) sfx('castlehit', rand(0.8, 0.95), 0.8, e); // 16 Eki: kuşatma makinesi parçalanırken tahta çatırtısı
   deathVoice(e);
@@ -8087,8 +8088,9 @@ function update(dt) {
   }
   if (G.gold >= 2000) achGive('hoard');
   if (G.winHold > 0) G.winHold -= dt;
-  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !G.loot.length) {
-    const lr = G.lives / G.maxLives;
+  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !G.loot.length && !G.coins.some(c => !c.done)) { // sikkeler sayaca varsın (kasa hesabı)
+    const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
+    vaultSettle(firstWin);
     if (G.chal === 'd') { save.daily = { key: G.daily.key, done: true, n: ((save.daily && save.daily.n) || 0) + 1 }; G.stars = 1; }
     else if (G.chal) { save.ch = save.ch || {}; save.ch[G.idx] = Object.assign({}, save.ch[G.idx], { [G.chal]: 1 }); G.stars = 1; }
     else {
@@ -18628,6 +18630,37 @@ function drawComic() {
 }
 // zafer ekranı özeti: sayılar sırayla sayarak dolar; en çok öldüren vurgulanır
 const KILLER_NAME = { curse: 'Lanet Kuleleri', arrow: 'Kemik Kuleleri', magic: 'Ruh Fenerleri', blast: 'Veba Kazanları', melee: 'Mahzen İskeletleri', minion: 'Dirilen Ölüler', burst: 'Ceset Patlatma' };
+// Mortimer'ın Kasası (16 Eki): zaferde kalan altın kristale döner (data.js VAULT); zafer panelinde sayaçla gösterilir (drawVault)
+function vaultSettle(firstWin) {
+  G.vault = null;
+  if (G.chal === 'd' || G.endless) return;
+  const left = Math.max(0, Math.floor(G.gold)), boss = Math.min(left, Math.floor(G.bossGold || 0)), val = left + boss * (VAULT.boss - 1);
+  let c = Math.min(VAULT.cap, Math.floor(val / VAULT.per)); if (!firstWin) c = Math.round(c * VAULT.replay);
+  G.vault = { gold: left, boss, c, replay: !firstWin, t0: null, n: 0, done: false };
+  if (c > 0) { save.crystal = (save.crystal || 0) + c; cnt('crystal', c); persist(); }
+}
+function drawVault(k, cx, y) {
+  const V = G.vault; if (!V || k < 1.35) return;
+  if (V.t0 == null) V.t0 = time;
+  const u = clamp((time - V.t0 - 0.25) / 1.3, 0, 1), e = 1 - (1 - u) ** 3, a = easeOutBack(clamp((time - V.t0) / 0.35, 0, 1));
+  const g = Math.round(V.gold * (1 - e * (V.c > 0 ? 1 : 0))), n = Math.floor(V.c * e + 1e-6);
+  if (n > V.n) { V.n = n; sfx('coin', 1 + n * 0.06); }
+  if (u >= 1 && !V.done) { V.done = true; if (V.c > 0) sfx('lootchime'); }
+  const w = 470, x0 = cx - w / 2;
+  ctx.save(); ctx.translate(cx, y); ctx.scale(a, a); ctx.translate(-cx, -y);
+  roundRect(x0, y - 21, w, 42, 21, 'rgba(10,6,18,0.7)', '#d4ab5a', 1.6);
+  txt("Mortimer'ın Kasası", x0 + 18, y + 1, 16, '#e8dcc0', 'left', '400', FONT_T, false);
+  const gx = x0 + 214; drawIcon('coin', gx, y, 20); txt(String(g), gx + 16, y + 1, 19, '#ffe27a', 'left', '400', FONT_T, false);
+  if (V.c > 0 || V.gold >= VAULT.per) {
+    const ax = x0 + 318; ctx.fillStyle = '#9fe870'; ctx.beginPath(); ctx.moveTo(ax, y - 6); ctx.lineTo(ax + 11, y); ctx.lineTo(ax, y + 6); ctx.closePath(); ctx.fill();
+    drawIconArt('crystal', paintCrystal, x0 + 352, y, 12); txt('+' + n, x0 + 370, y + 1, 20, '#e0b8ff', 'left', '400', FONT_T, false);
+    if (V.replay) { roundRect(x0 + w - 74, y - 11, 60, 22, 11, 'rgba(232,187,74,0.18)', 'rgba(232,187,74,0.6)', 1); txt('TEKRAR', x0 + w - 44, y + 1, 12, '#ffd98a', 'center', '800', FONT_B, false); }
+    if (u > 0 && u < 1 && V.c > 0 && Math.random() < 0.5) { // sikkeler kasadan kristale akar
+      emit(uiParts, { kind: 'glow', add: true, x: gx + rand(-4, 4), y: y + rand(-4, 4), vx: (x0 + 352 - gx) * rand(1.6, 2.2), vy: -rand(20, 60), drag: 2.2, col: Math.random() < 0.6 ? '255,220,110' : '210,150,255', s0: rand(3, 5), s1: 1, life: 0.45 });
+    }
+  } else fitTxt(`${VAULT.per} altında 1 kristal`, x0 + 344, y + 1, 112, 14, '#a89878', 'left', '800', FONT_B, false, 11);
+  ctx.restore();
+}
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 44, w = pw - 88, y0 = py + 190;
   roundRect(x0, y0, w, 112, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);
@@ -18956,7 +18989,7 @@ function drawOverlay() {
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
-  const pw = big ? 600 : pz ? 480 : sum ? 680 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? 472 : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
+  const pw = big ? 600 : pz ? 480 : sum ? 680 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? (G && G.vault && G.lootGot ? 512 : 472) : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   const wn = overlay === 'win' && NECRO; // 16 Eki (Caner: zafer ekranı konsepte uysun): kararma, panel aşağıdan kayar, başlık yere çakılır, yıldızlar tek tek düşer
   if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.5 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); } if (G.winCheerT && G.t >= G.winCheerT) { G.winCheerT = 0; sfx('skelcheer'); } }
@@ -19013,15 +19046,16 @@ function drawOverlay() {
     const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60);
     if (sum) drawWinSummary(k, px, py, pw, cx);
     else txt(`${G.kills || 0} düşman · ${mm}:${String(ss2).padStart(2, '0')}`, cx, py + 206, 15, '#8a6238', 'center', '800', FONT_B, false);
-    if (NECRO && sum && G.lootGot && k > 1.2) { // 14 Eki: bossun ganimeti (kristal + eşyalar) espri satırının yerinde
+    if (NECRO && sum && G.vault) drawVault(k, cx, py + 330); // 16 Eki: Mortimer'ın Kasası (kalan altın → kristal)
+    if (NECRO && sum && G.lootGot && k > 1.2) { // 14 Eki: bossun ganimeti (kristal + eşyalar) espri satırının yerinde (kasa varsa bir alt satırda)
       const L = G.lootGot, n = L.gear.length, a = easeOutBack(clamp((k - 1.2) / 0.4, 0, 1)), wTot = 150 + 44 * n;
       if (!G.winLoot) { G.winLoot = true; sfx('lootchime'); } // ganimet çınlaması
-      ctx.save(); ctx.translate(cx, py + 330); ctx.scale(a, a);
+      ctx.save(); ctx.translate(cx, py + (G.vault ? 374 : 330)); ctx.scale(a, a);
       txt('Ganimet:', -wTot / 2, 0, 15, '#cfc4dc', 'left', '800', FONT_B, false);
       drawIconArt('crystal', paintCrystal, -wTot / 2 + 88, 0, 11); txt('+' + L.c, -wTot / 2 + 104, 1, 18, '#e0b8ff', 'left', '400', FONT_T, false);
       L.gear.forEach((it, i) => gearCell(it, -wTot / 2 + 172 + i * 44, 0, 38));
       ctx.restore();
-    } else if (NECRO) fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 330 : 228), pw - 60, 15, '#9fd8a0', 'center', '700', FONT_B, false, 12);
+    } else if (NECRO && !(sum && G.vault)) fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 330 : 228), pw - 60, 15, '#9fd8a0', 'center', '700', FONT_B, false, 12);
     const appear = k - (NECRO ? 1.75 : 1.3), by = sum ? 138 : NECRO ? 10 : 0; // necro: özet kartına ve espri satırına yer aç
     if (NECRO && sum && G.idx + 1 < LEVELS.length) { // 16 Eki (Caner: "sıkışık"): tek sıra yazılı düğmeler, altta etiket yok
       const yb = py + ph - 66;
