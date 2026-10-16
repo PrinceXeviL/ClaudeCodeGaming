@@ -2635,9 +2635,31 @@ function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yü
   }
   return true;
 }
-const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.42, burn: 0.3, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.35, slow: [0.4, 2] }; // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
+const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.42, burn: 0.5, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.35, slow: [0.4, 2] }; // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
 // Merlin'in ruh meteoru (16 Eki, Caner: "daha kaliteli, ihtişamlı"): hedefte dönen çift rün çemberi + alan kararır; çarpmada parlama, ışık sütunu,
 // iki şok halkası (yeşil, mor), saçılan kaya parçaları, yükselen kıvılcımlar, mor duman
+// yerde yanan küçük ruh alevleri (meteor çarpması): dalgalanan dil, yeşil çekirdek, mor uç, altında ışık; açılırken büyür, sönerken küçülür
+function drawSoulFlames() {
+  for (const z of G.zones) {
+    if (z.kind !== 'flames') continue;
+    const A = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.9); if (A <= 0) continue;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y, z.r * 1.1, '120,255,150', 0.16 * A); ctx.restore();
+    for (const f of z.fl) {
+      const g0 = clamp((z.t - f.t0) / 0.25, 0, 1) * A; if (g0 <= 0) continue;
+      const x = z.x + f.dx, y = z.y + f.dy, ph = f.ph + time * 9, hh = f.h * g0 * (0.85 + 0.15 * Math.sin(ph * 1.4) + 0.08 * Math.sin(ph * 3.1)), ww = f.w * (0.9 + 0.1 * Math.sin(ph * 2.2));
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - hh * 0.35, ww * 2.6, '120,255,160', 0.3 * g0); ctx.restore(); // hale (ışık)
+      ctx.save(); // gövde normal karışımla: mor dış, yeşil orta, açık yeşil çekirdek (beyaza dönmesin)
+      for (const [k, col, a] of [[1, '118,48,210', 0.9], [0.72, '70,215,110', 0.95], [0.4, '190,255,200', 0.95]]) {
+        const H = hh * k, Wd = ww * k, tip = Math.sin(ph) * Wd * 0.45 + Math.sin(ph * 1.7) * Wd * 0.2;
+        ctx.fillStyle = `rgba(${col},${a * g0})`; ctx.beginPath(); ctx.moveTo(x - Wd, y);
+        ctx.quadraticCurveTo(x - Wd * 1.05, y - H * 0.45, x + tip, y - H);
+        ctx.quadraticCurveTo(x + Wd * 1.05, y - H * 0.45, x + Wd, y);
+        ctx.quadraticCurveTo(x, y + Wd * 0.35, x - Wd, y); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+}
 function drawSoulRune(p, pre, k) {
   const r = p.ringR || p.splash, a = p.t < 0 ? pre : 1, rot = time * 0.9;
   ctx.save(); ctx.translate(p.tx, p.ty); ctx.scale(1, 0.45);
@@ -2664,8 +2686,7 @@ function fxSoulMeteorImpact(x, y, r, first) {
     emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(30, 80), g: 560, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
       col: i % 3 === 0 ? '#7aff9a' : i % 3 === 1 ? '#3a2448' : '#5a3a68', s0: rand(1.4, 2.8), s1: 1.2, life: rand(0.6, 1), floor: y + rand(-8, 10) });
   }
-  for (let i = 0; i < 9; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.4, y: y + rand(-r, r) * 0.2, vx: rand(-25, 25), vy: -rand(30, 90), drag: 1.4, col: cols[i % 3], s0: rand(1.6, 3.2), s1: 0.4, life: rand(0.5, 0.9) });
-  for (let i = 0; i < 3; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
+  for (let i = 0; i < 1; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
   G.decals.push({ x, y, r: r * 1.05, t: 0, life: 12, hot: true });
 }
 // 16 Eki (Caner: "yerde obruk açılsın, hafif bir süre sonra geçsin"): ruh meteorunun açtığı çukur. Hızla açılır (open sn), çatlakları ve dibi
@@ -5707,8 +5728,13 @@ function updateProjectile(pr, dt) {
       if (pr.mini) { stunEnemy(e, METEOR_RAIN.stun * (e.def.chief ? 0.5 : 1)); slowEnemy(e, METEOR_RAIN.slow[0], METEOR_RAIN.slow[1]); } // sersemler, yavaşlar
       flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
     if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
-      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
-      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
+      if (pr.mini) { // 16 Eki (Caner: "yere düştükten sonra efekt yerine yangın: yerlerde ufak ateşler, üstünden geçen saniye başı yanma hasarı"): 2-4 küçük ruh alevi
+        const fl = []; for (let i = 0, n = randi(2, 4); i < n; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * Math.sqrt(Math.random()) * 0.55; fl.push({ dx: Math.cos(a) * d, dy: Math.sin(a) * d * 0.5, h: rand(9, 15), w: rand(4, 6), ph: rand(0, 9), t0: rand(0, 0.25) }); }
+        G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.75, dps: 0, burn: pr.mburn[0], t: 0, life: pr.mburn[1] + rand(-0.4, 0.6), fxT: 0, src: 'blast', kind: 'flames', fl });
+      } else {
+        G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
+        G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * 1.7, t: 0, dur: 0.8 });
+      }
       G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true, soul: pr.mini });
       if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(METEOR_RAIN.crater[0], METEOR_RAIN.crater[1]), t: 0, life: CRATER.life + rand(-1, 1), seed: rand(0, 99) }); // her bilye kendi ufak krateri
       if (pr.mini) { shakeScreen(pr.first ? 6 : 2.5, 0.22); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
@@ -8033,7 +8059,8 @@ function update(dt) {
       if (z.kind === 'chains') { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); }
       if (z.kind === 'bloodpool' && z.hero && !z.hero.dead) z.hero.hp = Math.min(z.hero.maxHp, z.hero.hp + (hp0 - Math.max(0, e.hp)) * 0.2);
       if (z.slowK && !e.dead) slowEnemy(e, z.slowK, 0.4); // veba gazı yavaşlatır
-      if (z.infect && !e.dead) { poisonEnemy(e, z.infect, 3); e.rotT = Math.max(e.rotT || 0, 2); } // zehir gölü: içinden geçen zehri üstünde taşır
+      if (z.infect && !e.dead) { poisonEnemy(e, z.infect, 3); e.rotT = Math.max(e.rotT || 0, 2); }
+      if (z.burn && !e.dead) burnEnemy(e, z.burn, 1.5); // ruh alevi: tutuşur, saniye başı yanar (çıkınca 1,5 sn sürer) // zehir gölü: içinden geçen zehri üstünde taşır
       if (bats) { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); if (z.hero && !z.hero.dead) z.hero.hp = Math.min(z.hero.maxHp, z.hero.hp + (hp0 - Math.max(0, e.hp)) * z.heal); }
     }
     if (z.kind === 'bloodpool') for (const s of G.soldiers) if (!s.dead && !s.wall && dist(s.x, s.y, z.x, z.y) <= z.r) s.hp = Math.min(s.maxHp, s.hp + z.heal * dt);
@@ -8041,6 +8068,7 @@ function update(dt) {
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
+      if (z.kind === 'flames') { z.fxT = 0.16; const f = z.fl[Math.floor(rand(0, z.fl.length))]; if (z.t < z.life - 0.6) emit(G.parts, { kind: 'glow', add: true, x: z.x + f.dx + rand(-2, 2), y: z.y + f.dy - f.h * 0.8, vx: rand(-8, 8), vy: -rand(25, 50), drag: 1, col: Math.random() < 0.5 ? '130,255,160' : '190,120,255', s0: rand(1.4, 2.4), s1: 0.3, life: rand(0.4, 0.7) }); continue; } // kıvılcım
       if (z.kind === 'chains') { z.fxT = 0.1; emit(G.parts, { kind: 'chunk', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5, vx: rand(-40, 40), vy: -rand(40, 90), g: 420, col: '#6a5a4a', s0: 1.6, s1: 1, life: 0.4, vr: rand(-8, 8) }); continue; }
       if (bats) { z.fxT = 0.12; if (live) emit(G.parts, { kind: 'dot', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.5 - 6, vy: rand(10, 30), g: 140, col: '#b01020', s0: 1.4, s1: 0.5, life: 0.4 }); continue; }
       if (z.kind === 'soulpool') { z.fxT = 0.06; emit(G.parts, { kind: 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.45, vx: rand(-6, 6), vy: -rand(6, 18), col: Math.random() < 0.6 ? '170,110,255' : '120,230,150', s0: rand(4, 7), s1: rand(8, 12), life: rand(0.6, 1) }); continue; }
@@ -18217,7 +18245,7 @@ function drawPlay() {
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  drawPlaguePools();
+  drawPlaguePools(); drawSoulFlames();
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
   drawGasClouds();
