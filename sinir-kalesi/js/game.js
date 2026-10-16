@@ -1630,7 +1630,7 @@ function drawSmallDecor(g, kind, x, y, s, th, seen, vr) {
   const fl = vr() < 0.5 ? -1 : 1;
   if (kind === 'b') { const bn = th.bushSpr ? pickVaried(th.bushSpr, x, y, seen.b, vr) : 's2_bush_1', b = spr(bn); if (b) { drawVaried(g, b, x, y + 4, s, fl); bgLight(th.bushSpr && bn, x, y + 4, s, fl); } return; }
   const name = th.rockSpr ? pickVaried(th.rockSpr, x, y, seen.r, vr) : null, im = name && spr(name); if (!im) return;
-  const m = SPR_META[name], w = (m ? m[0] * ROCK_K * (th.rockK || 1) * (s / 8) : s * 3) * (BG_ISMAP && name === 'nm_crow' ? 0.4 : 1); // 16 Eki (Caner): haritada sabit kargalar uçan kuşlara ve askerlere göre devdi: %60 küçük
+  const m = SPR_META[name], w = (m ? m[0] * ROCK_K * BG_DK * (th.rockK || 1) * (s / 8) : s * 3) * (BG_ISMAP && name === 'nm_crow' ? 0.4 : 1); // 16 Eki (Caner): haritada sabit kargalar uçan kuşlara ve askerlere göre devdi: %60 küçük
   g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3 * fl, y + s * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
   drawVaried(g, im, x, y + s * 0.5, w, fl); bgLight(name, x, y + s * 0.5, w, fl);
 }
@@ -1658,9 +1658,10 @@ function snowCover(c, lv, paths, res) {
   }
   g.restore();
 }
-let BG_ISMAP = false; // sefer haritası zemini çiziliyor (lv.decorK)
+let BG_ISMAP = false, BG_DK = 1; // sefer haritası zemini çiziliyor (lv.decorK); BG_DK: dekor ölçeği (haritada MAP_DECOR_K)
+const MAP_DECOR_K = 0.9, MAP_TEX_K = 0.4; // 16 Eki (Caner): haritadaki ev, harabe, sancak, ağaç %10 küçük; zemin ve yol dokusu haritada 0,4 ölçekte (askerlere orantılı ince, yakınlaşınca keskin)
 function renderBackground(lv, paths, res = 2, m = null) {
-  BG_ISMAP = !!lv.decorK; BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
+  BG_ISMAP = !!lv.decorK; BG_DK = BG_ISMAP ? MAP_DECOR_K : 1; BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
   try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; BG_FADE = null; }
 }
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
@@ -1726,7 +1727,7 @@ function renderBackground0(lv, paths, res) {
   const grassTex = spr('grass_' + (th.tex || lv.theme));
   if (grassTex) {
     const pat = g.createPattern(grassTex, 'repeat');
-    pat.setTransform(new DOMMatrix().scale(0.5));
+    pat.setTransform(new DOMMatrix().scale(0.5 * (BG_ISMAP ? MAP_TEX_K : 1)));
     g.fillStyle = pat; g.fillRect(B.x, B.y, B.w, B.h);
     g.globalAlpha = 0.42; g.fillStyle = grd; g.fillRect(B.x, B.y, B.w, B.h); g.globalAlpha = 1;
   }
@@ -1761,7 +1762,7 @@ function renderBackground0(lv, paths, res) {
   const roadTex = painted || spr('road');
   if (roadTex) {
     const pat = g.createPattern(roadTex, 'repeat');
-    pat.setTransform(new DOMMatrix().scale(painted ? (desert ? 0.24 : 0.3) : 0.5));
+    pat.setTransform(new DOMMatrix().scale((painted ? (desert ? 0.24 : 0.3) : 0.5) * (BG_ISMAP ? MAP_TEX_K : 1)));
     strokePath(42 * R, pat);
     if (painted) {
       // doku tonu temaya uyar: rengi temanın yol renginden, açıklık/ayrıntı dokudan gelir
@@ -1878,7 +1879,7 @@ function renderBackground0(lv, paths, res) {
       if (b) drawSprite(g, b, x + Math.cos(a) * pw * 0.48, y + Math.sin(a) * pw * 0.2 + 6, 13 + rnd() * 7);
     }
     const rk = th.rockSpr && spr(th.rockSpr[i % th.rockSpr.length]);
-    if (rk) { const a = a0 + Math.PI + rnd(), m = SPR_META[th.rockSpr[i % th.rockSpr.length]], w = m ? m[0] * ROCK_K * (th.rockK || 1) * 0.8 : 14; drawSprite(g, rk, x + Math.cos(a) * pw * 0.5, y + Math.sin(a) * pw * 0.22 + 5, w); }
+    if (rk) { const a = a0 + Math.PI + rnd(), m = SPR_META[th.rockSpr[i % th.rockSpr.length]], w = m ? m[0] * ROCK_K * BG_DK * (th.rockK || 1) * 0.8 : 14; drawSprite(g, rk, x + Math.cos(a) * pw * 0.5, y + Math.sin(a) * pw * 0.22 + 5, w); }
   }
   const bushSeen = [], brnd = seeded(lv.name.length * 29 + 5); // ayrı tohum: çeşit ve aynalama yerleşimi kaydırmaz
   const rockSeen = [];
@@ -1896,7 +1897,7 @@ function renderBackground0(lv, paths, res) {
     n++;
     const rockName = th.rockSpr ? pickVaried(th.rockSpr, x, y, rockSeen, rnd) : 'rock_' + (1 + (n % 2)), rockIm = spr(rockName), fl = rnd() < 0.5 ? -1 : 1;
     if (rockIm) {
-      const m = SPR_META[rockName], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (s / 8) : s * 3;
+      const m = SPR_META[rockName], w = m ? m[0] * ROCK_K * BG_DK * (th.rockK || 1) * (s / 8) : s * 3;
       g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3 * fl, y + s * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
       drawVaried(g, rockIm, x, y + s * 0.5, w, fl); bgLight(rockName, x, y + s * 0.5, w, fl);
       continue;
@@ -1919,7 +1920,7 @@ function renderBackground0(lv, paths, res) {
     const ruinAt = {}; // 15 Eki: aynı yapı en çok 2 kez, ikizi uzakta (≥ 380 px)
     for (let i = 0; i < Math.min(nR, deck.length * 2); i++) {
       const name = deck[i % deck.length], im = spr(name), M = SPR_META[name] || [300, 300]; // orman: karışık deste, tekrar az
-      const w = M[0] * (name.startsWith('nm_ruin') ? RUIN_K : th.ruinK || RUIN_K) * (0.85 + rnd() * 0.3), h = w * M[1] / M[0];
+      const w = M[0] * (name.startsWith('nm_ruin') ? RUIN_K : th.ruinK || RUIN_K) * (0.85 + rnd() * 0.3) * BG_DK, h = w * M[1] / M[0];
       // görsel ayak noktasından yukarı uzar: gövdesinin üst ve yan noktaları da yola/arsaya binmesin
       let q = null;
       for (let k = 0; k < 40 && !q; k++) {
@@ -1968,7 +1969,7 @@ function renderBackground0(lv, paths, res) {
       const bush = th.bushSpr && srnd() < 0.4, name = bush ? pickVaried(th.bushSpr, x, y, rockSeen, srnd) : th.rockSpr ? pickVaried(th.rockSpr, x, y, rockSeen, srnd) : null, im = name && spr(name), fl = srnd() < 0.5 ? -1 : 1;
       if (!im) continue;
       if (bush) { const bw = 12 + srnd() * 10; drawVaried(g, im, x, y + 4, bw, fl); bgLight(name, x, y + 4, bw, fl); continue; }
-      const m = SPR_META[name], w = m ? m[0] * ROCK_K * (th.rockK || 1) * (sz / 8) : sz * 3;
+      const m = SPR_META[name], w = m ? m[0] * ROCK_K * BG_DK * (th.rockK || 1) * (sz / 8) : sz * 3;
       g.fillStyle = 'rgba(0,0,0,0.2)'; g.beginPath(); g.ellipse(x + 3 * fl, y + sz * 0.4, w * 0.42, w * 0.12, 0, 0, Math.PI * 2); g.fill();
       drawVaried(g, im, x, y + sz * 0.5, w, fl); bgLight(name, x, y + sz * 0.5, w, fl);
     }
@@ -2008,7 +2009,7 @@ function renderBackground0(lv, paths, res) {
     if (BG_ISMAP && treeName === 'nm2_ravtree') treeName = 'nm_tree_4'; // 16 Eki (Caner): kuzgun ağacının dalındaki çizili kargalar haritada devdi: haritada kargasız ağaç
     const treeIm = spr(treeName), fl = vr() < 0.5 ? -1 : 1, sk = VARY.size[0] + vr() * (VARY.size[1] - VARY.size[0]);
     if (treeIm) {
-      const m = SPR_META[treeName], w = m ? m[0] * TREE_K * (th.treeK || 1) * (0.75 + (s - 10) / 9 * 0.4) * sk : s * 3.4;
+      const m = SPR_META[treeName], w = m ? m[0] * TREE_K * BG_DK * (th.treeK || 1) * (0.75 + (s - 10) / 9 * 0.4) * sk : s * 3.4;
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(x + 5 * fl, y + 3, w * 0.36, w * 0.11, 0, 0, Math.PI * 2); g.fill();
       drawVaried(g, treeIm, x, y + 5, w, fl); bgLight(treeName, x, y + 5, w, fl);
       continue;
@@ -12679,6 +12680,22 @@ function sunburst(x, y, r, col) {
 // vektör ikonlar (beyaz dolgu, koyu kontur); s ≈ ikonun boyu
 // 16 Eki: Gemini arayüz simgeleri (nm16_arayuz_F, nm17_arayuz_G): varsa kodla çizilen vektör ikonun yerine
 const UI_ICO = { play: 'play', gear: 'gear', next: 'fast', fast: 'fast', pause: 'pause', restart: 'restart', map: 'map', back: 'back', sound: 'sound', mute: 'mute', heart: 'heart', coin: 'coin', lock: 'lock', check: 'check', close: 'close' };
+// 16 Eki (Caner): sefer haritasındaki yıldızlar ince siyah konturlu ve gölgeli; konturlu kopya görsel başına bir kez kurulur
+const STAR_OL = new WeakMap();
+function outlinedIco(im) {
+  let c = STAR_OL.get(im); if (c) return c;
+  const o = Math.max(2, Math.round(Math.max(im.width, im.height) * 0.035)), sil = document.createElement('canvas');
+  sil.width = im.width; sil.height = im.height; const s = sil.getContext('2d'); s.drawImage(im, 0, 0); s.globalCompositeOperation = 'source-in'; s.fillStyle = '#000'; s.fillRect(0, 0, im.width, im.height);
+  c = document.createElement('canvas'); c.width = im.width + o * 2; c.height = im.height + o * 2; const g = c.getContext('2d');
+  for (let a = 0; a < 16; a++) g.drawImage(sil, o + Math.cos(a * Math.PI / 8) * o, o + Math.sin(a * Math.PI / 8) * o);
+  g.drawImage(im, o, o); c.sil = sil; c.o = o; STAR_OL.set(im, c); return c;
+}
+function mapStar(x, y, r, filled) {
+  const im = spr(filled ? 'ico_ui_star' : 'ico_em_starempty'); if (!im) { fancyStar(x, y, r, filled); return; }
+  const R = filled ? r * 0.95 : r * 1.05 / 1.2, S = R * 2.4, k = S / Math.max(im.width, im.height), c = outlinedIco(im), w = c.width * k, h = c.height * k;
+  ctx.save(); ctx.globalAlpha *= 0.45; ctx.drawImage(c.sil, x - im.width * k / 2 + r * 0.18, y - im.height * k / 2 + r * 0.3, im.width * k, im.height * k); ctx.restore();
+  ctx.drawImage(c, x - w / 2, y - h / 2, w, h);
+}
 const uiEm = (n, x, y, r) => { const im = spr('ico_em_' + n); if (im) icoFit(im, x, y, r / 1.2); return !!im; }; // 16 Eki: büyük amblemler (nm19_amblem_I), r: yarıçap
 const uiIco = (n, x, y, s) => { const im = spr('ico_ui_' + n); if (im) icoFit(im, x, y, s * 0.46); return !!im; };
 function drawIcon(name, x, y, s, col = '#fff') {
@@ -17151,16 +17168,16 @@ function drawMapNode(i, x, y, num, last, at, locked = null) {
   const unlocked = locked == null ? levelUnlocked(i) : !locked, st = save.stars[i] || 0, current = unlocked && st === 0;
   const e = easeOutBack(p), key = 'node' + i, sc = pressScale(key) * e * MAP_NODE_K;
   ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
-  ctx.fillStyle = 'rgba(10,6,2,0.4)'; ctx.beginPath(); ctx.ellipse(0, 13, 17, 5.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(10,6,2,0.4)'; ctx.beginPath(); ctx.ellipse(0, 15, 20, 6.5, 0, 0, Math.PI * 2); ctx.fill();
   if (!unlocked) { // kilitli (sisin kenarında görünen sonraki bölümler): büyük, dokununca ne gerektiğini söyler
-    circle(0, 0, 17, '#5a544c', '#1e1a14', 2.4);
-    circle(0, 0, 13.5, '#2e2a26');
-    drawIcon('lock', 0, 0, 18);
+    circle(0, 0, 20.4, '#5a544c', '#1e1a14', 2.6);
+    circle(0, 0, 16.2, '#2e2a26');
+    drawIcon('lock', 0, 0, 21.5);
     ctx.restore();
     buttons.push({ key, x: x - 29, y: y - 29, w: 58, h: 58, fn: () => { mapNote = { text: 'Önceki bölümü bitir, bu bölüm açılsın', t: time }; sfx('error'); } });
     return;
   }
-  if (current) glow(ctx, 0, 0, 44, '255,210,100', 0.45 + Math.sin(time * 4) * 0.15);
+  if (current) glow(ctx, 0, 0, 52, '255,210,100', 0.45 + Math.sin(time * 4) * 0.15);
   // bayrak direği ve sancak (tamamlananda sefer renginde, bölüm sonunda taçlı)
   const flagCol = epOf(i) === 1 ? ['#e8434b', '#8a1a14'] : ['#ffcf4a', '#a8701a'];
   const wv = Math.sin(time * 4 + i) * 1.5;
@@ -17170,28 +17187,28 @@ function drawMapNode(i, x, y, num, last, at, locked = null) {
   const fg = ctx.createLinearGradient(8, -34, 27, -22); fg.addColorStop(0, flagCol[0]); fg.addColorStop(1, flagCol[1]);
   ctx.fillStyle = fg; ctx.fill(); ctx.strokeStyle = '#2a1608'; ctx.lineWidth = 1.4; ctx.stroke();
   circle(8, -35, 2.2, '#ffd34d', '#5a3a08', 1);
-  // madalyon
-  const mg = ctx.createLinearGradient(0, -16, 0, 16); mg.addColorStop(0, '#fff0b0'); mg.addColorStop(1, '#a8681a');
-  circle(0, 0, 16, mg, '#2e1606', 2);
-  const mb = ctx.createRadialGradient(-4, -5, 2, 0, 0, 13);
+  // madalyon (16 Eki, Caner: %20 büyük)
+  const mg = ctx.createLinearGradient(0, -19, 0, 19); mg.addColorStop(0, '#fff0b0'); mg.addColorStop(1, '#a8681a');
+  circle(0, 0, 19.2, mg, '#2e1606', 2.2);
+  const mb = ctx.createRadialGradient(-5, -6, 2, 0, 0, 15.5);
   if (st > 0) { mb.addColorStop(0, '#5ab8ff'); mb.addColorStop(1, '#14408a'); } else { mb.addColorStop(0, '#f05a4a'); mb.addColorStop(1, '#7a140e'); }
-  circle(0, 0, 12.5, mb);
-  if (last) drawCrown(0, -1, 10);
-  else txt(num + '', 0, 1, 16, '#fff', 'center', '400', FONT_T);
+  circle(0, 0, 15, mb);
+  if (last) drawCrown(0, -1, 12);
+  else txt(num + '', 0, 1, 19, '#fff', 'center', '400', FONT_T);
   // yıldızlar
-  if (st > 0) for (let s = 0; s < 3; s++) fancyStar((s - 1) * 11, 22 - (s === 1 ? 2 : 0), s === 1 ? 6.5 : 5.5, s < st);
+  if (st > 0) for (let s = 0; s < 3; s++) mapStar((s - 1) * 12, 25 - (s === 1 ? 2 : 0), s === 1 ? 6.5 : 5.5, s < st);
   ctx.restore();
   if (current) {
     // sıradaki bölüm: üstünde zıplayan ok ve adı
-    const by = y - 52 + Math.sin(time * 5) * 4;
+    const by = y - 56 + Math.sin(time * 5) * 4;
     ctx.save(); ctx.translate(x, by);
     ctx.beginPath(); ctx.moveTo(-8, -6); ctx.lineTo(8, -6); ctx.lineTo(0, 5); ctx.closePath();
     ctx.fillStyle = '#ffd34d'; ctx.fill(); ctx.strokeStyle = '#3a2008'; ctx.lineWidth = 2; ctx.stroke();
     ctx.restore();
     const name = LEVELS[i].name;
     ctx.font = `400 13px ${FONT_T}`; const w = ctx.measureText(name).width + 18;
-    roundRect(x - w / 2, y + 26, w, 20, 10, 'rgba(30,16,6,0.85)', '#d4ab5a', 1.4);
-    txt(name, x, y + 36.5, 13, '#ffe9a8', 'center', '400', FONT_T, false);
+    roundRect(x - w / 2, y + 30, w, 20, 10, 'rgba(30,16,6,0.85)', '#d4ab5a', 1.4);
+    txt(name, x, y + 40.5, 13, '#ffe9a8', 'center', '400', FONT_T, false);
   }
   buttons.push({ key, x: x - 24, y: y - 44, w: 55, h: 70, fn: () => { mapSel = i; mapSelT = time; mapMode = 'c'; sfx('open'); } });
 }
@@ -17219,6 +17236,7 @@ function drawMapTiles(ep, X, V) {
   for (const e in REGION_PRE) if (+e !== ep && REGION_PRE[e] && REGION_PRE[e].tiles) for (const t of REGION_PRE[e].tiles) t.img = null; // bellek: öteki bölge
   const pad = (V[3] - V[1]) * 0.6;
   for (const t of P.tiles) {
+    if (t.y > V[3] + pad * 3 || t.y + t.h < V[1] - pad * 3) { t.img = null; continue; } // 16 Eki: uzaktaki şerit bellekten çıkar (6x çözünürlükte şerit başı ~20 MB)
     if (t.y > V[3] + pad || t.y + t.h < V[1] - pad) continue;
     if (!t.img) { t.img = new Image(); t.img.src = 'img/' + t.file + (window.SURUM ? '?v=' + window.SURUM : ''); }
     if (t.img.complete && t.img.naturalWidth && t.y < V[3] && t.y + t.h > V[1]) ctx.drawImage(t.img, X.x, t.y, X.w, t.h);
@@ -17692,19 +17710,31 @@ const ZONE_FX = { cursed: 'fireflies', bog: 'rain', graveyard: 'storm', blacklak
 const zoneBand = (E, k) => { const c = E.mapH - k * MAP_V.step - MAP_V.h / 2; return [c - MAP_V.step * 0.62, c + MAP_V.step * 0.62]; };
 const hsh = (i, s) => { const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
 // 16 Eki (Caner: "mekânlar haritada görünsün"): her mekânın ortasında, yolun boş tarafında o yeri tanıtan işaret (fenerli kuru meşe, kemik kapı, kızıl ay...)
-const MAP_MARK = { w: 72, side: 165, chapel: 110 }; // w: genişlik (dünya), side: haritanın ortasından yana uzaklık; chapel: haritadaki şapel. 16 Eki (Caner): yoldaki askerlere (8.5) göre orantılı
+const MAP_MARK = { w: 65, chapel: 99, reach: 150, clear: 30 }; // w: genişlik (dünya); chapel: haritadaki şapel; reach: bölümlerin ortasından en çok uzaklık; clear: yol ortasına en az uzaklık
+// 16 Eki (Caner): askerlere (8.5) göre orantılı, sonra %10 daha küçük; telefonda (yakınlık 3,15) kadraj dışında kalmasın diye bölümlerin yakınında yolun boş yanına konur
 function drawMapLandmarks(E, ep, V) {
-  if (!E.zones || !E.vert) return; const per = Math.ceil(E.nodes.length / E.zones.length);
+  if (!E.zones || !E.vert) return;
   for (let k = 0; k < E.zones.length; k++) {
     const L = landmarkPos(E, k); if (!L || L.y + 40 < V[1] || L.y - L.h - 40 > V[3]) continue;
     ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(L.x, L.y - 4, L.w * 0.42, L.w * 0.12, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     ctx.drawImage(L.im, L.x - L.w / 2, L.y - L.h, L.w, L.h);
   }
 }
-function landmarkPos(E, k) { // işaretin tabanı (x, y), boyu; yolun bu dilimde geçmediği yanda
-  const im = spr('nm30_map_' + E.zones[k][0]); if (!im) return null; const per = Math.ceil(E.nodes.length / E.zones.length);
+const LANDMARK_C = new Map();
+function landmarkPos(E, k) { // işaretin tabanı (x, y), boyu: yazısıyla birlikte yola en az MAP_MARK.clear uzak, bölümlere en yakın yer
+  const im = spr('nm30_map_' + E.zones[k][0]); if (!im) return null;
+  const key = E.name + k, c = LANDMARK_C.get(key); if (c && c.im === im) return c;
+  const per = Math.ceil(E.nodes.length / E.zones.length), w = MAP_MARK.w, h = w * im.height / im.width;
   const [y0, y1] = zoneBand(E, k), cy = (y0 + y1) / 2, ns = E.nodes.slice(k * per, (k + 1) * per), mx = ns.length ? ns.reduce((a, n) => a + n[0], 0) / ns.length : MAP_V.x;
-  const w = MAP_MARK.w, h = w * im.height / im.width; return { im, w, h, x: mx > MAP_V.x ? MAP_V.x - MAP_MARK.side : MAP_V.x + MAP_MARK.side, y: cy + h * 0.42 };
+  const road = regionRoad(E), lw = 62; // lw: yazının yarı genişliği
+  let best = null;
+  for (let dy = -60; dy <= 60; dy += 15) for (let dx = -MAP_MARK.reach; dx <= MAP_MARK.reach; dx += 6) {
+    const x = mx + dx, y = cy + h * 0.42 + dy, bx0 = x - Math.max(w / 2, lw), bx1 = x + Math.max(w / 2, lw), by0 = y - h, by1 = y + 26;
+    let d = 1e9; for (const q of road) { const ex = Math.max(bx0 - q[0], 0, q[0] - bx1), ey = Math.max(by0 - q[1], 0, q[1] - by1); d = Math.min(d, Math.hypot(ex, ey)); }
+    const sc = Math.min(d, MAP_MARK.clear) * 10 - Math.abs(dx) - Math.abs(dy) * 0.5;
+    if (!best || sc > best.sc) best = { sc, x, y };
+  }
+  const L = { im, w, h, x: best.x, y: best.y }; LANDMARK_C.set(key, L); return L;
 }
 function drawMapZoneFx(E, ep, X, V) {
   if (!E.zones || !E.vert) return;
@@ -17735,12 +17765,27 @@ function drawMapZoneFx(E, ep, X, V) {
     ctx.restore();
   }
 }
+// 16 Eki (Caner: kurdelesiz, farklı): eski harita yazısı gibi koyu konturlu açık harfler, iki yanında ince çizgi ve elmas süs
+function zoneTitle(t) {
+  ctx.font = `400 17px ${FONT_T}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  const w = ctx.measureText(t).width / 2;
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+  ctx.strokeStyle = 'rgba(22,10,6,0.95)'; ctx.lineWidth = 4.5; ctx.strokeText(t, 0, 0);
+  ctx.shadowColor = 'transparent'; ctx.fillStyle = '#f4e3b2'; ctx.fillText(t, 0, 0);
+  for (const sg of [-1, 1]) {
+    const x0 = sg * (w + 6), x1 = sg * (w + 22);
+    ctx.strokeStyle = 'rgba(22,10,6,0.9)'; ctx.lineWidth = 3.4; ctx.beginPath(); ctx.moveTo(x0, 1); ctx.lineTo(x1, 1); ctx.stroke();
+    ctx.strokeStyle = '#d9b46a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x0, 1); ctx.lineTo(x1, 1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1 + sg * 5, 1); ctx.lineTo(x1, -3); ctx.lineTo(x1 - sg * 5, 1); ctx.lineTo(x1, 5); ctx.closePath();
+    ctx.fillStyle = '#d9b46a'; ctx.fill(); ctx.strokeStyle = 'rgba(22,10,6,0.9)'; ctx.lineWidth = 1.4; ctx.stroke();
+  }
+}
 function drawMapZoneLabels(E, ep) { // açılmış mekânın adı: yer işaretinin altında küçük kurdele (işaret yoksa ilk bölümün yanında)
   if (!E.zones || !E.vert) return; const ids = epLevels(ep), per = Math.ceil(ids.length / E.zones.length);
   for (let k = 0; k < E.zones.length; k++) {
     const i0 = ids[k * per], nd = E.nodes[k * per]; if (i0 == null || !nd || (!levelUnlocked(i0) && !fogTest())) continue;
     const L = landmarkPos(E, k); let x, y; if (L) { x = L.x; y = L.y + 16; } else { const [y0] = zoneBand(E, k); y = Math.max(nd[1] + 34, y0 + 30); x = nd[0] < 480 ? nd[0] + 120 : nd[0] - 120; }
-    const z = MAPCAM.z; ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); ctx.globalAlpha = 0.92; crimsonRibbon(0, 0, E.zones[k][1], 16, 0); ctx.restore();
+    const z = MAPCAM.z; ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); zoneTitle(E.zones[k][1]); ctx.restore();
   }
 }
 function drawRegionMap(E, ep, st) {

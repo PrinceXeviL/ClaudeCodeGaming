@@ -4,7 +4,7 @@
 // Sunucu 8765'te açıkken: node tools/harita-pisir.js   (taşma payı: 20:9 telefon ve 4:3 tablete yeter; daha geniş pencerede oyun kendisi çizer)
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
-const BX = 180, BY = 110, RES = 2, HI = 4, NT = 4; // 16 Eki: dikey bölge haritaları HI çözünürlükte NT şerit (map_bolge<N>_t<k>.webp) + RES'te yedek
+const BX = 180, BY = 110, RES = 2, HI = 6, NT = 8; // 16 Eki (Caner: zemin daha kaliteli): 4 → 6, şerit 4 → 8 // 16 Eki: dikey bölge haritaları HI çözünürlükte NT şerit (map_bolge<N>_t<k>.webp) + RES'te yedek
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
