@@ -383,7 +383,7 @@
   "Bu kuleden haritada zaten var": "Cette tour est déjà sur la carte",
   "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "La tour revient telle qu'elle était avant de tomber : niveau, spécialisation, compétences",
   "ÇIPLAK KEMİK": "OS À NU",
-  "Çıplak Kemik": "Os à nu",
+  "Çıplak Kemik": "Os à Nu",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 vie · seulement 2 types de tours · pas de sorts de Mortimer",
   "3 yıldızla açılır": "Se débloque avec 3 étoiles",
   "Kemik Gülle": "Boulet d'os",
@@ -394,7 +394,45 @@
   "Kalkan Hamlesi!": "Charge au bouclier !",
   "Tabut Duvarı!": "Mur de cercueil !",
   "Ruh Biçimi!": "Faucheur d'âmes !",
-  "Veba Sinekleri": "Mouches de la Peste"
+  "Veba Sinekleri": "Mouches de la Peste",
+  "KARA DEFTER": "REGISTRE NOIR",
+  "Tümü": "Tout",
+  "Sefer": "Campagne",
+  "Savaş": "Bataille",
+  "Ölüler ve Büyüler": "Morts et sorts",
+  "Kuleler": "Tours",
+  "Mortimer'ın Şakaları": "Blagues de Mortimer",
+  "Gizli başarım: Mortimer bunu kimseye söylemez": "Succès secret : Mortimer ne le dit à personne",
+  "KEMİK": "OS",
+  "GÜMÜŞ": "ARGENT",
+  "ALTIN": "OR",
+  "Fatih Mortimer": "Mortimer le Conquérant",
+  "Bitmeyen Gece": "Nuit Sans Fin",
+  "Gökyüzü Temizliği": "Ciel Dégagé",
+  "Kuşatma Kırıcı": "Briseur de Siège",
+  "Sabırsız Büyücü": "Sorcier Impatient",
+  "Komutanın Yükselişi": "Ascension du Commandant",
+  "Komutan Gücü": "Pouvoir du Commandant",
+  "Ceset Patlatıcı": "Éclateur de Cadavres",
+  "Golem Ustası": "Maître des Golems",
+  "Kitap Kurdu": "Rat de Bibliothèque",
+  "Kara Kitap": "Livre Noir",
+  "Mimar Mortimer": "Mortimer l'Architecte",
+  "Küllerinden": "Des Cendres",
+  "Mahzen Bekçisi": "Gardien de la Crypte",
+  "Sinek Sürüsü": "Essaim de Mouches",
+  "Silah Büyücüsü": "Enchanteur d'Armes",
+  "Bubu'nun Dostu": "Copain de Bubu",
+  "Prens Değil": "Pas un Prince",
+  "Orman Gözcüsü": "Guetteur des Bois",
+  "Kıl Payı": "De Justesse",
+  "Aceleci Ölü": "Mort Pressé",
+  "Ölüler Ordusu": "Armée des Morts",
+  "Büyüsüz Necromancer": "Nécromancien sans Sorts",
+  "Bir bölümü son canınla kazan": "Gagne un niveau avec ta dernière vie",
+  "Bir bölümde her dalgayı erken çağır": "Appelle chaque vague en avance dans un niveau",
+  "Aynı anda 25 dost ölü ve iskelet": "25 morts et squelettes alliés à la fois",
+  "5. bölümden sonra hiç büyü yapmadan kazan": "Gagne après le niveau 5 sans lancer de sort"
  },
  "tpl": [
   [
@@ -572,6 +610,138 @@
   [
    "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
    "La tour devient le Chaudron de Peste Noire : peste vert-violet, nuage de gaz plus grand · Les ennemis touchés sont infectés ({} de poison par seconde) : à la mort d'un infecté, la peste se propage aux voisins · Mouches de la Peste : {} essaims à la fois attaquent les ennemis (volants compris), empoisonnent et infectent ceux qu'ils piquent"
+  ],
+  [
+   "{} bölüm kazan",
+   "Gagne {} niveaux"
+  ],
+  [
+   "Toplam {} yıldız topla",
+   "Récolte {} étoiles au total"
+  ],
+  [
+   "{} bölümü hiç can kaybetmeden bitir",
+   "Termine {} niveaux sans perdre de vie"
+  ],
+  [
+   "{} Kahramanlık meydan okuması bitir",
+   "Termine {} défis Héroïques"
+  ],
+  [
+   "{} Çıplak Kemik meydan okuması bitir",
+   "Termine {} défis Os à Nu"
+  ],
+  [
+   "Sonsuz Gece'de {}. dalgaya ulaş",
+   "Atteins la vague {} dans la Nuit Sans Fin"
+  ],
+  [
+   "Toplam {} düşman öldür",
+   "Tue {} ennemis au total"
+  ],
+  [
+   "{} komutan (boss) devir",
+   "Renverse {} commandants (boss)"
+  ],
+  [
+   "{} uçan düşman düşür",
+   "Abats {} ennemis volants"
+  ],
+  [
+   "{} kuşatma aracı parçala",
+   "Brise {} engins de siège"
+  ],
+  [
+   "Dalgayı {} kez erken çağır",
+   "Appelle une vague en avance {} fois"
+  ],
+  [
+   "Bir komutanı {}. seviyeye çıkar",
+   "Monte un commandant au niveau {}"
+  ],
+  [
+   "Komutan gücünü {} kez kullan",
+   "Utilise le pouvoir du commandant {} fois"
+  ],
+  [
+   "Toplam {} ölüyü dirilt",
+   "Relève {} morts au total"
+  ],
+  [
+   "Korku büyüsüyle {} düşman kaçır",
+   "Fais fuir {} ennemis avec la Peur"
+  ],
+  [
+   "Kemik Duvarı {} kez dik",
+   "Dresse le Mur d'Os {} fois"
+  ],
+  [
+   "{} cesedi patlat",
+   "Fais exploser {} cadavres"
+  ],
+  [
+   "{} Ceset Golemi çağır",
+   "Invoque {} Golems de Cadavres"
+  ],
+  [
+   "Toplam {} büyü yap",
+   "Lance {} sorts au total"
+  ],
+  [
+   "Büyü Kitabı'nda {} puan harca",
+   "Dépense {} points dans le Grimoire"
+  ],
+  [
+   "{} kule kur",
+   "Construis {} tours"
+  ],
+  [
+   "{} kulenin uzmanlığını son kademeye çıkar",
+   "Monte la spécialité de {} tours au maximum"
+  ],
+  [
+   "Molozdan {} kule yeniden kur",
+   "Reconstruis {} tours depuis les décombres"
+  ],
+  [
+   "Mahzen kapağından ya da mezardan {} golem kaldır",
+   "Relève {} golems d'une trappe ou d'une tombe"
+  ],
+  [
+   "Veba sinekleri {} kez ısırsın",
+   "Laisse les mouches de la peste piquer {} fois"
+  ],
+  [
+   "{} silah büyüsü işle",
+   "Applique {} enchantements d'arme"
+  ],
+  [
+   "Mortimer'a {} kez çay içir",
+   "Sers le thé à Mortimer {} fois"
+  ],
+  [
+   "{} kargayı ürküt",
+   "Effraie {} corbeaux"
+  ],
+  [
+   "Mezardaki elden {} kez bahşiş al",
+   "Reçois {} pourboires de la main dans la tombe"
+  ],
+  [
+   "Bubu'yu {} kez rahatsız et",
+   "Dérange Bubu {} fois"
+  ],
+  [
+   "{} düşmanı kurbağaya çevir",
+   "Transforme {} ennemis en grenouilles"
+  ],
+  [
+   "Haritada {} sürpriz bul",
+   "Trouve {} surprises sur la carte"
+  ],
+  [
+   "AL +{}",
+   "PRENDRE +{}"
   ]
  ]
 }

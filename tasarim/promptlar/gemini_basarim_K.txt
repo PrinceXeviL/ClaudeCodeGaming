@@ -1,0 +1,21 @@
+Image 1 is the achievement icon sheet of my dark gothic cartoon tower defense game "Don't Mess with the Necromancer", image 2 is its emblem sheet (the exact art style, line weight and quality I want), image 3 is the current plain achievements screen that I am redesigning into "Mortimer's Black Ledger", a necromancer's book of deeds. Draw a NEW sheet of 12 pieces in exactly that style, rich and premium like the best mobile strategy games, arranged in a clean grid of 4 columns and 3 rows:
+
+Row 1, MEDALLION FRAMES (round frames with a completely EMPTY dark round center where an achievement icon will be placed; all four exactly the same size and the same inner hole size):
+1) BONE tier: a ring of old yellowed bones and small vertebrae, a tiny skull at the top, dark bronze rim.
+2) SILVER tier: a tarnished silver ring with engraved runes, two small bat wings at the sides, a small silver skull at the top.
+3) GOLD tier: an ornate polished gold ring with two small curved horns at the top, three small glowing green soul gems set around it, warm highlights.
+4) LOCKED: a dark cracked grey stone ring wrapped in a rusty iron chain with a small padlock at the bottom, dull and dim.
+
+Row 2:
+5) SECRET seal: a round crimson wax seal with a stamped closed-eye sigil and a dripping edge (no letters, no question mark).
+6) REWARD chest: a small black coffin-shaped chest wide open, spilling glowing purple soul crystals.
+7) CAMPAIGN emblem: a rolled old parchment map tied with a cord and a skull wax seal.
+8) BATTLE emblem: two crossed bone swords over a cracked round shield with a skull.
+
+Row 3:
+9) NECROMANCY emblem: a skeletal hand rising from a small grave mound, green flame swirling around its fingers.
+10) TOWERS emblem: a small sinister bone tower with a glowing green window and a skull on top.
+11) MORTIMER'S JOKES emblem: a chipped teacup with a skull face on it, a little green ghost wisp rising as steam.
+12) THE BLACK LEDGER: a thick black leather book with a silver skull clasp, a purple ribbon bookmark and glowing green rune corners.
+
+Each piece centered in its own cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, similar visual size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines. 16:9 image.

@@ -394,7 +394,45 @@
   "Kalkan Hamlesi!": "Рывок щитом!",
   "Tabut Duvarı!": "Стена гроба!",
   "Ruh Biçimi!": "Жнец душ!",
-  "Veba Sinekleri": "Чумные мухи"
+  "Veba Sinekleri": "Чумные мухи",
+  "KARA DEFTER": "ЧЁРНАЯ КНИГА",
+  "Tümü": "Все",
+  "Sefer": "Поход",
+  "Savaş": "Битва",
+  "Ölüler ve Büyüler": "Мёртвые и чары",
+  "Kuleler": "Башни",
+  "Mortimer'ın Şakaları": "Шутки Мортимера",
+  "Gizli başarım: Mortimer bunu kimseye söylemez": "Тайное достижение: Мортимер никому не скажет",
+  "KEMİK": "КОСТЬ",
+  "GÜMÜŞ": "СЕРЕБРО",
+  "ALTIN": "ЗОЛОТО",
+  "Fatih Mortimer": "Мортимер Завоеватель",
+  "Bitmeyen Gece": "Бесконечная ночь",
+  "Gökyüzü Temizliği": "Чистое небо",
+  "Kuşatma Kırıcı": "Сокрушитель осад",
+  "Sabırsız Büyücü": "Нетерпеливый маг",
+  "Komutanın Yükselişi": "Возвышение командира",
+  "Komutan Gücü": "Сила командира",
+  "Ceset Patlatıcı": "Подрывник трупов",
+  "Golem Ustası": "Мастер големов",
+  "Kitap Kurdu": "Книжный червь",
+  "Kara Kitap": "Чёрная книга",
+  "Mimar Mortimer": "Мортимер-зодчий",
+  "Küllerinden": "Из пепла",
+  "Mahzen Bekçisi": "Хранитель склепа",
+  "Sinek Sürüsü": "Рой мух",
+  "Silah Büyücüsü": "Зачарователь оружия",
+  "Bubu'nun Dostu": "Приятель Бубу",
+  "Prens Değil": "Не принц",
+  "Orman Gözcüsü": "Лесной дозорный",
+  "Kıl Payı": "На волоске",
+  "Aceleci Ölü": "Торопливый мертвец",
+  "Ölüler Ordusu": "Армия мёртвых",
+  "Büyüsüz Necromancer": "Некромант без чар",
+  "Bir bölümü son canınla kazan": "Выиграй уровень с последней жизнью",
+  "Bir bölümde her dalgayı erken çağır": "Вызови каждую волну досрочно в одном уровне",
+  "Aynı anda 25 dost ölü ve iskelet": "25 союзных мертвецов и скелетов одновременно",
+  "5. bölümden sonra hiç büyü yapmadan kazan": "Выиграй после 5-го уровня без единого заклинания"
  },
  "tpl": [
   [
@@ -572,6 +610,138 @@
   [
    "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
    "Башня становится Котлом Чёрной Чумы: фиолетово-зелёная чума, облако газа больше · Поражённые заражаются ({} яда в секунду): когда заражённый умирает, чума переходит на соседей · Чумные мухи: одновременно {} роя нападают на врагов (и летающих), отравляя и заражая укушенных"
+  ],
+  [
+   "{} bölüm kazan",
+   "Выиграй уровней: {}"
+  ],
+  [
+   "Toplam {} yıldız topla",
+   "Собери всего {} звёзд"
+  ],
+  [
+   "{} bölümü hiç can kaybetmeden bitir",
+   "Пройди {} уровней, не потеряв жизни"
+  ],
+  [
+   "{} Kahramanlık meydan okuması bitir",
+   "Пройди героических испытаний: {}"
+  ],
+  [
+   "{} Çıplak Kemik meydan okuması bitir",
+   "Пройди испытаний «Голые кости»: {}"
+  ],
+  [
+   "Sonsuz Gece'de {}. dalgaya ulaş",
+   "Дойди до {}-й волны в Бесконечной ночи"
+  ],
+  [
+   "Toplam {} düşman öldür",
+   "Убей всего {} врагов"
+  ],
+  [
+   "{} komutan (boss) devir",
+   "Свергни {} командиров (боссов)"
+  ],
+  [
+   "{} uçan düşman düşür",
+   "Сбей {} летающих врагов"
+  ],
+  [
+   "{} kuşatma aracı parçala",
+   "Разбей {} осадных машин"
+  ],
+  [
+   "Dalgayı {} kez erken çağır",
+   "Вызови волну досрочно {} раз"
+  ],
+  [
+   "Bir komutanı {}. seviyeye çıkar",
+   "Подними командира до {} уровня"
+  ],
+  [
+   "Komutan gücünü {} kez kullan",
+   "Используй силу командира {} раз"
+  ],
+  [
+   "Toplam {} ölüyü dirilt",
+   "Подними всего {} мертвецов"
+  ],
+  [
+   "Korku büyüsüyle {} düşman kaçır",
+   "Отпугни {} врагов Страхом"
+  ],
+  [
+   "Kemik Duvarı {} kez dik",
+   "Возведи Костяную стену {} раз"
+  ],
+  [
+   "{} cesedi patlat",
+   "Взорви {} трупов"
+  ],
+  [
+   "{} Ceset Golemi çağır",
+   "Призови {} трупных големов"
+  ],
+  [
+   "Toplam {} büyü yap",
+   "Сотвори всего {} заклинаний"
+  ],
+  [
+   "Büyü Kitabı'nda {} puan harca",
+   "Потрать {} очков в Книге заклинаний"
+  ],
+  [
+   "{} kule kur",
+   "Построй {} башен"
+  ],
+  [
+   "{} kulenin uzmanlığını son kademeye çıkar",
+   "Прокачай специализацию {} башен до предела"
+  ],
+  [
+   "Molozdan {} kule yeniden kur",
+   "Восстанови {} башен из руин"
+  ],
+  [
+   "Mahzen kapağından ya da mezardan {} golem kaldır",
+   "Подними {} големов из люка склепа или могилы"
+  ],
+  [
+   "Veba sinekleri {} kez ısırsın",
+   "Пусть чумные мухи укусят {} раз"
+  ],
+  [
+   "{} silah büyüsü işle",
+   "Наложи {} чар на оружие"
+  ],
+  [
+   "Mortimer'a {} kez çay içir",
+   "Напои Мортимера чаем {} раз"
+  ],
+  [
+   "{} kargayı ürküt",
+   "Спугни {} ворон"
+  ],
+  [
+   "Mezardaki elden {} kez bahşiş al",
+   "Получи чаевые от руки из могилы {} раз"
+  ],
+  [
+   "Bubu'yu {} kez rahatsız et",
+   "Побеспокой Бубу {} раз"
+  ],
+  [
+   "{} düşmanı kurbağaya çevir",
+   "Преврати {} врагов в лягушек"
+  ],
+  [
+   "Haritada {} sürpriz bul",
+   "Найди {} сюрпризов на карте"
+  ],
+  [
+   "AL +{}",
+   "ЗАБРАТЬ +{}"
   ]
  ]
 }

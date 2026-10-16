@@ -551,6 +551,7 @@ const SOUND = {
   starthud: { vol: 0.6, gap: 0.05, max: 3 },
   starchime: { vol: 0.6, gap: 0.05, max: 3 },
   flybuzz: { vol: 0.4, gap: 0.8, max: 2, rate: [0.92, 1.1] }, // sinek sürüsü kalkışı
+  achieve: { vol: 0.55, gap: 1, max: 1 }, // Kara Defter: başarım kademesi açıldı
   flyswarm: { vol: 0.32, gap: 0.6, max: 2, rate: [0.9, 1.12] }, // sürü düşmanın çevresinde vızıldarken // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
   skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
   lootchime: { vol: 0.5, gap: 0.5, max: 1 },                         // ganimet çıkınca kristal + altın çınlaması                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
@@ -2222,6 +2223,7 @@ function waveBonusAndStart() {
   G.wavePeek = null;
   const bonus = earlyBonus();
   if (bonus > 0) {
+    cnt('early'); G.earlyN = (G.earlyN || 0) + 1;
     const b = waveButtonPos(nextWavePaths()[0] || 0);
     dropCoins(b.x, b.y, bonus, true);
     floatText(b.x, b.y - 34, `Erken çağrı +${bonus}`, '#ffd34d');
@@ -2948,7 +2950,7 @@ function killEnemy0(e) {
   }
   G.kills = (G.kills || 0) + 1;
   if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
-  cnt('kills'); if (e.def.chief) cnt('bosses'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
+  cnt('kills'); if (e.def.chief) cnt('bosses'); if (e.def.flying) cnt('fly'); if (e.def.machine) cnt('mach'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
   dropCoins(e.x, e.y, Math.max(1, Math.round(e.def.gold * diff().bounty)), false, e.def.chief && !e.leaked ? [44, 2.1] : null); // boss: altın yağmuru (14 Eki: daha bol)
   sfx('death');
   if (e.def.machine && !e.leaked) sfx('castlehit', rand(0.8, 0.95), 0.8, e); // 16 Eki: kuşatma makinesi parçalanırken tahta çatırtısı
@@ -3705,7 +3707,7 @@ function buildTower(plot, type) {
   const cost = TOWERS[type].levels[0].cost;
   if (G.gold < cost) return false;
   if (TOWERS[type].unique && G.towers.some(o => o.type === type)) return false; // Lanet Kulesi haritada tek
-  G.gold -= cost; gaDesign('kule:kur:' + type);
+  G.gold -= cost; gaDesign('kule:kur:' + type); cnt('build');
   const t = { type, def: TOWERS[type], lvl: 0, x: plot.x, y: plot.y, cd: 0.3, spent: cost, plot, soldiers: [], anim: 0, shotAnim: 0, born: G.t };
   plot.tower = t;
   G.towers.push(t); towerHp(t);
@@ -3843,7 +3845,7 @@ function buyAbility(t, id) {
   G.gold -= cost; t.spent += cost; t.ab = t.ab || {}; t.ab[id] = cur + 1; t.born = G.t;
   const first = !t.spec;
   t.spec = id;
-  if (cur + 1 >= def.ranks.length) achGive('master');
+  if (cur + 1 >= def.ranks.length) cnt('specmax');
   if (t.type === 'barracks') {
     if (first && t.soldiers.length < 4) { // uzmanlık seçilince 4. iskelet mahzenden kalkar
       const s4 = makeSoldier(t, 3);
@@ -3874,7 +3876,7 @@ function buyPath(t, p) {
 function buyImbue(t, k) {
   const I = IMBUE[k];
   if (!I || t.imbue || !imbueOpen(t) || G.gold < I.cost) return false;
-  G.gold -= I.cost; t.spent += I.cost; t.imbue = k; t.born = G.t;
+  G.gold -= I.cost; t.spent += I.cost; t.imbue = k; t.born = G.t; cnt('imbue');
   floatText(t.x, t.y - 80, (t.type === 'archer' ? I.arrow : I.melee) + '!', `rgb(${I.col})`); sfx('upgrade');
   G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: I.col, t: 0, dur: 0.5 });
   for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(30, 90); emit(G.parts, { kind: 'glow', add: true, x: t.x + rand(-14, 14), y: t.y - rand(10, 60), vx: Math.cos(a) * v * 0.4, vy: -rand(30, 80), drag: 1.5, col: I.col, s0: rand(3, 5), s1: 0.5, life: rand(0.6, 1) }); }
@@ -3937,7 +3939,7 @@ function rebuildTower(pl) {
   return true;
 }
 function finishRebuild(pl) {
-  const R = pl.rubble, S = R.snap, type = R.type; pl.rubble = null;
+  const R = pl.rubble, S = R.snap, type = R.type; pl.rubble = null; cnt('rebuild');
   const t = { type, def: TOWERS[type], lvl: S.lvl, x: pl.x, y: pl.y, cd: 0.3, spent: S.spent, plot: pl, soldiers: [], anim: 0, shotAnim: 0, born: G.t,
     spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra };
   pl.tower = t; G.towers.push(t); towerHp(t);
@@ -5664,6 +5666,7 @@ function castSpell(id, x, y) {
   if (NECRO_SPELLS[id]) { const n = enemiesNear(x, y, NECRO_SPELLS[id].r || 90).length; if (castNecro(id, x, y) === false) return; gainSpellXp(id, n); }
   else { hitBy = 'hero'; const ok = castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; if (ok === false) return; } // yanlış yere: bekleme başlamaz
   if (G.stats) G.stats.spells++;
+  if (NECRO_SPELLS[id]) { cnt('spells'); G.spellUsed = true; if (id === 'nm_golem') cnt('golem'); } else cnt('ult'); // Kara Defter
   gaDesign('buyu:' + id);
   G.spells[id] = spellInfo(id).cd;
 }
@@ -6410,50 +6413,115 @@ function drawTut() {
 // ----- başarımlar -----
 // save.ach: açılanlar (id -> zaman), save.cnt: kalıcı sayaçlar. cnt(k, n) sayacı artırır ve ilgili başarımları dener.
 // Sayaçlar bellekte artar; kayıt başarım açılınca ve bölüm bitince yazılır.
+// 16 Eki (Caner: "başarımlar rakiplerin 1-0 önünde olsun, tasarım ve içerik"): Mortimer'ın Kara Defteri. 5 kategori, 41 başarım; çoğu üç kademeli
+// (kemik / gümüş / altın), bazıları tek seferlik, birkaçı gizli (açılana kadar mühürlü). Her kademe kristal ödülü verir, defterden alınır.
+// t: kademe eşikleri (sayaç k ya da ölçü m); tek seferlikler t: [1] ve achGive ile. Kademe: save.cnt / ölçü değerinden hesaplanır,
+// save.achT[id] = bildirilen kademe, save.achC[id] = ödülü alınan kademe. Eski kayıt (save.ach) ilk açılışta sayaçlara taşınır (achMigrate).
+const ACH_CATS = [['all', 'Tümü', 'ico_ach_book'], ['camp', 'Sefer', 'ico_ach_cat_camp'], ['battle', 'Savaş', 'ico_ach_cat_battle'], ['necro', 'Ölüler ve Büyüler', 'ico_ach_cat_necro'], ['tower', 'Kuleler', 'ico_ach_cat_tower'], ['fun', "Mortimer'ın Şakaları", 'ico_ach_cat_fun']];
+const ACH_REW = [1, 1, 2], ACH_REW1 = 2; // kristal: kademe başına / tek seferlik
 const ACH = [
-  { id: 'first', name: 'İlk Kan', desc: 'Bir bölümü bitir', icon: 'skull' },
-  { id: 'flawless', name: 'Kusursuz', desc: 'Bir bölümü hiç can kaybetmeden bitir', icon: 'heart' },
-  { id: 'allstars', name: 'Yıldız Avcısı', desc: 'Bütün bölümlerden 3 yıldız al', icon: 'star' },
-  { id: 'heroic', name: 'Kahraman', desc: 'Bir Kahramanlık meydan okumasını bitir', icon: 'shield' },
-  { id: 'kills', name: 'Mezarlık Dolu', desc: 'Toplam 1000 düşman öldür', icon: 'skull', cnt: 'kills', need: 1000 },
-  { id: 'bosses', name: 'Rütbe Söken', desc: '5 komutan (boss) devir', icon: 'crown', cnt: 'bosses', need: 5 },
-  { id: 'raise', name: 'Mesai Arkadaşları', desc: 'Toplam 100 ölüyü dirilt', icon: 'raise', cnt: 'raise', need: 100 },
-  { id: 'fear', name: 'Böö!', desc: 'Korku büyüsüyle 50 düşman kaçır', icon: 'fear', cnt: 'fear', need: 50 },
-  { id: 'wall', name: 'Duvarcı Ustası', desc: 'Kemik Duvarı 15 kez dik', icon: 'wall', cnt: 'wall', need: 15 },
-  { id: 'tea', name: 'Çay Saati', desc: "Mortimer'a 10 kez çay içir", icon: 'tea', cnt: 'tea', need: 10 },
-  { id: 'crow', name: 'Kargalar Dostu', desc: '15 kargayı ürküt', icon: 'crow', cnt: 'crow', need: 15 },
-  { id: 'tip', name: 'Mezar Bahşişi', desc: 'Mezardaki elden bahşiş al', icon: 'coin', cnt: 'tip', need: 1 },
-  { id: 'hoard', name: 'Cimri Büyücü', desc: 'Bir bölümde 2000 altın biriktir', icon: 'coin' },
-  { id: 'master', name: 'Kara Türbe', desc: 'Bir kulenin uzmanlığını son kademeye çıkar', icon: 'tower' },
-  { id: 'codex', name: 'Ansiklopedist', desc: 'Kodeksteki bütün düşmanları gör', icon: 'book' },
-  { id: 'chal5', name: 'Lanetli Efsane', desc: 'Bütün bölümlerde Kahramanlık meydan okumasını bitir', icon: 'crown' },
+  // ---- Sefer ----
+  { id: 'first', cat: 'camp', name: 'İlk Kan', desc: 'Bir bölümü bitir', icon: 'skull', t: [1] },
+  { id: 'conquer', cat: 'camp', name: 'Fatih Mortimer', desc: '{n} bölüm kazan', icon: 'crown', k: 'win', t: [5, 15, 40] },
+  { id: 'allstars', cat: 'camp', name: 'Yıldız Avcısı', desc: 'Toplam {n} yıldız topla', icon: 'star', m: 'stars', t: [30, 90, 200] },
+  { id: 'flawless', cat: 'camp', name: 'Kusursuz', desc: '{n} bölümü hiç can kaybetmeden bitir', icon: 'heart', k: 'flawless', t: [1, 5, 15] },
+  { id: 'heroic', cat: 'camp', name: 'Kahraman', desc: '{n} Kahramanlık meydan okuması bitir', icon: 'shield', k: 'heroic', t: [1, 5, 15] },
+  { id: 'iron', cat: 'camp', name: 'Çıplak Kemik', desc: '{n} Çıplak Kemik meydan okuması bitir', icon: 'skull', k: 'iron', t: [1, 5, 15] },
+  { id: 'endless', cat: 'camp', name: 'Bitmeyen Gece', desc: "Sonsuz Gece'de {n}. dalgaya ulaş", icon: 'skull', m: 'endless', t: [10, 20, 35] },
+  { id: 'chal5', cat: 'camp', name: 'Lanetli Efsane', desc: 'Bütün bölümlerde Kahramanlık meydan okumasını bitir', icon: 'crown', t: [1] },
+  // ---- Savaş ----
+  { id: 'kills', cat: 'battle', name: 'Mezarlık Dolu', desc: 'Toplam {n} düşman öldür', icon: 'skull', k: 'kills', t: [1000, 5000, 20000] },
+  { id: 'bosses', cat: 'battle', name: 'Rütbe Söken', desc: '{n} komutan (boss) devir', icon: 'crown', k: 'bosses', t: [5, 20, 50] },
+  { id: 'fly', cat: 'battle', name: 'Gökyüzü Temizliği', desc: '{n} uçan düşman düşür', icon: 'crow', k: 'fly', t: [100, 500, 2000] },
+  { id: 'mach', cat: 'battle', name: 'Kuşatma Kırıcı', desc: '{n} kuşatma aracı parçala', icon: 'tower', k: 'mach', t: [10, 50, 150] },
+  { id: 'early', cat: 'battle', name: 'Sabırsız Büyücü', desc: 'Dalgayı {n} kez erken çağır', icon: 'coin', k: 'early', t: [25, 100, 300] },
+  { id: 'herolvl', cat: 'battle', name: 'Komutanın Yükselişi', desc: 'Bir komutanı {n}. seviyeye çıkar', icon: 'shield', m: 'herolvl', t: [5, 10, 20] },
+  { id: 'ult', cat: 'battle', name: 'Komutan Gücü', desc: 'Komutan gücünü {n} kez kullan', icon: 'crown', k: 'ult', t: [25, 100, 300] },
+  // ---- Ölüler ve Büyüler ----
+  { id: 'raise', cat: 'necro', name: 'Mesai Arkadaşları', desc: 'Toplam {n} ölüyü dirilt', icon: 'raise', k: 'raise', t: [100, 500, 2000] },
+  { id: 'fear', cat: 'necro', name: 'Böö!', desc: 'Korku büyüsüyle {n} düşman kaçır', icon: 'fear', k: 'fear', t: [50, 250, 1000] },
+  { id: 'wall', cat: 'necro', name: 'Duvarcı Ustası', desc: 'Kemik Duvarı {n} kez dik', icon: 'wall', k: 'wall', t: [15, 75, 250] },
+  { id: 'burst', cat: 'necro', name: 'Ceset Patlatıcı', desc: '{n} cesedi patlat', icon: 'skull', k: 'burst', t: [25, 150, 500] },
+  { id: 'golem', cat: 'necro', name: 'Golem Ustası', desc: '{n} Ceset Golemi çağır', icon: 'skull', k: 'golem', t: [5, 25, 75] },
+  { id: 'spells', cat: 'necro', name: 'Kitap Kurdu', desc: 'Toplam {n} büyü yap', icon: 'book', k: 'spells', t: [100, 500, 2000] },
+  { id: 'grim', cat: 'necro', name: 'Kara Kitap', desc: "Büyü Kitabı'nda {n} puan harca", icon: 'book', m: 'grim', t: [5, 15, 25] },
+  // ---- Kuleler ----
+  { id: 'build', cat: 'tower', name: 'Mimar Mortimer', desc: '{n} kule kur', icon: 'tower', k: 'build', t: [50, 250, 1000] },
+  { id: 'master', cat: 'tower', name: 'Kara Türbe', desc: '{n} kulenin uzmanlığını son kademeye çıkar', icon: 'tower', k: 'specmax', t: [1, 10, 40] },
+  { id: 'rebuild', cat: 'tower', name: 'Küllerinden', desc: 'Molozdan {n} kule yeniden kur', icon: 'tower', k: 'rebuild', t: [5, 25, 75] },
+  { id: 'hatch', cat: 'tower', name: 'Mahzen Bekçisi', desc: 'Mahzen kapağından ya da mezardan {n} golem kaldır', icon: 'skull', k: 'hatch', t: [5, 25, 75] },
+  { id: 'flies', cat: 'tower', name: 'Sinek Sürüsü', desc: 'Veba sinekleri {n} kez ısırsın', icon: 'skull', k: 'flies', t: [500, 2500, 10000] },
+  { id: 'imbue', cat: 'tower', name: 'Silah Büyücüsü', desc: '{n} silah büyüsü işle', icon: 'fear', k: 'imbue', t: [5, 25, 75] },
+  { id: 'codex', cat: 'tower', name: 'Ansiklopedist', desc: 'Kodeksteki bütün düşmanları gör', icon: 'book', t: [1] },
+  // ---- Mortimer'ın şakaları (ve gizliler) ----
+  { id: 'tea', cat: 'fun', name: 'Çay Saati', desc: "Mortimer'a {n} kez çay içir", icon: 'tea', k: 'tea', t: [10, 50, 150] },
+  { id: 'crow', cat: 'fun', name: 'Kargalar Dostu', desc: '{n} kargayı ürküt', icon: 'crow', k: 'crow', t: [15, 60, 200] },
+  { id: 'tip', cat: 'fun', name: 'Mezar Bahşişi', desc: 'Mezardaki elden {n} kez bahşiş al', icon: 'coin', k: 'tip', t: [1, 5, 20] },
+  { id: 'bubu', cat: 'fun', name: "Bubu'nun Dostu", desc: "Bubu'yu {n} kez rahatsız et", icon: 'skull', k: 'bubu', t: [5, 25, 100] },
+  { id: 'frog', cat: 'fun', name: 'Prens Değil', desc: '{n} düşmanı kurbağaya çevir', icon: 'crow', k: 'frog', t: [25, 100, 400] },
+  { id: 'surprise', cat: 'fun', name: 'Orman Gözcüsü', desc: 'Haritada {n} sürpriz bul', icon: 'crow', k: 'surprise', t: [5, 20, 50] },
+  { id: 'hoard', cat: 'fun', name: 'Cimri Büyücü', desc: 'Bir bölümde 2000 altın biriktir', icon: 'coin', t: [1] },
+  { id: 'sec_onelife', cat: 'fun', hidden: true, name: 'Kıl Payı', desc: 'Bir bölümü son canınla kazan', icon: 'heart', t: [1] },
+  { id: 'sec_rush', cat: 'fun', hidden: true, name: 'Aceleci Ölü', desc: 'Bir bölümde her dalgayı erken çağır', icon: 'coin', t: [1] },
+  { id: 'sec_army', cat: 'fun', hidden: true, name: 'Ölüler Ordusu', desc: 'Aynı anda 25 dost ölü ve iskelet', icon: 'raise', t: [1] },
+  { id: 'sec_nospell', cat: 'fun', hidden: true, name: 'Büyüsüz Necromancer', desc: '5. bölümden sonra hiç büyü yapmadan kazan', icon: 'book', t: [1] },
 ];
 const ACH_TOAST = [];
+const achById = (id) => ACH.find(a => a.id === id);
+function achMetric(m) {
+  if (m === 'stars') return LEVELS.reduce((a, lv, i) => a + (save.stars[i] || 0), 0) + Object.values(save.ch || {}).reduce((a, c) => a + (c && c.h ? 1 : 0) + (c && c.i ? 1 : 0), 0);
+  if (m === 'endless') return Math.max(0, ...Object.values(save.endless || {}));
+  if (m === 'herolvl') return Math.max(1, ...Object.values(save.hero || {}).map(h => (h && h.lvl) || 1));
+  if (m === 'grim') return Object.values(save.grim || {}).reduce((a, v) => a + (v || 0), 0);
+  return 0;
+}
+const achVal = (a) => (a.k ? (save.cnt && save.cnt[a.k]) || 0 : a.m ? achMetric(a.m) : save.ach && save.ach[a.id] ? 1 : 0);
+const achTier = (a) => a.t.filter(n => achVal(a) >= n).length; // ulaşılan kademe (0..3)
+const achClaimable = (a) => achTier(a) - ((save.achC && save.achC[a.id]) || 0);
+const achReward = (a, k) => (a.t.length === 1 ? ACH_REW1 : ACH_REW[k]); // k: kademe sırası (0..)
+function achMigrate() { // eski 16 başarımlık kayıt: açılmış olanların sayaçları en az ilk kademeye
+  if (save.achV >= 2) return; save.achV = 2; save.cnt = save.cnt || {}; const A = save.ach || {};
+  const atLeast = (k, n) => { save.cnt[k] = Math.max(save.cnt[k] || 0, n); };
+  if (A.flawless) atLeast('flawless', 1); if (A.heroic) atLeast('heroic', 1); if (A.master) atLeast('specmax', 1);
+  atLeast('win', LEVELS.filter((lv, i) => (save.stars[i] || 0) > 0).length);
+  save.achT = {}; for (const a of ACH) save.achT[a.id] = achTier(a); // eskiden açılanlar yeniden bildirilmesin
+}
+function achNotify(a) { // kademe yükseldiyse bildirim
+  achMigrate(); save.achT = save.achT || {}; const t = achTier(a), old = save.achT[a.id] || 0;
+  if (t <= old) return; save.achT[a.id] = t; save.achNew = (save.achNew || 0) + 1; persist();
+  ACH_TOAST.push({ a, tier: t, t: null }); if (actx && !muted) sfx('achieve');
+}
 function cnt(k, n = 1) {
   save.cnt = save.cnt || {}; save.cnt[k] = (save.cnt[k] || 0) + n;
   if (!cnt.due) cnt.due = setTimeout(() => { cnt.due = 0; persist(); }, 3000); // sayaçlar bölüm ortasında çıkılsa da kaybolmasın
-  for (const a of ACH) if (a.cnt === k && save.cnt[k] >= a.need) achGive(a.id);
+  for (const a of ACH) if (a.k === k) achNotify(a);
 }
 function achGive(id) {
-  save.ach = save.ach || {};
-  if (save.ach[id]) return;
-  save.ach[id] = Date.now(); save.achNew = (save.achNew || 0) + 1; persist();
-  ACH_TOAST.push({ a: ACH.find(x => x.id === id), t: null });
-  if (actx && !muted) sfx('levelup');
+  save.ach = save.ach || {}; if (save.ach[id]) return;
+  save.ach[id] = Date.now(); const a = achById(id); if (a) achNotify(a); else persist();
 }
+function achMetrics() { for (const a of ACH) if (a.m) achNotify(a); }
 // bölüm sonu ve diğer durum başarımları
 function achLevelEnd(win) {
   if (win) {
-    achGive('first');
-    if (!G.chal && G.lives >= G.maxLives) achGive('flawless');
-    if (LEVELS.every((lv, i) => (save.stars[i] || 0) >= 3)) achGive('allstars');
-    if (G.chal === 'h') achGive('heroic');
+    achGive('first'); cnt('win');
+    if (!G.chal && G.lives >= G.maxLives) cnt('flawless');
+    if (G.chal === 'h') cnt('heroic');
+    if (G.chal === 'i') cnt('iron');
     if (LEVELS.every((lv, i) => save.ch && save.ch[i] && save.ch[i].h)) achGive('chal5');
+    if (G.lives === 1) achGive('sec_onelife');
+    if (G.lv.waves.length >= 5 && G.earlyN >= G.lv.waves.length - 1) achGive('sec_rush'); // ilk dalga hariç hepsi erken
+    if (G.idx >= 5 && !G.spellUsed && !G.chal) achGive('sec_nospell');
   }
-  persist();
+  achMetrics(); persist();
 }
+// Kara Defter'de yeni başarımlar için oyundaki simge setlerinden (kendi ico_ach_<id> çizimi olmayanlar)
+const ACH_ICO = { conquer: 'ico_ui_map', iron: 'ico_em_defeat', endless: 'ico_kumsaati', fly: 'ico_ach_crow', mach: 'ico_bomb', early: 'ico_ui_wavecall',
+  herolvl: 'ico_ui_heroes', ult: 'ico_em_topkill', burst: 'ico_sp_nm_burst', golem: 'ico_sp_nm_golem', spells: 'ico_ab_shadow', grim: 'ico_sp_book',
+  build: 'ico_bd_archer', rebuild: 'ico_mn_clear', hatch: 'ico_mn_ghoul', flies: 'ico_ab_plague', imbue: 'ico_im_fire', bubu: 'ico_em_boss',
+  frog: 'ico_hs_merlin_frog', surprise: 'ico_em_treasure', conquer2: 'ico_ui_map', sec_onelife: 'ico_ui_heart', sec_rush: 'ico_ui_fast', sec_army: 'ico_sp_nm_raise', sec_nospell: 'ico_ui_lock' };
 function achIcon(icon, r, id) {
-  { const im = id && spr('ico_ach_' + id); if (im) { icoFit(im, 0, 0, r * 0.95); return; } } // 16 Eki: Gemini başarım simgesi (nm18_basarim_H)
+  { const im = id && (spr('ico_ach_' + id) || (ACH_ICO[id] && spr(ACH_ICO[id]))); if (im) { icoFit(im, 0, 0, r * 0.95); return; } } // 16 Eki: Gemini başarım simgesi (nm18_basarim_H)
   ctx.save(); ctx.lineJoin = 'round';
   if (icon === 'skull' || icon === 'raise') drawSkullIcon(0, 0, r * 0.95);
   else if (icon === 'heart') drawIcon('heart', 0, 0, r * 1.4);
@@ -6469,61 +6537,110 @@ function achIcon(icon, r, id) {
   else if (icon === 'tower') { const im = spr('tower_barracks_3'); if (im) drawSprite(ctx, im, 0, r * 0.7, r * 1.5); }
   ctx.restore();
 }
-// açılan başarım bildirimi: üstten kayar, 3 sn kalır, sırayla
+// açılan başarım bildirimi: üstten kayar, 3 sn kalır, sırayla. 16 Eki: kademe çerçeveli madalyon, kademe adı, ödül
+const ACH_FR = ['ico_ach_fr_lock', 'ico_ach_fr_bone', 'ico_ach_fr_silver', 'ico_ach_fr_gold'], ACH_TIER = ['', 'KEMİK', 'GÜMÜŞ', 'ALTIN'], ACH_TCOL = ['#9a90aa', '#e6d2a6', '#dfe6f2', '#ffd75a'];
+function achMedal(a, tier, x, y, r) { // kademe çerçevesi + içinde simge (kademe 0: kilitli, gizli ve açılmamışsa mühür)
+  const tr = a.t.length === 1 && tier ? 3 : tier;
+  if (a.hidden && !tier) { const im = spr('ico_ach_secret'); if (im) { icoFit(im, x, y, r * 0.95); return; } }
+  const fr = spr(ACH_FR[tr]); if (fr) icoFit(fr, x, y, r); else circle(x, y, r * 0.66, null, ACH_TCOL[tr], 3); // çerçeve önce (ortası koyu), simge üstüne
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, r * 0.58, 0, Math.PI * 2); ctx.clip();
+  if (tier) { const g = ctx.createRadialGradient(x, y - r * 0.2, 0, x, y, r * 0.58); g.addColorStop(0, tr === 3 ? 'rgba(255,215,110,0.4)' : tr === 2 ? 'rgba(210,225,255,0.3)' : 'rgba(230,200,150,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); }
+  ctx.translate(x, y); if (!tier) ctx.globalAlpha *= 0.32; achIcon(a.icon, r * 0.48, a.id); ctx.restore();
+}
 function drawAchToast() {
   const T = ACH_TOAST[0]; if (!T) return;
   if (T.t == null) T.t = time;
-  const k = time - T.t, a = clamp(Math.min(k / 0.3, (3.2 - k) / 0.4), 0, 1);
-  if (k > 3.2) { ACH_TOAST.shift(); return; }
-  const y = -40 + 56 * easeOutBack(clamp(k / 0.4, 0, 1)) * (k > 2.8 ? a : 1);
+  const k = time - T.t, a = clamp(Math.min(k / 0.3, (3.4 - k) / 0.4), 0, 1);
+  if (k > 3.4) { ACH_TOAST.shift(); return; }
+  const y = -50 + 66 * easeOutBack(clamp(k / 0.4, 0, 1)) * (k > 3 ? a : 1), A = T.a, tr = A.t.length === 1 ? 3 : T.tier;
   ctx.save(); ctx.globalAlpha = a;
-  const w = 300, x = W / 2 - w / 2;
-  crimsonBox(x, y, w, 46, 14);
-  ctx.save(); ctx.translate(x + 26, y + 23); achIcon(T.a.icon, 14, T.a.id); ctx.restore();
-  txt('BAŞARIM: ' + T.a.name, x + 50, y + 15, 14, '#f0cf86', 'left', '400', FONT_T, false);
-  txt(T.a.desc, x + 50, y + 32, 11, '#e8e0f0', 'left', '700', FONT_B, false);
+  const w = 380, x = W / 2 - w / 2;
+  crimsonBox(x, y, w, 58, 14);
+  if (k < 1.2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + 34, y + 29, 40, tr === 3 ? '255,210,100' : '200,160,255', 0.5 * (1 - k / 1.2)); ctx.restore(); }
+  achMedal(A, T.tier, x + 34, y + 29, 26);
+  txt((A.t.length > 1 ? ACH_TIER[T.tier] + ' · ' : '') + A.name, x + 68, y + 19, 16, ACH_TCOL[tr], 'left', '400', FONT_T, false);
+  fitTxt(achDesc(A, T.tier - 1), x + 68, y + 39, w - 130, 13, '#e8e0f0', 'left', '700', FONT_B, false, 11);
+  const im = spr('ico_crystal'); if (im) icoFit(im, x + w - 40, y + 29, 11);
+  txt('+' + achReward(A, T.tier - 1), x + w - 24, y + 30, 15, '#e0b8ff', 'left', '400', FONT_T, false);
   ctx.restore();
 }
+const achDesc = (a, k) => a.desc.replace('{n}', a.t[clamp(k, 0, a.t.length - 1)].toLocaleString('tr-TR'));
 // başarımlar ekranı (haritadaki kupa düğmesi)
 // başarımlar/kodeks nereden açıldıysa geri düğmesi oraya döner
 let menuBack = 'map';
+let achTab = 'all';
+const ACH_FX = []; // ödül alınca yükselen yazılar (ekran koordinatı)
+function claimAch(a, x, y) {
+  const k = (save.achC && save.achC[a.id]) || 0; if (k >= achTier(a)) return;
+  const n = achReward(a, k); save.achC = save.achC || {}; save.achC[a.id] = k + 1; save.crystal = (save.crystal || 0) + n; persist();
+  sfx('lootchime'); haptic('medium');
+  ACH_FX.push({ x, y, t: time, txt: '+' + n + ' KRİSTAL' });
+  for (let i = 0; i < 22; i++) { const an = rand(0, Math.PI * 2), v = rand(60, 170); emit(uiParts, { kind: 'glow', add: true, x, y, vx: Math.cos(an) * v, vy: Math.sin(an) * v - 50, drag: 2.5, col: i % 3 ? '200,140,255' : '255,220,120', s0: rand(3, 6), s1: 1, life: rand(0.5, 0.9) }); }
+}
 function drawAchievements() {
-  const st = time - screenT, bg = spr('nm_title');
-  if (NECRO) menuBackdrop(st);
-  else {
-    if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
-    ctx.fillStyle = 'rgba(8,4,16,0.75)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
-  }
+  achMigrate(); achMetrics();
+  const st = time - screenT;
+  menuBackdrop(st);
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.translate(W / 2, 40); ctx.scale(rk, rk); ribbon(0, 0, 300, 'BAŞARIMLAR', 'blue', 24); ctx.restore();
-  const got = ACH.filter(a => save.ach && save.ach[a.id]).length;
-  txt(`${got} / ${ACH.length}`, W / 2, 74, 15, '#ffe27a', 'center', '400', FONT_T);
+  ctx.save(); ctx.translate(W / 2, 40); ctx.scale(rk, rk); ribbon(0, 0, 330, 'KARA DEFTER', 'blue', 24); { const bk = spr('ico_ach_book'); if (bk) icoFit(bk, -190, -2, 24); } ctx.restore();
+  // toplam ilerleme: ulaşılan kademe / bütün kademeler (halka)
+  const allT = ACH.reduce((s2, a) => s2 + a.t.length, 0), gotT = ACH.reduce((s2, a) => s2 + achTier(a), 0), pct = gotT / allT;
+  { const rx = EDGE.r - 112, ry = 44;
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(20,10,28,0.85)'; ctx.beginPath(); ctx.arc(rx, ry, 24, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#9dff6a'; ctx.beginPath(); ctx.arc(rx, ry, 24, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct * clamp(st / 0.8, 0, 1)); ctx.stroke(); ctx.restore();
+    txt(Math.round(pct * 100) + '%', rx, ry + 1, 15, '#efe6cc', 'center', '400', FONT_T, false); }
   roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st });
   roundBtn('boards', EDGE.r - 46, 44, 29, (r) => fancyStar(0, -1, r * 0.6, true), svcShowBoards, { appear: st - 0.1, tile: 'gold' }); // liderlik tablosu
-  // 11 Eki (mobil): 2 sütun, büyük kart ve yazı; liste kaydırılır
-  const cols = 2, cw = 436, ch = 76, gx = 12, gy = 8, x0 = W / 2 - (cols * cw + (cols - 1) * gx) / 2, Y0 = 88, AH = EDGE.b - 8 - Y0;
-  const sy = scrollArea('ach', x0 - 4, Y0, cols * cw + gx + 14, AH, Math.ceil(ACH.length / cols) * (ch + gy)), y0 = Y0 - sy;
-  ctx.save(); ctx.beginPath(); ctx.rect(x0 - 8, Y0, cols * cw + gx + 16, AH); ctx.clip();
-  ACH.forEach((a, i) => {
-    const c = i % cols, r = Math.floor(i / cols), x = x0 + c * (cw + gx), y = y0 + r * (ch + gy), on = save.ach && save.ach[a.id];
-    const ap = clamp((st - 0.1 - i * 0.025) / 0.25, 0, 1); if (ap <= 0 || y > Y0 + AH || y + ch < Y0) return;
+  // sekmeler: solda kategori amblemleri (dokunma alanı ≥ 60), alınmamış ödül rozetleri
+  const TX = EDGE.l + 48, TY0 = 104, TS = 70;
+  ACH_CATS.forEach(([id, name, ico], i) => {
+    const y = TY0 + i * TS, sel = achTab === id, L = ACH.filter(a => id === 'all' || a.cat === id), cl = L.reduce((s2, a) => s2 + Math.max(0, achClaimable(a)), 0);
+    roundBtn('achtab_' + id, TX, y + 26, 29, (r) => { const im = spr(ico); if (im) icoFit(im, 0, 0, r * 0.62); }, () => { achTab = id; SCROLL.ach = 0; sfx('click'); }, { appear: st - 0.05 * i, tile: sel ? 'gold' : 'red' });
+    if (cl) { circle(TX + 22, y + 6, 10, '#3cbf3c', '#0a2a0a', 1.4); txt(cl + '', TX + 22, y + 6.5, 12, '#fff', 'center', '800', FONT_B, false); }
+  });
+  const cat = ACH_CATS.find(c => c[0] === achTab);
+  txt(cat[1], EDGE.l + 100, 84, 16, '#e8c86a', 'left', '400', FONT_T, false);
+  { const L = ACH.filter(a => achTab === 'all' || a.cat === achTab), g2 = L.reduce((s2, a) => s2 + achTier(a), 0), a2 = L.reduce((s2, a) => s2 + a.t.length, 0); txt(`${g2} / ${a2}`, EDGE.r - 20, 84, 14, '#b8acc8', 'right', '800', FONT_B, false); }
+  // kartlar: 2 sütun, kaydırılır; alınacak ödülü olanlar başta
+  const list = ACH.filter(a => achTab === 'all' || a.cat === achTab).slice().sort((p, q) => (achClaimable(q) > 0) - (achClaimable(p) > 0));
+  const X0 = EDGE.l + 98, AW = EDGE.r - 14 - X0, cols = 2, gx = 10, cw = (AW - gx) / cols, ch = 100, gy = 8, Y0 = 96, AH = EDGE.b - 6 - Y0;
+  const sy = scrollArea('ach', X0 - 4, Y0, AW + 8, AH, Math.ceil(list.length / cols) * (ch + gy)), y0 = Y0 - sy;
+  ctx.save(); ctx.beginPath(); ctx.rect(X0 - 8, Y0, AW + 16, AH); ctx.clip();
+  list.forEach((a, i) => {
+    const c = i % cols, r = Math.floor(i / cols), x = X0 + c * (cw + gx), y = y0 + r * (ch + gy);
+    const ap = clamp((st - 0.1 - i * 0.02) / 0.25, 0, 1); if (ap <= 0 || y > Y0 + AH || y + ch < Y0) return;
+    const tier = achTier(a), max = a.t.length, done = tier >= max, secret = a.hidden && !tier, cl = achClaimable(a), tr = max === 1 && tier ? 3 : tier;
     ctx.save(); ctx.globalAlpha = ap;
-    if (NECRO) { velvetCard(x, y, cw, ch, 12, { border: on ? '#e8c86a' : 'rgba(150,120,140,0.55)', ac: on ? '230,190,110' : null }); if (!on) roundRect(x, y, cw, ch, 12, 'rgba(10,4,12,0.35)'); }
-    else roundRect(x, y, cw, ch, 12, on ? '#2c2240' : 'rgba(30,24,40,0.85)', on ? '#e8c86a' : 'rgba(150,140,170,0.4)', on ? 2 : 1.2);
-    circle(x + 36, y + ch / 2, 26, on ? '#3e2e58' : '#1c1626', on ? '#e8c86a' : '#4a4058', 1.8);
-    ctx.save(); ctx.translate(x + 36, y + ch / 2); if (!on) ctx.globalAlpha *= 0.45; achIcon(a.icon, 24, a.id); ctx.restore();
-    fitTxt(a.name, x + 72, y + 22, cw - 140, 18, on ? '#ffe27a' : '#b8acc8', 'left', '400', FONT_T, false);
-    wrapLines(a.desc, cw - 84, 13.5, '700', FONT_B, 2).forEach((l, k) => txt(l, x + 72, y + 42 + k * 16, 13.5, on ? '#e8e0f0' : '#9a90aa', 'left', '700', FONT_B, false));
-    if (a.cnt && !on) {
-      const v = Math.min(a.need, (save.cnt && save.cnt[a.cnt]) || 0), bw = cw - 84;
-      roundRect(x + 72, y + ch - 12, bw, 7, 3.5, '#120c1a');
-      if (v) roundRect(x + 72, y + ch - 12, bw * v / a.need, 7, 3.5, '#8fd06a');
-      txt(`${v}/${a.need}`, x + cw - 12, y + 22, 13, '#a89eb8', 'right', '800', FONT_B, false);
+    velvetCard(x, y, cw, ch, 12, { border: cl > 0 ? '#9dff6a' : tier ? ACH_TCOL[tr] : 'rgba(150,120,140,0.5)', ac: cl > 0 ? '120,255,110' : done ? '230,190,110' : null });
+    if (!tier) roundRect(x, y, cw, ch, 12, 'rgba(10,4,12,0.3)');
+    achMedal(a, tier, x + 50, y + ch / 2, 38);
+    const tx = x + 96, tw = cw - 96 - 92;
+    fitTxt(secret ? '???' : a.name, tx, y + 24, tw, 18, tier ? ACH_TCOL[tr] : '#c8bcd8', 'left', '400', FONT_T, false, 14);
+    const desc = secret ? 'Gizli başarım: Mortimer bunu kimseye söylemez' : achDesc(a, tier);
+    wrapLines(desc, tw + 30, 13.5, '700', FONT_B, 2).forEach((l, k) => txt(l, tx, y + 46 + k * 16, 13.5, tier ? '#e8e0f0' : '#a89eb8', 'left', '700', FONT_B, false));
+    if (max > 1) { // kademe noktaları: kemik / gümüş / altın
+      for (let k = 0; k < 3; k++) { const px = tx + tw - 30 + k * 15, on = k < tier; circle(px, y + 22, 6, on ? ACH_TCOL[k + 1] : 'rgba(20,12,28,0.9)', on ? '#2a1406' : 'rgba(150,130,160,0.6)', 1.4); }
+      if (!done && !secret) { // ilerleme çubuğu
+        const nx = a.t[tier], prev = tier ? a.t[tier - 1] : 0, v = achVal(a), f = clamp((v - prev) / (nx - prev), 0, 1), by = y + ch - 16, bw = tw - 4;
+        roundRect(tx, by, bw, 9, 4.5, '#120c1a', 'rgba(230,210,170,0.35)', 1);
+        if (f > 0) { const g = ctx.createLinearGradient(tx, 0, tx + bw, 0); g.addColorStop(0, '#5fa83c'); g.addColorStop(1, '#b8ff8a'); roundRect(tx, by, Math.max(9, bw * f), 9, 4.5, g); }
+        txt(`${Math.min(v, nx).toLocaleString('tr-TR')} / ${nx.toLocaleString('tr-TR')}`, tx + bw, by - 7, 12, '#b8acc8', 'right', '800', FONT_B, false);
+      }
     }
-    if (on) { circle(x + cw - 20, y + 20, 10, '#3cbf3c', '#0a2a0a', 1.4); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x + cw - 25, y + 20); ctx.lineTo(x + cw - 21, y + 24); ctx.lineTo(x + cw - 15, y + 16); ctx.stroke(); }
+    // sağda ödül: alınacak varsa "AL" düğmesi, yoksa sıradaki ödül (soluk) ya da tamam işareti
+    const rx = x + cw - 46, ry = y + ch / 2;
+    if (cl > 0) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, rx, ry, 44, '140,255,120', 0.25 + 0.12 * Math.sin(time * 4 + i)); ctx.restore();
+      gameButton('achcl_' + a.id, rx, ry + 2, 76, 66, '', () => claimAch(a, rx, ry), 'green', { breathe: true, appear: ap });
+      const im = spr('ico_ach_chest'); if (im) icoFit(im, rx, ry - 6, 17);
+      txt('AL +' + achReward(a, (save.achC && save.achC[a.id]) || 0), rx, ry + 22, 14, '#fff', 'center', '400', FONT_T, false);
+    } else if (done) { const im = spr('ico_ui_check'); if (im) icoFit(im, rx, ry, 16); }
+    else { ctx.save(); ctx.globalAlpha *= 0.6; const im = spr('ico_crystal'); if (im) icoFit(im, rx - 22, ry, 11); txt('+' + achReward(a, tier), rx - 8, ry + 1, 15, '#e0b8ff', 'left', '400', FONT_T, false); ctx.restore(); }
     ctx.restore();
   });
   ctx.restore();
+  for (const f of ACH_FX) { const k = (time - f.t) / 1.2; if (k > 1) continue; ctx.save(); ctx.globalAlpha = 1 - k; txt(f.txt, f.x, f.y - 30 - 40 * k, 18, '#e0b8ff', 'center', '400', FONT_T); ctx.restore(); }
+  while (ACH_FX.length && time - ACH_FX[0].t > 1.2) ACH_FX.shift();
   save.achNew = 0;
 }
 // ----- borazancı: ilk dalga çağrılınca o dalganın girişlerinden birer lejyoner çıkar, savaş borazanını çalar, geri döner;
@@ -7325,7 +7442,7 @@ function drawBloodMoon() {
 function openHatch(h) {
   const cost = h && h.grave ? GRAVE.cost : HATCH.cost;
   if (!h || h.state !== 'closed' || G.gold < cost) return false;
-  G.gold -= cost; h.state = 'open'; h.openT = G.t;
+  G.gold -= cost; h.state = 'open'; h.openT = G.t; cnt('hatch');
   if (h.grave) { // Ceset Golemi (Caner, 12 Eki): golemin çizimi ve şeritleri, iri; ömrü yok (büyüdeki golemden farkı)
     const K = GRAVE.knight, s = { guard: true, ghoul: h, militia: false, x: h.x, y: h.y, rx: h.rx, ry: h.ry, hp: K.hp, maxHp: K.hp, dmg: K.dmg, armor: K.armor,
       rate: K.rate, speed: K.speed, engage: K.engage, aoe: K.aoe, atk: 0, target: null, dead: false, respawnT: 0, face: h.rx < h.x ? -1 : 1, anim: 0, slot: 0, born: G.t + graveRise(h),
@@ -7504,7 +7621,7 @@ function frogPuff(e) {
   G.effects.push({ kind: 'puff', x: e.x, y: e.y - 8, t: 0, dur: 0.5, r: 10 });
 }
 function frogEnemy(e) {
-  e.frogT = FROG.t; e.blocker = null; e.inMelee = false; e.atGate = false;
+  e.frogT = FROG.t; e.blocker = null; e.inMelee = false; e.atGate = false; cnt('frog');
   for (const s of G.soldiers) if (s.target === e) s.target = null; // kurbağa kimseyle dövüşmez (askerler ötekilere döner)
   frogPuff(e); floatText(e.x, e.y - 30, 'Vrak!', '#8cff7a'); sfx('magic');
 }
@@ -7691,7 +7808,8 @@ function update(dt) {
   if (G.bossFx && (G.bossFx.t += dt) > G.bossFx.dur) G.bossFx = null;
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
   for (const t of G.towers) { SFX_POS = t; updateTower(t, dt); }
-  updateSwarms(dt); // ses konumu: o an işlenen birim (spatial)
+  updateSwarms(dt);
+  if ((G.armyT = (G.armyT || 0) - dt) <= 0) { G.armyT = 1; if (G.soldiers.filter(s => !s.dead && !s.hero).length >= 25) achGive('sec_army'); } // Kara Defter: Ölüler Ordusu // ses konumu: o an işlenen birim (spatial)
   for (const e of G.enemies) if (!e.dead) { SFX_POS = e; updateEnemy(e, dt); }
   for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); }
   SFX_POS = null;
@@ -12941,7 +13059,7 @@ function updateSwarms(dt) {
       if (w.buzzT <= 0) { w.buzzT = SWARM.buzz; SFX_POS = w; sfx('flyswarm'); }
       if (w.biteT <= 0) {
         w.biteT = SWARM.bite; const e = w.e;
-        hitBy = 'tower'; damageEnemy(e, w.dmg, 'phys', true, 'blast'); hitBy = null;
+        hitBy = 'tower'; damageEnemy(e, w.dmg, 'phys', true, 'blast'); hitBy = null; cnt('flies');
         if (!e.dead) { slowEnemy(e, SWARM.slow, SWARM.slowT); poisonEnemy(e, w.dps, SWARM.poisonT, 'blast'); if (!immuneTo(e, 'poison')) { e.plagueT = 4; e.plagueDps = w.dps; } }
         for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: e.x + rand(-6, 6), y: aimY(e) + rand(-6, 6), vx: rand(-30, 30), vy: rand(-40, 0), g: 200, col: i % 2 ? '#8cff5a' : '#b070ff', s0: rand(1, 1.6), s1: 0.6, life: rand(0.3, 0.5) });
       }
@@ -16601,7 +16719,7 @@ function mapForestTap(sx, sy) {
   const sp = mapSpots(mapEp).find(o => dist(o.x, o.y, x, y) < SURPRISE.hit / Math.min(1.5, z) + 6); if (!sp || sp.cd > time) return false;
   const S = SURPRISE.list[sp.k]; if (!spr(S.n)) return false;
   const L = (MAPFX.sur ||= []); if (L.length >= SURPRISE.max) L.shift();
-  sp.cd = time + SURPRISE.cd; L.push({ S, x: sp.x, y: sp.y, t: 0, f: sp.x < W / 2 ? 1 : -1 });
+  sp.cd = time + SURPRISE.cd; L.push({ S, x: sp.x, y: sp.y, t: 0, f: sp.x < W / 2 ? 1 : -1 }); cnt('surprise');
   sfx(S.s[0], S.s[1], S.s[2], null); haptic('light');
   return true;
 }

@@ -39,6 +39,7 @@ SFX = {
     'starchime': ('one bright magical bell chime ding with sparkling shimmer tail, single clear high note, cute and rewarding, mobile game star earned sound, no music, no voice', 0.8, 2),
     'flybuzz': ('an angry swarm of buzzing plague flies rising and darting away, loud close insect buzz swelling then flying off, gross and creepy, short, no music', 1.3, 2),
     'flyswarm': ('a dense swarm of fat plague flies buzzing around a victim, continuous loud close insect buzzing with wing flutter, gross, steady, no music', 1.8, 2),
+    'achieve': ('dark fantasy achievement unlocked jingle: a short triumphant spooky fanfare with a deep church bell, a bright magical chime sparkle and a ghostly choir swell, rewarding, game UI, no voice', 1.6, 2),
     'starthud': ('a magical star slamming into place: a deep hollow bone thud with a bright eerie green magic chime sparkle on top, short, satisfying game reward sound, no music', 0.7, 3),
     'skelsel': ('a cartoon skeleton soldier answering an order, short raspy hollow undead grunt like hrrah, with a quick clack of its jaw bones and a dry bone rattle, funny, game voice, no words, no music', 0.8, 3),
     'skelmove': ('a small group of cartoon skeleton warriors marching off with a raspy hollow undead battle cry, bones clattering, short, funny, no words, no music', 1.0, 3),

@@ -586,7 +586,45 @@
   "Kalkan Hamlesi!": "Shield Dash!",
   "Tabut Duvarı!": "Coffin Wall!",
   "Ruh Biçimi!": "Soul Reaper!",
-  "Veba Sinekleri": "Plague Flies"
+  "Veba Sinekleri": "Plague Flies",
+  "KARA DEFTER": "BLACK LEDGER",
+  "Tümü": "All",
+  "Sefer": "Campaign",
+  "Savaş": "Battle",
+  "Ölüler ve Büyüler": "Dead & Spells",
+  "Kuleler": "Towers",
+  "Mortimer'ın Şakaları": "Mortimer's Jokes",
+  "Gizli başarım: Mortimer bunu kimseye söylemez": "Secret achievement: Mortimer tells no one",
+  "KEMİK": "BONE",
+  "GÜMÜŞ": "SILVER",
+  "ALTIN": "GOLD",
+  "Fatih Mortimer": "Mortimer the Conqueror",
+  "Bitmeyen Gece": "Endless Night",
+  "Gökyüzü Temizliği": "Clear Skies",
+  "Kuşatma Kırıcı": "Siege Breaker",
+  "Sabırsız Büyücü": "Impatient Wizard",
+  "Komutanın Yükselişi": "Commander's Rise",
+  "Komutan Gücü": "Commander Power",
+  "Ceset Patlatıcı": "Corpse Popper",
+  "Golem Ustası": "Golem Master",
+  "Kitap Kurdu": "Bookworm",
+  "Kara Kitap": "Black Book",
+  "Mimar Mortimer": "Mortimer the Architect",
+  "Küllerinden": "From the Ashes",
+  "Mahzen Bekçisi": "Crypt Keeper",
+  "Sinek Sürüsü": "Fly Swarm",
+  "Silah Büyücüsü": "Weapon Enchanter",
+  "Bubu'nun Dostu": "Bubu's Buddy",
+  "Prens Değil": "No Prince",
+  "Orman Gözcüsü": "Forest Lookout",
+  "Kıl Payı": "By a Hair",
+  "Aceleci Ölü": "Hasty Dead",
+  "Ölüler Ordusu": "Army of the Dead",
+  "Büyüsüz Necromancer": "Spell-less Necromancer",
+  "Bir bölümü son canınla kazan": "Win a level with your last life",
+  "Bir bölümde her dalgayı erken çağır": "Call every wave early in one level",
+  "Aynı anda 25 dost ölü ve iskelet": "25 friendly dead and skeletons at once",
+  "5. bölümden sonra hiç büyü yapmadan kazan": "Win after level 5 without casting a spell"
  },
  "tpl": [
   [
@@ -1072,6 +1110,138 @@
   [
    "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
    "The tower becomes a Black Plague Cauldron: purple-green plague, bigger gas cloud · Hit enemies are infected ({} poison per second): when an infected enemy dies the plague spreads to those nearby · Plague Flies: {} fly swarms at a time attack enemies (flyers too), poisoning and infecting whoever they bite"
+  ],
+  [
+   "{} bölüm kazan",
+   "Win {} levels"
+  ],
+  [
+   "Toplam {} yıldız topla",
+   "Collect {} stars in total"
+  ],
+  [
+   "{} bölümü hiç can kaybetmeden bitir",
+   "Finish {} levels without losing a life"
+  ],
+  [
+   "{} Kahramanlık meydan okuması bitir",
+   "Complete {} Heroic challenges"
+  ],
+  [
+   "{} Çıplak Kemik meydan okuması bitir",
+   "Complete {} Bare Bones challenges"
+  ],
+  [
+   "Sonsuz Gece'de {}. dalgaya ulaş",
+   "Reach wave {} in Endless Night"
+  ],
+  [
+   "Toplam {} düşman öldür",
+   "Kill {} enemies in total"
+  ],
+  [
+   "{} komutan (boss) devir",
+   "Topple {} commanders (bosses)"
+  ],
+  [
+   "{} uçan düşman düşür",
+   "Bring down {} flying enemies"
+  ],
+  [
+   "{} kuşatma aracı parçala",
+   "Smash {} siege engines"
+  ],
+  [
+   "Dalgayı {} kez erken çağır",
+   "Call a wave early {} times"
+  ],
+  [
+   "Bir komutanı {}. seviyeye çıkar",
+   "Raise a commander to level {}"
+  ],
+  [
+   "Komutan gücünü {} kez kullan",
+   "Use commander power {} times"
+  ],
+  [
+   "Toplam {} ölüyü dirilt",
+   "Raise {} dead in total"
+  ],
+  [
+   "Korku büyüsüyle {} düşman kaçır",
+   "Scare off {} enemies with Fear"
+  ],
+  [
+   "Kemik Duvarı {} kez dik",
+   "Raise the Bone Wall {} times"
+  ],
+  [
+   "{} cesedi patlat",
+   "Explode {} corpses"
+  ],
+  [
+   "{} Ceset Golemi çağır",
+   "Summon {} Corpse Golems"
+  ],
+  [
+   "Toplam {} büyü yap",
+   "Cast {} spells in total"
+  ],
+  [
+   "Büyü Kitabı'nda {} puan harca",
+   "Spend {} points in the Spellbook"
+  ],
+  [
+   "{} kule kur",
+   "Build {} towers"
+  ],
+  [
+   "{} kulenin uzmanlığını son kademeye çıkar",
+   "Max out the specialty of {} towers"
+  ],
+  [
+   "Molozdan {} kule yeniden kur",
+   "Rebuild {} towers from rubble"
+  ],
+  [
+   "Mahzen kapağından ya da mezardan {} golem kaldır",
+   "Raise {} golems from a crypt hatch or grave"
+  ],
+  [
+   "Veba sinekleri {} kez ısırsın",
+   "Let plague flies bite {} times"
+  ],
+  [
+   "{} silah büyüsü işle",
+   "Apply {} weapon enchantments"
+  ],
+  [
+   "Mortimer'a {} kez çay içir",
+   "Serve Mortimer tea {} times"
+  ],
+  [
+   "{} kargayı ürküt",
+   "Scare {} crows"
+  ],
+  [
+   "Mezardaki elden {} kez bahşiş al",
+   "Get tipped {} times by the hand in the grave"
+  ],
+  [
+   "Bubu'yu {} kez rahatsız et",
+   "Bother Bubu {} times"
+  ],
+  [
+   "{} düşmanı kurbağaya çevir",
+   "Turn {} enemies into frogs"
+  ],
+  [
+   "Haritada {} sürpriz bul",
+   "Find {} surprises on the map"
+  ],
+  [
+   "AL +{}",
+   "CLAIM +{}"
   ]
  ]
 }

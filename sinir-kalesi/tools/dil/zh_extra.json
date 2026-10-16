@@ -383,7 +383,7 @@
   "Bu kuleden haritada zaten var": "地图上已有这座塔",
   "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "塔恢复到倒塌前的样子：等级、专精、技能",
   "ÇIPLAK KEMİK": "赤骨",
-  "Çıplak Kemik": "赤骨",
+  "Çıplak Kemik": "白骨",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 条命 · 仅 2 种塔 · 莫蒂默不能施法",
   "3 yıldızla açılır": "获得 3 星解锁",
   "Kemik Gülle": "骨弹",
@@ -394,7 +394,45 @@
   "Kalkan Hamlesi!": "盾冲！",
   "Tabut Duvarı!": "棺材之墙！",
   "Ruh Biçimi!": "灵魂收割！",
-  "Veba Sinekleri": "瘟疫蝇群"
+  "Veba Sinekleri": "瘟疫蝇群",
+  "KARA DEFTER": "黑色账簿",
+  "Tümü": "全部",
+  "Sefer": "征程",
+  "Savaş": "战斗",
+  "Ölüler ve Büyüler": "亡灵与法术",
+  "Kuleler": "塔",
+  "Mortimer'ın Şakaları": "莫蒂默的玩笑",
+  "Gizli başarım: Mortimer bunu kimseye söylemez": "秘密成就：莫蒂默谁也不告诉",
+  "KEMİK": "骨",
+  "GÜMÜŞ": "银",
+  "ALTIN": "金",
+  "Fatih Mortimer": "征服者莫蒂默",
+  "Bitmeyen Gece": "无尽之夜",
+  "Gökyüzü Temizliği": "清空天际",
+  "Kuşatma Kırıcı": "破城者",
+  "Sabırsız Büyücü": "急躁的巫师",
+  "Komutanın Yükselişi": "指挥官崛起",
+  "Komutan Gücü": "指挥官之力",
+  "Ceset Patlatıcı": "尸爆者",
+  "Golem Ustası": "魔像大师",
+  "Kitap Kurdu": "书虫",
+  "Kara Kitap": "黑书",
+  "Mimar Mortimer": "建筑师莫蒂默",
+  "Küllerinden": "浴火重生",
+  "Mahzen Bekçisi": "墓穴守卫",
+  "Sinek Sürüsü": "蝇群",
+  "Silah Büyücüsü": "武器附魔师",
+  "Bubu'nun Dostu": "布布的朋友",
+  "Prens Değil": "不是王子",
+  "Orman Gözcüsü": "森林瞭望者",
+  "Kıl Payı": "千钧一发",
+  "Aceleci Ölü": "急性子亡灵",
+  "Ölüler Ordusu": "亡者大军",
+  "Büyüsüz Necromancer": "不施法的死灵法师",
+  "Bir bölümü son canınla kazan": "以最后一条命赢得关卡",
+  "Bir bölümde her dalgayı erken çağır": "在一关中提前召唤每一波",
+  "Aynı anda 25 dost ölü ve iskelet": "同时拥有25个友方亡灵和骷髅",
+  "5. bölümden sonra hiç büyü yapmadan kazan": "第5关之后不施法获胜"
  },
  "tpl": [
   [
@@ -572,6 +610,138 @@
   [
    "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
    "塔变为黑死病药釜：紫绿色瘟疫，毒气云更大 · 被击中者感染瘟疫（每秒{}点毒伤）：感染者死亡时瘟疫传给附近敌人 · 瘟疫蝇群：同时{}群苍蝇攻击敌人（含飞行单位），被叮咬者中毒并感染瘟疫"
+  ],
+  [
+   "{} bölüm kazan",
+   "赢得{}关"
+  ],
+  [
+   "Toplam {} yıldız topla",
+   "累计收集{}颗星"
+  ],
+  [
+   "{} bölümü hiç can kaybetmeden bitir",
+   "无损通过{}关"
+  ],
+  [
+   "{} Kahramanlık meydan okuması bitir",
+   "完成{}个英雄挑战"
+  ],
+  [
+   "{} Çıplak Kemik meydan okuması bitir",
+   "完成{}个白骨挑战"
+  ],
+  [
+   "Sonsuz Gece'de {}. dalgaya ulaş",
+   "在无尽之夜中到达第{}波"
+  ],
+  [
+   "Toplam {} düşman öldür",
+   "累计击杀{}个敌人"
+  ],
+  [
+   "{} komutan (boss) devir",
+   "击倒{}名指挥官（首领）"
+  ],
+  [
+   "{} uçan düşman düşür",
+   "击落{}个飞行敌人"
+  ],
+  [
+   "{} kuşatma aracı parçala",
+   "摧毁{}台攻城器械"
+  ],
+  [
+   "Dalgayı {} kez erken çağır",
+   "提前召唤波次{}次"
+  ],
+  [
+   "Bir komutanı {}. seviyeye çıkar",
+   "将一名指挥官升到{}级"
+  ],
+  [
+   "Komutan gücünü {} kez kullan",
+   "使用指挥官之力{}次"
+  ],
+  [
+   "Toplam {} ölüyü dirilt",
+   "累计复活{}具亡者"
+  ],
+  [
+   "Korku büyüsüyle {} düşman kaçır",
+   "用恐惧吓跑{}个敌人"
+  ],
+  [
+   "Kemik Duvarı {} kez dik",
+   "竖起骨墙{}次"
+  ],
+  [
+   "{} cesedi patlat",
+   "引爆{}具尸体"
+  ],
+  [
+   "{} Ceset Golemi çağır",
+   "召唤{}个尸体魔像"
+  ],
+  [
+   "Toplam {} büyü yap",
+   "累计施放{}次法术"
+  ],
+  [
+   "Büyü Kitabı'nda {} puan harca",
+   "在法术书中花费{}点"
+  ],
+  [
+   "{} kule kur",
+   "建造{}座塔"
+  ],
+  [
+   "{} kulenin uzmanlığını son kademeye çıkar",
+   "将{}座塔的专精升到满级"
+  ],
+  [
+   "Molozdan {} kule yeniden kur",
+   "从废墟中重建{}座塔"
+  ],
+  [
+   "Mahzen kapağından ya da mezardan {} golem kaldır",
+   "从墓穴盖或坟墓中唤起{}个魔像"
+  ],
+  [
+   "Veba sinekleri {} kez ısırsın",
+   "让瘟疫蝇叮咬{}次"
+  ],
+  [
+   "{} silah büyüsü işle",
+   "施加{}次武器附魔"
+  ],
+  [
+   "Mortimer'a {} kez çay içir",
+   "给莫蒂默上茶{}次"
+  ],
+  [
+   "{} kargayı ürküt",
+   "吓走{}只乌鸦"
+  ],
+  [
+   "Mezardaki elden {} kez bahşiş al",
+   "从坟中之手那里拿到{}次小费"
+  ],
+  [
+   "Bubu'yu {} kez rahatsız et",
+   "打扰布布{}次"
+  ],
+  [
+   "{} düşmanı kurbağaya çevir",
+   "把{}个敌人变成青蛙"
+  ],
+  [
+   "Haritada {} sürpriz bul",
+   "在地图上找到{}个惊喜"
+  ],
+  [
+   "AL +{}",
+   "领取 +{}"
   ]
  ]
 }

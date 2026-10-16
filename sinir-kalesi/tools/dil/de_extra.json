@@ -394,7 +394,45 @@
   "Kalkan Hamlesi!": "Schildstoß!",
   "Tabut Duvarı!": "Sargwall!",
   "Ruh Biçimi!": "Seelenmäher!",
-  "Veba Sinekleri": "Pestfliegen"
+  "Veba Sinekleri": "Pestfliegen",
+  "KARA DEFTER": "SCHWARZES BUCH",
+  "Tümü": "Alle",
+  "Sefer": "Feldzug",
+  "Savaş": "Kampf",
+  "Ölüler ve Büyüler": "Tote & Zauber",
+  "Kuleler": "Türme",
+  "Mortimer'ın Şakaları": "Mortimers Späße",
+  "Gizli başarım: Mortimer bunu kimseye söylemez": "Geheimer Erfolg: Mortimer verrät es niemandem",
+  "KEMİK": "KNOCHEN",
+  "GÜMÜŞ": "SILBER",
+  "ALTIN": "GOLD",
+  "Fatih Mortimer": "Mortimer der Eroberer",
+  "Bitmeyen Gece": "Endlose Nacht",
+  "Gökyüzü Temizliği": "Klarer Himmel",
+  "Kuşatma Kırıcı": "Belagerungsbrecher",
+  "Sabırsız Büyücü": "Ungeduldiger Zauberer",
+  "Komutanın Yükselişi": "Aufstieg des Kommandanten",
+  "Komutan Gücü": "Kommandantenkraft",
+  "Ceset Patlatıcı": "Leichensprenger",
+  "Golem Ustası": "Golemmeister",
+  "Kitap Kurdu": "Bücherwurm",
+  "Kara Kitap": "Schwarzes Buch",
+  "Mimar Mortimer": "Baumeister Mortimer",
+  "Küllerinden": "Aus der Asche",
+  "Mahzen Bekçisi": "Gruftwächter",
+  "Sinek Sürüsü": "Fliegenschwarm",
+  "Silah Büyücüsü": "Waffenverzauberer",
+  "Bubu'nun Dostu": "Bubus Kumpel",
+  "Prens Değil": "Kein Prinz",
+  "Orman Gözcüsü": "Waldspäher",
+  "Kıl Payı": "Haaresbreite",
+  "Aceleci Ölü": "Eiliger Toter",
+  "Ölüler Ordusu": "Armee der Toten",
+  "Büyüsüz Necromancer": "Nekromant ohne Zauber",
+  "Bir bölümü son canınla kazan": "Gewinne ein Level mit deinem letzten Leben",
+  "Bir bölümde her dalgayı erken çağır": "Rufe in einem Level jede Welle früh",
+  "Aynı anda 25 dost ölü ve iskelet": "25 verbündete Tote und Skelette gleichzeitig",
+  "5. bölümden sonra hiç büyü yapmadan kazan": "Gewinne nach Level 5 ohne einen Zauber"
  },
  "tpl": [
   [
@@ -572,6 +610,138 @@
   [
    "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
    "Der Turm wird zum Schwarzen Pestkessel: violett-grüne Pest, größere Gaswolke · Getroffene werden infiziert ({} Gift pro Sekunde): stirbt ein Infizierter, springt die Pest auf Nahestehende über · Pestfliegen: {} Fliegenschwärme gleichzeitig greifen Feinde an (auch Flieger) und vergiften und infizieren, wen sie beißen"
+  ],
+  [
+   "{} bölüm kazan",
+   "Gewinne {} Level"
+  ],
+  [
+   "Toplam {} yıldız topla",
+   "Sammle insgesamt {} Sterne"
+  ],
+  [
+   "{} bölümü hiç can kaybetmeden bitir",
+   "Beende {} Level ohne ein Leben zu verlieren"
+  ],
+  [
+   "{} Kahramanlık meydan okuması bitir",
+   "Schließe {} Heldenprüfungen ab"
+  ],
+  [
+   "{} Çıplak Kemik meydan okuması bitir",
+   "Schließe {} Nackte-Knochen-Prüfungen ab"
+  ],
+  [
+   "Sonsuz Gece'de {}. dalgaya ulaş",
+   "Erreiche Welle {} in der Endlosen Nacht"
+  ],
+  [
+   "Toplam {} düşman öldür",
+   "Besiege insgesamt {} Feinde"
+  ],
+  [
+   "{} komutan (boss) devir",
+   "Stürze {} Kommandanten (Bosse)"
+  ],
+  [
+   "{} uçan düşman düşür",
+   "Hole {} fliegende Feinde herunter"
+  ],
+  [
+   "{} kuşatma aracı parçala",
+   "Zerschmettere {} Belagerungsmaschinen"
+  ],
+  [
+   "Dalgayı {} kez erken çağır",
+   "Rufe {} Mal eine Welle früh"
+  ],
+  [
+   "Bir komutanı {}. seviyeye çıkar",
+   "Bringe einen Kommandanten auf Stufe {}"
+  ],
+  [
+   "Komutan gücünü {} kez kullan",
+   "Setze die Kommandantenkraft {} Mal ein"
+  ],
+  [
+   "Toplam {} ölüyü dirilt",
+   "Erwecke insgesamt {} Tote"
+  ],
+  [
+   "Korku büyüsüyle {} düşman kaçır",
+   "Verscheuche {} Feinde mit Furcht"
+  ],
+  [
+   "Kemik Duvarı {} kez dik",
+   "Errichte die Knochenwand {} Mal"
+  ],
+  [
+   "{} cesedi patlat",
+   "Sprenge {} Leichen"
+  ],
+  [
+   "{} Ceset Golemi çağır",
+   "Beschwöre {} Leichengolems"
+  ],
+  [
+   "Toplam {} büyü yap",
+   "Wirke insgesamt {} Zauber"
+  ],
+  [
+   "Büyü Kitabı'nda {} puan harca",
+   "Gib {} Punkte im Zauberbuch aus"
+  ],
+  [
+   "{} kule kur",
+   "Baue {} Türme"
+  ],
+  [
+   "{} kulenin uzmanlığını son kademeye çıkar",
+   "Bringe die Spezialisierung von {} Türmen aufs Maximum"
+  ],
+  [
+   "Molozdan {} kule yeniden kur",
+   "Baue {} Türme aus Trümmern wieder auf"
+  ],
+  [
+   "Mahzen kapağından ya da mezardan {} golem kaldır",
+   "Erwecke {} Golems aus Gruftluken oder Gräbern"
+  ],
+  [
+   "Veba sinekleri {} kez ısırsın",
+   "Lass Pestfliegen {} Mal beißen"
+  ],
+  [
+   "{} silah büyüsü işle",
+   "Wirke {} Waffenzauber"
+  ],
+  [
+   "Mortimer'a {} kez çay içir",
+   "Serviere Mortimer {} Mal Tee"
+  ],
+  [
+   "{} kargayı ürküt",
+   "Verscheuche {} Krähen"
+  ],
+  [
+   "Mezardaki elden {} kez bahşiş al",
+   "Lass dir {} Mal von der Hand im Grab Trinkgeld geben"
+  ],
+  [
+   "Bubu'yu {} kez rahatsız et",
+   "Störe Bubu {} Mal"
+  ],
+  [
+   "{} düşmanı kurbağaya çevir",
+   "Verwandle {} Feinde in Frösche"
+  ],
+  [
+   "Haritada {} sürpriz bul",
+   "Finde {} Überraschungen auf der Karte"
+  ],
+  [
+   "AL +{}",
+   "HOLEN +{}"
   ]
  ]
 }

@@ -383,7 +383,7 @@
   "Bu kuleden haritada zaten var": "Ya tienes esta torre en el mapa",
   "Kule yıkılmadan önceki haliyle geri gelir: kademe, uzmanlık, yetenekler": "La torre vuelve tal como era antes de caer: nivel, especialización, habilidades",
   "ÇIPLAK KEMİK": "HUESOS DESNUDOS",
-  "Çıplak Kemik": "Huesos desnudos",
+  "Çıplak Kemik": "Hueso Pelado",
   "1 can · yalnız 2 kule türü · Mortimer büyüsü yok": "1 vida · solo 2 tipos de torre · sin hechizos de Mortimer",
   "3 yıldızla açılır": "Se desbloquea con 3 estrellas",
   "Kemik Gülle": "Bala de hueso",
@@ -394,7 +394,45 @@
   "Kalkan Hamlesi!": "¡Embestida de escudo!",
   "Tabut Duvarı!": "¡Muro de ataúd!",
   "Ruh Biçimi!": "¡Segador de almas!",
-  "Veba Sinekleri": "Moscas de la Peste"
+  "Veba Sinekleri": "Moscas de la Peste",
+  "KARA DEFTER": "LIBRO NEGRO",
+  "Tümü": "Todo",
+  "Sefer": "Campaña",
+  "Savaş": "Batalla",
+  "Ölüler ve Büyüler": "Muertos y hechizos",
+  "Kuleler": "Torres",
+  "Mortimer'ın Şakaları": "Bromas de Mortimer",
+  "Gizli başarım: Mortimer bunu kimseye söylemez": "Logro secreto: Mortimer no se lo cuenta a nadie",
+  "KEMİK": "HUESO",
+  "GÜMÜŞ": "PLATA",
+  "ALTIN": "ORO",
+  "Fatih Mortimer": "Mortimer el Conquistador",
+  "Bitmeyen Gece": "Noche Sin Fin",
+  "Gökyüzü Temizliği": "Cielos Limpios",
+  "Kuşatma Kırıcı": "Rompeasedios",
+  "Sabırsız Büyücü": "Mago Impaciente",
+  "Komutanın Yükselişi": "Ascenso del Comandante",
+  "Komutan Gücü": "Poder del Comandante",
+  "Ceset Patlatıcı": "Revientacadáveres",
+  "Golem Ustası": "Maestro de Gólems",
+  "Kitap Kurdu": "Ratón de Biblioteca",
+  "Kara Kitap": "Libro Negro",
+  "Mimar Mortimer": "Mortimer el Arquitecto",
+  "Küllerinden": "De las Cenizas",
+  "Mahzen Bekçisi": "Guardián de la Cripta",
+  "Sinek Sürüsü": "Enjambre de Moscas",
+  "Silah Büyücüsü": "Encantador de Armas",
+  "Bubu'nun Dostu": "Amigo de Bubu",
+  "Prens Değil": "No Es Príncipe",
+  "Orman Gözcüsü": "Vigía del Bosque",
+  "Kıl Payı": "Por un Pelo",
+  "Aceleci Ölü": "Muerto Apresurado",
+  "Ölüler Ordusu": "Ejército de Muertos",
+  "Büyüsüz Necromancer": "Nigromante sin Hechizos",
+  "Bir bölümü son canınla kazan": "Gana un nivel con tu última vida",
+  "Bir bölümde her dalgayı erken çağır": "Llama antes cada oleada en un nivel",
+  "Aynı anda 25 dost ölü ve iskelet": "25 muertos y esqueletos aliados a la vez",
+  "5. bölümden sonra hiç büyü yapmadan kazan": "Gana tras el nivel 5 sin lanzar hechizos"
  },
  "tpl": [
   [
@@ -572,6 +610,138 @@
   [
    "Kule Kara Veba Kazanına dönüşür: mor-yeşil veba, daha büyük gaz bulutu · Vurulanlar vebalı olur (saniyede {} zehir): vebalı ölünce veba yanındakilere bulaşır · Veba Sinekleri: aynı anda {} sinek sürüsü düşmana saldırır (uçanlara da), ısırdıklarını zehirler ve vebalar",
    "La torre se convierte en el Caldero de la Peste Negra: peste verde-púrpura, nube de gas mayor · Los alcanzados quedan infectados ({} de veneno por segundo): al morir un infectado, la peste se contagia a los cercanos · Moscas de la Peste: {} enjambres a la vez atacan a los enemigos (también voladores), envenenan e infectan a quien muerden"
+  ],
+  [
+   "{} bölüm kazan",
+   "Gana {} niveles"
+  ],
+  [
+   "Toplam {} yıldız topla",
+   "Reúne {} estrellas en total"
+  ],
+  [
+   "{} bölümü hiç can kaybetmeden bitir",
+   "Termina {} niveles sin perder vidas"
+  ],
+  [
+   "{} Kahramanlık meydan okuması bitir",
+   "Completa {} desafíos Heroicos"
+  ],
+  [
+   "{} Çıplak Kemik meydan okuması bitir",
+   "Completa {} desafíos Hueso Pelado"
+  ],
+  [
+   "Sonsuz Gece'de {}. dalgaya ulaş",
+   "Llega a la oleada {} en Noche Sin Fin"
+  ],
+  [
+   "Toplam {} düşman öldür",
+   "Mata {} enemigos en total"
+  ],
+  [
+   "{} komutan (boss) devir",
+   "Derriba {} comandantes (jefes)"
+  ],
+  [
+   "{} uçan düşman düşür",
+   "Derriba {} enemigos voladores"
+  ],
+  [
+   "{} kuşatma aracı parçala",
+   "Destroza {} máquinas de asedio"
+  ],
+  [
+   "Dalgayı {} kez erken çağır",
+   "Llama antes una oleada {} veces"
+  ],
+  [
+   "Bir komutanı {}. seviyeye çıkar",
+   "Sube un comandante al nivel {}"
+  ],
+  [
+   "Komutan gücünü {} kez kullan",
+   "Usa el poder del comandante {} veces"
+  ],
+  [
+   "Toplam {} ölüyü dirilt",
+   "Levanta {} muertos en total"
+  ],
+  [
+   "Korku büyüsüyle {} düşman kaçır",
+   "Ahuyenta {} enemigos con Miedo"
+  ],
+  [
+   "Kemik Duvarı {} kez dik",
+   "Alza el Muro de Hueso {} veces"
+  ],
+  [
+   "{} cesedi patlat",
+   "Revienta {} cadáveres"
+  ],
+  [
+   "{} Ceset Golemi çağır",
+   "Invoca {} Gólems de Cadáver"
+  ],
+  [
+   "Toplam {} büyü yap",
+   "Lanza {} hechizos en total"
+  ],
+  [
+   "Büyü Kitabı'nda {} puan harca",
+   "Gasta {} puntos en el Libro de Hechizos"
+  ],
+  [
+   "{} kule kur",
+   "Construye {} torres"
+  ],
+  [
+   "{} kulenin uzmanlığını son kademeye çıkar",
+   "Lleva al máximo la especialidad de {} torres"
+  ],
+  [
+   "Molozdan {} kule yeniden kur",
+   "Reconstruye {} torres desde los escombros"
+  ],
+  [
+   "Mahzen kapağından ya da mezardan {} golem kaldır",
+   "Levanta {} gólems de una trampilla o tumba"
+  ],
+  [
+   "Veba sinekleri {} kez ısırsın",
+   "Que las moscas de la peste piquen {} veces"
+  ],
+  [
+   "{} silah büyüsü işle",
+   "Aplica {} encantamientos de arma"
+  ],
+  [
+   "Mortimer'a {} kez çay içir",
+   "Sirve té a Mortimer {} veces"
+  ],
+  [
+   "{} kargayı ürküt",
+   "Asusta {} cuervos"
+  ],
+  [
+   "Mezardaki elden {} kez bahşiş al",
+   "Recibe {} propinas de la mano de la tumba"
+  ],
+  [
+   "Bubu'yu {} kez rahatsız et",
+   "Molesta a Bubu {} veces"
+  ],
+  [
+   "{} düşmanı kurbağaya çevir",
+   "Convierte {} enemigos en ranas"
+  ],
+  [
+   "Haritada {} sürpriz bul",
+   "Encuentra {} sorpresas en el mapa"
+  ],
+  [
+   "AL +{}",
+   "RECLAMAR +{}"
   ]
  ]
 }
