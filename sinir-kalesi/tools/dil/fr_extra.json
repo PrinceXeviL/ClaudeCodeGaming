@@ -491,7 +491,11 @@
   "Kasırga Fırtınası!": "Tempête tornade !",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Une tornade descend du nuage d'orage et remonte la route : les ennemis happés tournoient dans les airs, subissent des dégâts et sont projetés (les lourds et les boss sont renversés), la foudre tombe du nuage",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornade qui avance sur la route : fait tournoyer et projette ceux qu’elle happe",
-  "DENEME ALANI": "ZONE DE TEST"
+  "DENEME ALANI": "ZONE DE TEST",
+  "Yakında düşman yok": "Aucun ennemi à proximité",
+  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Le ver de compagnie de Mortimer : touche-le pour qu'il attrape un ennemi par la tête et l'envoie au loin",
+  "Bubu! Getir!": "Bubu ! Rapporte !",
+  "Bubu ısırmaz. Fırlatır.": "Bubu ne mord pas. Il lance."
  },
  "tpl": [
   [

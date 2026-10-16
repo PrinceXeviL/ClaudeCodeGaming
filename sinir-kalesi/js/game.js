@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|bubu_(?:idle|atk)|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -372,9 +372,20 @@ function pickMip(c, im, w) {
 }
 
 // alt-orta noktaya hizalı çizim (anchorY=0.5 ise merkez)
+// 16 Eki (Caner: "harabe, kütük gibi nesneler kale ve kulelerle karışmasın, kulelerimiz ayırt edilsin"): bölüm zemini fırınlanırken dekor
+// (harabe, ağaç, kaya, çalı) zemin rengine doğru soldurulur (BG_FADE: { col, a }); kuleler ve kale canlı kalır. Sefer haritasında yok.
+let BG_FADE = null, FADE_C = null;
 function drawSprite(c, im, x, y, w, anchorY = 1) {
-  const h = w * im.height / im.width;
-  c.drawImage(pickMip(c, im, w), x - w / 2, y - h * anchorY, w, h);
+  const h = w * im.height / im.width, src = pickMip(c, im, w);
+  if (BG_FADE && c !== ctx) {
+    const m = c.getTransform(), k = Math.hypot(m.a, m.b), pw = Math.max(1, Math.ceil(w * k)), ph = Math.max(1, Math.ceil(h * k));
+    if (!FADE_C) FADE_C = document.createElement('canvas');
+    if (FADE_C.width < pw || FADE_C.height < ph) { FADE_C.width = Math.max(FADE_C.width, pw); FADE_C.height = Math.max(FADE_C.height, ph); }
+    const f = FADE_C.getContext('2d'); f.setTransform(1, 0, 0, 1, 0, 0); f.globalCompositeOperation = 'source-over'; f.globalAlpha = 1; f.clearRect(0, 0, pw, ph);
+    f.drawImage(src, 0, 0, pw, ph); f.globalCompositeOperation = 'source-atop'; f.globalAlpha = BG_FADE.a; f.fillStyle = BG_FADE.col; f.fillRect(0, 0, pw, ph);
+    c.drawImage(FADE_C, 0, 0, pw, ph, x - w / 2, y - h * anchorY, w, h); return;
+  }
+  c.drawImage(src, x - w / 2, y - h * anchorY, w, h);
 }
 
 // ---------- kayıt ----------
@@ -606,7 +617,9 @@ const SOUND = {
   titlesoft: { vol: 0.62, gap: 1, max: 1 }, // başlıktan haritaya sade geçiş (16 Eki: duyulmuyordu, 0,42 → 0,62)
   mapfly: { vol: 0.5, gap: 2, max: 1 }, // harita açılış yakınlaşması: kamera süzülürken alçak gece rüzgârı
   flyswarm: { vol: 0.32, gap: 0.6, max: 2, rate: [0.9, 1.12] }, // sürü düşmanın çevresinde vızıldarken // 16 Eki: her yıldıza parlak çınlama, yükselen nota (do-mi-sol)
-  skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
+  skelcheer: { vol: 0.55, gap: 2, max: 1 },                         // (16 Eki'den beri çalmıyor: Caner saçma buldu)
+  skelwarcry: { vol: 0.75, gap: 2, max: 1 },                        // 16 Eki: zaferde iskelet ordusunun ağır savaş narası (ElevenLabs)
+                         // zaferde iskelet ordusunun sevinç çığlığı (kemik takırtısı)
   lootchime: { vol: 0.5, gap: 0.5, max: 1 },                         // ganimet çıkınca kristal + altın çınlaması                        // zafer yıldızı yuvasına çakılır (kemik vuruşu + yeşil büyü çınlaması)
   lose:    { vol: 0.80, gap: 1, max: 1 },
   levelup: { vol: 0.55, gap: 0.5, max: 1 },
@@ -1648,7 +1661,7 @@ function snowCover(c, lv, paths, res) {
 let BG_ISMAP = false; // sefer haritası zemini çiziliyor (lv.decorK)
 function renderBackground(lv, paths, res = 2, m = null) {
   BG_ISMAP = !!lv.decorK; BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
-  try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; }
+  try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; BG_FADE = null; }
 }
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
 // Dekor ışıkları (11 Eki, Caner): sıradan ışıklar (mum, fener) sıcak sarı, büyülü şeyler (mantar, mahzen, kütük gözü) yeşil; noktalar img/lights.json (varliklar/isik_isle.py)
@@ -1841,12 +1854,14 @@ function renderBackground0(lv, paths, res) {
   const blocked = (x, y, pad) => {
     if (nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad) return true; // dalgalı kenar payı dahil
     for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
+    if (!lv.decorK) for (const pl of lv.plots) if (Math.abs(x - pl[0]) < 34 + pad * 0.5 && y < pl[1] && y > pl[1] - 100) return true; // 16 Eki: kulenin yükseldiği şerit (arsanın arkası) boş
     for (const hq of hatchSpots(lv, paths)) if (dist(x, y, hq[0], hq[1]) < 30 + pad) return true;
     if (y < 52 && (x < 300 || x > 860)) return true;
     if (y > 465 && x < 230) return true;
     if (Math.abs(x - lv.castle[0]) < 75 + pad && y > lv.castle[1] - 170 && y < lv.castle[1] + 38 + pad) return true;
     return false;
   };
+  if (NECRO && !lv.decorK) BG_FADE = { col: th.grass2 || '#3a3a30', a: 0.24 }; // dekor soluk (kuleler öne çıksın); ışık katmanından önce kalkar
   // vaha gölleri ve çalılar (yerde, gölgesiz)
   const DK = lv.decorK || 1; // dekor yoğunluğu (bölge haritası daha dolu)
   // 16 Eki (Caner: "haritadaki nesneleri mantıklı yerleştir, rastgele olmasın, doğal olsun"): göl birbirine ve yola yaslanmaz, ağaçlar içine
@@ -2011,6 +2026,7 @@ function renderBackground0(lv, paths, res) {
     g.fillStyle = ['#f4e36b', '#ffffff', '#e86c8f'][i % 3];
     g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fill();
   }
+  BG_FADE = null;
   // ışık: sol üstten sıcak güneş, sağ alta doğru serin gölge, kenarlarda vinyet
   const sun = g.createLinearGradient(0, 0, W, H);
   sun.addColorStop(0, th.light); sun.addColorStop(0.5, 'rgba(255,255,255,0)'); sun.addColorStop(1, 'rgba(20,30,70,0.16)');
@@ -2145,6 +2161,7 @@ function startLevel(idx, chal = null) {
 
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
+  if (BUBU.on && NECRO && idx >= BUBU.from) ['bubu_idle', 'bubu_atk'].forEach(n => keep.add(n)); // 16 Eki: yeni Bubu
   useStrips(keep);
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
@@ -4803,6 +4820,7 @@ function updateEnemy(e, dt) {
       }
     }
   }
+  if (bubuHold(e, dt)) return; // Bubu'nun ağzında / havada
   if (twistStep(e, dt)) return; // kasırgada dönüyor (havada)
   if (flingStep(e, dt)) return; // meteor savurması: havada (balistik); sersemleme, blok, dirilme bekler
   if (e.reviveT > 0) { e.reviveT -= dt; return; } // diriliyor: yerinden kalkar
@@ -6469,6 +6487,7 @@ const MORT_LINES = {
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
   lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, Bubu!'], // göl solucanı Bubu (kodla çizilen dokunaç) kalıyor; silinen Veo Bubu'su değil
+  bubu: ['Bubu! Getir!', 'Aferin Bubu. Kim iyi solucan?', 'Bubu ısırmaz. Fırlatır.'], // 16 Eki: yeni Bubu
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
@@ -7087,6 +7106,106 @@ function propSpot(rnd, pad) {
   }
   return null;
 }
+// ----- Bubu (16 Eki, Caner: yeniden, sıfırdan tasarım): Mortimer'ın evcil mezar yılan-solucanı. Kale tarafında yol kenarındaki çukurda hep
+// dışarıda bekler (salınır). Dokununca yoldaki bir düşmanı kafasından kapar, havaya kaldırır, yolun gerisine (girişe doğru) uzağa fırlatır:
+// düştüğü yerde hasar, çevresine küçük hasar, sersemletme. Boss, makine, uçan kapılmaz. BUBU.cd sn dinlenir.
+// Görsel: Gemini (varliklar/ham/nm_bubu2.jpg) + Veo (varliklar/bubu2_isle.py): bubu_idle (döngü), bubu_atk; meta: mouth (karede ağzın yeri),
+// entry (bekleme döngüsünden kesintisiz giriş: idle sonu → atk 0, idle 27 → atk 26), bite (çene kapanır), throw (bırakır), back (bitince idle karesi).
+const BUBU = { on: true, from: 3, cd: 30, h: 96, reach: 100, back: 170, dmg: [90, 130], splash: 42, splashK: 0.35, stun: 1.4, flyT: 0.9, arc: 90, pull: 50 };
+function setupBubu() {
+  G.bubu = null; if (!BUBU.on || !NECRO || G.idx < BUBU.from || !ANIM_META.bubu_atk || !ANIM_META.bubu_idle) return;
+  const free = (x, y) => x > 60 && x < W - 60 && y > BUBU.h + 40 && y < H - 60 && !(x < 520 && y > H - 130) && nearestOnPaths(G.paths, x, y).d > 38
+    && G.plots.every(p => dist(p.x, p.y, x, y) > 60 && !(Math.abs(p.x - x) < 70 && p.y < y + 20 && p.y > y - BUBU.h - 30)) && dist(x, y, G.castle.x, G.castle.y - 40) > 100 // gövdesi arsaya, kuleye binmesin && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
+    && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60) && !(G.zitem && dist(G.zitem.x, G.zitem.y, x, y) < 80);
+  const FS = [0.78, 0.7, 0.85, 0.62, 0.9]; for (let f = 0.5; f < 0.96; f += 0.03) FS.push(f); // kale tarafı önce
+  for (const f of FS) for (const P of G.paths) for (const off of [54, 72]) {
+    const q = pathPos(P, P.total * f), L = Math.hypot(q.dx, q.dy) || 1;
+    for (const sd of [1, -1]) { const x = q.x - q.dy / L * off * sd, y = q.y + q.dx / L * off * 0.82 * sd;
+      if (free(x, y)) { G.bubu = { x, y, st: 'idle', it: 0, t: 0, cd: 6, want: false, face: x < q.x ? 1 : -1 }; ['bubu_idle', 'bubu_atk'].forEach(loadStrip);
+        if (!save.bubuSeen2) { save.bubuSeen2 = 1; persist(); G.bubuIntro = true; } return; } }
+  }
+}
+const bubuOk = (e) => !e.dead && !e.under && !e.def.flying && !e.def.machine && !e.def.chief && !e.def.boss && e.siege === undefined && !e.bbPh && !(e.twT > 0) && e.flZ == null && !(e.kdT > 0);
+function bubuTarget(b) { let best = null, bd = BUBU.reach; for (const e of G.enemies) if (bubuOk(e)) { const d = dist(e.x, e.y, b.x, b.y); if (d < bd) { bd = d; best = e; } } return best; }
+function bubuMouth(b, name, i) { // şerit karesinde ağzın dünya konumu
+  const F = ANIM_META[name], m = F.mouth && F.mouth[Math.min(F.n - 1, i)]; if (!m) return { x: b.x, y: b.y - BUBU.h * 0.7 };
+  const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh;
+  return { x: b.x + b.face * (-fw * F.fx + m[0] * fw), y: b.y - fh * (1 - F.base) + m[1] * fh };
+}
+function updateBubu(dt) {
+  const b = G.bubu; if (!b) return;
+  if (G.bubuIntro && !G.banner && !overlay && !G.comic) { G.bubuIntro = false; G.banner = { title: 'YENİ: BUBU', sub: "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın", t: 0, dur: 5 }; }
+  const FI = ANIM_META.bubu_idle, FA = ANIM_META.bubu_atk;
+  if (b.cd > 0 && b.st === 'idle') b.cd -= dt;
+  if (b.st === 'idle') {
+    const i0 = Math.floor(b.it * 24) % FI.n; b.it += dt; const i1 = Math.floor(b.it * 24) % FI.n;
+    if (b.want) { // bekleme döngüsünün uygun karesinde saldırıya geçer (dikişsiz)
+      const e0 = (FA.entry || [0])[1] ?? 0, crossEnd = i1 < i0, crossMid = e0 && i0 < e0 + 1 && i1 >= e0 + 1;
+      if (crossEnd || crossMid) { b.st = 'atk'; b.want = false; b.fiF = crossEnd ? 0 : e0; b.fi = -1; }
+    }
+    return;
+  }
+  b.fiF += dt * (b.fiF < FA.bite - 12 ? 48 : 24); const fi = Math.min(FA.n - 1, Math.floor(b.fiF)); // hamle öncesi kareler iki kat hızlı (her kare yine çizilir)
+  if (fi >= FA.bite - 12 && !b.prey && !b.missed) { // dalış: dokunuşta kilitlenen av (yoksa en yakını)
+    const L = b.lock, e = L && bubuOk(L) && dist(L.x, L.y, b.x, b.y) < BUBU.reach * 1.7 ? L : bubuTarget(b); b.lock = null; if (e) { b.prey = e; e.bbPh = 'pull'; e.bbB = b; e.bbX0 = e.x; e.bbY0 = e.y; e.bbT = 0; e.blocker = null; e.inMelee = false; for (const s of G.soldiers) if (s.target === e) s.target = null; } else b.missed = true;
+  }
+  if (b.prey && fi >= FA.bite && b.prey.bbPh === 'pull') { b.prey.bbPh = 'hold'; sfx('bash'); haptic('light'); }
+  if (b.prey && fi >= FA.throw && b.prey.bbPh === 'hold') { // fırlat: yolun gerisine
+    const e = b.prey, td = Math.max(0, e.d - BUBU.back * rand(0.85, 1.1)), q = pathPos(e.p, td, e.off || 0);
+    e.bbPh = 'fly'; e.bbT = 0; e.bbX0 = e.x; e.bbY0 = e.y; e.bbZ0 = e.flZ || 0; e.bbTX = q.x; e.bbTY = q.y; e.bbTD = td; e.spinV = (b.face || 1) * rand(9, 13);
+    sfx('whirl'); b.prey = null;
+  }
+  b.fi = fi;
+  if (b.fiF >= FA.n) { b.st = 'idle'; b.it = (FA.back || 0) / 24; b.cd = BUBU.cd; b.missed = false; }
+}
+function bubuHold(e, dt) { // ağızdaki / havadaki düşman (true: yürüme yok)
+  if (!e.bbPh) return false;
+  const b = e.bbB, H0 = CHAR_H['enemy_' + e.type] || 30;
+  if (e.bbPh === 'pull' || e.bbPh === 'hold') {
+    if (!b || G.bubu !== b) { e.bbPh = null; e.flZ = null; e.spinA = 0; return false; }
+    const m = bubuMouth(b, 'bubu_atk', b.fi), gy = b.y + 3, z = Math.max(0, gy - m.y - H0 * 0.92); // kafası ağızda
+    if (e.bbPh === 'pull') { e.bbT += dt; const u = clamp(e.bbT / 0.42, 0, 1), k = u * u * (3 - 2 * u); e.x = lerp(e.bbX0, m.x, k); e.y = lerp(e.bbY0, gy, k); e.flZ = Math.max(0.01, z * k); }
+    else { e.x = m.x; e.y = gy; e.flZ = Math.max(0.01, z); e.spinA = Math.sin(G.t * 14) * 0.25; }
+    return true;
+  }
+  if (e.bbPh === 'fly') {
+    e.bbT += dt; const u = clamp(e.bbT / BUBU.flyT, 0, 1);
+    e.x = lerp(e.bbX0, e.bbTX, u); e.y = lerp(e.bbY0, e.bbTY, u); e.flZ = Math.max(0.01, lerp(e.bbZ0, 0, u) + Math.sin(u * Math.PI) * BUBU.arc); e.spinA = (e.spinA || 0) + e.spinV * dt;
+    if (u >= 1) { // yere çakılır
+      e.bbPh = null; e.flZ = null; e.spinA = 0; e.d = e.bbTD; e.x = e.bbTX; e.y = e.bbTY; e.blocker = null;
+      HERO_SKILL = true; damageEnemy(e, roll(BUBU.dmg), 'phys', false, 'blast');
+      for (const o of G.enemies) if (o !== e && !o.dead && !o.def.flying && dist(o.x, o.y, e.x, e.y) < BUBU.splash) damageEnemy(o, roll(BUBU.dmg) * BUBU.splashK, 'phys', false, 'blast');
+      HERO_SKILL = false; if (!e.dead) stunEnemy(e, BUBU.stun);
+      G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.8 }); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: BUBU.splash, col: '200,150,255', t: 0, dur: 0.45 });
+      for (let i = 0; i < 14; i++) { const a = rand(Math.PI * 1.05, Math.PI * 1.95), v = rand(60, 160); emit(G.parts, { kind: 'chunk', x: e.x + rand(-8, 8), y: e.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 440, col: ['#5a4430', '#7a6448', '#3a2a1e'][i % 3], s0: rand(1.8, 3), s1: 1.2, life: rand(0.5, 0.8), vr: rand(-12, 12), floor: e.y + rand(-4, 4) }); }
+      shakeScreen(5, 0.35); sfx('stomp'); haptic('heavy');
+    }
+    return true;
+  }
+  return false;
+}
+function tapBubu(x, y) {
+  const b = G.bubu; if (!b || dist(x, y, b.x + b.face * 6, b.y - BUBU.h * 0.45) > 46) return false;
+  if (b.st !== 'idle' || b.want) return true;
+  if (b.cd > 0) { floatText(b.x, b.y - BUBU.h - 6, Math.ceil(b.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
+  if (!bubuTarget(b)) { floatText(b.x, b.y - BUBU.h - 6, 'Yakında düşman yok', '#c8c8c8'); sfx('error'); return true; }
+  b.want = true; b.lock = bubuTarget(b); floatText(b.x, b.y - BUBU.h - 6, 'Bubu!', '#d8a8ff'); sfx('roar'); tipDone('bubu'); gaDesign('bubu');
+  if (!(save.cnt && save.cnt.bubu)) mortSay('bubu', true); cnt('bubu');
+  return true;
+}
+function drawBubu() {
+  const b = G.bubu; if (!b) return;
+  const atk = b.st === 'atk', name = atk ? 'bubu_atk' : 'bubu_idle', F = ANIM_META[name], im = spr(name); if (!F || !im) { if (!im) loadStrip(name); return; }
+  const fi = atk ? Math.max(0, b.fi || 0) : Math.floor(b.it * 24) % F.n, ready = !atk && b.cd <= 0;
+  if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, b.x, b.y - 6, 40, '190,120,255', 0.16 + 0.1 * Math.sin(time * 4)); ctx.restore(); }
+  const fh = BUBU.h / F.ch, fw = fh * F.fw / F.fh, C = F.cols || F.n, bs = im.width / (F.fw * C), by = im.height / (F.fh * Math.ceil(F.n / C));
+  ctx.save(); ctx.translate(b.x, b.y); ctx.scale(b.face, 1);
+  ctx.drawImage(im, (fi % C) * F.fw * bs, Math.floor(fi / C) * F.fh * by, F.fw * bs, F.fh * by, -fw * F.fx, -fh * (1 - F.base), fw, fh);
+  ctx.restore();
+  if (!atk && !b.want) { const iy = b.y - BUBU.h - 8 + Math.sin(time * 4) * 2;
+    if (b.cd > 0) { const k = 1 - b.cd / BUBU.cd; circle(b.x, iy, 9, 'rgba(20,12,24,0.75)', 'rgba(200,160,255,0.5)', 1.2); ctx.strokeStyle = '#d0a8ff'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(b.x, iy, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
+    else { circle(b.x, iy, 10, 'rgba(26,12,30,0.9)', '#f2e6c8', 1.5); drawIcon('play', b.x + 0.5, iy, 10, '#f2e6c8'); } }
+}
 function setupProps() {
   let seed = (G.idx + 7) * 7919;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -7094,11 +7213,12 @@ function setupProps() {
   for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
   const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
   G.teaT = 0;
-  setupZoneItem();
+  setupZoneItem(); setupBubu();
 }
 function updateProps(dt) {
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
+  updateBubu(dt);
   for (const o of G.props || []) {
     o.t += dt;
     if (o.kind === 'crow') {
@@ -7109,7 +7229,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
-  if (tapZoneItem(x, y)) return true;
+  if (tapZoneItem(x, y) || tapBubu(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -7155,7 +7275,7 @@ function crowCaw() {
   }
 }
 function drawProps(air) {
-  if (!air) drawZoneItem();
+  if (!air) { drawZoneItem(); drawBubu(); }
   for (const o of G.props || []) {
     if (o.kind === 'crow') {
       const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
@@ -8748,7 +8868,7 @@ function drawXbowMen(t, ts, redraw) {
     if (CK) pose = M.pose; // kutlama: yay/arbalet kalkık pozda
     const im = spr(pre + pose) || spr(up ? pre + M.pose : pre); if (!im) continue;
     ctx.save(); ctx.translate(f.x, f.y); ctx.scale(a.face, 1); if (rv < 1) { ctx.globalAlpha *= rv; ctx.translate(0, (1 - rv) * h * 0.25); } // yeniden kalkan okçu belirir
-    const bob = (a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012) + (CK ? Math.max(0, Math.sin(time * CELEB.rate + a.d * 3 + t.x * 0.1)) * h * 0.14 * CK : 0); // yürürken sekme, dururken nefes; kutlamada zıplar
+    const bob = (a.walking ? Math.abs(Math.sin(a.anim * 9)) * h * 0.04 : Math.sin(a.anim * 2) * h * 0.012) + 0; // yürürken sekme, dururken nefes (16 Eki: kutlamada zıplama yok, yay kalkık)
     const kk = a.aimT <= 0 && a.kickT > 0 ? a.kickT / M.kick : 0; // bırakınca geri tepme (geri ve yukarı)
     let lean = a.walking ? Math.sin(a.anim * 9) * 0.04 : up ? (1 - rise) * 0.12 - kk * 0.1 : 0, sx = 1, sy = 1, back = 0;
     if (M.bow && up) { // okçu: pozlar germeyi gösterir; üstüne tam gerilimde hafif titreme, bırakınca küçük ileri sekme
@@ -10478,8 +10598,8 @@ function drawBoneWall(s) {
 function drawSoldier(s) {
   const C = celebK();
   if (!C || s.dead || s.wall || s.hero) { drawSoldier0(s); return; }
-  const ph = time * CELEB.rate + (s.slot || 0) * 1.3 + s.x * 0.05, hop = Math.max(0, Math.sin(ph)) * CELEB.hop * C; // kutlama: zıplar, silahı kalkıp iner
-  ctx.save(); ctx.translate(0, -hop); CHEER_ATK = -ATK_PREP * (0.55 + 0.4 * Math.sin(ph * 0.5 + 1)); drawSoldier0(s); CHEER_ATK = null; ctx.restore();
+  const P = celebPump(); // kutlama: silah ağır ağır kalkar (C), herkes birlikte göğe kaldırır (P); zıplama yok
+  CHEER_ATK = -ATK_PREP * (0.35 * C + 0.6 * P * C); drawSoldier0(s); CHEER_ATK = null;
 }
 function drawSoldier0(s) {
   if (s.wall) { drawBoneWall(s); return; }
@@ -10510,7 +10630,7 @@ function drawSoldier0(s) {
     // Wan şeritleri geldiyse onlar oynar (saldırı: vuruş döngüsüne bağlı kare, yürüyüş: 16 fps); yoksa çizimden hareket
     const sk = rise == null && (((fighting || CHEER_ATK != null) && animStrip(s.big, null, '_atk')) || (walking && animStrip(s.big, null, '_walk')));
     if (sk) {
-      const F = ANIM_META[sk], i = sk.endsWith('_atk') ? (CHEER_ATK != null ? Math.floor((0.15 + 0.2 * (0.5 + 0.5 * Math.sin(time * CELEB.rate * 0.5))) * F.n) : Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n)) : Math.floor(s.anim * 16) % F.n;
+      const F = ANIM_META[sk], i = sk.endsWith('_atk') ? (CHEER_ATK != null ? Math.floor((0.12 + 0.22 * celebPump()) * celebK() * F.n) : Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n)) : Math.floor(s.anim * 16) % F.n;
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(sk), F, i, ch); ctx.restore();
       if (window.__animLog && s.logId != null) window.__animLog.push([s.logId, sk, i, s.face || 1, walking, '', +s.x.toFixed(2), +s.y.toFixed(2)]);
     } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
@@ -13146,7 +13266,7 @@ function waveBtnScreen(pi) {
   const m = 24 * WAVE_BTN_K + 6; // düğme ekrandan taşmasın
   return { x: clamp(q.x, EDGE.l + m, EDGE.r - m), y: clamp(q.y, EDGE.t + m, EDGE.b - m), dx: b.dx, dy: b.dy };
 }
-const WAVE_BTN_K = 1.75; // 14 Eki (Caner): %10 daha // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük; 15 Eki: %30 daha)
+const WAVE_BTN_K = 2.1; // 16 Eki (Caner): %20 daha (1,75 → 2,1) // 14 Eki (Caner): %10 daha // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük; 15 Eki: %30 daha)
 function drawWaveButtons() {
   const show = waveCallable();
   if (show && G.waveShowT == null) G.waveShowT = time;
@@ -13717,8 +13837,7 @@ function drawHud() {
   });
   // 14 Eki (Caner): komutan gücü ile büyüler arasındaki kemik ayraç kaldırıldı (drawBoneDivider duruyor); gruplar arası boşluk ULT_GAP
 
-  drawWaveButtons();
-  drawWavePeek();
+  // dalga düğmeleri drawPlay'de en sonda (her şeyin üstünde) çizilir
 
   // bilgi paneli
   const info = infoText();
@@ -18494,6 +18613,7 @@ function drawPlay() {
   drawCombo();
   drawCoinsFlying();
   drawBossBar();
+  drawWaveButtons(); drawWavePeek(); // 16 Eki: dalga düğmesi bütün arayüzün üstünde (yalnız tanıtım, kurdele ve eğitim üstünde)
   drawIntro();
   drawBanner();
   drawTut();
@@ -18896,23 +19016,23 @@ function drawVault(k, cx, y) {
   } else fitTxt(`${VAULT.per} altında 1 kristal`, x0 + 344, y + 1, 112, 14, '#a89878', 'left', '800', FONT_B, false, 11);
   ctx.restore();
 }
-// ---- zafer kutlaması (16 Eki, Caner: "zaferde bütün iskeletler, okçular, savaşçılar, golem, komutanlar sevinsin, ellerini kaldırıp bağırsınlar"):
-// zafer paneli CELEB.dur sn gecikir; askerler yerinde zıplar ve silahını ritimle kaldırıp indirir (saldırı pozunun kurulma anı), kuledeki okçular
-// yayını kaldırıp zıplar, komutan zafer pozunu oynar, iskelet tezahüratı ve "Yaşasın!" yazıları. Kutlama, zafer panelinin arkasında da sürer.
-const CELEB = { dur: 2.2, hop: 7, rate: 7.5, words: ['Yaşasın!', 'Zafer!', 'Hurra!', 'Kemikler kazandı!', 'Mortimer!', 'Yaşasın ölüler!'] };
+// ---- zafer kutlaması (16 Eki): zafer paneli CELEB.dur sn gecikir. İlk sürüm (zıplama, "Yaşasın!" yazıları, tezahürat) Caner'e saçma geldi:
+// "gerçek asker gibi ağır kutlasın, ellerini kaldırıp iskeletçe savaş narası atsın, 3 sn sürsün". Askerler silahını ağır ağır kaldırır (saldırı pozunun
+// kurulma anı), hep birlikte (aynı tempoda) iki kez göğe kaldırıp narayı basar; zıplama yok. Kuledeki okçular yayını kaldırır, komutan zafer pozunu oynar.
+const CELEB = { dur: 3, rise: 0.55, cry: 0.45, pump: 1.25 }; // rise: kaldırış süresi, cry: naranın başladığı an, pump: birlikte kaldırma aralığı
 let CHEER_ATK = null;
 function celebStart() { // true: kutlama sürüyor (zafer paneli bekler)
   if (G.celebT0 == null) {
-    G.celebT0 = G.t; G.celebTime = time; sfx('skelcheer');
+    G.celebT0 = G.t; G.celebTime = time; G.cryT = G.t + CELEB.cry;
     for (const h of G.heroes) { const F = !h.dead && ANIM_META[h.def.sprite + '_lvlup']; if (F) h.lvlA = h.lvlD = F.dur || F.n / 24; } // komutanın zafer pozu (Veo _lvlup)
-    const L = []; for (const q of G.soldiers.filter(q => !q.dead && !q.wall && !q.hero && !q.pet).sort(() => Math.random() - 0.5)) if (L.length < 5 && L.every(o => Math.hypot(o.x - q.x, o.y - q.y) > 55)) L.push(q); // yazılar üst üste binmesin
-    G.cheerQ = L.map((q, i) => ({ q, t: G.t + 0.15 + i * 0.3, w: CELEB.words[(i + G.idx) % CELEB.words.length] }));
     return true;
   }
-  for (const c of G.cheerQ || []) if (!c.done && G.t >= c.t) { c.done = true; if (!c.q.dead) floatText(c.q.x, c.q.y - (c.q.zh || c.q.bh || 30) - 10, c.w, '#b8ff9a'); }
+  if (G.cryT && G.t >= G.cryT) { G.cryT = 0; sfx('skelwarcry'); shakeScreen(2.5, 0.4); }
   return G.t - G.celebT0 < CELEB.dur;
 }
-const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / 0.25, 0, 1) : 0);
+const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / CELEB.rise, 0, 1) : 0);
+// birlikte kaldırma: 0 (kalkık) .. 1 (en yukarı, göğe doğru), herkes aynı tempoda
+const celebPump = () => { if (!G || G.celebTime == null) return 0; const u = time - G.celebTime - CELEB.cry; return u < 0 ? 0 : Math.pow(Math.max(0, Math.sin(u / CELEB.pump * Math.PI)), 1.5); };
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 44, w = pw - 88, y0 = py + 190;
   roundRect(x0, y0, w, 112, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);
@@ -19244,7 +19364,7 @@ function drawOverlay() {
   const pw = big ? 600 : pz ? 480 : sum ? 680 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? (G && G.vault && G.lootGot ? 512 : 472) : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   const wn = overlay === 'win' && NECRO; // 16 Eki (Caner: zafer ekranı konsepte uysun): kararma, panel aşağıdan kayar, başlık yere çakılır, yıldızlar tek tek düşer
-  if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.5 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); } if (G.winCheerT && G.t >= G.winCheerT) { G.winCheerT = 0; sfx('skelcheer'); } }
+  if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.5 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); }  }
   ctx.save(); ctx.globalAlpha = clamp((wn ? k - 0.12 : k) / 0.15, 0, 1);
   if (wn) { const u = clamp((k - 0.12) / 0.5, 0, 1), sl = 1 - (1 - Math.pow(1 - u, 3)) - Math.sin(u * Math.PI) * 0.05 * (u > 0.6 ? 1 : 0); ctx.translate(0, sl * H * 0.75); }
   else { ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy); }
@@ -19517,6 +19637,25 @@ function hudTap(x, y) {
   if (tutCardTap()) return true; // eğitim kartı açıkken dokunuş kartı geçer
   G.spellPeek = null; // büyü seçimi: başka yere dokununca kalkar
   const hitU = (b) => hit(b, x, y, b.r * UI_HIT); // arayüz düğmeleri: görünenden geniş dokunma alanı
+  // dalga butonu (16 Eki, Caner: "çoğu zaman yeteneklerle, kule menüsüyle üst üste geliyor, tıklanmıyor; en üstte olmalı"): ilk yoklanan düğme
+  // ilk dokunuş: o girişten gelecek düşmanları gösterir; ikinci dokunuş (8 sn içinde): dalgayı çağırır
+  if (waveCallable()) {
+    for (const pi of nextWavePaths()) {
+      const b = waveBtnScreen(pi);
+      if (dist(b.x, b.y, x, y) < 24 * WAVE_BTN_K + 4) {
+        tapPop('wave' + pi);
+        if (G.wavePeek && G.wavePeek.w === G.wave && time - G.wavePeek.t < 8) { G.wavePeek = null; waveBonusAndStart(); }
+        else { G.wavePeek = { pi, w: G.wave, t: time }; setSel(null); sfx('select'); }
+        return true;
+      }
+    }
+    if (G.wavePeek && G.wavePeek.pi != null) {
+      // önizleme kutusuna dokunmak da dalgayı çağırır
+      const R = G.wavePeek.box;
+      if (R && x >= R.x && x <= R.x + R.w && y >= R.y && y <= R.y + R.h) { G.wavePeek = null; waveBonusAndStart(); return true; }
+      G.wavePeek = null;
+    }
+  }
   if (hitU(HUD.pause)) { tapPop('hud_pause'); sfx('click'); setOverlay('pause'); return true; }
   if (hitU(HUD.speed)) { // 13 Eki (Caner): 1x ve 2x ücretsiz, 3x Mortimer'ın Hazinesi ile (test sürümünde açık)
     tapPop('hud_speed'); sfx('click'); const top = isPremium() || TEST_OPEN ? 3 : 2;
@@ -19551,25 +19690,6 @@ function hudTap(x, y) {
       G.mode = G.mode && G.mode.id === id ? null : { kind: 'spell', id };
       if (G.mode) { G.spellPeek = id; sfx('spell'); }
       return true;
-    }
-  }
-  // dalga butonu
-  // ilk dokunuş: o girişten gelecek düşmanları gösterir; ikinci dokunuş (8 sn içinde): dalgayı çağırır
-  if (waveCallable()) {
-    for (const pi of nextWavePaths()) {
-      const b = waveBtnScreen(pi);
-      if (dist(b.x, b.y, x, y) < 24 * WAVE_BTN_K + 4) {
-        tapPop('wave' + pi);
-        if (G.wavePeek && G.wavePeek.w === G.wave && time - G.wavePeek.t < 8) { G.wavePeek = null; waveBonusAndStart(); }
-        else { G.wavePeek = { pi, w: G.wave, t: time }; setSel(null); sfx('select'); }
-        return true;
-      }
-    }
-    if (G.wavePeek && G.wavePeek.pi != null) {
-      // önizleme kutusuna dokunmak da dalgayı çağırır
-      const R = G.wavePeek.box;
-      if (R && x >= R.x && x <= R.x + R.w && y >= R.y && y <= R.y + R.h) { G.wavePeek = null; waveBonusAndStart(); return true; }
-      G.wavePeek = null;
     }
   }
   // açık menü

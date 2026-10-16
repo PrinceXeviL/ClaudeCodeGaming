@@ -683,7 +683,11 @@
   "Kasırga Fırtınası!": "Tornado Storm!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "A tornado drops from the storm cloud and moves back along the road: caught enemies spin into the air, take damage and get flung away (heavies and bosses are knocked down), lightning strikes from the cloud",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "A tornado moving along the road: spins and flings whoever it catches",
-  "DENEME ALANI": "TEST AREA"
+  "DENEME ALANI": "TEST AREA",
+  "Yakında düşman yok": "No enemy nearby",
+  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Mortimer's pet worm: tap it to grab an enemy by the head and hurl him far away",
+  "Bubu! Getir!": "Bubu! Fetch!",
+  "Bubu ısırmaz. Fırlatır.": "Bubu doesn't bite. He throws."
  },
  "tpl": [
   [

@@ -491,7 +491,11 @@
   "Kasırga Fırtınası!": "龙卷风暴！",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "龙卷风从雷云中降下，沿道路向后移动：被卷入的敌人旋转升空、受到伤害并被甩飞（重甲与首领被掀翻），云中劈下闪电",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "沿路移动的龙卷风：卷起并甩飞敌人",
-  "DENEME ALANI": "测试区"
+  "DENEME ALANI": "测试区",
+  "Yakında düşman yok": "附近没有敌人",
+  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "莫蒂默的宠物蠕虫：点击它，咬住敌人的脑袋远远甩出去",
+  "Bubu! Getir!": "布布！叼回来！",
+  "Bubu ısırmaz. Fırlatır.": "布布不咬人。它扔人。"
  },
  "tpl": [
   [

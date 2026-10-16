@@ -1,0 +1,9 @@
+Static locked-off camera, no camera movement, no zoom. Plain pure white background for the entire video, no shadows, no other objects; the background stays perfectly clean and empty: no dust clouds, no fog, no floating specks. 2D hand-painted cartoon game art style exactly like the reference image; keep the creature's design, colors, glowing runes, chain collar and proportions identical. The grave hole and the earth around it never move. Wide zoomed-out framing exactly like the reference image: the creature is small in the middle of a big empty white frame and stays small; huge white margins on all sides, especially above and to the sides, so even at the highest and widest point of the attack the head, jaws and tail stay far inside the frame and never touch the edges.
+
+ACTION 1 (0-3 s): IDLE, two identical cycles with exactly the same rhythm, a seamless loop. The purple serpent-worm sways gently from side to side out of its hole like a cobra, breathing, the fins on its back fluttering, the glowing green runes pulsing softly, it flicks its forked tongue and blinks once per cycle, curious and loyal like a guard dog. At 3 s it is back exactly in the reference pose.
+
+PAUSE (3-3.5 s): completely still in the reference pose.
+
+ACTION 2 (3.5-7 s): GRAB AND FLING ATTACK. The head pulls back and coils (anticipation), then strikes fast down and forward to ground level in front of the hole with its jaws wide open, snaps the jaws shut as if biting something the size of a soldier's helmet, then whips its head up high and hurls it in a big arc over its shoulder to the side with a powerful, exaggerated cartoon throwing motion, opens the jaws to let go, roars proudly, and settles back exactly into the reference pose. The mouth is always empty: nothing is held, nothing flies away, only the motion.
+
+The first frame and the last frame are both exactly the reference image. No text, no people, no soldier, no color tint over the creature.

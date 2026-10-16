@@ -491,7 +491,11 @@
   "Kasırga Fırtınası!": "Ураганная буря!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Из грозовой тучи опускается смерч и движется назад по дороге: пойманные враги кружатся в воздухе, получают урон и разлетаются (тяжёлые и боссы падают), из тучи бьют молнии",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Смерч на дороге: закручивает пойманных и разбрасывает",
-  "DENEME ALANI": "ТЕСТОВАЯ ЗОНА"
+  "DENEME ALANI": "ТЕСТОВАЯ ЗОНА",
+  "Yakında düşman yok": "Рядом нет врагов",
+  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Ручной червь Мортимера: коснись, и он схватит врага за голову и зашвырнёт подальше",
+  "Bubu! Getir!": "Бубу! Апорт!",
+  "Bubu ısırmaz. Fırlatır.": "Бубу не кусает. Он швыряет."
  },
  "tpl": [
   [

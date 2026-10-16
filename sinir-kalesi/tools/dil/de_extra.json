@@ -491,7 +491,11 @@
   "Kasırga Fırtınası!": "Tornadosturm!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Aus der Sturmwolke senkt sich ein Tornado und zieht den Weg zurück: Gefangene Feinde wirbeln in die Luft, nehmen Schaden und werden fortgeschleudert (Schwere und Bosse stürzen zu Boden), aus der Wolke zucken Blitze",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornado auf dem Weg: wirbelt Gefangene herum und schleudert sie fort",
-  "DENEME ALANI": "TESTBEREICH"
+  "DENEME ALANI": "TESTBEREICH",
+  "Yakında düşman yok": "Kein Feind in der Nähe",
+  "Mortimer'ın evcil solucanı: dokun, düşmanı kafasından kapıp uzağa fırlatsın": "Mortimers Haustierwurm: tippe, er packt einen Feind am Kopf und schleudert ihn weit weg",
+  "Bubu! Getir!": "Bubu! Hol!",
+  "Bubu ısırmaz. Fırlatır.": "Bubu beißt nicht. Er wirft."
  },
  "tpl": [
   [
