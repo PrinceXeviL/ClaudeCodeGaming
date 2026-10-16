@@ -10121,7 +10121,7 @@ function drawPhalanx(s) {
 // 15 Eki (Caner: "kemik duvarını yeniden daha güzel tasarlayalım; dev diş ve kemik parçaları her biri bağımsız topraktan çıkıp 2 düşman boyu yükselsin"):
 // Gemini nm8_bw_* parçaları (eğri diş, kırık diş, kazık, kırık öbeği, iğne). Her parça ayrı, önden görünüşlü: yolun yönü ne olursa olsun yola dik dizilir.
 // Önce toprak yarılır (yeşil ışıklı çatlak), sonra parçalar karışık sırayla zemin çizgisinin altından fırlar (easeOutBack), süre bitince gömülür.
-const BW8 = { parts: ['nm8_bw_fang', 'nm8_bw_tooth', 'nm8_bw_stake', 'nm8_bw_shards', 'nm8_bw_needle'], n: 13, h: 48, rows: [-7, 6], gap: 0.045, rise: 0.34, start: 0.1 }; // 15 Eki (Caner): daha çok parça, iki sıra zikzak; sonra %15 küçük (56 → 48), yol yine boydan boya kaplı (13 parça)
+const BW8 = { parts: ['nm8_bw_fang', 'nm8_bw_tooth', 'nm8_bw_stake', 'nm8_bw_shards', 'nm8_bw_needle'], n: 15, h: 43, rows: [-7, 6], gap: 0.045, rise: 0.34, start: 0.1 }; // 15 Eki (Caner): daha çok parça, iki sıra zikzak; sonra %15 küçük (56 → 48), yol yine boydan boya kaplı (13 parça) // 16 Eki (Caner): %10 küçük (48 → 43), yolu kaplamaya devam etsin diye 13 → 15 parça (genişlik BWALL.span aynı)
 function boneWall8(s) {
   if (s.bw8) return s.bw8;
   const r = seeded(Math.floor(s.seed * 9973) + 31), L = [];
