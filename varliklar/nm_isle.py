@@ -78,6 +78,7 @@ SHEETS = [
     ('nm7_orman_surpriz.jpg', ['nm7_owl', 'nm7_eyes', 'nm7_ghost', 'nm7_ghost2', 'nm7_bats', 'nm7_frog', 'nm7_shroom', 'nm7_hand', 'nm7_squirrel', 'nm7_cat'], 'decor'),  # 15 Eki: sefer haritası orman sürprizleri
     ('nm8_kemik_duvar_parca.jpg', ['nm8_bw_fang', 'nm8_bw_tooth', 'nm8_bw_stake', None, None, 'nm8_bw_shards', None, None, None, 'nm8_bw_needle'], 'decor'),  # 15 Eki: yeni Kemik Duvarı parçaları (Caner 5'ini seçti)
     ('nm9_esya_simgeleri.jpg', ['ico_gear_sword', 'ico_gear_spear', 'ico_gear_staff', 'ico_gear_arrow', None, 'ico_gear_dagger', 'ico_gear_armor', 'ico_gear_ring', 'ico_gear_amulet', None, 'ico_bomb', 'ico_kumsaati', 'ico_tea', 'ico_kese', 'ico_crystal'], 'decor'),  # 15 Eki: eşya ve dükkân simgeleri (kodla çizilenlerin yerine)
+    ('nm30_harita_mekan.jpg', ['nm30_map_cursed', 'nm30_map_bog', 'nm30_map_graveyard', 'nm30_map_blacklake', 'nm30_map_necrogate', 'nm30_map_ravenwood', 'nm30_map_plague', 'nm30_map_monastery', 'nm30_map_ossuary', 'nm30_map_bloodmoon'], 'decor'),  # 16 Eki: sefer haritasında her mekânın yer işareti (Gemini; alttaki yazılar, sızan mabet ve sandık, bataklık mabedinin haçı dışarıda)
     ('nm29_mekanik.jpg', ['nm29_gallows', 'nm29_barricade', 'nm29_post', 'nm29_belltower', 'nm29_bones', 'nm29_bones2'], 'decor'),  # 16 Eki: 2. sefer mekanikleri (darağacı, karantina barikatı ve direği, çan kulesi, kemik yığını dolu/az)
     ('nm28_merlin_kasirga.jpg', ['ico_hu_merlin2', None, None, None], 'decor'),  # 16 Eki: Merlin'in Kasırga Fırtınası simgesi (4 seçenekten 1.; eski zincir şimşek varliklar/cikti/eski_simge)
     ('nm22_kemik_havan.jpg', ['tower_artillery_bonemortar'], 'decor'),  # 16 Eki: Kemik Havan Kazanı (Kemik Gülle uzmanlığı; mancınık yerine)
@@ -111,6 +112,7 @@ BOXES = {
     'nm3_orman_dekor.jpg': [(55, 15, 315, 308), (355, 12, 595, 308), (660, 12, 850, 308), (885, 12, 1065, 308), (1115, 12, 1305, 312), (25, 318, 345, 500), (415, 305, 745, 520), (755, 315, 1025, 520), (1035, 315, 1355, 520), (90, 515, 280, 752), (355, 512, 545, 752), (595, 550, 1005, 730), (1055, 515, 1355, 752)],  # 13 nesne, satırlara düzgün oturmuyor
     'nm_engizisyon_C.jpg': [(0, 0, 1000, 700), (1000, 0, 2000, 560), (0, 690, 1060, 1493), (1060, 540, 2000, 1493)],
     # bir nesne birden çok kutudan oluşabilir (katedral: sağdaki gövde + soldaki itici rahipler, kolosun altında)
+    'nm30_harita_mekan.jpg': [(40, 30, 425, 445), (440, 60, 820, 445), (830, 85, 1215, 445), (1225, 95, 1580, 428), (1600, 40, 1990, 445), (35, 550, 440, 1045), (455, 560, 800, 1045), (912, 565, 1190, 1045), (1245, 612, 1610, 1045), (1630, 590, 1990, 1045)],
     'nm29_mekanik.jpg': [(30, 50, 530, 1010), (560, 670, 1090, 1100), (1210, 60, 1520, 715), (1565, 50, 1940, 720), (1105, 742, 1570, 1000), (1580, 820, 1990, 995)],  # üstteki ilk barikat (ikizi) atlandı
     'nm_sunak_4.jpg': [(0, 80, 1010, 1116), (1010, 0, 2000, 1116)],  # rün halkası kopuk parçalar: kutuyla
     'nm2_dekor_A.jpg': [(c * 341 + 2, r * 341 + 2, c * 341 + 339, r * 341 + 339) for r in range(3) for c in range(3)],  # 3x3 ızgara

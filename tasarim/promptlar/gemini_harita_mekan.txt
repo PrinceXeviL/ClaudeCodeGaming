@@ -1,0 +1,12 @@
+Image 1 is a piece of the campaign map of my dark gothic cartoon tower defense game (top-down 3/4 view, hand-painted). Image 2 is a decoration sheet of the same game. Draw a NEW sheet of 10 LANDMARKS for the campaign map, one for each region, in exactly the same 2D hand-painted cartoon style, thick dark outlines and slight top-down 3/4 view, each one a small detailed diorama that instantly tells which place it is:
+1) Dead Forest: a giant twisted dead oak with glowing green lanterns hanging from its branches, roots coming out of the ground
+2) Misty Bog: a half sunken stone shrine in green swamp water, reeds, mist, a rotting rowboat
+3) Forgotten Graveyard: a stone mausoleum gate with a broken iron fence and crooked tombstones, a crow on top
+4) Black Lake: a ruined wooden pier on dark water with a small boat and an eerie glowing eye under the water, a little snow on the planks
+5) Mortimer's Gate: a huge gate arch made of bones and skulls with purple flames in braziers on both sides
+6) Raven Woods: a dark autumn tree full of ravens with a wooden gallows next to it, red-orange leaves
+7) Plague Village: a crooked half-timbered house with boarded windows, a plague barricade with a yellow cloth and a black sun emblem, green mist
+8) Sunken Monastery: a half-flooded monastery bell tower with a big bronze bell, water around its base, candles
+9) Bone Cathedral: a small cathedral facade built from bones and skulls, a rose window glowing faint violet
+10) Blood Moon Hill: a rocky hill with a sacrificial stone altar and a huge red moon glowing behind it, red light
+Arranged in a clean grid of 5 columns and 2 rows, in this order, each centered in its own area with plenty of empty magenta space around it, nothing touching, all at a similar size. Plain flat magenta (#FF00FF) background everywhere, no ground plane beyond each diorama's own small base, no shadows on the background, no people, no text, no letters, no labels. 16:9 image.

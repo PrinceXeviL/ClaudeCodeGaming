@@ -17691,6 +17691,21 @@ function drawMapClouds(ep, X, V, dt) {
 const ZONE_FX = { cursed: 'fireflies', bog: 'rain', graveyard: 'storm', blacklake: 'snow', necrogate: 'embers', ravenwood: 'leaves', plague: 'mist', monastery: 'rain', ossuary: 'dust', bloodmoon: 'blood' };
 const zoneBand = (E, k) => { const c = E.mapH - k * MAP_V.step - MAP_V.h / 2; return [c - MAP_V.step * 0.62, c + MAP_V.step * 0.62]; };
 const hsh = (i, s) => { const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
+// 16 Eki (Caner: "mekânlar haritada görünsün"): her mekânın ortasında, yolun boş tarafında o yeri tanıtan işaret (fenerli kuru meşe, kemik kapı, kızıl ay...)
+const MAP_MARK = { w: 150, side: 205 }; // w: genişlik (dünya), side: haritanın ortasından yana uzaklık
+function drawMapLandmarks(E, ep, V) {
+  if (!E.zones || !E.vert) return; const per = Math.ceil(E.nodes.length / E.zones.length);
+  for (let k = 0; k < E.zones.length; k++) {
+    const L = landmarkPos(E, k); if (!L || L.y + 40 < V[1] || L.y - L.h - 40 > V[3]) continue;
+    ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(L.x, L.y - 4, L.w * 0.42, L.w * 0.12, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    ctx.drawImage(L.im, L.x - L.w / 2, L.y - L.h, L.w, L.h);
+  }
+}
+function landmarkPos(E, k) { // işaretin tabanı (x, y), boyu; yolun bu dilimde geçmediği yanda
+  const im = spr('nm30_map_' + E.zones[k][0]); if (!im) return null; const per = Math.ceil(E.nodes.length / E.zones.length);
+  const [y0, y1] = zoneBand(E, k), cy = (y0 + y1) / 2, ns = E.nodes.slice(k * per, (k + 1) * per), mx = ns.length ? ns.reduce((a, n) => a + n[0], 0) / ns.length : MAP_V.x;
+  const w = MAP_MARK.w, h = w * im.height / im.width; return { im, w, h, x: mx > MAP_V.x ? MAP_V.x - MAP_MARK.side : MAP_V.x + MAP_MARK.side, y: cy + h * 0.42 };
+}
 function drawMapZoneFx(E, ep, X, V) {
   if (!E.zones || !E.vert) return;
   for (let k = 0; k < E.zones.length; k++) {
@@ -17720,12 +17735,12 @@ function drawMapZoneFx(E, ep, X, V) {
     ctx.restore();
   }
 }
-function drawMapZoneLabels(E, ep) { // açılmış mekânın adı: ilk bölümünün yanında küçük kurdele
+function drawMapZoneLabels(E, ep) { // açılmış mekânın adı: yer işaretinin altında küçük kurdele (işaret yoksa ilk bölümün yanında)
   if (!E.zones || !E.vert) return; const ids = epLevels(ep), per = Math.ceil(ids.length / E.zones.length);
   for (let k = 0; k < E.zones.length; k++) {
     const i0 = ids[k * per], nd = E.nodes[k * per]; if (i0 == null || !nd || (!levelUnlocked(i0) && !fogTest())) continue;
-    const [y0] = zoneBand(E, k), y = Math.max(nd[1] + 34, y0 + 30), x = nd[0] < 480 ? nd[0] + 120 : nd[0] - 120, z = MAPCAM.z;
-    ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); ctx.globalAlpha = 0.92; crimsonRibbon(0, 0, E.zones[k][1], 20, 0); ctx.restore();
+    const L = landmarkPos(E, k); let x, y; if (L) { x = L.x; y = L.y + 16; } else { const [y0] = zoneBand(E, k); y = Math.max(nd[1] + 34, y0 + 30); x = nd[0] < 480 ? nd[0] + 120 : nd[0] - 120; }
+    const z = MAPCAM.z; ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); ctx.globalAlpha = 0.92; crimsonRibbon(0, 0, E.zones[k][1], 20, 0); ctx.restore();
   }
 }
 function drawRegionMap(E, ep, st) {
@@ -17736,6 +17751,7 @@ function drawRegionMap(E, ep, st) {
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
   drawBgLights(R.lights, V);
   drawGraveHands(R.hands, uiParts); drawBanners(R.banners, V);
+  drawMapLandmarks(E, ep, V); // 16 Eki: her mekânın yer işareti (Gemini nm30_map_<tema>)
   drawMapZoneFx(E, ep, X, V); // 16 Eki: her mekânın havası (yağmur, kar, sis, kor, yaprak)
   MAPFX.fog = drawMapFog2(E, ep, road, X);
   drawMapZoneLabels(E, ep);
