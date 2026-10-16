@@ -145,6 +145,7 @@ for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 // Ortak ölçekler: UNIT_K tüm birimler (asker, kahraman, düşman), BUILD_K binalar (kule, kale, arsa),
 // ROAD_K yol genişliği. ZOOM_MAX: en yakın zoom (arka plan dokusunun keskin kaldığı sınır).
 const UNIT_K = 0.72, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5;
+for (const lv of LEVELS) if (lv.roadWide) lv.roadK = ROAD_K * lv.roadWide; // 16 Eki: sıkışık bölümlerde geniş yol (data.js BAL.wideRoad)
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
 const TOWER_K = 0.12 * BUILD_K, TREE_K = 0.105, ROCK_K = 0.075;
 const TOWER_TOP = { archer: 0.86, barracks: 0.7, mage: 0.92, artillery: 0.74 }; // mermi çıkış yüksekliği
@@ -2213,6 +2214,7 @@ const heroUlt = (h) => (h.act === 'ult2' && HERO_ULT2[h.id] ? HERO_ULT2[h.id] : 
 const heroUltRank = (h) => (h.act === 'ult2' ? h.ult2 || 1 : h.ult || 1);
 
 // ---------- dalgalar ----------
+const SPAWN_LANE = { k: 1.5, min: 0.3, row: 1.6 }; // yol başına doğuş aralığı (yukarıda, spawner döngüsü)
 const WAVE_REST = 20; // iki dalga arası dinlenme (sn); oyuncu dalgayı erken çağırıp altın kazanabilir
 function waveBonusAndStart() {
   endlessExtend();
@@ -2284,7 +2286,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   const p = G.paths[pi] || G.paths[0];
   const esc = (def.chief && BOSS_ESCORT[type]) || def.escort; // 16 Eki: kuşatma makineleri lejyoner muhafızlarla gelir
   if (esc && d0 <= 0) d0 += 18; // muhafızların arkada da yer bulması için boss biraz ileriden başlar
-  const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * ROAD_K);
+  const off = off0 ?? (def.boss ? 0 : rand(-11, 11) * (G.lv.roadK || ROAD_K)); // 16 Eki: geniş yollu bölümde yana daha çok yayılır
   const q = pathPos(p, d0, off);
   const tier = G.lv.tier ?? G.idx; // boss gücü kademesi (2. sefer 1. seferin sonlarından başlar)
   const hp = (def.chief ? (650 + 400 * tier) * (def.hpK || 1) * diff().hp : def.hp * (G.lv.hpMul || 1) * diff().hp) * (G.chal ? CHAL[G.chal].hp : 1) * (G.mod && G.mod.hp || 1);
@@ -4733,10 +4735,10 @@ function updateEnemy(e, dt) {
       if (g / n < gap / (need || 1)) { gap = g; need = n; lead = o; }
     }
     if (lead) {
-      spd *= clamp((gap - need * 0.6) / (need * 0.4), 0, 1);
+      spd *= clamp((gap - need * 0.75) / (need * 0.25), 0, 1); // 16 Eki: kuyrukta biraz daha aralıklı durur (0,6 → 0,75)
       e.cvT = spd < 0.5 ? (e.cvT || 0) + dt : 0; if (e.cvT > 2.5) { e.cvT = 0; e.cvFree = 1.5; } // emniyet: 2,5 sn kıpırdayamayan bir süre aralık kuralını atlar (döngüsel bekleme kalmasın)
-      if (!e.march && !lead.march && e.def.speed > lead.def.speed * 1.15 && !e.def.machine) { // sollama: boş tarafa kayar
-        const lim = 11 * ROAD_K, dir = e.off === lead.off ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(e.off - lead.off);
+      if (!e.march && !lead.march && (e.def.speed > lead.def.speed * 1.15 || e.cvT > 1) && !e.def.machine) { // sollama: boş tarafa kayar (16 Eki: 1 sn takılan da önce yana kayar, içinden geçmez)
+        const lim = 11 * (G.lv.roadK || ROAD_K), dir = e.off === lead.off ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(e.off - lead.off);
         e.off = clamp(e.off + dir * 22 * dt, -lim, lim);
       }
     }
@@ -7658,10 +7660,18 @@ function update(dt) {
       const R = sp.pack ? 0 : marchRow(ENEMIES[ty], sp), col = R ? i % R : 0;
       const rt = G.lv.routes && G.lv.routes[sp.p];
       const pi = R && col ? sp.lastPi : rt ? rt[(sp.rk = (sp.rk ?? Math.floor(Math.random() * rt.length)) + 1) % rt.length] : sp.p;
+      // 16 Eki (Caner: "kalabalık gruplar tek seferde gelip yolda sıkışıyor"): yol başına doğuş sırası. Aynı yoldan iki doğuş arasında en az
+      // (yarıçap × SPAWN_LANE.k / hız) sn olur; aynı anda başlayan gruplar ve paketler sıraya girer (dalga yapısı aynı kalır). Yan yana yürüyen
+      // sıranın ilk askeri sırayı tutar, gerisi onunla birlikte çıkar.
+      if (!(R && col)) {
+        const D = ENEMIES[ty] || {}, Ln = G.lane || (G.lane = {}), need = Math.max(SPAWN_LANE.min, (D.r || 10) * SPAWN_LANE.k / Math.max(6, D.speed || 20)) * (R ? SPAWN_LANE.row : 1);
+        if (G.t < (Ln[pi] ?? -9)) { sp.timer = Ln[pi] - G.t + 0.01; if (rt) sp.rk--; break; }
+        Ln[pi] = G.t + need;
+      }
       sp.lastPi = pi;
       // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
       const cap = NECRO && i === 0 && sp.n >= 4 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
-      const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * ROAD_K : null);
+      const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null);
       if (cap) e.captain = true;
       if (R) e.march = true;
       if (sp.hpK && (!e.def.chief || sp.hpK < 1)) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; } // ikili generaller (chief) de zayıflar

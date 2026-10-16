@@ -44,21 +44,22 @@ function bad(x, y, btns) {
 }
 const fixes = [];
 LEVELS.forEach((lv, li) => {
+  const RML = ROAD_MIN * (lv.roadWide || 1); // 16 Eki: genişletilmiş yollu bölümde arsa yoldan daha uzak
   const ps = lv.paths.map(p => smoothPts(p)), btns = ps.map(waveBtn);
   const dPath = (x, y) => Math.min(...ps.map(p => Math.min(...p.map(q => Math.hypot(q[0] - x, q[1] - y)))));
   const castleBad = (x, y) => Math.abs(x - lv.castle[0]) < 90 && y > lv.castle[1] - 140 && y < lv.castle[1] + 50;
   const plots = lv.plots.map(p => p.slice()); lv._orig = lv.plots.map(p => p.slice());
   plots.forEach((pl, k) => {
-    const why = bad(pl[0], pl[1], btns) || (dPath(pl[0], pl[1]) < ROAD_MIN ? 'yola yakın' : null);
+    const why = bad(pl[0], pl[1], btns) || (dPath(pl[0], pl[1]) < RML ? 'yola yakın' : null);
     if (!why) return;
     // en yakın uygun yer: yol kenarı adayları (yoldan 60-95 px), diğer arsalara en az 72 px
     let best = null, bd = 1e9;
     for (const p of ps) for (let i = 0; i < p.length; i += 2) {
       const a = p[Math.max(0, i - 1)], b = p[Math.min(p.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1;
-      for (const s of [-1, 1]) for (const off of [ROAD_MIN, ROAD_MIN + 6, ROAD_MIN + 12, ROAD_MIN + 18, ROAD_MIN + 26]) {
+      for (const s of [-1, 1]) for (const off of [RML, RML + 6, RML + 12, RML + 18, RML + 26]) {
         const x = Math.round(p[i][0] - dy / l * off * s), y = Math.round(p[i][1] + dx / l * off * s);
         if (bad(x, y, btns) || castleBad(x, y)) continue;
-        const dp = dPath(x, y); if (dp < ROAD_MIN || dp > ROAD_MIN + 36) continue;
+        const dp = dPath(x, y); if (dp < RML || dp > RML + 36) continue;
         if (plots.some((o, j) => j !== k && Math.hypot(o[0] - x, (o[1] - y) * 1.3) < 72)) continue;
         const d = Math.hypot(x - pl[0], y - pl[1]);
         if (d < bd) { bd = d; best = [x, y]; }
