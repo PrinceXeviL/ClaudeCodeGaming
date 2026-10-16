@@ -5263,6 +5263,8 @@ function updateSoldier(s, dt) {
   }
   if (s.stunT > 0) { s.stunT -= dt; return; }
   if (s.march) { marchSoldier(s, dt); return; }
+  if (s.zHeal) zombieHeal(s, dt);
+  if (s.zRanged && zombieShoot(s, dt)) return;
   // dirilen ceset: hedefi yokken en yakın yer düşmanına yönelir (yürüdüğü nokta düşmanla birlikte güncellenir)
   if (s.zombie && !s.target) zombieHunt(s);
   if (s.hero && s.ranged) { updateRangedHero(s, dt); runHeroSkills(s, dt); return; }
@@ -5330,6 +5332,7 @@ function updateSoldier(s, dt) {
         if (s.pet && s.pet.stun && !t.dead && !t.def.chief && Math.random() < 0.35) stunEnemy(t, s.pet.stun); // Kadim Ruh Kurdu: ısırık bazen sersemletir
         if (s.tower && s.tower.imbue && !s.hero) applyImbue(t, s.tower.imbue, 'melee'); // silah büyüsü
         if (s.plagueZ && !t.dead) poisonEnemy(t, s.plagueZ, 3); // veba zombisi: vuruşu zehirler
+        if (s.zBurn && !t.dead) { burnEnemy(t, s.zBurn, RAISED_ROLE.burnT, 'minion'); emit(G.parts, { kind: 'glow', add: true, x: t.x, y: t.y - 12, vy: -30, col: '255,150,50', s0: 6, s1: 1, life: 0.35 }); } // dirilen meşaleci yakar
         if (s.aoe) { // iri birim: savurması çevresindeki herkese işler
           for (const o of G.enemies) if (o !== t && !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, t.x, t.y) < 34) damageEnemy(o, dmg * s.aoe, 'phys', false, 'melee');
           impactFx(t.x, t.y - 8, '230,220,190', 1.1); shakeScreen(1.2, 0.08);
@@ -6173,6 +6176,43 @@ function zombieHunt(s) {
 // Diriltme hedefli: dokunulan yerin CORPSE_ECO.r çevresindeki cesetler, en güçlüler önce. Rahip ve fener arabası çevrelerindeki cesetleri kutsar.
 const CORPSE_ECO = { base: 110, min: 0.8, max: 2.4, r: 95, strong: 1.5 };
 const corpsePower = (e) => clamp(Math.sqrt((e.def.hp || 100) / CORPSE_ECO.base), CORPSE_ECO.min, CORPSE_ECO.max); // düşmanın temel canı (bölüm çarpanı değil)
+// ---- dirilenlerin yetenekleri (16 Eki): rangeMax/rateK/dmgK okçu, heal rahip (cd sn'de bir r içindeki iskeletlere), burn meşaleci (dps, burnT sn) ----
+const RAISED_ROLE = { rangeMax: 150, rateK: 1.1, dmgK: 0.9, heal: { cd: 4.5, amt: 26, r: 95 }, burn: 6, burnT: 2.5 };
+function zombieShoot(s, dt) { // true: bu kare ok attı ya da nişan aldı (yürümez)
+  const R = s.zRanged; if (s.target && dist(s.x, s.y, s.target.x, s.target.y) < 24) return false; // göğüs göğüseyse yakın dövüş
+  let best = null, bd = -1;
+  for (const e of G.enemies) { if (e.dead || e.under || e.reviveT > 0 || dist(s.x, s.y - 10, e.x, e.y) > R.r) continue; if (e.d > bd) { bd = e.d; best = e; } } // kaleye en yakın
+  if (!best) return false;
+  s.face = best.x < s.x ? -1 : 1; s.anim += dt; s.atk -= dt;
+  if (s.atk <= 0) {
+    s.atk = R.rate; const sx = s.x + s.face * 5, sy = s.y - (s.zh || 28) * 0.62, d = dist(sx, sy, best.x, best.y);
+    G.projectiles.push({ kind: 'arrow', boneArrow: true, cursed: true, sx, sy, target: best, tx: best.x, ty: aimY(best), t: 0, dur: clamp(d / 460, 0.12, 0.55), dmg: roll(R.dmg) * allyK(s), dtype: 'phys', arc: 14, src: 'arrow', by: 'minion' });
+    sfx('arrow');
+  }
+  return true;
+}
+function zombieHeal(s, dt) { // dirilen rahip: yakındaki iskeletleri (ve dirilenleri) iyileştirir
+  const H = RAISED_ROLE.heal; if ((s.zHeal.t -= dt) > 0) return; s.zHeal.t = H.cd;
+  let n = 0; for (const o of G.soldiers) if (!o.dead && !o.wall && o.hp < o.maxHp && dist(o.x, o.y, s.x, s.y) < H.r) { o.hp = Math.min(o.maxHp, o.hp + H.amt * (s.pw || 1)); G.effects.push({ kind: 'heal', x: o.x, y: o.y, t: 0, dur: 0.6 }); n++; }
+  if (n) { G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: H.r, col: '140,255,150', t: 0, dur: 0.5 }); sfx('heal'); }
+}
+function drawRaisedRole(s) { // başının üstünde küçük rol simgesi: yay, artı, alev
+  const y = s.y - (s.zh || 30) - 8 + Math.sin(time * 3 + (s.slot || 0)) * 1.2, x = s.x;
+  ctx.save(); ctx.globalAlpha = 0.9; circle(x, y, 6.5, 'rgba(20,8,24,0.8)', s.zRole === 'heal' ? '#9dff8a' : s.zRole === 'fire' ? '#ffa04a' : '#d8c8ff', 1.2);
+  ctx.lineCap = 'round'; ctx.lineWidth = 1.6;
+  if (s.zRole === 'bow') { ctx.strokeStyle = '#e8dcc0'; ctx.beginPath(); ctx.arc(x - 1, y, 4, -1.2, 1.2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x + 0.4, y - 3.7); ctx.lineTo(x + 0.4, y + 3.7); ctx.moveTo(x - 3, y); ctx.lineTo(x + 4, y); ctx.stroke(); }
+  else if (s.zRole === 'heal') { ctx.strokeStyle = '#9dff8a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 3.5, y); ctx.lineTo(x + 3.5, y); ctx.moveTo(x, y - 3.5); ctx.lineTo(x, y + 3.5); ctx.stroke(); }
+  else { ctx.fillStyle = '#ff9a3a'; ctx.beginPath(); ctx.moveTo(x, y - 4.5); ctx.quadraticCurveTo(x + 4, y, x, y + 3.8); ctx.quadraticCurveTo(x - 4, y, x, y - 4.5); ctx.fill(); }
+  ctx.restore();
+}
+function strongCorpseMark(f) { // güçlü ceset (iri düşmanın ölüsü): üstünde kızıl halkalı kafatası işareti, nabız gibi
+  const y = f.y - 24 + Math.sin(time * 4 + f.x) * 1.5, k = 1 + Math.sin(time * 6 + f.x) * 0.08;
+  ctx.save(); ctx.translate(f.x, y); ctx.scale(k, k);
+  circle(0, 0, 7.5, 'rgba(40,4,8,0.85)', '#ff6a5a', 1.6);
+  ctx.fillStyle = '#f2e6c8'; ctx.beginPath(); ctx.arc(0, -0.8, 3.6, Math.PI, 0); ctx.lineTo(2.6, 2.6); ctx.lineTo(-2.6, 2.6); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#3a0608'; ctx.beginPath(); ctx.arc(-1.4, -0.6, 0.9, 0, 7); ctx.arc(1.4, -0.6, 0.9, 0, 7); ctx.fill();
+  ctx.restore();
+}
 function raiseMinion(e, delay = 0) {
   const S = spellStats('nm_raise'), M = S.minion, up = e.pw || 1; // dayanıklılık Büyü Kitabı'ndan (spellStats), güç cesedin sahibinden
   if (G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
@@ -6184,6 +6224,10 @@ function raiseMinion(e, delay = 0) {
   if (e.name) {
     const D = ENEMIES[e.name.slice(6)];
     s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true;
+    // 16 Eki (Caner: "dirilen düşman yeteneğini korusun"): okçu/avcı uzaktan ok atar, rahip iskeletleri iyileştirir, meşaleci yakar (RAISED_ROLE)
+    if (D && D.ranged && !D.machine) { s.zRanged = { r: Math.min(RAISED_ROLE.rangeMax, D.ranged.r || 130), rate: (D.ranged.rate || 1.6) * RAISED_ROLE.rateK, dmg: (D.ranged.dmg || D.dmg).map(v => v * RAISED_ROLE.dmgK * Math.pow(up, 0.8)) }; s.zRole = 'bow'; }
+    if (D && (D.heals || (D.ab && D.ab.heal))) { s.zHeal = { t: 1.2 }; s.zRole = 'heal'; }
+    if (D && D.purify && D.purify.fire) { s.zBurn = RAISED_ROLE.burn * Math.pow(up, 0.7); s.zRole = 'fire'; }
   }
   G.soldiers.push(s);
   // 13 Eki: ışık sütunu yerine yerden fışkıran toprak ve kızıl kıvılcım (sütunlar ekranı boyuyordu)
@@ -10593,6 +10637,10 @@ function drawBoneWall(s) {
   if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 46, 22, s.hp / s.maxHp, '#e8dcb8');
 }
 function drawSoldier(s) {
+  if (s.zRole && !s.dead) { drawSoldier1(s); drawRaisedRole(s); return; }
+  drawSoldier1(s);
+}
+function drawSoldier1(s) {
   const C = celebK();
   if (!C || s.dead || s.wall || s.hero) { drawSoldier0(s); return; }
   const P = celebPump(); // kutlama: silah ağır ağır kalkar (C), herkes birlikte göğe kaldırır (P); zıplama yok
@@ -11425,7 +11473,7 @@ function drawCorpse(f) {
       if (f.blood && lay > 0.5) { const b = clamp((lay - 0.5) * 2, 0, 1) * Math.min(1, 0.5 + (f.t || 0) * 0.15); ctx.fillStyle = 'rgba(70,6,12,' + (0.38 * b) + ')'; ctx.beginPath(); ctx.ellipse(f.x - f.face * hh * 0.18, f.y + 2, hh * 0.32 * b, hh * 0.09 * b, 0.1, 0, Math.PI * 2); ctx.fill(); }
       ctx.globalAlpha = a0; }
     if (f.kind === 'remains') { const F = ANIM_META[dk]; ctx.globalAlpha *= 0.86; ctx.translate(f.x, f.y + 1); ctx.rotate(f.vr || 0); ctx.scale(f.face * (rig.flip ? -1 : 1), 1); drawFrame(spr(dk), F, F.n - 1, hh); ctx.restore(); return; }
-    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); }
+    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); if (pw >= CORPSE_ECO.strong) strongCorpseMark(f); }
     ctx.translate(f.x, f.y + 1); ctx.rotate((f.vr || 0) * lay); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
     drawFrame(spr(dk), F, i, hh);
     ctx.restore();
@@ -11451,7 +11499,7 @@ function drawCorpse(f) {
   const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78; // uzun yatan ceset son yarım saniyede solar
   ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
   // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
-  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); }
+  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); if (pw >= CORPSE_ECO.strong) strongCorpseMark(f); }
   // ölüm pozu bitince (0.8 sn) ceset değişmez: bir kez ayrı tuvale çizilir, sonra tek resim olarak basılır (10 sn yatan cesetler ucuzlasın)
   if (f.air) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 1, w * 0.4, w * 0.13, 0, 0, Math.PI * 2); ctx.fill(); }
   if (t > 0.8 && !f.air && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
@@ -13824,7 +13872,9 @@ function drawHud() {
     if (id === 'nm_raise') { // ceset sayacı: diriltilebilir ceset sayısı; güçlü ceset varsa kızıl
       let nC = 0, nS = 0; for (const f of G.effects) if (f.kind === 'corpse' && f.raisable && f.t < f.dur - 0.15) { nC++; if ((f.pw || 1) >= CORPSE_ECO.strong) nS++; }
       const qx = -b.r * 0.72, qy = -b.r * 0.78, w0 = nC > 9 ? 28 : 22;
+      if (nS) { const k = 1 + 0.14 * Math.sin(time * 7); ctx.save(); ctx.translate(qx, qy); ctx.scale(k, k); ctx.translate(-qx, -qy); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, qx, qy, 18, '255,70,60', 0.4); ctx.restore(); } // 16 Eki: güçlü ceset varken rozet nabız gibi atar
       roundRect(qx - w0 / 2, qy - 10, w0, 20, 10, nS ? '#b8202a' : '#4a1a6a', '#f2e6c8', 1.5); txt(nC + '', qx, qy + 1, 13, '#fff', 'center', '400', FONT_T);
+      if (nS) ctx.restore();
     }
     if (info.hero) { // köşede komutanın küçük yüzü: kimin gücü olduğu belli olsun
       const hh = info.hero, im = heroSprite(hh.def), c = im && headCrop(im, hh.def.sprite), rr = b.r * 0.36, qx = b.r * 0.74, qy = -b.r * 0.74;
