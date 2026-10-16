@@ -41,10 +41,10 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
         for (let guard = 0; guard < 8; guard++) {
           const opts = [];
           const fi = order.find(i => !G.plots[i].tower);
-          if (fi != null) { const t = plan[G.towers.length % plan.length]; opts.push({ c: TOWERS[t].levels[0].cost * 1.3, f: () => g.build(fi, t) }); }
+          if (fi != null) { const t = plan[G.towers.length % plan.length]; opts.push({ c: (g.buildCost ? g.buildCost(t) : TOWERS[t].levels[0].cost) * 1.3, f: () => g.build(fi, t) }); }
           for (const i of order) { const t = G.plots[i].tower; if (!t) continue;
             if (t.type === 'archer' && NECRO && !t.path && t.lvl === 0) { const pp = (xbow++ % 2) ? 'xbow' : 'bow'; opts.push({ c: 140, f: () => g.path(i, pp) }); continue; }
-            if (t.lvl < t.def.levels.length - 1) opts.push({ c: t.def.levels[t.lvl + 1].cost, f: () => g.upgrade(i) });
+            if (t.lvl < t.def.levels.length - 1) opts.push({ c: (g.upCost ? g.upCost(t) : t.def.levels[t.lvl + 1].cost), f: () => g.upgrade(i) });
             else for (const a of t.def.abilities || []) { const r = (t.ab && t.ab[a.id]) || 0; if (r < a.ranks.length && (!t.spec || t.spec === a.id)) opts.push({ c: a.ranks[r].cost * 1.2, f: () => g.buy(t, a.id) }); }
           }
           if (G.castle.lvl < CASTLE.levels.length - 1 && G.towers.length >= 5) opts.push({ c: CASTLE.levels[G.castle.lvl + 1].cost * 1.4, f: () => g.upgradeCastle() });

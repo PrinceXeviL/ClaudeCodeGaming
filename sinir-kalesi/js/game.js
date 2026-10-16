@@ -45,10 +45,33 @@ function seeded(seed) {
 // SVG'ler bir kez tuvale basılır (her karede vektör çizmemek için).
 // Bir sprite yoksa o nesne kodla çizilir (yedek), böylece görseller parça parça eklenebilir.
 const SPR = {};
-const spr = (name) => SPR[name] || null;
+// 16 Eki (Android/iPhone bellek; 20. bölümde şeritler telefonda 822 MB tutuyordu): şerit bütçesi. Her çizimde kullanım anı (kare sayacı)
+// yazılır; bütçe aşılınca ~10 sn çizilmeyen şeritler eskiden yeniye atılır (stripTrim), yeniden istenince arkada yüklenir (STRIP_GONE).
+// Türetilmiş (rütbe rengi, çürük) kopyalar animStrip'te asıl şeritten yeniden üretilir. Masaüstünde bütçe yok.
+let SPR_TICK = 0, SPR_NOW = 0, STRIP_BUDGET = Infinity; // SPR_NOW: oyun saati (sn), frame'de güncellenir
+const STRIP_USE = {}, STRIP_GONE = new Set();
+const spr = (name) => {
+  const s = SPR[name];
+  if (s) { if (STRIP_BUDGET !== Infinity) STRIP_USE[name] = SPR_NOW; return s; }
+  if (STRIP_GONE.has(name)) { STRIP_GONE.delete(name); loadStrip(name); }
+  return null;
+};
+function stripTrim() {
+  if (STRIP_BUDGET === Infinity) return;
+  const mb = (im) => im && im.width ? im.width * im.height * 4 / 1048576 : 0, L = [];
+  let tot = 0;
+  for (const k in SPR) if (LAZY_RE.test(k)) { const v = mb(SPR[k]); tot += v; if (STRIP_USE[k] == null) STRIP_USE[k] = SPR_NOW; /* yeni yüklenen: 10 sn süre tanınır */ else if (SPR_NOW - STRIP_USE[k] > 10) L.push([k, v]); }
+  if (tot <= STRIP_BUDGET) return;
+  L.sort((a, b) => STRIP_USE[a[0]] - STRIP_USE[b[0]]);
+  for (const [k, v] of L) {
+    if (tot <= STRIP_BUDGET * 0.85) break;
+    delete SPR[k]; delete WHITE[k]; delete STRIP_USE[k]; if (LAZY[k]) STRIP_GONE.add(k); tot -= v;
+  }
+}
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_(?:atk|idle)|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+// 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -218,7 +241,7 @@ const PAINT = (() => {
 // şerit dosyasını (LAZY adı) boyacıda yükletir, ops: [['lut', işlev], ['rot']] sırayla uygulanır, küçük kopyalarla döner.
 // done(bitmap) iş bitince; başarısızsa done(null) (çağıran eski eşzamanlı yola düşer). Boyacı yoksa false
 // 15 Eki (Caner: 20. bölümde oyun kapanıyordu; ölçüm: kalabalık bölümde şeritler ~900 MB): telefonda animasyon şeritleri %75 boyutla çözülür (bellek ~%44 az)
-const STRIP_K = (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 0.75 : 1;
+let STRIP_K = (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 0.75 : 1;
 let PAINT_OK = true; // ilk başarısızlıkta (ör. özel adres şeması fetch'e kapalı) eski yola geçilir
 function paintAsync(file, ops, done) {
   const path = LAZY[file] || (SPR[file] && SPR[file].src && !SPR[file].src.startsWith('data:') ? file + '.webp' : null); // şerit ya da tek dosyalı görsel
@@ -366,10 +389,16 @@ save.lv20 = true;
 const SETTINGS_DEF = { atmo: true, vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
+// 16 Eki: hafif kip (zayıf Android ya da elle DÜŞÜK kalite): şeritler %55 boyutla çözülür (bellek ~yarı), çizim yoğunluğu en çok 1,5, parçacık yarı.
+// Zayıf cihaz: 3 GB ve altı bellek (navigator.deviceMemory; Safari vermez) ya da en çok 4 çekirdekli Android. Ayar değişince şerit boyu sonraki açılışta değişir.
+const WEAK_DEV = !!((navigator.deviceMemory && navigator.deviceMemory <= 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4 && /Android/i.test(navigator.userAgent)));
+const liteMode = () => setting('gfx') === 'low' || (setting('gfx') === 'auto' && WEAK_DEV);
+if (liteMode()) STRIP_K = Math.min(STRIP_K, 0.55);
+if (STRIP_K < 1) STRIP_BUDGET = liteMode() ? 200 : 380; // telefon: şerit bütçesi (MB); bkz. stripTrim
 function setSetting(k, v) {
   save.settings = Object.assign({}, save.settings, { [k]: v }); persist();
   if ((k === 'vol' || k === 'sfx') && master) master.gain.value = sfxGain();
-  if (k === 'gfx') { quality = v === 'low' ? 0.75 : QMAX; resize(); }
+  if (k === 'gfx') { LITE_P = liteMode(); quality = v === 'low' ? 0.75 : liteMode() ? Math.min(QMAX, 1.5) : QMAX; resize(); }
 }
 // Kayıt güvenliği (11 Eki): kayıt tarayıcı deposuna ek olarak uygulamanın kendi deposuna da yazılır (Capacitor Preferences,
 // iOS UserDefaults / Android SharedPreferences). WebView deposu temizlenirse açılışta yerel kopyadan geri yüklenir; iki kopyadan
@@ -429,11 +458,11 @@ document.body.appendChild(safeProbe);
 // Kare hızı düşerse çözünürlük kademeli olarak azaltılır, toparlanınca geri yükseltilir.
 // 15 Eki (performans): dokunmatik cihazda (iPhone dpr 3) çizim yoğunluğu en çok 2,5: boyanan piksel ~%30 az, keskinlik farkı zor seçilir
 const QMAX = Math.min(window.devicePixelRatio || 1, (window.matchMedia && matchMedia('(pointer: coarse)').matches) ? 2.5 : 3);
-let quality = setting('gfx') === 'low' ? 0.75 : QMAX;
+let quality = setting('gfx') === 'low' ? 0.75 : liteMode() ? Math.min(QMAX, 1.5) : QMAX; // hafif kip (zayıf cihaz, OTO): 1,5
 // Otomatik kalite (10 Eki düzeltmesi): eskiden kare aralığına bakıyordu; iPhone Düşük Güç kipinde (30 fps sınırı) aralık hep uzun
 // olduğundan çözünürlük 0.85'e iner, birimler bulanıklaşırdı (Caner: "düşmanlar ve askerlerim net değil"). Artık karenin gerçek iş
 // süresine bakar ve otomatikte ekran yoğunluğunun 2 katının altına inmez (düşük kalite elle seçilirse 0.75).
-const QMIN = Math.min(QMAX, 2);
+const QMIN = Math.min(QMAX, liteMode() ? 1.25 : 2);
 const perf = { acc: 0, work: 0, n: 0, t: 0, good: 0, last: 0, heavy: -9 }; // heavy: son tek seferlik ağır iş (zemin çizimi) anı
 function adaptQuality(real) {
   if (real > 0.2 || setting('gfx') !== 'auto') return; // sekme arka plandaydı / kalite elle seçildi
@@ -444,7 +473,7 @@ function adaptQuality(real) {
   perf.acc = perf.work = perf.n = perf.t = 0;
   if (avg > 1 / 42 && work > 0.02 && quality > QMIN) { quality = Math.max(QMIN, quality * 0.85); perf.good = 0; perf.drop = time; resize(); }
   // 15 Eki (performans): kalite düşünce bir dakika yükselmez, yükselmek için 4 rahat pencere (8 sn) gerekir: kalabalıkta gidip gelip her seferinde tuvali yeniden kurmasın (takılma)
-  else if (work < 0.01 && quality < QMAX && time - (perf.drop ?? -99) > 60) { if (++perf.good >= 4) { quality = Math.min(QMAX, quality * 1.15); perf.good = 0; resize(); } }
+  else if (work < 0.01 && quality < (liteMode() ? Math.min(QMAX, 1.5) : QMAX) && time - (perf.drop ?? -99) > 60) { if (++perf.good >= 4) { quality = Math.min(liteMode() ? Math.min(QMAX, 1.5) : QMAX, quality * 1.15); perf.good = 0; resize(); } }
   else perf.good = 0;
 }
 function resize() {
@@ -2385,8 +2414,10 @@ function glow(c, x, y, r, col, a = 1) {
   c.drawImage(glowTex(col), x - r, y - r, r * 2, r * 2);
   c.globalAlpha = pa;
 }
+let LITE_P = liteMode(); // hafif kip parçacık sınırı (ayar değişince setSetting günceller)
 function emit(list, o) {
-  if (list.length > 520 || (list.length > 260 && Math.random() < (list.length - 260) / 260)) return; // 16 Eki (performans): kalabalıkta yeni parçacık seyrelir (eskiden 900'e dek hepsi)
+  const P = LITE_P ? 130 : 260; // hafif kipte yarı
+  if (list.length > 2 * P || (list.length > P && Math.random() < (list.length - P) / P)) return; // 16 Eki (performans): kalabalıkta yeni parçacık seyrelir (eskiden 900'e dek hepsi)
   list.push(Object.assign({ t: 0, vx: 0, vy: 0, g: 0, drag: 0, s0: 2, s1: 0, a: 1, kind: 'dot' }, o));
 }
 function updateParts(list, dt) {
@@ -3714,13 +3745,24 @@ function drawDmgNums() {
 }
 
 // ---------- kuleler ----------
+// 16 Eki (Caner: "2 gelişmiş kule + birkaç mahzenle rahat geçiyorum"): aynı türden kule çoğaldıkça pahalanır.
+// Bot deneyi: baskın strateji 2 büyücü + 10-11 mahzendi. İlk TOWER_STACK.free (data.js) kule normal fiyat, sonrakilerin her biri +k (en çok max kat).
+// Kat kurulurken kuleye yazılır (t.stackK): o kulenin yükseltmeleri ve uzmanlıkları da aynı katla ödenir.
+function stackK(type) {
+  const S = TOWER_STACK, n = G.towers.filter(o => o.type === type).length + G.plots.filter(p => p.rubble && p.rubble.type === type).length;
+  return Math.min(S.max, 1 + S.k * Math.max(0, n - S.free + 1));
+}
+const priceK = (c, k) => k > 1 ? Math.round(c * k / 5) * 5 : c;
+function buildCost(type) { return priceK(TOWERS[type].levels[0].cost, stackK(type)); }
+function upCost(t) { return priceK(t.def.levels[t.lvl + 1].cost, t.stackK || 1); }
 function buildTower(plot, type) {
   if (plot.rubble) return false; // önce moloz temizlenir
-  const cost = TOWERS[type].levels[0].cost;
+  const sk = stackK(type), cost = buildCost(type);
   if (G.gold < cost) return false;
   if (TOWERS[type].unique && G.towers.some(o => o.type === type)) return false; // Lanet Kulesi haritada tek
   G.gold -= cost; gaDesign('kule:kur:' + type); cnt('build');
-  const t = { type, def: TOWERS[type], lvl: 0, x: plot.x, y: plot.y, cd: 0.3, spent: cost, plot, soldiers: [], anim: 0, shotAnim: 0, born: G.t };
+  if (sk > 1 && !tipSeen('stack')) { floatText(plot.x, plot.y - 70, 'Aynı kuleden çoğaldıkça her yenisi daha pahalı', '#ffc070'); tipDone('stack'); }
+  const t = { type, def: TOWERS[type], lvl: 0, x: plot.x, y: plot.y, cd: 0.3, spent: cost, plot, soldiers: [], anim: 0, shotAnim: 0, born: G.t, stackK: sk };
   plot.tower = t;
   G.towers.push(t); towerHp(t);
   if (type === 'barracks') {
@@ -3852,7 +3894,7 @@ function buyAbility(t, id) {
   const def = t.def.abilities.find(a => a.id === id), cur = (t.ab && t.ab[id]) || 0;
   if (t.spec && t.spec !== id) return false; // diğer uzmanlık yolu kapalı
   if (cur >= def.ranks.length) return false;
-  const cost = def.ranks[cur].cost;
+  const cost = priceK(def.ranks[cur].cost, t.stackK || 1);
   if (G.gold < cost) return false;
   G.gold -= cost; t.spent += cost; t.ab = t.ab || {}; t.ab[id] = cur + 1; t.born = G.t;
   const first = !t.spec;
@@ -3896,7 +3938,7 @@ function buyImbue(t, k) {
 }
 function upgradeTower(t) {
   if (t.lvl >= t.def.levels.length - 1) return false;
-  const cost = t.def.levels[t.lvl + 1].cost;
+  const cost = upCost(t);
   if (G.gold < cost) return false;
   G.gold -= cost; t.spent += cost; t.lvl++; t.born = G.t; towerHp(t); gaDesign('kule:yukselt:' + t.type + ':' + (t.lvl + 1));
   if (t.type === 'barracks') applySoldierStats(t);
@@ -3929,7 +3971,7 @@ function collapseTower(t) {
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.towers = G.towers.filter(x => x !== t); t.plot.tower = null;
   if (G.sel && (G.sel.tower === t || G.sel.plot === t.plot)) setSel(null);
-  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, rx: t.rx, ry: t.ry, spent: t.spent } };
+  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK } };
   shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t);
   for (let i = 0; i < 3; i++) G.effects.push({ kind: 'dust', x: t.x + rand(-14, 14), y: t.y - rand(0, 10), t: 0, dur: 0.8 + i * 0.15 });
   for (let i = 0; i < 34; i++) emit(G.parts, { kind: 'chunk', x: t.x + rand(-16, 16), y: t.y - rand(10, h * 0.8), vx: rand(-90, 90), vy: -rand(20, 140), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#5a5466' : '#d8ccb0', s0: rand(1.6, 3.2), s1: 1, life: rand(0.6, 1.1) });
@@ -3953,7 +3995,7 @@ function rebuildTower(pl) {
 function finishRebuild(pl) {
   const R = pl.rubble, S = R.snap, type = R.type; pl.rubble = null; cnt('rebuild');
   const t = { type, def: TOWERS[type], lvl: S.lvl, x: pl.x, y: pl.y, cd: 0.3, spent: S.spent, plot: pl, soldiers: [], anim: 0, shotAnim: 0, born: G.t,
-    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra };
+    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra, stackK: S.stackK };
   pl.tower = t; G.towers.push(t); towerHp(t);
   if (type === 'barracks') {
     const n = nearestOnPaths(G.paths, t.x, t.y); t.rx = S.rx ?? n.x; t.ry = S.ry ?? n.y;
@@ -4356,7 +4398,7 @@ function updateSiege(e, dt) {
   }
 }
 
-const HOLD = { max: 6, walk: 3 }; // menzilli düşmanın nişan alıp durma sınırı (sn)
+const HOLD = { max: 6, walk: 3, per: 2 }; // menzilli düşmanın nişan alıp durma sınırı (sn); per: aynı hedefe en çok kaç düşman durur
 function castleHit(e) {
   const c = G.castle, before = G.lives / G.maxLives;
   const dmg = e.def.lives;
@@ -4617,7 +4659,7 @@ function updateEnemy(e, dt) {
       if (h.dead || h.removed || h.wall || (h.born != null && G.t < h.born)) continue;
       const d = dist(e.x, e.y, h.x, h.y); if (d <= bd) { bd = d; tgt = h; }
     }
-    if (RG.any && NECRO && !(e.blocker && RG.hold)) for (const t of G.towers) { // kuledeki okçular da hedef (yerdeki yakın asker önce)
+    if (RG.any && !RG.noTower && NECRO && !(e.blocker && RG.hold)) for (const t of G.towers) { // kuledeki okçular da hedef (yerdeki yakın asker önce)
       if (!t.ga) continue;
       for (const a of t.ga) { if (!a.pr || a.dead) continue; const d = dist(e.x, e.y, a.pr.x, a.pr.y) + TMAN.prefer; if (d <= bd) { bd = d; tgt = a.pr; } }
     }
@@ -4638,12 +4680,16 @@ function updateEnemy(e, dt) {
       }
       // durur: yürümez, kılıç sallamaz. Kimse önünü kesmiyorsa en çok HOLD.max sn durur, sonra HOLD.walk sn atış yaparak yürür
       // (kule menzili dışından iyileşen iskeletlere sonsuza dek ateş edip bölümü kilitlemesin)
-      if (RG.hold) {
+      // 16 Eki (Caner: "3 iskelete 3 tanesi saldırır, diğerleri neden duruyor"): bir hedefe en çok HOLD.per düşman durup nişan alır,
+      // gerisi atış yaparak yürümeye devam eder (yol tıkanmaz). Önünü kesilen her zaman durur.
+      const busy = !e.blocker && e.holdOn !== tgt && G.enemies.reduce((n, o) => n + (o !== e && !o.dead && o.holdOn === tgt ? 1 : 0), 0) >= HOLD.per;
+      if (RG.hold && !busy) {
         e.holdT = e.blocker ? 0 : (e.holdT || 0) + dt;
         if (e.holdT > HOLD.max + HOLD.walk) e.holdT = 0;
-        if (e.holdT <= HOLD.max) { e.inMelee = false; return; }
-      }
-    } else e.holdT = 0;
+        if (e.holdT <= HOLD.max) { e.holdOn = tgt; e.inMelee = false; return; }
+        e.holdOn = null;
+      } else e.holdOn = null;
+    } else { e.holdT = 0; e.holdOn = null; }
   }
   if (e.atGate && !e.blocker && e.frogT > 0) return; // kurbağa kapıda bekler
   if (e.atGate && !e.blocker) { // kapıya vuruyor
@@ -6323,7 +6369,7 @@ const TUTS = [
     { card: true, icon: 'barracks', title: 'Mahzen', text: 'İskelet savaşçılar yola çıkıp düşmanı durdurur. Durdurulan düşmanı okçular rahatça vurur: ikisi birlikte çok güçlü.' },
     WAVE_STEP('Kafatasına dokun: gelecek düşmanları gör. Bir daha dokun: dalga gelsin.'),
     { text: () => (tutSelUp() ? (tutSelUp().type === 'archer' && !tutSelUp().path && tutSelUp().lvl === 0 ? 'Okçu yolunu seç (sık atar, uçanları vurur) ya da Arbaletçi (ağır vurur, zırh deler): simgeye dokun, onaylamak için bir daha dokun' : 'Yeşil oka dokun, onaylamak için bir daha dokun: kule güçlenir') : 'Altının yetti: kuleye dokunup yükselt'),
-      when: () => G.towers.some(o => o.lvl < o.def.levels.length - 1 && G.gold >= o.def.levels[o.lvl + 1].cost) || !!tutSelUp(),
+      when: () => G.towers.some(o => o.lvl < o.def.levels.length - 1 && G.gold >= upCost(o)) || !!tutSelUp(),
       done: () => G.towers.some(o => o.lvl > 0), timeout: 40,
       at: () => { const o = tutSelUp(); if (o) { const it = currentMenu().find(m => m.id === 'path' && m.type === 'bow') || currentMenu().find(m => m.id === 'upgrade'); return it && { x: it.x, y: it.y - 4 }; }
         const u = G.towers.find(o => G.gold >= (o.def.levels[o.lvl + 1] || {}).cost) || G.towers[0]; return u && worldToScreen(u.x, u.y - 46); } },
@@ -8089,8 +8135,8 @@ const TOWER_FORM = {
   // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
   archer_fan: { noAnim: true, w: 1.25, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
   archer_bow: { noAnim: true, w: 1.35, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
-  mage_drain: { noAnim: true, w: 1, src: [0.73, 0.24], rate: 0.9, ramp: 0.12, rampMax: 0.6, col: 'rgb(190,140,255)' },
-  mage_ghost: { noAnim: true, w: 1, src: [0.73, 0.33], cageAt: [0.73, 0.33], col: 'rgb(255,80,80)', cage: { cd: 8, t: 2.2 } },
+  mage_drain: { noAnim: true, w: 1, src: [0.73, 0.24], rate: 0.9, ramp: 0.12, rampMax: 0.4, col: 'rgb(190,140,255)' },
+  mage_ghost: { noAnim: true, w: 1, src: [0.73, 0.33], cageAt: [0.73, 0.33], col: 'rgb(255,80,80)', cage: { cd: 10, t: 1.8 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
   // Lanet Kulesi: rite -> Kan Mabedi (kızıl bağlar kâseden çıkar), blight -> Kara Lanet Mabedi (lanet küreden, ölenlerin kalkma şansı +%10)
 };
@@ -9679,7 +9725,7 @@ function drawTowerBody(t) {
     ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
     const TA = towerAnim(t) || boneAnim(t);
     if (TA && t.animT != null && t.animT < TA.dur) { // atış animasyonu: şeridin karesi, görselle aynı yere oturur
-      const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * (TA.fps || TOWER_ANIM_FPS))), b = M.box, lim = TA.noLit ? TA.im : litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im;
+      const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * (TA.fps || TOWER_ANIM_FPS))), b = M.box, lim = TA.noLit || !TA.im.src || M.cols ? TA.im : litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im; // 16 Eki: tembel (adressiz ImageBitmap) ya da satırlı şeritte ışık kopyası yok (anahtar çakışır, kare yeri yanlış, bellek 2 kat)
       const C = M.cols || M.n, sx = lim.width / (M.fw * C), sy = lim.height / (M.fh * Math.ceil(M.n / C)); // satırlı ve telefonda küçültülmüş şerit
       ctx.drawImage(lim, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (t.call0 != null && time - t.call0 < (plagueStrip(t, 'call') || { dur: 0 }).dur) { // Kara Veba: sürü çağrısı
@@ -12179,7 +12225,7 @@ function plotMenuItems(pl) {
     : [{ id: 'clear', x: pl.x, y: pl.y - 74, cost: RUBBLE.cost }]; // yıkılan kule: son haliyle yeniden kur ya da molozu temizle
   const types = TOWER_ORDER.filter(type => towerUnlocked(type) && !(TOWERS[type].unique && G.towers.some(o => o.type === type))); // tek kurulan kule (Lanet Kulesi) kuruluysa menüde görünmez, satılınca geri gelir
   const offs = types.length > 4 ? [[-56, -36], [0, -66], [56, -36], [-38, 42], [38, 42]] : [[-48, -44], [48, -44], [-48, 44], [48, 44]];
-  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15 * BUILD_ICON_K, y: pl.y - 16 + offs[i][1] * 1.15 * BUILD_ICON_K, cost: TOWERS[type].levels[0].cost }));
+  return types.map((type, i) => ({ id: 'build', type, x: pl.x + offs[i][0] * 1.15 * BUILD_ICON_K, y: pl.y - 16 + offs[i][1] * 1.15 * BUILD_ICON_K, cost: buildCost(type), up: buildCost(type) > TOWERS[type].levels[0].cost }));
 }
 // silah büyüsü: kemik kulesi ve mahzen 3. seviyeye gelince açılır (Caner, 10 Eki: uzmanlığı son kademeye çıkarmak gerekmez; kule başına bir büyü)
 const imbueOpen = (t) => NECRO && (t.type === 'archer' || t.type === 'barracks') && t.lvl >= t.def.levels.length - 1;
@@ -12191,8 +12237,8 @@ function towerMenuItems(t) {
     return items;
   }
   if (NECRO && t.type === 'archer' && t.lvl === 0 && !t.path) { // 2. kademe: okçu ya da arbaletçi yolu
-    for (const [k, dx] of [['bow', -46], ['xbow', 46]]) items.push({ id: 'path', type: k, x: t.x + dx, y: t.y - 82, cost: t.def.levels[1].cost });
-  } else if (t.lvl < t.def.levels.length - 1) items.push({ id: 'upgrade', x: t.x, y: t.y - 82, cost: t.def.levels[t.lvl + 1].cost });
+    for (const [k, dx] of [['bow', -46], ['xbow', 46]]) items.push({ id: 'path', type: k, x: t.x + dx, y: t.y - 82, cost: upCost(t) });
+  } else if (t.lvl < t.def.levels.length - 1) items.push({ id: 'upgrade', x: t.x, y: t.y - 82, cost: upCost(t) });
   else {
     // son seviye: iki yetenek, her biri 3 kademe geliştirilebilir
     // son seviye: iki uzmanlık yolu; biri seçilince yalnız o kalır ve 3 kademeye kadar geliştirilir
@@ -12201,7 +12247,7 @@ function towerMenuItems(t) {
       const PS = t.path && ARCHER_PATH[t.path] && ARCHER_PATH[t.path].spec; if (PS && PS !== a.id) return; // yol 4. kademeyi belirler
       const r = (t.ab && t.ab[a.id]) || 0, one = t.spec || PS;
       const n = t.def.abilities.length, ox = n === 3 ? [-58, 0, 58][i] : (i ? 44 : -44), oy = n === 3 && i === 1 ? -92 : -76;
-      items.push({ id: 'ability', type: a.id, ab: a, rank: r, x: one ? t.x : t.x + ox, y: one ? t.y - 76 : t.y + oy, cost: r < a.ranks.length ? a.ranks[r].cost : null });
+      items.push({ id: 'ability', type: a.id, ab: a, rank: r, x: one ? t.x : t.x + ox, y: one ? t.y - 76 : t.y + oy, cost: r < a.ranks.length ? priceK(a.ranks[r].cost, t.stackK || 1) : null });
     });
   }
   const EX = t.spec && TOWER_EXTRA[t.spec];
@@ -12481,7 +12527,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     const label = it.cost != null ? it.cost + '' : '+' + it.refund, tw = 50, ty = R + 9;
     roundRect(-tw / 2, ty - 9.5, tw, 19, 9.5, 'rgba(24,15,7,0.94)', ok ? '#e8bb4a' : '#d9453a', 1.8);
     drawIcon('coin', -tw / 2 + 10, ty, 12);
-    txt(label, 6, ty + 1, 13, ok ? '#ffe9a0' : '#ff8070', 'center', '400', FONT_T);
+    txt(label, 6, ty + 1, 13, ok ? (it.up ? '#ff9a3c' : '#ffe9a0') : '#ff8070', 'center', '400', FONT_T); // it.up: aynı tür kule fazlalığından pahalanmış (turuncu)
   }
   if (active) {
     circle(R * 0.74, -R * 0.74, 9.5, '#3cbf3c', '#fff', 2);
@@ -19022,6 +19068,7 @@ let last = performance.now();
 function frame(now) {
   const w0 = performance.now(), real = Math.min(0.05, (now - last) / 1000);
   last = now; time += real;
+  SPR_NOW = time; if (++SPR_TICK % 60 === 0) stripTrim(); // telefonda şerit bütçesi (60 karede bir)
   adaptQuality(real);
   if (bgDirty && time - bgDirty > 0.3) {
     bgDirty = 0;
@@ -19201,7 +19248,8 @@ window.__game = {
     const mb = (im) => im && im.width ? im.width * im.height * 4 / 1048576 : 0, L = [];
     let strips = 0, other = 0; for (const k in SPR) { const v = mb(SPR[k]); if (LAZY_RE.test(k)) { strips += v; L.push([k, Math.round(v)]); } else other += v; }
     let white = 0; for (const k in WHITE) white += mb(WHITE[k]); let rot = 0; for (const k in ROT) rot += mb(ROT[k]);
-    return { strips: Math.round(strips), other: Math.round(other), white: Math.round(white), rot: Math.round(rot), big: L.sort((a, b) => b[1] - a[1]).slice(0, n), others: n > 15 ? Object.keys(SPR).filter(k => !LAZY_RE.test(k)).map(k => [k, Math.round(mb(SPR[k]))]).sort((a, b) => b[1] - a[1]).slice(0, n) : null };
+    const ages = Object.keys(SPR).filter(k => LAZY_RE.test(k)).map(k => SPR_NOW - (STRIP_USE[k] ?? SPR_NOW));
+    return { tick: SPR_TICK, budget: STRIP_BUDGET, idle: ages.filter(a => a > 10).length, fresh: ages.filter(a => a < 2).length, strips: Math.round(strips), other: Math.round(other), white: Math.round(white), rot: Math.round(rot), big: L.sort((a, b) => b[1] - a[1]).slice(0, n), others: n > 15 ? Object.keys(SPR).filter(k => !LAZY_RE.test(k)).map(k => [k, Math.round(mb(SPR[k]))]).sort((a, b) => b[1] - a[1]).slice(0, n) : null };
   },
   collapse: (i) => G.plots[i].tower && collapseTower(G.plots[i].tower), // test: kuleyi yık (moloz)
   rebuild: (i) => rebuildTower(G.plots[i]), ability: (i, id) => buyAbility(G.plots[i].tower, id), // test: molozdan yeniden kur, uzmanlık al
@@ -19220,7 +19268,7 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, // test: harita kamerası
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
     const D = [], { dpr, scale, ox, oy } = view;

@@ -602,7 +602,7 @@ if (NECRO) {
     torch:      { name: 'Meşaleci', h: 31, hp: 130, speed: 22, armor: 0.1, mr: 0.1, gold: 13, dmg: [5, 9], rate: 1, lives: 1, r: 10, purify: { r: 80, every: 3, dmg: 18, fire: true } },
     hound:      { name: 'Ak Tazı', h: 17, hp: 85, speed: 48, armor: 0, mr: 0, gold: 7, dmg: [4, 7], rate: 0.7, lives: 1, r: 9 },
     holywater:  { name: 'Kutsal Su Taşıyıcı', h: 32, hp: 160, speed: 18, armor: 0, mr: 0.3, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10,
-      ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30 } },
+      ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30, noTower: true } }, // 16 Eki (Caner): kuledeki iskeletlere atmaz (durup yolu tıkıyordu)
     flagellant: { name: 'Kırbaçlı Tövbekâr', h: 31, hp: 220, speed: 22, armor: 0, mr: 0, gold: 16, dmg: [6, 10], rate: 0.8, lives: 1, r: 10, frenzy: { spd: 0.9, dmg: 1.2 } },
     lantern:    { name: 'Fener Arabası', h: 40, hp: 650, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 }, purify: { r: 95, every: 5, dmg: 0, bless: true } }, // 15 Eki: fener cesetleri kutsar
     bellpriest: { name: 'Çan Rahibi', h: 32, hp: 170, speed: 18, armor: 0, mr: 0.4, gold: 18, dmg: [2, 4], rate: 1, lives: 1, r: 10,
@@ -1551,11 +1551,24 @@ for (const i in BAL.lvl) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1)
 if (LEVELS[1]) LEVELS[1].gold += 60;
 // 8. tur: bölüm canı "2 Ruh Feneri + mahzen" stratejisini etkilemedi (hâlâ ort. 16 can): asıl güç mahzenlerin düşmanı kapıda tutması.
 // Mahzen iskeletlerinin canı %20 az (BAL.barracksHp); Tabut Duvarı emişi %80 → %60 (game.js ELITE_SK.shield.red)
+// 16 Eki: aynı tür kule fazlalığı pahalanır (game.js stackK): ilk 2 normal, sonra her biri +%15, en çok 2 kat (mahzen yığmayı frenler)
+const TOWER_STACK = { free: 2, k: 0.15, max: 2 };
+// 14. tur (16 Eki, fiyat artışıyla): altını tam harcayan "2 Ruh Feneri + mahzen" (Caner'in tarzı) 1. seferin 10-20. bölümlerini hâlâ 20/20 canla geçiyordu
+// (karışık bot altın biriktirdiği için kaybediyor; ölçüt gerçek oyuncu). Bu bölümler güçlenir (14 ve 18 karışıkta da kayıp: az). 2. seferde fiyat artışından
+// sonra birden çok stratejinin kaybettiği bölümler biraz kolaylaşır.
+// 15. tur: asıl neden tam kademe Ruh Feneri çıktı: 14., 18. ve 20. bölümde 2 tam Ruh Feneri tek başına 20/20 (4700-8300 altın artıyor), aynı yerde
+// 2 tam Kemik Kulesi ve karışık oyun kaybediyor. Can artışı o üç bölümden kalktı; tam kademe Ruh Feneri kırpıldı (3. kademe hasarı ×0,88,
+// game.js mage_drain rampMax 0,6 → 0,4, mage_ghost kafes 8 sn → 10 sn ve 2,2 → 1,8 sn).
+// 16-17. tur: Ruh Feneri kırpması ve +%28 can odaklı oyunu değiştirmedi (yine 20/20, binlerce altın artıyor), yalnız karışık oyunu düşürdü: ölçülü değerde kaldı.
+// Odaklı ve altını tam harcayan oyuncu için zorluk: Usta (DIFFS, can ×1,4).
+BAL.lvl3 = { 9: 1.1, 10: 1.1, 11: 1.05, 12: 1.15, 14: 1.15, 15: 1.15, 16: 1.1, 18: 1.15, 24: 0.92, 29: 0.92, 30: 0.92, 31: 0.92, 33: 0.92 };
+TOWERS.mage.levels[2].dmg = TOWERS.mage.levels[2].dmg.map(v => Math.round(v * 0.88));
 BAL.barracksHp = 0.9; // 9. tur: 0,8 güçlü stratejiyi etkilemedi, karışık oyunu zayıflattı
 for (const L of TOWERS.barracks.levels) L.hp = Math.round(L.hp * BAL.barracksHp);
 // 9. tur: tam testte her stratejiyle (Merlin'li karışık dahil) tam canla geçilen bölümler: eski can çarpanları zayıf bota göre çok düşük kalmış
 BAL.lvl2 = { 2: 1.5, 3: 1.4, 4: 1.2, 5: 1.1, 6: 1.2, 7: 1.4, 10: 1.1, 12: 1.1, 14: 1.05, 16: 1.3, 18: 1.6, 21: 1.1, 24: 1.3, 25: 1.05, 26: 1.5, 27: 1.2, 29: 1.2, 31: 1.1, 33: 1.3 };
 for (const i in BAL.lvl2) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl2[i];
+for (const i in BAL.lvl3) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl3[i];
 // 10. tur: Spartaküs (ücretsiz başlangıç komutanı) karışık oyunda 40'ta 20 kazanıyor, ort. 5,5 can (Merlin 35/40, 11,7): güçlenir
 BAL.spartacus = { dmg: 1.35, hp: 1.3, cd: 0.85, ult: 1.4 }; // 11. tur: 1,2/1,15/1,2 ile 22/40, ort. 7 can (yetmedi)
 { const S = HEROES.spartacus, B = BAL.spartacus; S.dmg = S.dmg.map(v => Math.round(v * B.dmg)); S.hp = Math.round(S.hp * B.hp);

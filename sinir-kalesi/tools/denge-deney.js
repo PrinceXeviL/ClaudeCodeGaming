@@ -47,10 +47,10 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
         for (let guard = 0; guard < 8; guard++) {
           const opts = [];
           const fi = order.find(i => !G.plots[i].tower);
-          if (fi != null && (SK !== 'iki' || G.towers.length < 2 || G.towers.filter(t => t.type === ST).every(t => t.spec && ((t.ab && t.ab[t.spec]) || 0) >= 3) || G.wave >= 4)) { const t = SK === 'iki' ? plan[Math.min(G.towers.length, plan.length - 1)] : plan[G.towers.length % plan.length]; opts.push({ c: TOWERS[t].levels[0].cost * (SK === 'iki' && G.towers.length < 2 ? 0.5 : 1.3), f: () => g.build(fi, t) }); }
+          if (fi != null && (SK !== 'iki' || G.towers.length < 2 || G.towers.filter(t => t.type === ST).every(t => t.spec && ((t.ab && t.ab[t.spec]) || 0) >= 3) || G.wave >= 4)) { const t = SK === 'iki' ? plan[Math.min(G.towers.length, plan.length - 1)] : plan[G.towers.length % plan.length]; opts.push({ c: (g.buildCost ? g.buildCost(t) : TOWERS[t].levels[0].cost) * (SK === 'iki' && G.towers.length < 2 ? 0.5 : 1.3), f: () => g.build(fi, t) }); }
           for (const i of order) { const t = G.plots[i].tower; if (!t) continue;
             if (t.type === 'archer' && NECRO && !t.path && t.lvl === 0) { const pp = (xbow++ % 2) ? 'xbow' : 'bow'; opts.push({ c: 140, f: () => g.path(i, pp) }); continue; }
-            if (t.lvl < t.def.levels.length - 1) opts.push({ c: t.def.levels[t.lvl + 1].cost * (SK === 'iki' && t.type === ST ? 0.4 : 1), f: () => g.upgrade(i) });
+            if (t.lvl < t.def.levels.length - 1) opts.push({ c: (g.upCost ? g.upCost(t) : t.def.levels[t.lvl + 1].cost) * (SK === 'iki' && t.type === ST ? 0.4 : 1), f: () => g.upgrade(i) });
             else { const abs = t.def.abilities || [], pick = t.spec || abs[(specAlt[t.type] = (specAlt[t.type] || 0) + (t.spec ? 0 : 1)) % abs.length].id; // uzmanlık sırayla
               for (const a of abs) { if (a.id !== pick) continue; const r = (t.ab && t.ab[a.id]) || 0; if (r < a.ranks.length) opts.push({ c: a.ranks[r].cost * 1.2 * (SK === 'iki' && t.type === ST ? 0.4 : 1), f: () => g.buy(t, a.id) }); } }
           }
