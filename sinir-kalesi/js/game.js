@@ -2555,6 +2555,23 @@ function fxMeteorImpact(x, y, r, burn) {
   if (burn) G.zones.push({ x, y, r: r * 0.6, dps: 8, t: 0, life: 2.5, fxT: 0, src: 'blast' });
   shakeScreen(7, 0.45);
 }
+// Merlin'in ruh meteoru (16 Eki): yuvarlak dövme demir bilye; koyu metal, üstte parlak yansıma, altta ruh ateşinin yeşil-mor yansıması
+let IRON_BALL = null;
+function ironBall() {
+  if (IRON_BALL) return IRON_BALL;
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.translate(64, 64);
+  const R = 40;
+  const rim = g.createRadialGradient(0, 8, R * 0.6, 0, 0, R * 1.5); rim.addColorStop(0, 'rgba(120,255,160,0.0)'); rim.addColorStop(0.7, 'rgba(150,90,255,0.55)'); rim.addColorStop(1, 'rgba(150,90,255,0)');
+  g.fillStyle = rim; g.beginPath(); g.arc(0, 0, R * 1.5, 0, Math.PI * 2); g.fill();
+  const body = g.createRadialGradient(-R * 0.35, -R * 0.4, R * 0.08, 0, 0, R); body.addColorStop(0, '#b8b4c4'); body.addColorStop(0.35, '#5a5668'); body.addColorStop(0.8, '#24202e'); body.addColorStop(1, '#100c16');
+  g.fillStyle = body; g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fill();
+  const under = g.createRadialGradient(R * 0.2, R * 0.55, 2, R * 0.2, R * 0.55, R * 0.8); under.addColorStop(0, 'rgba(130,255,160,0.55)'); under.addColorStop(1, 'rgba(130,255,160,0)');
+  g.fillStyle = under; g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fill(); // alttan ruh ateşi yansıması
+  g.lineWidth = 3; g.strokeStyle = '#08060c'; g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.ellipse(-R * 0.38, -R * 0.42, R * 0.2, R * 0.12, -0.7, 0, Math.PI * 2); g.fill(); // parlak yansıma
+  g.fillStyle = 'rgba(255,255,255,0.25)'; g.beginPath(); g.ellipse(-R * 0.12, -R * 0.62, R * 0.32, R * 0.08, -0.25, 0, Math.PI * 2); g.fill();
+  return (IRON_BALL = c);
+}
 // Göktaşının kayası (bir kez çizilir): çatlaklarından akkor ışık sızan, köşeli koyu kaya. soul: Merlin'in ruh meteoru (mor kaya, yeşil çatlak)
 let METEOR_ROCK = null, SOUL_ROCK = null;
 function meteorRock(soul) {
@@ -2618,7 +2635,7 @@ function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yü
   }
   return true;
 }
-const METEOR_RAIN = { n: 8, gap: 0.13, spread: 0.85, r: 0.45, size: [0.95, 1.3], dmg: 0.42, burn: 0.4 }; // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
+const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.5, 0.72], dmg: 0.42, burn: 0.3, minD: 0.22, crater: [0.42, 0.56] }; // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
 // Merlin'in ruh meteoru (16 Eki, Caner: "daha kaliteli, ihtişamlı"): hedefte dönen çift rün çemberi + alan kararır; çarpmada parlama, ışık sütunu,
 // iki şok halkası (yeşil, mor), saçılan kaya parçaları, yükselen kıvılcımlar, mor duman
 function drawSoulRune(p, pre, k) {
@@ -2718,9 +2735,8 @@ function drawMeteor0(p, noRing, ringOnly) {
   if (SO) { glow(ctx, x, y, 42, '150,70,255', 0.7); glow(ctx, x, y, 22, '110,255,150', 0.8); glow(ctx, x, y, 10, '240,255,240', 0.9); }
   else { glow(ctx, x, y, 34, '255,120,30', 0.85); glow(ctx, x, y, 16, '255,230,170', 0.9); }
   ctx.restore();
-  ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 5);
-  ctx.drawImage(meteorRock(SO), -12, -12, 24, 24);
-  ctx.restore();
+  if (SO) ctx.drawImage(ironBall(), x - 12, y - 12, 24, 24); // ruh meteoru: yuvarlak demir bilye (ışığı sabit, dönmez)
+  else { ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 5); ctx.drawImage(meteorRock(SO), -12, -12, 24, 24); ctx.restore(); }
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + ux * 6, y + uy * 6, 9, SO ? '200,255,210' : '255,200,120', 0.7); ctx.restore();
 
 }
@@ -5691,8 +5707,8 @@ function updateProjectile(pr, dt) {
       G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
       G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
       G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: 16, hot: true, soul: pr.mini });
-      if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(0.55, 0.7), t: 0, life: CRATER.life, seed: rand(0, 99) }); // obruk
-      if (pr.mini) { shakeScreen(pr.first ? 7 : 4, 0.28); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
+      if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(METEOR_RAIN.crater[0], METEOR_RAIN.crater[1]), t: 0, life: CRATER.life + rand(-1, 1), seed: rand(0, 99) }); // her bilye kendi ufak krateri
+      if (pr.mini) { shakeScreen(pr.first ? 6 : 2.5, 0.22); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
       else { shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60); }
     }
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
@@ -7855,11 +7871,16 @@ function castUlt(h, x, y) {
     // Merlin'in Meteor'u (14 Eki): yerde uyarı halkası, gökten dev kaya; çarpınca büyük patlama, krater, yanan zemin (drawMeteor big, fxMeteorImpact)
     // 16 Eki (Caner): tek dev kaya yerine 7-8 küçük meteor yağmuru (METEOR_RAIN): alana yayılır, aralıklı düşer; her biri küçük patlama, krater, yanan zemin.
     // Toplam güç korunur: alandaki düşmana ortalama ~2,5 meteor değer (hasar payı M.dmg), yanma payı M.burn. Hedef halkası (U.r) son düşene kadar görünür.
-    const M = METEOR_RAIN, n = M.n, last = n - 1;
+    const M = METEOR_RAIN, n = M.n, last = n - 1, spots = []; let tt = -0.5;
     for (let i = 0; i < n; i++) {
-      const a = i === 0 ? 0 : rand(0, Math.PI * 2), rr = i === 0 ? 0 : U.r * Math.sqrt(rand(0.15, 1)) * M.spread, tx = x + Math.cos(a) * rr, ty = y + Math.sin(a) * rr * 0.55;
-      G.projectiles.push({ kind: 'meteor', big: rand(M.size[0], M.size[1]), mini: true, first: i === 0, ringR: i === last ? U.r : 0, noRing: i !== last, sx: tx - 200 + rand(-50, 50), sy: ty - 500, tx, ty,
-        t: -0.5 - i * M.gap, dur: 0.6, arc: 0, dmg: dmg() * M.dmg, splash: U.r * M.r, src: 'blast', spin: rand(0, 6), mburn: [U.burn * k * M.burn, U.burnT] });
+      let tx = x, ty = y;
+      for (let tr = 0; tr < 12; tr++) { // düzensiz dağılım: birbirine fazla yaklaşmayan rastgele noktalar
+        const a = rand(0, Math.PI * 2), rr = U.r * Math.sqrt(Math.random()) * M.spread; tx = x + Math.cos(a) * rr; ty = y + Math.sin(a) * rr * 0.55;
+        if (spots.every(([qx, qy]) => Math.hypot(qx - tx, (qy - ty) / 0.55) > U.r * M.minD)) break;
+      }
+      spots.push([tx, ty]); tt -= rand(M.gap[0], M.gap[1]);
+      G.projectiles.push({ kind: 'meteor', big: rand(M.size[0], M.size[1]), mini: true, first: i === 0, ringR: i === last ? U.r : 0, noRing: i !== last, sx: tx - 190 + rand(-70, 70), sy: ty - 500 + rand(-40, 40), tx, ty,
+        t: tt, dur: rand(0.5, 0.65), arc: 0, dmg: dmg() * M.dmg, splash: U.r * M.r, src: 'blast', spin: rand(0, 6), mburn: [U.burn * k * M.burn, U.burnT] });
     }
     sfx('magic'); setTimeout(() => sfx('whirl'), 350);
   } else if (U.storm) {

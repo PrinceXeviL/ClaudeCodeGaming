@@ -476,7 +476,9 @@
   "Bayrak: devi gönder": "旗帜：派出巨人",
   "Ok: yükselt": "箭头：升级",
   "Gökten 8 küçük meteor yağar: alana yayılan patlamalar, kraterler ve 4 sn yanan zemin": "天降8颗小陨石：范围爆炸、陨坑与4秒燃烧地面",
-  "Meteor yağmuru: 8 patlama, yanan zemin": "流星雨：8次爆炸，燃烧地面"
+  "Meteor yağmuru: 8 patlama, yanan zemin": "流星雨：8次爆炸，燃烧地面",
+  "Gökten ruh ateşli demir bilyeler yağar: dağınık patlamalar, ufak kraterler ve 4 sn yanan zemin": "天降魂火铁球：分散爆炸、小陨坑与4秒燃烧地面",
+  "Meteor yağmuru: dağınık patlamalar, yanan zemin": "流星雨：分散爆炸，燃烧地面"
  },
  "tpl": [
   [

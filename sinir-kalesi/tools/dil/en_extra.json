@@ -668,7 +668,9 @@
   "Bayrak: devi gönder": "Flag: send the giant",
   "Ok: yükselt": "Arrow: upgrade",
   "Gökten 8 küçük meteor yağar: alana yayılan patlamalar, kraterler ve 4 sn yanan zemin": "8 small meteors rain from the sky: spread-out blasts, craters and 4 s of burning ground",
-  "Meteor yağmuru: 8 patlama, yanan zemin": "Meteor shower: 8 blasts, burning ground"
+  "Meteor yağmuru: 8 patlama, yanan zemin": "Meteor shower: 8 blasts, burning ground",
+  "Gökten ruh ateşli demir bilyeler yağar: dağınık patlamalar, ufak kraterler ve 4 sn yanan zemin": "Soul-fire iron balls rain from the sky: scattered blasts, small craters and 4 s of burning ground",
+  "Meteor yağmuru: dağınık patlamalar, yanan zemin": "Meteor shower: scattered blasts, burning ground"
  },
  "tpl": [
   [
