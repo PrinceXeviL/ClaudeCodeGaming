@@ -485,7 +485,21 @@
   "Kasırga Fırtınası!": "Tornadosturm!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Aus der Sturmwolke senkt sich ein Tornado und zieht den Weg zurück: Gefangene Feinde wirbeln in die Luft, nehmen Schaden und werden fortgeschleudert (Schwere und Bosse stürzen zu Boden), aus der Wolke zucken Blitze",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornado auf dem Weg: wirbelt Gefangene herum und schleudert sie fort",
-  "DENEME ALANI": "TESTBEREICH"
+  "DENEME ALANI": "TESTBEREICH",
+  "DARAĞAÇLARI": "GALGEN",
+  "Asılı ölüler de Ölüleri Diriltme ile kalkar · darağacı 40 sn'de yeniden dolar": "Gehängte erheben sich auch mit Tote erwecken · ein Galgen füllt sich in 40 s wieder",
+  "KARANTİNA KAPISI": "QUARANTÄNETOR",
+  "Kapıya dokun: yol 5 sn kapanır, düşmanlar önünde yığılır": "Tippe auf das Tor: Der Weg schließt sich 5 s, Feinde stauen sich davor",
+  "KUTSAL ÇAN KULESİ": "HEILIGER GLOCKENTURM",
+  "Çan çalınca yakındaki iskeletler sersemler · uyarıda kuleye dokun, susturursun": "Läutet die Glocke, werden Skelette in der Nähe betäubt · tippe während der Warnung auf den Turm, um sie zum Schweigen zu bringen",
+  "KEMİK YIĞINLARI": "KNOCHENHAUFEN",
+  "Ölüleri Diriltme ceset olmasa da her yığından bir iskelet kaldırır · yığın 45 sn'de yeniden birikir": "Tote erwecken holt aus jedem Haufen ein Skelett, auch ohne Leichen · ein Haufen wächst in 45 s nach",
+  "Karantina!": "Quarantäne!",
+  "Sus!": "Ruhe!",
+  "Karantina! Kimse giremez, kimse çıkamaz.": "Quarantäne! Keiner rein, keiner raus.",
+  "Kapıyı kapattım. Veba da bizden yana.": "Tor zu. Sogar die Pest ist auf unserer Seite.",
+  "Şu çan beni deli ediyor.": "Diese Glocke macht mich wahnsinnig.",
+  "Dua çanı... iskeletlerim sersemledi.": "Gebetsglocken... meine Skelette sind benommen."
  },
  "tpl": [
   [

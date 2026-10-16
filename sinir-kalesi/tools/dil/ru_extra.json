@@ -485,7 +485,21 @@
   "Kasırga Fırtınası!": "Ураганная буря!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Из грозовой тучи опускается смерч и движется назад по дороге: пойманные враги кружатся в воздухе, получают урон и разлетаются (тяжёлые и боссы падают), из тучи бьют молнии",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Смерч на дороге: закручивает пойманных и разбрасывает",
-  "DENEME ALANI": "ТЕСТОВАЯ ЗОНА"
+  "DENEME ALANI": "ТЕСТОВАЯ ЗОНА",
+  "DARAĞAÇLARI": "ВИСЕЛИЦЫ",
+  "Asılı ölüler de Ölüleri Diriltme ile kalkar · darağacı 40 sn'de yeniden dolar": "Повешенные тоже встают от Поднятия мертвецов · виселица заполняется за 40 с",
+  "KARANTİNA KAPISI": "КАРАНТИННЫЕ ВОРОТА",
+  "Kapıya dokun: yol 5 sn kapanır, düşmanlar önünde yığılır": "Коснись ворот: дорога закрыта на 5 с, враги скапливаются перед ними",
+  "KUTSAL ÇAN KULESİ": "СВЯТАЯ КОЛОКОЛЬНЯ",
+  "Çan çalınca yakındaki iskeletler sersemler · uyarıda kuleye dokun, susturursun": "Когда звонит колокол, ближние скелеты оглушены · коснись башни во время предупреждения, чтобы заглушить",
+  "KEMİK YIĞINLARI": "ГРУДЫ КОСТЕЙ",
+  "Ölüleri Diriltme ceset olmasa da her yığından bir iskelet kaldırır · yığın 45 sn'de yeniden birikir": "Поднятие мертвецов поднимает скелета из каждой груды, даже без трупов · груда снова собирается за 45 с",
+  "Karantina!": "Карантин!",
+  "Sus!": "Тихо!",
+  "Karantina! Kimse giremez, kimse çıkamaz.": "Карантин! Никто не войдёт, никто не выйдет.",
+  "Kapıyı kapattım. Veba da bizden yana.": "Ворота закрыты. Даже чума на нашей стороне.",
+  "Şu çan beni deli ediyor.": "Этот колокол сводит меня с ума.",
+  "Dua çanı... iskeletlerim sersemledi.": "Молитвенный звон... мои скелеты оглушены."
  },
  "tpl": [
   [

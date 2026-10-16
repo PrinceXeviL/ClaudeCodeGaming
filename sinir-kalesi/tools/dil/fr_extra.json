@@ -485,7 +485,21 @@
   "Kasırga Fırtınası!": "Tempête tornade !",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Une tornade descend du nuage d'orage et remonte la route : les ennemis happés tournoient dans les airs, subissent des dégâts et sont projetés (les lourds et les boss sont renversés), la foudre tombe du nuage",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornade qui avance sur la route : fait tournoyer et projette ceux qu’elle happe",
-  "DENEME ALANI": "ZONE DE TEST"
+  "DENEME ALANI": "ZONE DE TEST",
+  "DARAĞAÇLARI": "GIBETS",
+  "Asılı ölüler de Ölüleri Diriltme ile kalkar · darağacı 40 sn'de yeniden dolar": "Les pendus se relèvent aussi avec Relever les morts · un gibet se remplit en 40 s",
+  "KARANTİNA KAPISI": "PORTE DE QUARANTAINE",
+  "Kapıya dokun: yol 5 sn kapanır, düşmanlar önünde yığılır": "Touche la porte : la route se ferme 5 s et les ennemis s'entassent devant",
+  "KUTSAL ÇAN KULESİ": "CLOCHER SACRÉ",
+  "Çan çalınca yakındaki iskeletler sersemler · uyarıda kuleye dokun, susturursun": "Quand la cloche sonne, les squelettes proches sont étourdis · touche la tour pendant l'alerte pour la faire taire",
+  "KEMİK YIĞINLARI": "TAS D'OS",
+  "Ölüleri Diriltme ceset olmasa da her yığından bir iskelet kaldırır · yığın 45 sn'de yeniden birikir": "Relever les morts lève un squelette de chaque tas, même sans cadavres · un tas se reforme en 45 s",
+  "Karantina!": "Quarantaine !",
+  "Sus!": "Silence !",
+  "Karantina! Kimse giremez, kimse çıkamaz.": "Quarantaine ! Personne n'entre, personne ne sort.",
+  "Kapıyı kapattım. Veba da bizden yana.": "Porte fermée. Même la peste est de notre côté.",
+  "Şu çan beni deli ediyor.": "Cette cloche me rend fou.",
+  "Dua çanı... iskeletlerim sersemledi.": "Cloches de prière... mes squelettes sont sonnés."
  },
  "tpl": [
   [

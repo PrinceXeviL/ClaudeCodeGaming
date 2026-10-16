@@ -5024,6 +5024,7 @@ function updateEnemy(e, dt) {
     }
   }
   e.curSpd = spd * (e.d < 0 ? 1.5 : 1); e.movedAt = G.t; // mermilerin tahminli nişanı için (leadPoint)
+  if (gateHold(e)) e.curSpd = 0; // 16 Eki: karantina kapısı kapalı
   e.d += e.curSpd * dt; // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
   // ayak tozu: yürüyüş döngüsünde her adım yere bastığında (çizimdeki adım hızıyla aynı)
   if (!e.def.flying && spd > 0) {
@@ -5973,10 +5974,12 @@ function castNecro(id, x, y) {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length, hasXY = x != null && y != null;
     const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
       .sort((a, b) => (b.pw || 1) - (a.pw || 1) || a.t - b.t).slice(0, Math.max(0, S.max - alive)); // güçlüler önce
-    if (!bodies.length) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, alive >= S.max ? 'Ordun dolu!' : hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
+    const piles = G.mech && G.mech.kind === 'bonepile' && alive < S.max ? G.mech.spots.filter(o => o.ready).length : 0; // 16 Eki: kemik yığınları
+    if (!bodies.length && !piles) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, alive >= S.max ? 'Ordun dolu!' : hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
     if (hasXY) G.effects.push({ kind: 'ring', x, y, r: CORPSE_ECO.r, col: '220,60,60', t: 0, dur: 0.5 });
     G.raiseT = 1.2; mortSay('raise', true);
     bodies.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); cnt('raise', bodies.length);
+    const nb = raiseBonePiles(); if (nb) cnt('raise', nb);
     G.effects.push({ kind: 'ring', x: m.x, y: m.y - 10, r: 70, col: S.col, t: 0, dur: 0.7 });
     sfx('portal'); sfx('raise');
   } else if (id === 'nm_golem') {
@@ -6485,6 +6488,7 @@ const MORT_LINES = {
   boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
   sun: ['Güneş mi? Perdeleri kapatın!', 'Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.'],
   graves: ['Komşular uyandı!', 'Mezarlıkta herkes bizden.'],
+  quarantine: ['Karantina! Kimse giremez, kimse çıkamaz.', 'Kapıyı kapattım. Veba da bizden yana.'], chime: ['Şu çan beni deli ediyor.', 'Dua çanı... iskeletlerim sersemledi.'], // 16 Eki
   lake: ['Gölde bir şey var. Ve aç.', 'Afiyet olsun, gölün sahibi!'],
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
@@ -7126,7 +7130,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
-  if (tapZoneItem(x, y)) return true;
+  if (tapZoneItem(x, y) || tapMech(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -7306,6 +7310,11 @@ const MECH = {
   graves: { title: 'MEZARLAR UYANIYOR', sub: 'Arada bir mezarlardan senin için ölüler kalkar', every: 18 },
   lake: { title: 'GÖLDE BİR ŞEY VAR', sub: 'Göl yaratığı yoldaki düşmanları suya çeker', every: 30 },
   sunbeam: { title: 'GÜNEŞ IŞINI', sub: 'Solarian rahipleri arada bir kulelerinden birini susturur', every: 30, warn: 2, off: 4 },
+  // 16 Eki (Caner: "2. seferde her mekâna kendi mekaniği"): Kuzgun Ormanı, Veba Köyü, Manastır, Kemik Mahzeni (Kızıl Ay'da BLOOD zaten var)
+  gallows: { title: 'DARAĞAÇLARI', sub: 'Asılı ölüler de Ölüleri Diriltme ile kalkar · darağacı 40 sn\'de yeniden dolar', regrow: 40, pw: 1.3 },
+  quarantine: { title: 'KARANTİNA KAPISI', sub: 'Kapıya dokun: yol 5 sn kapanır, düşmanlar önünde yığılır', cd: 28, shut: 5 },
+  chime: { title: 'KUTSAL ÇAN KULESİ', sub: 'Çan çalınca yakındaki iskeletler sersemler · uyarıda kuleye dokun, susturursun', every: 26, warn: 2.2, r: 170, stun: 1.6 },
+  bonepile: { title: 'KEMİK YIĞINLARI', sub: 'Ölüleri Diriltme ceset olmasa da her yığından bir iskelet kaldırır · yığın 45 sn\'de yeniden birikir', regrow: 45 },
 };
 function setupMech() {
   const kind = G.lv.mech;
@@ -7320,6 +7329,15 @@ function setupMech() {
       // ang: yolun yer düzlemindeki yönü (birikinti yol boyunca uzanır); a: yol boyunca, b: yol enine yarıçap
       if (spaced(q.x, q.y, 60)) M.spots.push({ x: q.x, y: q.y, r: 32, a: 37, b: 24, ang: Math.atan2(q.dy / MUD_SQ, q.dx), seed: Math.random() * 9 });
     }
+  } else if (kind === 'gallows' || kind === 'bonepile' || kind === 'chime') {
+    const n = kind === 'bonepile' ? 3 : kind === 'gallows' ? 2 : 1, gap = kind === 'chime' ? 0 : 150;
+    for (let f = kind === 'chime' ? 0.45 : 0.2; f <= 0.85 && M.spots.length < n; f += 0.05) for (const side of [1, -1]) {
+      const q = pathPos(P0, P0.total * f, side * 52), near = nearestOnPaths(G.paths, q.x, q.y);
+      if (near.d > 36 && free(q.x, q.y, 50) && spaced(q.x, q.y, gap) && q.y > 110) { const r = pathPos(P0, P0.total * f); M.spots.push({ x: q.x, y: q.y, rx: r.x, ry: r.y, face: q.x < r.x ? 1 : -1, ready: true, t: 0, seed: Math.random() * 9 }); break; }
+    }
+    if (kind === 'gallows') for (const m of M.spots) gallowsBody(m);
+  } else if (kind === 'quarantine') {
+    for (const f of [0.5, 0.42, 0.58, 0.36, 0.64]) { const q = pathPos(P0, P0.total * f); if (free(q.x, q.y, 40) && q.x > 60 && q.x < W - 60) { M.gate = { p: P0, d: P0.total * f, x: q.x, y: q.y, dx: q.dx, dy: q.dy, cd: 3, shutT: 0 }; break; } }
   } else if (kind === 'graves' || kind === 'lake') {
     for (let f = 0.18; f <= 0.82 && M.spots.length < (kind === 'graves' ? 4 : 2); f += 0.06) {
       for (const side of [1, -1]) {
@@ -7333,6 +7351,36 @@ function setupMech() {
       }
     }
   }
+}
+// 16 Eki: darağacındaki asılı ölü = diriltilebilir ceset (ekranda yerde değil, iple asılı çizilir: f.hang)
+function gallowsBody(m) {
+  const HUMAN = ['legion', 'solarcher', 'gladiator', 'hunter', 'torch', 'flagellant', 'holywater', 'priest', 'assassin', 'heavy', 'bellpriest', 'paladin'], waveT = new Set(G.lv.waves.flat().map(g => g.t)); // asılan: insan biçimli (köpek, at değil)
+  const pool = HUMAN.filter(t => ENEMIES[t] && waveT.has(t)), t = pool[Math.floor(Math.random() * pool.length)] || 'legion', d = ENEMIES[t];
+  m.body = { kind: 'corpse', hang: true, name: 'enemy_' + t, rig: d.base ? 'enemy_' + d.base : null, h: CHAR_H['enemy_' + t], x: m.x, y: m.y + 4, face: m.face, fly: 0, t: 1, dur: 1e9, raisable: true, pw: MECH.gallows.pw };
+  G.effects.push(m.body); m.flash = 0.6;
+}
+function gateHold(e) { // karantina kapısı kapalıyken önündeki düşman durur
+  const M = G.mech, g = M && M.gate; if (!g || !(g.shutT > 0) || e.def.flying || e.p !== g.p) return false;
+  return e.d < g.d && e.d > g.d - 18 - e.def.r;
+}
+function tapMech(x, y) {
+  const M = G.mech; if (!M) return false;
+  if (M.kind === 'quarantine' && M.gate && dist(x, y, M.gate.x, M.gate.y - 14) < 44) {
+    const g = M.gate; if (g.shutT > 0) return true;
+    if (g.cd > 0) { floatText(g.x, g.y - 46, Math.ceil(g.cd) + ' sn', '#c8c8c8'); sfx('error'); return true; }
+    g.shutT = MECH.quarantine.shut; sfx('bash'); shakeScreen(2, 0.2); floatText(g.x, g.y - 46, 'Karantina!', '#d8ff9a'); mortSay('quarantine'); return true;
+  }
+  if (M.kind === 'chime' && M.spots[0] && dist(x, y, M.spots[0].x, M.spots[0].y - 30) < 46) {
+    const f = M.fx.find(o => o.kind === 'chime' && !o.done);
+    if (f) { f.silenced = true; f.done = true; f.t = f.dur - 0.3; floatText(f.m.x, f.m.y - 70, 'Sus!', '#ffd98a'); sfx('error'); }
+    return true;
+  }
+  return false;
+}
+function raiseBonePiles() { // Ölüleri Diriltme: hazır kemik yığınlarından birer iskelet (ceset gerekmez)
+  const M = G.mech; if (!M || M.kind !== 'bonepile') return 0; let n = 0;
+  for (const m of M.spots) if (m.ready) { const c0 = G.soldiers.length; raiseMinion({ x: m.x, y: m.y + 4, face: m.face }, n * 0.1); if (G.soldiers.length > c0) { m.ready = false; m.t = 0; n++; for (let i = 0; i < 10; i++) emit(G.parts, { kind: 'chunk', x: m.x + rand(-8, 8), y: m.y, vx: rand(-50, 50), vy: -rand(60, 130), g: 420, col: i % 2 ? '#e8dcc0' : '#bfb294', s0: rand(1.6, 2.6), s1: 1, life: 0.6, floor: m.y + 3 }); } }
+  return n;
 }
 function updateMech(dt) {
   const M = G.mech; if (!M) return;
@@ -7355,6 +7403,12 @@ function updateMech(dt) {
     }
     for (const sd of G.soldiers) sd.inMud = !sd.dead && !!mudAt(sd.x, sd.y);
   }
+  if (M.kind === 'gallows') for (const m of M.spots) { // asılı ölü diriltilince darağacı boşalır, sonra yeniden dolar
+    if (m.body && !G.effects.includes(m.body)) { m.body = null; m.t = 0; }
+    if (!m.body && (m.t += dt) >= D.regrow) gallowsBody(m);
+  }
+  if (M.kind === 'bonepile') for (const m of M.spots) if (!m.ready && (m.t += dt) >= D.regrow) { m.ready = true; m.flash = 0.6; }
+  if (M.kind === 'quarantine' && M.gate) { const g = M.gate; if (g.shutT > 0) { g.shutT -= dt; if (g.shutT <= 0) { g.cd = D.cd; sfx('pick'); } } else if (g.cd > 0) g.cd -= dt; }
   if (G.wave <= 0) return;
   M.timer -= dt;
   if (M.kind === 'graves' && M.timer <= 0 && M.spots.length) {
@@ -7375,6 +7429,8 @@ function updateMech(dt) {
     M.timer = D.every; pick.grabbed = true; stunEnemy(pick, 1.2);
     M.fx.push({ kind: 'tentacle', x: spot.x, y: spot.y, e: pick, t: 0, dur: 1.3 });
     sfx('roar'); mortSay('lake');
+  } else if (M.kind === 'chime' && M.timer <= 0 && M.spots.length && !M.fx.some(f => f.kind === 'chime')) {
+    M.timer = D.every; M.fx.push({ kind: 'chime', m: M.spots[0], t: 0, dur: D.warn + 0.8 }); sfx('bell');
   } else if (M.kind === 'sunbeam' && M.timer <= 0) {
     const list = G.towers.filter(t => !(t.disabledT > 0));
     if (!list.length) { M.timer = 3; return; }
@@ -7388,6 +7444,11 @@ function updateMech(dt) {
       if (!f.e.dead) { killEnemy(f.e); f.e.leaked = true; }
       for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'glow', x: f.x + rand(-10, 10), y: f.y - rand(0, 8), vx: rand(-40, 40), vy: -rand(40, 110), g: 220, col: '90,170,160', s0: rand(2, 4), s1: 1, life: rand(0.4, 0.8) });
       impactFx(f.x, f.y - 12, '120,220,200', 1.2);
+    }
+    if (f.kind === 'chime' && !f.done && f.t > D.warn) { // kutsal dalga: yakındaki iskeletler sersemler (komutan, duvar ve golem değil)
+      f.done = true; if (f.silenced) continue;
+      for (const sd of G.soldiers) if (!sd.dead && !sd.hero && !sd.wall && !sd.big && dist(sd.x, sd.y, f.m.x, f.m.y) < D.r) { sd.stunT = Math.max(sd.stunT || 0, D.stun); sd.flash = 0.15; }
+      impactFx(f.m.x, f.m.y - 30, '255,230,150', 1.4); shakeScreen(2, 0.25); sfx('bell'); mortSay('chime');
     }
     if (f.kind === 'sun' && !f.done && f.t > D.warn) {
       f.done = true;
@@ -7594,6 +7655,45 @@ function drawMechGround() {
       if (im) drawSprite(ctx, im, m.x, m.y + 3, 22);
       else roundRect(m.x - 7, m.y - 18, 14, 20, 6, '#6a6a72', '#1a1a20', 1.5);
     }
+  } else if (M.kind === 'gallows') { // darağacı: iki direk, kiriş, ip; dolu iken asılı ölü salınır (diriltilebilir: yeşil parıltı)
+    for (const m of M.spots) {
+      shadow(m.x, m.y + 2, 18, 5); ctx.save(); ctx.translate(m.x, m.y);
+      ctx.strokeStyle = '#2a1a10'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-14, 2); ctx.lineTo(-14, -52); ctx.lineTo(16, -52); ctx.moveTo(-14, -40); ctx.lineTo(-4, -52); ctx.stroke();
+      ctx.strokeStyle = '#6a4a2a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-14, 2); ctx.lineTo(-14, -52); ctx.lineTo(16, -52); ctx.stroke();
+      const sw = Math.sin(time * 1.6 + m.seed) * 0.12; ctx.strokeStyle = '#c8b48a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(10, -52); ctx.lineTo(10 + sw * 30, -40); ctx.stroke();
+      if (m.body) { const im = spr(m.body.name) || spr('enemy_legion'); if (im) { const h = (m.body.h || 30) * 0.95, w = h * im.width / im.height;
+        ctx.save(); ctx.translate(10 + sw * 30, -40); ctx.rotate(sw); if (G.spells.nm_raise <= 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, h * 0.5, h * 0.7, '120,255,140', 0.22 + 0.1 * Math.sin(time * 5)); ctx.restore(); }
+          ctx.globalAlpha = 0.9; ctx.drawImage(im, -w / 2, 0, w, h); ctx.restore(); } }
+      ctx.restore();
+    }
+  } else if (M.kind === 'bonepile') { // kemik yığını: hazırken yeşil ruh parıltısı; kullanılınca küçülür, yavaşça yeniden birikir
+    for (const m of M.spots) {
+      const k = m.ready ? 1 : 0.35 + 0.65 * clamp(m.t / MECH.bonepile.regrow, 0, 1); shadow(m.x, m.y + 2, 16, 5);
+      if (m.ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, m.x, m.y - 6, 26, '140,255,150', 0.2 + 0.1 * Math.sin(time * 4 + m.seed)); ctx.restore(); }
+      ctx.save(); ctx.translate(m.x, m.y); ctx.scale(k, k); ctx.lineCap = 'round';
+      for (let i = 0; i < 9; i++) { const a = m.seed + i * 1.9, x = Math.cos(a) * (10 - i * 0.6), y = -2 - i * 1.6; ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.strokeStyle = '#3a3226'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(6, 0); ctx.stroke(); ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(6, 0); ctx.stroke(); ctx.restore(); }
+      circle(0, -17, 5, '#efe3c4', '#3a3226', 1); circle(-1.8, -17.5, 1.1, '#2a2018'); circle(1.8, -17.5, 1.1, '#2a2018');
+      ctx.restore();
+    }
+  } else if (M.kind === 'chime') { // çan kulesi: taş kule, tepede çan (uyarıda sallanır)
+    for (const m of M.spots) {
+      const f = M.fx.find(o => o.kind === 'chime' && !o.done), sw = f ? Math.sin(time * 18) * 0.35 : Math.sin(time * 1.2) * 0.04;
+      shadow(m.x, m.y + 2, 18, 5); ctx.save(); ctx.translate(m.x, m.y);
+      roundRect(-11, -46, 22, 48, 3, '#5a5650', '#1e1c1a', 1.6); roundRect(-14, -50, 28, 6, 2, '#6e6a62', '#1e1c1a', 1.4);
+      ctx.fillStyle = '#2a2622'; ctx.beginPath(); ctx.moveTo(-14, -50); ctx.lineTo(0, -68); ctx.lineTo(14, -50); ctx.closePath(); ctx.fill();
+      ctx.save(); ctx.translate(0, -44); ctx.rotate(sw); ctx.fillStyle = '#c89a3a'; ctx.strokeStyle = '#4a3010'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-6, 10); ctx.quadraticCurveTo(-6, 0, 0, 0); ctx.quadraticCurveTo(6, 0, 6, 10); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+      if (f) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -40, 30, '255,220,140', 0.35 + 0.2 * Math.sin(time * 14)); ctx.restore(); }
+      ctx.restore();
+      if (f) { const k = clamp(f.t / MECH.chime.warn, 0, 1); ctx.save(); ctx.strokeStyle = `rgba(255,220,120,${0.35 + 0.35 * k})`; ctx.lineWidth = 2.5; ctx.setLineDash([7, 6]); ctx.lineDashOffset = -time * 40; ctx.beginPath(); ctx.ellipse(m.x, m.y, MECH.chime.r, MECH.chime.r * 0.45, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+    }
+  } else if (M.kind === 'quarantine' && M.gate) { // karantina kapısı: yol kenarında iki direk; kapalıyken yolu kesen tahta ve veba bezi
+    const g = M.gate, L = Math.hypot(g.dx, g.dy) || 1, nx = -g.dy / L, ny = g.dx / L, half = 16 * (G.lv.roadK || ROAD_K), sh = g.shutT > 0;
+    for (const sd of [-1, 1]) { const px = g.x + nx * half * sd, py = g.y + ny * half * sd * 0.7; shadow(px, py + 2, 6, 2); roundRect(px - 3, py - 30, 6, 32, 2, '#5a3a20', '#1e120a', 1.4); circle(px, py - 31, 3.4, '#7a5a30', '#1e120a', 1); }
+    if (sh) { ctx.save(); ctx.lineCap = 'round'; for (const [yy, c] of [[-20, '#6a4a2a'], [-10, '#5a3a20']]) { ctx.strokeStyle = '#1e120a'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(g.x - nx * half, g.y - ny * half * 0.7 + yy); ctx.lineTo(g.x + nx * half, g.y + ny * half * 0.7 + yy); ctx.stroke(); ctx.strokeStyle = c; ctx.lineWidth = 4.5; ctx.stroke(); }
+      ctx.fillStyle = 'rgba(190,200,90,0.85)'; ctx.beginPath(); ctx.ellipse(g.x, g.y - 24, 7, 5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    const iy = g.y - 48 + Math.sin(time * 4) * 2;
+    if (!sh && g.cd <= 0) { circle(g.x, iy, 10, 'rgba(26,12,30,0.9)', '#f2e6c8', 1.5); drawIcon('play', g.x + 0.5, iy, 10, '#f2e6c8'); }
+    else if (!sh) { const k = 1 - g.cd / MECH.quarantine.cd; circle(g.x, iy, 9, 'rgba(20,12,24,0.75)', 'rgba(200,220,140,0.5)', 1.2); ctx.strokeStyle = '#d8ff9a'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(g.x, iy, 9, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
   } else if (M.kind === 'lake') {
     for (const m of M.spots) {
       ctx.save(); ctx.translate(m.x, m.y);
@@ -11308,6 +11408,7 @@ let CORPSE_BAKE = 3; // kare başına en çok bu kadar ceset önbelleğe alını
 // ölüm şeridi süresi (sn): kareler bu sürede oynar, ceset son karede yatar; dirilişte tersten
 const DIE_T = 0.9;
 function drawCorpse(f) {
+  if (f.hang) return; // darağacında asılı (drawMechGround çizer)
   const im = spr(f.name);
   if (!im) return;
   if (f.blessT != null) { const k = clamp(1 - (G.t - f.blessT) / 1.6, 0, 1); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y - 4, 22, '255,220,130', 0.5 * k); ctx.restore(); } // kutsanmış: altın ışık
@@ -17528,6 +17629,48 @@ function drawMapClouds(ep, X, V, dt) {
     }
   }
 }
+// 16 Eki (Caner: "mekânlar sefer haritasında görünür olsun: 4 bölüm bir mekân, yeşillik; mezarlık kasvetli, yağmur yağıyor..."):
+// her mekân diliminin kendi havası (dünya koordinatında, yalnız görünen dilimler) ve açılmış mekânların ad tabelası.
+const ZONE_FX = { cursed: 'fireflies', bog: 'rain', graveyard: 'storm', blacklake: 'snow', necrogate: 'embers', ravenwood: 'leaves', plague: 'mist', monastery: 'rain', ossuary: 'dust', bloodmoon: 'blood' };
+const zoneBand = (E, k) => { const c = E.mapH - k * MAP_V.step - MAP_V.h / 2; return [c - MAP_V.step * 0.62, c + MAP_V.step * 0.62]; };
+const hsh = (i, s) => { const x = Math.sin(i * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
+function drawMapZoneFx(E, ep, X, V) {
+  if (!E.zones || !E.vert) return;
+  for (let k = 0; k < E.zones.length; k++) {
+    const kind = ZONE_FX[E.zones[k][0]], [y0, y1] = zoneBand(E, k); if (!kind || y1 < V[1] || y0 > V[3]) continue;
+    const H0 = y1 - y0, x0 = X.x, w = X.w, edge = (y) => clamp(Math.min(y - y0, y1 - y) / 70, 0, 1); // dilim kenarında söner
+    ctx.save();
+    if (kind === 'rain' || kind === 'storm') {
+      ctx.strokeStyle = 'rgba(190,210,235,0.42)'; ctx.lineWidth = 1.1; ctx.beginPath();
+      for (let i = 0; i < 90; i++) { const x = x0 + hsh(i, k) * w, y = y0 + ((hsh(i, k + 9) * H0 + time * 260) % H0), a = edge(y); if (a < 0.2) continue; ctx.moveTo(x, y); ctx.lineTo(x - 3, y + 11); }
+      ctx.stroke();
+      if (kind === 'storm') { const ph = (time * 0.23 + k * 0.37) % 1; if (ph < 0.035) { ctx.fillStyle = `rgba(220,230,255,${0.22 * (1 - ph / 0.035)})`; ctx.fillRect(x0, y0, w, H0); } } // uzak şimşek
+    } else if (kind === 'snow') {
+      ctx.fillStyle = 'rgba(245,250,255,0.85)';
+      for (let i = 0; i < 70; i++) { const y = y0 + ((hsh(i, k + 3) * H0 + time * 26) % H0), x = x0 + hsh(i, k) * w + Math.sin(time * 1.3 + i) * 6, a = edge(y); if (a < 0.2) continue; ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, 1 + hsh(i, k + 5) * 1.3, 0, 7); ctx.fill(); }
+    } else if (kind === 'leaves') {
+      for (let i = 0; i < 26; i++) { const y = y0 + ((hsh(i, k + 3) * H0 + time * 22) % H0), x = x0 + ((hsh(i, k) * w + time * 14 + Math.sin(time + i) * 10) % w), a = edge(y); if (a < 0.2) continue;
+        ctx.save(); ctx.globalAlpha = a * 0.9; ctx.translate(x, y); ctx.rotate(time * 2 + i); ctx.fillStyle = i % 3 ? '#b8502a' : '#d8902e'; ctx.beginPath(); ctx.ellipse(0, 0, 3.2, 1.6, 0, 0, 7); ctx.fill(); ctx.restore(); }
+    } else if (kind === 'mist') {
+      for (let i = 0; i < 9; i++) { const y = y0 + hsh(i, k + 2) * H0, x = x0 + ((hsh(i, k) * w + time * 8) % w), a = edge(y); if (a < 0.1) continue; ctx.globalAlpha = 0.3 * a; ctx.drawImage(puffTex('110,170,80'), x - 70, y - 30, 140, 60); }
+    } else if (kind === 'embers' || kind === 'blood' || kind === 'fireflies' || kind === 'dust') {
+      const col = kind === 'embers' ? '170,110,255' : kind === 'blood' ? '255,80,60' : kind === 'fireflies' ? '170,255,120' : '230,220,190', n = kind === 'dust' ? 30 : 34;
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < n; i++) { const up = kind === 'dust' ? 4 : 18, y = y1 - ((hsh(i, k + 3) * H0 + time * up) % H0), x = x0 + hsh(i, k) * w + Math.sin(time * 0.9 + i * 1.7) * 8, a = edge(y) * (0.5 + 0.5 * Math.sin(time * 3 + i)); if (a < 0.1) continue;
+        glow(ctx, x, y, kind === 'fireflies' ? 4 : 3, col, 0.7 * a); }
+      if (kind === 'blood') { ctx.globalCompositeOperation = 'source-over'; const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(120,10,20,0)'); g.addColorStop(0.5, 'rgba(120,10,20,0.12)'); g.addColorStop(1, 'rgba(120,10,20,0)'); ctx.fillStyle = g; ctx.fillRect(x0, y0, w, H0); }
+    }
+    ctx.restore();
+  }
+}
+function drawMapZoneLabels(E, ep) { // açılmış mekânın adı: ilk bölümünün yanında küçük kurdele
+  if (!E.zones || !E.vert) return; const ids = epLevels(ep), per = Math.ceil(ids.length / E.zones.length);
+  for (let k = 0; k < E.zones.length; k++) {
+    const i0 = ids[k * per], nd = E.nodes[k * per]; if (i0 == null || !nd || (!levelUnlocked(i0) && !fogTest())) continue;
+    const [y0] = zoneBand(E, k), y = Math.max(nd[1] + 34, y0 + 30), x = nd[0] < 480 ? nd[0] + 120 : nd[0] - 120, z = MAPCAM.z;
+    ctx.save(); ctx.translate(x, y); ctx.scale(1 / Math.max(1, z * 0.6), 1 / Math.max(1, z * 0.6)); ctx.globalAlpha = 0.92; crimsonRibbon(0, 0, E.zones[k][1], 20, 0); ctx.restore();
+  }
+}
 function drawRegionMap(E, ep, st) {
   const bg = regionBg(ep), R = REGION_BG[ep]; if (!bg) return;
   const X = mapExt(bg), z = MAPCAM.z, V = [(VIS.l - MAPCAM.tx) / z, (VIS.t - MAPCAM.ty) / z, (VIS.r - MAPCAM.tx) / z, (VIS.b - MAPCAM.ty) / z]; // ekranda görünen dünya kutusu
@@ -17536,7 +17679,9 @@ function drawRegionMap(E, ep, st) {
   const road = R.road[0], dt = Math.min(0.05, time - (MAPFX.last || time)); MAPFX.last = time;
   drawBgLights(R.lights, V);
   drawGraveHands(R.hands, uiParts); drawBanners(R.banners, V);
+  drawMapZoneFx(E, ep, X, V); // 16 Eki: her mekânın havası (yağmur, kar, sis, kor, yaprak)
   MAPFX.fog = drawMapFog2(E, ep, road, X);
+  drawMapZoneLabels(E, ep);
   drawMapHint(V); drawMapSurprises(dt);
   // devriye: girişten sıradaki bölüme kadar yürür ve orada söner (düşman oraya dayandı)
   const cur = Math.max(0, LEVELS.findIndex((lv, i) => levelUnlocked(i) && !(save.stars[i] > 0)));

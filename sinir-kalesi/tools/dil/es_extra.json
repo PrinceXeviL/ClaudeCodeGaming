@@ -485,7 +485,21 @@
   "Kasırga Fırtınası!": "¡Tormenta de tornado!",
   "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar": "Un tornado baja de la nube de tormenta y retrocede por el camino: los enemigos atrapados giran en el aire, reciben daño y salen despedidos (los pesados y jefes caen al suelo), la nube lanza rayos",
   "Yolda ilerleyen kasırga: kapılanı döndürüp savurur": "Tornado que avanza por el camino: hace girar y lanza a quien atrapa",
-  "DENEME ALANI": "ZONA DE PRUEBAS"
+  "DENEME ALANI": "ZONA DE PRUEBAS",
+  "DARAĞAÇLARI": "HORCAS",
+  "Asılı ölüler de Ölüleri Diriltme ile kalkar · darağacı 40 sn'de yeniden dolar": "Los ahorcados también se alzan con Alzar a los Muertos · la horca se rellena en 40 s",
+  "KARANTİNA KAPISI": "PUERTA DE CUARENTENA",
+  "Kapıya dokun: yol 5 sn kapanır, düşmanlar önünde yığılır": "Toca la puerta: el camino se cierra 5 s y los enemigos se amontonan",
+  "KUTSAL ÇAN KULESİ": "CAMPANARIO SAGRADO",
+  "Çan çalınca yakındaki iskeletler sersemler · uyarıda kuleye dokun, susturursun": "Cuando suena la campana, los esqueletos cercanos quedan aturdidos · toca la torre durante el aviso para silenciarla",
+  "KEMİK YIĞINLARI": "MONTONES DE HUESOS",
+  "Ölüleri Diriltme ceset olmasa da her yığından bir iskelet kaldırır · yığın 45 sn'de yeniden birikir": "Alzar a los Muertos levanta un esqueleto de cada montón, aun sin cadáveres · el montón crece de nuevo en 45 s",
+  "Karantina!": "¡Cuarentena!",
+  "Sus!": "¡Silencio!",
+  "Karantina! Kimse giremez, kimse çıkamaz.": "¡Cuarentena! Nadie entra, nadie sale.",
+  "Kapıyı kapattım. Veba da bizden yana.": "Puerta cerrada. Hasta la peste está de nuestro lado.",
+  "Şu çan beni deli ediyor.": "Esa campana me vuelve loco.",
+  "Dua çanı... iskeletlerim sersemledi.": "Campanas de oración... mis esqueletos están aturdidos."
  },
  "tpl": [
   [

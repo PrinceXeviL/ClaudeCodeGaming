@@ -4,7 +4,7 @@
 // seçilen yerin gördüğü yol parçalarının ağırlığı düşer (arsalar yol boyunca yayılır).
 // Kullanım: node tools/arsa-uret.js js/data.js [bölüm numaraları, ör. 1,2,3] [--dry]
 const fs = require('fs');
-const file = process.argv[2], only = (process.argv[3] && process.argv[3] !== '--dry') ? process.argv[3].split(',').map(n => +n - 1) : null, dry = process.argv.includes('--dry');
+const file = process.argv[2], only = (process.argv[3] && !process.argv[3].startsWith('--')) ? process.argv[3].split(',').map(n => +n - 1) : null, json = process.argv.includes('--json'), dry = process.argv.includes('--dry') || json; // --json: yalnız seçilen bölümlerin arsalarını {ad: arsalar} yazar (data.js'e dokunmaz; LAYOUT3 için)
 eval(fs.readFileSync(file, 'utf8') + ';global.LEVELS=LEVELS;');
 const W = 960, H = 540;
 const ROAD_HALF = 46, CLEAR = 5, PLOT_RX = 28, PLOT_RY = 16, SPACING = 84, RANGE = 150;
@@ -30,9 +30,9 @@ const result = LEVELS.map((lv, li) => {
   for (const p of ps) { const c = cum(p), T = c[c.length - 1]; for (let d = 0; d < T; d += 8) { const q = at(p, c, d); if (q[0] > 0 && q[0] < W && q[1] > 0 && q[1] < H && !S.some(s => dist(s.x, s.y, q[0], q[1]) < 6)) S.push({ x: q[0], y: q[1], w: 1 }); } }
   const ok = (x, y) => {
     if (x < 64 || x > W - 74 || y < 132 || y > H - 38) return false;          // kenar payı (kule gövdesi ~80 px yukarı uzanır)
-    if (x < 335 && y > 425) return false;                                     // sol alt: kahraman/güç düğmeleri
+    if (x < 500 && y > 400) return false;                                     // sol alt: komutan, güç ve büyü düğmeleri (16 Eki: çubuk genişledi)
     if (x > W - 190 && y < 160) return false;                                 // sağ üst düğmeler
-    if (Math.abs(x - cx) < 88 && y > cy - 150 && y < cy + 48) return false;   // kale
+    if (Math.abs(x - cx) < 100 && y > cy - 225 && y < cy + 52) return false;  // kale (16 Eki: kale binası kapıdan ~210 yukarı uzanır; kale artık her yerde)
     for (const b of btns) if (dist(x, y, b[0], b[1]) < 72 || dist(x, y - 40, b[0], b[1]) < 60) return false;
     for (const q of EZ) if (dist(x, y, q[0], q[1]) < 96) return false;
     for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; if (dRoad(x + Math.cos(a) * PLOT_RX, y + Math.sin(a) * PLOT_RY) < ROAD_HALF + CLEAR) return false; }
@@ -55,6 +55,7 @@ const result = LEVELS.map((lv, li) => {
   console.log(`${li + 1}. ${lv.name}: ${plots.length}/${lv.plots.length} arsa`);
   return plots;
 });
+if (json) { const o = {}; LEVELS.forEach((lv, li) => { if (!only || only.includes(li)) o[(lv.ep || 1) + ':' + lv.name] = result[li]; }); console.log('JSON' + JSON.stringify(o)); }
 if (!dry) {
   let text = fs.readFileSync(file, 'utf8'), n = 0;
   const start = text.indexOf('const LEVELS = [');

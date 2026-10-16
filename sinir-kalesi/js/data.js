@@ -908,12 +908,58 @@ function shapeWaves(lv, li) {
     for (const g of w) if (!heavy(g) && g.n >= 6 && rnd() < PACK_CHANCE) g.pack = rnd() < 0.5 ? 3 : 4;
   });
 }
-// Yolun son kısmı: kapıdan 60 px yakındaki noktalar atılır, yol şapelin önüne inip kapıya alttan girer
+// Yolun son kısmı: kapıdan 60 px yakındaki noktalar atılır, yol şapelin önüne inip kapıya alttan girer.
+// 16 Eki: kale artık her yerde olabilir (LAYOUT3): yol, geldiği yandan (sağ/sol) kapıya yaklaşır; alttaki kalede dalış sığ (ekrandan taşmasın)
 function gateApproach(pts) {
   const E = pts[pts.length - 1];
   const keep = pts.slice(0, -1).filter(p => Math.hypot(p[0] - E[0], p[1] - E[1]) > 60);
-  return keep.concat([[E[0] - 38, E[1] + 50], [E[0] - 14, E[1] + 36], E]);
+  const P = keep[keep.length - 1] || [E[0] - 100, E[1]], s = Math.sign(P[0] - E[0]) || -1, dip = E[1] > 430 ? 0.45 : 1;
+  return keep.concat([[E[0] + s * 38, E[1] + 50 * dip], [E[0] + s * 14, E[1] + 36 * dip], E]);
 }
+// 16 Eki (Caner: "bölümler sıkıcı mı, birbirinin kopyası mı?"): 40 bölümün 40'ında kale sağ kenardaydı, her harita soldan sağa okunuyordu;
+// 29 ile 37'nin yolu neredeyse aynıydı, 10-16 ve 34-35 benzerdi. Bu bölümlerde kale solda (L), altta (B), üstte (T) ya da ortada (C);
+// düşman sağdan da gelir. Arsalar tools/arsa-uret.js ile (--json) bu yollara göre üretildi. routes (kol) yok: her yol ayrı giriş ya da birleşir.
+// 16 Eki: 2. seferin mekânlarına çevre mekaniği (game.js MECH): Kuzgun Ormanı darağaçları, Veba Köyü karantina kapısı, Manastır çan kulesi, Kemik Mahzeni kemik yığınları
+const MECH2 = { ravenwood: 'gallows', plague: 'quarantine', monastery: 'chime', ossuary: 'bonepile' };
+for (const lv of LEVELS) if (lv.ep === 2 && !lv.mech && MECH2[lv.theme]) lv.mech = MECH2[lv.theme];
+const LAYOUT3 = {
+  'Kurbağa Adası': { k: 0.6,  // B
+    paths: [[[-40,240],[120,240],[220,170],[360,140],[470,200],[460,300],[500,380],[520,450],[580,472],[640,488]], [[700,-40],[700,90],[800,170],[810,290],[790,400],[740,470],[640,488]]], plots: [[358,216],[730,234],[94,144],[826,492],[418,390],[274,228],[376,282],[664,192],[886,342],[112,342],[610,132],[868,414]] },
+  'Kemik Tarlası': { // L
+    paths: [[[1000,140],[850,140],[740,200],[620,170],[500,210],[420,280],[300,260],[200,250],[105,300]], [[1000,380],[860,380],[760,330],[640,360],[520,390],[380,370],[250,340],[105,300]], [[560,-40],[560,90],[520,170],[420,280],[300,260],[200,250],[105,300]]], plots: [[550,276],[796,264],[622,240],[880,270],[340,198],[76,396],[508,462],[256,180],[442,132],[742,420],[592,450],[832,474]] },
+  'Lanet Kuyusu': { // C
+    paths: [[[-40,180],[120,180],[200,270],[300,380],[420,392],[480,365]], [[1000,180],[850,180],[760,270],[660,380],[540,392],[480,365]], [[240,-40],[240,90],[160,170],[200,270],[300,380],[420,392],[480,365]], [[740,580],[740,470],[660,400],[540,392],[480,365]]], plots: [[598,456],[256,210],[844,294],[352,318],[118,288],[784,366],[604,318],[322,144],[502,486],[202,396],[826,426],[724,186],[334,252],[664,264]] },
+  'Yanık Kazıklar': { // L
+    paths: [[[1000,180],[860,180],[760,240],[640,200],[520,150],[410,190],[390,280],[480,345],[370,395],[250,365],[180,300],[105,300]]], plots: [[496,264],[310,312],[730,162],[856,294],[220,240],[580,252],[502,426],[304,240],[76,396],[772,306],[556,318],[364,132]] },
+  'Kuzgun Tepesi': { ep: 2, k: 0.6, g: 1.3,  // B
+    paths: [[[260,-40],[260,90],[200,170],[260,250],[400,270],[480,340],[500,420],[560,470],[640,488]], [[700,-40],[700,90],[790,160],[760,250],[620,250],[480,340],[500,420],[560,470],[640,488]]], plots: [[394,354],[640,174],[304,192],[484,234],[778,318],[352,132],[190,288],[868,210],[574,132],[742,498],[556,198],[136,228]] },
+  'Karantina Kapısı': { // C
+    paths: [[[-40,250],[120,250],[220,330],[330,392],[420,398],[480,365]], [[1000,240],[840,240],[740,320],[620,395],[540,398],[480,365]]], plots: [[592,330],[346,324],[844,348],[112,354],[574,468],[280,282],[718,240],[118,150],[658,288],[190,396],[778,162],[658,456]] },
+  'Veba Hendeği': { k: 0.75, g: 1.3,  // T
+    paths: [[[-40,330],[110,330],[210,250],[320,230],[380,300],[440,310],[500,240]], [[700,580],[700,460],[780,380],[720,300],[620,300],[560,290],[500,240]]], plots: [[646,372],[286,306],[508,354],[82,234],[400,198],[808,492],[634,228],[232,360],[604,432],[814,282],[412,378],[154,198]] },
+  'Ölüler Kuyusu': { // L
+    paths: [[[1000,380],[860,380],[760,300],[780,190],[660,140],[520,170],[460,260],[540,340],[440,390],[320,350],[240,270],[105,290]]], plots: [[400,312],[640,246],[232,372],[868,276],[550,246],[346,258],[820,468],[508,444],[88,396],[862,204],[724,384],[442,138]] },
+  'Su Basmış Avlu': { k: 0.75, g: 1.2,  // B
+    paths: [[[-40,150],[140,150],[260,220],[380,200],[460,280],[480,370],[520,450],[580,472],[640,488]], [[1000,260],[880,260],[780,210],[650,190],[540,230],[470,290],[480,370],[520,450],[580,472],[640,488]]], plots: [[382,300],[688,258],[124,246],[478,180],[760,306],[406,396],[268,144],[832,348],[568,138],[292,288],[742,498],[64,294]] },
+  'Çan Kulesi': { k: 0.88, // C
+    paths: [[[-40,170],[110,170],[200,250],[160,330],[240,390],[360,398],[430,385],[480,365]], [[1000,170],[860,170],[760,250],[800,330],[720,390],[600,398],[530,385],[480,365]]], plots: [[256,318],[700,318],[502,486],[94,270],[868,276],[586,474],[352,330],[772,444],[724,168],[244,174],[112,396],[604,330]] },
+  'Kafatası Kapısı': { // L
+    paths: [[[700,580],[700,450],[800,370],[840,260],[760,170],[620,130],[480,160],[420,250],[500,320],[400,380],[280,350],[200,290],[105,300]]], plots: [[358,306],[754,276],[544,210],[214,396],[820,468],[694,216],[568,276],[292,264],[604,426],[886,378],[76,396],[502,420]] },
+  'Kemik Mahzeni': { // T (Kemik Avize Salonu'na benziyordu)
+    paths: [[[-40,300],[120,300],[230,360],[340,330],[420,300],[500,240]], [[1000,300],[840,300],[730,360],[620,330],[560,300],[500,240]], [[620,580],[620,450],[560,400],[520,330],[500,240]]], plots: [[448,366],[718,432],[244,288],[850,402],[610,246],[100,396],[520,492],[364,396],[718,288],[400,234],[94,198],[880,198]] },
+  'Sis Yolu': { // B (Sazlık Şapel'in neredeyse aynısıydı)
+    paths: [[[420,-40],[420,80],[300,130],[180,190],[200,290],[320,330],[420,280],[520,200],[660,160],[800,200],[830,300],[790,400],[740,460],[640,488]]], plots: [[322,216],[748,264],[574,252],[808,498],[676,228],[280,396],[862,432],[514,300],[130,132],[196,372],[880,180],[454,348]] },
+  'Yıkık Kule': { k: 0.85,  // L
+    paths: [[[1000,150],[840,150],[720,210],[560,180],[420,230],[300,220],[200,260],[105,290]], [[760,580],[760,450],[640,400],[500,380],[360,370],[240,330],[105,290]]], plots: [[352,294],[592,306],[844,252],[634,474],[436,300],[88,396],[676,288],[208,174],[520,270],[718,132],[856,426],[298,150]] },
+  'Kızıl Sur': { k: 0.58,  // C
+    paths: [[[-40,200],[120,200],[220,300],[330,392],[420,398],[480,365]], [[1000,200],[840,200],[740,300],[630,392],[540,398],[480,365]], [[250,-40],[250,100],[180,170],[160,260],[220,300],[330,392],[420,398],[480,365]]], plots: [[256,228],[592,330],[364,330],[844,306],[88,294],[574,468],[340,138],[784,360],[160,348],[718,210],[322,270],[658,456]] },
+};
+// ekrandaki yol uzunluğu (çerçeve dışı giriş payı sayılmaz): yeni yol kısaysa düşman kulelerin önünde daha az kalır → can çarpanı orana göre (LAYOUT3.k ile ince ayar)
+const scrLen = (p) => { let s = 0; for (let i = 1; i < p.length; i++) { const c = (v, m) => Math.max(0, Math.min(m, v)); s += Math.hypot(c(p[i][0], 960) - c(p[i - 1][0], 960), c(p[i][1], 540) - c(p[i - 1][1], 540)); } return s; };
+for (const lv of LEVELS) { const Lo = LAYOUT3[lv.name]; if (!Lo || (Lo.ep && Lo.ep !== (lv.ep || 1))) continue;
+  const avg = (P) => P.reduce((a, p) => a + scrLen(p), 0) / P.length, r = avg(Lo.paths) / avg(lv.paths), n0 = lv.paths.length;
+  lv.paths = Lo.paths.map(p => p.map(q => q.slice())); delete lv.routes; if (Lo.plots) lv.plots = Lo.plots.map(q => q.slice()); lv.layout3 = true;
+  lv.hpMul *= Math.pow(Math.max(0.4, Math.min(1.15, r)), 1.1) * (Lo.k || 1); lv.gold = Math.round(lv.gold * (lv.paths.length > n0 ? 1.15 : 1) * (Lo.g || 1) / 5) * 5; } // k: can, g: başlangıç altını ince ayarı (denge botu)
 // Yol düzeni: giriş sayısı, kale yeri (yolun ucunda kapı) ve dalga gruplarının girişlere dağıtımı
 LEVELS.forEach((lv) => {
   const alts = new Set();
@@ -1062,8 +1108,9 @@ if (NECRO) {
   ENEMIES.shadowmaster.desc = 'Gölgeye karışıp yolun ilerisinde belirir, zehir bulutu saçar, suikastçı çağırır';
   ENEMIES.ironwarden.desc = 'Kalkan Duvarı: 4 sn ok ve top hasarının çoğunu karşılar (büyü ve askerler işler). Yeri döver, ağır piyade çağırır';
   // her mekânın kendi komutanı (bölüm 1-20); 17-19 ikili
-  const B1 = ['centurion', 'centurion', 'centurion', 'champion', 'champion', 'champion', 'hierophant', 'hierophant', 'shadowmaster', 'shadowmaster',
-    'shadowmaster', 'ironwarden', 'cavcaptain', 'ironwarden', 'cavcaptain', 'cavcaptain', 'ironwarden', 'cavcaptain', 'shadowmaster', 'gloriosus1'];
+  // 16 Eki (Caner: "bölümler tekrar etmesin"): aynı komutan iki bölüm üst üste gelmez; her bölgenin son bölümünde (4, 8, 12, 16, 20) o bölgenin büyük komutanı
+  const B1 = ['centurion', 'champion', 'centurion', 'champion', 'hierophant', 'centurion', 'champion', 'hierophant', 'shadowmaster', 'hierophant',
+    'champion', 'shadowmaster', 'cavcaptain', 'shadowmaster', 'ironwarden', 'cavcaptain', 'ironwarden', 'shadowmaster', 'cavcaptain', 'gloriosus1'];
   const B2 = { 16: 'hierophant', 17: 'champion', 18: 'ironwarden' };
   LEVELS.filter(l => (l.ep || 1) === 1).forEach((l, i) => { if (B1[i]) l.bossT = B1[i]; if (B2[i]) l.boss2 = B2[i]; });
 }
@@ -1099,8 +1146,9 @@ if (NECRO) {
     ab: { drain: { cd: 7, r: 95, dmg: 18 }, burn: { cd: 8, r: 100, dps: 12, t: 4, poison: true, say: 'Lanetli Çay!' }, rage: { cd: 13, t: 3 } } };
   for (const t of ['hubertus', 'agnes', 'lucia', 'godfrey', 'severus3']) CLASS_OF_EXTRA[t] = t === 'godfrey' ? 'agir' : t === 'hubertus' ? 'hafif' : 'kutsal';
   // her mekânın kendi komutanı (2. sefer bölüm 1-20); 17-19 ikili
-  const B2 = ['hubertus', 'hubertus', 'hubertus', 'malleus', 'agnes', 'agnes', 'agnes', 'campanus', 'lucia', 'lucia', 'lucia', 'ignis',
-    'godfrey', 'godfrey', 'godfrey', 'colossus', 'godfrey', 'malleus', 'campanus', 'cathedral'];
+  // 16 Eki: üst üste aynı komutan yok; bölge sonları (4, 8, 12, 16, 20) büyük bosslar (Malleus, Campanus, Ignis, Colossus, Katedral)
+  const B2 = ['hubertus', 'agnes', 'hubertus', 'malleus', 'agnes', 'hubertus', 'lucia', 'campanus', 'lucia', 'agnes', 'godfrey', 'ignis',
+    'godfrey', 'lucia', 'agnes', 'colossus', 'godfrey', 'malleus', 'campanus', 'cathedral'];
   const B2b = { 16: 'lucia', 17: 'agnes', 18: 'ignis' };
   LEVELS.filter(l => l.ep === 2).forEach((l, i) => { l.bossT = B2[i]; if (B2b[i]) l.boss2 = B2b[i]; else delete l.boss2; });
 }
