@@ -1,0 +1,9 @@
+Edit this exact image: the same castle, same camera, same size, same position in the frame, same magenta background, same art style. Every part stays exactly where it is; this is damage stage 3 of 3, HEAVY damage, the house is almost destroyed but still standing:
+- big chunks of the walls are broken away showing dark rooms inside, deep cracks everywhere, the tall tower roof is half collapsed with exposed wooden beams (beams are broken and slanted, never forming a cross shape)
+- most roof tiles are gone on the left roof, large ragged holes with irregular jagged edges
+- almost all orange windows are smashed and dark, bigger orange fires burn inside three broken windows and on the left balcony
+- both red banners on the left are torn to rags, the balcony railing is broken in many places with fallen balusters
+- the terrace is covered in rubble: the red sofa is torn and tipped over, the bookshelf has fallen, the telescope has fallen on its side, the cauldron is spilled with a green puddle
+- many arrows stuck in the walls and roof, a few cracks in the stairs and the rock base
+- the green door glow and the ritual circle still faintly shine
+Nothing sticks out of the building outline: no smoke clouds, no flying debris outside the castle. No crosses anywhere (no cross-shaped holes, no cross-shaped beams, plain coffin lid), no text. Background stays plain flat solid magenta (#FF00FF).

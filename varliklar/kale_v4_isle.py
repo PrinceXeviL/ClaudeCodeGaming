@@ -8,7 +8,10 @@ from PIL import Image, ImageDraw
 D = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, D)
 from anim_isle import remove_magenta
 OUT = os.path.join(D, 'cikti', 'kale_v4'); W_OUT = 760
-HACLAR = {1: [[(1201, 2062), (1226, 2062), (1226, 2130), (1201, 2130)], [(1191, 2076), (1237, 2076), (1237, 2100), (1191, 2100)]]}
+TABUT = [[(1201, 2062), (1226, 2062), (1226, 2130), (1201, 2130)], [(1191, 2076), (1237, 2076), (1237, 2100), (1191, 2100)]]  # tabuttaki haç (her evrede aynı yerde)
+HACLAR = {1: TABUT, 2: TABUT + [[(1186, 2060), (1236, 2060), (1236, 2140), (1186, 2140)]]}
+# artı biçimli çatı delikleri (haç gibi okunuyor): kutudaki koyu delik pikselleri çevreden doldurulur
+DELIK = {2: [(340, 700, 400, 762), (558, 670, 664, 784)]}
 
 
 def harmonik(a, m, n=1500):
@@ -25,7 +28,17 @@ def load(n):
     im = Image.open(p).convert('RGB'); a = np.asarray(im).astype(np.float32)
     for poly in HACLAR.get(n, []):
         mk = Image.new('L', im.size, 0); ImageDraw.Draw(mk).polygon(poly, fill=255); harmonik(a, np.asarray(mk) > 0)
+    from scipy import ndimage as nd
+    for x0, y0, x1, y1 in DELIK.get(n, []):
+        m = np.zeros(a.shape[:2], bool); m[y0:y1, x0:x1] = a[y0:y1, x0:x1].max(2) < 60
+        m = nd.binary_dilation(nd.binary_opening(m, iterations=2), iterations=3); harmonik(a, m)
+        a[m] += np.random.default_rng(5).normal(0, 3, (m.sum(), 1))
     rgba = remove_magenta(np.clip(a, 0, 255).astype(np.uint8)); rgba[..., 3] = np.where(rgba[..., 3] < 24, 0, rgba[..., 3])
+    # kenar pembeliği (3. evre yarım çözünürlükte geldi, büyütülünce magenta saçağı kalın kaldı): saydam bölgeye 8 px içindeki pembe tonu griye çek
+    from scipy import ndimage as nd
+    edge = nd.binary_dilation(rgba[..., 3] < 200, iterations=8); c = rgba[..., :3].astype(np.float32)
+    m = np.minimum(c[..., 0], c[..., 2]) - c[..., 1]; fix = edge & (m > 25)
+    c[fix, 0] -= m[fix] * 0.85; c[fix, 2] -= m[fix] * 0.85; rgba[..., :3] = c.clip(0, 255).astype(np.uint8)
     return rgba
 
 

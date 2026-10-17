@@ -6572,12 +6572,12 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
 // 13 Eki (Caner): kale sıfırdan (ham/nm_kale_v3.jpg, varliklar/kale_v3_isle.py): boynuzlu kafatası kule, kafatası ağzı kapı, ortada yarım daire
 // balkon (Mortimer), iki yan kanat balkonda okçular. Kesirler castle_keep_1 görseline göre (ızgarayla ölçüldü).
-const KEEP = { w: 184, gate: [0.455, 0.845], at: [0.485, 0.552], rail: [0.36, 0.53, 0.62, 0.61], px: 122,
+const KEEP = { w: 184, gate: [0.42, 0.88], at: [0.49, 0.538], rail: [0.36, 0.53, 0.62, 0.61], px: 122, // 17 Eki: kale v4 (teraslı gotik ev)
   // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (Mortimer ve okçuların ayakları korkuluğun ardında)
-  railPoly: [[0.1, 0.46], [0.13, 0.47], [0.2, 0.5], [0.28, 0.518], [0.33, 0.535], [0.37, 0.548], [0.42, 0.56], [0.48, 0.566], [0.54, 0.562], [0.58, 0.552],
-    [0.62, 0.556], [0.7, 0.574], [0.8, 0.584], [0.88, 0.584], [0.93, 0.57], [0.97, 0.548], [0.97, 0.63], [0.1, 0.63]],
+  railPoly: [[0.11, 0.454], [0.145, 0.488], [0.263, 0.5], [0.36, 0.509], [0.395, 0.532], [0.447, 0.548], [0.526, 0.552], [0.585, 0.539], [0.684, 0.564],
+    [0.79, 0.574], [0.895, 0.571], [0.954, 0.541], [0.96, 0.63], [0.1, 0.63]],
   guards: [], gpx: 128,
-  archers: [[0.8, 0.566, -1], [0.2, 0.488, 1]], apx: 105 };
+  archers: [[0.8, 0.566, -1], [0.235, 0.488, 1]], apx: 105 };
 const isKeep = (im) => im && [1, 2, 3, 4].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
   if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
@@ -14784,16 +14784,16 @@ function winCol(i) {
   return A.map((v, j) => Math.round(lerp(v, B[j], k))).join(',');
 }
 // heybetli kalenin ışıkları: iki mangalda kızıl ruh ateşi (11 Eki: görsel de mor/kızıl, varliklar/kale_renk.py), pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
-const KEEP_FX = { // 13 Eki: yeni kale (yeşil alevli mangallar, mor/yeşil pencereler; 4. öğe pencerenin rengi)
-  fire: [[0.255, 0.76], [0.6, 0.79]], green: true, roof: [[0.27, 0.32], [0.72, 0.36]], eyes: [[0.39, 0.688], [0.505, 0.692]],
-  win: [[0.5, 0.36, 2.2, '200,90,255'], [0.5, 0.25, 0.5, '110,255,120'], [0.625, 0.25, 0.5, '200,90,255'], [0.26, 0.33, 1, '200,90,255'], [0.26, 0.455, 1, '110,255,120'],
-    [0.36, 0.48, 0.8, '110,255,120'], [0.405, 0.48, 0.8, '110,255,120'], [0.72, 0.37, 1, '110,255,120'], [0.72, 0.5, 1, '200,90,255'], [0.8, 0.5, 0.8, '110,255,120'], [0.62, 0.515, 0.8, '110,255,120']],
-  // 11 Eki: hasar evrelerinin dumanı ve çatı yangını görselden silindi, kodla canlı (Caner: duman hareketsizdi).
-  // smoke: [x, y, kalınlık] dumanın çıktığı yer; burn: [x, y, boy] çatıdaki yangın. Evre başına (castle_keep_N).
+const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritüel çemberi; 4. öğe ışığın rengi). Mangal yok (fire boş).
+  fire: [], green: true, eyes: [],
+  win: [[0.497, 0.244, 0.6, '255,150,60'], [0.625, 0.24, 0.5, '255,150,60'], [0.5, 0.356, 1.6, '255,150,60'], [0.267, 0.337, 0.8, '255,150,60'],
+    [0.263, 0.444, 0.9, '255,150,60'], [0.366, 0.47, 0.6, '110,255,120'], [0.405, 0.47, 0.6, '110,255,120'], [0.668, 0.388, 0.7, '110,255,120'],
+    [0.5, 0.478, 1.4, '110,255,120'], [0.322, 0.634, 1.3, '110,255,120'], [0.25, 0.605, 0.8, '255,150,60'], [0.405, 0.632, 0.8, '255,150,60'],
+    [0.803, 0.551, 1.4, '110,255,120'], [0.842, 0.512, 0.7, '110,255,120']],
+  // hasar evrelerinde duman ve yangın kodla canlı: smoke [x, y, kalınlık], burn [x, y, boy]; off: o evrede kırılıp sönen pencereler (win sırası)
   dmg: {
-    2: { smoke: [[0.66, 0.3, 0.8]], burn: [] }, // 13 Eki: yeni kalenin çatıları
-    3: { smoke: [[0.26, 0.28, 1], [0.72, 0.33, 1.1]], burn: [[0.26, 0.29, 0.9], [0.72, 0.34, 1]] },
-    4: { smoke: [[0.26, 0.26, 1.2], [0.72, 0.31, 1.3], [0.5, 0.2, 0.9], [0.87, 0.55, 0.7]], burn: [[0.26, 0.28, 1.1], [0.72, 0.33, 1.2], [0.87, 0.56, 0.7]] },
+    2: { smoke: [[0.27, 0.43, 0.6], [0.56, 0.1, 0.7]], burn: [] },
+    3: { smoke: [[0.3, 0.3, 1], [0.5, 0.13, 0.9], [0.62, 0.36, 0.9], [0.17, 0.46, 0.8]], burn: [[0.17, 0.475, 0.6], [0.27, 0.46, 0.45]], off: [0, 1, 2, 3] },
   },
 };
 // süzülen duman: üst üste binen yumuşak gri lekeler aşağıdan yukarı yükselir, rüzgârla sağa kıvrılır, büyüyüp söner (görselde değil, her karede)
@@ -14811,7 +14811,9 @@ function keepSmoke(x, y, s, k, seed) {
 function drawKeepLights(cp, h, sh, burning) {
   const s = cp.w / 1000, P = (f) => [cp.x - cp.w / 2 + f[0] * cp.w + sh, cp.y - h + f[1] * h];
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const off = (KEEP_FX.dmg[burning] || {}).off;
   for (const [i, f] of KEEP_FX.win.entries()) {
+    if (off && off.includes(i)) continue;
     const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
     glow(ctx, x, y, 22 * s * f[2], f[3] || winCol(i), 0.15 * k + 0.05);
   }
