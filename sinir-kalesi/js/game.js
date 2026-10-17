@@ -3016,6 +3016,7 @@ function bloodHit(e, dealt) {
   e.bloodCd = G.t + BLOOD_FX.cd;
   const h = CHAR_H['enemy_' + e.type] || 30, r = dealt / Math.max(1, e.maxHp), n = clamp(Math.round(5 + r * 24), 5, 10), y0 = e.y - h * (e.def.flying ? 0.4 : 0.55) - (e.def.flying ? 26 : 0);
   const sim = kind === 'blood' && bloodPick(BLOOD_SPR.drop);
+  if (kind === 'blood') bloodStain(e, h);
   if (sim) { // görselli kan: sıçrama + damlalar
     const sp = bloodPick(r > BLOOD_FX.big * 2 ? BLOOD_SPR.heavy : r > BLOOD_FX.big ? BLOOD_SPR.spray : BLOOD_SPR.small);
     if (sp) G.effects.push({ kind: 'bspray', im: sp, x: e.x + rand(-2, 2), y: y0 + 2, w: h * (r > BLOOD_FX.big * 2 ? BLOOD_SPR.heavyK : BLOOD_SPR.sprayK) * rand(0.85, 1.15), face: Math.random() < 0.5 ? -1 : 1, rot: rand(-0.35, 0.35), t: 0, dur: BLOOD_SPR.dur });
@@ -3030,6 +3031,19 @@ function bloodHit(e, dealt) {
     G.parts.push({ kind: 'dot', x: e.x + rand(-4, 4), y: y0 + rand(-4, 4), vx: rand(-70, 70), vy: -rand(50, 130), g: 560, drag: 0, col, s0: rand(2.4, 3.8), s1: 1.4, a: 1, life: rand(0.55, 0.85), floor: e.y + rand(-3, 4), t: 0 }); // seyreltmeden (kalabalık kipi de)
   }
   if (kind === 'blood' && r > BLOOD_FX.big && !e.def.flying) G.decals.push({ kind: 'splat', red: true, small: true, x: e.x + rand(-6, 6), y: e.y + rand(-2, 3), r: rand(4, 7), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 6 });
+}
+// 17 Eki (Caner: "kanlar düşmanın üzerinde kalsın, ölene kadar görünsün"): vuruldukça gövdede kalıcı kan lekesi birikir; can azaldıkça artar
+// (en çok BLOOD_STAIN.n), düşman ölünce kaybolur. Yer gövdeye göre (ayaktan yukarı oran, yana oran; yüzü dönünce aynalanır)
+const BLOOD_STAIN = { n: 4, w: [0.15, 0.21], fx: 0.11, fy: [0.3, 0.62], im: ['nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'] };
+function bloodStain(e, h) {
+  if (e.def.flying || e.def.machine) return;
+  const S = e.stains || (e.stains = []), want = Math.min(BLOOD_STAIN.n, Math.ceil((1 - Math.max(0, e.hp) / e.maxHp) * BLOOD_STAIN.n));
+  while (S.length < want) { const B = BLOOD_STAIN; S.push({ im: B.im[S.length % B.im.length], fx: rand(-B.fx, B.fx), fy: rand(B.fy[0], B.fy[1]), w: rand(B.w[0], B.w[1]), rot: rand(-0.6, 0.6), fl: Math.random() < 0.5 ? -1 : 1, t: G.t }); }
+}
+function drawStains(e, x, h, fly) {
+  if (!setting('blood')) return;
+  for (const s of e.stains) { const im = spr(s.im); if (!im) continue; const w = h * s.w, hh = w * im.height / im.width, a = Math.min(1, (G.t - s.t) / 0.15);
+    ctx.save(); ctx.globalAlpha = 0.93 * a; ctx.translate(x + s.fx * h * (e.face || 1), e.y - fly - s.fy * h); ctx.rotate(s.rot); ctx.scale(s.fl, 1); ctx.drawImage(im, -w / 2, -hh / 2, w, hh); ctx.restore(); }
 }
 function bloodDeath(e) {
   if (bleedKind(e) !== 'blood' || !setting('blood') || e.def.flying || e.leaked) return;
@@ -10876,6 +10890,7 @@ function drawEnemy0(e) {
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else if (e.spinA) { const cy = e.kdT > 0 ? e.y - uo.fly - 2 : e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.kdT > 0 ? e.spinA : e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner (devrilen: ayaklarının üstünden, savrulan: gövde ortasından)
     else drawUnit(name, im, ux, e.y, e.face, uo);
+    if (e.stains && !e.under) drawStains(e, ux, uo.h, uo.fly || 0); // gövdedeki kan lekeleri
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
     if (e.wallT > 0 && !e.dead) { // 17 Eki: kalkan duvarı (birimin önünde çizilir): başın üstüne kaldırılmış kalkanların bronz kavsi (açılırken büyür, biterken söner)
       const k = Math.min(1, ((e.wallD || CAPTAIN.shield.t) - e.wallT) / 0.2, e.wallT / 0.3), hw = (d.r || 10) * 1.12, cy = e.y - fly - uo.h * 0.74, f = e.face || 1; // kaskın hemen üstü (uo.h sorguçla birlikte boy)
