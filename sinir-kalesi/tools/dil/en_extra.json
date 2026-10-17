@@ -797,7 +797,8 @@
   "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 raised · +25% health · +25% damage · corpse +1.65 s",
   "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 raised · +25% health and damage · corpse +2 s · 2 separate groups",
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Very fast; runs over skeletons and stabs with a spear while driving. They can't stop it; a bone wall can",
-  "Ortam efektleri": "Ambient effects"
+  "Ortam efektleri": "Ambient effects",
+  "Bölüğün kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır; o ölünce bu avantaj kaybolur. Lejyonerden %60 daha canlı": "The squad veteran: marches in front and gives orders. Nearby legionaries hit 15% harder and take 15% less damage; the bonus is lost when he dies. 60% more health than a legionary"
  },
  "tpl": [
   [

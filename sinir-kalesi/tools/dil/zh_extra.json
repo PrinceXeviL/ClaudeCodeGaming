@@ -608,7 +608,8 @@
   "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 复活 · +25% 生命 · +25% 伤害 · 尸体 +1.65 秒",
   "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 复活 · +25% 生命与伤害 · 尸体 +2 秒 · 2 个独立小队",
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "速度极快；碾过骷髅，行进中挥矛刺击。骷髅挡不住它，骨墙可以",
-  "Ortam efektleri": "环境特效"
+  "Ortam efektleri": "环境特效",
+  "Bölüğün kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır; o ölünce bu avantaj kaybolur. Lejyonerden %60 daha canlı": "小队老兵：走在最前并发号施令。附近军团兵攻击提高15%，受到伤害降低15%；他一死，加成随之消失。生命比军团兵多60%"
  },
  "tpl": [
   [

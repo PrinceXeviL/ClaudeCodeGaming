@@ -1492,6 +1492,7 @@ if (NECRO) {
     });
     if (r === 2) ENEMIES[t + '_y'].ab = Object.assign({}, d.ab, { howl: { cd: 11, r: 85, say: 'Borazan!', soft: true } });
   }
+  ENEMIES.legion_k.desc = 'Bölüğün kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır; o ölünce bu avantaj kaybolur. Lejyonerden %60 daha canlı'; // 17 Eki: bölük komutanı (game.js CAPTAIN)
   ENEMIES.heavy_y.hp = Math.round(ENEMIES.heavy_y.hp * 0.7); // 16 Eki (Caner): Ağır Piyade Yüzbaşı %30 daha az canlı
   // dalgalara rütbe dağıtımı (tohumlu, her oynanışta aynı): 2. bölümden itibaren kıdemliler, 5. bölümde yüzbaşılar.
   // Kıdemli oranı bölüm ve dalga ilerledikçe artar; yüzbaşı her dalgada 1-3 tane.

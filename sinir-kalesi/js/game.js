@@ -3036,6 +3036,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   e.hitG = G.t; // komutan 'Kalkanlar!' için (oyun zamanı)
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
   if (e.frogT > 0) amount *= FROG.dmg; // kurbağa fazla hasar alır
+  if (e.capT > 0) amount *= CAPTAIN.def; // kıdemlinin yanında: kalkanlar sıkı
   if (src === 'melee' && NECRO) { const L = lightAt(e.x, e.y); if (L) amount *= L.k; } // fener ışığında iskeletler zayıf
   if (src === 'melee' && G.bloodT > 0) amount *= BLOOD.dmg; // Kızıl Ay: ölüler azgın
   e.lastSrc = src || type;
@@ -3130,7 +3131,10 @@ function abRank(t, id) {
 }
 // Lejyoner komutanı (kıdemli): yanındaki lejyonerlere +%10 hasar ve +%5 hız; o ölünce güç kalmaz. Komutlar ekrandayken, en çok 12 sn'de bir:
 // girişte "Saf tutun!", dövüşe girince "Hücum!" (3 sn koşar), bölük vurulunca "Kalkanlar!" (2,5 sn zırh)
-const CAPTAIN = { r: 80, cd: 12, dmg: 1.1, spd: 1.05, rush: 1.15 };
+// 17 Eki (Caner: "lejyonerlerin başında hep bir kıdemli olsun, komut versin; çevresindekilerin saldırı ve savunmasını arttırsın, ölürse avantaj kalksın"):
+// her lejyoner bölüğünün (2+ kişi) başında kıdemli yürür. Aurası (r) içindeki lejyonerler dmg kat sert vurur, def kat hasar alır; aura her karede
+// yenilenir, kıdemli ölünce 0,6 sn içinde söner. Ayağın altındaki soluk altın halka kimin güçlendiğini gösterir.
+const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15 };
 function updateCaptain(e, dt) {
   const near = [];
   for (const o of G.enemies) if (o !== e && !o.dead && (o.def.base || o.type) === 'legion' && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r) { near.push(o); if (!(o.curseT > 0)) o.capT = 0.6; }
@@ -8720,7 +8724,7 @@ function update(dt) {
       }
       sp.lastPi = pi;
       // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
-      const cap = NECRO && i === 0 && sp.n >= 4 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
+      const cap = NECRO && i === 0 && sp.n >= 2 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
       const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null);
       if (cap) e.captain = true;
       if (sp.loot) e.lootCarrier = true; // 17 Eki: boss gelmeyen bölümde ödülü taşıyan Yüzbaşı
@@ -10825,6 +10829,11 @@ function drawEnemy0(e) {
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
+    if ((e.capT > 0 || e.captain) && !e.dead && !(uo.fly > 0)) { // kıdemli ve aurasındakiler: ayağın altında soluk altın halka
+      ctx.save(); const rr = (d.r || 10) * 1.15; ctx.strokeStyle = e.captain ? 'rgba(255,215,110,0.55)' : 'rgba(255,215,110,0.2)'; ctx.lineWidth = e.captain ? 1.2 : 0.8;
+      if (e.captain) { ctx.fillStyle = 'rgba(255,215,110,0.1)'; ctx.beginPath(); ctx.ellipse(ux, e.y + 1, rr * 1.15, rr * 0.42, 0, 0, Math.PI * 2); ctx.fill(); }
+      ctx.beginPath(); ctx.ellipse(ux, e.y + 1, rr * (e.captain ? 1.15 : 0.85), rr * (e.captain ? 0.42 : 0.3), 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    }
     if (d.crew) drawSiegeCrew(e, uo.h, im);
     if (d.formation) drawFormation(e, name, im, ux, uo);
     else if (e.spinA) { const cy = e.kdT > 0 ? e.y - uo.fly - 2 : e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.kdT > 0 ? e.spinA : e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner (devrilen: ayaklarının üstünden, savrulan: gövde ortasından)

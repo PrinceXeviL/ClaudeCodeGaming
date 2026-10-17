@@ -608,7 +608,8 @@
   "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 Erweckte · +25 % Leben · +25 % Schaden · Leiche +1,65 s",
   "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 Erweckte · +25 % Leben und Schaden · Leiche +2 s · 2 getrennte Gruppen",
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Sehr schnell; überrollt Skelette und sticht im Vorbeifahren mit dem Speer zu. Sie halten ihn nicht auf, eine Knochenmauer schon",
-  "Ortam efektleri": "Umgebungseffekte"
+  "Ortam efektleri": "Umgebungseffekte",
+  "Bölüğün kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır; o ölünce bu avantaj kaybolur. Lejyonerden %60 daha canlı": "Der Veteran des Trupps: marschiert vorn und gibt Befehle. Legionäre in der Nähe schlagen 15 % härter zu und erleiden 15 % weniger Schaden; stirbt er, ist der Vorteil weg. 60 % mehr Leben als ein Legionär"
  },
  "tpl": [
   [
