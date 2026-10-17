@@ -1724,6 +1724,8 @@ function extendEntry(p) {
   const pts = [[a[0] - (b[0] - a[0]) / L * ext, a[1] - (b[1] - a[1]) / L * ext]].concat(p.pts);
   return { pts, cum: [0].concat(p.cum.map(c => c + ext)), total: p.total + ext };
 }
+// 17 Eki (Caner: "zemindeki yaprak, mum askerlerden büyük olmasın"): zemin karosu 360 → 250 birim (ayrıntılar askere oranlı küçülür, doku keskinleşir)
+const GROUND_TILE = 250, GROUND_TILES = { marsh: 200, village: 220 }; // bataklıkta nilüfer/saz iri çizilmiş: karo daha küçük
 function renderBackground0(lv, paths, res) {
   if (BGM.x || BGM.y) paths = paths.map(extendEntry);
   const B = bgBox(), c = document.createElement('canvas');
@@ -1740,7 +1742,7 @@ function renderBackground0(lv, paths, res) {
   const grassTex = spr('grass_' + (th.tex || lv.theme));
   if (grassTex) {
     const pat = g.createPattern(grassTex, 'repeat');
-    pat.setTransform(new DOMMatrix().scale(0.5 * (BG_ISMAP ? MAP_TEX_K : 1)));
+    pat.setTransform(new DOMMatrix().scale((GROUND_TILES[th.tex || lv.theme] || GROUND_TILE) / grassTex.width * (BG_ISMAP ? MAP_TEX_K : 1))); // 17 Eki: karo GROUND_TILE birim (doku çözünürlüğünden bağımsız)
     g.fillStyle = pat; g.fillRect(B.x, B.y, B.w, B.h);
     g.globalAlpha = 0.42; g.fillStyle = grd; g.fillRect(B.x, B.y, B.w, B.h); g.globalAlpha = 1;
   }
@@ -1775,7 +1777,7 @@ function renderBackground0(lv, paths, res) {
   const roadTex = painted || spr('road');
   if (roadTex) {
     const pat = g.createPattern(roadTex, 'repeat');
-    pat.setTransform(new DOMMatrix().scale((painted ? (desert ? 0.24 : 0.3) : 0.5) * (BG_ISMAP ? MAP_TEX_K : 1)));
+    pat.setTransform(new DOMMatrix().scale((painted ? (desert ? 0.24 : 0.3) * 800 / roadTex.width : 0.5) * (BG_ISMAP ? MAP_TEX_K : 1))); // 17 Eki: boyalı yol karosu genişlikten bağımsız
     strokePath(42 * R, pat);
     if (painted) {
       // doku tonu temaya uyar: rengi temanın yol renginden, açıklık/ayrıntı dokudan gelir
