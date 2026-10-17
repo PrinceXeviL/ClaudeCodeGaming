@@ -729,7 +729,24 @@
   "Önce önceki bölümü bitir": "Termine d’abord l’étape précédente",
   "Şu an açık etkinlik yok": "Aucun événement en ce moment",
   "ETKİNLİĞE DÖN": "RETOUR À L’ÉVÉNEMENT",
-  "gün": "jours"
+  "gün": "jours",
+  "Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.": "La Frontière Maudite. Une terre où les morts dorment en paix.",
+  "Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.": "Un seul nécromancien vit ici : Mortimer. Et il boit son café en silence.",
+  "Ama sınırın öbür yanında güneş hiç batmaz.": "Mais de l’autre côté de la frontière, le soleil ne se couche jamais.",
+  "Solarian İmparatorluğu ölülerin topraklarını istiyor. General Gloriosus yola çıktı.": "L’Empire solarien veut la terre des morts. Le général Gloriosus est en marche.",
+  "Mortimer kahvesini asla yarım bırakmaz. Bu gece bıraktı.": "Mortimer ne laisse jamais son café à moitié. Ce soir, si.",
+  "\"Kalkın tembeller. Davetsiz misafirlerimiz var.\"": "« Debout, fainéants. Nous avons des invités surprise. »",
+  "İmparatorluğun Güneş Generali": "Le Général du Soleil de l’Empire",
+  "\"Güneş adına! Bu kemik yığınını toz edin!\"": "« Au nom du Soleil ! Réduisez ce tas d’os en poussière ! »",
+  "Çaydanlık hırsızı": "Le voleur de théière",
+  "\"Kutsal ışık seni ve çaydanlığını arındıracak!\"": "« La lumière sacrée vous purifiera, toi et ta théière ! »",
+  "Gloriosus düştü. Altın miğferi artık Mortimer'ın rafında.": "Gloriosus est tombé. Son casque d’or trône sur l’étagère de Mortimer.",
+  "Ama İmparatorluk pes etmez. Engizisyon yola çıktı bile...": "Mais l’Empire n’abandonne jamais. L’Inquisition est déjà en route...",
+  "Çaydanlık evine döndü. Lanetli Sınır yine sessiz.": "La théière est rentrée. La Frontière Maudite est de nouveau calme.",
+  "Şimdilik.": "Pour l’instant.",
+  "GENERAL GLORİOSUS": "GÉNÉRAL GLORIOSUS",
+  "BÜYÜK ENGİZİTÖR SEVERUS": "GRAND INQUISITEUR SEVERUS",
+  "ATLA ▶▶": "PASSER ▶▶"
  },
  "tpl": [
   [

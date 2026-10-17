@@ -1,0 +1,10 @@
+[
+ {
+  "name": "tower_xbow_2_collapse",
+  "ref": "ham/anim/tower_xbow_2_ref.png",
+  "raw": true,
+  "frames": 49,
+  "seed": 21,
+  "prompt": "a cartoon bone-and-stone watchtower of a necromancer collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the walls with a little green glow inside, the top balcony tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ }
+]

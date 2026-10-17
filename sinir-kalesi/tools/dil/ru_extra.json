@@ -729,7 +729,24 @@
   "Önce önceki bölümü bitir": "Сначала пройди предыдущий этап",
   "Şu an açık etkinlik yok": "Сейчас нет событий",
   "ETKİNLİĞE DÖN": "К СОБЫТИЮ",
-  "gün": "дн."
+  "gün": "дн.",
+  "Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.": "Проклятый Рубеж. Земля, где мёртвые спят спокойно.",
+  "Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.": "Здесь живёт лишь один некромант — Мортимер. И пьёт свой кофе в тишине.",
+  "Ama sınırın öbür yanında güneş hiç batmaz.": "Но по ту сторону границы солнце никогда не заходит.",
+  "Solarian İmparatorluğu ölülerin topraklarını istiyor. General Gloriosus yola çıktı.": "Солнечная Империя хочет земли мёртвых. Генерал Глориозус уже в пути.",
+  "Mortimer kahvesini asla yarım bırakmaz. Bu gece bıraktı.": "Мортимер никогда не бросает кофе недопитым. Этой ночью бросил.",
+  "\"Kalkın tembeller. Davetsiz misafirlerimiz var.\"": "«Вставайте, лентяи. У нас незваные гости».",
+  "İmparatorluğun Güneş Generali": "Солнечный генерал Империи",
+  "\"Güneş adına! Bu kemik yığınını toz edin!\"": "«Именем Солнца! Сотрите эту груду костей в прах!»",
+  "Çaydanlık hırsızı": "Похититель чайника",
+  "\"Kutsal ışık seni ve çaydanlığını arındıracak!\"": "«Святой свет очистит тебя и твой чайник!»",
+  "Gloriosus düştü. Altın miğferi artık Mortimer'ın rafında.": "Глориозус пал. Его золотой шлем теперь на полке у Мортимера.",
+  "Ama İmparatorluk pes etmez. Engizisyon yola çıktı bile...": "Но Империя не сдаётся. Инквизиция уже в пути...",
+  "Çaydanlık evine döndü. Lanetli Sınır yine sessiz.": "Чайник вернулся домой. На Проклятом Рубеже снова тихо.",
+  "Şimdilik.": "Пока что.",
+  "GENERAL GLORİOSUS": "ГЕНЕРАЛ ГЛОРИОЗУС",
+  "BÜYÜK ENGİZİTÖR SEVERUS": "ВЕЛИКИЙ ИНКВИЗИТОР СЕВЕР",
+  "ATLA ▶▶": "ПРОПУСТИТЬ ▶▶"
  },
  "tpl": [
   [

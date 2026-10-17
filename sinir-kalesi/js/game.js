@@ -2290,7 +2290,8 @@ function startLevel(idx, chal = null) {
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
   if (NECRO && chal !== 'a' && chal !== 'o') {
     const seen = (save.comics || {}), key = idx === 0 ? 'intro' : lv.ep === 2 && idx === LEVELS.findIndex(l => l.ep === 2) ? 'intro2' : lv.comic && COMICS[lv.comic] && !seen[lv.comic] ? lv.comic : lv.boss;
-    if (COMICS[key] && !seen[key]) startComic(key);
+    if (key === 'intro' && cineReady('intro')) { save.comics = Object.assign(save.comics || {}, { intro: 1 }); startCine('intro'); } // 18 Eki: açılış Veo sahnesi
+    else if (COMICS[key] && !seen[key]) startComic(key);
   }
 }
 function bakeNext() {
@@ -9119,6 +9120,7 @@ function update(dt) {
     if (G.tutLv) { save.tut3 = save.tut3 || {}; save.tut3[G.idx] = 1; persist(); } // eğitimli bölüm kazanıldı: eğitimi bir daha gösterme
     persist();
     setOverlay('win');
+    { const ep = G.lv.ep || 1, L = epLevels(ep); if (!G.chal && firstWin && L[L.length - 1] === G.idx && cineReady('end' + ep)) startCine('end' + ep); } // 18 Eki: sefer sonu ödül sahnesi (zafer ekranının üstünde, bir kez)
     if (NECRO) { sfx('winbone'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
     gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
@@ -16418,6 +16420,7 @@ function drawCrown(x, y, s, face) {
 // Boss girişi: ilk BOSS_ENTRY sn ağır ağır yürür, her adımda yer sarsılır ve toz kalkar; ekran uzun süre kızıl karanlıkta kalır
 const BOSS_ENTRY = 5;
 function bossIntro(e) {
+  { const bk = /^gloriosus/.test(e.type) ? 'boss_gloriosus' : /^severus/.test(e.type) ? 'boss_severus' : null; if (bk && cineReady(bk) && !G.admin) startCine(bk); } // 18 Eki: büyük bossun Veo girişi (bir kez)
   G.bossT = 0; e.entryT = BOSS_ENTRY;
   G.intro = { type: e.type, t: 0, dur: 6.5, boss: true };
   G.bossFx = { t: 0, dur: 5.5 };
@@ -17352,6 +17355,63 @@ function drawEvent() {
     else gameButton('ev_' + j, x + cw / 2, y0 + ch - 40, cw - 60, 50, open ? 'OYNA' : 'KİLİTLİ', () => { if (!open) { mapNote = { text: 'Önce önceki bölümü bitir', t: time }; sfx('error'); return; } go(() => startEvent(E, j)); }, open ? 'red' : 'dark', { icon: open ? 'play' : 'lock', size: 18, shine: open });
     ctx.restore();
   });
+}
+// 18 Eki (Caner: "hikâye: açılış sahnesi, boss giriş gösterisi, sefer sonu ödül sahnesi"): Veo sahne videoları (img/cine_*.mp4, varliklar/hikaye_video_isle.py).
+// Videoda yazı yok; altyazı kodla (6 dile çevrilir). Dokununca sonraki plan, ATLA bütün sahneyi geçer, her sahne bir kez (save.cine).
+// Dosyası olmayan plan atlanır (CINE_FILES); sahnenin hiç planı yoksa eski yol (çizgi roman, kodla boss gösterisi) sürer.
+const CINE_FILES = new Set([]); // 18 Eki: video geldikçe eklenir (cine_acilis_a yeniden çiziliyor)
+const CINE = {
+  intro: [
+    { v: 'cine_acilis_a', sub: [[0.4, 4.4, 'Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.'], [4.7, 9.4, 'Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.']] },
+    { v: 'cine_acilis_b', sub: [[0.4, 4.4, 'Ama sınırın öbür yanında güneş hiç batmaz.'], [4.7, 9.4, 'Solarian İmparatorluğu ölülerin topraklarını istiyor. General Gloriosus yola çıktı.']] },
+    { v: 'cine_acilis_c', sub: [[0.4, 4.4, 'Mortimer kahvesini asla yarım bırakmaz. Bu gece bıraktı.'], [4.7, 9.4, '"Kalkın tembeller. Davetsiz misafirlerimiz var."']] },
+  ],
+  boss_gloriosus: [{ v: 'cine_boss_gloriosus', title: 'GENERAL GLORİOSUS', sub: [[1.2, 4.6, 'İmparatorluğun Güneş Generali'], [4.9, 9.4, '"Güneş adına! Bu kemik yığınını toz edin!"']] }],
+  boss_severus: [{ v: 'cine_boss_severus', title: 'BÜYÜK ENGİZİTÖR SEVERUS', sub: [[1.2, 4.6, 'Çaydanlık hırsızı'], [4.9, 9.4, '"Kutsal ışık seni ve çaydanlığını arındıracak!"']] }],
+  end1: [{ v: 'cine_sefer1_sonu', sub: [[0.4, 4.6, 'Gloriosus düştü. Altın miğferi artık Mortimer\'ın rafında.'], [4.9, 9.4, 'Ama İmparatorluk pes etmez. Engizisyon yola çıktı bile...']] }],
+  end2: [{ v: 'cine_sefer2_sonu', sub: [[0.4, 4.6, 'Çaydanlık evine döndü. Lanetli Sınır yine sessiz.'], [4.9, 9.4, 'Şimdilik.']] }],
+};
+let CINE_S = null;
+const cineReady = (key) => !!(CINE[key] && CINE[key].every(S => CINE_FILES.has(S.v)) && !(save.cine && save.cine[key])); // sahnenin bütün planları hazır olmalı (yarım hikâye oynamasın)
+function startCine(key, done) {
+  const shots = (CINE[key] || []).filter(S => CINE_FILES.has(S.v));
+  if (!shots.length) { if (done) done(); return false; }
+  save.cine = save.cine || {}; save.cine[key] = 1; persist();
+  CINE_S = { key, shots, i: -1, done, wasPaused: paused, t0: time }; if (screen === 'play') paused = true;
+  cineShot(0); return true;
+}
+function cineShot(i) {
+  const C = CINE_S; if (!C) return;
+  if (C.v) { try { C.v.pause(); C.v.remove(); } catch (e) {} C.v = null; }
+  if (i >= C.shots.length) { const d = C.done; paused = C.wasPaused; CINE_S = null; if (d) d(); return; }
+  C.i = i; C.st = time; const S = C.shots[i], v = document.createElement('video');
+  v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+  v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+  v.src = 'img/' + S.v + '.mp4' + (window.SURUM ? '?v=' + window.SURUM : ''); document.body.appendChild(v); C.v = v;
+  v.onerror = () => { if (CINE_S === C && C.v === v) cineShot(i + 1); };
+  const pr = v.play(); if (pr && pr.catch) pr.catch(() => {});
+  if (!C.poster || C.poster.src.indexOf(S.v) < 0) { const im = new Image(); im.src = 'img/' + S.v + '.jpg' + (window.SURUM ? '?v=' + window.SURUM : ''); C.poster = im; }
+}
+function drawCine() {
+  const C = CINE_S, S = C.shots[C.i], v = C.v; if (!S) return;
+  buttons.length = 0;
+  const L = VIS.l, T = VIS.t, Wv = VIS.w, Hv = VIS.h, bar = Hv * 0.1, st = time - C.st;
+  ctx.fillStyle = '#000'; ctx.fillRect(L, T, Wv, Hv);
+  const src = v && v.readyState >= 2 && v.videoWidth ? v : C.poster && C.poster.complete && C.poster.naturalWidth ? C.poster : null;
+  if (src) { const sw = src.videoWidth || src.naturalWidth, sh = src.videoHeight || src.naturalHeight, k = Math.max(Wv / sw, (Hv - bar * 2) / sh), dw = sw * k, dh = sh * k;
+    ctx.save(); ctx.globalAlpha = clamp(st / 0.45, 0, 1); ctx.drawImage(src, L + (Wv - dw) / 2, T + (Hv - dh) / 2, dw, dh); ctx.restore(); }
+  ctx.fillStyle = '#000'; ctx.fillRect(L, T, Wv, bar); ctx.fillRect(L, T + Hv - bar, Wv, bar); // sinema bantları
+  const vt = v && v.readyState >= 2 ? v.currentTime : st;
+  if (S.title && vt > 0.3) { const a = clamp((vt - 0.3) / 0.35, 0, 1) * clamp((4.4 - vt) / 0.4, 0, 1); if (a > 0) { const sc = 1.6 - 0.6 * easeOutBack(clamp((vt - 0.3) / 0.35, 0, 1));
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, T + Hv * 0.3); ctx.scale(sc, sc); const TI = winTitleImg(S.title, 44); ctx.drawImage(TI.c, -TI.w / 2, -TI.h / 2, TI.w, TI.h); ctx.restore(); } }
+  for (const [a0, a1, text] of S.sub) {
+    if (vt < a0 || vt > a1) continue;
+    const a = clamp((vt - a0) / 0.3, 0, 1) * clamp((a1 - vt) / 0.3, 0, 1), lines = wrapLines(TR(text), Math.min(760, Wv - 80), 19, '700', FONT_B, 2);
+    ctx.save(); ctx.globalAlpha = a; lines.forEach((l, k) => txt(l, W / 2, T + Hv - bar / 2 - (lines.length - 1) * 12 + k * 24, 19, '#f6ecd8', 'center', '700', FONT_B, true)); ctx.restore();
+  }
+  if (v && (v.ended || (v.duration && v.currentTime >= v.duration - 0.06))) { cineShot(C.i + 1); return; }
+  buttons.push({ key: 'cine_next', x: L, y: T, w: Wv, h: Hv, fn: () => { if (time - C.st > 0.6) cineShot(C.i + 1); } });
+  gameButton('cine_skip', Math.min(VIS.r, EDGE.r) - 74, T + bar / 2, 120, 36, 'ATLA ▶▶', () => cineShot(99), 'dark', { size: 14 });
 }
 let CARD_FOE = null; // bölüm kartında dokunulan düşman { i: bölüm, t: tür, x, y, at }
 let UPG_SEL = null; // gelişme ekranında seçili kademe { i: sütun, j: kademe }
@@ -21799,6 +21859,7 @@ function frame(now) {
   drawPartsAll(uiParts);
   drawAchToast();
   drawAd();
+  if (CINE_S) drawCine();
   if (trans) drawTrans();
   ctx.restore();
   if (view.ch > view.cw * 1.1) {
