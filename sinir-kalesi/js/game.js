@@ -20289,8 +20289,10 @@ function winTitleImg(text, size) {
   const R = 2, c = document.createElement('canvas'), g = c.getContext('2d'); g.font = `${size}px ${FONT_LOGO}`;
   const w = Math.ceil(g.measureText(text).width + size * 1.6), h = Math.ceil(size * 2.2); c.width = w * R; c.height = h * R;
   g.scale(R, R); g.font = `${size}px ${FONT_LOGO}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  g.shadowColor = 'rgba(120,255,140,0.85)'; g.shadowBlur = size * 0.5; g.strokeStyle = '#0c040e'; g.lineWidth = size * 0.17; g.strokeText(text, w / 2, h / 2);
-  g.shadowBlur = 0; const gr = g.createLinearGradient(0, h / 2 - size * 0.5, 0, h / 2 + size * 0.5); gr.addColorStop(0, '#f4ffd8'); gr.addColorStop(0.45, '#9dff8a'); gr.addColorStop(1, '#2a8e40');
+  // 17 Eki (Caner: "ZAFER yazısı berbat"): yeşil yerine altın harf, kızıl iç kenar, mor dış ışıma
+  g.shadowColor = 'rgba(190,120,255,0.8)'; g.shadowBlur = size * 0.45; g.shadowOffsetY = size * 0.05; g.strokeStyle = '#12040a'; g.lineWidth = size * 0.24; g.strokeText(text, w / 2, h / 2);
+  g.shadowBlur = 0; g.shadowOffsetY = 0; g.strokeStyle = '#8a1530'; g.lineWidth = size * 0.1; g.strokeText(text, w / 2, h / 2);
+  const gr = g.createLinearGradient(0, h / 2 - size * 0.5, 0, h / 2 + size * 0.5); gr.addColorStop(0, '#fffbe6'); gr.addColorStop(0.42, '#ffd75a'); gr.addColorStop(0.7, '#f0a224'); gr.addColorStop(1, '#a8520c');
   g.fillStyle = gr; g.fillText(text, w / 2, h / 2);
   g.globalAlpha = 0.35; g.fillStyle = '#ffffff'; g.save(); g.beginPath(); g.rect(0, 0, w, h / 2 - size * 0.12); g.clip(); g.fillText(text, w / 2, h / 2); g.restore(); // üst yarıda parlak şerit
   return (WINC[key] = { c, w, h });
@@ -20353,6 +20355,55 @@ function drawWinScene(a) { // döner: sahnenin ekrandaki kutusu (Mortimer ve iç
   ctx.restore();
   return { x, y, w: vw, h: vh };
 }
+// 17 Eki (Caner: "arkada havai fişekler de patlayabilir"): zafer gökyüzünde havai fişek. Roket iz bırakarak yükselir, tepede parlar ve
+// patlar; üç tür (yuvarlak, halka, altın söğüt), renkler yeşil, mor, kızıl, altın. Kıvılcımlar yerçekimiyle süzülür, sönerken titrer.
+const WINFW = { list: [], next: 0, last: 0, cols: ['140,255,150', '200,140,255', '255,90,120', '255,214,110'] };
+function winFireworks(x0, x1, yTop, yBot, k, cx) { // cx: içerik ortası; patlamalar yazı ve yıldız sütununun (cx ± 190) iki yanına düşer
+  const F = WINFW, dt = clamp(time - F.last, 0, 0.05); F.last = time;
+  if (k < 0.15) { F.list.length = 0; F.next = time + 0.35; }
+  if (time >= F.next && F.list.length < 520) {
+    F.next = time + rand(0.45, 1.25);
+    const L = Math.max(0, cx - 190 - x0), R = Math.max(0, x1 - cx - 190), u = Math.random() * (L + R) || 0;
+    F.list.push({ r: 1, x: L + R < 60 ? rand(x0, x1) : u < L ? x0 + u : cx + 190 + (u - L), y: yBot, ty: rand(yTop, lerp(yTop, yBot, 0.42)), v: rand(330, 420), col: F.cols[Math.floor(Math.random() * 4)], kind: Math.random() < 0.22 ? 2 : Math.random() < 0.3 ? 1 : 0, age: 0 });
+  }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+  for (let i = F.list.length - 1; i >= 0; i--) {
+    const p = F.list[i]; p.age += dt;
+    if (p.r) { // roket
+      p.y -= p.v * dt; p.x += Math.sin(p.age * 9) * 6 * dt;
+      ctx.strokeStyle = 'rgba(255,230,180,0.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x, p.y + 26); ctx.lineTo(p.x, p.y); ctx.stroke();
+      glow(ctx, p.x, p.y, 7, '255,236,190', 0.9);
+      if (p.y <= p.ty) {
+        F.list.splice(i, 1); sfx('boom', rand(1.5, 1.9), 0.18, null);
+        const n = p.kind === 2 ? 52 : 64, sp = p.kind === 2 ? 170 : rand(230, 300), col = p.kind === 2 ? '255,214,110' : p.col, col2 = F.cols[(F.cols.indexOf(col) + 1) % 4];
+        F.list.push({ fl: 1, x: p.x, y: p.y, col, age: 0 });
+        for (let j = 0; j < n; j++) {
+          const a = j / n * Math.PI * 2 + rand(-0.05, 0.05), v = p.kind === 1 ? sp : sp * Math.sqrt(rand(0.15, 1));
+          F.list.push({ x: p.x, y: p.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, col: p.kind === 0 && j % 3 === 0 ? col2 : col,
+            life: p.kind === 2 ? rand(2, 2.6) : rand(1.4, 1.9), drag: p.kind === 2 ? 1.5 : 1.25, gr: p.kind === 2 ? 40 : 62, tail: p.kind === 2 ? 0.14 : 0.075, age: 0, tw: rand(0, 9) });
+        }
+      }
+      continue;
+    }
+    if (p.fl) { if (p.age > 0.35) { F.list.splice(i, 1); continue; } glow(ctx, p.x, p.y, 110 * (1 - p.age / 0.35 * 0.4), p.col, 0.5 * (1 - p.age / 0.35)); glow(ctx, p.x, p.y, 26, '255,250,230', 0.8 * (1 - p.age / 0.35)); continue; }
+    const u = p.age / p.life; if (u >= 1) { F.list.splice(i, 1); continue; }
+    const dk = Math.exp(-p.drag * dt); p.vx *= dk; p.vy = p.vy * dk + p.gr * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    let a = 1 - u * u; if (u > 0.55) a *= 0.55 + 0.45 * Math.sin(time * 30 + p.tw); // sönerken çıtırdar
+    glow(ctx, p.x, p.y, 9, p.col, a * 0.7); ctx.strokeStyle = `rgba(${p.col},${a})`; ctx.lineWidth = 3 * (1 - u * 0.5);
+    ctx.beginPath(); ctx.moveTo(p.x - p.vx * p.tail - 0.5, p.y - p.vy * p.tail); ctx.lineTo(p.x, p.y); ctx.stroke();
+    if (u < 0.2) glow(ctx, p.x, p.y, 4, '255,250,235', a * 0.6);
+  }
+  ctx.restore();
+}
+function winRays() { // yıldızların arkasında yavaş dönen yumuşak ışık huzmeleri (önbellek)
+  if (WINC.rays) return WINC.rays;
+  const S = 512, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d'), R = S / 2;
+  g.translate(R, R);
+  for (let i = 0; i < 16; i++) { g.rotate(Math.PI * 2 / 16); const gr = g.createLinearGradient(0, 0, R, 0); gr.addColorStop(0, 'rgba(255,236,170,0.55)'); gr.addColorStop(1, 'rgba(255,236,170,0)');
+    g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0); g.lineTo(R, -R * 0.11); g.lineTo(R, R * 0.11); g.closePath(); g.fill(); }
+  g.globalCompositeOperation = 'destination-in'; const m = g.createRadialGradient(0, 0, R * 0.12, 0, 0, R); m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = m; g.fillRect(-R, -R, S, S);
+  return (WINC.rays = c);
+}
 function drawWinMinimal(k) {
   const top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
   // 17 Eki (Caner: "Mortimer çok küçük, daha büyük ve kaliteli"): solda ekran boyunun ~%64'ü kadar havalı Mortimer; içerik sağda kalan alanın ortasında
@@ -20362,9 +20413,15 @@ function drawWinMinimal(k) {
   const pose = SC ? null : spr('mortimer_pose_throne') || spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.66, 390) : 0, mw = pose ? mh * pose.width / pose.height : 0;
   const mLeft = Math.max(VIS.l, EDGE.l) + 10, rEdge = Math.min(VIS.r, EDGE.r);
   const cx = SC ? (Math.max(mLeft, SC.x + SC.w * 0.46) + rEdge) / 2 : pose ? (mLeft + mw - 10 + rEdge) / 2 : W / 2;
-  // diriltme çemberi (yıldızların arkasında): iki halka ters yönde döner, açılırken büyür
-  const ca = fa(0.2, 0.6), cy = Y(0.405);
-  if (ca > 0) {
+  const ca = fa(0.2, 0.6), cy = Y(0.39);
+  if (SC) winFireworks(Math.max(mLeft, SC.x + SC.w * 0.42), rEdge - 20, top + hh * 0.06, top + hh * 0.55, k, cx);
+  if (SC && ca > 0) { // 17 Eki: rün çemberi yerine yıldızların arkasında dönen sıcak ışık huzmeleri
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = ca * (0.7 + 0.1 * Math.sin(time * 1.7));
+    const rs = 300 * (0.6 + 0.4 * easeOutQ(ca)); ctx.translate(cx, cy - 6); ctx.rotate(time * 0.12); ctx.drawImage(winRays(), -rs / 2, -rs / 2 * 0.8, rs, rs * 0.8); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, cy - 6, 150, '255,200,110', 0.22 * ca); glow(ctx, cx, cy, 110, '200,140,255', 0.14 * ca); ctx.restore();
+  }
+  // diriltme çemberi (sahne yoksa, yıldızların arkasında): iki halka ters yönde döner, açılırken büyür
+  if (!SC && ca > 0) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = ca * (0.82 + 0.12 * Math.sin(time * 2));
     const sc = (0.55 + 0.45 * easeOutQ(ca)) * 0.5;
     glow(ctx, cx, cy, 170 * sc / 0.62, '90,220,120', 0.22);
@@ -20385,14 +20442,14 @@ function drawWinMinimal(k) {
   // yıldızlar (çemberin üstünde); dolan yıldızın arkasında ruh alevi
   for (let s = 0; s < 3; s++) {
     if (G.chal && s !== 1) continue;
-    const sx = cx + (s - 1) * 92, sy = cy - (s === 1 ? 12 : 0), r = s === 1 ? 40 : 32;
-    if (fa(0.45) > 0) { ctx.save(); ctx.globalAlpha = fa(0.45) * 0.9; fancyStar(sx, sy, r, false); ctx.restore(); }
+    const sx = cx + (s - 1) * (SC ? 104 : 92), sy = cy - (s === 1 ? (SC ? 22 : 12) : 0), r = s === 1 ? (SC ? 50 : 40) : (SC ? 39 : 32), rot = SC ? (s - 1) * 0.2 : 0;
+    if (fa(0.45) > 0) { ctx.save(); ctx.globalAlpha = fa(0.45) * 0.9; ctx.translate(sx, sy); ctx.rotate(rot); fancyStar(0, 0, r, false); ctx.restore(); }
     if (s >= G.stars) continue;
     const q = fa(0.75 + s * 0.34, 0.26); if (q <= 0) continue;
     if (!(G.starFx & (1 << s))) { G.starFx |= 1 << s; sfx('starthud', 1 + 0.12 * s); sfx('starchime', [1, 1.26, 1.5][s]); shakeScreen(1.5 + s, 0.12);
       for (let j = 0; j < 14; j++) { const a = rand(0, Math.PI * 2), v = rand(80, 200); emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '255,220,100' : j % 2 ? '140,255,150' : '200,120,255', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) }); } }
     if (q >= 1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const fl = 0.85 + 0.15 * Math.sin(time * 7 + s * 2); glow(ctx, sx, sy - r * 0.35, r * 1.5 * fl, '120,255,140', 0.3); glow(ctx, sx, sy - r * 0.9, r * 0.8 * fl, '190,140,255', 0.22); ctx.restore(); }
-    ctx.save(); ctx.translate(sx, sy); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha = q; fancyStar(0, 0, r, true); ctx.restore();
+    ctx.save(); ctx.translate(sx, sy); ctx.rotate(rot); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha = q; fancyStar(0, 0, r, true); ctx.restore();
   }
   // özet: tek satır
   const sa = fa(1.2, 0.35);
