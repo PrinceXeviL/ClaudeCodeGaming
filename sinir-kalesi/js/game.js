@@ -6572,12 +6572,13 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
 // 13 Eki (Caner): kale sıfırdan (ham/nm_kale_v3.jpg, varliklar/kale_v3_isle.py): boynuzlu kafatası kule, kafatası ağzı kapı, ortada yarım daire
 // balkon (Mortimer), iki yan kanat balkonda okçular. Kesirler castle_keep_1 görseline göre (ızgarayla ölçüldü).
-const KEEP = { w: 184, gate: [0.42, 0.88], at: [0.49, 0.538], rail: [0.36, 0.53, 0.62, 0.61], px: 122, // 17 Eki: kale v4 (teraslı gotik ev)
+const KEEP = { w: 147, gate: [0.42, 0.88], at: [0.73, 0.556], // 17 Eki (Caner): kale ve Mortimer %20 küçük (Mortimer kaleyle ölçeklenir); Mortimer yan terasta (kanepe ile ritüel çemberi arası)
+  rail: [0.36, 0.53, 0.62, 0.61], px: 122, // 17 Eki: kale v4 (teraslı gotik ev)
   // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (Mortimer ve okçuların ayakları korkuluğun ardında)
   railPoly: [[0.11, 0.454], [0.145, 0.488], [0.263, 0.5], [0.36, 0.509], [0.395, 0.532], [0.447, 0.548], [0.526, 0.552], [0.585, 0.539], [0.684, 0.564],
     [0.79, 0.574], [0.895, 0.571], [0.954, 0.541], [0.96, 0.63], [0.1, 0.63]],
   guards: [], gpx: 128,
-  archers: [[0.8, 0.566, -1], [0.235, 0.488, 1]], apx: 105 };
+  archers: [[0.5, 0.538, -1], [0.235, 0.488, 1]], apx: 105 }; // okçular ön ve sol balkonda
 const isKeep = (im) => im && [1, 2, 3, 4].some(n => im === spr('castle_keep_' + n));
 function castleStageSprite() {
   if (NECRO && spr('castle_keep_1') && !avluOn()) { const st = castleStage(); return spr('castle_keep_' + st) || (st > 1 && spr('castle_keep_2')) || spr('castle_keep_1'); } // can azaldıkça hasarlı hal
@@ -10575,6 +10576,41 @@ function drawTowerDisabled(t) {
 const TOWER_LIT = { a: 0.28, reach: 0.75, mode: 'soft-light', pool: 0.05, back: 0.09, shade: 0.42,
   cols: {}, col: ['255,238,205', '255,228,175'] };
 const LIT_CACHE = new Map();
+// 17 Eki (Caner: "daha gölgeli olsun kuleler, derinlikleri olsun"): bina görsellerine biçim gölgesi. Işık sağ üstten (ay):
+// alt kısım zemine doğru koyulaşır (bot), sol yan gölgede kalır (side), tepe hafif aydınlanır (top). Kulelerde ışık kopyasına (litOf) pişer,
+// kalede durağan görselin saydamlığıyla maskelenmiş katman olarak her karenin (Veo döngüsü dahil) üstüne çizilir (shadeOverlay).
+const SHADE = { on: !window.__SHADE_OFF, bot: 0.58, from: 0.42, side: 0.38, sideTo: 0.55, top: 0.22, col: '14,8,26', hi: '255,236,210' };
+function formShade(g, frames, box, iw, ih) {
+  if (!SHADE.on) return; // deneme: sayfa açılmadan window.__SHADE_OFF = 1 → gölgesiz (öncesi/sonrası)
+  g.save();
+  for (let f = 0; f < frames; f++) {
+    const b = box || [0, 0, 1, 1], fw = iw / frames, sw = fw / (b[2] - b[0]), shh = ih / (b[3] - b[1]), ox = f * fw - b[0] * sw, oy = -b[1] * shh;
+    g.save(); g.beginPath(); g.rect(f * fw, 0, fw, ih); g.clip(); g.globalCompositeOperation = 'source-atop';
+    let gr = g.createLinearGradient(0, oy + shh * SHADE.from, 0, oy + shh);
+    gr.addColorStop(0, `rgba(${SHADE.col},0)`); gr.addColorStop(1, `rgba(${SHADE.col},${SHADE.bot})`); g.fillStyle = gr; g.fillRect(f * fw, 0, fw, ih);
+    gr = g.createLinearGradient(ox, 0, ox + sw * SHADE.sideTo, 0);
+    gr.addColorStop(0, `rgba(${SHADE.col},${SHADE.side})`); gr.addColorStop(1, `rgba(${SHADE.col},0)`); g.fillStyle = gr; g.fillRect(f * fw, 0, fw, ih);
+    gr = g.createRadialGradient(ox + sw * 0.75, oy, 0, ox + sw * 0.75, oy, shh * 0.55);
+    gr.addColorStop(0, `rgba(${SHADE.hi},${SHADE.top})`); gr.addColorStop(1, `rgba(${SHADE.hi},0)`); g.fillStyle = gr; g.globalCompositeOperation = 'soft-light'; g.fillRect(f * fw, 0, fw, ih);
+    g.restore();
+  }
+  g.restore();
+}
+const SHADE_OV = new WeakMap();
+function shadeOverlay(im) { // durağan görselin biçiminde gölge katmanı (yalnız gölge; görselin kendisi yok)
+  let c = SHADE_OV.get(im); if (c !== undefined) return c;
+  const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height; if (!iw) return null;
+  c = document.createElement('canvas'); c.width = Math.min(iw, 512); c.height = Math.round(ih * c.width / iw);
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0, c.width, c.height); formShade(g, 1, null, c.width, c.height);
+  // yalnız koyulaşma kalsın: görselin kendisi çıkarılır, gölge rengi ve saydamlığı kalır
+  const d = g.getImageData(0, 0, c.width, c.height), o = g.createImageData(c.width, c.height), base = document.createElement('canvas'); base.width = c.width; base.height = c.height;
+  const bg = base.getContext('2d'); bg.drawImage(im, 0, 0, c.width, c.height); const s0 = bg.getImageData(0, 0, c.width, c.height).data, s1 = d.data, O = o.data;
+  for (let i = 0; i < O.length; i += 4) {
+    const L0 = s0[i] + s0[i + 1] + s0[i + 2], L1 = s1[i] + s1[i + 1] + s1[i + 2], k = L0 > 8 ? Math.max(0, 1 - L1 / L0) : 0;
+    O[i] = 14; O[i + 1] = 8; O[i + 2] = 26; O[i + 3] = Math.round(Math.min(1, k) * s0[i + 3]);
+  }
+  g.putImageData(o, 0, 0); SHADE_OV.set(im, c); return c;
+}
 function litOf(im, cols, strip) {
   const key = im.src + '|' + cols.join('|');
   if (LIT_CACHE.has(key)) return LIT_CACHE.get(key);
@@ -10601,6 +10637,7 @@ function litOf(im, cols, strip) {
         }
         g.restore();
       }
+      formShade(g, strip ? strip.n : 1, strip ? strip.box : null, iw, ih); // 17 Eki: gölge ve derinlik
       g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0); // saydam yerler saydam kalsın
       LIT_CACHE.set(key, c);
     } catch (e) { /* özgün görselle devam */ }
@@ -14715,6 +14752,7 @@ function drawCastle() {
     const IA = IN && spr(IN) && ANIM_META[IN];
     if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw, kim = spr(IN), C = IA.cols || IA.n, ks = kim.width / (IA.fw * C), ky = kim.height / (IA.fh * Math.ceil(IA.n / C)); ctx.drawImage(kim, (fi % C) * IA.fw * ks, Math.floor(fi / C) * IA.fh * ky, IA.fw * ks, IA.fh * ky, -cp.w / 2, -h, cp.w, h); } // 16 Eki: satırlı şerit (cols)
     else drawSprite(ctx, im, 0, 0, cp.w);
+    if (NECRO && isKeep(im) && !PERF_OFF.has('tlight')) { const so = shadeOverlay(im); if (so) drawSprite(ctx, so, 0, 0, cp.w); } // biçim gölgesi (Veo döngüsünün de üstüne)
     if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
