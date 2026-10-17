@@ -2528,5 +2528,89 @@
   "fw": 301,
   "fh": 369,
   "cols": 51
+ },
+ "enemy_bellpriest_idle": {
+  "n": 32,
+  "fw": 163,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
+ },
+ "enemy_cavalry_idle": {
+  "n": 32,
+  "fw": 157,
+  "fh": 169,
+  "base": 0.0145,
+  "ch": 0.947
+ },
+ "enemy_champion_idle": {
+  "n": 32,
+  "fw": 127,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "castle_keep_1_idle": {
+  "n": 48,
+  "fw": 420,
+  "fh": 566,
+  "fps": 21.6,
+  "cols": 24
+ },
+ "enemy_gloriosus1_idle": {
+  "n": 32,
+  "fw": 188,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9707
+ },
+ "enemy_gloriosus3_idle": {
+  "n": 32,
+  "fw": 158,
+  "fh": 169,
+  "base": 0.0144,
+  "ch": 0.945
+ },
+ "enemy_hierophant_idle": {
+  "n": 32,
+  "fw": 118,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9613
+ },
+ "enemy_hubertus_idle": {
+  "n": 32,
+  "fw": 226,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_ironwarden_idle": {
+  "n": 32,
+  "fw": 133,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
+ },
+ "enemy_malleus_idle": {
+  "n": 32,
+  "fw": 245,
+  "fh": 172,
+  "base": 0.0141,
+  "ch": 0.9297
+ },
+ "enemy_saint_idle": {
+  "n": 32,
+  "fw": 238,
+  "fh": 170,
+  "base": 0.0145,
+  "ch": 0.942
+ },
+ "enemy_severus3_idle": {
+  "n": 32,
+  "fw": 204,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9613
  }
 }

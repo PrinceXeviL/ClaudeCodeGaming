@@ -2,7 +2,8 @@
 1. evrenin döngüsü kale_idle_isle.py ile yapıldı; bu betik genel: video ile o evrenin durağan görselini (castle_keep_N) hizalar.
 Hizalama: durağan görsel videoda kaba kuvvetle aranır (ölçek + konum, maskeli ortalama fark); saydamlık videonun ortalama karesinden
 (beyaz taşma doldurma), kapı kafatasının gözleri en sönük karedeki haliyle sabit; 12 fps, en temiz kapanan 24-36 kare.
-    .venv/bin/python varliklar/kale_evre_idle.py ham/anim/kale_v3_idle_orta.mp4 2
+    .venv/bin/python varliklar/kale_evre_idle.py ham/anim/kale_v3_idle_orta.mp4 2 [--goz] [--agac]
+    17 Eki, kale v4: ham/anim/kale_v4_idle_<N>.mp4 <N>
 """
 import glob, json, os, subprocess, sys, tempfile
 import numpy as np
@@ -56,7 +57,7 @@ a = ndimage.gaussian_filter((~bg).astype(float), 0.7); a = np.clip((a - 0.25) / 
 soft = (a < 1) & (a > 0); a[soft] *= np.clip((255 - mn[soft]) / 60, 0.3, 1)
 alpha = Image.fromarray((a * 255).astype(np.uint8))
 # kapı kafatasının gözleri sönük (Caner)
-E = [(0.39, 0.688), (0.505, 0.692)]; R = 0.06 * FW
+E = [(0.39, 0.688), (0.505, 0.692)] if '--goz' in sys.argv else []; R = 0.06 * FW  # 17 Eki: v3 kalesinde (--goz); v4'te kafatası yok
 yy, xx = np.mgrid[:FH, :FW]; mk = np.zeros((FH, FW))
 for ex, ey in E: mk = np.maximum(mk, np.clip(1.6 - np.hypot(xx - ex * FW, (yy - ey * FH) * 1.25) / R, 0, 1))
 F = [np.asarray(f).astype(float) for f in frames]

@@ -1,0 +1,10 @@
+[
+ {
+  "name": "enemy_elephant_idle",
+  "ref": "ham/anim/enemy_elephant_ref.png",
+  "prompt": "a cartoon armored war elephant with red and gold barding and a small wooden tower with an archer on its back stands still in a calm, serious and heavy idle: slow deep breathing, the big body rises and falls only slightly, the large ears flap slowly once, the trunk sways gently and curls a little, the tail swings slowly, the legs and feet stay firmly planted on the same spot, the archer in the tower looks around calmly, a powerful and dignified war beast, no bouncing, no squash and stretch, no funny faces, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ }
+]
