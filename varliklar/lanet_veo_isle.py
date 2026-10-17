@@ -67,4 +67,46 @@ def run(key):
     json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)
     print(key, 'döngü', s, L, 'fark', round(best[0], 2), 'saldırı', A0, A1, 'ışın', b0, b1, 'kutu', box)
 
-for k in (sys.argv[1:] or [k for k in VIDS if os.path.exists(os.path.join(H0, 'ham', 'anim', VIDS[k]))]): run(k)
+
+# 2. tur (17 Eki): bekleme ve saldırı ayrı videolar (Frames to Video: ilk ve son kare = durağan kule). Işın/duman yok, etki gözde.
+#   ham/anim/lanet2_<k>_bekle.mp4  → <görsel>_idle: videonun içinde başı ve sonu en benzer 72-120 karelik döngü
+#   ham/anim/lanet2_<k>_saldiri.mp4 → <görsel>_atk: ilk kareden en çok ayrılan bölümün çevresi (başta/sonda durağan kısım atılır)
+def run2(key):
+    name = 'tower_altar_' + key
+    pb, pa = [os.path.join(H0, 'ham', 'anim', 'lanet2_%s_%s.mp4' % (key, t)) for t in ('bekle', 'saldiri')]
+    meta_p = os.path.join(IMG, 'anim.json'); meta = json.load(open(meta_p)); man_p = os.path.join(IMG, 'manifest.json'); man = json.load(open(man_p))
+    for kind, path in (('idle', pb), ('atk', pa)):
+        if not os.path.exists(path): continue
+        fr = video_isle.frames_of(path, 24); H, W = fr[0].shape[:2]
+        sx, sy, sw, sh = sprite_rect(name, W, H)
+        X0, X1, Y0, Y1 = max(0, int(sx - MX * sw)), min(W, int(sx + sw * (1 + MX))), max(0, int(sy - MT * sh)), min(H, int(sy + sh * (1 + MB)))
+        box = [round((X0 - sx) / sw, 4), round((Y0 - sy) / sh, 4), round((X1 - sx) / sw, 4), round((Y1 - sy) / sh, 4)]
+        fade = np.ones((Y1 - Y0, X1 - X0), np.float32)
+        for i in range(FADE): k = (i + 1) / (FADE + 1); fade[:, i] *= k; fade[:, -1 - i] *= k; fade[i, :] *= k
+        cut = lambda a: (lambda c: (c.__setitem__((Ellipsis, 3), c[..., 3] * fade), c.clip(0, 255).astype(np.uint8))[1])(video_isle.remove_white_fx(a)[Y0:Y1, X0:X1].astype(np.float32))
+        sm = lambda a: np.asarray(Image.fromarray(a[Y0:Y1, X0:X1]).resize((60, 120))).astype(np.float32)
+        S = [sm(a) for a in fr]
+        if kind == 'idle':
+            best = None
+            for s0 in range(0, 48):
+                for L in range(72, 122, 2):
+                    if s0 + L >= len(fr): break
+                    d = np.abs(S[s0] - S[s0 + L]).mean()
+                    if best is None or d < best[0]: best = (d, s0, L)
+            d, s0, L = best; idx = range(s0, s0 + L); info = 'döngü %d+%d fark %.2f' % (s0, L, d); idle0 = S[s0]
+        else:
+            # başlangıç: ilk kareden ayrılmadan biraz önce; bitiş: hareket söndükten sonra bekleme döngüsünün ilk karesine en çok benzeyen kare
+            # (oyun saldırıdan sonra döngüyü 0. kareden başlatır: dikişsiz dönüş)
+            dv = [np.abs(S[i] - S[0]).mean() for i in range(len(fr))]; on = [i for i, v in enumerate(dv) if v > 3]
+            a0 = max(0, on[0] - 6) if on else 0; peak = max(range(len(fr)), key=lambda i: dv[i])
+            ref = locals().get('idle0', S[0]); a1 = min(range(peak + 12, min(len(fr), peak + 90)), key=lambda j: np.abs(S[j] - ref).mean()) + 1
+            idx = range(a0, a1); info = 'saldırı %d-%d (tepe %d, dönüş farkı %.1f)' % (a0, a1, peak, np.abs(S[a1 - 1] - ref).mean())
+        frames = [cut(fr[i]) for i in idx]
+        video_isle.save_strip(name + '_' + kind, frames, X1 - X0, Y1 - Y0, IMG, meta, man, {'fps': 24, 'tower': True, 'box': box}, keep=False)
+        print(key, kind, info, 'kare', len(frames), 'kutu', box)
+    json.dump(meta, open(meta_p, 'w'), indent=1); json.dump(sorted(man), open(man_p, 'w'), indent=0)
+
+if sys.argv[1:2] == ['2']:
+    for k in sys.argv[2:]: run2(k)
+else:
+    for k in (sys.argv[1:] or [k for k in VIDS if os.path.exists(os.path.join(H0, 'ham', 'anim', VIDS[k]))]): run(k)

@@ -9030,6 +9030,27 @@ function plagueStrip(t, k) {
 }
 // 17 Eki: Lanet Kulesi Veo şeritleri (varliklar/lanet_veo_isle.py): <görsel>_idle bekleme döngüsü, <görsel>_atk lanet anı (göz büyür, damarlanır,
 // parlar). Saldırı göz bir düşmana kilitlenince (t.cur0) bir kez oynar, bitince bekleme 0. kareden sürer (dikişsiz). Şerit varsa kodla çizilen göz çizilmez.
+// 17 Eki (Caner: "göz küçük kalıyor"): Veo lanet şeridinde göz yalnız kısılıyor; kod, o karedeki göz bölgesini %22'ye dek büyütüp
+// yumuşak kenarla üstüne çizer (büyüme lanetin ortasında tepe yapar) ve gözde kızıl-mor parıltı yakar. u: şeridin ilerleyişi 0..1
+// göz merkezi kule görselinde [x, alttan y, göz yarı genişliği] (görsel kesri; durağan görselin mor göz pikselleri ölçüldü)
+const ALTAR_RAGE = { tower_altar_1: [0.611, 0.777, 0.07] };
+let ALTAR_RAGE_C = null;
+function altarRageEye(t, ts, im, src, dst, u) {
+  const E = ALTAR_RAGE[ts.name]; if (!E) return;
+  const env = clamp((u - 0.1) / 0.18, 0, 1) * clamp((0.88 - u) / 0.14, 0, 1); if (env <= 0) return;
+  const tr = ctx.getTransform(), k = Math.hypot(tr.a, tr.b), sc = 1 + 0.22 * env;
+  const ex = (E[0] - 0.5) * ts.w, ey = -E[1] * ts.h, R = E[2] * ts.w * 2.3, px = Math.min(512, Math.ceil(2 * R * k));
+  const c = ALTAR_RAGE_C || (ALTAR_RAGE_C = document.createElement('canvas')); if (c.width < px) c.width = c.height = px;
+  const g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, px, px);
+  const m = px / (2 * R) * sc; g.setTransform(m, 0, 0, m, px / 2 - ex * m, px / 2 - ey * m); g.drawImage(im, ...src, ...dst); // gözün çevresi sc kat büyük
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'destination-in';
+  const rg = g.createRadialGradient(px / 2, px / 2, px * 0.3, px / 2, px / 2, px / 2); rg.addColorStop(0, '#000'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = rg; g.fillRect(0, 0, px, px); g.globalCompositeOperation = 'source-over';
+  ctx.drawImage(c, 0, 0, px, px, ex - R, ey - R, 2 * R, 2 * R);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glow(ctx, ex, ey, R * 0.9, '255,50,80', 0.22 * env); glow(ctx, ex, ey, R * 0.5, '200,110,255', 0.28 * env * (0.8 + 0.2 * Math.sin(time * 18)));
+  ctx.restore();
+}
 function altarStrip(t, ts, k) {
   if (!NECRO || t.type !== 'altar' || !ts) return null;
   const n = ts.name + '_' + k, M = ANIM_META[n]; if (!M) return null;
@@ -10617,7 +10638,9 @@ function drawTowerBody(t) {
       const AI = altarStrip(t, ts, 'idle'), AA = t.cur0 != null && altarStrip(t, ts, 'atk'), play = AA && time - t.cur0 < AA.dur, S = play ? AA : AI, M = S.M;
       const i = play ? Math.min(M.n - 1, Math.floor((time - t.cur0) * M.fps)) : Math.floor(AA ? (time - t.cur0 - AA.dur) * M.fps : time * M.fps + (t.x % 7)) % M.n;
       const b = M.box, C = M.cols || M.n, sx = S.im.width / (M.fw * C), sy = S.im.height / (M.fh * Math.ceil(M.n / C));
-      ctx.drawImage(S.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
+      const src = [(i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy], dst = [(b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h];
+      ctx.drawImage(S.im, ...src, ...dst);
+      if (play) altarRageEye(t, ts, S.im, src, dst, i / M.n);
     } else if (t.call0 != null && time - t.call0 < (plagueStrip(t, 'call') || { dur: 0 }).dur) { // Kara Veba: sürü çağrısı
       const PC = plagueStrip(t, 'call'), M = PC.M, i = Math.min(M.n - 1, Math.floor((time - t.call0) * M.fps)), b = M.box, C = M.cols || M.n, sx = PC.im.width / (M.fw * C), sy = PC.im.height / (M.fh * Math.ceil(M.n / C));
       ctx.drawImage(PC.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);

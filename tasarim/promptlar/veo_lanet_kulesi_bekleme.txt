@@ -1,0 +1,4 @@
+Animate this exact 2D cartoon tower from the image, keeping its design, colors, outlines and proportions perfectly identical. Static locked camera, no zoom, no pan, wide zoomed-out framing with plain white margins all around; the tower stays small in the center and never moves. Plain flat white background the whole time, no ground, no shadow, no new objects.
+Calm idle loop: the big evil eye slowly looks to the left, then slowly to the right, blinks once with its stone lids, then returns to looking straight ahead exactly like the first frame. The pupil always stays a clear round black circle. The glowing runes pulse softly, the candle flames flicker gently.
+The stone, chains, base and bones stay perfectly still. NO smoke, NO mist, NO fog, NO particles, NO sparks, NO beams, nothing appears outside the tower.
+The last frame is exactly identical to the first frame (seamless loop). Smooth fluid motion at 24 frames per second, high detail, no camera shake, no text.
