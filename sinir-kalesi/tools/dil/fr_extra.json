@@ -609,7 +609,8 @@
   "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 relevés · +25 % de vie et de dégâts · cadavre +2 s · 2 groupes séparés",
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Très rapide ; écrase les squelettes et frappe à la lance en roulant. Ils ne peuvent l'arrêter, un mur d'os si",
   "Ortam efektleri": "Effets d'ambiance",
-  "Bölüğün kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır; o ölünce bu avantaj kaybolur. Lejyonerden %60 daha canlı": "Le vétéran de l'escouade : marche en tête et donne les ordres. Les légionnaires proches frappent 15 % plus fort et subissent 15 % de dégâts en moins ; l'avantage disparaît à sa mort. 60 % de vie en plus qu'un légionnaire"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: kalkanlılar 3 sn kalkan duvarı kurar, oklar %50-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Le vétéran de chaque groupe de quatre légionnaires : marche en tête et donne les ordres. Les légionnaires proches frappent 15 % plus fort et subissent 15 % de dégâts en moins. Quand les flèches arrivent, il crie « Boucliers ! » : les soldats à bouclier forment un mur 3 s, les flèches font 50-80 % de dégâts en moins ou ricochent, mais ils marchent plus lentement. Les avantages disparaissent à sa mort",
+  "SEKTİ": "DÉVIÉE"
  },
  "tpl": [
   [

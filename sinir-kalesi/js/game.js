@@ -3050,6 +3050,10 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (HERO_SKILL) amount *= HERO_POWER * SKILL_K; // kahraman yetenek hasarı (SKILL_K: yeteneğin ağaçtaki kademesi)
   if (e.fearT > 0 && NECRO && grimRank('nm_fear') >= 5) amount *= 1.2; // Büyü Kitabı: korkan düşman %20 fazla hasar alır
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
+  if (src === 'arrow') { e.arrowG = G.t; // kıdemlinin "Kalkanlar!" komutu için
+    if (e.wallT > 0) { const S = CAPTAIN.shield; // kalkan duvarı: ok seker ya da az işler
+      if (!raw && Math.random() < S.miss) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.5)) { e.blockFx = time; floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 28) - 4, 'SEKTİ', '#ffe2a0'); impactFx(e.x + (e.face || 1) * 6, e.y - (CHAR_H['enemy_' + e.type] || 28) * 0.55, '255,230,170', 0.6); } return; }
+      amount *= rand(S.k[0], S.k[1]); } }
   if (e.markT > 0) amount *= 1.6;
   // zırh barı: hasarı önce zırh karşılar (direnç uygulanmaz), artan kısım cana geçer
   if (e.plate > 0) {
@@ -3134,16 +3138,30 @@ function abRank(t, id) {
 // 17 Eki (Caner: "lejyonerlerin başında hep bir kıdemli olsun, komut versin; çevresindekilerin saldırı ve savunmasını arttırsın, ölürse avantaj kalksın"):
 // her lejyoner bölüğünün (2+ kişi) başında kıdemli yürür. Aurası (r) içindeki lejyonerler dmg kat sert vurur, def kat hasar alır; aura her karede
 // yenilenir, kıdemli ölünce 0,6 sn içinde söner. Ayağın altındaki soluk altın halka kimin güçlendiğini gösterir.
-const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15 };
+const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15,
+  // 17 Eki (Caner: "okçular saldırınca kıdemlinin komutuyla kalkan kullanıp guard alsınlar; oklar en çok %80 az işlesin, bazen ıska"):
+  // ok değince kıdemli "Kalkanlar!" der; çevresindeki kalkanlılar t sn kalkan duvarı kurar: okların miss'i seker, kalanı k kat işler; yürüyüş spd kat
+  shield: { t: 3, cd: 9, miss: 0.2, k: [0.2, 0.5], spd: 0.7 } };
+const SHIELDED = new Set(['legion', 'heavy', 'paladin', 'signifer']); // kalkanlı piyade (rütbelileri base ile)
+const isShielded = (o) => SHIELDED.has(o.def.base || o.type);
 function updateCaptain(e, dt) {
   const near = [];
   for (const o of G.enemies) if (o !== e && !o.dead && (o.def.base || o.type) === 'legion' && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r) { near.push(o); if (!(o.curseT > 0)) o.capT = 0.6; }
-  e.cmdCd = (e.cmdCd ?? 2.5) - dt;
+  e.cmdCd = (e.cmdCd ?? 2.5) - dt; e.shCd = (e.shCd ?? 0) - dt;
+  if (e.shCd <= 0 && e.d >= 0) {
+    const S = CAPTAIN.shield, grp = G.enemies.filter(o => !o.dead && !o.under && isShielded(o) && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r);
+    if (grp.some(o => G.t - (o.arrowG ?? -9) < 0.5)) {
+      e.shCd = S.cd; for (const o of grp) o.wallT = S.t;
+      const said = G.enemies.some(o => o !== e && o.captain && G.t - (o.shSaid ?? -9) < 1.2 && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r * 2); // yakındaki kıdemli az önce bağırdıysa tek ses
+      if (!said && onScreen(e, 60) && !MUTE_VOICE(e)) { e.shSaid = G.t; floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, 'Kalkanlar!', '#ffd890'); sfx('clash', 0.6, 1.2, e); }
+      e.cmdCd = Math.max(e.cmdCd, 2); return;
+    }
+  }
   if (e.cmdCd > 0 || e.d < 0 || !onScreen(e, 60) || MUTE_VOICE(e)) return;
   let cmd = null;
   if (!e.saidIn) { e.saidIn = true; cmd = 'Saf tutun!'; }
   else if (e.inMelee || near.some(o => o.inMelee)) { cmd = 'Hücum!'; for (const o of near.concat(e)) o.capRushT = 3; }
-  else if ([e, ...near].some(o => G.t - (o.hitG ?? -9) < 0.4)) { cmd = 'Kalkanlar!'; for (const o of near.concat(e)) o.armT = Math.max(o.armT || 0, 2.5); }
+  else if ([e, ...near].some(o => G.t - (o.hitG ?? -9) < 0.4)) { cmd = 'Saf tutun!'; for (const o of near.concat(e)) o.armT = Math.max(o.armT || 0, 2.5); } // ok dışı vuruş: zırh sıkılaşır
   if (!cmd) return;
   e.cmdCd = CAPTAIN.cd; G.cryCd = Math.max(G.cryCd || 0, 2);
   floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, cmd, '#ffd890');
@@ -4871,7 +4889,7 @@ function updateEnemy(e, dt) {
   if (e.hasteT > 0) e.hasteT -= dt;
   if (e.armT > 0) e.armT -= dt;
   if (e.drumT > 0) e.drumT -= dt;
-  if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt;
+  if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt; if (e.wallT > 0) e.wallT -= dt;
   if (e.captain) updateCaptain(e, dt);
   if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; if (e.xrayT > 0) e.xrayT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
@@ -5174,7 +5192,7 @@ function updateEnemy(e, dt) {
       if (e.bashCd <= 0) { e.bashCd = RB.rate; e.bashHit = G.t; damageTower(t, RB.dmg); impactFx(t.x, t.y - 14, '255,220,170', 1); shakeScreen(2.5, 0.2); sfx('castlehit', 0.9, 0.8, e); }
     }
   }
-  if (e.capT > 0) spd *= CAPTAIN.spd; if (e.capRushT > 0) spd *= CAPTAIN.rush; // komutanın yanında biraz hızlı, "Hücum!" ile koşar
+  if (e.capT > 0) spd *= CAPTAIN.spd; if (e.capRushT > 0) spd *= CAPTAIN.rush; if (e.wallT > 0) spd *= CAPTAIN.shield.spd; // kalkan duvarında ağır adım // komutanın yanında biraz hızlı, "Hücum!" ile koşar
   if (e.entryT > 0) { // boss girişi: ağır adımlar
     e.entryT -= dt; spd *= 0.3;
     if ((e.stompT = (e.stompT ?? 0.4) - dt) <= 0) { e.stompT = 0.8; sfx('stomp'); shakeScreen(2.6, 0.22); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 }); }
@@ -8724,7 +8742,7 @@ function update(dt) {
       }
       sp.lastPi = pi;
       // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
-      const cap = NECRO && i === 0 && sp.n >= 2 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
+      const cap = NECRO && i % 4 === 0 && i + 4 <= sp.n && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
       const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null);
       if (cap) e.captain = true;
       if (sp.loot) e.lootCarrier = true; // 17 Eki: boss gelmeyen bölümde ödülü taşıyan Yüzbaşı
@@ -10839,6 +10857,15 @@ function drawEnemy0(e) {
     else if (e.spinA) { const cy = e.kdT > 0 ? e.y - uo.fly - 2 : e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.kdT > 0 ? e.spinA : e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner (devrilen: ayaklarının üstünden, savrulan: gövde ortasından)
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
+    if (e.wallT > 0 && !e.dead) { // 17 Eki: kalkan duvarı (birimin önünde çizilir): başın üstüne kaldırılmış kalkanların bronz kavsi (açılırken büyür, biterken söner)
+      const k = Math.min(1, (CAPTAIN.shield.t - e.wallT) / 0.2, e.wallT / 0.3), hw = (d.r || 10) * 1.12, cy = e.y - fly - uo.h * 0.74, f = e.face || 1; // kaskın hemen üstü (uo.h sorguçla birlikte boy)
+      ctx.save(); ctx.globalAlpha = 0.85 * k; ctx.lineCap = 'round';
+      ctx.fillStyle = 'rgba(190,60,40,0.55)'; ctx.strokeStyle = '#3a1a0c'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.ellipse(ux + f * 2, cy, hw, hw * 0.32, 0, Math.PI, Math.PI * 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,215,120,0.9)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse(ux + f * 2, cy - 0.5, hw * 0.92, hw * 0.28, 0, Math.PI * 1.08, Math.PI * 1.92); ctx.stroke();
+      ctx.fillStyle = '#ffd67a'; ctx.beginPath(); ctx.arc(ux + f * 2, cy - hw * 0.16, 1.3, 0, Math.PI * 2); ctx.fill(); // kalkan topuzu (güneş)
+      ctx.restore();
+    }
     if (e.lootCarrier) { // 17 Eki: ödül taşıyan Yüzbaşı: başının üstünde süzülen kristal (oyuncu kimi kovalayacağını bilsin)
       const hy = e.y - uo.h - fly - 15 + Math.sin(time * 3 + e.off) * 1.5; // rütbe yıldızının üstünde
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, ux, hy, 7, '200,140,255', 0.4 + 0.15 * Math.sin(time * 5)); ctx.restore();
