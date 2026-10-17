@@ -1223,7 +1223,12 @@ function buildPath(pts) {
   pts = smoothPts(pts);
   const cum = [0];
   for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + dist(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]));
-  return { pts, cum, total: cum[cum.length - 1] };
+  // 17 Eki (Caner: "düşmanlar virajda takılıp titriyor"): köşe teğetleri (komşu parçaların ortalaması, ±2 parça yumuşatılmış).
+  // Şeritten yürüyenin yana kayması parça yönünden değil bu teğetin parça boyunca ara değerinden hesaplanır: köşede sıçrama olmaz.
+  const n = pts.length, sd = [], tv = [];
+  for (let i = 1; i < n; i++) { const L = cum[i] - cum[i - 1] || 1; sd.push([(pts[i][0] - pts[i - 1][0]) / L, (pts[i][1] - pts[i - 1][1]) / L]); }
+  for (let i = 0; i < n; i++) { let x = 0, y = 0; for (let k = i - 3; k <= i + 2; k++) { const v = sd[clamp(k, 0, sd.length - 1)]; x += v[0]; y += v[1]; } const L = Math.hypot(x, y) || 1; tv.push([x / L, y / L]); }
+  return { pts, cum, total: cum[cum.length - 1], tv };
 }
 function pathPos(p, d, off = 0) {
   if (d < 0 && p.ext) { // tam ekran: çerçeve dışından gelen yolun girişinden geriye, ilk doğrultuda uzanır (düşman ekran dışında doğar)
@@ -1238,6 +1243,8 @@ function pathPos(p, d, off = 0) {
   const segLen = p.cum[i] - p.cum[i - 1] || 1;
   const t = (d - p.cum[i - 1]) / segLen;
   const dx = (b[0] - a[0]) / segLen, dy = (b[1] - a[1]) / segLen;
+  if (off && p.tv) { const u = p.tv[i - 1], v = p.tv[i], nx = lerp(u[0], v[0], t), ny = lerp(u[1], v[1], t), L = Math.hypot(nx, ny) || 1; // yumuşak normal
+    return { x: lerp(a[0], b[0], t) - ny / L * off, y: lerp(a[1], b[1], t) + nx / L * off, dx, dy }; }
   return { x: lerp(a[0], b[0], t) - dy * off, y: lerp(a[1], b[1], t) + dx * off, dx, dy };
 }
 // giriş payı: düşman/borazancı yolun bu kadar gerisinden (görünen ekranın dışından) yola çıkar; masaüstünde (taşma yok) 0
@@ -2983,7 +2990,8 @@ function aimY(e) {
 let hitBy = null;
 const DIVE_VULN = 1.5;
 const CANNON_FIRE = 0.8; // Güneş Topu ateş şeridinin süresi (sn); bu sürede durur
-const CONVOY = { gap: 1.8, walk: 1.05 }; // yürürken önündekiyle en az boşluk (yarıçaplar toplamının katı): araçlar gap, ötekiler walk
+const CONVOY = { gap: 1.8, walk: 1.05 };
+const CROWD_SPILL = 4; // yol kenarından taşma payı (yol ölçeğinde birim; ~6 px, bir adım) // yürürken önündekiyle en az boşluk (yarıçaplar toplamının katı): araçlar gap, ötekiler walk
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 // ---- çizgi film kanı (16 Eki, Caner: "kırmızı kan olsun, kurallara uygun en yüksek"): isabette 2-5 küçük damla (sert vuruşta yere minik leke),
 // ölünce ayağının dibinde kısa süre kalan küçük kan lekesi. Parçalanma, büyük kan gölü yok (ESRB "Mild Blood" sınırı). Ayarlardan kapatılır (blood).
@@ -5148,7 +5156,7 @@ function updateEnemy(e, dt) {
       e.waitT = (e.waitT || 0) + dt;
       if (bd > 75 || (!coming && !B.hero && e.waitT > 3)) { e.blocker = null; e.waitT = 0; }
       else if (!coming || e.waitT > 1.2) {
-        const sp = e.def.speed * G.wspd * (e.spdMul || 1) * slow, k = Math.min(1, sp * dt / Math.max(1, bd - 18));
+        const sp = e.def.speed * G.wspd * (e.spdMul || 1) * slow, k = Math.min(sp * dt, Math.max(0, bd - 18)) / Math.max(1, bd); // 17 Eki: adım hızla sınırlı (yakındayken bir karede 6 px sıçrıyor, gidip geliyordu)
         e.face = B.x < e.x ? -1 : 1; e.x += (B.x - e.x) * k; e.y += (B.y - e.y) * k; e.offPath = true;
       }
       if (!e.blocker) return;
@@ -5217,9 +5225,10 @@ function updateEnemy(e, dt) {
   }
   // dövüş için yoldan çıktıysa önce yumuşakça yola geri döner
   if (e.offPath) {
+    e.d = Math.min(e.p.total, e.d + spd * dt * 0.6); // 17 Eki: yola dönüş noktası ilerler: geri yürümez, çapraz önden birleşir
     const q = pathPos(e.p, e.d, e.off), d = dist(e.x, e.y, q.x, q.y), st = Math.max(spd, 12) * dt;
     if (d <= st + 0.5) e.offPath = false;
-    else { e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
+    else { if (Math.abs(q.x - e.x) > 3) e.face = q.x < e.x ? -1 : 1; e.x += (q.x - e.x) / d * st; e.y += (q.y - e.y) / d * st; return; }
   }
   // 15 Eki (Caner): yürürken kimse kimsenin üstüne binmesin. Aynı yolda önündekine (yarıçaplar toplamı × CONVOY) yaklaşan yavaşlar,
   // iyice yaklaşınca durur; kuşatma araçları daha geniş aralık bırakır. Yanyana şeritteki (off farkı büyük) ve dövüşen öndeki sayılmaz
@@ -5237,11 +5246,14 @@ function updateEnemy(e, dt) {
       spd *= clamp((gap - need * 0.75) / (need * 0.25), 0, 1); // 16 Eki: kuyrukta biraz daha aralıklı durur (0,6 → 0,75)
       e.cvT = spd < 0.5 ? (e.cvT || 0) + dt : 0; if (e.cvT > 2.5) { e.cvT = 0; e.cvFree = 1.5; } // emniyet: 2,5 sn kıpırdayamayan bir süre aralık kuralını atlar (döngüsel bekleme kalmasın)
       if (!e.march && !lead.march && (e.def.speed > lead.def.speed * 1.15 || e.cvT > 1) && !e.def.machine) { // sollama: boş tarafa kayar (16 Eki: 1 sn takılan da önce yana kayar, içinden geçmez)
-        const lim = 11 * (G.lv.roadK || ROAD_K), dir = e.off === lead.off ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(e.off - lead.off);
-        e.off = clamp(e.off + dir * 22 * dt, -lim, lim);
+        // 17 Eki (Caner: "çok kalabalıkta sıkışırsa yol çizgisinin bir adım dışına taşabilir"): 0,6 sn'den uzun sıkışan yol kenarının
+        // bir adım (CROWD_SPILL) dışına kadar kayar; önü açılınca yavaşça şeridine döner (aşağıda)
+        const R = G.lv.roadK || ROAD_K, lim = e.cvT > 0.6 ? (21 + CROWD_SPILL) * R : 11 * R, dir = e.off === lead.off ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(e.off - lead.off);
+        e.off = clamp(e.off + dir * 22 * dt, -Math.max(lim, Math.abs(e.off)), Math.max(lim, Math.abs(e.off)));
       }
     }
   }
+  { const lim0 = 11 * (G.lv.roadK || ROAD_K); if (Math.abs(e.off) > lim0 && !(e.cvT > 0.3)) e.off -= Math.sign(e.off) * Math.min(Math.abs(e.off) - lim0, 9 * dt); } // taşan şeridine döner
   e.curSpd = spd * (e.d < 0 ? 1.5 : 1); e.movedAt = G.t; // mermilerin tahminli nişanı için (leadPoint)
   if (gateHold(e)) e.curSpd = 0; // 16 Eki: karantina kapısı kapalı
   e.d += e.curSpd * dt; // ekran dışındaki giriş payını biraz hızlı geçer (dalga gecikmesin)
