@@ -417,7 +417,7 @@ if (NECRO && !save.lv20 && save.stars && save.stars.length) {
 }
 save.lv20 = true;
 // ----- ayarlar (kayıtta saklanır) -----
-const SETTINGS_DEF = { blood: true, atmo: true, vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
+const SETTINGS_DEF = { blood: true, atmo: true, amb: null, vol: 1, shake: true, haptic: true, stats: false, gfx: 'auto', music: true, mvol: 0.7, sfx: true }; // Caner (10 Eki): müzik varsayılanı ORTA // vol: efekt düzeyi, mvol: müzik düzeyi
 const sfxGain = () => (setting('sfx') ? 0.9 * setting('vol') : 0);
 function setting(k) { return (save.settings && save.settings[k] != null) ? save.settings[k] : SETTINGS_DEF[k]; }
 // 16 Eki: hafif kip (zayıf Android ya da elle DÜŞÜK kalite): şeritler %55 boyutla çözülür (bellek ~yarı), çizim yoğunluğu en çok 1,5, parçacık yarı.
@@ -1665,9 +1665,10 @@ function snowCover(c, lv, paths, res) {
 let BG_ISMAP = false, BG_DK = 1; // sefer haritası zemini çiziliyor (lv.decorK); BG_DK: dekor ölçeği (haritada MAP_DECOR_K)
 const MAP_DECOR_K = 0.9, MAP_TEX_K = 0.4; // 16 Eki (Caner): haritadaki ev, harabe, sancak, ağaç %10 küçük; zemin ve yol dokusu haritada 0,4 ölçekte (askerlere orantılı ince, yakınlaşınca keskin)
 function renderBackground(lv, paths, res = 2, m = null) {
-  BG_ISMAP = !!lv.decorK; BG_DK = BG_ISMAP ? MAP_DECOR_K : 1; BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; perf.heavy = time;
-  try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; return c; } finally { BGM = { x: 0, y: 0 }; BG_FADE = null; }
+  BG_ISMAP = !!lv.decorK; BG_DK = BG_ISMAP ? MAP_DECOR_K : 1; BGM = m ? { x: m.x, y: m.y } : { x: 0, y: 0 }; BG_HANDS = []; BG_LIGHTS = []; BG_BANNERS = []; BG_PONDS = []; perf.heavy = time;
+  try { const c = renderBackground0(lv, paths, res); if (lv.weather === 'snow') snowCover(c, lv, paths, res); c.m = BGM; c.hands = BG_HANDS; c.lights = BG_LIGHTS; c.banners = BG_BANNERS; c.ponds = BG_PONDS; return c; } finally { BGM = { x: 0, y: 0 }; BG_FADE = null; }
 }
+let BG_PONDS = []; // 17 Eki: zemindeki göllerin yeri (su parıltısı)
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
 // Dekor ışıkları (11 Eki, Caner): sıradan ışıklar (mum, fener) sıcak sarı, büyülü şeyler (mantar, mahzen, kütük gözü) yeşil; noktalar img/lights.json (varliklar/isik_isle.py)
 let DECOR_LIGHTS = {};
@@ -1856,6 +1857,28 @@ function renderBackground0(lv, paths, res) {
     }
   }
 
+  // 17 Eki (Caner: "yol kenarına daha sık küçük dekor ve yolla çimen arasında daha doğal geçiş"): yalnız bölümlerde (haritada değil).
+  // (1) kenardan çimene taşan düzensiz toprak lekeleri (sert kenar çizgisi yumuşar), (2) kenar şeridinde ara ara küçük çalı, mantar,
+  // kemik, taş görseli. Arsalara, kapaklara, kaleye ve başka yolun üstüne düşmez. Zemine pişer: karede yük yok.
+  if (NECRO && !lv.decorK) {
+    const r2 = seeded(lv.name.length * 53 + lv.plots.length * 11 + 5); // ayrı dizi: öbür dekorun yeri kaymasın
+    const hs = hatchSpots(lv, paths), free = (x, y, p, d, pad) => !onRoad(p, x, y, false, d) && !lv.plots.some(pl => dist(x, y, pl[0], pl[1]) < 36 + pad) &&
+      !hs.some(hq => dist(x, y, hq[0], hq[1]) < 28 + pad) && !(Math.abs(x - lv.castle[0]) < 70 && y > lv.castle[1] - 150 && y < lv.castle[1] + 40);
+    for (const p of paths) for (const side of [-1, 1]) for (let d = 4; d < p.total - 4; d += 5 + r2() * 6) {
+      const e = 21 * R * roadVary(p, d, side), q = pathPos(p, d, side * (e + 2 + r2() * 9)), r = 2.5 + r2() * 5;
+      if (!free(q.x, q.y, p, d, -20)) continue;
+      g.fillStyle = `rgba(${parseInt(th.road[2].slice(1, 3), 16)},${parseInt(th.road[2].slice(3, 5), 16)},${parseInt(th.road[2].slice(5, 7), 16)},${0.12 + r2() * 0.16})`;
+      g.beginPath(); g.ellipse(q.x, q.y, r * 1.5, r * 0.7, Math.atan2(q.y - pathPos(p, d, 0).y, q.x - pathPos(p, d, 0).x) + Math.PI / 2, 0, Math.PI * 2); g.fill();
+    }
+    const small = [].concat((th.bushSpr || []).map(n => [n, 15, 6]), (th.rockSpr || []).filter(n => /rock|bones|tomb/.test(n)).map(n => [n, 12, 5])).filter(([n]) => spr(n));
+    if (small.length) for (const p of paths) for (let d = 30 + r2() * 40; d < p.total - 20; d += 38 + r2() * 46) {
+      const side = r2() < 0.5 ? -1 : 1, [n, w0, wr] = small[Math.floor(r2() * small.length)], q = pathPos(p, d, side * (25 + r2() * 7) * R);
+      if (q.x < 4 || q.x > W - 4 || q.y < 50 || q.y > H - 6 || !free(q.x, q.y, p, d, 0)) continue;
+      if (nearestOnPaths(paths, q.x, q.y).d < 22 * R) continue;
+      const im = spr(n), w = w0 + r2() * wr; g.save(); g.globalAlpha = 0.95; g.fillStyle = 'rgba(15,10,5,0.25)'; g.beginPath(); g.ellipse(q.x, q.y + 1, w * 0.45, w * 0.14, 0, 0, Math.PI * 2); g.fill();
+      if (r2() < 0.5) { g.translate(q.x, 0); g.scale(-1, 1); drawSprite(g, im, 0, q.y + 1, w); } else drawSprite(g, im, q.x, q.y + 1, w); g.restore();
+    }
+  }
   const blocked = (x, y, pad) => {
     if (nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad) return true; // dalgalı kenar payı dahil
     for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
@@ -1875,7 +1898,7 @@ function renderBackground0(lv, paths, res) {
   for (let i = 0, n = 0; i < 300 * DK && n < (th.ponds || 0) * DK; i++) {
     const x = 90 + rnd() * (W - 180), y = 90 + rnd() * (H - 180), im = spr(th.pondSpr || 's2_pond_2'), pw = 60 + rnd() * 30;
     if (blocked(x, y, 40) || !im || pondsAt.some(o => Math.hypot(o[0] - x, o[1] - y) < 150)) continue;
-    n++; pondsAt.push([x, y, pw * 0.55]);
+    n++; pondsAt.push([x, y, pw * 0.55]); BG_PONDS.push({ x, y, w: pw });
     drawSprite(g, im, x, y, pw, 0.5);
     const a0 = rnd() * 6.283, nb = 3 + Math.floor(rnd() * 2);
     for (let k = 0; k < nb; k++) { // kıyı: göl elipsinin kenarında, yan yana sazlık öbeği (alt kıyı önde)
@@ -2181,7 +2204,7 @@ function startLevel(idx, chal = null) {
   G.loadWait = { t0: performance.now(), keep: crit, crit: new Set(crit) };
   crit.forEach(k => { if (STRIP_WAIT.has(k) && !SPR[k]) { STRIP_WAIT.delete(k); loadStrip(k); } }); // boyacı kuyruğundaysa öne al (doğrudan, paralel)
   setupMech();
-  setupProps();
+  setupProps(); setupFG(); setupGrass();
   gaProg('Start', idx);
   setupHeralds();
   setupGate();
@@ -2503,6 +2526,10 @@ function drawParts(list, add) {
     } else if (p.kind === 'bdrop') { // kan damlası görseli: ucu gidişin tersine
       const im = p.im; if (!im) continue; ctx.globalAlpha = Math.min(1, a * 3); const sp = Math.hypot(p.vx, p.vy), ww = s * 2, hh = ww * (1 + Math.min(1.6, sp / 160)); // hızlıyken uzar
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) - Math.PI / 2); ctx.drawImage(im, -ww / 2, -hh / 2, ww, hh); ctx.restore();
+    } else if (p.kind === 'leaf') { // 17 Eki: uçuşan yaprak: dönerek düşer, yan yan salınır (genişliği dönüşle daralıp açılır)
+      ctx.globalAlpha = Math.min(1, a * 3); ctx.save(); ctx.translate(p.x + Math.sin(p.t * 2.2 + p.ph) * 6, p.y); ctx.rotate(p.rot || 0); ctx.scale(Math.cos(p.t * 3 + p.ph), 1);
+      ctx.fillStyle = p.col; ctx.beginPath(); ctx.ellipse(0, 0, s * 1.3, s * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(20,14,8,0.5)'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(-s * 1.2, 0); ctx.lineTo(s * 1.2, 0); ctx.stroke(); ctx.restore();
     } else if (p.kind === 'chunk') {
       ctx.globalAlpha = Math.min(1, a * 2.5);
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);
@@ -2573,6 +2600,7 @@ function splatTex(v, red) {
 function fxExplosion(x, y, r, big) {
   const P = G.parts, m = big ? 1.5 : 1;
   emit(P, { kind: 'glow', add: true, x, y: y - 6, col: '255,236,180', s0: r * 1.4, s1: r * 1.8, life: 0.16, a: 0.95 });
+  if (ambOn()) { emit(P, { kind: 'glow', add: true, x, y: y - 6, col: '255,255,250', s0: r * 0.9, s1: r * 0.5, life: 0.07, a: 1 }); if (big) { G.whiteT = 0.09; G.hitStop = Math.max(G.hitStop || 0, 0.04); } } // 17 Eki: beyaz çekirdek; büyükte ekran ağarır
   for (let i = 0; i < 9 * m; i++) {
     const a = rand(0, Math.PI * 2), v = rand(15, 70) * m;
     emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.25, y: y - rand(0, 10), vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.5 - rand(15, 45),
@@ -8795,7 +8823,7 @@ function update(dt) {
   for (const d of G.decals) d.t += dt;
   G.decals = G.decals.filter(d => d.t < d.life);
   G.shakeT = Math.max(0, G.shakeT - dt);
-  G.ambT -= dt;
+  G.ambT -= dt; ambientExtra(dt);
   if (G.ambT <= 0) { // havada süzülen polen / ateş böcekleri / kar taneleri / kor
     const th = THEMES[G.lv.theme];
     if (G.weather) {
@@ -15195,10 +15223,12 @@ function settingsList(inGame) {
     ['map', 'Anonim oyun verisi', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('stats'), (v) => { setSetting('stats', v); save.statsAsked = 1; persist(); if (v) gaInit(); else if (GA) try { GA.setEnabledEventSubmission(false); } catch (e) {} }],
     ['map', 'Öğretici', [[false, 'KAPALI'], [true, 'AÇIK']], [0, 1, 2].some(i => !(save.tut3 && save.tut3[i])), (v) => { save.tut3 = v ? {} : { 0: 1, 1: 1, 2: 1 }; persist(); }], // 13 Eki: ilk 3 bölümün eğitimi yeniden
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTO'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
+    ['gear', 'Ortam efektleri', [[false, 'KAPALI'], [true, 'AÇIK']], ambOn(), (v) => setSetting('amb', v)], // 17 Eki: ön plan, canlı çimen, su, yaprak, parlama
     ['heart', 'Kan efektleri', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('blood'), (v) => setSetting('blood', v)], // 16 Eki: çizgi film kanı (ebeveyn / yaş derecesi için kapatılabilir)
   ];
   if (inGame) rows.splice(5, 1); // öğretici satırı yalnız ana ayarlarda
   if (inGame || !GA_KEYS.game) rows.splice(4, 1); // oyun verisi izni yalnız ana ayarlarda ve ölçüm anahtarı girilince
+  if (inGame) rows.splice(3, 1); // 17 Eki: oyun içi pencereye 7 satır sığar; titreşim yalnız ana ayarlarda (Ortam efektleri oyun içinde kalsın: kasarsa hemen kapatılır)
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
   return rows;
 }
@@ -18978,6 +19008,127 @@ function drawAtmo() {
   if (G.castle) warm(G.castle.x, G.castle.y - 10, 120, ATMO.warm * 0.9);
   ctx.restore();
 }
+// ---- 17 Eki (Caner: "görüntüyü daha iyi hale getirelim; kasarsa ayardan kapansın"): görsel cila. Ayar: Ortam efektleri (amb).
+// Varsayılan: hafif kipte (zayıf cihaz / DÜŞÜK kalite) kapalı, öbür cihazlarda açık. Zemine pişirilen yol kenarı dekoru ayardan bağımsızdır (karede yük yok).
+const ambOn = () => { const v = save.settings && save.settings.amb; return v != null ? !!v : !liteMode(); };
+// Ön plan siluetleri: ekranın kenarına taşan büyük, koyu ağaç/kaya/çalı (Kingdom Rush derinliği). Temanın kendi dekor görselleri,
+// koyu boyanmış önbellek kopyası. Yola, arsaya, kaleye değmeyen kenar yerleri seçilir; kamera kayınca biraz daha hızlı kayar (paralaks),
+// ağaçlar rüzgârda tabanından hafifçe salınır.
+const FG = { dark: 'rgba(9,6,14,0.9)', par: 0.16, n: 6 };
+const FG_C = {};
+function fgSil(name) {
+  if (FG_C[name]) return FG_C[name];
+  const im = spr(name); if (!im) return null;
+  const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height, k = Math.min(1, 420 / Math.max(iw, ih));
+  const c = document.createElement('canvas'); c.width = Math.round(iw * k); c.height = Math.round(ih * k); const g = c.getContext('2d');
+  g.drawImage(im, 0, 0, c.width, c.height); g.globalCompositeOperation = 'source-atop';
+  g.fillStyle = FG.dark; g.fillRect(0, 0, c.width, c.height);
+  return (FG_C[name] = c);
+}
+function setupFG() {
+  G.fg = []; const th = THEMES[G.lv.theme]; if (!th || !NECRO) return;
+  const ok = (L) => (L || []).filter(n => SPR_META[n] && !/crow|stake|bones/.test(n));
+  // yalnız biçimi okunan siluetler: ağaçlar ve dallı/direkli yıkıntılar (kaya, çalı koyu boyanınca kara kütle oluyor)
+  const trees = ok(th.treeSpr), props = ok(th.ruinSpr).filter(n => /stump|gallows|totem|ravtree|sign/.test(n)); if (!trees.length) return;
+  const rnd = seeded(G.idx * 131 + 17), C = [];
+  for (let x = VIS.l + 20; x < VIS.r - 20; x += 64) C.push({ side: 'b', x: x + rnd() * 30, y: H + 14 + rnd() * 14 });
+  for (let y = 150; y < H - 30; y += 70) { C.push({ side: 'l', y: y + rnd() * 30 }); C.push({ side: 'r', y: y + rnd() * 30 }); }
+  // köşeler önce: kenarın ortasındaki adaylar sona (sahne çerçevelenir, orta açık kalır)
+  const cx = (VIS.l + VIS.r) / 2; C.forEach(c => { c.sc = c.side === 'b' ? -Math.abs((c.x - cx) / (VIS.w / 2)) : -(c.y / H) - 0.3; c.sc += rnd() * 0.25; }); C.sort((a, b) => a.sc - b.sc);
+  const roadIn = (x0, y0, x1, y1) => { for (const p of G.paths) for (let d = 0; d < p.total; d += 8) { const q = pathPos(p, d, 0); if (q.x > x0 - 34 && q.x < x1 + 34 && q.y > y0 - 30 && q.y < y1 + 30) return true; } return false; };
+  for (const c of C) {
+    if (G.fg.length >= FG.n) break;
+    const kind = c.side === 'b' && props.length && rnd() < 0.3 ? 'prop' : 'tree';
+    const L = kind === 'tree' ? trees : props, name = L[Math.floor(rnd() * L.length)], m = SPR_META[name];
+    const w = kind === 'tree' ? 140 + rnd() * 50 : 95 + rnd() * 30, h = w * m[1] / m[0];
+    const x = c.side === 'l' ? VIS.l + w * 0.12 : c.side === 'r' ? VIS.r - w * 0.12 : c.x, y = c.y + (c.side === 'b' ? 0 : h * 0.35);
+    const vx0 = Math.max(VIS.l, x - w / 2), vx1 = Math.min(VIS.r, x + w / 2), vy0 = y - h, vy1 = Math.min(H, y); // ekranda görünen kısım
+    if (vx1 - vx0 < 20 || vy1 - vy0 < 20) continue;
+    if (roadIn(vx0 + w * 0.12, vy0 + h * 0.12, vx1 - w * 0.12, vy1)) continue;
+    if (G.plots.some(pl => pl.x > vx0 - 40 && pl.x < vx1 + 40 && pl.y > vy0 - 20 && pl.y < vy1 + 90)) continue;
+    if (G.castle && Math.abs(G.castle.x - x) < w / 2 + 90 && G.castle.y > vy0 - 40) continue;
+    if (G.fg.some(o => Math.abs(o.x0 - x) < (o.w + w) * 0.42 && Math.abs(o.y - y) < (o.h + h) * 0.4)) continue;
+    const anchor = c.side === 'l' ? x - VIS.l : c.side === 'r' ? VIS.r - x : null;
+    G.fg.push({ name, side: c.side, x0: x, anchor, y, w, h, flip: rnd() < 0.5 ? -1 : 1, ph: rnd() * 6.3, sway: kind === 'tree' ? 0.012 : 0 });
+  }
+}
+function drawFG() {
+  if (!G.fg || !G.fg.length || !ambOn() || PERF_OFF.has('fg')) return;
+  const px = (cam.x + W / (2 * cam.z) - W / 2) * FG.par, py = (cam.y + H / (2 * cam.z) - H / 2) * FG.par;
+  for (const f of G.fg) {
+    const im = fgSil(f.name); if (!im) continue;
+    const x = f.side === 'l' ? VIS.l + f.anchor : f.side === 'r' ? VIS.r - f.anchor : f.x0;
+    ctx.save(); ctx.translate(x - px, f.y - py);
+    if (f.sway) ctx.rotate(Math.sin(time * 0.7 + f.ph) * f.sway + Math.sin(time * 1.9 + f.ph * 2) * f.sway * 0.3); // rüzgâr: yavaş salınım + küçük titreme
+    ctx.scale(f.flip, 1); ctx.drawImage(im, -f.w / 2, -f.h, f.w, f.h);
+    ctx.restore();
+  }
+}
+// Canlı çimen: zemindeki (pişmiş) ot öbeklerinin üstüne, yol kenarlarında ve açık çimende rüzgârla eğilen az sayıda canlı ot tutamı.
+// Rüzgâr haritada soldan sağa dalga olarak geçer (komşu tutamlar birlikte eğilir).
+function setupGrass() {
+  G.grass = []; const th = THEMES[G.lv.theme]; if (!th || !th.tuft) return;
+  const rnd = seeded(G.idx * 977 + 3), R = G.lv.roadK || ROAD_K;
+  for (const p of G.paths) for (let d = 20; d < p.total - 10; d += 26 + rnd() * 34) {
+    const side = rnd() < 0.5 ? -1 : 1, q = pathPos(p, d, side * (24 + rnd() * 10) * R);
+    if (q.x < -20 || q.x > W + 20 || q.y < 40 || q.y > H) continue;
+    if (nearestOnPaths(G.paths, q.x, q.y).d < 20 * R) continue;
+    if (G.plots.some(pl => dist(pl.x, pl.y, q.x, q.y) < 34)) continue;
+    G.grass.push({ x: q.x, y: q.y, s: 0.8 + rnd() * 0.6, n: 3 + Math.floor(rnd() * 3), ph: rnd() * 6.3 });
+  }
+  G.grass.sort((a, b) => a.y - b.y);
+  if (G.grass.length > 70) G.grass = G.grass.filter((_, i) => i % Math.ceil(G.grass.length / 70) === 0);
+}
+function drawGrassLive() {
+  if (!G.grass || !ambOn() || PERF_OFF.has('grass')) return;
+  const th = THEMES[G.lv.theme], dk = (h, k) => { const n = parseInt(h.slice(1), 16); return `rgb(${Math.round((n >> 16) * k)},${Math.round(((n >> 8) & 255) * k)},${Math.round((n & 255) * k)})`; }, c0 = dk(th.tuft[0], 0.7), c1 = dk(th.tuft[1], 0.82), v = [cam.x - 10, cam.y - 10, cam.x + W / cam.z + 10, cam.y + H / cam.z + 10];
+  ctx.save(); ctx.lineCap = 'round';
+  for (const o of G.grass) {
+    if (o.x < v[0] || o.x > v[2] || o.y < v[1] || o.y > v[3]) continue;
+    const wind = Math.sin(time * 1.5 - o.x * 0.012 + o.ph * 0.2) * 0.6 + Math.sin(time * 3.7 + o.ph) * 0.15; // haritada ilerleyen rüzgâr dalgası
+    for (let k = 0; k < o.n; k++) {
+      const u = o.n > 1 ? k / (o.n - 1) - 0.5 : 0, len = (5 + 2.5 * Math.sin(o.ph * 9 + k * 2.1)) * o.s, a = -Math.PI / 2 + u * 1.1 + wind * 0.5, bx = o.x + u * 4 * o.s;
+      const tx = bx + Math.cos(a) * len + wind * 2.2 * o.s, ty = o.y + Math.sin(a) * len;
+      ctx.strokeStyle = k % 2 ? c1 : c0; ctx.lineWidth = 1.1 * o.s;
+      ctx.beginPath(); ctx.moveTo(bx, o.y); ctx.quadraticCurveTo(bx + (tx - bx) * 0.3, o.y + (ty - o.y) * 0.6, tx, ty); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+// Su parıltısı: zemindeki göllerin üstünde ara ara yanıp sönen ışık pırıltıları ve yavaş genişleyen halkalar
+function drawPondFx(list) {
+  if (!list || !list.length || !ambOn() || PERF_OFF.has('pond')) return;
+  ctx.save();
+  for (const [i, o] of list.entries()) {
+    const rx = o.w * 0.34, ry = o.w * 0.11;
+    for (let k = 0; k < 3; k++) { // pırıltı: yıldız gibi kısa çizgi çifti, sırayla yanar
+      const ph = (time * 0.6 + i * 0.37 + k * 0.33) % 1; if (ph > 0.35) continue;
+      const a = Math.sin(ph / 0.35 * Math.PI), sx = o.x + Math.sin(i * 7.1 + k * 3.3) * rx * 0.75, sy = o.y + Math.cos(i * 5.3 + k * 2.1) * ry * 0.6, s = 2 + a * 2.2;
+      ctx.strokeStyle = `rgba(230,250,255,${0.75 * a})`; ctx.lineWidth = 0.9;
+      ctx.beginPath(); ctx.moveTo(sx - s, sy); ctx.lineTo(sx + s, sy); ctx.moveTo(sx, sy - s * 0.6); ctx.lineTo(sx, sy + s * 0.6); ctx.stroke();
+    }
+    const rp = (time * 0.35 + i * 0.41) % 1; // halka
+    ctx.strokeStyle = `rgba(210,240,235,${0.35 * (1 - rp)})`; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.ellipse(o.x + Math.sin(i * 3.7) * rx * 0.4, o.y + Math.cos(i * 2.3) * ry * 0.3, 2 + rp * rx * 0.45, (2 + rp * rx * 0.45) * 0.32, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+// Uçuşan yaprak ve kül: ağaçlı temalarda rüzgârla sürüklenen, dönerek düşen yapraklar; kemik/kızıl/ateş temalarında yavaş kül
+const AMB_LEAF = { cursed: ['#9a8a50', '#a8763e', '#7e8a4a'], bog: ['#8a9a56', '#9a8a4e'], graveyard: ['#a07a46', '#8a7a50'], ravenwood: ['#c0662c', '#d88a38', '#a04a22'], blacklake: ['#8a9088', '#9a9a86'],
+  plague: ['#a89a4a', '#b08a46'], monastery: ['#a8864a', '#c09048'] }; // koyu zeminde seçilsin diye açık, solgun güz renkleri
+const AMB_ASH = { necrogate: '200,190,210', ossuary: '220,210,190', bloodmoon: '220,170,170' };
+function ambientExtra(dt) {
+  if (!ambOn() || G.weather) return;
+  if ((G.leafT = (G.leafT ?? 1) - dt) > 0) return;
+  const th = G.lv.theme, L = AMB_LEAF[th], A = AMB_ASH[th]; G.leafT = L ? 0.55 : A ? 0.18 : 9;
+  if (L) emit(G.parts, { kind: 'leaf', x: rand(-40, W * 0.8), y: rand(-10, H * 0.5), vx: rand(18, 34), vy: rand(10, 22), col: L[Math.floor(rand(0, L.length))], s0: rand(3, 4.2), s1: 3, life: rand(7, 11), a: 0.9, rot: rand(0, 6), vr: rand(-3, 3), ph: rand(0, 6) });
+  else if (A) emit(G.parts, { kind: 'glow', x: rand(-20, W), y: -8, vx: rand(4, 14), vy: rand(10, 20), col: A, s0: rand(1.2, 2), s1: 1, life: rand(10, 14), a: 0.55 });
+}
+// Patlama parlaması: büyük patlamada ekran bir an ağarır (yalnız ayar açıkken; ekran sarsıntısı ayarından bağımsız)
+function drawWhiteFlash() {
+  if (!(G.whiteT > 0)) return; const a = G.whiteT / 0.09 * 0.14; G.whiteT -= 1 / 60;
+  ctx.fillStyle = `rgba(255,250,235,${a})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+}
 // 16 Eki: sis (WEATHER.fog): ekranda ağır ağır sürüklenen yumuşak sis kümeleri + yerde ince pus. Bulut dokusu bir kez üretilir.
 let WFOG_TEX = null; const WFOG = { banks: null };
 function wfogTex() {
@@ -19224,6 +19375,7 @@ function drawPlay() {
   if (!PERF_OFF.has('bg')) ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   if (!PERF_OFF.has('bgl')) drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   drawGraveHands(G.bg.hands, G.parts); drawBanners(G.bg.banners, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
+  drawPondFx(G.bg.ponds);
   for (const d of PERF_OFF.has('decal') ? [] : G.decals) {
     if (d.kind === 'crater') { drawCrater(d); continue; }
     if (d.kind === 'splat') {
@@ -19247,6 +19399,7 @@ function drawPlay() {
   }
   ctx.globalAlpha = 1;
   if (!PERF_OFF.has('ground')) drawGround();
+  drawGrassLive();
   drawHolyLights();
   for (const pl of G.plots) if (!pl.tower) (pl.rubble ? drawRubble(pl) : drawPlot(pl));
   drawHatches();
@@ -19304,6 +19457,7 @@ function drawPlay() {
   if (!PERF_OFF.has('parts')) drawPartsAll(G.parts);
   drawMechFx();
   drawProps(true);
+  drawFG();
   drawDmgNums();
   drawNets(); drawCages();
   for (const f of G.floaters) {
@@ -19318,6 +19472,7 @@ function drawPlay() {
   ctx.restore();
   if (!PERF_OFF.has('weather')) drawWeather();
   if (!PERF_OFF.has('atmo')) drawAtmo();
+  drawWhiteFlash();
   drawBloodMoon();
   if (G.bossFx) {
     // boss girişi: ekran kenarları kızıl karanlığa bürünür, nabız gibi atar, sonra açılır

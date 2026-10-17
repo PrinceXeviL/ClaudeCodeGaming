@@ -607,7 +607,8 @@
   "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 resucitados · +10% de poder · cadáver +1,65 s",
   "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 resucitados · +25% de vida · +25% de daño · cadáver +1,65 s",
   "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 resucitados · +25% de vida y daño · cadáver +2 s · 2 grupos separados",
-  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Muy rápido; arrolla esqueletos y clava su lanza mientras avanza. No pueden detenerlo; un muro de huesos sí"
+  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Muy rápido; arrolla esqueletos y clava su lanza mientras avanza. No pueden detenerlo; un muro de huesos sí",
+  "Ortam efektleri": "Efectos de ambiente"
  },
  "tpl": [
   [

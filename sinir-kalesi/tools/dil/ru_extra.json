@@ -607,7 +607,8 @@
   "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 поднятых · +10% силы · труп +1,65 с",
   "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 поднятых · +25% здоровья · +25% урона · труп +1,65 с",
   "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 поднятых · +25% здоровья и урона · труп +2 с · 2 отдельные группы",
-  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Очень быстрая; давит скелетов и бьёт копьём на ходу. Остановить её они не могут, а костяная стена может"
+  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Очень быстрая; давит скелетов и бьёт копьём на ходу. Остановить её они не могут, а костяная стена может",
+  "Ortam efektleri": "Эффекты окружения"
  },
  "tpl": [
   [
