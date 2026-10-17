@@ -725,12 +725,13 @@ Object.assign(HEROES, {
       { id: 'bash', name: 'Gladyatör Ağı', cd: 8, desc: 'Hedefine ağ atar: 2 sn kımıldayamaz, ek hasar alır' },
       { id: 'charge', name: 'Arena Hamlesi', cd: 16, desc: 'Kaleye en yakın düşmana atılıp ağır darbe vurur' },
     ] }] },
-  leonidas: { name: 'Leonidas', role: 'Kemik Kalkan · Tank', sprite: 'hero_leonidas', h: 33, aura: '200,150,255',
-    hp: 480, dmg: [12, 18], armor: 0.5, rate: 1.1, speed: 72, respawn: 16, regen: 12, engage: 70, unlock: 28,
+  // 17 Eki (Caner: "estetik dövüşen bir savaşçı, ihtişamlı aktif ve pasif yetenekler"): v2 Ölü Sparta Kralı. Pasifler Kalkan Hücumu (doğuştan) ve Mızrak Dansı,
+  // doğuştan Bronz Kalkan (parry: yakın dövüş darbelerinin bir kısmını karşılar), aktifler Mızrak Yağmuru ve Termopylae Falanksı. Mantık game.js LEO
+  leonidas: { name: 'Leonidas', role: 'Ölü Sparta Kralı · Savaşçı', sprite: 'hero_leonidas', h: 40, aura: '200,150,255', halo: '255,200,120', parry: 0.2, flames: '190,120,255',
+    hp: 480, dmg: [12, 18], armor: 0.45, rate: 1.0, speed: 76, respawn: 16, regen: 12, engage: 70, unlock: 28,
     paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
-      { id: 'bash', name: 'Sparta Tekmesi', cd: 7, desc: '"Bu Sparta!": hedefi tekmeyle sersemletir, ek hasar verir' },
-      { id: 'cry', name: 'Sparta Narası', cd: 15, desc: 'Yakındaki iskeletleri iyileştirir, 6 sn hasarlarını %50 artırır' },
-      { id: 'iron', name: 'Bronz Kalkan', passive: true, desc: 'Kalıcı: +%25 zırh ve iki kat can yenilenmesi' },
+      { id: 'charge', name: 'Kalkan Hücumu', cd: 9, desc: 'Kalkanıyla kalabalığa atılır: yolundaki düşmanlara vurur, geri savurur ve 1 sn sersemletir' },
+      { id: 'spear', name: 'Mızrak Dansı', cd: 11, desc: 'Mızrağını iki tur çevirir: çevresindeki bütün düşmanlara iki kez vurur' },
     ] }] },
 });
 // 15 Eki (Caner: "Merlin ölüm büyücüsünü yapalım, çok ihtişamlı"): Mortimer'a düelloda yenilen efsanevi büyücü; menzilli büyü ve kalabalık kontrolü.
@@ -780,8 +781,8 @@ HERO_ORDER.splice(0, HERO_ORDER.length, 'leonidas', 'merlin', 'robin', 'bathory'
 const HERO_ULT2 = {
   spartacus: { name: 'Arena Kükremesi', cd: 45, r: 84, dmg: [18, 26], stun: 1.5, scream: true, col: '255,170,90',
     desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
-  leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
-    desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
+  leonidas: { name: 'Termopylae Falanksı', cd: 55, hp: 900, life: 6, phalanx: true, n: 5, thorns: 0.5, thrust: [60, 80],
+    desc: 'Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar', short: 'Kalkan duvarı: yolu kapatır, sonunda mızrak saplar' },
   // 16 Eki (Caner: "tornadolu fırtına olabilir; tornadoya kapılan düşman dönerek etrafa saçılır, savrulur"): Zincir Şimşek yerine Kasırga Fırtınası (game.js TORNADO)
   merlin: { name: 'Kasırga Fırtınası', cd: 45, anim: 1.5, r: 70, dmg: [40, 55], dur: 4, n: 12, tornado: true,
     desc: 'Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar', short: 'Yolda ilerleyen kasırga: kapılanı döndürüp savurur' },
@@ -791,7 +792,7 @@ const HERO_ULT2 = {
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
 };
 // pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)
-const HERO_PASSIVES = { spartacus: ['whirl', 'bash'], leonidas: ['bash', 'iron'], merlin: ['timegate', 'frog'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
+const HERO_PASSIVES = { spartacus: ['whirl', 'bash'], leonidas: ['charge', 'spear'], merlin: ['timegate', 'frog'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
 for (const id in HERO_PASSIVES) if (HEROES[id]) HEROES[id].passives = HERO_PASSIVES[id];
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde

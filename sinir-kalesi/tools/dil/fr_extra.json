@@ -661,7 +661,20 @@
   "YARDIMCI": "SECOND",
   "BAŞA GEÇİR": "NOMMER CHEF",
   "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 flèches de feu d’âme vertes s’abattent en averse sur la zone choisie : dégâts, poison, et elles se plantent au sol",
-  "Alana 40 okluk zehirli sağanak": "Averse empoisonnée de 40 flèches"
+  "Alana 40 okluk zehirli sağanak": "Averse empoisonnée de 40 flèches",
+  "Ölü Sparta Kralı · Savaşçı": "Roi mort-vivant de Sparte · Guerrier",
+  "Kalkan Hücumu": "Charge au bouclier",
+  "Kalkan Hücumu!": "Charge au bouclier !",
+  "Kalkanıyla kalabalığa atılır: yolundaki düşmanlara vurur, geri savurur ve 1 sn sersemletir": "Fonce dans la foule derrière son bouclier : frappe les ennemis sur son passage, les repousse et les étourdit 1 s",
+  "Mızrak Dansı": "Danse de la lance",
+  "Mızrak Dansı!": "Danse de la lance !",
+  "Mızrağını iki tur çevirir: çevresindeki bütün düşmanlara iki kez vurur": "Fait tournoyer sa lance deux fois : frappe deux fois chaque ennemi autour de lui",
+  "Termopylae Falanksı": "Phalange des Thermopyles",
+  "Termopylae Falanksı!": "Phalange des Thermopyles !",
+  "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "Cinq hoplites fantômes dressent un mur de boucliers : route bloquée 6 s, les assaillants subissent des dégâts, puis tous frappent de la lance",
+  "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "Mur de boucliers : bloque la route, finit par un coup de lance",
+  "SPARTA!": "SPARTE !",
+  "Kalkan!": "Bouclier !"
  },
  "tpl": [
   [

@@ -850,7 +850,20 @@
   "YARDIMCI": "SECOND",
   "BAŞA GEÇİR": "MAKE LEADER",
   "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 green soul-fire arrows pour down on the chosen area: they deal damage, poison, and stick into the ground",
-  "Alana 40 okluk zehirli sağanak": "A 40-arrow poison downpour"
+  "Alana 40 okluk zehirli sağanak": "A 40-arrow poison downpour",
+  "Ölü Sparta Kralı · Savaşçı": "Undead King of Sparta · Warrior",
+  "Kalkan Hücumu": "Shield Charge",
+  "Kalkan Hücumu!": "Shield Charge!",
+  "Kalkanıyla kalabalığa atılır: yolundaki düşmanlara vurur, geri savurur ve 1 sn sersemletir": "Charges into the crowd behind his shield: hits every enemy in his path, knocks them back and stuns them for 1 s",
+  "Mızrak Dansı": "Spear Dance",
+  "Mızrak Dansı!": "Spear Dance!",
+  "Mızrağını iki tur çevirir: çevresindeki bütün düşmanlara iki kez vurur": "Spins his spear twice: hits every enemy around him two times",
+  "Termopylae Falanksı": "Phalanx of Thermopylae",
+  "Termopylae Falanksı!": "Phalanx of Thermopylae!",
+  "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "Five ghost hoplites raise a shield wall on the road: it blocks the road for 6 s, attackers take damage, and at the end they all thrust their spears",
+  "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "Shield wall: blocks the road, ends with a spear thrust",
+  "SPARTA!": "SPARTA!",
+  "Kalkan!": "Shield!"
  },
  "tpl": [
   [

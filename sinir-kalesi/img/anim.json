@@ -1021,23 +1021,6 @@
   "base": 0.0147,
   "ch": 0.956
  },
- "hero_leonidas_walk": {
-  "n": 19,
-  "fw": 265,
-  "fh": 232,
-  "base": 0.0143,
-  "ch": 0.9501,
-  "idle": 10,
-  "sh": 1,
-  "stride": 1.147
- },
- "hero_leonidas_die": {
-  "n": 33,
-  "fw": 420,
-  "fh": 231,
-  "base": 0.0141,
-  "ch": 0.9513
- },
  "hero_wren_atk": {
   "n": 32,
   "fw": 372,
@@ -1061,14 +1044,6 @@
   "fh": 233,
   "base": 0.0143,
   "ch": 0.943,
-  "sh": 1
- },
- "hero_leonidas_atk": {
-  "n": 32,
-  "fw": 260,
-  "fh": 228,
-  "base": 0.0145,
-  "ch": 0.9638,
   "sh": 1
  },
  "enemy_hunter_die": {
@@ -1159,13 +1134,6 @@
   "fh": 163,
   "base": 0.0139,
   "ch": 0.9811
- },
- "hero_leonidas_skill": {
-  "n": 32,
-  "fw": 285,
-  "fh": 249,
-  "base": 0.0133,
-  "ch": 0.8847
  },
  "enemy_torch_die": {
   "n": 33,
@@ -1676,34 +1644,6 @@
   "fh": 230,
   "base": 0.0145,
   "ch": 0.9564
- },
- "hero_leonidas_idle": {
-  "n": 32,
-  "fw": 259,
-  "fh": 227,
-  "base": 0.0146,
-  "ch": 0.9708
- },
- "hero_leonidas_run": {
-  "n": 32,
-  "fw": 288,
-  "fh": 240,
-  "base": 0.0139,
-  "ch": 0.9169
- },
- "hero_leonidas_cast": {
-  "n": 32,
-  "fw": 271,
-  "fh": 236,
-  "base": 0.0139,
-  "ch": 0.9307
- },
- "hero_leonidas_block": {
-  "n": 32,
-  "fw": 243,
-  "fh": 232,
-  "base": 0.0143,
-  "ch": 0.9476
  },
  "unit_corpsegolem_rise": {
   "n": 6,

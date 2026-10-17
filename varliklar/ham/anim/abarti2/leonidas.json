@@ -1,0 +1,97 @@
+[
+ {
+  "name": "hero_leonidas_idle",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, stands in a proud ready battle stance: slow heavy breathing, the shoulders rise and fall, the crimson cape and the helmet crest sway gently in the wind, the shield stays raised in front, the spear tip bobs slightly, the purple eyes glow, a calm seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_walk",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, marches forward in place with a heroic, heavy and confident warrior walk: strong long strides, each foot stomps down firmly, the shield held high in front, the spear held level and ready, the cape and crest flow behind, the body bobs with every step, a non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "seed": 21,
+  "cycle": true
+ },
+ {
+  "name": "hero_leonidas_run",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, charges forward in place at a fast run: leans forward behind the raised shield, long powerful running strides, the spear pointed forward, the cape whips behind, a non-stop running cycle. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "cycle": true
+ },
+ {
+  "name": "hero_leonidas_atk",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, attacks: a big wind-up pulling the spear far back behind the shield, then a lightning fast powerful spear thrust straight forward with the whole body lunging into it, strong follow-through, then pulls the spear back and returns exactly to the starting pose, exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_block",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, defends: crouches behind the big round shield and raises it firmly in front, braces against a heavy blow, the shield recoils and sparks fly from its rim, the feet slide back a little, then pushes the shield forward with a strong shove and returns to the starting pose, exaggerated cartoon action, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_cast_charge",
+  "ref": "ham/anim/hero_leonidas_genis_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, performs a shield charge on the same spot: crouches low behind the raised shield, then explodes forward in a short powerful shield rush and slams the shield forward with his whole body, dust bursts from his feet, then he plants his feet and returns to the starting pose, exaggerated cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_cast_spin",
+  "ref": "ham/anim/hero_leonidas_genis_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, performs a spinning spear dance on the same spot: holds the long spear with both hands and spins it around his body in a full fast circle twice like a whirlwind, the cape swirls around him, sweeping slashes all around, then stops and returns to the starting pose, exaggerated graceful cartoon action, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_skill",
+  "ref": "ham/anim/hero_leonidas_genis_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, summons a rain of spears: raises the spear high toward the sky with a mighty battle cry, the jaw opens wide, then swings the spear down and points it forward commanding the attack, the cape billows, then returns to the starting pose, grand heroic exaggerated cartoon action, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_skill2",
+  "ref": "ham/anim/hero_leonidas_genis_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, forms a phalanx: slams the bottom of the big round shield down onto the ground in front of him, plants his feet, lowers the spear over the top of the shield pointing forward, roars a battle cry, holds the unbreakable stance, then rises back to the starting pose, grand heroic exaggerated cartoon action, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_cheer",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, celebrates a great victory in place: raises the spear high above the head and shakes it triumphantly, bangs the spear against the shield twice, the skull jaw opens wide in a proud roar, the cape flutters, then returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_lvlup",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, powers up: plants the spear upright, raises the shield high, purple soul energy swirls around him and his eyes blaze brighter, he stands taller with pride, then returns to the starting pose, grand heroic cartoon action. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21,
+  "loop": true
+ },
+ {
+  "name": "hero_leonidas_die",
+  "ref": "ham/anim/hero_leonidas_genis_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, dies: is struck hard, staggers back, drops to one knee leaning on the spear, then collapses forward behind his shield, the bones go limp and he lies still on the ground, the helmet stays on, exaggerated comic cartoon death, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "seed": 21
+ }
+]

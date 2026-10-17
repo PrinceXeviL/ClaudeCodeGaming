@@ -661,7 +661,20 @@
   "YARDIMCI": "APOYO",
   "BAŞA GEÇİR": "HACER LÍDER",
   "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 flechas de fuego de almas verde caen como un aguacero en la zona elegida: dañan, envenenan y se clavan en el suelo",
-  "Alana 40 okluk zehirli sağanak": "Aguacero venenoso de 40 flechas"
+  "Alana 40 okluk zehirli sağanak": "Aguacero venenoso de 40 flechas",
+  "Ölü Sparta Kralı · Savaşçı": "Rey no muerto de Esparta · Guerrero",
+  "Kalkan Hücumu": "Carga de escudo",
+  "Kalkan Hücumu!": "¡Carga de escudo!",
+  "Kalkanıyla kalabalığa atılır: yolundaki düşmanlara vurur, geri savurur ve 1 sn sersemletir": "Carga contra la multitud con su escudo: golpea a los enemigos a su paso, los empuja y los aturde 1 s",
+  "Mızrak Dansı": "Danza de lanza",
+  "Mızrak Dansı!": "¡Danza de lanza!",
+  "Mızrağını iki tur çevirir: çevresindeki bütün düşmanlara iki kez vurur": "Gira su lanza dos veces: golpea dos veces a todos los enemigos a su alrededor",
+  "Termopylae Falanksı": "Falange de las Termópilas",
+  "Termopylae Falanksı!": "¡Falange de las Termópilas!",
+  "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "Cinco hoplitas fantasma forman un muro de escudos: bloquea el camino 6 s, quien lo golpea recibe daño y al final todos clavan sus lanzas",
+  "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "Muro de escudos: bloquea el camino y termina con lanzas",
+  "SPARTA!": "¡ESPARTA!",
+  "Kalkan!": "¡Escudo!"
  },
  "tpl": [
   [

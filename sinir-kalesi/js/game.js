@@ -3503,6 +3503,8 @@ function damageSoldier(s, amount, src) {
   if (s.dead) return;
   if (src) provoke(s, src);
   if (s.wall) {
+    if (s.phalanx && s.thorns && src && src.hp != null && !src.dead && dist(src.x, src.y, s.x, s.y) < 60) { // Termopylae: duvara vuran hasar yer
+      hitBy = 'hero'; damageEnemy(src, amount * s.thorns, 'phys'); hitBy = null; if (Math.random() < 0.5) impactFx(src.x, src.y - 12, '255,215,140', 0.7); }
     s.hp -= amount * (1 - s.armor); s.flash = 0.08;
     if (s.hp <= 0) { s.dead = true; s.hp = 0; s.life = 0; wallCrumble(s); releaseSoldier(s); }
     return;
@@ -3511,6 +3513,11 @@ function damageSoldier(s, amount, src) {
   if (G.heroes.some(h => !h.dead && h.learned.frostarmor && dist(h.x, h.y, s.x, s.y) < 110)) amount *= 0.8;
   if (s.dodge && Math.random() < s.dodge) { if (Math.random() < 0.4) floatText(s.x, s.y - 30, 'Kaçtı!', '#ffe9b0'); return; }
   if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('bash'); return; }
+  if (s.hero && s.def.parry && src && src.hp != null && dist(src.x, src.y, s.x, s.y) < 45 && !(s.parryCd > G.t) && Math.random() < s.def.parry) { // 17 Eki: Leonidas'ın Bronz Kalkan'ı
+    s.parryCd = G.t + LEO.parryCd; s.blockA = HERO_ANIM.block; s.blockCd = G.t + 1.5; const dir = Math.sign(src.x - s.x) || s.face || 1;
+    for (let i = 0; i < 7; i++) emit(G.parts, { kind: 'streak', add: true, x: s.x + dir * 9, y: s.y - 18, vx: dir * rand(40, 130), vy: -rand(20, 110), g: 260, col: i % 3 ? '#ffd88a' : '#fff4d0', s0: 1.5, s1: 0.2, life: rand(0.2, 0.38) });
+    if (pushable(src) && !src.def.chief) { src.knockT = KNOCK.t; src.knockV = 60; }
+    if (Math.random() < 0.35) floatText(s.x, s.y - 34, 'Kalkan!', '#ffd88a'); sfx('clash', 1.25, 0.7); return; }
   if (s.wardT > 0) amount *= 1 - ELITE_SK.shield.red; // Tabut Duvarı
   if (s.hero && amount > s.maxHp * 0.04 && !(s.blockCd > G.t) && !(s.ultT > 0) && !(s.castA > 0)) { s.blockA = HERO_ANIM.block; s.blockCd = G.t + 3; } // komutan darbeyi karşılar
   const CA = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); // lanet aurası: iskelete ek zırh
@@ -5495,7 +5502,12 @@ function updateSoldier(s, dt) {
   if (s.skT > 0) s.skT -= dt;
   if (s.militia) {
     s.life -= dt;
+    if (s.phalanx && !s.thrustT && s.life < 0.55 && !s.dead && s.thrust) phalanxThrust(s);
     if (s.life <= 0 && !s.dead) { s.dead = true; releaseSoldier(s); }
+  }
+  if (s.hero && !s.dead) {
+    if (s.spear2 && (s.spear2.t -= dt) <= 0) { const d2 = s.spear2.dmg; s.spear2 = null; leoSpearHit(s, d2); }
+    if (s.chg) { leoCharge(s, dt); s.anim += dt; return; } // Kalkan Hücumu sürerken saldırmaz, yürümez
   }
   if (s.dead) {
     if (s.plagueZ && !s.burst) { s.burst = true; G.zones.push({ x: s.x, y: s.y, r: 26, dps: s.plagueZ, t: 0, life: 2, fxT: 0, src: 'blast', kind: 'plague', gas: true, seed: rand(0, 9) }); fxPlagueSplash(s.x, s.y, 26); } // çürüyüp veba saçarak dağılır
@@ -5639,8 +5651,49 @@ function runHeroSkills(h, dt) {
   for (let i = nz; i < G.zones.length; i++) { G.zones[i].heroSkill = true; G.zones[i].skK = SKILL_K; }
   SKILL_K = 1;
 }
+// 17 Eki (Caner: "Leonidas estetik dövüşen bir savaşçı"): Leonidas'ın yetenek ayarları. charge: Kalkan Hücumu (atılma süresi, menzil, hasar, sersemletme),
+// spear: Mızrak Dansı (yarıçap, iki vuruş arası), parry: Bronz Kalkan'ın karşılayınca verdiği kıvılcım/geri itme, phalanx: falanks hoplit aralığı
+const LEO = { charge: { dur: 0.38, r: 110, min: 30, dmg: 34, lvl: 8, stun: 1, w: 20, knock: 150 }, spear: { r: 62, gap: 0.36, dmg: 26, lvl: 6 }, parryCd: 0.6, gapK: 0.52 };
+function leoCharge(h, dt) { // atılma: kolay başlar, hızlanır, sona doğru yavaşlar; geçtiği yerdeki düşmanlara bir kez vurur
+  const C = h.chg, D = LEO.charge; C.t += dt; const k = clamp(C.t / D.dur, 0, 1), e = 1 - Math.pow(1 - k, 2.4);
+  h.x = lerp(C.from.x, C.to.x, e); h.y = lerp(C.from.y, C.to.y, e); h.moving = true;
+  if ((C.trail -= dt) <= 0) { C.trail = 0.025; // bronz iz ve ayak tozu
+    emit(G.parts, { kind: 'glow', add: true, x: h.x - C.ux * 6, y: h.y - rand(10, 26), vx: -C.ux * 30, vy: rand(-8, 8), col: Math.random() < 0.6 ? '255,200,120' : '200,150,255', s0: rand(6, 9), s1: 1, life: 0.32 });
+    emit(G.parts, { kind: 'glow', x: h.x + rand(-4, 4), y: h.y + 1, vx: -C.ux * rand(20, 50), vy: -rand(5, 18), col: '170,150,120', s0: 3, s1: 9, life: 0.5, a: 0.35 }); }
+  for (const t of G.enemies) {
+    if (t.dead || t.under || t.def.flying || C.hit.has(t) || dist(t.x, t.y, h.x, h.y) > D.w) continue;
+    C.hit.add(t); hitBy = 'hero'; damageEnemy(t, C.dmg, 'phys'); hitBy = null;
+    if (!t.dead) { if (!t.def.chief) stunEnemy(t, D.stun); if (pushable(t) && !t.def.chief) { t.knockT = KNOCK.t * 1.6; t.knockV = D.knock; t.hopT = Math.max(t.hopT || 0, 0.3); } }
+    impactFx(t.x - C.ux * 4, t.y - 12, '255,215,140', 1.2); slashFx(t.x, t.y - 14, h.face || 1, '#ffd88a', 1.1);
+  }
+  if (k >= 1) {
+    h.chg = null; shakeScreen(2.2, 0.14); sfx('clash');
+    G.effects.push({ kind: 'ring', x: h.x + C.ux * 10, y: h.y, r: 34, col: '255,210,130', t: 0, dur: 0.35 });
+    for (let i = 0; i < 8; i++) emit(G.parts, { kind: 'chunk', x: h.x + C.ux * 10, y: h.y - 4, vx: C.ux * rand(20, 90) + rand(-30, 30), vy: -rand(40, 110), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#8a6a4a' : '#d8ccb0', s0: rand(1.3, 2.2), s1: 1, life: rand(0.5, 0.8), floor: h.y + rand(-2, 4) });
+  }
+}
+function leoSpearHit(h, dm) {
+  for (const e of enemiesNear(h.x, h.y, LEO.spear.r)) {
+    hitBy = 'hero'; damageEnemy(e, dm, 'phys'); hitBy = null;
+    const a = Math.atan2(e.y - h.y, e.x - h.x); slashFx(e.x, e.y - 14, Math.cos(a) >= 0 ? 1 : -1, Math.random() < 0.5 ? '#ffd88a' : '#d8b0ff', 0.9);
+    if (!e.dead && pushable(e) && !e.def.chief) { e.knockT = KNOCK.t; e.knockV = 70; }
+  }
+  shakeScreen(1.2, 0.08);
+}
+function phalanxThrust(s) { // falanksın son anı: hoplitler hep birden mızrak saplar (gelen yöndeki düşmanlara)
+  s.thrustT = G.t; let n = 0;
+  for (const e of G.enemies) {
+    if (e.dead || e.under || e.def.flying || dist(e.x, e.y, s.x, s.y) > 52) continue;
+    if ((e.x - s.x) * s.dx + (e.y - s.y) * s.dy > 14) continue; // yalnız duvarın önündekiler (yolun geldiği taraf)
+    hitBy = 'hero'; damageEnemy(e, roll(s.thrust) * (s.skK || 1), 'phys'); hitBy = null; n++;
+    if (!e.dead && !e.def.chief) { stunEnemy(e, 0.7); if (pushable(e)) { e.knockT = KNOCK.t * 1.4; e.knockV = 130; } }
+    impactFx(e.x, e.y - 12, '255,215,140', 1);
+  }
+  shakeScreen(n ? 3 : 1.5, 0.2); sfx('clash'); setTimeout(() => sfx('bash'), 90);
+  floatText(s.x, s.y - 44, 'SPARTA!', '#ffd34d');
+}
 // 16 Eki (Caner): Báthory'nin Kan Bağı doğuştan pasif: ağaçta puan olmadan da kullanır; puan verilirse kademesi artar
-const HERO_INNATE = { bathory: 'bloodlink' };
+const HERO_INNATE = { bathory: 'bloodlink', leonidas: 'charge' }; // 17 Eki: Leonidas'ın Kalkan Hücumu doğuştan
 function heroSkills(h, dt) {
   for (const k in h.cds) h.cds[k] -= dt;
   if (h.castT > 0) h.castT -= dt;
@@ -5648,6 +5701,8 @@ function heroSkills(h, dt) {
   if (h.castA > 0) h.castA -= dt; // yetenek şeridi (12 Eki)
   if (h.lvlA > 0) h.lvlA -= dt; // seviye atlama / zafer şeridi (16 Eki, Veo _lvlup)
   if (h.blockA > 0) h.blockA -= dt; // savunma şeridi
+  if (h.def.flames && !h.dead && Math.random() < dt * 16) { const sd = Math.random() < 0.5 ? -1 : 1; // 17 Eki: Leonidas'ın ayağında mor ruh alevleri (çizimde yok: Wan magenta zemini siler)
+    emit(G.parts, { kind: 'glow', add: true, x: h.x + sd * rand(3, 9), y: h.y - rand(0, 3), vx: rand(-6, 6), vy: -rand(18, 34), drag: 1.2, col: Math.random() < 0.75 ? h.def.flames : '140,255,150', s0: rand(3.5, 5.5), s1: 0.6, life: rand(0.45, 0.75), a: 0.75 }); }
   for (const p of h.def.paths) for (const sk of p.skills) {
     const lr = h.learned[sk.id] || (HERO_INNATE[h.id] === sk.id ? 1 : 0); // doğuştan yetenek: puan harcanmadan 1. kademe
     if (sk.passive || !lr || (h.cds[sk.id] || 0) > 0) continue;
@@ -5702,6 +5757,22 @@ function useSkill(h, id) {
       }
       G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 120, col: '255,210,90', t: 0, dur: 0.6 });
       sfx('cry');
+      return true;
+    }
+    case 'charge': { // 17 Eki: Leonidas'ın Kalkan Hücumu: kalabalığa doğru kalkanla atılır, yolundakileri savurur (hareket updateSoldier'da leoCharge)
+      const c = densest(h.x, h.y, LEO.charge.r, 40); if (!c || c.n < 2) return false;
+      const d = dist(h.x, h.y, c.e.x, c.e.y); if (d < LEO.charge.min) return false;
+      const ux = (c.e.x - h.x) / d, uy = (c.e.y - h.y) / d, len = Math.min(LEO.charge.r, d + 26);
+      h.chg = { t: 0, from: { x: h.x, y: h.y }, to: { x: h.x + ux * len, y: h.y + uy * len }, ux, uy, hit: new Set(), dmg: (LEO.charge.dmg + LEO.charge.lvl * L) * SKILL_K, trail: 0 };
+      faceTo(h, c.e.x); sfx('whirl'); setTimeout(() => sfx('bash'), 120);
+      return true;
+    }
+    case 'spear': { // 17 Eki: Mızrak Dansı: iki tam tur, her turda çevresindekilere vurur (ikinci vuruş LEO.spear.gap sn sonra)
+      if (enemiesNear(h.x, h.y, LEO.spear.r).length < 2) return false;
+      const dm = (LEO.spear.dmg + LEO.spear.lvl * L) * SKILL_K;
+      leoSpearHit(h, dm); h.spear2 = { t: LEO.spear.gap, dmg: dm };
+      G.effects.push({ kind: 'spearDance', x: h.x, y: h.y - 12, t: 0, dur: LEO.spear.gap * 2 + 0.15, face: h.face || 1 });
+      sfx('whirl'); setTimeout(() => sfx('whirl', 1.15), LEO.spear.gap * 1000);
       return true;
     }
     case 'whirl': {
@@ -8753,9 +8824,9 @@ function castUlt(h, x, y) {
     if (q.d > 50) { floatText(x, y - 20, 'Yolun üstüne koy!', '#c8c8c8'); sfx('error'); return false; }
     const dir = pathPos(q.p, q.along);
     G.soldiers.push({ militia: true, wall: true, phalanx: true, x: q.x, y: q.y, rx: q.x, ry: q.y, hp: U.hp * k, maxHp: U.hp * k, dmg: [0, 0], armor: 0.5, rate: 99, speed: 0,
-      engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: U.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9) });
+      engage: 0, atk: 0, target: null, dead: false, face: 1, anim: 0, slot: 0, life: U.life, born: G.t, dx: dir.dx, dy: dir.dy, seed: rand(0, 9), n: U.n || 3, thorns: U.thorns, thrust: U.thrust, skK: k });
     G.effects.push({ kind: 'dust', x: q.x, y: q.y, t: 0, dur: 0.9 }); G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 50, col: '200,150,255', t: 0, dur: 0.5 });
-    floatText(q.x, q.y - 40, 'Bu Sparta!', '#ffd34d'); shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200);
+    shakeScreen(4, 0.3); sfx('bash'); setTimeout(() => sfx('clash'), 200); // 17 Eki: "SPARTA!" saplama anında (phalanxThrust)
   } else if (U.bloodpool) {
     // Báthory'nin kan gölü: can emer, yavaşlatır, içindeki iskeletleri iyileştirir (çizim drawPlaguePools: z.blood)
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'magic', t: 0, life: U.dur, fxT: 0, kind: 'bloodpool', pool: true, blood: true, slowK: 0.3, heal: U.heal || 14, hero: h, seed: rand(0, 9) });
@@ -8765,7 +8836,7 @@ function castUlt(h, x, y) {
     // Robin'in ok yağmuru: alana zamana yayılmış zehirli yeşil oklar
     // 17 Eki (Caner: "yağmur gibi yağsın, en az 30-40 ok, düştüğü yere saplansın"): 40 ok 2 sn'de sağanak gibi iner, her biri düşmana ya da yere saplanır
     for (let i = 0; i < U.n; i++) { const [tx, ty] = spot(U.r), dx = rand(-62, -40);
-      G.projectiles.push({ kind: 'rainarrow', sx: tx + dx, sy: ty - rand(270, 320), tx, ty, t: -(i / U.n) * U.dur - rand(0, 0.06), dur: rand(0.36, 0.46), dmg: dmg(), splash: 18, arc: 0, poison: U.poison ?? 3, poisonT: 2, gold: U.gold, col: U.gold ? '230,170,70' : '140,255,90' }); }
+      G.projectiles.push({ kind: 'rainarrow', sx: tx + dx, sy: ty - rand(270, 320), tx, ty, t: -(i / U.n) * U.dur - rand(0, 0.06), dur: rand(0.36, 0.46), dmg: dmg(), splash: 18, arc: 0, poison: U.poison ?? 3, poisonT: 2, gold: U.gold, longArrow: U.gold, col: U.gold ? '230,170,70' : '140,255,90' }); }
     for (let i = 0; i < 6; i++) setTimeout(() => sfx('arrow', rand(0.9, 1.15)), i * 330);
   } else if (U.portal) {
     timeGate(x, y, U.r, dmg, U.back, U.stun);
@@ -11158,7 +11229,8 @@ function drawPhalanx(s) {
   const im = spr('unit_skel_2') || spr('unit_skel_1'); if (!im) return;
   const h = 30 * UNIT_K * 1.35 * easeOutBack(k) * (1 - sink), face = -Math.sign(s.dx || 1);
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 8, 40, '200,150,255', 0.2 * (1 - sink)); ctx.restore();
-  const pts = [-1, 0, 1].map(i => ({ x: s.x + nx * i * 17 * ROAD_K * 0.6, y: s.y + ny * i * 17 * ROAD_K * 0.6 })).sort((a, b) => a.y - b.y);
+  const N = s.n || 3, gap = (N > 3 ? 12.5 : 17) * ROAD_K * 0.6, th = s.thrustT ? clamp((G.t - s.thrustT) / 0.22, 0, 1) : 0, jab = Math.sin(th * Math.PI) * 9; // 17 Eki: 5 hoplit, sonda mızrak saplar
+  const pts = Array.from({ length: N }, (_, j) => j - (N - 1) / 2).map(i => ({ x: s.x + nx * i * gap - face * jab * 0.35, y: s.y + ny * i * gap })).sort((a, b) => a.y - b.y);
   for (const p of pts) {
     shadow(p.x, p.y + 2, 9, 3.5);
     if (h > 1) drawUnit('unit_skel_2', im, p.x, p.y, face, { h, rig: 'unit_skel_2', phase: 0, walking: false, fly: 0, flash: s.flash, seed: p.x });
@@ -11166,6 +11238,9 @@ function drawPhalanx(s) {
     const sx = p.x + face * 6, sy = p.y - h * 0.38, R = h * 0.22; // kalkan önde, iskeleti örtmeyecek kadar
     if (h > 4) { circle(sx, sy, R, '#b0863a', '#3a2408', 1.2); circle(sx, sy, R * 0.72, null, 'rgba(255,230,160,0.5)', 0.8);
       ctx.strokeStyle = '#5a3a10'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(sx - R * 0.35, sy + R * 0.4); ctx.lineTo(sx, sy - R * 0.45); ctx.lineTo(sx + R * 0.35, sy + R * 0.4); ctx.stroke(); }
+    if (h > 4 && s.thrust) { const L2 = h * 0.5 + jab, by = sy - R * 0.55; ctx.strokeStyle = '#4a2e12'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(p.x - face * 4, by); ctx.lineTo(p.x + face * L2, by + 1); ctx.stroke(); // kalkanın üstünden uzanan mızrak
+      ctx.fillStyle = '#e0a83a'; ctx.beginPath(); ctx.moveTo(p.x + face * (L2 + 5), by + 1); ctx.lineTo(p.x + face * L2, by - 1.8); ctx.lineTo(p.x + face * L2, by + 3.2); ctx.fill();
+      if (th > 0 && th < 1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, p.x + face * (L2 + 3), by, 9, '255,215,140', 0.7 * (1 - th)); ctx.restore(); } }
   }
   if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 42, 26, s.hp / s.maxHp, '#d8b0ff');
 }
@@ -12648,6 +12723,17 @@ function drawEffect(f) {
     ctx.save(); ctx.globalAlpha = (1 - k) * (f.a ?? 1);
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
     const ek = 1 - (1 - k) ** 3; ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.3 + 0.7 * ek), f.r * (0.3 + 0.7 * ek) * 0.45, 0, 0, Math.PI * 2); ctx.stroke(); // 16 Eki: yavaşlayarak açılır (akıcı)
+    ctx.restore();
+  } else if (f.kind === 'spearDance') { // 17 Eki: Leonidas'ın Mızrak Dansı: iki tur dönen bronz ve mor kesik yayları, uçta parıltı
+    ctx.save(); ctx.translate(f.x, f.y); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    const turns = 2, a0 = k * Math.PI * 2 * turns * (f.face || 1), fade = k < 0.85 ? 1 : (1 - k) / 0.15;
+    for (let i = 0; i < 2; i++) {
+      const col = i ? '200,150,255' : '255,210,130', R = i ? 40 : 50;
+      for (let j = 0; j < 6; j++) { const aa = a0 - (f.face || 1) * j * 0.16 + i * Math.PI; ctx.strokeStyle = `rgba(${col},${(0.7 - j * 0.1) * fade})`; ctx.lineWidth = (4.5 - j * 0.6);
+        ctx.beginPath(); ctx.ellipse(0, 8, R, R * 0.4, 0, aa - 0.18, aa + 0.18); ctx.stroke(); }
+      const tx = Math.cos(a0 + i * Math.PI) * R, ty = 8 + Math.sin(a0 + i * Math.PI) * R * 0.4; glow(ctx, tx, ty, 11, col, 0.8 * fade);
+    }
+    glow(ctx, 0, 6, 60, '255,200,120', 0.12 * fade);
     ctx.restore();
   } else if (f.kind === 'whirl') {
     ctx.save(); ctx.translate(f.x, f.y); ctx.globalAlpha = 1 - k;
@@ -18873,6 +18959,8 @@ function drawMap() {
     for (const g of save.gear || []) if (g.h === 'spartacus' || (!g.h && g.k === 'sword')) { g.h = 'leonidas'; g.c = 'warrior'; if (g.k === 'sword') g.k = 'spear'; }
     if (save.team) save.team = save.team.map(id => (id === 'spartacus' ? 'leonidas' : id)).filter((id, i, a) => a.indexOf(id) === i);
     persist(); }
+  if (!save.leoFix) { save.leoFix = 1; // 17 Eki: Leonidas v2 yetenekleri; eski (bash, cry, iron, whirl) puanları silinir = iade
+    const R = save.hero && save.hero.leonidas; if (R && R.sk) for (const k of Object.keys(R.sk)) if (!['charge', 'spear'].includes(k)) delete R.sk[k]; persist(); }
   if (save.hero && save.hero.commander) { delete save.hero.commander; if (save.team && save.team.includes('commander')) save.team = [HERO_ORDER[0]]; persist(); } // 14 Eki: eski komutan (Drakula) kaldırıldı
   ensureMapEp();
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);

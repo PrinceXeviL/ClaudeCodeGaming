@@ -661,7 +661,20 @@
   "YARDIMCI": "ZWEITER",
   "BAŞA GEÇİR": "ZUM ANFÜHRER",
   "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 grüne Seelenfeuer-Pfeile prasseln auf das gewählte Gebiet: Schaden, Gift, die Pfeile bleiben im Boden stecken",
-  "Alana 40 okluk zehirli sağanak": "Giftiger Schauer aus 40 Pfeilen"
+  "Alana 40 okluk zehirli sağanak": "Giftiger Schauer aus 40 Pfeilen",
+  "Ölü Sparta Kralı · Savaşçı": "Untoter König Spartas · Krieger",
+  "Kalkan Hücumu": "Schildansturm",
+  "Kalkan Hücumu!": "Schildansturm!",
+  "Kalkanıyla kalabalığa atılır: yolundaki düşmanlara vurur, geri savurur ve 1 sn sersemletir": "Stürmt mit dem Schild in die Menge: trifft jeden Feind auf dem Weg, wirft ihn zurück und betäubt 1 s",
+  "Mızrak Dansı": "Speertanz",
+  "Mızrak Dansı!": "Speertanz!",
+  "Mızrağını iki tur çevirir: çevresindeki bütün düşmanlara iki kez vurur": "Wirbelt den Speer zweimal: trifft jeden Feind um ihn herum zweimal",
+  "Termopylae Falanksı": "Phalanx der Thermopylen",
+  "Termopylae Falanksı!": "Phalanx der Thermopylen!",
+  "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "Fünf Geisterhopliten bilden einen Schildwall: 6 s gesperrt, Angreifer nehmen Schaden, am Ende stoßen alle die Speere vor",
+  "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "Schildwall: sperrt die Straße, endet mit Speerstoß",
+  "SPARTA!": "SPARTA!",
+  "Kalkan!": "Schild!"
  },
  "tpl": [
   [
