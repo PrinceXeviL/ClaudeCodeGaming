@@ -1014,37 +1014,12 @@
   "base": 0.0127,
   "ch": 0.8471
  },
- "hero_spartacus_atk": {
-  "n": 32,
-  "fw": 251,
-  "fh": 230,
-  "base": 0.0147,
-  "ch": 0.956
- },
  "hero_wren_atk": {
   "n": 32,
   "fw": 372,
   "fh": 321,
   "base": 0.0141,
   "ch": 0.9341
- },
- "hero_spartacus_walk": {
-  "n": 22,
-  "fw": 204,
-  "fh": 233,
-  "base": 0.0143,
-  "ch": 0.943,
-  "idle": 7,
-  "sh": 1,
-  "stride": 1.326
- },
- "hero_spartacus_die": {
-  "n": 33,
-  "fw": 323,
-  "fh": 233,
-  "base": 0.0143,
-  "ch": 0.943,
-  "sh": 1
  },
  "enemy_hunter_die": {
   "n": 33,
@@ -1212,13 +1187,6 @@
   "fh": 176,
   "base": 0.013,
   "ch": 0.9067
- },
- "hero_spartacus_skill": {
-  "n": 32,
-  "fw": 271,
-  "fh": 232,
-  "base": 0.0143,
-  "ch": 0.9475
  },
  "unit_xbow1_walk": {
   "n": 22,
@@ -1616,34 +1584,6 @@
   "fh": 174,
   "base": 0.0139,
   "ch": 0.9211
- },
- "hero_spartacus_idle": {
-  "n": 32,
-  "fw": 204,
-  "fh": 227,
-  "base": 0.0147,
-  "ch": 0.9707
- },
- "hero_spartacus_run": {
-  "n": 32,
-  "fw": 246,
-  "fh": 231,
-  "base": 0.0147,
-  "ch": 0.9511
- },
- "hero_spartacus_cast": {
-  "n": 32,
-  "fw": 227,
-  "fh": 245,
-  "base": 0.0133,
-  "ch": 0.898
- },
- "hero_spartacus_block": {
-  "n": 32,
-  "fw": 210,
-  "fh": 230,
-  "base": 0.0145,
-  "ch": 0.9564
  },
  "unit_corpsegolem_rise": {
   "n": 6,
