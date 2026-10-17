@@ -1364,11 +1364,11 @@ const THEMES = {
   bog:       { tex: 'cursed', tint: 'rgba(30,80,60,0.25)', grass: '#34402e', grass2: '#1e2a1e', patch: ['#34402e', '#1e2a1e'], trees: 36, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#56503e', '#9a9074', '#262014'], tuft: ['#3a5a30', '#5a7a3a'], stone: ['#5a665a', '#8a968a'], light: 'rgba(160,255,200,0.1)', amb: '170,255,140', flowers: 0,
     treeSpr: ['nm_tree_3', 'nm_tree_2', 'nm_tree_1', 'nm2_ravtree'], rockSpr: ['nm_rock_2', 'nm_rock_1', 'nm_crow', 'nm_bones', 'nm2_stake'], treeK: 0.9, rockK: 1.1, pondSpr: 'nm_pond', ponds: 5, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 22, ruinSpr: ['nm_ruin_2', 'nm_ruin_5', 'nm2_ravtree', 'nm3_stump', 'nm3_log', 'nm3_cage', 'nm3_totem_2', 'nm3_sign_2'], ruinK: 0.26, ruinN: 8, dense: true },
   graveyard: { tex: 'cursed', tint: 'rgba(40,30,60,0.22)', grass: '#3a3a38', grass2: '#222226', patch: ['#3a3a38', '#222226'], trees: 30, rocks: 34, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a5450', '#a49a8e', '#2a2420'], tuft: ['#4a5236', '#646e44'], stone: ['#6e6e72', '#a0a0a6'], light: 'rgba(190,170,255,0.08)', amb: '200,180,255', flowers: 0,
-    treeSpr: ['nm_tree_4', 'nm_tree_1', 'nm_tree_2', 'nm2_ravtree'], rockSpr: ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3', 'nm_bones', 'nm_fence', 'nm_tomb_1', 'nm_crow'], treeK: 0.95, rockK: 1.25, bushSpr: ['nm_shroom'], bushes: 14, ruinN: 8, dense: true, ruinSpr: ['nm_ruin_3', 'nm_ruin_6', 'nm3_coffin', 'nm3_coffin_open', 'nm3_grave', 'nm3_candles', 'nm3_totem_3', 'nm3_cart'], ruinK: 0.26 },
+    treeSpr: ['nm_tree_4', 'nm_tree_1', 'nm_tree_2', 'nm2_ravtree'], rockSpr: ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_2', 'nm_bones', 'nm_fence', 'nm_tomb_1', 'nm_crow'], treeK: 0.95, rockK: 1.25, bushSpr: ['nm_shroom'], bushes: 14, ruinN: 8, dense: true, ruinSpr: ['nm_ruin_3', 'nm_ruin_6', 'nm3_coffin', 'nm3_coffin_open', 'nm3_grave', 'nm3_candles', 'nm3_totem_3', 'nm3_cart'], ruinK: 0.26 },
   blacklake: { tex: 'cursed', tint: 'rgba(20,30,50,0.3)', grass: '#2e3434', grass2: '#181e22', patch: ['#2e3434', '#181e22'], trees: 32, rocks: 18, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#54504c', '#9c948a', '#24201c'], tuft: ['#3a4a3a', '#566a48'], stone: ['#5a6066', '#8a9298'], light: 'rgba(140,200,255,0.08)', amb: '160,220,255', flowers: 0,
     treeSpr: ['nm_tree_3', 'nm_tree_1', 'nm_tree_4', 'nm2_ravtree'], rockSpr: ['nm_rock_1', 'nm_rock_2', 'nm_bones', 'nm_crow', 'nm2_stake'], treeK: 0.9, rockK: 1.15, pondSpr: 'nm_pond', ponds: 7, bushSpr: ['nm_bush'], bushes: 16, ruinSpr: ['nm_ruin_2', 'nm_ruin_3', 'nm_ruin_5', 'nm3_log', 'nm3_stump', 'nm3_sign_1', 'nm3_coffin_open'], ruinN: 8, dense: true, ruinK: 0.26 },
   necrogate: { tex: 'cursed', tint: 'rgba(60,20,70,0.22)', grass: '#36302e', grass2: '#1e1a1c', patch: ['#36302e', '#1e1a1c'], trees: 40, rocks: 26, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5048', '#a8968a', '#2a201a'], tuft: ['#4a4a30', '#6a6a3a'], stone: ['#665e66', '#9a909a'], light: 'rgba(180,255,170,0.1)', amb: '170,255,150', flowers: 0,
-    treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3', 'nm2_ravtree'], rockSpr: ['nm_tomb_3', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence', 'nm2_stake', 'nm_crow'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 18, ruinSpr: ['nm_ruin_1', 'nm_ruin_6', 'nm2_gallows', 'nm_ruin_3', 'nm3_candles', 'nm3_totem_1', 'nm3_totem_3', 'nm3_cage', 'nm3_grave'], ruinK: 0.26, ruinN: 8, dense: true },
+    treeSpr: ['nm_tree_2', 'nm_tree_4', 'nm_tree_1', 'nm_tree_3', 'nm2_ravtree'], rockSpr: ['nm_tomb_2', 'nm_tomb_1', 'nm_bones', 'nm_tomb_2', 'nm_fence', 'nm2_stake', 'nm_crow'], treeK: 0.95, rockK: 1.2, bushSpr: ['nm_shroom', 'nm_bush'], bushes: 18, ruinSpr: ['nm_ruin_1', 'nm_ruin_6', 'nm2_gallows', 'nm_ruin_3', 'nm3_candles', 'nm3_totem_1', 'nm3_totem_3', 'nm3_cage', 'nm3_grave'], ruinK: 0.26, ruinN: 8, dense: true },
   // Sefer 2 (Cadı Avı): Kuzgun Ormanı, Veba Köyü, Batık Manastır, Kemik Katedrali, Kızıl Ay Tepesi.
   // 15 Eki (Caner: "1. ve 2. sefer ortam olarak farklı olsun"): 2. sefer sonbahar doğası nm5_* (Gemini nm5_sefer2_doga.jpg: meşe, akçaağaç, köknar, huş, baltalı kütük,
   // odun yığını, saman, korkuluk, kaya, çalı, dikenli çalı, kovuk kütük, buğday); zemin ılık sonbahar tonunda. 1. sefer soğuk yeşil-mor ölü orman kalır.
@@ -1376,19 +1376,19 @@ const THEMES = {
   // deco: sefer haritasında da dekor (1. seferdeki dense gibi); nm4_banner bezi her karede dalgalanır (BANNER)
   ravenwood: { tex: 'cursed', tint: 'rgba(110,60,20,0.22)', grass: '#3a3426', grass2: '#1e1a12', patch: ['#3a3426', '#1e1a12'], trees: 40, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a4c3e', '#9e8c76', '#2a2016'], tuft: ['#6a5a2a', '#8a7234'], stone: ['#605e5a', '#908c84'], light: 'rgba(255,170,90,0.08)', amb: '255,190,130', flowers: 0,
     treeSpr: ['nm5_oak', 'nm5_maple', 'nm5_fir', 'nm5_birch', 'nm5_oak', 'nm2_ravtree'], rockSpr: ['nm5_rock', 'nm5_stump', 'nm5_logs', 'nm_crow', 'nm5_hollow', 'nm5_rock'], treeK: 0.85, rockK: 1.0, bushSpr: ['nm5_shrub', 'nm5_thorn'], bushes: 14,
-    ruinSpr: ['nm2_gallows', 'nm2_stake', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_board', 'nm4_wagon', 'nm4_barrels', 'nm4_cross'], ruinK: 0.22, ruinN: 8, deco: true },
+    ruinSpr: ['nm2_gallows', 'nm2_stake', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_board', 'nm4_wagon', 'nm4_barrels', 'nm4_suntomb'], ruinK: 0.22, ruinN: 8, deco: true },
   plague:    { tex: 'village', tint: 'rgba(110,70,25,0.2)', grass: '#4a3c28', grass2: '#2a2014', patch: ['#4a3c28', '#2a2014'], trees: 10, rocks: 14, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5e5446', '#a89a84', '#2c241a'], tuft: ['#6a5a2a', '#8a7234'], stone: ['#6a645a', '#9c968a'], light: 'rgba(255,190,110,0.08)', amb: '220,200,150', flowers: 0,
     treeSpr: ['nm5_birch', 'nm5_oak', 'nm5_maple'], rockSpr: ['nm2_qfence', 'nm5_hay', 'nm5_rock', 'nm5_scarecrow', 'nm_crow', 'nm5_logs', 'nm5_hay'], treeK: 0.85, rockK: 1.0, bushSpr: ['nm5_wheat', 'nm5_shrub', 'nm5_wheat'], bushes: 16,
     ruinSpr: ['nm2_cottage', 'nm2_well', 'nm2_gallows', 'nm4_pyre', 'nm4_pillory', 'nm4_board', 'nm4_barrels', 'nm4_firebarrel', 'nm4_wagon', 'nm4_shrine', 'nm4_banner'], ruinK: 0.22, ruinN: 8, deco: true, weather: 'rain' },
   monastery: { tex: 'marsh', tint: 'rgba(40,70,60,0.2)', grass: '#2c3428', grass2: '#161c16', patch: ['#22322c', '#121c18'], trees: 22, rocks: 10, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5a564c', '#a29c8c', '#28241c'], tuft: ['#2a4a34', '#3a6a44'], stone: ['#5a6662', '#8a9692'], light: 'rgba(160,255,200,0.1)', amb: '170,255,190', flowers: 0,
-    treeSpr: ['nm5_fir', 'nm5_birch', 'nm5_fir', 'nm5_maple'], rockSpr: ['nm5_rock', 'nm_tomb_3', 'nm5_hollow', 'nm_crow', 'nm5_stump'], treeK: 0.85, rockK: 1.0, bushSpr: ['nm5_thorn', 'nm5_shrub'], bushes: 10,
-    ruinSpr: ['nm_ruin_1', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_2', 'nm4_shrine', 'nm4_suntomb', 'nm4_cross', 'nm4_banner', 'nm4_brazier', 'nm4_barrels'], ruinK: 0.24, ruinN: 7, deco: true },
+    treeSpr: ['nm5_fir', 'nm5_birch', 'nm5_fir', 'nm5_maple'], rockSpr: ['nm5_rock', 'nm_tomb_1', 'nm5_hollow', 'nm_crow', 'nm5_stump'], treeK: 0.85, rockK: 1.0, bushSpr: ['nm5_thorn', 'nm5_shrub'], bushes: 10,
+    ruinSpr: ['nm_ruin_1', 'nm_ruin_4', 'nm_ruin_5', 'nm_ruin_2', 'nm4_shrine', 'nm4_suntomb', 'nm4_banner', 'nm4_brazier', 'nm4_barrels'], ruinK: 0.24, ruinN: 7, deco: true },
   ossuary:   { tex: 'bone', tint: 'rgba(40,20,50,0.25)', grass: '#3a3440', grass2: '#1e1a22', patch: ['#3a3440', '#1e1a22'], trees: 12, rocks: 26, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c5450', '#a89e96', '#2a2420'], tuft: ['#4a4a40', '#5e5e50'], stone: ['#6a6270', '#9c94a2'], light: 'rgba(190,160,255,0.08)', amb: '200,180,255', flowers: 0,
     treeSpr: ['nm5_birch', 'nm5_fir'], rockSpr: ['nm_bones', 'nm_tomb_1', 'nm_tomb_2', 'nm5_rock', 'nm_bones', 'nm5_stump'], treeK: 0.8, rockK: 1.2, bushSpr: ['nm5_thorn', 'nm5_wheat'], bushes: 6,
-    ruinSpr: ['nm_ruin_3', 'nm_ruin_5', 'nm_ruin_6', 'nm_ruin_2', 'nm4_suntomb', 'nm4_cross', 'nm4_shrine', 'nm4_brazier', 'nm4_banner'], ruinK: 0.24, ruinN: 8, deco: true },
+    ruinSpr: ['nm_ruin_3', 'nm_ruin_5', 'nm_ruin_6', 'nm_ruin_2', 'nm4_suntomb', 'nm4_shrine', 'nm4_brazier', 'nm4_banner'], ruinK: 0.24, ruinN: 8, deco: true },
   bloodmoon: { tex: 'cursed', tint: 'rgba(110,10,20,0.26)', grass: '#3a2a26', grass2: '#1e1414', patch: ['#3a2a26', '#1e1414'], trees: 30, rocks: 16, treeCol: ['#2a2a26', '#3a3a34', '#4a4a40'], road: ['#5c4a44', '#a8908a', '#2a1c18'], tuft: ['#4a3a2a', '#6a4a3a'], stone: ['#665a5a', '#9a8a8a'], light: 'rgba(255,90,80,0.1)', amb: '255,140,130', flowers: 0,
     treeSpr: ['nm5_maple', 'nm5_oak', 'nm5_maple', 'nm2_ravtree'], rockSpr: ['nm_tomb_1', 'nm5_rock', 'nm2_stake', 'nm5_stump', 'nm5_rock'], treeK: 0.85, rockK: 1.0, bushSpr: ['nm5_thorn', 'nm5_shrub'], bushes: 10,
-    ruinSpr: ['nm_ruin_1', 'nm2_gallows', 'nm_ruin_6', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_firebarrel', 'nm4_wagon', 'nm4_cross', 'nm4_pillory'], ruinK: 0.22, ruinN: 8, deco: true },
+    ruinSpr: ['nm_ruin_1', 'nm2_gallows', 'nm_ruin_6', 'nm2_ravtree', 'nm4_pyre', 'nm4_banner', 'nm4_brazier', 'nm4_firebarrel', 'nm4_wagon', 'nm4_suntomb', 'nm4_pillory'], ruinK: 0.22, ruinN: 8, deco: true },
   rocky:  { grass: '#a3ad6e', grass2: '#7f8c52', patch: ['#a0a878', '#5f6a40'], trees: 12, rocks: 22, treeCol: ['#3a5a2a', '#4d7236', '#628a44'], road: ['#6a6058', '#b0a690', '#4a4239'], tuft: ['#6f7a40', '#8f9a55'], stone: ['#8d877c', '#bdb6a6'], light: 'rgba(255,214,150,0.18)' },
 };
 
@@ -1967,7 +1967,7 @@ function renderBackground0(lv, paths, res) {
       const q = place(16); if (!q) continue;
       props.push([q[0], q[1], 16]); BG_HANDS.push({ x: q[0], y: q[1], off: rnd() * 30, T: 9 + rnd() * 7, face: rnd() < 0.5 ? -1 : 1 });
     }
-    const tombs = ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3'].filter(n => spr(n));
+    const tombs = ['nm_tomb_1', 'nm_tomb_2', 'nm4_suntomb'].filter(n => spr(n)); // 17 Eki: haçlı taş (nm_tomb_3) çıktı
     for (let i = 0; tombs.length && i < nG; i++) {
       const q = place(34); if (!q) continue;
       props.push([q[0], q[1], 30]);
@@ -19066,7 +19066,7 @@ const ambOn = () => { const v = save.settings && save.settings.amb; return v != 
 // Ön plan siluetleri: ekranın kenarına taşan büyük, koyu ağaç/kaya/çalı (Kingdom Rush derinliği). Temanın kendi dekor görselleri,
 // koyu boyanmış önbellek kopyası. Yola, arsaya, kaleye değmeyen kenar yerleri seçilir; kamera kayınca biraz daha hızlı kayar (paralaks),
 // ağaçlar rüzgârda tabanından hafifçe salınır.
-const FG = { dark: 'rgba(9,6,14,0.9)', par: 0.16, n: 6 };
+const FG = { dark: 'rgba(12,8,18,0.78)', par: 0.16, n: 4, edge: 0.3 }; // 17 Eki (Caner: "12. bölümde altta siyah kocaman ağaçlar hoş durmuyor"): yalnız köşeler (alt kenarın orta %40'ı boş), daha küçük, tam kara değil
 const FG_C = {};
 function fgSil(name) {
   if (FG_C[name]) return FG_C[name];
@@ -19083,7 +19083,7 @@ function setupFG() {
   // yalnız biçimi okunan siluetler: ağaçlar ve dallı/direkli yıkıntılar (kaya, çalı koyu boyanınca kara kütle oluyor)
   const trees = ok(th.treeSpr), props = ok(th.ruinSpr).filter(n => /stump|gallows|totem|ravtree|sign/.test(n)); if (!trees.length) return;
   const rnd = seeded(G.idx * 131 + 17), C = [];
-  for (let x = VIS.l + 20; x < VIS.r - 20; x += 64) C.push({ side: 'b', x: x + rnd() * 30, y: H + 14 + rnd() * 14 });
+  for (let x = VIS.l + 20; x < VIS.r - 20; x += 64) { const xx = x + rnd() * 30, yy = H + 14 + rnd() * 14; if (Math.abs(xx - (VIS.l + VIS.r) / 2) > VIS.w * FG.edge) C.push({ side: 'b', x: xx, y: yy }); }
   for (let y = 150; y < H - 30; y += 70) { C.push({ side: 'l', y: y + rnd() * 30 }); C.push({ side: 'r', y: y + rnd() * 30 }); }
   // köşeler önce: kenarın ortasındaki adaylar sona (sahne çerçevelenir, orta açık kalır)
   const cx = (VIS.l + VIS.r) / 2; C.forEach(c => { c.sc = c.side === 'b' ? -Math.abs((c.x - cx) / (VIS.w / 2)) : -(c.y / H) - 0.3; c.sc += rnd() * 0.25; }); C.sort((a, b) => a.sc - b.sc);
@@ -19092,7 +19092,7 @@ function setupFG() {
     if (G.fg.length >= FG.n) break;
     const kind = c.side === 'b' && props.length && rnd() < 0.3 ? 'prop' : 'tree';
     const L = kind === 'tree' ? trees : props, name = L[Math.floor(rnd() * L.length)], m = SPR_META[name];
-    const w = kind === 'tree' ? 140 + rnd() * 50 : 95 + rnd() * 30, h = w * m[1] / m[0];
+    const w = kind === 'tree' ? 112 + rnd() * 38 : 80 + rnd() * 24, h = w * m[1] / m[0];
     const x = c.side === 'l' ? VIS.l + w * 0.12 : c.side === 'r' ? VIS.r - w * 0.12 : c.x, y = c.y + (c.side === 'b' ? 0 : h * 0.35);
     const vx0 = Math.max(VIS.l, x - w / 2), vx1 = Math.min(VIS.r, x + w / 2), vy0 = y - h, vy1 = Math.min(H, y); // ekranda görünen kısım
     if (vx1 - vx0 < 20 || vy1 - vy0 < 20) continue;
@@ -19811,7 +19811,7 @@ function comicBg(p, r, t) {
       g.fillStyle = '#1a1424'; g.beginPath(); g.moveTo(r.x, r.y + r.h * 0.72);
       for (let i = 0; i <= 6; i++) g.lineTo(r.x + r.w * i / 6, r.y + r.h * (0.66 + 0.05 * Math.sin(i * 2.1)));
       g.lineTo(r.x + r.w, r.y + r.h); g.lineTo(r.x, r.y + r.h); g.fill();
-      const tomb = ['nm_tomb_1', 'nm_tomb_2', 'nm_tomb_3'], tree = spr('nm_tree_2');
+      const tomb = ['nm_tomb_1', 'nm_tomb_2', 'nm4_suntomb'], tree = spr('nm_tree_2'); // 17 Eki: haçsız
       if (tree) { g.save(); g.globalAlpha = 0.7; drawSprite(g, tree, r.x + r.w * 0.08, r.y + r.h * 0.74, r.h * 0.5); g.restore(); }
       for (let i = 0; i < 5; i++) { const im = spr(tomb[i % 3]); if (im) drawSprite(g, im, r.x + r.w * (0.12 + i * 0.19), r.y + r.h * (0.74 + (i % 2) * 0.04), r.h * 0.16); }
       g.fillStyle = '#100c16'; g.fillRect(r.x, r.y + r.h * 0.88, r.w, r.h * 0.12);
