@@ -879,7 +879,46 @@
   "Lanet ve destek": "Curse and support",
   "ÖNCE ÜSTTEKİ": "TOP ONE FIRST",
   "ALINDI ✓": "OWNED ✓",
-  "Önce üstteki kademeyi al": "Buy the tier above first"
+  "Önce üstteki kademeyi al": "Buy the tier above first",
+  "Sarsıntı ve parlama": "Shake and flashes",
+  "Renk körü modu": "Colorblind mode",
+  "DÜNYA SIRALAMASI": "WORLD RANKING",
+  "Sonsuz Gece · Rekorların": "Endless Night · Your records",
+  "Henüz deneme yok. İlk rekoru sen kır.": "No runs yet. Set the first record.",
+  "GÖRÜNÜM": "LOOKS",
+  "Sade": "Plain",
+  "Altın Rün": "Golden Rune",
+  "Ruh Ateşi": "Soul Fire",
+  "Kan Sisi": "Blood Mist",
+  "Ayaz": "Frost",
+  "Balkabağı": "Pumpkin",
+  "Kor İzi": "Ember Trail",
+  "Yarasa Sürüsü": "Bat Swarm",
+  "Altın Taç": "Golden Crown",
+  "Hayalet İz": "Ghost Trail",
+  "TAKILI": "EQUIPPED",
+  "Etkinlik ödülü": "Event reward",
+  "Bu görünüm etkinlik ödülü": "This look is an event reward",
+  "Kristal yetmiyor": "Not enough crystals",
+  "KULE GÖRÜNÜMÜ · bütün kulelerin tabanında": "TOWER LOOK · at the base of every tower",
+  "KOMUTAN GÖRÜNÜMÜ · savaştaki komutanlarda": "COMMANDER LOOK · on commanders in battle",
+  "Ölüler Gecesi": "Night of the Dead",
+  "ÖLÜLER GECESİ": "NIGHT OF THE DEAD",
+  "Balkabakları yandı, ölüler dans ediyor. İmparatorluk bu gece de durmuyor.": "The pumpkins are lit, the dead are dancing. The Empire won’t rest tonight either.",
+  "Balkabağı Tarlası": "Pumpkin Patch",
+  "Hayaletli Yol": "Haunted Road",
+  "Kabak Kralın Gecesi": "Night of the Pumpkin King",
+  "Düşmanlar %15 hızlı": "Enemies 15% faster",
+  "Düşmanlar %25 dayanıklı · az altın": "Enemies 25% tougher · less gold",
+  "Büyü yok · düşmanlar güçlü": "No spells · strong enemies",
+  "ÖDÜL": "REWARD",
+  "TAMAM ✓": "DONE ✓",
+  "OYNA": "PLAY",
+  "KİLİTLİ": "LOCKED",
+  "Önce önceki bölümü bitir": "Finish the previous stage first",
+  "Şu an açık etkinlik yok": "No event right now",
+  "ETKİNLİĞE DÖN": "BACK TO EVENT",
+  "gün": "days"
  },
  "tpl": [
   [
@@ -1589,6 +1628,22 @@
   [
    "Bu bölümde {} tane",
    "{} in this level"
+  ],
+  [
+   "En iyi: {} dalga",
+   "Best: {} waves"
+  ],
+  [
+   "{} · {} öldürme · {}",
+   "{} · {} kills · {}"
+  ],
+  [
+   "{}  ·  Bitişe {} gün",
+   "{}  ·  {} days left"
+  ],
+  [
+   "Yeni görünüm: {}",
+   "New look: {}"
   ]
  ]
 }

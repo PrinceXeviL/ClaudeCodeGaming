@@ -690,7 +690,46 @@
   "Lanet ve destek": "Проклятие и поддержка",
   "ÖNCE ÜSTTEKİ": "СНАЧАЛА ВЕРХНИЙ",
   "ALINDI ✓": "КУПЛЕНО ✓",
-  "Önce üstteki kademeyi al": "Сначала купи уровень выше"
+  "Önce üstteki kademeyi al": "Сначала купи уровень выше",
+  "Sarsıntı ve parlama": "Тряска и вспышки",
+  "Renk körü modu": "Режим для дальтоников",
+  "DÜNYA SIRALAMASI": "МИРОВОЙ РЕЙТИНГ",
+  "Sonsuz Gece · Rekorların": "Бесконечная ночь · Твои рекорды",
+  "Henüz deneme yok. İlk rekoru sen kır.": "Попыток ещё нет. Установи первый рекорд.",
+  "GÖRÜNÜM": "ОБЛИК",
+  "Sade": "Простой",
+  "Altın Rün": "Золотая руна",
+  "Ruh Ateşi": "Огонь душ",
+  "Kan Sisi": "Кровавый туман",
+  "Ayaz": "Иней",
+  "Balkabağı": "Тыква",
+  "Kor İzi": "След углей",
+  "Yarasa Sürüsü": "Стая летучих мышей",
+  "Altın Taç": "Золотая корона",
+  "Hayalet İz": "Призрачный след",
+  "TAKILI": "НАДЕТО",
+  "Etkinlik ödülü": "Награда события",
+  "Bu görünüm etkinlik ödülü": "Этот облик — награда события",
+  "Kristal yetmiyor": "Не хватает кристаллов",
+  "KULE GÖRÜNÜMÜ · bütün kulelerin tabanında": "ОБЛИК БАШЕН · у основания каждой башни",
+  "KOMUTAN GÖRÜNÜMÜ · savaştaki komutanlarda": "ОБЛИК КОМАНДИРА · в бою",
+  "Ölüler Gecesi": "Ночь мёртвых",
+  "ÖLÜLER GECESİ": "НОЧЬ МЁРТВЫХ",
+  "Balkabakları yandı, ölüler dans ediyor. İmparatorluk bu gece de durmuyor.": "Тыквы горят, мёртвые пляшут. Империя не дремлет и этой ночью.",
+  "Balkabağı Tarlası": "Тыквенное поле",
+  "Hayaletli Yol": "Призрачная дорога",
+  "Kabak Kralın Gecesi": "Ночь Тыквенного короля",
+  "Düşmanlar %15 hızlı": "Враги на 15% быстрее",
+  "Düşmanlar %25 dayanıklı · az altın": "Враги на 25% крепче · меньше золота",
+  "Büyü yok · düşmanlar güçlü": "Без заклинаний · сильные враги",
+  "ÖDÜL": "НАГРАДА",
+  "TAMAM ✓": "ГОТОВО ✓",
+  "OYNA": "ИГРАТЬ",
+  "KİLİTLİ": "ЗАКРЫТО",
+  "Önce önceki bölümü bitir": "Сначала пройди предыдущий этап",
+  "Şu an açık etkinlik yok": "Сейчас нет событий",
+  "ETKİNLİĞE DÖN": "К СОБЫТИЮ",
+  "gün": "дн."
  },
  "tpl": [
   [
@@ -1100,6 +1139,26 @@
   [
    "Bu bölümde {} tane",
    "{} на этом уровне"
+  ],
+  [
+   "{} dalga",
+   "{} волн"
+  ],
+  [
+   "En iyi: {} dalga",
+   "Лучший: {} волн"
+  ],
+  [
+   "{} · {} öldürme · {}",
+   "{} · {} убийств · {}"
+  ],
+  [
+   "{}  ·  Bitişe {} gün",
+   "{}  ·  осталось {} дн."
+  ],
+  [
+   "Yeni görünüm: {}",
+   "Новый облик: {}"
   ]
  ]
 }

@@ -690,7 +690,46 @@
   "Lanet ve destek": "Fluch und Unterstützung",
   "ÖNCE ÜSTTEKİ": "ERST DAS OBERE",
   "ALINDI ✓": "GEKAUFT ✓",
-  "Önce üstteki kademeyi al": "Kaufe zuerst die obere Stufe"
+  "Önce üstteki kademeyi al": "Kaufe zuerst die obere Stufe",
+  "Sarsıntı ve parlama": "Wackeln und Blitze",
+  "Renk körü modu": "Farbenblind-Modus",
+  "DÜNYA SIRALAMASI": "WELTRANGLISTE",
+  "Sonsuz Gece · Rekorların": "Endlose Nacht · Deine Rekorde",
+  "Henüz deneme yok. İlk rekoru sen kır.": "Noch kein Versuch. Stell den ersten Rekord auf.",
+  "GÖRÜNÜM": "AUSSEHEN",
+  "Sade": "Schlicht",
+  "Altın Rün": "Goldrune",
+  "Ruh Ateşi": "Seelenfeuer",
+  "Kan Sisi": "Blutnebel",
+  "Ayaz": "Frost",
+  "Balkabağı": "Kürbis",
+  "Kor İzi": "Glutspur",
+  "Yarasa Sürüsü": "Fledermausschwarm",
+  "Altın Taç": "Goldene Krone",
+  "Hayalet İz": "Geisterspur",
+  "TAKILI": "AUSGERÜSTET",
+  "Etkinlik ödülü": "Event-Belohnung",
+  "Bu görünüm etkinlik ödülü": "Dieses Aussehen ist eine Event-Belohnung",
+  "Kristal yetmiyor": "Nicht genug Kristalle",
+  "KULE GÖRÜNÜMÜ · bütün kulelerin tabanında": "TURM-AUSSEHEN · am Fuß jedes Turms",
+  "KOMUTAN GÖRÜNÜMÜ · savaştaki komutanlarda": "KOMMANDANTEN-AUSSEHEN · im Kampf",
+  "Ölüler Gecesi": "Nacht der Toten",
+  "ÖLÜLER GECESİ": "NACHT DER TOTEN",
+  "Balkabakları yandı, ölüler dans ediyor. İmparatorluk bu gece de durmuyor.": "Die Kürbisse leuchten, die Toten tanzen. Das Imperium ruht auch heute Nacht nicht.",
+  "Balkabağı Tarlası": "Kürbisfeld",
+  "Hayaletli Yol": "Spukweg",
+  "Kabak Kralın Gecesi": "Nacht des Kürbiskönigs",
+  "Düşmanlar %15 hızlı": "Feinde 15 % schneller",
+  "Düşmanlar %25 dayanıklı · az altın": "Feinde 25 % zäher · weniger Gold",
+  "Büyü yok · düşmanlar güçlü": "Keine Zauber · starke Feinde",
+  "ÖDÜL": "BELOHNUNG",
+  "TAMAM ✓": "ERLEDIGT ✓",
+  "OYNA": "SPIELEN",
+  "KİLİTLİ": "GESPERRT",
+  "Önce önceki bölümü bitir": "Beende zuerst die vorige Stufe",
+  "Şu an açık etkinlik yok": "Gerade kein Event",
+  "ETKİNLİĞE DÖN": "ZUM EVENT",
+  "gün": "Tage"
  },
  "tpl": [
   [
@@ -1100,6 +1139,26 @@
   [
    "Bu bölümde {} tane",
    "{} in diesem Level"
+  ],
+  [
+   "{} dalga",
+   "{} Wellen"
+  ],
+  [
+   "En iyi: {} dalga",
+   "Bestwert: {} Wellen"
+  ],
+  [
+   "{} · {} öldürme · {}",
+   "{} · {} Kills · {}"
+  ],
+  [
+   "{}  ·  Bitişe {} gün",
+   "{}  ·  noch {} Tage"
+  ],
+  [
+   "Yeni görünüm: {}",
+   "Neues Aussehen: {}"
   ]
  ]
 }

@@ -690,7 +690,46 @@
   "Lanet ve destek": "Maldición y apoyo",
   "ÖNCE ÜSTTEKİ": "PRIMERO EL DE ARRIBA",
   "ALINDI ✓": "COMPRADO ✓",
-  "Önce üstteki kademeyi al": "Compra primero el nivel de arriba"
+  "Önce üstteki kademeyi al": "Compra primero el nivel de arriba",
+  "Sarsıntı ve parlama": "Temblor y destellos",
+  "Renk körü modu": "Modo daltónico",
+  "DÜNYA SIRALAMASI": "CLASIFICACIÓN MUNDIAL",
+  "Sonsuz Gece · Rekorların": "Noche Eterna · Tus récords",
+  "Henüz deneme yok. İlk rekoru sen kır.": "Aún no hay intentos. Bate el primer récord.",
+  "GÖRÜNÜM": "ASPECTO",
+  "Sade": "Sencillo",
+  "Altın Rün": "Runa dorada",
+  "Ruh Ateşi": "Fuego de almas",
+  "Kan Sisi": "Niebla de sangre",
+  "Ayaz": "Escarcha",
+  "Balkabağı": "Calabaza",
+  "Kor İzi": "Rastro de brasas",
+  "Yarasa Sürüsü": "Enjambre de murciélagos",
+  "Altın Taç": "Corona dorada",
+  "Hayalet İz": "Rastro fantasmal",
+  "TAKILI": "EQUIPADO",
+  "Etkinlik ödülü": "Premio del evento",
+  "Bu görünüm etkinlik ödülü": "Este aspecto es un premio de evento",
+  "Kristal yetmiyor": "No tienes suficientes cristales",
+  "KULE GÖRÜNÜMÜ · bütün kulelerin tabanında": "ASPECTO DE TORRE · en la base de cada torre",
+  "KOMUTAN GÖRÜNÜMÜ · savaştaki komutanlarda": "ASPECTO DE COMANDANTE · en batalla",
+  "Ölüler Gecesi": "Noche de los Muertos",
+  "ÖLÜLER GECESİ": "NOCHE DE LOS MUERTOS",
+  "Balkabakları yandı, ölüler dans ediyor. İmparatorluk bu gece de durmuyor.": "Las calabazas arden, los muertos bailan. El Imperio tampoco descansa esta noche.",
+  "Balkabağı Tarlası": "Campo de calabazas",
+  "Hayaletli Yol": "Camino embrujado",
+  "Kabak Kralın Gecesi": "Noche del Rey Calabaza",
+  "Düşmanlar %15 hızlı": "Enemigos un 15% más rápidos",
+  "Düşmanlar %25 dayanıklı · az altın": "Enemigos un 25% más duros · menos oro",
+  "Büyü yok · düşmanlar güçlü": "Sin hechizos · enemigos fuertes",
+  "ÖDÜL": "PREMIO",
+  "TAMAM ✓": "HECHO ✓",
+  "OYNA": "JUGAR",
+  "KİLİTLİ": "BLOQUEADO",
+  "Önce önceki bölümü bitir": "Termina primero la fase anterior",
+  "Şu an açık etkinlik yok": "No hay ningún evento ahora",
+  "ETKİNLİĞE DÖN": "VOLVER AL EVENTO",
+  "gün": "días"
  },
  "tpl": [
   [
@@ -1100,6 +1139,26 @@
   [
    "Bu bölümde {} tane",
    "{} en este nivel"
+  ],
+  [
+   "{} dalga",
+   "{} oleadas"
+  ],
+  [
+   "En iyi: {} dalga",
+   "Mejor: {} oleadas"
+  ],
+  [
+   "{} · {} öldürme · {}",
+   "{} · {} bajas · {}"
+  ],
+  [
+   "{}  ·  Bitişe {} gün",
+   "{}  ·  quedan {} días"
+  ],
+  [
+   "Yeni görünüm: {}",
+   "Nuevo aspecto: {}"
   ]
  ]
 }

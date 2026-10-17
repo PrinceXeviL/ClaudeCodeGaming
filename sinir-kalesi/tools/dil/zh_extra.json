@@ -690,7 +690,46 @@
   "Lanet ve destek": "诅咒与辅助",
   "ÖNCE ÜSTTEKİ": "先解锁上一级",
   "ALINDI ✓": "已获得 ✓",
-  "Önce üstteki kademeyi al": "请先购买上一级"
+  "Önce üstteki kademeyi al": "请先购买上一级",
+  "Sarsıntı ve parlama": "震动与闪光",
+  "Renk körü modu": "色盲模式",
+  "DÜNYA SIRALAMASI": "世界排行",
+  "Sonsuz Gece · Rekorların": "无尽之夜 · 你的纪录",
+  "Henüz deneme yok. İlk rekoru sen kır.": "还没有记录，来创造第一个吧。",
+  "GÖRÜNÜM": "外观",
+  "Sade": "朴素",
+  "Altın Rün": "黄金符文",
+  "Ruh Ateşi": "灵魂之火",
+  "Kan Sisi": "血雾",
+  "Ayaz": "霜冻",
+  "Balkabağı": "南瓜",
+  "Kor İzi": "余烬之迹",
+  "Yarasa Sürüsü": "蝙蝠群",
+  "Altın Taç": "黄金王冠",
+  "Hayalet İz": "幽灵之迹",
+  "TAKILI": "已装备",
+  "Etkinlik ödülü": "活动奖励",
+  "Bu görünüm etkinlik ödülü": "此外观为活动奖励",
+  "Kristal yetmiyor": "水晶不足",
+  "KULE GÖRÜNÜMÜ · bütün kulelerin tabanında": "塔外观 · 每座塔的底座",
+  "KOMUTAN GÖRÜNÜMÜ · savaştaki komutanlarda": "指挥官外观 · 战斗中",
+  "Ölüler Gecesi": "亡者之夜",
+  "ÖLÜLER GECESİ": "亡者之夜",
+  "Balkabakları yandı, ölüler dans ediyor. İmparatorluk bu gece de durmuyor.": "南瓜点亮，亡者起舞。帝国今夜也不罢休。",
+  "Balkabağı Tarlası": "南瓜田",
+  "Hayaletli Yol": "闹鬼之路",
+  "Kabak Kralın Gecesi": "南瓜王之夜",
+  "Düşmanlar %15 hızlı": "敌人速度 +15%",
+  "Düşmanlar %25 dayanıklı · az altın": "敌人耐久 +25% · 金币减少",
+  "Büyü yok · düşmanlar güçlü": "无法术 · 敌人强大",
+  "ÖDÜL": "奖励",
+  "TAMAM ✓": "完成 ✓",
+  "OYNA": "开始",
+  "KİLİTLİ": "未解锁",
+  "Önce önceki bölümü bitir": "请先完成上一关",
+  "Şu an açık etkinlik yok": "当前没有活动",
+  "ETKİNLİĞE DÖN": "返回活动",
+  "gün": "天"
  },
  "tpl": [
   [
@@ -1100,6 +1139,26 @@
   [
    "Bu bölümde {} tane",
    "本关 {} 个"
+  ],
+  [
+   "{} dalga",
+   "{} 波"
+  ],
+  [
+   "En iyi: {} dalga",
+   "最佳：{} 波"
+  ],
+  [
+   "{} · {} öldürme · {}",
+   "{} · {} 击杀 · {}"
+  ],
+  [
+   "{}  ·  Bitişe {} gün",
+   "{}  ·  剩余 {} 天"
+  ],
+  [
+   "Yeni görünüm: {}",
+   "新外观：{}"
   ]
  ]
 }
