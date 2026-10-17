@@ -2126,7 +2126,7 @@ function startLevel(idx, chal = null) {
   const dk = CUR_DIFF = chal ? 'normal' : (DIFFS[save.diff] ? save.diff : 'normal');
   G = {
     idx, lv, paths, diffKey: dk,
-    bg: renderBackground(lv, paths, bgRes(), BLEED),
+    bg: null, bgPend: 2, // 17 Eki: zemin (bölümün en ağır işi, telefonda ~1 sn) yükleme ekranı göründükten sonra çizilir (drawPlay): ekran haritada donup kalmaz
     gold: (Math.round(lv.gold * diff().gold) + (upgRank('castle') >= 2 ? 60 : 0) + (upgRank('castle') >= 3 ? 60 : 0)),
     lives: chal ? CHAL[chal].lives : diff().lives - (lv.ep === 2 ? 5 : 0) + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
     maxLives: chal ? CHAL[chal].lives : diff().lives - (lv.ep === 2 ? 5 : 0) + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
@@ -8435,13 +8435,30 @@ function twistStep(e, dt) { // kasırgaya kapılan düşman: huninin çevresinde
   }
   return true;
 }
-// huni: üst üste dönen yarı saydam halkalar (aşağı daralır, yılan gibi kıvrılır), içinde parlak çizgiler; tepede koyu fırtına bulutu.
-// back: birimlerin altında taban gölgesi ve toz halkası; ön: huni ve bulut (birimlerin önünde, saydam)
+// 17 Eki (Caner: "tornadoyu da çalışırız"): huni çizgi film tarzında yeniden: konturlu, soldan gölgeli gövde; çevresine sarılan sarmal
+// rüzgâr şeritleri (arka yarısı birimlerin arkasında, ön yarısı önünde); tabanda dönen toz öbekleri; tepede konturlu kabarık fırtına bulutu
+// (alt yüzü koyu, üstü açık, yavaşça döner; şimşekte içten yeşil-beyaz parlar). Renkler necro: mor gövde, yeşil ve kızıl kıvılcımlar.
+// back: birimlerin altında taban gölgesi ve tozun arka yarısı; ön: huni, kapılanlar, ön şeritler, bulut
 const PUFF = {};
 function puffTex(col) { // dolu, kenarı yumuşak öbek (bulut, duman): glowTex'ten daha geniş dolu çekirdek
   if (!PUFF[col]) { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
     gr.addColorStop(0, `rgba(${col},1)`); gr.addColorStop(0.55, `rgba(${col},0.92)`); gr.addColorStop(0.8, `rgba(${col},0.45)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); PUFF[col] = c; }
   return PUFF[col];
+}
+// öbek listesini tek yola çevirir: yarı saydam dolguda üst üste binen daireler koyulaşmaz (tek siluet)
+const blobPath = (D, grow = 0, k = 1, ox = 0, oy = 0) => { ctx.beginPath(); for (const [x, y, r] of D) { ctx.moveTo(x + ox + r * k + grow, y + oy); ctx.arc(x + ox, y + oy, r * k + grow, 0, Math.PI * 2); } };
+const TW_BANDS = 9, TW_SEG = 40, TW_CLOUD = [[-34, 4, 15], [34, 5, 14], [-18, -3, 19], [18, -4, 18], [0, -9, 21], [-46, 9, 10], [46, 10, 10], [-8, 6, 16], [12, 7, 15]];
+function tornadoDust(z, front, gr) { // tabanda dönen toz öbekleri (yarım: arkadakiler birimlerin arkasında); önce konturlar sonra dolgular: tek siluet
+  const t = z.t, D = [];
+  for (let i = 0; i < 10; i++) {
+    const a = t * 5.5 + i * 0.628, sn = Math.sin(a); if ((sn >= 0) !== front) continue;
+    const R = (22 + (i % 3) * 5) * (0.6 + 0.4 * gr);
+    D.push([z.x + Math.cos(a) * R, z.y + sn * R * 0.32 - 3 - (i % 2) * 3, (5.5 + (i % 4) * 1.5) * (0.85 + 0.15 * Math.sin(t * 7 + i))]);
+  }
+  ctx.globalAlpha = 0.7 * gr; ctx.fillStyle = 'rgba(30,22,36,0.6)'; blobPath(D, 1.2); ctx.fill();
+  ctx.fillStyle = front ? '#8a7c84' : '#675b69'; blobPath(D); ctx.fill();
+  ctx.fillStyle = 'rgba(205,195,205,0.3)'; blobPath(D, 0, 0.4); ctx.fill();
+  ctx.globalAlpha = 1;
 }
 function drawTornadoes(back) {
   for (const z of G.zones) {
@@ -8450,47 +8467,67 @@ function drawTornadoes(back) {
     const top = z.y - T.H, bot = top + T.H * gr, t = z.t;
     if (back) {
       if (gr <= 0) continue;
-      ctx.save(); ctx.globalAlpha = 0.35 * gr; ctx.fillStyle = '#1a1022'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 26, 8, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 0.55 * gr; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
-      for (let i = 0; i < 3; i++) { const a0 = t * 7 + i * 2.1; ctx.strokeStyle = i % 2 ? 'rgba(200,180,220,0.8)' : 'rgba(150,230,160,0.7)';
-        ctx.beginPath(); ctx.ellipse(z.x, z.y, 18 + i * 5, (18 + i * 5) * 0.32, 0, a0, a0 + 2.2); ctx.stroke(); }
-      ctx.restore(); continue;
+      ctx.save(); ctx.globalAlpha = 0.4 * gr; ctx.fillStyle = '#140c1a'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 30, 9, 0, 0, Math.PI * 2); ctx.fill();
+      tornadoDust(z, false, gr); ctx.restore(); continue;
     }
     ctx.save();
-    const N = 16, sway = (u) => Math.sin(t * 2.2 + z.seed + u * 3.2) * 9 * u + Math.sin(t * 5.3 + u * 7) * 2.5 * u;
-    const ring = (i) => { const u = i / N; return { u, y: bot - (bot - top) * u, w: lerp(6, 38, Math.pow(u, 1.45)), x: z.x + sway(u), a0: (t * (12 - u * 6) + i * 0.9) % (Math.PI * 2) }; };
-    const arcs = (front) => { // halkanın arka yarısı (üst kavis) birimlerin arkasında, ön yarısı önünde: derinlik
-      ctx.lineCap = 'round';
-      for (let i = 0; i <= N; i++) { const R = ring(i), c0 = Math.round(70 + 90 * (1 - R.u)), sh = front ? 1 : 0.6;
-        ctx.strokeStyle = `rgba(${Math.round((c0 + 25) * sh)},${Math.round(c0 * sh)},${Math.round((c0 + 45) * sh)},${(front ? 0.7 : 0.5) * cl})`; ctx.lineWidth = 2 + R.u * 3;
-        const s0 = front ? 0 : Math.PI, a = R.a0; ctx.beginPath(); ctx.ellipse(R.x, R.y, R.w, R.w * 0.27, 0, s0 + (a % 1.2), s0 + Math.PI - 0.2 + (a % 1.2) * 0.3); ctx.stroke();
-        if (front && i % 3 === 1) { ctx.strokeStyle = `rgba(${i % 2 ? '170,255,190' : '220,180,255'},${0.65 * cl})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(R.x, R.y, R.w * 0.92, R.w * 0.24, 0, a * 0.5 % Math.PI, a * 0.5 % Math.PI + 0.9); ctx.stroke(); }
+    // u: 0 taban .. 1 tepe; huni yılan gibi kıvrılır, kenarı kıpır kıpır
+    const sway = (u) => Math.sin(t * 2.2 + z.seed + u * 3.2) * 9 * u + Math.sin(t * 5.3 + u * 7) * 2.5 * u;
+    const P = (u) => ({ x: z.x + sway(u), y: bot - (bot - top) * u, w: lerp(5, 36, Math.pow(u, 1.4)) * (1 + 0.07 * Math.sin(u * 14 - t * 11)) });
+    const bands = (front) => { // sarmal rüzgâr şeritleri: her biri tabandan tepeye huninin çevresinde dolanır, kesik kesik akar
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (let b = 0; b < TW_BANDS; b++) { // görünen yarıda, yoğunluğu eşiği geçen ardışık noktalar tek düzgün çizgi (kesik kesik akan şerit)
+        let run = [], sa = 0, su = 0;
+        const flush = () => { if (run.length > 2) { const a = sa / run.length * (front ? 0.85 : 0.42) * cl, u = su / run.length;
+            ctx.strokeStyle = front ? (b % 3 === 0 ? `rgba(200,255,210,${a})` : `rgba(232,222,250,${a})`) : `rgba(70,56,96,${a})`; ctx.lineWidth = (front ? 1.4 : 1.1) + 2.8 * u;
+            ctx.beginPath(); run.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }
+          run = []; sa = 0; su = 0; };
+        for (let k = 0; k <= TW_SEG; k++) {
+          const u = k / TW_SEG, Q = P(u), th = t * (11 - 5 * u) + b * (Math.PI * 2 / TW_BANDS) + u * 5.5, sn = Math.sin(th);
+          const d = Math.sin(u * 8 - t * 7 + b * 1.7) * Math.min(1, u * 4 + 0.2);
+          if ((sn >= 0) === front && d > 0.12) { run.push([Q.x + Math.cos(th) * Q.w * 1.02, Q.y + sn * Q.w * 0.27]); sa += d; su += u; } else flush();
+        }
+        flush();
       }
-      for (let k = 0; k < 9; k++) { // savrulan kırıntılar (taş, dal, kemik)
-        const u = ((k * 0.137 + t * 0.35) % 1), R = ring(Math.round(u * N)), a = t * (9 - u * 4) + k * 2.3, sn = Math.sin(a);
+      for (let k = 0; k < 10; k++) { // savrulan kırıntılar: taş, dal, kemik, yaprak
+        const u = (k * 0.137 + t * 0.35) % 1, Q = P(u), a = t * (9 - u * 4) + k * 2.3, sn = Math.sin(a);
         if ((sn >= 0) !== front) continue;
-        ctx.save(); ctx.translate(R.x + Math.cos(a) * R.w * 1.05, R.y + sn * R.w * 0.28); ctx.rotate(a * 2); ctx.fillStyle = k % 3 ? '#4a3a32' : '#d8ccb4'; ctx.fillRect(-1.6, -0.9, 3.2, 1.8); ctx.restore();
+        ctx.save(); ctx.translate(Q.x + Math.cos(a) * Q.w * 1.15, Q.y + sn * Q.w * 0.3); ctx.rotate(a * 2);
+        ctx.fillStyle = ['#4a3a32', '#d8ccb4', '#3c5a2a', '#7a2a2a'][k % 4]; ctx.strokeStyle = '#140c14'; ctx.lineWidth = 0.6;
+        ctx.beginPath(); ctx.rect(-1.8, -1, 3.6, 2); ctx.fill(); ctx.stroke(); ctx.restore();
       }
     };
     if (gr > 0) {
-      const L = [], Rr = [];
-      for (let i = 0; i <= N; i++) { const R = ring(i); L.push([R.x - R.w, R.y]); Rr.push([R.x + R.w, R.y]); }
-      const g = ctx.createLinearGradient(0, top, 0, bot); g.addColorStop(0, 'rgba(46,34,66,0.62)'); g.addColorStop(0.55, 'rgba(92,78,118,0.4)'); g.addColorStop(1, 'rgba(150,136,150,0.3)');
-      ctx.globalAlpha = cl; ctx.fillStyle = g; ctx.beginPath(); L.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); for (let i = Rr.length - 1; i >= 0; i--) ctx.lineTo(Rr[i][0], Rr[i][1]); ctx.closePath(); ctx.fill();
-      ctx.globalAlpha = 1; arcs(false);
+      const L = [], R = [], N = 22;
+      for (let i = 0; i <= N; i++) { const Q = P(i / N); L.push([Q.x - Q.w, Q.y]); R.push([Q.x + Q.w, Q.y]); }
+      const body = () => { ctx.beginPath(); L.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); for (let i = R.length - 1; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]); ctx.closePath(); };
+      // gövde: soldan koyu, sağda açık şerit (hacim), tabana doğru saydamlaşır; ince koyu kontur
+      const hx = z.x + sway(0.6), hg = ctx.createLinearGradient(hx - 36, 0, hx + 36, 0);
+      hg.addColorStop(0, 'rgba(34,24,52,0.85)'); hg.addColorStop(0.35, 'rgba(78,62,108,0.75)'); hg.addColorStop(0.62, 'rgba(132,116,164,0.7)'); hg.addColorStop(0.8, 'rgba(176,164,204,0.7)'); hg.addColorStop(1, 'rgba(70,54,96,0.85)');
+      ctx.globalAlpha = cl; ctx.fillStyle = hg; body(); ctx.fill();
+      const vg = ctx.createLinearGradient(0, top, 0, bot); vg.addColorStop(0, 'rgba(20,12,30,0.35)'); vg.addColorStop(0.7, 'rgba(20,12,30,0)'); vg.addColorStop(1, 'rgba(150,130,140,0.25)');
+      ctx.fillStyle = vg; body(); ctx.fill();
+      ctx.strokeStyle = 'rgba(18,10,26,0.7)'; ctx.lineWidth = 1.6; ctx.lineJoin = 'round'; body(); ctx.stroke();
+      ctx.globalAlpha = 1; bands(false);
     }
     ctx.restore();
     for (const e of G.enemies) if (e.twT > 0 && e.twZ === z && !e.dead) { const o = e.twZh || 0; e.flZ = o; drawEnemy(e); e.flZ = null; } // kapılanlar huninin içinde
     ctx.save();
-    if (gr > 0) { arcs(true); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x + sway(0.5), lerp(bot, top, 0.5), 34, '150,100,255', 0.14 * cl * gr); glow(ctx, z.x, bot - 4, 18, '130,255,160', 0.12 * cl * gr); ctx.globalCompositeOperation = 'source-over'; }
-    // fırtına bulutu: yumuşak kabarık öbekler (koyu mor-gri; üstleri açık), şimşekte içten yeşil-beyaz parlar
-    const fl = z.flashT > 0 ? z.flashT / 0.18 : 0, cy = top - 8;
-    ctx.globalAlpha = cl;
-    for (const [dx, dy, r0, c] of [[-40, 6, 22, 0], [40, 7, 20, 0], [-22, 2, 26, 0], [22, 1, 26, 0], [0, -2, 30, 0], [0, 10, 34, 2], [-30, -6, 18, 1], [8, -12, 22, 1], [32, -5, 16, 1]]) {
-      const ox = Math.sin(t * 0.8 + dx * 0.1) * 2.5, oy = Math.cos(t * 0.7 + dx) * 1.5, r = r0 * (0.85 + 0.15 * Math.min(1, z.t / 0.4));
-      ctx.drawImage(puffTex(c === 1 ? '96,82,120' : c === 2 ? '22,14,32' : '50,38,68'), z.x + dx + ox - r, cy + dy + oy - r * 0.7, r * 2, r * 1.4);
-    }
-    ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x + Math.sin(z.seed + t * 3) * 14, cy, 50, fl > 0 ? '190,255,200' : '140,80,220', (0.1 + 0.55 * fl) * cl); ctx.globalCompositeOperation = 'source-over';
+    if (gr > 0) { bands(true); tornadoDust(z, true, gr); }
+    // fırtına bulutu: önce bütün öbeklerin koyu konturu (tek siluet), sonra dolgular; öbekler merkez çevresinde yavaşça döner
+    const fl = z.flashT > 0 ? z.flashT / 0.18 : 0, cy = top - 6, gk = 0.85 + 0.15 * Math.min(1, z.t / 0.4);
+    const puffs = TW_CLOUD.map(([dx, dy, r0], i) => { const a = t * 0.5 + i * 0.7; return [z.x + dx * gk + Math.cos(a) * 3, cy + dy + Math.sin(a) * 1.6, r0 * gk]; });
+    ctx.globalAlpha = cl; ctx.fillStyle = '#120a1a'; blobPath(puffs, 2); ctx.fill();
+    ctx.fillStyle = fl > 0 ? '#d8ffe4' : '#9a8cba'; blobPath(puffs); ctx.fill(); // üst kenar ışığı: açık dolgu, üstüne aşağı kaydırılmış koyu dolgu
+    ctx.save(); blobPath(puffs); ctx.clip();
+    const cg = ctx.createLinearGradient(0, cy - 26, 0, cy + 26); // bütün bulut için tek renk geçişi: öbekler birbirine dikişsiz karışır
+    cg.addColorStop(0, '#6a5a8c'); cg.addColorStop(0.55, '#45365f'); cg.addColorStop(1, '#22162f');
+    ctx.fillStyle = cg; blobPath(puffs, 0, 1, 1.5, 4); ctx.fill();
+    if (fl > 0) { ctx.globalAlpha = cl * fl * 0.5; ctx.fillStyle = '#c8ffd8'; blobPath(puffs, 0, 0.75, 0, -2); ctx.fill(); ctx.globalAlpha = cl; }
+    ctx.restore();
+    // bulutun içinde ara ara kızıl-mor kıvılcımlar
+    if (((t * 3) % 1) < 0.12) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x + Math.sin(z.seed + t * 3) * 22, cy + 2, 26, Math.sin(t * 9) > 0 ? '255,80,90' : '170,110,255', 0.35 * cl); ctx.globalCompositeOperation = 'source-over'; }
+    if (fl > 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, cy, 60, '190,255,200', 0.5 * fl * cl); ctx.globalCompositeOperation = 'source-over'; }
     ctx.restore();
   }
 }
@@ -19112,7 +19149,7 @@ function preloadCommon() {
 }
 function checkLoad() {
   const P = loadProgress(); G.loadWait.k = Math.max(G.loadWait.k || 0, P.k);
-  if (P.ready || (performance.now() - G.loadWait.t0) / 1000 > LOAD_MAX) { G.loadWait = null; console.log('[yükleme] bitti'); }
+  if ((P.ready && G.bg) || (performance.now() - G.loadWait.t0) / 1000 > LOAD_MAX) { G.loadWait = null; console.log('[yükleme] bitti'); }
 }
 function drawLoading() {
   const k = G.loadWait.k || 0;
@@ -19128,6 +19165,10 @@ function drawLoading() {
   txt('— Mortimer', cx, cy + 126, 13, '#9a8ab8', 'center', '600', FONT_B, false);
 }
 function drawPlay() {
+  if (!G.bg) { // zemin henüz yok: önce iki kare yükleme ekranı (ya da çizgi roman), sonra zemini çiz
+    if (G.bgPend-- > 0) { ctx.fillStyle = '#08050c'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (overlay) drawOverlay(); if (G.loadWait && !G.comic) drawLoading(); return; }
+    G.bg = renderBackground(G.lv, G.paths, bgRes(), BLEED);
+  }
   CROWD = G.enemies.length + G.soldiers.length > CROWD_N;
   if (G.bakeQ && G.bakeQ.length) { const t0 = performance.now(); do bakeNext(); while (G.loadWait && G.bakeQ.length && performance.now() - t0 < 12); } // yüklenirken karede çok boya
   const sh = G.shakeT > 0 ? G.shakeAmp * (G.shakeT / G.shakeDur) : 0;
