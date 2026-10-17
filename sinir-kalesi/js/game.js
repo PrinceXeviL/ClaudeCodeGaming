@@ -20412,7 +20412,8 @@ function drawWinMinimal(k) {
   if (!SC && !SPR.mortimer_throne) loadStrip('mortimer_throne'); // sahne yoksa eski yol: koltukta Mortimer şeridi
   const pose = SC ? null : spr('mortimer_pose_throne') || spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.66, 390) : 0, mw = pose ? mh * pose.width / pose.height : 0;
   const mLeft = Math.max(VIS.l, EDGE.l) + 10, rEdge = Math.min(VIS.r, EDGE.r);
-  const cx = SC ? (Math.max(mLeft, SC.x + SC.w * 0.46) + rEdge) / 2 : pose ? (mLeft + mw - 10 + rEdge) / 2 : W / 2;
+  const mR = SC ? Math.max(mLeft, SC.x + SC.w * 0.44) : 0, cx = SC ? mR + (rEdge - mR) * (VIS.w / VIS.h > 1.9 ? 0.41 : 0.5) : // 17 Eki (Caner): geniş ekranda içerik Mortimer'a yakın; iPad'de düğmeler cübbeye binmesin diye ortada
+    pose ? (mLeft + mw - 10 + rEdge) / 2 : W / 2;
   const ca = fa(0.2, 0.6), cy = Y(0.39);
   if (SC) winFireworks(Math.max(mLeft, SC.x + SC.w * 0.42), rEdge - 20, top + hh * 0.06, top + hh * 0.55, k, cx);
   if (SC && ca > 0) { // 17 Eki: rün çemberi yerine yıldızların arkasında dönen sıcak ışık huzmeleri
