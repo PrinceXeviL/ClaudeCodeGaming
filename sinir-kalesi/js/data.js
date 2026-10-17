@@ -764,23 +764,24 @@ HEROES.bathory = { name: 'Báthory', role: 'Kan Kontesi · Kan büyüsü', sprit
 Object.assign(HERO_ULT, {
   bathory: { name: 'Kan Gölü', cd: 60, anim: 2.0, r: 72, dps: [18, 24.3], dur: 5, bloodpool: true, heal: 12.6, // 16 Eki: 26-34 → 20-27; 16 Eki (2, Caner: "%10 düşür"): 18-24,3, iskelet iyileştirme 14 → 12,6
     desc: 'Seçtiğin yerde 5 sn kaynayan bir kan gölü açılır: düşmanların canını emer ve yavaşlatır, içindeki iskeletler iyileşir', short: 'Can emen, iskeletleri iyileştiren kan gölü' },
-  robin: { name: 'Ok Yağmuru', cd: 55, anim: 2.6, r: 78, dmg: [16, 22], n: 36, dur: 3.5, rain: true,
-    desc: 'Seçtiğin alana 3,5 sn yeşil ruh ateşli oklar yağar: hasar verir, zehirler', short: 'Alana 3,5 sn zehirli ok yağmuru' },
+  robin: { name: 'Ok Yağmuru', cd: 55, anim: 2.6, r: 78, dmg: [16, 22], n: 40, dur: 2, rain: true, // 17 Eki: 36 ok 3,5 sn yerine 40 ok 2 sn (sağanak), oklar saplanır
+    desc: 'Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır', short: 'Alana 40 okluk zehirli sağanak' },
   merlin: { name: 'Meteor', cd: 60, anim: 1.8, r: 80, dmg: [110, 150], burn: 14, burnT: 4, meteor: true,
     desc: 'Gökten ruh ateşli demir bilyeler yağar: dağınık patlamalar, ufak kraterler ve 4 sn yanan zemin', short: 'Meteor yağmuru: dağınık patlamalar, yanan zemin' },
   spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
     desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },
-  leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
-    desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
+  // 17 Eki: Leonidas başlangıç komutanı oldu; ana güç hasar veren Mızrak Yağmuru, Falanks ikinci güç (yer değişti)
+  leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
+    desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'spartacus', 'leonidas', 'merlin', 'robin', 'bathory');
+HERO_ORDER.splice(0, HERO_ORDER.length, 'leonidas', 'merlin', 'robin', 'bathory'); // 17 Eki (Caner): Spartaküs elendi (Leonidas ile aynı tür, savaşçı); verisi duruyor, görünmez
 // 13 Eki (Caner): her komutanın 2 aktif gücü (savaşa yalnız biri götürülür, Komutanlar ekranında seçilir) ve kendi kendine kullandığı
 // 2 pasif yeteneği var. İkinci aktifler: HERO_ULT2 (kademe tablosu HERO_TREE.ult2), pasifler: HEROES[id].passives (ağaçta yalnız bunlar).
 const HERO_ULT2 = {
   spartacus: { name: 'Arena Kükremesi', cd: 45, r: 84, dmg: [18, 26], stun: 1.5, scream: true, col: '255,170,90',
     desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
-  leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
-    desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
+  leonidas: { name: 'Falanks', cd: 55, hp: 900, life: 6, phalanx: true,
+    desc: 'Yolun seçtiğin yerinde kalkanlı üç iskelet hoplit duvar örer: 6 sn yolu kapatır', short: 'Yola kalkan duvarı: 6 sn yolu kapatır' },
   // 16 Eki (Caner: "tornadolu fırtına olabilir; tornadoya kapılan düşman dönerek etrafa saçılır, savrulur"): Zincir Şimşek yerine Kasırga Fırtınası (game.js TORNADO)
   merlin: { name: 'Kasırga Fırtınası', cd: 45, anim: 1.5, r: 70, dmg: [40, 55], dur: 4, n: 12, tornado: true,
     desc: 'Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar', short: 'Yolda ilerleyen kasırga: kapılanı döndürüp savurur' },
@@ -1571,8 +1572,7 @@ const ADMIN_TEST = { level: 'Kara Göl Geçidi', gold: 1500, lives: 20, waves: [
    { t: 'cavalry', n: 3, gap: 1.4, at: 6 }, { t: 'lantern', n: 1, gap: 1, at: 9 }, { t: 'legion', n: 8, gap: 0.6, at: 10 }, { t: 'centurion', n: 1, gap: 1, at: 15 }],
 ] };
 for (const t of ['gloriosus3', 'cathedral']) if (ENEMIES[t]) ENEMIES[t].final = true;
-Object.assign(HEROES.spartacus, { cost: 0, unlock: null }); // 14 Eki: başlangıç komutanı (ücretsiz) // komutan kristalle açılır (eski unlock bölümü yerine)
-Object.assign(HEROES.leonidas, { cost: 30 });
+Object.assign(HEROES.leonidas, { cost: 0, unlock: null }); // 17 Eki: başlangıç komutanı Leonidas (ücretsiz; Spartaküs elendi). Diğerleri kristalle açılır
 // tek kullanımlık savaş eşyaları: dükkânda kristalle alınır, savaşta sağ alttaki çantadan kullanılır (KR'deki eşyalar gibi)
 const ITEMS = {
   bomb:   { name: 'Kemik Bombası',    cost: 3, desc: 'Seçtiğin yerde patlar, ağır alan hasarı', target: true, r: 85, dmg: 320 },
@@ -1709,6 +1709,11 @@ BAL.spartacus = { dmg: 1.35, hp: 1.3, cd: 0.85, ult: 1.4 }; // 11. tur: 1,2/1,15
 { const S = HEROES.spartacus, B = BAL.spartacus; S.dmg = S.dmg.map(v => Math.round(v * B.dmg)); S.hp = Math.round(S.hp * B.hp);
   for (const P of S.paths || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * B.cd * 10) / 10;
   const U = HERO_ULT.spartacus; if (U && U.dps) U.dps = U.dps.map(v => Math.round(v * B.ult)); }
+// 17 Eki: Spartaküs elendi, başlangıç komutanı Leonidas; onun başlangıç takviyesi Leonidas'a (tank: can daha az artar, falanks canı ult ile)
+BAL.leonidas = { dmg: 1.8, hp: 1.2, cd: 0.8, ult: 1.6 }; // 17 Eki bot 2-6: 1,35/1,15 ile 0/5, 1,8 ile 1/5; ana güç Mızrak Yağmuru olunca 4/5 (Spartaküs 4/5, canlar eş)
+{ const S = HEROES.leonidas, B = BAL.leonidas; S.dmg = S.dmg.map(v => Math.round(v * B.dmg)); S.hp = Math.round(S.hp * B.hp);
+  for (const P of S.paths || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * B.cd * 10) / 10;
+  const U = HERO_ULT.leonidas; if (U && U.dmg) U.dmg = U.dmg.map(v => Math.round(v * B.ult)); }
 // 16 Eki (Caner: "kalabalık gruplar yolda sıkışıyor; gerekirse yolu %10-15 genişlet"): doğuş sırasından (game.js SPAWN_LANE) sonra hâlâ en
 // sıkışık dört bölümde yol %12 geniş (tools/kalabalik-tara.js: bir düşmanın 12 px yakınında 7-9 komşu kalıyordu)
 BAL.wideRoad = { 12: 1.12, 17: 1.12, 30: 1.12, 37: 1.12 };

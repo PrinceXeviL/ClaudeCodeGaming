@@ -5957,11 +5957,14 @@ function updateProjectile(pr, dt) {
     return;
   }
   if (pr.kind === 'rainarrow') {
+    let hit = null, hd = 13; // tam üstüne düştüğü düşmana saplanır, yoksa yere (okçu okları gibi STUCK süresince kalır)
     for (const e of G.enemies) {
       if (e.dead || dist(e.x, e.y, pr.tx, pr.ty) > pr.splash) continue;
       damageEnemy(e, pr.dmg, 'phys', true);
       if (pr.poison) poisonEnemy(e, pr.poison, pr.poisonT);
+      const d = dist(e.x, e.y, pr.tx, pr.ty); if (d < hd && !e.dead && !e.def.flying) { hd = d; hit = e; }
     }
+    stickArrow(pr, hit);
     if (pr.poison) for (let i = 0; i < 4; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-6, 6), y: pr.ty + rand(-3, 3), vx: rand(-20, 20), vy: -rand(10, 40), drag: 2, col: i % 2 ? '140,255,80' : '200,255,140', s0: 3.5, s1: 0.5, life: 0.5 });
     else fxArrowHit(pr.tx, pr.ty, false);
     return;
@@ -8760,9 +8763,10 @@ function castUlt(h, x, y) {
     shakeScreen(3, 0.3); sfx('blooddrain'); setTimeout(() => sfx('splash'), 150);
   } else if (U.rain) {
     // Robin'in ok yağmuru: alana zamana yayılmış zehirli yeşil oklar
-    for (let i = 0; i < U.n; i++) { const [tx, ty] = spot(U.r);
-      G.projectiles.push({ kind: 'rainarrow', sx: tx - 70, sy: ty - 280, tx, ty, t: -i * U.dur / U.n, dur: 0.42, dmg: dmg(), splash: 18, arc: 0, poison: U.poison ?? 3, poisonT: 2, gold: U.gold }); }
-    for (let i = 0; i < 5; i++) setTimeout(() => sfx('arrow'), i * 600);
+    // 17 Eki (Caner: "yağmur gibi yağsın, en az 30-40 ok, düştüğü yere saplansın"): 40 ok 2 sn'de sağanak gibi iner, her biri düşmana ya da yere saplanır
+    for (let i = 0; i < U.n; i++) { const [tx, ty] = spot(U.r), dx = rand(-62, -40);
+      G.projectiles.push({ kind: 'rainarrow', sx: tx + dx, sy: ty - rand(270, 320), tx, ty, t: -(i / U.n) * U.dur - rand(0, 0.06), dur: rand(0.36, 0.46), dmg: dmg(), splash: 18, arc: 0, poison: U.poison ?? 3, poisonT: 2, gold: U.gold, col: U.gold ? '230,170,70' : '140,255,90' }); }
+    for (let i = 0; i < 6; i++) setTimeout(() => sfx('arrow', rand(0.9, 1.15)), i * 330);
   } else if (U.portal) {
     timeGate(x, y, U.r, dmg, U.back, U.stun);
   } else if (U.meteor) {
@@ -18862,6 +18866,13 @@ function drawTip(tx, ty, text, above = true) {
 function drawMap() {
   // gelişme fiyatları arttı (9 Eki): harcanan yıldız eldekini aşıyorsa gelişmeler sıfırlanır, yıldızlar iade edilir
   if (!save.upgFix2) { save.upgFix2 = 1; if (starsSpent() > starsTotal()) save.upg = {}; persist(); }
+  if (!save.spartaFix) { save.spartaFix = 1; // 17 Eki (Caner: "ikisi de savaşçı, biri elensin, Leonidas kalsın"): Spartaküs kalktı; seviyesi ve eşyaları Leonidas'a geçer
+    const H = save.hero || {}, S = H.spartacus, L = H.leonidas;
+    if (S && (!L || (S.lvl || 1) > (L.lvl || 1))) H.leonidas = S;
+    delete H.spartacus;
+    for (const g of save.gear || []) if (g.h === 'spartacus' || (!g.h && g.k === 'sword')) { g.h = 'leonidas'; g.c = 'warrior'; if (g.k === 'sword') g.k = 'spear'; }
+    if (save.team) save.team = save.team.map(id => (id === 'spartacus' ? 'leonidas' : id)).filter((id, i, a) => a.indexOf(id) === i);
+    persist(); }
   if (save.hero && save.hero.commander) { delete save.hero.commander; if (save.team && save.team.includes('commander')) save.team = [HERO_ORDER[0]]; persist(); } // 14 Eki: eski komutan (Drakula) kaldırıldı
   ensureMapEp();
   const E = EPISODES[mapEp - 1], ids = epLevels(mapEp);

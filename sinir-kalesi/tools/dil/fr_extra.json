@@ -659,7 +659,9 @@
   "Yedinci gün sandığı açıyoruz. Kaçırma!": "Le septième jour, on ouvre le coffre. Ne le rate pas !",
   "BAŞ KOMUTAN": "CHEF",
   "YARDIMCI": "SECOND",
-  "BAŞA GEÇİR": "NOMMER CHEF"
+  "BAŞA GEÇİR": "NOMMER CHEF",
+  "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 flèches de feu d’âme vertes s’abattent en averse sur la zone choisie : dégâts, poison, et elles se plantent au sol",
+  "Alana 40 okluk zehirli sağanak": "Averse empoisonnée de 40 flèches"
  },
  "tpl": [
   [

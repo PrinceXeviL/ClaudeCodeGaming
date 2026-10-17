@@ -848,7 +848,9 @@
   "Yedinci gün sandığı açıyoruz. Kaçırma!": "On day seven we open the chest. Don’t miss it!",
   "BAŞ KOMUTAN": "LEADER",
   "YARDIMCI": "SECOND",
-  "BAŞA GEÇİR": "MAKE LEADER"
+  "BAŞA GEÇİR": "MAKE LEADER",
+  "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 green soul-fire arrows pour down on the chosen area: they deal damage, poison, and stick into the ground",
+  "Alana 40 okluk zehirli sağanak": "A 40-arrow poison downpour"
  },
  "tpl": [
   [

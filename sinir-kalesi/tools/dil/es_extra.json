@@ -659,7 +659,9 @@
   "Yedinci gün sandığı açıyoruz. Kaçırma!": "El séptimo día abrimos el cofre. ¡No te lo pierdas!",
   "BAŞ KOMUTAN": "LÍDER",
   "YARDIMCI": "APOYO",
-  "BAŞA GEÇİR": "HACER LÍDER"
+  "BAŞA GEÇİR": "HACER LÍDER",
+  "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 flechas de fuego de almas verde caen como un aguacero en la zona elegida: dañan, envenenan y se clavan en el suelo",
+  "Alana 40 okluk zehirli sağanak": "Aguacero venenoso de 40 flechas"
  },
  "tpl": [
   [

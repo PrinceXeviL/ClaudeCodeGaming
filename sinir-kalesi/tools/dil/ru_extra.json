@@ -659,7 +659,9 @@
   "Yedinci gün sandığı açıyoruz. Kaçırma!": "На седьмой день открываем сундук. Не пропусти!",
   "BAŞ KOMUTAN": "ГЛАВНЫЙ",
   "YARDIMCI": "ПОМОЩНИК",
-  "BAŞA GEÇİR": "СДЕЛАТЬ ГЛАВНЫМ"
+  "BAŞA GEÇİR": "СДЕЛАТЬ ГЛАВНЫМ",
+  "Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır": "40 зелёных стрел душ обрушиваются ливнем на выбранную область: наносят урон, отравляют и вонзаются в землю",
+  "Alana 40 okluk zehirli sağanak": "Ядовитый ливень из 40 стрел"
  },
  "tpl": [
   [
