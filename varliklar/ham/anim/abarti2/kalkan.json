@@ -1,0 +1,29 @@
+[
+ {
+  "name": "enemy_legion_shield",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear keeps walking forward in place while taking a guard against arrows coming diagonally from the upper front: the big shield is lifted up and forward and tilted at a 45 degree angle toward the sky in front, covering the head and shoulders, the shield arm stays raised and firm, the head is tucked down behind the shield, the weapon is held low and ready behind it, steady heavy marching steps, a non-stop walk cycle, every step the same length, the shield stays up in the same guard position the whole time. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_heavy_shield",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword keeps walking forward in place while taking a guard against arrows coming diagonally from the upper front: the big shield is lifted up and forward and tilted at a 45 degree angle toward the sky in front, covering the head and shoulders, the shield arm stays raised and firm, the head is tucked down behind the shield, the weapon is held low and ready behind it, steady heavy marching steps, a non-stop walk cycle, every step the same length, the shield stays up in the same guard position the whole time. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_paladin_shield",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace keeps walking forward in place while taking a guard against arrows coming diagonally from the upper front: the big shield is lifted up and forward and tilted at a 45 degree angle toward the sky in front, covering the head and shoulders, the shield arm stays raised and firm, the head is tucked down behind the shield, the weapon is held low and ready behind it, steady heavy marching steps, a non-stop walk cycle, every step the same length, the shield stays up in the same guard position the whole time. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 21
+ }
+]

@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -3329,7 +3329,7 @@ function killEnemy0(e) {
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: (e.face || 1) * (NECRO && Math.random() < 0.45 ? -1 : 1), fly: e.def.flying ? 26 : 0, t: 0, // 16 Eki: ölenler hep aynı yöne düşmesin
     vr: rand(-0.1, 0.1), vs: rand(0.93, 1.07), blood: !e.def.machine && !e.def.ghost,
-    dur: NECRO ? corpseStay() : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
+    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
     pw: corpsePower(e), str: (e.maxHp || e.def.hp) * (e.def.chief ? 3 : 1) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
@@ -3642,11 +3642,12 @@ function machineWreck(e) {
   impactFx(e.x, e.y - h * 0.4, '230,200,150', 1.2); shakeScreen(2, 0.25); sfx('castlehit');
 }
 // uçan düşman vurulunca kanatları kapanır, dönerek düşer, tüyler saçılır, yerde bir süre yatıp söner
+const BIRD_STAY = 0.5; // 17 Eki (Caner): kuş cesetleri %50 daha çabuk kaybolur
 function skyFall(e) {
   const name = 'enemy_' + e.type, im = enemySprite(e.type) || spr(name);
   if (!im) return;
   const h = CHAR_H[name] || 24;
-  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: corpseStay() });
+  G.effects.push({ kind: 'skyfall', img: im, x: e.x, y: e.y - 26, floor: e.y, h, face: e.face || 1, vx: rand(-12, 12), vy: -30, rot: 0, vr: (e.face || 1) * rand(4, 7), rest: false, t: 0, dur: corpseStay() * BIRD_STAY });
   for (let i = 0; i < 12; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-6, 6), y: e.y - 26 - rand(0, 10), vx: rand(-60, 60), vy: rand(-80, 10), g: 120, vr: rand(-6, 6), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#7a4a22', s0: rand(1.2, 2.2), s1: 0.8, life: rand(0.9, 1.6) });
 }
 function skyFallPhys(f, dt) {
@@ -8955,7 +8956,7 @@ function txt(s, x, y, size, col = '#fff', align = 'center', weight = '800', font
   }
   ctx.fillStyle = col; ctx.fillText(s, x, y);
 }
-// metni verilen genişliğe sığacak satırlara böler (en çok max satır; taşan son satır '…' ile biter)
+// metni verilen genişliğe sığacak satırlara böler (en çok max satır; sığmazsa sondan yan cümleler atılır, clauseFit)
 const TR = (s) => (window.tr ? window.tr(s) : s); // dil katmanı (js/dil.js): satıra bölmeden / kısaltmadan önce bütün metin çevrilir
 // düşman açıklaması + özel saldırı notu: iki cümle ayrı ayrı çevrilir, sonra birleşir (birleşik cümle sözlükte yok)
 function enemyDesc(type, base) { const n = ENEMY_NOTE[type]; base = base || ''; return n && base === ENEMY_DESC[type] ? TR(base) + '. ' + TR(n) : base; }
@@ -8967,8 +8968,23 @@ function wrapLines(s, maxW, size, weight = '700', font = FONT_B, max = 2) {
     const cur = lines[lines.length - 1];
     if (cur != null && ctx.measureText(cur + ' ' + w).width <= maxW) lines[lines.length - 1] = cur + ' ' + w; else lines.push(w);
   }
-  if (lines.length > max) { lines.length = max; lines[max - 1] += '…'; }
+  if (lines.length > max) return clauseFit(s, maxW, size, weight, font, max); // 17 Eki: üç nokta yerine kısa cümle (bkz. clauseFit)
   return lines;
+}
+// 17 Eki (Caner: üstteki bilgi kutusu "…" ile bitmesin, kısa cümleyle halledilsin): sığmayan metnin sonundan bütün yan cümleler
+// (nokta, noktalı virgül, virgül, iki nokta, · ile ayrılan) atılır, kalan kısa cümle noktayla biter. İlk yan cümle bile sığmazsa son sığan kelimede biter; üç nokta yok.
+function clauseFit(s, maxW, size, weight = '700', font = FONT_B, max = 2) {
+  s = TR(s);
+  ctx.font = `${weight} ${size}px ${font}`; lastFont = null;
+  const wrap = (t) => { const L = []; for (const w of t.split(' ')) { const c = L[L.length - 1]; if (c != null && ctx.measureText(c + ' ' + w).width <= maxW) L[L.length - 1] = c + ' ' + w; else L.push(w); } return L; };
+  let L = wrap(s); if (L.length <= max) return L;
+  const parts = s.match(/[^.;,:·]+[.;,:·]?/g) || [s];
+  for (let n = parts.length - 1; n >= 1; n--) {
+    let t = parts.slice(0, n).join('').trim().replace(/[;,:·]$/, '');
+    if (!/[.!?]$/.test(t)) t += '.';
+    L = wrap(t); if (L.length <= max) return L;
+  }
+  L = wrap(s).slice(0, max); L[max - 1] = L[max - 1].replace(/[;,:·]$/, ''); return L;
 }
 function circle(x, y, r, fill, stroke, lw = 2) {
   ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -10925,7 +10941,7 @@ function drawEnemy0(e) {
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0 && !d.crew) && !(e.reviveT > 0), // kuşatma kulesi okçular atarken de yürür
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0) + (e.flZ > 0 ? e.flZ : 0),
       atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
-      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId,
+      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
@@ -10940,7 +10956,7 @@ function drawEnemy0(e) {
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.stains && !e.under) drawStains(e, ux, uo.h, uo.fly || 0); // gövdedeki kan lekeleri
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
-    if (e.wallT > 0 && !e.dead) { // 17 Eki: kalkan duvarı (birimin önünde çizilir): başın üstüne kaldırılmış kalkanların bronz kavsi (açılırken büyür, biterken söner)
+    if (e.wallT > 0 && !e.dead && !animStrip(name, uo.rig, '_shield')) { // 17 Eki: kalkan duvarı (birimin önünde çizilir; Wan kalkan şeridi varsa o çizer, bu kavis yok): başın üstüne kaldırılmış kalkanların bronz kavsi (açılırken büyür, biterken söner)
       const k = Math.min(1, ((e.wallD || CAPTAIN.shield.t) - e.wallT) / 0.2, e.wallT / 0.3), hw = (d.r || 10) * 1.12, cy = e.y - fly - uo.h * 0.74, f = e.face || 1; // kaskın hemen üstü (uo.h sorguçla birlikte boy)
       ctx.save(); ctx.globalAlpha = 0.85 * k; ctx.lineCap = 'round';
       ctx.fillStyle = 'rgba(190,60,40,0.55)'; ctx.strokeStyle = '#3a1a0c'; ctx.lineWidth = 1.2;
@@ -11869,7 +11885,7 @@ function drawUnit(name, im, x, y, face, o) {
     if (T) { fi = 0; for (let i = 0; i < 8; i++) if (o.atk >= T[i]) fi = i; }
     else fi = Math.min(ANIM_META[fName].n - 1, Math.floor((o.atk + ATK_PREP) / (ATK_PREP + ATK_AFTER) * ANIM_META[fName].n));
   } else if (o.walking && !rig.wings) {
-    const suf = o.dir === 'on' ? '_walk_on' : o.dir === 'arka' ? '_walk_arka' : '_walk';
+    const suf = o.walkSuf && animStrip(name, o.rig, o.walkSuf) ? o.walkSuf : o.dir === 'on' ? '_walk_on' : o.dir === 'arka' ? '_walk_arka' : '_walk';
     for (const sf of [suf, '_walk']) { const n = animStrip(name, o.rig, sf); if (n) { fName = n; break; } }
     if (fName) fi = Math.floor(((o.phase / TAU) % 1 + 1) % 1 * ANIM_META[fName].n) % ANIM_META[fName].n;
   }
@@ -13461,7 +13477,7 @@ function drawEnemyPanel() {
   G.enemyPanelR = null;
   if (infoText()) return; // büyü/kule açıklaması aynı alt şeridi kullanır: o açıkken kart çekilir
   const d = e.def, w = Math.min(420, hudRight() - hudLeft(), cardRight(0) - cardLeft(0)), x0c = 84, cw = w - x0c - 16;
-  const dl = wrapLines(enemyDesc(e.type, d.desc || ENEMY_DESC[e.type]), cw, 13, '700', FONT_B, 2);
+  const dl = clauseFit(enemyDesc(e.type, d.desc || ENEMY_DESC[e.type]), cw, 13, '700', FONT_B, 2);
   const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
   const SPD = d.speed < 18 ? 'Yavaş' : d.speed < 30 ? 'Orta' : d.speed < 45 ? 'Hızlı' : 'Çok hızlı';
   const st = [['shield', `%${Math.round(d.armor * 100)}`, 'Zırh'], ['magic', `%${Math.round(d.mr * 100)}`, 'Büyü dir.'], ['boot', SPD, null], ['heart', `-${d.lives}`, null]];
@@ -14561,7 +14577,7 @@ function drawInfoCard(info) {
     });
     ly += 26;
   }
-  bl.forEach((b, i) => { const y = ly + i * 19 - 2; circle(x0 + 24, y, 2.6, '#c9a865'); fitTxt(b, x0 + 32, y + 1, bw - 14, BS, i === 0 ? '#f2e8d4' : '#d8ccb4', 'left', '700', FONT_B, false, 11); });
+  bl.forEach((b, i) => { const y = ly + i * 19 - 2; circle(x0 + 24, y, 2.6, '#c9a865'); fitTxt(clauseFit(b, bw - 14, 11, '700', FONT_B, 1)[0], x0 + 32, y + 1, bw - 14, BS, i === 0 ? '#f2e8d4' : '#d8ccb4', 'left', '700', FONT_B, false, 11); });
 }
 
 // Ekranın üstünde kısa duyuru (yeni yetenek, yetenek bilgisi)
