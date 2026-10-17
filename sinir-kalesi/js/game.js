@@ -167,7 +167,7 @@ const CHAR_H = { soldier: 21, militia: 21 };
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 // Ortak ölçekler: UNIT_K tüm birimler (asker, kahraman, düşman), BUILD_K binalar (kule, kale, arsa),
 // ROAD_K yol genişliği. ZOOM_MAX: en yakın zoom (arka plan dokusunun keskin kaldığı sınır).
-const UNIT_K = 0.72, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5;
+const UNIT_K = 0.72 * 0.95, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5; // 17 Eki (Caner): tüm karakterler %5 küçük
 for (const lv of LEVELS) if (lv.roadWide) lv.roadK = ROAD_K * lv.roadWide; // 16 Eki: sıkışık bölümlerde geniş yol (data.js BAL.wideRoad)
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
 const TOWER_S = 0.95; // 17 Eki (Caner): kuleler %5 küçük (kule üstündeki okçular da)
@@ -6573,7 +6573,7 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
 // 13 Eki (Caner): kale sıfırdan (ham/nm_kale_v3.jpg, varliklar/kale_v3_isle.py): boynuzlu kafatası kule, kafatası ağzı kapı, ortada yarım daire
 // balkon (Mortimer), iki yan kanat balkonda okçular. Kesirler castle_keep_1 görseline göre (ızgarayla ölçüldü).
-const KEEP = { w: 147, gate: [0.42, 0.88], at: [0.73, 0.556], // 17 Eki (Caner): kale ve Mortimer %20 küçük (Mortimer kaleyle ölçeklenir); Mortimer yan terasta (kanepe ile ritüel çemberi arası)
+const KEEP = { w: 140, gate: [0.42, 0.88], at: [0.73, 0.556], // 17 Eki (Caner): kale ve Mortimer %20, sonra %5 daha küçük (Mortimer kaleyle ölçeklenir); Mortimer yan terasta (kanepe ile ritüel çemberi arası)
   rail: [0.36, 0.53, 0.62, 0.61], px: 122, // 17 Eki: kale v4 (teraslı gotik ev)
   // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (Mortimer ve okçuların ayakları korkuluğun ardında)
   railPoly: [[0.11, 0.454], [0.145, 0.488], [0.263, 0.5], [0.36, 0.509], [0.395, 0.532], [0.447, 0.548], [0.526, 0.552], [0.585, 0.539], [0.684, 0.564],
@@ -10580,15 +10580,15 @@ const LIT_CACHE = new Map();
 // 17 Eki (Caner: "daha gölgeli olsun kuleler, derinlikleri olsun"): bina görsellerine biçim gölgesi. Işık sağ üstten (ay):
 // alt kısım zemine doğru koyulaşır (bot), sol yan gölgede kalır (side), tepe hafif aydınlanır (top). Kulelerde ışık kopyasına (litOf) pişer,
 // kalede durağan görselin saydamlığıyla maskelenmiş katman olarak her karenin (Veo döngüsü dahil) üstüne çizilir (shadeOverlay).
-const SHADE = { on: !window.__SHADE_OFF, bot: 0.58, from: 0.42, side: 0.38, sideTo: 0.55, top: 0.22, col: '14,8,26', hi: '255,236,210' };
-function formShade(g, frames, box, iw, ih) {
+const SHADE = { on: !window.__SHADE_OFF, keep: 0, lift: 0.2, bot: 0.58, from: 0.42, side: 0.38, sideTo: 0.55, top: 0.22, col: '14,8,26', hi: '255,236,210' };
+function formShade(g, frames, box, iw, ih, k = 1) { // k: alt gölgenin gücü (kalede yarım: alt kısım zaten koyu kaya)
   if (!SHADE.on) return; // deneme: sayfa açılmadan window.__SHADE_OFF = 1 → gölgesiz (öncesi/sonrası)
   g.save();
   for (let f = 0; f < frames; f++) {
     const b = box || [0, 0, 1, 1], fw = iw / frames, sw = fw / (b[2] - b[0]), shh = ih / (b[3] - b[1]), ox = f * fw - b[0] * sw, oy = -b[1] * shh;
     g.save(); g.beginPath(); g.rect(f * fw, 0, fw, ih); g.clip(); g.globalCompositeOperation = 'source-atop';
     let gr = g.createLinearGradient(0, oy + shh * SHADE.from, 0, oy + shh);
-    gr.addColorStop(0, `rgba(${SHADE.col},0)`); gr.addColorStop(1, `rgba(${SHADE.col},${SHADE.bot})`); g.fillStyle = gr; g.fillRect(f * fw, 0, fw, ih);
+    gr.addColorStop(0, `rgba(${SHADE.col},0)`); gr.addColorStop(1, `rgba(${SHADE.col},${SHADE.bot * k})`); g.fillStyle = gr; g.fillRect(f * fw, 0, fw, ih);
     gr = g.createLinearGradient(ox, 0, ox + sw * SHADE.sideTo, 0);
     gr.addColorStop(0, `rgba(${SHADE.col},${SHADE.side})`); gr.addColorStop(1, `rgba(${SHADE.col},0)`); g.fillStyle = gr; g.fillRect(f * fw, 0, fw, ih);
     gr = g.createRadialGradient(ox + sw * 0.75, oy, 0, ox + sw * 0.75, oy, shh * 0.55);
@@ -10602,7 +10602,7 @@ function shadeOverlay(im) { // durağan görselin biçiminde gölge katmanı (ya
   let c = SHADE_OV.get(im); if (c !== undefined) return c;
   const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height; if (!iw) return null;
   c = document.createElement('canvas'); c.width = Math.min(iw, 512); c.height = Math.round(ih * c.width / iw);
-  const g = c.getContext('2d'); g.drawImage(im, 0, 0, c.width, c.height); formShade(g, 1, null, c.width, c.height);
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0, c.width, c.height); formShade(g, 1, null, c.width, c.height, SHADE.keep);
   // yalnız koyulaşma kalsın: görselin kendisi çıkarılır, gölge rengi ve saydamlığı kalır
   const d = g.getImageData(0, 0, c.width, c.height), o = g.createImageData(c.width, c.height), base = document.createElement('canvas'); base.width = c.width; base.height = c.height;
   const bg = base.getContext('2d'); bg.drawImage(im, 0, 0, c.width, c.height); const s0 = bg.getImageData(0, 0, c.width, c.height).data, s1 = d.data, O = o.data;
@@ -10611,6 +10611,16 @@ function shadeOverlay(im) { // durağan görselin biçiminde gölge katmanı (ya
     O[i] = 14; O[i + 1] = 8; O[i + 2] = 26; O[i + 3] = Math.round(Math.min(1, k) * s0[i + 3]);
   }
   g.putImageData(o, 0, 0); SHADE_OV.set(im, c); return c;
+}
+// kalenin alt yarısı (kaya ve merdiven) Veo döngüsünde çok koyu (Caner): görselin biçiminde, aşağı doğru artan soluk aydınlatma (screen)
+const LIFT_OV = new WeakMap();
+function liftOverlay(im) {
+  let c = LIFT_OV.get(im); if (c !== undefined) return c;
+  const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height; if (!iw) return null;
+  c = document.createElement('canvas'); c.width = Math.min(iw, 512); c.height = Math.round(ih * c.width / iw);
+  const g = c.getContext('2d'), gr = g.createLinearGradient(0, c.height * 0.45, 0, c.height);
+  gr.addColorStop(0, 'rgba(170,150,190,0)'); gr.addColorStop(1, `rgba(170,150,190,${SHADE.lift})`); g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height);
+  g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0, c.width, c.height); LIFT_OV.set(im, c); return c;
 }
 function litOf(im, cols, strip) {
   const key = im.src + '|' + cols.join('|');
@@ -14753,7 +14763,7 @@ function drawCastle() {
     const IA = IN && spr(IN) && ANIM_META[IN];
     if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw, kim = spr(IN), C = IA.cols || IA.n, ks = kim.width / (IA.fw * C), ky = kim.height / (IA.fh * Math.ceil(IA.n / C)); ctx.drawImage(kim, (fi % C) * IA.fw * ks, Math.floor(fi / C) * IA.fh * ky, IA.fw * ks, IA.fh * ky, -cp.w / 2, -h, cp.w, h); } // 16 Eki: satırlı şerit (cols)
     else drawSprite(ctx, im, 0, 0, cp.w);
-    if (NECRO && isKeep(im) && !PERF_OFF.has('tlight')) { const so = shadeOverlay(im); if (so) drawSprite(ctx, so, 0, 0, cp.w); } // biçim gölgesi (Veo döngüsünün de üstüne)
+    if (NECRO && isKeep(im) && !PERF_OFF.has('tlight')) { const so = shadeOverlay(im), lo = SHADE.on && liftOverlay(im); if (so) drawSprite(ctx, so, 0, 0, cp.w); if (lo) { ctx.globalCompositeOperation = 'screen'; drawSprite(ctx, lo, 0, 0, cp.w); ctx.globalCompositeOperation = 'source-over'; } } // biçim gölgesi (Veo döngüsünün de üstüne)
     if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
