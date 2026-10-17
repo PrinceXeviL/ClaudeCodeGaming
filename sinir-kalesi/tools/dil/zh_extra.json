@@ -610,7 +610,26 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "速度极快；碾过骷髅，行进中挥矛刺击。骷髅挡不住它，骨墙可以",
   "Ortam efektleri": "环境特效",
   "SEKTİ": "弹开",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "每四名军团兵中的老兵：走在最前、发号施令，率队时生命翻倍。附近军团兵攻击提高15%，受到伤害降低15%。遭到箭射时他高喊“举盾！”：整支小队立即组成盾墙（持盾士兵中箭时也会自己举盾），箭矢伤害降低30-80%或被弹开，但行进变慢。他一死，这些加成随之消失"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "每四名军团兵中的老兵：走在最前、发号施令，率队时生命翻倍。附近军团兵攻击提高15%，受到伤害降低15%。遭到箭射时他高喊“举盾！”：整支小队立即组成盾墙（持盾士兵中箭时也会自己举盾），箭矢伤害降低30-80%或被弹开，但行进变慢。他一死，这些加成随之消失",
+  "Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "莫蒂默正在喝咖啡。升级：门口出现骨巨人，阳台上出现骷髅弓手",
+  "Mortimer'ın Kahvesi": "莫蒂默的咖啡",
+  "Parlıyor. Kahvemi ısıtabilir mi acaba?": "他在发光。能帮我热热咖啡吗？",
+  "Türk kahvesi. Ölüleri bile diriltir.": "土耳其咖啡。连死人都能喝醒。",
+  "Şşş. Kahve saati.": "嘘。咖啡时间。",
+  "Sade. Ben zaten yeterince tatlıyım.": "不加糖。我已经够甜了。",
+  "Yine mi misafir? Kahvemi yeni pişirmiştim.": "又有客人？我才刚煮好咖啡。",
+  "Kalabalık geldiler. Bir kahve daha pişireyim.": "来了一大群。我再煮一杯咖啡。",
+  "Kahvemi döktürdün!": "你害我把咖啡洒了！",
+  "Kahveme toz kaçtı. Bu kişisel oldu.": "灰尘掉进我的咖啡了。这下是私人恩怨了。",
+  "Bu gidişle kahveyi bahçede içeceğim.": "照这样下去，我得在花园里喝咖啡了。",
+  "Tertemiz. Tek damla kahve dökülmedi.": "干干净净。一滴咖啡都没洒。",
+  "Kahve Saati": "咖啡时间",
+  "Kutsal su atıyor. Kahvemi pişirirdim o suyla.": "扔圣水。我会用它来煮咖啡。",
+  "Borazanı çok sesli. Kahvemi içemiyorum.": "他的号角太吵了。我都没法喝咖啡。",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.": "他乘着狮车来，步行时大吼，最后像太阳一样发光。我得打败他三次。把咖啡煮上。",
+  "Mortimer kahvesine kaldığı yerden devam ediyor.": "莫蒂默继续喝他的咖啡。",
+  "Güzel. Kahve suyumu ısıtacak biri lazımdı.": "很好。我正需要有人帮我烧咖啡水。",
+  "Fincanı kapattım. Falımda bol ceset var.": "我把杯子倒扣过来占卜。卦象：尸体多多。"
  },
  "tpl": [
   [
@@ -988,6 +1007,10 @@
   [
    "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
    "被诅咒者死亡时，诅咒跳到最近的{}名敌人"
+  ],
+  [
+   "Mortimer'a {n} kez kahve içir",
+   "让莫蒂默喝{n}次咖啡"
   ]
  ]
 }

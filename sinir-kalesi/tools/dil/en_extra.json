@@ -799,7 +799,26 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Very fast; runs over skeletons and stabs with a spear while driving. They can't stop it; a bone wall can",
   "Ortam efektleri": "Ambient effects",
   "SEKTİ": "DEFLECTED",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "The veteran of every four legionaries: marches in front and gives orders, and has double health while leading the squad. Nearby legionaries hit 15% harder and take 15% less damage. When arrows come he shouts \"Shields!\": the whole squad forms a shield wall at once (shielded troops also raise shields on their own when hit by an arrow), arrows deal 30-80% less or glance off, but they walk slower. The bonuses are lost when he dies"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "The veteran of every four legionaries: marches in front and gives orders, and has double health while leading the squad. Nearby legionaries hit 15% harder and take 15% less damage. When arrows come he shouts \"Shields!\": the whole squad forms a shield wall at once (shielded troops also raise shields on their own when hit by an arrow), arrows deal 30-80% less or glance off, but they walk slower. The bonuses are lost when he dies",
+  "Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer sips his coffee. Upgrade: a Bone Giant at the gate, a skeleton archer on the balcony",
+  "Mortimer'ın Kahvesi": "Mortimer's Coffee",
+  "Parlıyor. Kahvemi ısıtabilir mi acaba?": "He's glowing. Could he warm up my coffee?",
+  "Türk kahvesi. Ölüleri bile diriltir.": "Turkish coffee. It could raise the dead.",
+  "Şşş. Kahve saati.": "Shh. Coffee time.",
+  "Sade. Ben zaten yeterince tatlıyım.": "No sugar. I'm sweet enough already.",
+  "Yine mi misafir? Kahvemi yeni pişirmiştim.": "Guests again? I just brewed my coffee.",
+  "Kalabalık geldiler. Bir kahve daha pişireyim.": "Quite a crowd. Let me brew another coffee.",
+  "Kahvemi döktürdün!": "You made me spill my coffee!",
+  "Kahveme toz kaçtı. Bu kişisel oldu.": "Dust got in my coffee. Now it's personal.",
+  "Bu gidişle kahveyi bahçede içeceğim.": "At this rate I'll be drinking my coffee in the garden.",
+  "Tertemiz. Tek damla kahve dökülmedi.": "Spotless. Not a drop of coffee spilled.",
+  "Kahve Saati": "Coffee Time",
+  "Kutsal su atıyor. Kahvemi pişirirdim o suyla.": "Throws holy water. I'd brew my coffee with it.",
+  "Borazanı çok sesli. Kahvemi içemiyorum.": "His horn is so loud. I can't drink my coffee.",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.": "He comes in a lion chariot, shouts when he's on foot, and finally shines like the sun. I'll have to beat him three times. Put the coffee on.",
+  "Mortimer kahvesine kaldığı yerden devam ediyor.": "Mortimer goes back to his coffee.",
+  "Güzel. Kahve suyumu ısıtacak biri lazımdı.": "Good. I needed someone to heat my coffee water.",
+  "Fincanı kapattım. Falımda bol ceset var.": "I turned the cup over. My fortune shows plenty of corpses."
  },
  "tpl": [
   [
@@ -1477,6 +1496,10 @@
   [
    "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
    "When a cursed enemy dies, the curse jumps to the {} nearest enemies"
+  ],
+  [
+   "Mortimer'a {n} kez kahve içir",
+   "Make Mortimer drink coffee {n} times"
   ]
  ]
 }

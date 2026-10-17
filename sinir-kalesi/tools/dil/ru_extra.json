@@ -610,7 +610,26 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Очень быстрая; давит скелетов и бьёт копьём на ходу. Остановить её они не могут, а костяная стена может",
   "Ortam efektleri": "Эффекты окружения",
   "SEKTİ": "ОТСКОК",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Ветеран на каждых четырёх легионеров: идёт впереди, отдаёт приказы и, возглавляя отряд, имеет вдвое больше здоровья. Легионеры рядом бьют на 15% сильнее и получают на 15% меньше урона. При обстреле кричит «Щиты!»: весь отряд разом смыкает стену щитов (воины со щитами поднимают щит и сами, когда в них попадает стрела), стрелы наносят на 30-80% меньше урона или отскакивают, но отряд идёт медленнее. Со смертью ветерана преимущества пропадают"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Ветеран на каждых четырёх легионеров: идёт впереди, отдаёт приказы и, возглавляя отряд, имеет вдвое больше здоровья. Легионеры рядом бьют на 15% сильнее и получают на 15% меньше урона. При обстреле кричит «Щиты!»: весь отряд разом смыкает стену щитов (воины со щитами поднимают щит и сами, когда в них попадает стрела), стрелы наносят на 30-80% меньше урона или отскакивают, но отряд идёт медленнее. Со смертью ветерана преимущества пропадают",
+  "Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Мортимер пьёт свой кофе. Улучшение: костяной великан у ворот, скелет-лучник на балконе",
+  "Mortimer'ın Kahvesi": "Кофе Мортимера",
+  "Parlıyor. Kahvemi ısıtabilir mi acaba?": "Сияет. Может, подогреет мне кофе?",
+  "Türk kahvesi. Ölüleri bile diriltir.": "Турецкий кофе. Даже мёртвых поднимет.",
+  "Şşş. Kahve saati.": "Тсс. Время кофе.",
+  "Sade. Ben zaten yeterince tatlıyım.": "Без сахара. Я и так достаточно сладкий.",
+  "Yine mi misafir? Kahvemi yeni pişirmiştim.": "Опять гости? Я только сварил кофе.",
+  "Kalabalık geldiler. Bir kahve daha pişireyim.": "Целая толпа. Сварю-ка ещё кофе.",
+  "Kahvemi döktürdün!": "Из-за тебя я пролил кофе!",
+  "Kahveme toz kaçtı. Bu kişisel oldu.": "В кофе попала пыль. Теперь это личное.",
+  "Bu gidişle kahveyi bahçede içeceğim.": "Так я скоро буду пить кофе в саду.",
+  "Tertemiz. Tek damla kahve dökülmedi.": "Чисто. Ни капли кофе не пролито.",
+  "Kahve Saati": "Время кофе",
+  "Kutsal su atıyor. Kahvemi pişirirdim o suyla.": "Бросается святой водой. Я бы на ней кофе сварил.",
+  "Borazanı çok sesli. Kahvemi içemiyorum.": "Его рог слишком громкий. Не могу выпить кофе.",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.": "Приезжает на колеснице со львами, пешим орёт, а под конец сияет как солнце. Придётся побеждать его трижды. Ставьте кофе.",
+  "Mortimer kahvesine kaldığı yerden devam ediyor.": "Мортимер возвращается к своему кофе.",
+  "Güzel. Kahve suyumu ısıtacak biri lazımdı.": "Отлично. Мне как раз нужен был кто-то, чтобы нагреть воду для кофе.",
+  "Fincanı kapattım. Falımda bol ceset var.": "Перевернул чашку. По гуще — много трупов."
  },
  "tpl": [
   [
@@ -988,6 +1007,10 @@
   [
    "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
    "Когда проклятый умирает, проклятие перескакивает на {} ближайших врагов"
+  ],
+  [
+   "Mortimer'a {n} kez kahve içir",
+   "Угостите Мортимера кофе {n} раз"
   ]
  ]
 }

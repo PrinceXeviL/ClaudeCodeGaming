@@ -832,7 +832,7 @@ const NECRO_SPELLS = {
     short: 'Alandaki cesetleri patlatır: çevresine ağır hasar ve zehir' },
 };
 // şapel ağacı (10 Eki): kapıyı tutan Kemik Devi; 15 Eki (Caner): kale kuleler gibi 3 kez yükselir, balkona en çok 2 iskelet okçu
-Object.assign(CASTLE.levels[0], { title: 'Kara Şapel', perk: 'Mortimer çayını içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu', archers: 0 });
+Object.assign(CASTLE.levels[0], { title: 'Kara Şapel', perk: 'Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu', archers: 0 });
 Object.assign(CASTLE.levels[1], { title: 'Kemik Devi', cost: 200, dmg: [6, 9], rate: 1.6, archers: 2, // 15 Eki: ilk yükseltmede de 2 okçu (hasar biraz düşük)
   perk: 'Kapıyı Kemik Devi korur (3 düşmanı durdurur, ölürse 30 sn\'de kalkar); balkonda 2 iskelet okçu',
   giant: { hp: 900, dmg: [22, 34], armor: 0.45, block: 3, respawn: 30 } });
@@ -1158,6 +1158,36 @@ if (NECRO) {
   const BOSS_PAIR2 = { 3: 'hubertus', 7: 'agnes', 11: 'lucia', 15: 'godfrey' }; // 17 Eki: ara bölüm komutanları mekân sonunda ikinci general
   LEVELS.filter(l => l.ep === 2).forEach((l, i) => { delete l.boss2; if ((i + 1) % BOSS_EVERY) { l.bossT = null; l.noBoss = true; return; } l.bossT = B2[i]; if (BOSS_PAIR2[i]) l.boss2 = BOSS_PAIR2[i]; });
 }
+// 17 Eki (Caner: "2. sefer çok sıkıcı ve zor, keyif vermiyor"; dalga analizi: 2. seferde yem düşman yok, orta bölümlerde tür az, sert başlıyor):
+// (1) 2. seferin her dalgasında sıradan lejyoner payı en az FODDER.share: özel birlik grupları aynı oranda küçülür, yerine lejyon bölüğü gelir
+//     (Kingdom Rush gibi: ortalık sıradan askerle dolar, özel birim içinde göze çarpar; kıdemli ve kalkan duvarıyla lejyon da tehdit)
+// (2) 25-36. bölümlerde iki dalgada bir yeni bölüğün bir kısmı 1. seferden bir tür (FODDER.mix, sırayla) — tür çeşidi
+// (3) 21-22. bölümler kısalır (FODDER.short), (4) 4. ve 7. bölüm biraz hafif (bot sınırdaydı)
+const FODDER = { share: 0.35, plain: ['legion', 'legion_k', 'legion_y'], mix: ['solarcher', 'gladiator', 'wardog', 'heavy', 'cavalry', 'assassin'], mixK: 0.3, short: { 20: 0.7, 21: 0.75 }, soft: { 3: 0.8, 6: 0.8, 22: 0.85, 28: 0.8, 37: 0.85 },
+  early: { 28: 0.7, 30: 0.7, 37: 0.7 }, earlyN: { 37: 5 }, cap: { lantern: 6 } }; // earlyN: kaç dalga küçülür (38. bölüm 5. dalgada 9 fener arabası + 16 meşaleci ile duvar) // early: ilk 3 dalga küçülür (bot 2-3. dalgada düşüyordu: başlangıç altınına göre kalabalık)
+if (NECRO) LEVELS.forEach((lv, li) => {
+  if (FODDER.soft[li]) lv.hpMul = (lv.hpMul || 1) * FODDER.soft[li];
+  if (lv.ep !== 2) return;
+  const ei = LEVELS.filter(l => l.ep === 2).indexOf(lv), sh = FODDER.short[li];
+  lv.waves.forEach((w, wi) => {
+    const G2 = w.filter(g => !g.fixed && ENEMIES[g.t] && !ENEMIES[g.t].chief);
+    for (const g of G2) if (FODDER.cap[g.t] && g.n > FODDER.cap[g.t]) { // destek makinesi sürü hâlinde gelmez (38. bölümde 30 fener arabası vardı): fazlası lejyoner
+      const ex = g.n - FODDER.cap[g.t]; g.n = FODDER.cap[g.t]; if (g.types) g.types = g.types.slice(0, g.n);
+      const L0 = { t: 'legion', n: ex, gap: 0.55, at: g.at || 0, p: g.p || 0, hpK: g.hpK }; w.push(L0); G2.push(L0); }
+    if (FODDER.early[li] && wi < (FODDER.earlyN[li] || 3)) for (const g of G2) { g.n = Math.max(1, Math.round(g.n * FODDER.early[li])); if (g.types) g.types = g.types.slice(0, g.n); }
+    if (sh) for (const g of G2) { g.n = Math.max(1, Math.round(g.n * sh)); if (g.types) g.types = g.types.slice(0, g.n); }
+    const N = G2.reduce((a, g) => a + g.n, 0); if (N < 6) return;
+    const plainN = G2.filter(g => FODDER.plain.includes(g.t) && !(g.types && g.types.some(t => !FODDER.plain.includes(t)))).reduce((a, g) => a + g.n, 0);
+    let need = Math.round(N * FODDER.share) - plainN; if (need < 4) return;
+    const spec = G2.filter(g => !FODDER.plain.includes(g.t) && g.n > 1), SN = spec.reduce((a, g) => a + g.n, 0); if (!SN) return;
+    let took = 0; for (const g of spec) { const k = Math.min(g.n - 1, Math.round(g.n * need / SN)); g.n -= k; took += k; if (g.types) g.types = g.types.slice(0, g.n); }
+    if (took < 4) return;
+    const big = G2.reduce((a, g) => (g.n > a.n ? g : a), G2[0]), hk = G2.map(g => g.hpK || 1).sort((a, b) => a - b)[Math.floor(G2.length / 2)];
+    const mixT = ei >= 4 && ei <= 15 && wi % 2 === 1 ? FODDER.mix[(ei + wi) % FODDER.mix.length] : null, mixN = mixT ? Math.max(3, Math.round(took * FODDER.mixK)) : 0;
+    w.push({ t: 'legion', n: took - mixN, gap: 0.55, at: 0, p: big.p || 0, hpK: hk });
+    if (mixN) w.push({ t: mixT, n: mixN, gap: 0.7, at: 3, p: big.p || 0, hpK: hk });
+  });
+});
 LEVELS.forEach((lv, i) => {
   const w = lv.waves[lv.waves.length - 1];
   const end = Math.max(...w.map(g => (g.at || 0) + g.gap * (g.n - 1)));
@@ -1547,7 +1577,7 @@ Object.assign(HEROES.leonidas, { cost: 30 });
 const ITEMS = {
   bomb:   { name: 'Kemik Bombası',    cost: 3, desc: 'Seçtiğin yerde patlar, ağır alan hasarı', target: true, r: 85, dmg: 320 },
   freeze: { name: 'Zaman Kum Saati',  cost: 4, desc: 'Bütün düşmanlar 5 sn donar', t: 5 },
-  tea:    { name: "Mortimer'ın Çayı", cost: 3, desc: '+5 can, bütün iskeletler ve komutan iyileşir', lives: 5 },
+  tea:    { name: "Mortimer'ın Kahvesi", cost: 3, desc: '+5 can, bütün iskeletler ve komutan iyileşir', lives: 5 },
   purse:  { name: 'Lanetli Kese',     cost: 2, desc: 'Hemen +250 altın', gold: 250 },
 };
 const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];

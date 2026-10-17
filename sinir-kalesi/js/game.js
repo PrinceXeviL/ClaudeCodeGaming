@@ -6793,19 +6793,19 @@ const MORT_LINES = {
   sev2: ['Katedral yıkıldı. Kirasını kim ödeyecek?', 'Çaydanlığımı hâlâ tutuyor. Elini yakmasın.', 'İniyor! Merdiven yokmuş demek.'],
   sev3: ['O çaydanlık bana ait. Laneti de.', 'Söylemiştim: demlenmeden içilmez.', 'Yeşil sana yakışmadı, Severus.'],
   glor2: ['Arabası kırıldı. Yürüsün biraz, sağlığa iyi.', 'Aslanlar kaçtı. Akıllı hayvanlar.', 'Yayan general mi? Ne kadar da mütevazı.'],
-  glor3: ['Parlıyor. Çayımı ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
+  glor3: ['Parlıyor. Kahvemi ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
   // 2. sefer (Cadı Avı)
   start2: ['Cadı avı mı? Yanlış kapıyı çaldınız.', 'Meşaleler, çanlar... Ne kadar gürültücü bir din.', 'Çaydanlığımı geri alana kadar kimse uyumuyor.'],
   hatch: ['Mahzen açık! Misafir geldi.', 'Golem, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
   sealed: ['Kapağımı mühürledi! Terbiyesiz.', 'O mahzenin kirasını kim ödeyecek?'],
   blood: ['Ay kızardı. Benden utandı herhalde.', 'Kızıl Ay! Kalkın çocuklar, gece bizim.', 'Dua edin bakalım. Ben de güleyim.'],
   light: ['Fener mi? Söndürün şunu, gözüm kamaştı!', 'Işık arabası. Ne kadar da kaba.'],
-  tea: ['Earl Grey. Ölüleri bile diriltir.', 'Şşş. Çay saati.', 'Şekersiz. Ben zaten yeterince tatlıyım.', 'Bir yudum daha, sonra kıyamet.', 'Soğumuş. Tıpkı düşmanlarım gibi.'],
+  tea: ['Türk kahvesi. Ölüleri bile diriltir.', 'Şşş. Kahve saati.', 'Sade. Ben zaten yeterince tatlıyım.', 'Bir yudum daha, sonra kıyamet.', 'Soğumuş. Tıpkı düşmanlarım gibi.', 'Fincanı kapattım. Falımda bol ceset var.'],
   crowtap: ['Kargalarıma dokunma! Dedikodu taşıyorlar.', 'O karga bana borçlu, bilesin.'],
-  start: ['Yine mi misafir? Çayımı yeni demlemiştim.', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
-  wave: ['Bir dalga daha. Ne azimliler.', 'Sıraya girin. Mezarlıkta herkese yer var.', 'Yeni gönüllüler! İskeletim azalmıştı.', 'Kalabalık geldiler. Çayı tazeleyeyim.', 'İmparator hiç mi ders almaz?'],
+  start: ['Yine mi misafir? Kahvemi yeni pişirmiştim.', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
+  wave: ['Bir dalga daha. Ne azimliler.', 'Sıraya girin. Mezarlıkta herkese yer var.', 'Yeni gönüllüler! İskeletim azalmıştı.', 'Kalabalık geldiler. Bir kahve daha pişireyim.', 'İmparator hiç mi ders almaz?'],
   last: ['Son dalga mı? Sonunda biraz sessizlik.', 'Hepsi bu mu? Kalanlar da gelsin!'],
-  leak: ['Hey! Halıma basma!', 'Kapı kilitli değil diye girilmez!', 'Çayımı döktürdün!', 'Bu kaç oldu? Saymayı bıraktım.', 'Kim açtı o kapıyı?!'],
+  leak: ['Hey! Halıma basma!', 'Kapı kilitli değil diye girilmez!', 'Kahvemi döktürdün!', 'Bu kaç oldu? Saymayı bıraktım.', 'Kim açtı o kapıyı?!'],
   raise: ['Kalkın! Mesai bitmedi.', 'Ölmek bahane değil. Kalk!', 'Emekliliğiniz iptal.', 'Kalkın tembeller!'],
   fear: ['Böö!', 'Annenizi mi istiyorsunuz?', 'Koşun! Koşun! Hah!', 'Arkanıza bakmayın.'],
   boss: ['Oo, rütbeli biri. Kafası rafıma yakışır.', 'Bu da kim? Kartını bırakıp gitsin.', 'Büyük adam, büyük mezar.'],
@@ -6816,13 +6816,13 @@ const MORT_LINES = {
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
-  firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Çayıma toz kaçtı. Bu kişisel oldu.'],
+  firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Kahveme toz kaçtı. Bu kişisel oldu.'],
   // 15 Eki (Caner): kale vurulunca Mortimer askerlerine ve komutana kızar ({h}: takımdaki komutanın adı)
   scold: ['Kemik torbaları! Kapıyı tutun demedim mi?!', 'İskeletler! Uyumak için mezarınız var!', 'Size yeniden kas mı takayım? Durdurun şunları!',
     'Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!', 'Kaburganız boş, kafanız da mı boş?!', 'Kim nöbetteydi? Kafatasını görmek istiyorum!'],
   scoldHero: ['{h}! Seni kapıya süs olsun diye mi diktim?!', '{h}, kale yanıyor, sen manzara mı seyrediyorsun?', 'Hey {h}! Komutan dediğin önden gider!',
     '{h}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!', '{h}, seni mezardan çıkardığıma pişman ettirme!'],
-  low: ['Kule sallanıyor... Kitaplarım!', 'Bu gidişle çayı bahçede içeceğim.', 'Az kaldı! Biri şu kapıyı tutsun!'],
+  low: ['Kule sallanıyor... Kitaplarım!', 'Bu gidişle kahveyi bahçede içeceğim.', 'Az kaldı! Biri şu kapıyı tutsun!'],
   veteran: ['Kıdemliler. Kemikleri daha sağlam olur.', 'Kırmızı sorguç mu? Ne kadar da şık.', 'Tecrübeli askerler. Tecrübeli iskelet olurlar.'],
   captain: ['Yüzbaşı! Borazanı da benim olacak.', 'Altın sorguç... Rafımda tam yeri var.', 'Rütbe yükseldikçe mezar derinleşir.'],
   bossRage: ['Sinirlendi mi? Ne tatlı.', 'Bağırmak kibarlığa sığmaz, general.', 'Öfke kalbe zararlı. Benim kalbim yok tabii.'],
@@ -6830,7 +6830,7 @@ const MORT_LINES = {
   stunned: ['Kuleme taş atmak ayıp!', 'Hey! O kule kiralık değil!', 'Taşlarını geri al, kaba adam.'],
   maxTower: ['İşte şimdi oldu.', 'Böyle bir kulem olsun isterdim. Dur, var.', 'Mimari harikası. Biraz da ürkütücü.'],
   heroDown: ['Kalk, uyuklama!', 'Ölmek mi? Bizde bu geçici.', 'Kısa bir mola. Hemen döner.'],
-  clean: ['Tertemiz. Tek damla çay dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
+  clean: ['Tertemiz. Tek damla kahve dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
   loot: ['Solarian vergisi... ters yönde.', 'İmparatorluğun parası. Artık benim.', 'Bu sikkede güneş var. Ne ironi.', 'Ölüler cüzdan taşımaz. Ben taşırım.', 'Bağışınız için teşekkürler, lejyoner.', 'Hazine bakanlığı: ben.'],
   rich: ['Altınlar mezara gömülmez. Bir şey kur!', 'Kese dolu, kuleler boş. Garip.', 'O altınla iki kule olur. Sadece diyorum.'],
   ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
@@ -7177,7 +7177,7 @@ const ACH = [
   { id: 'imbue', cat: 'tower', name: 'Silah Büyücüsü', desc: '{n} silah büyüsü işle', icon: 'fear', k: 'imbue', t: [5, 25, 75] },
   { id: 'codex', cat: 'tower', name: 'Ansiklopedist', desc: 'Kodeksteki bütün düşmanları gör', icon: 'book', t: [1] },
   // ---- Mortimer'ın şakaları (ve gizliler) ----
-  { id: 'tea', cat: 'fun', name: 'Çay Saati', desc: "Mortimer'a {n} kez çay içir", icon: 'tea', k: 'tea', t: [10, 50, 150] },
+  { id: 'tea', cat: 'fun', name: 'Kahve Saati', desc: "Mortimer'a {n} kez kahve içir", icon: 'tea', k: 'tea', t: [10, 50, 150] },
   { id: 'crow', cat: 'fun', name: 'Kargalar Dostu', desc: '{n} kargayı ürküt', icon: 'crow', k: 'crow', t: [15, 60, 200] },
   { id: 'tip', cat: 'fun', name: 'Mezar Bahşişi', desc: 'Mezardaki elden {n} kez bahşiş al', icon: 'coin', k: 'tip', t: [1, 5, 20] },
   { id: 'frog', cat: 'fun', name: 'Prens Değil', desc: '{n} düşmanı kurbağaya çevir', icon: 'crow', k: 'frog', t: [25, 100, 400] },
@@ -8965,7 +8965,7 @@ const HP_K = 0.657; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: ik
 const HPBAR_C = new Map();
 function hpBar(x, y, w, frac, col = '#4cd34c') {
   frac = clamp(frac, 0, 1); w *= HP_K;
-  const h = 3.2 * HP_K, r = h / 2 + 1.1 * HP_K;
+  const h = 2.56 * HP_K, r = h / 2 + 1.1 * HP_K; // 17 Eki (Caner): çubuk %20 ince (3,2 → 2,56), uzunluk aynı
   const b = 1.1 * HP_K; // dış çerçeve payı
   // 15 Eki (performans): çerçeve + koyu zemin genişliğe göre bir kez çizilip saklanır (kalabalıkta kare başına ~190 dolgu buradandı)
   const key = Math.round(w * 4), K = 4; let F = HPBAR_C.get(key);
@@ -10879,7 +10879,7 @@ function drawEnemy0(e) {
     if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: yukarı uçuşan kıvılcım (13 Eki, Caner: ayaktaki yuvarlak ışıklar kalktı)
       if (Math.random() < 0.03) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-5, 5), y: e.y - rand(6, 20), vy: -rand(18, 34), col: '255,140,70', s0: 1.4, s1: 0.3, life: 0.6, a: 0.9 });
     }
-    const top = e.y - fly - (CHAR_H[name] || 20) - 6;
+    const top = e.y - fly - (CHAR_H[name] || (d.base && CHAR_H['enemy_' + d.base] * (d.h || 30) / (ENEMIES[d.base].h || d.h || 30)) || 20) - 6; // 17 Eki: rütbelinin boyu asıl türünden (kıdemlinin çubuğu göğsündeydi)
     const fr = e.hp / e.maxHp;
     if (d.rank === 2) drawRankStar(e.x, top - 1);
     // durum işaretleri: lanet (mor duman), ruh çivisi (başın üstünde kara çivi), kara veba (yeşil kabarcık)
@@ -16820,7 +16820,7 @@ const CODEX_NOTE = {
   hunter: 'Cadı avlıyormuş. Ben cadı değilim. Cadılar kibar olur.',
   hound: 'Beyaz köpekler. Kemik kokusunu alıyorlar, maalesef haklılar.',
   torch: 'Her şeyi yakıyor. Cesetleri de. İsrafa bak.',
-  holywater: 'Kutsal su atıyor. Çayımı demlerdim o suyla.',
+  holywater: 'Kutsal su atıyor. Kahvemi pişirirdim o suyla.',
   flagellant: 'Kendini kırbaçlıyor. Bana bırakmıyor bile.',
   lantern: 'Bir fener. Gece benim, ışığını başka yere tut.',
   bellpriest: 'Çan çalıyor. Kemiklerim titriyor, ben değil.',
@@ -16841,7 +16841,7 @@ const CODEX_NOTE = {
   drummer: 'Ritim duygusu yok. İskeletlerim daha iyi dans eder.',
   catapult: 'Bahçeme taş atıyor. Komşuluk bunu gerektirmez.',
   cannon: 'İki adam bir aslanı itiyor. Aslan da tükürüyor. Ne aile ama.',
-  centurion: 'Borazanı çok sesli. Çayımı içemiyorum.',
+  centurion: 'Borazanı çok sesli. Kahvemi içemiyorum.',
   champion: 'Kalabalığı coşturur. Kalabalık az sonra benim olacak.',
   hierophant: 'Güneşe dua ediyor. Burada güneş öğlene kadar uyur.',
   ironwarden: 'Zırhı o kadar ağır ki iskeletlerim onu taşımaya üşeniyor.',
@@ -16853,7 +16853,7 @@ const CODEX_NOTE = {
   lucia: 'Ölülerimi kovuyor. Kira ödemeden kalan tek kiracılarımdı.',
   godfrey: 'Kılıcı yanıyor ama kafası soğuk. İkisinden biri hep yanlış yerde.',
   severus3: 'Çaydanlığımı çaldı, şimdi çaydanlığım onu çalıyor. Adalet bazen demlenmeyi bekler.',
-  gloriosus1: 'Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Çayı demlemeye koyun.',
+  gloriosus1: 'Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.',
   archer: 'Arbaletçilerim hiç ıskalamaz. Iskalasalar da cıvatayı geri toplarlar.',
   barracks: 'Eski komşular. Kira ödemiyorlar ama kapıyı iyi tutuyorlar.',
   mage: 'Ruhlar burada çalışıyor. Mesai bitince de çalışıyor.',
@@ -19564,7 +19564,7 @@ const TIPS = NECRO ? [
 ];
 // zafer ekranında bölüme göre Mortimer esprisi
 const WIN_QUIPS = [
-  'Mortimer çayına kaldığı yerden devam ediyor.',
+  'Mortimer kahvesine kaldığı yerden devam ediyor.',
   'Ölüler bugün de fazla mesai yaptı.',
   'İmparatorluk yine eli boş döndü. Biraz da eksik.',
   'Solarian ordusu yeni gönüllüler arıyor. Acil.',
@@ -19704,7 +19704,7 @@ const COMICS = {
   ignis: [
     { bg: 'karanlik', act: [{ s: 'e:ignis', x: 0.5, y: 0.95, h: 0.68 }],
       say: [{ who: 'Rahibe Ignis', text: 'Ateş arındırır. Önce cesetlerini, sonra seni.', x: 0.5, y: 0.08, to: [0.5, 0.34] }] },
-    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Güzel. Çay suyumu ısıtacak biri lazımdı.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
+    { bg: 'balkon', mort: 'sit', say: [{ who: 'Mortimer', text: 'Güzel. Kahve suyumu ısıtacak biri lazımdı.', x: 0.3, y: 0.14, to: [0.5, 0.42] }] },
   ],
   colossus: [
     { bg: 'gece', act: [{ s: 'e:saint', x: 0.2, y: 0.92, h: 0.46 }, { s: 'e:colossus', x: 0.6, y: 0.97, h: 0.84 }],

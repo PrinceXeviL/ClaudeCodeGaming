@@ -610,7 +610,26 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Sehr schnell; überrollt Skelette und sticht im Vorbeifahren mit dem Speer zu. Sie halten ihn nicht auf, eine Knochenmauer schon",
   "Ortam efektleri": "Umgebungseffekte",
   "SEKTİ": "ABGEPRALLT",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Der Veteran je vier Legionäre: marschiert vorn, gibt Befehle und hat als Truppführer doppeltes Leben. Legionäre in der Nähe schlagen 15 % härter zu und erleiden 15 % weniger Schaden. Kommen Pfeile, ruft er „Schilde!“: der ganze Trupp bildet sofort einen Schildwall (Schildträger heben ihn auch allein, wenn ein Pfeil sie trifft), Pfeile wirken 30-80 % schwächer oder prallen ab, doch sie gehen langsamer. Stirbt er, sind die Vorteile weg"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Der Veteran je vier Legionäre: marschiert vorn, gibt Befehle und hat als Truppführer doppeltes Leben. Legionäre in der Nähe schlagen 15 % härter zu und erleiden 15 % weniger Schaden. Kommen Pfeile, ruft er „Schilde!“: der ganze Trupp bildet sofort einen Schildwall (Schildträger heben ihn auch allein, wenn ein Pfeil sie trifft), Pfeile wirken 30-80 % schwächer oder prallen ab, doch sie gehen langsamer. Stirbt er, sind die Vorteile weg",
+  "Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer trinkt seinen Kaffee. Ausbau: ein Knochenriese am Tor, ein Skelettschütze auf dem Balkon",
+  "Mortimer'ın Kahvesi": "Mortimers Kaffee",
+  "Parlıyor. Kahvemi ısıtabilir mi acaba?": "Er glüht. Ob er meinen Kaffee aufwärmen kann?",
+  "Türk kahvesi. Ölüleri bile diriltir.": "Türkischer Kaffee. Weckt sogar Tote auf.",
+  "Şşş. Kahve saati.": "Psst. Kaffeezeit.",
+  "Sade. Ben zaten yeterince tatlıyım.": "Ohne Zucker. Ich bin süß genug.",
+  "Yine mi misafir? Kahvemi yeni pişirmiştim.": "Schon wieder Besuch? Ich hatte gerade Kaffee gekocht.",
+  "Kalabalık geldiler. Bir kahve daha pişireyim.": "Ganz schön viele. Ich koche noch einen Kaffee.",
+  "Kahvemi döktürdün!": "Du hast meinen Kaffee verschüttet!",
+  "Kahveme toz kaçtı. Bu kişisel oldu.": "Staub im Kaffee. Jetzt wird's persönlich.",
+  "Bu gidişle kahveyi bahçede içeceğim.": "So trinke ich meinen Kaffee bald im Garten.",
+  "Tertemiz. Tek damla kahve dökülmedi.": "Blitzsauber. Kein Tropfen Kaffee verschüttet.",
+  "Kahve Saati": "Kaffeezeit",
+  "Kutsal su atıyor. Kahvemi pişirirdim o suyla.": "Wirft Weihwasser. Damit würde ich Kaffee kochen.",
+  "Borazanı çok sesli. Kahvemi içemiyorum.": "Sein Horn ist so laut. Ich kann meinen Kaffee nicht trinken.",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.": "Er kommt im Löwenwagen, brüllt zu Fuß und strahlt am Ende wie die Sonne. Ich muss ihn dreimal besiegen. Setzt den Kaffee auf.",
+  "Mortimer kahvesine kaldığı yerden devam ediyor.": "Mortimer trinkt seinen Kaffee weiter.",
+  "Güzel. Kahve suyumu ısıtacak biri lazımdı.": "Gut. Ich brauchte jemanden, der mein Kaffeewasser erhitzt.",
+  "Fincanı kapattım. Falımda bol ceset var.": "Ich habe die Tasse umgedreht. Im Kaffeesatz: viele Leichen."
  },
  "tpl": [
   [
@@ -988,6 +1007,10 @@
   [
    "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
    "Stirbt ein Verfluchter, springt der Fluch auf die {} nächsten Feinde"
+  ],
+  [
+   "Mortimer'a {n} kez kahve içir",
+   "Lass Mortimer {n}-mal Kaffee trinken"
   ]
  ]
 }

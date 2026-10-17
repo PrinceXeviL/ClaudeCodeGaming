@@ -610,7 +610,26 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Muy rápido; arrolla esqueletos y clava su lanza mientras avanza. No pueden detenerlo; un muro de huesos sí",
   "Ortam efektleri": "Efectos de ambiente",
   "SEKTİ": "¡DESVIADA!",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "El veterano de cada cuatro legionarios: marcha al frente, da órdenes y tiene el doble de vida mientras dirige la escuadra. Los legionarios cercanos golpean un 15% más fuerte y reciben un 15% menos de daño. Cuando llegan flechas grita \"¡Escudos!\": toda la escuadra forma un muro de escudos a la vez (las tropas con escudo también lo alzan solas al recibir una flecha), las flechas hacen un 30-80% menos o rebotan, pero caminan más despacio. Las ventajas se pierden cuando muere"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "El veterano de cada cuatro legionarios: marcha al frente, da órdenes y tiene el doble de vida mientras dirige la escuadra. Los legionarios cercanos golpean un 15% más fuerte y reciben un 15% menos de daño. Cuando llegan flechas grita \"¡Escudos!\": toda la escuadra forma un muro de escudos a la vez (las tropas con escudo también lo alzan solas al recibir una flecha), las flechas hacen un 30-80% menos o rebotan, pero caminan más despacio. Las ventajas se pierden cuando muere",
+  "Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer toma su café. Mejora: un Gigante de Hueso en la puerta, un arquero esqueleto en el balcón",
+  "Mortimer'ın Kahvesi": "El café de Mortimer",
+  "Parlıyor. Kahvemi ısıtabilir mi acaba?": "Brilla. ¿Podrá calentarme el café?",
+  "Türk kahvesi. Ölüleri bile diriltir.": "Café turco. Hasta resucita a los muertos.",
+  "Şşş. Kahve saati.": "Shh. Hora del café.",
+  "Sade. Ben zaten yeterince tatlıyım.": "Sin azúcar. Ya soy bastante dulce.",
+  "Yine mi misafir? Kahvemi yeni pişirmiştim.": "¿Otra vez visitas? Acababa de hacer mi café.",
+  "Kalabalık geldiler. Bir kahve daha pişireyim.": "Vienen en grupo. Haré otro café.",
+  "Kahvemi döktürdün!": "¡Me has hecho tirar el café!",
+  "Kahveme toz kaçtı. Bu kişisel oldu.": "Me ha entrado polvo en el café. Esto ya es personal.",
+  "Bu gidişle kahveyi bahçede içeceğim.": "A este paso me tomaré el café en el jardín.",
+  "Tertemiz. Tek damla kahve dökülmedi.": "Impecable. Ni una gota de café derramada.",
+  "Kahve Saati": "Hora del café",
+  "Kutsal su atıyor. Kahvemi pişirirdim o suyla.": "Lanza agua bendita. Yo haría mi café con ella.",
+  "Borazanı çok sesli. Kahvemi içemiyorum.": "Su cuerno suena muy fuerte. No puedo tomar mi café.",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.": "Llega en un carro de leones, grita cuando queda a pie y al final brilla como el sol. Tendré que vencerlo tres veces. Poned el café al fuego.",
+  "Mortimer kahvesine kaldığı yerden devam ediyor.": "Mortimer vuelve a su café.",
+  "Güzel. Kahve suyumu ısıtacak biri lazımdı.": "Bien. Necesitaba a alguien que calentara el agua del café.",
+  "Fincanı kapattım. Falımda bol ceset var.": "He volcado la taza. Mi fortuna dice: muchos cadáveres."
  },
  "tpl": [
   [
@@ -988,6 +1007,10 @@
   [
    "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
    "Al morir un maldito, la maldición salta a los {} enemigos más cercanos"
+  ],
+  [
+   "Mortimer'a {n} kez kahve içir",
+   "Haz que Mortimer tome café {n} veces"
   ]
  ]
 }

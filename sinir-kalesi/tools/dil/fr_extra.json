@@ -610,7 +610,26 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Très rapide ; écrase les squelettes et frappe à la lance en roulant. Ils ne peuvent l'arrêter, un mur d'os si",
   "Ortam efektleri": "Effets d'ambiance",
   "SEKTİ": "DÉVIÉE",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Le vétéran de chaque groupe de quatre légionnaires : marche en tête, donne les ordres et a deux fois plus de vie à la tête de l'escouade. Les légionnaires proches frappent 15 % plus fort et subissent 15 % de dégâts en moins. Quand les flèches arrivent, il crie « Boucliers ! » : toute l'escouade forme un mur d'un coup (les soldats à bouclier le lèvent aussi seuls quand une flèche les touche), les flèches font 30-80 % de dégâts en moins ou ricochent, mais ils marchent plus lentement. Les avantages disparaissent à sa mort"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Le vétéran de chaque groupe de quatre légionnaires : marche en tête, donne les ordres et a deux fois plus de vie à la tête de l'escouade. Les légionnaires proches frappent 15 % plus fort et subissent 15 % de dégâts en moins. Quand les flèches arrivent, il crie « Boucliers ! » : toute l'escouade forme un mur d'un coup (les soldats à bouclier le lèvent aussi seuls quand une flèche les touche), les flèches font 30-80 % de dégâts en moins ou ricochent, mais ils marchent plus lentement. Les avantages disparaissent à sa mort",
+  "Mortimer kahvesini içiyor. Yükselt: kapıya Kemik Devi, balkona iskelet okçu": "Mortimer boit son café. Amélioration : un Géant d'os à la porte, un archer squelette au balcon",
+  "Mortimer'ın Kahvesi": "Le café de Mortimer",
+  "Parlıyor. Kahvemi ısıtabilir mi acaba?": "Il brille. Il pourrait réchauffer mon café ?",
+  "Türk kahvesi. Ölüleri bile diriltir.": "Café turc. Il ressusciterait les morts.",
+  "Şşş. Kahve saati.": "Chut. L'heure du café.",
+  "Sade. Ben zaten yeterince tatlıyım.": "Sans sucre. Je suis assez doux comme ça.",
+  "Yine mi misafir? Kahvemi yeni pişirmiştim.": "Encore des invités ? Je venais de préparer mon café.",
+  "Kalabalık geldiler. Bir kahve daha pişireyim.": "Ils sont nombreux. Je refais un café.",
+  "Kahvemi döktürdün!": "Tu m'as fait renverser mon café !",
+  "Kahveme toz kaçtı. Bu kişisel oldu.": "De la poussière dans mon café. C'est personnel maintenant.",
+  "Bu gidişle kahveyi bahçede içeceğim.": "À ce rythme, je boirai mon café dans le jardin.",
+  "Tertemiz. Tek damla kahve dökülmedi.": "Impeccable. Pas une goutte de café renversée.",
+  "Kahve Saati": "L'heure du café",
+  "Kutsal su atıyor. Kahvemi pişirirdim o suyla.": "Il lance de l'eau bénite. J'en ferais mon café.",
+  "Borazanı çok sesli. Kahvemi içemiyorum.": "Son cor est si bruyant. Je ne peux pas boire mon café.",
+  "Aslanlı arabayla geliyor, yayan kalınca bağırıyor, sonunda güneş gibi parlıyor. Üç kere yenmem gerekecek. Kahveyi ocağa koyun.": "Il arrive en char à lions, crie une fois à pied, puis brille comme le soleil. Il faudra le battre trois fois. Mettez le café sur le feu.",
+  "Mortimer kahvesine kaldığı yerden devam ediyor.": "Mortimer reprend son café.",
+  "Güzel. Kahve suyumu ısıtacak biri lazımdı.": "Parfait. Il me fallait quelqu'un pour chauffer l'eau du café.",
+  "Fincanı kapattım. Falımda bol ceset var.": "J'ai retourné la tasse. Mon avenir : beaucoup de cadavres."
  },
  "tpl": [
   [
@@ -988,6 +1007,10 @@
   [
    "Lanetli ölünce lanet en yakın {} düşmana sıçrar",
    "Quand un maudit meurt, la malédiction saute sur les {} ennemis les plus proches"
+  ],
+  [
+   "Mortimer'a {n} kez kahve içir",
+   "Fais boire du café à Mortimer {n} fois"
   ]
  ]
 }
