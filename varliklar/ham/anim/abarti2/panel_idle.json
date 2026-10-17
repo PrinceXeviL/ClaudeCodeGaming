@@ -1,0 +1,38 @@
+[
+ {
+  "name": "panel_leonidas_idle",
+  "ref": "ham/anim/panel_leonidas_ref.png",
+  "raw": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 21,
+  "prompt": "The undead Spartan king stands proudly on the glowing ring in a calm idle: slow heavy breathing, the shoulders rise and fall, the crimson cape and the helmet crest sway gently, the spear tip bobs slightly, the purple eyes glow and pulse softly. Keep this exact image: the dark background, the glowing ring on the floor, the light and every color stay exactly the same, static camera, no zoom, nothing new appears, the character stays on the same spot on the ring and never leaves it, the last frame matches the first frame for a seamless loop. 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "panel_merlin_idle",
+  "ref": "ham/anim/panel_merlin_ref.png",
+  "raw": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 21,
+  "prompt": "The undead wizard floats calmly above the glowing ring in an idle: his long ghostly green beard and robes drift softly as if under water, the green soul flames on his crown and in his hand flicker, the orb on his staff swirls slowly, purple mist curls around the hem of his robe. Keep this exact image: the dark background, the glowing ring on the floor, the light and every color stay exactly the same, static camera, no zoom, nothing new appears, the character stays on the same spot on the ring and never leaves it, the last frame matches the first frame for a seamless loop. 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "panel_robin_idle",
+  "ref": "ham/anim/panel_robin_ref.png",
+  "raw": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 21,
+  "prompt": "The undead forest archer and his ghost wolf stand on the glowing ring in a calm idle: the archer breathes slowly, his cape and the leaves around him drift, the green flame in his hand flickers; the wolf breathes, its tail sways and its green ghost flames flicker. Keep this exact image: the dark background, the glowing ring on the floor, the light and every color stay exactly the same, static camera, no zoom, nothing new appears, the character stays on the same spot on the ring and never leaves it, the last frame matches the first frame for a seamless loop. 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "panel_bathory_idle",
+  "ref": "ham/anim/panel_bathory_ref.png",
+  "raw": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 21,
+  "prompt": "The undead blood countess stands on the glowing ring in a calm, elegant idle: slow breathing, the ribbons of blood around her swirl slowly like silk, the heart on her staff pulses, her dress sways softly, her eyes glow. Keep this exact image: the dark background, the glowing ring on the floor, the light and every color stay exactly the same, static camera, no zoom, nothing new appears, the character stays on the same spot on the ring and never leaves it, the last frame matches the first frame for a seamless loop. 2D cartoon game animation, crisp clean frames, no motion blur"
+ }
+]

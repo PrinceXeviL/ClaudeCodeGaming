@@ -1,0 +1,26 @@
+[
+ {
+  "name": "enemy_drummer_idlex",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer in white and gold armor with a bear pelt hood and a big drum at his hip stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees in rhythm, he holds the two drumsticks over the drum and taps a light marching rhythm on it, the head bobs to the beat, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear anywhere. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 44
+ },
+ {
+  "name": "enemy_severus3_diex",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours dark green necromantic smoke and a cracked sun staff is defeated: the dark green smoke is sucked back into the teapot, the teapot falls from his hand, the green glow fades from his eyes and he collapses onto the ground and lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Only dark green smoke, it fades out quickly. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear anywhere. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 44
+ },
+ {
+  "name": "unit_gulyabani_diex",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers is destroyed: it shrieks, crumbles and collapses into a pile of grey hair, grey rags and grey dust on the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. The dust is grey only. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear anywhere. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 44
+ }
+]

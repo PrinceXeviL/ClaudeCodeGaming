@@ -176,8 +176,9 @@ def main(src, name, cols, rows, flip=False, auto=False, anchor='body', order=Non
         strip.alpha_composite(im, (ox, oy)) if ox >= 0 else strip.paste(im, (ox, oy), im)
     # şerit taşmasın: her kare kendi hücresine kırpılır
     out = Image.new('RGBA', strip.size, (0, 0, 0, 0))
+    import serit_temizle  # 18 Eki: kareler yazılmadan temizlenir (beyaz hale, pembe saçak, kırıntı)
     for i in range(len(frames)):
-        out.paste(strip.crop((i * FW, 0, (i + 1) * FW, FH)), (i * FW, 0))
+        out.paste(Image.fromarray(serit_temizle.kare(np.asarray(strip.crop((i * FW, 0, (i + 1) * FW, FH))), name)), (i * FW, 0))
     out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=88, method=6)
     if os.path.exists(os.path.join(IMG, name + '.png')): os.remove(os.path.join(IMG, name + '.png'))
     meta_p = os.path.join(IMG, 'anim.json')

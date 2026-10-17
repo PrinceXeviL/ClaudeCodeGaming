@@ -3037,7 +3037,7 @@ const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'bla
 // ---- çizgi film kanı (16 Eki, Caner: "kırmızı kan olsun, kurallara uygun en yüksek"): isabette 2-5 küçük damla (sert vuruşta yere minik leke),
 // ölünce ayağının dibinde kısa süre kalan küçük kan lekesi. Parçalanma, büyük kan gölü yok (ESRB "Mild Blood" sınırı). Ayarlardan kapatılır (blood).
 // Heykeller taş tozu, makineler tahta kıymığı saçar (ayardan bağımsız). Süreli hasarlar (zehir, yanma) kan saçmaz.
-const BLOOD_FX = { cd: 0.1, big: 0.06, splat: 14, cols: ['#8a0c16', '#c0121e', '#e8303a'] }; // 16 Eki (Caner: "kanı görmüyorum bile"): damlalar iri ve çok, sıçrama bulutu, leke uzun
+const BLOOD_FX = { cd: 0.091, big: 0.06, splat: 15.4, cols: ['#8a0c16', '#c0121e', '#e8303a'] }; // 16 Eki (Caner: "kanı görmüyorum bile"): damlalar iri ve çok, sıçrama bulutu, leke uzun
 const BLOOD_STONE = new Set(['colossus', 'saint']);
 function bleedKind(e) { const t = (e.def.base || e.type).replace(/_(k|y)$/, ''); return e.def.machine || e.siege !== undefined ? 'wood' : BLOOD_STONE.has(t) ? 'stone' : 'blood'; }
 // 16 Eki (Caner: "kan pikselleri amatör"): Gemini kan sayfası (varliklar/kan_isle.py, nm32_*): isabette sıçrama görseli, savrulan damla görselleri
@@ -3046,7 +3046,8 @@ const BLOOD_SPR = { spray: ['nm32_bspray', 'nm32_bcrescent'], heavy: ['nm32_bsta
   pool: ['nm32_splat_pool', 'nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'], spot: ['nm32_splat_spots', 'nm32_drop_cluster'], dur: 0.16,
   // 16 Eki (Caner: "adamın kafası kadar damla, en az 10 kat küçük"): dünya ölçüleri (lejyoner ~30 boy, kafası ~6): damla ~1, sıçrama ~5, ölüm lekesi gövdenin yarısı
   // 17 Eki (Caner: "kan birazcık daha belirgin olabilir"): hepsi ~%25 büyük
-  dropS: [0.56, 1], sprayK: 0.21, heavyK: 0.32, spotW: 3.2, hitSpotW: 6.2, poolK: 0.5 };
+  // 18 Eki (Caner: "kanı %10 arttır"): bütün kan boyları BLOOD_K ile
+  dropS: [0.56 * 1.1, 1.1], sprayK: 0.21 * 1.1, heavyK: 0.32 * 1.1, spotW: 3.2 * 1.1, hitSpotW: 6.2 * 1.1, poolK: 0.5 * 1.1 };
 const bloodPick = (L) => spr(L[Math.floor(Math.random() * L.length)]);
 function bloodDropFloor(p) { // damla yere değdi: minik leke
   if (Math.random() < 0.35) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: p.x, y: p.y, w: BLOOD_SPR.spotW * rand(0.7, 1.2), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 4 });
@@ -3075,7 +3076,7 @@ function bloodHit(e, dealt) {
 }
 // 17 Eki (Caner: "kanlar düşmanın üzerinde kalsın, ölene kadar görünsün"): vuruldukça gövdede kalıcı kan lekesi birikir; can azaldıkça artar
 // (en çok BLOOD_STAIN.n), düşman ölünce kaybolur. Yer gövdeye göre (ayaktan yukarı oran, yana oran; yüzü dönünce aynalanır)
-const BLOOD_STAIN = { n: 4, w: [0.15, 0.21], fx: 0.11, fy: [0.3, 0.62], im: ['nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'] };
+const BLOOD_STAIN = { n: 4, w: [0.15 * 1.1, 0.21 * 1.1], fx: 0.11, fy: [0.3, 0.62], im: ['nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'] };
 function bloodStain(e, h) {
   if (e.def.flying || e.def.machine) return;
   const S = e.stains || (e.stains = []), want = Math.min(BLOOD_STAIN.n, Math.ceil((1 - Math.max(0, e.hp) / e.maxHp) * BLOOD_STAIN.n));
@@ -3369,7 +3370,7 @@ function killEnemy0(e) {
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: (e.face || 1) * (NECRO && Math.random() < 0.45 ? -1 : 1), fly: e.def.flying ? 26 : 0, t: 0, // 16 Eki: ölenler hep aynı yöne düşmesin
     vr: rand(-0.1, 0.1), vs: rand(0.93, 1.07), blood: !e.def.machine && !e.def.ghost,
-    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise && !lightAt(e.x, e.y),
+    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise, // 18 Eki: kutsal ışık engeli kalıcı değil (corpseOk)
     pw: corpsePower(e), str: (e.maxHp || e.def.hp) * (e.def.chief ? 3 : 1) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
@@ -5040,7 +5041,7 @@ function updateEnemy(e, dt) {
       e.purT = PU.every;
       let n = 0;
       let nb = 0;
-      for (const f of G.effects) if (f.kind === 'corpse' && f.raisable && dist(f.x, f.y, e.x, e.y) < PU.r) {
+      for (const f of G.effects) if (f.kind === 'corpse' && corpseOk(f) && dist(f.x, f.y, e.x, e.y) < PU.r) {
         f.raisable = false; nb++;
         if (PU.bless) { f.blessT = G.t; f.dur = Math.min(f.dur, f.t + 1.6); } else f.dur = Math.min(f.dur, f.t + 0.7); // kutsanan ceset altın ışıkta söner (diriltilemez)
         for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: f.x + rand(-8, 8), y: f.y - rand(0, 6), vy: -rand(20, 50), col: i % 2 ? '255,200,90' : '255,240,180', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) });
@@ -5056,7 +5057,7 @@ function updateEnemy(e, dt) {
     e.scT = (e.scT ?? rand(0.5, 1.5)) - dt;
     if (e.scT <= 0) {
       e.scT = 0.4;
-      const f = G.effects.find(f => f.kind === 'corpse' && f.raisable && !f.eaten && dist(f.x, f.y, e.x, e.y) < SC.r);
+      const f = G.effects.find(f => f.kind === 'corpse' && corpseOk(f) && !f.eaten && dist(f.x, f.y, e.x, e.y) < SC.r);
       if (f) {
         e.scT = SC.every; f.raisable = false; f.eaten = true; f.dur = Math.min(f.dur, f.t + 0.6);
         e.hp = Math.min(e.maxHp, e.hp + SC.heal); sfx('vulture');
@@ -6286,6 +6287,32 @@ const SPELL_R = 24 * 1.2 * 0.95 * UI_K, // 13 Eki (Caner): büyü düğmeleri %2
       SPELL_STEP = 2 * SPELL_R + 15 * UI_GAP; // 13 Eki (Caner): düğme arası 2 kat, sonra biraz daralttı
 // 11 Eki (Caner): Mortimer'ın büyüleri ile komutan güçleri ayrı grup: aralarında boşluk ve kemik ayraç, komutan gücü altın çerçeveli
 // 13 Eki (Caner): yanlış dokunmasın diye komutan grubu (portre + gücü) solda bir arada, geniş boşluk ve kemik ayraçtan sonra Mortimer'ın büyüleri
+const SPELL_FR = { in: 0.9, ico: 0.86, w: 0.2 }; // simge halkası: iç açıklık (düğme yarıçapına göre), simge boyu (icoFit yarıçapı / açıklık), halka kalınlığı
+// 18 Eki (Caner: "skillerin çevresindeki halka simgenin rengiyle aynı olsun"): simgenin baskın (doygun) rengi bir kez ölçülür
+const ICO_COL = new WeakMap();
+function icoColor(im) {
+  let c = ICO_COL.get(im); if (c) return c;
+  const N = 32, cv = document.createElement('canvas'); cv.width = cv.height = N; const g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, N, N);
+  const d = g.getImageData(0, 0, N, N).data; let R = 0, Gs = 0, B = 0, W = 0;
+  for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue; const r = d[i], gg = d[i + 1], b = d[i + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), sat = mx ? (mx - mn) / mx : 0;
+    if (sat < 0.3 || mx < 70) continue; const w = sat * sat * mx; R += r * w; Gs += gg * w; B += b * w; W += w; }
+  let rgb = W ? [R / W, Gs / W, B / W] : [200, 190, 170];
+  const mx = Math.max(...rgb), mn = Math.min(...rgb), k = 215 / Math.max(1, mx); rgb = rgb.map(v => Math.round(Math.min(255, mn + (v - mn) * 1.25) * k)); // canlı, açık ton
+  c = rgb.map(v => Math.max(0, Math.min(255, v))).join(','); ICO_COL.set(im, c); return c;
+}
+const rgbMul = (c, k, add = 0) => c.split(',').map(v => Math.max(0, Math.min(255, Math.round(+v * k + add)))).join(',');
+function icoBg(x, y, ir, c, on) { const g = ctx.createRadialGradient(x, y - ir * 0.25, 1, x, y, ir); g.addColorStop(0, `rgba(${c},${on ? 0.7 : 0.3})`); g.addColorStop(1, '#140c1c'); circle(x, y, ir, g); }
+const heroIcoSpr = (id, act) => spr('ico_hu_' + id + (((act === 'ult2') !== ICO_SWAP.has(id)) ? '2' : ''));
+function skillRing(x, y, ir, c, on) { // kalın, çizgi filmsi halka: koyu kontur, üstten ışık alan renk, içte ince koyu çizgi
+  const w = ir * SPELL_FR.w, R = ir + w;
+  circle(x, y + 4, R + 2, 'rgba(0,0,0,0.42)');
+  const g = ctx.createLinearGradient(x, y - R, x, y + R);
+  if (on) { g.addColorStop(0, `rgb(${rgbMul(c, 0.55, 120)})`); g.addColorStop(0.45, `rgb(${c})`); g.addColorStop(1, `rgb(${rgbMul(c, 0.42)})`); }
+  else { g.addColorStop(0, `rgb(${rgbMul(c, 0.35, 70)})`); g.addColorStop(1, `rgb(${rgbMul(c, 0.3, 20)})`); }
+  circle(x, y, R + 1.5, g, '#0a0610', 2.5);
+  ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = Math.max(1, w * 0.22); ctx.beginPath(); ctx.arc(x, y, R - w * 0.32, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+  circle(x, y, ir + 0.5, null, '#0a0610', 2);
+}
 const ULT_GAP = 22 * UI_GAP; // 14 Eki: ayraç kalkınca boşluk 46 -> 22 (yine de iki grup ayrı seçilir)
 const HERO_R = 28 * 0.95 * UI_K; // sol alttaki komutan portresi (13 Eki: %5 küçük)
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
@@ -6371,7 +6398,7 @@ function castNecro(id, x, y) {
   G.mortCast = G.mortCastT = id === 'nm_raise' && mortStrip('mortimer_dirilt') ? MORT_RAISE.t : MORT_CAST_T; G.mortCastN = id === 'nm_raise' ? 'mortimer_dirilt' : null; G.mortFlash = false; // balkonda büyü kareleri (diriltmede Veo şeridi)
   if (id === 'nm_raise') {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length, hasXY = x != null && y != null;
-    const bodies = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
+    const bodies = G.effects.filter(f => f.kind === 'corpse' && corpseOk(f) && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
       .sort((a, b) => (b.pw || 1) - (a.pw || 1) || a.t - b.t).slice(0, Math.max(0, S.max - alive)); // güçlüler önce
     const piles = G.mech && G.mech.kind === 'bonepile' && alive < S.max ? G.mech.spots.filter(o => o.ready).length : 0; // 16 Eki: kemik yığınları
     if (!bodies.length && !piles) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, alive >= S.max ? 'Ordun dolu!' : hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
@@ -6551,6 +6578,19 @@ function drawPet(s) {
 // yerden ilk REACH birimdeki (ve ekran dışındaki) düşmana saldırmaz, oraya yürümez. Komutan serbest (oyuncu yönlendirir).
 const SOLDIER_REACH = 110;
 const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
+// 18 Eki (Caner: "zombilere bir yere saldır dediğimde tek adama değil o gruba saldırsınlar; o kişi ölünce duruyorlar"): gösterilen düşman ölünce
+// onun çevresindeki (ZOMBIE_GROUP_R) en yakın düşmana geçilir; aynı düşmana yığılmasınlar diye üzerinde emirli zombi sayısı kadar uzak sayılır. Grup bitince emir biter.
+const ZOMBIE_GROUP_R = 130;
+function zNextFoe(s, o) {
+  let best = null, bs = 1e9;
+  for (const e of G.enemies) {
+    if (e.dead || e.def.flying || e.under || e.reviveT > 0 || !inReach(e) || zIgnored(s, e)) continue;
+    const dg = dist(e.x, e.y, o.x, o.y); if (dg > ZOMBIE_GROUP_R) continue;
+    let n = 0; for (const z of G.soldiers) if (z !== s && z.zombie && !z.dead && z.order === e) n++;
+    const sc = dist(e.x, e.y, s.x, s.y) + n * 28; if (sc < bs) { bs = sc; best = e; }
+  }
+  return best;
+}
 function zombieHunt(s) {
   if (s.zResume) { s.zResume = false; if (s.post && dist(s.x, s.y, s.post.x, s.post.y) > 12) s.moving = true; } // önünü kesen düşman bitti: emre devam
   if (s.post && s.moving) { // Mortimer'ın emri: gösterilen yere yol boyunca yürür
@@ -6565,7 +6605,8 @@ function zombieHunt(s) {
     if (near) { s.moving = false; s.zResume = true; s.zProg = null; s.target = near; if (!near.blocker) near.blocker = s; s.rx = s.x; s.ry = s.y; zLock(s); return; }
     if (zombieRoadTo(s, s.post.x, s.post.y)) s.moving = false; return; }
   if (s.order) { // Mortimer'ın emri: gösterilen düşmana yol boyunca yürür (yakındaysa doğrudan); yetişince olağan dövüş seçimi onu tutar
-    const o = s.order; if (o.dead || o.under || o.reviveT > 0) s.order = null; else { if (dist(o.x, o.y, s.x, s.y) < 40) { s.rx = o.x; s.ry = o.y; } else zombieRoadTo(s, o.x, o.y); if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; zLock(s); if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
+    let o = s.order; if (o.dead || o.under || o.reviveT > 0) { s.order = o = zNextFoe(s, o); if (!o) { s.post = null; s.rx = s.x; s.ry = s.y; } } // 18 Eki: hedef ölünce aynı gruptan sıradakine
+    if (o) { if (dist(o.x, o.y, s.x, s.y) < 40) { s.rx = o.x; s.ry = o.y; } else zombieRoadTo(s, o.x, o.y); if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; zLock(s); if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
   let best = null, bd = ZOMBIE.aggro; // 14 Eki (Caner): yalnız yakına gelen düşmana gider; düşman yoksa bulunduğu yerde bekler
   for (const o of G.enemies) {
     if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o)) continue;
@@ -7150,7 +7191,7 @@ const TUTS = [
         return spellBtn(spellIds().indexOf('nm_wall')); } },
     { text: () => (spellMode('nm_fear') ? 'Kalabalığın üstüne dokun: düşmanlar korkup kaçar' : 'Korku büyüsüne dokun'), when: () => tutFoes().length >= 5 && G.spells.nm_fear <= 0, done: () => tutSpell('nm_fear'), timeout: 30,
       at: () => { if (spellMode('nm_fear')) { const e = tutCrowd(); return e && worldToScreen(e.x, e.y - 20); } return spellBtn(spellIds().indexOf('nm_fear')); } },
-    { text: 'Ölüleri Diriltme büyüsüne dokun: yerdeki cesetler kalkıp senin için savaşır', when: () => G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 2, done: () => tutSpell('nm_raise'), timeout: 20,
+    { text: 'Ölüleri Diriltme büyüsüne dokun: yerdeki cesetler kalkıp senin için savaşır', when: () => G.effects.filter(f => f.kind === 'corpse' && corpseOk(f)).length >= 2, done: () => tutSpell('nm_raise'), timeout: 20,
       at: () => spellBtn(spellIds().indexOf('nm_raise')) },
     { text: () => (spellMode('ult0') ? 'Şimdi hedefe dokun' : 'Altın çerçeveli düğme komutanının gücü: dokun, sonra hedefe dokun'), when: () => G.heroes.length && G.wave >= 2 && tutFoes().length >= 3, done: () => tutSpell('ult0'), timeout: 30,
       at: () => { if (spellMode('ult0')) { const e = tutCrowd(); return e && worldToScreen(e.x, e.y - 20); } return spellBtn(spellIds().indexOf('ult0')); } },
@@ -7208,7 +7249,7 @@ const TUTOR_STEPS = [
   TWAVE(4, 'Büyük bir kalabalık geliyor: kafatasına iki kez dokun.'),
   Object.assign({}, TUTS[2][4], { skip: tutClear(4), timeout: 30 }),
   Object.assign({}, TUTS[2][5], { skip: tutClear(4) }),
-  Object.assign({}, TUTS[2][6], { skip: () => tutClear(4)() && !G.effects.some(f => f.kind === 'corpse' && f.raisable) }),
+  Object.assign({}, TUTS[2][6], { skip: () => tutClear(4)() && !G.effects.some(f => f.kind === 'corpse' && corpseOk(f)) }),
   { text: 'Kalabalığı bitir.', done: tutClear(4) },
   // kule uzmanlığı: en üst kademe + uzmanlık yeteneği
   { text: () => { const o = tutArcher(); if (!tutSelIs(o)) return 'Kemik Kulesi\'ne dokun: en üst kademeye çıkaralım';
@@ -12305,7 +12346,7 @@ function drawCorpse(f) {
       if (f.blood && lay > 0.5) { const b = clamp((lay - 0.5) * 2, 0, 1) * Math.min(1, 0.5 + (f.t || 0) * 0.15); ctx.fillStyle = 'rgba(70,6,12,' + (0.38 * b) + ')'; ctx.beginPath(); ctx.ellipse(f.x - f.face * hh * 0.18, f.y + 2, hh * 0.32 * b, hh * 0.09 * b, 0.1, 0, Math.PI * 2); ctx.fill(); }
       ctx.globalAlpha = a0; }
     if (f.kind === 'remains') { const F = ANIM_META[dk]; ctx.globalAlpha *= 0.86; ctx.translate(f.x, f.y + 1); ctx.rotate(f.vr || 0); ctx.scale(f.face * (rig.flip ? -1 : 1), 1); drawFrame(spr(dk), F, F.n - 1, hh); ctx.restore(); return; }
-    if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); if (pw >= CORPSE_ECO.strong) strongCorpseMark(f); }
+    if (corpseOk(f) && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); if (pw >= CORPSE_ECO.strong) strongCorpseMark(f); }
     ctx.translate(f.x, f.y + 1); ctx.rotate((f.vr || 0) * lay); ctx.scale(f.face * (rig.flip ? -1 : 1), 1);
     drawFrame(spr(dk), F, i, hh);
     ctx.restore();
@@ -12331,7 +12372,7 @@ function drawCorpse(f) {
   const fade0 = f.dur > CORPSE_DUR ? f.dur - 0.5 : 0.78; // uzun yatan ceset son yarım saniyede solar
   ctx.globalAlpha = 1 - clamp((t - fade0) / (f.dur - fade0), 0, 1);
   // diriltme hazırsa kaldırılabilecek cesetlerin altında yeşil ruh ışığı
-  if (f.raisable && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); if (pw >= CORPSE_ECO.strong) strongCorpseMark(f); }
+  if (corpseOk(f) && t > 0.6 && G.spells.nm_raise <= 0) { const pw = f.pw || 1, sel = G.mode && G.mode.id === 'nm_raise'; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x, f.y, 10 + 7 * pw, pw >= CORPSE_ECO.strong ? '255,70,60' : '190,70,255', (0.18 + Math.sin(time * 5 + f.x) * 0.06) * (sel ? 2.2 : 1)); ctx.restore(); if (pw >= CORPSE_ECO.strong) strongCorpseMark(f); }
   // ölüm pozu bitince (0.8 sn) ceset değişmez: bir kez ayrı tuvale çizilir, sonra tek resim olarak basılır (10 sn yatan cesetler ucuzlasın)
   if (f.air) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 1, w * 0.4, w * 0.13, 0, 0, Math.PI * 2); ctx.fill(); }
   if (t > 0.8 && !f.air && !rig.wings && (f.cache || CORPSE_BAKE-- > 0)) {
@@ -13916,13 +13957,15 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
   ctx.scale(s, s);
   if (active) glow(ctx, 0, 0, R * 2.2, '255,215,110', 0.6);
+  const abIm = it.id === 'ability' && spr('ico_ab_' + it.type); // 18 Eki (Caner): yetenek düğmesinin halkası simgenin renginde
+  if (abIm) { const c = icoColor(abIm); skillRing(0, 0, R - R * SPELL_FR.w * 0.5, c, ok); icoBg(0, 0, R - R * SPELL_FR.w * 0.5, c, ok); } else {
   circle(0, 5, R + 3, 'rgba(0,0,0,0.38)');
   const rim = ctx.createLinearGradient(0, -R, 0, R);
   rim.addColorStop(0, '#fff2b8'); rim.addColorStop(0.45, '#e2a93c'); rim.addColorStop(1, '#7a4c10');
   circle(0, 0, R + 3.5, rim, '#2e1a06', 1.5);
   const body = ctx.createRadialGradient(-7, -9, 2, 0, 0, R + 2);
   body.addColorStop(0, active ? '#fff6d0' : '#7d664b'); body.addColorStop(1, active ? '#d99a2a' : '#271b10');
-  circle(0, 0, R, body);
+  circle(0, 0, R, body); }
   ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R - 1, 0, Math.PI * 2); ctx.clip();
   if (!ok) ctx.globalAlpha = a * 0.45;
   const mi = (n, k = 0.6, dy = 0) => { const im = spr(n); if (im) icoFit(im, 0, dy, R * k); return !!im; }; // 16 Eki: Gemini menü simgeleri (nm15_kule_menu), yoksa kodla çizim
@@ -13937,7 +13980,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     const g = ctx.createLinearGradient(0, -14, 0, 12); g.addColorStop(0, '#d4ff9a'); g.addColorStop(1, '#3a9a22');
     ctx.lineJoin = 'round'; ctx.strokeStyle = '#123a08'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = g; ctx.fill();
   } else if (it.id === 'ability') {
-    drawAbilityIcon(it.type, 0, -1, 1);
+    drawAbilityIcon(it.type, 0, abIm ? 1 : -1, abIm ? 1.5 : 1); // 18 Eki: Gemini simgesi halkayı doldursun
   } else if (it.id === 'max') {
     if (!mi('ico_mn_max', 0.5, -4)) fancyStar(0, -3, 13, true);
     txt('MAX', 0, 12, 10, '#fff', 'center', '400', FONT_T);
@@ -14702,7 +14745,7 @@ function drawHud() {
   if (!overlay && !G.sel && !G.tut && !G.mode) { // tanıtım ipuçları (bir kez; eğitim sürerken çıkmaz)
     const h0 = G.heroes[0], hb = HUD.heroes[0];
     if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts')) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
-    else if (G.idx < NOVICE.levels && !tipSeen('spell') && spellIds().includes('nm_raise') && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && f.raisable).length >= 3) { // büyüyü öğret
+    else if (G.idx < NOVICE.levels && !tipSeen('spell') && spellIds().includes('nm_raise') && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && corpseOk(f)).length >= 3) { // büyüyü öğret
       const b = spellBtn(spellIds().indexOf('nm_raise')); drawTip(b.x, b.y - 34, 'Cesetleri dirilt: büyüye dokun!'); }
     else if (G.wave > 0 && G.zitem && G.zitem.cd <= 0 && !tipSeen('zitem')) { const q = worldToScreen(G.zitem.x, G.zitem.y - 56); drawTip(q.x, q.y, G.zitem.name + ': dokun! ' + G.zitem.sub); } // mekân öğesi
     else if (G.wave > 0 && G.castle.lvl === 0 && G.gold >= CASTLE.levels[1].cost && !tipSeen('castle')) { const q = worldToScreen(G.castle.x, G.castle.y - 70); drawTip(q.x, q.y - 40, 'Kaleye dokun: kaleyi yükselt'); } // 15 Eki: kale menüsü yükseltme
@@ -14718,6 +14761,15 @@ function drawHud() {
     else if (peek) glow(ctx, 0, 0, b.r * 2.2, '255,240,200', 0.5 + Math.sin(time * 6) * 0.15);
     else if (ready) glow(ctx, 0, 0, b.r * 1.9, col, 0.25 + Math.sin(time * 3) * 0.1);
     if (info.necro && time - (G.soulFlash ?? -9) < 0.5) glow(ctx, 0, 0, b.r * 2, '140,255,210', 0.6 * (1 - (time - G.soulFlash) / 0.5)); // ruh geldi: bekleme kısaldı
+    const IM = info.hero ? heroIcoSpr(info.hero.id, info.hero.act) : spr('ico_sp_' + id), ir = IM ? b.r * SPELL_FR.in : b.r;
+    if (IM) { // 18 Eki (Caner): simgeler başarımlardaki gibi büyük ve çizgi filmsi, halka simgenin kendi renginde
+      const rc = icoColor(IM); skillRing(0, 0, ir, rc, ready);
+      ctx.save(); ctx.beginPath(); ctx.arc(0, 0, ir, 0, Math.PI * 2); ctx.clip();
+      const bd = ctx.createRadialGradient(0, -ir * 0.25, 1, 0, 0, ir); bd.addColorStop(0, `rgba(${rc},${ready ? 0.7 : 0.3})`); bd.addColorStop(1, '#140c1c'); ctx.fillStyle = bd; ctx.fillRect(-ir, -ir, ir * 2, ir * 2);
+      if (!ready) ctx.filter = 'saturate(0.45) brightness(0.85)';
+      icoFit(IM, 0, ir * 0.04, ir * SPELL_FR.ico);
+      ctx.filter = 'none'; ctx.restore();
+    } else {
     circle(0, 5, b.r + 4, 'rgba(0,0,0,0.45)');
     const rm = ctx.createLinearGradient(0, -b.r, 0, b.r);
     if (info.hero) { rm.addColorStop(0, ready ? '#fff0b0' : '#a89870'); rm.addColorStop(0.5, ready ? '#c8902a' : '#6a5430'); rm.addColorStop(1, '#4a2c08'); } // komutan gücü: altın çerçeve
@@ -14732,15 +14784,16 @@ function drawHud() {
     else if (info.necro) drawNecroGlyph(id, b.r);
     ctx.restore();
     ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.ellipse(0, -b.r * 0.5, b.r * 0.6, b.r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
-    if (!ready && cd <= 0) { circle(0, 0, b.r, 'rgba(10,6,14,0.66)'); drawIcon('lock', 0, 0, b.r * 0.9); } // büyüsüz gece: kilitli
+    }
+    if (!ready && cd <= 0) { circle(0, 0, ir, 'rgba(10,6,14,0.66)'); drawIcon('lock', 0, 0, ir * 0.9); } // büyüsüz gece: kilitli
     else if (!ready) {
-      ctx.fillStyle = 'rgba(0,0,0,0.62)';
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, b.r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (cd / max)); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, ir, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (cd / max)); ctx.fill();
       txt(Math.ceil(cd) + '', 0, 1, 19, '#fff', 'center', '400', FONT_T);
     }
     if (peek) { ctx.strokeStyle = '#ffe9a0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, b.r + 6, 0, Math.PI * 2); ctx.stroke(); }
     if (id === 'nm_raise') { // ceset sayacı: diriltilebilir ceset sayısı; güçlü ceset varsa kızıl
-      let nC = 0, nS = 0; for (const f of G.effects) if (f.kind === 'corpse' && f.raisable && f.t < f.dur - 0.15) { nC++; if ((f.pw || 1) >= CORPSE_ECO.strong) nS++; }
+      let nC = 0, nS = 0; for (const f of G.effects) if (f.kind === 'corpse' && corpseOk(f) && f.t < f.dur - 0.15) { nC++; if ((f.pw || 1) >= CORPSE_ECO.strong) nS++; }
       const qx = -b.r * 0.72, qy = -b.r * 0.78, w0 = nC > 9 ? 28 : 22;
       if (nS) { const k = 1 + 0.14 * Math.sin(time * 7); ctx.save(); ctx.translate(qx, qy); ctx.scale(k, k); ctx.translate(-qx, -qy); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, qx, qy, 18, '255,70,60', 0.4); ctx.restore(); } // 16 Eki: güçlü ceset varken rozet nabız gibi atar
       roundRect(qx - w0 / 2, qy - 10, w0, 20, 10, nS ? '#b8202a' : '#4a1a6a', '#f2e6c8', 1.5); txt(nC + '', qx, qy + 1, 13, '#fff', 'center', '400', FONT_T);
@@ -15398,8 +15451,9 @@ function drawHeroSkills(id, x0, y0, w0, h0, k, battle, o) {
     const r = rankOf(row), ult = row.kind !== 'sk', on = treeSel[id] === row.id, can = treeCan(Rr, row.kind, row.id), need = treeNext(Rr, row.kind, row.id), locked = r === 0 && need != null && Rr.lvl < need;
     ctx.save(); ctx.globalAlpha *= a; const ps = pressScale('ts' + row.id) * (on ? 1.06 : 1); ctx.translate(x, y); ctx.scale(ps, ps);
     if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, R * 1.9, ult ? '255,210,90' : '140,255,150', 0.45 + 0.12 * Math.sin(time * 4)); ctx.restore(); }
-    upIconRing(0, 0, R, ult);
-    if (on) circle(0, 0, R + 6, null, ult ? '#ffe27a' : '#b8ff8a', 2.4);
+    { const im = ult ? heroIcoSpr(id, row.kind) : spr('ico_hs_' + id + '_' + row.id) || spr('ico_ab_' + (HSK_ICON[row.id] || 'blast')); // 18 Eki: halka simgenin renginde
+      if (im) { const c = icoColor(im); skillRing(0, 0, R, c, !!r); icoBg(0, 0, R, c, !!r); } else upIconRing(0, 0, R, ult); }
+    if (on) circle(0, 0, R + R * SPELL_FR.w + 5, null, ult ? '#ffe27a' : '#b8ff8a', 2.4);
     ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.clip(); ctx.globalAlpha *= r ? 1 : 0.45;
     if (ult) heroGlyph(id, R, row.kind); else drawHeroSkillIcon(row.id, 0, 0, R / 22, id);
     ctx.restore();
@@ -15999,7 +16053,7 @@ function heroStatBars(d) {
 }
 function drawHeroPage(id) {
   const st = time - heroPageT, d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), open = heroUnlocked(id), sel = team()[0] === id, aide = team()[1] === id;
-  menuBackdrop(st);
+  if (window.__panelBg) { ctx.fillStyle = '#100816'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); } else menuBackdrop(st);
   roundBtn('back', 44, 44, 23, 'back', () => { heroPageId = null; screenT = time - 1; sfx('pick'); }, { appear: st - 0.1 });
   { const rk = easeOutBack(clamp(st / 0.4, 0, 1)); ctx.save(); ctx.translate(W / 2, 50); ctx.scale(rk, rk); crimsonRibbon(0, 0, d.name, 26, 300); ctx.restore(); }
   fitTxt(`${gearClsName(id)} · ${d.role.split(' · ')[0]}`, W / 2, 94, 420, 15, '#f0e2c4', 'center', '700', FONT_B, false, 12); // 16 Eki: sınıfı da yazar
@@ -16031,10 +16085,10 @@ function drawHeroPage(id) {
     ctx.beginPath(); ctx.ellipse(cx, feet + 2, 92, 16, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
   ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.beginPath(); ctx.ellipse(cx, feet + 2, 70, 12, 0, 0, Math.PI * 2); ctx.fill();
   const P = d.pet && PET[d.pet] && PET[d.pet][Rr.lvl >= PET.lvl2 ? 1 : 0], pim = P && (spr(P.img) || spr(PET[d.pet][0].img)), hx = pim ? cx + 34 : cx; // evcil hayvanı (Robin'in kurdu) solda, komutan biraz sağda
-  if (pim) { const ph = 84, pw2 = ph * pim.width / pim.height, br = Math.sin(time * 2.4) * 1.2;
+  if (pim && !window.__panelBg) { const ph = 84, pw2 = ph * pim.width / pim.height, br = Math.sin(time * 2.4) * 1.2;
     ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(cx - 86, feet + 6, pw2 * 0.34, 7, 0, 0, Math.PI * 2); ctx.fill();
     ctx.save(); ctx.translate(cx - 86, feet + 6 - br); if (!open) ctx.filter = 'brightness(0.18) saturate(0)'; drawSprite(ctx, pim, 0, 0, pw2); ctx.restore(); }
-  { const ik = animStrip(d.sprite, null, '_idle'), F = ik && ANIM_META[ik];
+  if (!window.__panelBg) { const ik = animStrip(d.sprite, null, '_idle'), F = ik && ANIM_META[ik]; // __panelBg: test, Wan referansı için kahramansız zemin
     ctx.save(); ctx.translate(hx, feet); if (!open) ctx.filter = 'brightness(0.18) saturate(0)';
     if (F) drawFrame(spr(ik), F, Math.floor(time * (F.fps || 12)) % F.n, 172); else { const im = heroSprite(d); if (im) drawSprite(ctx, im, 0, 0, 172 * im.width / im.height); }
     ctx.restore(); }
@@ -16803,7 +16857,7 @@ function bossAbilities(e, dt) {
   // Şeytan Kovma (12 Eki, Lucia): yakındaki dirilmiş ölüleri yok eder, oradaki cesetler artık diriltilemez (necromancer'a karşı)
   if (ab.exorcise && ready('exorcise', ab.exorcise.cd)) {
     const A = ab.exorcise, vs = G.soldiers.filter(o => !o.dead && o.minion && dist(o.x, o.y, e.x, e.y) < A.r).slice(0, A.n);
-    const cs = G.effects.filter(f => f.kind === 'corpse' && f.raisable && dist(f.x, f.y, e.x, e.y) < A.r);
+    const cs = G.effects.filter(f => f.kind === 'corpse' && corpseOk(f) && dist(f.x, f.y, e.x, e.y) < A.r);
     if (!vs.length && !cs.length) e.abT.exorcise = 1;
     else {
       for (const o of vs) { damageSoldier(o, 99999, e); G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - (e.def.h || 40) * 0.6, x1: o.x, y1: o.y - 12, t: 0, dur: 0.45, w: 1.2, col: 'rgb(255,230,150)', seed: rand(0, 99) }); }
@@ -17103,6 +17157,9 @@ function curseAura(x, y) {
 }
 const allyK = (s) => { const A = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); return A ? 1 + A.ally : 1; };
 // Engizisyon feneri (def.light): ışık dairesinde iskelet hasarı azalır, ceset diriltilemez, lanet tutmaz
+// 18 Eki (Caner: "yerde bir sürü ceset varken sayaç göstermiyor, diriltemiyorum"): fener/kutsal ışık altında ölen ceset önceden kalıcı olarak
+// diriltilemez sayılıyordu (fener gidince de). Artık ışık yalnız o an cesedin üstündeyken engeller.
+const corpseOk = (f) => f.raisable && !lightAt(f.x, f.y);
 function lightAt(x, y) {
   for (const o of G.enemies) { const L = o.def.light; if (L && !o.dead && Math.hypot(o.x - x, (o.y - y) * 1.3) < L.r) return L; }
   return null;
@@ -17764,6 +17821,22 @@ function codexStage(x, y, w, h, col) {
   ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = `rgba(${col},0.5)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.stroke();
 }
+const CODEX_FIT = { w: 188, h: 190 }; // kodeks sahnesinde gövdenin sığacağı alan (kırpma kutusu 206x218)
+const STRIP_BOX = {};
+function stripBox(key) { // şeridin bütün karelerindeki dolu alan (kare boyuna oranla: sol, sağ, üst, alt), bir kez ölçülür
+  if (STRIP_BOX[key]) return STRIP_BOX[key];
+  const F = ANIM_META[key], img = spr(key); if (!F || !img || !img.width) return null;
+  const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = img.width / (F.fw * C), sy = img.height / (F.fh * R), q = Math.min(1, 96 / (F.fh * sy));
+  const w = Math.max(1, Math.round(F.fw * sx * q)), h = Math.max(1, Math.round(F.fh * sy * q)), cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const g = cv.getContext('2d', { willReadFrequently: true }); let x0 = w, x1 = 0, y0 = h, y1 = 0;
+  for (let i = 0; i < F.n; i += Math.max(1, Math.floor(F.n / 8))) {
+    g.clearRect(0, 0, w, h); g.drawImage(img, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, 0, 0, w, h);
+    const d = g.getImageData(0, 0, w, h).data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 100) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < x0) return null;
+  return (STRIP_BOX[key] = [x0 / w, (x1 + 1) / w, y0 / h, (y1 + 1) / h]);
+}
 const CODEX_SMALL = { wardog: 0.6, hound: 0.6, eagle: 0.6, vulture: 0.6 }; // 12 Eki (Caner): hayvanlar kodekste çok büyüktü, %40 küçük
 const CODEX_PACE = 0.7; // kodeks yürüyüşü: saniyede karakter boyunun 0,7'si kadar (artık yalnız şeridi olmayan iskelet animasyonunda)
 // 17 Eki (Caner: kodekste kimi çok hızlı kimi yavaş): kaidede zemin akmadığı için ayak kayması yok; her şerit çekildiği hızda oynar
@@ -17786,10 +17859,16 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   if (!ready) { CODEX.t0 = time; const a = time * 5; ctx.save(); ctx.strokeStyle = 'rgba(200,160,255,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy - 70, 14, a, a + 4); ctx.stroke(); ctx.restore(); } // yükleniyor
   if (im && ready) {
     const big = d.chief ? 168 : ['ram', 'catapult', 'cannon', 'cavalry'].includes(id) ? 132 : 150;
-    const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k) * (CODEX_SMALL[id] || 1);
+    let hh = Math.min(big, 200 * im.height / im.width) * (CODEX_SMALL[id] || 1), dx = 0, dy = 0;
+    // 18 Eki (Caner: "kodekste karakterler dairenin ortasında değil, bazıları sığmıyor"): şeridin dolu alanı ölçülür;
+    // gövde kutuya sığacak kadar küçülür, dolu alanın ortası ve tabanı dairenin ortasına oturur (kare kafaya göre ortalı: araba/fil sağa taşıyordu)
+    const sk = wantStrip && ready, F = sk && ANIM_META[ready], B = F && stripBox(ready);
+    if (B) { const kk = hh / (F.ch * F.fh), dw = F.fw * kk, dh = F.fh * kk, W = (B[1] - B[0]) * dw, Hc = (B[3] - B[2]) * dh, f = Math.min(1, CODEX_FIT.w / W, CODEX_FIT.h / Hc);
+      hh *= f; dx = -((B[0] + B[1]) / 2 - 0.5) * dw * f; dy = -(B[3] * dh - dh * (1 - F.base)) * f; }
+    hh *= 0.6 + 0.4 * k; dx *= 0.6 + 0.4 * k; dy *= 0.6 + 0.4 * k;
     ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 218); ctx.clip();
     // hepsi aynı görünür hızda yürür: saniyede CODEX_PACE boy kadar yol (adım boyu şeritten), ayaklar kaymaz
-    drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * codexWalkRate('enemy_' + type, rigN, hh), walking: true, fly: 0, seed: 0, rig: rigN });
+    drawUnit('enemy_' + type, im, cx + dx, cy + dy, 1, { h: hh, phase: time * codexWalkRate('enemy_' + type, rigN, hh), walking: true, fly: 0, seed: 0, rig: rigN });
     ctx.restore();
     if (r === 2) drawRankStar(cx, cy - hh - 8);
   }
@@ -22115,7 +22194,7 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
     const D = [], { dpr, scale, ox, oy } = view;

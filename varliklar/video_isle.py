@@ -101,7 +101,7 @@ def main(src, name, start=None, length=None, fps=24, order=None, first_h=False, 
     if F0: k = F0['ch'] * F0['fh'] / chH   # eski şeritteki karakter boyu (px)
     # 16 Eki: genişlik sınırı için küçültme yerine satırlara bölünür (pack); Veo şeritleri her kareyle
     FW = int(round((X1 - X0) * k)); FH = int(round((Y1 - Y0) * k))
-    out, cols = pack([Image.fromarray(c[max(0, Y0):Y1, max(0, X0):X1]).resize((FW, FH), Image.LANCZOS) for c in cells], FW, FH)
+    out, cols = pack([Image.fromarray(c[max(0, Y0):Y1, max(0, X0):X1]).resize((FW, FH), Image.LANCZOS) for c in cells], FW, FH, name=name)
     out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=86, method=6)
     meta[name] = {'n': len(cells), 'fw': FW, 'fh': FH, 'base': round((Y1 - y1) / (Y1 - Y0), 4), 'ch': round(chH / (Y1 - Y0), 4)}
     if cols: meta[name]['cols'] = cols
@@ -141,9 +141,14 @@ def remove_white_fx(a, dark=110, grow=10, gain=1.7, core_r=6, core_max=5000):
     return out.astype(np.uint8)
 
 
-def pack(tiles, FW, FH, limit=16000):
+def pack(tiles, FW, FH, limit=16000, name='', clean=True):
     """16 Eki: kareleri şeride dizer; WebP 16383 px sınırını aşarsa satırlara böler.
-    Döner: (görsel, cols) — cols yalnız birden çok satır varsa anim.json'a 'cols' olarak yazılır (game.js drawFrame okur)."""
+    Döner: (görsel, cols) — cols yalnız birden çok satır varsa anim.json'a 'cols' olarak yazılır (game.js drawFrame okur).
+    18 Eki (Caner: "sonraki durumlarda önüne geçmek için"): her kare yazılmadan önce serit_temizle.kare ile temizlenir
+    (beyaz hale, kırıntı; ad verilirse ve bilerek mor değilse pembe saçak). Kapatmak için clean=False."""
+    if clean:
+        import serit_temizle
+        tiles = [Image.fromarray(serit_temizle.kare(np.asarray(t.convert('RGBA')), name)) for t in tiles]
     n = len(tiles); rows = max(1, -(-FW * n // limit)); cols = -(-n // rows)
     out = Image.new('RGBA', (FW * cols, FH * rows), (0, 0, 0, 0))
     for i, t in enumerate(tiles): out.paste(t, ((i % cols) * FW, (i // cols) * FH))
@@ -155,7 +160,7 @@ def save_strip(name, crops, FW, FH, img_dir, meta, man, info, keep=True, quality
     (serit_kucult sonradan küçültmüş olabilir; telefon belleği). Eski meta anahtarları (dur, idle, stride...) korunur, info üstüne yazar."""
     F0 = meta.get(name) if keep else None
     if F0: FW, FH = F0['fw'], F0['fh']
-    out, cols = pack([Image.fromarray(c).resize((FW, FH), Image.LANCZOS) for c in crops], FW, FH)
+    out, cols = pack([Image.fromarray(c).resize((FW, FH), Image.LANCZOS) for c in crops], FW, FH, name=name)
     out.save(os.path.join(img_dir, name + '.webp'), 'WEBP', quality=quality, method=6)
     m = {k: v for k, v in (F0 or {}).items() if k not in ('n', 'fw', 'fh', 'cols')}
     m.update(info); m.update(n=len(crops), fw=FW, fh=FH)

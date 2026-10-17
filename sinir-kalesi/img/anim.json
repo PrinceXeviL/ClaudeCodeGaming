@@ -2800,5 +2800,26 @@
   "fh": 165,
   "base": 0.0146,
   "ch": 0.9708
+ },
+ "enemy_drummer_idlex": {
+  "n": 32,
+  "fw": 122,
+  "fh": 165,
+  "base": 0.0165,
+  "ch": 0.9669
+ },
+ "enemy_severus3_diex": {
+  "n": 33,
+  "fw": 225,
+  "fh": 183,
+  "base": 0.013,
+  "ch": 0.8742
+ },
+ "unit_gulyabani_diex": {
+  "n": 33,
+  "fw": 303,
+  "fh": 179,
+  "base": 0.0134,
+  "ch": 0.8926
  }
 }
