@@ -2696,5 +2696,68 @@
   "fh": 166,
   "base": 0.0145,
   "ch": 0.9661
+ },
+ "enemy_shadowmaster_idle": {
+  "n": 32,
+  "fw": 181,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952
+ },
+ "unit_bonegiant_idle": {
+  "n": 32,
+  "fw": 183,
+  "fh": 167,
+  "base": 0.0143,
+  "ch": 0.957
+ },
+ "unit_ghostarcher_idle": {
+  "n": 32,
+  "fw": 110,
+  "fh": 165,
+  "base": 0.0147,
+  "ch": 0.9707
+ },
+ "unit_gulyabani_idle": {
+  "n": 32,
+  "fw": 161,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9475
+ },
+ "unit_skel_7_idle": {
+  "n": 32,
+  "fw": 130,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9501
+ },
+ "unit_xbow2_idle": {
+  "n": 32,
+  "fw": 109,
+  "fh": 167,
+  "base": 0.0144,
+  "ch": 0.9591
+ },
+ "enemy_assassin_idlex": {
+  "n": 32,
+  "fw": 144,
+  "fh": 171,
+  "base": 0.0139,
+  "ch": 0.935
+ },
+ "enemy_campanus_walkx": {
+  "n": 48,
+  "fw": 172,
+  "fh": 174,
+  "base": 0.0141,
+  "ch": 0.9204
+ },
+ "enemy_cathedral_walkx": {
+  "n": 48,
+  "fw": 156,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.954
  }
 }

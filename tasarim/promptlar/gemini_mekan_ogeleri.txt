@@ -1,0 +1,13 @@
+Draw a sprite sheet of 9 separate interactive map props for a 2D cartoon dark-fantasy tower defense game, in EXACTLY the same art style as image 1 (thick dark outlines, rich cartoon shading, same 3/4 top-down camera angle, same scale feeling, desaturated dark colors with glowing magic accents in green, purple and red).
+Layout: a clean 3 x 3 grid, every prop centered in its own cell with plenty of empty space around it, all props about the same size, none touching each other. Each prop stands on a small patch of dark ground.
+1. Root trap: a gnarled dead tree stump with thick grasping roots spreading on the ground and two small glowing green eyes in the bark.
+2. Swamp gas: a small round bog pit of murky green water with toxic green bubbles rising, a few reeds around it.
+3. Open grave: a freshly dug open grave with a dirt pile and a plain rounded cracked tombstone, a skeletal hand reaching out of the hole.
+4. Black whirlpool: a small dark round pond with a black-blue swirling whirlpool and one faint glowing eye deep under the water.
+5. Curse stone: a dark purple stone obelisk with glowing purple runes carved on it, small purple sparks at the top.
+6. Bat tree: a small twisted dead tree with several bats hanging upside down from its branches.
+7. Sunken bell: an old bronze bell hanging on a weathered wooden frame, standing in shallow dark water.
+8. Bone totem: a totem pole made of stacked bones and skulls, a green soul flame burning on top.
+9. Blood altar: a small square stone altar with a stone bowl of glowing red blood and two lit candles.
+No crosses anywhere, no text, no letters, no numbers, no people.
+Background: plain flat solid magenta (#FF00FF) everywhere around the props, no shadows on the background.

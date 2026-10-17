@@ -7791,6 +7791,12 @@ function drawZoneItem() {
   ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.ellipse(x + 2, y + 2, 17, 5.5, 0, 0, Math.PI * 2); ctx.fill();
   if (ready) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - 10, 34, o.id === 'altar' ? '255,60,70' : o.id === 'bell' ? '255,210,120' : '170,110,255', 0.22 + 0.16 * pulse); ctx.restore(); }
+  // 17 Eki: Gemini çizimi (img/nm37_z_<id>, varliklar/mekan_ogeleri_isle.py) varsa o çizilir: alanı ~3600 birim², tetiklenince zıplar (çan sallanır)
+  const zim = spr('nm37_z_' + o.id);
+  if (zim) { const k = Math.sqrt(3600 / (zim.width * zim.height)), w = zim.width * k, h = zim.height * k, pop = 1 + 0.18 * fk * Math.sin(fk * Math.PI * 3);
+    ctx.translate(x, y + 9); ctx.scale(pop, 2 - pop); if (o.id === 'bell' && fk) ctx.rotate(Math.sin(time * 26) * 0.08 * fk);
+    if (!ready) ctx.globalAlpha = 0.82; ctx.drawImage(zim, -w / 2, -h, w, h); ctx.restore();
+    drawZoneMarker(o, ready, x, y, y + 9 - h * (2 - pop) - 14); return; }
   const ol = '#1a0c18'; ctx.lineWidth = 1.4; ctx.strokeStyle = ol;
   const shape = {
     roots: () => { ctx.fillStyle = '#4a3422'; ctx.beginPath(); ctx.moveTo(x - 13, y); ctx.lineTo(x - 9, y - 18); ctx.lineTo(x - 3, y - 22); ctx.lineTo(x + 6, y - 20); ctx.lineTo(x + 11, y - 14); ctx.lineTo(x + 14, y); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -7817,8 +7823,11 @@ function drawZoneItem() {
   }[o.id];
   if (shape) shape();
   ctx.restore();
-  if (!ready) { const k = 1 - o.cd / (o.cdMax || ZONE_ITEM[G.lv.theme].cd); circle(x, y - 46, 8, 'rgba(20,12,24,0.75)', 'rgba(200,160,255,0.5)', 1.2); ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x, y - 46, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
-  else { const by = y - 48 + Math.sin(time * 4) * 2; circle(x, by, 9, 'rgba(26,12,22,0.9)', '#f2e6c8', 1.5); drawIcon('play', x + 0.5, by, 9, '#f2e6c8'); } // dokun işareti
+  drawZoneMarker(o, ready, x, y);
+}
+function drawZoneMarker(o, ready, x, y, my = y - 46) { // my: işaretin yüksekliği (çizimin tepesinin üstü)
+  if (!ready) { const k = 1 - o.cd / (o.cdMax || ZONE_ITEM[G.lv.theme].cd); circle(x, my, 8, 'rgba(20,12,24,0.75)', 'rgba(200,160,255,0.5)', 1.2); ctx.strokeStyle = '#c8a0ff'; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(x, my, 8, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
+  else { const by = my - 2 + Math.sin(time * 4) * 2; circle(x, by, 9, 'rgba(26,12,22,0.9)', '#f2e6c8', 1.5); drawIcon('play', x + 0.5, by, 9, '#f2e6c8'); } // dokun işareti
 }
 // ----- bölüme özel mekanikler (lv.mech) -----
 // mud: yoldaki çamur düşmanı yavaşlatır · graves: yol kenarı mezarlardan arada bir bizim tarafa ölü kalkar
