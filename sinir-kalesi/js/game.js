@@ -13374,6 +13374,19 @@ function drawEnemyRing() {
   ctx.save(); ctx.strokeStyle = 'rgba(255,220,120,0.9)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.lineDashOffset = -time * 20;
   ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, Math.max(12, eh * 0.45), Math.max(5, eh * 0.18), 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
 }
+// 17 Eki (Caner: "tıkladığımız şeyin bilgi kartı en üstte görünsün"): bilgi kartları ekranın üst ortasında, her şeyin üstünde.
+// Seçili şey ekranın üst kısmındaysa (kart onu ve menüsünü örterdi) kart alta iner.
+function selScreenY() {
+  const S = G.sel; if (!S) return null; const o = S.kind === 'enemy' ? S.enemy : S.kind === 'tower' ? S.tower : S.kind === 'plot' ? S.plot : S.kind === 'hero' ? S.hero : S.kind === 'hatch' ? S.hatch : S.kind === 'castle' ? G.castle : null;
+  return o ? worldToScreen(o.x, o.y).y : null;
+}
+function cardY(ph) {
+  const top = EDGE.t + 8, sy = selScreenY();
+  return sy != null && sy - 110 < top + ph + 20 ? EDGE.b - 8 - ph : top; // seçilenin üstündeki menü/gövde payı ~110
+}
+// kartın yatay sınırları: üstte sol üst kaynak kutusu ile sağ üst düğmeler arası, altta büyü düğmeleri ile çanta arası
+const cardLeft = (y) => (y < H / 2 ? EDGE.l + 200 : hudLeft());
+const cardRight = (y) => (y < H / 2 ? HUD.mute.x - HUD.mute.r - 10 : hudRight());
 function drawEnemyPanel() {
   // 16 Eki (Caner: "kısa, basit, simgeli, profesyonel"): portre + ad + rütbe/sınıf etiketi, can çubuğu, simgeli değerler,
   // zayıflık (yeşil ▲) ve direnç (mavi ▼) hasar türü simgesiyle, en çok 2 satır açıklama. Yazılar ≥ 13 px.
@@ -13382,7 +13395,7 @@ function drawEnemyPanel() {
   if (e.dead || e.siege !== undefined) { G.sel = null; return; }
   G.enemyPanelR = null;
   if (infoText()) return; // büyü/kule açıklaması aynı alt şeridi kullanır: o açıkken kart çekilir
-  const d = e.def, w = Math.min(420, hudRight() - hudLeft()), x0c = 84, cw = w - x0c - 16;
+  const d = e.def, w = Math.min(420, hudRight() - hudLeft(), cardRight(0) - cardLeft(0)), x0c = 84, cw = w - x0c - 16;
   const dl = wrapLines(enemyDesc(e.type, d.desc || ENEMY_DESC[e.type]), cw, 13, '700', FONT_B, 2);
   const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
   const SPD = d.speed < 18 ? 'Yavaş' : d.speed < 30 ? 'Orta' : d.speed < 45 ? 'Hızlı' : 'Çok hızlı';
@@ -13390,7 +13403,7 @@ function drawEnemyPanel() {
   if (d.flying) st.push(['wing', 'Uçar', null]);
   const wkRow = weak.map(q => [q, 1]).concat(res.map(q => [q, -1]));
   const ph = 100 + (wkRow.length ? 28 : 0) + dl.length * 17 + 6;
-  const P = { x: clamp(W / 2 - w / 2, hudLeft(), hudRight() - w), y: EDGE.b - 8 - ph, w, h: ph }; G.enemyPanelR = P;
+  const cy0 = cardY(ph), P = { x: clamp(W / 2 - w / 2, cardLeft(cy0), cardRight(cy0) - w), y: cy0, w, h: ph }; G.enemyPanelR = P; G.cardBot = cy0 < H / 2 ? cy0 + ph : null;
   const k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
   ctx.save(); ctx.translate(P.x + P.w / 2, P.y + P.h / 2); ctx.scale(k, k); ctx.translate(-(P.x + P.w / 2), -(P.y + P.h / 2));
   roundRect(P.x + 3, P.y + 6, P.w, P.h, 16, 'rgba(0,0,0,0.38)');
@@ -14421,9 +14434,9 @@ function drawHud() {
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
     ctx.font = `700 15px ${FONT_B}`;
-    const w = ctx.measureText(hint).width + 36, bob = Math.sin(time * 4) * 1.5;
-    roundRect(W / 2 - w / 2, 58 + bob, w, 28, 14, 'rgba(24,16,8,0.88)', '#d4ab5a', 1.5);
-    txt(hint, W / 2, 73 + bob, 15, '#fff', 'center', '700', FONT_B, false);
+    const w = ctx.measureText(hint).width + 36, bob = Math.sin(time * 4) * 1.5, hy = info && G.cardBot ? G.cardBot + 8 : 58; // 17 Eki: üstteki kartın altında
+    roundRect(W / 2 - w / 2, hy + bob, w, 28, 14, 'rgba(24,16,8,0.88)', '#d4ab5a', 1.5);
+    txt(hint, W / 2, hy + 15 + bob, 15, '#fff', 'center', '700', FONT_B, false);
   }
 }
 
@@ -14447,7 +14460,7 @@ function infoParse(info) {
   return { title, cost, tag: X.tag || tag, tagCol: X.tagCol, refund: X.refund, chips: info[2] || null, delta: X.delta && X.delta.length ? X.delta : null, bullets: bullets.slice(0, 3) };
 }
 function drawInfoCard(info) {
-  const I = infoParse(info), left = hudLeft(), maxW = hudRight() - left, TS = 18, CS = 14, BS = 14;
+  const I = infoParse(info), left = Math.max(hudLeft(), EDGE.l + 200), maxW = Math.min(hudRight(), HUD.mute.x - HUD.mute.r - 10) - left, TS = 18, CS = 14, BS = 14;
   ctx.font = `400 ${TS}px ${FONT_T}`; const tW = ctx.measureText(I.title).width;
   ctx.font = `800 13px ${FONT_B}`; const tagW = I.tag ? ctx.measureText(I.tag).width + 18 : 0;
   ctx.font = `400 15px ${FONT_T}`; const costW = I.cost != null ? ctx.measureText(String(I.cost)).width + 34 : I.refund != null ? ctx.measureText('+' + I.refund).width + 34 : 0;
@@ -14458,7 +14471,7 @@ function drawInfoCard(info) {
   const chipsW = chips.reduce((a, c) => a + c.w + 8, chips.length ? -8 : 0);
   const w = clamp(Math.max(headW, chipsW, 280) + 40, 300, Math.min(maxW, 560)), bw = w - 36;
   const bl = I.bullets; // her madde tek satır: sığmazsa fitTxt küçültür
-  const ph = 36 + (chips.length ? 26 : 0) + bl.length * 19 + 8, y0 = EDGE.b - 8 - ph, x0 = clamp(W / 2 - w / 2, left, hudRight() - w), cx = x0 + w / 2;
+  const ph = 36 + (chips.length ? 26 : 0) + bl.length * 19 + 8, y0 = cardY(ph), x0 = clamp(W / 2 - w / 2, cardLeft(y0), cardRight(y0) - w), cx = x0 + w / 2; G.cardBot = y0 < H / 2 ? y0 + ph : null;
   roundRect(x0 + 3, y0 + 6, w, ph, 16, 'rgba(0,0,0,0.38)');
   const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(76,15,36,0.97)'); g.addColorStop(0.6, 'rgba(51,16,46,0.97)'); g.addColorStop(1, 'rgba(30,11,38,0.97)');
   roundRect(x0, y0, w, ph, 16, g, '#d4ab5a', 2); roundRect(x0 + 4, y0 + 4, w - 8, ph - 8, 12, null, 'rgba(201,168,101,0.28)', 1);
@@ -19553,8 +19566,8 @@ function drawPlay() {
   }
   drawSlowMo();
   drawMenu();
-  drawEnemyPanel();
   if (!PERF_OFF.has('hud')) drawHud();
+  drawEnemyPanel(); // 17 Eki: HUD'un üstünde
   drawCombo();
   drawCoinsFlying();
   drawBossBar();
