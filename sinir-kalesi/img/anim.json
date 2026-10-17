@@ -2526,13 +2526,6 @@
   "base": 0.0146,
   "ch": 0.9708
  },
- "castle_keep_1_idle": {
-  "n": 48,
-  "fw": 420,
-  "fh": 566,
-  "fps": 21.6,
-  "cols": 24
- },
  "enemy_gloriosus1_idle": {
   "n": 32,
   "fw": 188,

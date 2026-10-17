@@ -6603,7 +6603,7 @@ function castleStage() { const r = G.lives / G.maxLives; return r > 0.6 ? 1 : r 
 // rails: önde yeniden çizilen korkuluk dikdörtgenleri (Mortimer ve muhafızların ayakları korkuluğun ardında kalır)
 // 13 Eki (Caner): kale sıfırdan (ham/nm_kale_v3.jpg, varliklar/kale_v3_isle.py): boynuzlu kafatası kule, kafatası ağzı kapı, ortada yarım daire
 // balkon (Mortimer), iki yan kanat balkonda okçular. Kesirler castle_keep_1 görseline göre (ızgarayla ölçüldü).
-const KEEP = { w: 140, gate: [0.42, 0.88], at: [0.73, 0.556], // 17 Eki (Caner): kale ve Mortimer %20, sonra %5 daha küçük (Mortimer kaleyle ölçeklenir); Mortimer yan terasta (kanepe ile ritüel çemberi arası)
+const KEEP = { w: 140, gate: [0.42, 0.9], at: [0.73, 0.556], // 17 Eki (Caner): kale ve Mortimer %20, sonra %5 daha küçük (Mortimer kaleyle ölçeklenir); Mortimer yan terasta (kanepe ile ritüel çemberi arası)
   rail: [0.36, 0.53, 0.62, 0.61], px: 122, // 17 Eki: kale v4 (teraslı gotik ev)
   // railPoly: korkuluğun üst çizgisi (tutamak) boyunca çokgen; altı önde yeniden çizilir (Mortimer ve okçuların ayakları korkuluğun ardında)
   railPoly: [[0.11, 0.454], [0.145, 0.488], [0.263, 0.5], [0.36, 0.509], [0.395, 0.532], [0.447, 0.548], [0.526, 0.552], [0.585, 0.539], [0.684, 0.564],
@@ -14950,8 +14950,10 @@ const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritü
   fire: [], green: true, eyes: [],
   win: [[0.497, 0.244, 0.6, '255,150,60'], [0.625, 0.24, 0.5, '255,150,60'], [0.5, 0.356, 1.6, '255,150,60'], [0.267, 0.337, 0.8, '255,150,60'],
     [0.263, 0.444, 0.9, '255,150,60'], [0.366, 0.47, 0.6, '110,255,120'], [0.405, 0.47, 0.6, '110,255,120'], [0.668, 0.388, 0.7, '110,255,120'],
-    [0.5, 0.478, 1.4, '110,255,120'], [0.322, 0.634, 1.3, '110,255,120'], [0.25, 0.605, 0.8, '255,150,60'], [0.405, 0.632, 0.8, '255,150,60'],
-    [0.803, 0.551, 1.4, '110,255,120'], [0.842, 0.512, 0.7, '110,255,120']],
+    [0.5, 0.478, 1.4, '110,255,120'], [0.322, 0.634, 1.3, '110,255,120', 0], [0.25, 0.605, 0.8, '255,150,60', 0], [0.405, 0.632, 0.8, '255,150,60', 0],
+    [0.803, 0.551, 1.4, '110,255,120'], [0.842, 0.512, 0.7, '110,255,120'],
+    // 17 Eki: v5 taş temel (yalnız 1. evre; 5. öğe 1 = yalnız sağlam kale, 0 = yalnız eski kayalıklı 2-3. evre görselleri)
+    [0.255, 0.618, 0.8, '255,150,60', 1], [0.69, 0.702, 0.8, '255,150,60', 1], [0.381, 0.752, 0.9, '110,255,120', 1], [0.553, 0.806, 0.9, '110,255,120', 1]],
   // hasar evrelerinde duman ve yangın kodla canlı: smoke [x, y, kalınlık], burn [x, y, boy]; off: o evrede kırılıp sönen pencereler (win sırası)
   dmg: {
     // 17 Eki: 2-3. evrede Veo yok (Veo hasarlı kaleyi reddetti ya da onarıp çizdi): pencerelerdeki çizili yangınların üstünde kodla canlı alev
@@ -14976,7 +14978,7 @@ function drawKeepLights(cp, h, sh, burning) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const off = (KEEP_FX.dmg[burning] || {}).off;
   for (const [i, f] of KEEP_FX.win.entries()) {
-    if (off && off.includes(i)) continue;
+    if ((off && off.includes(i)) || (f[4] === 1 && burning) || (f[4] === 0 && !burning)) continue;
     const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
     glow(ctx, x, y, 22 * s * f[2], f[3] || winCol(i), 0.15 * k + 0.05);
   }
