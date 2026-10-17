@@ -20050,7 +20050,10 @@ function winCircleImg(which) { // 0: dış rün halkası, 1: iç kemik halkası 
   return (WINC['circ' + which] = c);
 }
 function drawWinMinimal(k) {
-  const cx = W / 2, top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
+  const top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
+  // 17 Eki (Caner: "Mortimer çok küçük, daha büyük ve kaliteli"): solda ekran boyunun ~%64'ü kadar havalı Mortimer; içerik sağda kalan alanın ortasında
+  const pose = spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.64, 380) : 0, mw = pose ? mh * pose.width / pose.height : 0;
+  const mLeft = Math.max(VIS.l, EDGE.l) + 10, cx = pose ? (mLeft + mw - 10 + Math.min(VIS.r, EDGE.r)) / 2 : W / 2;
   const fa = (t0, d = 0.3) => clamp((k - t0) / d, 0, 1);
   // diriltme çemberi (yıldızların arkasında): iki halka ters yönde döner, açılırken büyür
   const ca = fa(0.2, 0.6), cy = Y(0.405);
@@ -20125,23 +20128,22 @@ function drawWinMinimal(k) {
       ctx.restore();
     }
   }
-  // Mortimer (sol alt): kahvesini yudumlar, konuşma balonunda bir laf
-  const ma = fa(1.6, 0.4);
-  if (ma > 0) {
-    const mx = cx - 390, my = Y(0.82), mh = 118, n = mortStrip('mortimer_cay'), im = spr(n || 'mortimer');
-    ctx.save(); ctx.globalAlpha = ma; ctx.translate(mx, my + (1 - easeOutBack(ma)) * 30);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -mh * 0.45, mh * 0.8, '140,255,150', 0.14); ctx.restore();
-    if (n && im) drawFrame(im, ANIM_META[n], Math.floor(time * 12) % ANIM_META[n].n, mh);
-    else if (im) { const w = mh * im.width / im.height; ctx.drawImage(im, -w / 2, -mh, w, mh); }
+  // Mortimer (solda, büyük): zafer pozu; içeri kayarak girer, nefes alır, fincanından yeşil kıvılcım çıkar; başının üstünde konuşma balonu
+  const ma = fa(0.9, 0.5);
+  if (pose && ma > 0) {
+    const e = easeOutBack(ma), mx = mLeft + mw / 2 - (1 - e) * 140, my = Y(0.985), br = Math.sin(time * 1.8);
+    ctx.save(); ctx.globalAlpha = ma;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my - mh * 0.5, mh * 0.55, '120,255,140', 0.16); glow(ctx, mx - mw * 0.3, my - mh * 0.78, mh * 0.18, '160,255,170', 0.2 + 0.08 * Math.sin(time * 5)); ctx.restore();
+    ctx.translate(mx, my); ctx.scale(1 - br * 0.005, 1 + br * 0.01); ctx.rotate(Math.sin(time * 0.9) * 0.01); ctx.drawImage(pose, -mw / 2, -mh, mw, mh);
     ctx.restore();
+    if (ma >= 1 && Math.random() < 0.25) emit(uiParts, { kind: 'glow', add: true, x: mx - mw * 0.4 + rand(-6, 6), y: my - mh * 0.8 + rand(-6, 4), vx: rand(-10, 10), vy: -rand(12, 30), col: Math.random() < 0.7 ? '150,255,160' : '220,200,255', s0: rand(2, 3.6), s1: 0.4, life: rand(0.6, 1.1) }); // fincandan kıvılcım
     if (!G.winSay) { const L2 = G.lv.boss ? WIN_SAY.boss : G.stars >= 3 ? WIN_SAY.three : WIN_SAY.less; G.winSay = L2[Math.floor(Math.random() * L2.length)]; }
-    const ba = fa(2.0, 0.3);
-    if (ba > 0) { const bw2 = 230, bx2 = mx - 30, by2 = my - mh - 58, lines = wrapLines(TR(G.winSay), bw2 - 24, 14, '700', FONT_B, 3), bh2 = 16 + lines.length * 18;
-      ctx.save(); ctx.globalAlpha = ba; const s2 = easeOutBack(ba); ctx.translate(bx2, by2 + bh2); ctx.scale(s2, s2); ctx.translate(-bx2, -(by2 + bh2));
-      roundRect(bx2, by2, bw2, bh2, 12, 'rgba(240,232,212,0.96)', '#1a0c14', 2);
-      ctx.fillStyle = 'rgba(240,232,212,0.96)'; ctx.strokeStyle = '#1a0c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx2 + 34, by2 + bh2 - 1); ctx.lineTo(bx2 + 30, by2 + bh2 + 12); ctx.lineTo(bx2 + 48, by2 + bh2 - 1); ctx.fill(); ctx.stroke();
-      ctx.fillRect(bx2 + 33, by2 + bh2 - 3, 16, 3);
-      lines.forEach((t, i) => txt(t, bx2 + 12, by2 + 17 + i * 18, 14, '#2a1420', 'left', '700', FONT_B, false));
+    const ba = fa(1.9, 0.3);
+    if (ba > 0) { const bw2 = 240, lines = wrapLines(TR(G.winSay), bw2 - 26, 15, '700', FONT_B, 3), bh2 = 18 + lines.length * 19, bx2 = clamp(mx - bw2 * 0.35, mLeft, mx + mw / 2 - bw2), by2 = my - mh - bh2 + 6;
+      ctx.save(); ctx.globalAlpha = ba; const s2 = easeOutBack(ba); ctx.translate(bx2 + 40, by2 + bh2); ctx.scale(s2, s2); ctx.translate(-(bx2 + 40), -(by2 + bh2));
+      roundRect(bx2, by2, bw2, bh2, 13, 'rgba(240,232,212,0.97)', '#1a0c14', 2);
+      ctx.fillStyle = 'rgba(240,232,212,0.97)'; ctx.strokeStyle = '#1a0c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx2 + 70, by2 + bh2 - 1); ctx.lineTo(bx2 + 82, by2 + bh2 + 14); ctx.lineTo(bx2 + 92, by2 + bh2 - 1); ctx.fill(); ctx.stroke(); ctx.fillRect(bx2 + 69, by2 + bh2 - 3, 24, 3);
+      lines.forEach((t, i) => txt(t, bx2 + 13, by2 + 19 + i * 19, 15, '#2a1420', 'left', '700', FONT_B, false));
       ctx.restore(); }
   }
   // düğmeler
