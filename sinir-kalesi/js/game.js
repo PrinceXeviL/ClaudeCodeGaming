@@ -19438,6 +19438,8 @@ function drawLoading() {
   txt('— Mortimer', cx, cy + 126, 13, '#9a8ab8', 'center', '600', FONT_B, false);
 }
 function drawPlay() {
+  if (NECRO && overlay === 'win' && G.winSnap && G.winSnap.width === ctx.canvas.width && G.winSnap.height === ctx.canvas.height) { // 17 Eki: zaferde dünya donmuş fotoğraf (telefonda kasma)
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(G.winSnap, 0, 0); ctx.restore(); drawOverlay(); return; }
   if (!G.bg) { // zemin henüz yok: önce iki kare yükleme ekranı (ya da çizgi roman), sonra zemini çiz
     if (G.bgPend-- > 0) { ctx.fillStyle = '#08050c'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (overlay) drawOverlay(); if (G.loadWait && !G.comic) drawLoading(); return; }
     G.bg = renderBackground(G.lv, G.paths, bgRes(), BLEED);
@@ -19576,6 +19578,7 @@ function drawPlay() {
   drawBanner();
   drawTut();
   if (G.tutorial && !overlay) gameButton('tut_skip', W / 2, EDGE.t + 30, 150, 44, 'EĞİTİMİ ATLA ›', () => { save.tdAsked = 1; persist(); go(() => { screen = 'map'; setOverlay(null); }); }, 'wood', { size: 14 }); // 16 Eki: öğretici atlanabilir, haritaya döner
+  if (NECRO && overlay === 'win' && !G.winSnap) { const c = document.createElement('canvas'); c.width = ctx.canvas.width; c.height = ctx.canvas.height; c.getContext('2d').drawImage(ctx.canvas, 0, 0); G.winSnap = c; }
   if (overlay) drawOverlay();
   if (G.loadWait && !G.comic) drawLoading(); // yükleme ekranı (çizgi roman paneli varken o oynar, yükleme arkada sürer)
 }
@@ -20001,69 +20004,108 @@ function celebStart() { // true: kutlama sürüyor (zafer paneli bekler)
 const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / CELEB.rise, 0, 1) : 0);
 // birlikte kaldırma: 0 (kalkık) .. 1 (en yukarı, göğe doğru), herkes aynı tempoda
 const celebPump = () => { if (!G || G.celebTime == null) return 0; const u = time - G.celebTime - CELEB.cry; return u < 0 ? 0 : Math.pow(Math.max(0, Math.sin(u / CELEB.pump * Math.PI)), 1.5); };
-// 17 Eki (Caner: "zafer ekranında üst üste binenler var; baştan, çok daha minimal ama görsel olarak güzel"): çerçevesiz zafer ekranı.
-// Oyun kararır, ortada yavaş dönen yeşil ışık ve mor hale; parlayan ZAFER! yukarıdan çakılır, yıldızlar tek tek düşer,
-// tek satır özet (can · düşman · süre), tek satır ödül (kristal + eşyalar) ve altında ince kasa çubuğu; altta 3 düğme.
-function winTitle(text, x, y, size) {
-  ctx.save(); ctx.font = `${size}px ${FONT_LOGO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
-  ctx.shadowColor = 'rgba(120,255,140,0.75)'; ctx.shadowBlur = size * 0.45;
-  ctx.strokeStyle = '#0e0510'; ctx.lineWidth = size * 0.17; ctx.strokeText(text, x, y);
-  ctx.shadowBlur = 0;
-  const g = ctx.createLinearGradient(0, y - size * 0.5, 0, y + size * 0.5); g.addColorStop(0, '#f4ffd8'); g.addColorStop(0.45, '#9dff8a'); g.addColorStop(1, '#2f9a44');
-  ctx.fillStyle = g; ctx.fillText(text, x, y);
-  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= 0.25 + 0.15 * Math.sin(time * 3); ctx.fillStyle = '#d8ffcc'; ctx.fillText(text, x, y - size * 0.03);
-  ctx.restore();
+// 17 Eki (2, Caner: "biraz kasılıyor; rakiplerden farklı, necromancer temasına uygun, daha güzel"): zafer ekranı 2.
+// Hız: arkadaki dünya zafer açılınca bir kez fotoğraflanır (drawPlay, G.winSnap), başlık ve diriltme çemberi bir kez çizilip saklanır
+// (WINC); kare başına yalnız birkaç görsel ve ışık çizilir. Görünüm: yıldızların arkasında yavaşça dönen yeşil diriltme çemberi (rün halkası,
+// kemik ve kafatasları), dolan yıldızın arkasında ruh alevi, yerden yükselen ruhlar, köşede kahvesini yudumlayan Mortimer ve konuşma balonu.
+const WINC = {};
+const WIN_SAY = {
+  three: ['Kusursuz. Kahvem bile soğumadı.', 'Ölüler alkışlıyor. Kemikleri yüzünden biraz gürültülü.', 'İmparatora kartpostal yollayın: "Keşke burada olsaydınız."'],
+  less: ['Biraz hasar aldık. Duvarları kemikle yamarız.', 'Kazandık. Bahçe biraz ezildi ama olsun.', 'Bir dahaki sefere misafirleri kapıda karşılayalım.'],
+  boss: ['Generali de topladık. Koleksiyonum büyüyor.', 'Komutanları gitti. Yerine iyi bir iskelet olur.'],
+};
+function winTitleImg(text, size) {
+  const key = text + size; if (WINC[key]) return WINC[key];
+  const R = 2, c = document.createElement('canvas'), g = c.getContext('2d'); g.font = `${size}px ${FONT_LOGO}`;
+  const w = Math.ceil(g.measureText(text).width + size * 1.6), h = Math.ceil(size * 2.2); c.width = w * R; c.height = h * R;
+  g.scale(R, R); g.font = `${size}px ${FONT_LOGO}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.shadowColor = 'rgba(120,255,140,0.85)'; g.shadowBlur = size * 0.5; g.strokeStyle = '#0c040e'; g.lineWidth = size * 0.17; g.strokeText(text, w / 2, h / 2);
+  g.shadowBlur = 0; const gr = g.createLinearGradient(0, h / 2 - size * 0.5, 0, h / 2 + size * 0.5); gr.addColorStop(0, '#f4ffd8'); gr.addColorStop(0.45, '#9dff8a'); gr.addColorStop(1, '#2a8e40');
+  g.fillStyle = gr; g.fillText(text, w / 2, h / 2);
+  g.globalAlpha = 0.35; g.fillStyle = '#ffffff'; g.save(); g.beginPath(); g.rect(0, 0, w, h / 2 - size * 0.12); g.clip(); g.fillText(text, w / 2, h / 2); g.restore(); // üst yarıda parlak şerit
+  return (WINC[key] = { c, w, h });
+}
+function winCircleImg(which) { // 0: dış rün halkası, 1: iç kemik halkası (ayrı ayrı ters yönde döner)
+  if (WINC['circ' + which]) return WINC['circ' + which];
+  const S = 400, R = 2, c = document.createElement('canvas'); c.width = c.height = S * R; const g = c.getContext('2d'); g.scale(R, R); g.translate(S / 2, S / 2);
+  g.lineCap = 'round';
+  if (!which) {
+    for (const [r, lw, a] of [[188, 3, 0.75], [176, 1.5, 0.55], [150, 1.2, 0.4]]) { g.strokeStyle = `rgba(140,255,150,${a})`; g.lineWidth = lw; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.stroke(); }
+    g.fillStyle = 'rgba(170,255,170,0.85)'; g.font = `700 15px ${FONT_B}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const RUNE = 'ᚱᚢᚾᛖᛗᛟᚱᛏᛁᛗᛖᚱᛞᚨᚷᚹᛚᛉᛋᚦᚠᛜᛇ'; // rün harfleri (dekor)
+    for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2; g.save(); g.rotate(a); g.translate(0, -163); g.fillText(RUNE[i % RUNE.length], 0, 0); g.restore(); }
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; g.save(); g.rotate(a); g.fillStyle = 'rgba(200,140,255,0.9)'; g.beginPath(); g.arc(0, -188, 5, 0, Math.PI * 2); g.fill(); g.restore(); }
+  } else {
+    g.strokeStyle = 'rgba(200,150,255,0.55)'; g.lineWidth = 1.6; g.beginPath(); g.arc(0, 0, 122, 0, Math.PI * 2); g.stroke();
+    g.setLineDash([2, 9]); g.strokeStyle = 'rgba(140,255,150,0.5)'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 108, 0, Math.PI * 2); g.stroke(); g.setLineDash([]);
+    for (let i = 0; i < 8; i++) { // kemikler ve aralarında kafatası
+      const a = i / 8 * Math.PI * 2; g.save(); g.rotate(a); g.translate(0, -122);
+      if (i % 2) { g.fillStyle = '#e8ddc0'; g.strokeStyle = '#1a1010'; g.lineWidth = 1.4; g.beginPath(); g.arc(0, -1, 7, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.fillStyle = '#123a1a'; g.beginPath(); g.arc(-2.6, -1.5, 1.8, 0, Math.PI * 2); g.arc(2.6, -1.5, 1.8, 0, Math.PI * 2); g.fill(); }
+      else { g.rotate(Math.PI / 2); g.strokeStyle = '#1a1010'; g.lineWidth = 5; g.beginPath(); g.moveTo(-9, 0); g.lineTo(9, 0); g.stroke(); g.strokeStyle = '#e8ddc0'; g.lineWidth = 3; g.stroke();
+        for (const sx of [-9, 9]) for (const sy of [-2, 2]) { g.fillStyle = '#e8ddc0'; g.beginPath(); g.arc(sx, sy, 2.2, 0, Math.PI * 2); g.fill(); } }
+      g.restore();
+    }
+  }
+  return (WINC['circ' + which] = c);
 }
 function drawWinMinimal(k) {
   const cx = W / 2, top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
   const fa = (t0, d = 0.3) => clamp((k - t0) / d, 0, 1);
-  // ışık
-  ctx.save(); ctx.globalAlpha = fa(0.15, 0.6) * 0.5;
-  sunburst(cx, Y(0.3), 280, '140,255,150'); ctx.globalAlpha = fa(0.15, 0.6);
-  ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, Y(0.3), 300, '170,110,255', 0.16); glow(ctx, cx, Y(0.16), 200, '120,255,140', 0.12);
-  ctx.restore();
-  // başlık: yukarıdan çakılır
+  // diriltme çemberi (yıldızların arkasında): iki halka ters yönde döner, açılırken büyür
+  const ca = fa(0.2, 0.6), cy = Y(0.405);
+  if (ca > 0) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = ca * (0.82 + 0.12 * Math.sin(time * 2));
+    const sc = (0.55 + 0.45 * easeOutQ(ca)) * 0.5;
+    glow(ctx, cx, cy, 170 * sc / 0.62, '90,220,120', 0.22);
+    for (const [i, sp] of [[0, 0.12], [1, -0.2]]) { const im = winCircleImg(i); ctx.save(); ctx.translate(cx, cy); ctx.scale(sc, sc * 0.92); ctx.rotate(time * sp); ctx.drawImage(im, -200, -200, 400, 400); ctx.restore(); }
+    ctx.restore();
+  }
+  // yükselen ruhlar (seyrek)
+  if (k > 0.4 && Math.random() < 0.18) emit(uiParts, { kind: 'glow', add: true, x: cx + rand(-260, 260), y: Y(0.95), vx: rand(-6, 6), vy: -rand(28, 55), col: Math.random() < 0.65 ? '130,255,150' : '190,140,255', s0: rand(2.5, 5), s1: 0.5, life: rand(2.5, 4), a: 0.8, fadeIn: 0.3 });
+  // başlık + bölüm adı
   const ts = fa(0.3, 0.22);
   if (ts > 0) {
     if (ts >= 1 && !G.winSlam) { G.winSlam = true; shakeScreen(5, 0.3); sfx('stomp');
-      for (let j = 0; j < 26; j++) { const a = rand(-Math.PI, 0), v = rand(90, 260); emit(uiParts, { kind: 'glow', add: true, x: cx + rand(-130, 130), y: Y(0.15), vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '140,255,150' : '200,140,255', s0: rand(3, 6), s1: 0.5, life: rand(0.5, 0.9) }); } }
-    ctx.save(); ctx.globalAlpha *= ts; const sc = 2.2 - 1.2 * ts * ts; ctx.translate(cx, Y(0.15)); ctx.scale(sc, sc);
-    winTitle(G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', 0, 0, G.chal ? 50 : 66); ctx.restore();
+      for (let j = 0; j < 22; j++) { const a = rand(-Math.PI, 0), v = rand(90, 240); emit(uiParts, { kind: 'glow', add: true, x: cx + rand(-120, 120), y: Y(0.13), vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '140,255,150' : '200,140,255', s0: rand(3, 6), s1: 0.5, life: rand(0.5, 0.9) }); } }
+    const T = winTitleImg(G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', G.chal ? 50 : 64), sc = 2.2 - 1.2 * ts * ts;
+    ctx.save(); ctx.globalAlpha = ts; ctx.translate(cx, Y(0.12)); ctx.scale(sc, sc); ctx.drawImage(T.c, -T.w / 2, -T.h / 2, T.w, T.h); ctx.restore();
+    const na = fa(0.65, 0.3); if (na > 0) { ctx.save(); ctx.globalAlpha = na; fitTxt(TR(G.lv.name).toLocaleUpperCase('tr'), cx, Y(0.205), 420, 15, '#d8c8a0', 'center', '800', FONT_B, true, 12); ctx.restore(); }
   }
-  // yıldızlar
+  // yıldızlar (çemberin üstünde); dolan yıldızın arkasında ruh alevi
   for (let s = 0; s < 3; s++) {
     if (G.chal && s !== 1) continue;
-    const sx = cx + (s - 1) * 92, sy = Y(0.335) - (s === 1 ? 10 : 0), r = s === 1 ? 40 : 32;
-    if (fa(0.45) > 0) { ctx.save(); ctx.globalAlpha *= fa(0.45); fancyStar(sx, sy, r, false); ctx.restore(); }
+    const sx = cx + (s - 1) * 92, sy = cy - (s === 1 ? 12 : 0), r = s === 1 ? 40 : 32;
+    if (fa(0.45) > 0) { ctx.save(); ctx.globalAlpha = fa(0.45) * 0.9; fancyStar(sx, sy, r, false); ctx.restore(); }
     if (s >= G.stars) continue;
     const q = fa(0.75 + s * 0.34, 0.26); if (q <= 0) continue;
     if (!(G.starFx & (1 << s))) { G.starFx |= 1 << s; sfx('starthud', 1 + 0.12 * s); sfx('starchime', [1, 1.26, 1.5][s]); shakeScreen(1.5 + s, 0.12);
-      for (let j = 0; j < 16; j++) { const a = rand(0, Math.PI * 2), v = rand(80, 200); emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '255,220,100' : j % 2 ? '140,255,150' : '200,120,255', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) }); } }
-    ctx.save(); ctx.translate(sx, sy); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha *= q; fancyStar(0, 0, r, true);
-    if (q >= 1 && spr('ico_win_star')) starShine(r, k - 0.75 - s * 0.34); ctx.restore();
+      for (let j = 0; j < 14; j++) { const a = rand(0, Math.PI * 2), v = rand(80, 200); emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '255,220,100' : j % 2 ? '140,255,150' : '200,120,255', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) }); } }
+    if (q >= 1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const fl = 0.85 + 0.15 * Math.sin(time * 7 + s * 2); glow(ctx, sx, sy - r * 0.35, r * 1.5 * fl, '120,255,140', 0.3); glow(ctx, sx, sy - r * 0.9, r * 0.8 * fl, '190,140,255', 0.22); ctx.restore(); }
+    ctx.save(); ctx.translate(sx, sy); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha = q; fancyStar(0, 0, r, true); ctx.restore();
   }
-  // özet: tek satır, simgeli, aralarda nokta
+  // özet: tek satır
   const sa = fa(1.2, 0.35);
   if (sa > 0) {
     const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60), up = (v) => Math.round(v * easeOutQ(fa(1.2, 0.8)));
     const items = [['heart', `${G.lives}/${G.maxLives}`, '#ffd6d6'], ['skull', String(up(G.kills || 0)), '#efe6cc'], ['time', `${mm}:${String(ss2).padStart(2, '0')}`, '#efe6cc']];
     ctx.font = `400 21px ${FONT_T}`; const ws = items.map(([, t]) => ctx.measureText(t).width + 34), gap = 34, tw = ws.reduce((a, b) => a + b, 0) + gap * (items.length - 1);
-    ctx.save(); ctx.globalAlpha *= sa; let x = cx - tw / 2; const y = Y(0.5);
+    ctx.save(); ctx.globalAlpha = sa; let x = cx - tw / 2; const y = Y(0.6);
     items.forEach(([ic, t, col], i) => {
       if (ic === 'time') drawIconArt('kumsaati', paintHourglass, x + 12, y, 13); else drawIcon(ic, x + 12, y, 22);
       txt(t, x + 30, y + 1, 21, col, 'left', '400', FONT_T, true); x += ws[i];
-      if (i < items.length - 1) { circle(x + gap / 2, y, 2.5, 'rgba(207,196,168,0.55)'); x += gap; }
+      if (i < items.length - 1) { circle(x + gap / 2, y, 2.5, 'rgba(140,255,150,0.6)'); x += gap; }
     });
     ctx.restore();
   }
-  // ödüller: kasanın kristalleri + bossun ganimeti tek satırda; altında ince kasa çubuğu
+  // ödüller + kasa
   const V = G.vault, L = G.lootGot, ra = fa(1.45, 0.35);
   if (ra > 0) {
     let vc = 0, bank = 0;
     if (V) { if (V.t0 == null) V.t0 = time; const u = clamp((time - V.t0 - 0.25) / 1.3, 0, 1), e = 1 - (1 - u) ** 3; vc = Math.floor(V.c * e + 1e-6); bank = Math.round(lerp(V.bank0, V.bank1, e));
       if (vc > (V.n || 0)) { V.n = vc; sfx('coin', 1 + vc * 0.06); } if (u >= 1 && !V.done) { V.done = true; if (V.c > 0) sfx('lootchime'); } }
     if (L && !G.winLoot) { G.winLoot = true; sfx('lootchime'); }
-    const cr = vc + (L ? L.c : 0), gear = L ? L.gear : [], y = Y(0.635), a = easeOutBack(ra);
+    const cr = vc + (L ? L.c : 0), gear = L ? L.gear : [], y = Y(0.69), a = easeOutBack(ra);
     ctx.save(); ctx.translate(cx, y); ctx.scale(a, a);
     if (cr > 0 || gear.length) {
       ctx.font = `400 24px ${FONT_T}`; const cw = cr > 0 ? 34 + ctx.measureText('+' + cr).width : 0, gw = gear.length * 50, tw = cw + gw + (cw && gw ? 20 : 0);
@@ -20071,20 +20113,39 @@ function drawWinMinimal(k) {
       if (cr > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + 13, 0, 26, '200,140,255', 0.35 + 0.1 * Math.sin(time * 4)); ctx.restore();
         drawIconArt('crystal', paintCrystal, x + 13, 0, 14); txt('+' + cr, x + 32, 1, 24, '#e6c4ff', 'left', '400', FONT_T, true); x += cw + 20; }
       gear.forEach((it, i) => gearCell(it, x + 22 + i * 50, 0, 42));
-    } else fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], 0, 0, 520, 16, '#9fd8a0', 'center', '700', FONT_B, true, 12);
+    }
     ctx.restore();
-    if (V) { // kasa: ince çubuk, solda "Kasa", sağda sayı (yazılar çubuğun dışında, hiçbir şeye binmez)
-      const bw = 200, bx = cx - bw / 2, by = Y(0.715), f = clamp(bank / VAULT.per, 0, 1);
-      ctx.save(); ctx.globalAlpha *= ra;
+    if (V) {
+      const bw = 200, bx = cx - bw / 2, by = Y(0.76), f = clamp(bank / VAULT.per, 0, 1);
+      ctx.save(); ctx.globalAlpha = ra;
       txt('Kasa', bx - 10, by + 1, 14, '#cfc4a8', 'right', '800', FONT_B, true);
-      roundRect(bx, by - 5, bw, 10, 5, 'rgba(10,6,18,0.85)', 'rgba(212,171,90,0.55)', 1);
-      if (f > 0) roundRect(bx + 1, by - 4, Math.max(8, (bw - 2) * f), 8, 4, '#d4ab5a');
-      txt(bank < VAULT.per ? `${bank}/${VAULT.per}` : `${bank} altın`, bx + bw + 10, by + 1, 14, '#ffe9b0', 'left', '800', FONT_B, true); // bölüm sınırını aşan birikim: sonraki bölümde kristale döner
+      roundRect(bx, by - 5, bw, 10, 5, 'rgba(10,6,18,0.85)', 'rgba(140,255,150,0.45)', 1);
+      if (f > 0) { const g = ctx.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, '#3fae55'); g.addColorStop(1, '#b8ff9a'); roundRect(bx + 1, by - 4, Math.max(8, (bw - 2) * f), 8, 4, g); }
+      txt(bank < VAULT.per ? `${bank}/${VAULT.per}` : `${bank} altın`, bx + bw + 10, by + 1, 14, '#ffe9b0', 'left', '800', FONT_B, true);
       ctx.restore();
     }
   }
-  // düğmeler: solda tekrar, ortada büyük sonraki bölüm, sağda harita
-  const appear = k - 1.75, yb = Y(0.87);
+  // Mortimer (sol alt): kahvesini yudumlar, konuşma balonunda bir laf
+  const ma = fa(1.6, 0.4);
+  if (ma > 0) {
+    const mx = cx - 390, my = Y(0.82), mh = 118, n = mortStrip('mortimer_cay'), im = spr(n || 'mortimer');
+    ctx.save(); ctx.globalAlpha = ma; ctx.translate(mx, my + (1 - easeOutBack(ma)) * 30);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -mh * 0.45, mh * 0.8, '140,255,150', 0.14); ctx.restore();
+    if (n && im) drawFrame(im, ANIM_META[n], Math.floor(time * 12) % ANIM_META[n].n, mh);
+    else if (im) { const w = mh * im.width / im.height; ctx.drawImage(im, -w / 2, -mh, w, mh); }
+    ctx.restore();
+    if (!G.winSay) { const L2 = G.lv.boss ? WIN_SAY.boss : G.stars >= 3 ? WIN_SAY.three : WIN_SAY.less; G.winSay = L2[Math.floor(Math.random() * L2.length)]; }
+    const ba = fa(2.0, 0.3);
+    if (ba > 0) { const bw2 = 230, bx2 = mx - 30, by2 = my - mh - 58, lines = wrapLines(TR(G.winSay), bw2 - 24, 14, '700', FONT_B, 3), bh2 = 16 + lines.length * 18;
+      ctx.save(); ctx.globalAlpha = ba; const s2 = easeOutBack(ba); ctx.translate(bx2, by2 + bh2); ctx.scale(s2, s2); ctx.translate(-bx2, -(by2 + bh2));
+      roundRect(bx2, by2, bw2, bh2, 12, 'rgba(240,232,212,0.96)', '#1a0c14', 2);
+      ctx.fillStyle = 'rgba(240,232,212,0.96)'; ctx.strokeStyle = '#1a0c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx2 + 34, by2 + bh2 - 1); ctx.lineTo(bx2 + 30, by2 + bh2 + 12); ctx.lineTo(bx2 + 48, by2 + bh2 - 1); ctx.fill(); ctx.stroke();
+      ctx.fillRect(bx2 + 33, by2 + bh2 - 3, 16, 3);
+      lines.forEach((t, i) => txt(t, bx2 + 12, by2 + 17 + i * 18, 14, '#2a1420', 'left', '700', FONT_B, false));
+      ctx.restore(); }
+  }
+  // düğmeler
+  const appear = k - 1.75, yb = Y(0.895);
   const retry = () => go(() => startLevel(G.idx, G.chal)), toMap = () => go(() => { screen = 'map'; setOverlay(null); });
   if (G.idx + 1 < LEVELS.length || G.tutorial || G.admin) {
     roundBtn('ov_retry', cx - 200, yb, 31, 'restart', retry, { appear, tile: 'violet' });
