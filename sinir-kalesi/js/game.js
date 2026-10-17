@@ -14843,8 +14843,9 @@ const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritü
     [0.803, 0.551, 1.4, '110,255,120'], [0.842, 0.512, 0.7, '110,255,120']],
   // hasar evrelerinde duman ve yangın kodla canlı: smoke [x, y, kalınlık], burn [x, y, boy]; off: o evrede kırılıp sönen pencereler (win sırası)
   dmg: {
-    2: { smoke: [[0.27, 0.43, 0.6], [0.56, 0.1, 0.7]], burn: [] },
-    3: { smoke: [[0.3, 0.3, 1], [0.5, 0.13, 0.9], [0.62, 0.36, 0.9], [0.17, 0.46, 0.8]], burn: [[0.17, 0.475, 0.6], [0.27, 0.46, 0.45]], off: [0, 1, 2, 3] },
+    // 17 Eki: 2-3. evrede Veo yok (Veo hasarlı kaleyi reddetti ya da onarıp çizdi): pencerelerdeki çizili yangınların üstünde kodla canlı alev
+    2: { smoke: [[0.27, 0.43, 0.6], [0.56, 0.1, 0.7]], burn: [[0.264, 0.455, 0.35], [0.25, 0.625, 0.32], [0.405, 0.63, 0.32]] },
+    3: { smoke: [[0.3, 0.3, 1], [0.5, 0.13, 0.9], [0.62, 0.36, 0.9], [0.17, 0.46, 0.8]], burn: [[0.17, 0.475, 0.6], [0.27, 0.46, 0.45], [0.25, 0.615, 0.32], [0.405, 0.645, 0.32]], off: [0, 1, 2, 3] },
   },
 };
 // süzülen duman: üst üste binen yumuşak gri lekeler aşağıdan yukarı yükselir, rüzgârla sağa kıvrılır, büyüyüp söner (görselde değil, her karede)
