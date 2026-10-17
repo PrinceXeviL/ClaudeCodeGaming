@@ -20319,13 +20319,49 @@ function winCircleImg(which) { // 0: dış rün halkası, 1: iç kemik halkası 
   }
   return (WINC['circ' + which] = c);
 }
+// 17 Eki (Caner: Mortimer'ın arkası kesilmiyor, "arkaplanla birlikte hareket ettirilmeli"): zafer ekranının arka planı Veo sahnesi (tahtta kahve
+// yudumlayan Mortimer, terasta gece). img/win_scene.mp4 sessiz 8 sn dikişsiz döngü (varliklar/zafer_video_isle.py), yüklenene kadar ilk karesi win_scene.jpg.
+// Sahne ekran yüksekliğine oturur, sola dayanır; geniş ekranda sağdaki boşluk sahnenin sağ kenar sütunuyla uzar ve kararır.
+const WINV = { v: null, img: null, edge: null, seen: 0 };
+function winScene() {
+  if (!WINV.img) { const im = new Image(); im.onload = () => { WINV.ok = true; const c = document.createElement('canvas'); c.width = 1; c.height = 180; const g = c.getContext('2d'); g.drawImage(im, im.width - 6, 0, 6, im.height, 0, 0, 1, 180); WINV.edge = c; };
+    im.src = 'img/win_scene.jpg' + (window.SURUM ? '?v=' + window.SURUM : ''); WINV.img = im; }
+  if (!WINV.v && typeof document !== 'undefined' && document.createElement('video').canPlayType) {
+    const v = document.createElement('video'); v.muted = true; v.defaultMuted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+    v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+    v.src = 'img/win_scene.mp4' + (window.SURUM ? '?v=' + window.SURUM : ''); document.body.appendChild(v); WINV.v = v;
+    setInterval(() => { if (!v.paused && performance.now() - WINV.seen > 700) v.pause(); }, 500); // zafer ekranından çıkınca durur
+  }
+  WINV.seen = performance.now(); const v = WINV.v;
+  if (v && v.paused) { const pr = v.play(); if (pr && pr.catch) pr.catch(() => {}); }
+  return v && v.readyState >= 2 && v.videoWidth ? v : WINV.ok ? WINV.img : null;
+}
+function drawWinScene(a) { // döner: sahnenin ekrandaki kutusu (Mortimer ve içerik yerleşimi için) ya da null
+  const src = winScene(); if (!src) return null;
+  const vh = VIS.h * 1.04, vw = vh * 16 / 9, y = VIS.t - VIS.h * 0.01; // üstten %1, alttan %3 taşar (tahtın tepesi ve terlikler içeride)
+  const x = VIS.l - Math.min(vw * 0.13, Math.max(0, vw - VIS.w) * 0.6); // dar ekran (iPad): sahne sola kayar (tırpanın ucu dışarıda), sağda düğmelere yer kalır
+  ctx.save(); ctx.globalAlpha = a;
+  ctx.drawImage(src, x, y, vw, vh);
+  if (x + vw < VIS.r) { // geniş ekran: sağ kenar sütunu uzar, gece karanlığına söner
+    if (WINV.edge) ctx.drawImage(WINV.edge, x + vw - 1, y, VIS.r - x - vw + 2, vh);
+    const g = ctx.createLinearGradient(x + vw * 0.86, 0, VIS.r, 0); g.addColorStop(0, 'rgba(10,8,24,0)'); g.addColorStop(1, 'rgba(10,8,24,0.75)');
+    ctx.fillStyle = g; ctx.fillRect(x + vw * 0.86, VIS.t, VIS.r - x - vw * 0.86, VIS.h);
+  }
+  const g2 = ctx.createLinearGradient(x + vw * 0.42, 0, x + vw * 0.62, 0); g2.addColorStop(0, 'rgba(8,4,18,0)'); g2.addColorStop(1, 'rgba(8,4,18,0.38)'); // yazılar okunsun
+  ctx.fillStyle = g2; ctx.fillRect(x + vw * 0.42, VIS.t, VIS.r - x - vw * 0.42, VIS.h);
+  ctx.restore();
+  return { x, y, w: vw, h: vh };
+}
 function drawWinMinimal(k) {
   const top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
   // 17 Eki (Caner: "Mortimer çok küçük, daha büyük ve kaliteli"): solda ekran boyunun ~%64'ü kadar havalı Mortimer; içerik sağda kalan alanın ortasında
-  if (!SPR.mortimer_throne) loadStrip('mortimer_throne'); // 17 Eki: koltukta kahve yudumlayan Mortimer (Veo şeridi, tembel)
-  const pose = spr('mortimer_pose_throne') || spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.66, 390) : 0, mw = pose ? mh * pose.width / pose.height : 0;
-  const mLeft = Math.max(VIS.l, EDGE.l) + 10, cx = pose ? (mLeft + mw - 10 + Math.min(VIS.r, EDGE.r)) / 2 : W / 2;
   const fa = (t0, d = 0.3) => clamp((k - t0) / d, 0, 1);
+  const SC = drawWinScene(fa(0, 0.45)); // sahne videosu: Mortimer içinde, ayrı poz çizilmez
+  if (!SC && !SPR.mortimer_throne) loadStrip('mortimer_throne'); // sahne yoksa eski yol: koltukta Mortimer şeridi
+  const pose = SC ? null : spr('mortimer_pose_throne') || spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.66, 390) : 0, mw = pose ? mh * pose.width / pose.height : 0;
+  const mLeft = Math.max(VIS.l, EDGE.l) + 10, rEdge = Math.min(VIS.r, EDGE.r);
+  const cx = SC ? (Math.max(mLeft, SC.x + SC.w * 0.46) + rEdge) / 2 : pose ? (mLeft + mw - 10 + rEdge) / 2 : W / 2;
   // diriltme çemberi (yıldızların arkasında): iki halka ters yönde döner, açılırken büyür
   const ca = fa(0.2, 0.6), cy = Y(0.405);
   if (ca > 0) {
@@ -20398,6 +20434,17 @@ function drawWinMinimal(k) {
       txt(bank < VAULT.per ? `${bank}/${VAULT.per}` : `${bank} altın`, bx + bw + 10, by + 1, 14, '#ffe9b0', 'left', '800', FONT_B, true);
       ctx.restore();
     }
+  }
+  if (SC) { // sahnede konuşma balonu: kuyruğu Mortimer'ın kafatasının sağına (sahne kesri 0.335, 0.29)
+    if (!G.winSay) { const L2 = G.lv.boss ? WIN_SAY.boss : G.stars >= 3 ? WIN_SAY.three : WIN_SAY.less; G.winSay = L2[Math.floor(Math.random() * L2.length)]; }
+    const ba = fa(1.9, 0.3);
+    if (ba > 0) { const bw2 = 240, lines = wrapLines(TR(G.winSay), bw2 - 26, 15, '700', FONT_B, 3), bh2 = 18 + lines.length * 19;
+      const tx = SC.x + SC.w * 0.335, ty = SC.y + SC.h * 0.29, bx2 = Math.max(mLeft, tx - 30), by2 = Math.max(top + 6, ty - 14 - bh2), kx = tx - bx2;
+      ctx.save(); ctx.globalAlpha = ba; const s2 = easeOutBack(ba); ctx.translate(tx, ty); ctx.scale(s2, s2); ctx.translate(-tx, -ty);
+      roundRect(bx2, by2, bw2, bh2, 13, 'rgba(240,232,212,0.97)', '#1a0c14', 2);
+      ctx.fillStyle = 'rgba(240,232,212,0.97)'; ctx.strokeStyle = '#1a0c14'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx2 + kx + 8, by2 + bh2 - 1); ctx.lineTo(tx, by2 + bh2 + 14); ctx.lineTo(bx2 + kx + 22, by2 + bh2 - 1); ctx.fill(); ctx.stroke(); ctx.fillRect(bx2 + kx + 7, by2 + bh2 - 3, 16, 3);
+      lines.forEach((t, i) => txt(t, bx2 + 13, by2 + 19 + i * 19, 15, '#2a1420', 'left', '700', FONT_B, false));
+      ctx.restore(); }
   }
   // Mortimer (solda, büyük): zafer pozu; içeri kayarak girer, nefes alır, fincanından yeşil kıvılcım çıkar; başının üstünde konuşma balonu
   const ma = fa(0.9, 0.5);
