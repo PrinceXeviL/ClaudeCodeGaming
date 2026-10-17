@@ -1,0 +1,7 @@
+A 3x3 grid sheet of nine 2D game icons on a flat solid magenta (#FF00FF) background, each icon well separated with lots of magenta space around it, no frames, no circles behind them, no text.
+Style exactly like images 2 and 3: bold clean cartoon game icons, thick dark outlines, flat cel shading with simple highlights, saturated colors, crisp and readable at small size, a soft colored glow only where it is magical. Dark fantasy necromancer theme with green, purple and crimson magic.
+Keep the ideas of the old icons in image 1 but redraw them cleaner and bolder in this style:
+Row 1: (1) a skeletal hand bursting up out of a grave mound with green and purple necromantic flames; (2) a wall of sharp bone spikes and ribs erupting from the ground; (3) a screaming purple ghost with crimson wisps, scary face.
+Row 2: (4) a bloated green zombie corpse bursting apart with bones and green gas flying out; (5) the head and shoulders of a big stitched flesh golem with glowing green eyes; (6) a closed dark spellbook with a bone skull clasp and glowing purple runes.
+Row 3: (7) the small white porcelain Turkish coffee cup with an orange-gold pattern from image 4, on a small saucer, dark coffee inside, a thin wisp of steam, a tiny skull mark on the cup; (8) a war banner on a bone pole: a tattered GREEN flag with a white skull, a small skull on top of the pole; (9) the same war banner but with a tattered PURPLE flag.
+No crosses anywhere. Each icon is a single object, centered in its cell, fully visible, nothing cut off.

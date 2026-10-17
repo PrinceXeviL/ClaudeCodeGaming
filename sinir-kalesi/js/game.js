@@ -6183,6 +6183,9 @@ function drawMinionCmd1(g) {
   ctx.save(); ctx.translate(B.x, B.y); ctx.scale(pop, pop);
   if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, B.r * 1.8, Z.rgb, 0.45 + Math.sin(time * 6) * 0.12); ctx.restore(); }
   circle(0, 0, B.r, on ? Z.on : '#2a1a34', on ? Z.col : '#e8d8b0', B.r * 0.12);
+  const banIm = spr(g ? 'ico_ui_banner_p' : 'ico_ui_banner_g'); // 17 Eki: Gemini sancak simgesi (yoksa kodla çizim)
+  if (banIm) { icoFit(banIm, B.r * 0.06, -B.r * 0.02, B.r * 1.08); if (zTwoGroups()) txt(Z.mark, -B.r * 0.62, B.r * 0.62, B.r * 0.4, '#efe6cc', 'center', '400', FONT_T, true); }
+  else {
   // sancak: kemik direk, grup renginde bayrak, üstünde grup numarası
   ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = B.r * 0.12; ctx.beginPath(); ctx.moveTo(-B.r * 0.32, B.r * 0.55); ctx.lineTo(-B.r * 0.32, -B.r * 0.55); ctx.stroke();
   ctx.fillStyle = Z.col; ctx.beginPath(); ctx.moveTo(-B.r * 0.3, -B.r * 0.52); ctx.quadraticCurveTo(B.r * 0.2, -B.r * 0.62 + Math.sin(time * 5 + g) * B.r * 0.05, B.r * 0.55, -B.r * 0.42);
@@ -6190,6 +6193,7 @@ function drawMinionCmd1(g) {
   if (zTwoGroups()) txt(Z.mark, B.r * 0.1, -B.r * 0.31, B.r * 0.34, '#1a1020', 'center', '400', FONT_T, false);
   circle(B.r * 0.12, B.r * 0.22, B.r * 0.26, '#efe6cc', '#1a1020', B.r * 0.05);
   ctx.fillStyle = '#1a1020'; ctx.beginPath(); ctx.arc(B.r * 0.03, B.r * 0.2, B.r * 0.06, 0, 7); ctx.arc(B.r * 0.21, B.r * 0.2, B.r * 0.06, 0, 7); ctx.fill();
+  }
   const n = zGroupN(g); circle(B.r * 0.72, -B.r * 0.72, B.r * 0.36, '#c03030', '#1a0a0a', B.r * 0.06); txt(n + '', B.r * 0.72, -B.r * 0.72 + B.r * 0.13, B.r * 0.42, '#fff', 'center', '800', FONT_B, false);
   ctx.restore();
 }

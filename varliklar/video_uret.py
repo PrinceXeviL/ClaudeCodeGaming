@@ -156,17 +156,18 @@ def process(job):
     rgb = video_isle.frames_of(os.path.join(ROOT, 'varliklar', rel), 16)
     L = len(rgb) - (1 if job.get('loop') else 0)  # döngüde son kare = ilk kare
     order = list(range(L))
-    if (job['name'].endswith('_walk') or job.get('cycle')) and not job.get('loop'):
+    nm = job['name'][:-1] if job['name'].endswith('x') else job['name']  # 17 Eki: abartılı iş adı <şerit>x; tür eki (_atk/_die) x'siz bakılır
+    if (nm.endswith('_walk') or job.get('cycle')) and not job.get('loop'):
         # döngüsüz üretilmiş yürüyüş: videonun içinden en iyi kapanan döngü seçilir (ilk=son kuralı bazen 'yürü-dur' yaptırıyor)
         st, n = video_isle.find_loop(rgb, 12, 30); order = list(range(st, st + n))
-    if job['name'].endswith('_atk'):
+    if nm.endswith(('_atk', '_atk2', '_atk3')):
         wid = []
         for a in rgb[:L]:
             xs = np.nonzero(remove_magenta(a)[..., 3] > 128)[1]
             wid.append(xs.max() - xs.min() if len(xs) else 0)
         hit = int(np.argmax(wid)); st = (hit - round(0.4 * L)) % L
         order = [(st + i) % L for i in range(L)]
-    die = job['name'].endswith('_die')
+    die = nm.endswith('_die')
     if die: order = list(range(L))  # ölüm: bütün kareler (10 Eki: Caner akıcı istedi; önceden yarı kare)
     video_isle.main(rel, job['name'], fps=16, order=order, first_h=die)
 
