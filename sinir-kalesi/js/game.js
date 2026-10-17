@@ -2117,6 +2117,8 @@ const CHAL = {
   a: { name: 'DENEME BİTTİ', short: 'Deneme', hp: 1, lives: ADMIN_TEST.lives, admin: true, desc: '2 dalga · son güncellemeler · kayıt yok' },
   // 16 Eki: haritadaki ÖĞRETİCİ: tek bölümde senaryolu eğitim (TUTOR); hiçbir şey kaydedilmez
   o: { name: 'EĞİTİM TAMAM', short: 'Eğitim', hp: 1, lives: 20, admin: true, desc: 'Senaryolu eğitim · kayıt yok' },
+  // 17 Eki (Caner: serbest mod): sınırsız altın ve can, dalga yok; istediğin düşmanı istediğin sayıda çağırırsın. Kayıt, ödül, XP, başarım yok
+  s: { name: 'SERBEST MOD', short: 'Serbest', hp: 1, lives: 20, admin: true, sandbox: true, desc: 'Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok' },
 };
 const adminIdx = () => Math.max(0, LEVELS.findIndex(l => l.name === ADMIN_TEST.level));
 // Çıplak Kemik'te bölüme göre izinli iki kule (biri mutlaka havayı vurur: Kemik Kulesi ya da Ruh Feneri)
@@ -2240,6 +2242,8 @@ function startLevel(idx, chal = null) {
     G.admin = true; G.tutorial = true; G.lv = Object.assign({}, lv, { waves: JSON.parse(JSON.stringify(TUTOR.waves)) }); G.gold = TUTOR.gold; G.banner = null;
     G.spells = {}; for (const id of TUTOR.spells) G.spells[id] = 0; G.tutItems = { bomb: 1 }; G.heroes.forEach((h, i) => { G.spells['ult' + i] = 0; });
     G.tut = { i: 0, t: 0, w: 0, on: false, steps: TUTOR_STEPS }; G.tutLv = false; }
+  if (chal === 's') { G.admin = true; G.sandbox = { page: 0, n: 5, nocd: false, open: true, path: 0, q: [], qT: 0 }; G.lv = Object.assign({}, lv, { waves: [] }); G.gold = 99999;
+    G.banner = { title: 'SERBEST MOD', sub: 'Sınırsız altın ve can · soldaki panelden düşman çağır', t: 0, dur: 3.5 }; }
   if (chal === 'e') { G.endless = true; G.baseWaves = lv.waves; G.lv = Object.assign({}, lv, { waves: lv.waves.map(w => JSON.parse(JSON.stringify(w))) }); endlessExtend(); }
   if (chal === 'i') { // Çıplak Kemik
     G.mod = { id: 'iron', nospell: true }; const T = ironTowers(idx).map(t => TOWERS[t].name).join(' ve ');
@@ -3368,6 +3372,7 @@ function killEnemy0(e) {
 const HERO_XP = { kill: 0.5 };
 const xpNeed = (lvl) => 80 * lvl * lvl;
 function gainXp(h, amount, quiet) {
+  if (G && G.sandbox) return;
   if (h.lvl >= HERO_MAX) return;
   const R = heroRec(h.id); h.xp += amount; R.xp = h.xp;
   let up = 0;
@@ -3694,6 +3699,7 @@ function bloodShare(h, amt) {
 function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 }); }
 // ---- Boss kristali ve savaş eşyaları (12 Eki, data.js CRYSTAL / ITEMS) ----
 function giveCrystals(e) {
+  if (G && G.sandbox) return;
   let n = e.def.final ? CRYSTAL.final : CRYSTAL.boss;
   if (G.chal === 'h') n *= CRYSTAL.heroic;
   if (G.diffKey === 'usta') n *= CRYSTAL.usta;
@@ -3746,6 +3752,7 @@ function addGear(it) {
 }
 // boss ölünce: altın, kristal taşları ve eşya içinden fışkırır; hepsi yere düşer, biraz bekler, sonra toplanır (G.loot)
 function bossLoot(e, crystals) {
+  if (G && G.sandbox) return; // serbest modda eşya/kristal düşmez
   const hid = G.heroes && G.heroes[0] && G.heroes[0].id;
   let n = e.def.final ? EQUIP.drop.final : EQUIP.drop.boss; if (G.chal === 'h') n += EQUIP.drop.heroic;
   const tries = 1 + (e.def.final ? EQUIP.luck.final : 0) + (G.diffKey === 'usta' ? EQUIP.luck.usta : 0) + (G.chal === 'h' ? EQUIP.luck.heroic : 0);
@@ -7267,11 +7274,13 @@ function achNotify(a) { // kademe yükseldiyse bildirim
   ACH_TOAST.push({ a, tier: t, t: null }); if (actx && !muted) sfx('achieve');
 }
 function cnt(k, n = 1) {
+  if (G && G.sandbox) return; // serbest modda sayaç ve başarım yok
   save.cnt = save.cnt || {}; save.cnt[k] = (save.cnt[k] || 0) + n;
   if (!cnt.due) cnt.due = setTimeout(() => { cnt.due = 0; persist(); }, 3000); // sayaçlar bölüm ortasında çıkılsa da kaybolmasın
   for (const a of ACH) if (a.k === k) achNotify(a);
 }
 function achGive(id) {
+  if (G && G.sandbox) return;
   save.ach = save.ach || {}; if (save.ach[id]) return;
   save.ach[id] = Date.now(); const a = achById(id); if (a) achNotify(a); else persist();
 }
@@ -7686,6 +7695,47 @@ function drawProps(air) {
       }
     }
   }
+}
+// ----- serbest mod (17 Eki, Caner) -----
+// Solda açılır panel: karşılaşılan düşmanlar (kodekste görülenler) sayfa sayfa; dokununca seçili sayıda o düşman sırayla çıkar.
+// Altta: sayı (1/5/10), yol (çok girişli haritada), beklemesiz büyü, hepsini temizle.
+const SB_N = [1, 5, 10], SB_COLS = 5, SB_ROWS = 2;
+const sbList = () => CODEX_ENEMIES.filter(t => ENEMIES[t] && codexSeen(t));
+function updateSandbox(dt) {
+  const S = G.sandbox; if (S.nocd) { for (const k in G.spells) G.spells[k] = 0; }
+  if (S.q.length && (S.qT -= dt) <= 0) { spawnEnemy(S.q.shift(), S.path % G.paths.length); S.qT = 0.45; }
+}
+function sbClear() {
+  const S = G.sandbox; S.q.length = 0; G.spawners.length = 0;
+  for (const e of G.enemies) { e.dead = true; e.hp = 0; }
+  G.enemies.length = 0; for (const s of G.soldiers) { s.target = null; s.order = null; }
+  floatText(W / 2, H / 2, 'Temizlendi', '#b8ff9a'); sfx('pick');
+}
+function drawSandbox() {
+  const S = G.sandbox, L = sbList(), per = SB_COLS * SB_ROWS, pages = Math.max(1, Math.ceil(L.length / per)); S.page = Math.min(S.page, pages - 1);
+  const x0 = EDGE.l + 12, ty = EDGE.t + 112;
+  gameButton('sb_tog', x0 + 74, ty, 148, 38, S.open ? 'SERBEST ▲' : 'SERBEST ▼', () => { S.open = !S.open; sfx('pick'); }, 'blue', { size: 14 });
+  if (!S.open) return;
+  const cw = 66, pw = SB_COLS * cw + 24, ph = 46 + SB_ROWS * cw + 66, px = x0, py = ty + 26;
+  roundRect(px + 3, py + 5, pw, ph, 14, 'rgba(0,0,0,0.4)'); velvetCard(px, py, pw, ph, 14, { border: '#8ac8ff' });
+  txt('DÜŞMAN ÇAĞIR', px + 14, py + 20, 14, '#e8f4ff', 'left', '800', FONT_B, false);
+  if (pages > 1) { gameButton('sb_prev', px + pw - 112, py + 20, 40, 30, '◀', () => { S.page = (S.page + pages - 1) % pages; sfx('pick'); }, 'dark', { size: 13 });
+    txt((S.page + 1) + '/' + pages, px + pw - 66, py + 21, 13, '#cfe6ff', 'center', '800', FONT_B, false);
+    gameButton('sb_next', px + pw - 24, py + 20, 40, 30, '▶', () => { S.page = (S.page + 1) % pages; sfx('pick'); }, 'dark', { size: 13 }); }
+  L.slice(S.page * per, S.page * per + per).forEach((t, k) => {
+    const d = ENEMIES[t], cx = px + 12 + (k % SB_COLS) * cw + cw / 2, cy = py + 40 + Math.floor(k / SB_COLS) * cw + cw / 2, key = 'sb_e' + t, sc = pressScale(key);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(sc, sc);
+    circle(0, 0, cw * 0.44, '#1a120a', d.chief ? '#ff7a5a' : '#c9a865', 2);
+    const im = enemySprite(t) || spr('enemy_' + t);
+    if (im) { ctx.save(); ctx.beginPath(); ctx.arc(0, 0, cw * 0.42, 0, TAU); ctx.clip(); const ih = d.chief ? 66 : 54; drawSprite(ctx, im, 0, ih * 0.6, ih * im.width / im.height); ctx.restore(); }
+    ctx.restore();
+    buttons.push({ key, x: cx - cw / 2, y: cy - cw / 2, w: cw, h: cw, fn: () => { for (let i = 0; i < S.n; i++) S.q.push(t); if (S.qT > 0.2) S.qT = 0.2; floatText(cx, cy - 30, '+' + S.n + ' ' + d.name, '#ffd8a0'); sfx('pick'); } });
+  });
+  const by = py + ph - 30; let bx = px + 12;
+  for (const n of SB_N) { const on = S.n === n; gameButton('sb_n' + n, bx + 26, by, 52, 44, n + '×', () => { S.n = n; sfx('pick'); }, on ? 'gold' : 'dark', { size: 15 }); bx += 58; }
+  if (G.paths.length > 1) { gameButton('sb_path', bx + 32, by, 62, 44, 'YOL ' + (S.path % G.paths.length + 1), () => { S.path = (S.path + 1) % G.paths.length; sfx('pick'); }, 'dark', { size: 13 }); bx += 68; }
+  gameButton('sb_cd', bx + 30, by, 58, 44, '⏱', () => { S.nocd = !S.nocd; floatText(W / 2, H / 2, S.nocd ? 'Büyüler beklemesiz' : 'Büyü beklemesi açık', '#cfe6ff'); sfx('pick'); }, S.nocd ? 'green' : 'dark', { size: 18 }); bx += 64;
+  gameButton('sb_clr', px + pw - 40, by, 64, 44, 'SİL', sbClear, 'red', { size: 14 });
 }
 // ----- mekân öğeleri (15 Eki, Caner: her mekâna dokunulabilir bir harita öğesi) -----
 // Yolun kenarında, mekânın temasına göre bir öğe: dokununca savaşa etki eder, sonra cd sn dolar. Kodla çizilir (yeni görsel gerekmez).
@@ -8845,7 +8895,7 @@ function update(dt) {
   for (const f of G.ground) f.t += dt;
   G.ground = G.ground.filter(f => f.t < f.dur);
   updateWeather(dt);
-  if (G.intro) { G.intro.t += dt; if (G.intro.t > G.intro.dur) G.intro = null; }
+  if (G.intro) { G.intro.t += dt; if (G.intro.t > G.intro.dur || G.sandbox) G.intro = null; } // serbest modda tanıtım kartı yok (paneli örtmesin)
   for (const f of G.effects) if (f.riseAt != null && f.kind === 'corpse' && f.t >= f.riseAt) { // çivili/lanetli ceset kendiliğinden dirilir
     f.riseAt = null;
     if (G.soldiers.filter(s => s.minion && !s.dead).length < spellStats('nm_raise').max) { raiseMinion(f, 0); f.t = f.dur; floatText(f.x, f.y - 30, 'Kalktı!', '#ff7a6a'); }
@@ -8926,13 +8976,14 @@ function update(dt) {
   for (const f of G.floaters) { f.t += dt; f.y -= 22 * dt; }
   G.floaters = G.floaters.filter(f => f.t < 1.1);
 
+  if (G.sandbox) { G.lives = G.maxLives; G.gold = Math.max(G.gold, 50000); updateSandbox(dt); }
   if (G.lives <= 0 && !overlay) {
     if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); persist(); svcScore('endless', Object.values(save.endless).reduce((a, b) => a + b, 0)); } // tablo: bütün bölümlerdeki en iyi dalgaların toplamı
     if (G.admin) { setOverlay('lose'); sfx('lose'); } else { heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave); }
   }
   if (G.gold >= 2000) achGive('hoard');
   if (G.winHold > 0) G.winHold -= dt;
-  if (!overlay && !G.endless && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !(G.tutorial && G.tut) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
+  if (!overlay && !G.endless && !G.sandbox && G.wave >= G.lv.waves.length && G.spawners.length === 0 && G.enemies.length === 0 && !(G.winHold > 0) && !(G.tutorial && G.tut) && !G.loot.length && !G.coins.some(c => !c.done) && !celebStart()) { // sikkeler sayaca varsın (kasa hesabı); önce kutlama (celebStart)
     const lr = G.lives / G.maxLives, firstWin = G.chal ? !(save.ch && save.ch[G.idx] && save.ch[G.idx][G.chal]) : !(save.stars[G.idx] > 0);
     vaultSettle(firstWin);
     if (G.admin) { G.stars = 3; setOverlay('win'); if (NECRO) { sfx('winbone'); G.winLaughT = G.t + 1.9; } return; } // deneme: kayıt, başarım, XP yok
@@ -18950,6 +19001,7 @@ function levelFoes(lv) { // bölümde çıkan düşman türleri (rütbeliler as�
 function modeIcon(m, x, y, s) {
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
   if (m === 'c') { fancyStar(0, 1, 15, true); }
+  else if (m === 's') { const im = spr('ico_bomb'); if (im) icoFit(im, 0, 0, 14); else drawSkullIcon(0, 0, 12); }
   else if (m === 'i') { const im = spr('ico_ui_close'); if (im) icoFit(im, 0, 0, 14); else { ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-11, -11); ctx.lineTo(11, 11); ctx.moveTo(11, -11); ctx.lineTo(-11, 11); ctx.stroke(); } drawSkullIcon(0, 0, 6); }
   else if (m === 'h') {
     ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(12, -9.5); ctx.lineTo(11, 4); ctx.quadraticCurveTo(7, 12, 0, 16); ctx.quadraticCurveTo(-7, 12, -11, 4); ctx.lineTo(-12, -9.5); ctx.closePath();
@@ -18973,6 +19025,7 @@ function drawLevelCard(i, cx, cy, at) {
     { m: 'h', name: 'Kahramanlık', open: TEST_OPEN || st >= 3, stat: hDone ? 'Tamam' : (TEST_OPEN || st >= 3) ? 'Açık' : '3 yıldızla', desc: 'Yalnız 3 can var, düşmanlar %20 daha dayanıklı. Hata yapma şansın yok.', lock: '3 yıldız al, Kahramanlık açılır' },
     { m: 'e', name: 'Sonsuz Gece', open: TEST_OPEN || st > 0, stat: best ? 'Rekor ' + best : (TEST_OPEN || st > 0) ? 'Açık' : 'Kilitli', desc: 'Dalgalar bitmez, her turda güçlenir. Ne kadar dayanabilirsin?' + (best ? ' Rekorun: ' + best + ' dalga.' : ''), lock: 'Bölümü bir kez bitir, Sonsuz Gece açılır' },
     { m: 'i', name: 'Çıplak Kemik', open: TEST_OPEN || st >= 3, stat: iDone ? 'Tamam' : (TEST_OPEN || st >= 3) ? 'Açık' : '3 yıldızla', desc: 'Tek can, yalnız ' + ironTowers(i).map(t => TOWERS[t].name).join(' ve ') + ', Mortimer büyü yapamaz. Bir sızıntı bile kaybettirir.', lock: '3 yıldızla açılır' },
+    { m: 's', name: 'Serbest', open: TEST_OPEN || st > 0, stat: (TEST_OPEN || st > 0) ? 'Açık' : 'Kilitli', desc: 'Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.', lock: 'Bölümü bir kez bitir, Serbest Mod açılsın.' },
   ];
   if (!MODES.find(o => o.m === mapMode)) mapMode = 'c';
   const M = MODES.find(o => o.m === mapMode);
@@ -19734,6 +19787,7 @@ function drawPlay() {
   drawMenu();
   if (!PERF_OFF.has('hud')) drawHud();
   drawEnemyPanel(); // 17 Eki: HUD'un üstünde
+  if (G.sandbox && !overlay) drawSandbox();
   drawCombo();
   drawCoinsFlying();
   drawBossBar();
