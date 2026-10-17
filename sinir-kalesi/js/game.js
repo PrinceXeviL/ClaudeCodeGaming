@@ -17162,6 +17162,7 @@ function drawUpgrades() {
   roundBtn('up_reset', px + pw - 36, py + ph / 2, 22, 'restart', () => { save.upg = {}; persist(); sfx('coins'); UPG_SEL = null; }, { style: 'red', appear: st - 0.4 });
   ctx.restore();
 }
+let CARD_FOE = null; // bölüm kartında dokunulan düşman { i: bölüm, t: tür, x, y, at }
 let UPG_SEL = null; // gelişme ekranında seçili kademe { i: sütun, j: kademe }
 // gelişme kademesinin küçük simgesi (vektör): dmg kılıç, range göz/menzil yayı, speed üç ok, hp kalp, armor kalkan, area patlama, curse kafatası, cost sikke
 function upgGlyph(ico, x, y, r, col = '#f6e6c4') {
@@ -19258,6 +19259,23 @@ function drawLevelCard(i, cx, cy, at) {
     const im = spr('enemy_' + t) || enemySprite(t);
     if (im) { ctx.save(); ctx.beginPath(); ctx.arc(ex, ey, 18.5, 0, Math.PI * 2); ctx.clip(); const ih = d.chief ? 54 : 44; drawSprite(ctx, im, ex, ey + ih * 0.6, ih * im.width / im.height); ctx.restore(); }
     if (!codex.has(t)) { roundRect(ex - 19, ey - 30, 38, 15, 7, '#e8434b', '#fff', 1.2); txt('YENİ', ex, ey - 22, 10, '#fff', 'center', '400', FONT_T); }
+    if (CARD_FOE && CARD_FOE.i === i && CARD_FOE.t === t) { ctx.strokeStyle = '#ffe9b0'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(ex, ey, 23.5 + Math.sin(time * 5), 0, TAU); ctx.stroke(); }
+    buttons.push({ key: 'foe_' + t, x: ex - 25, y: ey - 25, w: 50, h: 50, fn: () => { CARD_FOE = CARD_FOE && CARD_FOE.i === i && CARD_FOE.t === t ? null : { i, t, x: ex, y: ey, at: time }; sfx('pick'); } });
+  }
+  // 18 Eki (Caner: "düşmana tıklayınca hiçbir şey olmuyor; kim olduğu, kaç tane geleceği yazmalı"): seçili düşmanın balonu (ad, sayı, kısa tanım)
+  if (CARD_FOE && CARD_FOE.i === i && foes.includes(CARD_FOE.t)) {
+    const t = CARD_FOE.t, d = ENEMIES[t], cnt = lv.waves.reduce((a, wv) => a + wv.reduce((b, g) => b + ((ENEMIES[g.t] && (ENEMIES[g.t].base || g.t)) === t ? (g.n || 1) : 0), 0), 0);
+    const bw = tw, bh = 84, bx = tx, by = CARD_FOE.y - 42 - bh, ka = easeOutBack(clamp((time - CARD_FOE.at) / 0.22, 0, 1));
+    ctx.save(); ctx.translate(CARD_FOE.x, by + bh); ctx.scale(ka, ka); ctx.translate(-CARD_FOE.x, -(by + bh));
+    roundRect(bx, by, bw, bh, 12, 'rgba(18,8,16,0.97)', d.chief ? '#ff7a5a' : '#d4ab5a', 2);
+    ctx.fillStyle = 'rgba(18,8,16,0.97)'; ctx.strokeStyle = d.chief ? '#ff7a5a' : '#d4ab5a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(CARD_FOE.x - 9, by + bh - 1); ctx.lineTo(CARD_FOE.x, by + bh + 10); ctx.lineTo(CARD_FOE.x + 9, by + bh - 1); ctx.fill(); ctx.stroke();
+    fitTxt(TR(d.name || t), bx + 14, by + 20, bw - 120, 17, '#ffe9b0', 'left', '400', FONT_T, true, 12);
+    roundRect(bx + bw - 96, by + 9, 84, 24, 12, d.chief ? 'rgba(120,20,20,0.9)' : 'rgba(60,30,50,0.9)', null);
+    txt(d.chief ? 'KOMUTAN' : '×' + cnt, bx + bw - 54, by + 22, 15, d.chief ? '#ffd0c0' : '#fff3d0', 'center', '400', FONT_T);
+    const desc = (typeof ENEMY_DESC !== 'undefined' && ENEMY_DESC[t]) || '', L2 = wrapLines(TR(desc), bw - 28, 14, '700', FONT_B, 2);
+    L2.slice(0, 2).forEach((l, k) => txt(l, bx + 14, by + 46 + k * 18, 14, '#e8dcc4', 'left', '700', FONT_B, false));
+    if (!L2.length) txt(`Bu bölümde ${cnt} tane`, bx + 14, by + 50, 14, '#e8dcc4', 'left', '700', FONT_B, false);
+    ctx.restore();
   }
   if (foes.length > nShow) txt('+' + (foes.length - nShow), tx + 22 + nShow * 50, ty + th + 113, 16, '#f2ecd8', 'center', '400', FONT_T);
   // sağ: mod kutuları

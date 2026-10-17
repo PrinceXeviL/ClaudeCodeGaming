@@ -1096,6 +1096,10 @@
   [
    "★{} GEREK",
    "★{} NÖTIG"
+  ],
+  [
+   "Bu bölümde {} tane",
+   "{} in diesem Level"
   ]
  ]
 }

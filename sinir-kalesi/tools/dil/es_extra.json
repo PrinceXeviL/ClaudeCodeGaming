@@ -1096,6 +1096,10 @@
   [
    "★{} GEREK",
    "FALTAN ★{}"
+  ],
+  [
+   "Bu bölümde {} tane",
+   "{} en este nivel"
   ]
  ]
 }
