@@ -20067,7 +20067,8 @@ function winCircleImg(which) { // 0: dış rün halkası, 1: iç kemik halkası 
 function drawWinMinimal(k) {
   const top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
   // 17 Eki (Caner: "Mortimer çok küçük, daha büyük ve kaliteli"): solda ekran boyunun ~%64'ü kadar havalı Mortimer; içerik sağda kalan alanın ortasında
-  const pose = spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.64, 380) : 0, mw = pose ? mh * pose.width / pose.height : 0;
+  if (!SPR.mortimer_throne) loadStrip('mortimer_throne'); // 17 Eki: koltukta kahve yudumlayan Mortimer (Veo şeridi, tembel)
+  const pose = spr('mortimer_pose_throne') || spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.66, 390) : 0, mw = pose ? mh * pose.width / pose.height : 0;
   const mLeft = Math.max(VIS.l, EDGE.l) + 10, cx = pose ? (mLeft + mw - 10 + Math.min(VIS.r, EDGE.r)) / 2 : W / 2;
   const fa = (t0, d = 0.3) => clamp((k - t0) / d, 0, 1);
   // diriltme çemberi (yıldızların arkasında): iki halka ters yönde döner, açılırken büyür
@@ -20148,10 +20149,15 @@ function drawWinMinimal(k) {
   if (pose && ma > 0) {
     const e = easeOutBack(ma), mx = mLeft + mw / 2 - (1 - e) * 140, my = Y(0.985), br = Math.sin(time * 1.8);
     ctx.save(); ctx.globalAlpha = ma;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my - mh * 0.5, mh * 0.55, '120,255,140', 0.16); glow(ctx, mx - mw * 0.3, my - mh * 0.78, mh * 0.18, '160,255,170', 0.2 + 0.08 * Math.sin(time * 5)); ctx.restore();
-    ctx.translate(mx, my); ctx.scale(1 - br * 0.005, 1 + br * 0.01); ctx.rotate(Math.sin(time * 0.9) * 0.01); ctx.drawImage(pose, -mw / 2, -mh, mw, mh);
+    const st = spr('mortimer_throne'), F = st && ANIM_META.mortimer_throne;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my - mh * 0.5, mh * 0.55, '120,255,140', 0.16);
+    if (pose === spr('mortimer_pose_throne')) for (const [gx, gy] of [[0.25, 0.08], [0.69, 0.09]]) glow(ctx, mx + (gx - 0.5) * mw, my - mh * (1 - gy), mh * 0.09, '140,255,160', 0.22 + 0.08 * Math.sin(time * 7 + gx * 9)); // mum alevleri
     ctx.restore();
-    if (ma >= 1 && Math.random() < 0.25) emit(uiParts, { kind: 'glow', add: true, x: mx - mw * 0.4 + rand(-6, 6), y: my - mh * 0.8 + rand(-6, 4), vx: rand(-10, 10), vy: -rand(12, 30), col: Math.random() < 0.7 ? '150,255,160' : '220,200,255', s0: rand(2, 3.6), s1: 0.4, life: rand(0.6, 1.1) }); // fincandan kıvılcım
+    ctx.translate(mx, my);
+    if (F) drawFrame(st, F, Math.floor(time * F.fps) % F.n, mh); // Veo: yudum, bacak, buhar, mumlar her kareyle
+    else if (pose === spr('mortimer_pose_throne')) ctx.drawImage(pose, -mw / 2, -mh, mw, mh); // şerit yüklenene kadar ilk kare
+    else { ctx.scale(1 - br * 0.005, 1 + br * 0.01); ctx.drawImage(pose, -mw / 2, -mh, mw, mh); }
+    ctx.restore();
     if (!G.winSay) { const L2 = G.lv.boss ? WIN_SAY.boss : G.stars >= 3 ? WIN_SAY.three : WIN_SAY.less; G.winSay = L2[Math.floor(Math.random() * L2.length)]; }
     const ba = fa(1.9, 0.3);
     if (ba > 0) { const bw2 = 240, lines = wrapLines(TR(G.winSay), bw2 - 26, 15, '700', FONT_B, 3), bh2 = 18 + lines.length * 19, bx2 = clamp(mx - bw2 * 0.35, mLeft, mx + mw / 2 - bw2), by2 = my - mh - bh2 + 6;
@@ -21189,7 +21195,8 @@ window.__game = {
   path: (i, p) => buyPath(G.plots[i].tower, p), imbue: (i, k) => buyImbue(G.plots[i].tower, k), // test: Kemik Kulesi yolu ve silah büyüsü
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
-  wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
+  wave: () => waveBonusAndStart(), cast: castSpell, upgradeCastle, cam, zoomAt, lightning: () => strikeLightning(), spawn: (t, p = 0) => spawnEnemy(t, p), setOverlay, sprSet: (n, im) => { SPR[n] = im; delete ANIM_META[n + '_idle']; }, // deneme: görseli canlı değiştir (yeni çizimi oyunda önizleme)
+   buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   towerOn: (type) => towerUnlocked(type), // test: kule bu bölümde kurulabilir mi (öğretici kilidi)
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri

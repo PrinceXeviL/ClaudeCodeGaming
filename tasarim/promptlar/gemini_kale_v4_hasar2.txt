@@ -1,0 +1,8 @@
+Edit this exact image: the same castle, same camera, same size, same position in the frame, same magenta background, same art style. Every part stays exactly where it is; only add battle damage (damage stage 2 of 3, medium damage):
+- cracks in the stone walls and the tower, some broken and missing black roof tiles with holes, one small spire tip broken off
+- two or three orange windows are now cracked and dark, one red banner is torn
+- a few balusters of the terrace railing are broken and fallen, some rubble and stone chunks on the terrace and on the stairs
+- the red sofa is knocked over a little, the coffee table tipped, books fallen from the bookshelf
+- a few arrows stuck in the walls and roof (plain arrows), small orange fires burning in two broken windows
+- the ritual circle and the green door glow still shine
+Nothing sticks out of the building outline: no smoke clouds, no flying debris outside the castle. No crosses anywhere, no text. Background stays plain flat solid magenta (#FF00FF).
