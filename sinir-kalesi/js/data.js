@@ -713,18 +713,11 @@ TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
 const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
-// komutanlar (tek seçilir). Wailing Wren 11 Eki'de, eski komutan 14 Eki'de (Caner) çıkarıldı: HERO_ORDER'da yok, başlangıç komutanı Spartaküs
+// komutanlar (tek seçilir). Wailing Wren 11 Eki'de, eski komutan 14 Eki'de (Caner) çıkarıldı: HERO_ORDER'da yok, başlangıç komutanı Leonidas
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
 // 10 Eki: Mortimer'a düelloda yenilip onun komutanı olan ünlü savaşçılar (tasarim/komutanlar-golemler.md).
 // unlock: bitirilmesi gereken bölüm (15: 1. seferin sonu; 21: Cadı Avı'nın 6. bölümü)
 Object.assign(HEROES, {
-  spartacus: { name: 'Spartaküs', role: 'Zincirsiz · Yakın dövüş', sprite: 'hero_spartacus', h: 32, aura: '255,90,80',
-    hp: 360, dmg: [16, 24], armor: 0.2, rate: 0.9, speed: 82, respawn: 15, regen: 10, engage: 75, unlock: 20,
-    paths: [{ name: 'Yetenekler', col: '#ffd34d', skills: [
-      { id: 'whirl', name: 'Zincir Savurma', cd: 9, desc: 'Zincirlerini savurur: çevresindeki bütün düşmanlara hasar' },
-      { id: 'bash', name: 'Gladyatör Ağı', cd: 8, desc: 'Hedefine ağ atar: 2 sn kımıldayamaz, ek hasar alır' },
-      { id: 'charge', name: 'Arena Hamlesi', cd: 16, desc: 'Kaleye en yakın düşmana atılıp ağır darbe vurur' },
-    ] }] },
   // 17 Eki (Caner: "estetik dövüşen bir savaşçı, ihtişamlı aktif ve pasif yetenekler"): v2 Ölü Sparta Kralı. Pasifler Kalkan Hücumu (doğuştan) ve Mızrak Dansı,
   // doğuştan Bronz Kalkan (parry: yakın dövüş darbelerinin bir kısmını karşılar), aktifler Mızrak Yağmuru ve Termopylae Falanksı. Mantık game.js LEO
   leonidas: { name: 'Leonidas', role: 'Ölü Sparta Kralı · Savaşçı', sprite: 'hero_leonidas', h: 40, aura: '200,150,255', halo: '255,200,120', parry: 0.2, flames: '190,120,255',
@@ -769,18 +762,14 @@ Object.assign(HERO_ULT, {
     desc: 'Seçtiğin alana 40 yeşil ruh ateşli ok sağanak gibi yağar: hasar verir, zehirler, oklar yere saplanır', short: 'Alana 40 okluk zehirli sağanak' },
   merlin: { name: 'Meteor', cd: 60, anim: 1.8, r: 80, dmg: [110, 150], burn: 14, burnT: 4, meteor: true,
     desc: 'Gökten ruh ateşli demir bilyeler yağar: dağınık patlamalar, ufak kraterler ve 4 sn yanan zemin', short: 'Meteor yağmuru: dağınık patlamalar, yanan zemin' },
-  spartacus: { name: 'Zincir Fırtınası', cd: 50, r: 70, dps: [22, 30], dur: 3, slow: 0.35, chains: true,
-    desc: 'Seçtiğin alanda zincirler döner: 3 sn hasar verir, yavaşlatır', short: 'Alanda dönen zincirler: 3 sn hasar ve yavaşlatma' },
   // 17 Eki: Leonidas başlangıç komutanı oldu; ana güç hasar veren Mızrak Yağmuru, Falanks ikinci güç (yer değişti)
   leonidas: { name: 'Mızrak Yağmuru', cd: 50, r: 72, dmg: [22, 30], n: 24, dur: 2.2, rain: true, poison: 0, gold: true,
     desc: 'Seçtiğin alana bronz uçlu mızraklar yağar: 2,2 sn ağır hasar', short: 'Alana 2,2 sn mızrak yağmuru' },
 });
-HERO_ORDER.splice(0, HERO_ORDER.length, 'leonidas', 'merlin', 'robin', 'bathory'); // 17 Eki (Caner): Spartaküs elendi (Leonidas ile aynı tür, savaşçı); verisi duruyor, görünmez
+HERO_ORDER.splice(0, HERO_ORDER.length, 'leonidas', 'merlin', 'robin', 'bathory');
 // 13 Eki (Caner): her komutanın 2 aktif gücü (savaşa yalnız biri götürülür, Komutanlar ekranında seçilir) ve kendi kendine kullandığı
 // 2 pasif yeteneği var. İkinci aktifler: HERO_ULT2 (kademe tablosu HERO_TREE.ult2), pasifler: HEROES[id].passives (ağaçta yalnız bunlar).
 const HERO_ULT2 = {
-  spartacus: { name: 'Arena Kükremesi', cd: 45, r: 84, dmg: [18, 26], stun: 1.5, scream: true, col: '255,170,90',
-    desc: 'Spartaküs arenayı inletir: alandaki düşmanlar hasar alır ve 1,5 sn sersemler', short: 'Alanda kükreme: hasar ve 1,5 sn sersemletme' },
   leonidas: { name: 'Termopylae Falanksı', cd: 55, hp: 900, life: 6, phalanx: true, n: 5, thorns: 0.5, thrust: [60, 80],
     desc: 'Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar', short: 'Kalkan duvarı: yolu kapatır, sonunda mızrak saplar' },
   // 16 Eki (Caner: "tornadolu fırtına olabilir; tornadoya kapılan düşman dönerek etrafa saçılır, savrulur"): Zincir Şimşek yerine Kasırga Fırtınası (game.js TORNADO)
@@ -792,7 +781,7 @@ const HERO_ULT2 = {
     desc: 'Kan yarasaları alana üşüşür: 3 sn ısırır, yavaşlatır, Báthory ısırıklarla iyileşir', short: 'Alana kan yarasaları: ısırık, yavaşlatma, iyileşme' },
 };
 // pasifler: komutanın kendi kendine kullandığı iki yetenek (ötekiler ağaçta görünmez, öğrenilmiş puanları iade edilir)
-const HERO_PASSIVES = { spartacus: ['whirl', 'bash'], leonidas: ['charge', 'spear'], merlin: ['timegate', 'frog'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
+const HERO_PASSIVES = { leonidas: ['charge', 'spear'], merlin: ['timegate', 'frog'], robin: ['bonearrow', 'hunter'], bathory: ['bloodlink', 'thirst'] };
 for (const id in HERO_PASSIVES) if (HEROES[id]) HEROES[id].passives = HERO_PASSIVES[id];
 Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dmg: [26, 36], stun: 1.6, desc: 'Wren çığlık atar: alandaki düşmanlar hasar alır ve 1,6 sn sersemler' });
 // kale yerine Mortimer'ın kulesi: balkonda Mortimer durur, okçular pencere önlerinde
@@ -1261,7 +1250,7 @@ const HERO_SKILLS = {
   commander: ['bash', 'whirl', 'cry'],
   zeynep: ['volley', 'multishot', 'blastarrow'],
 };
-// (spartacus ve leonidas yollarını kendileri tanımlar: aynı yetenek kimlikleri, kendi adları)
+// (öbür komutanlar yollarını kendileri tanımlar)
 for (const id in HERO_SKILLS) {
   const all = HEROES[id].paths.flatMap(p => p.skills);
   HEROES[id].paths = [{ name: 'Yetenekler', col: '#ffd34d', skills: HERO_SKILLS[id].map(k => all.find(s => s.id === k)) }];
@@ -1573,7 +1562,7 @@ const ADMIN_TEST = { level: 'Kara Göl Geçidi', gold: 1500, lives: 20, waves: [
    { t: 'cavalry', n: 3, gap: 1.4, at: 6 }, { t: 'lantern', n: 1, gap: 1, at: 9 }, { t: 'legion', n: 8, gap: 0.6, at: 10 }, { t: 'centurion', n: 1, gap: 1, at: 15 }],
 ] };
 for (const t of ['gloriosus3', 'cathedral']) if (ENEMIES[t]) ENEMIES[t].final = true;
-Object.assign(HEROES.leonidas, { cost: 0, unlock: null }); // 17 Eki: başlangıç komutanı Leonidas (ücretsiz; Spartaküs elendi). Diğerleri kristalle açılır
+Object.assign(HEROES.leonidas, { cost: 0, unlock: null }); // 17 Eki: başlangıç komutanı Leonidas (ücretsiz). Diğerleri kristalle açılır
 // tek kullanımlık savaş eşyaları: dükkânda kristalle alınır, savaşta sağ alttaki çantadan kullanılır (KR'deki eşyalar gibi)
 const ITEMS = {
   bomb:   { name: 'Kemik Bombası',    cost: 3, desc: 'Seçtiğin yerde patlar, ağır alan hasarı', target: true, r: 85, dmg: 320 },
@@ -1585,7 +1574,7 @@ const ITEM_ORDER = ['bomb', 'freeze', 'tea', 'purse'];
 // 15 Eki (Caner): günlük giriş hediyesi. 7 günlük döngü; bir gün kaçırılırsa seri sıfırlanmaz, kaldığı yerden sürer.
 // c: kristal, item: savaş eşyası (ITEMS). Haftada ~8 kristal + 4 eşya (komutanlar 15/30 kristal: bossların payını ezmesin).
 // 14 Eki (Caner): komutan eşyaları. Bosslar düşürür (save.gear), Komutanlar ekranındaki EŞYALAR panosunda komutanın üstüne takılır
-// (save.equip[komutan][yuva] = eşya no). 4 yuva; silah komutana özeldir (Spartaküs kılıç, Leonidas mızrak, Merlin asa, Robin ok, Báthory hançer).
+// (save.equip[komutan][yuva] = eşya no). 4 yuva; silah komutana özeldir (Leonidas mızrak, Merlin asa, Robin ok, Báthory hançer).
 // Nadirlik 0..3; değerler game.js heroStats'ta uygulanır. Eşya {id, s: yuva, k: silah türü, r: nadirlik}.
 const EQUIP = {
   slots: ['weapon', 'armor', 'ring', 'amulet'],
@@ -1599,9 +1588,9 @@ const EQUIP = {
   // nadirliğe göre: silah hasar, zırh can + zırh, yüzük güç bekleme süresi (-), tılsım saldırı hızı + can yenileme
   stat: { weapon: { dmg: [0.08, 0.15, 0.24, 0.35] }, armor: { hp: [0.1, 0.18, 0.28, 0.4], armor: [0.02, 0.04, 0.07, 0.1] },
     ring: { cd: [0.05, 0.09, 0.14, 0.2] }, amulet: { spd: [0.05, 0.09, 0.14, 0.2], regen: [0.2, 0.35, 0.55, 0.8] } },
-  wpn: { spartacus: 'sword', leonidas: 'spear', merlin: 'staff', robin: 'arrow', bathory: 'dagger' },
+  wpn: { leonidas: 'spear', merlin: 'staff', robin: 'arrow', bathory: 'dagger' },
   // 16 Eki (Caner): eşyalar komutanın sınıfına göre; düşen eşya doğrudan savaştaki komutanın çantasına gider (eşya.h = sahibi, eşya.c = sınıf)
-  cls: { spartacus: 'warrior', leonidas: 'warrior', merlin: 'mage', bathory: 'bloodmage', robin: 'ranger' },
+  cls: { leonidas: 'warrior', merlin: 'mage', bathory: 'bloodmage', robin: 'ranger' },
   clsName: { warrior: 'Savaşçı', mage: 'Büyücü', bloodmage: 'Kan Büyücüsü', ranger: 'Suikastçı Okçu' },
   clsNames: { // savaşçı names'teki zırh/yüzük/tılsımı kullanır
     mage: { armor: ['Keten Cübbe', 'Yıldızlı Cübbe', 'Fırtına Cübbesi', 'Avalon Cübbesi'], ring: ['Bakır Mühür', 'Ay Taşı Yüzüğü', 'Rün Yüzüğü', "Merlin'in Mührü"],
@@ -1664,7 +1653,7 @@ for (const t in BAL.tower) for (const L of TOWERS[t].levels) if (L.dmg) L.dmg = 
 GAME_DIFF.hp *= BAL.hp; GAME_DIFF.bounty *= BAL.bounty;
 for (const h in BAL.hero) if (HEROES[h] && HEROES[h].dmg) HEROES[h].dmg = HEROES[h].dmg.map(v => Math.round(v * BAL.hero[h]));
 for (const h in BAL.heroCd) for (const P of (HEROES[h] && HEROES[h].paths) || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * BAL.heroCd[h] * 10) / 10;
-// 16 Eki (7. tur): 40 bölüm × 3 yapılandırma tam test (karışık+Spartaküs, karışık+Merlin, 2 Ruh Feneri+mahzen+Merlin). Üçünün de tam canla geçtiği
+// 16 Eki (7. tur): 40 bölüm × 3 yapılandırma tam test (karışık+başlangıç komutanı, karışık+Merlin, 2 Ruh Feneri+mahzen+Merlin). Üçünün de tam canla geçtiği
 // bölümlerde can artar, karışık oyunun kaybettiklerinde azalır (BAL.lvl: bölüm sırası → can çarpanı). Kuzgun Tepesi (1): ödül kesintisinden sonra
 // bot 2-3 kule kurabiliyordu, üç yapılandırma da kaybetti: can %20 az, +60 başlangıç altını.
 BAL.lvl = { 1: 0.8, 2: 1.25, 3: 1.2, 5: 1.15, 7: 1.2, 8: 1.05, 10: 1.05, 11: 0.9, 12: 1.25, 13: 0.92, 14: 1.2, 16: 1.2, 17: 0.92, 18: 1.25,
@@ -1705,13 +1694,8 @@ for (const L of TOWERS.barracks.levels) L.hp = Math.round(L.hp * BAL.barracksHp)
 BAL.lvl2 = { 2: 1.5, 3: 1.4, 4: 1.2, 5: 1.1, 6: 1.2, 7: 1.4, 10: 1.1, 12: 1.1, 14: 1.05, 16: 1.3, 18: 1.6, 21: 1.1, 24: 1.3, 25: 1.05, 26: 1.5, 27: 1.2, 29: 1.2, 31: 1.1, 33: 1.3 };
 for (const i in BAL.lvl2) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl2[i];
 for (const i in BAL.lvl3) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl3[i];
-// 10. tur: Spartaküs (ücretsiz başlangıç komutanı) karışık oyunda 40'ta 20 kazanıyor, ort. 5,5 can (Merlin 35/40, 11,7): güçlenir
-BAL.spartacus = { dmg: 1.35, hp: 1.3, cd: 0.85, ult: 1.4 }; // 11. tur: 1,2/1,15/1,2 ile 22/40, ort. 7 can (yetmedi)
-{ const S = HEROES.spartacus, B = BAL.spartacus; S.dmg = S.dmg.map(v => Math.round(v * B.dmg)); S.hp = Math.round(S.hp * B.hp);
-  for (const P of S.paths || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * B.cd * 10) / 10;
-  const U = HERO_ULT.spartacus; if (U && U.dps) U.dps = U.dps.map(v => Math.round(v * B.ult)); }
-// 17 Eki: Spartaküs elendi, başlangıç komutanı Leonidas; onun başlangıç takviyesi Leonidas'a (tank: can daha az artar, falanks canı ult ile)
-BAL.leonidas = { dmg: 1.8, hp: 1.2, cd: 0.8, ult: 1.6 }; // 17 Eki bot 2-6: 1,35/1,15 ile 0/5, 1,8 ile 1/5; ana güç Mızrak Yağmuru olunca 4/5 (Spartaküs 4/5, canlar eş)
+// 17 Eki: başlangıç komutanı Leonidas: başlangıç takviyesi (bot ile ayarlandı)
+BAL.leonidas = { dmg: 1.8, hp: 1.2, cd: 0.8, ult: 1.6 }; // 17 Eki bot 2-6: 1,35/1,15 ile 0/5, 1,8 ile 1/5; ana güç Mızrak Yağmuru olunca 4/5 (eski başlangıç komutanıyla eş)
 { const S = HEROES.leonidas, B = BAL.leonidas; S.dmg = S.dmg.map(v => Math.round(v * B.dmg)); S.hp = Math.round(S.hp * B.hp);
   for (const P of S.paths || []) for (const sk of P.skills || []) if (sk.cd) sk.cd = Math.round(sk.cd * B.cd * 10) / 10;
   const U = HERO_ULT.leonidas; if (U && U.dmg) U.dmg = U.dmg.map(v => Math.round(v * B.ult)); }

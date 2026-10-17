@@ -32,38 +32,6 @@
   "seed": 5
  },
  {
-  "name": "hero_spartacus_idle",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists stands in place in a relaxed ready stance, breathing calmly, the chest rises and falls, he shifts his weight slightly, the cloth gently sways, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "hero_spartacus_run",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists runs in place fast with long strides, leaning forward, knees lifting high, arms pumping, the cloth streaming behind, a full running cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "hero_spartacus_cast",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists raises his sword high above his head and roars a battle cry, the broken chains on his wrists swing and rattle, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
-  "frames": 33,
-  "loop": true,
-  "seed": 5
- },
- {
-  "name": "hero_spartacus_block",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists raises his chained forearms crossed in front of his face to block a heavy blow, staggers back one step, then returns to his fighting stance. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",
-  "frames": 33,
-  "loop": true,
-  "seed": 5
- },
- {
   "name": "hero_leonidas_idle",
   "ref": "ham/anim/hero_leonidas_ref.png",
   "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear stands in place in a relaxed ready stance, breathing calmly, the chest rises and falls, he shifts his weight slightly, the cloth gently sways, a seamless idle loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion",

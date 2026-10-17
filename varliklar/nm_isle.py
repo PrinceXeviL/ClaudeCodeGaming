@@ -49,7 +49,6 @@ SHEETS = [
     ('nm_kusatma.jpg', ['enemy_ram', 'enemy_catapult'], 'unit'),
     ('nm_mortimer.jpg', ['mortimer', None], 'unit'),  # azrail Mortimer: önden görünüş (balkondan ekrana/aşağı bakar)
     ('nm_banshee.jpg', ['hero_wren'], 'unit'),
-    ('nm_komutanlar_2.jpg', ['hero_spartacus', 'hero_leonidas'], 'unit'),
     ('nm_merlin.jpg', ['hero_merlin'], 'unit'),
     ('nm_robin.jpg', ['hero_robin'], 'unit'),
     ('nm_bathory.jpg', ['hero_bathory'], 'unit'),  # 16 Eki: Erzsébet Báthory, Kan Kontesi (kan büyücüsü)
@@ -97,8 +96,8 @@ SHEETS = [
     ('nm17_arayuz_G.jpg', ['ico_ui_back', 'ico_ui_close', 'ico_ui_lock', 'ico_ui_check', 'ico_ui_daily', 'ico_ui_help', 'ico_ui_heroes', 'ico_ui_upgrades', 'ico_ui_ach', 'ico_ui_codex', 'ico_ui_shop', 'ico_ui_star'], 'decor'),  # 16 Eki: menü düğmeleri
     ('nm18_basarim_H.jpg', ['ico_ach_first', 'ico_ach_flawless', 'ico_ach_allstars', 'ico_ach_heroic', 'ico_ach_kills', 'ico_ach_bosses', 'ico_ach_raise', 'ico_ach_fear', 'ico_ach_wall', 'ico_ach_tea', 'ico_ach_crow', 'ico_ach_tip', 'ico_ach_hoard', 'ico_ach_master', 'ico_ach_codex', 'ico_ach_chal5'], 'decor'),  # 16 Eki: başarım simgeleri (ACH sırası)
     ('nm15_kule_menu.jpg', ['ico_mn_upgrade', 'ico_mn_sell', 'ico_mn_clear', 'ico_mn_rally', 'ico_im_fire', 'ico_im_poison', 'ico_im_frost', 'ico_mn_path_bow', 'ico_mn_path_xbow', 'ico_mn_ghoul', 'ico_mn_max', 'ico_mn_back'], 'decor'),  # 16 Eki: kule menüsü simgeleri (yükselt, sat, kürek, bayrak, büyüler, yollar, hortlak, max, geri)
-    ('nm14_komutan_D.jpg', ['ico_hs_spartacus_whirl', 'ico_hs_spartacus_bash', 'ico_hs_spartacus_charge', 'ico_hs_leonidas_bash', 'ico_hs_leonidas_cry', 'ico_hs_merlin_timegate', 'ico_hs_merlin_frog', 'ico_hs_robin_knives', 'ico_hs_robin_bonearrow', 'ico_hs_robin_hunter', 'ico_hs_bathory_sacrifice', 'ico_hs_bathory_thirst'], 'decor'),  # 16 Eki: komutan yetenek ağacı simgeleri
-    ('nm13_komutan_C.jpg', ['ico_hu_spartacus', 'ico_hu_spartacus2', 'ico_hu_leonidas', 'ico_hu_leonidas2', 'ico_hu_merlin', 'ico_hu_merlin2', 'ico_hu_robin', 'ico_hu_robin2', 'ico_hu_bathory', 'ico_hu_bathory2', 'ico_hs_leonidas_iron', 'ico_hs_bathory_bloodlink'], 'decor'),  # 16 Eki: komutan güç simgeleri (ult, ult2) + Bronz Kalkan, Kan Bağı
+    ('nm14_komutan_D.jpg', [None, None, None, 'ico_hs_leonidas_bash', 'ico_hs_leonidas_cry', 'ico_hs_merlin_timegate', 'ico_hs_merlin_frog', 'ico_hs_robin_knives', 'ico_hs_robin_bonearrow', 'ico_hs_robin_hunter', 'ico_hs_bathory_sacrifice', 'ico_hs_bathory_thirst'], 'decor'),  # 16 Eki: komutan yetenek ağacı simgeleri
+    ('nm13_komutan_C.jpg', [None, None, 'ico_hu_leonidas', 'ico_hu_leonidas2', 'ico_hu_merlin', 'ico_hu_merlin2', 'ico_hu_robin', 'ico_hu_robin2', 'ico_hu_bathory', 'ico_hu_bathory2', 'ico_hs_leonidas_iron', 'ico_hs_bathory_bloodlink'], 'decor'),  # 16 Eki: komutan güç simgeleri (ult, ult2) + Bronz Kalkan, Kan Bağı
     ('nm12_yetenek_B.jpg', ['ico_ab_poison', 'ico_ab_snipe', 'ico_ab_frost', 'ico_ab_blast', 'ico_ab_napalm', 'ico_ab_holy', 'ico_ab_quake', 'ico_ab_smoke', 'ico_ab_trap', 'ico_ab_shadow', 'ico_ab_meteor', 'ico_ab_soulshield'], 'decor'),  # 16 Eki: kule yetenek simgeleri (2. sayfa; soulshield yedek)
     ('nm11_buyu_simgeleri.jpg', ['ico_sp_nm_raise', 'ico_sp_nm_wall', 'ico_sp_nm_fear', 'ico_sp_nm_golem', 'ico_sp_nm_burst', 'ico_sp_book'], 'decor'),
     ('nm34_buyu_simgeleri_2.jpg', ['ico_sp_nm_raise', 'ico_sp_nm_wall', 'ico_sp_nm_fear', 'ico_sp_nm_burst', 'ico_sp_nm_golem', 'ico_sp_book', 'ico_tea', 'ico_ui_banner_g', 'ico_ui_banner_p'], 'decor'),  # 17 Eki (Caner): büyü simgeleri başarım tarzında; Türk kahvesi fincanı; zombi emir sancakları (eskiler varliklar/cikti/eski_buyu_simge/)  # 16 Eki: Mortimer büyü simgeleri (alt çubuk, büyü kitabı)

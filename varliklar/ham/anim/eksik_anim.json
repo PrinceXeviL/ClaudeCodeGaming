@@ -185,14 +185,6 @@
   "prompt": "a cartoon armored war elephant with red and gold barding and a small wooden tower with an archer on its back is struck and dies: it stumbles, sinks to its knees and topples over onto its side, the tower breaking, then lies still. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
  },
  {
-  "name": "hero_spartacus_skill",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "frames": 33,
-  "loop": true,
-  "seed": 5,
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists spins around swinging his long chains in a wide circle above his head with green ghost fire, then returns exactly to the starting pose. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, smooth motion"
- },
- {
   "name": "hero_leonidas_skill",
   "ref": "ham/anim/hero_leonidas_ref.png",
   "frames": 33,

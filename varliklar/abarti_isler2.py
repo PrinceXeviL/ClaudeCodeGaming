@@ -21,7 +21,7 @@ VEO = {'castle_keep_1_idle', 'castle_keep_2_idle', 'castle_keep_3_idle', 'enemy_
        'enemy_siegetower_die', 'enemy_siegetower_walk', 'enemy_eagle_atk', 'enemy_eagle_walk', 'enemy_vulture_atk', 'enemy_vulture_walk',
        'unit_skel_4_dash', 'unit_skel_4_die', 'unit_skel_4_guard', 'unit_skel_5_die', 'unit_skel_5_skill', 'unit_skel_4_atk'}
 VEO_PRE = ('hero_merlin', 'hero_robin', 'hero_bathory', 'tower_', 'mortimer')
-ESKI = ('enemy_gloriosus_', 'enemy_herald', 'hero_wren', 'hero_drakula', 'hero_vladrik', 'hero_spartacus', 'hero_leonidas', 'unit_archer1', 'unit_archer2')
+ESKI = ('enemy_gloriosus_', 'enemy_herald', 'hero_wren', 'hero_drakula', 'hero_vladrik', 'hero_leonidas', 'unit_archer1', 'unit_archer2')
 VEO_BEKLER = ('enemy_catapult',)
 NO_IDLE = {'cannon', 'catapult', 'ram', 'siegetower', 'lantern', 'chariot', 'cathedral', 'eagle', 'vulture'}  # makine / uçan: durunca tek kare yeter
 CUT2 = A1.CUT[:-3] + r'|stalks|strides|shuffles|lumbers|prowls|glides|floats|waddles|limps|staggers|creeps|trudges|swaggers|sways|struts|gallops|plods|bounces|drags|rides|pushes|is pulled)\b'

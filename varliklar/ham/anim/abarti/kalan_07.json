@@ -80,28 +80,12 @@
   "seed": 11
  },
  {
-  "name": "hero_spartacus_walkx",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 49,
-  "loop": false,
-  "seed": 11
- },
- {
   "name": "hero_drakula_walkx",
   "ref": "ham/anim/hero_drakula_ref.png",
   "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
   "frames": 49,
   "loop": false,
   "seed": 11
- },
- {
-  "name": "hero_spartacus_atkx",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists swings the sword in a powerful slash and whips the chain forward, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 7
  },
  {
   "name": "hero_leonidas_atkx",
@@ -128,14 +112,6 @@
   "seed": 7
  },
  {
-  "name": "hero_spartacus_diex",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists falls to his knees, drops the sword and collapses forward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": false,
-  "seed": 7
- },
- {
   "name": "hero_drakula_diex",
   "ref": "ham/anim/hero_drakula_ref.png",
   "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier is struck down: he staggers, wraps himself in his cape and crumbles into a cloud of dust and small black bats that fly away. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
@@ -155,14 +131,6 @@
   "name": "hero_drakula_skillx",
   "ref": "ham/anim/hero_drakula_ref.png",
   "prompt": "a cartoon vampire count dracula with slicked-back black hair, a black suit, a crimson waistcoat and a huge black cape with red lining, holding a silver rapier spreads his cape wide like bat wings and a swarm of small black bats bursts out of it and flies forward, then he closes the cape and returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 5
- },
- {
-  "name": "hero_spartacus_skillx",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists spins around swinging his long chains in a wide circle above his head with green ghost fire, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
   "frames": 33,
   "loop": true,
   "seed": 5

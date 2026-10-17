@@ -57,8 +57,6 @@ SFX = {
     'titlego': ('dark fantasy game start transition: a deep rushing whoosh pulled into a swirling ghostly vortex, eerie spirit choir rising quickly, then one heavy magical boom with a shimmering tail, cinematic, no voice words', 2.4, 2),
     'titlesoft': ('a soft calm magical transition: one gentle airy whoosh fading into a single warm low chime, soothing, relaxing, quiet, short, no music, no voice', 1.2, 1),
     'mapfly': ('a long gentle airy night wind whoosh, like gliding softly through the air over a dark forest, slowly swelling then settling down calmly, soothing, quiet, no music, no voice', 3.2, 1),
-    'hsel_spartacus': ('a tough gladiator warrior gives one short confident battle grunt \'hah\', heavy chains rattle, game unit selected acknowledgment, no words', 1.1, 2),
-    'hmove_spartacus': ('a heavy gladiator starts running, a few strong footsteps on dirt, chains clinking, one short determined grunt, no words', 1.1, 2),
     'hsel_leonidas': ('a spartan king gives one deep commanding \'hmm\' growl, bronze armor and shield clank, game unit selected, no words', 1.1, 2),
     'hmove_leonidas': ('an armored spartan marches off, steady heavy footsteps, bronze shield clank, a short battle \'hup\', no words', 1.1, 2),
     'hsel_merlin': ('an old wise wizard gives a thoughtful \'hmm\' and a soft magical sparkle chime, game unit selected, no words', 1.1, 2),

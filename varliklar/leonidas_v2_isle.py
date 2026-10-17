@@ -1,4 +1,4 @@
-"""Leonidas v2 (17 Eki, Caner: Spartaküs elendi, Leonidas kaldı; yeni tasarım: ölü Sparta kralı, Korint miğferi, lambdalı kalkan, tek mızrak, mor ruh alevleri).
+"""Leonidas v2 (17 Eki, Caner: yeni tasarım: ölü Sparta kralı, Korint miğferi, lambdalı kalkan, tek mızrak, mor ruh alevleri).
 ham/nm_leonidas_v2_alevsiz.jpg (beyaz zemin; mor alevli sürümü nm_leonidas_v2.jpg: Wan magenta zemini mor alevi siler, alevler kodla) -> img/hero_leonidas.webp (380 px boy) + meta. Eski görsel ve şeritler varliklar/cikti/leonidas_v1/.
     .venv/bin/python3 varliklar/leonidas_v2_isle.py"""
 import os, json, shutil

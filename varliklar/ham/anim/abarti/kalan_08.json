@@ -24,38 +24,6 @@
   "seed": 5
  },
  {
-  "name": "hero_spartacus_idlex",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists stands in place in a relaxed ready stance, breathing calmly, the chest rises and falls, he shifts his weight slightly, the cloth gently sways, a seamless idle loop. Lively cartoon idle: big breathing, the shoulders rise and fall, a slight bounce, the weight shifts from foot to foot, squash and stretch, but the character stays in place, seamless loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "hero_spartacus_runx",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists runs in place fast with long strides, leaning forward, knees lifting high, arms pumping, the cloth streaming behind, a full running cycle. Exaggerated cartoon run: very long strides, knees high, the body leans far forward and bounces, the arms pump hard, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 21
- },
- {
-  "name": "hero_spartacus_castx",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists raises his sword high above his head and roars a battle cry, the broken chains on his wrists swing and rattle, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 5
- },
- {
-  "name": "hero_spartacus_blockx",
-  "ref": "ham/anim/hero_spartacus_ref.png",
-  "prompt": "a cartoon undead gladiator champion with a bronze helmet, a short sword and broken chains on his wrists raises his chained forearms crossed in front of his face to block a heavy blow, staggers back one step, then returns to his fighting stance. Exaggerated cartoon action: braces hard, a big recoil from the blow, then snaps back, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
-  "frames": 33,
-  "loop": true,
-  "seed": 5
- },
- {
   "name": "hero_leonidas_idlex",
   "ref": "ham/anim/hero_leonidas_ref.png",
   "prompt": "a cartoon undead spartan king with a crested bronze helmet, a big round bone shield and a spear stands in place in a relaxed ready stance, breathing calmly, the chest rises and falls, he shifts his weight slightly, the cloth gently sways, a seamless idle loop. Lively cartoon idle: big breathing, the shoulders rise and fall, a slight bounce, the weight shifts from foot to foot, squash and stretch, but the character stays in place, seamless loop. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
