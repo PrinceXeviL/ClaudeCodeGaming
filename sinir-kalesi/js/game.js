@@ -13080,7 +13080,7 @@ if (NECRO) Object.assign(STYLES, {
 
 // Necromancer arayüzü (Caner, 10 Eki: menülerde Necromancer tasarımı ağır bassın): düğmeler parlak şeker yerine kara taş levha,
 // kemik çerçeve, köşelerde kemik perçin, rengi yalnız kenardaki ruh ışığında (yeşil devam, mor ayar, kemik, kızıl). Karolar mezar taşı biçiminde.
-const NECRO_AC = { green: '130,255,150', blue: '190,140,255', gold: '235,215,170', wood: '175,155,215', red: '255,95,85', dark: '180,160,140' };
+const NECRO_AC = { green: '130,255,150', blue: '190,140,255', gold: '235,215,170', wood: '175,155,215', red: '255,95,85', dark: '180,160,140', ember: '255,150,60' }; // ember: etkinlik (18 Eki)
 function necroButton(key, x, y, w, h, label, fn, style, o, appear) {
   // duraklatma karolarının dili: kızıl-mor kadife, altın çerçeve, alttan rengine göre ruh ışığı; karo (o.tile) simgesi altın madalyonda
   const ac = NECRO_AC[style] || NECRO_AC.wood, down = press.key === key;
@@ -17322,37 +17322,101 @@ function drawEndlessBoard(i, x, y, w, h) {
     fitTxt(`${(HEROES[r.h] && HEROES[r.h].name) || ''} · ${r.k} öldürme · ${ds}`, x + w - 12, ry, w - 150, 13, '#b8a8c8', 'right', '700', FONT_B, false, 10);
   });
 }
+// 18 Eki (Caner: "Ölüler Gecesi sayfası konseptine uygun olsun, çizimler olabilir"): etkinliğin kendi sayfası. Gemini çizimleri gelince
+// img/ev_<id>_bg.jpg (arka plan) ve ev_<id>_1..3.jpg (bölüm kartları) kullanılır (manifestte değil, sayfa açılınca yüklenir); yoksa kodla gece sahnesi.
+const EV_IMG = {};
+function evImg(name) {
+  if (!(name in EV_IMG)) { const im = new Image(); EV_IMG[name] = null; im.onload = () => { EV_IMG[name] = im; }; im.src = 'img/' + name + '.jpg' + (window.SURUM ? '?v=' + window.SURUM : ''); }
+  return EV_IMG[name];
+}
+const EVFX = { leaves: [], bats: [] };
+function drawEventBackdrop(E, st) {
+  const L = VIS.l, T = VIS.t, Wv = VIS.w, Hv = VIS.h, bg = evImg('ev_' + E.id + '_bg');
+  if (bg) { const k = Math.max(Wv / bg.width, Hv / bg.height) * (1.04 + 0.01 * Math.sin(time * 0.15)); ctx.drawImage(bg, L + (Wv - bg.width * k) / 2, T + (Hv - bg.height * k) / 2, bg.width * k, bg.height * k); }
+  else { // kodla gece: mor gök, ufukta turuncu ışık, dev hasat ayı, tepe siluetleri, mezar taşları
+    const g = ctx.createLinearGradient(0, T, 0, T + Hv); g.addColorStop(0, '#120720'); g.addColorStop(0.55, '#2a0f3a'); g.addColorStop(0.82, '#5a2416'); g.addColorStop(1, '#1a0806');
+    ctx.fillStyle = g; ctx.fillRect(L, T, Wv, Hv);
+    const mx = L + Wv * 0.78, my = T + Hv * 0.3, mr = Hv * 0.2;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my, mr * 3.2, '255,140,40', 0.35); glow(ctx, mx, my, mr * 1.6, '255,190,90', 0.4); ctx.restore();
+    const mg = ctx.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, mr * 0.1, mx, my, mr); mg.addColorStop(0, '#ffe2a0'); mg.addColorStop(1, '#f08a2a'); circle(mx, my, mr, mg);
+    for (const [dx, dy, rr] of [[-0.3, -0.2, 0.16], [0.25, 0.15, 0.12], [-0.05, 0.35, 0.09], [0.35, -0.3, 0.07]]) circle(mx + dx * mr, my + dy * mr, rr * mr, 'rgba(200,100,30,0.35)');
+    const hill = (y0, amp, col, seed) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(L, T + Hv); for (let x = 0; x <= Wv; x += 20) { const u = x / Wv; ctx.lineTo(L + x, T + Hv * y0 - Math.sin(u * 6 + seed) * amp - Math.sin(u * 13 + seed * 2) * amp * 0.4); } ctx.lineTo(L + Wv, T + Hv); ctx.closePath(); ctx.fill(); };
+    hill(0.78, 18, '#1c0a22', 1); hill(0.86, 12, '#120614', 3);
+    const r = seeded(9); for (let i = 0; i < 14; i++) { const x = L + r() * Wv, y = T + Hv * (0.82 + r() * 0.12); ctx.fillStyle = '#0c040e'; ctx.beginPath(); ctx.roundRect(x - 6, y - 16, 12, 18, [6, 6, 0, 0]); ctx.fill(); }
+  }
+  // sis bantları
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 5; i++) { const x = L + ((i * 0.27 + time * 0.012 * (i % 2 ? 1 : -1)) % 1.2 - 0.1) * Wv, y = T + Hv * (0.7 + i * 0.05); glow(ctx, x, y, Wv * 0.22, '150,120,190', 0.07); }
+  ctx.restore();
+  // yarasalar ve düşen yapraklar
+  if (EVFX.bats.length < 7) EVFX.bats.push({ x: L - 40 - rand(0, 300), y: T + rand(Hv * 0.08, Hv * 0.45), v: rand(40, 90), s: rand(0.7, 1.3), ph: rand(0, 9) });
+  for (const b of EVFX.bats) { b.x += b.v * 0.016; if (b.x > L + Wv + 60) { b.x = L - 60; b.y = T + rand(Hv * 0.08, Hv * 0.45); } drawBatMap(b.x, b.y + Math.sin(time * 2 + b.ph) * 10, 1, time * 10 + b.ph, b.s * 1.2); }
+  if (EVFX.leaves.length < 22) EVFX.leaves.push({ x: L + rand(0, Wv), y: T - 20, vy: rand(18, 36), vx: rand(-14, 14), r: rand(0, 6), s: rand(3, 6), c: Math.random() < 0.6 ? '#e8741a' : Math.random() < 0.5 ? '#c84a1a' : '#8a3a8a' });
+  for (const f of EVFX.leaves) { f.y += f.vy * 0.016; f.x += (f.vx + Math.sin(time * 2 + f.r) * 18) * 0.016; f.r += 0.03;
+    if (f.y > T + Hv + 20) { f.y = T - 20; f.x = L + rand(0, Wv); }
+    ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.r); ctx.fillStyle = f.c; ctx.beginPath(); ctx.ellipse(0, 0, f.s, f.s * 0.5, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+  // kenarları karart (kartlar okunsun)
+  const vg = ctx.createRadialGradient(W / 2, H / 2, Hv * 0.25, W / 2, H / 2, Wv * 0.7); vg.addColorStop(0, 'rgba(10,4,14,0.25)'); vg.addColorStop(1, 'rgba(10,4,14,0.6)');
+  ctx.fillStyle = vg; ctx.fillRect(L, T, Wv, Hv);
+}
+function evTitle(text) { // turuncu, parlayan, gotik başlık (önbellek)
+  const key = 'ev_' + text; if (WINC[key]) return WINC[key];
+  const size = 46, R = 2, c = document.createElement('canvas'), g = c.getContext('2d'); g.font = `${size}px ${FONT_LOGO}`;
+  const w = Math.ceil(g.measureText(text).width + size * 1.4), h = Math.ceil(size * 2); c.width = w * R; c.height = h * R; g.scale(R, R);
+  g.font = `${size}px ${FONT_LOGO}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.shadowColor = 'rgba(255,120,30,0.9)'; g.shadowBlur = size * 0.55; g.strokeStyle = '#1a0606'; g.lineWidth = size * 0.22; g.strokeText(text, w / 2, h / 2);
+  g.shadowBlur = 0; g.strokeStyle = '#5a1a6a'; g.lineWidth = size * 0.09; g.strokeText(text, w / 2, h / 2);
+  const gr = g.createLinearGradient(0, h / 2 - size * 0.5, 0, h / 2 + size * 0.5); gr.addColorStop(0, '#fff2c0'); gr.addColorStop(0.45, '#ffb030'); gr.addColorStop(1, '#c4400c');
+  g.fillStyle = gr; g.fillText(text, w / 2, h / 2);
+  return (WINC[key] = { c, w, h });
+}
 function drawEvent() {
   const st = time - screenT, EN = eventNow();
-  menuBackdrop(st);
+  if (!EN) { menuBackdrop(st); roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = 'map'; screenT = time; }), { appear: st - 0.1 }); txt('Şu an açık etkinlik yok', W / 2, H / 2, 22, '#f0e2c4', 'center', '400', FONT_T, false); return; }
+  const E = EN.E; drawEventBackdrop(E, st);
   roundBtn('back', EDGE.l + 42, 44, 29, 'back', () => go(() => { screen = 'map'; screenT = time; }), { appear: st - 0.1 });
-  if (!EN) { txt('Şu an açık etkinlik yok', W / 2, H / 2, 22, '#f0e2c4', 'center', '400', FONT_T, false); return; }
-  const E = EN.E, rk = easeOutBack(clamp(st / 0.45, 0, 1));
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, W / 2, 60, 260, E.col, 0.18); ctx.restore();
-  ctx.save(); ctx.translate(W / 2, 50); ctx.scale(rk, rk); ribbon(0, 0, 360, E.name.toLocaleUpperCase('tr'), 'gold', 26); ctx.restore();
-  txt(`${E.desc}  ·  Bitişe ${EN.days} gün`, W / 2, 96, 15, '#ffd8b0', 'center', '700', FONT_B, false);
-  const n = E.stages.length, cw = 270, gap = 22, x0 = W / 2 - (n * cw + (n - 1) * gap) / 2, y0 = 122, ch = 360;
+  // başlık: iki yanında balkabağı, altında geri sayım şeridi
+  const rk = easeOutBack(clamp(st / 0.5, 0, 1)), TI = evTitle(E.name.toLocaleUpperCase('tr'));
+  ctx.save(); ctx.translate(W / 2, 46); ctx.scale(rk, rk); ctx.drawImage(TI.c, -TI.w / 2, -TI.h / 2, TI.w, TI.h);
+  for (const sd of [-1, 1]) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, sd * (TI.w / 2 + 18), 4, 30, '255,140,40', 0.4); ctx.restore(); drawPumpkin(sd * (TI.w / 2 + 18), 6, 15, sd + time * 0.1); }
+  ctx.restore();
+  { const t = `${E.desc}  ·  Bitişe ${EN.days} gün`; ctx.font = `700 15px ${FONT_B}`; const tw = Math.min(ctx.measureText(TR(t)).width + 40, VIS.w - 80);
+    roundRect(W / 2 - tw / 2, 80, tw, 30, 15, 'rgba(26,8,20,0.85)', 'rgba(255,150,60,0.6)', 1.5); fitTxt(t, W / 2, 96, tw - 24, 15, '#ffd8b0', 'center', '700', FONT_B, false, 11); }
+  const n = E.stages.length, cw = 272, gap = 22, x0 = W / 2 - (n * cw + (n - 1) * gap) / 2, y0 = 124, ch = 360;
   E.stages.forEach((S, j) => {
-    const x = x0 + j * (cw + gap), p = clamp((st - 0.15 - j * 0.08) / 0.35, 0, 1), done = evDone(E, j), open = j === 0 || evDone(E, j - 1);
+    const x = x0 + j * (cw + gap), p = clamp((st - 0.2 - j * 0.1) / 0.4, 0, 1), done = evDone(E, j), open = j === 0 || evDone(E, j - 1), cur = open && !done;
     if (p <= 0) return;
-    ctx.save(); ctx.globalAlpha = p; ctx.translate(0, (1 - easeOutBack(p)) * 40);
-    velvetCard(x, y0, cw, ch, 18, { border: open && !done ? '#ffb070' : null });
-    const tx = x + 14, ty = y0 + 14, tw = cw - 28, th = 130, T = thumbOf(S.base);
+    ctx.save(); ctx.globalAlpha = p; ctx.translate(0, (1 - easeOutBack(p)) * 50);
+    if (cur) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + cw / 2, y0 + ch / 2, cw * 0.75, '255,130,40', 0.22 + 0.08 * Math.sin(time * 3)); ctx.restore(); }
+    // kart: koyu mor kadife, turuncu ince kenar, köşelerde sarmaşık kıvrımı
+    const cg = ctx.createLinearGradient(0, y0, 0, y0 + ch); cg.addColorStop(0, '#2c0f30'); cg.addColorStop(1, '#16061a');
+    roundRect(x, y0, cw, ch, 18, cg, cur ? '#ffa040' : done ? '#9be06a' : '#6a3a5a', cur ? 3 : 2);
+    roundRect(x + 5, y0 + 5, cw - 10, ch - 10, 14, null, 'rgba(255,170,90,0.22)', 1);
+    ctx.strokeStyle = 'rgba(90,140,50,0.75)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    for (const [cx0, cy0, sx, sy] of [[x + 6, y0 + 6, 1, 1], [x + cw - 6, y0 + 6, -1, 1], [x + 6, y0 + ch - 6, 1, -1], [x + cw - 6, y0 + ch - 6, -1, -1]]) {
+      ctx.beginPath(); ctx.moveTo(cx0, cy0 + sy * 30); ctx.quadraticCurveTo(cx0, cy0, cx0 + sx * 30, cy0); ctx.stroke(); ctx.beginPath(); ctx.arc(cx0 + sx * 12, cy0 + sy * 12, 5, 0, TAU); ctx.stroke(); }
+    // kart resmi: Gemini çizimi (ev_<id>_<j+1>) ya da turuncuya boyanmış harita önizlemesi
+    const tx = x + 14, ty = y0 + 14, tw = cw - 28, th = 136, art = evImg('ev_' + E.id + '_' + (j + 1)), T = art || thumbOf(S.base);
     ctx.save(); ctx.beginPath(); ctx.roundRect(tx, ty, tw, th, 12); ctx.clip();
     if (T) { const k = Math.max(tw / T.width, th / T.height); ctx.drawImage(T, tx + (tw - T.width * k) / 2, ty + (th - T.height * k) / 2, T.width * k, T.height * k); }
-    ctx.fillStyle = `rgba(${E.col},0.18)`; ctx.fillRect(tx, ty, tw, th); ctx.restore();
-    roundRect(tx, ty, tw, th, 12, null, '#c9a865', 2.5);
-    for (const sd of [-1, 1]) drawPumpkin(x + cw / 2 + sd * 92, ty + th - 14, 9, j + sd);
-    circle(tx + 22, ty + 22, 17, '#7a140e', '#fff0b0', 2); txt('' + (j + 1), tx + 22, ty + 23, 18, '#fff', 'center', '400', FONT_T);
-    fitTxt(S.name, x + cw / 2, ty + th + 26, cw - 24, 19, '#ffe9b0', 'center', '400', FONT_T, true, 13);
-    fitTxt(S.rule, x + cw / 2, ty + th + 52, cw - 24, 14, '#f2d0b0', 'center', '700', FONT_B, false, 11);
-    // ödül
-    roundRect(x + 18, ty + th + 70, cw - 36, 50, 12, 'rgba(14,6,14,0.7)', '#6a4a5a', 1.5);
-    txt('ÖDÜL', x + 32, ty + th + 95, 13, '#cdb894', 'left', '400', FONT_T, false);
-    let rx = x + 88; if (S.reward.c) { drawCrystal(rx, ty + th + 95, 10); txt('+' + S.reward.c, rx + 14, ty + th + 96, 16, '#f0d8ff', 'left', '400', FONT_T, false); rx += 62; }
-    if (S.reward.cos) { const C = TOWER_SKINS.concat(HERO_SKINS).find(o => o.id === S.reward.cos); fitTxt(C ? C.name : '', rx, ty + th + 96, x + cw - 30 - rx, 14, '#ffb070', 'left', '800', FONT_B, false, 10); }
+    if (!art) { ctx.fillStyle = 'rgba(80,20,60,0.35)'; ctx.fillRect(tx, ty, tw, th); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, tx + tw / 2, ty + th, tw * 0.6, '255,120,30', 0.25); ctx.restore(); }
+    const sh = ctx.createLinearGradient(0, ty + th * 0.55, 0, ty + th); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(10,2,8,0.6)'); ctx.fillStyle = sh; ctx.fillRect(tx, ty, tw, th);
+    ctx.restore();
+    roundRect(tx, ty, tw, th, 12, null, '#c98a45', 2.5);
+    if (!art) for (const sd of [-1, 1]) drawPumpkin(x + cw / 2 + sd * 96, ty + th - 14, 9, j + sd);
+    // numara: balkabağı madalyon
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, tx + 24, ty + 24, 26, '255,140,40', 0.35); ctx.restore();
+    drawPumpkin(tx + 24, ty + 26, 17, j);
+    fitTxt(S.name, x + cw / 2, ty + th + 28, cw - 24, 20, '#ffd890', 'center', '400', FONT_T, true, 13);
+    fitTxt(S.rule, x + cw / 2, ty + th + 54, cw - 24, 14, '#e8c8e8', 'center', '700', FONT_B, false, 11);
+    // ödül şeridi
+    roundRect(x + 18, ty + th + 72, cw - 36, 50, 12, 'rgba(10,4,12,0.75)', 'rgba(255,150,60,0.45)', 1.5);
+    txt('ÖDÜL', x + 32, ty + th + 97, 13, '#ffb070', 'left', '400', FONT_T, false);
+    let rx = x + 88; if (S.reward.c) { drawCrystal(rx, ty + th + 97, 10); txt('+' + S.reward.c, rx + 14, ty + th + 98, 16, '#f0d8ff', 'left', '400', FONT_T, false); rx += 62; }
+    if (S.reward.cos) { const C = TOWER_SKINS.concat(HERO_SKINS).find(o => o.id === S.reward.cos); fitTxt(C ? C.name : '', rx, ty + th + 98, x + cw - 30 - rx, 14, '#ffb070', 'left', '800', FONT_B, false, 10); }
     if (done) { roundRect(x + 40, y0 + ch - 62, cw - 80, 44, 22, 'rgba(40,90,30,0.85)', '#9be06a', 2); txt('TAMAM ✓', x + cw / 2, y0 + ch - 40, 18, '#eaffd8', 'center', '400', FONT_T); }
-    else gameButton('ev_' + j, x + cw / 2, y0 + ch - 40, cw - 60, 50, open ? 'OYNA' : 'KİLİTLİ', () => { if (!open) { mapNote = { text: 'Önce önceki bölümü bitir', t: time }; sfx('error'); return; } go(() => startEvent(E, j)); }, open ? 'red' : 'dark', { icon: open ? 'play' : 'lock', size: 18, shine: open });
+    else gameButton('ev_' + j, x + cw / 2, y0 + ch - 40, cw - 60, 50, open ? 'OYNA' : 'KİLİTLİ', () => { if (!open) { mapNote = { text: 'Önce önceki bölümü bitir', t: time }; sfx('error'); return; } go(() => startEvent(E, j)); }, open ? 'ember' : 'dark', { icon: open ? 'play' : 'lock', size: 18, shine: open });
+    if (!open) { roundRect(x, y0, cw, ch, 18, 'rgba(8,2,10,0.5)'); drawIcon('lock', x + cw / 2, ty + th / 2, 40); }
     ctx.restore();
   });
 }
