@@ -260,6 +260,7 @@
 "enemy_torch_atk.webp",
 "enemy_torch_die.webp",
 "enemy_torch_idle.webp",
+"enemy_torch_skill.webp",
 "enemy_torch_walk.webp",
 "enemy_vulture.webp",
 "enemy_vulture_walk.webp",
@@ -447,6 +448,5 @@
 "unit_xbow1_walk.webp",
 "unit_xbow2_idle.webp",
 "unit_xbow2_walk.webp",
-"unit_xbow3_walk.webp",
-"enemy_torch_skill.webp"
+"unit_xbow3_walk.webp"
 ]

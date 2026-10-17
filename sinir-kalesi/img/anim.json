@@ -80,13 +80,12 @@
   "stride": 0.834
  },
  "enemy_cavalry_walk": {
-  "n": 32,
-  "fw": 148,
-  "fh": 171,
+  "n": 15,
+  "fw": 154,
+  "fh": 173,
   "base": 0.0142,
-  "ch": 0.9384,
-  "idle": 0,
-  "stride": 0.747
+  "ch": 0.9265,
+  "idle": 0
  },
  "enemy_gloriosus_walk": {
   "n": 32,
@@ -252,13 +251,12 @@
   "stride": 1.186
  },
  "enemy_ram_walk": {
-  "n": 42,
-  "fw": 303,
-  "fh": 156,
-  "base": 0.0472,
-  "ch": 0.8972,
-  "idle": 0,
-  "stride": 1.2
+  "n": 15,
+  "fw": 304,
+  "fh": 168,
+  "base": 0.0154,
+  "ch": 0.9537,
+  "idle": 0
  },
  "enemy_catapult_walk": {
   "n": 48,
@@ -385,13 +383,12 @@
   "ch": 0.8481
  },
  "enemy_chariot_walk": {
-  "n": 49,
-  "fw": 257,
-  "fh": 170,
-  "base": 0.015,
-  "ch": 0.9398,
-  "idle": 0,
-  "stride": 0.891
+  "n": 13,
+  "fw": 255,
+  "fh": 169,
+  "base": 0.0149,
+  "ch": 0.9478,
+  "idle": 0
  },
  "enemy_chariot_die": {
   "n": 33,
@@ -612,13 +609,12 @@
   "idle": 0
  },
  "enemy_ignis_walk": {
-  "n": 49,
+  "n": 18,
   "fw": 172,
-  "fh": 169,
-  "base": 0.0143,
-  "ch": 0.9475,
-  "idle": 0,
-  "stride": 0.989
+  "fh": 170,
+  "base": 0.0141,
+  "ch": 0.9435,
+  "idle": 0
  },
  "enemy_colossus_walk": {
   "n": 24,
@@ -836,13 +832,12 @@
   "stride": 1.196
  },
  "enemy_hound_walk": {
-  "n": 49,
-  "fw": 327,
-  "fh": 114,
-  "base": 0.0197,
-  "ch": 0.9377,
-  "idle": 0,
-  "stride": 3.727
+  "n": 16,
+  "fw": 491,
+  "fh": 170,
+  "base": 0.0198,
+  "ch": 0.9406,
+  "idle": 0
  },
  "enemy_holywater_walk": {
   "n": 37,
@@ -935,13 +930,12 @@
   "ch": 0.9659
  },
  "unit_bonegiant_walk": {
-  "n": 49,
-  "fw": 191,
-  "fh": 172,
-  "base": 0.014,
-  "ch": 0.9301,
-  "idle": 0,
-  "stride": 1.115
+  "n": 21,
+  "fw": 197,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9477,
+  "idle": 0
  },
  "unit_bonegiant_atk": {
   "n": 32,
@@ -1259,13 +1253,12 @@
   "ch": 0.9475
  },
  "unit_xbow1_walk": {
-  "n": 49,
-  "fw": 111,
-  "fh": 169,
+  "n": 22,
+  "fw": 113,
+  "fh": 170,
   "base": 0.0143,
-  "ch": 0.9452,
-  "idle": 0,
-  "stride": 0.891
+  "ch": 0.9427,
+  "idle": 0
  },
  "unit_xbow3_walk": {
   "n": 40,
@@ -1277,13 +1270,12 @@
   "stride": 0.903
  },
  "unit_ghostxbow_walk": {
-  "n": 49,
-  "fw": 113,
-  "fh": 176,
-  "base": 0.014,
-  "ch": 0.9114,
-  "idle": 0,
-  "stride": 0.813
+  "n": 21,
+  "fw": 109,
+  "fh": 170,
+  "base": 0.0144,
+  "ch": 0.9402,
+  "idle": 0
  },
  "unit_xbow2_walk": {
   "n": 44,

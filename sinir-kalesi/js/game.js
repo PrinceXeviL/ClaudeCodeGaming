@@ -10620,7 +10620,7 @@ function drawNecroTowerFx(t, ts) {
   } else if (t.type === 'altar') {
     // lanet kulesi: nabız gibi atan mor lanet ışığı; kan ayini varsa güçlendirdiği kulelere bağ
     const beat = Math.pow(Math.max(0, Math.sin(time * 3.2 + t.x)), 6), L = t.def.levels[t.lvl];
-    ctx.restore(); drawAltarFx(t, ts); ctx.save(); // göz, kitap, ateşler, sis (drawAltarFx)
+    ctx.restore(); drawAltarFx(t, ts); drawCurseLock(t); ctx.save(); // göz, kitap, ateşler, sis (drawAltarFx); kilit çizgisi
     ctx.globalCompositeOperation = 'lighter';
     // yerde dönen menzil halkası kalktı (13 Eki, Caner); menzil kule seçilince görünür
     for (const u of G.towers) {
@@ -11066,6 +11066,11 @@ function drawEnemy0(e) {
       for (let i = 0; i < 3; i++) { const an = time * 1.3 + i * 2.09 + e.off, x = e.x + Math.cos(an) * dh * 0.32, y = e.y - dh * (0.35 + 0.18 * Math.sin(an * 0.7 + i)), rr = dh * 0.42;
         const gm = ctx.createRadialGradient(x, y, 0, x, y, rr); gm.addColorStop(0, `rgba(150,70,220,${0.2 * a})`); gm.addColorStop(1, 'rgba(150,70,220,0)'); ctx.fillStyle = gm; ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
       if (Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: e.x + rand(-5, 5), y: e.y - rand(dh * 0.2, dh * 0.7), vy: -rand(10, 22), col: '120,50,170', s0: rand(2, 3.2), s1: 0.6, life: 0.7, a: 0.5 });
+      { const C = e.curseCol || '210,120,255', y = top - 9 + Math.sin(time * 3 + e.off) * 1.2, r = 5.2; // 17 Eki: başın üstünde dönen rün mührü (lanetli kim, uzaktan okunsun)
+        ctx.save(); ctx.translate(e.x, y); ctx.globalAlpha = a; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 10, C, 0.45); ctx.restore();
+        ctx.strokeStyle = `rgb(${C})`; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke(); ctx.rotate(time * 2.4);
+        for (let i = 0; i < 3; i++) { ctx.rotate(TAU / 3); ctx.beginPath(); ctx.moveTo(r, 0); ctx.lineTo(r + 2.6, -1.4); ctx.lineTo(r + 2.6, 1.4); ctx.closePath(); ctx.fillStyle = `rgb(${C})`; ctx.fill(); }
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, 1.5, 0, TAU); ctx.fill(); ctx.restore(); }
     }
     if (e.nailT > 0) { ctx.save(); ctx.translate(e.x + 6, top - 4); ctx.rotate(0.3); ctx.fillStyle = '#1a1020'; ctx.strokeStyle = '#9dff8a'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(-2.4, -5); ctx.lineTo(2.4, -5); ctx.lineTo(0.6, 4); ctx.lineTo(-0.6, 4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
@@ -12634,6 +12639,7 @@ function drawEffect(f) {
   } else if (f.kind === 'bspray') { // kan sıçraması görseli: hızla açılır, söner
     const im = f.im, e = 1 - (1 - Math.min(1, k * 1.6)) ** 2, w = f.w * (0.5 + 0.55 * e), h = w * im.height / im.width;
     ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.scale(f.face, 1); ctx.globalAlpha = k < 0.55 ? 1 : 1 - (k - 0.55) / 0.45; ctx.drawImage(im, -w / 2, -h * 0.6, w, h); ctx.restore();
+  } else if (f.kind === 'curseBolt') { drawCurseBolt(f);
   } else if (f.kind === 'ring') {
     ctx.save(); ctx.globalAlpha = (1 - k) * (f.a ?? 1);
     ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 4 * (1 - k) + 1;
@@ -16866,11 +16872,44 @@ function updateGaze(t, L, dt) {
       for (let i = 0; i < 8; i++) { const a = rand(0, Math.PI * 2); emit(G.parts, { kind: 'glow', add: true, x: v.x + Math.cos(a) * 8, y: aimY(v) + Math.sin(a) * 6, vx: -Math.cos(a) * 20, vy: -rand(10, 25), col: i % 3 ? '190,90,255' : '255,60,90', s0: 3, s1: 0.5, life: rand(0.3, 0.5) }); }
     }
     floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 8, 'Lanet!', '#d8a8ff'); sfx('cursegaze');
+    { const o = altarEye(t), C = curseCols(t); for (const v of vs) { v.curseCol = C[0]; G.effects.push({ kind: 'curseBolt', x: o.x, y: o.y, tg: v, tx: v.x, ty: aimY(v), t: 0, dur: 0.55, col: C, seed: rand(0, 9) }); } t.boltT = time; }
     t.gazeHit = time; t.gaze = null; t.gazeT = 0; // sonraki kurbana
   }
 }
+// 17 Eki (Caner: "Lanet Kulesi hiç etkileyici değil"): lanet artık görünür: göz kilitlenince hedefe ince, titreyen bir bakış çizgisi uzanır ve göz şişer;
+// lanet anında gözden kurbana kıvrılan bir lanet hortumu (curseBolt) fırlar, vurduğu yerde patlar. Lanetlinin başının üstünde dönen rün mührü.
+// Renk uzmanlığa göre: Kan Sülüğü kızıl, Kara Lanet kara-mor, öteki mor.
+const curseCols = (t) => (t.spec === 'rite' ? ['255,70,80', '150,10,25'] : t.spec === 'blight' ? ['170,80,255', '40,10,70'] : ['210,120,255', '110,40,190']);
+function altarEye(t) {
+  const ts = towerSprite(t); if (!ts) return { x: t.x, y: t.y - 50 };
+  const F = ALTAR_FORM[ts.name] || ALTAR_FX[t.lvl];
+  return F && F.eye ? { x: t.x + (F.eye[0] - 0.5) * ts.w, y: ts.bottom - F.eye[1] * ts.h } : { x: t.x, y: ts.bottom - ts.h * 0.7 };
+}
+function drawCurseBolt(f) {
+  const k = f.t / f.dur, p = Math.min(1, k * 2.4), fade = k < 0.42 ? 1 : 1 - (k - 0.42) / 0.58;
+  const tx = f.tg && !f.tg.dead ? f.tg.x : f.tx, ty = f.tg && !f.tg.dead ? aimY(f.tg) : f.ty; f.tx = tx; f.ty = ty;
+  const dx = tx - f.x, dy = ty - f.y, L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L, N = 18;
+  const pt = (u) => { const w = Math.sin(u * Math.PI) * (12 + 6 * Math.sin(time * 9 + f.seed)) * Math.sin(u * 7 + time * 14 + f.seed); return [f.x + dx * u + nx * w, f.y + dy * u + ny * w - Math.sin(u * Math.PI) * L * 0.18]; };
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [wd, c, al] of [[9, f.col[1], 0.35], [4.5, f.col[0], 0.75], [1.6, '255,240,255', 0.9]]) {
+    ctx.strokeStyle = `rgba(${c},${al * fade})`; ctx.lineWidth = wd * (0.6 + 0.4 * fade); ctx.beginPath();
+    for (let i = 0; i <= N; i++) { const u = (i / N) * p, [x, y] = pt(u); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); }
+  const [hx, hy] = pt(p); glow(ctx, hx, hy, 16, f.col[0], 0.6 * fade); glow(ctx, f.x, f.y, 22, f.col[0], 0.45 * fade);
+  ctx.restore();
+  if (p >= 1 && !f.hit) { f.hit = true; G.effects.push({ kind: 'ring', x: tx, y: ty + 6, r: 26, col: f.col[0], t: 0, dur: 0.45 });
+    for (let i = 0; i < 14; i++) { const a = rand(0, TAU), v = rand(30, 90); emit(G.parts, { kind: 'glow', add: true, x: tx, y: ty, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6 - 20, col: i % 3 ? f.col[0] : '255,255,255', s0: rand(2, 3.4), s1: 0.3, life: rand(0.35, 0.6) }); } }
+}
+function drawCurseLock(t) { // kilit: gözden hedefe ince titreyen bakış çizgisi, lanet yaklaştıkça kalınlaşır
+  const e = t.gaze; if (!e || e.dead || !(t.gazeT > 0)) return;
+  const q = clamp(t.gazeT / GAZE.t[t.lvl], 0, 1), o = altarEye(t), C = curseCols(t), ty = aimY(e);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.setLineDash([3, 5]); ctx.lineDashOffset = -time * 40;
+  ctx.strokeStyle = `rgba(${C[0]},${0.15 + 0.45 * q})`; ctx.lineWidth = 0.8 + 1.6 * q; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(e.x, ty); ctx.stroke(); ctx.setLineDash([]);
+  glow(ctx, o.x, o.y, 10 + 16 * q, C[0], 0.25 + 0.35 * q); glow(ctx, e.x, ty, 8 + 10 * q, C[0], 0.2 + 0.3 * q);
+  ctx.restore();
+}
 function updateAltar(t, dt) {
   const L = effLevel(t), bl = abRank(t, 'blight');
+  if (Math.random() < dt * 4) { const C = curseCols(t), a = rand(0, TAU); emit(G.parts, { kind: 'glow', add: true, x: t.x + Math.cos(a) * 18, y: t.y - 2 + Math.sin(a) * 6, vx: rand(-4, 4), vy: -rand(14, 30), col: Math.random() < 0.7 ? C[0] : '255,255,255', s0: rand(1.4, 2.4), s1: 0.2, life: rand(0.9, 1.6), a: 0.8 }); } // 17 Eki: bekleme havası
   if (!(t.disabledT > 0)) updateGaze(t, L, dt);
   // lanet dalgası: kuleden yayılan mor halka (hasar vermez, yalnız laneti tazeler ve gösterir)
   t.pulseCd = (t.pulseCd ?? 0.6) - dt;
