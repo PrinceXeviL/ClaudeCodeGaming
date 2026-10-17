@@ -11445,25 +11445,23 @@ function zBadge(g, kind, x, y, r, rim, sel) {
     g.fillStyle = '#1a0a1c'; g.beginPath(); g.ellipse(-u * 2, -u * 0.8, u * 1.5, u * 1.8, 0, 0, TAU); g.ellipse(u * 2, -u * 0.8, u * 1.5, u * 1.8, 0, 0, TAU); g.fill();
     g.beginPath(); g.moveTo(0, u * 1); g.lineTo(-u * 0.8, u * 2.3); g.lineTo(u * 0.8, u * 2.3); g.closePath(); g.fill();
     for (const dx of [-1.3, 0, 1.3]) g.fillRect(dx * u - u * 0.25, u * 3, u * 0.5, u * 1.8);
-  } else if (kind === 'sword') {
-    g.rotate(-0.78);
-    const bl = g.createLinearGradient(-u * 1.2, 0, u * 1.2, 0); bl.addColorStop(0, '#9aa4b4'); bl.addColorStop(0.5, '#f4f6fa'); bl.addColorStop(1, '#8a94a6');
-    g.fillStyle = bl; g.strokeStyle = '#1a0a1c'; g.lineWidth = u * 0.6;
-    g.beginPath(); g.moveTo(0, -u * 7); g.lineTo(u * 1.3, -u * 5.4); g.lineTo(u * 1.3, u * 2.4); g.lineTo(-u * 1.3, u * 2.4); g.lineTo(-u * 1.3, -u * 5.4); g.closePath(); g.stroke(); g.fill();
-    g.fillStyle = '#e0a83a'; g.beginPath(); g.roundRect(-u * 3.6, u * 2.2, u * 7.2, u * 1.6, u * 0.6); g.stroke(); g.fill();
-    g.fillStyle = '#6a3a1a'; g.fillRect(-u * 0.8, u * 3.8, u * 1.6, u * 2.6); g.fillStyle = '#e0a83a'; g.beginPath(); g.arc(0, u * 7, u * 1.1, 0, TAU); g.fill();
-  } else if (kind === 'bow') { // ok: çapraz uçan ok, kemik renkli sap, yeşil tüy
-    g.rotate(-0.78); g.strokeStyle = '#1a0a1c'; g.lineWidth = u * 2.2; g.beginPath(); g.moveTo(0, u * 6.4); g.lineTo(0, -u * 4.6); g.stroke();
-    g.strokeStyle = '#efe6cc'; g.lineWidth = u * 1.1; g.stroke();
-    g.fillStyle = '#d8dce6'; g.strokeStyle = '#1a0a1c'; g.lineWidth = u * 0.6; g.beginPath(); g.moveTo(0, -u * 7.6); g.lineTo(u * 2.2, -u * 4.2); g.lineTo(-u * 2.2, -u * 4.2); g.closePath(); g.stroke(); g.fill();
-    g.fillStyle = '#7aff8a'; for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(0, u * 3.2); g.lineTo(sd * u * 2.6, u * 5.4); g.lineTo(sd * u * 2.4, u * 7.4); g.lineTo(0, u * 5.8); g.closePath(); g.stroke(); g.fill(); }
+  } else if (kind === 'sword') { // 18 Eki (Caner: renkli olmasın): kafatasıyla aynı kemik rengi, tek renk
+    g.rotate(-0.78); g.fillStyle = '#efe6cc';
+    g.beginPath(); g.moveTo(0, -u * 7); g.lineTo(u * 1.4, -u * 5.4); g.lineTo(u * 1.4, u * 2.2); g.lineTo(-u * 1.4, u * 2.2); g.lineTo(-u * 1.4, -u * 5.4); g.closePath(); g.fill();
+    g.beginPath(); g.roundRect(-u * 3.8, u * 2.2, u * 7.6, u * 1.7, u * 0.7); g.fill();
+    g.fillRect(-u * 0.85, u * 3.9, u * 1.7, u * 2.4); g.beginPath(); g.arc(0, u * 6.9, u * 1.2, 0, TAU); g.fill();
+    g.strokeStyle = '#1a0a1c'; g.lineWidth = u * 0.5; g.beginPath(); g.moveTo(0, -u * 5.6); g.lineTo(0, u * 1.6); g.stroke(); // ortadaki oluk
+  } else if (kind === 'bow') { // ok: kemik rengi, tek renk
+    g.rotate(-0.78); g.strokeStyle = '#efe6cc'; g.lineWidth = u * 1.4; g.beginPath(); g.moveTo(0, u * 6.2); g.lineTo(0, -u * 4.4); g.stroke();
+    g.fillStyle = '#efe6cc'; g.beginPath(); g.moveTo(0, -u * 7.6); g.lineTo(u * 2.4, -u * 4); g.lineTo(-u * 2.4, -u * 4); g.closePath(); g.fill();
+    for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(0, u * 3); g.lineTo(sd * u * 2.6, u * 5.2); g.lineTo(sd * u * 2.6, u * 7.4); g.lineTo(0, u * 5.6); g.closePath(); g.fill(); }
   }
   if (sel) { g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = r * 0.1; g.beginPath(); g.arc(0, 0, r * 1.32, 0, TAU); g.stroke(); }
   g.restore();
 }
 function drawZombieMark(s) {
   const two = zTwoGroups(), g = zGroupOf(s), y = s.y - (s.zh || 30) - 9 + Math.sin(time * 3 + (s.slot || 0)) * 1.2, sel = G.mode && G.mode.kind === 'minions' && (G.mode.g == null || G.mode.g === g);
-  zBadge(ctx, two ? (g ? 'bow' : 'sword') : 'skull', s.x, y, 6.2, two ? ZGROUP[g].col : '#d8c8a8', sel);
+  zBadge(ctx, two ? (g ? 'bow' : 'sword') : 'skull', s.x, y + 3, 3.1, '#d8c8a8', sel); // 18 Eki (Caner): %50 küçük, hepsi kemik kenarlı (grup rengi yok)
 }
 function drawSoldier1(s) {
   const C = celebK();
@@ -21968,7 +21966,7 @@ requestAnimationFrame(frame);
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
 window.__game = {
   zBadgePreview() { const c = document.createElement('canvas'); c.width = 900; c.height = 300; const g = c.getContext('2d'); g.fillStyle = '#3a4a2a'; g.fillRect(0, 0, 900, 300);
-    [['skull', '#d8c8a8'], ['sword', ZGROUP[0].col], ['bow', ZGROUP[1].col]].forEach(([k, col], i) => { zBadge(g, k, 150 + i * 300, 110, 70, col, false); zBadge(g, k, 120 + i * 300, 250, 12, col, false); zBadge(g, k, 180 + i * 300, 250, 12, col, true); }); return c.toDataURL(); }, // 18 Eki: zombi rozeti önizlemesi
+    [['skull', '#d8c8a8'], ['sword', '#d8c8a8'], ['bow', '#d8c8a8']].forEach(([k, col], i) => { zBadge(g, k, 150 + i * 300, 110, 70, col, false); zBadge(g, k, 120 + i * 300, 250, 12, col, false); zBadge(g, k, 180 + i * 300, 250, 12, col, true); }); return c.toDataURL(); }, // 18 Eki: zombi rozeti önizlemesi
   rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme
   raiseAll() { G.testRaiseMax = 99; const c = G.effects.filter(f => f.kind === 'corpse' && f.raisable); c.forEach((f, i) => { raiseMinion(f, i * 0.08); f.t = f.dur; }); return c.length; }, // test: bütün cesetleri dirilt
   spawn(type, pi = 0) { return spawnEnemy(type, pi); }, // test: düşman çıkar

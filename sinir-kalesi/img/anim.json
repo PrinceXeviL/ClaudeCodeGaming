@@ -214,12 +214,11 @@
   "ch": 0.9645
  },
  "unit_skel_8_atk": {
-  "n": 32,
-  "fw": 300,
-  "fh": 173,
-  "base": 0.0136,
-  "ch": 0.9252,
-  "sh": 1
+  "n": 33,
+  "fw": 181,
+  "fh": 171,
+  "base": 0.0142,
+  "ch": 0.9362
  },
  "mortimer_buyu": {
   "n": 32,
@@ -355,11 +354,10 @@
  },
  "enemy_wardog_die": {
   "n": 33,
-  "fw": 330,
-  "fh": 174,
-  "base": 0.0144,
-  "ch": 0.9185,
-  "sh": 1
+  "fw": 290,
+  "fh": 178,
+  "base": 0.0141,
+  "ch": 0.897
  },
  "enemy_chariot_atk": {
   "n": 32,
@@ -431,12 +429,11 @@
   "ch": 0.8758
  },
  "unit_skel_2_atk2": {
-  "n": 32,
-  "fw": 97,
-  "fh": 173,
-  "base": 0.014,
-  "ch": 0.9254,
-  "sh": 1
+  "n": 33,
+  "fw": 142,
+  "fh": 181,
+  "base": 0.0133,
+  "ch": 0.8825
  },
  "unit_skel_3_atk2": {
   "n": 32,
@@ -538,12 +535,11 @@
   "ch": 0.9226
  },
  "enemy_hound_atk": {
-  "n": 32,
-  "fw": 500,
-  "fh": 175,
-  "base": 0.0189,
-  "ch": 0.8962,
-  "sh": 1
+  "n": 33,
+  "fw": 378,
+  "fh": 209,
+  "base": 0.0164,
+  "ch": 0.7644
  },
  "enemy_holywater_atk": {
   "n": 32,
@@ -706,12 +702,11 @@
   "ch": 0.944
  },
  "enemy_ignis_skill": {
-  "n": 32,
-  "fw": 342,
-  "fh": 166,
-  "base": 0.0146,
-  "ch": 0.9659,
-  "sh": 1
+  "n": 33,
+  "fw": 222,
+  "fh": 173,
+  "base": 0.0143,
+  "ch": 0.926
  },
  "enemy_severus_skill": {
   "n": 33,
@@ -728,12 +723,11 @@
   "ch": 0.9465
  },
  "enemy_cavalry_skill": {
-  "n": 32,
-  "fw": 149,
-  "fh": 173,
+  "n": 33,
+  "fw": 155,
+  "fh": 175,
   "base": 0.0133,
-  "ch": 0.9246,
-  "sh": 1
+  "ch": 0.9157
  },
  "enemy_heavy_skill": {
   "n": 32,
@@ -765,12 +759,11 @@
   "ch": 0.9609
  },
  "enemy_saint_skill": {
-  "n": 32,
-  "fw": 235,
-  "fh": 181,
-  "base": 0.0136,
-  "ch": 0.8824,
-  "sh": 1
+  "n": 33,
+  "fw": 263,
+  "fh": 184,
+  "base": 0.0135,
+  "ch": 0.8697
  },
  "enemy_campanus_skill": {
   "n": 32,
@@ -955,11 +948,10 @@
  },
  "unit_bonegiant_die": {
   "n": 33,
-  "fw": 234,
-  "fh": 170,
-  "base": 0.0142,
-  "ch": 0.9433,
-  "sh": 1
+  "fw": 243,
+  "fh": 184,
+  "base": 0.0131,
+  "ch": 0.8693
  },
  "unit_corpsegolem_walk": {
   "n": 43,
@@ -1089,19 +1081,17 @@
  },
  "enemy_cathedral_die": {
   "n": 33,
-  "fw": 290,
-  "fh": 170,
-  "base": 0.0142,
-  "ch": 0.9385,
-  "sh": 1
+  "fw": 302,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9211
  },
  "enemy_inquisitor_skill": {
-  "n": 32,
-  "fw": 145,
-  "fh": 165,
+  "n": 33,
+  "fw": 341,
+  "fh": 167,
   "base": 0.0147,
-  "ch": 0.9707,
-  "sh": 1
+  "ch": 0.9609
  },
  "enemy_elephant_walk": {
   "n": 25,
@@ -1149,11 +1139,10 @@
  },
  "enemy_campanus_die": {
   "n": 33,
-  "fw": 233,
-  "fh": 167,
-  "base": 0.0148,
-  "ch": 0.9556,
-  "sh": 1
+  "fw": 237,
+  "fh": 169,
+  "base": 0.0145,
+  "ch": 0.9467
  },
  "enemy_severus_die": {
   "n": 33,
@@ -1425,10 +1414,10 @@
  },
  "enemy_hierophant_die": {
   "n": 33,
-  "fw": 212,
+  "fw": 261,
   "fh": 166,
   "base": 0.0145,
-  "ch": 0.9613
+  "ch": 0.9638
  },
  "enemy_shadowmaster_walk": {
   "n": 32,
@@ -1576,18 +1565,18 @@
   "stride": 0.725
  },
  "enemy_gloriosus3_atk": {
-  "n": 32,
-  "fw": 142,
-  "fh": 183,
-  "base": 0.0145,
-  "ch": 0.8747
+  "n": 33,
+  "fw": 244,
+  "fh": 190,
+  "base": 0.0141,
+  "ch": 0.8407
  },
  "enemy_gloriosus3_skill": {
-  "n": 32,
-  "fw": 188,
-  "fh": 169,
+  "n": 33,
+  "fw": 171,
+  "fh": 183,
   "base": 0.0143,
-  "ch": 0.9452
+  "ch": 0.8765
  },
  "enemy_gloriosus3_die": {
   "n": 33,
@@ -1606,12 +1595,12 @@
  },
  "enemy_lucia_walk": {
   "n": 32,
-  "fw": 185,
-  "fh": 169,
-  "base": 0.0145,
-  "ch": 0.947,
-  "idle": 19,
-  "stride": 0.887
+  "fw": 188,
+  "fh": 170,
+  "base": 0.0143,
+  "ch": 0.943,
+  "idle": 0,
+  "stride": 0.873
  },
  "enemy_lucia_atk": {
   "n": 33,
@@ -1629,19 +1618,19 @@
  },
  "enemy_lucia_die": {
   "n": 33,
-  "fw": 300,
-  "fh": 168,
-  "base": 0.0143,
-  "ch": 0.9523
+  "fw": 273,
+  "fh": 171,
+  "base": 0.0141,
+  "ch": 0.9366
  },
  "enemy_godfrey_walk": {
-  "n": 31,
-  "fw": 199,
-  "fh": 168,
-  "base": 0.0144,
-  "ch": 0.9544,
-  "idle": 11,
-  "stride": 0.948
+  "n": 32,
+  "fw": 198,
+  "fh": 167,
+  "base": 0.0146,
+  "ch": 0.9587,
+  "idle": 0,
+  "stride": 0.949
  },
  "enemy_godfrey_atk": {
   "n": 33,
@@ -1659,10 +1648,10 @@
  },
  "enemy_godfrey_die": {
   "n": 33,
-  "fw": 273,
-  "fh": 167,
-  "base": 0.0144,
-  "ch": 0.9568
+  "fw": 275,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
  },
  "enemy_hubertus_walk": {
   "n": 32,
@@ -1689,10 +1678,10 @@
  },
  "enemy_hubertus_die": {
   "n": 33,
-  "fw": 342,
-  "fh": 166,
-  "base": 0.0145,
-  "ch": 0.9661
+  "fw": 410,
+  "fh": 167,
+  "base": 0.0144,
+  "ch": 0.9568
  },
  "enemy_agnes_walk": {
   "n": 32,
@@ -1730,7 +1719,7 @@
   "fh": 168,
   "base": 0.0144,
   "ch": 0.952,
-  "idle": 21,
+  "idle": 0,
   "stride": 0.538
  },
  "enemy_severus3_atk": {
@@ -1757,23 +1746,23 @@
  "enemy_legion_idle": {
   "n": 32,
   "fw": 111,
-  "fh": 168,
+  "fh": 169,
   "base": 0.0144,
-  "ch": 0.952
+  "ch": 0.9472
  },
  "enemy_solarcher_idle": {
   "n": 32,
   "fw": 106,
-  "fh": 169,
-  "base": 0.0143,
-  "ch": 0.9475
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.952
  },
  "enemy_gladiator_idle": {
   "n": 32,
   "fw": 108,
-  "fh": 168,
-  "base": 0.0144,
-  "ch": 0.9496
+  "fh": 167,
+  "base": 0.0145,
+  "ch": 0.9566
  },
  "enemy_drummer_idle": {
   "n": 32,
@@ -1791,10 +1780,10 @@
  },
  "enemy_heavy_idle": {
   "n": 32,
-  "fw": 160,
-  "fh": 167,
+  "fw": 157,
+  "fh": 168,
   "base": 0.0143,
-  "ch": 0.957
+  "ch": 0.9523
  },
  "enemy_assassin_idle": {
   "n": 32,
@@ -1806,23 +1795,23 @@
  "enemy_priest_idle": {
   "n": 32,
   "fw": 148,
-  "fh": 169,
-  "base": 0.0188,
-  "ch": 0.9467
+  "fh": 170,
+  "base": 0.0187,
+  "ch": 0.9408
  },
  "enemy_hunter_idle": {
   "n": 32,
-  "fw": 232,
+  "fw": 231,
   "fh": 165,
   "base": 0.0146,
-  "ch": 0.9708
+  "ch": 0.9684
  },
  "enemy_torch_idle": {
   "n": 32,
-  "fw": 197,
-  "fh": 170,
+  "fw": 195,
+  "fh": 171,
   "base": 0.0142,
-  "ch": 0.9385
+  "ch": 0.9338
  },
  "enemy_holywater_idle": {
   "n": 32,
@@ -1843,7 +1832,7 @@
   "fw": 150,
   "fh": 166,
   "base": 0.0145,
-  "ch": 0.9638
+  "ch": 0.9661
  },
  "unit_skel_5_idle": {
   "n": 32,
@@ -2691,13 +2680,13 @@
   "ch": 0.9708
  },
  "hero_leonidas_walk": {
-  "n": 21,
-  "fw": 365,
-  "fh": 317,
-  "base": 0.0143,
-  "ch": 0.9477,
-  "idle": 14,
-  "stride": 0.839
+  "n": 23,
+  "fw": 366,
+  "fh": 319,
+  "base": 0.0142,
+  "ch": 0.9409,
+  "idle": 21,
+  "stride": 0.904
  },
  "hero_leonidas_atk": {
   "n": 32,
@@ -2722,10 +2711,11 @@
  },
  "hero_leonidas_cast_spin": {
   "n": 32,
-  "fw": 399,
-  "fh": 366,
-  "base": 0.017,
-  "ch": 0.8187
+  "fw": 585,
+  "fh": 328,
+  "base": 0.0194,
+  "ch": 0.9159,
+  "cols": 16
  },
  "hero_leonidas_skill": {
   "n": 32,
@@ -2810,222 +2800,5 @@
   "fh": 165,
   "base": 0.0146,
   "ch": 0.9708
- },
- "enemy_campanus_diex": {
-  "n": 33,
-  "fw": 237,
-  "fh": 169,
-  "base": 0.0145,
-  "ch": 0.9467
- },
- "enemy_cathedral_diex": {
-  "n": 33,
-  "fw": 302,
-  "fh": 174,
-  "base": 0.0139,
-  "ch": 0.9211
- },
- "enemy_cavalry_skillx": {
-  "n": 33,
-  "fw": 155,
-  "fh": 175,
-  "base": 0.0133,
-  "ch": 0.9157
- },
- "enemy_drummer_idlex": {
-  "n": 32,
-  "fw": 122,
-  "fh": 166,
-  "base": 0.0164,
-  "ch": 0.9616
- },
- "enemy_gladiator_idlex": {
-  "n": 32,
-  "fw": 108,
-  "fh": 167,
-  "base": 0.0145,
-  "ch": 0.9566
- },
- "enemy_gloriosus3_atkx": {
-  "n": 33,
-  "fw": 244,
-  "fh": 190,
-  "base": 0.0141,
-  "ch": 0.8407
- },
- "enemy_gloriosus3_skillx": {
-  "n": 33,
-  "fw": 171,
-  "fh": 183,
-  "base": 0.0143,
-  "ch": 0.8765
- },
- "enemy_godfrey_diex": {
-  "n": 33,
-  "fw": 275,
-  "fh": 166,
-  "base": 0.0145,
-  "ch": 0.9661
- },
- "enemy_godfrey_walkx": {
-  "n": 32,
-  "fw": 198,
-  "fh": 167,
-  "base": 0.0146,
-  "ch": 0.9587
- },
- "enemy_heavy_idlex": {
-  "n": 32,
-  "fw": 157,
-  "fh": 168,
-  "base": 0.0143,
-  "ch": 0.9523
- },
- "enemy_hierophant_diex": {
-  "n": 33,
-  "fw": 261,
-  "fh": 166,
-  "base": 0.0145,
-  "ch": 0.9638
- },
- "enemy_hound_atkx": {
-  "n": 33,
-  "fw": 378,
-  "fh": 209,
-  "base": 0.0164,
-  "ch": 0.7644
- },
- "enemy_hubertus_diex": {
-  "n": 33,
-  "fw": 410,
-  "fh": 167,
-  "base": 0.0144,
-  "ch": 0.9568
- },
- "enemy_hunter_idlex": {
-  "n": 32,
-  "fw": 231,
-  "fh": 165,
-  "base": 0.0146,
-  "ch": 0.9684
- },
- "enemy_ignis_skillx": {
-  "n": 33,
-  "fw": 222,
-  "fh": 173,
-  "base": 0.0143,
-  "ch": 0.926
- },
- "enemy_inquisitor_skillx": {
-  "n": 33,
-  "fw": 341,
-  "fh": 167,
-  "base": 0.0147,
-  "ch": 0.9609
- },
- "enemy_legion_idlex": {
-  "n": 32,
-  "fw": 111,
-  "fh": 169,
-  "base": 0.0144,
-  "ch": 0.9472
- },
- "enemy_lucia_diex": {
-  "n": 33,
-  "fw": 273,
-  "fh": 171,
-  "base": 0.0141,
-  "ch": 0.9366
- },
- "enemy_lucia_walkx": {
-  "n": 32,
-  "fw": 188,
-  "fh": 170,
-  "base": 0.0143,
-  "ch": 0.943
- },
- "enemy_priest_idlex": {
-  "n": 32,
-  "fw": 148,
-  "fh": 170,
-  "base": 0.0187,
-  "ch": 0.9408
- },
- "enemy_saint_skillx": {
-  "n": 33,
-  "fw": 263,
-  "fh": 184,
-  "base": 0.0135,
-  "ch": 0.8697
- },
- "enemy_severus3_diex": {
-  "n": 33,
-  "fw": 244,
-  "fh": 180,
-  "base": 0.0132,
-  "ch": 0.8901
- },
- "enemy_severus3_walkx": {
-  "n": 32,
-  "fw": 208,
-  "fh": 168,
-  "base": 0.0144,
-  "ch": 0.952
- },
- "enemy_solarcher_idlex": {
-  "n": 32,
-  "fw": 106,
-  "fh": 168,
-  "base": 0.0144,
-  "ch": 0.952
- },
- "enemy_torch_idlex": {
-  "n": 32,
-  "fw": 195,
-  "fh": 171,
-  "base": 0.0142,
-  "ch": 0.9338
- },
- "enemy_wardog_diex": {
-  "n": 33,
-  "fw": 290,
-  "fh": 178,
-  "base": 0.0141,
-  "ch": 0.897
- },
- "unit_bonegiant_diex": {
-  "n": 33,
-  "fw": 243,
-  "fh": 184,
-  "base": 0.0131,
-  "ch": 0.8693
- },
- "unit_gulyabani_diex": {
-  "n": 33,
-  "fw": 287,
-  "fh": 174,
-  "base": 0.0138,
-  "ch": 0.922
- },
- "unit_skel_2_atk2x": {
-  "n": 33,
-  "fw": 142,
-  "fh": 181,
-  "base": 0.0133,
-  "ch": 0.8825
- },
- "unit_skel_4_idlex": {
-  "n": 32,
-  "fw": 150,
-  "fh": 166,
-  "base": 0.0145,
-  "ch": 0.9661
- },
- "unit_skel_8_atkx": {
-  "n": 33,
-  "fw": 181,
-  "fh": 171,
-  "base": 0.0142,
-  "ch": 0.9362
  }
 }
