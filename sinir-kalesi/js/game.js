@@ -2996,7 +2996,8 @@ function bleedKind(e) { const t = (e.def.base || e.type).replace(/_(k|y)$/, '');
 const BLOOD_SPR = { spray: ['nm32_bspray', 'nm32_bcrescent'], heavy: ['nm32_bstar'], small: ['nm32_bpuff'], drop: ['nm32_drop_round', 'nm32_drop_tear', 'nm32_drop_tear', 'nm32_drop_streak'],
   pool: ['nm32_splat_pool', 'nm32_splat_drips', 'nm32_splat_mid', 'nm32_splat_smear'], spot: ['nm32_splat_spots', 'nm32_drop_cluster'], dur: 0.16,
   // 16 Eki (Caner: "adamın kafası kadar damla, en az 10 kat küçük"): dünya ölçüleri (lejyoner ~30 boy, kafası ~6): damla ~1, sıçrama ~5, ölüm lekesi gövdenin yarısı
-  dropS: [0.45, 0.8], sprayK: 0.17, heavyK: 0.26, spotW: 2.6, hitSpotW: 5, poolK: 0.42 };
+  // 17 Eki (Caner: "kan birazcık daha belirgin olabilir"): hepsi ~%25 büyük
+  dropS: [0.56, 1], sprayK: 0.21, heavyK: 0.32, spotW: 3.2, hitSpotW: 6.2, poolK: 0.5 };
 const bloodPick = (L) => spr(L[Math.floor(Math.random() * L.length)]);
 function bloodDropFloor(p) { // damla yere değdi: minik leke
   if (Math.random() < 0.35) G.decals.push({ kind: 'splat', red: true, small: true, spr: 'spot', x: p.x, y: p.y, w: BLOOD_SPR.spotW * rand(0.7, 1.2), rot: 0, flip: Math.random() < 0.5, v: 0, t: 0, life: 4 });
@@ -19121,7 +19122,7 @@ function ambientExtra(dt) {
   if (!ambOn() || G.weather) return;
   if ((G.leafT = (G.leafT ?? 1) - dt) > 0) return;
   const th = G.lv.theme, L = AMB_LEAF[th], A = AMB_ASH[th]; G.leafT = L ? 0.55 : A ? 0.18 : 9;
-  if (L) emit(G.parts, { kind: 'leaf', x: rand(-40, W * 0.8), y: rand(-10, H * 0.5), vx: rand(18, 34), vy: rand(10, 22), col: L[Math.floor(rand(0, L.length))], s0: rand(3, 4.2), s1: 3, life: rand(7, 11), a: 0.9, rot: rand(0, 6), vr: rand(-3, 3), ph: rand(0, 6) });
+  if (L) emit(G.parts, { kind: 'leaf', x: rand(-40, W * 0.8), y: rand(-10, H * 0.5), vx: rand(18, 34), vy: rand(10, 22), col: L[Math.floor(rand(0, L.length))], s0: rand(2.1, 2.9), s1: 2.1, life: rand(7, 11), a: 0.9, rot: rand(0, 6), vr: rand(-3, 3), ph: rand(0, 6) });
   else if (A) emit(G.parts, { kind: 'glow', x: rand(-20, W), y: -8, vx: rand(4, 14), vy: rand(10, 20), col: A, s0: rand(1.2, 2), s1: 1, life: rand(10, 14), a: 0.55 });
 }
 // Patlama parlaması: büyük patlamada ekran bir an ağarır (yalnız ayar açıkken; ekran sarsıntısı ayarından bağımsız)
