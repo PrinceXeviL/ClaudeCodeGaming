@@ -2612,5 +2612,89 @@
   "fh": 166,
   "base": 0.0145,
   "ch": 0.9613
+ },
+ "enemy_agnes_idle": {
+  "n": 32,
+  "fw": 203,
+  "fh": 170,
+  "base": 0.0142,
+  "ch": 0.9433
+ },
+ "enemy_campanus_idle": {
+  "n": 32,
+  "fw": 186,
+  "fh": 167,
+  "base": 0.0147,
+  "ch": 0.956
+ },
+ "enemy_cavcaptain_idle": {
+  "n": 32,
+  "fw": 142,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
+ },
+ "enemy_colossus_idle": {
+  "n": 32,
+  "fw": 186,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9516
+ },
+ "enemy_flagellant_idle": {
+  "n": 32,
+  "fw": 214,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_gloriosus2_idle": {
+  "n": 32,
+  "fw": 119,
+  "fh": 173,
+  "base": 0.0139,
+  "ch": 0.9261
+ },
+ "enemy_godfrey_idle": {
+  "n": 32,
+  "fw": 185,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_hound_idle": {
+  "n": 32,
+  "fw": 443,
+  "fh": 188,
+  "base": 0.0156,
+  "ch": 0.8494
+ },
+ "enemy_ignis_idle": {
+  "n": 32,
+  "fw": 167,
+  "fh": 168,
+  "base": 0.0144,
+  "ch": 0.9544
+ },
+ "enemy_lucia_idle": {
+  "n": 32,
+  "fw": 183,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9611
+ },
+ "enemy_paladin_idle": {
+  "n": 32,
+  "fw": 161,
+  "fh": 172,
+  "base": 0.014,
+  "ch": 0.9301
+ },
+ "enemy_severus_idle": {
+  "n": 32,
+  "fw": 179,
+  "fh": 166,
+  "base": 0.0145,
+  "ch": 0.9661
  }
 }

@@ -10580,7 +10580,7 @@ const LIT_CACHE = new Map();
 // 17 Eki (Caner: "daha gölgeli olsun kuleler, derinlikleri olsun"): bina görsellerine biçim gölgesi. Işık sağ üstten (ay):
 // alt kısım zemine doğru koyulaşır (bot), sol yan gölgede kalır (side), tepe hafif aydınlanır (top). Kulelerde ışık kopyasına (litOf) pişer,
 // kalede durağan görselin saydamlığıyla maskelenmiş katman olarak her karenin (Veo döngüsü dahil) üstüne çizilir (shadeOverlay).
-const SHADE = { on: !window.__SHADE_OFF, keep: 0, lift: 0.2, bot: 0.58, from: 0.42, side: 0.38, sideTo: 0.55, top: 0.22, col: '14,8,26', hi: '255,236,210' };
+const SHADE = { on: !window.__SHADE_OFF, keepOn: false, keep: 0, lift: 0.2, bot: 0.58, from: 0.42, side: 0.38, sideTo: 0.55, top: 0.22, col: '14,8,26', hi: '255,236,210' };
 function formShade(g, frames, box, iw, ih, k = 1) { // k: alt gölgenin gücü (kalede yarım: alt kısım zaten koyu kaya)
   if (!SHADE.on) return; // deneme: sayfa açılmadan window.__SHADE_OFF = 1 → gölgesiz (öncesi/sonrası)
   g.save();
@@ -14763,7 +14763,7 @@ function drawCastle() {
     const IA = IN && spr(IN) && ANIM_META[IN];
     if (IA) { const fi = Math.floor(time * IA.fps) % IA.n, h = cp.w * IA.fh / IA.fw, kim = spr(IN), C = IA.cols || IA.n, ks = kim.width / (IA.fw * C), ky = kim.height / (IA.fh * Math.ceil(IA.n / C)); ctx.drawImage(kim, (fi % C) * IA.fw * ks, Math.floor(fi / C) * IA.fh * ky, IA.fw * ks, IA.fh * ky, -cp.w / 2, -h, cp.w, h); } // 16 Eki: satırlı şerit (cols)
     else drawSprite(ctx, im, 0, 0, cp.w);
-    if (NECRO && isKeep(im) && !PERF_OFF.has('tlight')) { const so = shadeOverlay(im), lo = SHADE.on && liftOverlay(im); if (so) drawSprite(ctx, so, 0, 0, cp.w); if (lo) { ctx.globalCompositeOperation = 'screen'; drawSprite(ctx, lo, 0, 0, cp.w); ctx.globalCompositeOperation = 'source-over'; } } // biçim gölgesi (Veo döngüsünün de üstüne)
+    if (NECRO && isKeep(im) && SHADE.keepOn && !PERF_OFF.has('tlight')) { const so = shadeOverlay(im), lo = SHADE.on && liftOverlay(im); if (so) drawSprite(ctx, so, 0, 0, cp.w); if (lo) { ctx.globalCompositeOperation = 'screen'; drawSprite(ctx, lo, 0, 0, cp.w); ctx.globalCompositeOperation = 'source-over'; } } // 17 Eki (Caner): kalede gölge de aydınlatma da beğenilmedi, kapalı (keepOn) // biçim gölgesi (Veo döngüsünün de üstüne)
     if (G.keepTr && G.keepTr.prev) { const k = clamp((time - G.keepTr.t0 - 0.15) / 0.4, 0, 1); if (k < 1) { ctx.globalAlpha = 1 - k; drawSprite(ctx, G.keepTr.prev, 0, 0, cp.w); ctx.globalAlpha = 1; } }
     if (c.flash > 0) { ctx.globalAlpha = c.flash / 0.25 * 0.45; drawSprite(ctx, whiteOf('castle_fx_' + stage, im), 0, 0, cp.w); }
     ctx.restore();
