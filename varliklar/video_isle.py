@@ -58,6 +58,7 @@ def find_loop(rgb, lo=20, hi=40):
         s = a[::4, ::4].astype(np.float32); m = ((s[..., 0] + s[..., 2]) / 2 - s[..., 1]) < 90
         small.append(np.where(m[..., None], s, 0))
     small = np.array(small); N = len(small); best = None
+    hi = min(hi, N - 11); lo = min(lo, hi)  # 18 Eki: kısa video (33 kare) döngü aralığını aşmasın
     for st in range(8, N - hi - 2):
         for L in range(lo, hi + 1):
             if st + L + 1 >= N: break

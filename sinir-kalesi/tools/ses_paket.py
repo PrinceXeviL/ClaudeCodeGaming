@@ -6,7 +6,7 @@ yüklüyor (Envato sesleriyle paket 16 MB oldu): her parça en çok PART bayt. O
 """
 import glob, json, os
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ses')
-PART = 12 * 1024 * 1024
+PART = 14 * 1024 * 1024  # 18 Eki: 12 → 14 MB (iki parça; yayının dosya sınırı, parça başına en çok 15 MB)
 names = json.load(open(os.path.join(D, 'manifest.json')))
 for p in glob.glob(os.path.join(D, 'paket[0-9]*.wav')): os.remove(p)  # eski fazla parçalar kalmasın
 idx, part, off, total = [], 0, 0, 0

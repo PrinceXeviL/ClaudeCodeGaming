@@ -40,8 +40,9 @@
     if (!LS.includes(l)) return;
     try { localStorage.setItem('sinirKalesi.lang', l); } catch (e) {}
     const fin = () => { build(l); window.dispatchEvent(new Event('langchange')); if (done) done(); };
+    if (window.DILLER && window.DILLER[l]) window.DIL = window.DILLER[l]; // 18 Eki: bütün diller js/dil/diller.js içinde
     if (l === 'tr' || l === 'en' || (window.DIL && window.DIL.lang === l)) { fin(); return; }
-    const sc = document.createElement('script'); sc.src = 'js/dil/' + l + '.js?v=' + (window.SURUM || ''); sc.onload = fin; sc.onerror = fin; document.head.appendChild(sc);
+    const sc = document.createElement('script'); sc.src = 'js/dil/diller.js?v=' + (window.SURUM || ''); sc.onload = () => { if (window.DILLER && window.DILLER[l]) window.DIL = window.DILLER[l]; fin(); }; sc.onerror = fin; document.head.appendChild(sc);
   };
   build(L);
   const P = CanvasRenderingContext2D.prototype, F = P.fillText, S = P.strokeText, M = P.measureText;

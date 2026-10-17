@@ -1,0 +1,20 @@
+[
+ {
+  "name": "hero_leonidas_walk",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, walks forward in place with a steady, heavy, perfectly even marching walk cycle: left step, right step, always the same rhythm and the same step length, the body bobs up and down evenly with every step, the big round shield stays steady in front of the chest, the spear stays level and pointed forward, the cape sways behind, he never pauses, never speeds up and never slows down, a seamless repeating walk cycle. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "cycle": true,
+  "loop_lo": 16,
+  "loop_hi": 30,
+  "seed": 33
+ },
+ {
+  "name": "hero_leonidas_cast_spin",
+  "ref": "ham/anim/hero_leonidas_genis_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest and glowing purple eyes, bronze skull-studded armor, a torn crimson cape, a big round bronze shield with a lambda and a skull on his left arm and one long bronze-tipped spear in his right hand, performs a whirlwind spear spin on the same spot: he plants his feet and turns his whole body one full circle like a spinning top, sweeping the long spear horizontally around himself at waist height so the spear tip draws a full circle, the cape flares out in a wide circle, then he stops facing right again and returns exactly to the starting pose, fast graceful exaggerated cartoon action. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot, the whole body and the spear always stay fully inside the frame, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 33
+ }
+]

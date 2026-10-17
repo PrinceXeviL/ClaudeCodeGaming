@@ -159,7 +159,7 @@ def process(job):
     nm = job['name'][:-1] if job['name'].endswith('x') else job['name']  # 17 Eki: abartılı iş adı <şerit>x; tür eki (_atk/_die) x'siz bakılır
     if (nm.endswith('_walk') or job.get('cycle')) and not job.get('loop'):
         # döngüsüz üretilmiş yürüyüş: videonun içinden en iyi kapanan döngü seçilir (ilk=son kuralı bazen 'yürü-dur' yaptırıyor)
-        st, n = video_isle.find_loop(rgb, 12, 30); order = list(range(st, st + n))
+        st, n = video_isle.find_loop(rgb, job.get('loop_lo', 12), job.get('loop_hi', 30)); order = list(range(st, st + n))  # 18 Eki: loop_lo: tam bir adım çifti kesilsin (yarım döngü takılır)
     if nm.endswith(('_atk', '_atk2', '_atk3')):
         wid = []
         for a in rgb[:L]:

@@ -17,7 +17,7 @@ fs.writeFileSync(path.join(D, '..', '..', 'js', 'dil.js'), out);
 console.log('dil.js:', Object.keys(EX).length, 'metin,', TPL.length, 'şablon');
 
 // öteki diller: kaynak.json (tr, en, tpl) sırasıyla <dil>_0..3.json çevirileri -> js/dil/<dil>.js (window.DIL)
-const K = J('kaynak.json'), OUT = path.join(D, '..', '..', 'js', 'dil');
+const K = J('kaynak.json'), OUT = path.join(D, '..', '..', 'js', 'dil'), ALL = {}; // 18 Eki: beş dil tek dosyada (js/dil/diller.js): yayının 511 dosya sınırı
 if (!fs.existsSync(OUT)) fs.mkdirSync(OUT);
 for (const L of ['es', 'de', 'fr', 'ru', 'zh']) {
   const parts = [0, 1, 2, 3].filter(i => fs.existsSync(path.join(D, `${L}_${i}.json`))).flatMap(i => J(`${L}_${i}.json`));
@@ -34,6 +34,8 @@ for (const L of ['es', 'de', 'fr', 'ru', 'zh']) {
   // 12 Eki: <dil>_extra.json ({ exact: {tr: çeviri}, tpl: [[tr, çeviri]] }) sonradan eklenen metinler (tools/dil/ceviri_12eki.py)
   const XP = path.join(D, L + '_extra.json');
   if (fs.existsSync(XP)) { const XL = J(L + '_extra.json'); for (const [k, v] of Object.entries(XL.exact)) { ex[k] = v; const ku = k.toLocaleUpperCase('tr'); if (ku !== k && !(ku in XL.exact)) ex[ku] = v.toLocaleUpperCase(L); } const tk = new Set(XL.tpl.map(t => t[0])); for (let i = tpl.length - 1; i >= 0; i--) if (tk.has(tpl[i][0])) tpl.splice(i, 1); tpl.push(...XL.tpl); }
-  fs.writeFileSync(path.join(OUT, L + '.js'), `// üretildi: node tools/dil/build.js — elle düzenleme\nwindow.DIL = ${JSON.stringify({ lang: L, EX: ex, TPL: tpl })};\n`);
+  ALL[L] = { lang: L, EX: ex, TPL: tpl };
   console.log(L + '.js:', Object.keys(ex).length, 'metin,', tpl.length, 'şablon');
 }
+fs.writeFileSync(path.join(OUT, 'diller.js'), `// üretildi: node tools/dil/build.js — elle düzenleme. Beş dil tek dosyada; seçili dil window.DIL olur\nwindow.DILLER = ${JSON.stringify(ALL)};\n(function () { var l = null; try { l = localStorage.getItem('sinirKalesi.lang'); } catch (e) {} if (window.DILLER[l]) window.DIL = window.DILLER[l]; })();\n`);
+for (const L of Object.keys(ALL)) { const f = path.join(OUT, L + '.js'); if (fs.existsSync(f)) fs.unlinkSync(f); } // eski tek dil dosyaları

@@ -147,7 +147,8 @@ def process_output(od, jobs):
             os.replace(src, os.path.join(OUT, j['name'] + '.mp4'))
             if j.get('raw'): print('video:', j['name'], flush=True); continue  # sahne videosu (ör. giriş ekranı): şeride çevrilmez
             if j.get('kule'): import kule_anim_isle; kule_anim_isle.process(j); continue  # kule atış animasyonu
-            video_uret.process(j); print('şerit:', j['name'], flush=True)
+            try: video_uret.process(j); print('şerit:', j['name'], flush=True)
+            except Exception as e: print('HATA (video yerinde, elle işlenebilir):', j['name'], repr(e), flush=True)  # 18 Eki: tek videonun hatası ötekileri durdurmasın
 
 
 if __name__ == '__main__':
