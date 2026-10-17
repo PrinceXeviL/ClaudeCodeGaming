@@ -170,7 +170,8 @@ for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 const UNIT_K = 0.72, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5;
 for (const lv of LEVELS) if (lv.roadWide) lv.roadK = ROAD_K * lv.roadWide; // 16 Eki: sıkışık bölümlerde geniş yol (data.js BAL.wideRoad)
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
-const TOWER_K = 0.12 * BUILD_K, TREE_K = 0.105, ROCK_K = 0.075;
+const TOWER_S = 0.95; // 17 Eki (Caner): kuleler %5 küçük (kule üstündeki okçular da)
+const TOWER_K = 0.12 * BUILD_K * TOWER_S, TREE_K = 0.105, ROCK_K = 0.075;
 const TOWER_TOP = { archer: 0.86, barracks: 0.7, mage: 0.92, artillery: 0.74 }; // mermi çıkış yüksekliği
 const easeOutBack = (x) => 1 + 2.70158 * Math.pow(x - 1, 3) + 1.70158 * Math.pow(x - 1, 2);
 
@@ -9290,7 +9291,7 @@ const MEN_K = 1.22, OUTL = new WeakMap(); // 15 Eki: zayıf anahtar (atılan şe
 // 11 Eki (2): kule büyüdükçe okçular aynı boyda kalınca büyük kulede küçük görünüyordu → kademeyle büyür, mahzen iskeletinin
 // o kademedeki boyunu geçmez (1. kademe 21, 2. 23, 3. ve 4. kademe 25; yoldaki iskelet savaşçılar 23..26)
 const MEN_BODY_T = [21, 23, 25], MEN_BODY = 21;
-const menBody = (t) => (t.spec ? 25 : MEN_BODY_T[Math.min(2, t.lvl)]);
+const menBody = (t) => (t.spec ? 25 : MEN_BODY_T[Math.min(2, t.lvl)]) * TOWER_S;
 const menH = (t) => { const M = menOf(t); return menBody(t) / bodyRatio(spr(M.pre)); };
 function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   let c = OUTL.get(im); if (c) return c;
