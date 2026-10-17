@@ -605,7 +605,9 @@
   "Düşmanı her alanda zayıflatan güçlü lanetler": "全方位削弱敌人的强力诅咒",
   "ölenlerin kalkma şansı +%10": "死者复活几率+%10",
   "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 复活 · +10% 力量 · 尸体 +1.65 秒",
-  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 复活 · +25% 生命 · +25% 伤害 · 尸体 +1.65 秒"
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 复活 · +25% 生命 · +25% 伤害 · 尸体 +1.65 秒",
+  "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 复活 · +25% 生命与伤害 · 尸体 +2 秒 · 2 个独立小队",
+  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "速度极快；碾过骷髅，行进中挥矛刺击。骷髅挡不住它，骨墙可以"
  },
  "tpl": [
   [

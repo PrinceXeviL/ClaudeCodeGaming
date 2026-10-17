@@ -605,7 +605,9 @@
   "Düşmanı her alanda zayıflatan güçlü lanetler": "Mächtige Flüche, die Feinde in jeder Hinsicht schwächen",
   "ölenlerin kalkma şansı +%10": "+%10 Chance, dass Tote aufstehen",
   "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 Erweckte · +10 % Kraft · Leiche +1,65 s",
-  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 Erweckte · +25 % Leben · +25 % Schaden · Leiche +1,65 s"
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 Erweckte · +25 % Leben · +25 % Schaden · Leiche +1,65 s",
+  "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 Erweckte · +25 % Leben und Schaden · Leiche +2 s · 2 getrennte Gruppen",
+  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Sehr schnell; überrollt Skelette und sticht im Vorbeifahren mit dem Speer zu. Sie halten ihn nicht auf, eine Knochenmauer schon"
  },
  "tpl": [
   [

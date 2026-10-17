@@ -335,7 +335,7 @@ Object.assign(ENEMIES, {
   signifer:  { name: 'Sancaktar', base: 'legion', h: 31, hp: 150, speed: 21, armor: 0.2, mr: 0, gold: 18, dmg: [3, 6], rate: 1, lives: 1, r: 10, aura: { r: 85, armor: 0.25 }, prop: 'banner' },
   // 1. bölgenin son dört türü (görseller FLUX Kontext ile, Kaggle'da): trample: iskeletleri ezip geçer (kemik duvar durdurur)
   wardog:    { name: 'Savaş Köpeği', h: 15, hp: 70, speed: 46, armor: 0, mr: 0, gold: 6, dmg: [3, 6], rate: 0.7, lives: 1, r: 9 },
-  chariot:   { name: 'Savaş Arabası', h: 36, hp: 300, speed: 28, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 1, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 } },
+  chariot:   { name: 'Savaş Arabası', h: 36, hp: 300, speed: 28, armor: 0.3, mr: 0, gold: 34, dmg: [6, 10], rate: 1, lives: 1, r: 16, noblock: true, machine: true, trample: { dmg: 22, r: 16 }, strike: { r: 34, rate: 1.3, dmg: [12, 18], dur: 1, hit: 0.5 } }, // 17 Eki: sürerken mızrakla vurur (game.js strike)
   // 15 Eki (Caner): yeni Güneş Kuşatma Kulesi; tepede 4 güçlü okçu ok yağdırır, yıkılınca içinden onlarca asker yarı canın biraz üstünde (bazıları tam canla) dökülür
   siegetower:{ name: 'Kuşatma Kulesi', h: 89, hp: 1250, speed: 8, armor: 0.45, mr: 0.1, gold: 70, dmg: [2, 4], rate: 2, lives: 3, r: 26, machine: true, noblock: true,
     ranged: { r: 165, dmg: [7, 11], rate: 0.55, proj: 'harrow', any: true, moving: true, top: 0.95 },
@@ -804,7 +804,7 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 const RAISE_MAX = [4, 7, 10, 13, 16, 20]; // Ölüleri Diriltme: kademeye göre aynı anda en çok dirilen (game.js spellStats)
 const GRIM = {
   lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
-  nm_raise: ['+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+4 dirilen · +%25 can · +%25 hasar · ceset +2 sn'], // 16 Eki (Caner): en çok 4/7/10/13/16/20 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
+  nm_raise: ['+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 16 Eki (Caner): en çok 4/7/10/13/16/20 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],
@@ -1285,7 +1285,7 @@ Object.assign(ENEMY_DESC, {
   catapult: 'Durup kulelerimize taş atar, 3 sn susturur. Önce onu durdur',
   cannon: 'İki lejyoner iter; durup kulelerimize gülle atar, 2,5 sn susturur. Önce onu durdur',
   wardog: 'Sürüyle gelir, çok hızlıdır ama canı azdır. Veba kazanı sürüyü dağıtır',
-  chariot: 'Çok hızlı; iskeletleri ezip geçer, durduramazlar. Kemik duvar durdurur',
+  chariot: 'Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur',
   siegetower: 'Tepesinden 4 okçu ok yağdırır; yıkılınca içinden 15 asker dökülür. Yolun başında yık',
   eagle: 'Uçar: iskeletler ve kazanlar vuramaz. Kemik Kulesi ve Ruh Feneri vurur',
   horsearcher: 'Koşarken iskeletlere ok atar, iskeletler onu durduramaz. Kemik duvar durdurur',

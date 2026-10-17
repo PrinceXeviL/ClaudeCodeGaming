@@ -605,7 +605,9 @@
   "Düşmanı her alanda zayıflatan güçlü lanetler": "Des malédictions puissantes qui affaiblissent l’ennemi en tout",
   "ölenlerin kalkma şansı +%10": "+%10 de chances que les morts se relèvent",
   "+3 dirilen · +%10 güç · ceset +1,65 sn": "+3 relevés · +10 % de puissance · cadavre +1,65 s",
-  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 relevés · +25 % de vie · +25 % de dégâts · cadavre +1,65 s"
+  "+4 dirilen · +%25 can · +%25 hasar · ceset +1,65 sn": "+4 relevés · +25 % de vie · +25 % de dégâts · cadavre +1,65 s",
+  "+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup": "+4 relevés · +25 % de vie et de dégâts · cadavre +2 s · 2 groupes séparés",
+  "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Très rapide ; écrase les squelettes et frappe à la lance en roulant. Ils ne peuvent l'arrêter, un mur d'os si"
  },
  "tpl": [
   [

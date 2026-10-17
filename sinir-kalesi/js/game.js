@@ -4861,6 +4861,17 @@ function updateEnemy(e, dt) {
     if ((e.ran || (e.ran = new Set())).has(s)) continue;
     e.ran.add(s); damageSoldier(s, TR.dmg); s.flash = 0.15; impactFx(s.x, s.y - 8, '235,225,200', 0.9); sfx('bash'); if (e.type === 'elephant') sfx('elephant');
   }
+  // 17 Eki (Caner: "atlı araba saldırmıyor, sadece itekliyor; her düşman saldırgan olmalı"): savaş arabası sürerken yakınındaki
+  // iskelete/komutana mızrak saplar (saldırı şeridi bir kez oynar, araba durmaz: makine); vuruş şeridin ortasında (ST.hit sn sonra)
+  const ST = e.def.strike;
+  if (ST && !(e.frogT > 0) && !(e.stun > 0)) {
+    if (e.stkAt != null && G.t >= e.stkAt) { const v = e.stkTgt; e.stkAt = null;
+      if (v && !v.dead && dist(v.x, v.y, e.x, e.y) < ST.r + 14) { damageSoldier(v, roll(ST.dmg) * foeDmgMul(e)); v.flash = 0.15; impactFx(v.x, v.y - 12, '255,230,180', 0.9); sfx('clash', 1, 1, e); } }
+    if ((e.stkCd = (e.stkCd ?? rand(0.2, 0.6)) - dt) <= 0) {
+      let v = null, bd = ST.r; for (const o of G.soldiers) { if (o.dead || o.removed || o.wall || (o.born != null && G.t < o.born)) continue; const d = dist(o.x, o.y, e.x, e.y); if (d < bd) { bd = d; v = o; } }
+      if (v) { e.stkCd = ST.rate * curseSlowAtk(e); e.stkTgt = v; e.stkAt = G.t + ST.hit; playSkill(e, ST.dur); } else e.stkCd = 0.2;
+    }
+  }
   // 15 Eki (Caner): uçanlar (def.dive) arada bir altındaki iskelete pike yapar, pençeler, yine havalanır (Veo şeridi _atk).
   // Dalış boyunca yolda durur ve DIVE_VULN kat hasar alır; pençe hit kesrinde iner (şeridin en alt karesi)
   const DV = e.def.dive;
@@ -5459,7 +5470,8 @@ function updateSoldier(s, dt) {
   if (s.target) {
     const t = s.target;
     if ((!t.blocker || t.blocker.dead) && !t.def.noblock) t.blocker = s;
-    const side = s.x < t.x ? -1 : 1;
+    if (s.sideOf !== t || Math.abs(s.x - t.x) > 18) { s.sideOf = t; s.side = s.x < t.x ? -1 : 1; } // 17 Eki: yan histerezisli (titreme)
+    const side = s.side;
     let spot = t.blocker === s ? { x: t.x + side * 13, y: t.y } : { x: t.x + side * 12, y: t.y + (s.slot === 2 ? 7 : -7) };
     if (s.zombie && t.blocker !== s) { // 13 Eki: ek saldıranlar hedefin çevresine yayılır (aynı noktaya yığılmaz)
       const atk = G.soldiers.filter(o => o !== t.blocker && !o.dead && o.target === t), k = atk.indexOf(s), n = atk.length;
@@ -5507,7 +5519,7 @@ function updateSoldier(s, dt) {
     const arrived = moveToward(s, home.x, home.y, dt);
     if (s.hero && !arrived) heroDust(s, dt);
     if (arrived) {
-      if (!(s.zombie && s.post && dist(s.x, s.y, s.post.x, s.post.y) > 4)) s.moving = false; // 16 Eki: dirilen yol boyunca ara adımlarla yürür; emir yerine varınca durur
+      if (!(s.zombie && s.post && dist(s.x, s.y, s.post.x, s.post.y) > 10)) s.moving = false; // 16 Eki: dirilen yol boyunca ara adımlarla yürür; emir yerine varınca durur
       if (s.hero && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.regen * dt);
       // askerler savaşmadığında yaralarını sarar (saniyede canının %8'i)
       else if (!s.hero && s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt);
@@ -6077,14 +6089,17 @@ const hudLeft = () => (spellIds().length ? Math.max(...spellIds().map((_, i) => 
 const minionsAlive = () => (G ? G.soldiers.filter(s => s.zombie && !s.dead).length : 0);
 // 17 Eki (Caner: "zombileri eşit sayıda 2 ayrı grup hâlinde yönetebilelim"): her dirilen sayısı az olan gruba (0: I yeşil, 1: II mor) katılır
 const ZGROUP = [{ col: '#5ad24a', rgb: '140,255,120', on: '#2a5a24', mark: 'I' }, { col: '#b46aff', rgb: '200,140,255', on: '#3c2458', mark: 'II' }];
+// 17 Eki (Caner): iki grup yalnız Diriltme'nin en üst kademesinde (5); altında tek sancak, hepsi I. grup
+const zTwoGroups = () => spellRank('nm_raise') >= 5;
 function zGroupOf(s) {
+  if (!zTwoGroups()) return 0;
   if (s.zg == null) { const n0 = G.soldiers.filter(o => o.zombie && !o.dead && o.zg === 0).length, n1 = G.soldiers.filter(o => o.zombie && !o.dead && o.zg === 1).length; s.zg = n0 <= n1 ? 0 : 1; }
   return s.zg;
 }
 const zGroupN = (g) => (G ? G.soldiers.filter(s => s.zombie && !s.dead && zGroupOf(s) === g).length : 0);
 function minionCmdBtn(g = 0) { // iki grup sancağı diriltme düğmesinin üstünde yan yana; grubunda asker yoksa o sancak çıkmaz
-  const i = spellIds().indexOf('nm_raise'); if (i < 0 || !zGroupN(g)) return null;
-  const b = spellBtn(i), r = Math.max(20 * UI_K, b.r * 0.6); return { x: b.x + (g ? 1 : -1) * r * 1.12, y: b.y - b.r * 1.95, r, g };
+  const i = spellIds().indexOf('nm_raise'); if (i < 0 || (g && !zTwoGroups()) || !zGroupN(g)) return null;
+  const b = spellBtn(i), r = Math.max(20 * UI_K, b.r * 0.6); return { x: b.x + (zTwoGroups() ? (g ? 1 : -1) * r * 1.12 : 0), y: b.y - b.r * 1.95, r, g };
 }
 function cmdMinions(x, y, g = null) { // g: yalnız o grup (null: hepsi)
   const L = G.soldiers.filter(s => s.zombie && !s.dead && (g == null || zGroupOf(s) === g));
@@ -6099,9 +6114,9 @@ function cmdMinions(x, y, g = null) { // g: yalnız o grup (null: hepsi)
   // 16 Eki (Caner: "yönlendirirken takılıyorlar; yalnız yoldan gitsinler, yol dışına çıkmasınlar"): gösterilen yer hep yolun üstüne oturur,
   // askerler yolun üstünde sıralanır (yol boyunca öne-arkaya ve şeritlere dağılır); oraya yol boyunca yürürler (zombieRoadTo)
   const n = nearestOnPaths(G.paths, x, y), px = n.x, py = n.y;
-  L.forEach((s, j) => { const row = Math.floor(j / 3), col = j % 3, al = n.along + (row % 2 ? -1 : 1) * Math.ceil(row / 2) * 11, lane = (col - 1) * ZOMBIE.lane * 0.9;
+  L.forEach((s, j) => { const row = Math.floor(j / 3), col = j % 3, al = n.along + (row % 2 ? -1 : 1) * Math.ceil(row / 2) * ZOMBIE.sep * 1.15, lane = (col - 1) * ZOMBIE.sep * 0.75; // 17 Eki: aralık itme mesafesinden geniş (yer kavgası, titreme)
     const q = pathPos(n.p, clamp(al, SOLDIER_REACH, n.p.total - 10), lane); s.post = { x: q.x, y: q.y, p: n.p, along: clamp(al, SOLDIER_REACH, n.p.total - 10), lane };
-    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.zlane = lane; zombieRoadTo(s, s.post.x, s.post.y); });
+    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.zlane = lane; s.atPost = false; zombieRoadTo(s, s.post.x, s.post.y); });
   const RC = g == null ? '140,255,120' : ZGROUP[g].rgb; G.effects.push({ kind: 'ring', x: px, y: py, r: 26, col: RC, t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: px, y: py, r: 14, col: '200,120,255', t: 0, dur: 0.35 });
   floatText(px, py - 24, 'İleri!', '#9aff8a'); sfx('spell');
 }
@@ -6116,7 +6131,7 @@ function drawMinionCmd1(g) {
   ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = B.r * 0.12; ctx.beginPath(); ctx.moveTo(-B.r * 0.32, B.r * 0.55); ctx.lineTo(-B.r * 0.32, -B.r * 0.55); ctx.stroke();
   ctx.fillStyle = Z.col; ctx.beginPath(); ctx.moveTo(-B.r * 0.3, -B.r * 0.52); ctx.quadraticCurveTo(B.r * 0.2, -B.r * 0.62 + Math.sin(time * 5 + g) * B.r * 0.05, B.r * 0.55, -B.r * 0.42);
   ctx.lineTo(B.r * 0.42, -B.r * 0.2); ctx.quadraticCurveTo(B.r * 0.1, -B.r * 0.08, -B.r * 0.3, -B.r * 0.12); ctx.closePath(); ctx.fill();
-  txt(Z.mark, B.r * 0.1, -B.r * 0.31, B.r * 0.34, '#1a1020', 'center', '400', FONT_T, false);
+  if (zTwoGroups()) txt(Z.mark, B.r * 0.1, -B.r * 0.31, B.r * 0.34, '#1a1020', 'center', '400', FONT_T, false);
   circle(B.r * 0.12, B.r * 0.22, B.r * 0.26, '#efe6cc', '#1a1020', B.r * 0.05);
   ctx.fillStyle = '#1a1020'; ctx.beginPath(); ctx.arc(B.r * 0.03, B.r * 0.2, B.r * 0.06, 0, 7); ctx.arc(B.r * 0.21, B.r * 0.2, B.r * 0.06, 0, 7); ctx.fill();
   const n = zGroupN(g); circle(B.r * 0.72, -B.r * 0.72, B.r * 0.36, '#c03030', '#1a0a0a', B.r * 0.06); txt(n + '', B.r * 0.72, -B.r * 0.72 + B.r * 0.13, B.r * 0.42, '#fff', 'center', '800', FONT_B, false);
@@ -6335,7 +6350,7 @@ function zombieHunt(s) {
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
-  if (!best) { if (s.post) { if (dist(s.x, s.y, s.post.x, s.post.y) > 12) zombieRoadTo(s, s.post.x, s.post.y); else { s.rx = s.post.x; s.ry = s.post.y; } } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler; 16 Eki: yerinden itildiyse yol boyunca döner
+  if (!best) { if (s.post) { const pd = dist(s.x, s.y, s.post.x, s.post.y); if (pd > (s.atPost ? 26 : 10)) { s.atPost = false; zombieRoadTo(s, s.post.x, s.post.y); } else { s.atPost = true; s.rx = s.x; s.ry = s.y; idleFace(s); } } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; idleFace(s); } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler; 16 Eki: yerinden itildiyse yol boyunca döner
   // 16 Eki (Caner: "bir düşmanı öldürünce önce gönderdiğim yere dönüyor, sonra saldırıyor"): yakındaki düşmana yola ya da emir yerine
   // dönmeden doğrudan yürür ve onu hedef alır; yol boyunca yürüme yalnız uzaktaki düşman için
   if (bd <= ZOMBIE.direct && !(s.born != null && G.t < s.born)) { s.target = best; if (!best.blocker && !best.def.noblock) best.blocker = s; s.rx = s.x; s.ry = s.y; return; }
@@ -6346,6 +6361,14 @@ function zombieHunt(s) {
   if (me.d > 8 + Math.abs(s.zlane)) { const q0 = pathPos(me.p, me.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return; }
   const tg = nearestOnPaths([me.p], best.x, best.y), q = pathPos(me.p, Math.max(SOLDIER_REACH, me.along + clamp(tg.along - me.along, -30, 30)), s.zlane); // girişe yürümez
   s.rx = q.x; s.ry = q.y;
+}
+// 17 Eki (Caner: "cesetler beklerken bi sağa bi sola bakıyor"): bekleyen dirilen yarım saniyede bir bakacağı yönü seçer: en yakın düşman,
+// yoksa bulunduğu yolda düşmanın geleceği yön (yolun başı). Yön yalnız gerçekten değişince döner.
+function idleFace(s) {
+  if (G.t < (s.lookT || 0)) return; s.lookT = G.t + 0.5;
+  let tx = null, bd = 260; for (const o of G.enemies) { if (o.dead || o.under) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < bd) { bd = d; tx = o.x; } }
+  if (tx == null) { const me = nearestOnPaths(G.paths, s.x, s.y); if (me.d < 40) tx = pathPos(me.p, Math.max(0, me.along - 30), 0).x; }
+  if (tx != null) faceTo(s, tx, 10);
 }
 // 16 Eki (Caner: "yalnız yoldan gitsinler, yol dışına çıkamasınlar, çıkarlarsa yola dönsünler"): dirilenin yol boyunca yürüyüşü.
 // Rota emir anında bir kez planlanır (zRoute): hedef başka koldaysa önce kendi kolunda kavşağa, sonra hedefin kolunda hedefe. Her adımda
@@ -6362,7 +6385,7 @@ function zombieRoadTo(s, tx, ty) {
   const R = s.zr, leg = R.legs[R.i], last = R.i === R.legs.length - 1, cur = nearestOnPaths([leg.p], s.x, s.y);
   if (cur.d > 10 + Math.abs(s.zlane)) { const q0 = pathPos(leg.p, cur.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return false; } // yoldan çıkmış: yola dön
   const dA = leg.a - cur.along;
-  if (Math.abs(dA) < 3) { if (!last) { R.i++; return zombieRoadTo(s, tx, ty); } s.rx = tx; s.ry = ty; return dist(s.x, s.y, tx, ty) < 3; }
+  if (Math.abs(dA) < 3) { if (!last) { R.i++; return zombieRoadTo(s, tx, ty); } s.rx = tx; s.ry = ty; return dist(s.x, s.y, tx, ty) < 8; } // 17 Eki: kalabalıkta 3 birime yaklaşamayan dursun (8)
   const q = pathPos(leg.p, cur.along + clamp(dA, -24, 24), s.zlane); s.rx = q.x; s.ry = q.y; return false;
 }
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
@@ -15171,7 +15194,6 @@ function settingsList(inGame) {
     ['fast', 'Titreşim', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('haptic'), (v) => { setSetting('haptic', v); if (v) haptic('medium'); }],
     ['map', 'Anonim oyun verisi', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('stats'), (v) => { setSetting('stats', v); save.statsAsked = 1; persist(); if (v) gaInit(); else if (GA) try { GA.setEnabledEventSubmission(false); } catch (e) {} }],
     ['map', 'Öğretici', [[false, 'KAPALI'], [true, 'AÇIK']], [0, 1, 2].some(i => !(save.tut3 && save.tut3[i])), (v) => { save.tut3 = v ? {} : { 0: 1, 1: 1, 2: 1 }; persist(); }], // 13 Eki: ilk 3 bölümün eğitimi yeniden
-    ['gear', 'Atmosfer ışığı', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('atmo'), (v) => setSetting('atmo', v)], // 13 Eki: deneme (14. bölüm)
     ['gear', 'Görüntü kalitesi', [['low', 'DÜŞÜK'], ['auto', 'OTO'], ['high', 'YÜKSEK']], setting('gfx'), (v) => setSetting('gfx', v)],
     ['heart', 'Kan efektleri', [[false, 'KAPALI'], [true, 'AÇIK']], !!setting('blood'), (v) => setSetting('blood', v)], // 16 Eki: çizgi film kanı (ebeveyn / yaş derecesi için kapatılabilir)
   ];
@@ -18942,7 +18964,7 @@ function drawNight() {
 
 // 13 Eki (Caner): atmosfer ışığı (deneme): ekranın kenarları hafifçe kararır, kulelerin ve komutanın dibi soluk sıcak ışıkla ısınır
 // (kuleler renkli ışıkla boyanmaz, ışık yere vurur). Ayarlar'dan kapanır. Önce yalnız ATMO.levels bölümlerinde (14. bölüm) denenir.
-const ATMO = { levels: [13], edge: 0.4, warm: 0.09 };
+const ATMO = { levels: [], edge: 0.4, warm: 0.09 }; // 17 Eki (Caner: "pek fark göremedim"): kapalı, ayarlardan da kalktı
 function drawAtmo() {
   if (!setting('atmo') || !ATMO.levels.includes(G.idx) || G.weather === 'night') return;
   const cx = (VIS.l + VIS.r) / 2, cy = (VIS.t + VIS.b) / 2, R = Math.hypot(VIS.w, VIS.h) / 2;
