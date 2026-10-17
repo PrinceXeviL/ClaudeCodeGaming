@@ -637,7 +637,29 @@
   "Kazandık. Bahçe biraz ezildi ama olsun.": "Победа. Сад немного потоптали, ну и ладно.",
   "Bir dahaki sefere misafirleri kapıda karşılayalım.": "В следующий раз встретим гостей у ворот.",
   "Generali de topladık. Koleksiyonum büyüyor.": "И генерала прибрали. Коллекция растёт.",
-  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Их командир пал. Из него выйдет хороший скелет."
+  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Их командир пал. Из него выйдет хороший скелет.",
+  "SERBEST MOD": "ПЕСОЧНИЦА",
+  "Serbest": "Песочница",
+  "Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok": "Бесконечное золото и жизни · вызывай любых врагов · ничего не сохраняется",
+  "Sınırsız altın ve can · soldaki panelden düşman çağır": "Бесконечное золото и жизни · вызывай врагов в левой панели",
+  "Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.": "Бесконечное золото и жизни, без волн. Вызывай любых врагов и испытывай башни и командира. Ничего не сохраняется.",
+  "Bölümü bir kez bitir, Serbest Mod açılsın.": "Пройди уровень один раз, чтобы открыть песочницу.",
+  "SERBEST ▲": "ПЕСОЧНИЦА ▲",
+  "SERBEST ▼": "ПЕСОЧНИЦА ▼",
+  "DÜŞMAN ÇAĞIR": "ВЫЗВАТЬ ВРАГА",
+  "SİL": "ОЧИСТИТЬ",
+  "Temizlendi": "Очищено",
+  "Büyüler beklemesiz": "Заклинания без перезарядки",
+  "Büyü beklemesi açık": "Перезарядка включена",
+  "BUGÜN": "СЕГОДНЯ",
+  "Kristallerle dükkândan komutan ve eşya alınır": "За кристаллы в лавке покупают командиров и предметы",
+  "Bugünkü hediyen hazır. Ben cömert bir iskeletim.": "Сегодняшний подарок готов. Я щедрый скелет.",
+  "Gel bakalım, bugün de eli boş dönmeyeceksin.": "Подходи, сегодня тоже не уйдёшь с пустыми руками.",
+  "Her gün uğra, kasam dolu.": "Заходи каждый день, сундук полон.",
+  "Yedinci gün sandığı açıyoruz. Kaçırma!": "На седьмой день открываем сундук. Не пропусти!",
+  "BAŞ KOMUTAN": "ГЛАВНЫЙ",
+  "YARDIMCI": "ПОМОЩНИК",
+  "BAŞA GEÇİR": "СДЕЛАТЬ ГЛАВНЫМ"
  },
  "tpl": [
   [
@@ -1019,6 +1041,18 @@
   [
    "Mortimer'a {n} kez kahve içir",
    "Угостите Мортимера кофе {n} раз"
+  ],
+  [
+   "YOL {}",
+   "ПУТЬ {}"
+  ],
+  [
+   "Yarın: {}",
+   "Завтра: {}"
+  ],
+  [
+   "{} kristal + {}",
+   "{} кристалла + {}"
   ]
  ]
 }

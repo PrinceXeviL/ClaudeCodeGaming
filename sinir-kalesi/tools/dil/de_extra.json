@@ -637,7 +637,29 @@
   "Kazandık. Bahçe biraz ezildi ama olsun.": "Gewonnen. Der Garten ist etwas zertrampelt, aber egal.",
   "Bir dahaki sefere misafirleri kapıda karşılayalım.": "Nächstes Mal empfangen wir die Gäste an der Tür.",
   "Generali de topladık. Koleksiyonum büyüyor.": "Den General haben wir auch. Meine Sammlung wächst.",
-  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Ihr Kommandant ist weg. Er gibt ein gutes Skelett ab."
+  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Ihr Kommandant ist weg. Er gibt ein gutes Skelett ab.",
+  "SERBEST MOD": "SANDKASTEN",
+  "Serbest": "Sandkasten",
+  "Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok": "Unbegrenzt Gold und Leben · rufe jeden Feind · nichts wird gespeichert",
+  "Sınırsız altın ve can · soldaki panelden düşman çağır": "Unbegrenzt Gold und Leben · rufe Feinde über das linke Feld",
+  "Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.": "Unbegrenzt Gold und Leben, keine Wellen. Rufe jeden Feind und teste Türme und Kommandanten. Nichts wird gespeichert.",
+  "Bölümü bir kez bitir, Serbest Mod açılsın.": "Schließe das Level einmal ab, um den Sandkasten freizuschalten.",
+  "SERBEST ▲": "SANDKASTEN ▲",
+  "SERBEST ▼": "SANDKASTEN ▼",
+  "DÜŞMAN ÇAĞIR": "FEIND RUFEN",
+  "SİL": "LEEREN",
+  "Temizlendi": "Geleert",
+  "Büyüler beklemesiz": "Zauber ohne Abklingzeit",
+  "Büyü beklemesi açık": "Abklingzeiten an",
+  "BUGÜN": "HEUTE",
+  "Kristallerle dükkândan komutan ve eşya alınır": "Mit Kristallen kaufst du im Laden Kommandanten und Gegenstände",
+  "Bugünkü hediyen hazır. Ben cömert bir iskeletim.": "Dein Geschenk ist bereit. Ich bin ein großzügiges Skelett.",
+  "Gel bakalım, bugün de eli boş dönmeyeceksin.": "Komm her, auch heute gehst du nicht leer aus.",
+  "Her gün uğra, kasam dolu.": "Komm jeden Tag vorbei, meine Truhe ist voll.",
+  "Yedinci gün sandığı açıyoruz. Kaçırma!": "Am siebten Tag öffnen wir die Truhe. Verpass es nicht!",
+  "BAŞ KOMUTAN": "ANFÜHRER",
+  "YARDIMCI": "ZWEITER",
+  "BAŞA GEÇİR": "ZUM ANFÜHRER"
  },
  "tpl": [
   [
@@ -1019,6 +1041,18 @@
   [
    "Mortimer'a {n} kez kahve içir",
    "Lass Mortimer {n}-mal Kaffee trinken"
+  ],
+  [
+   "YOL {}",
+   "WEG {}"
+  ],
+  [
+   "Yarın: {}",
+   "Morgen: {}"
+  ],
+  [
+   "{} kristal + {}",
+   "{} Kristalle + {}"
   ]
  ]
 }

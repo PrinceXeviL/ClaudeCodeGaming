@@ -637,7 +637,29 @@
   "Kazandık. Bahçe biraz ezildi ama olsun.": "Victoire. Le jardin est un peu piétiné, tant pis.",
   "Bir dahaki sefere misafirleri kapıda karşılayalım.": "La prochaine fois, accueillons les invités à la porte.",
   "Generali de topladık. Koleksiyonum büyüyor.": "Le général aussi. Ma collection grandit.",
-  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Leur commandant est tombé. Il fera un bon squelette."
+  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Leur commandant est tombé. Il fera un bon squelette.",
+  "SERBEST MOD": "MODE LIBRE",
+  "Serbest": "Libre",
+  "Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok": "Or et vies illimités · invoque n’importe quel ennemi · rien n’est sauvegardé",
+  "Sınırsız altın ve can · soldaki panelden düşman çağır": "Or et vies illimités · invoque des ennemis depuis le panneau de gauche",
+  "Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.": "Or et vies illimités, pas de vagues. Invoque n’importe quel ennemi et teste tes tours et ton commandant. Rien n’est sauvegardé.",
+  "Bölümü bir kez bitir, Serbest Mod açılsın.": "Termine le niveau une fois pour débloquer le mode libre.",
+  "SERBEST ▲": "LIBRE ▲",
+  "SERBEST ▼": "LIBRE ▼",
+  "DÜŞMAN ÇAĞIR": "INVOQUER",
+  "SİL": "EFFACER",
+  "Temizlendi": "Effacé",
+  "Büyüler beklemesiz": "Sorts sans recharge",
+  "Büyü beklemesi açık": "Recharge des sorts activée",
+  "BUGÜN": "AUJOURD’HUI",
+  "Kristallerle dükkândan komutan ve eşya alınır": "Les cristaux achètent commandants et objets à la boutique",
+  "Bugünkü hediyen hazır. Ben cömert bir iskeletim.": "Ton cadeau du jour est prêt. Je suis un squelette généreux.",
+  "Gel bakalım, bugün de eli boş dönmeyeceksin.": "Approche, tu ne repartiras pas les mains vides aujourd’hui non plus.",
+  "Her gün uğra, kasam dolu.": "Passe chaque jour, mon coffre est plein.",
+  "Yedinci gün sandığı açıyoruz. Kaçırma!": "Le septième jour, on ouvre le coffre. Ne le rate pas !",
+  "BAŞ KOMUTAN": "CHEF",
+  "YARDIMCI": "SECOND",
+  "BAŞA GEÇİR": "NOMMER CHEF"
  },
  "tpl": [
   [
@@ -1019,6 +1041,18 @@
   [
    "Mortimer'a {n} kez kahve içir",
    "Fais boire du café à Mortimer {n} fois"
+  ],
+  [
+   "YOL {}",
+   "VOIE {}"
+  ],
+  [
+   "Yarın: {}",
+   "Demain : {}"
+  ],
+  [
+   "{} kristal + {}",
+   "{} cristaux + {}"
   ]
  ]
 }

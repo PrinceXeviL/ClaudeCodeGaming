@@ -637,7 +637,29 @@
   "Kazandık. Bahçe biraz ezildi ama olsun.": "赢了。花园被踩坏了点，也罢。",
   "Bir dahaki sefere misafirleri kapıda karşılayalım.": "下次我们在门口迎接客人吧。",
   "Generali de topladık. Koleksiyonum büyüyor.": "将军也收入囊中。我的收藏越来越多了。",
-  "Komutanları gitti. Yerine iyi bir iskelet olur.": "他们的指挥官没了。正好做个好骷髅。"
+  "Komutanları gitti. Yerine iyi bir iskelet olur.": "他们的指挥官没了。正好做个好骷髅。",
+  "SERBEST MOD": "沙盒模式",
+  "Serbest": "沙盒",
+  "Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok": "无限金币和生命 · 召唤任意敌人 · 不保存进度",
+  "Sınırsız altın ve can · soldaki panelden düşman çağır": "无限金币和生命 · 在左侧面板召唤敌人",
+  "Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.": "无限金币和生命，没有波次。召唤任意敌人，测试你的塔和指挥官。不保存任何进度。",
+  "Bölümü bir kez bitir, Serbest Mod açılsın.": "通关一次即可解锁沙盒模式。",
+  "SERBEST ▲": "沙盒 ▲",
+  "SERBEST ▼": "沙盒 ▼",
+  "DÜŞMAN ÇAĞIR": "召唤敌人",
+  "SİL": "清除",
+  "Temizlendi": "已清除",
+  "Büyüler beklemesiz": "法术无冷却",
+  "Büyü beklemesi açık": "法术冷却已开启",
+  "BUGÜN": "今天",
+  "Kristallerle dükkândan komutan ve eşya alınır": "水晶可在商店购买指挥官和道具",
+  "Bugünkü hediyen hazır. Ben cömert bir iskeletim.": "今天的礼物准备好了。我是个大方的骷髅。",
+  "Gel bakalım, bugün de eli boş dönmeyeceksin.": "过来吧，今天也不会让你空手而归。",
+  "Her gün uğra, kasam dolu.": "每天都来吧，我的宝库满满的。",
+  "Yedinci gün sandığı açıyoruz. Kaçırma!": "第七天我们开宝箱。别错过！",
+  "BAŞ KOMUTAN": "主将",
+  "YARDIMCI": "副将",
+  "BAŞA GEÇİR": "设为主将"
  },
  "tpl": [
   [
@@ -1019,6 +1041,18 @@
   [
    "Mortimer'a {n} kez kahve içir",
    "让莫蒂默喝{n}次咖啡"
+  ],
+  [
+   "YOL {}",
+   "路线 {}"
+  ],
+  [
+   "Yarın: {}",
+   "明天：{}"
+  ],
+  [
+   "{} kristal + {}",
+   "{} 水晶 + {}"
   ]
  ]
 }

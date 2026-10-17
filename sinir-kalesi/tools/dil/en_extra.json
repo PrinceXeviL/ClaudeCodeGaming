@@ -826,7 +826,29 @@
   "Kazandık. Bahçe biraz ezildi ama olsun.": "We won. The garden got a bit trampled, but fine.",
   "Bir dahaki sefere misafirleri kapıda karşılayalım.": "Next time let's greet the guests at the door.",
   "Generali de topladık. Koleksiyonum büyüyor.": "We bagged the general too. My collection grows.",
-  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Their commander is gone. He'll make a fine skeleton."
+  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Their commander is gone. He'll make a fine skeleton.",
+  "SERBEST MOD": "SANDBOX",
+  "Serbest": "Sandbox",
+  "Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok": "Unlimited gold and lives · summon any enemy · nothing is saved",
+  "Sınırsız altın ve can · soldaki panelden düşman çağır": "Unlimited gold and lives · summon enemies from the left panel",
+  "Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.": "Unlimited gold and lives, no waves. Summon any enemy and test your towers and commander. Nothing is saved.",
+  "Bölümü bir kez bitir, Serbest Mod açılsın.": "Finish the level once to unlock Sandbox.",
+  "SERBEST ▲": "SANDBOX ▲",
+  "SERBEST ▼": "SANDBOX ▼",
+  "DÜŞMAN ÇAĞIR": "SUMMON ENEMY",
+  "SİL": "CLEAR",
+  "Temizlendi": "Cleared",
+  "Büyüler beklemesiz": "No spell cooldowns",
+  "Büyü beklemesi açık": "Spell cooldowns on",
+  "BUGÜN": "TODAY",
+  "Kristallerle dükkândan komutan ve eşya alınır": "Spend crystals in the shop on commanders and items",
+  "Bugünkü hediyen hazır. Ben cömert bir iskeletim.": "Today’s gift is ready. I am a generous skeleton.",
+  "Gel bakalım, bugün de eli boş dönmeyeceksin.": "Come here, you won’t leave empty-handed today either.",
+  "Her gün uğra, kasam dolu.": "Drop by every day, my vault is full.",
+  "Yedinci gün sandığı açıyoruz. Kaçırma!": "On day seven we open the chest. Don’t miss it!",
+  "BAŞ KOMUTAN": "LEADER",
+  "YARDIMCI": "SECOND",
+  "BAŞA GEÇİR": "MAKE LEADER"
  },
  "tpl": [
   [
@@ -1508,6 +1530,18 @@
   [
    "Mortimer'a {n} kez kahve içir",
    "Make Mortimer drink coffee {n} times"
+  ],
+  [
+   "YOL {}",
+   "PATH {}"
+  ],
+  [
+   "Yarın: {}",
+   "Tomorrow: {}"
+  ],
+  [
+   "{} kristal + {}",
+   "{} crystals + {}"
   ]
  ]
 }

@@ -637,7 +637,29 @@
   "Kazandık. Bahçe biraz ezildi ama olsun.": "Ganamos. El jardín quedó algo pisoteado, pero bueno.",
   "Bir dahaki sefere misafirleri kapıda karşılayalım.": "La próxima vez recibamos a los invitados en la puerta.",
   "Generali de topladık. Koleksiyonum büyüyor.": "También cayó el general. Mi colección crece.",
-  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Su comandante cayó. Será un buen esqueleto."
+  "Komutanları gitti. Yerine iyi bir iskelet olur.": "Su comandante cayó. Será un buen esqueleto.",
+  "SERBEST MOD": "MODO LIBRE",
+  "Serbest": "Libre",
+  "Sınırsız altın ve can · istediğin düşmanı çağır · kayıt yok": "Oro y vidas ilimitados · invoca cualquier enemigo · no se guarda nada",
+  "Sınırsız altın ve can · soldaki panelden düşman çağır": "Oro y vidas ilimitados · invoca enemigos desde el panel izquierdo",
+  "Sınırsız altın ve can, dalga yok. İstediğin düşmanı çağır, kulelerini ve komutanını dene. Hiçbir şey kaydedilmez.": "Oro y vidas ilimitados, sin oleadas. Invoca cualquier enemigo y prueba tus torres y tu comandante. No se guarda nada.",
+  "Bölümü bir kez bitir, Serbest Mod açılsın.": "Completa el nivel una vez para desbloquear el modo libre.",
+  "SERBEST ▲": "LIBRE ▲",
+  "SERBEST ▼": "LIBRE ▼",
+  "DÜŞMAN ÇAĞIR": "INVOCAR ENEMIGO",
+  "SİL": "BORRAR",
+  "Temizlendi": "Despejado",
+  "Büyüler beklemesiz": "Hechizos sin espera",
+  "Büyü beklemesi açık": "Espera de hechizos activada",
+  "BUGÜN": "HOY",
+  "Kristallerle dükkândan komutan ve eşya alınır": "Con cristales compras comandantes y objetos en la tienda",
+  "Bugünkü hediyen hazır. Ben cömert bir iskeletim.": "Tu regalo de hoy está listo. Soy un esqueleto generoso.",
+  "Gel bakalım, bugün de eli boş dönmeyeceksin.": "Ven, hoy tampoco te irás con las manos vacías.",
+  "Her gün uğra, kasam dolu.": "Pasa cada día, mi cofre está lleno.",
+  "Yedinci gün sandığı açıyoruz. Kaçırma!": "El séptimo día abrimos el cofre. ¡No te lo pierdas!",
+  "BAŞ KOMUTAN": "LÍDER",
+  "YARDIMCI": "APOYO",
+  "BAŞA GEÇİR": "HACER LÍDER"
  },
  "tpl": [
   [
@@ -1019,6 +1041,18 @@
   [
    "Mortimer'a {n} kez kahve içir",
    "Haz que Mortimer tome café {n} veces"
+  ],
+  [
+   "YOL {}",
+   "RUTA {}"
+  ],
+  [
+   "Yarın: {}",
+   "Mañana: {}"
+  ],
+  [
+   "{} kristal + {}",
+   "{} cristales + {}"
   ]
  ]
 }
