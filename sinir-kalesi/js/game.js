@@ -7292,7 +7292,7 @@ function drawAchToast() {
   if (k > 3.4) { ACH_TOAST.shift(); return; }
   const y = -50 + 66 * easeOutBack(clamp(k / 0.4, 0, 1)) * (k > 3 ? a : 1), A = T.a, tr = A.t.length === 1 ? 3 : T.tier;
   ctx.save(); ctx.globalAlpha = a;
-  const w = 380, x = W / 2 - w / 2;
+  const win = screen === 'play' && overlay === 'win', w = win ? 320 : 380, x = win ? EDGE.l + 14 : W / 2 - w / 2; // 17 Eki: zafer ekranında ZAFER! yazısına binmesin: sol üst köşe
   crimsonBox(x, y, w, 58, 14);
   if (k < 1.2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + 34, y + 29, 40, tr === 3 ? '255,210,100' : '200,160,255', 0.5 * (1 - k / 1.2)); ctx.restore(); }
   achMedal(A, T.tier, x + 34, y + 29, 26);
@@ -20001,6 +20001,101 @@ function celebStart() { // true: kutlama sürüyor (zafer paneli bekler)
 const celebK = () => (G && G.celebTime != null ? clamp((time - G.celebTime) / CELEB.rise, 0, 1) : 0);
 // birlikte kaldırma: 0 (kalkık) .. 1 (en yukarı, göğe doğru), herkes aynı tempoda
 const celebPump = () => { if (!G || G.celebTime == null) return 0; const u = time - G.celebTime - CELEB.cry; return u < 0 ? 0 : Math.pow(Math.max(0, Math.sin(u / CELEB.pump * Math.PI)), 1.5); };
+// 17 Eki (Caner: "zafer ekranında üst üste binenler var; baştan, çok daha minimal ama görsel olarak güzel"): çerçevesiz zafer ekranı.
+// Oyun kararır, ortada yavaş dönen yeşil ışık ve mor hale; parlayan ZAFER! yukarıdan çakılır, yıldızlar tek tek düşer,
+// tek satır özet (can · düşman · süre), tek satır ödül (kristal + eşyalar) ve altında ince kasa çubuğu; altta 3 düğme.
+function winTitle(text, x, y, size) {
+  ctx.save(); ctx.font = `${size}px ${FONT_LOGO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(120,255,140,0.75)'; ctx.shadowBlur = size * 0.45;
+  ctx.strokeStyle = '#0e0510'; ctx.lineWidth = size * 0.17; ctx.strokeText(text, x, y);
+  ctx.shadowBlur = 0;
+  const g = ctx.createLinearGradient(0, y - size * 0.5, 0, y + size * 0.5); g.addColorStop(0, '#f4ffd8'); g.addColorStop(0.45, '#9dff8a'); g.addColorStop(1, '#2f9a44');
+  ctx.fillStyle = g; ctx.fillText(text, x, y);
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= 0.25 + 0.15 * Math.sin(time * 3); ctx.fillStyle = '#d8ffcc'; ctx.fillText(text, x, y - size * 0.03);
+  ctx.restore();
+}
+function drawWinMinimal(k) {
+  const cx = W / 2, top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
+  const fa = (t0, d = 0.3) => clamp((k - t0) / d, 0, 1);
+  // ışık
+  ctx.save(); ctx.globalAlpha = fa(0.15, 0.6) * 0.5;
+  sunburst(cx, Y(0.3), 280, '140,255,150'); ctx.globalAlpha = fa(0.15, 0.6);
+  ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx, Y(0.3), 300, '170,110,255', 0.16); glow(ctx, cx, Y(0.16), 200, '120,255,140', 0.12);
+  ctx.restore();
+  // başlık: yukarıdan çakılır
+  const ts = fa(0.3, 0.22);
+  if (ts > 0) {
+    if (ts >= 1 && !G.winSlam) { G.winSlam = true; shakeScreen(5, 0.3); sfx('stomp');
+      for (let j = 0; j < 26; j++) { const a = rand(-Math.PI, 0), v = rand(90, 260); emit(uiParts, { kind: 'glow', add: true, x: cx + rand(-130, 130), y: Y(0.15), vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '140,255,150' : '200,140,255', s0: rand(3, 6), s1: 0.5, life: rand(0.5, 0.9) }); } }
+    ctx.save(); ctx.globalAlpha *= ts; const sc = 2.2 - 1.2 * ts * ts; ctx.translate(cx, Y(0.15)); ctx.scale(sc, sc);
+    winTitle(G.chal ? CHAL[G.chal].name + '!' : 'ZAFER!', 0, 0, G.chal ? 50 : 66); ctx.restore();
+  }
+  // yıldızlar
+  for (let s = 0; s < 3; s++) {
+    if (G.chal && s !== 1) continue;
+    const sx = cx + (s - 1) * 92, sy = Y(0.335) - (s === 1 ? 10 : 0), r = s === 1 ? 40 : 32;
+    if (fa(0.45) > 0) { ctx.save(); ctx.globalAlpha *= fa(0.45); fancyStar(sx, sy, r, false); ctx.restore(); }
+    if (s >= G.stars) continue;
+    const q = fa(0.75 + s * 0.34, 0.26); if (q <= 0) continue;
+    if (!(G.starFx & (1 << s))) { G.starFx |= 1 << s; sfx('starthud', 1 + 0.12 * s); sfx('starchime', [1, 1.26, 1.5][s]); shakeScreen(1.5 + s, 0.12);
+      for (let j = 0; j < 16; j++) { const a = rand(0, Math.PI * 2), v = rand(80, 200); emit(uiParts, { kind: 'glow', add: true, x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '255,220,100' : j % 2 ? '140,255,150' : '200,120,255', s0: rand(4, 7), s1: 1, life: rand(0.4, 0.7) }); } }
+    ctx.save(); ctx.translate(sx, sy); const ss = 2.2 - 1.2 * easeOutBack(q); ctx.scale(ss, ss); ctx.globalAlpha *= q; fancyStar(0, 0, r, true);
+    if (q >= 1 && spr('ico_win_star')) starShine(r, k - 0.75 - s * 0.34); ctx.restore();
+  }
+  // özet: tek satır, simgeli, aralarda nokta
+  const sa = fa(1.2, 0.35);
+  if (sa > 0) {
+    const mm = Math.floor(G.t / 60), ss2 = Math.floor(G.t % 60), up = (v) => Math.round(v * easeOutQ(fa(1.2, 0.8)));
+    const items = [['heart', `${G.lives}/${G.maxLives}`, '#ffd6d6'], ['skull', String(up(G.kills || 0)), '#efe6cc'], ['time', `${mm}:${String(ss2).padStart(2, '0')}`, '#efe6cc']];
+    ctx.font = `400 21px ${FONT_T}`; const ws = items.map(([, t]) => ctx.measureText(t).width + 34), gap = 34, tw = ws.reduce((a, b) => a + b, 0) + gap * (items.length - 1);
+    ctx.save(); ctx.globalAlpha *= sa; let x = cx - tw / 2; const y = Y(0.5);
+    items.forEach(([ic, t, col], i) => {
+      if (ic === 'time') drawIconArt('kumsaati', paintHourglass, x + 12, y, 13); else drawIcon(ic, x + 12, y, 22);
+      txt(t, x + 30, y + 1, 21, col, 'left', '400', FONT_T, true); x += ws[i];
+      if (i < items.length - 1) { circle(x + gap / 2, y, 2.5, 'rgba(207,196,168,0.55)'); x += gap; }
+    });
+    ctx.restore();
+  }
+  // ödüller: kasanın kristalleri + bossun ganimeti tek satırda; altında ince kasa çubuğu
+  const V = G.vault, L = G.lootGot, ra = fa(1.45, 0.35);
+  if (ra > 0) {
+    let vc = 0, bank = 0;
+    if (V) { if (V.t0 == null) V.t0 = time; const u = clamp((time - V.t0 - 0.25) / 1.3, 0, 1), e = 1 - (1 - u) ** 3; vc = Math.floor(V.c * e + 1e-6); bank = Math.round(lerp(V.bank0, V.bank1, e));
+      if (vc > (V.n || 0)) { V.n = vc; sfx('coin', 1 + vc * 0.06); } if (u >= 1 && !V.done) { V.done = true; if (V.c > 0) sfx('lootchime'); } }
+    if (L && !G.winLoot) { G.winLoot = true; sfx('lootchime'); }
+    const cr = vc + (L ? L.c : 0), gear = L ? L.gear : [], y = Y(0.635), a = easeOutBack(ra);
+    ctx.save(); ctx.translate(cx, y); ctx.scale(a, a);
+    if (cr > 0 || gear.length) {
+      ctx.font = `400 24px ${FONT_T}`; const cw = cr > 0 ? 34 + ctx.measureText('+' + cr).width : 0, gw = gear.length * 50, tw = cw + gw + (cw && gw ? 20 : 0);
+      let x = -tw / 2;
+      if (cr > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + 13, 0, 26, '200,140,255', 0.35 + 0.1 * Math.sin(time * 4)); ctx.restore();
+        drawIconArt('crystal', paintCrystal, x + 13, 0, 14); txt('+' + cr, x + 32, 1, 24, '#e6c4ff', 'left', '400', FONT_T, true); x += cw + 20; }
+      gear.forEach((it, i) => gearCell(it, x + 22 + i * 50, 0, 42));
+    } else fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], 0, 0, 520, 16, '#9fd8a0', 'center', '700', FONT_B, true, 12);
+    ctx.restore();
+    if (V) { // kasa: ince çubuk, solda "Kasa", sağda sayı (yazılar çubuğun dışında, hiçbir şeye binmez)
+      const bw = 200, bx = cx - bw / 2, by = Y(0.715), f = clamp(bank / VAULT.per, 0, 1);
+      ctx.save(); ctx.globalAlpha *= ra;
+      txt('Kasa', bx - 10, by + 1, 14, '#cfc4a8', 'right', '800', FONT_B, true);
+      roundRect(bx, by - 5, bw, 10, 5, 'rgba(10,6,18,0.85)', 'rgba(212,171,90,0.55)', 1);
+      if (f > 0) roundRect(bx + 1, by - 4, Math.max(8, (bw - 2) * f), 8, 4, '#d4ab5a');
+      txt(bank < VAULT.per ? `${bank}/${VAULT.per}` : `${bank} altın`, bx + bw + 10, by + 1, 14, '#ffe9b0', 'left', '800', FONT_B, true); // bölüm sınırını aşan birikim: sonraki bölümde kristale döner
+      ctx.restore();
+    }
+  }
+  // düğmeler: solda tekrar, ortada büyük sonraki bölüm, sağda harita
+  const appear = k - 1.75, yb = Y(0.87);
+  const retry = () => go(() => startLevel(G.idx, G.chal)), toMap = () => go(() => { screen = 'map'; setOverlay(null); });
+  if (G.idx + 1 < LEVELS.length || G.tutorial || G.admin) {
+    roundBtn('ov_retry', cx - 200, yb, 31, 'restart', retry, { appear, tile: 'violet' });
+    gameButton('ov_next', cx, yb, 270, 64, G.tutorial ? 'HARİTAYA DÖN' : G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.tutorial ? (screen = 'map', setOverlay(null)) : G.admin ? startLevel(G.idx, 'a') : startLevel(G.idx + 1)), 'green',
+      { icon: 'next', shine: true, breathe: true, appear: appear - 0.08, size: 21, glow: '140,255,120' });
+    roundBtn('ov_map', cx + 200, yb, 31, 'map', toMap, { appear: appear - 0.04, tile: 'blue' });
+  } else {
+    gameButton('ov_retry', cx - 120, yb, 200, 58, 'TEKRAR', retry, 'wood', { icon: 'restart', appear, size: 18 });
+    gameButton('ov_map', cx + 120, yb, 200, 58, 'HARİTA', toMap, 'green', { icon: 'map', appear: appear - 0.06, shine: true, size: 18 });
+  }
+}
 function drawWinSummary(k, px, py, pw, cx) {
   const S = G.stats || { by: {}, raised: 0, spells: 0 }, x0 = px + 44, w = pw - 88, y0 = py + 190;
   roundRect(x0, y0, w, 112, 12, 'rgba(10,6,18,0.55)', 'rgba(207,196,168,0.35)', 1.2);
@@ -20332,7 +20427,8 @@ function drawOverlay() {
   const pw = big ? 600 : pz ? 480 : sum ? 680 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? (G && G.vault && G.lootGot ? 512 : 472) : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   const wn = overlay === 'win' && NECRO; // 16 Eki (Caner: zafer ekranı konsepte uysun): kararma, panel aşağıdan kayar, başlık yere çakılır, yıldızlar tek tek düşer
-  if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.5 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); }  }
+  if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.62 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); }
+    drawWinMinimal(k); return; } // 17 Eki: çerçevesiz, minimal zafer ekranı
   ctx.save(); ctx.globalAlpha = clamp((wn ? k - 0.12 : k) / 0.15, 0, 1);
   if (wn) { const u = clamp((k - 0.12) / 0.5, 0, 1), sl = 1 - (1 - Math.pow(1 - u, 3)) - Math.sin(u * Math.PI) * 0.05 * (u > 0.6 ? 1 : 0); ctx.translate(0, sl * H * 0.75); }
   else { ctx.translate(cx, cy); ctx.scale(e, e); ctx.translate(-cx, -cy); }
