@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -11859,7 +11859,9 @@ function drawUnit(name, im, x, y, face, o) {
   // özel saldırı / büyü anı: <ad>_skill şeridi (yoksa saldırı şeridi) baştan sona bir kez oynar
   const skillKey = o.skill != null && ((o.skillSuf && animStrip(name, o.rig, o.skillSuf)) || animStrip(name, o.rig, '_skill') || animStrip(name, o.rig, '_atk')); // skillSuf: Veo şeridi (_dash, _guard) varsa o
   const chB = CHEER_POSE && o.atk === CHEER_ATK && animStrip(name, o.rig, '_atk'), chM = chB && ANIM_META[chB].cheer, chK = chM && animStrip(name, o.rig, chM[0]);
-  if (chK) { fName = chK; fi = Math.max(0, Math.round(chM[1] * CHEER_POSE.c) - (CHEER_POSE.p > 0.55 ? 1 : 0)); } // 16 Eki: kutlama: şeridin kılıç-havada karesine kalkar, orada tutar (varliklar/kutlama_kare.py)
+  const chS = CHEER_POSE && animStrip(name, o.rig, '_cheer'); // 17 Eki (Caner): zafer sevinci Wan şeridi (unit_skel_N_cheer) varsa o döner, yoksa kılıç havada kare
+  if (chS) { fName = chS; fi = Math.floor((time + (CHEER_POSE.seed || 0) * 0.37) * 14) % ANIM_META[chS].n; }
+  else if (chK) { fName = chK; fi = Math.max(0, Math.round(chM[1] * CHEER_POSE.c) - (CHEER_POSE.p > 0.55 ? 1 : 0)); } // 16 Eki: kutlama: şeridin kılıç-havada karesine kalkar, orada tutar (varliklar/kutlama_kare.py)
   else if (skillKey) { fName = skillKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.skill * ANIM_META[fName].n)); }
   else if (atkKey) {
     fName = atkKey;
@@ -17127,7 +17129,15 @@ function codexStage(x, y, w, h, col) {
   ctx.strokeStyle = `rgba(${col},0.5)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.42, 11, 0, 0, Math.PI * 2); ctx.stroke();
 }
 const CODEX_SMALL = { wardog: 0.6, hound: 0.6, eagle: 0.6, vulture: 0.6 }; // 12 Eki (Caner): hayvanlar kodekste çok büyüktü, %40 küçük
-const CODEX_PACE = 0.7; // kodeks yürüyüşü: saniyede karakter boyunun 0,7'si kadar
+const CODEX_PACE = 0.7; // kodeks yürüyüşü: saniyede karakter boyunun 0,7'si kadar (artık yalnız şeridi olmayan iskelet animasyonunda)
+// 17 Eki (Caner: kodekste kimi çok hızlı kimi yavaş): kaidede zemin akmadığı için ayak kayması yok; her şerit çekildiği hızda oynar
+// (Wan 16 kare/sn, Veo 24 kare/sn). Önceden adım boyundan hesaplanıp 0,5-1,4 sn'ye sıkıştırılıyordu: 120 karelik Veo yürüyüşü 105 kare/sn oynuyordu.
+const VEO_WALK = new Set(['hero_merlin_walk', 'hero_robin_walk', 'hero_bathory_walk', 'enemy_cannon_walk', 'enemy_siegetower_walk', 'enemy_eagle_walk', 'enemy_vulture_walk']);
+function codexWalkRate(name, rig, hh) {
+  const key = ANIM_META[name + '_walk'] ? name + '_walk' : rig && ANIM_META[rig + '_walk'] ? rig + '_walk' : null, F = key && ANIM_META[key];
+  if (!F) return walkRate(name, rig, CODEX_PACE * hh, hh);
+  return TAU * (F.fps || (VEO_WALK.has(key) ? 24 : 16)) / F.n;
+}
 function drawCodexEnemy(id, px, py, pw, ph) {
   const ranked = RANKED.includes(id), r = ranked ? CODEX.rank : 0, type = r ? id + '_' + RANKS[r].id : id, d = ENEMIES[type];
   const k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
@@ -17143,7 +17153,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
     const hh = Math.min(big, 200 * im.height / im.width) * (0.6 + 0.4 * k) * (CODEX_SMALL[id] || 1);
     ctx.save(); ctx.beginPath(); ctx.rect(px + 4, py + 4, 206, 218); ctx.clip();
     // hepsi aynı görünür hızda yürür: saniyede CODEX_PACE boy kadar yol (adım boyu şeritten), ayaklar kaymaz
-    drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * walkRate('enemy_' + type, rigN, CODEX_PACE * hh, hh), walking: true, fly: 0, seed: 0, rig: rigN });
+    drawUnit('enemy_' + type, im, cx, cy, 1, { h: hh, phase: time * codexWalkRate('enemy_' + type, rigN, hh), walking: true, fly: 0, seed: 0, rig: rigN });
     ctx.restore();
     if (r === 2) drawRankStar(cx, cy - hh - 8);
   }

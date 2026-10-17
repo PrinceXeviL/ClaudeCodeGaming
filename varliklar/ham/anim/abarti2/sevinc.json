@@ -1,0 +1,66 @@
+[
+ {
+  "name": "unit_skel_1_cheer",
+  "ref": "ham/anim/unit_skel_1_ref.png",
+  "prompt": "a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the weapon and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_2_cheer",
+  "ref": "ham/anim/unit_skel_2_ref.png",
+  "prompt": "a cartoon skeleton guard in chainmail with a skull shield and a long sword celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the weapon and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_3_cheer",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the weapon and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_4_cheer",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "prompt": "a cartoon huge armored skeleton grave warden in black spiked plate armor and horned helmet, with a big coffin tower shield and a spiked mace with green runes celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the weapon and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_5_cheer",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the weapon and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_6_cheer",
+  "ref": "ham/anim/unit_skel_6_ref.png",
+  "prompt": "a cartoon skeleton archer in a tattered purple hooded cloak with glowing green eyes, holding a longbow, a quiver on the back celebrates a great victory in place: raises the bow high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the bow and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_7_cheer",
+  "ref": "ham/anim/unit_skel_7_ref.png",
+  "prompt": "a cartoon armored skeleton archer with an iron helmet, brown leather armor and a torn purple tabard, holding a longbow, a quiver on the hip celebrates a great victory in place: raises the bow high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the bow and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_8_cheer",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow celebrates a great victory in place: raises the bow high above the head and shakes it triumphantly, hops up and down twice on the same spot, the skull jaw opens wide and clacks with joy, the bones rattle, then lowers the bow and returns exactly to the starting pose, exaggerated cartoon squash and stretch, a seamless loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame on the same spot and never walks, never turns toward the camera, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ }
+]

@@ -1,0 +1,92 @@
+[
+ {
+  "name": "enemy_ram_walkx",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a lion head ram and soldiers inside rolls forward in place with exaggerated bouncy cartoon motion: the whole machine bounces and wobbles over bumps, the wheels turn fast, loose parts rattle and swing, squash and stretch, lively snappy timing, a full looping cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "enemy_hound_walkx",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar walks forward in place with an exaggerated bouncy cartoon gait: the legs reach far, the paws stomp down firmly, the whole body bobs up and down and rocks, squash and stretch, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "unit_xbow1_walkx",
+  "ref": "ham/anim/unit_xbow1_ref.png",
+  "prompt": "a cartoon skeleton recruit with a rusty iron pot helmet and a grey loincloth, bare bones clearly visible, holding a small wooden crossbow at the hip marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "enemy_chariot_walkx",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it gallops in place: the horse moves forward in place with an exaggerated bouncy cartoon gallop: the animals legs reach far and stomp down, their bodies bob and rock, the rider or the vehicle bounces with every stride, squash and stretch, lively snappy timing, a full looping cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "enemy_saint_walkx",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "prompt": "a walking cracked white marble statue of a robed saint with a stone halo and a stone sword marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "unit_gulyabani_walkx",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers shambles in place with a creepy hunched walk, a full walk cycle, long arms swaying, beard and hair swinging marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "enemy_cavalry_walkx",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "prompt": "a cartoon roman cavalryman with a lance riding a white horse moves forward in place with an exaggerated bouncy cartoon gallop: the animals legs reach far and stomp down, their bodies bob and rock, the rider or the vehicle bounces with every stride, squash and stretch, lively snappy timing, a full looping cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "enemy_ignis_walkx",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "unit_ghostxbow_walkx",
+  "ref": "ham/anim/unit_ghostxbow_ref.png",
+  "prompt": "a cartoon crimson-hooded skeleton with horned skull pauldrons, holding a heavy black crossbow at the hip, crimson mist at the feet marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ },
+ {
+  "name": "unit_bonegiant_walkx",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "seed": 33
+ }
+]
