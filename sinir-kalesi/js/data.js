@@ -1075,6 +1075,7 @@ LEVELS.forEach((lv, li) => {
     }
   });
 });
+const BOSS_EVERY = 4; // 17 Eki: her mekân 4 bölüm; boss mekânın son bölümünde
 const CLASS_OF_EXTRA = {}; // sonradan eklenen bossların zırh sınıfı (CLASS_OF'a katılır)
 // 1. sefer bossları (11 Eki, Caner: "bosslar dikkat çekici olsun, 20. bölümdeki ultra güçlü"; arastirma/boss-analizi.md):
 // altı komutanın kendi çizimi (varliklar/ham/nm_boss_A/B.jpg), %25 iri; her mekânın kendi komutanı; 17-19'da ikili generaller;
@@ -1113,7 +1114,10 @@ if (NECRO) {
   const B1 = ['centurion', 'champion', 'centurion', 'champion', 'hierophant', 'centurion', 'champion', 'hierophant', 'shadowmaster', 'hierophant',
     'champion', 'shadowmaster', 'cavcaptain', 'shadowmaster', 'ironwarden', 'cavcaptain', 'ironwarden', 'shadowmaster', 'cavcaptain', 'gloriosus1'];
   const B2 = { 16: 'hierophant', 17: 'champion', 18: 'ironwarden' };
-  LEVELS.filter(l => (l.ep || 1) === 1).forEach((l, i) => { if (B1[i]) l.bossT = B1[i]; if (B2[i]) l.boss2 = B2[i]; });
+  // 17 Eki (Caner: "her bölüm sonunda boss gelmesin, 4 bölümde bir mekân değişiyor, 4 bölümde bir gelsin"): boss yalnız mekân sonlarında
+  // (4, 8, 12, 16, 20). Ara bölümlerin komutanları boşa gitmesin: mekân sonunda büyük bossun yanında ikinci general olarak gelir (BOSS_PAIR1).
+  const BOSS_PAIR1 = { 7: 'centurion', 15: 'ironwarden' }; // ilk boss (4. bölüm) tek: yeni oyuncuya ikili general ağır geliyordu (bot kaybetti)
+  LEVELS.filter(l => (l.ep || 1) === 1).forEach((l, i) => { delete l.boss2; if ((i + 1) % BOSS_EVERY) { l.bossT = null; l.noBoss = true; return; } l.bossT = B1[i]; if (BOSS_PAIR1[i]) l.boss2 = BOSS_PAIR1[i]; });
 }
 // 2. sefer bossları (12 Eki, Caner): engizisyonun kendi komutanları (varliklar/ham/nm_boss_D.jpg; haç yerine güneş amblemi),
 // her mekânın kendi komutanı, 17-19 ikili; 20. bölüm üç evre: Yürüyen Katedral → çaydanlıklı Severus → Lanetli Severus (nm_boss_E.jpg).
@@ -1151,12 +1155,15 @@ if (NECRO) {
   const B2 = ['hubertus', 'agnes', 'hubertus', 'malleus', 'agnes', 'hubertus', 'lucia', 'campanus', 'lucia', 'agnes', 'godfrey', 'ignis',
     'godfrey', 'lucia', 'agnes', 'colossus', 'godfrey', 'malleus', 'campanus', 'cathedral'];
   const B2b = { 16: 'lucia', 17: 'agnes', 18: 'ignis' };
-  LEVELS.filter(l => l.ep === 2).forEach((l, i) => { l.bossT = B2[i]; if (B2b[i]) l.boss2 = B2b[i]; else delete l.boss2; });
+  const BOSS_PAIR2 = { 3: 'hubertus', 7: 'agnes', 11: 'lucia', 15: 'godfrey' }; // 17 Eki: ara bölüm komutanları mekân sonunda ikinci general
+  LEVELS.filter(l => l.ep === 2).forEach((l, i) => { delete l.boss2; if ((i + 1) % BOSS_EVERY) { l.bossT = null; l.noBoss = true; return; } l.bossT = B2[i]; if (BOSS_PAIR2[i]) l.boss2 = BOSS_PAIR2[i]; });
 }
 LEVELS.forEach((lv, i) => {
-  lv.boss = lv.bossT || LEVEL_BOSS[i];
   const w = lv.waves[lv.waves.length - 1];
   const end = Math.max(...w.map(g => (g.at || 0) + g.gap * (g.n - 1)));
+  // boss gelmeyen bölüm: son dalganın sonunda kristal ve eşya taşıyan Yüzbaşı (boss değil: ağır çekim, boss müziği yok; ödülü boss ödülüyle aynı)
+  if (lv.noBoss) { lv.boss = null; w.push({ t: 'legion_y', n: 1, gap: 1, at: Math.round(end + 6), p: 0, loot: true }); return; }
+  lv.boss = lv.bossT || LEVEL_BOSS[i];
   w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0, hpK: lv.boss2 ? 0.75 : undefined });
   if (lv.boss2) w.push({ t: lv.boss2, n: 1, gap: 1, at: Math.round(end + 10), p: (lv.entr || 1) > 1 ? 1 : 0, hpK: 0.75 }); // ikili generaller: ikisi de biraz zayıf
 });

@@ -2354,7 +2354,7 @@ function waveBonusAndStart() {
   let lastSpawn = 0;
   G.waveN = def.reduce((a, grp) => a + grp.n, 0); // dalganın asker sayısı (erken çağrı eşiği için)
   for (const grp of def) {
-    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
+    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, loot: grp.loot, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + wait + grp.gap * (grp.n - 1));
   }
   if (!G.endless && bloodWaves(G.lv).includes(G.wave)) startBloodMoon();
@@ -3261,7 +3261,8 @@ function killEnemy0(e) {
   }
   if (e.def.crew && !e.leaked) siegeCrewOut(e);
   if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
-  if (e.def.chief && !e.leaked) { bossLoot(e, giveCrystals(e)); bossDeathFx(e); G.winHold = Math.max(G.winHold || 0, WIN_HOLD); } // 14 Eki (Caner): zafer ekranı hemen gelmez; ölüm, altın, kristal ve eşya görünür
+  if (e.def.chief && !e.leaked) { bossLoot(e, giveCrystals(e)); bossDeathFx(e); G.winHold = Math.max(G.winHold || 0, WIN_HOLD); }
+  else if (e.lootCarrier && !e.leaked) { bossLoot(e, giveCrystals(e)); shakeScreen(3, 0.25); G.winHold = Math.max(G.winHold || 0, 2.6); } // 17 Eki: ödül taşıyan Yüzbaşı // 14 Eki (Caner): zafer ekranı hemen gelmez; ölüm, altın, kristal ve eşya görünür
   if (!e.leaked) comboKill(e);
   if (e.def.dismount) {
     // deve süvarisi: deve düşer, süvari yaya olarak yoluna devam eder
@@ -8722,6 +8723,7 @@ function update(dt) {
       const cap = NECRO && i === 0 && sp.n >= 4 && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
       const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null);
       if (cap) e.captain = true;
+      if (sp.loot) e.lootCarrier = true; // 17 Eki: boss gelmeyen bölümde ödülü taşıyan Yüzbaşı
       if (R) e.march = true;
       if (sp.hpK && (!e.def.chief || sp.hpK < 1)) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; } // ikili generaller (chief) de zayıflar
       sp.left--;
@@ -10828,6 +10830,11 @@ function drawEnemy0(e) {
     else if (e.spinA) { const cy = e.kdT > 0 ? e.y - uo.fly - 2 : e.y - uo.fly - uo.h * 0.45; ctx.save(); ctx.translate(ux, cy); ctx.rotate(e.kdT > 0 ? e.spinA : e.spinA * (e.face || 1)); ctx.translate(-ux, -cy); drawUnit(name, im, ux, e.y, e.face, uo); ctx.restore(); } // savrulurken döner (devrilen: ayaklarının üstünden, savrulan: gövde ortasından)
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
+    if (e.lootCarrier) { // 17 Eki: ödül taşıyan Yüzbaşı: başının üstünde süzülen kristal (oyuncu kimi kovalayacağını bilsin)
+      const hy = e.y - uo.h - fly - 15 + Math.sin(time * 3 + e.off) * 1.5; // rütbe yıldızının üstünde
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, ux, hy, 7, '200,140,255', 0.4 + 0.15 * Math.sin(time * 5)); ctx.restore();
+      drawCrystal(ux, hy, 3);
+    }
     if (d.prop) drawEnemyProp(e, d.prop, uo.h);
     if (e.drumT > 0 && !d.aura) { // davulla gaza gelen asker: yukarı uçuşan kıvılcım (13 Eki, Caner: ayaktaki yuvarlak ışıklar kalktı)
       if (Math.random() < 0.03) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-5, 5), y: e.y - rand(6, 20), vy: -rand(18, 34), col: '255,140,70', s0: 1.4, s1: 0.3, life: 0.6, a: 0.9 });
@@ -16864,7 +16871,7 @@ function enemySkills(d) {
   return L;
 }
 function codexBossHp(type) {
-  const i = LEVELS.findIndex(lv => lv.boss === type), lv = LEVELS[i] || {}, tier = lv.tier ?? i;
+  const i = LEVELS.findIndex(lv => lv.boss === type || lv.boss2 === type), lv = LEVELS[i] || {}, tier = lv.tier ?? i;
   return Math.round((650 + 400 * Math.max(0, tier)) * (ENEMIES[type].hpK || 1));
 }
 function codexBookIcon(r) {
