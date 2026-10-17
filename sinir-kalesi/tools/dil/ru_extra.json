@@ -610,7 +610,7 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Очень быстрая; давит скелетов и бьёт копьём на ходу. Остановить её они не могут, а костяная стена может",
   "Ortam efektleri": "Эффекты окружения",
   "SEKTİ": "ОТСКОК",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: kalkanlılar kısa bir süre kalkan duvarı kurar, oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Ветеран на каждых четырёх легионеров: идёт впереди и отдаёт приказы. Легионеры рядом бьют на 15% сильнее и получают на 15% меньше урона. При обстреле кричит «Щиты!»: воины со щитами ненадолго смыкают стену щитов, стрелы наносят на 30-80% меньше урона или отскакивают, но отряд идёт медленнее. Со смертью ветерана преимущества пропадают"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Ветеран на каждых четырёх легионеров: идёт впереди, отдаёт приказы и, возглавляя отряд, имеет вдвое больше здоровья. Легионеры рядом бьют на 15% сильнее и получают на 15% меньше урона. При обстреле кричит «Щиты!»: весь отряд разом смыкает стену щитов (воины со щитами поднимают щит и сами, когда в них попадает стрела), стрелы наносят на 30-80% меньше урона или отскакивают, но отряд идёт медленнее. Со смертью ветерана преимущества пропадают"
  },
  "tpl": [
   [

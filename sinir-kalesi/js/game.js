@@ -3051,6 +3051,8 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (e.fearT > 0 && NECRO && grimRank('nm_fear') >= 5) amount *= 1.2; // Büyü Kitabı: korkan düşman %20 fazla hasar alır
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
   if (src === 'arrow') { e.arrowG = G.t; // kıdemlinin "Kalkanlar!" komutu için
+    if (!(e.wallT > 0) && isShielded(e) && G.t >= (e.selfShCd ?? 0) && (G.idx >= CAPTAIN.shield.from || G.lv.ep === 2)) { const SS = CAPTAIN.shield.self; e.selfShCd = G.t + SS.cd; e.wallT = e.wallD = SS.t; } // kıdemlisiz: kendi kalkanı (bu ok tam işler)
+    else
     if (e.wallT > 0) { const S = CAPTAIN.shield; // kalkan duvarı: ok seker ya da az işler
       if (!raw && Math.random() < S.miss) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.5)) { e.blockFx = time; floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 28) - 4, 'SEKTİ', '#ffe2a0'); impactFx(e.x + (e.face || 1) * 6, e.y - (CHAR_H['enemy_' + e.type] || 28) * 0.55, '255,230,170', 0.6); } return; }
       amount *= rand(S.k[0], S.k[1]); } }
@@ -3142,7 +3144,8 @@ const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15,
   // 17 Eki (Caner: "okçular saldırınca kıdemlinin komutuyla kalkan kullanıp guard alsınlar; oklar en çok %80 az işlesin, bazen ıska"):
   // ok değince kıdemli "Kalkanlar!" der; çevresindeki kalkanlılar t sn kalkan duvarı kurar: okların miss'i seker, kalanı k kat işler; yürüyüş spd kat
   // from: kalkan duvarı bu bölümden (0'dan) itibaren; ilk boss bölümüne kadar yok (bot 4-7'de çok can kaybetti: 3 sn/9 sn/%20/0,2-0,5 sertti)
-  shield: { t: 2.5, cd: 12, miss: 0.15, k: [0.2, 0.7], spd: 0.7, from: 4 } };
+  shield: { t: 2.5, cd: 12, miss: 0.15, k: [0.2, 0.7], spd: 0.7, from: 4, self: { t: 1.8, cd: 7 } }, // self: kıdemlisiz tek asker (17 Eki, Caner): ok yiyince kendisi kalkan kaldırır, daha kısa
+  hp: 2 }; // bölük başındaki kıdemlinin canı (Caner: 2 kat)
 const SHIELDED = new Set(['legion', 'heavy', 'paladin', 'signifer']); // kalkanlı piyade (rütbelileri base ile)
 const isShielded = (o) => SHIELDED.has(o.def.base || o.type);
 function updateCaptain(e, dt) {
@@ -3152,7 +3155,7 @@ function updateCaptain(e, dt) {
   if (e.shCd <= 0 && e.d >= 0 && (G.idx >= CAPTAIN.shield.from || G.lv.ep === 2)) {
     const S = CAPTAIN.shield, grp = G.enemies.filter(o => !o.dead && !o.under && isShielded(o) && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r);
     if (grp.some(o => G.t - (o.arrowG ?? -9) < 0.5)) {
-      e.shCd = S.cd; for (const o of grp) o.wallT = S.t;
+      e.shCd = S.cd; for (const o of grp) o.wallT = o.wallD = S.t;
       const said = G.enemies.some(o => o !== e && o.captain && G.t - (o.shSaid ?? -9) < 1.2 && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r * 2); // yakındaki kıdemli az önce bağırdıysa tek ses
       if (!said && onScreen(e, 60) && !MUTE_VOICE(e)) { e.shSaid = G.t; floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, 'Kalkanlar!', '#ffd890'); sfx('clash', 0.6, 1.2, e); }
       e.cmdCd = Math.max(e.cmdCd, 2); return;
@@ -8745,7 +8748,7 @@ function update(dt) {
       // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
       const cap = NECRO && i % 4 === 0 && i + 4 <= sp.n && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
       const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null);
-      if (cap) e.captain = true;
+      if (cap) { e.captain = true; e.hp *= CAPTAIN.hp; e.maxHp *= CAPTAIN.hp; } // bölük başındaki kıdemli 2 kat canlı
       if (sp.loot) e.lootCarrier = true; // 17 Eki: boss gelmeyen bölümde ödülü taşıyan Yüzbaşı
       if (R) e.march = true;
       if (sp.hpK && (!e.def.chief || sp.hpK < 1)) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; } // ikili generaller (chief) de zayıflar
@@ -10859,7 +10862,7 @@ function drawEnemy0(e) {
     else drawUnit(name, im, ux, e.y, e.face, uo);
     if (e.coatT > 0) drawPlagueCoat(e, ux, uo.h, fly);
     if (e.wallT > 0 && !e.dead) { // 17 Eki: kalkan duvarı (birimin önünde çizilir): başın üstüne kaldırılmış kalkanların bronz kavsi (açılırken büyür, biterken söner)
-      const k = Math.min(1, (CAPTAIN.shield.t - e.wallT) / 0.2, e.wallT / 0.3), hw = (d.r || 10) * 1.12, cy = e.y - fly - uo.h * 0.74, f = e.face || 1; // kaskın hemen üstü (uo.h sorguçla birlikte boy)
+      const k = Math.min(1, ((e.wallD || CAPTAIN.shield.t) - e.wallT) / 0.2, e.wallT / 0.3), hw = (d.r || 10) * 1.12, cy = e.y - fly - uo.h * 0.74, f = e.face || 1; // kaskın hemen üstü (uo.h sorguçla birlikte boy)
       ctx.save(); ctx.globalAlpha = 0.85 * k; ctx.lineCap = 'round';
       ctx.fillStyle = 'rgba(190,60,40,0.55)'; ctx.strokeStyle = '#3a1a0c'; ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.ellipse(ux + f * 2, cy, hw, hw * 0.32, 0, Math.PI, Math.PI * 2); ctx.closePath(); ctx.fill(); ctx.stroke();

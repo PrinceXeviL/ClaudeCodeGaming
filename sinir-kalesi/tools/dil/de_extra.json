@@ -610,7 +610,7 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "Sehr schnell; überrollt Skelette und sticht im Vorbeifahren mit dem Speer zu. Sie halten ihn nicht auf, eine Knochenmauer schon",
   "Ortam efektleri": "Umgebungseffekte",
   "SEKTİ": "ABGEPRALLT",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: kalkanlılar kısa bir süre kalkan duvarı kurar, oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Der Veteran je vier Legionäre: marschiert vorn und gibt Befehle. Legionäre in der Nähe schlagen 15 % härter zu und erleiden 15 % weniger Schaden. Kommen Pfeile, ruft er „Schilde!“: Schildträger bilden kurz einen Schildwall, Pfeile wirken 30-80 % schwächer oder prallen ab, doch sie gehen langsamer. Stirbt er, sind die Vorteile weg"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "Der Veteran je vier Legionäre: marschiert vorn, gibt Befehle und hat als Truppführer doppeltes Leben. Legionäre in der Nähe schlagen 15 % härter zu und erleiden 15 % weniger Schaden. Kommen Pfeile, ruft er „Schilde!“: der ganze Trupp bildet sofort einen Schildwall (Schildträger heben ihn auch allein, wenn ein Pfeil sie trifft), Pfeile wirken 30-80 % schwächer oder prallen ab, doch sie gehen langsamer. Stirbt er, sind die Vorteile weg"
  },
  "tpl": [
   [

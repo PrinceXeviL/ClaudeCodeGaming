@@ -610,7 +610,7 @@
   "Çok hızlı; iskeletleri ezip geçer, sürerken mızrakla vurur. Durduramazlar, kemik duvar durdurur": "速度极快；碾过骷髅，行进中挥矛刺击。骷髅挡不住它，骨墙可以",
   "Ortam efektleri": "环境特效",
   "SEKTİ": "弹开",
-  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: kalkanlılar kısa bir süre kalkan duvarı kurar, oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "每四名军团兵中的老兵：走在最前并发号施令。附近军团兵攻击提高15%，受到伤害降低15%。遭到箭射时他高喊“举盾！”：持盾士兵短暂组成盾墙，箭矢伤害降低30-80%或被弹开，但行进变慢。他一死，这些加成随之消失"
+  "Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince \"Kalkanlar!\" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur": "每四名军团兵中的老兵：走在最前、发号施令，率队时生命翻倍。附近军团兵攻击提高15%，受到伤害降低15%。遭到箭射时他高喊“举盾！”：整支小队立即组成盾墙（持盾士兵中箭时也会自己举盾），箭矢伤害降低30-80%或被弹开，但行进变慢。他一死，这些加成随之消失"
  },
  "tpl": [
   [
