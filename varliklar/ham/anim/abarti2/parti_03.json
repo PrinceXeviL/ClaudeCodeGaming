@@ -1,0 +1,194 @@
+[
+ {
+  "name": "enemy_gloriosus3_diex",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword is defeated: the flames on his body go out, his armor turns dull, he drops the sword, falls to his knees and collapses face down onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_gloriosus3_skillx",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword raises both arms and the sun halo behind him flares into a blinding burst of golden fire, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_atkx",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword swings the flaming greatsword in a wide powerful overhead arc that leaves a trail of fire, then returns exactly to the starting pose. The emblem on the chest is a round sun, never a cross. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_diex",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. The emblem on the chest is a round sun, never a cross. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_godfrey_skillx",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword bursts out around him, then returns exactly to the starting pose. The emblem on the chest is a round sun, never a cross. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_godfrey_walkx",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the arms swing strongly, squash on each step, lively snappy timing, a full walk cycle. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_heavy_atkx",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword attacks forward with his weapon in one powerful strike, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_heavy_idlex",
+  "ref": "ham/anim/enemy_heavy_ref.png",
+  "prompt": "a cartoon heavy roman infantryman with a big sun shield and a short sword stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hierophant_atkx",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff swings the glowing sun staff forward and a burst of golden light flashes from its tip, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_hierophant_diex",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff is struck and dies: he staggers back, drops his weapon and falls backward onto the ground, then lies still on his back. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_holywater_idlex",
+  "ref": "ham/anim/enemy_holywater_ref.png",
+  "prompt": "a chubby cartoon friar in a cream and gold robe carrying a basket of glowing blue glass flasks on his back stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hound_atkx",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar lunges forward and snaps its jaws in a vicious bite, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hound_diex",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar is struck and dies: it collapses onto its side and lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hubertus_diex",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hunter_atkx",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow raises the silver crossbow, aims to the right and shoots one bolt, the crossbow kicks back, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_hunter_idlex",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat and a long dark leather coat holding a silver crossbow stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hunter_skillx",
+  "ref": "ham/anim/enemy_hunter_ref.png",
+  "prompt": "a cartoon witch hunter in a black wide-brimmed hat raises his silver crossbow and fires a spreading silver net forward to the right, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_ignis_skillx",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun raises her brass sun flamethrower censer and spins, spraying a ring of fire all around her, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_inquisitor_idlex",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe with a high collar and red skullcap, holding a glowing holy book stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_inquisitor_skillx",
+  "ref": "ham/anim/enemy_inquisitor_ref.png",
+  "prompt": "a tall gaunt cartoon inquisitor in a black and crimson robe opens a glowing holy book and points it forward, a beam of golden light shoots out from the pages, then he closes the book and returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_ironwarden_skillx",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace raises the huge tower shield in front of him and slams it into the ground with force, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_legion_idlex",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_lucia_atkx",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer thrusts the glowing holy book forward and a burst of golden light shoots out of it, then returns exactly to the starting pose. Her pendant and all emblems are round suns, never crosses. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 5
+ },
+ {
+  "name": "enemy_lucia_diex",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer is struck and dies: staggers back, drops the weapon and falls backward onto the ground, then lies still. Her pendant and all emblems are round suns, never crosses. Exaggerated comic cartoon death: violently knocked back, limbs flailing, the body bounces once on the ground and then lies still, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ }
+]

@@ -1,0 +1,194 @@
+[
+ {
+  "name": "enemy_agnes_idle",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_bellpriest_idle",
+  "ref": "ham/anim/enemy_bellpriest_ref.png",
+  "prompt": "a thin old cartoon priest in a black and gold robe holding a big bronze hand bell high stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_campanus_idle",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk in black and gold robes carrying an enormous bronze church bell on his back with chains and holding a big hammer stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_cavalry_idle",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "prompt": "a cartoon roman cavalryman with a lance riding a white horse stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_cavcaptain_idle",
+  "ref": "ham/anim/enemy_cavcaptain_ref.png",
+  "prompt": "a cartoon cavalry captain with a winged golden helmet and red cape riding a big black armored warhorse with golden barding, holding a long lance with a red pennant stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_champion_idle",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_colossus_idle",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo and a stone greatsword stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_elephant_idle",
+  "ref": "ham/anim/enemy_elephant_ref.png",
+  "prompt": "a cartoon armored war elephant with red and gold barding and a small wooden tower with an archer on its back stands in place in a lively exaggerated cartoon idle: big panting breaths, the body rises and falls, the head and ears twitch and look around, the tail swishes, the paws stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_flagellant_idle",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "prompt": "a bare-chested hooded cartoon fanatic with a crimson hood and rope belt holding a knotted whip stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus1_idle",
+  "ref": "ham/anim/enemy_gloriosus1_ref.png",
+  "prompt": "a cartoon vain roman general with a mustache in golden armor standing in a huge ornate golden war chariot with spiked golden wheels and a big golden sun disc, pulled by two armored white war lions stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus2_idle",
+  "ref": "ham/anim/enemy_gloriosus2_ref.png",
+  "prompt": "a cartoon furious roman general with a mustache in dented golden armor and a torn red cape, holding a golden gladius sword and a round golden shield stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus3_idle",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_godfrey_idle",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, and a long white and crimson cape, holding a flaming greatsword stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hierophant_idle",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hound_idle",
+  "ref": "ham/anim/enemy_hound_ref.png",
+  "prompt": "a lean white wolfhound with a crimson leather harness and a spiked silver collar stands in place in a lively exaggerated cartoon idle: big panting breaths, the body rises and falls, the head and ears twitch and look around, the tail swishes, the paws stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hubertus_idle",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_ignis_idle",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_ironwarden_idle",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_lucia_idle",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_malleus_idle",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_paladin_idle",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_saint_idle",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "prompt": "a walking cracked white marble statue of a robed saint with a stone halo and a stone sword stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_severus_idle",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "enemy_severus3_idle",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ }
+]

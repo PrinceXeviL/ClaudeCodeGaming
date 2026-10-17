@@ -1,0 +1,26 @@
+[
+ {
+  "name": "unit_skel_5_idlex",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_8_atkx",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow draws the bow back fully and shoots a glowing arrow forward, then returns exactly to the starting pose. Exaggerated punchy cartoon action: a big anticipation wind-up, then a fast powerful strike with the whole body leaning into it, strong follow-through and recoil, squash and stretch, snappy timing. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_skel_8_idlex",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the weapon is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image. Side view facing right, static camera, the character stays in the center of the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ }
+]
