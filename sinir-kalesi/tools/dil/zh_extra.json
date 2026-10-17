@@ -673,7 +673,24 @@
   "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "五名幽灵重装步兵在路上筑起盾墙：封路 6 秒，攻击者受到伤害，最后一齐刺出长矛",
   "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "盾墙：封路，最后长矛突刺",
   "SPARTA!": "斯巴达！",
-  "Kalkan!": "格挡！"
+  "Kalkan!": "格挡！",
+  "Bölümlerden kazandığın yıldızlarla kalıcı güç satın al · her sütun yukarıdan aşağı açılır": "用获得的星星购买永久强化 · 每列从上到下解锁",
+  "Lanet Kuleleri": "诅咒塔",
+  "+%12 atış hızı": "+12% 攻击速度",
+  "Kurma ve yükseltme %10 ucuz": "建造和升级便宜 10%",
+  "+%15 iskelet canı ve hasarı": "+15% 骷髅生命与伤害",
+  "+%10 lanet menzili": "+10% 诅咒范围",
+  "Lanet +%3 daha güçlü": "诅咒增强 3%",
+  "İskelet ve okçulara +%4 hasar": "骷髅与弓箭手 +4% 伤害",
+  "Lanet %12 daha sık": "诅咒频率 +12%",
+  "Delici oklar ve cıvatalar": "穿刺箭矢与弩箭",
+  "Yolu tutan iskeletler": "守住道路的骷髅",
+  "Zırh delen ruh ışını": "破甲灵魂光束",
+  "Alan hasarı, veba": "范围伤害，瘟疫",
+  "Lanet ve destek": "诅咒与辅助",
+  "ÖNCE ÜSTTEKİ": "先解锁上一级",
+  "ALINDI ✓": "已获得 ✓",
+  "Önce üstteki kademeyi al": "请先购买上一级"
  },
  "tpl": [
   [
@@ -1067,6 +1084,18 @@
   [
    "{} kristal + {}",
    "{} 水晶 + {}"
+  ],
+  [
+   "{} · {}. kademe",
+   "{} · 第 {} 级"
+  ],
+  [
+   "AL · ★{}",
+   "购买 · ★{}"
+  ],
+  [
+   "★{} GEREK",
+   "需要 ★{}"
   ]
  ]
 }

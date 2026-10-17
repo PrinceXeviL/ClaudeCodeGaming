@@ -673,7 +673,24 @@
   "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "Cinco hoplitas fantasma forman un muro de escudos: bloquea el camino 6 s, quien lo golpea recibe daño y al final todos clavan sus lanzas",
   "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "Muro de escudos: bloquea el camino y termina con lanzas",
   "SPARTA!": "¡ESPARTA!",
-  "Kalkan!": "¡Escudo!"
+  "Kalkan!": "¡Escudo!",
+  "Bölümlerden kazandığın yıldızlarla kalıcı güç satın al · her sütun yukarıdan aşağı açılır": "Gasta las estrellas ganadas en poder permanente · cada columna se abre de arriba abajo",
+  "Lanet Kuleleri": "Torres de maldición",
+  "+%12 atış hızı": "+12% velocidad de ataque",
+  "Kurma ve yükseltme %10 ucuz": "Construir y mejorar 10% más barato",
+  "+%15 iskelet canı ve hasarı": "+15% vida y daño de esqueletos",
+  "+%10 lanet menzili": "+10% alcance de la maldición",
+  "Lanet +%3 daha güçlü": "Maldición un 3% más fuerte",
+  "İskelet ve okçulara +%4 hasar": "+4% daño a esqueletos y arqueros",
+  "Lanet %12 daha sık": "Maldición un 12% más frecuente",
+  "Delici oklar ve cıvatalar": "Flechas y virotes perforantes",
+  "Yolu tutan iskeletler": "Esqueletos que bloquean el camino",
+  "Zırh delen ruh ışını": "Rayo de almas que perfora armadura",
+  "Alan hasarı, veba": "Daño en área, peste",
+  "Lanet ve destek": "Maldición y apoyo",
+  "ÖNCE ÜSTTEKİ": "PRIMERO EL DE ARRIBA",
+  "ALINDI ✓": "COMPRADO ✓",
+  "Önce üstteki kademeyi al": "Compra primero el nivel de arriba"
  },
  "tpl": [
   [
@@ -1067,6 +1084,18 @@
   [
    "{} kristal + {}",
    "{} cristales + {}"
+  ],
+  [
+   "{} · {}. kademe",
+   "{} · nivel {}"
+  ],
+  [
+   "AL · ★{}",
+   "COMPRAR · ★{}"
+  ],
+  [
+   "★{} GEREK",
+   "FALTAN ★{}"
   ]
  ]
 }

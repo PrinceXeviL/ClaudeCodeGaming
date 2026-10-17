@@ -1438,6 +1438,19 @@ if (NECRO) {
   U.archer.name = 'Kemik Kuleleri'; U.barracks.name = 'Mahzenler'; U.mage.name = 'Ruh Fenerleri'; U.artillery.name = 'Veba Kazanları';
   U.barracks.ranks[0].desc = '+%20 iskelet canı'; U.barracks.ranks[1].desc = '+%20 iskelet hasarı';
   U.artillery.ranks[1].desc = '+%15 veba alanı';
+  // 18 Eki (Caner: "gelişmeler çok basit, daha güzel ve detaylı"): her kuleye 5 kademe (ilk üçü eski kayıtla aynı) + Lanet Kulesi sütunu.
+  // ico: düğmedeki küçük simge (game.js upgGlyph). 4. kademe saldırı hızı, 5. kademe kurma ve yükseltme %10 ucuz (game.js towerStats, buildCost, upCost)
+  const IC = { archer: ['dmg', 'range', 'dmg'], barracks: ['hp', 'dmg', 'armor'], mage: ['dmg', 'range', 'dmg'], artillery: ['dmg', 'area', 'dmg'] };
+  for (const id in IC) U[id].ranks.forEach((r, j) => { r.ico = IC[id][j]; });
+  U.archer.ranks.push({ cost: 6, desc: '+%12 atış hızı', ico: 'speed' }, { cost: 8, desc: 'Kurma ve yükseltme %10 ucuz', ico: 'cost' });
+  U.barracks.ranks.push({ cost: 6, desc: '+%15 iskelet canı ve hasarı', ico: 'hp' }, { cost: 8, desc: 'Kurma ve yükseltme %10 ucuz', ico: 'cost' });
+  U.mage.ranks.push({ cost: 6, desc: '+%12 atış hızı', ico: 'speed' }, { cost: 8, desc: 'Kurma ve yükseltme %10 ucuz', ico: 'cost' });
+  U.artillery.ranks.push({ cost: 6, desc: '+%12 atış hızı', ico: 'speed' }, { cost: 8, desc: 'Kurma ve yükseltme %10 ucuz', ico: 'cost' });
+  UPGRADES.splice(UPGRADES.indexOf(U.artillery) + 1, 0, { id: 'altar', name: 'Lanet Kuleleri', ranks: [
+    { cost: 2, desc: '+%10 lanet menzili', ico: 'range' }, { cost: 3, desc: 'Lanet +%3 daha güçlü', ico: 'curse' }, { cost: 5, desc: 'İskelet ve okçulara +%4 hasar', ico: 'dmg' },
+    { cost: 6, desc: 'Lanet %12 daha sık', ico: 'speed' }, { cost: 8, desc: 'Kurma ve yükseltme %10 ucuz', ico: 'cost' }] });
+  Object.assign(U.archer, { sub: 'Delici oklar ve cıvatalar' }); Object.assign(U.barracks, { sub: 'Yolu tutan iskeletler' }); Object.assign(U.mage, { sub: 'Zırh delen ruh ışını' });
+  Object.assign(U.artillery, { sub: 'Alan hasarı, veba' }); UPGRADES.find(u => u.id === 'altar').sub = 'Lanet ve destek';
   // Büyüler satırı 11 Eki'de Büyü Kitabı'na taşındı (GRIM)
   UPGRADES.splice(UPGRADES.indexOf(U.castle), 1); // şapel yükseltilmez (Caner, 10 Eki): yıldızları iade olur
   Object.assign(WK_NAME, { arrow: 'Delici', magic: 'Ruh', blast: 'Veba/Ateş', melee: 'Kesici' }); // hasar türleri (10 Eki)

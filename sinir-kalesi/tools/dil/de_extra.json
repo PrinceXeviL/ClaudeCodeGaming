@@ -673,7 +673,24 @@
   "Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar": "Fünf Geisterhopliten bilden einen Schildwall: 6 s gesperrt, Angreifer nehmen Schaden, am Ende stoßen alle die Speere vor",
   "Kalkan duvarı: yolu kapatır, sonunda mızrak saplar": "Schildwall: sperrt die Straße, endet mit Speerstoß",
   "SPARTA!": "SPARTA!",
-  "Kalkan!": "Schild!"
+  "Kalkan!": "Schild!",
+  "Bölümlerden kazandığın yıldızlarla kalıcı güç satın al · her sütun yukarıdan aşağı açılır": "Kaufe mit verdienten Sternen dauerhafte Stärke · jede Spalte öffnet sich von oben nach unten",
+  "Lanet Kuleleri": "Fluchtürme",
+  "+%12 atış hızı": "+12 % Angriffstempo",
+  "Kurma ve yükseltme %10 ucuz": "Bau und Ausbau 10 % günstiger",
+  "+%15 iskelet canı ve hasarı": "+15 % Skelett-Leben und -Schaden",
+  "+%10 lanet menzili": "+10 % Fluchreichweite",
+  "Lanet +%3 daha güçlü": "Fluch 3 % stärker",
+  "İskelet ve okçulara +%4 hasar": "+4 % Schaden für Skelette und Bogenschützen",
+  "Lanet %12 daha sık": "Fluch 12 % häufiger",
+  "Delici oklar ve cıvatalar": "Durchschlagende Pfeile und Bolzen",
+  "Yolu tutan iskeletler": "Skelette, die den Weg halten",
+  "Zırh delen ruh ışını": "Rüstungsbrechender Seelenstrahl",
+  "Alan hasarı, veba": "Flächenschaden, Seuche",
+  "Lanet ve destek": "Fluch und Unterstützung",
+  "ÖNCE ÜSTTEKİ": "ERST DAS OBERE",
+  "ALINDI ✓": "GEKAUFT ✓",
+  "Önce üstteki kademeyi al": "Kaufe zuerst die obere Stufe"
  },
  "tpl": [
   [
@@ -1067,6 +1084,18 @@
   [
    "{} kristal + {}",
    "{} Kristalle + {}"
+  ],
+  [
+   "{} · {}. kademe",
+   "{} · Stufe {}"
+  ],
+  [
+   "AL · ★{}",
+   "KAUFEN · ★{}"
+  ],
+  [
+   "★{} GEREK",
+   "★{} NÖTIG"
   ]
  ]
 }
