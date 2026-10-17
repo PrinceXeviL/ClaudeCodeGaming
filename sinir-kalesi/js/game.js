@@ -9168,6 +9168,13 @@ function shadow(x, y, rx, ry) {
 // küçük, yuvarlak uçlu (hap biçimli) can barı
 const HP_K = 0.657; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: iki kez %5 küçüldü; 15 Eki: %10 daha (düşman, dost, komutan)
 const HPBAR_C = new Map();
+// 17 Eki (Caner: "komutanlarımın hp'sinin yanında aynı renkte mor bir yıldız olsun, ayırt edebileyim"): komutan çubuğunun solunda mor yıldız
+function heroHpBar(x, y, w, frac) {
+  hpBar(x, y, w, frac, HP_HERO);
+  const r = 3.3 * HP_K, sx = x - w * HP_K / 2 - r - 1.6 * HP_K, sy = y + 1.28 * HP_K;
+  ctx.lineJoin = 'round'; starShape(sx, sy, r + 1.1 * HP_K); ctx.fillStyle = 'rgba(14,8,3,0.85)'; ctx.fill();
+  starShape(sx, sy, r); ctx.fillStyle = HP_HERO; ctx.fill(); starShape(sx, sy - r * 0.12, r * 0.45); ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+}
 function hpBar(x, y, w, frac, col = '#4cd34c') {
   frac = clamp(frac, 0, 1); w *= HP_K;
   const h = 2.56 * HP_K, r = h / 2 + 1.1 * HP_K; // 17 Eki (Caner): çubuk %20 ince (3,2 → 2,56), uzunluk aynı
@@ -11549,7 +11556,7 @@ function drawSoldier0(s) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(hsk), F, i, ch); ctx.restore();
       if (window.__animLog && s.logId != null) window.__animLog.push([s.logId, hsk, i, s.face || 1, walking, '', +s.x.toFixed(2), +s.y.toFixed(2)]);
-      hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
+      heroHpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp);
       return;
     }
     drawUnit(key, im, s.x, s.y, s.face, { logId: s.logId,
@@ -11561,10 +11568,10 @@ function drawSoldier0(s) {
     if (s.def && s.def.float && Math.random() < (walking ? 0.5 : 0.18)) // Merlin: eteğinden mor-yeşil sis dökülür (yürürken iz bırakır)
       emit(G.parts, { kind: 'glow', x: s.x + rand(-6, 6), y: s.y - rand(0, 4), vx: rand(-6, 6) - (walking ? (s.face || 1) * 10 : 0), vy: -rand(2, 8), col: Math.random() < 0.6 ? '150,90,230' : '110,220,140', s0: rand(3, 5), s1: rand(7, 10), life: rand(0.6, 0.9), a: 0.35 });
     if (s.hero) {
-      hpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp, HP_HERO);
+      heroHpBar(s.x, s.y - ch - 7, 18, s.hp / s.maxHp);
       return;
     }
-    if (s.hp < s.maxHp || s.hero) hpBar(s.x, s.y - CHAR_H[s.hero ? 'hero' : s.militia ? 'militia' : 'soldier'] - 6, s.hero ? 18 : 11, s.hp / s.maxHp, s.hero ? HP_HERO : HP_SOLDIER);
+    if (s.hero) heroHpBar(s.x, s.y - CHAR_H.hero - 6, 18, s.hp / s.maxHp); else if (s.hp < s.maxHp) hpBar(s.x, s.y - CHAR_H[s.militia ? 'militia' : 'soldier'] - 6, 11, s.hp / s.maxHp, HP_SOLDIER);
     return;
   }
   ctx.save(); ctx.translate(s.x, s.y - bob); ctx.scale(s.face, 1);
@@ -11585,7 +11592,7 @@ function drawSoldier0(s) {
   ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, s.hero ? -14 : -10); ctx.stroke();
   ctx.restore();
   ctx.restore();
-  if (s.hp < s.maxHp || s.hero) hpBar(s.x, s.y - (s.hero ? 34 : 22), s.hero ? 22 : 14, s.hp / s.maxHp, s.hero ? HP_HERO : HP_SOLDIER);
+  if (s.hero) heroHpBar(s.x, s.y - 34, 22, s.hp / s.maxHp); else if (s.hp < s.maxHp) hpBar(s.x, s.y - 22, 14, s.hp / s.maxHp, HP_SOLDIER);
 }
 
 // Karakter çizimi + prosedürel animasyon:

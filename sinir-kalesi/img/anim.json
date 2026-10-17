@@ -2710,5 +2710,26 @@
   "fh": 168,
   "base": 0.0135,
   "ch": 0.9506
+ },
+ "enemy_legion_shield": {
+  "n": 21,
+  "fw": 122,
+  "fh": 169,
+  "base": 0.0145,
+  "ch": 0.9467
+ },
+ "enemy_heavy_shield": {
+  "n": 21,
+  "fw": 170,
+  "fh": 167,
+  "base": 0.0143,
+  "ch": 0.957
+ },
+ "enemy_paladin_shield": {
+  "n": 22,
+  "fw": 203,
+  "fh": 169,
+  "base": 0.0143,
+  "ch": 0.9477
  }
 }
