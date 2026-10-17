@@ -3141,14 +3141,15 @@ function abRank(t, id) {
 const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15,
   // 17 Eki (Caner: "okçular saldırınca kıdemlinin komutuyla kalkan kullanıp guard alsınlar; oklar en çok %80 az işlesin, bazen ıska"):
   // ok değince kıdemli "Kalkanlar!" der; çevresindeki kalkanlılar t sn kalkan duvarı kurar: okların miss'i seker, kalanı k kat işler; yürüyüş spd kat
-  shield: { t: 3, cd: 9, miss: 0.2, k: [0.2, 0.5], spd: 0.7 } };
+  // from: kalkan duvarı bu bölümden (0'dan) itibaren; ilk boss bölümüne kadar yok (bot 4-7'de çok can kaybetti: 3 sn/9 sn/%20/0,2-0,5 sertti)
+  shield: { t: 2.5, cd: 12, miss: 0.15, k: [0.2, 0.7], spd: 0.7, from: 4 } };
 const SHIELDED = new Set(['legion', 'heavy', 'paladin', 'signifer']); // kalkanlı piyade (rütbelileri base ile)
 const isShielded = (o) => SHIELDED.has(o.def.base || o.type);
 function updateCaptain(e, dt) {
   const near = [];
   for (const o of G.enemies) if (o !== e && !o.dead && (o.def.base || o.type) === 'legion' && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r) { near.push(o); if (!(o.curseT > 0)) o.capT = 0.6; }
   e.cmdCd = (e.cmdCd ?? 2.5) - dt; e.shCd = (e.shCd ?? 0) - dt;
-  if (e.shCd <= 0 && e.d >= 0) {
+  if (e.shCd <= 0 && e.d >= 0 && (G.idx >= CAPTAIN.shield.from || G.lv.ep === 2)) {
     const S = CAPTAIN.shield, grp = G.enemies.filter(o => !o.dead && !o.under && isShielded(o) && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r);
     if (grp.some(o => G.t - (o.arrowG ?? -9) < 0.5)) {
       e.shCd = S.cd; for (const o of grp) o.wallT = S.t;
