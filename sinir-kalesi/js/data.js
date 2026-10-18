@@ -1708,7 +1708,7 @@ const SKILL_CD_K = 1.1;
 // tools/denge-deney.js ile 10 strateji × 16 bölüm (iki sefer): "2 Ruh Feneri + mahzen" 16/16 ve ort. 17 canla geçiyordu (en güçlü),
 // Veba Kazanı tek başına 8/16 (en zayıf hasar kulesi; karışık oyunda öldürmelerin %1'i), karışık oyunda bölüm sonunda ort. 2650 altın artıyordu.
 // BAL.tower: kule hasar çarpanı (tüm kademeler), BAL.hp: düşman canı çarpanı, BAL.bounty: düşman ödülü ve erken çağrı bonusu çarpanı.
-const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.1 }, hp: 1.25, bounty: 0.875, hero: { bathory: 0.95 }, heroCd: { merlin: 1.15, bathory: 1.15 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
+const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.2 }, /* 18 Eki: 1,1 → 1,2 (yalnız okçu 2. seferde hiç geçemiyordu) */ hp: 1.25, bounty: 0.875, hero: { bathory: 0.95 }, heroCd: { merlin: 1.15, bathory: 1.15 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
 for (const t in BAL.tower) for (const L of TOWERS[t].levels) if (L.dmg) L.dmg = L.dmg.map(v => Math.round(v * BAL.tower[t]));
 GAME_DIFF.hp *= BAL.hp; GAME_DIFF.bounty *= BAL.bounty;
 for (const h in BAL.hero) if (HEROES[h] && HEROES[h].dmg) HEROES[h].dmg = HEROES[h].dmg.map(v => Math.round(v * BAL.hero[h]));
@@ -1784,7 +1784,7 @@ BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82, 27: 0.88, 33: 0.
 for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl7[i];
 // 18 Eki (Caner kuralı: "tek çözümlü bölüm ve ani zorluk sıçraması asla"; 6 strateji × 40 bölüm, komutanlı): 19 hiçbir stratejiyle geçilmiyordu,
 // 16/20/39 yalnız 2 stratejiyle; 27/35/38'de karışık oyun bir önceki bölüme göre çakılıyordu. Hedef: her bölüm ≥ 3 stratejiyle, karışık ≥ 8 canla
-BAL.lvl8 = {}; // ilk ölçümde bot altını harcamıyordu (alınamayan seçenekte duruyordu); düzeltilmiş botla yeniden ölçülecek
+BAL.lvl8 = { 6: 0.92, 16: 0.72, 19: 0.92, 32: 0.92, 38: 0.92 }; // 4. tur: 16 karışıkta hâlâ 6 can (15 ve 17'de 20) → 0,8; 19 6 can → 0,92 // düzeltilmiş botla (harcama hatası giderildi): 16 yalnız 1 stratejiyle geçiliyordu; 6/32/38'de karışık oyunda can çakılması
 for (const i in BAL.lvl8) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl8[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)
 // 18 Eki (Caner: "kristalle ana kalemizin kalıcı level özelliğini açıcam: balkonda iskelet okçular, bir üst levelde daha fazla, kapısında golem her oyun başında"):

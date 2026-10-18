@@ -2519,7 +2519,7 @@ const SHOUTS = ['Sol Invictus!', 'Hücum!', 'İleri!', 'Kalkanlar!', 'Güneş i�
 const onScreen = (e, m = 40) => { const q = worldToScreen(e.x, e.y); return q.x > VIS.l + m && q.x < VIS.r - m && q.y > VIS.t + 50 && q.y < VIS.b - 10; };
 function warCry(e, text = true) {
   if (!e || e.dead || MUTE_VOICE(e) || e.def.flying) return;
-  if (text) floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 10, SHOUTS[Math.floor(Math.random() * SHOUTS.length)], '#ffe2b0');
+  if (text) shoutText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 10, SHOUTS[Math.floor(Math.random() * SHOUTS.length)], '#ffe2b0');
 }
 function nextWavePaths() {
   if (G.wave >= G.lv.waves.length) return [];
@@ -3329,7 +3329,7 @@ function updateCaptain(e, dt) {
     if (grp.some(o => G.t - (o.arrowG ?? -9) < 0.5)) {
       e.shCd = S.cd; for (const o of grp) o.wallT = o.wallD = S.t;
       const said = G.enemies.some(o => o !== e && o.captain && G.t - (o.shSaid ?? -9) < 1.2 && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r * 2); // yakındaki kıdemli az önce bağırdıysa tek ses
-      if (!said && onScreen(e, 60) && !MUTE_VOICE(e)) { e.shSaid = G.t; floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, 'Kalkanlar!', '#ffd890'); sfx('clash', 0.6, 1.2, e); }
+      if (!said && onScreen(e, 60) && !MUTE_VOICE(e)) { e.shSaid = G.t; shoutText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, 'Kalkanlar!', '#ffd890'); sfx('clash', 0.6, 1.2, e); }
       e.cmdCd = Math.max(e.cmdCd, 2); return;
     }
   }
@@ -3340,7 +3340,7 @@ function updateCaptain(e, dt) {
   else if ([e, ...near].some(o => G.t - (o.hitG ?? -9) < 0.4)) { cmd = 'Saf tutun!'; for (const o of near.concat(e)) o.armT = Math.max(o.armT || 0, 2.5); } // ok dışı vuruş: zırh sıkılaşır
   if (!cmd) return;
   e.cmdCd = CAPTAIN.cd; G.cryCd = Math.max(G.cryCd || 0, 2);
-  floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, cmd, '#ffd890');
+  shoutText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 24) - 12, cmd, '#ffd890');
 }
 // Ruh Hasadı (10 Eki, Caner: "ruh feneri düşmanların ruhlarını çalsın, necromancer büyülerini onunla yapsın"): Ruh Feneri'nin menzilinde ölen
 // düşmanın ruhu fenere uçar; varınca Mortimer'ın bütün büyülerinin beklemesi kısalır. cd: fener seviyesine göre ruh başına sn,
@@ -3479,7 +3479,8 @@ function killEnemy0(e) {
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: (e.face || 1) * (NECRO && Math.random() < 0.45 ? -1 : 1), fly: e.def.flying ? 26 : 0, t: 0, // 16 Eki: ölenler hep aynı yöne düşmesin
     vr: rand(-0.1, 0.1), vs: rand(0.93, 1.07), blood: !e.def.machine && !e.def.ghost,
-    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && !e.def.flying && !e.def.chief && !e.def.machine && !e.def.noraise, // 18 Eki: kutsal ışık engeli kalıcı değil (corpseOk)
+    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && !e.def.flying && (!e.def.chief || (ZOMBIE_X.boss.on && !e.def.final && !e.leaked)) && !e.def.machine && !e.def.noraise, // 18 Eki: kutsal ışık engeli kalıcı değil (corpseOk); boss/ara boss bir kez dev ölü olur
+    boss: e.def.chief && !e.def.final ? { hp: e.maxHp || e.def.hp, dmg: e.def.dmg, mini: !!e.mini } : null,
     pw: corpsePower(e), str: (e.maxHp || e.def.hp) * (e.def.chief ? 3 : 1) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
   if (G.bloodT > 0 && body.raisable) body.riseAt = BLOOD.rise; // Kızıl Ay: ceset kendiliğinden kalkar
@@ -3854,7 +3855,15 @@ function bloodShare(h, amt) {
     G.effects.push({ kind: 'heal', x: s.x, y: s.y, t: 0, dur: 0.5 });
   }
 }
-function floatText(x, y, text, col) { G.floaters.push({ x, y, text, col, t: 0 }); }
+// 18 Eki (Caner: "yazılar ekranı çok kaplıyor, baya azalt"): aynı anda en çok TEXTS.max yazı; yakında (r px) yeni çıkmış yazı varsa yenisi çıkmaz.
+// imp: önemli yazı (kule yıkıldı, imza, lejyon, boss dirildi, satış): sınırsız ve büyük
+const TEXTS = { max: 4, r: 46, recent: 0.6, size: 12.5, impSize: 15, shoutP: 0.2, shoutGap: 14 };
+function floatText(x, y, text, col, imp = false) {
+  if (!imp) { if (G.floaters.filter(f => !f.imp).length >= TEXTS.max) return; if (G.floaters.some(f => f.t < TEXTS.recent && Math.abs(f.x - x) < TEXTS.r && Math.abs(f.y - y) < TEXTS.r * 0.6)) return; }
+  G.floaters.push({ x, y, text, col, t: 0, imp });
+}
+// düşman sözleri (savaş çığlığı, kıdemli komutları) seyrek: TEXTS.shoutP şansla ve bir önceki sözden TEXTS.shoutGap sn sonra
+function shoutText(x, y, text, col) { if (Math.random() > TEXTS.shoutP || G.t - (G.shoutT ?? -99) < TEXTS.shoutGap) return; G.shoutT = G.t; floatText(x, y, text, col); }
 // ---- Boss kristali ve savaş eşyaları (12 Eki, data.js CRYSTAL / ITEMS) ----
 function giveCrystals(e) {
   if (G && G.sandbox) return;
@@ -4235,7 +4244,7 @@ function corpsePhys(f, dt) {
 }
 // Hasar sayıları: vurulan düşmanın üstünde küçük, kısa ömürlü sayı (büyük vuruş daha iri ve kırmızıya döner).
 // Sürekli hasar (zehir, gaz, kanama) toplanıp yarım saniyede bir gösterilir; aynı düşmana çok yakın vuruşlar birleşir.
-const DMGNUM = { life: 0.7, max: 45 };
+const DMGNUM = { life: 0.7, max: 8, minK: 0.45, min: 60 }; // 18 Eki (Caner: "yazılar çok"): yalnız büyük vuruşlar (azami canın %45i ya da 60+), en çok 8
 // can barı renkleri: mahzen iskeletleri mavi, komutanlar mor (düşmanlarınki yeşil-sarı-kırmızı kalır, dirilenler yeşil)
 const HP_SOLDIER = '#4aa8ff', HP_HERO = '#b57aff';
 function dmgNum(e, v, dot) {
@@ -4243,6 +4252,7 @@ function dmgNum(e, v, dot) {
   if (dot) { e.dotAcc = (e.dotAcc || 0) + v; return; } // updateDmgNums boşaltır
   const last = e.lastNum;
   if (last && last.t < 0.12 && G.dmgNums.includes(last)) { last.v += v; return; }
+  if (v < DMGNUM.min && v < (e.maxHp || 100) * DMGNUM.minK) return;
   if (G.dmgNums.length >= DMGNUM.max) G.dmgNums.shift();
   const n = { e, v, x: e.x + rand(-6, 6), y: e.y - (CHAR_H['enemy_' + e.type] || 22) - 4, t: 0, vx: rand(-8, 8) };
   G.dmgNums.push(n); e.lastNum = n;
@@ -4260,7 +4270,7 @@ function drawDmgNums() {
   for (const n of G.dmgNums) {
     const v = Math.round(n.v); if (v < 1) continue;
     const k = n.t / DMGNUM.life, big = Math.log2(1 + v);
-    const size = clamp(5.5 + big * 1.15, 6, 15), pop = 1 + 0.35 * Math.max(0, 1 - n.t / 0.12);
+    const size = clamp(5.5 + big * 1.0, 6, 12.5), pop = 1 + 0.35 * Math.max(0, 1 - n.t / 0.12);
     const col = n.dot ? '#9fe870' : v < 10 ? '#f2ecd8' : v < 30 ? '#ffd96a' : v < 80 ? '#ffa04a' : '#ff5a44';
     ctx.save(); ctx.globalAlpha = k < 0.55 ? 0.95 : 0.95 * (1 - (k - 0.55) / 0.45);
     ctx.translate(n.x, n.y); ctx.scale(pop, pop);
@@ -4476,7 +4486,7 @@ function upgradeTower(t) {
   G.gold -= cost; spendOn(t, cost); t.lvl++; t.born = G.t; towerHp(t); gaDesign('kule:yukselt:' + t.type + ':' + (t.lvl + 1));
   if (t.type === 'barracks') applySoldierStats(t);
   G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 }); upFlash(t, '255,225,140');
-  floatText(t.x, t.y - 80, towerTitle(t), '#ffe27a');
+  floatText(t.x, t.y - 80, towerTitle(t), '#ffe27a', true);
   sfx('upgrade');
   if (t.lvl === t.def.levels.length - 1 && !G.saidMax) { G.saidMax = true; mortSay('maxTower'); }
   return true;
@@ -4511,7 +4521,7 @@ function collapseTower(t) {
   if (CF && spr(cn)) t.plot.rubble.anim = { name: cn, t0: G.t, w: ts.w, bottom: ts.bottom, dur: CF.n / (CF.fps || 16) };
   for (let i = 0; i < 3; i++) G.effects.push({ kind: 'dust', x: t.x + rand(-14, 14), y: t.y - rand(0, 10), t: 0, dur: 0.8 + i * 0.15 });
   for (let i = 0; i < (t.plot.rubble.anim ? 10 : 34); i++) emit(G.parts, { kind: 'chunk', x: t.x + rand(-16, 16), y: t.y - rand(10, h * 0.8), vx: rand(-90, 90), vy: -rand(20, 140), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#5a5466' : '#d8ccb0', s0: rand(1.6, 3.2), s1: 1, life: rand(0.6, 1.1) });
-  floatText(t.x, t.y - 50, 'Kule yıkıldı!', '#ff9a7a');
+  floatText(t.x, t.y - 50, 'Kule yıkıldı!', '#ff9a7a', true);
 }
 function updateTowerHp(dt) {
   for (const t of G.towers) {
@@ -4613,7 +4623,7 @@ const sellValue = (t) => { const w = Math.min(t.spent, sameWave(t)); return w + 
 function sellTower(t) {
   const refund = sellValue(t), full = sameWave(t) >= t.spent;
   G.gold += refund;
-  floatText(t.x, t.y - 30, `+${refund}${full ? ' (tam iade)' : ''}`, '#ffd34d');
+  floatText(t.x, t.y - 30, `+${refund}${full ? ' (tam iade)' : ''}`, '#ffd34d', true);
   for (const s of t.soldiers) { releaseSoldier(s); s.removed = true; }
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.towers = G.towers.filter(x => x !== t);
@@ -4936,7 +4946,7 @@ function sigTick(t, dt) {
   const S = TSIG[t.spec], L = effLevel(t), base = L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 0, R = L.range || 130;
   const foes = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= R * 1.1);
   const sol = (t.soldiers || []).filter(s => !s.dead);
-  const fire = () => { t.sigT = S.cd; floatText(t.x, t.y - 92, S.name + '!', '#ff9a70'); };
+  const fire = () => { t.sigT = S.cd; floatText(t.x, t.y - 92, S.name + '!', '#ff9a70', true); };
   const strongest = (L2) => L2.filter(e => e.siege === undefined).sort((a, b) => b.hp - a.hp)[0];
   HERO_SKILL = false;
   if (t.spec === 'bow' || t.spec === 'fan') {
@@ -5880,6 +5890,7 @@ function updateSoldier(s, dt) {
         if (s.pet && s.pet.stun && !t.dead && !t.def.chief && Math.random() < 0.35) stunEnemy(t, s.pet.stun); // Kadim Ruh Kurdu: ısırık bazen sersemletir
         if (s.tower && s.tower.imbue && !s.hero) applyImbue(t, s.tower.imbue, 'melee'); // silah büyüsü
         if (s.plagueZ && !t.dead) poisonEnemy(t, s.plagueZ, 3); // veba zombisi: vuruşu zehirler
+        if (s.zRole === 'charge' && !t.dead && G.t >= (s.zChargeT || 0)) { s.zChargeT = G.t + 6; damageEnemy(t, dmg * 1.5, 'phys', false, 'melee'); if (!t.dead && !t.def.chief) stunEnemy(t, 0.8); floatText(t.x, t.y - 30, 'Hücum!', '#ffd08a'); G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 }); } // atlı ölü: hücum
         if (s.zBurn && !t.dead) { burnEnemy(t, s.zBurn, RAISED_ROLE.burnT, 'minion'); emit(G.parts, { kind: 'glow', add: true, x: t.x, y: t.y - 12, vy: -30, col: '255,150,50', s0: 6, s1: 1, life: 0.35 }); } // dirilen meşaleci yakar
         if (s.aoe) { // iri birim: savurması çevresindeki herkese işler
           for (const o of G.enemies) if (o !== t && !o.dead && !o.def.flying && !o.under && dist(o.x, o.y, t.x, t.y) < 34) damageEnemy(o, dmg * s.aoe, 'phys', false, 'melee');
@@ -6635,8 +6646,9 @@ function castNecro(id, x, y) {
   G.mortCast = G.mortCastT = id === 'nm_raise' && mortStrip('mortimer_dirilt') ? MORT_RAISE.t : MORT_CAST_T; G.mortCastN = id === 'nm_raise' ? 'mortimer_dirilt' : null; G.mortFlash = false; // balkonda büyü kareleri (diriltmede Veo şeridi)
   if (id === 'nm_raise') {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length, hasXY = x != null && y != null;
-    const bodies = G.effects.filter(f => f.kind === 'corpse' && corpseOk(f) && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
-      .sort((a, b) => (b.pw || 1) - (a.pw || 1) || a.t - b.t).slice(0, Math.max(0, S.max - alive)); // güçlüler önce
+    const B0 = G.effects.filter(f => f.kind === 'corpse' && corpseOk(f) && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
+      .sort((a, b) => (b.pw || 1) - (a.pw || 1) || a.t - b.t);
+    const bodies = B0.filter(f => f.boss).concat(B0.filter(f => !f.boss).slice(0, Math.max(0, S.max - alive))); // güçlüler önce; boss cesedi ordu dolu olsa da kalkar
     const piles = G.mech && G.mech.kind === 'bonepile' && alive < S.max ? G.mech.spots.filter(o => o.ready).length : 0; // 16 Eki: kemik yığınları
     if (!bodies.length && !piles) { G.mortCast = 0; floatText(hasXY ? x : m.x, (hasXY ? y : m.y) - 30, alive >= S.max ? 'Ordun dolu!' : hasXY ? 'Burada ceset yok!' : 'Ceset yok!', '#c8c8c8'); sfx('error'); return false; }
     if (hasXY) G.effects.push({ kind: 'ring', x, y, r: CORPSE_ECO.r, col: '220,60,60', t: 0, dur: 0.5 });
@@ -6942,9 +6954,81 @@ function strongCorpseMark(f) { // güçlü ceset (iri düşmanın ölüsü): üs
   ctx.fillStyle = '#3a0608'; ctx.beginPath(); ctx.arc(-1.4, -0.6, 0.9, 0, 7); ctx.arc(1.4, -0.6, 0.9, 0, 7); ctx.fill();
   ctx.restore();
 }
+// ---- Zombi geliştirmeleri (18 Eki, Caner'in seçtiği 6 öneri) ----
+// boss: boss/ara boss cesedi bir kez dev ölü olarak kalkar (canı bossunkinin hp katı, hasarı dmg katı, çevresine savurur)
+// legion: sahada n ya da daha fazla dirilen varken hepsi dmg kat sert vurur (kale üstünde sayaç)
+// terror: kalkan ölünün yanındaki düşmanlar kısa korkar ya da donup kalır (r yarıçap, fear sn, stun sn, cd: aynı düşman için bekleme)
+// sac: dirilene iki kez dokununca patlar (r, taban hasar + azami canın payı); yakındaki cesetler zincirleme patlar (chainR, chain hasar)
+const ZOMBIE_X = { boss: { on: true, hp: 0.3, dmg: 1, life: 2, h: 1.1 }, legion: { n: 10, dmg: 1.25 }, terror: { r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
+  sac: { r: 55, base: 30, hpK: 0.5, chainR: 80, chain: 45, chainHit: 40, arm: 2 } };
+const TERROR_LINES = ['Marcus?!', 'O benim kardeşimdi!', 'Annem!', 'Bu adil değil!', 'Dün beraber yemek yemiştik!', 'Geri çekilin!', 'Kalktı!'];
+function zombieKind(s, tp, D) { // türe göre özellik: kalkanlı lejyoner kalkan tutar, atlı hücum eder, köpek hızlı koşar
+  if (!D || s.zRole) return;
+  const base = D.base || tp;
+  if ((D.ab && D.ab.guard) || ANIM_META['enemy_' + base + '_shield'] || /^(legion|heavy|paladin)/.test(tp)) { s.zRole = 'shield'; s.armor = Math.min(0.75, (s.armor || 0) + 0.25); s.block = 0.2; s.hp = s.maxHp = s.maxHp * 1.2; }
+  else if (/cavalry|horse/.test(tp)) { s.zRole = 'charge'; s.speed *= 1.7; s.zChargeT = 0; }
+  else if (DOGS.has(base) || DOGS.has(tp)) { s.zRole = 'fast'; s.speed *= 1.5; s.rate *= 0.75; }
+}
+function zombieBoss(s, e) {
+  const B = ZOMBIE_X.boss, b = e.boss;
+  s.hp = s.maxHp = Math.round(b.hp * B.hp); s.dmg = (b.dmg || s.dmg).map(v => v * B.dmg); s.armor = 0.3; s.zBoss = true; s.aoe = 0.5; s.life = (s.life || 30) * B.life; s.speed = 34; s.zh = (s.zh || 40) * B.h; s.engage = 120;
+  floatText(e.x, e.y - 60, b.mini ? 'DEV ÖLÜ!' : 'BOSS DİRİLDİ!', '#ff7a5a', true); shakeScreen(6, 0.5); cnt('bossraise');
+  G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 60, col: '255,60,60', t: 0, dur: 0.7 }); G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '255,70,90', t: 0, dur: 0.9 }); sfx('roar');
+}
+function zombieTerror(e) { // dirilen arkadaşını gören düşmanlar
+  const T = ZOMBIE_X.terror; let said = false;
+  for (const o of G.enemies) {
+    if (o.dead || o.under || o.def.chief || o.def.machine || o.siege !== undefined || (o.terrorT || 0) > G.t || dist(o.x, o.y, e.x, e.y) > T.r) continue;
+    o.terrorT = G.t + T.cd;
+    if (Math.random() < T.p) { o.fearT = Math.max(o.fearT || 0, T.fear); o.fearMax = T.fear; o.hopT = 0.4; } else stunEnemy(o, T.stun);
+    if (!said && Math.random() < 0.4) { said = true; shoutText(o.x, o.y - 34, TERROR_LINES[Math.floor(Math.random() * TERROR_LINES.length)], '#ffe0c0'); }
+  }
+}
+function thrallNote(tp, D, e) { // Ölüler Defteri: ilk kez dirilen tür kaydedilir (ansiklopedide "kölen", başarım)
+  if (G.admin) return;
+  save.thralls = save.thralls || {}; tp = (D && D.base) || tp.replace(/_(k|y)$/, ''); // rütbe çeşitleri (kıdemli, yüzbaşı) aynı tür
+  if (!save.thralls[tp]) { save.thralls[tp] = 1; floatText(e.x, e.y - 50, `Ölüler Defteri: ${(ENEMIES[tp] || D || {}).name || tp}`, '#ffb0ff'); persist(); } else save.thralls[tp]++;
+}
+// Ölü Lejyonu: sayaç ve güç (updateLegion her karede, drawLegionMeter kale üstünde)
+function updateLegion() {
+  const n = G.soldiers.filter(s => s.zombie && !s.dead).length, on = n >= ZOMBIE_X.legion.n;
+  if (on && !G.legionOn) { const c = G.castle; floatText(c.x, c.y - 120, 'ÖLÜ LEJYONU!', '#ff5a5a', true); cnt('legion'); sfx('raise'); shakeScreen(3, 0.3);
+    for (const s of G.soldiers) if (s.zombie && !s.dead) G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: 18, col: '255,60,60', t: 0, dur: 0.5 }); }
+  G.legionN = n; G.legionOn = on;
+}
+function drawLegionMeter() {
+  const n = G.legionN || 0; if (!n && !G.legionOn) return;
+  const c = G.castle, im = castleStageSprite(); if (!im) return;
+  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, x = cp.x, y = cp.y - h - 10, N = ZOMBIE_X.legion.n, k = Math.min(1, n / N), on = G.legionOn, w = 66;
+  ctx.save();
+  roundRect(x - w / 2, y - 8, w, 16, 8, 'rgba(20,6,10,0.85)', on ? '#ff6a5a' : '#c9a865', 1.3);
+  roundRect(x - w / 2 + 2, y - 6, (w - 4) * k, 12, 6, on ? `rgba(255,${60 + 40 * Math.sin(time * 6)},60,0.9)` : 'rgba(190,60,70,0.85)');
+  txt(on ? 'LEJYON' : `${n}/${N}`, x, y + 1, 10, '#fff2e0', 'center', '800', FONT_B, true);
+  if (on) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 30, '255,60,60', 0.25 + 0.1 * Math.sin(time * 5)); }
+  ctx.restore();
+}
+// Fedakârlık: dirilene dokun (kafatası belirir) → tekrar dokun: patlar, yakındaki cesetler zincirleme patlar
+function zombieTap(x, y) {
+  let best = null, bd = 1e9;
+  for (const s of G.soldiers) { if (!s.zombie || s.dead) continue; const h = s.zh || 30, d = dist(s.x, s.y - h * 0.45, x, y); if (d < Math.max(14, h * 0.55) && d < bd) { bd = d; best = s; } }
+  if (!best) return false;
+  if ((best.sacArm || 0) > G.t) { zombieBlast(best); return true; }
+  for (const s of G.soldiers) s.sacArm = 0;
+  best.sacArm = G.t + ZOMBIE_X.sac.arm; floatText(best.x, best.y - (best.zh || 30) - 14, 'Patlat? Tekrar dokun', '#ffb0a0', true); sfx('pick'); return true;
+}
+function zombieBlast(s) {
+  const S = ZOMBIE_X.sac, d0 = S.base + s.maxHp * S.hpK; s.sacArm = 0; cnt('sacrifice');
+  const boom = (x, y, r, dmg) => { for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, x, y); if (d < r) { HERO_SKILL = true; damageEnemy(e, dmg * (1 - 0.5 * d / r), 'magic', false, 'blast'); HERO_SKILL = false; } }
+    G.effects.push({ kind: 'ring', x, y, r, col: '255,70,60', t: 0, dur: 0.45 }); G.effects.push({ kind: 'ring', x, y, r: r * 0.55, col: '190,80,255', t: 0, dur: 0.35 });
+    for (let i = 0; i < 14; i++) { const a = rand(0, TAU), v = rand(60, 170); emit(G.parts, { kind: 'chunk', x, y: y - 6, vx: Math.cos(a) * v, vy: -rand(60, 180), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#7a2a2a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9) }); } };
+  boom(s.x, s.y, S.r, d0); shakeScreen(4, 0.3); sfx('stomp');
+  let k = 0; for (const f of G.effects) { if (f.kind !== 'corpse' || !f.raisable || f.t >= f.dur || dist(f.x, f.y, s.x, s.y) > S.chainR) continue; f.t = f.dur; k++; const fx = f.x, fy = f.y; setTimeout(() => G && boom(fx, fy, S.chain, S.chainHit), 120 * k); }
+  if (k) floatText(s.x, s.y - 40, `Zincir x${k + 1}!`, '#ff9a7a');
+  damageSoldier(s, 1e9);
+}
 function raiseMinion(e, delay = 0) {
   const S = spellStats('nm_raise'), M = S.minion, up = e.pw || 1; // dayanıklılık Büyü Kitabı'ndan (spellStats), güç cesedin sahibinden
-  if (G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
+  if (!e.boss && G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg.map(v => v * Math.pow(up, 0.8)), armor: M.armor, pw: up,
     rate: 1, speed: 44, engage: 100, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay };
@@ -6957,8 +7041,12 @@ function raiseMinion(e, delay = 0) {
     if (D && D.ranged && !D.machine) { s.zRanged = { r: Math.min(RAISED_ROLE.rangeMax, D.ranged.r || 130), rate: (D.ranged.rate || 1.6) * RAISED_ROLE.rateK, proj: D.ranged.proj, splash: D.ranged.splash || 0, dmg: (D.ranged.dmg || D.dmg).map(v => v * RAISED_ROLE.dmgK * Math.pow(up, 0.8)) }; s.zRole = D.ranged.proj === 'flask' ? 'flask' : 'bow'; }
     if (D && (D.heals || (D.ab && D.ab.heal))) { s.zHeal = { t: 1.2 }; s.zRole = 'heal'; }
     if (D && D.purify && D.purify.fire) { s.zBurn = RAISED_ROLE.burn * Math.pow(up, 0.7); s.zRole = 'fire'; }
+    zombieKind(s, e.name.slice(6), D);
+    if (e.boss) zombieBoss(s, e);
+    thrallNote(e.name.slice(6), D, e);
   }
   G.soldiers.push(s);
+  zombieTerror(e);
   // 13 Eki: ışık sütunu yerine yerden fışkıran toprak ve kızıl kıvılcım (sütunlar ekranı boyuyordu)
   G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 16, col: '220,60,50', t: 0, dur: 0.45 });
   for (let i = 0; i < 9; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-8, 8), y: e.y - rand(0, 4), vx: rand(-60, 60), vy: -rand(50, 130), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#5a4632' : '#3a2c20', s0: rand(1.2, 2.2), s1: 1, life: rand(0.4, 0.7), floor: e.y + rand(-3, 4) });
@@ -7660,6 +7748,10 @@ const ACH = [
   { id: 'crystal', cat: 'battle', name: 'Kristal Avcısı', desc: 'Bosslardan toplam {n} kristal topla', icon: 'coin', k: 'crystal', t: [10, 50, 150] }, // 16 Eki: Bubu'nun yerine
   // ---- Ölüler ve Büyüler ----
   { id: 'raise', cat: 'necro', name: 'Mesai Arkadaşları', desc: 'Toplam {n} ölüyü dirilt', icon: 'raise', k: 'raise', t: [100, 500, 2000] },
+  { id: 'thralls', cat: 'necro', name: 'Ölüler Defteri', desc: '{n} farklı düşman türünü dirilt', icon: 'raise', m: 'thralls', t: [5, 15, 30] }, // 18 Eki
+  { id: 'bossraise', cat: 'necro', name: 'Dev Ölü', desc: '{n} boss ya da ara bossu dirilt', icon: 'raise', k: 'bossraise', t: [1, 5, 15] },
+  { id: 'legion', cat: 'necro', name: 'Ölü Lejyonu', desc: 'Ölü Lejyonunu {n} kez topla', icon: 'raise', k: 'legion', t: [1, 10, 30] },
+  { id: 'sacrifice', cat: 'necro', name: 'Son Hizmet', desc: '{n} dirileni feda et', icon: 'raise', k: 'sacrifice', t: [5, 25, 100] },
   { id: 'fear', cat: 'necro', name: 'Böö!', desc: 'Korku büyüsüyle {n} düşman kaçır', icon: 'fear', k: 'fear', t: [50, 250, 1000] },
   { id: 'wall', cat: 'necro', name: 'Duvarcı Ustası', desc: 'Kemik Duvarı {n} kez dik', icon: 'wall', k: 'wall', t: [15, 75, 250] },
   { id: 'burst', cat: 'necro', name: 'Ceset Patlatıcı', desc: '{n} cesedi patlat', icon: 'skull', k: 'burst', t: [25, 150, 500] },
@@ -7692,6 +7784,7 @@ function achMetric(m) {
   if (m === 'stars') return LEVELS.reduce((a, lv, i) => a + (save.stars[i] || 0), 0) + Object.values(save.ch || {}).reduce((a, c) => a + (c && c.h ? 1 : 0) + (c && c.i ? 1 : 0), 0);
   if (m === 'endless') return Math.max(0, ...Object.values(save.endless || {}));
   if (m === 'herolvl') return Math.max(1, ...Object.values(save.hero || {}).map(h => (h && h.lvl) || 1));
+  if (m === 'thralls') return Object.keys(save.thralls || {}).length;
   if (m === 'grim') return Object.values(save.grim || {}).reduce((a, v) => a + (v || 0), 0);
   return 0;
 }
@@ -9679,6 +9772,7 @@ function update(dt) {
   if (G.banner) { G.banner.t += dt; if (G.banner.t > G.banner.dur) G.banner = null; }
   for (const t of G.towers) { SFX_POS = t; updateTower(t, dt); }
   updateSwarms(dt);
+  updateLegion();
   if ((G.armyT = (G.armyT || 0) - dt) <= 0) { G.armyT = 1; if (G.soldiers.filter(s => !s.dead && !s.hero).length >= 25) achGive('sec_army'); } // Kara Defter: Ölüler Ordusu // ses konumu: o an işlenen birim (spatial)
   for (const e of G.enemies) if (!e.dead) { SFX_POS = e; updateEnemy(e, dt); }
   for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); }
@@ -12192,7 +12286,9 @@ function zBadge(g, kind, x, y, r, rim, sel) {
 function drawZombieMark(s) {
   const two = zTwoGroups(), g = zGroupOf(s), y = s.y - (s.zh || 30) - 9 + Math.sin(time * 3 + (s.slot || 0)) * 1.2, sel = G.mode && G.mode.kind === 'minions' && (G.mode.g == null || G.mode.g === g);
   // 18 Eki (Caner: "simgeyi kaldır, küçük hafif saydam kırmızı nokta olsun"): bizden olduğu kızıl noktadan belli; komut seçiliyken parlak + halka
-  ctx.save(); ctx.globalAlpha *= sel ? 0.95 : 0.55; circle(s.x, y + 4, sel ? 2.6 : 2.2, '#ff3a3a', 'rgba(60,0,0,0.8)', 0.6); ctx.restore();
+  if ((s.sacArm || 0) > G.t) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, y - 2, 14, '255,60,60', 0.5); ctx.restore(); drawIcon('skull', s.x, y - 2, 12 + 2 * Math.sin(time * 10), '#ff6a5a'); return; } // feda: ikinci dokunuşu bekler
+  if (G.legionOn) { ctx.save(); ctx.globalAlpha *= 0.55; ctx.strokeStyle = '#ff4a4a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, 10, 4, 0, 0, TAU); ctx.stroke(); ctx.restore(); } // Ölü Lejyonu halkası
+  ctx.save(); ctx.globalAlpha *= sel ? 0.95 : 0.55; circle(s.x, y + 4, (sel ? 2.6 : 2.2) * (s.zBoss ? 1.6 : 1), '#ff3a3a', 'rgba(60,0,0,0.8)', 0.6); ctx.restore();
   if (sel) { ctx.save(); ctx.globalAlpha *= 0.7; ctx.strokeStyle = '#ffd0d0'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(s.x, y + 4, 4.2, 0, TAU); ctx.stroke(); ctx.restore(); }
 }
 function drawSoldier1(s) {
@@ -18195,7 +18291,7 @@ function curseAura(x, y) {
   for (const a of G.towers) { if (a.type !== 'altar' || a.disabledT > 0) continue; const L = upgRank('altar') ? effLevel(a) : a.def.levels[a.lvl]; if (dist(a.x, a.y, x, y) <= L.range) return L; } // 18 Eki: gelişmeler (menzil, destek) aurada da
   return null;
 }
-const allyK = (s) => { const A = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); return A ? 1 + A.ally : 1; };
+const allyK = (s) => { const A = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); return (A ? 1 + A.ally : 1) * (s.zombie && G.legionOn ? ZOMBIE_X.legion.dmg : 1); }; // Ölü Lejyonu
 // Engizisyon feneri (def.light): ışık dairesinde iskelet hasarı azalır, ceset diriltilemez, lanet tutmaz
 // 18 Eki (Caner: "yerde bir sürü ceset varken sayaç göstermiyor, diriltemiyorum"): fener/kutsal ışık altında ölen ceset önceden kalıcı olarak
 // diriltilemez sayılıyordu (fener gidince de). Artık ışık yalnız o an cesedin üstündeyken engeller.
@@ -18868,6 +18964,7 @@ function drawCodex() {
     }
     ctx.restore();
     fitTxt(known ? (tab === 'e' ? ENEMIES[id].name : TOWERS[id].name) : '???', x + tw / 2, y + th - 10, tw - 6, 13, known ? '#f0e2c4' : '#8a7a9a', 'center', '800', FONT_B, false, 10);
+    if (tab === 'e' && save.thralls && save.thralls[id]) { roundRect(x + 4, y + 4, 44, 16, 8, 'rgba(90,10,20,0.92)', '#ff7a6a', 1.1); txt('KÖLEN', x + 26, y + 12.5, 9, '#ffd8d0', 'center', '800', FONT_B, false); } // 18 Eki: Ölüler Defteri
     if (!known) drawIcon('lock', x + tw - 14, y + 14, 14);
     if ((save.codexNew || []).includes(id)) { const by = y + 6 + Math.sin(time * 5 + i) * 1.5; roundRect(x + tw - 40, by - 8, 40, 17, 8, '#e8434b', '#fff', 1.2); txt('YENİ', x + tw - 20, by + 0.5, 11, '#fff', 'center', '400', FONT_T); }
     ctx.restore();
@@ -21536,6 +21633,7 @@ function drawPlay() {
   if (!PERF_OFF.has('parts')) drawPartsAll(G.parts);
   drawSigFx(false);
   drawAllyXray();
+  drawLegionMeter();
   drawMechFx();
   drawProps(true);
   drawFG();
@@ -21544,7 +21642,7 @@ function drawPlay() {
   for (const f of G.floaters) {
     const k = f.t / 1.1, pop = easeOutBack(clamp(f.t / 0.2, 0, 1));
     ctx.save(); ctx.globalAlpha = 1 - k * k; ctx.translate(f.x, f.y); ctx.scale(pop, pop);
-    txt(f.text, 0, 0, 15, f.col, 'center', '400', FONT_T);
+    txt(f.text, 0, 0, f.imp ? TEXTS.impSize : TEXTS.size, f.col, 'center', '400', FONT_T);
     ctx.restore();
   }
   drawMortSay();
@@ -23030,6 +23128,7 @@ function worldTap(x, y) {
   for (const h of G.heroes) {
     if (!h.dead && dist(h.x, h.y - 10, x, y) < 22) { setSel({ kind: 'hero', hero: h }); sfx('select'); heroBark(h, 'hsel'); return; }
   }
+  if (!G.sel && zombieTap(x, y)) return; // dirilene dokun: feda (patlat)
   // düşman: dokununca özellik paneli
   {
     let best = null, bd = 1e9;
@@ -23318,7 +23417,7 @@ window.__game = {
     for (let i = 0; i < n; i++) { const t0 = performance.now(); ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawNecroTitle(5 + i / 60); drawPartsAll(uiParts); ctx.restore(); D.push(performance.now() - t0); time += 1 / 60; }
     D.sort((a, b) => a - b); return { ort: +(D.reduce((a, b) => a + b) / n).toFixed(2), p95: +D[Math.floor(n * 0.95)].toFixed(2), max: +D[n - 1].toFixed(2) };
   },
-  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, cast: (id, x, y) => castSpell(id, x, y), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
+  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, cast: (id, x, y) => castSpell(id, x, y), ztap: (x, y) => zombieTap(x, y), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   // test: adıyla bir düğmenin ekran (CSS piksel) merkezi; son çizilen karedeki buttons listesinden (tools/akis-testi.js)
   btn(key) { const b = buttons.find(o => o.key === key || (key.endsWith('*') && o.key.startsWith(key.slice(0, -1)))); return b ? { x: view.ox + (b.x + b.w / 2) * view.scale, y: view.oy + (b.y + b.h / 2) * view.scale, key: b.key } : null; },
   btnKeys() { return buttons.map(b => b.key); },
