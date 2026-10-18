@@ -6386,8 +6386,10 @@ function skillRing(x, y, ir, c, on) { // kalın, çizgi filmsi halka: koyu kontu
 const ULT_GAP = 22 * UI_GAP; // 14 Eki: ayraç kalkınca boşluk 46 -> 22 (yine de iki grup ayrı seçilir)
 const HERO_R = 28 * 0.95 * UI_K; // sol alttaki komutan portresi (13 Eki: %5 küçük)
 const necroCount = () => spellIds().filter(id => !id.startsWith('ult')).length;
+const HERO2_K = 0.8, HERO2_GAP = 14; // ikinci komutan portresi: boy oranı, araya boşluk
+const hero2W = () => (G && G.heroes && G.heroes.length > 1 ? 2 * HERO_R * HERO2_K + HERO2_GAP : 0);
 const spellBtn = (i) => { const n = necroCount(), nu = spellIds().length - n, slot = i >= n ? i - n : nu + i, gap = i < n && nu ? ULT_GAP : 0;
-  return { x: EDGE.l + 18 + 2 * HERO_R + 22 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
+  return { x: EDGE.l + 18 + 2 * HERO_R + hero2W() + 22 * UI_GAP + SPELL_R + slot * SPELL_STEP + gap, y: EDGE.b - 14 - SPELL_R, r: SPELL_R }; };
 // sol alttaki portre + büyü düğmelerinin sağ kenarı: alt paneller bunun sağından başlar (üst üste binmesin)
 const hudRight = () => itemBag().x - SPELL_R - 10; // 16 Eki: alt bilgi kartları sağdaki çanta düğmesine binmesin
 const hudLeft = () => (spellIds().length ? Math.max(...spellIds().map((_, i) => spellBtn(i).x)) + SPELL_R + 8 : G && G.heroes.length ? HUD.heroes[0].x + HUD.heroes[0].r + 16 : EDGE.l + 18);
@@ -14578,7 +14580,7 @@ const HUD = (() => { // sağ üst düğmeler ve sol alt portre (UI_K ile büyüt
     get pause() { return { x: EDGE.r - 11 - rb, y: EDGE.t + 11 + rb, r: rb }; },
     get speed() { const p = this.pause; return { x: p.x - 2 * rb - gap, y: p.y, r: rb }; },
     get mute() { const p = this.speed; return { x: p.x - rb - rm - gap, y: p.y, r: rm }; },
-    get heroes() { const r2 = hr * 0.78; return [{ x: EDGE.l + 18 + hr, y: EDGE.b - 34 - hr, r: hr }, { x: EDGE.l + 18 + r2, y: EDGE.b - 34 - 2 * hr - r2 - 22, r: r2 }]; }, // 17 Eki: yardımcı komutan baş komutanın üstünde (büyü düğmeleri yerinde kalır)
+    get heroes() { const r2 = hr * HERO2_K; return [{ x: EDGE.l + 18 + hr, y: EDGE.b - 34 - hr, r: hr }, { x: EDGE.l + 18 + 2 * hr + HERO2_GAP + r2, y: EDGE.b - 34 - r2, r: r2 }]; }, // 18 Eki (Caner: "iki komutanda sol alttakiler üst üste olmasın, harita görünmüyor"): yardımcı komutan yanında, büyü düğmeleri o kadar sağda
   };
 })();
 const heroBadge = (hb) => ({ x: hb.x + hb.r * 0.8, y: hb.y - hb.r * 0.8, r: 10 * UI_K });
@@ -18349,32 +18351,53 @@ function codexNoteBox(note, px, y, pw) {
   wrapLines(note, pw - 84, 13, '800', FONT_B, 2).forEach((l, i) => txt(l, px + 50, y + 29 + i * 15, 13, '#2a1838', 'left', '800', FONT_B, false));
 }
 const DMG_NAME = { archer: 'Delici (ok)', mage: 'Ruh (büyü)', artillery: 'Veba/Ateş (alan)', barracks: 'Kesici (iskeletler)', altar: 'Saldırmaz' };
+// 18 Eki (Caner: "kodeks kuleler bölümü daha detaylı olabilir"): üç seviye yan yana tablo (seçili sütun vurgulu, saniyede hasar), hasar türünün zırh
+// sınıflarına etkisi (güçlü/zayıf), iki uzmanlık kendi kule görseliyle kart olarak (son kademesinin etkisi), altta Mortimer'ın notu
+const CODEX_SRC = { archer: 'arrow', barracks: 'melee', mage: 'magic', artillery: 'blast' };
+const CODEX_SPEC_IMG = { corpse: 'tower_artillery_boneball' };
 function drawCodexTower(id, px, py, pw, ph) {
   const T = TOWERS[id], li = clamp(CODEX.lvl, 0, T.levels.length - 1), L = T.levels[li], k = easeOutBack(clamp((time - CODEX.t0) / 0.35, 0, 1));
   const cx = px + 104, cy = py + 214, im = towerIcon(id, li + 1);
   codexStage(cx, cy, 170, 190, '170,130,255');
   if (im) { const h = (110 + li * 20) * (0.7 + 0.3 * k); drawSprite(ctx, im, cx, cy + 4, h * im.width / im.height); }
   ['1', '2', '3'].forEach((lb, i) => codexPill('cxl' + i, px + 20 + i * 64, py + 252, 58, lb + '. sv', li === i, () => { CODEX.lvl = i; CODEX.t0 = time; }));
-  const x0 = px + 222; CODEX.statW = Math.min(140, (pw - 236) / 2);
+  const x0 = px + 222, wR = pw - 236;
   txt(T.name.toLocaleUpperCase('tr'), x0, py + 26, 12.5, '#c8a8ff', 'left', '800', FONT_B, false);
-  fitTxt(L.title, x0, py + 48, pw - 236, 22, '#fff', 'left', '400', FONT_T);
-  fitTxt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 72, pw - 236, 12.5, '#a898b8', 'left', '700', FONT_B, false);
-  const stats = [['Maliyet', L.cost + ' altın'], ['Menzil', L.range + '']];
-  if (id === 'barracks') stats.push(['İskelet canı', L.hp + ''], ['İsk. hasarı', `${L.dmg[0]}–${L.dmg[1]}`], ['İsk. zırhı', `%${Math.round(L.armor * 100)}`], ['Doğma süresi', L.respawn + ' sn']);
-  else if (id === 'altar') stats.push(['Direnç kırma', `%${Math.round(L.res * 100)}`], ['Fazla hasar', `+%${Math.round(L.curse * 100)}`], ['Yavaşlık', `%${Math.round(L.slow * 100)}`], ['Güçsüzlük', `%${Math.round(L.weak * 100)}`], ['Dirilme', `%${Math.round(L.rise * 100)}`]);
-  else { stats.push(['Hasar', `${L.dmg[0]}–${L.dmg[1]}`], ['Atış arası', L.rate + ' sn']); if (L.splash) stats.push(['Alan', L.splash + '']); }
-  let y = codexStats(stats, x0, py + 92) + 4;
-  wrapLines(L.perk || T.desc, pw - 236, 12.5, '700', FONT_B, 3).forEach(l => { txt(l, x0, y, 12.5, '#f0e2c4', 'left', '700', FONT_B, false); y += 16; });
-  // uzmanlıklar
-  let by = py + 290;
-  txt('UZMANLIKLAR (3. seviyede biri seçilir)', px + 18, by, 12.5, '#ffe27a', 'left', '800', FONT_B, false); by += 19;
-  for (const a of T.abilities || []) {
-    const S = SPEC[a.id] || {}, top = a.ranks[a.ranks.length - 1], title = S.title || a.name;
-    txt(title, px + 18, by, 14, '#fff', 'left', '400', FONT_T); by += 17;
-    wrapLines(S.who || `${a.name}: ${a.desc(top)}`, pw - 36, 12.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 12.5, '#cdbb98', 'left', '700', FONT_B, false); by += 15; }); // 11 Eki: tek satıra küçültmek yerine iki satır
-    by += 4;
-  }
-  if (by + 56 < py + ph) codexNoteBox(CODEX_NOTE[id], px, Math.max(by + 4, py + ph - 62), pw);
+  fitTxt(L.title, x0, py + 48, wR, 22, '#fff', 'left', '400', FONT_T);
+  fitTxt(`Hasar türü: ${DMG_NAME[id] || ''}`, x0, py + 72, wR, 12.5, '#a898b8', 'left', '700', FONT_B, false);
+  // değer tablosu: satır = özellik, sütun = seviye
+  const Ls = T.levels, rows = [['Maliyet', l => l.cost + ''], ['Menzil', l => l.range + '']];
+  if (id === 'barracks') rows.push(['İskelet canı', l => l.hp + ''], ['İsk. hasarı', l => `${l.dmg[0]}–${l.dmg[1]}`], ['İsk. zırhı', l => `%${Math.round(l.armor * 100)}`], ['Doğma', l => l.respawn + ' sn']);
+  else if (id === 'altar') rows.push(['Fazla hasar', l => `+%${Math.round(l.curse * 100)}`], ['Yavaşlık', l => `%${Math.round(l.slow * 100)}`], ['Güçsüzlük', l => `%${Math.round(l.weak * 100)}`], ['Direnç kırma', l => `%${Math.round(l.res * 100)}`]);
+  else { rows.push(['Hasar', l => `${l.dmg[0]}–${l.dmg[1]}`], ['Atış arası', l => l.rate + ' sn'], ['Saniyede', l => Math.round((l.dmg[0] + l.dmg[1]) / 2 / l.rate) + '']); if (Ls.some(l => l.splash)) rows.push(['Alan', l => (l.splash || 0) + '']); }
+  const ty = py + 92, lw = Math.min(104, wR * 0.32), cw = (wR - lw) / 3, rh = 19;
+  roundRect(x0 + lw + li * cw - 2, ty - 12, cw, rh * (rows.length + 1) + 4, 8, 'rgba(255,211,77,0.12)', 'rgba(255,211,77,0.45)', 1.2); // seçili seviye sütunu
+  ['1. sv', '2. sv', '3. sv'].forEach((h, i) => txt(h, x0 + lw + (i + 0.5) * cw, ty, 11.5, i === li ? '#ffd34d' : '#9a88b0', 'center', '800', FONT_B, false));
+  rows.forEach(([lab, f], r) => { const y = ty + (r + 1) * rh;
+    if (r % 2 === 0) { ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(x0 - 4, y - rh / 2, wR + 4, rh); }
+    fitTxt(lab, x0, y, lw - 6, 12.5, '#b8a8c8', 'left', '700', FONT_B, false, 10);
+    Ls.forEach((l, i) => fitTxt(f(l), x0 + lw + (i + 0.5) * cw, y, cw - 6, 13.5, i === li ? '#fff' : '#cdbfd8', 'center', '400', FONT_T, false, 10)); });
+  let y = ty + (rows.length + 1) * rh + 8;
+  // zırh sınıflarına etkisi
+  const src = CODEX_SRC[id];
+  if (src) { let x = x0; txt('Etkisi:', x, y, 12, '#b8a8c8', 'left', '800', FONT_B, false); x += 46;
+    for (const [cid, C] of Object.entries(ARMOR_CLASS)) { const m = C.mult[src]; if (m == null || Math.abs(m - 1) < 0.05) continue; const good = m > 1, w = codexChip(x, y, `${C.name.split(' ')[0]} ×${+m.toFixed(2)}`, good ? '#9aff8a' : '#ff9a8a', good ? 'rgba(30,70,30,0.8)' : 'rgba(80,25,25,0.8)', 11); x += w + 4; if (x > x0 + wR - 70) break; }
+    y += 20; }
+  wrapLines(L.perk || T.desc, wR, 12.5, '700', FONT_B, 2).forEach(l => { txt(l, x0, y, 12.5, '#f0e2c4', 'left', '700', FONT_B, false); y += 16; });
+  { const nmax = Math.floor((py + 280 - y) / 14), nl = CODEX_NOTE[id] && nmax > 1 ? wrapLines('Mortimer: ' + CODEX_NOTE[id], wR, 11.5, '700', FONT_B, nmax) : []; nl.forEach(l => { txt(l, x0, y + 2, 11.5, '#c8a8ff', 'left', '700', FONT_B, false); y += 14; }); } // Mortimer'ın notu (kısa)
+  // uzmanlık kartları
+  let by = py + 292;
+  txt('UZMANLIKLAR · 3. seviyeden sonra biri seçilir', px + 18, by, 12.5, '#ffe27a', 'left', '800', FONT_B, false); by += 14;
+  const A = T.abilities || [], gw = 10, cwid = (pw - 36 - gw * (A.length - 1)) / Math.max(1, A.length), chh = Math.min(150, py + ph - 14 - by);
+  A.forEach((a, i) => {
+    const S = SPEC[a.id] || {}, top = a.ranks[a.ranks.length - 1], bx = px + 18 + i * (cwid + gw), sim = spr(CODEX_SPEC_IMG[a.id] || `tower_${id}_${a.id}`) || spr('ico_ab_' + a.id);
+    roundRect(bx, by, cwid, chh, 12, 'rgba(14,6,18,0.7)', 'rgba(201,168,101,0.5)', 1.4);
+    const iw = Math.min(96, chh * 0.8); if (sim) { const k2 = Math.min((iw - 6) / sim.width, (chh - 14) / sim.height); ctx.drawImage(sim, bx + 6 + (iw - 6 - sim.width * k2) / 2, by + chh - 7 - sim.height * k2, sim.width * k2, sim.height * k2); }
+    const tx = bx + iw + 6, tw = cwid - iw - 12; let ly = by + 17;
+    fitTxt(S.title || a.name, tx, ly, tw, 15, '#fff', 'left', '400', FONT_T); ly += 18;
+    wrapLines(S.who || '', tw, 12, '700', FONT_B, 2).forEach(l => { txt(l, tx, ly, 12, '#cdbb98', 'left', '700', FONT_B, false); ly += 15; });
+    const d = a.desc ? a.desc(top) : '', dm = Math.floor((by + chh - 6 - ly) / 14); if (d && dm > 1) wrapLines(d, tw, 11.5, '700', FONT_B, dm).forEach(l => { txt(l, tx, ly + 2, 11.5, '#9ad8a8', 'left', '700', FONT_B, false); ly += 14; });
+  });
 }
 
 
