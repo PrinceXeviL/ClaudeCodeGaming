@@ -4091,7 +4091,7 @@ const itemBag = () => ({ x: EDGE.r - 16 - SPELL_R, y: EDGE.b - 14 - SPELL_R, r: 
 const itemBtn = (i) => { const b = itemBag(); return { x: b.x - (i + 1) * (SPELL_R * 2 + 8), y: b.y, r: SPELL_R * 0.92 }; };
 const itemCount = (id) => (G && G.tutorial ? (G.tutItems && G.tutItems[id]) || 0 : (save.items && save.items[id]) || 0); // öğretici: kendi (kaydedilmeyen) eşyaları
 function pickItem(id) {
-  if (itemCount(id) <= 0) { floatText(itemBag().x - 120, itemBag().y - 50, 'Dükkândan kristalle al', '#e0b8ff'); sfx('error'); return; }
+  if (itemCount(id) <= 0) { floatText(itemBag().x - 120, itemBag().y - 50, 'Dükkândan kristalle al', '#ffb4a8'); sfx('error'); return; }
   if (ITEMS[id].target) { G.mode = { kind: 'item', id }; G.bagOpen = false; G.spellPeek = null; sfx('spell'); return; }
   useItem(id);
 }
@@ -7700,7 +7700,7 @@ function drawAchievements() {
       const im = spr('ico_ach_chest'); if (im) icoFit(im, rx, ry - 8, 16);
       txt('AL +' + achReward(a, (save.achC && save.achC[a.id]) || 0), rx, ry + 20, 14, '#fff', 'center', '400', FONT_T, false);
     } else if (done) { const im = spr('ico_ui_check'); if (im) icoFit(im, rx, ry, 17); else txt('✓', rx, ry, 26, '#8fd06a'); }
-    else { ctx.save(); ctx.globalAlpha *= 0.6; const im = spr('ico_crystal'); if (im) icoFit(im, rx - 12, ry, 12); txt('+' + achReward(a, tier), rx + 4, ry + 1, 16, '#e0b8ff', 'left', '400', FONT_T, false); ctx.restore(); }
+    else { ctx.save(); ctx.globalAlpha *= 0.6; const im = spr('ico_crystal'); if (im) icoFit(im, rx - 12, ry, 12); txt('+' + achReward(a, tier), rx + 4, ry + 1, 16, '#ffb4a8', 'left', '400', FONT_T, false); ctx.restore(); }
     ctx.restore();
   });
   ctx.restore();
@@ -16328,7 +16328,7 @@ function drawCosmeticShop(px, py, pw, ph) {
       if (on) txt('TAKILI', x + cw / 2, y + 120, 13, '#8af07a', 'center', '400', FONT_T);
       else if (own) txt('TAK', x + cw / 2, y + 120, 13, '#f0e2c4', 'center', '400', FONT_T);
       else if (S.event) fitTxt('Etkinlik ödülü', x + cw / 2, y + 120, cw - 8, 12, '#ffb070', 'center', '800', FONT_B, false, 9);
-      else { drawCrystal(x + cw / 2 - 14, y + 120, 7); txt('' + S.cost, x + cw / 2 + 6, y + 121, 14, c >= S.cost ? '#f0d8ff' : '#8a7a8a', 'center', '400', FONT_T); }
+      else { drawCrystal(x + cw / 2 - 14, y + 120, 7); txt('' + S.cost, x + cw / 2 + 6, y + 121, 14, c >= S.cost ? '#ffd4cc' : '#8a7a8a', 'center', '400', FONT_T); }
       ctx.restore();
       buttons.push({ key, x, y, w: cw, h: ch, fn: () => {
         if (on) return;
@@ -16343,7 +16343,7 @@ function drawCosmeticShop(px, py, pw, ph) {
 function drawCrystalShop(px, py, pw, ph) {
   const c = save.crystal || 0;
   drawCrystal(W / 2 - 92, py + 52, 17);
-  txt(`Kristalin: ${c}`, W / 2 + 12, py + 53, 24, '#f0d8ff', 'center', '400', FONT_T, false);
+  txt(`Kristalin: ${c}`, W / 2 + 12, py + 53, 24, '#ffd4cc', 'center', '400', FONT_T, false);
   txt('Kristal yalnız bosslardan düşer · komutan ve savaş eşyası açar', W / 2, py + 82, 14, '#c8b8d8', 'center', '700', FONT_B, false);
   ITEM_ORDER.forEach((id, k) => {
     const I = ITEMS[id], ry = py + 100 + k * 68, rx = px + 24, rw = pw - 48;
@@ -17968,7 +17968,7 @@ function drawEvent() {
     // ödül şeridi
     roundRect(x + 18, ty + th + 72, cw - 36, 50, 12, 'rgba(10,4,12,0.75)', 'rgba(255,150,60,0.45)', 1.5);
     txt('ÖDÜL', x + 32, ty + th + 97, 13, '#ffb070', 'left', '400', FONT_T, false);
-    let rx = x + 88; if (S.reward.c) { drawCrystal(rx, ty + th + 97, 10); txt('+' + S.reward.c, rx + 14, ty + th + 98, 16, '#f0d8ff', 'left', '400', FONT_T, false); rx += 62; }
+    let rx = x + 88; if (S.reward.c) { drawCrystal(rx, ty + th + 97, 10); txt('+' + S.reward.c, rx + 14, ty + th + 98, 16, '#ffd4cc', 'left', '400', FONT_T, false); rx += 62; }
     if (S.reward.cos) { const C = TOWER_SKINS.concat(HERO_SKINS).find(o => o.id === S.reward.cos); fitTxt(C ? C.name : '', rx, ty + th + 98, x + cw - 30 - rx, 14, '#ffb070', 'left', '800', FONT_B, false, 10); }
     if (done) { roundRect(x + 40, y0 + ch - 62, cw - 80, 44, 22, 'rgba(40,90,30,0.85)', '#9be06a', 2); txt('TAMAM ✓', x + cw / 2, y0 + ch - 40, 18, '#eaffd8', 'center', '400', FONT_T); }
     else gameButton('ev_' + j, x + cw / 2, y0 + ch - 40, cw - 60, 50, open ? 'OYNA' : 'KİLİTLİ', () => { if (!open) { mapNote = { text: 'Önce önceki bölümü bitir', t: time }; sfx('error'); return; } go(() => startEvent(E, j)); }, open ? 'ember' : 'dark', { icon: open ? 'play' : 'lock', size: 18, shine: open });
@@ -20024,7 +20024,7 @@ function drawMap() {
     }, () => { const D = dailyPick(); mapNote = { text: `Günün sınavı: ${LEVELS[D.idx].name} · ${D.mod.name} (${D.mod.desc})`, t: time }; go(() => startLevel(D.idx, 'd')); }, { appear: st - 0.3, tile: 'ember' });
   }
   roundBtn('shop', bx(4), TY, RB, (r) => { uiIco('shop', 0, 0, r * 1.2) || drawIcon('coin', 0, 0, r * 1.15); if (isPremium()) drawCrown(0, -r * 0.9, 0.55, 1); }, () => go(() => { menuBack = 'map'; screen = 'shop'; screenT = time; }), { appear: st - 0.35, tile: 'gold' });
-  { const cc = save.crystal || 0; if (cc) { const qx = bx(4) + 2, qy = TY + 24; roundRect(qx - 26, qy - 11, 52, 22, 11, 'rgba(40,16,50,0.95)', '#e0b8ff', 1.5); drawCrystal(qx - 13, qy, 8); txt(cc + '', qx + 9, qy + 0.5, 13, '#fff', 'center', '400', FONT_T); } }
+  { const cc = save.crystal || 0; if (cc) { const qx = bx(4) + 2, qy = TY + 24; roundRect(qx - 26, qy - 11, 52, 22, 11, 'rgba(52,12,16,0.95)', '#ff8a7a', 1.5); drawCrystal(qx - 13, qy, 8); txt(cc + '', qx + 9, qy + 0.5, 13, '#fff', 'center', '400', FONT_T); } }
   if (save.achNew) { circle(bx(2) + 18, TY - 18, 9, '#e04a3a', '#2a0606', 1.4); txt(save.achNew + '', bx(2) + 18, TY - 17.5, 11, '#fff', 'center', '400', FONT_T, false); }
   if ((save.codexNew || []).length) { const cx = bx(1) + 18, cy = TY - 18 + Math.sin(time * 5) * 1.5; circle(cx, cy, 9, '#e8434b', '#fff', 1.4); txt(save.codexNew.length + '', cx, cy + 0.5, 10.5, '#fff', 'center', '400', FONT_T); }
   // sefer adı: sekmelerle sağ düğmeler arasındaki boşlukta (dar ekranda küçülür, sığmazsa ikinci satıra iner)
@@ -21363,7 +21363,7 @@ function drawVault(k, cx, y) {
   const gx = x0 + 214; drawIcon('coin', gx, y, 20); txt(String(g), gx + 16, y + 1, 19, '#ffe27a', 'left', '400', FONT_T, false);
   if (V.c > 0 || V.gold >= VAULT.per) {
     const ax = x0 + 318; ctx.fillStyle = '#9fe870'; ctx.beginPath(); ctx.moveTo(ax, y - 6); ctx.lineTo(ax + 11, y); ctx.lineTo(ax, y + 6); ctx.closePath(); ctx.fill();
-    drawIconArt('crystal', paintCrystal, x0 + 352, y, 12); txt('+' + n, x0 + 370, y + 1, 20, '#e0b8ff', 'left', '400', FONT_T, false);
+    drawIconArt('crystal', paintCrystal, x0 + 352, y, 12); txt('+' + n, x0 + 370, y + 1, 20, '#ffb4a8', 'left', '400', FONT_T, false);
     if (V.replay) { roundRect(x0 + w - 74, y - 11, 60, 22, 11, 'rgba(232,187,74,0.18)', 'rgba(232,187,74,0.6)', 1); txt('TEKRAR', x0 + w - 44, y + 1, 12, '#ffd98a', 'center', '800', FONT_B, false); }
     if (u > 0 && u < 1 && V.c > 0 && Math.random() < 0.5) { // sikkeler kasadan kristale akar
       emit(uiParts, { kind: 'glow', add: true, x: gx + rand(-4, 4), y: y + rand(-4, 4), vx: (x0 + 352 - gx) * rand(1.6, 2.2), vy: -rand(20, 60), drag: 2.2, col: Math.random() < 0.6 ? '255,220,110' : '210,150,255', s0: rand(3, 5), s1: 1, life: 0.45 });
@@ -21599,7 +21599,7 @@ function drawWinMinimal(k) {
       ctx.font = `400 24px ${FONT_T}`; const cw = cr > 0 ? 34 + ctx.measureText('+' + cr).width : 0, gw = gear.length * 50, tw = cw + gw + (cw && gw ? 20 : 0);
       let x = -tw / 2;
       if (cr > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + 13, 0, 26, '200,140,255', 0.35 + 0.1 * Math.sin(time * 4)); ctx.restore();
-        drawIconArt('crystal', paintCrystal, x + 13, 0, 14); txt('+' + cr, x + 32, 1, 24, '#e6c4ff', 'left', '400', FONT_T, true); x += cw + 20; }
+        drawIconArt('crystal', paintCrystal, x + 13, 0, 14); txt('+' + cr, x + 32, 1, 24, '#ffc0b4', 'left', '400', FONT_T, true); x += cw + 20; }
       gear.forEach((it, i) => gearCell(it, x + 22 + i * 50, 0, 42));
     }
     ctx.restore();
@@ -22057,7 +22057,7 @@ function drawOverlay() {
       if (!G.winLoot) { G.winLoot = true; sfx('lootchime'); } // ganimet çınlaması
       ctx.save(); ctx.translate(cx, py + (G.vault ? 374 : 330)); ctx.scale(a, a);
       txt('Ganimet:', -wTot / 2, 0, 15, '#cfc4dc', 'left', '800', FONT_B, false);
-      drawIconArt('crystal', paintCrystal, -wTot / 2 + 88, 0, 11); txt('+' + L.c, -wTot / 2 + 104, 1, 18, '#e0b8ff', 'left', '400', FONT_T, false);
+      drawIconArt('crystal', paintCrystal, -wTot / 2 + 88, 0, 11); txt('+' + L.c, -wTot / 2 + 104, 1, 18, '#ffb4a8', 'left', '400', FONT_T, false);
       L.gear.forEach((it, i) => gearCell(it, -wTot / 2 + 172 + i * 44, 0, 38));
       ctx.restore();
     } else if (NECRO && !(sum && G.vault)) fitTxt(WIN_QUIPS[G.idx % WIN_QUIPS.length], cx, py + (sum ? 330 : 228), pw - 60, 15, '#9fd8a0', 'center', '700', FONT_B, false, 12);

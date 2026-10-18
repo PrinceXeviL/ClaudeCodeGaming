@@ -5,7 +5,8 @@
 // Strateji: kule yerleri yolu en çok gördükleri sıraya göre; karışık kule; en ucuz geliştirme; okçu yolu sırayla bow/xbow;
 // büyüler: duvar kaleye yaklaşan durdurulamayanların (noblock/hızlı) önüne, korku kalabalığa, diriltme/patlatma/golem ceset kümesine.
 const { chromium } = require('playwright');
-const arg = process.argv[2] || '0-39', team = (process.argv[3] || 'leonidas').split(','), STARS = +(process.argv[4] || 3);
+// 18 Eki: DIFF=kolay|normal|usta, NOSPELL=1 (Mortimer'ın büyüleri kullanılmaz), komutansız için 2. değişken 'yok'
+const arg = process.argv[2] || '0-39', team = (process.argv[3] || 'leonidas').split(',').filter(t => t !== 'yok'), STARS = +(process.argv[4] || 3), DIFF = process.env.DIFF || 'normal', NOSPELL = !!process.env.NOSPELL;
 const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, (_, i) => a + i))(arg.split('-').map(Number)) : arg.split(',').map(Number);
 (async () => {
   const b = await chromium.launch();
@@ -14,10 +15,10 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
   await p.goto('http://localhost:8765/index.html?' + Date.now());
   await p.waitForTimeout(1500);
   for (const lvl of lvls) {
-    const r = await p.evaluate(({ lvl, team, STARS }) => {
+    const r = await p.evaluate(({ lvl, team, STARS, DIFF, NOSPELL }) => {
       const g = window.__game, S = g.save();
       // --- oyuncu ilerlemesi ---
-      S.stars = Array.from({ length: lvl }, () => STARS); S.team = team; S.upg = {}; S.grim = {}; S.sxp = {}; S.tutDone = 1; S.tut3 = { 0: 1, 1: 1, 2: 1 }; S.comics = S.comics || {};
+      S.stars = Array.from({ length: lvl }, () => STARS); S.team = team; S.diff = DIFF; S.upg = {}; S.grim = {}; S.sxp = {}; S.tutDone = 1; S.tut3 = { 0: 1, 1: 1, 2: 1 }; S.comics = S.comics || {};
       let free = S.stars.reduce((a, b) => a + b, 0), bought = true;
       while (bought) { bought = false; for (const u of UPGRADES) { const r = S.upg[u.id] || 0; if (r < u.ranks.length && u.ranks[r].cost <= free) { free -= u.ranks[r].cost; S.upg[u.id] = r + 1; bought = true; } } }
       for (const id of ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem']) { S.sxp[id] = 85 * lvl; for (let k = 0; k < 5; k++) g.grimBuy(id); }
@@ -33,7 +34,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
       const flyN = G.lv.waves.reduce((a, w) => a + (w.groups || w).reduce ? (w.groups || w).reduce((s, gr) => s + (((ENEMIES[gr.t || gr.type || gr[0]] || {}).flying) ? 1 : 0), 0) : 0, 0);
       const plan = ['barracks', 'archer', 'mage', 'artillery', 'archer', 'mage', 'barracks', 'artillery', 'archer', 'mage', 'archer', 'barracks', 'mage', 'artillery'].filter(t => g.towerOn(t)); // öğretici bölümde yalnız açık kuleler
       const leaks = {}, alive = new Map(); let time = 0, casts = 0, xbow = 0;
-      const cast = (id, x, y) => { g.cast(id, x, y); if (G.spells[id] > 0) { casts++; used[id] = (used[id] || 0) + 1; } }, used = {};
+      const cast = (id, x, y) => { if (NOSPELL && id.startsWith('nm_')) return; g.cast(id, x, y); if (G.spells[id] > 0) { casts++; used[id] = (used[id] || 0) + 1; } }, used = {};
       g.wave();
       const dens = (list, r) => { let best = null, bn = 0; for (const e of list) { const n = list.filter(o => Math.hypot(o.x - e.x, o.y - e.y) < r).length; if (n > bn) { bn = n; best = e; } } return [best, bn]; };
       while (!g.overlay && time < 1500) {
@@ -72,7 +73,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
       }
       const stuck = g.overlay ? null : G.enemies.filter(e => !e.dead).sort((a, b) => b.d - a.d).slice(0, 6).map(e => ({ t: e.type, d: e.p ? Math.round(e.d) + '/' + Math.round(e.p.total) : '-', x: Math.round(e.x), y: Math.round(e.y), under: !!e.under, blk: !!e.blocker, st: e.siege, hp: Math.round(e.hp), fear: +(e.fearT || 0).toFixed(1), stun: +(e.stun || 0).toFixed(1), spd: +(e.curSpd || 0).toFixed(1), slow: +(e.slowT || 0).toFixed(1), n: G.enemies.filter(o => !o.dead).length }));
       return { lvl, name: G.lv.name, result: g.overlay, stuck, spawners: G.spawners.length, cd: G.waveCountdown, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time), gold: G.gold, towers: G.towers.map(t => t.type[0] + t.lvl).join(''), casts, used, leaks };
-    }, { lvl, team, STARS });
+    }, { lvl, team, STARS, DIFF, NOSPELL });
     console.log(JSON.stringify(r));
   }
   if (errs.length) console.log('HATALAR', JSON.stringify([...new Set(errs)].slice(0, 20)));
