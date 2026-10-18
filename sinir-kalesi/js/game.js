@@ -4503,7 +4503,7 @@ function collapseTower(t) {
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.towers = G.towers.filter(x => x !== t); t.plot.tower = null;
   if (G.sel && (G.sel.tower === t || G.sel.plot === t.plot)) setSel(null);
-  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, more: t.more, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK } };
+  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, more: t.more, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK, prio: t.prio } };
   shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t);
   // 18 Eki (Caner: "yıkılma efektini çok beğendim, tüm kulelere"): Wan yıkılma şeridi varsa kule kendi görseliyle abartılı çöker, moloz şerit bitince belirir
   const cn = ts && ts.name.replace(/_side$/, '') + '_collapse', CF = cn && ANIM_META[cn];
@@ -4531,7 +4531,7 @@ function rebuildTower(pl) {
 function finishRebuild(pl) {
   const R = pl.rubble, S = R.snap, type = R.type; pl.rubble = null; cnt('rebuild');
   const t = { type, def: TOWERS[type], lvl: S.lvl, x: pl.x, y: pl.y, cd: 0.3, spent: S.spent, plot: pl, soldiers: [], anim: 0, shotAnim: 0, born: G.t,
-    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra, more: S.more, stackK: S.stackK };
+    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra, more: S.more, stackK: S.stackK, prio: S.prio };
   pl.tower = t; G.towers.push(t); towerHp(t);
   if (type === 'barracks') {
     const n = nearestOnPaths(G.paths, t.x, t.y); t.rx = S.rx ?? n.x; t.ry = S.ry ?? n.y;
@@ -4620,13 +4620,21 @@ function sellTower(t) {
   sfx('coins');
 }
 
+// 18 Eki (Caner): hedef önceliği (kule menüsündeki nişan düğmesi): first kaleye en yakın (varsayılan), last en arkadaki,
+// strong canı en çok olan, fly önce uçanlar (yoksa kaleye en yakın)
+const PRIO = { first: { name: 'İlk', desc: 'Kaleye en yakın düşmanı vurur (varsayılan)' }, last: { name: 'Son', desc: 'En arkadaki düşmanı vurur: arkadan gelen şifacı, davulcu, sancaktar' },
+  strong: { name: 'Güçlü', desc: 'Canı en çok olan düşmanı vurur: boss ve ağır zırhlılar' }, fly: { name: 'Uçan', desc: 'Önce uçanları vurur (kartal, akbaba); uçan yoksa kaleye en yakını' } };
+const prioList = (t) => (TOWERS[t.type] && TOWERS[t.type].air ? ['first', 'last', 'strong', 'fly'] : ['first', 'last', 'strong']);
+const prioOpen = (t) => t.type === 'archer' || t.type === 'mage' || t.type === 'artillery';
 function findTarget(t, range, allowAir) {
-  let best = null, bestRemain = 1e9;
+  const P = (t && t.prio) || 'first';
+  let best = null, bestK = -1e18;
   for (const e of G.enemies) {
     if (e.dead || e.under || (e.def.flying && !allowAir)) continue;
     if (dist(t.x, t.y - 10, e.x, e.y) > range) continue;
     const remain = e.p.total - e.d;
-    if (remain < bestRemain) { bestRemain = remain; best = e; }
+    const k = P === 'last' ? remain : P === 'strong' ? e.hp * 1e4 - remain : P === 'fly' ? (e.def.flying ? 1e9 : 0) - remain : -remain;
+    if (k > bestK) { bestK = k; best = e; }
   }
   return best;
 }
@@ -14382,7 +14390,8 @@ function towerMenuItems(t) {
   if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 64, y: t.y - 34, cost: t.extra ? null : EX.cost, owned: !!t.extra });
   if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -62), y: t.y + (t.type === 'archer' ? -34 : 12), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
   if (moreOpen(t)) items.push({ id: 'more', type: t.type, x: t.x + (t.type === 'archer' ? -62 : 62), y: t.y + (t.type === 'archer' ? 12 : 34), cost: t.more ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
-  items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: Math.floor(t.spent * SELL_RATIO) });
+  if (prioOpen(t)) items.push({ id: 'target', type: t.prio || 'first', x: t.x + (t.type === 'archer' ? 72 : -72), y: t.y + 46 }); // hedef önceliği
+  items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: sellValue(t) });
   if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
 }
@@ -14690,6 +14699,9 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     drawImbueIcon(it.type, 0, 0, 1);
   } else if (it.id === 'imback') {
     if (!mi('ico_mn_back', 0.5)) drawIcon('back', 0, 0, 22);
+  } else if (it.id === 'target') { // nişangâh + seçili öncelik yazısı
+    ctx.lineCap = 'round'; for (const [w, c] of [[4, '#2a1406'], [2, '#ffd8a0']]) { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.arc(0, -4, 8, 0, TAU); ctx.moveTo(0, -15); ctx.lineTo(0, -10); ctx.moveTo(0, 2); ctx.lineTo(0, 7); ctx.moveTo(-11, -4); ctx.lineTo(-6, -4); ctx.moveTo(6, -4); ctx.lineTo(11, -4); ctx.stroke(); }
+    circle(0, -4, 2.2, '#ff5a3a'); txt(TR(PRIO[it.type].name).toLocaleUpperCase('tr'), 0, 13, 9, '#ffe9b0', 'center', '800', FONT_B, true);
   } else if (it.id === 'rally' && mi('ico_mn_rally')) {
   } else if (it.id === 'rally') {
     ctx.strokeStyle = '#2a1a0a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-5, 13); ctx.lineTo(-5, -12); ctx.stroke();
@@ -15677,6 +15689,7 @@ function infoText() {
       const nw = n2 > n1 ? `${t.path === 'xbow' ? 'Arbaletçi' : 'Okçu'} ${n1} → ${n2} · ` : '';
       return [`Yükselt → ${towerTitle(t, t.lvl + 1)} — ${upCost(t)} altın`, `${nw}${pc ? pc + ' · ' : ''}${pc ? perkNew((PD && PD.perks[t.lvl + 1]) || L.perk) : (PD && PD.perks[t.lvl + 1]) || L.perk}`, delta.length ? null : NC, { delta }];
     }
+    if (G.preview && G.preview.id === 'target') { const P = t.prio || 'first', L = prioList(t), nx = L[(L.indexOf(P) + 1) % L.length]; return [`Hedef: ${PRIO[P].name}`, `${PRIO[P].desc} · Dokun: ${PRIO[nx].name}`, null, { tag: 'HEDEF' }]; }
     if (G.preview && G.preview.id === 'sell') return ['Kuleyi sat', sameWave(t) > 0 ? (sameWave(t) >= t.spent ? 'Bu dalgada kuruldu: tam iade' : `Bu dalgadaki ${sameWave(t)} altın tam geri gelir`) : '', null, { refund: sellValue(t) }];
     if (G.preview && G.preview.id === 'ability') {
       const a = G.preview.ab, r = (t.ab && t.ab[a.id]) || 0;
@@ -22910,6 +22923,7 @@ function hudTap(x, y) {
         tapPop('mi' + it.id + (it.type || ''));
         if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
         if (it.id === 'max') return true;
+        if (it.id === 'target') { const tw = G.sel.tower, L = prioList(tw), nx = L[(L.indexOf(tw.prio || 'first') + 1) % L.length]; tw.prio = nx; it.type = nx; G.preview = Object.assign({}, it, { type: nx }); sfx('pick'); floatText(tw.x, tw.y - 70, TR('Hedef') + ': ' + TR(PRIO[nx].name), '#ffd8a0'); return true; }
         if (it.id === 'grim') { setSel(null); setOverlay('grim'); sfx('pick'); return true; } // Büyü Kitabı
         if (it.id === 'imbue' && !G.sel.tower.imbue) { G.sel.sub = 'imbue'; G.preview = null; G.menuT = time; sfx('pick'); return true; } // büyü seçimine geç
         if (it.id === 'imback') { G.sel.sub = null; G.preview = null; G.menuT = time; sfx('pick'); return true; }

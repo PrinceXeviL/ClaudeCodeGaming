@@ -19,7 +19,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
     const r = await p.evaluate(({ lvl, team, STARS, STRAT }) => {
       const g = window.__game, S = g.save();
       // --- oyuncu ilerlemesi ---
-      S.stars = Array.from({ length: lvl }, () => STARS); S.team = team; S.upg = {}; S.grim = {}; S.sxp = {}; S.tutDone = 1; S.tut3 = { 0: 1, 1: 1, 2: 1 }; S.comics = S.comics || {};
+      S.stars = Array.from({ length: lvl }, () => STARS); S.team = team; S.heroBuy = [...new Set((S.heroBuy || []).concat(team))]; /* 18 Eki: kristalle açılan komutan (LOCK_TEST) bot için açık */ S.upg = {}; S.grim = {}; S.sxp = {}; S.tutDone = 1; S.tut3 = { 0: 1, 1: 1, 2: 1 }; S.comics = S.comics || {};
       let free = S.stars.reduce((a, b) => a + b, 0), bought = true;
       while (bought) { bought = false; for (const u of UPGRADES) { const r = S.upg[u.id] || 0; if (r < u.ranks.length && u.ranks[r].cost <= free) { free -= u.ranks[r].cost; S.upg[u.id] = r + 1; bought = true; } } }
       for (const id of ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem']) { S.sxp[id] = 85 * lvl; for (let k = 0; k < 5; k++) g.grimBuy(id); }

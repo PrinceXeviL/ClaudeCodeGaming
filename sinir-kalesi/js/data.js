@@ -1621,6 +1621,8 @@ Object.assign(HEROES.leonidas, { cost: 0, unlock: null }); // 17 Eki: başlangı
 // 18 Eki (Caner: "deneme amaçlı Leonidas kristalle açılmak için kilitli olsun"): Leonidas da kristalle açılır; test sürümünde de kilitli (game.js LOCK_TEST).
 // Hiç komutan açılmamışsa savaş komutansız oynanır.
 HEROES.leonidas.cost = 20;
+// 18 Eki (Caner: "Robin ve Merlin kristalsiz açık olsun, diğerleri kristal istesin"): Merlin ve Robin baştan açık; Leonidas ve Báthory kristalle
+Object.assign(HEROES.merlin, { cost: 0, unlock: null }); Object.assign(HEROES.robin, { cost: 0, unlock: null });
 // tek kullanımlık savaş eşyaları: dükkânda kristalle alınır, savaşta sağ alttaki çantadan kullanılır (KR'deki eşyalar gibi)
 const ITEMS = {
   bomb:   { name: 'Kemik Bombası',    cost: 3, desc: 'Seçtiğin yerde patlar, ağır alan hasarı', target: true, r: 85, dmg: 320 },
