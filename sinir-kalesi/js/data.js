@@ -1002,12 +1002,22 @@ function restructureWaves() {
       if (!grp.length || !W[tj] || breath[tj] || W[tj].intro) continue;
       const seenT = new Set(); W[tj] = grp.filter(x => !seenT.has(x.t) && seenT.add(x.t)).map(x => Object.assign({}, x, { at: 0 })); W[tj].theme = cat; break;
     }
-    // girişler: tek gruplu dalga iki girişe bölünür; sondan üçüncü dalga tümden ikinci girişten (baskın)
-    if (lv.entr > 1) W.forEach((w, j) => {
-      if (breath[j]) return;
-      if (j === N - 3) { for (const x of w) x.p = 1 % lv.entr; return; }
-      if (w.length === 1 && w[0].n >= 2 && !heavyG(w[0])) { const a = w[0], n = a.n, b = Object.assign({}, a, { p: (a.p + 1) % lv.entr }); a.n = Math.ceil(n / 2); b.n = n - a.n; w.push(b); }
-    });
+    // girişler (18 Eki, Caner: "hep her yerden geliyor; bazı dalgalar tek yerden, bazen her yerden"): KR gibi dalga başına desen.
+    // ilk iki dalga tek giriş (sırayla tanıtır), sonra tohumlu karışım: tek giriş %45, iki giriş %25 (3+ girişte), hepsi %30;
+    // nefes dalgası tek giriş, baskın (sondan üçüncü) tümden beklenmeyen girişten, son dalga her yerden. Aynı tek giriş üst üste 2'den çok gelmez.
+    if (lv.entr > 1) { const E = lv.entr; let sd = 0; for (const ch of lv.name) sd = (sd * 31 + ch.charCodeAt(0)) >>> 0;
+      const rnd = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+      let last = -1, rep = 0; const one = () => { let e = Math.floor(rnd() * E); if (e === last && rep >= 1) e = (e + 1) % E; rep = e === last ? rep + 1 : 0; last = e; return e; };
+      W.forEach((w, j) => {
+        let pat = j < 2 ? 'one' : breath[j] ? 'one' : j === N - 1 ? 'all' : j === N - 3 ? 'raid' : (() => { const r = rnd(); return r < 0.45 ? 'one' : r < 0.7 && E > 2 ? 'two' : 'all'; })();
+        if (pat === 'one') { const e = j < 2 ? j % E : one(); if (j < 2) { rep = e === last ? rep + 1 : 0; last = e; } for (const x of w) x.p = e; return; }
+        if (pat === 'raid') { const e = (last + 1 + Math.floor(rnd() * (E - 1))) % E; last = e; rep = 0; for (const x of w) x.p = e; return; }
+        const ents = pat === 'all' ? [...Array(E).keys()] : (() => { const a = Math.floor(rnd() * E); return [a, (a + 1 + Math.floor(rnd() * (E - 1))) % E]; })();
+        if (w.length < ents.length) { // gruplar girişlerden azsa en kalabalık grup bölünür (boss bölünmez)
+          for (let q = w.length; q < ents.length; q++) { const a = w.filter(x => x.n >= 2 && !(ENEMIES[x.t] || {}).chief).sort((u, v) => v.n - u.n)[0]; if (!a) break; const n = a.n, b = Object.assign({}, a); a.n = Math.ceil(n / 2); b.n = n - a.n; w.push(b); } }
+        w.forEach((x, i) => { x.p = ents[i % ents.length]; });
+      });
+    }
     lv.waves = W; lv.shape = shape; lv.breath = breath;
   });
 }

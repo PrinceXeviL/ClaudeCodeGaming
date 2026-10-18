@@ -310,9 +310,22 @@ const MIPS = new WeakMap();
 // bekletiyordu (meteorla aynı anda vurulan 40 düşmanda tek kare 0,8-1,3 sn). Tuvaller artık işlemci tarafında (willReadFrequently) ve
 // karede en çok MAKE_BUDGET pahalı hazırlık yapılır; bütçe bitince o kare asıl görsel çizilir, kopya sonraki karede hazırlanır.
 let MAKE_BUDGET = 2;
+// 18 Eki (Caner: "kasılmalar var mı"): profil, savaşta yeni kule/ceset görselinin ilk çiziminde mipsOf içindeki okumanın 140-240 ms kare
+// dondurduğunu gösterdi. Tarayıcı destekliyorsa kopyalar createImageBitmap(resize) ile ARKA PLANDA üretilir (ana iş parçacığı beklemez,
+// tuval yok, boş kopya sorunu yok); hazır olana dek asıl görsel çizilir. Desteklemeyende eski yol (bütçeli, senkron) sürer.
+let ASYNC_MIP = false;
+try { const t = document.createElement('canvas'); t.width = t.height = 4;
+  createImageBitmap(t, { resizeWidth: 2, resizeHeight: 2, resizeQuality: 'high' }).then((b) => { ASYNC_MIP = b.width === 2; b.close && b.close(); }).catch(() => {}); } catch (e) {}
+function mipsAsync(im, list) {
+  let w = im.width, h = im.height, chain = Promise.resolve();
+  while (w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const W2 = w, H2 = h;
+    chain = chain.then(() => createImageBitmap(im, { resizeWidth: W2, resizeHeight: H2, resizeQuality: 'high' })).then((bm) => { MIP_OK.add(bm); list.push(bm); }); }
+  chain.catch(() => {});
+}
 function mipsOf(im) {
   let list = MIPS.get(im);
   if (list) return list;
+  if (ASYNC_MIP && im.width > 0) { list = [im]; MIPS.set(im, list); mipsAsync(im, list); return list; }
   if (MAKE_BUDGET <= 0) return [im];
   if (window.__mipLog && MAKE_BUDGET < 50) window.__mipLog.push([im.width, im.height, im.constructor.name, new Error().stack.split('\n').slice(3, 6).map(x => x.trim().split(' ')[1]).join('<')]); // test: savaşta geç hazırlanan kopya
   MAKE_BUDGET--;
@@ -3964,7 +3977,15 @@ function iconArt(name, paint) {
   return (ICON_C[name] = c);
 }
 const icoImg = (name) => spr('ico_' + (name === 'kristal' ? 'crystal' : name));
-function drawIconArt(name, paint, x, y, r) { const im = icoImg(name) || iconArt(name, paint); icoFit(im, x, y, r); }
+function drawIconArt(name, paint, x, y, r) { if ((name === 'kristal' || name === 'crystal') && r >= 12 && crystalAnim(x, y, r)) return; const im = icoImg(name) || iconArt(name, paint); icoFit(im, x, y, r); }
+// 18 Eki (Caner: "kristal için Veo ile animasyon"): büyük kristal gösterimlerinde (dükkân, ödül) dönen kafatası taşı (img/fx_crystal,
+// varliklar/kristal_veo_isle.py); şerit gelene dek ve küçük rozetlerde durağan ico_crystal.
+function crystalAnim(x, y, r) {
+  const F = ANIM_META.fx_crystal; if (!F) return false; const im = spr('fx_crystal'); if (!im) { loadStrip('fx_crystal'); return false; }
+  const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), i = Math.floor(time * (F.fps || 24)) % F.n;
+  const k = r * 2.4 * 1.06 / Math.max(F.fw, F.fh), w = F.fw * k, h = F.fh * k;
+  ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, x - w / 2, y - h / 2, w, h); return true;
+}
 // ruh kristali: yedi yüzlü taş, yüzeyler ayrı tonlarda, içinde yeşil ruh ışığı, kenar parıltıları ve yıldız pırıltısı
 function paintCrystal(g, R) {
   const glowR = g.createRadialGradient(0, 0, R * 0.2, 0, 0, R * 1.15); glowR.addColorStop(0, 'rgba(190,120,255,0.55)'); glowR.addColorStop(1, 'rgba(190,120,255,0)');

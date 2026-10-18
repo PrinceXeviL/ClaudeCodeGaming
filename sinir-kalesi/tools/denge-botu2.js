@@ -37,7 +37,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
       const cast = (id, x, y) => { if (NOSPELL && id.startsWith('nm_')) return; g.cast(id, x, y); if (G.spells[id] > 0) { casts++; used[id] = (used[id] || 0) + 1; } }, used = {};
       g.wave();
       const dens = (list, r) => { let best = null, bn = 0; for (const e of list) { const n = list.filter(o => Math.hypot(o.x - e.x, o.y - e.y) < r).length; if (n > bn) { bn = n; best = e; } } return [best, bn]; };
-      while (!g.overlay && time < 1500) {
+      while (!g.overlay && time < 2100) {
         // harcama
         for (let guard = 0; guard < 8; guard++) {
           const opts = [];
