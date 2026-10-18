@@ -2867,7 +2867,9 @@ function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yü
   if (e.flZ <= 0) {
     G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.4 });
     if (!e.flB && e.flVz < -90) { e.flB = true; e.flZ = 0.01; e.flVz = -e.flVz * FLING.bounce; e.flVx *= 0.4; e.flVy *= 0.4; e.spinV *= 0.3; }
-    else { e.flZ = null; e.spinA = 0; snapToPath(e); stunEnemy(e, FLING.stun); }
+    else { e.flZ = null; e.spinA = 0; snapToPath(e);
+      if (e.twLand) { const d = e.twLand; e.twLand = 0; HERO_SKILL = true; damageEnemy(e, d, 'magic'); HERO_SKILL = false; if (!e.dead) stunEnemy(e, TORNADO.landStun); shakeScreen(1.2, 0.1); } // kasırgadan savrulan: yere çakılır, sersemler
+      else stunEnemy(e, FLING.stun); }
   }
   return true;
 }
@@ -9220,7 +9222,7 @@ function stormChain(x, y, U, dmg) {
 // Bulut oluşur, huni iner, yolda düşmanların geldiği yöne (geriye) ilerler. Huniye değen hafif düşman (en çok U.n) havalanıp huninin
 // çevresinde döner (hold sn), sonra rastgele yöne fırlatılır (flingStep ile düşer, seker, yola oturur, sersemler) ve hasar alır.
 // Ağır/büyük düşman, boss: havalanmaz, yere devrilir (FLING.kd) ve %60 hasar alır. Uçanlar: hasar. Buluttan aralıkla şimşek çakar.
-const TORNADO = { speed: 26, catchR: 22, hold: 1.4, liftH: 92, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
+const TORNADO = { pullR: 70, pull: 34, landK: 0.4, landStun: 1.2, speed: 26, catchR: 26, hold: 1.4, liftH: 92, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
 function tornadoCast(x, y, U, dmg) {
   const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60;
   G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
@@ -9233,6 +9235,13 @@ function tornadoStep(z, dt) {
   const T = TORNADO, live = z.t < z.dur && tornadoGrow(z) > 0.85;
   if (z.p && z.t > 0.4 && z.t < z.dur) { z.d = Math.max(0, z.d - T.speed * dt); const q = pathPos(z.p, z.d, Math.sin(z.t * 1.7 + z.seed) * 7); z.x = q.x; z.y = q.y; }
   if ((z.whT -= dt) <= 0 && z.t < z.dur) { z.whT = 1.3; sfx('whirl'); }
+  if (live) for (const e of G.enemies) { // 18 Eki (Caner: "askerleri girdabına alsın"): yakındakiler huniye doğru çekilir (yolda ileri/geri ve yanal)
+    if (e.dead || e.under || z.hit.has(e) || e.twT > 0 || e.flZ != null || e.kdT > 0 || e.def.flying || e.def.chief || e.def.machine || e.siege !== undefined) continue;
+    const dd = Math.hypot(e.x - z.x, (e.y - z.y) / 0.55); if (dd > T.pullR) continue;
+    const k = 1 - dd / T.pullR;
+    if (z.p && e.p === z.p) { e.d += Math.sign(z.d - e.d) * T.pull * k * dt; if (e.off) e.off -= Math.sign(e.off) * Math.min(Math.abs(e.off), 20 * k * dt); }
+    else { e.x += (z.x - e.x) / (dd || 1) * T.pull * k * dt; e.y += (z.y - e.y) / (dd || 1) * T.pull * k * dt * 0.55; }
+  }
   if (live) for (const e of G.enemies) {
     if (e.dead || e.under || z.hit.has(e) || e.twT > 0 || e.flZ != null || e.kdT > 0) continue;
     if (Math.hypot(e.x - z.x, (e.y - z.y) / 0.55) > T.catchR + (e.def.r || 10) * 0.5) continue;
@@ -9283,7 +9292,8 @@ function twistStep(e, dt) { // kasırgaya kapılan düşman: huninin çevresinde
     e.twT = 0; const a = e.twA + Math.PI / 2 + rand(-0.6, 0.6), v = rand(T.v[0], T.v[1]); // teğet yönde fırlar
     e.flZ = Math.max(0.01, e.twZh); e.twZh = 0; e.flVx = Math.cos(a) * v; e.flVy = Math.sin(a) * v * 0.55; e.flVz = rand(T.vz[0], T.vz[1]);
     e.spinV = (Math.random() < 0.5 ? -1 : 1) * rand(6, 10); e.flB = false;
-    HERO_SKILL = true; damageEnemy(e, z.dmg(), 'magic'); HERO_SKILL = false;
+    const dm = z.dmg(); e.twLand = dm * T.landK; // yere çakılınca kalan hasar + sersemlik (flingStep)
+    HERO_SKILL = true; damageEnemy(e, dm * (1 - T.landK), 'magic'); HERO_SKILL = false;
     emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - e.flZ - 10, col: '170,130,255', s0: 10, s1: 3, life: 0.3 });
   }
   return true;
@@ -9303,9 +9313,9 @@ const blobPath = (D, grow = 0, k = 1, ox = 0, oy = 0) => { ctx.beginPath(); for 
 const TW_VEO = { on: false, k: 1.45 * 0.75 }; // on: Veo şeridi (18 Eki, Caner: "kodla yapılan efektler daha güzel" -> kodla çizilen huni, her biri farklı)
 // 18 Eki: her kasırga başka: renk takımı (mor / hayalet yeşili / kızıl), eğim, kalınlık, boy, kıvrılma, dönüş yönü
 const TW_PAL = [
-  { body: ['rgba(34,24,52,0.85)', 'rgba(78,62,108,0.75)', 'rgba(132,116,164,0.7)', 'rgba(176,164,204,0.7)', 'rgba(70,54,96,0.85)'], b1: '200,255,210', b2: '232,222,250', bb: '70,56,96', cl: ['#9a8cba', '#6a5a8c', '#45365f', '#22162f'] },
-  { body: ['rgba(16,40,34,0.85)', 'rgba(40,92,74,0.75)', 'rgba(92,160,128,0.7)', 'rgba(160,214,184,0.7)', 'rgba(34,74,60,0.85)'], b1: '210,255,200', b2: '200,240,226', bb: '30,80,64', cl: ['#86b8a2', '#4f8a74', '#2e5e4e', '#16342c'] },
-  { body: ['rgba(52,16,30,0.85)', 'rgba(110,40,62,0.75)', 'rgba(164,92,116,0.7)', 'rgba(210,160,176,0.7)', 'rgba(90,30,50,0.85)'], b1: '255,200,190', b2: '246,214,226', bb: '96,34,56', cl: ['#b88a9e', '#8a4f66', '#5e2e44', '#301622'] }];
+  { body: ['rgba(23,16,36,0.85)', 'rgba(54,43,75,0.75)', 'rgba(92,81,114,0.7)', 'rgba(123,114,142,0.7)', 'rgba(49,37,67,0.85)'], b1: '200,255,210', b2: '232,222,250', bb: '70,56,96', mid: '72,58,100' },
+  { body: ['rgba(11,28,23,0.85)', 'rgba(28,64,51,0.75)', 'rgba(64,112,89,0.7)', 'rgba(112,149,128,0.7)', 'rgba(23,51,42,0.85)'], b1: '210,255,200', b2: '200,240,226', bb: '30,80,64', mid: '34,78,64' },
+  { body: ['rgba(36,11,21,0.85)', 'rgba(77,28,43,0.75)', 'rgba(114,64,81,0.7)', 'rgba(147,112,123,0.7)', 'rgba(62,21,35,0.85)'], b1: '255,200,190', b2: '246,214,226', bb: '96,34,56', mid: '92,34,52' }];
 function tornadoVar() {
   return { pal: TW_PAL[Math.floor(Math.random() * TW_PAL.length)], lean: rand(-1, 1), wk: rand(0.8, 1.25), hk: rand(0.85, 1.15), sa: rand(5, 13), sf: rand(1.6, 3), dir: Math.random() < 0.5 ? -1 : 1, nb: 7 + Math.floor(rand(0, 5)) };
 }
@@ -9353,9 +9363,9 @@ function drawTornadoes(back) {
         const u = (hsh(j) + t * (0.22 + 0.18 * hsh(j + 7))) % 1, a = V.dir * t * (10 - 5 * u) + hsh(j + 3) * 6.283, sn = Math.sin(a);
         if ((sn >= 0) !== front) continue;
         const Q = P(u), rr = Q.w * (0.72 + 0.3 * hsh(j + 11)), sz = (5 + Q.w * 0.75) * (0.75 + 0.5 * hsh(j + 5));
-        const al = cl * fadeTop(u) * Math.min(1, u * 8) * (front ? 0.3 + 0.25 * hsh(j + 2) : 0.4);
+        const al = cl * fadeTop(u) * Math.min(1, u * 8) * (front ? 0.55 + 0.3 * hsh(j + 2) : 0.7); // 18 Eki (Caner: "soluk, daha koyu")
         if (al <= 0.02) continue;
-        const col = front ? (j % 5 === 0 ? V.pal.b1 : j % 2 ? V.pal.b2 : '178,164,150') : (j % 2 ? V.pal.bb : '74,62,58');
+        const col = front ? (j % 9 === 0 ? V.pal.b1 : j % 7 === 0 ? V.pal.b2 : j % 2 ? V.pal.mid : '66,56,56') : (j % 2 ? V.pal.bb : '30,22,28');
         ctx.globalAlpha = al; ctx.drawImage(puffTex(col), Q.x + Math.cos(a) * rr - sz, Q.y + sn * rr * 0.28 - sz * 0.7, sz * 2, sz * 1.4);
       }
       ctx.globalAlpha = 1;
@@ -9389,7 +9399,7 @@ function drawTornadoes(back) {
       const hx = z.x + sway(0.6), hg = ctx.createLinearGradient(hx - 40 * V.wk, 0, hx + 40 * V.wk, 0);
       [0, 0.35, 0.62, 0.8, 1].forEach((o, i) => hg.addColorStop(o, V.pal.body[V.lean > 0 ? i : 4 - i]));
       for (let i = 0; i < NL; i++) {
-        const u = i / NL, Q = P(u), al = cl * fadeTop(u) * (0.22 + 0.08 * Math.sin(i * 1.7 + t * 6));
+        const u = i / NL, Q = P(u), al = cl * fadeTop(u) * (0.38 + 0.08 * Math.sin(i * 1.7 + t * 6));
         ctx.globalAlpha = al; ctx.fillStyle = u < 0.18 ? `rgba(110,92,74,${0.9 - u * 3})` : hg;
         ctx.beginPath(); ctx.ellipse(Q.x, Q.y, Q.w * 0.92, Math.max(2, Q.w * 0.3), 0, 0, Math.PI * 2); ctx.fill();
       }
