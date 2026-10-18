@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -161,7 +161,9 @@ function drawFrame(img, F, i, h) {
 }
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
 const SPR_META = {};
-fetch('img/meta.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => { if (m._lights) { DECOR_LIGHTS = m._lights; delete m._lights; } Object.assign(SPR_META, m); }).catch(() => {});
+// 18 Eki: yayının dosya sınırı için ışık noktaları ('_lights') ve sefer haritası pişirme bilgisi ('_map', eski map_bolge.json) meta.json'un içinde
+const META_J = fetch('img/meta.json' + (window.SURUM ? '?v=' + window.SURUM : ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).catch(() => ({}));
+META_J.then(m => { m = Object.assign({}, m); if (m._lights) DECOR_LIGHTS = m._lights; delete m._lights; delete m._map; Object.assign(SPR_META, m); });
 // Oyun içi boyutlar (mantıksal px). Karakterler yüksekliğe göre, kule ve dekor kaynak ölçeğe göre.
 const CHAR_H = { soldier: 21, militia: 21 };
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
@@ -2284,7 +2286,9 @@ function startLevel(idx, chal = null) {
 
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
+  if (team().includes('merlin')) keep.add('fx_tornado'); // 18 Eki: Kasırga Fırtınası Veo şeridi
   useStrips(keep);
+  if (team().includes('merlin') && ANIM_META.fx_tornado) loadStrip('fx_tornado');
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
   [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
@@ -9118,11 +9122,12 @@ function stormChain(x, y, U, dmg) {
 // Bulut oluşur, huni iner, yolda düşmanların geldiği yöne (geriye) ilerler. Huniye değen hafif düşman (en çok U.n) havalanıp huninin
 // çevresinde döner (hold sn), sonra rastgele yöne fırlatılır (flingStep ile düşer, seker, yola oturur, sersemler) ve hasar alır.
 // Ağır/büyük düşman, boss: havalanmaz, yere devrilir (FLING.kd) ve %60 hasar alır. Uçanlar: hasar. Buluttan aralıkla şimşek çakar.
-const TORNADO = { speed: 26, catchR: 22, hold: 0.95, liftH: 70, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
+const TORNADO = { speed: 26, catchR: 22, hold: 1.15, liftH: 95, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
 function tornadoCast(x, y, U, dmg) {
   const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60;
   G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
-    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0 });
+    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0, veo: !!(ANIM_META.fx_tornado && spr('fx_tornado')) }); // veo: şerit hazırsa baştan sona o (yarıda çizim değişmesin)
+  loadStrip('fx_tornado');
   shakeScreen(3, 0.3); sfx('thunder'); setTimeout(() => sfx('whirl'), 250);
 }
 const tornadoGrow = (z) => clamp((z.t - 0.2) / 0.45, 0, 1) * clamp((z.dur + 0.6 - z.t) / 0.45, 0, 1); // huni iner / çekilir
@@ -9190,6 +9195,7 @@ function puffTex(col) { // dolu, kenarı yumuşak öbek (bulut, duman): glowTex'
 }
 // öbek listesini tek yola çevirir: yarı saydam dolguda üst üste binen daireler koyulaşmaz (tek siluet)
 const blobPath = (D, grow = 0, k = 1, ox = 0, oy = 0) => { ctx.beginPath(); for (const [x, y, r] of D) { ctx.moveTo(x + ox + r * k + grow, y + oy); ctx.arc(x + ox, y + oy, r * k + grow, 0, Math.PI * 2); } };
+const TW_VEO = { k: 1.45 }; // Veo kasırgasının boyu: toz halkasından tepeye TORNADO.H'nin katı
 const TW_BANDS = 9, TW_SEG = 40, TW_CLOUD = [[-34, 4, 15], [34, 5, 14], [-18, -3, 19], [18, -4, 18], [0, -9, 21], [-46, 9, 10], [46, 10, 10], [-8, 6, 16], [12, 7, 15]];
 function tornadoDust(z, front, gr) { // tabanda dönen toz öbekleri (yarım: arkadakiler birimlerin arkasında); önce konturlar sonra dolgular: tek siluet
   const t = z.t, D = [];
@@ -9211,8 +9217,16 @@ function drawTornadoes(back) {
     if (back) {
       if (gr <= 0) continue;
       ctx.save(); ctx.globalAlpha = 0.4 * gr; ctx.fillStyle = '#140c1a'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 30, 9, 0, 0, Math.PI * 2); ctx.fill();
-      tornadoDust(z, false, gr); ctx.restore(); continue;
+      if (!(z.veo && spr('fx_tornado'))) tornadoDust(z, false, gr); ctx.restore(); continue;
     }
+    // 18 Eki (Caner: "Merlin'in bulutlu tornadosu için çok daha etkileyici"): Gemini çizimi + Veo (img/fx_tornado, varliklar/merlin_kasirga_isle.py).
+    // Şerit varsa kodla çizilen huni/bulut yerine o oynar (toz halkası bölgenin ortasında), kapılan düşmanlar önünde döner; şerit yoksa eski çizim.
+    { const F = ANIM_META.fx_tornado, im = z.veo && F && spr('fx_tornado');
+      if (im) { const k = T.H * TW_VEO.k / F.by * (0.55 + 0.45 * gr), C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), i = Math.floor(t * (F.fps || 24)) % F.n;
+        ctx.save(); ctx.globalAlpha = cl; if (z.flashT > 0) ctx.filter = `brightness(${1 + z.flashT * 3})`;
+        ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, z.x - F.bx * k, z.y - F.by * k + 4, F.fw * k, F.fh * k); ctx.restore();
+        for (const e of G.enemies) if (e.twT > 0 && e.twZ === z && !e.dead) { const o = e.twZh || 0; e.flZ = o; drawEnemy(e); e.flZ = null; } // kapılanlar hortumun çevresinde döner
+        continue; } }
     ctx.save();
     // u: 0 taban .. 1 tepe; huni yılan gibi kıvrılır, kenarı kıpır kıpır
     const sway = (u) => Math.sin(t * 2.2 + z.seed + u * 3.2) * 9 * u + Math.sin(t * 5.3 + u * 7) * 2.5 * u;
@@ -19100,7 +19114,7 @@ const REGION_BG = {};
 // 12 Eki: sefer haritasının zemini önceden pişirilir (img/map_bolge*.webp + map_bolge.json; tools/harita-pisir.js). Oyunda çizmek her mekân için
 // ~0,3-1 sn donduruyordu (başlıkta 6 kez). Görsel yoksa ya da ekran pişirilen taşma payından genişse eski yol: parça parça çizilir.
 const REGION_PRE = { wait: true };
-fetch('img/map_bolge.json' + (window.SURUM ? '?v=' + window.SURUM : ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(J => {
+META_J.then(m => m._map || {}).then(J => {
   const eps = Object.keys(J); let left = eps.length;
   if (!left) REGION_PRE.wait = false;
   for (const ep of eps) {

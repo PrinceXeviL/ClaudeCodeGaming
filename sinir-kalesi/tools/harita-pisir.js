@@ -23,6 +23,7 @@ const BX = 180, BY = 110, RES = 2, HI = 6, NT = 8; // 16 Eki (Caner: zemin daha 
     console.log(file, r.w + 'x' + r.h, Math.round(fs.statSync(path.join(img, file)).size / 1024) + ' KB', 'ışık', r.lights.length, 'sancak', r.banners.length, 'el', r.hands.length);
   }
   fs.writeFileSync(path.join(img, 'map_bolge.json'), JSON.stringify(meta));
+  { const mp = path.join(img, 'meta.json'), M = JSON.parse(fs.readFileSync(mp, 'utf8')); M._map = meta; fs.writeFileSync(mp, JSON.stringify(M)); } // 18 Eki: oyun meta.json'dan okur (yayın dosya sınırı)
   const t = await p.evaluate(() => window.__game.bakeThumbs());
   fs.writeFileSync(path.join(img, 'map_kartlar.webp'), Buffer.from(t.data.split(',')[1], 'base64'));
   console.log('map_kartlar.webp', t.n, 'bölüm', t.w + 'x' + t.h, Math.round(fs.statSync(path.join(img, 'map_kartlar.webp')).size / 1024) + ' KB');
