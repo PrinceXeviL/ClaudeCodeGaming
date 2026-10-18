@@ -161,7 +161,7 @@ function drawFrame(img, F, i, h) {
 }
 // Boyama sprite'larının kaynak ölçüleri (aynı sayfadaki kulelerin göreli boyu korunur)
 const SPR_META = {};
-fetch('img/meta.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => Object.assign(SPR_META, m)).catch(() => {});
+fetch('img/meta.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => { if (m._lights) { DECOR_LIGHTS = m._lights; delete m._lights; } Object.assign(SPR_META, m); }).catch(() => {});
 // Oyun içi boyutlar (mantıksal px). Karakterler yüksekliğe göre, kule ve dekor kaynak ölçeğe göre.
 const CHAR_H = { soldier: 21, militia: 21 };
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
@@ -1736,7 +1736,7 @@ let BG_PONDS = []; // 17 Eki: zemindeki göllerin yeri (su parıltısı)
 let BG_LIGHTS = []; // zemin dekorundaki ışık noktaları (mum, fener, mantar): zemine çizili görselin üstünde her karede titrer
 // Dekor ışıkları (11 Eki, Caner): sıradan ışıklar (mum, fener) sıcak sarı, büyülü şeyler (mantar, mahzen, kütük gözü) yeşil; noktalar img/lights.json (varliklar/isik_isle.py)
 let DECOR_LIGHTS = {};
-fetch('img/lights.json?v=' + (window.SURUM || ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : {})).then(m => { DECOR_LIGHTS = m; }).catch(() => {});
+// 18 Eki: yayının dosya sınırı için ışık noktaları img/meta.json içinde ('_lights'); SPR_META yüklenince alınır
 function bgLight(name, x, y, w, flip = 1) {
   const L = name && DECOR_LIGHTS[name], im = L && spr(name); if (!im) return;
   const h = w * im.height / im.width;

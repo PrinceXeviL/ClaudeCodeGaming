@@ -45,6 +45,7 @@ def main():
         lights[name] = {'col': 'green' if name in GREEN else 'warm', 'pts': pts}
         print(name, len(pts))
     json.dump(lights, open(os.path.join(IMG, 'lights.json'), 'w'))
+    mp = os.path.join(IMG, 'meta.json'); M = json.load(open(mp)); M['_lights'] = lights; json.dump(M, open(mp, 'w'))  # 18 Eki: oyun ışıkları meta.json'dan okur (yayın dosya sınırı)
 
 
 if __name__ == '__main__':
