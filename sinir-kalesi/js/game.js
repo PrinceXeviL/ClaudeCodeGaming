@@ -2690,7 +2690,8 @@ const SKEL_GUARD = { p: 0.15, cd: 5, k: 0.4 }; // mahzen iskeletinin savunması:
 const ACID = { k: 1.95, hold: 1.9, fade: 0.7, land: 3, fast: 1.8, a: 0.72 }; // a: saydamlık (18 Eki, Caner: "çok yoğun, seyrelt"); hold +1 sn // land: damlanın yere değdiği kareler (normal hız); sonrası fast kat hızlı (18 Eki, Caner: "düştükten sonra %80 hızlandır")
 const acidDur = (F) => ACID.land / F.fps + (F.n - ACID.land) / (F.fps * ACID.fast);
 const acidFrame = (F, t) => { const L = ACID.land / F.fps; return Math.min(F.n - 1, Math.floor(t < L ? t * F.fps : ACID.land + (t - L) * F.fps * ACID.fast)); };
-const ACID_V = ['fx_acid', 'fx_acidb', 'fx_acidc']; // 18 Eki: çeşit çeşit çarpma (varsa); her atışta rastgele biri, ayrıca rastgele ayna + boyut
+const ACID_V = []; // 18 Eki (Caner: "video istemiyorum, eski efekt"): Veo asidi kapalı; açmak için ['fx_acid'] (şerit varliklar/cikti/iptal/fx_acid.webp; img/ + anim.json + manifest'e geri koy)
+const _ACID_VEO = ['fx_acid', 'fx_acidb', 'fx_acidc']; // 18 Eki: çeşit çeşit çarpma (varsa); her atışta rastgele biri, ayrıca rastgele ayna + boyut
 function drawAcidFx() {
   if (!G.acidFx) return;
   for (const a of G.acidFx) {
@@ -8219,6 +8220,7 @@ function setupProps() {
 }
 function updateProps(dt) {
   updateSurprise(dt); updateSigFx(dt); keepGolemTick(dt);
+  if (G.plagueQ && G.plagueQ.length) { for (const q of G.plagueQ) { q.t += dt; if (q.t >= 0 && !q.done) { q.done = true; plagueBounce(q); } } G.plagueQ = G.plagueQ.filter(q => !q.done); }
   if (G.acidFx) { for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => { const F = ANIM_META[a.v]; return F && a.t < acidDur(F) + ACID.fade + (a.hold ?? ACID.hold); }); }
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
@@ -11018,6 +11020,12 @@ function boneBallHit(pr) {
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: R, col: '200,255,140', t: 0, dur: 0.45 }); G.effects.push({ kind: 'dust', x: pr.tx, y: pr.ty, t: 0, dur: 0.8 });
   shakeScreen(4, 0.25); sfx('boom'); sfx('bonefall'); sfx('acidboom');
 }
+// sekme çeşidi: asit topağı yere vurup bir kez daha sıçrar, yanında ikinci küçük birikinti (görsel; hasar yok)
+function plagueBounce(q) {
+  for (let i = 0; i < 14; i++) { const a = rand(-Math.PI, 0), v = rand(50, 150); emit(G.parts, { kind: 'dot', x: q.x + rand(-3, 3), y: q.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.8 - 20, g: 520, col: q.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1, 2.2), s1: 0.8, life: rand(0.35, 0.6), floor: q.y + rand(-6, 6) }); }
+  G.zones.push({ x: q.x, y: q.y, r: q.r, dps: 0, t: 0, life: q.life, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: q.black, seed: rand(0, 9) });
+  G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: q.r * 1.4, col: '140,255,90', t: 0, dur: 0.35 });
+}
 function plagueBomb(pr) {
   for (const e of G.enemies) {
     if (e.dead || e.def.flying) continue;
@@ -11033,8 +11041,12 @@ function plagueBomb(pr) {
   const pool = { x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) }; G.zones.push(pool);
   const veo = fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2, pl2); if (veo) pool.veo = true; // 18 Eki: Veo asidi varsa kodla çizilen birikinti görünmez (altında ikinci asit kalıyordu), hasarı sürer
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
-  for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
-  if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
+  // 18 Eki (Caner: "her seferinde aynı sıçrama olmasın"): kodla 3 çeşit, her atışta rastgele: 0 yelpaze, 1 taç (dik yukarı), 2 sekme (damla bir kez daha sıçrar)
+  const sty = Math.floor(Math.random() * 3), dcol = (i) => pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0';
+  if (sty === 1) for (let i = 0; i < 30; i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-6, 6), y: pr.ty - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: pr.ty + rand(-6, 6) }); }
+  else for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
+  if (sty === 2) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.7, 1); (G.plagueQ ||= []).push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: pr.splash * 0.45, t: -rand(0.28, 0.4), life: pl2 * 0.8, black: pr.black }); }
+  if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * (sty === 1 ? rand(0.45, 0.8) : rand(0.75, 1.15)); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
