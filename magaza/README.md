@@ -21,7 +21,7 @@ Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üst
 
 ## Hâlâ gereken (Caner)
 
-1. **Simge: HAZIR (11 Eki).** Gemini çizimi `varliklar/ham/nm_simge.jpg` → `simge_isle.py` ile iOS + Android'e işlendi. Mağaza dosyaları: `simge_1024.png` (App Store), `play_simge_512.png` (Play). Google Play için 1024×500 öne çıkan görsel hâlâ gerekiyor.
+1. **Simge: HAZIR (11 Eki).** Gemini çizimi `varliklar/ham/nm_simge.jpg` → `simge_isle.py` ile iOS + Android'e işlendi. Mağaza dosyaları: `simge_1024.png` (App Store), `play_simge_512.png` (Play). Google Play öne çıkan görseli HAZIR (18 Eki): `play_one_cikan_1024x500.png` (Gemini, ham `varliklar/ham/nm42_play_banner.jpg`).
 2. **Gizlilik politikası adresi:** `gizlilik.html` içindeki `[İLETİŞİM E-POSTASI]` yerine mağazada görünecek bir iletişim adresi yazılmalı (depo herkese açık, kişisel adres yazılmadı). Sonra sayfa bir yere yüklenmeli (ör. GitHub Pages; depo zaten herkese açık). Bu, herkese açık yayın olduğu için Caner'in onayıyla yapılacak.
 3. **Hesaplar:** Apple Developer Program (yıllık 99 $), Google Play Console (tek sefer 25 $), vergi ve banka bilgileri.
 4. **Gelir modeli (12 Eki, Caner onayı):** ücretsiz indirme, ilk 10 bölüm ücretsiz; tam oyun tek seferlik **4,99 $ / 149,99 ₺** (`mortimer_hazine`, game.js MONET). Zorunlu ara reklam YOK; yalnız isteğe bağlı ödüllü reklam (tam oyunda reklamsız). Araştırma: `arastirma/gelir-ve-pazarlama.md`.
