@@ -1198,6 +1198,19 @@ LEVELS.forEach((lv, i) => {
   w.push({ t: lv.boss, n: 1, gap: 1, at: Math.round(end + 6), p: 0, hpK: lv.boss2 ? 0.75 : undefined });
   if (lv.boss2) w.push({ t: lv.boss2, n: 1, gap: 1, at: Math.round(end + 10), p: (lv.entr || 1) > 1 ? 1 : 0, hpK: 0.75 }); // ikili generaller: ikisi de biraz zayıf
 });
+// 18 Eki (Caner: "son bölümlere doğru dalganın uzun olduğu bölümlerde bir de ara boss gelsin, daha az güçlü"): her seferin 10. bölümünden sonra
+// 11 ve daha çok dalgalı bölümlerde, dalgaların ortasında daha önceki bir bölümün bossu %45 canla döner (boss müziği, giriş ve kristal ödülü yok).
+const MINI_BOSS = { from: 9, minWaves: 11, hpK: 0.45, at: 0.55, skip: /^(gloriosus|severus)/ };
+{ const seen = {}, epK = {};
+  LEVELS.forEach((lv) => {
+    const ep = lv.ep || 1, k = epK[ep] = (epK[ep] ?? -1) + 1, prev = seen[ep] || (seen[ep] = []);
+    const cand = prev.filter(t => t !== lv.boss && t !== lv.boss2 && ENEMIES[t] && !MINI_BOSS.skip.test(t));
+    if (k >= MINI_BOSS.from && lv.waves.length >= MINI_BOSS.minWaves && cand.length) {
+      let j = Math.round(lv.waves.length * MINI_BOSS.at); if (lv.breath && lv.breath[j]) j++;
+      const w = lv.waves[j]; if (w) { const t = cand[cand.length - 1 - (k % Math.min(2, cand.length))]; w.push({ t, n: 1, gap: 1, at: 4, p: (w[0] && w[0].p) || 0, hpK: MINI_BOSS.hpK, mini: true }); lv.mini = t; }
+    }
+    if (lv.boss && !prev.includes(lv.boss)) prev.push(lv.boss);
+  }); }
 
 // Düşmanların hasar kaynaklarına göre zayıflık (>1) ve dirençleri (<1): ok, büyü (yıldırım), top (patlama/ateş), kılıç (askerler)
 // Zırh ve büyü direnci bunlara ek olarak ayrıca uygulanır. Kahraman hasarı bundan etkilenmez.
@@ -1740,10 +1753,10 @@ for (const h in HEROES) { const H = HEROES[h]; if (H.dmg) H.dmg = H.dmg.map(v =>
 BAL.lvl5 = { 20: 2.3, 21: 2.3, 22: 1.6, 23: 2.1, 24: 1.2, 25: 1.6, 26: 1.9, 27: 1.5, 28: 1.5, 29: 1.5, 30: 1.25, 31: 2.2, 32: 1.7, 33: 1.7, 34: 1.7, 35: 1.9, 36: 1.6, 38: 1.8, 39: 2 };
 for (const i in BAL.lvl5) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl5[i];
 // 18 Eki (3. tur): 1. sefer HPX eşik araması (×1 / 1,25 / 1,5 / 1,75): hâlâ tam canla geçilenler güçlenir, sınırdakiler biraz kolaylaşır
-BAL.lvl6 = { 2: 1.3, 5: 1.1, 6: 0.95, 7: 1.2, 8: 1.1, 10: 1.15, 11: 0.81, 12: 1.2, 13: 1.4, 14: 1.15, 17: 1.7, 18: 2, 19: 2 };
+BAL.lvl6 = { 2: 1.3, 5: 1.1, 6: 0.95, 7: 1.2, 8: 1.1, 10: 1.15, 11: 0.73, 12: 1.2, 13: 1.4, 14: 1.15, 17: 1.7, 18: 2, 19: 2 };
 for (const i in BAL.lvl6) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl6[i];
 // 18 Eki (ücretsiz ilk 10 bölüm): az gelişmeli yeni oyuncu botu (bölüm başına 1-2 yıldız) normalde 6. (4-5 can), 7. (8 can / kayıp) ve 10. bölümde (1 can) zorlanıyordu.
 // İlk 10 bölüm oyuncuyu tutmalı: buralar yumuşar (asıl zorluk 11. bölümden sonra)
-BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82 };
+BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82, 33: 0.88 }; // 33: Kemik Avize Salonu (bot 0-11 can)
 for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl7[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)

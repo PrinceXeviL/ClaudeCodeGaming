@@ -1207,7 +1207,7 @@ function musicWanted() {
   if (!G || overlay === 'win' || overlay === 'lose' || !G.musicOn) return null;
   const T = MUSIC.tracks;
   const ep2 = G.lv.ep === 2;
-  if (G.enemies.some(e => e.def.chief && e.hp > 0)) { if (ep2 && !T.boss2.missing) return 'boss2'; if (!T.boss.missing) return 'boss'; }
+  if (G.enemies.some(e => e.def.chief && !e.mini && e.hp > 0)) { if (ep2 && !T.boss2.missing) return 'boss2'; if (!T.boss.missing) return 'boss'; }
   return ep2 && !T.battle2.missing ? 'battle2' : 'battle';
 }
 // Savaşın yoğunluğu (Caner, 11 Eki: oyun içinde savaş ve efektler önde, müzik gerekince girsin, boss'ta kesin):
@@ -2264,7 +2264,7 @@ function startLevel(idx, chal = null) {
     maxLives: chal ? CHAL[chal].lives : diff().lives - (lv.ep === 2 ? 5 : 0) + (upgRank('castle') >= 1 ? 3 : 0) + (upgRank('castle') >= 3 ? 3 : 0),
     chal,
     wave: 0, waveCountdown: null, waveCountdownMax: 1, spawners: [],
-    enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [], dmgNums: [],
+    enemies: [], towers: [], soldiers: [], projectiles: [], effects: [], floaters: [], dmgNums: [], sigFx: [],
     parts: [], decals: [], zones: [], coins: [], loot: [], traps: [], shakeT: 0, shakeAmp: 0, shakeDur: 1, ambT: 0,
     plots: lv.plots.map(([x, y]) => ({ x, y, tower: null })),
     hatches: hatchSpots(lv, paths).map(([x, y, rx, ry, kind]) => ({ x, y, rx, ry, state: 'closed', sealT: 0, ghoul: null, grave: kind === 'grave' })),
@@ -2475,7 +2475,7 @@ function waveBonusAndStart() {
   let lastSpawn = 0;
   G.waveN = def.reduce((a, grp) => a + grp.n, 0); // dalganın asker sayısı (erken çağrı eşiği için)
   for (const grp of def) {
-    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, loot: grp.loot, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
+    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, loot: grp.loot, mini: grp.mini, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + wait + grp.gap * (grp.n - 1));
   }
   if (!G.endless && bloodWaves(G.lv).includes(G.wave)) startBloodMoon();
@@ -2545,7 +2545,7 @@ function spawnEnemy(type, pi, d0 = 0, off0 = null) {
   }
   codexNote(type);
   if (type === 'ram' && !G.saidRam) { G.saidRam = true; setTimeout(() => mortSay('ram', true), 1200); }
-  if (def.chief) bossIntro(e);
+  if (def.chief) { if (G.spawnMini) { e.mini = true; miniIntro(e); } else bossIntro(e); } // ara boss: kısa giriş
   else {
     // (v2: zayıflık/direnç bilgisiyle her düşman kartı bir kez daha gösterilir)
     save.seenEnemies2 = save.seenEnemies2 || [];
@@ -3188,6 +3188,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (HERO_SKILL) amount *= HERO_POWER * SKILL_K; // kahraman yetenek hasarı (SKILL_K: yeteneğin ağaçtaki kademesi)
   if (e.fearT > 0 && NECRO && grimRank('nm_fear') >= 5) amount *= 1.2; // Büyü Kitabı: korkan düşman %20 fazla hasar alır
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
+  if (e.sigShT > 0) amount *= 0.5; else if (e.sigArmT > 0) amount *= 0.7; // 18 Eki: boss imza yetenekleri (kalkan kubbesi, sancak)
   if (src === 'arrow') { e.arrowG = G.t; // kıdemlinin "Kalkanlar!" komutu için
     if (!(e.wallT > 0) && isShielded(e) && G.t >= (e.selfShCd ?? 0) && (G.idx >= CAPTAIN.shield.from || G.lv.ep === 2)) { const SS = CAPTAIN.shield.self; e.selfShCd = G.t + SS.cd; e.wallT = e.wallD = SS.t; } // kıdemlisiz: kendi kalkanı (bu ok tam işler)
     else
@@ -3424,8 +3425,9 @@ function killEnemy0(e) {
     G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.6 });
   }
   if (e.def.crew && !e.leaked) siegeCrewOut(e);
-  if (e.def.chief) setTimeout(() => mortSay('bossDown', true), 900);
-  if (e.def.chief && !e.leaked) { bossLoot(e, giveCrystals(e)); bossDeathFx(e); G.winHold = Math.max(G.winHold || 0, WIN_HOLD); }
+  if (e.def.chief && !e.mini) setTimeout(() => mortSay('bossDown', true), 900);
+  if (e.def.chief && !e.leaked && e.mini) { shakeScreen(4, 0.4); sigBurst(e.x, e.y - 20, '255,215,120', 30); G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '255,215,120', t: 0, dur: 0.8 }); } // ara boss: ödülsüz, altın yağmuru yok
+  else if (e.def.chief && !e.leaked) { bossLoot(e, giveCrystals(e)); bossDeathFx(e); G.winHold = Math.max(G.winHold || 0, WIN_HOLD); }
   else if (e.lootCarrier && !e.leaked) { bossLoot(e, giveCrystals(e)); shakeScreen(3, 0.25); G.winHold = Math.max(G.winHold || 0, 2.6); } // 17 Eki: ödül taşıyan Yüzbaşı // 14 Eki (Caner): zafer ekranı hemen gelmez; ölüm, altın, kristal ve eşya görünür
   if (!e.leaked) comboKill(e);
   if (e.def.dismount) {
@@ -3436,8 +3438,8 @@ function killEnemy0(e) {
   G.kills = (G.kills || 0) + 1;
   if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
   cnt('kills'); if (e.def.chief) cnt('bosses'); if (e.def.flying) cnt('fly'); if (e.def.machine) cnt('mach'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
-  { const gv = Math.max(1, Math.round(e.def.gold * diff().bounty)); if (e.def.chief && !e.leaked) G.bossGold = (G.bossGold || 0) + gv; // kasa: boss altını ayrı sayılır
-  dropCoins(e.x, e.y, gv, false, e.def.chief && !e.leaked ? [44, 2.1] : null); } // boss: altın yağmuru (14 Eki: daha bol)
+  { const gv = Math.max(1, Math.round(e.def.gold * diff().bounty)); if (e.def.chief && !e.mini && !e.leaked) G.bossGold = (G.bossGold || 0) + gv; // kasa: boss altını ayrı sayılır
+  dropCoins(e.x, e.y, gv, false, e.def.chief && !e.mini && !e.leaked ? [44, 2.1] : null); } // boss: altın yağmuru (14 Eki: daha bol)
   sfx('death');
   if (e.def.machine && !e.leaked) sfx('castlehit', rand(0.8, 0.95), 0.8, e); // 16 Eki: kuşatma makinesi parçalanırken tahta çatırtısı
   deathVoice(e);
@@ -8185,7 +8187,7 @@ function setupProps() {
   setupZoneItem(); setupSurprise();
 }
 function updateProps(dt) {
-  updateSurprise(dt);
+  updateSurprise(dt); updateSigFx(dt);
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
@@ -9466,7 +9468,7 @@ function update(dt) {
       sp.lastPi = pi;
       // lejyoner bölüğünün başında hep bir kıdemli komutan yürür (Caner, 10 Eki): bölüğüne küçük güç verir, gerektiğinde komut bağırır
       const cap = NECRO && i % 4 === 0 && i + 4 <= sp.n && (ENEMIES[ty].base || ty) === 'legion' && ENEMIES.legion_k, ty2 = cap && ty === 'legion' ? 'legion_k' : ty;
-      const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null);
+      G.spawnMini = !!sp.mini; const e = spawnEnemy(ty2, pi, -entryLead(G.paths[pi] || G.paths[0]), R ? (col - (R - 1) / 2) * 11 * (G.lv.roadK || ROAD_K) : null); G.spawnMini = false;
       if (cap) { e.captain = true; e.hp *= CAPTAIN.hp; e.maxHp *= CAPTAIN.hp; } // bölük başındaki kıdemli 2 kat canlı
       if (sp.loot) e.lootCarrier = true; // 17 Eki: boss gelmeyen bölümde ödülü taşıyan Yüzbaşı
       if (R) e.march = true;
@@ -15161,6 +15163,11 @@ function hudBar(x, y, w, h) {
   roundRect(x, y, w, h, h / 2.4, 'rgba(12,8,18,0.86)', 'rgba(205,190,235,0.45)', 1.4);
 }
 function drawHud() {
+  if (G.sigFlash) { const k = 1 - G.sigFlash.t / 0.35; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.22 * k; ctx.fillStyle = `rgb(${G.sigFlash.col})`; ctx.fillRect(-W, -H, W * 3, H * 3); ctx.restore(); } // 18 Eki: imza yeteneği parlaması
+  if (G.sigBanner) { const B = G.sigBanner, a = Math.min(1, B.t / 0.15, (B.dur - B.t) / 0.4), sc = 1 + 0.35 * Math.max(0, 1 - B.t / 0.18); // imza yeteneğinin adı: ekranın üstünde büyük, parlayan
+    const y0 = G.enemies.some(o => o.def.chief && !o.dead) ? 128 : 96; ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, y0); ctx.scale(sc, sc);
+    ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 120, B.col, 0.35); ctx.globalCompositeOperation = 'source-over';
+    txt(B.name.toLocaleUpperCase('tr'), 0, 2, 30, `rgb(${B.col})`, 'center', '400', FONT_T, true); txt(TR(B.who), 0, 26, 13, '#f2e2c0', 'center', '800', FONT_B, true); ctx.restore(); }
   if (G.surEclipse > 0) { ctx.save(); ctx.globalAlpha = 0.32 * Math.min(1, G.surEclipse / 1.2) * Math.min(1, (6 - G.surEclipse) / 0.5); ctx.fillStyle = '#7a0010'; ctx.fillRect(-W, -H, W * 3, H * 3); ctx.restore(); } // 18 Eki: Kızıl Tutulma sürprizi
   drawSurBanner();
   drawItemHud();
@@ -17010,6 +17017,10 @@ function drawCrown(x, y, s, face) {
 // Boss girişi: ekran kızıl karanlığa bürünür, boru ve davullar çalar, ekran sarsılır, kükrer
 // Boss girişi: ilk BOSS_ENTRY sn ağır ağır yürür, her adımda yer sarsılır ve toz kalkar; ekran uzun süre kızıl karanlıkta kalır
 const BOSS_ENTRY = 5;
+function miniIntro(e) { // 18 Eki: ara boss: boss müziği ve sinematik yok, kısa uyarı
+  e.entryT = BOSS_ENTRY * 0.5; shakeScreen(2.5, 0.4); setTimeout(() => sfx('roar'), 300);
+  G.banner = { title: 'ARA KOMUTAN', sub: TR(e.def.name), t: 0, dur: 3 };
+}
 function bossIntro(e) {
   { const bk = /^gloriosus/.test(e.type) ? 'boss_gloriosus' : /^severus/.test(e.type) ? 'boss_severus' : null; if (bk && cineReady(bk) && !G.admin) startCine(bk); } // 18 Eki: büyük bossun Veo girişi (bir kez)
   G.bossT = 0; e.entryT = BOSS_ENTRY;
@@ -17159,8 +17170,203 @@ function bossTowerTarget(e, r) {
   const list = G.towers.filter(t => !(t.disabledT > 0) && dist(t.x, t.y, e.x, e.y) <= r);
   return list.length ? list[Math.floor(Math.random() * list.length)] : null;
 }
+// ----- Boss imza yetenekleri (18 Eki, Caner: "özel bossların 2'şer skili olsun, hp ya da stamina gibi barları olsun; skiller ihtişamlı görünsün") -----
+// Her bossun kendine özgü iki büyük yeteneği var. Üst bardaki GÜÇ barı dolunca boss sıradakini hazırlar (1 sn uyarı: yerde işaret, parlama),
+// sonra atar: ışık sütunu, şok halkaları, sarsıntı, parçacıklar. Eski küçük yetenekler (çağrı, borazan...) aynen sürer.
+// tür: nova (çevresine dalga), rain (gökten yağmur), banner (müttefiklere sancak), charge (hücum), quake (yer yarığı), net (ağ),
+// horde (sürü çağrısı), shield (kalkan kubbesi), silence (kuleleri susturan çan), shadow (gölge adımı). Ara boss (e.mini) daha seyrek atar.
+const SIG = { cd: 13, wind: 1.05, first: 0.45 };
+const BOSS_SIG = {
+  champion:    [{ k: 'nova', name: 'Arena Kasırgası', col: '255,170,60', style: 'blades', r: 120, dmg: 40, stun: 1.2 }, { k: 'net', name: 'Gladyatör Ağı', col: '214,192,146', r: 190, stun: 2.4 }],
+  hierophant:  [{ k: 'shield', name: 'Kutsal Kalkan', col: '255,225,130', r: 160, t: 5 }, { k: 'nova', name: 'Arınma Işığı', col: '255,240,170', style: 'holy', r: 140, dmg: 34, stun: 1.4 }],
+  centurion:   [{ k: 'banner', name: 'Lejyon Emri', col: '255,90,60', r: 170, t: 6 }, { k: 'rain', name: 'Ok Yağmuru', col: '255,210,150', style: 'arrow', n: 7, dmg: 30, r: 30 }],
+  shadowmaster:[{ k: 'shadow', name: 'Gölge Adımı', col: '170,90,255', step: 95, r: 110, stun: 1.5, dmg: 28 }, { k: 'nova', name: 'Karanlık Dalga', col: '140,60,255', style: 'shadow', r: 135, dmg: 36, stun: 1.2 }],
+  cavcaptain:  [{ k: 'charge', name: 'Süvari Hücumu', col: '255,190,110', len: 120, dmg: 44, stun: 1.2 }, { k: 'banner', name: 'Savaş Borusu', col: '255,150,70', r: 180, t: 6 }],
+  ironwarden:  [{ k: 'quake', name: 'Yer Yarığı', col: '255,150,80', off: 4, dmg: 40 }, { k: 'shield', name: 'Demir Duvar', col: '190,210,235', r: 150, t: 5 }],
+  gloriosus:   [{ k: 'rain', name: 'Güneş Mızrakları', col: '255,215,90', style: 'spear', n: 8, dmg: 46, r: 34 }, { k: 'banner', name: 'İmparatorluk Sancağı', col: '255,200,70', r: 200, t: 7 }],
+  malleus:     [{ k: 'net', name: 'Av Ağı', col: '214,192,146', r: 210, stun: 2.6 }, { k: 'rain', name: 'Gümüş Cıvatalar', col: '220,235,255', style: 'bolt', n: 6, dmg: 38, r: 28 }],
+  hubertus:    [{ k: 'horde', name: 'Sürü Çağrısı', col: '255,170,90', t: ['hound', 'wardog'], n: 4 }, { k: 'nova', name: 'Av Borusu', col: '255,190,110', style: 'sound', r: 150, dmg: 24, stun: 1.6 }],
+  campanus:    [{ k: 'silence', name: 'Ölüm Çanı', col: '255,215,120', r: 185, off: 2.5 }, { k: 'nova', name: 'Çan Dalgası', col: '255,225,150', style: 'sound', r: 140, dmg: 30, stun: 1.6 }],
+  agnes:       [{ k: 'nova', name: 'Kırbaç Fırtınası', col: '255,70,60', style: 'blades', r: 125, dmg: 44, stun: 0.9 }, { k: 'shield', name: 'Kan Yemini', col: '255,90,90', r: 150, t: 5 }],
+  ignis:       [{ k: 'rain', name: 'Ateş Yağmuru', col: '255,130,40', style: 'fire', n: 8, dmg: 40, r: 34 }, { k: 'nova', name: 'Alev Halkası', col: '255,110,40', style: 'fire', r: 135, dmg: 38, stun: 0.8 }],
+  lucia:       [{ k: 'nova', name: 'Kutsal Patlama', col: '255,245,190', style: 'holy', r: 150, dmg: 42, stun: 1.5 }, { k: 'silence', name: 'Şeytan Kovma', col: '255,240,170', r: 180, off: 2.2 }],
+  colossus:    [{ k: 'quake', name: 'Kolos Adımı', col: '255,215,140', off: 4.5, dmg: 50 }, { k: 'charge', name: 'Aziz Yürüyüşü', col: '255,230,160', len: 100, dmg: 54, stun: 1.4 }],
+  godfrey:     [{ k: 'shield', name: 'Tapınak Kalkanı', col: '255,215,110', r: 170, t: 5 }, { k: 'rain', name: 'Kutsal Mızraklar', col: '255,235,150', style: 'spear', n: 7, dmg: 42, r: 32 }],
+  cathedral:   [{ k: 'horde', name: 'Kutsal Ordu', col: '255,225,140', t: ['paladin', 'priest'], n: 3 }, { k: 'silence', name: 'Çan Kulesi', col: '255,215,120', r: 210, off: 3 }],
+  severus:     [{ k: 'nova', name: 'Engizisyon Ateşi', col: '255,120,50', style: 'fire', r: 145, dmg: 44, stun: 1.2 }, { k: 'silence', name: 'Aforoz', col: '255,230,150', r: 200, off: 2.8 }],
+};
+for (const k of ['gloriosus1', 'gloriosus2', 'gloriosus3']) BOSS_SIG[k] = BOSS_SIG.gloriosus;
+BOSS_SIG.severus3 = BOSS_SIG.severus;
+const sigOf = (e) => e.def.chief && (BOSS_SIG[e.type] || BOSS_SIG[e.def.base]) || null;
+const sigNext = (e) => { const S = sigOf(e); return S && S[(e.sigI || 0) % S.length]; };
+const sigK = (e) => (e.dmgMul || 1) * (e.mini ? 0.7 : 1);
+function sigPrepare(e, k) { // uyarı: hedefler seçilir, yerde işaret
+  const h = e.def.h || 40; e.sigW = SIG.wind; e.sigTg = null; G.sigBanner = { name: TR(k.name) + '!', who: e.def.name, col: k.col, t: 0, dur: 2.2 };
+  bossCastFx(e, k.name + '!', k.col); sfx('roar');
+  G.sigFx.push({ kind: 'aura', e, col: k.col, t: 0, dur: SIG.wind });
+  if (k.k === 'nova' || k.k === 'silence' || k.k === 'banner' || k.k === 'shield') G.sigFx.push({ kind: 'warn', x: e.x, y: e.y, r: k.r || 130, col: k.col, t: 0, dur: SIG.wind, follow: e });
+  else if (k.k === 'rain') {
+    const pool = G.soldiers.filter(s => !s.dead && !s.wall && dist(s.x, s.y, e.x, e.y) < 280).map(s => ({ x: s.x, y: s.y }))
+      .concat(G.towers.filter(t => dist(t.x, t.y, e.x, e.y) < 260).map(t => ({ x: t.x, y: t.y + 4, tower: t })));
+    const tg = []; for (let i = 0; i < k.n; i++) { const b = pool.length ? pool[i % pool.length] : { x: e.x + rand(-120, 120), y: e.y + rand(-60, 60) };
+      tg.push({ x: b.x + rand(-22, 22) * (i >= pool.length ? 1 : 0.4), y: b.y + rand(-12, 12) * (i >= pool.length ? 1 : 0.4), tower: b.tower, d: i * 0.09 }); }
+    e.sigTg = tg; for (const q of tg) G.sigFx.push({ kind: 'warn', x: q.x, y: q.y, r: k.r, col: k.col, t: -q.d, dur: SIG.wind + q.d, small: true });
+  } else if (k.k === 'quake') {
+    const t = G.towers.filter(o => !(o.disabledT > 0)).sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))[0];
+    e.sigTg = t ? { x: t.x, y: t.y + 4, tower: t } : { x: e.x + e.face * 160, y: e.y };
+    G.sigFx.push({ kind: 'line', x0: e.x, y0: e.y, x1: e.sigTg.x, y1: e.sigTg.y, col: k.col, t: 0, dur: SIG.wind });
+  } else if (k.k === 'charge' || k.k === 'shadow') {
+    const q = pathPos(e.p, e.d + (k.len || k.step || 100), e.off); e.sigTg = { x: q.x, y: q.y };
+    G.sigFx.push({ kind: 'line', x0: e.x, y0: e.y, x1: q.x, y1: q.y, col: k.col, t: 0, dur: SIG.wind, arrow: true });
+  }
+  void h;
+}
+function sigBurst(x, y, col, n = 30, sp = 160) {
+  for (let i = 0; i < n; i++) { const a = rand(0, Math.PI * 2), v = rand(sp * 0.4, sp); emit(G.parts, { kind: 'glow', add: true, x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - 30, drag: 2.2, col, s0: rand(3, 7), s1: 0.5, life: rand(0.5, 0.9) }); }
+}
+function sigPillar(x, y, col, big = 1) {
+  G.effects.push({ kind: 'pillar', x, y, col, t: 0, dur: 0.9 * big });
+  emit(G.parts, { kind: 'glow', add: true, x, y: y - 30, col, s0: 90 * big, s1: 20, life: 0.5 });
+}
+function sigRings(x, y, r, col, n = 3) { for (let i = 0; i < n; i++) G.effects.push({ kind: 'ring', x, y, r: r * (0.45 + i * 0.3), col, t: -i * 0.1, dur: 0.65 }); G.effects.push({ kind: 'shock', x, y, r: r * 1.2, t: 0, dur: 0.5 }); }
+function sigCast(e, k) {
+  const K = sigK(e), h = e.def.h || 40; G.sigFlash = { col: k.col, t: 0 };
+  sigPillar(e.x, e.y, k.col); sigBurst(e.x, e.y - h * 0.5, k.col, 34);
+  if (k.k === 'nova') {
+    const n = G.soldiers.filter(s => !s.dead && dist(s.x, s.y, e.x, e.y) < k.r);
+    for (const s of n) { damageSoldier(s, k.dmg * K, e); s.stunT = Math.max(s.stunT || 0, k.stun); }
+    sigRings(e.x, e.y, k.r, k.col, 4); G.sigFx.push({ kind: 'nova', x: e.x, y: e.y, r: k.r, col: k.col, style: k.style, t: 0, dur: 0.75 });
+    if (k.style === 'fire') G.effects.push({ kind: 'firering', x: e.x, y: e.y, r: k.r * 0.9, t: 0, dur: 0.5 });
+    shakeScreen(6, 0.5); sfx(k.style === 'sound' ? 'bell' : k.style === 'holy' ? 'magic' : 'boom');
+  } else if (k.k === 'rain') {
+    for (const q of e.sigTg || []) G.sigFx.push({ kind: 'fall', x: q.x, y: q.y, tower: q.tower, col: k.col, style: k.style, t: -q.d, dur: 0.32, dmg: k.dmg * K, r: k.r, src: e });
+    sfx('whirl');
+  } else if (k.k === 'banner') {
+    const al = G.enemies.filter(o => !o.dead && dist(o.x, o.y, e.x, e.y) < k.r);
+    for (const o of al) { o.hasteT = Math.max(o.hasteT || 0, k.t); o.sigArmT = Math.max(o.sigArmT || 0, k.t); }
+    G.sigFx.push({ kind: 'sigil', e, r: k.r * 0.55, col: k.col, t: 0, dur: k.t }); sigRings(e.x, e.y, k.r, k.col, 3); shakeScreen(4, 0.4); sfx('shout');
+  } else if (k.k === 'shield') {
+    const al = G.enemies.filter(o => !o.dead && dist(o.x, o.y, e.x, e.y) < k.r);
+    for (const o of al) { o.sigShT = Math.max(o.sigShT || 0, k.t); o.sigShCol = k.col; }
+    sigRings(e.x, e.y, k.r, k.col, 3); sfx('magic');
+  } else if (k.k === 'silence') {
+    for (const t of G.towers) if (dist(t.x, t.y, e.x, e.y) < k.r) { t.disabledT = Math.max(t.disabledT || 0, k.off); t.disabledKind = 'stun'; floatText(t.x, t.y - 60, 'Sustu!', `rgb(${k.col})`); }
+    for (let i = 0; i < 6; i++) G.effects.push({ kind: 'ring', x: e.x, y: e.y - 10, r: k.r * (0.2 + i * 0.17), col: k.col, t: -i * 0.09, dur: 0.75 });
+    G.sigFx.push({ kind: 'nova', x: e.x, y: e.y, r: k.r, col: k.col, style: 'sound', t: 0, dur: 0.9 }); shakeScreen(7, 0.6); sfx('bell');
+  } else if (k.k === 'net') {
+    const tg = G.soldiers.filter(s => !s.dead && !s.wall && dist(s.x, s.y, e.x, e.y) < k.r).slice(0, 8);
+    tg.forEach((s, i) => throwNet(e, s, k.stun, i * 0.06)); sigRings(e.x, e.y, k.r * 0.6, k.col, 2); sfx('whirl');
+  } else if (k.k === 'horde') {
+    const pi = G.paths.indexOf(e.p), d0 = Math.max(0, e.d - 26), q = pathPos(e.p, d0);
+    G.effects.push({ kind: 'portal', x: q.x, y: q.y, t: 0, dur: 1.5, col: k.col });
+    for (let i = 0; i < 3; i++) G.sigFx.push({ kind: 'bolt', x: q.x + rand(-26, 26), y: q.y + rand(-8, 8), col: k.col, t: -i * 0.12, dur: 0.35 });
+    if ((e.summonN || 0) < 16) for (let i = 0; i < k.n; i++) { const st = k.t[i % k.t.length]; if (!ENEMIES[st]) continue; const m = spawnEnemy(st, pi, Math.max(dLo(G.paths[pi]), d0 - i * 10), i % 2 ? 10 : -10); m.summonedBy = e; m.leader = e; m.form = -22 - i * 12; }
+    e.summonN = (e.summonN || 0) + k.n; sigRings(q.x, q.y, 70, k.col, 3); shakeScreen(5, 0.4); sfx('portal');
+  } else if (k.k === 'quake') {
+    const T = e.sigTg || { x: e.x, y: e.y }; if (T.tower && G.towers.includes(T.tower)) { T.tower.disabledT = Math.max(T.tower.disabledT || 0, k.off); T.tower.disabledKind = 'stun'; floatText(T.x, T.y - 60, 'Yarıldı!', `rgb(${k.col})`); }
+    G.sigFx.push({ kind: 'crack', x0: e.x, y0: e.y, x1: T.x, y1: T.y, col: k.col, t: 0, dur: 2.4, seed: rand(0, 9) });
+    const L = dist(e.x, e.y, T.x, T.y);
+    for (const s of G.soldiers) { if (s.dead) continue; const u = clamp(((s.x - e.x) * (T.x - e.x) + (s.y - e.y) * (T.y - e.y)) / Math.max(1, L * L), 0, 1); if (dist(s.x, s.y, e.x + (T.x - e.x) * u, e.y + (T.y - e.y) * u) < 22) { damageSoldier(s, k.dmg * K, e); s.stunT = Math.max(s.stunT || 0, 1.4); } }
+    for (let i = 0; i <= 10; i++) { const u = i / 10, x = e.x + (T.x - e.x) * u, y = e.y + (T.y - e.y) * u; for (let j = 0; j < 3; j++) emit(G.parts, { kind: 'chunk', x: x + rand(-6, 6), y, vx: rand(-60, 60), vy: -rand(120, 260), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: j % 2 ? '#6a5a48' : '#8a7458', s: rand(2, 4.5), life: rand(0.7, 1.1) }); }
+    sigPillar(T.x, T.y, k.col, 0.7); shakeScreen(9, 0.7); sfx('stomp');
+  } else if (k.k === 'charge' || k.k === 'shadow') {
+    e.sigDash = { t: 0, dur: k.k === 'shadow' ? 0.12 : 0.55, d0: e.d, d1: e.d + (k.len || k.step), k, hit: new Set() };
+    if (k.k === 'shadow') { sigBurst(e.x, e.y - h * 0.5, '60,20,90', 40, 120); G.sigFx.push({ kind: 'nova', x: e.x, y: e.y, r: k.r * 0.7, col: k.col, style: 'shadow', t: 0, dur: 0.6 }); }
+    sfx(k.k === 'shadow' ? 'magic' : 'stomp');
+  }
+}
+function bossSig(e, dt) {
+  const S = sigOf(e); if (!S) return;
+  if (e.sigDash) { // hücum / gölge adımı: yol boyunca ileri atılır, yolundakileri ezer
+    const D = e.sigDash, k = D.k; D.t += dt; const u = clamp(D.t / D.dur, 0, 1); e.d = D.d0 + (D.d1 - D.d0) * (k.k === 'shadow' ? u : 1 - (1 - u) * (1 - u));
+    const q = pathPos(e.p, e.d, e.off); e.x = q.x; e.y = q.y;
+    if (k.k === 'charge') { for (const s of G.soldiers) if (!s.dead && !D.hit.has(s) && dist(s.x, s.y, e.x, e.y) < 26) { D.hit.add(s); damageSoldier(s, k.dmg * sigK(e), e); s.stunT = Math.max(s.stunT || 0, k.stun); }
+      if (Math.random() < dt * 40) emit(G.parts, { kind: 'glow', x: e.x + rand(-10, 10), y: e.y - rand(0, 6), vx: -e.face * rand(20, 60), vy: -rand(10, 40), drag: 2, col: '190,165,120', s0: rand(6, 10), s1: 16, life: 0.6, a: 0.5 }); }
+    if (D.t >= D.dur) { e.sigDash = null; e.blocker = null;
+      if (k.k === 'shadow') { sigBurst(e.x, e.y - 20, k.col, 34); for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, e.x, e.y) < k.r) { damageSoldier(s, k.dmg * sigK(e), e); s.stunT = Math.max(s.stunT || 0, k.stun); } sigRings(e.x, e.y, k.r, k.col, 3); G.sigFx.push({ kind: 'nova', x: e.x, y: e.y, r: k.r, col: k.col, style: 'shadow', t: 0, dur: 0.7 }); }
+      else { sigRings(e.x, e.y, 70, k.col, 2); shakeScreen(6, 0.4); } }
+    return;
+  }
+  if (e.entryT > 0 || e.stun > 0) return;
+  if (e.sigW > 0) { e.sigW -= dt; if (e.sigW <= 0) { const k = sigNext(e); e.sigI = (e.sigI || 0) + 1; e.sigP = 0; sigCast(e, k); } return; }
+  e.sigP = (e.sigP ?? SIG.first) + dt / (SIG.cd * (e.cdMul || 1) * (e.mini ? 1.5 : 1));
+  if (e.sigP >= 1) { e.sigP = 1; sigPrepare(e, sigNext(e)); }
+}
+function updateSigFx(dt) {
+  if (G.sigFlash && (G.sigFlash.t += dt) > 0.35) G.sigFlash = null;
+  if (G.sigBanner && (G.sigBanner.t += dt) > G.sigBanner.dur) G.sigBanner = null;
+  for (const f of G.sigFx) {
+    f.t += dt;
+    if (f.kind === 'fall' && f.t >= f.dur && !f.hit) { f.hit = true; // gökten inen: patlama, hasar, kule sersemler
+      for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, f.x, f.y) < f.r) { damageSoldier(s, f.dmg, f.src); s.stunT = Math.max(s.stunT || 0, 0.8); }
+      if (f.tower && G.towers.includes(f.tower)) { f.tower.disabledT = Math.max(f.tower.disabledT || 0, 2); f.tower.disabledKind = 'stun'; }
+      G.effects.push({ kind: 'shock', x: f.x, y: f.y, r: f.r * 1.4, t: 0, dur: 0.35 }); G.effects.push({ kind: 'ring', x: f.x, y: f.y, r: f.r, col: f.col, t: 0, dur: 0.45 });
+      if (f.style === 'fire') G.effects.push({ kind: 'firering', x: f.x, y: f.y, r: f.r * 0.8, t: 0, dur: 0.4 });
+      sigBurst(f.x, f.y - 4, f.col, 14, 110); G.decals.push({ x: f.x, y: f.y, r: f.r * 0.5, t: 0, life: 5 }); shakeScreen(2.5, 0.15); sfx('boom', 1.2, 0.5);
+      f.dur2 = f.t + 0.3;
+    }
+  }
+  G.sigFx = G.sigFx.filter(f => f.kind === 'fall' ? !(f.hit && f.t > f.dur2) : f.t < f.dur && !(f.e && f.e.dead));
+  for (const e of G.enemies) { if (e.sigArmT > 0) e.sigArmT -= dt; if (e.sigShT > 0) e.sigShT -= dt; }
+}
+function drawSigFx(ground) {
+  for (const f of G.sigFx) {
+    if (f.t < 0) continue; const u = clamp(f.t / f.dur, 0, 1);
+    if (ground) {
+      if (f.kind === 'warn') { // uyarı: yerde dolan halka
+        const x = f.follow ? f.follow.x : f.x, y = f.follow ? f.follow.y : f.y, r = f.r * (f.small ? 1 : 1);
+        ctx.save(); ctx.globalAlpha = 0.25 + 0.45 * u; ctx.fillStyle = `rgba(${f.col},0.16)`; ctx.beginPath(); ctx.ellipse(x, y, r * u, r * u * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = `rgba(${f.col},0.95)`; ctx.lineWidth = 2.2; ctx.setLineDash([8, 6]); ctx.lineDashOffset = -time * 40; ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.5, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      } else if (f.kind === 'line') { // hücum/yarık yolu
+        ctx.save(); ctx.globalAlpha = 0.35 + 0.5 * u; ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 10 * (0.4 + u * 0.6); ctx.lineCap = 'round'; ctx.setLineDash([14, 10]); ctx.lineDashOffset = -time * 60;
+        ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x0 + (f.x1 - f.x0) * Math.min(1, u * 1.6), f.y0 + (f.y1 - f.y0) * Math.min(1, u * 1.6)); ctx.stroke(); ctx.restore();
+      } else if (f.kind === 'crack') { // yer yarığı: kızgın çatlak, söner
+        const a = 1 - Math.max(0, (u - 0.6) / 0.4); ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        const pts = []; for (let i = 0; i <= 12; i++) { const v = i / 12, j = i % 12 ? Math.sin(f.seed * 7 + i * 2.3) * 7 : 0; pts.push([f.x0 + (f.x1 - f.x0) * v + j * 0.5, f.y0 + (f.y1 - f.y0) * v + j]); }
+        for (const [w, c] of [[9, `rgba(30,14,6,${0.85 * a})`], [4, `rgba(${f.col},${0.95 * a})`], [1.6, `rgba(255,250,220,${a})`]]) { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo : ctx.moveTo).call(ctx, p[0], p[1])); ctx.stroke(); }
+        ctx.globalCompositeOperation = 'lighter'; for (let i = 1; i < 12; i += 2) glow(ctx, pts[i][0], pts[i][1], 14, f.col, 0.5 * a); ctx.restore();
+      } else if (f.kind === 'sigil') { // sancak mührü: bossun altında dönen altın daire
+        const e = f.e, a = Math.min(1, f.t / 0.3, (f.dur - f.t) / 0.6); ctx.save(); ctx.translate(e.x, e.y); ctx.scale(1, 0.5); ctx.rotate(time * 0.8);
+        ctx.globalAlpha = 0.8 * a; ctx.strokeStyle = `rgba(${f.col},0.9)`; ctx.lineWidth = 3;
+        for (const rr of [f.r, f.r * 0.78]) { ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke(); }
+        for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(Math.cos(an) * f.r * 0.78, Math.sin(an) * f.r * 0.78); ctx.lineTo(Math.cos(an + 0.4) * f.r, Math.sin(an + 0.4) * f.r); ctx.stroke(); }
+        ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, f.r, f.col, 0.18 * a); ctx.restore();
+      }
+    } else {
+      if (f.kind === 'nova') { // büyük dalga: stile göre bıçak, ışık, gölge, ses ya da ateş
+        const r = f.r * (0.25 + 0.75 * Math.sqrt(u)), a = 1 - u; ctx.save(); ctx.translate(f.x, f.y); ctx.scale(1, 0.5);
+        ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a;
+        const g = ctx.createRadialGradient(0, 0, r * 0.6, 0, 0, r); g.addColorStop(0, `rgba(${f.col},0)`); g.addColorStop(0.85, `rgba(${f.col},0.55)`); g.addColorStop(1, `rgba(${f.col},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+        if (f.style === 'blades') { ctx.rotate(f.t * 9); ctx.strokeStyle = `rgba(255,250,235,${a})`; ctx.lineWidth = 4; for (let i = 0; i < 10; i++) { const an = i * Math.PI / 5; ctx.beginPath(); ctx.arc(0, 0, r * 0.88, an, an + 0.42); ctx.stroke(); } }
+        if (f.style === 'holy') { ctx.strokeStyle = `rgba(255,255,240,${a})`; ctx.lineWidth = 3; for (let i = 0; i < 16; i++) { const an = i * Math.PI / 8; ctx.beginPath(); ctx.moveTo(Math.cos(an) * r * 0.3, Math.sin(an) * r * 0.3); ctx.lineTo(Math.cos(an) * r, Math.sin(an) * r); ctx.stroke(); } }
+        if (f.style === 'sound') { ctx.strokeStyle = `rgba(${f.col},${a})`; ctx.lineWidth = 3; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(0, 0, r * (0.55 + i * 0.2), 0, Math.PI * 2); ctx.stroke(); } }
+        if (f.style === 'shadow') { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = `rgba(20,6,30,${0.45 * a})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.9, 0, Math.PI * 2); ctx.fill(); }
+        ctx.restore();
+      } else if (f.kind === 'fall') { // gökten inen mızrak/ok/cıvata/ateş topu: iz bırakarak düşer
+        const v = clamp(f.t / f.dur, 0, 1), H = 340, y = f.y - H * (1 - v), x = f.x - 60 * (1 - v);
+        if (!f.hit) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(${f.col},0.55)`; ctx.lineWidth = f.style === 'fire' ? 9 : 4; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(x - 40, y - 140 * 0.85); ctx.lineTo(x, y); ctx.stroke(); glow(ctx, x, y, f.style === 'fire' ? 22 : 14, f.col, 0.9); ctx.restore();
+          ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(140, 40)); ctx.scale(1.6, 1.6);
+          if (f.style === 'fire') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 10, '255,220,140', 1); } else arrowShape(f.style === 'bolt' ? { line: '#1a2030', shaft: '#d8e4f4', tip: '#ffffff', fl: '#9fb8d8' } : { line: '#3a2008', shaft: '#ffd86a', tip: '#fff2c0', fl: '#ffb040' });
+          ctx.restore(); }
+      } else if (f.kind === 'aura') { // hazırlık: boss parlar
+        const e = f.e, h = e.def.h || 40; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - h * 0.5, h * (1 + u * 0.8), f.col, 0.25 + 0.35 * u + Math.sin(time * 30) * 0.05); ctx.restore();
+      } else if (f.kind === 'bolt') { // çağrı şimşeği
+        const a = 1 - u; ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(${f.col},${a})`; ctx.lineWidth = 3.5; ctx.beginPath(); let x = f.x, y = f.y - 260; ctx.moveTo(x, y);
+        for (let i = 0; i < 7; i++) { x += rand(-14, 14); y += 260 / 7; ctx.lineTo(x, y); } ctx.stroke(); glow(ctx, f.x, f.y, 26, f.col, 0.7 * a); ctx.restore();
+      }
+    }
+  }
+  if (!ground) for (const e of G.enemies) { if (e.dead) continue; // kalkan kubbesi ve sancak ışığı
+    if (e.sigShT > 0) { const h = e.def.h || 30, a = Math.min(1, e.sigShT / 0.4); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.55 * a;
+      ctx.strokeStyle = `rgba(${e.sigShCol || '255,225,130'},0.9)`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(e.x, e.y - h * 0.5, h * 0.55, h * 0.62, 0, 0, Math.PI * 2); ctx.stroke();
+      glow(ctx, e.x, e.y - h * 0.5, h * 0.6, e.sigShCol || '255,225,130', 0.22); ctx.restore(); }
+    else if (e.sigArmT > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y, 12, '255,200,90', 0.45 * Math.min(1, e.sigArmT / 0.4)); ctx.restore(); }
+  }
+}
 function bossAbilities(e, dt) {
   const ab = e.def.ab;
+  if (e.def.chief) bossSig(e, dt);
   if (!ab) return;
   e.abT = e.abT || {};
   const ready = (k, cd) => { cd *= e.cdMul || 1; e.abT[k] = (e.abT[k] ?? cd * 0.6) - dt; if (e.abT[k] > 0) return false; e.abT[k] = cd; return true; };
@@ -17441,7 +17647,7 @@ function drawBossAura(e, dh) {
 // boss can barı ekranın üstünde, %60 boyutunda (çok yer kaplamasın); üst kenara yaslı ölçeklenir
 const BOSS_BAR_K = 0.6 * 1.3; // Caner: boss canı okunmuyordu, %30 büyük
 function drawBossBar() {
-  const b = G.enemies.find(e => e.def.chief && !e.dead);
+  const b = G.enemies.find(e => e.def.chief && !e.dead && !e.mini) || G.enemies.find(e => e.def.chief && !e.dead);
   if (!b) return;
   // ekranın en üst ortasına yaslı (içeriğin üstü y=34 -> 4 px); altından düşman geçiyorsa yarı saydam (yol görünsün)
   const under = G.enemies.some(e => !e.dead && Math.abs((e.x - cam.x) * cam.z - W / 2) < 130 && (e.y - cam.y) * cam.z < 52);
@@ -17494,10 +17700,20 @@ function drawBossBarAt(b) {
   drawCrown(mx, my - 19, 0.85, 1); }
   if (b.phase2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, my, 30, '255,80,40', 0.35 + Math.sin(time * 8) * 0.12); ctx.restore(); }
   // ad şeridi ve bar yazıları
+  const bnm = b.mini ? 'ARA KOMUTAN · ' + TR(b.def.name) : b.def.name; // 18 Eki: dalga ortasındaki zayıf boss
   ctx.font = `400 14px ${FONT_T}`;
-  const nw = ctx.measureText(b.def.name).width + 26, nx = x + w / 2 - 4;
+  const nw = ctx.measureText(bnm).width + 26, nx = x + w / 2 - 4;
   roundRect(nx - nw / 2, y - 18, nw, 18, 9, '#7a1a12', '#e8bb52', 1.4);
-  txt(b.def.name, nx, y - 9, 14, '#ffe9b0', 'center', '400', FONT_T, false);
+  txt(bnm, nx, y - 9, 14, '#ffe9b0', 'center', '400', FONT_T, false);
+  { const S = sigOf(b); if (S) { // GÜÇ barı: dolunca boss sıradaki imza yeteneğini atar (adı altta)
+    const k = sigNext(b), py = y + H0 + 8, pw = w * 0.74, px = x + (w - pw) / 2 - 4, f = b.sigW > 0 ? 1 : clamp(b.sigP ?? SIG.first, 0, 1);
+    roundRect(px - 4, py - 3, pw + 8, 13, 6.5, 'rgba(20,10,4,0.92)', '#d8ac52', 1.2);
+    roundRect(px, py, pw, 7, 3.5, '#1a0a06');
+    const g2 = ctx.createLinearGradient(px, 0, px + pw, 0); g2.addColorStop(0, `rgba(${k.col},0.45)`); g2.addColorStop(1, `rgb(${k.col})`); roundRect(px, py, Math.max(7, pw * f), 7, 3.5, g2);
+    if (b.sigW > 0 || f > 0.92) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, px + pw * f, py + 3.5, 18, k.col, 0.5 + Math.sin(time * 20) * 0.25); ctx.restore(); }
+    txt('GÜÇ', px - 8, py + 4, 9, '#e8c47a', 'right', '400', FONT_T, false);
+    fitTxt((b.sigW > 0 ? '⚠ ' : '') + TR(k.name), px + pw / 2, py + 18, pw, 11, b.sigW > 0 ? `rgb(${k.col})` : '#f0dcb0', 'center', '400', FONT_T, false, 9);
+  } }
   if (armored) txt(b.plate > 0 ? 'ZIRH' : 'ZIRH KIRILDI', x + 6, y + 4.8, 8, b.plate > 0 ? '#1e2a3a' : '#cfd6e2', 'left', '400', FONT_T, false);
   txt(Math.ceil(b.hp) + '', x + w - 6, hpY + hpH / 2 + 0.5, 9, '#fff', 'right', '400', FONT_T, false);
 }
@@ -18203,8 +18419,12 @@ function silhouette(name, im) {
 function codexEnemyImg(type) { const d = ENEMIES[type]; return d.base ? enemySprite(type) : spr('enemy_' + type); }
 function speedName(v) { return v < 13 ? 'Çok yavaş' : v < 20 ? 'Yavaş' : v < 28 ? 'Orta' : v < 34 ? 'Hızlı' : 'Çok hızlı'; }
 // düşman yetenekleri (veriden)
+const SIG_DESC = { nova: 'çevresine dalga: iskeletlere hasar ve sersemletme', rain: 'gökten yağmur: iskeletlere ve kulelere', banner: 'sancak: çevresindekiler hızlanır ve sertleşir',
+  charge: 'hücum: yolundaki iskeletleri ezer', quake: 'yer yarığı: en yakın kuleyi susturur', net: 'ağ atar: iskeletleri bağlar', horde: 'sürü çağırır',
+  shield: 'kalkan kubbesi: çevresindekiler yarı hasar alır', silence: 'çan: yakındaki kuleleri susturur', shadow: 'gölge adımı: ileri ışınlanır, patlar' };
 function enemySkills(d) {
   const L = [], ab = d.ab || {};
+  { const ty = d.chief && Object.keys(ENEMIES).find(k => ENEMIES[k] === d), S = ty && BOSS_SIG[ty]; if (S) for (const k of S) L.push(`★ ${TR(k.name)}: ${TR(SIG_DESC[k.k])}`); } // 18 Eki: imza yetenekleri
   if (d.ranged) L.push(d.ranged.hold ? 'Menzilli: uzakta durup iskeletlere ve komutana ok atar' : 'Menzilli: durup iskeletlere ok atar');
   if (d.heals) L.push('İyileştirir: yakındaki askerlerin canını doldurur');
   if (d.blink || ab.blink) L.push('Gölgeye dalar: ileri ışınlanır');
@@ -20951,7 +21171,7 @@ function drawPlay() {
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  drawPlaguePools(); drawSoulFlames(); drawTornadoes(true);
+  drawPlaguePools(); drawSoulFlames(); drawTornadoes(true); drawSigFx(true);
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) if (!PERF_OFF.has('ent' + k)) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
   drawGasClouds();
@@ -20967,6 +21187,7 @@ function drawPlay() {
   }
   if (!PERF_OFF.has('fx')) for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
   if (!PERF_OFF.has('parts')) drawPartsAll(G.parts);
+  drawSigFx(false);
   drawMechFx();
   drawProps(true);
   drawFG();
@@ -22738,7 +22959,7 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), pathPos: (p, d, o) => pathPos(p, d, o), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
    surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi
   codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)

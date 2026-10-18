@@ -1766,10 +1766,10 @@
  },
  "enemy_drummer_idle": {
   "n": 32,
-  "fw": 122,
-  "fh": 166,
-  "base": 0.0164,
-  "ch": 0.9616
+  "fw": 123,
+  "fh": 165,
+  "base": 0.0165,
+  "ch": 0.9669
  },
  "enemy_centurion_idle": {
   "n": 32,
@@ -3087,19 +3087,5 @@
   "tw": 53.6,
   "bx": 118.0,
   "by": 143.0
- },
- "enemy_drummer_idlex": {
-  "n": 32,
-  "fw": 133,
-  "fh": 166,
-  "base": 0.0165,
-  "ch": 0.9642
- },
- "enemy_drummer_idlexb": {
-  "n": 32,
-  "fw": 123,
-  "fh": 165,
-  "base": 0.0165,
-  "ch": 0.9669
  }
 }
