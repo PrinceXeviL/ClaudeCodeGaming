@@ -6588,7 +6588,9 @@ function drawMinionCmd1(g) {
   const on = G.mode && G.mode.kind === 'minions' && G.mode.g === g, pop = pressScale('hud_mcmd' + g);
   ctx.save(); ctx.translate(B.x, B.y); ctx.scale(pop, pop);
   if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, B.r * 1.8, Z.rgb, 0.45 + Math.sin(time * 6) * 0.12); ctx.restore(); }
-  circle(0, 0, B.r, on ? Z.on : '#2a1a34', on ? Z.col : '#e8d8b0', B.r * 0.12);
+  { const r = B.r; ctx.beginPath(); ctx.moveTo(-r * 0.86, -r * 0.82); ctx.quadraticCurveTo(0, -r * 1.08, r * 0.86, -r * 0.82); ctx.lineTo(r * 0.88, r * 0.02); // 18 Eki (Caner: "yuvarlak olmasın"): kalkan biçimi
+    ctx.quadraticCurveTo(r * 0.82, r * 0.72, 0, r * 1.1); ctx.quadraticCurveTo(-r * 0.82, r * 0.72, -r * 0.88, r * 0.02); ctx.closePath();
+    ctx.fillStyle = on ? Z.on : '#2a1a34'; ctx.fill(); ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(10,4,12,0.9)'; ctx.lineWidth = r * 0.22; ctx.stroke(); ctx.strokeStyle = on ? Z.col : '#e8d8b0'; ctx.lineWidth = r * 0.11; ctx.stroke(); }
   const banIm = spr(g ? 'ico_ui_banner_p' : 'ico_ui_banner_g'); // 17 Eki: Gemini sancak simgesi (yoksa kodla çizim)
   if (banIm) { icoFit(banIm, B.r * 0.06, -B.r * 0.02, B.r * 1.08); if (zTwoGroups()) txt(Z.mark, -B.r * 0.62, B.r * 0.62, B.r * 0.4, '#efe6cc', 'center', '400', FONT_T, true); }
   else {
@@ -12163,7 +12165,9 @@ function zBadge(g, kind, x, y, r, rim, sel) {
 }
 function drawZombieMark(s) {
   const two = zTwoGroups(), g = zGroupOf(s), y = s.y - (s.zh || 30) - 9 + Math.sin(time * 3 + (s.slot || 0)) * 1.2, sel = G.mode && G.mode.kind === 'minions' && (G.mode.g == null || G.mode.g === g);
-  zBadge(ctx, two ? (g ? 'bow' : 'sword') : 'skull', s.x, y + 3, 3.1, '#d8c8a8', sel); // 18 Eki (Caner): %50 küçük, hepsi kemik kenarlı (grup rengi yok)
+  // 18 Eki (Caner: "simgeyi kaldır, küçük hafif saydam kırmızı nokta olsun"): bizden olduğu kızıl noktadan belli; komut seçiliyken parlak + halka
+  ctx.save(); ctx.globalAlpha *= sel ? 0.95 : 0.55; circle(s.x, y + 4, sel ? 2.6 : 2.2, '#ff3a3a', 'rgba(60,0,0,0.8)', 0.6); ctx.restore();
+  if (sel) { ctx.save(); ctx.globalAlpha *= 0.7; ctx.strokeStyle = '#ffd0d0'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(s.x, y + 4, 4.2, 0, TAU); ctx.stroke(); ctx.restore(); }
 }
 function drawSoldier1(s) {
   const C = celebK();
@@ -23277,7 +23281,7 @@ window.__game = {
     for (let i = 0; i < n; i++) { const t0 = performance.now(); ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawNecroTitle(5 + i / 60); drawPartsAll(uiParts); ctx.restore(); D.push(performance.now() - t0); time += 1 / 60; }
     D.sort((a, b) => a - b); return { ort: +(D.reduce((a, b) => a + b) / n).toFixed(2), p95: +D[Math.floor(n * 0.95)].toFixed(2), max: +D[n - 1].toFixed(2) };
   },
-  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
+  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, cast: (id, x, y) => castSpell(id, x, y), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   // test: adıyla bir düğmenin ekran (CSS piksel) merkezi; son çizilen karedeki buttons listesinden (tools/akis-testi.js)
   btn(key) { const b = buttons.find(o => o.key === key || (key.endsWith('*') && o.key.startsWith(key.slice(0, -1)))); return b ? { x: view.ox + (b.x + b.w / 2) * view.scale, y: view.oy + (b.y + b.h / 2) * view.scale, key: b.key } : null; },
   btnKeys() { return buttons.map(b => b.key); },
