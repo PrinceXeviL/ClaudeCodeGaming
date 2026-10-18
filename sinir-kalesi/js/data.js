@@ -1742,4 +1742,8 @@ for (const i in BAL.lvl5) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1
 // 18 Eki (3. tur): 1. sefer HPX eşik araması (×1 / 1,25 / 1,5 / 1,75): hâlâ tam canla geçilenler güçlenir, sınırdakiler biraz kolaylaşır
 BAL.lvl6 = { 2: 1.3, 5: 1.1, 6: 0.95, 7: 1.2, 8: 1.1, 10: 1.15, 11: 0.81, 12: 1.2, 13: 1.4, 14: 1.15, 17: 1.7, 18: 2, 19: 2 };
 for (const i in BAL.lvl6) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl6[i];
+// 18 Eki (ücretsiz ilk 10 bölüm): az gelişmeli yeni oyuncu botu (bölüm başına 1-2 yıldız) normalde 6. (4-5 can), 7. (8 can / kayıp) ve 10. bölümde (1 can) zorlanıyordu.
+// İlk 10 bölüm oyuncuyu tutmalı: buralar yumuşar (asıl zorluk 11. bölümden sonra)
+BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82 };
+for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl7[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)
