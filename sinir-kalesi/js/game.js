@@ -4261,7 +4261,7 @@ function buildTower(plot, type) {
   sfx('build');
   return true;
 }
-const SLOTS = [[-13, -7], [13, -7], [0, 10]], SLOTS4 = [[-14, -8], [14, -8], [-14, 9], [14, 9]]; // uzmanlıkta 4. iskelet katılır
+const SLOTS = [[-13, -7], [13, -7], [0, 10]], SLOTS4 = [[-14, -8], [14, -8], [-14, 9], [14, 9]], SLOTS5 = [[-16, -9], [16, -9], [-16, 9], [16, 9], [0, 1]]; // uzmanlıkta 4. iskelet katılır
 function soldierStats(t) {
   const L = TOWERS.barracks.levels[t.lvl], sh = abRank(t, 'shield'), bl = abRank(t, 'blade'), bw = abRank(t, 'bow'), ur = upgRank('barracks');
   const sp = t.spec ? SPEC_BONUS : 1; // uzmanlık seçen kışlanın askerleri daha güçlü
@@ -4386,8 +4386,8 @@ function buyAbility(t, id) {
   t.spec = id;
   if (cur + 1 >= def.ranks.length) cnt('specmax');
   if (t.type === 'barracks') {
-    if (first && t.soldiers.length < 4) { // uzmanlık seçilince 4. iskelet mahzenden kalkar
-      const s4 = makeSoldier(t, 3);
+    if (first && t.soldiers.length < barrN(t)) { // uzmanlık seçilince 4. iskelet mahzenden kalkar (+1 alınmışsa 5.)
+      const s4 = makeSoldier(t, t.soldiers.length);
       t.soldiers.push(s4); G.soldiers.push(s4);
       G.effects.push({ kind: 'pillar', x: t.x, y: t.y + 6, col: '140,255,140', t: 0, dur: 0.7 });
     }
@@ -4456,7 +4456,7 @@ function collapseTower(t) {
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.towers = G.towers.filter(x => x !== t); t.plot.tower = null;
   if (G.sel && (G.sel.tower === t || G.sel.plot === t.plot)) setSel(null);
-  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK } };
+  t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, more: t.more, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK } };
   shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t);
   // 18 Eki (Caner: "yıkılma efektini çok beğendim, tüm kulelere"): Wan yıkılma şeridi varsa kule kendi görseliyle abartılı çöker, moloz şerit bitince belirir
   const cn = ts && ts.name.replace(/_side$/, '') + '_collapse', CF = cn && ANIM_META[cn];
@@ -4484,11 +4484,11 @@ function rebuildTower(pl) {
 function finishRebuild(pl) {
   const R = pl.rubble, S = R.snap, type = R.type; pl.rubble = null; cnt('rebuild');
   const t = { type, def: TOWERS[type], lvl: S.lvl, x: pl.x, y: pl.y, cd: 0.3, spent: S.spent, plot: pl, soldiers: [], anim: 0, shotAnim: 0, born: G.t,
-    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra, stackK: S.stackK };
+    spec: S.spec, ab: S.ab && Object.assign({}, S.ab), path: S.path, imbue: S.imbue, extra: S.extra, more: S.more, stackK: S.stackK };
   pl.tower = t; G.towers.push(t); towerHp(t);
   if (type === 'barracks') {
     const n = nearestOnPaths(G.paths, t.x, t.y); t.rx = S.rx ?? n.x; t.ry = S.ry ?? n.y;
-    for (let i = 0; i < (t.spec ? 4 : 3); i++) { const sd = makeSoldier(t, i); riseFromGrave(sd); t.soldiers.push(sd); G.soldiers.push(sd); }
+    for (let i = 0; i < barrN(t); i++) { const sd = makeSoldier(t, i); riseFromGrave(sd); t.soldiers.push(sd); G.soldiers.push(sd); }
     applySoldierStats(t);
   }
   G.effects.push({ kind: 'pillar', x: t.x, y: t.y, col: '140,255,140', t: 0, dur: 0.8 }); G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 });
@@ -4664,6 +4664,20 @@ function updateObeliskForm(t, dt, L, ts, F) {
   }
 }
 // ----- 4. kademe ikinci güçleri -----
+// 18 Eki (Caner: "en üst levelde mahzenden çıkan iskelet 4'e, kuledeki okçu 4'e çıksın; parayla eklensin"): son seviyede +1 asker satın alınır.
+// Mahzen: bir iskelet daha (3 → 4, uzmanlıkta 4 → 5). Kemik Kulesi: bir okçu daha; atış okçulara bölüşüldüğü için hız da okçu sayısıyla artar.
+const TOWER_MORE = { barracks: { cost: 130, name: '+1 İskelet', desc: 'Mahzenden bir iskelet daha kalkar, yolu tutar' },
+  archer: { cost: 150, name: '+1 Okçu', desc: 'Kuleye bir okçu daha çıkar: kule daha sık atar' } };
+const moreOpen = (t) => NECRO && TOWER_MORE[t.type] && t.lvl >= t.def.levels.length - 1 && (t.type !== 'barracks' || !!t.spec); // mahzende uzmanlıktan sonra (menüde iki uzmanlık düğmesiyle çakışmasın)
+const barrN = (t) => (t.spec ? 4 : 3) + (t.more ? 1 : 0);
+function buyMore(t) {
+  const M = TOWER_MORE[t.type], c = M && priceK(M.cost, t.stackK || 1);
+  if (!M || t.more || !moreOpen(t) || G.gold < c) return false;
+  G.gold -= c; t.spent += c; t.more = true; sfx('upgrade'); floatText(t.x, t.y - 80, M.name + '!', '#ffe27a'); cnt('more');
+  G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: '255,215,100', t: 0, dur: 0.5 });
+  if (t.type === 'barracks' && t.soldiers.length < barrN(t)) { const s5 = makeSoldier(t, t.soldiers.length); riseFromGrave(s5); t.soldiers.push(s5); G.soldiers.push(s5); applySoldierStats(t); }
+  return true;
+}
 function buyExtra(t) {
   const E = t && t.spec && TOWER_EXTRA[t.spec];
   if (!E || t.extra || G.gold < E.cost) return false;
@@ -5453,7 +5467,7 @@ function updateEnemy(e, dt) {
 
 function soldierHome(s) {
   if (s.hero || s.militia || s.guard) return { x: s.rx, y: s.ry };
-  const t = s.tower, o = (t.soldiers.length > 3 ? SLOTS4 : SLOTS)[s.slot];
+  const t = s.tower, o = (t.soldiers.length > 4 ? SLOTS5 : t.soldiers.length > 3 ? SLOTS4 : SLOTS)[s.slot];
   return { x: t.rx + o[0], y: t.ry + o[1] };
 }
 
@@ -9938,7 +9952,7 @@ const menOf = (t) => {
 // kulenin o anki unvanı: Kemik Kulesi yolunda yola göre (ör. Kemik Okçular / Kemik Arbaletçiler)
 const towerTitle = (t, lvl = t.lvl) => (t.path && ARCHER_PATH[t.path] && ARCHER_PATH[t.path].titles[lvl]) || t.def.levels[lvl].title;
 const xbowCfg = (t) => XBOW_T[t.spec ? formImg(t) : xbowTowerName(t.lvl)] || XBOW_T.tower_archer_fan;
-const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t));
+const xbowCount = (t) => (!NECRO || t.type !== 'archer' ? 0 : t.spec && !MEN[t.spec] ? 0 : menOf(t).n(t) + (t.more ? 1 : 0));
 // kuledeki okçuların canı (11 Eki, Caner: düşman okçuları onları da hedef alsın). Ölen okçu kuleden düşer, TMAN.revive sn sonra kalkar;
 // kule eksik okçuyla seyrek atar (atış payı = sağ okçu / tüm okçu), hepsi ölünce susar.
 // 11 Eki (2): aşağıdan atılan okların %80'i ıskalar (miss), isabet edenin hasarı dmg ile çarpılır; can ve iyileşme artırıldı (kolay ölmesinler)
@@ -14160,6 +14174,7 @@ function towerMenuItems(t) {
   const EX = t.spec && TOWER_EXTRA[t.spec];
   if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 64, y: t.y - 34, cost: t.extra ? null : EX.cost, owned: !!t.extra });
   if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -62), y: t.y + (t.type === 'archer' ? -34 : 12), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
+  if (moreOpen(t)) items.push({ id: 'more', type: t.type, x: t.x + (t.type === 'archer' ? -62 : 62), y: t.y + (t.type === 'archer' ? 12 : 34), cost: t.more ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: Math.floor(t.spent * SELL_RATIO) });
   if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
@@ -14456,6 +14471,10 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     drawGrimIcon(0, 0, 1); if (soulsFree() > 0) { glow(ctx, 0, 0, 22, '200,120,255', 0.3 + Math.sin(time * 4) * 0.1); }
   } else if (it.id === 'extra') {
     glow(ctx, 0, 0, 20, '255,215,110', 0.3 + Math.sin(time * 4) * 0.08); drawAbilityIcon(it.type, 0, -1, 0.85); fancyStar(9, -10, 5, true);
+  } else if (it.id === 'more') { // +1 asker: iskelet/okçu simgesi ve +1 rozeti
+    glow(ctx, 0, 0, 20, '255,215,110', 0.25 + Math.sin(time * 4) * 0.08);
+    if (!mi(it.type === 'archer' ? 'ico_ab_bow' : 'ico_sp_nm_raise', 0.8)) drawSkullIcon(0, 1, 13);
+    roundRect(2, -19, 22, 15, 7, 'rgba(24,15,7,0.95)', '#e8bb4a', 1.4); txt('+1', 13, -11, 11, '#ffe27a', 'center', '400', FONT_T);
   } else if (it.id === 'ghoul') {
     glow(ctx, 0, 2, 20, '140,255,120', 0.35); if (!mi('ico_mn_ghoul')) drawSkullIcon(0, 1, 15);
   } else if (it.id === 'path') { // okçu yolu: yay; arbaletçi yolu: arbalet
@@ -14474,7 +14493,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   ctx.restore();
   ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.beginPath(); ctx.ellipse(0, -R * 0.5, R * 0.62, R * 0.32, 0, 0, Math.PI * 2); ctx.fill();
   if (it.blocked) { circle(0, 0, R - 1, 'rgba(10,4,12,0.55)'); drawIcon('lock', 0, -2, 20); }
-  if ((it.id === 'extra' || it.id === 'imbue') && it.owned) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#e8bb4a', 1.6); txt('VAR', 0, R + 9.5, 12, '#ffe27a', 'center', '400', FONT_T); }
+  if ((it.id === 'extra' || it.id === 'imbue' || it.id === 'more') && it.owned) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#e8bb4a', 1.6); txt('VAR', 0, R + 9.5, 12, '#ffe27a', 'center', '400', FONT_T); }
   if (it.id === 'imbue' && !it.owned) { roundRect(-26, R + 0.5, 52, 17, 8.5, 'rgba(24,15,7,0.94)', '#c9a0ff', 1.6); txt('BÜYÜ', 0, R + 9.5, 12, '#e8d0ff', 'center', '400', FONT_T); }
   if (it.id === 'ability') {
     for (let i = 0; i < it.ab.ranks.length; i++) {
@@ -15391,6 +15410,10 @@ function infoText() {
   if (pk) {
     const I = spellInfo(pk), cd = G.spells[pk];
     return [I.name, `${I.U.short || I.U.desc}`, null, { tag: cd > 0 ? `${Math.ceil(cd)} sn` : 'HAZIR', tagCol: cd > 0 ? null : '#2f7a22', note: cd > 0 ? null : 'Haritada hedefe dokun' }];
+  }
+  if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'more') {
+    const M = TOWER_MORE[G.preview.type], t = G.sel.tower;
+    return [t.more ? `${M.name} (alındı)` : `${M.name} — ${priceK(M.cost, t.stackK || 1)} altın`, M.desc];
   }
   if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'extra') {
     const E = TOWER_EXTRA[G.preview.type], t = G.sel.tower;
@@ -17778,6 +17801,7 @@ function effLevel(t) {
   const ab = t.type !== 'barracks' && altarBuff(t);
   if (ab) L = Object.assign({}, L, { rate: L.rate / (1 + ab.buff), dmg: [L.dmg[0] * (1 + ab.dmg), L.dmg[1] * (1 + ab.dmg)] });
   if (t.spec && t.type !== 'barracks') L = Object.assign({}, L, { dmg: [L.dmg[0] * SPEC_BONUS, L.dmg[1] * SPEC_BONUS] });
+  if (t.more && t.type === 'archer' && L.rate) { const n = xbowCount(t); if (n > 1) L = Object.assign({}, L, { rate: L.rate * (n - 1) / n }); } // +1 Okçu: atış aralığı okçu sayısıyla kısalır
   // kum fırtınası (hava ya da Fırtına Cini'nin yeteneği) kule menzilini düşürür
   const wr = (G && (G.weather === 'sand' || G.weather === 'fog') ? WEATHER[G.weather].range : 1) * (G && G.stormT > 0 ? 0.8 : 1);
   if (wr < 1) L = Object.assign({}, L, { range: L.range * wr });
@@ -22360,6 +22384,7 @@ function hudTap(x, y) {
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
         else if (it.id === 'ghoul') { if (openHatch(G.sel.hatch)) setSel(null); else sfx('error'); }
         else if (it.id === 'extra') { if (it.cost != null && buyExtra(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
+        else if (it.id === 'more') { if (it.cost != null && buyMore(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
         else if (it.id === 'upgrade' && it.type === 'castle') { if (upgradeCastle()) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade') { if (upgradeTower(G.sel.tower)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'ability') { if (it.cost != null && buyAbility(G.sel.tower, it.type)) G.preview = null; else sfx('error'); }
@@ -22713,7 +22738,7 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), // test: kule yıkılması
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
    surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi
   codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
