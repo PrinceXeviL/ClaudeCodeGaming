@@ -9224,8 +9224,8 @@ const TORNADO = { speed: 26, catchR: 22, hold: 1.15, liftH: 72, orbit: 13, H: 11
 function tornadoCast(x, y, U, dmg) {
   const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60;
   G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
-    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0, veo: !!(ANIM_META.fx_tornado && spr('fx_tornado')) }); // veo: şerit hazırsa baştan sona o (yarıda çizim değişmesin)
-  loadStrip('fx_tornado');
+    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0, veo: TW_VEO.on && !!(ANIM_META.fx_tornado && spr('fx_tornado')), vr: tornadoVar() }); // veo: şerit hazırsa baştan sona o (yarıda çizim değişmesin)
+  if (TW_VEO.on) loadStrip('fx_tornado');
   shakeScreen(3, 0.3); sfx('thunder'); setTimeout(() => sfx('whirl'), 250);
 }
 const tornadoGrow = (z) => clamp((z.t - 0.2) / 0.45, 0, 1) * clamp((z.dur + 0.6 - z.t) / 0.45, 0, 1); // huni iner / çekilir
@@ -9300,7 +9300,16 @@ function puffTex(col) { // dolu, kenarı yumuşak öbek (bulut, duman): glowTex'
 }
 // öbek listesini tek yola çevirir: yarı saydam dolguda üst üste binen daireler koyulaşmaz (tek siluet)
 const blobPath = (D, grow = 0, k = 1, ox = 0, oy = 0) => { ctx.beginPath(); for (const [x, y, r] of D) { ctx.moveTo(x + ox + r * k + grow, y + oy); ctx.arc(x + ox, y + oy, r * k + grow, 0, Math.PI * 2); } };
-const TW_VEO = { k: 1.45 * 0.75 }; // Veo kasırgasının boyu: toz halkasından tepeye TORNADO.H'nin katı (18 Eki, Caner: %25 küçük)
+const TW_VEO = { on: false, k: 1.45 * 0.75 }; // on: Veo şeridi (18 Eki, Caner: "kodla yapılan efektler daha güzel" -> kodla çizilen huni, her biri farklı)
+// 18 Eki: her kasırga başka: renk takımı (mor / hayalet yeşili / kızıl), eğim, kalınlık, boy, kıvrılma, dönüş yönü, şerit sayısı, bulut şekli
+const TW_PAL = [
+  { body: ['rgba(34,24,52,0.85)', 'rgba(78,62,108,0.75)', 'rgba(132,116,164,0.7)', 'rgba(176,164,204,0.7)', 'rgba(70,54,96,0.85)'], b1: '200,255,210', b2: '232,222,250', bb: '70,56,96', cl: ['#9a8cba', '#6a5a8c', '#45365f', '#22162f'] },
+  { body: ['rgba(16,40,34,0.85)', 'rgba(40,92,74,0.75)', 'rgba(92,160,128,0.7)', 'rgba(160,214,184,0.7)', 'rgba(34,74,60,0.85)'], b1: '210,255,200', b2: '200,240,226', bb: '30,80,64', cl: ['#86b8a2', '#4f8a74', '#2e5e4e', '#16342c'] },
+  { body: ['rgba(52,16,30,0.85)', 'rgba(110,40,62,0.75)', 'rgba(164,92,116,0.7)', 'rgba(210,160,176,0.7)', 'rgba(90,30,50,0.85)'], b1: '255,200,190', b2: '246,214,226', bb: '96,34,56', cl: ['#b88a9e', '#8a4f66', '#5e2e44', '#301622'] }];
+function tornadoVar() {
+  return { pal: TW_PAL[Math.floor(Math.random() * TW_PAL.length)], lean: rand(-1, 1), wk: rand(0.8, 1.25), hk: rand(0.85, 1.15), sa: rand(5, 13), sf: rand(1.6, 3), dir: Math.random() < 0.5 ? -1 : 1, nb: 7 + Math.floor(rand(0, 5)),
+    cloud: TW_CLOUD.map(([x, y, r]) => [x * rand(0.85, 1.2) + rand(-4, 4), y + rand(-3, 3), r * rand(0.8, 1.2)]).concat(Math.random() < 0.6 ? [[rand(-30, 30), rand(-12, -6), rand(10, 16)]] : []) };
+} // Veo kasırgasının boyu: toz halkasından tepeye TORNADO.H'nin katı (18 Eki, Caner: %25 küçük)
 const TW_BANDS = 9, TW_SEG = 40, TW_CLOUD = [[-34, 4, 15], [34, 5, 14], [-18, -3, 19], [18, -4, 18], [0, -9, 21], [-46, 9, 10], [46, 10, 10], [-8, 6, 16], [12, 7, 15]];
 function tornadoDust(z, front, gr) { // tabanda dönen toz öbekleri (yarım: arkadakiler birimlerin arkasında); önce konturlar sonra dolgular: tek siluet
   const t = z.t, D = [];
@@ -9318,7 +9327,7 @@ function drawTornadoes(back) {
   for (const z of G.zones) {
     if (z.kind !== 'tornado') continue;
     const T = TORNADO, cl = Math.min(1, z.t / 0.35, (z.life - z.t) / 0.5), gr = tornadoGrow(z); if (cl <= 0) continue;
-    const top = z.y - T.H, bot = top + T.H * gr, t = z.t;
+    const V = z.vr || (z.vr = tornadoVar()), HH = T.H * V.hk, top = z.y - HH, bot = top + HH * gr, t = z.t;
     if (back) {
       if (gr <= 0) continue;
       ctx.save(); ctx.globalAlpha = 0.4 * gr; ctx.fillStyle = '#140c1a'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 30, 9, 0, 0, Math.PI * 2); ctx.fill();
@@ -9334,18 +9343,18 @@ function drawTornadoes(back) {
         continue; } }
     ctx.save();
     // u: 0 taban .. 1 tepe; huni yılan gibi kıvrılır, kenarı kıpır kıpır
-    const sway = (u) => Math.sin(t * 2.2 + z.seed + u * 3.2) * 9 * u + Math.sin(t * 5.3 + u * 7) * 2.5 * u;
-    const P = (u) => ({ x: z.x + sway(u), y: bot - (bot - top) * u, w: lerp(5, 36, Math.pow(u, 1.4)) * (1 + 0.07 * Math.sin(u * 14 - t * 11)) });
+    const sway = (u) => Math.sin(t * V.sf + z.seed + u * 3.2) * V.sa * u + Math.sin(t * 5.3 + u * 7) * 2.5 * u + V.lean * 16 * u * u;
+    const P = (u) => ({ x: z.x + sway(u), y: bot - (bot - top) * u, w: lerp(5, 36 * V.wk, Math.pow(u, 1.4)) * (1 + 0.07 * Math.sin(u * 14 - t * 11)) });
     const bands = (front) => { // sarmal rüzgâr şeritleri: her biri tabandan tepeye huninin çevresinde dolanır, kesik kesik akar
       ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-      for (let b = 0; b < TW_BANDS; b++) { // görünen yarıda, yoğunluğu eşiği geçen ardışık noktalar tek düzgün çizgi (kesik kesik akan şerit)
+      for (let b = 0; b < V.nb; b++) { // görünen yarıda, yoğunluğu eşiği geçen ardışık noktalar tek düzgün çizgi (kesik kesik akan şerit)
         let run = [], sa = 0, su = 0;
         const flush = () => { if (run.length > 2) { const a = sa / run.length * (front ? 0.85 : 0.42) * cl, u = su / run.length;
-            ctx.strokeStyle = front ? (b % 3 === 0 ? `rgba(200,255,210,${a})` : `rgba(232,222,250,${a})`) : `rgba(70,56,96,${a})`; ctx.lineWidth = (front ? 1.4 : 1.1) + 2.8 * u;
+            ctx.strokeStyle = front ? (b % 3 === 0 ? `rgba(${V.pal.b1},${a})` : `rgba(${V.pal.b2},${a})`) : `rgba(${V.pal.bb},${a})`; ctx.lineWidth = (front ? 1.4 : 1.1) + 2.8 * u;
             ctx.beginPath(); run.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }
           run = []; sa = 0; su = 0; };
         for (let k = 0; k <= TW_SEG; k++) {
-          const u = k / TW_SEG, Q = P(u), th = t * (11 - 5 * u) + b * (Math.PI * 2 / TW_BANDS) + u * 5.5, sn = Math.sin(th);
+          const u = k / TW_SEG, Q = P(u), th = V.dir * t * (11 - 5 * u) + b * (Math.PI * 2 / V.nb) + u * 5.5, sn = Math.sin(th);
           const d = Math.sin(u * 8 - t * 7 + b * 1.7) * Math.min(1, u * 4 + 0.2);
           if ((sn >= 0) === front && d > 0.12) { run.push([Q.x + Math.cos(th) * Q.w * 1.02, Q.y + sn * Q.w * 0.27]); sa += d; su += u; } else flush();
         }
@@ -9364,8 +9373,8 @@ function drawTornadoes(back) {
       for (let i = 0; i <= N; i++) { const Q = P(i / N); L.push([Q.x - Q.w, Q.y]); R.push([Q.x + Q.w, Q.y]); }
       const body = () => { ctx.beginPath(); L.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); for (let i = R.length - 1; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]); ctx.closePath(); };
       // gövde: soldan koyu, sağda açık şerit (hacim), tabana doğru saydamlaşır; ince koyu kontur
-      const hx = z.x + sway(0.6), hg = ctx.createLinearGradient(hx - 36, 0, hx + 36, 0);
-      hg.addColorStop(0, 'rgba(34,24,52,0.85)'); hg.addColorStop(0.35, 'rgba(78,62,108,0.75)'); hg.addColorStop(0.62, 'rgba(132,116,164,0.7)'); hg.addColorStop(0.8, 'rgba(176,164,204,0.7)'); hg.addColorStop(1, 'rgba(70,54,96,0.85)');
+      const hx = z.x + sway(0.6), hg = ctx.createLinearGradient(hx - 36 * V.wk, 0, hx + 36 * V.wk, 0);
+      [0, 0.35, 0.62, 0.8, 1].forEach((o, i) => hg.addColorStop(o, V.pal.body[V.lean > 0 ? i : 4 - i])); // ışık eğimin tersinden
       ctx.globalAlpha = cl; ctx.fillStyle = hg; body(); ctx.fill();
       const vg = ctx.createLinearGradient(0, top, 0, bot); vg.addColorStop(0, 'rgba(20,12,30,0.35)'); vg.addColorStop(0.7, 'rgba(20,12,30,0)'); vg.addColorStop(1, 'rgba(150,130,140,0.25)');
       ctx.fillStyle = vg; body(); ctx.fill();
@@ -9377,19 +9386,19 @@ function drawTornadoes(back) {
     ctx.save();
     if (gr > 0) { bands(true); tornadoDust(z, true, gr); }
     // fırtına bulutu: önce bütün öbeklerin koyu konturu (tek siluet), sonra dolgular; öbekler merkez çevresinde yavaşça döner
-    const fl = z.flashT > 0 ? z.flashT / 0.18 : 0, cy = top - 6, gk = 0.85 + 0.15 * Math.min(1, z.t / 0.4);
-    const puffs = TW_CLOUD.map(([dx, dy, r0], i) => { const a = t * 0.5 + i * 0.7; return [z.x + dx * gk + Math.cos(a) * 3, cy + dy + Math.sin(a) * 1.6, r0 * gk]; });
+    const fl = z.flashT > 0 ? z.flashT / 0.18 : 0, cx0 = z.x + sway(1) * 0.8, cy = top - 6, gk = 0.85 + 0.15 * Math.min(1, z.t / 0.4);
+    const puffs = V.cloud.map(([dx, dy, r0], i) => { const a = t * 0.5 + i * 0.7; return [cx0 + dx * gk + Math.cos(a) * 3, cy + dy + Math.sin(a) * 1.6, r0 * gk]; });
     ctx.globalAlpha = cl; ctx.fillStyle = '#120a1a'; blobPath(puffs, 2); ctx.fill();
-    ctx.fillStyle = fl > 0 ? '#d8ffe4' : '#9a8cba'; blobPath(puffs); ctx.fill(); // üst kenar ışığı: açık dolgu, üstüne aşağı kaydırılmış koyu dolgu
+    ctx.fillStyle = fl > 0 ? '#d8ffe4' : V.pal.cl[0]; blobPath(puffs); ctx.fill(); // üst kenar ışığı: açık dolgu, üstüne aşağı kaydırılmış koyu dolgu
     ctx.save(); blobPath(puffs); ctx.clip();
     const cg = ctx.createLinearGradient(0, cy - 26, 0, cy + 26); // bütün bulut için tek renk geçişi: öbekler birbirine dikişsiz karışır
-    cg.addColorStop(0, '#6a5a8c'); cg.addColorStop(0.55, '#45365f'); cg.addColorStop(1, '#22162f');
+    cg.addColorStop(0, V.pal.cl[1]); cg.addColorStop(0.55, V.pal.cl[2]); cg.addColorStop(1, V.pal.cl[3]);
     ctx.fillStyle = cg; blobPath(puffs, 0, 1, 1.5, 4); ctx.fill();
     if (fl > 0) { ctx.globalAlpha = cl * fl * 0.5; ctx.fillStyle = '#c8ffd8'; blobPath(puffs, 0, 0.75, 0, -2); ctx.fill(); ctx.globalAlpha = cl; }
     ctx.restore();
     // bulutun içinde ara ara kızıl-mor kıvılcımlar
-    if (((t * 3) % 1) < 0.12) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x + Math.sin(z.seed + t * 3) * 22, cy + 2, 26, Math.sin(t * 9) > 0 ? '255,80,90' : '170,110,255', 0.35 * cl); ctx.globalCompositeOperation = 'source-over'; }
-    if (fl > 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, cy, 60, '190,255,200', 0.5 * fl * cl); ctx.globalCompositeOperation = 'source-over'; }
+    if (((t * 3) % 1) < 0.12) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx0 + Math.sin(z.seed + t * 3) * 22, cy + 2, 26, Math.sin(t * 9) > 0 ? '255,80,90' : '170,110,255', 0.35 * cl); ctx.globalCompositeOperation = 'source-over'; }
+    if (fl > 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, cx0, cy, 60, '190,255,200', 0.5 * fl * cl); ctx.globalCompositeOperation = 'source-over'; }
     ctx.restore();
   }
 }
