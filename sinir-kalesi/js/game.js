@@ -3196,6 +3196,7 @@ function bloodDeath(e) {
   G.decals.push({ kind: 'splat', red: true, spr: 'pool', si: Math.floor(Math.random() * BLOOD_SPR.pool.length), flip: Math.random() < 0.5, w: h * BLOOD_SPR.poolK * rand(0.85, 1.15), x: e.x + rand(-3, 3), y: e.y + 1, r: clamp(h * 0.36, 8, 18), rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: BLOOD_FX.splat });
 }
 function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen: zırhın bu kadarını deler (ağır cıvata); raw: zırh sınıfı çarpanı yok (süreli hasarlar)
+  if (e.markT > G.t) amount *= 2; // Kıyamet Damgası (Kara Lanet 3/3 imza)
   if (e.dead || e.under || e.reviveT > 0) return; // kumun altında / dirilirken vurulamaz
   if (e.invT > 0) return; // boss evre değiştiriyor
   if (e.diveT > 0) amount *= DIVE_VULN; // pike yapan kuş savunmasız
@@ -4286,7 +4287,7 @@ function buildTower(plot, type) {
   if (TOWERS[type].unique && G.towers.some(o => o.type === type)) return false; // Lanet Kulesi haritada tek
   G.gold -= cost; gaDesign('kule:kur:' + type); cnt('build');
   if (sk > 1 && !tipSeen('stack')) { floatText(plot.x, plot.y - 70, 'Aynı kuleden çoğaldıkça her yenisi daha pahalı', '#ffc070'); tipDone('stack'); }
-  const t = { type, def: TOWERS[type], lvl: 0, x: plot.x, y: plot.y, cd: 0.3, spent: cost, plot, soldiers: [], anim: 0, shotAnim: 0, born: G.t, stackK: sk };
+  const t = { type, def: TOWERS[type], lvl: 0, x: plot.x, y: plot.y, cd: 0.3, spent: cost, wSpent: cost, wWave: G.wave, plot, soldiers: [], anim: 0, shotAnim: 0, born: G.t, stackK: sk };
   plot.tower = t;
   G.towers.push(t); towerHp(t);
   if (type === 'barracks') {
@@ -4421,7 +4422,7 @@ function buyAbility(t, id) {
   if (cur >= def.ranks.length) return false;
   const cost = priceK(def.ranks[cur].cost, t.stackK || 1);
   if (G.gold < cost) return false;
-  G.gold -= cost; t.spent += cost; t.ab = t.ab || {}; t.ab[id] = cur + 1; t.born = G.t;
+  G.gold -= cost; spendOn(t, cost); t.ab = t.ab || {}; t.ab[id] = cur + 1; t.born = G.t;
   const first = !t.spec;
   t.spec = id;
   if (cur + 1 >= def.ranks.length) cnt('specmax');
@@ -4438,8 +4439,8 @@ function buyAbility(t, id) {
     emit(G.parts, { kind: 'glow', add: true, x: t.x + rand(-14, 14), y: t.y - rand(10, 60), vx: Math.cos(a) * v * 0.4, vy: -rand(30, 80), drag: 1.5,
       col: '255,220,120', s0: rand(3, 5), s1: 0.5, life: rand(0.6, 1) });
   }
-  G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 40, col: '255,215,100', t: 0, dur: 0.5 });
-  floatText(t.x, t.y - 70, first ? SPEC[id].title + '!' : `${def.name} ${cur + 1}!`, '#ffe27a');
+  G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 40, col: '255,215,100', t: 0, dur: 0.5 }); upFlash(t, cur + 1 >= def.ranks.length ? '255,120,90' : '255,225,140');
+  floatText(t.x, t.y - 70, first ? SPEC[id].title + '!' : cur + 1 >= def.ranks.length && TSIG[id] ? `${TSIG[id].name}!` : `${def.name} ${cur + 1}!`, '#ffe27a');
   sfx('upgrade');
   return true;
 }
@@ -4455,19 +4456,25 @@ function buyPath(t, p) {
 function buyImbue(t, k) {
   const I = IMBUE[k];
   if (!I || t.imbue || !imbueOpen(t) || G.gold < I.cost) return false;
-  G.gold -= I.cost; t.spent += I.cost; t.imbue = k; t.born = G.t; cnt('imbue');
+  G.gold -= I.cost; spendOn(t, I.cost); t.imbue = k; t.born = G.t; cnt('imbue');
   floatText(t.x, t.y - 80, (t.type === 'archer' ? I.arrow : I.melee) + '!', `rgb(${I.col})`); sfx('upgrade');
   G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: I.col, t: 0, dur: 0.5 });
   for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(30, 90); emit(G.parts, { kind: 'glow', add: true, x: t.x + rand(-14, 14), y: t.y - rand(10, 60), vx: Math.cos(a) * v * 0.4, vy: -rand(30, 80), drag: 1.5, col: I.col, s0: rand(3, 5), s1: 0.5, life: rand(0.6, 1) }); }
   return true;
 }
+// 18 Eki (Caner): yükseltme anı: kuleden yükselen ışık sütunu, halka, kıvılcımlar; yıldızlar (drawTowerStars) parlayarak belirir
+function upFlash(t, col) {
+  t.upT = G.t; G.effects.push({ kind: 'pillar', x: t.x, y: t.y + 6, col, t: 0, dur: 0.7 }); G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 46, col, t: 0, dur: 0.55 });
+  for (let i = 0; i < 16; i++) { const a = rand(0, Math.PI * 2), v = rand(30, 100); emit(G.parts, { kind: 'glow', add: true, x: t.x + rand(-16, 16), y: t.y - rand(6, 70), vx: Math.cos(a) * v * 0.45, vy: -rand(40, 110), drag: 1.5, col, s0: rand(2.5, 5), s1: 0.4, life: rand(0.6, 1.1) }); }
+  shakeScreen(1.5, 0.15);
+}
 function upgradeTower(t) {
   if (t.lvl >= t.def.levels.length - 1) return false;
   const cost = upCost(t);
   if (G.gold < cost) return false;
-  G.gold -= cost; t.spent += cost; t.lvl++; t.born = G.t; towerHp(t); gaDesign('kule:yukselt:' + t.type + ':' + (t.lvl + 1));
+  G.gold -= cost; spendOn(t, cost); t.lvl++; t.born = G.t; towerHp(t); gaDesign('kule:yukselt:' + t.type + ':' + (t.lvl + 1));
   if (t.type === 'barracks') applySoldierStats(t);
-  G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 });
+  G.effects.push({ kind: 'dust', x: t.x, y: t.y, t: 0, dur: 0.5 }); upFlash(t, '255,225,140');
   floatText(t.x, t.y - 80, towerTitle(t), '#ffe27a');
   sfx('upgrade');
   if (t.lvl === t.def.levels.length - 1 && !G.saidMax) { G.saidMax = true; mortSay('maxTower'); }
@@ -4598,10 +4605,14 @@ function drawTowerHp(t) {
   const ts = towerSprite(t), y = ts ? ts.bottom - ts.h - 8 : t.y - 84;
   hpBar(t.x, y, 34, t.hp / t.maxHp, t.hp / t.maxHp > 0.35 ? '#e8c070' : '#e05a3a');
 }
+// 18 Eki (Caner): aynı dalgada harcanan altın satışta tam geri gelir (yanlış kurulum/yükseltme cezalandırılmaz, KR'deki "geri al" hissi); öncekiler SELL_RATIO
+function spendOn(t, c) { if (t.wWave !== G.wave) { t.wWave = G.wave; t.wSpent = 0; } t.wSpent += c; t.spent += c; }
+const sameWave = (t) => t.wWave === G.wave ? t.wSpent || 0 : 0;
+const sellValue = (t) => { const w = Math.min(t.spent, sameWave(t)); return w + Math.floor((t.spent - w) * SELL_RATIO); };
 function sellTower(t) {
-  const refund = Math.floor(t.spent * SELL_RATIO);
+  const refund = sellValue(t), full = sameWave(t) >= t.spent;
   G.gold += refund;
-  floatText(t.x, t.y - 30, `+${refund}`, '#ffd34d');
+  floatText(t.x, t.y - 30, `+${refund}${full ? ' (tam iade)' : ''}`, '#ffd34d');
   for (const s of t.soldiers) { releaseSoldier(s); s.removed = true; }
   G.soldiers = G.soldiers.filter(s => !s.removed);
   G.towers = G.towers.filter(x => x !== t);
@@ -4713,7 +4724,7 @@ const barrN = (t) => (t.spec ? 4 : 3) + (t.more ? 1 : 0);
 function buyMore(t) {
   const M = TOWER_MORE[t.type], c = M && priceK(M.cost, t.stackK || 1);
   if (!M || t.more || !moreOpen(t) || G.gold < c) return false;
-  G.gold -= c; t.spent += c; t.more = true; sfx('upgrade'); floatText(t.x, t.y - 80, M.name + '!', '#ffe27a'); cnt('more');
+  G.gold -= c; spendOn(t, c); t.more = true; sfx('upgrade'); floatText(t.x, t.y - 80, M.name + '!', '#ffe27a'); cnt('more');
   G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: '255,215,100', t: 0, dur: 0.5 });
   if (t.type === 'barracks' && t.soldiers.length < barrN(t)) { const s5 = makeSoldier(t, t.soldiers.length); riseFromGrave(s5); t.soldiers.push(s5); G.soldiers.push(s5); applySoldierStats(t); }
   return true;
@@ -4721,7 +4732,7 @@ function buyMore(t) {
 function buyExtra(t) {
   const E = t && t.spec && TOWER_EXTRA[t.spec];
   if (!E || t.extra || G.gold < E.cost) return false;
-  G.gold -= E.cost; t.spent += E.cost; t.extra = true; t.exT = 1.5;
+  G.gold -= E.cost; spendOn(t, E.cost); t.extra = true; t.exT = 1.5;
   floatText(t.x, t.y - 80, E.name + '!', '#ffe27a'); sfx('upgrade');
   G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: '255,215,100', t: 0, dur: 0.5 });
   return true;
@@ -4898,6 +4909,72 @@ function drawXray(e, x, y, dh) { // şimşekle çarpılan düşman: 1 sn çizgi 
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -h * 0.5, h * 0.7, '200,140,255', 0.5); ctx.restore();
   ctx.drawImage(im, -w / 2, -h, w, h); ctx.restore(); return true;
 }
+// ---- 3/3 imza hareketleri (18 Eki, Caner: "tam güç anı"): uzmanlık son kademede kendi süresiyle yeni, görünür bir saldırı açar ----
+const TSIG = {
+  bow: { cd: 10, name: 'Ruh Oku', desc: "İmza (3/3): 10 sn'de bir yol boyunca delip geçen ruh oku, değdiği her düşmana ok hasarının 4 katı" },
+  fan: { cd: 12, name: 'Kazık Cıvata', desc: "İmza (3/3): 12 sn'de bir en güçlü düşmana dev cıvata: 5 kat hasar, 2 sn yere çiviler" },
+  shield: { cd: 14, name: 'Kemik Şoku', desc: "İmza (3/3): 14 sn'de bir iskeletler kalkanlarını yere vurur, çevredeki düşmanlar 1,5 sn sersemler" },
+  blade: { cd: 12, name: 'Kanlı Hasat', desc: "İmza (3/3): 12 sn'de bir iskeletler çevrelerini biçer: 3 kat hasar, canı %20'nin altındakini öldürür" },
+  drain: { cd: 10, name: 'Ruh Seli', desc: "İmza (3/3): 10 sn'de bir ışın 4 düşmana sıçrar: 2 kat hasar, yakındaki iskeletler iyileşir" },
+  ghost: { cd: 14, name: 'Dehşet Dalgası', desc: "İmza (3/3): 14 sn'de bir menzildeki bütün düşmanlar 2 sn korkup geri kaçar" },
+  corpse: { cd: 12, name: 'Gülle Yağmuru', desc: "İmza (3/3): 12 sn'de bir art arda 3 kemik gülle" },
+  plague: { cd: 11, name: 'Veba Patlaması', desc: "İmza (3/3): 11 sn'de bir menzildeki vebalılar patlar, çevrelerine alan hasarı verir" },
+  rite: { cd: 15, name: 'Kan Dalgası', desc: "İmza (3/3): 15 sn'de bir menzildeki her düşmandan can çeker, iskeletleri tam iyileştirir" },
+  blight: { cd: 15, name: 'Kıyamet Damgası', desc: "İmza (3/3): 15 sn'de bir en güçlü düşman damgalanır: 5 sn iki kat hasar alır" } };
+function sigTick(t, dt) {
+  if (t.burst > 0) { if (t.cd > (t.cdP ?? 0) + 0.01) { t.burst--; if (t.burst > 0) t.cd = 0.35; } t.cdP = t.cd; } // art arda atış (Gülle Yağmuru)
+  if ((t.sigT = (t.sigT ?? 2) - dt) > 0) return;
+  const S = TSIG[t.spec], L = effLevel(t), base = L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 0, R = L.range || 130;
+  const foes = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= R * 1.1);
+  const sol = (t.soldiers || []).filter(s => !s.dead);
+  const fire = () => { t.sigT = S.cd; floatText(t.x, t.y - 92, S.name + '!', '#ff9a70'); };
+  const strongest = (L2) => L2.filter(e => e.siege === undefined).sort((a, b) => b.hp - a.hp)[0];
+  HERO_SKILL = false;
+  if (t.spec === 'bow' || t.spec === 'fan') {
+    const e = t.spec === 'fan' ? strongest(foes) : foes.sort((a, b) => b.d - a.d)[0]; if (!e) { t.sigT = 0.5; return; }
+    const sx = t.x, sy = t.y - 62, ex = e.x, ey = aimY(e), ang = Math.atan2(ey - sy, ex - sx);
+    if (t.spec === 'bow') { const L2 = 300, fx = sx + Math.cos(ang) * L2, fy = sy + Math.sin(ang) * L2;
+      for (const f of G.enemies) { if (f.dead) continue; const k = clamp(((f.x - sx) * (fx - sx) + (aimY(f) - sy) * (fy - sy)) / (L2 * L2), 0, 1), px = sx + (fx - sx) * k, py = sy + (fy - sy) * k;
+        if (Math.hypot(f.x - px, aimY(f) - py) < 14 + (f.def.r || 9) * 0.5) { damageEnemy(f, base * 4, 'phys', false, 'arrow', 0.5); fxMagicHit(f.x, aimY(f)); } }
+      G.effects.push({ kind: 'bolt', col: 'soul', pts: [[sx, sy], [fx, fy]], t: 0, dur: 0.4 }); sfx('soulbolt');
+      for (let i = 0; i < 14; i++) { const k = i / 13; emit(G.parts, { kind: 'glow', add: true, x: lerp(sx, fx, k), y: lerp(sy, fy, k), vx: rand(-10, 10), vy: rand(-20, 0), col: '150,255,170', s0: 5, s1: 0.5, life: 0.5 }); }
+    } else { damageEnemy(e, base * 5, 'phys', false, 'arrow', 0.8); if (!e.dead) stunEnemy(e, 2);
+      G.effects.push({ kind: 'bolt', pts: [[sx, sy], [ex, ey]], t: 0, dur: 0.3 }); G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 26, col: '255,170,90', t: 0, dur: 0.4 }); shakeScreen(3, 0.2); sfx('stomp'); }
+    fire(); return;
+  }
+  if (t.spec === 'shield' || t.spec === 'blade') {
+    if (!sol.some(s => s.target && !s.target.dead)) { t.sigT = 0.5; return; }
+    for (const s of sol) {
+      const near = G.enemies.filter(e => !e.dead && !e.def.flying && dist(e.x, e.y, s.x, s.y) < 40);
+      G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: 36, col: t.spec === 'shield' ? '150,200,255' : '255,70,70', t: 0, dur: 0.4 });
+      for (const e of near) { if (t.spec === 'shield') { damageEnemy(e, (s.dmg ? (s.dmg[0] + s.dmg[1]) / 2 : 8), 'phys'); if (!e.dead) stunEnemy(e, 1.5); }
+        else if (!e.def.chief && e.hp < e.maxHp * 0.2) { damageEnemy(e, e.hp + 1, 'phys', false, null, 1, true); floatText(e.x, e.y - 30, 'HASAT!', '#ff6a6a'); }
+        else damageEnemy(e, (s.dmg ? (s.dmg[0] + s.dmg[1]) / 2 : 8) * 3, 'phys'); }
+    }
+    shakeScreen(2, 0.15); sfx(t.spec === 'shield' ? 'bash' : 'clash'); fire(); return;
+  }
+  if (t.spec === 'drain') { let cur = foes.sort((a, b) => dist(a.x, a.y, t.x, t.y) - dist(b.x, b.y, t.x, t.y))[0]; if (!cur) { t.sigT = 0.5; return; }
+    const hit = new Set(); let px = t.x, py = t.y - 70; const pts = [[px, py]];
+    for (let i = 0; i < 4 && cur; i++) { hit.add(cur); const hp0 = cur.hp; damageEnemy(cur, base * 2, 'magic'); pts.push([cur.x, aimY(cur)]); fxMagicHit(cur.x, aimY(cur));
+      const got = Math.max(0, hp0 - Math.max(0, cur.hp)) * 0.4; for (const s of G.soldiers) if (!s.dead && !s.hero && dist(s.x, s.y, cur.x, cur.y) < 70) s.hp = Math.min(s.maxHp, s.hp + got);
+      const c0 = cur; cur = G.enemies.filter(e => !e.dead && !hit.has(e) && dist(e.x, e.y, c0.x, c0.y) < 80).sort((a, b) => dist(a.x, a.y, c0.x, c0.y) - dist(b.x, b.y, c0.x, c0.y))[0]; }
+    G.effects.push({ kind: 'bolt', col: 'soul', pts, t: 0, dur: 0.45 }); sfx('soulbolt'); fire(); return; }
+  if (t.spec === 'ghost') { if (!foes.length) { t.sigT = 0.5; return; }
+    for (const e of foes) { if (e.siege !== undefined || e.def.machine) continue; const f = e.def.chief ? 1 : 2; e.fearT = Math.max(e.fearT || 0, f); e.fearMax = f; e.hopT = 0.4; }
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R, col: '200,160,255', t: 0, dur: 0.7 }); G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '150,255,190', t: 0, dur: 0.55 }); sfx('soulbolt'); fire(); return; }
+  if (t.spec === 'corpse') { if (!foes.length) { t.sigT = 0.5; return; } t.burst = 3; t.cd = 0; t.cdP = 0; fire(); return; }
+  if (t.spec === 'plague') { const sick = foes.filter(e => e.plagueT > 0 || e.coatT > 0 || e.poisonT > 0); if (!sick.length) { t.sigT = 0.5; return; }
+    for (const e of sick.slice(0, 8)) { const x = e.x, y = e.y; for (const f of G.enemies) if (!f.dead && dist(f.x, f.y, x, y) < 42) { NO_KNOCK = true; damageEnemy(f, base * 0.8, 'phys', false, 'blast'); NO_KNOCK = false; }
+      G.effects.push({ kind: 'ring', x, y, r: 34, col: '140,255,90', t: 0, dur: 0.4 }); for (let i = 0; i < 10; i++) { const a = rand(-Math.PI, 0), v = rand(60, 150); emit(G.parts, { kind: 'dot', x, y: y - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, g: 480, col: i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.4, 2.6), s1: 1, life: rand(0.4, 0.7), floor: y + rand(-6, 6) }); } }
+    shakeScreen(2.5, 0.2); sfx('acidboom'); fire(); return; }
+  if (t.spec === 'rite') { if (!foes.length) { t.sigT = 0.5; return; }
+    const d = 25 + 10 * t.lvl; for (const e of foes) { damageEnemy(e, d, 'magic', true, null, 0, true); G.effects.push({ kind: 'bolt', pts: [[e.x, aimY(e)], [t.x, t.y - 50]], col: 'blood', t: 0, dur: 0.35 }); }
+    for (const s of G.soldiers) if (!s.dead && !s.hero && dist(s.x, s.y, t.x, t.y) <= R) s.hp = s.maxHp;
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R, col: '255,40,60', t: 0, dur: 0.6 }); sfx('soulbolt'); fire(); return; }
+  if (t.spec === 'blight') { const e = strongest(foes); if (!e) { t.sigT = 0.5; return; } e.markT = G.t + 5;
+    G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 24, col: '200,40,60', t: 0, dur: 0.5 }); G.effects.push({ kind: 'bolt', pts: [[t.x, t.y - 60], [e.x, aimY(e)]], col: 'soul', t: 0, dur: 0.3 }); sfx('cursegaze'); fire(); return; }
+  t.sigT = S.cd;
+}
 function updateTower(t, dt) {
   t.anim += dt; t.shotAnim = Math.max(0, t.shotAnim - dt);
   if (t.gushT > 0) t.gushT -= dt; // veba kazanı: ağızdan fışkıran sıvı sütunu
@@ -4905,6 +4982,7 @@ function updateTower(t, dt) {
   if (t.animT != null) t.animT += dt;
   if (t.engageT > 0) { t.engageT -= dt; const A = towerAnim(t); if (A) { if (t.animT == null || t.animT >= A.dur) t.animT = 0; } } // döngü
   if (t.disabledT > 0) { t.disabledT -= dt; return; } // boss tarafından susturuldu
+  if (t.spec && TSIG[t.spec] && ((t.ab && t.ab[t.spec]) || 0) >= 3) sigTick(t, dt); // 3/3 imza hareketi
   if (t.extra) updateExtra(t, dt);
   if (xbowCount(t)) { updateXbowMen(t, dt); updateXbowRelease(t, dt); }
   if (t.type === 'barracks') return;
@@ -10830,6 +10908,19 @@ function drawTower(t) {
   { const sk = cosOf('tower'); if (sk !== 'none') { const ts = towerSprite(t); if (ts) drawTowerSkinFx(sk, t.x, ts.bottom - ts.w * 0.06, ts.w, true); } } // 18 Eki: kule görünümü (tabanda)
   drawTowerBody(t);
   if (t.disabledT > 0) drawTowerDisabled(t);
+  drawTowerStars(t);
+}
+// kademe yıldızları (18 Eki): kulenin tabanında 1-3. kademe gümüş yıldız; yükseltince parlayıp büyür (uzmanlıkta rozet gösterir)
+function drawTowerStars(t) {
+  const ts = towerSprite(t); if (!ts || t.spec) return; // uzmanlıkta tabandaki kademe rozeti (3 nokta) zaten var
+  const n = t.spec ? ((t.ab && t.ab[t.spec]) || 1) : t.lvl + 1, gold = !!t.spec, sig = gold && n >= 3, y = ts.bottom + 5, gap = 9, x0 = t.x - (n - 1) * gap / 2;
+  const pop = t.upT != null ? clamp(1 - (G.t - t.upT) / 0.6, 0, 1) : 0;
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * gap, r = 3.6 * (1 + 0.7 * pop);
+    if (sig) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 9, '255,90,70', 0.35 + 0.15 * Math.sin(time * 4 + i)); ctx.restore(); }
+    ctx.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath();
+    ctx.fillStyle = gold ? (sig ? '#ffb070' : '#ffd84a') : '#dfe4ee'; ctx.strokeStyle = 'rgba(20,10,4,0.9)'; ctx.lineWidth = 1.2; ctx.fill(); ctx.stroke();
+  }
 }
 // susturulan kule: üstünde dönen yıldızlar (sersemleme) ya da mor lanet halkası
 // ---- Lanet Kulesi canlandırması (10 Eki, Caner: "en kaliteli şekilde hareketlendir, korkutucu olsun") ----
@@ -11697,6 +11788,9 @@ function drawBurrow(e) {
 
 // tam ekranda yolun giriş ağzı görünür: düşman çerçeve dışında doğarken ilk adımlarında belirir (birden çıkmasın)
 function drawEnemy(e) {
+  if (e.markT > G.t && !e._dv && !e._mk) { e._mk = true; try { drawEnemy(e); } finally { e._mk = false; } // Kıyamet Damgası: başının üstünde dönen kızıl kafatası
+    const h = (CHAR_H['enemy_' + (e.def.base || e.type)] || 30) * (e.def.h ? e.def.h / 30 : 1), y = e.y - h - 16 - (e.flZ || 0) + Math.sin(time * 4) * 2;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, y, 14, '255,40,60', 0.45); ctx.restore(); drawIcon('skull', e.x, y, 13, '#ff5a5a'); return; }
   if (e.bashHit != null && G.t - e.bashHit < 0.4 && !e._dv) { // koçbaşı vuruşu: ileri atılıp geri çekilir
     ctx.save(); ctx.translate(Math.sin((G.t - e.bashHit) / 0.4 * Math.PI) * 8 * (e.face || 1), 0); e._dv = true; try { drawEnemy(e); } finally { e._dv = false; ctx.restore(); }
     return;
@@ -13426,7 +13520,7 @@ function drawEffect(f) {
     drawZap(f);
   } else if (f.kind === 'bolt') {
     ctx.save(); ctx.globalAlpha = 1 - k; ctx.lineJoin = 'round';
-    const bc = f.col === 'soul' ? 'rgba(130,255,160,0.6)' : f.col === 'arcane' ? 'rgba(190,120,255,0.55)' : f.col === 'frost' ? 'rgba(140,210,255,0.55)' : f.col === 'holy' ? 'rgba(255,235,160,0.6)' : 'rgba(140,180,255,0.5)';
+    const bc = f.col === 'soul' ? 'rgba(130,255,160,0.6)' : f.col === 'arcane' ? 'rgba(190,120,255,0.55)' : f.col === 'frost' ? 'rgba(140,210,255,0.55)' : f.col === 'holy' ? 'rgba(255,235,160,0.6)' : f.col === 'blood' ? 'rgba(255,50,60,0.6)' : 'rgba(140,180,255,0.5)';
     for (const [lw, col] of [[6, bc], [2.2, '#f2f7ff']]) {
       ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath();
       f.pts.forEach(([x, y], i) => {
@@ -15432,7 +15526,7 @@ function infoParse(info) {
   m = title.match(/^(.*) — En üst kademe$/); if (m) { title = m[1]; tag = 'EN ÜST'; }
   m = title.match(/^(.*) \(alındı\)$/); if (m) { title = m[1]; tag = 'ALINDI'; }
   const segs = (info[1] ? TR(info[1]) : '').split(/ · |; |\. (?=[A-ZÇĞİÖŞÜ])/).map(q => q.trim()).filter(Boolean);
-  const bullets = segs.slice(0, 3).map(q => q[0].toLocaleUpperCase('tr') + q.slice(1));
+  const bullets = segs.slice(0, X.note ? 2 : 3).map(q => q[0].toLocaleUpperCase('tr') + q.slice(1));
   if (X.note) bullets.push(X.note);
   return { title, cost, tag: X.tag || tag, tagCol: X.tagCol, refund: X.refund, chips: info[2] || null, delta: X.delta && X.delta.length ? X.delta : null, bullets: bullets.slice(0, 3) };
 }
@@ -15579,12 +15673,12 @@ function infoText() {
       const nw = n2 > n1 ? `${t.path === 'xbow' ? 'Arbaletçi' : 'Okçu'} ${n1} → ${n2} · ` : '';
       return [`Yükselt → ${towerTitle(t, t.lvl + 1)} — ${upCost(t)} altın`, `${nw}${pc ? pc + ' · ' : ''}${pc ? perkNew((PD && PD.perks[t.lvl + 1]) || L.perk) : (PD && PD.perks[t.lvl + 1]) || L.perk}`, delta.length ? null : NC, { delta }];
     }
-    if (G.preview && G.preview.id === 'sell') return ['Kuleyi sat', '', null, { refund: Math.floor(t.spent * SELL_RATIO) }];
+    if (G.preview && G.preview.id === 'sell') return ['Kuleyi sat', sameWave(t) > 0 ? (sameWave(t) >= t.spent ? 'Bu dalgada kuruldu: tam iade' : `Bu dalgadaki ${sameWave(t)} altın tam geri gelir`) : '', null, { refund: sellValue(t) }];
     if (G.preview && G.preview.id === 'ability') {
       const a = G.preview.ab, r = (t.ab && t.ab[a.id]) || 0;
-      if (r >= a.ranks.length) return [`${a.name} — En üst kademe`, a.desc(a.ranks[r - 1])];
+      if (r >= a.ranks.length) return [`${a.name} — En üst kademe`, a.desc(a.ranks[r - 1]), null, { note: TSIG[a.id] ? TSIG[a.id].desc : null }];
       if (!t.spec) return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: 'UZMANLIK', note: 'Diğer yol kapanır · +%20 güç' }];
-      return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: `${r + 1}/${a.ranks.length}`, delta: rankDelta(t, a, r) }];
+      return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: `${r + 1}/${a.ranks.length}`, delta: rankDelta(t, a, r), note: r + 1 >= a.ranks.length && TSIG[a.id] ? TSIG[a.id].desc : null }];
     }
     const L = t.def.levels[t.lvl];
     const C = towerChips(t.type, effShown(t));
