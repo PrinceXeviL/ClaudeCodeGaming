@@ -2038,7 +2038,7 @@
   "base": 0.0567,
   "ch": 0.8716,
   "idle": 0,
-  "stride": 1.548
+  "stride": 1.532
  },
  "hero_bathory_run": {
   "n": 23,
@@ -2114,7 +2114,7 @@
   "base": 0.0323,
   "ch": 0.8492,
   "idle": 0,
-  "stride": 1.191,
+  "stride": 1.182,
   "n": 120,
   "fw": 239,
   "fh": 259,
@@ -2167,7 +2167,7 @@
   "base": 0.0236,
   "ch": 0.945,
   "idle": 0,
-  "stride": 2.857
+  "stride": 2.852
  },
  "enemy_cannon_atk": {
   "n": 19,
@@ -2192,7 +2192,7 @@
   "base": 0.043,
   "ch": 0.9072,
   "idle": 0,
-  "stride": 1.824
+  "stride": 1.814
  },
  "enemy_siegetower_die": {
   "n": 65,
@@ -3087,5 +3087,35 @@
   "tw": 53.6,
   "bx": 118.0,
   "by": 143.0
+ },
+ "enemy_legarcher_walk": {
+  "n": 17,
+  "fw": 133,
+  "fh": 170,
+  "base": 0.0145,
+  "ch": 0.9422,
+  "idle": 3,
+  "stride": 0.961
+ },
+ "enemy_legarcher_atk": {
+  "n": 33,
+  "fw": 130,
+  "fh": 172,
+  "base": 0.0135,
+  "ch": 0.9302
+ },
+ "enemy_legarcher_die": {
+  "n": 33,
+  "fw": 180,
+  "fh": 171,
+  "base": 0.0141,
+  "ch": 0.9344
+ },
+ "enemy_legarcher_idle": {
+  "n": 32,
+  "fw": 121,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
  }
 }

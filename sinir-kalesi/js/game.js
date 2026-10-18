@@ -1109,7 +1109,7 @@ function sfx(kind, rate, volK = 1, pos = SFX_POS) {
 
 // Düşman sesleri (ses/pain_*, dvoice_*, scream_*: gerçek kayıtlar, varliklar/ses_kayit_isle.py). Perde düşmana göre: ağır/boss kalın, hafif ince.
 // Her düşmanın kendi perdesi vardır (e.vp) ki kalabalıkta aynı adam bağırıyor gibi olmasın.
-const VOICE_P = { heavy: 0.95, gladiator: 0.97, cavalry: 0.98, priest: 1.1, assassin: 1.08, solarcher: 1.05 };
+const VOICE_P = { heavy: 0.95, gladiator: 0.97, cavalry: 0.98, priest: 1.1, assassin: 1.08, solarcher: 1.05, legarcher: 1.02 };
 function voicePitch(e) {
   if (!e.vp) e.vp = (VOICE_P[e.def.base || e.type] || 1) * rand(0.94, 1.08) * (e.def.chief ? 0.9 : 1);
   return e.vp;
@@ -5303,7 +5303,7 @@ function updateEnemy(e, dt) {
         if (CA) { (e.crewShot ??= [])[e.crewK] = G.t; (e.crewF ??= [])[e.crewK] = tgt.x < CA.x ? -1 : 1; }
         if (AR && AR.kind === 'net') throwNet(e, tgt, AR.stun, NET.skill * NET.rel); else
         G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: CA ? CA.x : e.x + e.face * 6, sy: CA ? CA.y - 16 : RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
-          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
+          dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : RG.lob ? 14 + bd * 0.32 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
       // durur: yürümez, kılıç sallamaz. Kimse önünü kesmiyorsa en çok HOLD.max sn durur, sonra HOLD.walk sn atış yaparak yürür
       // (kule menzili dışından iyileşen iskeletlere sonsuza dek ateş edip bölümü kilitlemesin)
@@ -8475,7 +8475,7 @@ function setupMech() {
 }
 // 16 Eki: darağacındaki asılı ölü = diriltilebilir ceset (ekranda yerde değil, iple asılı çizilir: f.hang)
 function gallowsBody(m) {
-  const HUMAN = ['legion', 'solarcher', 'gladiator', 'hunter', 'torch', 'flagellant', 'holywater', 'priest', 'assassin', 'heavy', 'bellpriest', 'paladin'], waveT = new Set(G.lv.waves.flat().map(g => g.t)); // asılan: insan biçimli (köpek, at değil)
+  const HUMAN = ['legion', 'legarcher', 'solarcher', 'gladiator', 'hunter', 'torch', 'flagellant', 'holywater', 'priest', 'assassin', 'heavy', 'bellpriest', 'paladin'], waveT = new Set(G.lv.waves.flat().map(g => g.t)); // asılan: insan biçimli (köpek, at değil)
   const pool = HUMAN.filter(t => ENEMIES[t] && waveT.has(t)), t = pool[Math.floor(Math.random() * pool.length)] || 'legion', d = ENEMIES[t];
   m.body = { kind: 'corpse', hang: true, name: 'enemy_' + t, rig: d.base ? 'enemy_' + d.base : null, h: CHAR_H['enemy_' + t], x: m.x, y: m.y + 4, face: m.face, fly: 0, t: 1, dur: 1e9, raisable: true, pw: MECH.gallows.pw };
   G.effects.push(m.body); m.flash = 0.6;
@@ -11643,7 +11643,7 @@ function drawEnemy0(e) {
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0 && !d.crew) && !(e.reviveT > 0), // kuşatma kulesi okçular atarken de yürür
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0) + (e.flZ > 0 ? e.flZ : 0),
-      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? e.atkV : 0,
+      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? (d.dagger ? 1 : e.atkV) : 0, // Lejyon Okçusu: yakında hançer şeridi (_atk2)
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
     };
@@ -12326,7 +12326,7 @@ const easeInOut = (x) => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 const SKEL_H = [0, 32, 33, 35, 36, 34, 33, 34, 35];
 Object.assign(RIG, {
   unit_skel_1: { legY: 0.72 }, unit_skel_2: { legY: 0.72 }, unit_skel_3: { legY: 0.72 }, unit_skel_4: { legY: 0.72 }, unit_skel_5: { legY: 0.72 },
-  enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
+  enemy_legion: { legY: 0.72 }, enemy_solarcher: { legY: 0.72 }, enemy_legarcher: { legY: 0.72 }, enemy_gladiator: { legY: 0.72 }, enemy_assassin: { legY: 0.7 },
   enemy_priest: { legY: 0.82, stride: 0.5 }, enemy_heavy: { legY: 0.74, stride: 0.8 }, enemy_cavalry: { legY: 0.62, stride: 1.2 },
   enemy_gloriosus: { legY: 0.62, stride: 1.2 }, enemy_ram: { solid: 'cart' }, enemy_catapult: { solid: 'cart' }, enemy_cannon: { solid: 'cart' }, enemy_siegetower: { solid: 'cart' },
 });
@@ -18321,7 +18321,7 @@ function upgradeIcon(id, x, y) {
 
 // ---------- KODEKS: görülen düşmanların ve kulelerin kartları ----------
 // save.codex: görülen düşman türleri (rütbeliler asıl türün kaydına sayılır); save.codexNew: kodekste henüz bakılmamış yeni kayıtlar.
-const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'cannon', 'siegetower', 'vulture', 'elephant',
+const CODEX_ENEMIES = ['legion', 'drummer', ...(typeof LEGARCHER_ON !== 'undefined' && LEGARCHER_ON ? ['legarcher'] : []), 'solarcher', 'wardog', 'gladiator', 'signifer', 'assassin', 'eagle', 'priest', 'testudo', 'sunpriest', 'heavy', 'cavalry', 'chariot', 'horsearcher', 'ram', 'catapult', 'cannon', 'siegetower', 'vulture', 'elephant',
   'centurion', 'champion', 'hierophant', 'shadowmaster', 'ironwarden', 'cavcaptain', 'gloriosus1',
   // 2. sefer: Engizisyon
   'hunter', 'hound', 'torch', 'holywater', 'flagellant', 'lantern', 'bellpriest', 'paladin', 'inquisitor', 'saint',
@@ -18329,6 +18329,7 @@ const CODEX_ENEMIES = ['legion', 'drummer', 'solarcher', 'wardog', 'gladiator', 
 const CODEX_NOTE = {
   legion: 'Hepsi aynı kalıptan çıkmış. İskeletleri de birbirine benziyor, saymak kolay.',
   solarcher: 'Uzaktan ok atar, yakından ağlar. İskeletlerimi yanına yolla.',
+  legarcher: 'Yayını gökyüzüne kaldırıp ok yağdırır. Yanına varınca hançer çeker; yine de en çok kaçmayı sever.',
   gladiator: 'Arenada alkış bekler. Burada tek alkış kemiklerinin takırtısı.',
   assassin: 'Gölgeye saklanır. Benim bahçemde gölgeler de benim, haberi yok.',
   priest: 'Yaralıları iyileştirir. Ben de ölüleri. Mesleki rekabet.',

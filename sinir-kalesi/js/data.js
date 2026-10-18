@@ -314,6 +314,8 @@ Object.assign(ENEMIES, {
   // Solarian İmparatorluğu askerleri
   legion:    { name: 'Lejyoner',            h: 30, hp: 60,  speed: 24, armor: 0.15, mr: 0,    gold: 8,  dmg: [2, 5],   rate: 1,   lives: 1, r: 9 },
   solarcher: { name: 'Solarian Okçusu',     h: 30, hp: 45,  speed: 26, armor: 0,    mr: 0,    gold: 9,  dmg: [1, 3],   rate: 1,   lives: 1, r: 9, ranged: { r: 130, dmg: [4, 7], rate: 1.8, proj: 'harrow', any: true, hold: true } },
+  // 18 Eki (Caner: "lejyonere benzeyen okçu sınıfı, yakın dövüşte dagger"): Lejyon Okçusu. Yakında hançer (atk2), uzakta bombeli ok. LEGARCHER_ON açılınca dalgalarda Solarian Okçusu'nun yerini alır
+  legarcher: { name: 'Lejyon Okçusu', h: 30, hp: 52, speed: 26, armor: 0.15, mr: 0, gold: 9, dmg: [3, 6], rate: 0.85, lives: 1, r: 9, dagger: true, ranged: { r: 135, dmg: [4, 7], rate: 1.8, proj: 'harrow', any: true, hold: true, lob: true } },
   gladiator: { name: 'Gladyatör',           h: 31, hp: 120, speed: 30, armor: 0,    mr: 0,    gold: 14, dmg: [6, 10],  rate: 0.8, lives: 1, r: 9 },
   assassin:  { name: 'Suikastçı',           h: 27, hp: 80,  speed: 38, armor: 0,    mr: 0.25, gold: 15, dmg: [5, 9],   rate: 0.8, lives: 1, r: 9, blink: { cd: 9, d: 55 } },
   priest:    { name: 'Savaş Rahibi',        h: 30, hp: 140, speed: 19, armor: 0,    mr: 0.5,  gold: 20, dmg: [2, 4],   rate: 1,   lives: 1, r: 10, heals: true, purify: { r: 70, every: 5, dmg: 0, bless: true } }, // 15 Eki: cesetleri kutsar
@@ -1021,6 +1023,13 @@ function restructureWaves() {
     lv.waves = W; lv.shape = shape; lv.breath = breath;
   });
 }
+// Lejyon Okçusu (18 Eki): Caner animasyonları onaylayınca true. Dalgalardaki Solarian Okçusu bölükleri Lejyon Okçusu olur; 1. seferin 7. bölümünden
+// sonra (ve 2. seferde) bölüğün dörtte biri seçkin Solarian Okçusu olarak kalır (ateşli ok, daha dayanıklı)
+const LEGARCHER_ON = false || (typeof window !== 'undefined' && !!window.__legarcher); // test: window.__legarcher
+if (LEGARCHER_ON) { ENEMIES.solarcher.hp = Math.round(ENEMIES.solarcher.hp * 1.6); ENEMIES.solarcher.gold = 13; ENEMIES.solarcher.elite = true;
+  LEVELS.forEach((lv, li) => { for (const w of lv.waves) for (const g of w.slice()) if (g.t === 'solarcher' && !g.types) {
+    const keep = (lv.ep || 1) === 2 || li >= 6 ? Math.max(g.n >= 4 ? 1 : 0, Math.round(g.n * 0.25)) : 0; g.t = 'legarcher'; g.n -= keep;
+    if (keep) w.push(Object.assign({}, g, { t: 'solarcher', n: keep, at: (g.at || 0) + 2 })); } }); }
 restructureWaves();
 LEVELS.forEach((lv, i) => shapeWaves(lv, i));
 // 16 Eki (Caner: "10 koçbaşı göndermene gerek yok, az az gönder, yanlarında lejyonerler korusun"): bir grupta en çok SIEGE_CAP.n kuşatma
@@ -1327,6 +1336,7 @@ Object.assign(ENEMY_WK, {
 Object.assign(ENEMY_DESC, {
   legion: 'Kalkanlı piyade, kalabalık gelir. Ruh ışını kalkanını deler',
   solarcher: 'Durup iskeletlere ok atar. Zırhsız: oklar ve kılıç iyi işler',
+  legarcher: 'Uzaktan bombeli ok atar, yakına gelen iskelete hançer çeker. Hafif zırhlı',
   gladiator: 'Çevik arena dövüşçüsü, iskeletleri hızla keser. Ok ve veba işler',
   assassin: 'Çok hızlı, ara ara gölgeye dalıp ileri atlar. Vebanın alanından kaçamaz',
   priest: 'Yakınındakileri iyileştirir, büyüye dirençli. Önce onu okla vur',
@@ -1534,7 +1544,7 @@ const RANKS = [null,
   { id: 'k', name: 'Kıdemli', hp: 1.6, gold: 1.5, dmg: 1.25, armor: 0.05, h: 1.05 },
   { id: 'y', name: 'Yüzbaşı', hp: 2.5, gold: 2.3, dmg: 1.5, armor: 0.1, h: 1.13 },
 ];
-const RANKED = ['legion', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry'];
+const RANKED = ['legion', 'legarcher', 'solarcher', 'gladiator', 'assassin', 'priest', 'heavy', 'cavalry'];
 // zaten güçlü olan ağır piyade ve süvarinin rütbelileri yalnız son bölümde (bölüm sırası, 0'dan)
 const RANK_FROM = { heavy: 3.5, cavalry: 3.5 }; // ilerleme (lp) cinsinden: 14. bölümden itibaren
 if (NECRO) {

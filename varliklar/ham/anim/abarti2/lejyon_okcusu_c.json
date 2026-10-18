@@ -1,0 +1,10 @@
+[
+ {
+  "name": "enemy_legarcher_atk2",
+  "ref": "ham/anim/enemy_legarcher_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 57,
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt fights up close with a DAGGER: with his right hand he pulls a short shiny SILVER DAGGER out of the sheath on his belt, the steel blade clearly visible and gleaming in his right fist, then he lunges forward and stabs the dagger forward to the right in one fast thrust, the blade points forward at the end of the stab, then he pulls back and returns to the starting pose with the dagger back in the sheath. The bow stays in his LEFT hand the whole time. The dagger is always clearly visible while he stabs. Exaggerated punchy cartoon action, big anticipation, fast strike, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]
