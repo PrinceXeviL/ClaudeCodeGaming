@@ -15448,7 +15448,8 @@ function drawInfoCard(info) {
   const chipsW = chips.reduce((a, c) => a + c.w + 8, chips.length ? -8 : 0);
   const w = clamp(Math.max(headW, chipsW, 280) + 40, 300, Math.min(maxW, 560)), bw = w - 36;
   const bl = I.bullets; // her madde tek satır: sığmazsa fitTxt küçültür
-  const ph = 36 + (chips.length ? 26 : 0) + bl.length * 19 + 8, y0 = cardY(ph), x0 = clamp(W / 2 - w / 2, cardLeft(y0), cardRight(y0) - w), cx = x0 + w / 2; G.cardBot = y0 < H / 2 ? y0 + ph : null;
+  const rows = []; { let cur = [], rw = -8; for (const c of chips) { if (cur.length && rw + 8 + c.w > bw) { rows.push(cur); cur = []; rw = -8; } cur.push(c); rw += 8 + c.w; } if (cur.length) rows.push(cur); } // 18 Eki: sığmayan değerler alt satıra
+  const ph = 36 + rows.length * 26 + bl.length * 19 + 8, y0 = cardY(ph), x0 = clamp(W / 2 - w / 2, cardLeft(y0), cardRight(y0) - w), cx = x0 + w / 2; G.cardBot = y0 < H / 2 ? y0 + ph : null;
   roundRect(x0 + 3, y0 + 6, w, ph, 16, 'rgba(0,0,0,0.38)');
   const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(76,15,36,0.97)'); g.addColorStop(0.6, 'rgba(51,16,46,0.97)'); g.addColorStop(1, 'rgba(30,11,38,0.97)');
   roundRect(x0, y0, w, ph, 16, g, '#d4ab5a', 2); roundRect(x0 + 4, y0 + 4, w - 8, ph - 8, 12, null, 'rgba(201,168,101,0.28)', 1);
@@ -15460,9 +15461,9 @@ function drawInfoCard(info) {
   if (costW) { hx += 10; const ok = I.refund != null || G.gold >= I.cost; roundRect(hx, hy - 12, costW, 24, 12, 'rgba(10,4,12,0.75)', ok ? '#e8bb4a' : '#d9453a', 1.6); drawIcon('coin', hx + 13, hy, 13);
     txt(I.refund != null ? '+' + I.refund : String(I.cost), hx + 25, hy + 1, 15, I.refund != null ? '#b8ff8a' : ok ? '#ffe9a0' : '#ff8070', 'left', '400', FONT_T); }
   let ly = y0 + 46;
-  if (chips.length) { // simgeli değerler (yükseltmede: eski → yeni, yeni yeşil)
-    let x = cx - Math.min(chipsW, bw) / 2;
-    chips.forEach(c => {
+  for (const row of rows) { // simgeli değerler (yükseltmede: eski → yeni, yeni yeşil)
+    let x = cx - Math.min(row.reduce((a, c) => a + c.w + 8, -8), bw) / 2;
+    row.forEach(c => {
       roundRect(x, ly - 11, c.w, 22, 11, 'rgba(0,0,0,0.38)', c.a != null ? 'rgba(140,255,150,0.55)' : 'rgba(212,171,90,0.45)', 1.2);
       ctx.save(); ctx.translate(x + 13, ly); ctx.scale(1.25, 1.25); statGlyph(c.g, 0, 0); ctx.restore();
       let tx = x + 24;
@@ -15572,19 +15573,21 @@ function infoText() {
     if (G.sel.sub === 'imbue') return ['Silah büyüsü seç', `${t.type === 'archer' ? 'Oklar' : 'Kılıçlar'} her vuruşta düşmana bir etki bırakır: alev, zehir ya da buz`];
     if (G.preview && G.preview.id === 'upgrade') {
       const L = t.def.levels[t.lvl + 1];
-      const NC = towerChips(t.type, PD ? Object.assign({}, L, { rate: L.rate * PD.rate, dmg: L.dmg.map(v => v * PD.dmg) }) : L), OC = towerChips(t.type, effLevel(t));
+      const T2 = Object.assign({}, t, { lvl: t.lvl + 1 }), NC = towerChips(t.type, effShown(T2)), OC = towerChips(t.type, effShown(t)); // 18 Eki: ikisi de gelişmeler ve yol çarpanıyla
       const delta = NC.map(c => { const o = OC.find(q => q[0] === c[0]); return o && String(o[1]) !== String(c[1]) ? [c[0], o[1], c[1]] : null; }).filter(Boolean); // 16 Eki: yalnız değişen değerler (eski → yeni)
-      return [`Yükselt → ${towerTitle(t, t.lvl + 1)} — ${upCost(t)} altın`, `${(PD && PD.perks[t.lvl + 1]) || L.perk}`, delta.length ? null : NC, { delta }];
+      const pc = pctSum(t.type, effShown(t), effShown(T2)), n1 = xbowCount(t), n2 = xbowCount(T2); // 18 Eki (Caner): "2 okçu → 3 okçu, ne kazandırıyor görelim"
+      const nw = n2 > n1 ? `${t.path === 'xbow' ? 'Arbaletçi' : 'Okçu'} ${n1} → ${n2} · ` : '';
+      return [`Yükselt → ${towerTitle(t, t.lvl + 1)} — ${upCost(t)} altın`, `${nw}${pc ? pc + ' · ' : ''}${pc ? perkNew((PD && PD.perks[t.lvl + 1]) || L.perk) : (PD && PD.perks[t.lvl + 1]) || L.perk}`, delta.length ? null : NC, { delta }];
     }
     if (G.preview && G.preview.id === 'sell') return ['Kuleyi sat', '', null, { refund: Math.floor(t.spent * SELL_RATIO) }];
     if (G.preview && G.preview.id === 'ability') {
       const a = G.preview.ab, r = (t.ab && t.ab[a.id]) || 0;
       if (r >= a.ranks.length) return [`${a.name} — En üst kademe`, a.desc(a.ranks[r - 1])];
       if (!t.spec) return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: 'UZMANLIK', note: 'Diğer yol kapanır · +%20 güç' }];
-      return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: `${r + 1}/${a.ranks.length}` }];
+      return [`${a.name} — ${priceK(a.ranks[r].cost, t.stackK || 1)} altın`, a.desc(a.ranks[r]), null, { tag: `${r + 1}/${a.ranks.length}`, delta: rankDelta(t, a, r) }];
     }
     const L = t.def.levels[t.lvl];
-    const C = towerChips(t.type, effLevel(t));
+    const C = towerChips(t.type, effShown(t));
     if (t.spec) return [`${SPEC[t.spec].title}${t.imbue ? ' · ' + (t.type === 'archer' ? IMBUE[t.imbue].arrow : IMBUE[t.imbue].melee) : ''}`, imbueOpen(t) && !t.imbue ? `${SPEC[t.spec].who} · Silah büyüsü açıldı: yandaki düğme` : SPEC[t.spec].who, C];
     if (t.lvl >= t.def.levels.length - 1) return [`${towerTitle(t)} — Seviye ${t.lvl + 1} (son)`, PD ? `Uzmanlık: yukarıdaki düğme (${SPEC[PD.spec].title})` : `Uzmanlık seç: yukarıdaki ${t.def.abilities.length === 3 ? 'üç' : 'iki'} düğmeden biri`, C];
     if (NECRO && t.type === 'archer' && t.lvl === 0) return [`${L.title} — Seviye 1`, `${TR(L.perk)} · ${TR('Yükseltirken yolunu seç')}: ${TR('okçular ya da arbaletçiler')}`, C];
@@ -18034,6 +18037,9 @@ function diff() { const D = DIFFS[diffKey()] || DIFFS.normal; return { hp: GAME_
 // gelişmelerle güçlenmiş kule seviyesi değerleri
 // uzmanlık seçen kule +%20 hasar (kışlada asker canı ve hasarı) alır: tek yol seçmenin karşılığı
 const SPEC_BONUS = 1.2;
+// 18 Eki (Caner: "kuleler ileri seviyede pek katkı vermiyor, açıklamada da görünmüyor"; KR'deki gibi her kademe hissedilsin):
+// uzmanlık kademesi (1/3 → 3/3) okçu, fener ve kazanın ana gücünü de büyütür (kışla ve Lanet Kulesi kendi kademe değerleriyle büyür)
+const SPEC_RANK = { dmg: [1, 1.15, 1.3], rate: [1, 1.08, 1.15] };
 // Kan Sunağı: menzilindeki (kule merkezleri arası) en güçlü sunağın etkisi
 function altarBuff(t) {
   let buff = 0, dmg = 0;
@@ -18182,6 +18188,34 @@ function updateAltar(t, dt) {
     }
   }
 }
+const specRk = (t) => clamp((t.ab && t.ab[t.spec]) || 1, 1, 3);
+// yükseltme kartı: değişen ana değerlerin yüzdesi ("Hasar +%38 · Atış hızı +%30 · Menzil +%15")
+// yüzdeyle zaten görünen kısımları (sayı, menzil, hız) açıklamadan çıkarır: kartta yeni gelen özellik (kritik, zırh delme...) kalsın
+const perkNew = (p) => { const k = String(p || '').split(' · ').filter(q => !/^\d+ (iskelet |nişancı)?(okçu|arbaletçi|nişancı)|^\+?menzil|menzil$|^(daha |çok )?(hızlı|sık) (atış|yükleme)$|^daha (ağır|geniş)/i.test(q.trim())); return k.join(' · ') || p; };
+function pctSum(type, A, B) {
+  const P = (a, b) => (a > 0 ? Math.round((b / a - 1) * 100) : 0), out = [], add = (n, v, pp) => { if (Math.abs(v) >= 1) out.push(`${n} ${v > 0 ? '+' : '-'}${pp ? '' : '%'}${Math.abs(v)}${pp ? ' puan' : ''}`); };
+  const avg = (L) => (L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 0);
+  if (type === 'altar') { add('Lanet', Math.round((B.curse - A.curse) * 100), true); add('Direnç kırma', Math.round((B.res - A.res) * 100), true); add('Güçlendirme', Math.round((B.ally - A.ally) * 100), true); add('Menzil', P(A.range, B.range)); return out.join(', '); }
+  if (type === 'barracks') { add('Can', P(A.hp, B.hp)); add('Hasar', P(avg(A), avg(B))); add('Zırh', Math.round(((B.armor || 0) - (A.armor || 0)) * 100), true); return out.join(', '); }
+  add('Hasar', P(avg(A), avg(B))); if (A.rate && B.rate) add('Atış hızı', P(B.rate, A.rate)); add('Menzil', P(A.range, B.range)); if (A.splash && B.splash) add('Alan', P(A.splash, B.splash));
+  return out.join(', ');
+}
+// uzmanlık kademesi kartı: bu kademenin kazandırdıkları (eski → yeni simgeli değerler)
+const RANK_LBL = { every: (v) => `her ${v}. ok`, poison: (v) => `${v} zehir/sn`, pen: (v) => `%${Math.round(v * 100)} zırh delme`, crit: (v) => `%${Math.round(v * 100)} kritik`, armor: (v) => `+%${Math.round(v * 100)} zırh`,
+  hp: (v) => `+${v} can`, mult: (v) => `x${v} hasar`, heal: (v) => `%${Math.round(v * 100)} iyileştirme`, cd: (v) => `${v} sn bekleme`, dmg: (v) => (v < 1 ? `+%${Math.round(v * 100)} hasar` : `${v} hasar`), fear: (v) => `${v} sn korku`,
+  h: (v) => `${v} savurma`, pool: (v) => `x${v} göl`, stun: (v) => `${v} sn sersemlik`, dps: (v) => `${v} veba/sn`, sw: (v) => `${v} sinek sürüsü`, rate: (v) => `+%${Math.round(v * 100)} atış hızı`,
+  drain: (v) => `${v} can çekme/sn`, regen: (v) => `%${Math.round(v * 1000) / 10} yenilenme/sn`, n: (v) => `${v} sıçrama`, boost: (v) => `+%${Math.round(v * 100)} lanet gücü`, r: (v) => `${v} menzil`, jumps: (v) => `${v} sıçrama` };
+function rankDelta(t, a, r) { // r: alınmış kademe (1..), r+1'e geçiş
+  const A = a.ranks[r - 1], B = a.ranks[r], d = [];
+  if (t.spec === a.id && t.type !== 'barracks' && t.type !== 'altar') {
+    d.push(['sword', `+%${Math.round((SPEC_RANK.dmg[r - 1] * SPEC_BONUS - 1) * 100)}`, `+%${Math.round((SPEC_RANK.dmg[r] * SPEC_BONUS - 1) * 100)}`]);
+    d.push(['clock', `+%${Math.round((SPEC_RANK.rate[r - 1] - 1) * 100)}`, `+%${Math.round((SPEC_RANK.rate[r] - 1) * 100)}`]);
+  }
+  for (const k in B) if (k !== 'cost' && RANK_LBL[k] && A[k] !== B[k]) d.push([k === 'dmg' || k === 'mult' ? 'sword' : k === 'armor' || k === 'hp' ? 'shield' : k === 'rate' || k === 'cd' ? 'clock' : 'magic', RANK_LBL[k](A[k]), RANK_LBL[k](B[k])]);
+  return d.slice(0, 5);
+}
+// kartta görünen değer: Kemik Kulesi yolunun (okçu/arbaletçi) hız ve hasar çarpanı da katılır
+function effShown(t) { const E = effLevel(t), PD = t.path && ARCHER_PATH[t.path]; return PD && t.lvl >= 1 && E.rate ? Object.assign({}, E, { rate: E.rate * PD.rate, dmg: E.dmg.map(v => v * PD.dmg) }) : E; }
 function effLevel(t) {
   let L = t.def.levels[t.lvl];
   { const F = t.type !== 'archer' && towerForm(t); if (F && F.range) L = Object.assign({}, L, { range: L.range * F.range }); } // dönüşmüş kulenin menzili
@@ -18190,7 +18224,8 @@ function effLevel(t) {
   if (NECRO && t.type === 'artillery' && t.spec && ARTI_SPEC[t.spec] && ARTI_SPEC[t.spec].range) L = Object.assign({}, L, { range: L.range * ARTI_SPEC[t.spec].range });
   const ab = t.type !== 'barracks' && altarBuff(t);
   if (ab) L = Object.assign({}, L, { rate: L.rate / (1 + ab.buff), dmg: [L.dmg[0] * (1 + ab.dmg), L.dmg[1] * (1 + ab.dmg)] });
-  if (t.spec && t.type !== 'barracks') L = Object.assign({}, L, { dmg: [L.dmg[0] * SPEC_BONUS, L.dmg[1] * SPEC_BONUS] });
+  if (t.spec && t.type !== 'barracks') { const k = SPEC_BONUS * (t.type !== 'altar' ? SPEC_RANK.dmg[specRk(t) - 1] : 1), q = t.type !== 'altar' ? SPEC_RANK.rate[specRk(t) - 1] : 1;
+    L = Object.assign({}, L, { dmg: [L.dmg[0] * k, L.dmg[1] * k] }, L.rate ? { rate: L.rate / q } : {}); }
   if (t.more && t.type === 'archer' && L.rate) { const n = xbowCount(t); if (n > 1) L = Object.assign({}, L, { rate: L.rate * (n - 1) / n }); } // +1 Okçu: atış aralığı okçu sayısıyla kısalır
   // kum fırtınası (hava ya da Fırtına Cini'nin yeteneği) kule menzilini düşürür
   const wr = (G && (G.weather === 'sand' || G.weather === 'fog') ? WEATHER[G.weather].range : 1) * (G && G.stormT > 0 ? 0.8 : 1);

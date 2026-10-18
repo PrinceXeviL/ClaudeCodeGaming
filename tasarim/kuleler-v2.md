@@ -56,3 +56,19 @@ Yetenek örnekleri (her biri 3 kademe):
 ## Görsel ihtiyacı (Gemini, Caner çizdirir)
 4a/4b kuleleri: Dikilitaş 2, Ruh Feneri 2, Veba Kazanı 2, Lanet Kulesi 2 + Lanet Kulesi 1–3. kademe = 11 görsel
 (ikişer ikişer tek sayfada → yaklaşık 6 adım). Mahzen 4. kademeleri mevcut iskelet görselleriyle.
+
+## v3 — yükseltme hissi (18 Eki 2026, Caner: "ileri seviyede katkı yok, kartta da görünmüyor; level atlatmak ne veriyor görelim")
+Yapıldı (yayın 805):
+- **Kart her yükseltmede kazancı yazar:** birim sayısı ("Okçu 2 → 3"), yüzdeler ("Hasar +%59, Atış hızı +%45, Menzil +%21"),
+  sonra yalnız yeni gelen özellik ("%15 kritik"). Simgeli değerler eski → yeni; sığmayan alt satıra geçer.
+- **Uzmanlık kademeleri gerçek güç verir:** 2/3 ve 3/3 kulenin ana hasarını +%15 / +%30, atış hızını +%8 / +%15 büyütür
+  (SPEC_RANK, game.js; kışla ve Lanet Kulesi kendi kademe değerleriyle büyür). Kartta "bu kademe kazandırır" satırı (rankDelta).
+- Kemik Kulesi yol çarpanı (okçu/arbaletçi) kart değerlerine katıldı (eski değer yanlış görünüyordu).
+
+Sırada (oyuncuların sevdiği, rakiplerde olan):
+1. **Hedef önceliği** (BTD6'nın en sevilen özelliği; KR'de yok, forumlarda istenir): İlk / Son / Güçlü / Uçan. Kule menüsünde tek düğme.
+2. **3/3 imza hareketi:** her uzmanlık 3/3'te yeni, görünür bir saldırı açar (ör. Hayalet Okçular: 10 sn'de bir delip geçen ruh oku;
+   Kara Veba: ölen vebalı patlar). Sayı artışı + yeni hareket = "tam güç" anı (KR5 incelemelerindeki övgü).
+3. **Yükseltme anı:** kısa parlama + ses + kulenin üstünde kademe yıldızları (kaç kademe alındığı uzaktan görünsün).
+4. **Aynı dalgada geri al:** yanlış yükseltme/kurulum aynı dalgada satılırsa tam iade (KR'deki "undo" hissi; oyuncu cezalandırılmaz).
+5. Denge: SPEC_RANK sonrası geç bölümler denge botuyla ölçülecek (hedef: bot ≥ %50 canla geçsin, bkz. denge-botu).
