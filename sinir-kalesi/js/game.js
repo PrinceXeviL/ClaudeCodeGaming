@@ -2687,20 +2687,20 @@ function shakeScreen(amp, dur) {
 // veba sıçraması: çember yok; sıvı yere çarpıp dört bir yana saçılır, düzensiz bir birikinti ve çevresine damla lekeleri kalır
 // 18 Eki (Caner: "yeşil asit daha detaylı, Gemini + video"): Veo şeridi (img/fx_acid, varliklar/veba_asit_isle.py) çarpma yerinde oynar, son kare söner
 const SKEL_GUARD = { p: 0.15, cd: 5, k: 0.4 }; // mahzen iskeletinin savunması: yakın vuruşta şans, bekleme (sn), savunurken hasar çarpanı
-const ACID = { k: 1.95, hold: 0.9, fade: 0.7, land: 3, fast: 1.8 }; // land: damlanın yere değdiği kareler (normal hız); sonrası fast kat hızlı (18 Eki, Caner: "düştükten sonra %80 hızlandır")
+const ACID = { k: 1.95, hold: 1.9, fade: 0.7, land: 3, fast: 1.8, a: 0.72 }; // a: saydamlık (18 Eki, Caner: "çok yoğun, seyrelt"); hold +1 sn // land: damlanın yere değdiği kareler (normal hız); sonrası fast kat hızlı (18 Eki, Caner: "düştükten sonra %80 hızlandır")
 const acidDur = (F) => ACID.land / F.fps + (F.n - ACID.land) / (F.fps * ACID.fast);
 const acidFrame = (F, t) => { const L = ACID.land / F.fps; return Math.min(F.n - 1, Math.floor(t < L ? t * F.fps : ACID.land + (t - L) * F.fps * ACID.fast)); };
 function drawAcidFx() {
   const F = ANIM_META.fx_acid, im = F && spr('fx_acid'); if (!im || !G.acidFx) return;
   const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), dur = acidDur(F);
   for (const a of G.acidFx) {
-    const i = acidFrame(F, a.t), al = a.t < dur + ACID.hold ? 1 : 1 - (a.t - dur - ACID.hold) / ACID.fade, k = a.r * ACID.k / F.rw;
+    const i = acidFrame(F, a.t), hd = a.hold ?? ACID.hold, al = ACID.a * (a.t < dur + hd ? 1 : 1 - (a.t - dur - hd) / ACID.fade), k = a.r * ACID.k / F.rw;
     ctx.save(); ctx.globalAlpha = clamp(al, 0, 1); ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, a.x - F.bx * k, a.y - F.by * k, F.fw * k, F.fh * k); ctx.restore();
   }
 }
-function fxPlagueSplash(x, y, r) {
+function fxPlagueSplash(x, y, r, life) { // life: altındaki birikintinin süresi (sn); Veo asidi o kadar yerde kalır. Veo şeridi kullanıldıysa true döner
   const P = G.parts;
-  if (ANIM_META.fx_acid) { loadStrip('fx_acid'); if (spr('fx_acid')) { (G.acidFx ||= []).push({ x, y, r, t: 0 }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return; } }
+  if (ANIM_META.fx_acid) { loadStrip('fx_acid'); if (spr('fx_acid')) { const F = ANIM_META.fx_acid; (G.acidFx ||= []).push({ x, y, r, t: 0, hold: Math.max(ACID.hold, (life || 0) - acidDur(F) - ACID.fade) }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return true; } }
   for (let i = 0; i < 22; i++) { // yere yakın, yayvan saçılan damlalar
     const a = rand(0, Math.PI * 2), v = rand(50, 150);
     emit(P, { kind: 'dot', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? '#6cc83c' : '#b8f27a', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
@@ -8216,7 +8216,7 @@ function setupProps() {
 }
 function updateProps(dt) {
   updateSurprise(dt); updateSigFx(dt); keepGolemTick(dt);
-  if (G.acidFx) { const F = ANIM_META.fx_acid, end = F ? acidDur(F) + ACID.hold + ACID.fade : 0; for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => a.t < end); }
+  if (G.acidFx) { const F = ANIM_META.fx_acid, base = F ? acidDur(F) + ACID.fade : 0; for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => a.t < base + (a.hold ?? ACID.hold)); }
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
@@ -11027,18 +11027,18 @@ function plagueBomb(pr) {
   // 16 Eki (Caner: "kaynayan veba kazanı yüksek seviyede attığı zehir yolda daha uzun kalsın, üstünden geçen saniyede zehir hasarı alsın"):
   // birikinti süresi kademeyle (POOL_LV, uzmanlıkta +POOL_SPEC), içinden geçene bulaşan zehir kademe başına +%40
   const pl2 = POOL_LV[pr.plvl ?? 0] + (pr.pspec ? POOL_SPEC : 0), inf = 1 + 0.4 * (pr.plvl ?? 0);
-  G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) });
-  fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2);
+  const pool = { x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) }; G.zones.push(pool);
+  const veo = fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2, pl2); if (veo) pool.veo = true; // 18 Eki: Veo asidi varsa kodla çizilen birikinti görünmez (altında ikinci asit kalıyordu), hasarı sürer
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
   for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
-  for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
+  if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.75, 1.15); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
 // zehir gölü: yolda köpüren yeşil birikinti (içinden geçen zehirlenir)
 function drawPlaguePools() {
   for (const z of G.zones) {
-    if (!z.pool) continue;
+    if (!z.pool || z.veo) continue;
     if (z.boneball && spr('nm_bonepool')) { const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a > 0) { const im = spr('nm_bonepool'), w = z.r * 1.75 * (0.6 + 0.4 * Math.min(1, z.t / 0.3)); ctx.save(); ctx.globalAlpha = a * 0.92; ctx.drawImage(im, z.x - w / 2, z.y - w * im.height / im.width / 2, w, w * im.height / im.width); ctx.restore(); } continue; } // 16 Eki: kemik gülle gölü (Gemini)
     const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a <= 0) continue;
     const rx = z.r * (0.6 + 0.4 * Math.min(1, z.t / 0.3));
