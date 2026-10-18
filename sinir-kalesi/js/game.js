@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
