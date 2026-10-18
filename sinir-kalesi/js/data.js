@@ -1782,6 +1782,10 @@ for (const i in BAL.lvl6) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1
 // İlk 10 bölüm oyuncuyu tutmalı: buralar yumuşar (asıl zorluk 11. bölümden sonra)
 BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82, 27: 0.88, 33: 0.88, 38: 0.92 }; // 33: Kemik Avize Salonu (bot 0-11 can)
 for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl7[i];
+// 18 Eki (Caner kuralı: "tek çözümlü bölüm ve ani zorluk sıçraması asla"; 6 strateji × 40 bölüm, komutanlı): 19 hiçbir stratejiyle geçilmiyordu,
+// 16/20/39 yalnız 2 stratejiyle; 27/35/38'de karışık oyun bir önceki bölüme göre çakılıyordu. Hedef: her bölüm ≥ 3 stratejiyle, karışık ≥ 8 canla
+BAL.lvl8 = {}; // ilk ölçümde bot altını harcamıyordu (alınamayan seçenekte duruyordu); düzeltilmiş botla yeniden ölçülecek
+for (const i in BAL.lvl8) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl8[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)
 // 18 Eki (Caner: "kristalle ana kalemizin kalıcı level özelliğini açıcam: balkonda iskelet okçular, bir üst levelde daha fazla, kapısında golem her oyun başında"):
 // kalıcı kale seviyeleri (kristal dükkânı, KALE sekmesi). lvl: her bölüm kale bu seviyeden başlar; golem: kapıda Ceset Golemi; lives: ek can

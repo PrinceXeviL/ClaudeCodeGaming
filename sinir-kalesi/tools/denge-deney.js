@@ -55,8 +55,9 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
               for (const a of abs) { if (a.id !== pick) continue; const r = (t.ab && t.ab[a.id]) || 0; if (r < a.ranks.length) opts.push({ c: a.ranks[r].cost * 1.2 * (SK === 'iki' && t.type === ST ? 0.4 : 1), f: () => g.buy(t, a.id) }); } }
           }
           if (G.castle.lvl < CASTLE.levels.length - 1 && G.towers.length >= 5) opts.push({ c: CASTLE.levels[G.castle.lvl + 1].cost * 1.4, f: () => g.upgradeCastle() });
-          opts.sort((a, b) => a.c - b.c); const o = opts[0], g0 = G.gold;
-          if (!o || !o.f()) break; spent += Math.max(0, g0 - G.gold);
+          opts.sort((a, b) => a.c - b.c); const g0 = G.gold; // 18 Eki: alınamayan seçenek (kilitli/yanlış yol) harcamayı durdurmasın, sıradakine geç
+          let ok = false; for (const o of opts) { if (o.c > G.gold * 1.5) break; if (o.f()) { ok = true; break; } }
+          if (!ok) break; spent += Math.max(0, g0 - G.gold);
         }
         const live = G.enemies.filter(e => !e.dead && !e.under);
         const ground = live.filter(e => !e.def.flying);

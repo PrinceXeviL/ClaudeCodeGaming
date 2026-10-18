@@ -2626,6 +2626,7 @@ let LITE_P = liteMode(); // hafif kip parçacık sınırı (ayar değişince set
 let CROWD = false;
 const CROWD_N = 55; // düşman + asker sayısı bu eşiği aşınca
 function emit(list, o) {
+  if (XRAY) return; // görünürlük kopyası çizilirken parçacık üretilmez
   const P = (LITE_P ? 130 : 260) * (CROWD ? 0.6 : 1); // hafif kipte yarı, kalabalıkta %40 az
   if (list.length > 2 * P || (list.length > P && Math.random() < (list.length - P) / P)) return; // 16 Eki (performans): kalabalıkta yeni parçacık seyrelir (eskiden 900'e dek hepsi)
   list.push(Object.assign({ t: 0, vx: 0, vy: 0, g: 0, drag: 0, s0: 2, s1: 0, a: 1, kind: 'dot' }, o));
@@ -9896,12 +9897,14 @@ const HP_K = 0.657; // can barı ölçeği (genişlik ve kalınlık); 12 Eki: ik
 const HPBAR_C = new Map();
 // 17 Eki (Caner: "komutanlarımın hp'sinin yanında aynı renkte mor bir yıldız olsun, ayırt edebileyim"): komutan çubuğunun solunda mor yıldız
 function heroHpBar(x, y, w, frac) {
+  if (XRAY) return;
   hpBar(x, y, w, frac, HP_HERO);
   const r = 3.3 * HP_K, sx = x - w * HP_K / 2 - r - 1.6 * HP_K, sy = y + 1.28 * HP_K;
   ctx.lineJoin = 'round'; starShape(sx, sy, r + 1.1 * HP_K); ctx.fillStyle = 'rgba(14,8,3,0.85)'; ctx.fill();
   starShape(sx, sy, r); ctx.fillStyle = HP_HERO; ctx.fill(); starShape(sx, sy - r * 0.12, r * 0.45); ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
 }
 function hpBar(x, y, w, frac, col = '#4cd34c') {
+  if (XRAY) return;
   frac = clamp(frac, 0, 1); w *= HP_K;
   const h = 2.56 * HP_K, r = h / 2 + 1.1 * HP_K; // 17 Eki (Caner): çubuk %20 ince (3,2 → 2,56), uzunluk aynı
   const b = 1.1 * HP_K; // dış çerçeve payı
@@ -12136,6 +12139,21 @@ function drawBoneWall(s) {
   ctx.restore();
   if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 46, 22, s.hp / s.maxHp, '#e8dcb8');
 }
+// 18 Eki (Caner: "mahzendeki iskeletleri göremiyorum, çatışmada kaybolup gidiyorlar"): efektler, gaz ve parçacıklar birimlerin üstüne çizilir;
+// dövüşen müttefikler (iskelet, dirilen, golem, komutan) efektlerin üstüne yarı saydam bir kez daha çizilir: sisin içinden görünürler
+let XRAY = false;
+const ALLY_XRAY = { a: 0.45 };
+function drawAllyXray() {
+  if (PERF_OFF.has('xray') || !G.soldiers.length) return;
+  XRAY = true;
+  try {
+    for (const s of G.soldiers) {
+      if (s.dead || s.wall || s.removed || !s._p0 || !(s.target && !s.target.dead) || (s.born != null && G.t < s.born)) continue;
+      const ax = s.px, ay = s.py, an = s.anim; s.px = s._p0[0]; s.py = s._p0[1];
+      ctx.save(); ctx.globalAlpha *= ALLY_XRAY.a; try { drawSoldier1(s); } finally { ctx.restore(); s.px = ax; s.py = ay; s.anim = an; }
+    }
+  } finally { XRAY = false; }
+}
 function drawSoldier(s) {
   drawSoldier1(s);
   if (s.hero && !s.dead) { const sk = cosOf('hero'); if (sk !== 'none') drawHeroSkinFx(sk, s.x, s.y, CHAR_H.hero || 34, s.moving, true); } // 18 Eki: komutan görünümü
@@ -12269,6 +12287,10 @@ function drawSoldier0(s) {
     if (spR >= 2 && !elite) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.55, ch * (0.55 + 0.1 * spR), sp2 === 'shield' ? '120,200,255' : '120,255,120', 0.12 + 0.06 * spR + Math.sin(time * 4 + s.slot) * 0.04); ctx.restore(); }
     // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
     if (!elite) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore(); }
+    // 18 Eki (Caner: "iskeletler düşmanın içinden dikkat çekmiyor"): ayağın altında açık mavi takım halkası (strateji oyunlarındaki gibi), dövüşte daha belirgin
+    if (!XRAY && !(s.born != null && G.t < s.born)) { const fr = fighting ? 1 : 0.6, rw = 9 + ch * 0.12;
+      ctx.save(); ctx.globalAlpha *= 0.85 * fr; ctx.strokeStyle = 'rgba(10,20,40,0.7)'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, rw, rw * 0.38, 0, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = 'rgba(140,215,255,0.95)'; ctx.lineWidth = 1.3; ctx.stroke(); ctx.restore(); }
     if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
     const rise = !s.door && s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir
@@ -12295,7 +12317,7 @@ function drawSoldier0(s) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, wx, wy, 7 * sw, I.col, 0.55 + Math.sin(time * 6 + (s.slot || 0)) * 0.12); ctx.restore();
       if (Math.random() < 0.06 * sw) emit(G.parts, { kind: 'glow', add: true, x: wx + rand(-3, 3), y: wy + rand(-4, 4), vy: s.tower.imbue === 'fire' ? -rand(15, 30) : -rand(4, 12), col: I.col, s0: 2.2, s1: 0.4, life: 0.4 });
     }
-    if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, HP_SOLDIER);
+    if (s.hp < s.maxHp || fighting) hpBar(s.x, s.y - ch - 6, 11, s.hp / s.maxHp, HP_SOLDIER); // dövüşte can çubuğu hep görünür (mavi: bizim)
     return;
   }
   // kışla askeri (ve paralı asker): seviyeye göre zırh/silah değişen çizim
@@ -21490,7 +21512,7 @@ function drawPlay() {
   const ents = [];
   for (const t of G.towers) ents.push([t.y, 0, t]);
   for (const e of G.enemies) if (!(e.twT > 0)) ents.push([e.y + (e.def.flying ? 60 : 0), 1, e]); // kasırgadakiler drawTornadoes'ta
-  for (const s of G.soldiers) ents.push([s.exit && s.tower ? s.tower.y + 0.5 : s.y, 2, s]); // kapıdan çıkan iskelet binanın önünde
+  for (const s of G.soldiers) { s._p0 = s.px === undefined ? null : [s.px, s.py]; ents.push([s.exit && s.tower ? s.tower.y + 0.5 : s.y, 2, s]); } // kapıdan çıkan iskelet binanın önünde; _p0: görünürlük kopyası için önceki konum
   for (const c of G.coins) if (c.state !== 'fly') ents.push([c.y, 4, c]);
   for (const o of G.loot) ents.push([o.y, 6, o]);
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
@@ -21513,6 +21535,7 @@ function drawPlay() {
   if (!PERF_OFF.has('fx')) for (const f of G.effects) if (f.kind !== 'corpse') drawEffect(f);
   if (!PERF_OFF.has('parts')) drawPartsAll(G.parts);
   drawSigFx(false);
+  drawAllyXray();
   drawMechFx();
   drawProps(true);
   drawFG();

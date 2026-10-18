@@ -52,8 +52,9 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
             else for (const a of t.def.abilities || []) { const r = (t.ab && t.ab[a.id]) || 0; if (r < a.ranks.length && (!t.spec || t.spec === a.id)) opts.push({ c: a.ranks[r].cost * 1.2, f: () => g.buy(t, a.id) }); }
           }
           if (G.castle.lvl < CASTLE.levels.length - 1 && G.towers.length >= 5) opts.push({ c: CASTLE.levels[G.castle.lvl + 1].cost * 1.4, f: () => g.upgradeCastle() });
-          opts.sort((a, b) => a.c - b.c); const o = opts[0];
-          if (!o || !o.f()) break;
+          opts.sort((a, b) => a.c - b.c); // 18 Eki: alınamayan seçenek harcamayı durdurmasın, sıradakine geç
+          let ok = false; for (const o of opts) { if (o.c > G.gold * 1.5) break; if (o.f()) { ok = true; break; } }
+          if (!ok) break;
         }
         const live = G.enemies.filter(e => !e.dead && !e.under);
         const ground = live.filter(e => !e.def.flying);
