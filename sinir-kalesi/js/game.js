@@ -19225,6 +19225,8 @@ function drawTitle() {
     roundBtn('settings', ...TB(1), 30, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
     roundBtn('t_codex', ...TB(2), 30, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
     roundBtn('t_ach', ...TB(3), 30, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
+    if (TEST_OPEN) { const [ax, ay] = TB(4); roundBtn('t_admin', ax, ay, 30, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.9, tile: 'ember' }); // 18 Eki (Caner): admin serbest mod ana sayfada da
+    }
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
     if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
     return;
@@ -20403,7 +20405,7 @@ function drawMap() {
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
   if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => uiIco('help', 0, 0, r * 1.15) || txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => go(() => startLevel(TUTOR.idx, 'o')), { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
   // 16 Eki (Caner): Deneme Alanı düğmesi (admin; yalnız TEST_OPEN, mağaza sürümünde görünmez)
-  if (TEST_OPEN) { roundBtn('admintest', bx2(NECRO ? 4 : 3), by2, BR, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.2, tile: 'ember' }); lab(bx2(NECRO ? 4 : 3), 'DENEME'); } // 18 Eki (Caner): admin serbest mod
+  if (TEST_OPEN) { roundBtn('admintest', bx2(NECRO ? 4 : 3), by2, BR, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.2, tile: 'ember' }); lab(bx2(NECRO ? 4 : 3), 'ADMİN'); } // 18 Eki (Caner): admin serbest mod
   const freeStars = starsTotal() - starsSpent();
   roundBtn('upgrades', bx2(0), by2, BR, (r) => uiIco('upgrades', 0, 0, r * 1.15) || fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'rose', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
   const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
