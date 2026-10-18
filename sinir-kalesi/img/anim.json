@@ -3099,10 +3099,10 @@
  },
  "enemy_legarcher_atk": {
   "n": 33,
-  "fw": 130,
-  "fh": 172,
-  "base": 0.0135,
-  "ch": 0.9302
+  "fw": 171,
+  "fh": 181,
+  "base": 0.0133,
+  "ch": 0.8847
  },
  "enemy_legarcher_die": {
   "n": 33,

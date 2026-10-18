@@ -1025,7 +1025,7 @@ function restructureWaves() {
 }
 // Lejyon Okçusu (18 Eki): Caner animasyonları onaylayınca true. Dalgalardaki Solarian Okçusu bölükleri Lejyon Okçusu olur; 1. seferin 7. bölümünden
 // sonra (ve 2. seferde) bölüğün dörtte biri seçkin Solarian Okçusu olarak kalır (ateşli ok, daha dayanıklı)
-const LEGARCHER_ON = false || (typeof window !== 'undefined' && !!window.__legarcher); // test: window.__legarcher
+const LEGARCHER_ON = true || (typeof window !== 'undefined' && !!window.__legarcher); // test: window.__legarcher
 if (LEGARCHER_ON) { ENEMIES.solarcher.hp = Math.round(ENEMIES.solarcher.hp * 1.6); ENEMIES.solarcher.gold = 13; ENEMIES.solarcher.elite = true;
   LEVELS.forEach((lv, li) => { for (const w of lv.waves) for (const g of w.slice()) if (g.t === 'solarcher' && !g.types) {
     const keep = (lv.ep || 1) === 2 || li >= 6 ? Math.max(g.n >= 4 ? 1 : 0, Math.round(g.n * 0.25)) : 0; g.t = 'legarcher'; g.n -= keep;
@@ -1767,6 +1767,6 @@ BAL.lvl6 = { 2: 1.3, 5: 1.1, 6: 0.95, 7: 1.2, 8: 1.1, 10: 1.15, 11: 0.73, 12: 1.
 for (const i in BAL.lvl6) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl6[i];
 // 18 Eki (ücretsiz ilk 10 bölüm): az gelişmeli yeni oyuncu botu (bölüm başına 1-2 yıldız) normalde 6. (4-5 can), 7. (8 can / kayıp) ve 10. bölümde (1 can) zorlanıyordu.
 // İlk 10 bölüm oyuncuyu tutmalı: buralar yumuşar (asıl zorluk 11. bölümden sonra)
-BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82, 33: 0.88 }; // 33: Kemik Avize Salonu (bot 0-11 can)
+BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82, 27: 0.88, 33: 0.88, 38: 0.92 }; // 33: Kemik Avize Salonu (bot 0-11 can)
 for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl7[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)
