@@ -1128,6 +1128,7 @@ if (NECRO) {
   // (4, 8, 12, 16, 20). Ara bölümlerin komutanları boşa gitmesin: mekân sonunda büyük bossun yanında ikinci general olarak gelir (BOSS_PAIR1).
   const BOSS_PAIR1 = { 7: 'centurion', 15: 'ironwarden' }; // ilk boss (4. bölüm) tek: yeni oyuncuya ikili general ağır geliyordu (bot kaybetti)
   LEVELS.filter(l => (l.ep || 1) === 1).forEach((l, i) => { delete l.boss2; if ((i + 1) % BOSS_EVERY) { l.bossT = null; l.noBoss = true; return; } l.bossT = B1[i]; if (BOSS_PAIR1[i]) l.boss2 = BOSS_PAIR1[i]; });
+  { const L10 = LEVELS.filter(l => (l.ep || 1) === 1)[9]; if (L10) { L10.noBoss = false; L10.bossT = 'ironwarden'; L10.finale = true; } } // 18 Eki (Caner): ücretsiz kısmın son bölümü büyük bir bossla biter (Demir Muhafız Brutus), ardından merak bırakan sahne
 }
 // 2. sefer bossları (12 Eki, Caner): engizisyonun kendi komutanları (varliklar/ham/nm_boss_D.jpg; haç yerine güneş amblemi),
 // her mekânın kendi komutanı, 17-19 ikili; 20. bölüm üç evre: Yürüyen Katedral → çaydanlıklı Severus → Lanetli Severus (nm_boss_E.jpg).
@@ -1610,6 +1611,9 @@ const ADMIN_TEST = { level: 'Kara Göl Geçidi', gold: 1500, lives: 20, waves: [
 ] };
 for (const t of ['gloriosus3', 'cathedral']) if (ENEMIES[t]) ENEMIES[t].final = true;
 Object.assign(HEROES.leonidas, { cost: 0, unlock: null }); // 17 Eki: başlangıç komutanı Leonidas (ücretsiz). Diğerleri kristalle açılır
+// 18 Eki (Caner: "deneme amaçlı Leonidas kristalle açılmak için kilitli olsun"): Leonidas da kristalle açılır; test sürümünde de kilitli (game.js LOCK_TEST).
+// Hiç komutan açılmamışsa savaş komutansız oynanır.
+HEROES.leonidas.cost = 20;
 // tek kullanımlık savaş eşyaları: dükkânda kristalle alınır, savaşta sağ alttaki çantadan kullanılır (KR'deki eşyalar gibi)
 const ITEMS = {
   bomb:   { name: 'Kemik Bombası',    cost: 3, desc: 'Seçtiğin yerde patlar, ağır alan hasarı', target: true, r: 85, dmg: 320 },
@@ -1770,3 +1774,10 @@ for (const i in BAL.lvl6) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1
 BAL.lvl7 = { 2: 0.9, 4: 0.93, 5: 0.78, 6: 0.8, 8: 0.9, 9: 0.82, 27: 0.88, 33: 0.88, 38: 0.92 }; // 33: Kemik Avize Salonu (bot 0-11 can)
 for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl7[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)
+// 18 Eki (Caner: "kristalle ana kalemizin kalıcı level özelliğini açıcam: balkonda iskelet okçular, bir üst levelde daha fazla, kapısında golem her oyun başında"):
+// kalıcı kale seviyeleri (kristal dükkânı, KALE sekmesi). lvl: her bölüm kale bu seviyeden başlar; golem: kapıda Ceset Golemi; lives: ek can
+const KEEP_UP = [
+  { id: 'k1', name: 'Balkon Okçuları', desc: 'Her bölüm kale okçuları 2. kademeden başlar (2 iskelet okçu)', cost: 15, lvl: 1 },
+  { id: 'k2', name: 'Muhafız Balkonu', desc: 'Kale okçuları 3. kademeden başlar (3 okçu, kritik vuruş) · +2 can', cost: 30, lvl: 2, lives: 2 },
+  { id: 'k3', name: 'Kapı Golemi', desc: 'Her bölüm başında kalenin kapısında Ceset Golemi kalkar; ölürse 30 sn sonra yeniden', cost: 50, golem: true },
+];

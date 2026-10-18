@@ -2163,8 +2163,9 @@ let swipe = null;                 // harita sayfasını parmakla kaydırma      
 // TEST_OPEN (11 Eki, Caner oyunu test ediyor): bütün bölgeler, bölümler, kuleler, komutanlar, büyüler, kodeks ve meydan okumalar açık.
 // MAĞAZA SÜRÜMÜNDEN ÖNCE false YAP.
 const TEST_OPEN = true;
+const LOCK_TEST = new Set(['leonidas']); // 18 Eki: test sürümünde de kilitli kalanlar (kristalle açma denensin)
 function heroUnlocked(id) {
-  if (HEROES[id].cost) return (TEST_OPEN && !window.__paywallTest) || (save.heroBuy || []).includes(id); // 12 Eki: kristalle açılır
+  if (HEROES[id].cost) return (TEST_OPEN && !window.__paywallTest && !LOCK_TEST.has(id)) || (save.heroBuy || []).includes(id); // 12 Eki: kristalle açılır
   const u = HEROES[id].unlock;
   return TEST_OPEN || !u || (save.stars[u - 1] || 0) > 0;
 }
@@ -2176,7 +2177,7 @@ const heroSlots = () => (NECRO && (TEST_OPEN || (save.stars && (save.stars[HERO_
 function team() {
   if (ADMIN_SB.hero && HEROES[ADMIN_SB.hero]) return [ADMIN_SB.hero]; // admin serbest mod: kilitli komutan da denenir
   const t = (save.team || [HERO_ORDER[0]]).filter(id => HEROES[id] && HERO_ORDER.includes(id) && heroUnlocked(id)).slice(0, heroSlots());
-  return t.length ? t : [HERO_ORDER[0]];
+  return t.length ? t : HERO_ORDER.some(heroUnlocked) ? [HERO_ORDER.find(heroUnlocked)] : []; // 18 Eki: hiç komutan yoksa komutansız
 }
 
 // Meydan okuma (bölümde 3 yıldızdan sonra): 'h' Kahramanlık (aynı dalgalar, düşman canı +%20, 3 can). 1 ek yıldız (save.ch).
@@ -2361,6 +2362,7 @@ function startLevel(idx, chal = null) {
     if (D.mod.gold) G.gold = Math.round(G.gold * D.mod.gold);
     G.banner = { title: 'GÜNÜN SINAVI: ' + D.mod.name, sub: D.mod.desc, t: 0, dur: 4 };
   }
+  keepStart();
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
   if (NECRO && chal !== 'a' && chal !== 'o') {
@@ -8189,7 +8191,7 @@ function setupProps() {
   setupZoneItem(); setupSurprise();
 }
 function updateProps(dt) {
-  updateSurprise(dt); updateSigFx(dt);
+  updateSurprise(dt); updateSigFx(dt); keepGolemTick(dt);
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
@@ -15843,6 +15845,40 @@ function drawCastleArchers() {
   const c = G.castle;
   c.archers.forEach((a, i) => paintArcher(ctx, castleArcherPoint(i), CASTLE_ARCHER_S, a, Math.min(c.lvl, 2)));
 }
+const keepLvl = () => (save.keep || 0);
+function keepStart() { // kalıcı kale seviyeleri: bölüm başında uygulanır
+  const k = keepLvl(); if (!k) return;
+  for (const U of KEEP_UP.slice(0, k)) { if (U.lvl) G.castle.lvl = Math.max(G.castle.lvl, Math.min(U.lvl, CASTLE.levels.length - 1)); if (U.lives && !G.chal) { G.lives += U.lives; G.maxLives = (G.maxLives || G.lives) + U.lives; } }
+  if (KEEP_UP.slice(0, k).some(U => U.golem)) G.keepGolem = { s: null, t: 1.2 };
+}
+function keepGolemTick(dt) { // kapı golemi: kalenin kapısında yolu tutar, ölünce 30 sn sonra yeniden kalkar
+  const K = G.keepGolem; if (!K || !G.paths.length) return;
+  if (K.s && !K.s.dead && G.soldiers.includes(K.s)) return;
+  if (K.s) { K.t = GRAVE.respawn; K.s = null; }
+  if ((K.t -= dt) > 0) return;
+  const P = G.paths[0], q = pathPos(P, Math.max(0, P.total - 46)), C = GRAVE.knight;
+  const s = { guard: true, keepGolem: true, militia: false, x: G.castle.x, y: G.castle.y, rx: q.x, ry: q.y, hp: C.hp, maxHp: C.hp, dmg: C.dmg, armor: C.armor, rate: C.rate, speed: C.speed, engage: C.engage, aoe: C.aoe,
+    atk: 0, target: null, dead: false, respawnT: 0, face: q.x < G.castle.x ? -1 : 1, anim: 0, slot: 0, born: G.t, big: 'unit_corpsegolem', bh: BIG_H.golem };
+  K.s = s; G.soldiers.push(s); G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '140,255,140', t: 0, dur: 0.8 }); sfx('raise');
+}
+function buyKeep() { const U = KEEP_UP[keepLvl()]; if (!U || (save.crystal || 0) < U.cost) { sfx('error'); return false; } save.crystal -= U.cost; save.keep = keepLvl() + 1; persist(); sfx('upgrade'); return true; }
+function drawKeepShop(px, py, pw, ph) {
+  const c = save.crystal || 0;
+  drawCrystal(W / 2 - 92, py + 52, 17); txt(`Kristalin: ${c}`, W / 2 + 12, py + 53, 24, '#ffd4cc', 'center', '400', FONT_T, false);
+  txt('Kalıcı kale güçleri · bütün bölümlerde geçerli · sırayla açılır', W / 2, py + 82, 14, '#c8b8d8', 'center', '700', FONT_B, false);
+  KEEP_UP.forEach((U, k) => {
+    const ry = py + 100 + k * 82, rx = px + 24, rw = pw - 48, have = keepLvl() > k, next = keepLvl() === k;
+    roundRect(rx, ry, rw, 74, 12, have ? 'rgba(20,40,16,0.9)' : 'rgba(26,12,22,0.9)', have ? '#6ac85a' : '#6a4a5a', 2);
+    circle(rx + 38, ry + 37, 30, 'rgba(60,30,70,0.9)', '#e8bb52', 1.5);
+    const im = spr(U.golem ? 'unit_corpsegolem' : 'unit_archer' + (U.lvl + 1)) || spr('unit_archer1'); if (im) { ctx.save(); ctx.beginPath(); ctx.arc(rx + 38, ry + 37, 28, 0, TAU); ctx.clip(); drawSprite(ctx, im, rx + 38, ry + 64, 50 * im.width / im.height); ctx.restore(); }
+    txt(U.name, rx + 80, ry + 24, 17, '#fff4d0', 'left', '800', FONT_B, false);
+    fitTxt(U.desc, rx + 80, ry + 48, rw - 80 - 150, 13, '#c8b8a8', 'left', '700', FONT_B, false, 10);
+    if (have) txt('AÇIK', rx + rw - 70, ry + 38, 18, '#8af07a', 'center', '400', FONT_T, false);
+    else if (next) gameButton('keep_' + U.id, rx + rw - 70, ry + 37, 120, 48, '' + U.cost, buyKeep, c >= U.cost ? 'green' : 'dark', { size: 18 });
+    else { drawIcon('lock', rx + rw - 70, ry + 37, 18); }
+    if (next) drawCrystal(rx + rw - 106, ry + 38, 9);
+  });
+}
 function upgradeCastle() {
   const c = G.castle, N = CASTLE.levels[c.lvl + 1];
   if (!N || G.gold < N.cost) return false;
@@ -16285,6 +16321,28 @@ const MONET = { interEvery: 0, interMinSec: 120, price: '₺149,99', priceUsd: '
 const needsPremium = (i) => (!TEST_OPEN || window.__paywallTest) && !isPremium() && i >= MONET.freeLevels; // __paywallTest: test modunda kilidi görmek için
 let AD = null, lastInterAd = -1e9; // AD: { kind: 'rew' | 'int', t0, dur, cb }
 const isPremium = () => !!save.premium;
+// 18 Eki: sonraki bölüm: ücretsiz kısmın sonunda (10. bölüm, finale) bir kez merak sahnesi; tam oyun yoksa vitrin (önceden zafer ekranından kilitli bölüme geçilebiliyordu)
+function nextLevel() {
+  const i = G.idx + 1;
+  if (G.lv.finale && !G.chal && !(save.teaser || {}).f10) { save.teaser = Object.assign(save.teaser || {}, { f10: 1 }); persist(); screen = 'teaser'; screenT = time; TEASER.next = i; return; }
+  if (needsPremium(i)) { menuBack = 'map'; shopTab = 'full'; screen = 'shop'; screenT = time; return; }
+  startLevel(i);
+}
+// merak sahnesi: Solarian ordusunun asıl gövdesi ufukta (açılışın 2. planının ilk karesi), Mortimer teleskopla bakar, yazılar sırayla
+const TEASER = { next: 10, im: null, lines: [[0.6, 'Brutus düştü. Mortimer kahvesine döndü...'], [3.4, '...ve teleskobuna son bir kez baktı.'], [6.4, 'Ufukta binlerce güneş sancağı. Bu yalnızca öncü birlikti.'], [9.6, '"Kahvemi tazeleyin. Uzun bir gece olacak."']] };
+function drawTeaser() {
+  const t = time - screenT;
+  if (!TEASER.im) { const im = new Image(); im.src = 'img/cine_acilis_b.jpg' + (window.SURUM ? '?v=' + window.SURUM : ''); TEASER.im = im; }
+  ctx.fillStyle = '#05030a'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+  const im = TEASER.im; if (im.complete && im.naturalWidth) { const k = 1.04 + t * 0.012, w = VIS.w * k, h = w * im.naturalHeight / im.naturalWidth;
+    ctx.save(); ctx.globalAlpha = clamp(t / 1.2, 0, 1); ctx.drawImage(im, W / 2 - w / 2, VIS.t + VIS.h / 2 - h / 2 - 20, w, h);
+    const g = ctx.createLinearGradient(0, VIS.t, 0, VIS.b); g.addColorStop(0, 'rgba(10,4,20,0.55)'); g.addColorStop(0.6, 'rgba(10,4,20,0.25)'); g.addColorStop(1, 'rgba(5,2,10,0.92)'); ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    ctx.fillStyle = `rgba(60,0,10,${0.25 + 0.1 * Math.sin(t * 2)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); ctx.restore(); }
+  const mt = spr('mortimer_pose_teleskop'); if (mt) { const a = clamp((t - 2.6) / 0.8, 0, 1), h = 250; ctx.save(); ctx.globalAlpha = a; ctx.translate(VIS.l + 150 - (1 - a) * 40, VIS.b - 64); drawSprite(ctx, mt, 0, 0, h * mt.width / mt.height); ctx.restore(); }
+  let y = VIS.b - 150; for (const [at, s] of TEASER.lines) { const a = clamp((t - at) / 0.6, 0, 1); if (!a) continue; ctx.save(); ctx.globalAlpha = a; txt(TR(s), W / 2 + 80, y, 19, s.startsWith('"') ? '#ffe27a' : '#f2e6c8', 'center', '400', FONT_T, true); ctx.restore(); y += 28; }
+  const done = t > 11.2;
+  gameButton('teaser_go', W / 2 + 80, VIS.b - 32, 300, 48, done ? (isPremium() ? 'SAVAŞA DEVAM' : 'HİKÂYE DEVAM EDİYOR ▶') : 'ATLA ▶▶', () => { if (!done) { screenT = time - 11.3; return; } go(() => { if (needsPremium(TEASER.next)) { menuBack = 'map'; shopTab = 'full'; screen = 'shop'; screenT = time; } else startLevel(TEASER.next); }); }, done ? 'green' : 'dark', { size: done ? 17 : 13, shine: done });
+}
 function showRewardedAd(cb) {
   if (isPremium()) { cb(); return; }
   if (window.NativeAds && window.NativeAds.showRewarded) { window.NativeAds.showRewarded().then(ok => ok && cb()).catch(() => {}); return; }
@@ -16456,19 +16514,29 @@ function drawShop() {
   ctx.restore();
   // başlık yerine sekmeler (12 Eki): TAM OYUN | KRİSTAL; 16 Eki: çerçeveden sonra çizilir (taş çerçevenin üst kenarı örtmesin)
   ctx.save(); ctx.globalAlpha = clamp(rk, 0, 1);
-  [['full', 'TAM OYUN'], ['kristal', 'KRİSTAL'], ['cos', 'GÖRÜNÜM']].forEach(([k, lab], j) => { // 18 Eki: GÖRÜNÜM sekmesi (kozmetik)
-    const tx = W / 2 + (j - 1) * 196, sel = shopTab === k;
-    gameButton('tab_' + k, tx, uiOk() ? 40 : 50, 184, 52, lab, () => { if (shopTab !== k) { shopTab = k; sfx('pick'); } }, sel ? 'gold' : 'dark', { size: 18 });
+  [['full', 'TAM OYUN'], ['kristal', 'KRİSTAL'], ['keep', 'KALE'], ['cos', 'GÖRÜNÜM']].forEach(([k, lab], j) => { // 18 Eki: GÖRÜNÜM (kozmetik) ve KALE (kalıcı kale) sekmeleri
+    const tx = W / 2 + (j - 1.5) * 158, sel = shopTab === k;
+    gameButton('tab_' + k, tx, uiOk() ? 40 : 50, 150, 52, lab, () => { if (shopTab !== k) { shopTab = k; sfx('pick'); } }, sel ? 'gold' : 'dark', { size: 18 });
   });
   ctx.restore();
   if (pk < 0.9) return;
   if (shopTab === 'kristal') { drawCrystalShop(px, py, pw, ph); return; }
   if (shopTab === 'cos') { drawCosmeticShop(px, py, pw, ph); return; }
-  ctx.save(); ctx.translate(W / 2, py + 72); if (!uiEm('treasure', 0, -6, 54)) { drawIcon('skull', 0, 0, 54); drawCrown(0, -36, 1.1, 1); } ctx.restore();
-  txt("TAM OYUN · MORTİMER'IN HAZİNESİ", W / 2, py + 132, 24, '#ffe9b0', 'center', '400', FONT_T, false);
-  txt('Tek seferlik satın alma · abonelik yok · reklam yok', W / 2, py + 156, 15, '#e0c8a8', 'center', '700', FONT_B, false);
-  const rows = ['İki seferin 40 bölümünün tamamı (ilk 10 bölüm ücretsiz)', 'Bütün bosslar, Gloriosus ve Cadı Avı seferi', 'Ödüller (5 canla devam, altınla başla) reklam izlemeden', '3x oyun hızı · Mortimer\'a altın taç'];
-  rows.forEach((r, i) => { circle(px + 46, py + 190 + i * 30, 7, '#3cbf3c', '#0a2a0a', 1.2); fitTxt(r, px + 62, py + 191 + i * 30, pw - 84, 16, '#f2ecd8', 'left', '700', FONT_B, false, 12); });
+  if (shopTab === 'keep') { drawKeepShop(px, py, pw, ph); return; }
+  // 18 Eki (Caner: "kilit ekranını tam oyunu gösteren bir vitrine çevir"): dört görsel kart, Mortimer'ın lafı, tek düğme
+  txt("TAM OYUN · MORTİMER'IN HAZİNESİ", W / 2, py + 44, 24, '#ffe9b0', 'center', '400', FONT_T, false);
+  txt('Tek seferlik · abonelik yok · reklam yok · ilerlemen aynen kalır', W / 2, py + 68, 14, '#e0c8a8', 'center', '700', FONT_B, false);
+  const tw = 128, th = 168, gap = 10, tx0 = W / 2 - (tw * 4 + gap * 3) / 2, ty0 = py + 86;
+  const tile = (k, title, sub, draw) => { const x = tx0 + k * (tw + gap), y = ty0, a = clamp((st - 0.2 - k * 0.08) / 0.3, 0, 1), sc = 0.85 + 0.15 * easeOutBack(a);
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(x + tw / 2, y + th / 2); ctx.scale(sc, sc); ctx.translate(-tw / 2, -th / 2);
+    roundRect(2, 4, tw, th, 12, 'rgba(0,0,0,0.45)'); const g = ctx.createLinearGradient(0, 0, 0, th); g.addColorStop(0, '#3a1218'); g.addColorStop(1, '#14060a'); roundRect(0, 0, tw, th, 12, g, '#e8bb52', 1.6);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(5, 5, tw - 10, 104, 9); ctx.clip(); draw(tw / 2, 57); ctx.restore();
+    fitTxt(title, tw / 2, 124, tw - 10, 15, '#ffe27a', 'center', '400', FONT_T, false, 11); fitTxt(sub, tw / 2, 146, tw - 10, 11, '#e8d8c0', 'center', '700', FONT_B, false, 9); ctx.restore(); };
+  tile(0, '30 YENİ BÖLÜM', 'Cadı Avı seferi dahil', (cx, cy) => { [12, 24, 37].forEach((li, n) => { const T = thumbOf(li); if (!T) return; ctx.save(); ctx.translate(cx - 22 + n * 22, cy - 14 + n * 14); ctx.rotate(-0.08 + n * 0.08); ctx.drawImage(T, -58, -33, 116, 65); ctx.strokeStyle = '#e8bb52'; ctx.lineWidth = 1.5; ctx.strokeRect(-58, -33, 116, 65); ctx.restore(); }); });
+  tile(1, '16 BOSS', 'her biri iki imza yetenekli', (cx, cy) => { [['severus', -30, 0.9], ['cathedral', 32, 0.9], ['gloriosus1', 0, 1]].forEach(([t, dx, k]) => { const im = ENEMIES[t] && (enemySprite(t) || spr('enemy_' + t)); if (im) drawSprite(ctx, im, cx + dx, cy + 48, 70 * k * im.width / im.height); }); });
+  tile(2, 'YENİ BÜYÜLER', 'Ceset Patlatma · Ceset Golemi', (cx, cy) => { const a = spr('ico_sp_nm_burst'), b = spr('ico_sp_nm_golem'); if (a) icoFit(a, cx - 24, cy - 6, 26); if (b) icoFit(b, cx + 24, cy + 10, 26); });
+  tile(3, 'AYRICALIKLAR', 'reklamsız · 3x hız', (cx, cy) => { const f = spr('ico_ui_fast'), c = spr('ico_crystal'); if (f) icoFit(f, cx - 22, cy, 22); if (c) icoFit(c, cx + 24, cy, 20); });
+  { const sy = ty0 + th + 26; txt('"Kalan 30 bölüm için kahve param bitti. Bir fincan ısmarlar mısın?"', W / 2, sy, 13, '#cfe0a8', 'center', '700', FONT_B, false); txt('— Mortimer', W / 2 + 200, sy + 18, 11, '#a89878', 'center', '700', FONT_B, false); }
   if (isPremium()) txt('SATIN ALINDI — teşekkürler!', W / 2, py + ph - 38, 18, '#a8f0a0', 'center', '400', FONT_T, false);
   else gameButton('buy', W / 2, py + ph - 42, 320, 60, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 20 });
   gameButton('restore_b', W / 2, EDGE.b - 26, 300, 42, 'SATIN ALIMLARI GERİ YÜKLE', null, 'dark', { size: 14 }); // 11 Eki: mobilde basılacak boyda
@@ -21951,7 +22019,7 @@ function drawWinMinimal(k) {
     roundBtn('ov_map', cx + 200, yb, 31, 'map', toMap, { appear: appear - 0.04, tile: 'blue' });
   } else if (G.idx + 1 < LEVELS.length || G.tutorial || G.admin) {
     roundBtn('ov_retry', cx - 200, yb, 31, 'restart', retry, { appear, tile: 'violet' });
-    gameButton('ov_next', cx, yb, 270, 64, G.tutorial ? 'HARİTAYA DÖN' : G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.tutorial ? (screen = 'map', setOverlay(null)) : G.admin ? startLevel(G.idx, 'a') : startLevel(G.idx + 1)), 'green',
+    gameButton('ov_next', cx, yb, 270, 64, G.tutorial ? 'HARİTAYA DÖN' : G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.tutorial ? (screen = 'map', setOverlay(null)) : G.admin ? startLevel(G.idx, G.sandbox ? 's' : 'a') : nextLevel()), 'green',
       { icon: 'next', shine: true, breathe: true, appear: appear - 0.08, size: 21, glow: '140,255,120' });
     roundBtn('ov_map', cx + 200, yb, 31, 'map', toMap, { appear: appear - 0.04, tile: 'blue' });
   } else {
@@ -22360,13 +22428,13 @@ function drawOverlay() {
       const yb = py + ph - 66;
       gameButton('ov_retry', cx - 219, yb, 150, 56, 'TEKRAR', () => go(() => startLevel(G.idx, G.chal)), 'wood', { icon: 'restart', appear, size: 17 });
       gameButton('ov_map', cx - 55, yb, 150, 56, 'HARİTA', () => go(() => { screen = 'map'; setOverlay(null); }), 'blue', { icon: 'map', appear: appear - 0.06, size: 17 });
-      gameButton('ov_next', cx + 164, yb, 262, 62, G.tutorial ? 'HARİTAYA DÖN' : G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.tutorial ? (screen = 'map', setOverlay(null)) : G.admin ? startLevel(G.idx, 'a') : startLevel(G.idx + 1)), 'green', { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 21, glow: '140,255,120' });
+      gameButton('ov_next', cx + 164, yb, 262, 62, G.tutorial ? 'HARİTAYA DÖN' : G.admin ? 'YENİ DENEME' : 'SONRAKİ BÖLÜM', () => go(() => G.tutorial ? (screen = 'map', setOverlay(null)) : G.admin ? startLevel(G.idx, G.sandbox ? 's' : 'a') : nextLevel()), 'green', { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 21, glow: '140,255,120' });
     } else if (G.idx + 1 < LEVELS.length) {
       roundBtn('ov_retry', cx - 212, py + 246 + by, 34, 'restart', () => go(() => startLevel(G.idx, G.chal)), { appear }); // düğmeler arası geniş (Caner, 11 Eki: parmakla kolay basılsın)
       txt('Tekrar', cx - 212, py + 294 + by, 16, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
       roundBtn('ov_map', cx - 120, py + 246 + by, 34, 'map', () => go(() => { screen = 'map'; setOverlay(null); }), { appear: appear - 0.06, style: 'blue' });
       txt('Harita', cx - 120, py + 294 + by, 16, NECRO ? '#cfc4a8' : '#6a4420', 'center', '800', FONT_B, false);
-      gameButton('ov_next', cx + 112, py + 250 + by, 270, 72, 'SONRAKİ BÖLÜM', () => go(() => startLevel(G.idx + 1)), 'green',
+      gameButton('ov_next', cx + 112, py + 250 + by, 270, 72, 'SONRAKİ BÖLÜM', () => go(() => nextLevel()), 'green',
         { icon: 'next', shine: true, breathe: true, appear: appear - 0.12, size: 22, glow: '140,255,120' });
     } else {
       if (!NECRO) txt('Tüm bölümleri tamamladın!', cx, py + 222, 18, '#3a7a2a', 'center', '400', FONT_T, false);
@@ -22810,6 +22878,7 @@ function frame(now) {
   else if (screen === 'heroes') drawHeroes();
   else if (screen === 'settings') drawSettings();
   else if (screen === 'credits') drawCredits();
+  else if (screen === 'teaser') drawTeaser();
   else if (screen === 'upgrades') drawUpgrades();
   else if (screen === 'grim') drawGrimScreen();
   else if (screen === 'codex') drawCodex();
@@ -22988,7 +23057,7 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), pathPos: (p, d, o) => pathPos(p, d, o), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), nextLevel: () => nextLevel(), pathPos: (p, d, o) => pathPos(p, d, o), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
    surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi
   codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
