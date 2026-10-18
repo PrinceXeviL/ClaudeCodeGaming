@@ -601,6 +601,9 @@ resize();
 // rastgele seçilir, hız hafifçe oynatılır ki tekrar eden sesler mekanik duyulmasın.
 // vol: ses düzeyi, gap: aynı türün iki çalışı arasındaki en kısa süre, max: aynı anda en çok kaç tane.
 const SOUND = {
+  // 18 Eki (ElevenLabs, varliklar/yeni_sesler_18eki.py): ışınlanma, Ölüler Defteri, Ölü Lejyonu, 3/3 imza, kemiğe saplanan ok, dev ölü, feda patlaması
+  teleport: { vol: 0.6, gap: 0.2, max: 2 }, tome: { vol: 0.5, gap: 1, max: 1 }, legion: { vol: 0.7, gap: 3, max: 1 }, sigfire: { vol: 0.55, gap: 0.6, max: 2 },
+  stickbone: { vol: 0.35, gap: 0.08, max: 3, rate: [0.9, 1.15] }, bossraise: { vol: 0.8, gap: 2, max: 1 }, zboom: { vol: 0.65, gap: 0.15, max: 2, rate: [0.92, 1.08] },
   arrow:   { vol: 0.26, gap: 0.07, max: 3, rate: [0.92, 1.12] },   // kemik ok bırakma
   arrowhit: { vol: 0.22, gap: 0.06, max: 2, rate: [0.9, 1.15] },   // ok ucu saplanması
   splash:  { vol: 0.32, gap: 0.14, max: 2, rate: [0.9, 1.1] },     // kazan: fokurdayan buhar
@@ -4946,7 +4949,7 @@ function sigTick(t, dt) {
   const S = TSIG[t.spec], L = effLevel(t), base = L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 0, R = L.range || 130;
   const foes = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= R * 1.1);
   const sol = (t.soldiers || []).filter(s => !s.dead);
-  const fire = () => { t.sigT = S.cd; floatText(t.x, t.y - 92, S.name + '!', '#ff9a70', true); };
+  const fire = () => { t.sigT = S.cd; sfx('sigfire', null, 1, t); floatText(t.x, t.y - 92, S.name + '!', '#ff9a70', true); };
   const strongest = (L2) => L2.filter(e => e.siege === undefined).sort((a, b) => b.hp - a.hp)[0];
   HERO_SKILL = false;
   if (t.spec === 'bow' || t.spec === 'fan') {
@@ -5827,7 +5830,8 @@ function updateSoldier(s, dt) {
   if (s.provokeT > 0) { s.provokeT -= dt; if (s.provokeT <= 0 || !s.provoker || s.provoker.dead || s.provoker.under) s.provoker = null; }
   // vuran düşman: elindeki hedef göğüs göğüse değilse bırakıp ona döner
   const pv = s.provoker;
-  if (pv && !s.zombie && !s.moving && s.target !== pv && dist(pv.x, pv.y, home.x, home.y) <= PROVOKE.r && (!s.target || dist(s.x, s.y, s.target.x, s.target.y) > 26)) {
+  // 18 Eki (Caner: "dirilenlere yakından ok atılıyor, saldırmıyorlar"): dirilenler de kendine vurana döner (emirle yürürken değil; hedefi değecek kadar yakın değilse)
+  if (pv && !s.moving && s.target !== pv && !pv.def.flying && (s.zombie ? dist(pv.x, pv.y, s.x, s.y) <= ZOMBIE.aggro : dist(pv.x, pv.y, home.x, home.y) <= PROVOKE.r) && (!s.target || dist(s.x, s.y, s.target.x, s.target.y) > 26)) {
     if (s.target && s.target.blocker === s) s.target.blocker = null;
     s.target = pv; if (!pv.blocker && !pv.def.noblock) pv.blocker = s;
   }
@@ -6210,13 +6214,25 @@ const STUCK = { max: 3, on: 10, ground: 10, cap: 140 }; // 15 Eki (Caner): düş
 function groundArrow(x, y, a, src, dur = STUCK.ground) {
   const old = G.effects.filter(f => f.kind === 'stuck' && f.ground);
   if (old.length >= STUCK.cap) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
-  G.effects.push({ kind: 'stuck', x, y, ang: a, t: 0, dur, col: src.col, bolt: src.bolt, heavy: src.heavy, longA: src.longA ?? src.longArrow, ground: true });
+  G.effects.push({ kind: 'stuck', x, y, ang: a, t: 0, dur, col: src.col, bolt: src.bolt, heavy: src.heavy, longA: src.longA ?? src.longArrow, ground: true, foe: src.foe });
 }
 function dropStuck(f) { // düşmandaki ok yere düşer (düşman öldü ya da üstünde çok ok birikti)
   const T = f.target, fl = (T.face || 1) !== f.face0, x = T.x + (fl ? -f.dx : f.dx);
   const rem = Math.max(1.5, STUCK.ground - f.t); // saplandığından beri geçen süre düşülür: toplam ~10 sn
   f.gone = true; f.t = f.dur; T.stuckN = Math.max(0, (T.stuckN || 1) - 1);
   groundArrow(x + rand(-4, 4), T.y + rand(-3, 4), rand(0.5, Math.PI - 0.5), f, rem);
+}
+// düşman oku: askerde STUCK.on sn saplı (en çok STUCK.max), yoksa yere eğik saplanır; saplanınca küçük toz/kıymık
+function foeStick(pr, s) {
+  const ang = Math.atan2(pr.ty - pr.sy, pr.tx - pr.sx) + (pr.arc ? 0.35 * Math.sign(pr.tx - pr.sx || 1) : 0), st = pr.poison ? 'poison' : 'foe';
+  if (s) { const mine = G.effects.filter(f => f.kind === 'stuck' && f.target === s && !f.gone && f.t < f.dur); if (mine.length >= STUCK.max) dropStuck(mine[0]);
+    s.stuckN = (s.stuckN || 0) + 1; sfx('stickbone', null, 1, s);
+    G.effects.push({ kind: 'stuck', target: s, face0: s.face || 1, dx: pr.tx - s.x + Math.cos(ang) * 2, dy: pr.ty - s.y + Math.sin(ang) * 2, ang, t: 0, dur: STUCK.on * 0.6, foe: st });
+    for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx, y: pr.ty, vx: rand(-30, 30) - Math.cos(ang) * 20, vy: -rand(10, 40), g: 260, col: i % 2 ? '#efe6cc' : '#9a8a6a', s0: 1.2, s1: 0.5, life: 0.3 }); // kemik kıymığı
+  } else { const gy = pr.ty + 12, a = clamp(Math.abs(ang), 0.45, Math.PI - 0.45);
+    const old = G.effects.filter(f => f.kind === 'stuck' && f.ground); if (old.length >= STUCK.cap) old[0].t = Math.max(old[0].t, old[0].dur - 0.4);
+    G.effects.push({ kind: 'stuck', x: pr.tx, y: gy, ang: a, t: 0, dur: STUCK.ground * 0.6, ground: true, foe: st });
+    for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx, y: gy, vx: rand(-25, 25), vy: -rand(15, 45), g: 220, col: '#7a6a52', s0: 1.3, s1: 0.6, life: 0.35 }); }
 }
 function stickArrow(pr, e) {
   const k = 0.985, ang = projAng(pr, k);
@@ -6260,11 +6276,14 @@ function updateProjectile(pr, dt) {
       sfx('splash');
     }
     if (pr.net && h && !h.dead) { netSoldier(h, pr.net); sfx('bash'); return; } // ağ isabet etti
+    if ((pr.kind === 'harrow' || pr.kind === 'arrow') && (!h || h.dead || h.removed || h.wall)) foeStick(pr, null); // hedef yoksa ya da duvarsa: yere saplanır
     if (pr.burn && h && !h.dead) soldierDot(h, pr.burn.dps, pr.burn.t, '255,140,60');
     if (pr.stunHit && h && !h.dead && !h.wall) h.stunT = Math.max(h.stunT || 0, pr.stunHit);
+    const arrowy = pr.kind === 'harrow' || pr.kind === 'arrow';
     if (h && !h.dead && !h.removed) {
       damageSoldier(h, pr.edmg, pr.from);
       if (pr.kind === 'axe') sfx('clash');
+      if (arrowy && !h.wall) foeStick(pr, h.dead || h.removed ? null : h); // 18 Eki: düşman oku iskelete saplanır (ölürse yere düşer)
       for (let i = 0; i < 6; i++) emit(G.parts, { kind: 'glow', add: true, x: pr.tx + rand(-4, 4), y: pr.ty + rand(-4, 4), vx: rand(-40, 40), vy: rand(-50, 10), drag: 3,
         col: pr.kind === 'hex' ? '140,255,110' : '255,230,190', s0: 3, s1: 0.5, life: 0.35 });
     }
@@ -6959,7 +6978,7 @@ function strongCorpseMark(f) { // güçlü ceset (iri düşmanın ölüsü): üs
 // legion: sahada n ya da daha fazla dirilen varken hepsi dmg kat sert vurur (kale üstünde sayaç)
 // terror: kalkan ölünün yanındaki düşmanlar kısa korkar ya da donup kalır (r yarıçap, fear sn, stun sn, cd: aynı düşman için bekleme)
 // sac: dirilene iki kez dokununca patlar (r, taban hasar + azami canın payı); yakındaki cesetler zincirleme patlar (chainR, chain hasar)
-const ZOMBIE_X = { boss: { on: true, hp: 0.3, dmg: 1, life: 2, h: 1.1 }, legion: { n: 10, dmg: 1.25 }, terror: { r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
+const ZOMBIE_X = { boss: { on: true, hp: 0.3, dmg: 1, life: 2, h: 1.1 }, legion: { n: 10, dmg: 1.25 }, terror: { on: false, r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
   sac: { r: 55, base: 30, hpK: 0.5, chainR: 80, chain: 45, chainHit: 40, arm: 2 } };
 const TERROR_LINES = ['Marcus?!', 'O benim kardeşimdi!', 'Annem!', 'Bu adil değil!', 'Dün beraber yemek yemiştik!', 'Geri çekilin!', 'Kalktı!'];
 function zombieKind(s, tp, D) { // türe göre özellik: kalkanlı lejyoner kalkan tutar, atlı hücum eder, köpek hızlı koşar
@@ -6973,7 +6992,7 @@ function zombieBoss(s, e) {
   const B = ZOMBIE_X.boss, b = e.boss;
   s.hp = s.maxHp = Math.round(b.hp * B.hp); s.dmg = (b.dmg || s.dmg).map(v => v * B.dmg); s.armor = 0.3; s.zBoss = true; s.aoe = 0.5; s.life = (s.life || 30) * B.life; s.speed = 34; s.zh = (s.zh || 40) * B.h; s.engage = 120;
   floatText(e.x, e.y - 60, b.mini ? 'DEV ÖLÜ!' : 'BOSS DİRİLDİ!', '#ff7a5a', true); shakeScreen(6, 0.5); cnt('bossraise');
-  G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 60, col: '255,60,60', t: 0, dur: 0.7 }); G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '255,70,90', t: 0, dur: 0.9 }); sfx('roar');
+  G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 60, col: '255,60,60', t: 0, dur: 0.7 }); G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '255,70,90', t: 0, dur: 0.9 }); sfx('bossraise');
 }
 function zombieTerror(e) { // dirilen arkadaşını gören düşmanlar
   const T = ZOMBIE_X.terror; let said = false;
@@ -6987,12 +7006,12 @@ function zombieTerror(e) { // dirilen arkadaşını gören düşmanlar
 function thrallNote(tp, D, e) { // Ölüler Defteri: ilk kez dirilen tür kaydedilir (ansiklopedide "kölen", başarım)
   if (G.admin) return;
   save.thralls = save.thralls || {}; tp = (D && D.base) || tp.replace(/_(k|y)$/, ''); // rütbe çeşitleri (kıdemli, yüzbaşı) aynı tür
-  if (!save.thralls[tp]) { save.thralls[tp] = 1; floatText(e.x, e.y - 50, `Ölüler Defteri: ${(ENEMIES[tp] || D || {}).name || tp}`, '#ffb0ff'); persist(); } else save.thralls[tp]++;
+  if (!save.thralls[tp]) { save.thralls[tp] = 1; sfx('tome'); floatText(e.x, e.y - 50, `Ölüler Defteri: ${(ENEMIES[tp] || D || {}).name || tp}`, '#ffb0ff'); persist(); } else save.thralls[tp]++;
 }
 // Ölü Lejyonu: sayaç ve güç (updateLegion her karede, drawLegionMeter kale üstünde)
 function updateLegion() {
   const n = G.soldiers.filter(s => s.zombie && !s.dead).length, on = n >= ZOMBIE_X.legion.n;
-  if (on && !G.legionOn) { const c = G.castle; floatText(c.x, c.y - 120, 'ÖLÜ LEJYONU!', '#ff5a5a', true); cnt('legion'); sfx('raise'); shakeScreen(3, 0.3);
+  if (on && !G.legionOn) { const c = G.castle; floatText(c.x, c.y - 120, 'ÖLÜ LEJYONU!', '#ff5a5a', true); cnt('legion'); sfx('legion'); shakeScreen(3, 0.3);
     for (const s of G.soldiers) if (s.zombie && !s.dead) G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: 18, col: '255,60,60', t: 0, dur: 0.5 }); }
   G.legionN = n; G.legionOn = on;
 }
@@ -7021,10 +7040,10 @@ function zombieBlast(s) {
   const boom = (x, y, r, dmg) => { for (const e of G.enemies) { if (e.dead || e.def.flying) continue; const d = dist(e.x, e.y, x, y); if (d < r) { HERO_SKILL = true; damageEnemy(e, dmg * (1 - 0.5 * d / r), 'magic', false, 'blast'); HERO_SKILL = false; } }
     G.effects.push({ kind: 'ring', x, y, r, col: '255,70,60', t: 0, dur: 0.45 }); G.effects.push({ kind: 'ring', x, y, r: r * 0.55, col: '190,80,255', t: 0, dur: 0.35 });
     for (let i = 0; i < 14; i++) { const a = rand(0, TAU), v = rand(60, 170); emit(G.parts, { kind: 'chunk', x, y: y - 6, vx: Math.cos(a) * v, vy: -rand(60, 180), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#e8dcc0' : '#7a2a2a', s0: rand(1.4, 2.6), s1: 1, life: rand(0.5, 0.9) }); } };
-  boom(s.x, s.y, S.r, d0); shakeScreen(4, 0.3); sfx('stomp');
+  boom(s.x, s.y, S.r, d0); shakeScreen(4, 0.3); sfx('zboom', null, 1, s);
   let k = 0; for (const f of G.effects) { if (f.kind !== 'corpse' || !f.raisable || f.t >= f.dur || dist(f.x, f.y, s.x, s.y) > S.chainR) continue; f.t = f.dur; k++; const fx = f.x, fy = f.y; setTimeout(() => G && boom(fx, fy, S.chain, S.chainHit), 120 * k); }
   if (k) floatText(s.x, s.y - 40, `Zincir x${k + 1}!`, '#ff9a7a');
-  damageSoldier(s, 1e9);
+  s.block = 0; s.dodge = 0; s.armor = 0; damageSoldier(s, 1e9); // kalkanlı ölü kendi patlamasını savuşturmasın
 }
 function raiseMinion(e, delay = 0) {
   const S = spellStats('nm_raise'), M = S.minion, up = e.pw || 1; // dayanıklılık Büyü Kitabı'ndan (spellStats), güç cesedin sahibinden
@@ -7046,7 +7065,7 @@ function raiseMinion(e, delay = 0) {
     thrallNote(e.name.slice(6), D, e);
   }
   G.soldiers.push(s);
-  zombieTerror(e);
+  if (ZOMBIE_X.terror.on) zombieTerror(e); // 18 Eki (Caner): dehşet kaldırıldı (on: false)
   // 13 Eki: ışık sütunu yerine yerden fışkıran toprak ve kızıl kıvılcım (sütunlar ekranı boyuyordu)
   G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 16, col: '220,60,50', t: 0, dur: 0.45 });
   for (let i = 0; i < 9; i++) emit(G.parts, { kind: 'chunk', x: e.x + rand(-8, 8), y: e.y - rand(0, 4), vx: rand(-60, 60), vy: -rand(50, 130), g: 480, vr: rand(-10, 10), rot: rand(0, 6), col: i % 2 ? '#5a4632' : '#3a2c20', s0: rand(1.2, 2.2), s1: 1, life: rand(0.4, 0.7), floor: e.y + rand(-3, 4) });
@@ -7280,6 +7299,7 @@ function mortAnim(p) {
 // çıkarken tersi: kapıdan yürüyerek çıkar → kızıl ışınlanmayla terastaki yerine geçer. Boy hep aynı (m.h); yandan yürüme şeridi olmadığı için ışınlanma.
 const MORT_TP = { t: 0.45, door: [0.5, 0.515] }; // t: ışınlanma süresi (MORT_IN.walk'ın içinden); door: yeşil kapı eşiği (castle_keep görselinin kesri)
 function mortTeleportFx(x, y, h) {
+  sfx('teleport');
   G.effects.push({ kind: 'ring', x, y: y - 2, r: h * 0.55, col: '255,60,60', t: 0, dur: 0.4 });
   for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(20, 70);
     emit(G.parts, { kind: 'glow', add: true, x: x + Math.cos(a) * rand(2, 8), y: y - rand(0, h * 0.95), vx: Math.cos(a) * v, vy: -rand(30, 100), drag: 2, col: i % 3 ? '255,50,60' : '255,160,120', s0: rand(2, 4.5), s1: 0.4, life: rand(0.35, 0.7) }); }
@@ -13190,13 +13210,17 @@ function drawCorpse(f) {
 
 // 18 Eki (Caner: "tüm oyundaki oklar bizim iskelet okçuların oku kadar olsun"): bütün oklar aynı ölçüde (şaft -12..6, uç 10, tüy -13),
 // yalnız renkleri ayrı: iskelet okçu kemik + yeşil tüy, düşman tahta + çelik uç, kale ve kahraman kemik ya da tahta
-function arrowShape(c) {
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = c.line; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
-  ctx.strokeStyle = c.shaft; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
-  ctx.fillStyle = c.tip; ctx.strokeStyle = c.line; ctx.lineWidth = 0.6;
-  ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(5, -1.6); ctx.lineTo(6, 0); ctx.lineTo(5, 1.6); ctx.closePath(); ctx.fill(); ctx.stroke();
+// 18 Eki (Caner: "düşman okçusunun ve cadı avcısının okları hâlâ çok büyük; bütün oklar aynı boyda"): ahşap/düşman oku da kule okuyla aynı
+// ölçekte (ARROW_K × ARROW_FORM.arrow.k, ~14 px). embed: ucu gövdeye gömülü (saplanmış ok: yalnız şaft ve tüy)
+function arrowShape(c, embed) {
+  const k = ARROW_K * ARROW_FORM.arrow.k; ctx.save(); ctx.scale(k, k);
+  ctx.lineCap = 'round'; const x1 = embed ? -1 : 6;
+  ctx.strokeStyle = c.line; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(x1, 0); ctx.stroke();
+  ctx.strokeStyle = c.shaft; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(x1, 0); ctx.stroke();
+  if (!embed) { ctx.fillStyle = c.tip; ctx.strokeStyle = c.line; ctx.lineWidth = 0.6;
+    ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(5, -1.6); ctx.lineTo(6, 0); ctx.lineTo(5, 1.6); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   ctx.fillStyle = c.fl; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-13, -2); ctx.lineTo(-11.5, 0); ctx.lineTo(-13, 2); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 const ARROW_COL = { bone: { line: '#2a2018', shaft: '#efe6cc', tip: '#f6f0dc', fl: '#8fe88a' }, foe: { line: '#2a1a0c', shaft: '#9a6a34', tip: '#c8ccd6', fl: '#e8e2d2' },
   tower: { line: '#2a2018', shaft: '#ece4cc', tip: '#f6f0dc', fl: '#f0ece0' }, wood: { line: '#2a1a0c', shaft: '#8a5a2a', tip: '#d8dbe2', fl: '#f0ece0' }, poison: { line: '#1a2a10', shaft: '#9adf6a', tip: '#8fe85a', fl: '#c8ff9a' } };
@@ -13526,7 +13550,7 @@ function drawEffect(f) {
     const wob = Math.exp(-f.t * 9) * Math.sin(f.t * 55) * 0.25; // saplanınca sallanır
     ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y); ctx.rotate((fl ? Math.PI - f.ang : f.ang) + wob);
     if (f.ground) { ctx.fillStyle = 'rgba(40,26,12,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, 3 * ARROW_K, 1.1 * ARROW_K, -f.ang, 0, Math.PI * 2); ctx.fill(); }
-    boneArrowShape(f.col || '255,90,90', f.bolt, f.heavy, f.longA, true);
+    if (f.foe) arrowShape(ARROW_COL[f.foe] || ARROW_COL.foe, true); else boneArrowShape(f.col || '255,90,90', f.bolt, f.heavy, f.longA, true);
     ctx.restore();
     return;
   }

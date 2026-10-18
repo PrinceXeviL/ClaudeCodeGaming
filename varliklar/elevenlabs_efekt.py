@@ -155,6 +155,14 @@ SFX = {
     # 14 Eki (Caner: düşman ayak seslerini beğenmedi; Roma askeri, ortaçağ asker yürüyüşü gibi olsun)
     'g5_step_foot': ('a single firm footstep of a marching roman legionary in hobnailed leather caligae sandals on a packed dirt road, solid heel thud with a light gravel crunch and a faint rustle of leather armor, close, dry, no music', 0.5, 8),
     'g2_upgrade': ('a dark stone tower grows stronger: deep muffled stone grinding and a low magical hum swelling then settling, warm and soft, no metal clangs, no high pitched sounds, no music', 1.5, 3),
+    # 18 Eki (Caner: "ses efektlerinde eksikler varsa ElevenLabs'ten yap, konsepte uygun"): sesi olmayan yeni anlar
+    'teleport': ('a dark sorcerer teleports in a burst of crimson magic: a quick sharp reversed whoosh sucking inward, then a soft deep magical pop with a sizzling red ember crackle, short, game, no music, no voice', 0.9, 2),
+    'tome': ('a quill scratches quickly across an old leather tome, then a soft eerie ghostly chime: a new name is written in the book of the dead, short, game ui, no music, no voice', 1.2, 1),
+    'legion': ('an undead army assembles: many hollow raspy undead voices give one deep guttural rallying roar together, bones rattle and one heavy war drum hit, dark fantasy, short, no music, no words', 1.8, 1),
+    'sigfire': ('a dark gothic tower unleashes its ultimate power: a deep charged magical surge rising quickly into one heavy impactful boom with a crackling spectral tail, epic game skill, short, no music, no voice', 1.3, 1),
+    'stickbone': ('an arrow thunks hard into dry bone and old wood, short hollow crack with a tiny bone rattle, close-mic, dry, no music', 0.5, 2),
+    'bossraise': ('a giant fallen warlord rises from death as an undead monster: deep rumbling earth crack, heavy bones grinding, a monstrous low zombie roar and a dark magic whoosh, short, no music, no words', 2.0, 1),
+    'zboom': ('a zombie bursts apart in a gory cartoon explosion: wet squelchy pop, bones flying and clattering, a dark magic boom, short, no music', 0.9, 2),
 }
 
 
