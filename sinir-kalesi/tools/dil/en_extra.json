@@ -1171,7 +1171,8 @@
   "Kendi taşı!": "Their own rock!",
   "Tutulma! Final sahnesi BENİM! Kalkın, ölülerim!": "Eclipse! The finale is MINE! Rise, my dead!",
   "Hayalet!": "Ghost!",
-  "GRRR": "GRRR"
+  "GRRR": "GRRR",
+  "Düşmanlar %25 dayanıklı": "Enemies 25% tougher"
  },
  "tpl": [
   [
@@ -1921,6 +1922,26 @@
   [
    "✦ {}",
    "✦ {}"
+  ],
+  [
+   "Kapağa dokun: {} altına Ceset Golemi çıkar, yolu tutar. Meşaleciler kapağı mühürler!",
+   "Tap the hatch: raise a Corpse Golem for {} gold, it holds the road. Torchbearers seal the hatch!"
+  ],
+  [
+   "Ceset Golemi çıkar (Can {} · Hasar {}-{} · Zırh %{}), yolu tutar; ölürse {} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!",
+   "Raises a Corpse Golem (HP {} · Damage {}-{} · Armor {}%), it holds the road; if it dies it rises again after {} s. Torchbearers seal the hatch!"
+  ],
+  [
+   "Uzmanlık: yukarıdaki düğme ({})",
+   "Specialization: the button above ({})"
+  ],
+  [
+   "AÇ · {}",
+   "UNLOCK · {}"
+  ],
+  [
+   "Zırh: {}",
+   "Armor: {}"
   ]
  ]
 }

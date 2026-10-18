@@ -17612,9 +17612,9 @@ function heroEndXp(win) { if (!G) return; for (const h of G.heroes) gainXp(h, Ma
 // kalır. Yalnız Sefer modunda geçerli (Kahramanlık ve Sonsuz Gece kendi kurallarıyla, Normal). Yıldızlar her zorlukta aynı; Usta zaferi
 // save.usta[i] ile kaydedilir (haritada kafatası rozeti).
 const DIFFS = {
-  kolay: { name: 'Kolay', hp: 0.72, bounty: 1.1, lives: 5, note: 'Düşmanlar zayıf, +5 can' },
+  kolay: { name: 'Kolay', hp: 0.8, bounty: 1.1, lives: 5, note: 'Düşmanlar zayıf, +5 can' }, // 18 Eki tam tarama: 0,72'de bot 40/40 ort. 21,6/25 can (fazla rahat), usta 1,4'te 16/40 (fazla sert)
   normal: { name: 'Normal', hp: 1, bounty: 1, lives: 0, note: 'Dengeli' },
-  usta: { name: 'Usta', hp: 1.4, bounty: 0.9, lives: 0, note: 'Düşmanlar %40 dayanıklı' },
+  usta: { name: 'Usta', hp: 1.25, bounty: 0.9, lives: 0, note: 'Düşmanlar %25 dayanıklı' },
 };
 let CUR_DIFF = 'normal'; // startLevel G'yi kurmadan önce ayarlar (G'nin içindeki can hesabı da diff() kullanıyor)
 const diffKey = () => CUR_DIFF;

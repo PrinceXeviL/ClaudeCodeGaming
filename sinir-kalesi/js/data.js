@@ -1726,3 +1726,19 @@ BAL.leonidas = { dmg: 1.8, hp: 1.2, cd: 0.8, ult: 1.6 }; // 17 Eki bot 2-6: 1,35
 // sıkışık dört bölümde yol %12 geniş (tools/kalabalik-tara.js: bir düşmanın 12 px yakınında 7-9 komşu kalıyordu)
 BAL.wideRoad = { 12: 1.12, 17: 1.12, 30: 1.12, 37: 1.12 };
 for (const i in BAL.wideRoad) if (LEVELS[i]) LEVELS[i].roadWide = BAL.wideRoad[i]; // game.js ROAD_K ile çarpılır (lv.roadK)
+// 18 Eki (Caner: "tüm bölümleri test et, zorluk ayarlarına bak, komutanların ve büyülerin etkisini ölç, kolay/normal/zor dengesi"):
+// yeni giriş deseniyle (dalgalar tek/iki/her girişten) 5 kip tam tarama: normal 37/40 ort. 15 can (2. seferin neredeyse hepsi tam canla),
+// komutansız 36/40 ort. 13,4, büyüsüz 27/40 ort. 8,7. Hedef: bot kazansın ama can kaybetsin. Tam canla geçilen bölümler güçlenir, kaybedilenler azalır;
+// komutanların etkisi az çıktığı için komutan hasarı ve canı +%15 (BAL.heroAll).
+BAL.lvl4 = { 2: 1.1, 3: 1.1, 5: 1.05, 7: 1.1, 8: 1.15, 9: 1.1, 12: 1.15, 13: 1.15, 14: 1.05, 15: 1.15, 16: 1.05, 17: 1.15, 18: 1.15, 19: 1.15, 4: 0.9, 6: 0.85, 11: 0.88,
+  20: 1.2, 21: 1.2, 22: 1.2, 23: 1.2, 24: 1.2, 26: 1.2, 27: 1.2, 28: 1.05, 29: 1.2, 30: 1.1, 31: 1.2, 32: 1.2, 33: 1.2, 34: 1.2, 35: 1.2, 39: 1.2 };
+for (const i in BAL.lvl4) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl4[i];
+BAL.heroAll = { dmg: 1.15, hp: 1.15 };
+for (const h in HEROES) { const H = HEROES[h]; if (H.dmg) H.dmg = H.dmg.map(v => Math.round(v * BAL.heroAll.dmg)); if (H.hp) H.hp = Math.round(H.hp * BAL.heroAll.hp); }
+// 18 Eki (2. tur): 2. sefer ×1,2'yle de tam canla geçiliyordu; HPX eşik araması (×1,4 / ×1,8 / ×2,2) sonucuna göre bölüm başına çarpan (hedef 15 candan ~6-12 kalsın)
+BAL.lvl5 = { 20: 2.3, 21: 2.3, 22: 1.6, 23: 2.1, 24: 1.2, 25: 1.6, 26: 1.9, 27: 1.5, 28: 1.5, 29: 1.5, 30: 1.25, 31: 2.2, 32: 1.7, 33: 1.7, 34: 1.7, 35: 1.9, 36: 1.6, 38: 1.8, 39: 2 };
+for (const i in BAL.lvl5) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl5[i];
+// 18 Eki (3. tur): 1. sefer HPX eşik araması (×1 / 1,25 / 1,5 / 1,75): hâlâ tam canla geçilenler güçlenir, sınırdakiler biraz kolaylaşır
+BAL.lvl6 = { 2: 1.3, 5: 1.1, 6: 0.95, 7: 1.2, 8: 1.1, 10: 1.15, 11: 0.81, 12: 1.2, 13: 1.4, 14: 1.15, 17: 1.7, 18: 2, 19: 2 };
+for (const i in BAL.lvl6) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl6[i];
+if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)

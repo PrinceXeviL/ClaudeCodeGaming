@@ -982,7 +982,8 @@
   "Kendi taşı!": "¡Su propia piedra!",
   "Tutulma! Final sahnesi BENİM! Kalkın, ölülerim!": "¡Eclipse! ¡El final es MÍO! ¡Alzaos, mis muertos!",
   "Hayalet!": "¡Fantasma!",
-  "GRRR": "GRRR"
+  "GRRR": "GRRR",
+  "Düşmanlar %25 dayanıklı": "Enemigos un 25% más duros"
  },
  "tpl": [
   [
@@ -1440,6 +1441,26 @@
   [
    "✦ {}",
    "✦ {}"
+  ],
+  [
+   "Kapağa dokun: {} altına Ceset Golemi çıkar, yolu tutar. Meşaleciler kapağı mühürler!",
+   "Toca la trampilla: por {} de oro sale un Gólem de Cadáveres que bloquea el camino. ¡Los portadores de antorchas sellan la trampilla!"
+  ],
+  [
+   "Ceset Golemi çıkar (Can {} · Hasar {}-{} · Zırh %{}), yolu tutar; ölürse {} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!",
+   "Levanta un Gólem de Cadáveres (Vida {} · Daño {}-{} · Armadura {}%), bloquea el camino; si muere, vuelve a alzarse a los {} s. ¡Los portadores de antorchas sellan la trampilla!"
+  ],
+  [
+   "Uzmanlık: yukarıdaki düğme ({})",
+   "Especialización: el botón de arriba ({})"
+  ],
+  [
+   "AÇ · {}",
+   "DESBLOQUEAR · {}"
+  ],
+  [
+   "Zırh: {}",
+   "Armadura: {}"
   ]
  ]
 }

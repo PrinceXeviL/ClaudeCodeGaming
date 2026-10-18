@@ -982,7 +982,8 @@
   "Kendi taşı!": "Leur propre pierre !",
   "Tutulma! Final sahnesi BENİM! Kalkın, ölülerim!": "Éclipse ! Le final est À MOI ! Levez-vous, mes morts !",
   "Hayalet!": "Fantôme !",
-  "GRRR": "GRRR"
+  "GRRR": "GRRR",
+  "Düşmanlar %25 dayanıklı": "Ennemis 25 % plus coriaces"
  },
  "tpl": [
   [
@@ -1440,6 +1441,26 @@
   [
    "✦ {}",
    "✦ {}"
+  ],
+  [
+   "Kapağa dokun: {} altına Ceset Golemi çıkar, yolu tutar. Meşaleciler kapağı mühürler!",
+   "Touche la trappe : pour {} or, un Golem de cadavres surgit et tient la route. Les porte-torches scellent la trappe !"
+  ],
+  [
+   "Ceset Golemi çıkar (Can {} · Hasar {}-{} · Zırh %{}), yolu tutar; ölürse {} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!",
+   "Fait surgir un Golem de cadavres (PV {} · Dégâts {}-{} · Armure {} %), il tient la route ; s'il meurt, il revient après {} s. Les porte-torches scellent la trappe !"
+  ],
+  [
+   "Uzmanlık: yukarıdaki düğme ({})",
+   "Spécialisation : le bouton du dessus ({})"
+  ],
+  [
+   "AÇ · {}",
+   "DÉBLOQUER · {}"
+  ],
+  [
+   "Zırh: {}",
+   "Armure : {}"
   ]
  ]
 }

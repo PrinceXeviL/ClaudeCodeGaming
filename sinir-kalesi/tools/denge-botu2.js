@@ -12,6 +12,8 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
+  // 18 Eki: HPX=1.5 bütün bölümlerin düşman canını çarpar (eşik arama; data.js window.__HPX)
+  if (process.env.HPX) await p.addInitScript((k) => { window.__HPX = k; }, +process.env.HPX);
   await p.goto('http://localhost:8765/index.html?' + Date.now());
   await p.waitForTimeout(1500);
   for (const lvl of lvls) {

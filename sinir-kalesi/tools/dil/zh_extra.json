@@ -982,7 +982,8 @@
   "Kendi taşı!": "自己的石头！",
   "Tutulma! Final sahnesi BENİM! Kalkın, ölülerim!": "日蚀！终幕属于我！起来吧，我的亡者们！",
   "Hayalet!": "鬼！",
-  "GRRR": "吼——"
+  "GRRR": "吼——",
+  "Düşmanlar %25 dayanıklı": "敌人耐久提高25%"
  },
  "tpl": [
   [
@@ -1440,6 +1441,26 @@
   [
    "✦ {}",
    "✦ {}"
+  ],
+  [
+   "Kapağa dokun: {} altına Ceset Golemi çıkar, yolu tutar. Meşaleciler kapağı mühürler!",
+   "点击地窖门：花费{}金币召唤尸体魔像，它会守住道路。火把手会封住地窖门！"
+  ],
+  [
+   "Ceset Golemi çıkar (Can {} · Hasar {}-{} · Zırh %{}), yolu tutar; ölürse {} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!",
+   "召唤尸体魔像（生命{} · 伤害{}-{} · 护甲{}%），守住道路；阵亡后{}秒重新站起。火把手会封住地窖门！"
+  ],
+  [
+   "Uzmanlık: yukarıdaki düğme ({})",
+   "专精：上方按钮（{}）"
+  ],
+  [
+   "AÇ · {}",
+   "解锁 · {}"
+  ],
+  [
+   "Zırh: {}",
+   "护甲：{}"
   ]
  ]
 }

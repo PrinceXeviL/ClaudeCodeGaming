@@ -982,7 +982,8 @@
   "Kendi taşı!": "Ihr eigener Stein!",
   "Tutulma! Final sahnesi BENİM! Kalkın, ölülerim!": "Finsternis! Das Finale gehört MIR! Erhebt euch, meine Toten!",
   "Hayalet!": "Geist!",
-  "GRRR": "GRRR"
+  "GRRR": "GRRR",
+  "Düşmanlar %25 dayanıklı": "Gegner 25 % zäher"
  },
  "tpl": [
   [
@@ -1440,6 +1441,26 @@
   [
    "✦ {}",
    "✦ {}"
+  ],
+  [
+   "Kapağa dokun: {} altına Ceset Golemi çıkar, yolu tutar. Meşaleciler kapağı mühürler!",
+   "Tippe auf die Luke: Für {} Gold erhebt sich ein Leichengolem und hält die Straße. Fackelträger versiegeln die Luke!"
+  ],
+  [
+   "Ceset Golemi çıkar (Can {} · Hasar {}-{} · Zırh %{}), yolu tutar; ölürse {} sn sonra yeniden çıkar. Meşaleciler kapağı mühürler!",
+   "Erhebt einen Leichengolem (LP {} · Schaden {}-{} · Rüstung {} %), er hält die Straße; stirbt er, erhebt er sich nach {} s erneut. Fackelträger versiegeln die Luke!"
+  ],
+  [
+   "Uzmanlık: yukarıdaki düğme ({})",
+   "Spezialisierung: die Taste oben ({})"
+  ],
+  [
+   "AÇ · {}",
+   "FREISCHALTEN · {}"
+  ],
+  [
+   "Zırh: {}",
+   "Rüstung: {}"
   ]
  ]
 }
