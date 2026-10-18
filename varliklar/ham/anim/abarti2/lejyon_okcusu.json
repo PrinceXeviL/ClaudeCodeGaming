@@ -1,0 +1,44 @@
+[
+ {
+  "name": "enemy_legarcher_walk",
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt marches forward in place with a bouncy, exaggerated cartoon walk: big strides, each knee lifts high and each foot stomps down firmly, the whole body bobs up and down and sways side to side, the free arm swings strongly, the bow is carried in the left hand, squash on each step, lively snappy timing, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 33,
+  "ref": "ham/anim/enemy_legarcher_ref.png"
+ },
+ {
+  "name": "enemy_legarcher_atk",
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt shoots an arrow to the right: he takes an arrow from the quiver on his back, nocks it on the bow, raises the bow and pulls the string far back with a big anticipation, aims, then releases and the arrow flies out to the right, the bow arm recoils, then he lowers the bow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21,
+  "ref": "ham/anim/enemy_legarcher_ref.png"
+ },
+ {
+  "name": "enemy_legarcher_atk2",
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt pulls the short dagger from the sheath on his belt with his right hand and stabs forward to the right fast in one quick lunge, then pulls back and returns exactly to the starting pose; the bow stays in his left hand the whole time. Exaggerated punchy cartoon action: a big anticipation wind-up, a fast strike with the whole body leaning into it, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21,
+  "ref": "ham/anim/enemy_legarcher_ref.png"
+ },
+ {
+  "name": "enemy_legarcher_die",
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt is struck and dies: exaggerated comic cartoon death, violently knocked back, the bow flies out of his hand, limbs flailing, the body bounces once on the ground and then lies still. Squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21,
+  "ref": "ham/anim/enemy_legarcher_ref.png"
+ },
+ {
+  "name": "enemy_legarcher_idle",
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt stands in place in a lively exaggerated cartoon idle: big breathing, the chest and shoulders rise and fall, a slight bounce on the knees, the weight shifts from foot to foot, the head turns a little to look around, the bow is held ready and moves slightly, the feet stay planted on the same spot, squash and stretch, a seamless idle loop. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21,
+  "ref": "ham/anim/enemy_legarcher_ref.png"
+ }
+]

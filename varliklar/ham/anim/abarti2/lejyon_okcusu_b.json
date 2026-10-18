@@ -1,0 +1,10 @@
+[
+ {
+  "name": "enemy_legarcher_atkup",
+  "ref": "ham/anim/enemy_legarcher_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 21,
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt shoots a high arching arrow: he takes an arrow from the quiver on his back, nocks it, then tilts the bow and aims diagonally UP toward the upper right sky at about 45 degrees, leans back slightly and pulls the string far back with a big anticipation, releases and the arrow flies up and away to the upper right in a high arc, the bow arm recoils, then he lowers the bow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]

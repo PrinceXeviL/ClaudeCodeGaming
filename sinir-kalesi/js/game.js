@@ -12841,7 +12841,18 @@ function drawCorpse(f) {
   ctx.restore();
 }
 
-const FOE_ARROW_K = 0.7;
+// 18 Eki (Caner: "tüm oyundaki oklar bizim iskelet okçuların oku kadar olsun"): bütün oklar aynı ölçüde (şaft -12..6, uç 10, tüy -13),
+// yalnız renkleri ayrı: iskelet okçu kemik + yeşil tüy, düşman tahta + çelik uç, kale ve kahraman kemik ya da tahta
+function arrowShape(c) {
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = c.line; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
+  ctx.strokeStyle = c.shaft; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
+  ctx.fillStyle = c.tip; ctx.strokeStyle = c.line; ctx.lineWidth = 0.6;
+  ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(5, -1.6); ctx.lineTo(6, 0); ctx.lineTo(5, 1.6); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = c.fl; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-13, -2); ctx.lineTo(-11.5, 0); ctx.lineTo(-13, 2); ctx.closePath(); ctx.fill();
+}
+const ARROW_COL = { bone: { line: '#2a2018', shaft: '#efe6cc', tip: '#f6f0dc', fl: '#8fe88a' }, foe: { line: '#2a1a0c', shaft: '#9a6a34', tip: '#c8ccd6', fl: '#e8e2d2' },
+  tower: { line: '#2a2018', shaft: '#ece4cc', tip: '#f6f0dc', fl: '#f0ece0' }, wood: { line: '#2a1a0c', shaft: '#8a5a2a', tip: '#d8dbe2', fl: '#f0ece0' }, poison: { line: '#1a2a10', shaft: '#9adf6a', tip: '#8fe85a', fl: '#c8ff9a' } };
 function drawProjectile(p) {
   if (p.kind === 'meteor') { drawMeteor(p); return; }
   if (p.t < 0) return;
@@ -12866,22 +12877,13 @@ function drawProjectile(p) {
     ctx.restore();
     return;
   }
-  if ((p.kind === 'arrow' || p.kind === 'harrow') && p.foe && !p._sc) { // 18 Eki (Caner): düşman okçuların okları %30 küçük (bizimkiler aynı)
-    ctx.save(); ctx.translate(x, y); ctx.scale(FOE_ARROW_K, FOE_ARROW_K); ctx.translate(-x, -y); p._sc = 1; drawProjectile(p); p._sc = 0; ctx.restore(); return;
-  }
   if (p.kind === 'arrow' || p.kind === 'harrow') {
     const n = projPos(p, k + 0.05), a = Math.atan2(n.y - y, n.x - x), tl = projPos(p, k - 0.14), bone = NECRO && p.kind === 'arrow';
     if (p.boneArrow) {
       // iskelet okçunun oku: ince uzun kemik şaft, sivri kemik uç, yeşil tüy; arkasında hafif ruh izi
       ctx.save(); ctx.strokeStyle = 'rgba(150,255,160,0.35)'; ctx.lineWidth = 0.8; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
-      ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.lineCap = 'round';
-      ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 1.7; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
-      ctx.strokeStyle = '#efe6cc'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-12, 0); ctx.lineTo(6, 0); ctx.stroke();
-      ctx.fillStyle = '#f6f0dc'; ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 0.6;
-      ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(5, -1.6); ctx.lineTo(6, 0); ctx.lineTo(5, 1.6); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#8fe88a'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-13, -2); ctx.lineTo(-11.5, 0); ctx.lineTo(-13, 2); ctx.closePath(); ctx.fill();
-      ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a); arrowShape(ARROW_COL.bone); ctx.restore();
       return;
     }
     if (p.shard) {
@@ -12902,18 +12904,10 @@ function drawProjectile(p) {
     if (p.poison) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 6, '140,255,80', 0.6); ctx.restore(); }
     ctx.beginPath(); ctx.moveTo(tl.x, tl.y); ctx.lineTo(x, y); ctx.stroke();
     if (p.foe) { // düşman oku: ince uzun şaft, küçük demir uç, dar tüy
-      ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.lineCap = 'round';
-      ctx.strokeStyle = '#4a3018'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(5, 0); ctx.stroke();
-      ctx.fillStyle = '#e8e2d2'; ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-12, -1.4); ctx.lineTo(-8, 0); ctx.lineTo(-12, 1.4); ctx.fill();
-      ctx.fillStyle = '#c8ccd6'; ctx.beginPath(); ctx.moveTo(7.5, 0); ctx.lineTo(4.5, -1.3); ctx.lineTo(4.5, 1.3); ctx.fill();
-      ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a); arrowShape(ARROW_COL.foe); ctx.restore();
       return;
     }
-    ctx.save(); ctx.translate(x, y); ctx.rotate(a);
-    ctx.strokeStyle = bone ? '#3a3024' : '#5a3a1a'; ctx.lineWidth = bone ? 2.6 : 1.8; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke();
-    if (bone) { ctx.strokeStyle = '#ece4cc'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(4, 0); ctx.stroke(); ctx.fillStyle = '#ece4cc'; ctx.beginPath(); ctx.arc(-8.5, -1, 1.3, 0, 7); ctx.arc(-8.5, 1, 1.3, 0, 7); ctx.fill(); }
-    else { ctx.fillStyle = '#f0ece0'; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-11, -2.6); ctx.lineTo(-6, 0); ctx.lineTo(-11, 2.6); ctx.fill(); }
-    ctx.fillStyle = bone ? '#f6f0dc' : '#d8dbe2'; ctx.beginPath(); ctx.moveTo(7, 0); ctx.lineTo(3, -2.4); ctx.lineTo(3, 2.4); ctx.fill();
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a); arrowShape(p.poison ? ARROW_COL.poison : bone ? ARROW_COL.tower : ARROW_COL.wood);
     ctx.restore();
   } else if (p.kind === 'bolt') {
     // yıldırım 'zap' efektiyle çiziliyor
