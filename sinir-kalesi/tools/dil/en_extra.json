@@ -1258,7 +1258,10 @@
   "+1 İskelet!": "+1 Skeleton!",
   "+1 Okçu!": "+1 Archer!",
   "Mahzenden bir iskelet daha kalkar, yolu tutar": "One more skeleton rises from the crypt and holds the road",
-  "Kuleye bir okçu daha çıkar: kule daha sık atar": "One more archer climbs the tower: it shoots more often"
+  "Kuleye bir okçu daha çıkar: kule daha sık atar": "One more archer climbs the tower: it shoots more often",
+  "Lejyon Okçusu": "Legion Archer",
+  "Uzaktan bombeli ok atar, yakına gelen iskelete hançer çeker. Hafif zırhlı": "Lobs arcing arrows from afar and draws a dagger on skeletons that get close. Lightly armored",
+  "Yayını gökyüzüne kaldırıp ok yağdırır. Yanına varınca hançer çeker; yine de en çok kaçmayı sever.": "Raises his bow to the sky and rains arrows. Get close and he draws a dagger, though he would rather run."
  },
  "tpl": [
   [

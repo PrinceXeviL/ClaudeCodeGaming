@@ -1070,7 +1070,10 @@
   "+1 İskelet!": "+1 Skelett!",
   "+1 Okçu!": "+1 Bogenschütze!",
   "Mahzenden bir iskelet daha kalkar, yolu tutar": "Ein weiteres Skelett erhebt sich aus der Gruft und hält die Straße",
-  "Kuleye bir okçu daha çıkar: kule daha sık atar": "Ein weiterer Bogenschütze besteigt den Turm: er schießt öfter"
+  "Kuleye bir okçu daha çıkar: kule daha sık atar": "Ein weiterer Bogenschütze besteigt den Turm: er schießt öfter",
+  "Lejyon Okçusu": "Legionsbogenschütze",
+  "Uzaktan bombeli ok atar, yakına gelen iskelete hançer çeker. Hafif zırhlı": "Schießt aus der Ferne Bogenpfeile und zieht gegen nahe Skelette einen Dolch. Leicht gepanzert",
+  "Yayını gökyüzüne kaldırıp ok yağdırır. Yanına varınca hançer çeker; yine de en çok kaçmayı sever.": "Hebt den Bogen zum Himmel und lässt Pfeile regnen. Kommt man nah, zieht er einen Dolch, lieber rennt er aber weg."
  },
  "tpl": [
   [

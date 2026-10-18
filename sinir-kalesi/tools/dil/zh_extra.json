@@ -1070,7 +1070,10 @@
   "+1 İskelet!": "+1 骷髅！",
   "+1 Okçu!": "+1 弓箭手！",
   "Mahzenden bir iskelet daha kalkar, yolu tutar": "地穴再升起一具骷髅，守住道路",
-  "Kuleye bir okçu daha çıkar: kule daha sık atar": "塔上再添一名弓箭手：射击更频繁"
+  "Kuleye bir okçu daha çıkar: kule daha sık atar": "塔上再添一名弓箭手：射击更频繁",
+  "Lejyon Okçusu": "军团弓箭手",
+  "Uzaktan bombeli ok atar, yakına gelen iskelete hançer çeker. Hafif zırhlı": "远距离抛射弧线箭矢，近身则拔出匕首。轻甲",
+  "Yayını gökyüzüne kaldırıp ok yağdırır. Yanına varınca hançer çeker; yine de en çok kaçmayı sever.": "举弓向天，箭如雨下。靠近时会拔出匕首，不过他更喜欢逃跑。"
  },
  "tpl": [
   [

@@ -1070,7 +1070,10 @@
   "+1 İskelet!": "+1 скелет!",
   "+1 Okçu!": "+1 лучник!",
   "Mahzenden bir iskelet daha kalkar, yolu tutar": "Ещё один скелет встаёт из склепа и держит дорогу",
-  "Kuleye bir okçu daha çıkar: kule daha sık atar": "На башню поднимается ещё один лучник: она стреляет чаще"
+  "Kuleye bir okçu daha çıkar: kule daha sık atar": "На башню поднимается ещё один лучник: она стреляет чаще",
+  "Lejyon Okçusu": "Лучник легиона",
+  "Uzaktan bombeli ok atar, yakına gelen iskelete hançer çeker. Hafif zırhlı": "Издали пускает навесные стрелы, вблизи выхватывает кинжал. Лёгкая броня",
+  "Yayını gökyüzüne kaldırıp ok yağdırır. Yanına varınca hançer çeker; yine de en çok kaçmayı sever.": "Поднимает лук к небу и сыплет стрелами. Вблизи хватается за кинжал, хотя больше любит убегать."
  },
  "tpl": [
   [

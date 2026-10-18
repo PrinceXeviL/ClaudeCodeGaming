@@ -1070,7 +1070,10 @@
   "+1 İskelet!": "¡+1 Esqueleto!",
   "+1 Okçu!": "¡+1 Arquero!",
   "Mahzenden bir iskelet daha kalkar, yolu tutar": "Un esqueleto más se alza de la cripta y bloquea el camino",
-  "Kuleye bir okçu daha çıkar: kule daha sık atar": "Un arquero más sube a la torre: dispara más a menudo"
+  "Kuleye bir okçu daha çıkar: kule daha sık atar": "Un arquero más sube a la torre: dispara más a menudo",
+  "Lejyon Okçusu": "Arquero de la Legión",
+  "Uzaktan bombeli ok atar, yakına gelen iskelete hançer çeker. Hafif zırhlı": "Lanza flechas en arco desde lejos y saca una daga contra los esqueletos cercanos. Armadura ligera",
+  "Yayını gökyüzüne kaldırıp ok yağdırır. Yanına varınca hançer çeker; yine de en çok kaçmayı sever.": "Alza el arco al cielo y hace llover flechas. Si te acercas saca una daga, aunque prefiere huir."
  },
  "tpl": [
   [
