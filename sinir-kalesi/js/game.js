@@ -15527,6 +15527,7 @@ function winCol(i) {
   return A.map((v, j) => Math.round(lerp(v, B[j], k))).join(',');
 }
 // heybetli kalenin ışıkları: iki mangalda kızıl ruh ateşi (11 Eki: görsel de mor/kızıl, varliklar/kale_renk.py), pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
+const KEEP_V5 = new Set([2]); // 18 Eki: v5 tabanıyla Gemini'de yeniden çizilmiş hasar evreleri (varliklar/kale_v5_hasar_isle.py); 3 gelince eklenir
 const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritüel çemberi; 4. öğe ışığın rengi). Mangal yok (fire boş).
   fire: [], green: true, eyes: [],
   win: [[0.497, 0.244, 0.6, '255,150,60'], [0.625, 0.24, 0.5, '255,150,60'], [0.5, 0.356, 1.6, '255,150,60'], [0.267, 0.337, 0.8, '255,150,60'],
@@ -15538,7 +15539,7 @@ const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritü
   // hasar evrelerinde duman ve yangın kodla canlı: smoke [x, y, kalınlık], burn [x, y, boy]; off: o evrede kırılıp sönen pencereler (win sırası)
   dmg: {
     // 17 Eki: 2-3. evrede Veo yok (Veo hasarlı kaleyi reddetti ya da onarıp çizdi): pencerelerdeki çizili yangınların üstünde kodla canlı alev
-    2: { smoke: [[0.27, 0.43, 0.6], [0.56, 0.1, 0.7]], burn: [[0.264, 0.455, 0.35], [0.25, 0.625, 0.32], [0.405, 0.63, 0.32]] },
+    2: { smoke: [[0.37, 0.27, 0.6], [0.565, 0.12, 0.6]], burn: [[0.264, 0.43, 0.3]] }, // 18 Eki: v5 hasar 2 (çatı delikleri, isli sol pencere)
     3: { smoke: [[0.3, 0.3, 1], [0.5, 0.13, 0.9], [0.62, 0.36, 0.9], [0.17, 0.46, 0.8]], burn: [[0.17, 0.475, 0.6], [0.27, 0.46, 0.45], [0.25, 0.615, 0.32], [0.405, 0.645, 0.32]], off: [0, 1, 2, 3] },
   },
 };
@@ -15559,7 +15560,8 @@ function drawKeepLights(cp, h, sh, burning) {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const off = (KEEP_FX.dmg[burning] || {}).off;
   for (const [i, f] of KEEP_FX.win.entries()) {
-    if ((off && off.includes(i)) || (f[4] === 1 && burning) || (f[4] === 0 && !burning)) continue;
+    const v5 = !burning || KEEP_V5.has(burning); // 18 Eki: v5 tabanlı evreler (taş temel) ve eski kayalıklı evreler farklı pencere ışıkları kullanır
+    if ((off && off.includes(i)) || (f[4] === 1 && !v5) || (f[4] === 0 && v5)) continue;
     const [x, y] = P(f), k = 0.6 + 0.25 * Math.sin(time * 1.2 + i * 0.9) + 0.15 * Math.sin(time * 5 + i * 2) * Math.sin(time * 1.6 + i);
     glow(ctx, x, y, 22 * s * f[2], f[3] || winCol(i), 0.15 * k + 0.05);
   }
