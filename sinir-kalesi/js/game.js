@@ -17807,7 +17807,12 @@ function drawEndlessBoard(i, x, y, w, h) {
 // 18 Eki (Caner: "Ölüler Gecesi sayfası konseptine uygun olsun, çizimler olabilir"): etkinliğin kendi sayfası. Gemini çizimleri gelince
 // img/ev_<id>_bg.jpg (arka plan) ve ev_<id>_1..3.jpg (bölüm kartları) kullanılır (manifestte değil, sayfa açılınca yüklenir); yoksa kodla gece sahnesi.
 const EV_IMG = {};
+const EV_FOCUS = { cadilar: [0.6, 0.55, 0.34] }; // kart resminin dikey odağı (0 üst, 1 alt): Kabak Kral'ın başı görünsün
 function evImg(name) {
+  const mk = /^ev_(\w+)_([1-3]|bg)$/.exec(name); // 18 Eki: arka plan + üç kart tek sayfada (img/ev_<id>_k.jpg: üstte arka plan, altta 3 kare kart; web dosya sınırı)
+  if (mk && !(name in EV_IMG)) { const sh = evImg('ev_' + mk[1] + '_k'); if (!sh) return null; const w = sh.width / 3, bh = sh.height - w, c = document.createElement('canvas');
+    if (mk[2] === 'bg') { c.width = sh.width; c.height = bh; c.getContext('2d').drawImage(sh, 0, 0); } else { const i = +mk[2] - 1; c.width = c.height = w; c.getContext('2d').drawImage(sh, i * w, bh, w, w, 0, 0, w, w); }
+    EV_IMG[name] = c; }
   if (!(name in EV_IMG)) { const im = new Image(); EV_IMG[name] = null; im.onload = () => { EV_IMG[name] = im; }; im.src = 'img/' + name + '.jpg' + (window.SURUM ? '?v=' + window.SURUM : ''); }
   return EV_IMG[name];
 }
@@ -17880,7 +17885,7 @@ function drawEvent() {
     // kart resmi: Gemini çizimi (ev_<id>_<j+1>) ya da turuncuya boyanmış harita önizlemesi
     const tx = x + 14, ty = y0 + 14, tw = cw - 28, th = 136, art = evImg('ev_' + E.id + '_' + (j + 1)), T = art || thumbOf(S.base);
     ctx.save(); ctx.beginPath(); ctx.roundRect(tx, ty, tw, th, 12); ctx.clip();
-    if (T) { const k = Math.max(tw / T.width, th / T.height); ctx.drawImage(T, tx + (tw - T.width * k) / 2, ty + (th - T.height * k) / 2, T.width * k, T.height * k); }
+    if (T) { const k = Math.max(tw / T.width, th / T.height), fy = art && EV_FOCUS[E.id] ? EV_FOCUS[E.id][j] : 0.5; ctx.drawImage(T, tx + (tw - T.width * k) / 2, ty + (th - T.height * k) * fy, T.width * k, T.height * k); }
     if (!art) { ctx.fillStyle = 'rgba(80,20,60,0.35)'; ctx.fillRect(tx, ty, tw, th); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, tx + tw / 2, ty + th, tw * 0.6, '255,120,30', 0.25); ctx.restore(); }
     const sh = ctx.createLinearGradient(0, ty + th * 0.55, 0, ty + th); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(10,2,8,0.6)'); ctx.fillStyle = sh; ctx.fillRect(tx, ty, tw, th);
     ctx.restore();
@@ -17898,7 +17903,7 @@ function drawEvent() {
     if (S.reward.cos) { const C = TOWER_SKINS.concat(HERO_SKINS).find(o => o.id === S.reward.cos); fitTxt(C ? C.name : '', rx, ty + th + 98, x + cw - 30 - rx, 14, '#ffb070', 'left', '800', FONT_B, false, 10); }
     if (done) { roundRect(x + 40, y0 + ch - 62, cw - 80, 44, 22, 'rgba(40,90,30,0.85)', '#9be06a', 2); txt('TAMAM ✓', x + cw / 2, y0 + ch - 40, 18, '#eaffd8', 'center', '400', FONT_T); }
     else gameButton('ev_' + j, x + cw / 2, y0 + ch - 40, cw - 60, 50, open ? 'OYNA' : 'KİLİTLİ', () => { if (!open) { mapNote = { text: 'Önce önceki bölümü bitir', t: time }; sfx('error'); return; } go(() => startEvent(E, j)); }, open ? 'ember' : 'dark', { icon: open ? 'play' : 'lock', size: 18, shine: open });
-    if (!open) { roundRect(x, y0, cw, ch, 18, 'rgba(8,2,10,0.5)'); drawIcon('lock', x + cw / 2, ty + th / 2, 40); }
+    if (!open) { roundRect(x, y0, cw, ch, 18, 'rgba(8,2,10,0.5)'); drawIcon('lock', tx + tw - 30, ty + th - 30, 34); } // 18 Eki: kilit köşede, kartın resmi merak uyandırsın
     ctx.restore();
   });
 }
