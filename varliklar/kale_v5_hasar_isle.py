@@ -29,6 +29,12 @@ print('hizalama fark %.4f ölçek %.4f konum %d %d' % best)
 _, s, dx, dy = best
 im = Image.fromarray(new); im = im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
 c = Image.new('RGBA', (ref.shape[1], ref.shape[0])); c.alpha_composite(im, (dx, dy)) if dx >= 0 and dy >= 0 else c.paste(im, (dx, dy), im)
+# tuvalin üstünden taşan kısım (3. evrede kırılıp yana yatan kule ucu): taşan şerit + üstteki 3 katı yükseklik, tuvalin üst bandına sıkıştırılır
+top = -dy if dy < 0 else 0; ov = top - int(np.argmax(np.asarray(im)[..., 3].max(1) > 20)) if top else 0
+if ov > 0:
+    band = im.crop((0, top - ov, im.width, top + 3 * ov)).resize((im.width, 3 * ov), Image.LANCZOS)
+    c.paste(Image.new('RGBA', (c.width, 3 * ov)), (0, 0)); c.alpha_composite(band, (dx, 0)) if dx >= 0 else c.paste(band, (dx, 0), band)
+    print('üstten taşan', ov, 'px sıkıştırıldı')
 os.makedirs(OUT, exist_ok=True); c.save(os.path.join(OUT, f'castle_keep_{N}.webp'), 'WEBP', quality=90, method=6)
 k = Image.new('RGBA', (ref.shape[1] * 2, ref.shape[0]), (90, 110, 70, 255)); k.alpha_composite(Image.fromarray(ref), (0, 0)); k.alpha_composite(c, (ref.shape[1], 0))
 o = Image.fromarray(ref).copy(); o.putalpha(Image.fromarray((ref[..., 3] * 0.5).astype(np.uint8))); k2 = c.copy(); k2.alpha_composite(o)

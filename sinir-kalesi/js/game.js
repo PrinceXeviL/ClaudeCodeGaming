@@ -15527,7 +15527,7 @@ function winCol(i) {
   return A.map((v, j) => Math.round(lerp(v, B[j], k))).join(',');
 }
 // heybetli kalenin ışıkları: iki mangalda kızıl ruh ateşi (11 Eki: görsel de mor/kızıl, varliklar/kale_renk.py), pencereler ve gül pencere nabız gibi, kafatası kapının gözleri yanar
-const KEEP_V5 = new Set([2]); // 18 Eki: v5 tabanıyla Gemini'de yeniden çizilmiş hasar evreleri (varliklar/kale_v5_hasar_isle.py); 3 gelince eklenir
+const KEEP_V5 = new Set([2, 3]); // 18 Eki: v5 tabanıyla Gemini'de yeniden çizilmiş hasar evreleri (varliklar/kale_v5_hasar_isle.py)
 const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritüel çemberi; 4. öğe ışığın rengi). Mangal yok (fire boş).
   fire: [], green: true, eyes: [],
   win: [[0.497, 0.244, 0.6, '255,150,60'], [0.625, 0.24, 0.5, '255,150,60'], [0.5, 0.356, 1.6, '255,150,60'], [0.267, 0.337, 0.8, '255,150,60'],
@@ -15540,7 +15540,7 @@ const KEEP_FX = { // 17 Eki: kale v4 (turuncu pencereler, yeşil kapılar, ritü
   dmg: {
     // 17 Eki: 2-3. evrede Veo yok (Veo hasarlı kaleyi reddetti ya da onarıp çizdi): pencerelerdeki çizili yangınların üstünde kodla canlı alev
     2: { smoke: [[0.37, 0.27, 0.6], [0.565, 0.12, 0.6]], burn: [[0.264, 0.43, 0.3]] }, // 18 Eki: v5 hasar 2 (çatı delikleri, isli sol pencere)
-    3: { smoke: [[0.3, 0.3, 1], [0.5, 0.13, 0.9], [0.62, 0.36, 0.9], [0.17, 0.46, 0.8]], burn: [[0.17, 0.475, 0.6], [0.27, 0.46, 0.45], [0.25, 0.615, 0.32], [0.405, 0.645, 0.32]], off: [0, 1, 2, 3] },
+    3: { smoke: [[0.37, 0.27, 0.9], [0.54, 0.15, 0.9], [0.66, 0.36, 0.8], [0.76, 0.66, 0.7]], burn: [[0.37, 0.29, 0.4], [0.655, 0.37, 0.35]], off: [0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 13, 16, 17] }, // 18 Eki: v5 hasar 3 (kule kırık, üst pencereler ve fenerler sönük, temelde delik)
   },
 };
 // süzülen duman: üst üste binen yumuşak gri lekeler aşağıdan yukarı yükselir, rüzgârla sağa kıvrılır, büyüyüp söner (görselde değil, her karede)
