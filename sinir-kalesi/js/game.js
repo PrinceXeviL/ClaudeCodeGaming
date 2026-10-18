@@ -12841,6 +12841,7 @@ function drawCorpse(f) {
   ctx.restore();
 }
 
+const FOE_ARROW_K = 0.7;
 function drawProjectile(p) {
   if (p.kind === 'meteor') { drawMeteor(p); return; }
   if (p.t < 0) return;
@@ -12864,6 +12865,9 @@ function drawProjectile(p) {
     ctx.fillStyle = p.gold ? '#e0a83a' : p.poison ? '#8fe85a' : '#d8dbe2'; ctx.beginPath(); ctx.moveTo(p.gold ? 10 : 7, 0); ctx.lineTo(3, -2.6); ctx.lineTo(3, 2.6); ctx.fill();
     ctx.restore();
     return;
+  }
+  if ((p.kind === 'arrow' || p.kind === 'harrow') && p.foe && !p._sc) { // 18 Eki (Caner): düşman okçuların okları %30 küçük (bizimkiler aynı)
+    ctx.save(); ctx.translate(x, y); ctx.scale(FOE_ARROW_K, FOE_ARROW_K); ctx.translate(-x, -y); p._sc = 1; drawProjectile(p); p._sc = 0; ctx.restore(); return;
   }
   if (p.kind === 'arrow' || p.kind === 'harrow') {
     const n = projPos(p, k + 0.05), a = Math.atan2(n.y - y, n.x - x), tl = projPos(p, k - 0.14), bone = NECRO && p.kind === 'arrow';
