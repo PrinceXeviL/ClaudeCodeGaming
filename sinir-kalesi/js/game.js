@@ -725,7 +725,8 @@ const SV = window.SURUM ? '?v=' + window.SURUM : '';
 const SES_LOG = window.__ses = { paket: 'bekliyor', n: 0, dec: 0, fail: 0 }; // tanı: telefonda ses yükleme durumu (konsola da yazar)
 fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject('json ' + r.status))).then(idx => { // 14 Eki: paket parçalı (paket.wav, paket2.wav ...; yayın dosya başı 15 MB)
   const parts = Math.max(0, ...idx.map(e => e[3] || 0)) + 1;
-  return Promise.all([...Array(parts)].map((_, k) => fetch('ses/paket' + (k ? k + 1 : '') + '.wav' + SV).then(r => (r.ok || r.status === 0 ? r.arrayBuffer() : Promise.reject('wav ' + r.status)))))
+  const ext = (idx[0] && idx[0][4]) || 'wav'; // 18 Eki: web yayını MP3 paket kullanır (tools/ses_paket_web.py; yayın sürümü en çok 256 MB), telefon WAV
+  return Promise.all([...Array(parts)].map((_, k) => fetch('ses/paket' + (k ? k + 1 : '') + '.' + ext + SV).then(r => (r.ok || r.status === 0 ? r.arrayBuffer() : Promise.reject('wav ' + r.status)))))
     .then(all => { SES_LOG.paket = 'tamam ' + all.map(a => a.byteLength).join('+'); SES_LOG.n = idx.length; console.log('[ses] paket', SES_LOG.paket, idx.length);
       for (const [name, o, n, k] of idx) { rawSnd[name] = all[k || 0].slice(o, o + n); if (actx) decodeOne(name); } }); })
   .catch((e) => { SES_LOG.paket = 'hata ' + e; console.log('[ses] paket hatası', String(e)); return fetch('ses/manifest.json', { cache: 'no-cache' })
