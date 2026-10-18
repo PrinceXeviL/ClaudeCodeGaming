@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   const tapBtn = async (key, w = 900) => { const q = await btn(key); if (!q) { console.log('düğme yok:', key, await p.evaluate(() => window.__game.btnKeys().join(','))); return false; } await tap(q.x, q.y, w); return true; };
   let ok = true; const check = (cond, msg) => { if (!cond) { ok = false; console.log('HATA:', msg); } };
   // çizgi roman / tanıtım kaplamaları: varsa geç
-  const skipOverlays = async () => { await p.evaluate(() => { const G = window.__game.G; if (G) G.tut = null; }); /* 13 Eki: öğretici ayrı denenir (scratchpad tut_test) */ for (let i = 0; i < 12; i++) { const o = await p.evaluate(() => window.__game.overlay); if (!o || o === 'pause' || o === 'win' || o === 'lose') return; await p.evaluate(() => window.__game.setOverlay(null)); await p.waitForTimeout(300); } };
+  const skipOverlays = async () => { { const cs = await btn('cine_skip'); if (cs) await tap(cs.x, cs.y, 900); } /* 18 Eki: açılış Veo sahnesi: ATLA */ await p.evaluate(() => { const G = window.__game.G; if (G) G.tut = null; }); /* 13 Eki: öğretici ayrı denenir (scratchpad tut_test) */ for (let i = 0; i < 12; i++) { const o = await p.evaluate(() => window.__game.overlay); if (!o || o === 'pause' || o === 'win' || o === 'lose') return; await p.evaluate(() => window.__game.setOverlay(null)); await p.waitForTimeout(300); } };
 
   await tapBtn('play', 2500); let s = await st(); console.log('OYNA ->', s); check(s.screen === 'map', 'haritaya geçmedi');
   await tapBtn('node0', 1200); console.log('bölüm 1 ->', await st());

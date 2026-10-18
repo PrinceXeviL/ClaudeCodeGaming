@@ -1,0 +1,18 @@
+[
+ {
+  "name": "enemy_drummer_idlex",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer, a stern clean-shaven old soldier with no beard, white and gold armor, a black bear pelt hood over his head, a red drum with a golden sun emblem at his hip. He stands in place and plays a steady marching beat: he holds two thin wooden drumsticks with round ball tips, one in each hand, and strikes the drum top with them alternately, left stick then right stick, the sticks lift up and come down on the drum head. The two drumsticks stay rigid wooden sticks in his hands the whole time, they never bend, never melt and never disappear. His face stays exactly the same as in the reference image: clean-shaven, no beard, same stern expression. Gentle cartoon idle: the chest rises and falls with breathing, a small bounce on the knees to the rhythm, the head nods slightly to the beat, the feet stay planted on the same spot, a seamless idle loop. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 7
+ },
+ {
+  "name": "enemy_drummer_idlexb",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "prompt": "a cartoon roman war drummer, a stern clean-shaven old soldier with no beard, white and gold armor, a black bear pelt hood over his head, a red drum with a golden sun emblem at his hip. He stands in place and plays a steady marching beat: he holds two thin wooden drumsticks with round ball tips, one in each hand, and strikes the drum top with them alternately, left stick then right stick, the sticks lift up and come down on the drum head. The two drumsticks stay rigid wooden sticks in his hands the whole time, they never bend, never melt and never disappear. His face stays exactly the same as in the reference image: clean-shaven, no beard, same stern expression. Gentle cartoon idle: the chest rises and falls with breathing, a small bounce on the knees to the rhythm, the head nods slightly to the beat, the feet stay planted on the same spot, a seamless idle loop. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 91
+ }
+]
