@@ -604,7 +604,7 @@ if (NECRO) {
     holywater:  { name: 'Kutsal Su Taşıyıcı', h: 32, hp: 160, speed: 18, armor: 0, mr: 0.3, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30, noTower: true } }, // 16 Eki (Caner): kuledeki iskeletlere atmaz (durup yolu tıkıyordu)
     flagellant: { name: 'Kırbaçlı Tövbekâr', h: 31, hp: 220, speed: 22, armor: 0, mr: 0, gold: 16, dmg: [6, 10], rate: 0.8, lives: 1, r: 10, frenzy: { spd: 0.9, dmg: 1.2 } },
-    lantern:    { name: 'Fener Arabası', h: 40, hp: 520, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 }, purify: { r: 95, every: 5, dmg: 0, bless: true } }, // 15 Eki: fener cesetleri kutsar · 16 Eki (Caner): can 650 → 520 (-%20)
+    lantern:    { name: 'Fener Arabası', h: 40, hp: 364, speed: 10, armor: 0.35, mr: 0.1, gold: 45, dmg: [2, 4], rate: 2, lives: 2, r: 16, machine: true, light: { r: 85, k: 0.7 }, purify: { r: 95, every: 5, dmg: 0, bless: true } }, // 15 Eki: fener cesetleri kutsar · 16 Eki (Caner): can 650 → 520 (-%20) // 18 Eki (Caner): can %30 düşük (520 → 364)
     bellpriest: { name: 'Çan Rahibi', h: 32, hp: 170, speed: 18, armor: 0, mr: 0.4, gold: 18, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ab: { slam: { cd: 7, r: 80, stun: 1.4, dmg: 4, say: 'Çan!', bell: true } } },
     paladin:    { name: 'Paladin', h: 36, hp: 520, speed: 13, armor: 0.5, mr: 0.45, gold: 36, dmg: [10, 16], rate: 1.2, lives: 2, r: 12, elite: true },

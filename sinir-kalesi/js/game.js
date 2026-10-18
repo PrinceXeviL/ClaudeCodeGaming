@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -444,6 +444,44 @@ function persist() {
   try { localStorage.setItem(SAVE_KEY, js); } catch (e) {}
   cloudPush();
   if (NATIVE_PREFS && !nativeT) nativeT = setTimeout(() => { nativeT = null; NATIVE_PREFS.set({ key: SAVE_KEY, value: JSON.stringify(save) }).catch(() => {}); }, 400); // art arda yazımlar tek seferde
+}
+// 18 Eki: kayıt kodu (bulut kayıt hesabı yokken cihazdan cihaza): kayıt JSON'u sıkıştırılıp base64 olur ("NMK1." önekli).
+// AKTAR paylaş menüsünü açar (yoksa panoya kopyalar), YÜKLE panodan ya da yapıştırma kutusundan okur, onay alıp kaydı değiştirir.
+let saveMsg = null;
+const b64u = { enc: (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+  dec: (t) => { t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; const s = atob(t), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; } };
+async function zipBytes(u8, de) {
+  if (typeof CompressionStream === 'undefined') return null;
+  const st = new Blob([u8]).stream().pipeThrough(de ? new DecompressionStream('deflate-raw') : new CompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+async function saveExport() {
+  try {
+    const raw = new TextEncoder().encode(JSON.stringify(save)), z = await zipBytes(raw);
+    const code = z ? 'NMK1.' + b64u.enc(z) : 'NMK0.' + b64u.enc(raw);
+    let ok = false;
+    if (navigator.share) { try { await navigator.share({ title: "Necromancer kayıt kodu", text: code }); ok = true; } catch (e) { if (e && e.name === 'AbortError') return; } }
+    if (!ok && navigator.clipboard) { try { await navigator.clipboard.writeText(code); ok = true; saveMsg = { text: 'Kod panoya kopyalandı', col: '#9aff8a', t: time }; } catch (e) {} }
+    if (!ok) window.prompt('Kayıt kodunu kopyala:', code);
+    sfx('pick');
+  } catch (e) { saveMsg = { text: 'Kod oluşturulamadı', col: '#ff9a8a', t: time }; sfx('error'); }
+}
+async function saveImport() {
+  let code = '';
+  try { if (navigator.clipboard && navigator.clipboard.readText) code = (await navigator.clipboard.readText()) || ''; } catch (e) {}
+  if (!/^NMK[01]\./.test(code.trim())) code = window.prompt('Kayıt kodunu yapıştır:', '') || '';
+  code = code.trim(); if (!code) return;
+  try {
+    const m = /^NMK([01])\.(.+)$/.exec(code); if (!m) throw 0;
+    let u = b64u.dec(m[2]); if (m[1] === '1') u = await zipBytes(u, true);
+    const o = JSON.parse(new TextDecoder().decode(u)); if (!o || !Array.isArray(o.stars)) throw 0;
+    const n = o.stars.filter(x => x > 0).length;
+    if (!window.confirm(`Bu kayıtta ${n} bölüm açılmış. Bu cihazdaki ilerleme bu kayıtla değişecek. Emin misin?`)) return;
+    o.t = Date.now(); const js = JSON.stringify(o);
+    try { localStorage.setItem(SAVE_KEY, js); } catch (e) {}
+    if (NATIVE_PREFS) { try { await NATIVE_PREFS.set({ key: SAVE_KEY, value: js }); } catch (e) {} }
+    location.reload();
+  } catch (e) { saveMsg = { text: 'Kod geçersiz', col: '#ff9a8a', t: time }; sfx('error'); }
 }
 const saveProgress = (o) => (o.stars || []).reduce((a, b) => a + (b || 0), 0) * 100 + Object.values(o.hero || {}).reduce((a, h) => a + (h.lvl || 1), 0);
 if (NATIVE_PREFS) NATIVE_PREFS.get({ key: SAVE_KEY }).then(r => {
@@ -905,6 +943,7 @@ function stompSound(now) {
 }
 // Boss girişi: uzaktan derin boru akoru, üç ağır savaş davulu ve yer gürültüsü
 function bossSting() {
+  themeSting('boss');
   if (muted || !actx) return;
   const t = actx.currentTime, out = actx.createBiquadFilter(); out.type = 'lowpass'; out.frequency.value = 650; out.Q.value = 0.6; out.connect(master);
   for (const [f, v] of [[55, 0.1], [82.4, 0.08], [110, 0.06], [65.4, 0.05]]) {
@@ -1144,6 +1183,7 @@ for (const [t, o] of [['pointerup', window], ['touchend', window], ['click', win
 // açılışta dokunuş beklemeden dener (Caner, 10 Eki: menü müziği hemen başlasın). iOS uygulamasında (Capacitor, WKWebView
 // mediaTypesRequiringUserActionForPlayback = []) izin var; tarayıcı izin vermezse NotAllowedError ile ilk dokunuşa kalır.
 setTimeout(() => { if (!muted) startMusic(); }, 400);
+setTimeout(themePreload, 3000); // tema ezgileri (küçük dosyalar) arkada yüklenir
 // bölüm başında savaş parçası baştan başlar
 function musicRestartBattle() { for (const k of ['battle', 'battle2']) { const T = MUSIC.tracks[k]; if (T.el) { try { T.el.currentTime = 0; } catch (e) {} } } }
 function musicWanted() {
@@ -1174,6 +1214,7 @@ function updateMusic(dt) {
     if (tgt && overlay === 'pause') tgt *= 0.4;
     if (tgt && G && screen === 'play' && (G.heralds || []).some(h => h.state === 'blow')) tgt *= 0.2; // borazan duyulsun
     if (tgt && time < mortVoiceUntil) tgt *= 0.45; // Mortimer konuşurken müzik kısılır
+    if (tgt && time < themeDuckUntil) tgt *= 0.25; // tema ezgisi çalarken (boss girişi, sürpriz) müzik kısılır
     if (!tgt && !T.el) continue;
     const el = musicEl(T); if (!el) continue;
     // yumuşak giriş (Caner, 10 Eki: borazandan sonra müzik birden yüksek giriyordu): hedefe savaşta ~5 sn'de, boss'ta ~2,5 sn'de
@@ -1188,6 +1229,20 @@ function updateMusic(dt) {
     if (T.vol <= 0.002 && tgt === 0 && !el.paused) { el.pause(); if (T.old) { T.old.pause(); T.old = null; } }
     else if (tgt > 0 && el.paused) el.play().catch(() => {});
   }
+}
+// 18 Eki (Caner: "kalıcı müzik kimliği yok"): Mortimer teması. Ana temanın ("Banquet for the Uninvited") en çok tekrarlanan kancası (nakarat, 52,44. sn,
+// 112 BPM) her önemli anda aynı ezgiyle döner: zafer (tam, parlak), yenilgi (yavaş, -3 yarım ton, boğuk), boss girişi (-5 yarım ton, karanlık),
+// kısa (ilk ölçü: gizli sürpriz). Dosyalar ses/tema_*.mp3 (ffmpeg ile kesildi, yöntem: tasarim/muzik-kimligi.md). Müzik ayarına bağlı.
+// Web sürümünün dosya sınırı için dört ezgi tek dosyada (ses/tema.mp3; ayrı kesimler varliklar/ham/ses/tema/): at = başlangıç sn, d = süre.
+const THEME = { zafer: { at: 0, d: 9.72, gain: 0.55 }, yenilgi: { at: 10.32, d: 5.66, gain: 0.5 }, boss: { at: 16.58, d: 4.69, gain: 0.6, duck: 3.2 }, kisa: { at: 21.86, d: 2.45, gain: 0.42, duck: 2 } };
+let themeDuckUntil = 0, themeEl = null, themeStop = null;
+function themePreload() { if (!themeEl) { themeEl = new Audio('ses/tema.mp3' + (window.SURUM ? '?v=' + window.SURUM : '')); themeEl.preload = 'auto'; } return themeEl; }
+function themeSting(k, delay = 0) {
+  const T = THEME[k]; if (!T || muted || !setting('music')) return;
+  const el = themePreload();
+  const go = () => { try { el.currentTime = T.at + 0.03; } catch (e) {} setMusicVol(el, clamp(T.gain * setting('mvol'), 0, 1)); el.play().catch(() => {}); if (T.duck) themeDuckUntil = time + T.duck;
+    clearTimeout(themeStop); themeStop = setTimeout(() => el.pause(), T.d * 1000); };
+  if (delay) setTimeout(go, delay * 1000); else go();
 }
 function setMuted(m) {
   muted = m;
@@ -3099,6 +3154,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (hitBy || src) e.lastBy = hitBy || src;
   e.hitG = G.t; // komutan 'Kalkanlar!' için (oyun zamanı)
   if (e.curseT > 0) amount *= 1 + (e.curseK || 0); // lanetli fazla hasar alır
+  if (e.candleArm > 0) amount *= 1 - e.candleArm; // 18 Eki: Mum Işığı Koridoru sürprizi: yanan mumların yanındaki düşman korunur
   if (e.frogT > 0) amount *= FROG.dmg; // kurbağa fazla hasar alır
   if (e.capT > 0) amount *= CAPTAIN.def; // kıdemlinin yanında: kalkanlar sıkı
   if (src === 'melee' && NECRO) { const L = lightAt(e.x, e.y); if (L) amount *= L.k; } // fener ışığında iskeletler zayıf
@@ -4213,8 +4269,9 @@ function applySoldierStats(t) {
 // iskeletlerin duruşu: engage = bayrağa bu uzaklıktaki düşmana yürür, leash = hedef bundan da uzaklaşınca bırakıp döner.
 // Savunmacı (temel, kalkan) yerinden az ayrılır, yaklaşanı karşılar; saldırgan (kılıç) gördüğü en yakın düşmanın üstüne koşar.
 const SKEL_STANCE = {
-  base: { engage: 82, leash: 28, speed: 60, aggro: false },
-  guard: { engage: 74, leash: 20, speed: 56, aggro: false },
+  // 18 Eki (Caner: "mahzenden çıkan tüm iskeletlerim saldırgan olsun, menzili çevresindekilere"): temel ve kalkanlı da menzile giren en yakın düşmana koşar
+  base: { engage: 120, leash: 50, speed: 66, aggro: true },
+  guard: { engage: 110, leash: 44, speed: 60, aggro: true },
   attack: { engage: 140, leash: 60, speed: 80, aggro: true },
 };
 // Mahzen: iskeletler kapıdan toz kaldırarak çıkar (10 Eki'de mezarlıktaki mezarlardan kalkıyorlardı).
@@ -4375,13 +4432,17 @@ function collapseTower(t) {
   if (G.sel && (G.sel.tower === t || G.sel.plot === t.plot)) setSel(null);
   t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK } };
   shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t);
+  // 18 Eki (Caner: "yıkılma efektini çok beğendim, tüm kulelere"): Wan yıkılma şeridi varsa kule kendi görseliyle abartılı çöker, moloz şerit bitince belirir
+  const cn = ts && ts.name.replace(/_side$/, '') + '_collapse', CF = cn && ANIM_META[cn];
+  if (CF && spr(cn)) t.plot.rubble.anim = { name: cn, t0: G.t, w: ts.w, bottom: ts.bottom, dur: CF.n / (CF.fps || 16) };
   for (let i = 0; i < 3; i++) G.effects.push({ kind: 'dust', x: t.x + rand(-14, 14), y: t.y - rand(0, 10), t: 0, dur: 0.8 + i * 0.15 });
-  for (let i = 0; i < 34; i++) emit(G.parts, { kind: 'chunk', x: t.x + rand(-16, 16), y: t.y - rand(10, h * 0.8), vx: rand(-90, 90), vy: -rand(20, 140), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#5a5466' : '#d8ccb0', s0: rand(1.6, 3.2), s1: 1, life: rand(0.6, 1.1) });
+  for (let i = 0; i < (t.plot.rubble.anim ? 10 : 34); i++) emit(G.parts, { kind: 'chunk', x: t.x + rand(-16, 16), y: t.y - rand(10, h * 0.8), vx: rand(-90, 90), vy: -rand(20, 140), g: 520, vr: rand(-10, 10), rot: rand(0, 6), col: i % 3 ? '#5a5466' : '#d8ccb0', s0: rand(1.6, 3.2), s1: 1, life: rand(0.6, 1.1) });
   floatText(t.x, t.y - 50, 'Kule yıkıldı!', '#ff9a7a');
 }
 function updateTowerHp(dt) {
   for (const t of G.towers) {
     if (t.hitFlash > 0) t.hitFlash -= dt;
+    if (t.hp != null && (t.colChk = (t.colChk || 0) - dt) <= 0) { t.colChk = 1.5; const ts = towerSprite(t), cn = ts && ts.name.replace(/_side$/, '') + '_collapse'; if (cn && ANIM_META[cn]) loadStrip(cn); } // yıkılma şeridi önceden yüklenir
     if (t.hp != null && t.hp < t.maxHp && G.t - (t.hitAt ?? -99) > TOWER_HP.calm) t.hp = Math.min(t.maxHp, t.hp + t.maxHp * TOWER_HP.regen * dt);
   }
   for (const pl of G.plots) if (pl.rubble && pl.rubble.buildT > 0 && (pl.rubble.buildT -= dt) <= 0) finishRebuild(pl);
@@ -4416,8 +4477,16 @@ function clearRubble(pl) {
 }
 // 15 Eki: kulenin kendi molozu (Gemini nm6_kule_moloz.jpg, kule türüne göre; Ruh Fenerinin iki çeşidi). Arsanın üstünü örter, temizlenirken solup çöker.
 const RUBBLE_IMG = { w: 90, anchor: 0.6 };
+function drawCollapseAnim(pl) { // yıkılma şeridi: kulenin tabanına oturur, kule genişliğine ölçeklenir (meta tw/bx/by); bitince moloz yumuşakça belirir
+  const A = pl.rubble && pl.rubble.anim; if (!A) return 1;
+  const F = ANIM_META[A.name], img = spr(A.name), e = G.t - A.t0; if (!F || !img || e >= A.dur) { if (e >= A.dur + 0.4) pl.rubble.anim = null; return clamp((e - A.dur + 0.15) / 0.4, 0, 1); }
+  const i = Math.min(F.n - 1, Math.floor(e * (F.fps || 16))), C = F.cols || F.n, R = Math.ceil(F.n / C), sx = img.width / (F.fw * C), sy = img.height / (F.fh * R), k = A.w / F.tw;
+  ctx.drawImage(img, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, pl.x - F.bx * k, A.bottom - F.by * k, F.fw * k, F.fh * k);
+  return e > A.dur - 0.15 ? clamp((e - A.dur + 0.15) / 0.4, 0, 1) : 0;
+}
 function drawRubble(pl) { // 16 Eki: yeniden kurulurken molozun üstünde yeşil-mor büyü, yükselen kemik kıvılcımları ve ilerleme halkası
-  drawRubble0(pl); const R = pl.rubble; if (!R || !(R.buildT > 0)) return;
+  const ra = drawCollapseAnim(pl); if (ra <= 0) return;
+  if (ra < 1) { ctx.save(); ctx.globalAlpha *= ra; drawRubble0(pl); ctx.restore(); } else drawRubble0(pl); const R = pl.rubble; if (!R || !(R.buildT > 0)) return;
   const p = 1 - R.buildT / REBUILD.time;
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, pl.x, pl.y - 14, 40 + 20 * p, '120,255,140', 0.25 + 0.25 * p); glow(ctx, pl.x, pl.y - 20, 26, '190,110,255', 0.2); ctx.restore();
   if (Math.random() < 0.5) emit(G.parts, { kind: 'glow', add: true, x: pl.x + rand(-18, 18), y: pl.y - rand(0, 10), vy: -rand(30, 80), vx: rand(-8, 8), drag: 1, col: Math.random() < 0.7 ? '140,255,150' : '200,120,255', s0: rand(2, 4), s1: 0.5, life: rand(0.5, 0.9) });
@@ -6576,8 +6645,10 @@ function drawPet(s) {
 }
 // 16 Eki (Caner: dirilenler ve girişe yakın iskeletler kadrajdan çıkıp düşmanın çıktığı yerde savaşıyordu): askerler düşmanın yola girdiği
 // yerden ilk REACH birimdeki (ve ekran dışındaki) düşmana saldırmaz, oraya yürümez. Komutan serbest (oyuncu yönlendirir).
-const SOLDIER_REACH = 110;
-const inReach = (o) => !o.p || o.d >= SOLDIER_REACH;
+// 18 Eki (Caner: "bazı bölümlerde sıkıntı; düşman yaklaştığı an saldırsınlar"): giriş sınırı kalktı; yalnız ekran dışındaki (henüz görünmeyen) düşmana gidilmez.
+// SOLDIER_REACH artık yalnız emir yeri için (zombi sancağı yolun ağzına dikilmesin)
+const SOLDIER_REACH = 40;
+const inReach = (o) => !o.p || (o.d >= 0 && o.x > 6 && o.x < W - 6 && o.y > 6 && o.y < H - 6);
 // 18 Eki (Caner: "zombilere bir yere saldır dediğimde tek adama değil o gruba saldırsınlar; o kişi ölünce duruyorlar"): gösterilen düşman ölünce
 // onun çevresindeki (ZOMBIE_GROUP_R) en yakın düşmana geçilir; aynı düşmana yığılmasınlar diye üzerinde emirli zombi sayısı kadar uzak sayılır. Grup bitince emir biter.
 const ZOMBIE_GROUP_R = 130;
@@ -7721,6 +7792,299 @@ function drawCornu(face, hgt, k, breath) {
   ctx.restore();
   ctx.restore();
 }
+// ===== Bölüm sürprizleri (18 Eki, Caner: "40 bölüm birbirine benziyor; KR her bölüme özel sürpriz, mekanik ya da gizli şaka koyar;
+// ilgi çekici, sıra dışı, şaşırtacak şeyler olsun"). Her bölümde tekrarsız bir imza sürpriz: dokunulan nesne, dalga ortasında beklenmedik olay
+// ya da bossa karşı sahne. Tasarım listesi: tasarim/bolum-surprizleri.md. SUR[bölüm] = { name, setup(S), update(S, dt), tap(S, o) }.
+// Dokunulabilir nesneler S.o (ilk dalgadan sonra ara ara parıldar), hareketli efektler S.fx. İlk bulunuşta üstte altın şerit + save.sur
+// (başarım 'surprise' sayar). Görseller mevcut dekor/birim çizimleri; yenisi gerekmez.
+const surAlive = (e) => !e.dead && !e.under && !(e.reviveT > 0) && e.siege === undefined;
+const surNear = (x, y, r, air) => G.enemies.filter(e => surAlive(e) && (air || !e.def.flying) && dist(e.x, e.y, x, y) < r);
+function surSpot(f, side = 1, off = 58, pi = 0) { // yolun yanında boş yer (f: yol boyunca oran)
+  const P = G.paths[pi] || G.paths[0];
+  for (let k = 0; k < 26; k++) {
+    const ff = clamp(f + Math.ceil(k / 2) * 0.03 * (k % 2 ? -1 : 1), 0.08, 0.92);
+    for (const sd of [side, -side]) {
+      const q = pathPos(P, P.total * ff, sd * off), r = pathPos(P, P.total * ff);
+      if (q.x < 40 || q.x > W - 40 || q.y < 100 || q.y > H - 115) continue; // alt düğme şeridine düşmesin
+      if (nearestOnPaths(G.paths, q.x, q.y).d < off * 0.6) continue;
+      if (G.plots.some(p => dist(p.x, p.y, q.x, q.y) < 46) || dist(q.x, q.y, G.castle.x, G.castle.y) < 100) continue;
+      if ((G.sur.o || []).concat(G.props || []).some(o => dist(o.x, o.y, q.x, q.y) < 50)) continue;
+      return { x: q.x, y: q.y, rx: r.x, ry: r.y, p: P, d: P.total * ff };
+    }
+  }
+  const r = pathPos(P, P.total * f); return { x: r.x, y: r.y - 50, rx: r.x, ry: r.y, p: P, d: P.total * f };
+}
+const surRoad = (f, pi = 0) => { const P = G.paths[pi] || G.paths[0], q = pathPos(P, P.total * f); return { x: q.x, y: q.y, p: P, d: P.total * f }; };
+function surSay(text) { if (NECRO) { G.say = { text, t: 0, dur: 2.4 + text.length * 0.05 }; G.sayCd = 6; } }
+function surFound() { // sürprizin ilk tetiklenişi
+  const S = G.sur; if (!S || S.found) return; S.found = true;
+  save.sur = save.sur || {}; const first = !save.sur[G.idx]; save.sur[G.idx] = 1;
+  if (first) { cnt('surprise'); persist(); }
+  G.surBanner = { text: S.def.name, sub: first ? 'GİZLİ SÜRPRİZ BULUNDU!' : 'SÜRPRİZ', t: 0 }; sfx('lootchime'); themeSting('kisa');
+}
+function surHit(x, y, r, dmg, stun = 0, air = false) { let n = 0; for (const e of surNear(x, y, r, air)) { damageEnemy(e, e.def.chief ? dmg * 0.35 : dmg, 'phys'); if (stun) stunEnemy(e, stun); n++; } return n; }
+function surKill(e, corpse = true) { // öldür (boss değilse); corpse=false: ceset kalmaz (suya düştü, fırlatıldı)
+  const n0 = G.effects.length; damageEnemy(e, 1e9, 'true');
+  if (!corpse) for (let i = n0; i < G.effects.length; i++) if (G.effects[i].kind === 'corpse') G.effects[i].dur = 0.01;
+}
+function surAlly(x, y, n, name, pw = 1.3) { // bedava diriltilmiş ölü (büyü sınırı sayılmaz)
+  const m = G.testRaiseMax; G.testRaiseMax = 99;
+  for (let i = 0; i < n; i++) { const D = name && ENEMIES[name.slice(6)]; raiseMinion({ x: x + rand(-16, 16), y: y + rand(-6, 6), face: Math.random() < 0.5 ? -1 : 1, name, rig: D && D.base ? 'enemy_' + D.base : null, h: name ? CHAR_H[name] : 0, pw }, i * 0.18); }
+  G.testRaiseMax = m;
+}
+function surObj(im, q, w, o = {}) { const ob = Object.assign({ im, x: q.x, y: q.y, w, t: Math.random() * 3, taps: 0, used: false, face: 1 }, o); G.sur.o.push(ob); return ob; }
+function surPuff(x, y, col, n = 10, sp = 60) { for (let i = 0; i < n; i++) emit(G.parts, { kind: 'glow', add: true, x: x + rand(-8, 8), y: y + rand(-8, 4), vx: rand(-sp, sp), vy: -rand(10, sp), drag: 2, col, s0: rand(3, 6), s1: 0.5, life: rand(0.5, 0.9) }); }
+function surChunks(x, y, col, n = 10) { for (let i = 0; i < n; i++) emit(G.parts, { kind: 'chunk', x: x + rand(-8, 8), y: y - rand(0, 10), vx: rand(-70, 70), vy: -rand(60, 160), g: 520, vr: rand(-12, 12), rot: rand(0, 6), col, s0: rand(1.4, 2.6), s1: 1, life: rand(0.6, 0.9) }); }
+function surSplash(x, y, n = 14) { for (let i = 0; i < n; i++) emit(G.parts, { kind: 'dot', x: x + rand(-6, 6), y: y - 2, vx: rand(-60, 60), vy: -rand(60, 170), g: 520, drag: 0, col: i % 2 ? '#8ec8e8' : '#d8f0ff', s0: rand(2, 3.4), s1: 1, a: 0.9, life: rand(0.5, 0.8), t: 0 }); sfx('splash'); }
+function surToss(e, vx = rand(-90, 90), vy = -rand(260, 340)) { // düşman havaya fırlar, döne döne ekrandan çıkar
+  const im = spr('enemy_' + (e.def.base || e.type)); if (im) G.sur.fx.push({ kind: 'toss', im, x: e.x, y: e.y, vx, vy, rot: 0, vr: rand(-9, 9), w: (CHAR_H['enemy_' + e.type] || 30) * im.width / im.height, face: e.face || 1, t: 0 });
+  surKill(e, false);
+}
+function surRoll(p, im, r, spd, onHit, o = {}) { G.sur.fx.push(Object.assign({ kind: 'roll', p, d: p.total - 6, im, r, spd, onHit, hit: new Set(), t: 0, n: 0 }, o)); } // kaleden girişe yuvarlanır
+const surBoss = () => G.enemies.find(e => surAlive(e) && e.def.chief && e.d > 0);
+
+const SUR = {
+  // ---------------- 1. sefer ----------------
+  0: { name: 'Firari Acemi', setup(S) { S.at = 2; }, // 2. dalgada korkudan dönüp kaçan acemi lejyoner: yakalarsan üç kat altın
+    update(S) { if (!S.e && G.wave >= S.at && G.t > (S.t0 ??= G.t + 6)) { const p = G.paths[0], e = spawnEnemy('legion', 0, p.total * 0.55); if (!e) return; S.e = e; e.desert = true; e.def = Object.assign({}, e.def, { gold: e.def.gold * 3 }); floatText(e.x, e.y - 40, 'Annem!', '#ffe08a'); surFound(); surSay('Bak, biri kaçıyor! Yakalayın şu korkağı!'); }
+      const e = S.e; if (e && !e.dead) { e.fearT = Math.max(e.fearT || 0, 0.6); if ((S.cry = (S.cry || 0) - 1 / 60) <= 0) { S.cry = 2.4; floatText(e.x, e.y - 38, ['Annem!', 'Ben aşçıydım!', 'İstifa ediyorum!'][Math.floor(Math.random() * 3)], '#ffe08a'); } if (e.d <= 2) { e.dead = true; e.leaked = true; surSay('Kaçtı... Mektup yazar artık annesine.'); } } } },
+  1: { name: 'Kuzgun Kralı', setup(S) { S.k = surObj('nm_crow', surSpot(0.45, 1, 64), 30, { crown: true, need: 3 }); }, // üç kez dokun: kuzgun sürüsü düşmanlara dalar
+    tap(S, o) { if (o.used) return; o.taps++; crowCaw(); floatText(o.x, o.y - 40, ['Gak?', 'GAAK!'][Math.min(1, o.taps - 1)], '#e8d8ff');
+      if (o.taps >= o.need) { o.used = true; surFound(); surSay('Majesteleri kızdı. Uçuşun, çocuklar!'); const L = G.enemies.filter(e => surAlive(e) && e.d > 0).sort((a, b) => b.d - a.d).slice(0, 12);
+        L.forEach((e, i) => G.sur.fx.push({ kind: 'dive', e, x0: o.x + rand(-40, 40), y0: o.y - 160 - rand(0, 60), t: -i * 0.12, dur: 0.7 })); } } },
+  2: { name: 'Gül Bahçesi', setup(S) { const q = surSpot(0.5, 1, 52); S.g = surObj('nm5_thorn', q, 34, { need: 1, rx: q.rx, ry: q.ry }); }, // dikenler yola taşar: geçen kanar, yavaşlar
+    tap(S, o) { if (o.on > 0 || (o.cd || 0) > G.t) return; o.on = 8; o.cd = G.t + 35; surFound(); sfx('bonewall'); surChunks(o.rx, o.ry, '#3a5a20', 14); floatText(o.x, o.y - 40, 'Gül bahçem!', '#ff9ab0'); if (!S.said) { S.said = 1; surSay('Annemin gülleri. Dikkat edin, ısırırlar.'); } },
+    update(S, dt) { const o = S.g; if (!(o.on > 0)) return; o.on -= dt; for (const e of surNear(o.rx, o.ry, 60)) { slowEnemy(e, 0.5, 0.3); damageEnemy(e, 14 * dt, 'phys', true, null, 0, true); } } },
+  3: { name: 'Sihirli Mantarlar', setup(S) { S.m = [0.3, 0.62].map(f => { const q = surRoad(f); return surObj('nm7_shroom', { x: q.x + 14, y: q.y + 6 }, 18, { ready: true, step: true }); }); }, // basan düşmanın sporları: dostlar birbirine saldırır
+    update(S, dt) { for (const o of S.m) { if (!o.ready) { if ((o.cd -= dt) <= 0) o.ready = true; continue; }
+        const v = surNear(o.x, o.y, 22); if (!v.length) continue; o.ready = false; o.cd = 22; surFound(); surPuff(o.x, o.y - 6, '200,110,255', 22, 90); sfx('gravemist'); if (!S.said) { S.said = 1; surSay('Mantar yemesinler dedim! Şimdi birbirlerini sanıyorlar ben.'); }
+        for (const e of surNear(o.x, o.y, 90)) if (!e.def.chief) { e.confT = 5; e.confHit = 0; floatText(e.x, e.y - 36, '?!', '#d8a8ff'); } }
+      for (const e of G.enemies) if (e.confT > 0 && surAlive(e)) { e.confT -= dt; e.stun = Math.max(e.stun || 0, 0.15); if ((e.confHit -= dt) <= 0) { e.confHit = 0.9; let b = null, bd = 60; for (const o of G.enemies) if (o !== e && surAlive(o) && dist(o.x, o.y, e.x, e.y) < bd) { bd = dist(o.x, o.y, e.x, e.y); b = o; } if (b) { damageEnemy(b, (e.def.dmg ? (e.def.dmg[0] + e.def.dmg[1]) / 2 : 6) * 2.2, 'phys'); e.face = b.x < e.x ? -1 : 1; sfx('clash'); } } } } },
+  4: { name: 'Bataklık Gözü', setup(S) { const m = G.mech && G.mech.spots[0], q = m ? { x: m.x, y: m.y } : surRoad(0.4); S.eye = surObj('nm7_eyes', { x: q.x + 4, y: q.y + 2 }, 26, { noTap: true, blink: 0 }); S.cd = 40; }, // çamurdan bakan gözler, arada bir düşman yutar
+    update(S, dt) { const o = S.eye; if (G.wave < 2) return; if ((S.cd -= dt) > 0) return; const v = surNear(o.x, o.y, 46).filter(e => !e.def.chief && !e.def.machine); if (!v.length) return;
+      S.cd = 32; const e = v[0]; surSplash(e.x, e.y, 18); floatText(e.x, e.y - 40, 'GULP!', '#9aff8a'); surKill(e, false); o.blink = 1; surFound(); shakeScreen(2, 0.2); if (!S.said) { S.said = 1; surSay('Bataklığı beslemeyi unutmuşum. Kendisi hallediyor.'); } } },
+  5: { name: 'Dev Sülük', setup(S) { S.s = surObj('nm_pond', surSpot(0.55, -1, 66), 52, { cd: 0 }); }, // gölcüğe dokun: dev sülük en güçlü düşmanın kanını emer, altına çevirir
+    tap(S, o) { if (o.cd > G.t) { floatText(o.x, o.y - 30, Math.ceil(o.cd - G.t) + ' sn', '#c8c8c8'); return; } const v = surNear(o.x, o.y, 230).sort((a, b) => b.hp - a.hp); if (!v.length) { floatText(o.x, o.y - 30, 'Aç...', '#c8c8c8'); return; }
+      o.cd = G.t + 30; surFound(); G.sur.fx.push({ kind: 'leech', o, e: v[0], t: 0, dur: 3.5, drunk: 0 }); sfx('blooddrain'); if (!S.said) { S.said = 1; surSay('Bubu II. Daha uslu bir evcil hayvan.'); } } },
+  6: { name: 'Kurbağa Prens', setup(S) { S.f = surObj('nm7_frog', surSpot(0.4, 1, 60), 26, { crown: true, need: 5 }); }, // beş kez dokun: prens olur ve... kaleye saldırır
+    tap(S, o) { if (o.used) return; o.taps++; sfx('pick'); floatText(o.x, o.y - 30, ['Vrak.', 'Vrak?', 'Öp beni!', 'Az kaldı!', '!!!'][o.taps - 1], '#9aff8a');
+      if (o.taps >= o.need) { o.used = true; surFound(); surPuff(o.x, o.y - 10, '255,230,140', 26, 80); sfx('magic'); const n = nearestOnPaths(G.paths, o.x, o.y), pi = G.paths.indexOf(n.p), e = spawnEnemy('legion_y', Math.max(0, pi), n.along);
+        if (e) { e.def = Object.assign({}, e.def, { gold: 120 }); floatText(e.x, e.y - 44, 'Özgürüm! Yaşasın Güneş!', '#ffd34d'); } surSay('Öpmedim bile! Bu ne nankörlük!'); } } },
+  7: { name: 'Çürük Köprü', setup(S) { S.q = surRoad(0.5); S.load = 0; }, // ağır düşmanlar köprüde toplanınca köprü çöker
+    update(S, dt) { if (S.done) return; const heavy = surNear(S.q.x, S.q.y, 46).filter(e => !e.def.chief && (e.def.hp >= 260 || e.def.machine || /heavy|testudo|ram|elephant|colossus/.test(e.type)));
+      S.load = heavy.length ? S.load + dt * heavy.length : Math.max(0, S.load - dt); if (heavy.length && Math.random() < dt * 3) { surChunks(S.q.x, S.q.y, '#6a4a2a', 2); if (Math.random() < 0.3) floatText(S.q.x, S.q.y - 30, 'Gıcırt...', '#c8a878'); }
+      if (S.load > 3.2) { S.done = true; surFound(); sfx('castlehit'); shakeScreen(5, 0.4); surChunks(S.q.x, S.q.y, '#7a5434', 26); for (const e of surNear(S.q.x, S.q.y, 60)) if (!e.def.chief) { surSplash(e.x, e.y, 6); surKill(e, false); } G.sur.fx.push({ kind: 'hole', x: S.q.x, y: S.q.y, t: 0, dur: 6 }); surSay('O köprüyü ben yaptırmıştım. Bile bile çürük.'); } } },
+  8: { name: 'Uyuyan Bekçi', setup(S) { S.b = surObj('unit_skel_1', surSpot(0.35, 1, 60), 18, { lying: true }); }, // horlayan iskelet: dokun, uyanıp senin için savaşır
+    tap(S, o) { if (o.used) return; o.used = true; surFound(); sfx('skellaugh'); floatText(o.x, o.y - 30, 'Hı? Nöbet mi? Geldim!', '#efe6cc'); surAlly(o.x, o.y, 1, null, 2.2); o.gone = true; surSay('Üç yüz yıldır uyuyordu. Maaşını kesiyorum.'); } },
+  9: { name: 'Kemik Bovlingi', setup(S) { S.b = surObj('nm_boneball', surSpot(0.72, -1, 56), 26, {}); }, // topa dokun: yol boyunca yuvarlanır, düşmanları devirir; 5 ve üstü "STRIKE!"
+    tap(S, o) { if (o.used) return; o.used = true; surFound(); sfx('stomp'); const n = nearestOnPaths(G.paths, o.x, o.y);
+      surRoll(n.p, 'nm_boneball', 15, 190, (e, f) => { damageEnemy(e, e.def.chief ? 40 : 90, 'phys'); stunEnemy(e, 2); e.hopT = 0.5; f.n++; sfx('bash'); if (f.n === 5) { floatText(f.x, f.y - 40, 'STRIKE!', '#ffd34d'); dropCoins(f.x, f.y, 60); surSay('STRIKE! Turnuvaya yazılıyorum.'); } }, { d: n.along });
+      o.gone = true; } },
+  10: { name: 'Fener Bekçisi', setup(S) { S.at = 4; }, // 4. dalgada fenerli hayalet bekçi yolu yürür, düşmanlar korkup kaçar
+    update(S, dt) { if (!S.go && G.wave >= S.at && G.t > (S.t0 ??= G.t + 8)) { S.go = true; surFound(); const p = G.paths[0]; G.sur.fx.push({ kind: 'ghost', p, d: p.total * 0.9, spd: 34, t: 0 }); surSay('Bekçi Osvald! Hâlâ mezarlığı koruyor, gece yarısı mesaisi.'); } } },
+  11: { name: 'Dönek Rahip', setup(S) {}, // boss sahadayken bir rahip taraf değiştirir: iskeletlerini iyileştirir
+    update(S) { if (S.done) return; const b = surBoss(); if (!b || b.hp > b.maxHp * 0.75) return; const pr = G.enemies.find(e => surAlive(e) && /priest/.test(e.type) && !e.def.chief);
+      const q = pr ? { x: pr.x, y: pr.y } : { x: b.x + 30, y: b.y }; if (pr) surKill(pr, false); S.done = true; surFound(); surPuff(q.x, q.y - 12, '255,230,150', 18); surAlly(q.x, q.y, 1, 'enemy_priest', 1.8); floatText(q.x, q.y - 44, 'Mortimer\'in kahvesi daha iyi!', '#ffe08a'); surSay('Bir rahip daha kazandık. Kahve her kapıyı açar.'); } },
+  12: { name: 'İnce Buz', setup(S) { S.q = surRoad(0.45); S.n = 0; }, // donmuş göl: düşmanlar kayar; kalabalık olunca buz çatlar
+    update(S, dt) { if (S.broke) return; const v = surNear(S.q.x, S.q.y, 54); for (const e of v) if (Math.random() < dt * 0.25 && !e.def.chief) { stunEnemy(e, 0.8); floatText(e.x, e.y - 30, 'Kaydı!', '#c8f0ff'); S.slip = 1; if (!S.found) surFound(); }
+      if (v.length >= 7) { S.broke = true; surFound(); sfx('freeze'); shakeScreen(3, 0.3); for (const e of v) if (!e.def.chief) { surSplash(e.x, e.y, 5); surKill(e, false); } G.sur.fx.push({ kind: 'hole', x: S.q.x, y: S.q.y, t: 0, dur: 8, ice: true }); surSay('Buz incedir, demiştim. Tabelaya da yazmıştım.'); } } },
+  13: { name: 'Boğulmuşlar', setup(S) { S.at = 5; }, // 5. dalgada gölden boğulmuş tayfa kalkar, senin için savaşır
+    update(S) { if (S.go || G.wave < S.at) return; if (G.t < (S.t0 ??= G.t + 5)) return; S.go = true; surFound(); const m = G.mech && G.mech.spots[0], q = surRoad(0.5); const x = m ? m.rx : q.x, y = m ? m.ry : q.y;
+      surSplash(x, y, 24); surAlly(x, y, 4, 'enemy_legion', 1.4); surSay('Boğulmuşlar Derneği toplantıya geldi. Islak ama istekli.'); } },
+  14: { name: 'Sazlık Şarkısı', setup(S) { const m = G.mech && G.mech.spots[0]; S.r = surObj('nm5_wheat', m ? { x: m.x + 30, y: m.y } : surSpot(0.5, -1, 64), 30, { cd: 0 }); }, // sazlıktan şarkı: büyülenen düşmanlar suya yürür
+    tap(S, o) { if (o.cd > G.t) { floatText(o.x, o.y - 30, Math.ceil(o.cd - G.t) + ' sn', '#c8c8c8'); return; } o.cd = G.t + 45; surFound(); sfx('soulorb'); const v = surNear(o.x, o.y, 170).filter(e => !e.def.chief && !e.def.machine).slice(0, 4);
+      for (const e of v) { e.siren = { x: o.x + rand(-20, 20), y: o.y + rand(-6, 10), t: 0 }; e.stun = 0; floatText(e.x, e.y - 34, '♪ ♫', '#c8f0ff'); } if (!S.said) { S.said = 1; surSay('Su perisi Hilde. Çok güzel şarkı söyler, çok kötü yüzer.'); } },
+    update(S, dt) { for (const e of G.enemies) if (e.siren && surAlive(e)) { const s = e.siren; s.t += dt; e.stun = Math.max(e.stun || 0, 0.2); e.blocker = null; e.x += (s.x - e.x) * dt * 1.2; e.y += (s.y - e.y) * dt * 1.2; e.face = s.x < e.x ? -1 : 1; if (Math.random() < dt * 2) emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - 30, vy: -20, col: '180,230,255', s0: 3, s1: 0.5, life: 0.7 }); if (s.t > 2.6) { surSplash(e.x, e.y, 10); surKill(e, false); } } } },
+  15: { name: 'Değirmen Bendi', setup(S) { S.l = surObj('nm3_sign_2', surSpot(0.35, 1, 58), 22, {}); }, // tabelaya dokun: bent açılır, sel düşmanları geri sürükler
+    tap(S, o) { if (o.used) return; o.used = true; surFound(); sfx('splash'); shakeScreen(3, 0.5); floatText(o.x, o.y - 36, 'BENT AÇILDI!', '#9ad8ff'); const p = G.paths[0]; G.sur.fx.push({ kind: 'flood', p, d: p.total * 0.95, t: 0, spd: 260 }); surSay('Değirmen benim, su benim, sel de benim.'); } },
+  16: { name: 'Konuşan Tokmak', setup(S) { S.k = surObj('nm_tomb_2', surSpot(0.25, 1, 60), 30, {}); }, // kapı tokmağıyla parola şakası: üçüncüde hazine
+    tap(S, o) { if (o.used) return; o.taps++; sfx('bash'); const L = ['Kim o?', 'Parola?', 'Doğru! "Kahve." Buyrun.']; floatText(o.x, o.y - 44, L[Math.min(2, o.taps - 1)], '#efe6cc');
+      if (o.taps === 1) surSay('Benim! Mortimer!'); if (o.taps === 2) surSay('Of... "Kahve".'); if (o.taps >= 3) { o.used = true; surFound(); dropCoins(o.x, o.y - 10, 100); surPuff(o.x, o.y - 20, '255,220,120', 16); } } },
+  17: { name: 'Dilek Kuyusu', setup(S) { S.w = surObj('nm2_well', surSpot(0.55, -1, 62), 40, { cost: 50 }); }, // 50 altın at, kuyu ne dilerse: iki kat altın, ölüler, lanet ya da kurbağa yağmuru
+    tap(S, o) { if ((o.cd || 0) > G.t) return; if (G.gold < o.cost) { floatText(o.x, o.y - 40, o.cost + ' altın lazım', '#c8c8c8'); sfx('error'); return; } G.gold -= o.cost; o.cd = G.t + 20; surFound(); sfx('coin');
+      const r = Math.random(), v = G.enemies.filter(e => surAlive(e) && e.d > 0);
+      if (r < 0.35) { dropCoins(o.x, o.y - 20, 100); floatText(o.x, o.y - 44, 'İki katı!', '#ffd34d'); }
+      else if (r < 0.65) { surAlly(o.x, o.y + 20, 2, null, 1.4); floatText(o.x, o.y - 44, 'Ölüler!', '#9aff8a'); }
+      else if (r < 0.88) { for (const e of v) if (!e.def.nocurse) { e.curseT = Math.max(e.curseT || 0, 8); e.curseK = Math.max(e.curseK || 0, 0.3); } floatText(o.x, o.y - 44, 'Lanet!', '#d8a8ff'); sfx('cursegaze'); }
+      else { for (const e of v) if (!e.def.chief && !e.def.machine) frogEnemy(e); floatText(o.x, o.y - 44, 'KURBAĞA YAĞMURU!', '#9aff8a'); surSay('Kuyu kurbağa diledi. Ben karışmam.'); } } },
+  18: { name: 'Köprü Trolü', setup(S) { S.q = surRoad(0.5); S.n = 0; S.tr = surObj('unit_bonegiant', { x: S.q.x + 34, y: S.q.y + 30 }, 34, { noTap: true, peek: 0 }); }, // köprüden geçen her 10. düşman geçiş ücreti öder: fırlatılır
+    update(S, dt) { const o = S.tr; o.peek = Math.max(0, o.peek - dt); for (const e of surNear(S.q.x, S.q.y, 26)) { if (e.trollSeen) continue; e.trollSeen = true; if (++S.n % 10 || e.def.chief || e.def.machine) continue;
+        o.peek = 1.2; surFound(); sfx('roar'); floatText(e.x, e.y - 40, 'GEÇİŞ ÜCRETİ!', '#ffb08a'); surToss(e, rand(60, 120), -rand(300, 360)); if (!S.said) { S.said = 1; surSay('Trol Gorbo. Vergi memuru olarak çalışıyor.'); } } } },
+  19: { name: 'Kahve Fincanı', setup(S) {}, // boss gelince Mortimer kahve fincanını fırlatır
+    update(S) { if (S.done) return; const b = surBoss(); if (!b || !onScreen(b, -20)) return; S.done = true; surFound(); const m = mortimerPoint(); G.sur.fx.push({ kind: 'cup', x0: m.x, y0: m.y - 30, e: b, t: 0, dur: 1.1 }); surSay('Kapımda mı? KAHVEMİ İÇERKEN Mİ?!'); } },
+  // ---------------- 2. sefer ----------------
+  20: { name: 'Kopan İp', setup(S) {}, // darağacındaki ölüye dokun: ip kopar, alttaki düşmanın tepesine düşer ve kalkar
+    tap(S, o) {}, tapAt(S, x, y) { const M = G.mech; if (!M || M.kind !== 'gallows') return false; const m = M.spots.find(q => q.body && dist(x, y, q.x, q.y - 34) < 30); if (!m) return false;
+      const v = surNear(m.rx, m.ry, 70); const e = v[0]; surFound(); sfx('bonefall'); m.body.dur = 0; m.body = null; m.flash = 0.6; if (e) { damageEnemy(e, e.def.chief ? 60 : 160, 'phys'); stunEnemy(e, 2.5); floatText(e.x, e.y - 40, 'TEPESİNE!', '#ffb08a'); }
+      surAlly(e ? e.x : m.x, (e ? e.y : m.y) + 4, 1, 'enemy_legion', 1.6); if (!S.said) { S.said = 1; surSay('Askıda bekleyen dostlar. Sırası gelen iner.'); } return true; } },
+  21: { name: 'Devrilen Kazık', setup(S) { const q = surSpot(0.45, 1, 50); S.k = surObj('nm2_stake', q, 22, { rx: q.rx, ry: q.ry }); }, // yanan kazığa dokun: yola devrilir, alev şeridi
+    tap(S, o) { if (o.used) return; o.used = true; o.fall = 0; surFound(); sfx('plaguefire'); G.sur.fx.push({ kind: 'fire', x: o.rx, y: o.ry, t: 0, dur: 9 }); surSay('Bizi yakmak için dikmişlerdi. Ne ironi.'); },
+    update(S, dt) { const o = S.k; if (o.fall != null) o.fall = Math.min(1, o.fall + dt * 2.5); } },
+  22: { name: 'Avcının Kapanı', setup(S) { S.q = [0.35, 0.6].map(f => surRoad(f)); S.c = surObj('nm4_barrels', surSpot(0.5, -1, 60), 30, {}); }, // avcılar kendi kapanına basar; fıçılarını çal
+    tap(S, o) { if (o.used) return; o.used = true; surFound(); dropCoins(o.x, o.y - 10, 80); sfx('coins'); floatText(o.x, o.y - 40, 'Erzak bizim!', '#ffd34d'); surSay('Avcıların erzağı. Kurutulmuş et... ve kahve! Güzel.'); },
+    update(S) { for (const q of S.q) { if (q.snap > G.t) continue; const e = surNear(q.x, q.y, 18).find(e => !e.def.chief && !e.def.machine); if (!e) continue; q.snap = G.t + 14; stunEnemy(e, 3); damageEnemy(e, 40, 'phys'); sfx('bash'); floatText(e.x, e.y - 36, 'ŞAK! Kendi kapanımız!', '#ffb08a'); surFound(); } } },
+  23: { name: 'Kuzgun İntikamı', setup(S) {}, // boss %60'ta: yüzlerce kuzgun bossun kafasına üşüşür (6 sn kör ve sersem)
+    update(S, dt) { const b = surBoss(); if (!S.done && b && b.hp < b.maxHp * 0.6) { S.done = true; S.b = b; S.t = 6; surFound(); crowCaw(); surSay('Bu tepedeki kuzgunlar bana borçlu. Ödeme zamanı!'); }
+      if (S.t > 0 && S.b && surAlive(S.b)) { S.t -= dt; S.b.stun = Math.max(S.b.stun || 0, 0.2); if (Math.random() < dt * 4) damageEnemy(S.b, 6, 'phys', true); } } },
+  24: { name: 'Hapşıran Lejyoner', setup(S) { S.at = 3; }, // vebalı bir asker kendi saflarına hastalık bulaştırır
+    update(S, dt) { if (!S.e && G.wave >= S.at) { const e = G.enemies.find(e => surAlive(e) && e.type === 'legion' && e.d > 40); if (e) { S.e = e; e.sneeze = 1; surFound(); floatText(e.x, e.y - 40, 'Hap... HAPŞU!', '#b8ff8a'); surSay('O asker hasta. Ona yaklaşmayın... onlar yaklaşsın.'); } }
+      for (const e of G.enemies) if (e.sneeze && surAlive(e) && (e.sneezeT = (e.sneezeT || 0) - dt) <= 0) { e.sneezeT = 1.6; surPuff(e.x, e.y - 22, '150,230,90', 6, 30); for (const o of surNear(e.x, e.y, 44)) if (o !== e && !o.sneeze && !o.def.machine) { o.sneeze = 1; o.sneezeT = 1 + Math.random(); poisonEnemy(o, 7, 8); if (Math.random() < 0.5) floatText(o.x, o.y - 34, 'HAPŞU!', '#b8ff8a'); } } } },
+  25: { name: 'Kaçak Tüccar', setup(S) { S.at = 3; }, // pazara tüccar arabası gelir: üç tek seferlik pazarlık
+    update(S) { if (!S.w && G.wave >= S.at) { S.w = surObj('nm4_wagon', surSpot(0.4, 1, 70), 58, { deals: [{ t: '+3 can', c: 120, f: () => { G.lives = Math.min(G.maxLives + 3, G.lives + 3); } }, { t: 'Büyüler hazır', c: 150, f: () => { for (const k in G.spells) G.spells[k] = 0; } }, { t: '3 ölü asker', c: 90, f: () => surAlly(S.w.x, S.w.y + 20, 3, null, 1.5) }] }); surPuff(S.w.x, S.w.y - 20, '255,220,140', 14); surSay('Gizli tüccar Zeki. Sorma, söylemez nereden bulduğunu.'); } },
+    tap(S, o) { if (o !== S.w) return; o.open = !o.open; sfx('click'); surFound(); }, tapAt(S, x, y) { const o = S.w; if (!o || !o.open) return false;
+      for (let i = 0; i < o.deals.length; i++) { const d = o.deals[i]; if (d.sold) continue; const bx = o.x + (i - 1) * 74, by = o.y - 92; if (Math.abs(x - bx) < 34 && Math.abs(y - by) < 24) { if (G.gold < d.c) { sfx('error'); floatText(bx, by - 30, 'Altın yetmez', '#c8c8c8'); return true; } G.gold -= d.c; d.sold = true; d.f(); sfx('coins'); floatText(bx, by - 30, 'Anlaştık!', '#ffd34d'); if (o.deals.every(q => q.sold)) { o.open = false; surSay('Zeki dükkânı kapattı. Başka pazar, başka kurban.'); } return true; } } return false; } },
+  26: { name: 'Hendek Gazı', setup(S) { S.g = [0.4, 0.66].map(f => { const q = surRoad(f); return { x: q.x, y: q.y, ready: true }; }); S.at = 4; }, // hendekte gaz birikir; meşaleli düşman geçince patlar
+    update(S, dt) { if (!S.torch && G.wave >= S.at) { const p = G.paths[0]; S.torch = spawnEnemy('torch', 0, 0); if (S.torch) S.torch.gasLit = true; }
+      for (const g of S.g) { if (!g.ready) continue; if (Math.random() < dt * 2) emit(G.parts, { kind: 'glow', add: true, x: g.x + rand(-22, 22), y: g.y + rand(-6, 6), vy: -rand(4, 12), col: '140,220,80', s0: rand(3, 6), s1: 1, life: 1.2, a: 0.5 });
+        const t = surNear(g.x, g.y, 30).find(e => /torch|ignis/.test(e.type) || e.burnT > 0); if (!t) continue; g.ready = false; surFound(); sfx('acidboom'); shakeScreen(5, 0.4); surHit(g.x, g.y, 80, 120, 1); G.effects.push({ kind: 'ring', x: g.x, y: g.y, r: 80, col: '255,160,60', t: 0, dur: 0.6 }); surPuff(g.x, g.y, '255,150,50', 30, 120); if (!S.said) { S.said = 1; surSay('Kim meşaleyle gaz hendeğine girer? Solarian lar girer.'); } } } },
+  27: { name: 'Kuyudaki El', setup(S) {}, // boss %50: kuyudan dev el bossu tutar
+    update(S, dt) { const b = surBoss(); if (!S.done && b && b.hp < b.maxHp * 0.5) { S.done = true; S.b = b; S.t = 5; surFound(); sfx('roar'); shakeScreen(4, 0.5); surSay('Kuyudaki Büyük Nine! Torunlarına dokunma demiştim!'); }
+      if (S.t > 0 && S.b && surAlive(S.b)) { S.t -= dt; S.b.stun = Math.max(S.b.stun || 0, 0.2); if (Math.random() < dt * 3) damageEnemy(S.b, 10, 'phys', true); } } },
+  28: { name: 'Kara Kedi', setup(S) { S.c = surObj('nm7_cat', surSpot(0.4, 1, 62), 22, { walk: 0 }); S.cd = 12; }, // kara kedi yolu keser: önünden geçtiği düşmanlar uğursuzlaşır
+    update(S, dt) { const o = S.c; if ((S.cd -= dt) <= 0 && G.wave >= 1 && !o.cross) { S.cd = 26; const n = nearestOnPaths(G.paths, o.x, o.y); o.cross = { x0: o.x, y0: o.y, x1: n.x * 2 - o.x, y1: n.y * 2 - o.y, t: 0 }; }
+      if (o.cross) { const c = o.cross; c.t += dt / 3; o.x = lerp(c.x0, c.x1, Math.min(1, c.t)); o.y = lerp(c.y0, c.y1, Math.min(1, c.t)); o.face = c.x1 > c.x0 ? 1 : -1;
+        for (const e of surNear(o.x, o.y, 40)) if (!e.unlucky) { e.unlucky = true; e.curseT = Math.max(e.curseT || 0, 12); e.curseK = Math.max(e.curseK || 0, 0.35); floatText(e.x, e.y - 34, 'Uğursuzluk!', '#d8a8ff'); surFound(); if (!S.said) { S.said = 1; surSay('Patiş benim kedim. Önünden geçeni mahveder.'); } }
+        if (c.t >= 1) o.cross = null; } },
+    tap(S, o) { sfx('pick'); floatText(o.x, o.y - 26, 'Mrrr.', '#efe6cc'); } },
+  29: { name: 'Yüzen Tabutlar', setup(S) { S.t = [0.3, 0.55, 0.78].map((f, i) => surObj('nm3_coffin', surSpot(f, i % 2 ? 1 : -1, 60), 30, { bob: true })); }, // tabuta dokun: içinden ne çıkacağı belli olmaz
+    tap(S, o) { if (o.used) return; o.used = true; o.im = 'nm3_coffin_open'; surFound(); sfx('bonefall'); const r = Math.random();
+      if (r < 0.4) { surAlly(o.x, o.y + 16, 2, null, 1.5); floatText(o.x, o.y - 36, 'Ölüler!', '#9aff8a'); } else if (r < 0.75) { dropCoins(o.x, o.y - 10, 70); floatText(o.x, o.y - 36, 'Hazine!', '#ffd34d'); }
+      else { for (const e of surNear(o.x, o.y, 140, true)) { damageEnemy(e, 50, 'phys'); slowEnemy(e, 0.4, 3); } sfx('bats'); floatText(o.x, o.y - 36, 'Yarasalar!', '#d8a8ff'); }
+      if (!S.said) { S.said = 1; surSay('Tabut piyangosu! Ben hep yarasa çıkarırım.'); } } },
+  30: { name: 'Mumları Söndür', setup(S) { S.c = [0.25, 0.42, 0.58, 0.74].map((f, i) => surObj('nm3_candles', surSpot(f, i % 2 ? 1 : -1, 50), 22, { lit: true })); }, // yanan mumlar düşmanı korur; hepsini söndür, karanlıkta iskeletler azar
+    tap(S, o) { if (!o.lit) return; o.lit = false; sfx('fear'); surPuff(o.x, o.y - 16, '120,110,140', 8, 20); const left = S.c.filter(c => c.lit).length; floatText(o.x, o.y - 36, left ? left + ' kaldı' : 'KARANLIK!', left ? '#c8c8e8' : '#d8a8ff');
+      if (!left) { surFound(); S.dark = 30; surSay('Işıklar söndü. Şimdi benim saatim.'); } },
+    update(S, dt) { const lit = S.c.filter(c => c.lit); for (const e of G.enemies) if (surAlive(e)) e.candleArm = lit.some(c => dist(c.x, c.y, e.x, e.y) < 90) ? 0.25 : 0;
+      if (S.dark > 0) { S.dark -= dt; for (const e of G.enemies) if (surAlive(e)) slowEnemy(e, 0.2, 0.3); } } },
+  31: { name: 'Düşen Çan', setup(S) { S.b = surObj('nm29_belltower', surSpot(0.5, 1, 70), 56, { need: 3 }); }, // çan kulesine üç kez dokun: çan kopar, yola düşer
+    tap(S, o) { if (o.used) return; o.taps++; sfx('bash'); shakeScreen(1.5, 0.15); floatText(o.x, o.y - 70, ['Çatırt.', 'ÇATIRT!', 'DİKKAT!'][o.taps - 1], '#ffd98a');
+      if (o.taps >= o.need) { o.used = true; surFound(); const n = nearestOnPaths(G.paths, o.x, o.y); G.sur.fx.push({ kind: 'drop', im: 'nm37_z_bell', x: n.x, y: n.y, t: 0, dur: 0.6 }); surSay('O çan bütün gece çalıyordu. Artık susacak.'); } } },
+  32: { name: 'Küfürbaz Kafatası', setup(S) { S.k = surObj('nm_bones', surSpot(0.45, -1, 60), 30, { cd: 0 }); }, // kafatasına dokun: en iri düşmana laf atar, o da yolu bırakıp kafatasına saldırır
+    tap(S, o) { if (o.cd > G.t) { floatText(o.x, o.y - 30, 'Sesim kısıldı...', '#c8c8c8'); return; } const v = surNear(o.x, o.y, 240).filter(e => !e.def.chief && !e.def.machine).sort((a, b) => b.maxHp - a.maxHp); if (!v.length) return;
+      o.cd = G.t + 24; const e = v[0]; surFound(); sfx('skellaugh'); floatText(o.x, o.y - 40, ['Annen bir hamsterdı!', 'Miğferin tencere!', 'Kılıcın tahta!'][Math.floor(Math.random() * 3)], '#ffb08a'); e.taunt = { x: o.x, y: o.y, t: 0 }; floatText(e.x, e.y - 40, 'NE DEDİN?!', '#ff8a7a');
+      if (!S.said) { S.said = 1; surSay('Kafatası Ferdi. Ağzı bozuktur, ama işe yarar.'); } },
+    update(S, dt) { for (const e of G.enemies) if (e.taunt && surAlive(e)) { const t = e.taunt; t.t += dt; e.stun = Math.max(e.stun || 0, 0.15); e.blocker = null; e.x += (t.x - e.x) * dt * 0.9; e.y += (t.y - e.y) * dt * 0.9; e.face = t.x < e.x ? -1 : 1;
+        if (t.t > 5) { e.taunt = null; e.offPath = true; } } } },
+  33: { name: 'Kemik Tavan', setup(S) { S.p = surObj('nm_ruin_3', surSpot(0.5, 1, 64), 44, {}); }, // çatlak sütuna dokun: tavandan kemik yağar
+    tap(S, o) { if (o.used) return; o.used = true; surFound(); sfx('bonefall'); shakeScreen(5, 0.8); const n = nearestOnPaths(G.paths, o.x, o.y); for (let i = 0; i < 26; i++) G.sur.fx.push({ kind: 'shard', im: 'nm_bshard_' + (1 + i % 6), x: n.x + rand(-80, 80), y: n.y + rand(-30, 30), t: -i * 0.05, dur: 0.5 }); surSay('Tavanı kemikten yapmak fikri benimdi. Pişman değilim.'); } },
+  34: { name: 'Ceset Tüccarı', setup(S) { S.m = surObj('unit_skel_7', surSpot(0.5, -1, 60), 18, { cd: 0 }); }, // iskelet tüccar sahadaki bütün cesetleri altına çevirir
+    tap(S, o) { if (o.cd > G.t) { floatText(o.x, o.y - 30, 'Stok dolu.', '#c8c8c8'); return; } const C = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t < f.dur - 0.2); if (!C.length) { floatText(o.x, o.y - 34, 'Ceset getir, para al!', '#efe6cc'); return; }
+      o.cd = G.t + 30; surFound(); for (const f of C) { f.t = f.dur; dropCoins(f.x, f.y, 5); } sfx('coins'); floatText(o.x, o.y - 34, C.length + ' ceset satıldı!', '#ffd34d'); if (!S.said) { S.said = 1; surSay('Kuzenim Mırtık. Toptancı. Pazarlık yapmaz.'); } } },
+  35: { name: 'Dede Mortimer', setup(S) {}, // boss gelince Mortimer'ın dedesinin hayaleti bossa üç yıldırım atar
+    update(S, dt) { const b = surBoss(); if (!S.done && b && onScreen(b, -20) && b.hp < b.maxHp * 0.8) { S.done = true; S.b = b; S.n = 3; S.t = 0.6; surFound(); surSay('Dede! Gene mi mezardan çıktın? ...Tamam, vur şunu.'); G.sur.fx.push({ kind: 'grandpa', t: 0, dur: 5 }); }
+      if (S.n > 0 && (S.t -= dt) <= 0 && S.b && surAlive(S.b)) { S.n--; S.t = 1.1; G.sur.fx.push({ kind: 'bolt', x: S.b.x, y: S.b.y, t: 0, dur: 0.35 }); damageEnemy(S.b, S.b.maxHp * 0.06, 'magic'); stunEnemy(S.b, 1); sfx('thunder'); shakeScreen(4, 0.25); } } },
+  36: { name: 'Sisteki Kurtlar', setup(S) { S.at = 5; }, // 5. dalgada sisten kurt sürüsü çıkar, düşmanları ısırıp kovalar
+    update(S) { if (S.go || G.wave < S.at || G.t < (S.t0 ??= G.t + 4)) return; S.go = true; surFound(); sfx('dog'); const p = G.paths[0]; for (let i = 0; i < 4; i++) G.sur.fx.push({ kind: 'wolf', im: i % 2 ? 'pet_wolf_2' : 'pet_wolf_1', p, d: p.total - 10 - i * 26, off: rand(-12, 12), spd: 120, hit: new Set(), t: 0 }); surSay('Kurtlar! Ay kızıl olunca hep gelirler. Beni severler.'); } },
+  37: { name: 'Dev Kartopu', setup(S) { S.k = surObj('nm_rock_2', surSpot(0.82, 1, 60), 30, { snow: true }); }, // karlı kayaya dokun: kartopu yuvarlanır, büyüdükçe büyür
+    tap(S, o) { if (o.used) return; o.used = true; surFound(); sfx('stomp'); const n = nearestOnPaths(G.paths, o.x, o.y); o.gone = true;
+      surRoll(n.p, null, 12, 150, (e, f) => { damageEnemy(e, e.def.chief ? 50 : 70, 'phys'); stunEnemy(e, 2.2); e.d = Math.max(0, e.d - 40); f.r = Math.min(34, f.r + 1.6); f.n++; if (f.n === 8) floatText(f.x, f.y - 50, 'KOCAMAN!', '#e8f6ff'); }, { d: n.along, snow: true });
+      surSay('Çocukken kartopu oynamazdım. Şimdi telafi ediyorum.'); } },
+  38: { name: 'Ters Mancınık', setup(S) { S.at = 6; }, // mancınığın ayarı bozulur, kendi askerlerine taş atar
+    update(S, dt) { if (!S.c && G.wave >= S.at) { const c = G.enemies.find(e => surAlive(e) && /catapult|cannon/.test(e.type)) || (G.t > (S.t0 ??= G.t + 6) ? spawnEnemy('catapult', 0, 30) : null); if (c) { S.c = c; c.misfire = 3; surFound(); floatText(c.x, c.y - 50, 'Ayar bozuk!', '#ffb08a'); surSay('Mancınıkçıyı ben eğittim. Ters tarafa nişan alır.'); S.t = 2; } }
+      if (S.c && surAlive(S.c) && S.c.misfire > 0 && (S.t -= dt) <= 0) { S.t = 3.2; S.c.misfire--; const v = G.enemies.filter(e => surAlive(e) && e !== S.c && dist(e.x, e.y, S.c.x, S.c.y) < 260); const t = v[Math.floor(Math.random() * v.length)]; if (t) G.sur.fx.push({ kind: 'lob', x0: S.c.x, y0: S.c.y - 30, x1: t.x, y1: t.y, t: 0, dur: 1 }); } } },
+  39: { name: 'Kızıl Tutulma', setup(S) {}, // final boss %35: ay tutulur, sahadaki bütün cesetler kendiliğinden kalkar
+    update(S) { if (S.done) return; const b = surBoss(); if (!b || b.hp > b.maxHp * 0.35) return; S.done = true; surFound(); G.surEclipse = 6; sfx('roar'); shakeScreen(6, 0.8); surSay('Tutulma! Final sahnesi BENİM! Kalkın, ölülerim!');
+      const C = G.effects.filter(f => f.kind === 'corpse' && f.raisable && f.t < f.dur - 0.2).slice(0, 10); const m = G.testRaiseMax; G.testRaiseMax = 99; C.forEach((f, i) => { raiseMinion(f, i * 0.1); f.t = f.dur; }); G.testRaiseMax = m; } },
+};
+function setupSurprise() {
+  const def = NECRO && SUR[G.idx]; G.sur = { def, o: [], fx: [], found: false }; G.surBanner = null; G.surEclipse = 0;
+  if (def && def.setup && !G.chal) def.setup(G.sur); // meydan okumalarda (Kahramanlık, Çıplak Kemik) sürpriz yok: aynı bölüm, temiz sınav
+  else if (G.chal) G.sur.def = null;
+}
+function updateSurprise(dt) {
+  const S = G.sur; if (!S || !S.def) return;
+  for (const o of S.o) { o.t += dt; if (o.blink > 0) o.blink -= dt; }
+  if (S.def.update) S.def.update(S, dt);
+  if (G.surBanner && (G.surBanner.t += dt) > 3.4) G.surBanner = null;
+  if (G.surEclipse > 0) G.surEclipse -= dt;
+  for (const e of G.enemies) { // sürprizin düşman durumları
+    if (e.desert && e.dead) e.desert = false;
+    if (e.candleArm > 0 && e.hitG === G.t) {} // mum ışığı zırhı damageEnemy'de (surArmor)
+  }
+  for (const f of S.fx) {
+    f.t += dt; if (f.t < 0) continue;
+    if (f.kind === 'roll') { f.d -= f.spd * dt; const q = pathPos(f.p, f.d); f.x = q.x; f.y = q.y; for (const e of G.enemies) if (surAlive(e) && !e.def.flying && !f.hit.has(e) && dist(e.x, e.y, f.x, f.y) < f.r + 10) { f.hit.add(e); f.onHit(e, f); } if (f.d <= 0) f.done = true; if (f.snow && Math.random() < dt * 20) emit(G.parts, { kind: 'dot', x: f.x + rand(-f.r, f.r), y: f.y, vx: rand(-30, 30), vy: -rand(20, 60), g: 300, drag: 0, col: '#f4fbff', s0: 2, s1: 1, a: 0.9, life: 0.5, t: 0 }); }
+    else if (f.kind === 'toss') { f.vy += 620 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.vr * dt; if (f.t > 2) f.done = true; }
+    else if (f.kind === 'dive') { if (!f.hitDone && f.t > f.dur * 0.55) { f.hitDone = true; if (surAlive(f.e)) { damageEnemy(f.e, f.e.def.chief ? 15 : 45, 'phys'); stunEnemy(f.e, 0.8); } } if (f.t > f.dur) f.done = true; }
+    else if (f.kind === 'leech') { const e = f.e; if (!surAlive(e)) { f.done = true; continue; } const d = e.maxHp * (e.def.chief ? 0.03 : 0.12) * dt; damageEnemy(e, d, 'magic', true, null, 0, true); f.drunk += d; if (f.t > f.dur) { f.done = true; dropCoins(f.o.x, f.o.y - 10, Math.max(10, Math.round(f.drunk * 0.35))); } }
+    else if (f.kind === 'ghost') { f.d -= f.spd * dt; const q = pathPos(f.p, f.d); f.x = q.x; f.y = q.y; for (const e of surNear(f.x, f.y, 70)) if (!e.def.chief && !(e.fearT > 0)) { e.fearT = 2.5; e.fearMax = 2.5; floatText(e.x, e.y - 34, 'Hayalet!', '#c8f0ff'); } if (f.d <= 0) f.done = true; }
+    else if (f.kind === 'flood') { f.d -= f.spd * dt; const q = pathPos(f.p, f.d); f.x = q.x; f.y = q.y; for (const e of surNear(f.x, f.y, 50)) if (!e.flooded && e.p === f.p) { e.flooded = true; e.d = Math.max(0, e.d - (e.def.chief ? 30 : 120)); slowEnemy(e, 0.5, 3); damageEnemy(e, 30, 'phys'); } if (Math.random() < dt * 30) surSplash(f.x + rand(-20, 20), f.y, 1); if (f.d <= 0) f.done = true; }
+    else if (f.kind === 'cup') { const e = f.e; if (f.t > f.dur) { f.done = true; if (surAlive(e)) { damageEnemy(e, e.maxHp * 0.12, 'phys'); stunEnemy(e, 2.5); floatText(e.x, e.y - 60, 'ÇAYIMI DÖKTÜN!', '#ffb08a'); sfx('castlehit'); surChunks(e.x, e.y - 30, '#f2e6c8', 14); } } }
+    else if (f.kind === 'fire') { for (const e of surNear(f.x, f.y, 46)) burnEnemy(e, 14, 3, 'mech'); if (Math.random() < dt * 24) emit(G.parts, { kind: 'glow', add: true, x: f.x + rand(-40, 40), y: f.y + rand(-8, 8), vy: -rand(30, 70), col: Math.random() < 0.5 ? '255,140,40' : '255,210,90', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.8) }); if (f.t > f.dur) f.done = true; }
+    else if (f.kind === 'drop') { if (!f.land && f.t > f.dur) { f.land = true; sfx('bell'); shakeScreen(7, 0.5); G.effects.push({ kind: 'ring', x: f.x, y: f.y, r: 140, col: '255,220,140', t: 0, dur: 0.7 }); surHit(f.x, f.y, 60, 200); for (const e of surNear(f.x, f.y, 140)) stunEnemy(e, 3); surChunks(f.x, f.y, '#c8a060', 18); } if (f.t > f.dur + 6) f.done = true; }
+    else if (f.kind === 'shard') { if (!f.land && f.t > f.dur) { f.land = true; surHit(f.x, f.y, 24, 45, 0.6); surChunks(f.x, f.y, '#efe6cc', 3); if (Math.random() < 0.3) sfx('bonefall'); } if (f.t > f.dur + 1.5) f.done = true; }
+    else if (f.kind === 'wolf') { f.d -= f.spd * dt; const q = pathPos(f.p, f.d, f.off); f.x = q.x; f.y = q.y; f.face = q.dx > 0 ? -1 : 1; for (const e of surNear(f.x, f.y, 26)) if (!f.hit.has(e)) { f.hit.add(e); damageEnemy(e, e.def.chief ? 30 : 60, 'phys'); if (!e.def.chief) { e.fearT = 2; e.fearMax = 2; } sfx('dogbite'); } if (f.d <= 0) f.done = true; }
+    else if (f.kind === 'lob') { if (!f.land && f.t > f.dur) { f.land = true; surHit(f.x1, f.y1, 50, 90, 0.5); surChunks(f.x1, f.y1, '#8a7a6a', 12); sfx('boom'); floatText(f.x1, f.y1 - 40, 'Kendi taşı!', '#ffb08a'); } if (f.t > f.dur + 0.1) f.done = true; }
+    else if (f.kind === 'bolt' || f.kind === 'hole' || f.kind === 'grandpa') { if (f.t > f.dur) f.done = true; }
+  }
+  S.fx = S.fx.filter(f => !f.done);
+}
+function tapSurprise(x, y) {
+  const S = G.sur; if (!S || !S.def) return false;
+  if (S.def.tapAt && S.def.tapAt(S, x, y)) return true;
+  for (const o of S.o) { if (o.noTap || o.gone || !S.def.tap) continue; const im = spr(o.im), h = im ? o.w * im.height / im.width : o.w; if (Math.abs(x - o.x) < Math.max(24, o.w * 0.6) && y < o.y + 10 && y > o.y - h - 10) { S.def.tap(S, o); return true; } }
+  return false;
+}
+function drawSurprise(air) {
+  const S = G.sur; if (!S || !S.def) return;
+  if (!air) {
+    for (const f of S.fx) if (f.kind === 'hole') { const a = 1 - clamp((f.t - f.dur + 1.5) / 1.5, 0, 1); ctx.save(); ctx.globalAlpha *= a; ctx.fillStyle = f.ice ? 'rgba(30,70,110,0.85)' : 'rgba(25,40,60,0.85)'; ctx.beginPath(); ctx.ellipse(f.x, f.y, 44, 18, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = f.ice ? '#d8f4ff' : '#6a4a2a'; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
+      else if (f.kind === 'fire') { ctx.save(); ctx.globalAlpha *= 0.4 * (1 - clamp((f.t - f.dur + 1) / 1, 0, 1)); ctx.fillStyle = '#3a1406'; ctx.beginPath(); ctx.ellipse(f.x, f.y, 46, 14, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    if (S.def === SUR[12] && !S.broke) { ctx.save(); ctx.globalAlpha *= 0.5; ctx.fillStyle = '#cfefff'; ctx.beginPath(); ctx.ellipse(S.q.x, S.q.y, 52, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(S.q.x - 30, S.q.y - 4); ctx.lineTo(S.q.x - 6, S.q.y + 2); ctx.lineTo(S.q.x + 18, S.q.y - 6); ctx.stroke(); ctx.restore(); }
+    if (S.def === SUR[26]) for (const g of S.g) if (g.ready) { const im = spr('nm37_z_gas'); if (im) { ctx.save(); ctx.globalAlpha *= 0.55 + 0.1 * Math.sin(time * 2 + g.x); drawSprite(ctx, im, g.x, g.y + 8, 56); ctx.restore(); } }
+    for (const o of S.o) {
+      if (o.gone) continue; const im = spr(o.im); if (!im) continue;
+      let y = o.y, rot = 0, sx = o.face, sy = 1;
+      if (o.bob) y += Math.sin(o.t * 1.6) * 2;
+      if (o.lying) rot = -Math.PI / 2;
+      if (o.fall != null) rot = o.fall * 1.35;
+      if (o.peek != null) { if (o.peek <= 0) continue; y += (1 - Math.min(1, o.peek * 3)) * 20; }
+      if (o.im === 'nm7_eyes') { sy = o.blink > 0 ? 0.15 : 1; }
+      if (o.walk != null && o.cross) y -= Math.abs(Math.sin(o.t * 12)) * 2;
+      shadow(o.x, o.y + 1, o.w * 0.4, o.w * 0.12);
+      ctx.save(); ctx.translate(o.x, y); ctx.rotate(rot); ctx.scale(sx, sy);
+      if (o.im === 'nm_rock_2' && o.snow) ctx.filter = 'brightness(1.6) saturate(0.2)';
+      drawSprite(ctx, im, 0, 0, o.w); ctx.filter = 'none';
+      if (o.crown) { const h = o.w * im.height / im.width, cy = -h * 0.92; ctx.fillStyle = '#ffd34d'; ctx.strokeStyle = '#5a3a08'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-6, cy + 4); ctx.lineTo(-6, cy - 2); ctx.lineTo(-3, cy + 1); ctx.lineTo(0, cy - 4); ctx.lineTo(3, cy + 1); ctx.lineTo(6, cy - 2); ctx.lineTo(6, cy + 4); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+      ctx.restore();
+      if (o.lit) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y - o.w * 0.7, 26 + Math.sin(o.t * 9) * 2, '255,200,110', 0.5); ctx.restore(); }
+      if (o.lying && !o.used && Math.sin(o.t * 2) > 0.3) txt('z', o.x + 6 + Math.sin(o.t) * 3, o.y - 22 - (o.t * 8) % 14, 11, '#e8e0ff', 'center', '800', FONT_B, true);
+      // ipucu: ilk dalgadan sonra dokunulabilir nesne ara ara parıldar (KR'deki gibi)
+      if (!o.noTap && !o.used && G.wave >= 1 && S.def.tap && (o.t % 4.5) < 0.6) { const k = (o.t % 4.5) / 0.6, h = o.w * im.height / im.width; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x + o.w * 0.25, o.y - h * 0.8, 14 * Math.sin(k * Math.PI), '255,240,190', 0.8); ctx.restore(); }
+      if (o.deals && !o.open) { const bob = Math.abs(Math.sin(o.t * 3)) * 5; roundRect(o.x - 34, o.y - 78 - bob, 68, 22, 11, 'rgba(50,20,40,0.94)', '#e8bb4a', 2); txt('TÜCCAR', o.x, o.y - 66 - bob, 12, '#ffd34d', 'center', '800', FONT_B, false); }
+      if (o.open && o.deals) o.deals.forEach((d, i) => { const bx = o.x + (i - 1) * 74, by = o.y - 92; roundRect(bx - 34, by - 22, 68, 44, 10, d.sold ? 'rgba(40,30,30,0.85)' : 'rgba(50,20,40,0.94)', d.sold ? '#6a5a5a' : '#e8bb4a', 2); txt(d.t, bx, by - 6, 11, d.sold ? '#8a7a7a' : '#fff', 'center', '800', FONT_B, false); txt(d.sold ? 'SATILDI' : d.c + ' altın', bx, by + 10, 11, d.sold ? '#8a7a7a' : '#ffd34d', 'center', '800', FONT_B, false); });
+    }
+    for (const f of S.fx) if (f.kind === 'roll' && f.t >= 0) { const im = f.im && spr(f.im); shadow(f.x, f.y + 1, f.r, f.r * 0.3); ctx.save(); ctx.translate(f.x, f.y - f.r); ctx.rotate(-f.d / f.r);
+        if (im) drawSprite(ctx, im, 0, f.r, f.r * 2.1); else { const g = ctx.createRadialGradient(-f.r * 0.3, -f.r * 0.3, 1, 0, 0, f.r); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#b8d0e4'); circle(0, 0, f.r, g, '#5a7a94', 1.5); ctx.fillStyle = 'rgba(150,180,210,0.6)'; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(Math.cos(i * 1.3) * f.r * 0.55, Math.sin(i * 1.3) * f.r * 0.55, f.r * 0.12, 0, 7); ctx.fill(); } }
+        ctx.restore(); }
+      else if (f.kind === 'wolf' && f.t >= 0) { const im = spr(f.im); if (im) { shadow(f.x, f.y + 1, 10, 3); ctx.save(); ctx.translate(f.x, f.y - Math.abs(Math.sin(f.t * 14)) * 4); ctx.scale(f.face, 1); drawSprite(ctx, im, 0, 0, 34); ctx.restore(); } }
+      else if (f.kind === 'ghost') { const im = spr('nm7_ghost'); if (im) { ctx.save(); ctx.globalAlpha *= 0.85; ctx.translate(f.x, f.y - 10 + Math.sin(f.t * 3) * 3); drawSprite(ctx, im, 0, 0, 34); ctx.restore(); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, f.x + 10, f.y - 30, 34, '255,220,140', 0.6); ctx.restore(); } }
+      else if (f.kind === 'drop' && f.t >= 0) { const im = spr(f.im); if (im) { const k = Math.min(1, f.t / f.dur), y = f.y - (1 - k * k) * 260; ctx.save(); ctx.translate(f.x, y); if (f.land) ctx.rotate(Math.sin(f.t * 18) * 0.12 * Math.max(0, 1 - (f.t - f.dur) / 1.5)); drawSprite(ctx, im, 0, 0, 52); ctx.restore(); } }
+    if (S.def === SUR[18]) { const o = S.tr; if (o.peek > 0) txt('GRRR', o.x, o.y - 50, 12, '#ffb08a', 'center', '800', FONT_B, true); }
+    if (S.def === SUR[30] && S.c.some(c => c.lit)) for (const e of G.enemies) if (e.candleArm > 0 && surAlive(e)) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, e.y - 14, 16, '255,220,140', 0.25); ctx.restore(); }
+    return;
+  }
+  // havadakiler
+  for (const f of S.fx) {
+    if (f.t < 0) continue;
+    if (f.kind === 'toss') { ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.scale(f.face, 1); drawSprite(ctx, f.im, 0, 0, f.w, 0.5); ctx.restore(); }
+    else if (f.kind === 'dive') { const im = spr('nm_crow'); if (!im) continue; const k = f.t / f.dur, tx = f.e.x, ty = f.e.y - 20, x = k < 0.55 ? lerp(f.x0, tx, k / 0.55) : lerp(tx, tx + 120, (k - 0.55) / 0.45), y = k < 0.55 ? lerp(f.y0, ty, k / 0.55) : lerp(ty, ty - 160, (k - 0.55) / 0.45);
+      ctx.save(); ctx.translate(x, y); ctx.scale(x < tx ? 1 : -1, 1); ctx.rotate(k < 0.55 ? 0.5 : -0.4); drawSprite(ctx, im, 0, 0, 22, 0.5); ctx.restore(); }
+    else if (f.kind === 'leech') { const e = f.e, o = f.o; ctx.save(); ctx.strokeStyle = 'rgba(120,10,24,0.9)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(o.x, o.y - 6); ctx.quadraticCurveTo((o.x + e.x) / 2, Math.min(o.y, e.y) - 50 + Math.sin(f.t * 8) * 6, e.x, e.y - 16); ctx.stroke(); ctx.strokeStyle = 'rgba(230,60,70,0.8)'; ctx.lineWidth = 1.6; ctx.stroke(); ctx.restore(); }
+    else if (f.kind === 'cup') { const im = spr('ico_tea'), k = f.t / f.dur, x = lerp(f.x0, f.e.x, k), y = lerp(f.y0, f.e.y - 30, k) - Math.sin(k * Math.PI) * 120; if (im) { ctx.save(); ctx.translate(x, y); ctx.rotate(f.t * 14); drawSprite(ctx, im, 0, 0, 20, 0.5); ctx.restore(); } if (Math.random() < 0.5) emit(G.parts, { kind: 'dot', x, y, vx: rand(-20, 20), vy: rand(0, 30), g: 200, drag: 0, col: '#6a3a1a', s0: 2, s1: 1, a: 0.9, life: 0.5, t: 0 }); }
+    else if (f.kind === 'shard' && !f.land) { const im = spr(f.im); if (!im) continue; const k = Math.max(0, f.t / f.dur); ctx.save(); ctx.translate(f.x, f.y - (1 - k) * 300); ctx.rotate(f.t * 8); drawSprite(ctx, im, 0, 0, 16, 0.5); ctx.restore(); }
+    else if (f.kind === 'lob' && !f.land) { const k = f.t / f.dur, x = lerp(f.x0, f.x1, k), y = lerp(f.y0, f.y1, k) - Math.sin(k * Math.PI) * 140; circle(x, y, 6, '#6a5a4a', '#2a2018', 1.5); }
+    else if (f.kind === 'bolt') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = 'rgba(200,170,255,0.95)'; ctx.lineWidth = 4; ctx.beginPath(); let x = f.x + rand(-10, 10), y = 0; ctx.moveTo(x, y); while (y < f.y - 20) { y += rand(30, 60); x += rand(-22, 22); ctx.lineTo(x, Math.min(y, f.y - 20)); } ctx.stroke(); glow(ctx, f.x, f.y - 20, 60, '200,160,255', 0.8); ctx.restore(); }
+    else if (f.kind === 'grandpa') { const im = spr('mortimer'), c = G.castle; if (!im) continue; const a = Math.min(1, f.t / 0.5) * Math.min(1, (f.dur - f.t) / 0.6); ctx.save(); ctx.globalAlpha *= a * 0.75; ctx.filter = 'grayscale(1) brightness(1.5) hue-rotate(180deg)'; ctx.translate(c.x - 70, c.y - 40 + Math.sin(f.t * 2) * 4); drawSprite(ctx, im, 0, 0, 46); ctx.filter = 'none'; ctx.restore(); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, c.x - 70, c.y - 80, 50, '170,220,255', 0.4 * a); ctx.restore(); }
+  }
+  if (S.def === SUR[23] && S.t > 0 && S.b && surAlive(S.b)) { const im = spr('nm_crow'); if (im) for (let i = 0; i < 9; i++) { const a = G.t * 4 + i * 0.7, rr = 18 + (i % 3) * 8; ctx.save(); ctx.translate(S.b.x + Math.cos(a) * rr, S.b.y - 40 + Math.sin(a * 1.3) * 10); ctx.scale(Math.cos(a) > 0 ? 1 : -1, 1); drawSprite(ctx, im, 0, 0, 16, 0.5); ctx.restore(); } }
+  if (S.def === SUR[27] && S.t > 0 && S.b && surAlive(S.b)) { const im = spr('nm3_hand_fist') || spr('nm3_hand_open'); if (im) { ctx.save(); ctx.translate(S.b.x, S.b.y + 6); drawSprite(ctx, im, 0, 0, 56); ctx.restore(); } }
+}
+function drawSurBanner() { // sürpriz bulununca üstte altın şerit
+  const B = G.surBanner; if (!B) return; const a = Math.min(1, B.t / 0.25) * Math.min(1, (3.4 - B.t) / 0.4), y = 96 + (1 - Math.min(1, B.t / 0.25)) * -30;
+  ctx.save(); ctx.globalAlpha *= a; roundRect(W / 2 - 170, y - 26, 340, 54, 14, 'rgba(40,14,30,0.94)', '#e8bb4a', 2.5);
+  txt(B.sub, W / 2, y - 8, 12, '#e8bb4a', 'center', '800', FONT_B, false); txt(B.text, W / 2, y + 13, 20, '#fff2c8', 'center', '400', FONT_T, true); ctx.restore();
+}
 // ----- dokunulabilir dekor şakaları -----
 // karga: dokununca gaklayıp uçar, 20-30 sn sonra başka yere konar · mezar: dokununca topraktan iskelet eli çıkar, el sallar, laf atar;
 // üçüncü dokunuşta bir kez bahşiş fırlatır · Mortimer: balkonda dokununca çayından yudum alır (buhar, laf)
@@ -7744,9 +8108,10 @@ function setupProps() {
   for (let i = 0; i < 2; i++) { const q = propSpot(rnd, 6); if (q) G.props.push({ kind: 'crow', x: q.x, y: q.y, state: 'idle', t: rnd() * 5, face: rnd() < 0.5 ? -1 : 1 }); }
   const q = propSpot(rnd, 10); if (q) G.props.push({ kind: 'grave', x: q.x, y: q.y, state: 'idle', t: 0, taps: 0, look: 1 + Math.floor(rnd() * 3) });
   G.teaT = 0;
-  setupZoneItem();
+  setupZoneItem(); setupSurprise();
 }
 function updateProps(dt) {
+  updateSurprise(dt);
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
@@ -7759,7 +8124,7 @@ function updateProps(dt) {
   }
 }
 function tapProps(x, y) {
-  if (tapZoneItem(x, y) || tapMech(x, y)) return true;
+  if (tapSurprise(x, y) || tapZoneItem(x, y) || tapMech(x, y)) return true;
   // Mortimer: balkondaki figürün üstü
   const m = mortimerPoint();
   if (Math.abs(x - m.x) < m.h * 0.45 && y < m.y + 4 && y > m.y - m.h - 4) {
@@ -7806,6 +8171,7 @@ function crowCaw() {
 }
 function drawProps(air) {
   if (!air) drawZoneItem();
+  drawSurprise(air);
   for (const o of G.props || []) {
     if (o.kind === 'crow') {
       const im = spr('nm_crow'); if (!im || o.state === 'gone') continue;
@@ -9136,7 +9502,7 @@ function update(dt) {
   if (G.sandbox) { G.lives = G.maxLives; G.gold = Math.max(G.gold, 50000); updateSandbox(dt); }
   if (G.lives <= 0 && !overlay) {
     if (G.endless) { save.endless = save.endless || {}; G.endBest = save.endless[G.idx] || 0; G.endNew = G.wave > G.endBest; save.endless[G.idx] = Math.max(G.endBest, G.wave); endlessLog(G.idx, G.wave); persist(); svcScore('endless', Object.values(save.endless).reduce((a, b) => a + b, 0)); } // tablo: bütün bölümlerdeki en iyi dalgaların toplamı
-    if (G.admin) { setOverlay('lose'); sfx('lose'); } else { heroEndXp(false); setOverlay('lose'); sfx('lose'); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave); }
+    if (G.admin) { setOverlay('lose'); sfx('lose'); themeSting('yenilgi', 0.4); } else { heroEndXp(false); setOverlay('lose'); sfx('lose'); themeSting('yenilgi', 0.4); achLevelEnd(false); levelEndAd(); gaProg('Fail', G.idx, G.wave); }
   }
   if (G.gold >= 2000) achGive('hoard');
   if (G.winHold > 0) G.winHold -= dt;
@@ -9163,6 +9529,7 @@ function update(dt) {
     setOverlay('win');
     { const ep = G.lv.ep || 1, L = epLevels(ep); if (!G.chal && firstWin && L[L.length - 1] === G.idx && cineReady('end' + ep)) startCine('end' + ep); } // 18 Eki: sefer sonu ödül sahnesi (zafer ekranının üstünde, bir kez)
     if (NECRO) { sfx('winbone'); G.winLaughT = G.t + 1.9; } else sfx('win'); // 16 Eki: nekromantik zafer; Mortimer sonra kahkaha atar
+    themeSting('zafer', 0.25);
     gaProg('Complete', G.idx, G.stars); svcScore('stars', starsTotal()); if (G.chal === 'd') svcScore('daily', save.daily.n);
     achLevelEnd(true); levelEndAd();
   }
@@ -12403,8 +12770,8 @@ function drawProjectile(p) {
   const k = clamp(p.t / p.dur, 0, 1);
   const { x, y } = projPos(p, k);
   if (p.imbue && IMBUE[p.imbue]) { // silah büyüsü: okun çevresinde renkli parıltı, arkasında kıvılcım
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 8, IMBUE[p.imbue].col, 0.75); ctx.restore();
-    if (Math.random() < 0.45) emit(G.parts, { kind: 'glow', add: true, x, y, vx: rand(-8, 8), vy: p.imbue === 'fire' ? -rand(10, 30) : rand(-6, 10), col: IMBUE[p.imbue].col, s0: 2.4, s1: 0.4, life: 0.3 });
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 8 * 0.6, IMBUE[p.imbue].col, 0.75); ctx.restore(); // 18 Eki (Caner: "okların ucu çok parlıyor"): parıltı %40 küçük
+    if (Math.random() < 0.45) emit(G.parts, { kind: 'glow', add: true, x, y, vx: rand(-8, 8), vy: p.imbue === 'fire' ? -rand(10, 30) : rand(-6, 10), col: IMBUE[p.imbue].col, s0: 2.4 * 0.6, s1: 0.4, life: 0.3 });
   }
   if (p.kind === 'ultsword') { drawUltSword(x, y, 1, 1 - k * 0.3); return; }
   if (p.kind === 'ulthammer') { drawUltHammer(x, y, -1.3 * (1 - easeInOut(k)), 1); return; }
@@ -14683,6 +15050,8 @@ function hudBar(x, y, w, h) {
   roundRect(x, y, w, h, h / 2.4, 'rgba(12,8,18,0.86)', 'rgba(205,190,235,0.45)', 1.4);
 }
 function drawHud() {
+  if (G.surEclipse > 0) { ctx.save(); ctx.globalAlpha = 0.32 * Math.min(1, G.surEclipse / 1.2) * Math.min(1, (6 - G.surEclipse) / 0.5); ctx.fillStyle = '#7a0010'; ctx.fillRect(-W, -H, W * 3, H * 3); ctx.restore(); } // 18 Eki: Kızıl Tutulma sürprizi
+  drawSurBanner();
   drawItemHud();
   // altın / can değişince sayı zıplar
   { const gd = G.gold - (G.goldRoll ?? G.gold); G.goldRoll = gd < 0 ? G.gold : (G.goldRoll ?? G.gold) + Math.min(gd, Math.max(1, gd * 0.18)); } // 13 Eki: sayaç tıkır tıkır yetişir (harcayınca hemen düşer)
@@ -15679,7 +16048,7 @@ function volSlider(key, x, y, w, h, v, set, appear) {
   buttons.push({ key, x, y: y - h / 2 - 6, w, h: h + 12, fn: () => {}, drag: pick });
 }
 let slide = null; // sürüklenen ses çubuğu { key, b, id }
-const settingsCount = (inGame) => settingsList(inGame).length + (inGame ? 1 : 2); // + dil (+ sıfırla)
+const settingsCount = (inGame) => settingsList(inGame).length + (inGame ? 1 : 3); // + dil (+ sıfırla, kayıt kodu)
 function settingsList(inGame) {
   const vol = (onK, volK) => (v) => { setMuted(false); if (v <= 0.005) setSetting(onK, false); else { setSetting(onK, true); setSetting(volK, v); } };
   const rows = [ // ses düzeyleri 0-100 çubuk (Caner, 10 Eki): sürükleyerek ya da dokunarak
@@ -15727,6 +16096,12 @@ function settingsRows(x0, y0, w, st, inGame) {
       if (resetArm && time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
       else resetArm = time;
     }, 'red', { appear: st - 0.45, size: 15 });
+    // 18 Eki (Caner: "bulut kaydını sen şimdi ekleyemiyor musun?"): hesapsız cihazdan cihaza aktarma: kayıt kodu
+    const R3 = cell(rows.length + 2); head(R3, 'grimoire', 'Kayıt kodu');
+    const hw = (R3.cw - 8) / 2;
+    BTN('savexp', R3.cx + hw / 2, R3.y, hw, 40, 'AKTAR', () => saveExport(), 'green', { appear: st - 0.5, size: 15 });
+    BTN('savimp', R3.cx + hw * 1.5 + 8, R3.y, hw, 40, 'YÜKLE', () => saveImport(), 'blue', { appear: st - 0.55, size: 15 });
+    if (saveMsg && time - saveMsg.t < 4) txt(saveMsg.text, R3.cx + R3.cw / 2, R3.y + 32, 13, saveMsg.col, 'center', '800', FONT_B, true);
   }
   if (langMenu) drawLangMenu(L.cx, L.y, L.cw);
 }
@@ -19735,7 +20110,9 @@ function drawLevelCard(i, cx, cy, at) {
       ctx.restore();
       buttons.push({ key, x: bx, y: dy + 6, w: dw, h: dh, fn: () => { if (save.diff !== k) { save.diff = k; persist(); sfx('pick'); } } });
     });
-    { const ly = dy + dh + 30, lines = wrapLines(M.desc, rw - 8, 15, '700', FONT_B, 2); if (ly + lines.length * 19 < y0 + h - 140) lines.forEach((l, k) => txt(l, rx + 4, ly + k * 19, 15, '#e8dcc4', 'left', '700', FONT_B, false)); } // 18 Eki: boş kalmasın, Sefer'in kısa açıklaması
+    { const ly = dy + dh + 30, lines = wrapLines(M.desc, rw - 8, 15, '700', FONT_B, 2); if (ly + lines.length * 19 < y0 + h - 140) lines.forEach((l, k) => txt(l, rx + 4, ly + k * 19, 15, '#e8dcc4', 'left', '700', FONT_B, false));
+      const sy = ly + lines.length * 19 + 8, sd = NECRO && SUR[i], sf = save.sur && save.sur[i]; // 18 Eki: bölümün gizli sürprizi (bulunduysa adı)
+      if (sd && sy < y0 + h - 128) { txt(sf ? '✦ Sürpriz: ' + sd.name : '✦ Gizli sürpriz: ???', rx + 4, sy, 15, sf ? '#ffd34d' : '#b8a0d8', 'left', '800', FONT_B, false); } } // 18 Eki: boş kalmasın, Sefer'in kısa açıklaması
   } else {
     // 18 Eki: seçili modun açıklaması kendi panelinde: başlık + simge + en çok 3 satır
     const py = tyy + 124, ph = Math.min(mapMode === 'e' && M.open ? 140 : 112, y0 + h - 140 - py);
@@ -22194,7 +22571,9 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), // test: kule yıkılması
+   surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi
+  codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
   benchTitle(n = 120) { // giriş ekranı çizim süresi (ms)
     const D = [], { dpr, scale, ox, oy } = view;

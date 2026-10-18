@@ -11,7 +11,7 @@ import video_isle
 from anim_isle import remove_magenta
 import serit_temizle
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); IMG = os.path.join(ROOT, 'sinir-kalesi', 'img'); ANIM = os.path.join(ROOT, 'varliklar', 'ham', 'anim')
-FH = 240  # kare boyu (px): kule ~150 px, toz bulutu için pay
+FH = 170  # kare boyu (px): bellek (49 kare x 26 kule; yalnız kurulu kulelerinki yüklenir)
 def key_green(a):
     f = a.astype(np.float32); r, g, b = f[..., 0], f[..., 1], f[..., 2]
     d = g - np.maximum(r, b); al = np.clip(1 - (d - 40) / 70, 0, 1)  # yeşil baskınlığı arttıkça saydam
