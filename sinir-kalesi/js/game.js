@@ -6968,6 +6968,29 @@ function updateMortState(dt) {
   else if (M.st === 'up' && M.t > MORT_TRANS) { M.st = M.leave ? 'goin' : 'panic'; M.t = 0; M.leave = false; }
   else if (M.st === 'panic' && M.calm > 3) { M.st = M.quiet > 6 ? 'goin' : 'down'; M.t = 0; }
   else if (M.st === 'down' && M.t > MORT_TRANS) { M.st = 'tea'; M.t = 0; }
+  mortPoseUpdate(M, dt);
+}
+// 18 Eki (Caner: "Mortimer yeni evin balkonunda kırmızı koltukta otururken ve teleskoptan düşmana bakarken"): sakin anlarda poz değiştirir.
+// Düşman yoldayken (uzakta) teleskopla gözetler, ortalık boşken koltukta keyif yapar; tehlike, büyü ya da ağır hasarda hemen ayağa kalkar.
+// Görseller kaledeki koltuğun / teleskopun yerine oturur (img/mortimer_pose_koltuk, _teleskop, atlasta; varliklar/mortimer_balkon_isle.py).
+// fx, fy: kale görselinde dayanak noktası (kesir), ax, ay: görselin kendi dayanağı (kesir), hk: boy / kale görseli boyu. Yalnız v5 1-2. evrede.
+const MORT_POSE = { sofa: { im: 'mortimer_pose_koltuk', fx: 0.673, fy: 0.539, ax: 0.48, ay: 0.875, hk: 106 / 1025 },
+  scope: { im: 'mortimer_pose_teleskop', fx: 667 / 760, fy: 539 / 1025, ax: 0.47, ay: 0.36, hk: 150 / 1025 }, fade: 0.35, dur: [9, 16] };
+function mortPoseOk(k) { const im = castleStageSprite(); return !!(spr(MORT_POSE[k].im) && im && (im === spr('castle_keep_1') || im === spr('castle_keep_2'))); }
+function mortPoseUpdate(M, dt) {
+  M.pose = M.pose || 'stand'; M.poseA = Math.min(1, (M.poseA ?? 1) + dt / MORT_POSE.fade);
+  const set = (k) => { if (k !== M.pose) { M.poseOld = M.pose; M.pose = k; M.poseA = 0; } };
+  if (M.st !== 'tea' || G.mortCast > 0 || G.mortMood || (M.pose !== 'stand' && !mortPoseOk(M.pose))) { if (M.pose !== 'stand') { set('stand'); M.poseA = 1; } M.poseT = 3; return; }
+  if ((M.poseT = (M.poseT ?? 4) - dt) > 0) return;
+  const D = MORT_POSE.dur; M.poseT = rand(D[0], D[1]);
+  const foes = G.enemies.some(e => !e.dead && e.d > 0), r = Math.random();
+  set(foes ? (r < 0.6 && mortPoseOk('scope') ? 'scope' : 'stand') : (r < 0.6 && mortPoseOk('sofa') ? 'sofa' : r < 0.75 && mortPoseOk('scope') ? 'scope' : 'stand'));
+}
+function drawMortPose(k, a) {
+  const P = MORT_POSE[k], im = spr(P.im), ci = castleStageSprite(); if (!im || !ci || a <= 0) return;
+  const c = G.castle, cp = castlePlace(c.x, c.y, ci), h = cp.w * ci.height / ci.width, dh = P.hk * h, dw = dh * im.width / im.height;
+  const x = cp.x - cp.w / 2 + P.fx * cp.w, y = cp.y - h + P.fy * h, br = k === 'sofa' ? Math.sin(time * 1.4) * 0.008 : Math.sin(time * 1.1) * 0.006; // hafif nefes
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y + dh * (1 - P.ay)); ctx.scale(1, 1 + br); ctx.drawImage(im, -P.ax * dw, -dh, dw, dh); ctx.restore();
 }
 const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : (ANIM_META[n] && loadStrip(n), null)); // yüklü değilse yükletir (haritada çay)
 // 15 Eki: ruh hali animasyonları (Veo, tek seferlik): kale vurulunca öfke (ayak vurur, yumruk sallar). MORT_MOOD: kare/sn, tekrar bekleme (sn)
@@ -7031,6 +7054,14 @@ function drawMortimer() {
   const MS = G.mort && G.mort.st;
   if (MS === 'in') return;
   if (MS === 'out' || MS === 'goin') { drawMortDoor(); return; }
+  { const M = G.mort; if (M && M.pose && (M.pose !== 'stand' || (M.poseA < 1 && M.poseOld && M.poseOld !== 'stand'))) { // 18 Eki: koltukta / teleskopta
+      if (M.pose !== 'stand') drawMortPose(M.pose, M.poseA);
+      if (M.poseA < 1 && M.poseOld && M.poseOld !== 'stand') drawMortPose(M.poseOld, 1 - M.poseA);
+      if (M.pose !== 'stand') { if (M.poseA < 1 && M.poseOld === 'stand') { ctx.save(); ctx.globalAlpha *= 1 - M.poseA; drawMortimer0(); ctx.restore(); } return; }
+      ctx.save(); ctx.globalAlpha *= M.poseA; drawMortimer0(); ctx.restore(); return; } }
+  drawMortimer0();
+}
+function drawMortimer0() {
   const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / (G.mortCastT || MORT_CAST_T), 0, 1) : -1;
   if (p >= MORT_RAISE.flash && G.mortCastN === 'mortimer_dirilt' && !G.mortFlash) { // videodaki tam ekran patlama kesildi: yerine kodla yeşil patlama
     G.mortFlash = true; G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.9, col: '130,255,140', t: 0, dur: 0.45 });
@@ -22602,7 +22633,7 @@ window.__game = {
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
   goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
-  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), // test: kule yıkılması
+  card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), // test: kule yıkılması
    surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi
   codexSel: (id, tab = 'e') => { CODEX.tab = tab; CODEX.sel[tab] = id; CODEX.t0 = time - 2; }, codexList: () => CODEX_ENEMIES.slice(), codex: CODEX, goAch: () => { screen = 'ach'; screenT = time; }, goScreen: (n) => { screen = n; screenT = time; } /* test: herhangi bir ekran */, achGive, cnt, mapfx: MAPFX, mapcam: MAPCAM, buildCost, upCost, // test: harita kamerası
   logo: () => titleLogo(), // test: logo tuvali (yakından bakmak için)
