@@ -1,0 +1,634 @@
+[
+ {
+  "name": "enemy_champion_sig1",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net spins around twice like a whirlwind with the trident held out wide, the golden blades of the trident slicing a full circle, then stops and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_champion_sig2",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net swings the rope net around his head twice and hurls it far forward to the right, the net opens wide in the air, then he returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_champion_atk2",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_champion_block",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_hierophant_sig1",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff raises the golden sun staff high with both hands, the sun halo behind his head blazes brighter and a golden dome of light forms around him, then he lowers the staff and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hierophant_sig2",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff thrusts the golden sun staff forward and down and a blinding burst of white-gold holy light explodes out of the staff in all directions, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_hierophant_atk2",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_hierophant_block",
+  "ref": "ham/anim/enemy_hierophant_ref.png",
+  "prompt": "a cartoon old sun high priest in long white and gold robes with a tall golden mitre, a glowing golden sun halo behind his head and a tall golden sun staff defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_centurion_sig1",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin plants his feet, raises the javelin high and points it forward, shouting a loud order with his mouth wide open, his red cape whips in the wind, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_centurion_sig2",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin raises his arm high and points up to the sky, then sweeps the arm forward commanding a volley, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_centurion_atk2",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_centurion_block",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_shadowmaster_sig1",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades crouches low, wraps himself in his crimson cloak, vanishes into a dark purple puff and reappears a step further forward slashing both golden sickles, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_shadowmaster_sig2",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades raises both golden sickles crossed above his head, then slams them down and a dark purple shock wave bursts out around him, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_shadowmaster_atk2",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_shadowmaster_block",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_cavcaptain_sig1",
+  "ref": "ham/anim/enemy_cavcaptain_ref.png",
+  "prompt": "a cartoon cavalry captain with a winged golden helmet and red cape riding a big black armored warhorse with golden barding, holding a long lance with a red pennant the warhorse rears up high on its hind legs neighing while the captain levels the lance forward, then the horse lunges forward in a powerful charge and comes back exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_cavcaptain_sig2",
+  "ref": "ham/anim/enemy_cavcaptain_ref.png",
+  "prompt": "a cartoon cavalry captain with a winged golden helmet and red cape riding a big black armored warhorse with golden barding, holding a long lance with a red pennant the captain lifts a golden war horn to his mouth and blows it loudly, cheeks puffed, while the horse stamps and tosses its head, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_cavcaptain_atk2",
+  "ref": "ham/anim/enemy_cavcaptain_ref.png",
+  "prompt": "a cartoon cavalry captain with a winged golden helmet and red cape riding a big black armored warhorse with golden barding, holding a long lance with a red pennant attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_ironwarden_sig1",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace raises the heavy flanged mace high with both hands and smashes it down into the ground in front of him with enormous force, the ground cracks, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_ironwarden_sig2",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace slams the massive iron tower shield down into the ground in front of him and braces behind it, golden light runs along the shield edge, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_ironwarden_atk2",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_ironwarden_block",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_gloriosus1_sig1",
+  "ref": "ham/anim/enemy_gloriosus1_ref.png",
+  "prompt": "a cartoon vain roman general with a mustache in golden armor standing in a huge ornate golden war chariot with spiked golden wheels and a big golden sun disc, pulled by two armored white war lions the general raises his arm high to the sky and then sweeps it forward commanding, the golden sun disc on the chariot flashes bright, the lions roar, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus1_sig2",
+  "ref": "ham/anim/enemy_gloriosus1_ref.png",
+  "prompt": "a cartoon vain roman general with a mustache in golden armor standing in a huge ornate golden war chariot with spiked golden wheels and a big golden sun disc, pulled by two armored white war lions the general lifts a golden banner pole high and waves it proudly left and right, the lions rear and roar, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_gloriosus1_atk2",
+  "ref": "ham/anim/enemy_gloriosus1_ref.png",
+  "prompt": "a cartoon vain roman general with a mustache in golden armor standing in a huge ornate golden war chariot with spiked golden wheels and a big golden sun disc, pulled by two armored white war lions attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_gloriosus2_sig1",
+  "ref": "ham/anim/enemy_gloriosus2_ref.png",
+  "prompt": "a cartoon furious roman general with a mustache in dented golden armor and a torn red cape, holding a golden gladius sword and a round golden shield raises the golden gladius high to the sky and sweeps it forward commanding, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus2_sig2",
+  "ref": "ham/anim/enemy_gloriosus2_ref.png",
+  "prompt": "a cartoon furious roman general with a mustache in dented golden armor and a torn red cape, holding a golden gladius sword and a round golden shield raises the round golden shield and the golden gladius high and roars with his mouth wide open, his torn red cape whips in the wind, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_gloriosus2_atk2",
+  "ref": "ham/anim/enemy_gloriosus2_ref.png",
+  "prompt": "a cartoon furious roman general with a mustache in dented golden armor and a torn red cape, holding a golden gladius sword and a round golden shield attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_gloriosus2_block",
+  "ref": "ham/anim/enemy_gloriosus2_ref.png",
+  "prompt": "a cartoon furious roman general with a mustache in dented golden armor and a torn red cape, holding a golden gladius sword and a round golden shield defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_gloriosus3_sig1",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword raises the flaming golden sword high to the sky, the sun halo blazes and spears of light shoot up into the sky, then he sweeps the sword forward and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus3_sig2",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword spreads his arms wide, the cape of golden flames flares up huge and the sun halo pulses with blinding light, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_gloriosus3_atk2",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_gloriosus3_block",
+  "ref": "ham/anim/enemy_gloriosus3_ref.png",
+  "prompt": "a cartoon roman general with a mustache transformed into a sun god: glowing white-hot golden armor with cracks of light, a cape of burning golden flames, a blazing sun halo and a flaming golden sword defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_malleus_sig1",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows swings a big rope hunting net around his head and hurls it forward to the right, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_malleus_sig2",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows raises both silver crossbows high to the sky and fires them upward one after the other with strong recoil, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_malleus_atk2",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_malleus_block",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_hubertus_sig1",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds lifts a curved hunting horn to his mouth and blows it with all his strength, the two hounds howl up at the sky, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_hubertus_sig2",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds yanks the chains and releases the two hounds that leap forward snapping, then he pulls them back and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_hubertus_atk2",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_hubertus_block",
+  "ref": "ham/anim/enemy_hubertus_ref.png",
+  "prompt": "a cartoon burly bearded houndmaster in a crimson hunting coat and a black feathered hat holding the chains of two snarling white war hounds defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_campanus_sig1",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk carrying a giant bronze bell on his back and holding a big bronze hammer swings the big bronze hammer back and strikes the giant bell on his back with full force, the bell swings and rings, rippling sound waves pulse out, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_campanus_sig2",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk carrying a giant bronze bell on his back and holding a big bronze hammer spins around once and swings the giant bell off his back in a full circle like a wrecking ball, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_campanus_atk2",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk carrying a giant bronze bell on his back and holding a big bronze hammer attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_campanus_block",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "prompt": "a huge cartoon monk carrying a giant bronze bell on his back and holding a big bronze hammer defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_agnes_sig1",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff whirls the long chain whip around her in a furious full circle twice, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_agnes_sig2",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff raises the burning brazier staff high and presses her other hand to her heart swearing an oath, red light flares around her, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_agnes_atk2",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_agnes_block",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_ignis_sig1",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer points the brass flamethrower censer high up into the sky and sprays big fireballs upward in an arc, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_ignis_sig2",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer spins in place spraying a full ring of fire all around her from the brass flamethrower censer, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_ignis_atk2",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_ignis_block",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_lucia_sig1",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer holds the glowing holy book high with both hands and a huge burst of white-gold holy light explodes from its pages, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_lucia_sig2",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer swings the silver censer in a wide circle and points forward with her other hand casting out evil, golden light rays shoot forward, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_lucia_atk2",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_lucia_block",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_colossus_sig1",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo, holding a giant stone sword lifts one giant marble foot high and stomps it down with enormous force, the ground cracks and dust bursts up, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_colossus_sig2",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo, holding a giant stone sword raises the giant stone sword and lunges forward with a heavy charging step, the stone halo glows, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_colossus_atk2",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo, holding a giant stone sword attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_colossus_block",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "prompt": "a gigantic walking cathedral statue knight of cracked white marble and gold with a huge stone halo, holding a giant stone sword defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_godfrey_sig1",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, a long white and crimson cape, holding a flaming longsword and a kite shield raises the kite shield high and plants it, a golden dome of light spreads from the shield, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_godfrey_sig2",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, a long white and crimson cape, holding a flaming longsword and a kite shield raises the flaming longsword high to the sky, golden spears of light rain down from above, then he points the sword forward and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_godfrey_atk2",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, a long white and crimson cape, holding a flaming longsword and a kite shield attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_godfrey_block",
+  "ref": "ham/anim/enemy_godfrey_ref.png",
+  "prompt": "a cartoon towering holy knight in a white surcoat with a big crimson sun emblem on the chest, silver plate armor, a great helm crowned with golden sun rays and a red plume, a long white and crimson cape, holding a flaming longsword and a kite shield defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_cathedral_sig1",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels, with bells in its towers and a round rose window its great wooden doors swing open and golden light pours out, the bells in its towers swing and ring wildly, then the doors close and it returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_cathedral_sig2",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels, with bells in its towers and a round rose window the bells in its towers swing and ring with huge force, golden sound waves pulse out of the bell towers, then it returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_severus_sig1",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot raises the gold sun staff high, then points it forward and a burst of holy fire flares out in a ring around him, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_severus_sig2",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot raises the gold sun staff high and points down with the other hand shouting a damning curse, golden light rays strike down, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_severus_atk2",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_severus_block",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_severus3_sig1",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes, holding a black teapot and a cracked sun staff raises the cracked sun staff high, then points it forward and a ring of green and golden fire bursts out around him, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_severus3_sig2",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes, holding a black teapot and a cracked sun staff raises the black teapot high and shouts a curse, the broken sun halo flickers, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 22
+ },
+ {
+  "name": "enemy_severus3_atk2",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes, holding a black teapot and a cracked sun staff attacks forward with a different heavy second attack: a wide sweeping backhand blow from high to low with the whole body twisting into it, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_severus3_block",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes, holding a black teapot and a cracked sun staff defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_gloriosus1_skill",
+  "ref": "ham/anim/enemy_gloriosus1_ref.png",
+  "prompt": "a cartoon vain roman general with a mustache in golden armor standing in a huge ornate golden war chariot with spiked golden wheels and a big golden sun disc, pulled by two armored white war lions the general throws a golden bomb forward to the right with a big overhand throw, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_gloriosus2_die",
+  "ref": "ham/anim/enemy_gloriosus2_ref.png",
+  "prompt": "a cartoon furious roman general with a mustache in dented golden armor and a torn red cape, holding a golden gladius sword and a round golden shield is struck and defeated: exaggerated comic cartoon fall, knocked back, the sword and shield fly away, the body bounces once on the ground and then lies still. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "enemy_cathedral_idle",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels, with bells in its towers and a round rose window stands in place, the bells sway slightly, the rose window glows softly and the wooden frame creaks, a seamless idle loop. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ }
+]

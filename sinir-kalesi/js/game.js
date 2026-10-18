@@ -2174,6 +2174,7 @@ function heroUnlocked(id) {
 const HERO_SLOT2_AT = 14; // bu sıradaki bölüm bitince (0'dan sayılır)
 const heroSlots = () => (NECRO && (TEST_OPEN || (save.stars && (save.stars[HERO_SLOT2_AT] || 0) > 0)) ? 2 : 1);
 function team() {
+  if (ADMIN_SB.hero && HEROES[ADMIN_SB.hero]) return [ADMIN_SB.hero]; // admin serbest mod: kilitli komutan da denenir
   const t = (save.team || [HERO_ORDER[0]]).filter(id => HEROES[id] && HERO_ORDER.includes(id) && heroUnlocked(id)).slice(0, heroSlots());
   return t.length ? t : [HERO_ORDER[0]];
 }
@@ -2340,7 +2341,8 @@ function startLevel(idx, chal = null) {
     G.admin = true; G.tutorial = true; G.lv = Object.assign({}, lv, { waves: JSON.parse(JSON.stringify(TUTOR.waves)) }); G.gold = TUTOR.gold; G.banner = null;
     G.spells = {}; for (const id of TUTOR.spells) G.spells[id] = 0; G.tutItems = { bomb: 1 }; G.heroes.forEach((h, i) => { G.spells['ult' + i] = 0; });
     G.tut = { i: 0, t: 0, w: 0, on: false, steps: TUTOR_STEPS }; G.tutLv = false; }
-  if (chal === 's') { G.admin = true; G.sandbox = { page: 0, n: 5, nocd: false, open: true, path: 0, q: [], qT: 0 }; G.lv = Object.assign({}, lv, { waves: [] }); G.gold = 99999;
+  if (chal !== 's') ADMIN_SB.hero = null;
+  if (chal === 's') { G.admin = true; G.sandbox = { page: 0, n: 5, nocd: false, open: true, path: 0, q: [], qT: 0, adm: ADMIN_SB.on, tab: 'e' }; ADMIN_SB.on = false; ADMIN_SB.lv = idx; if (!G.sandbox.adm) ADMIN_SB.hero = null; G.lv = Object.assign({}, lv, { waves: [] }); G.gold = 99999;
     G.banner = { title: 'SERBEST MOD', sub: 'Sınırsız altın ve can · soldaki panelden düşman çağır', t: 0, dur: 3.5 }; }
   if (chal === 'e') { G.endless = true; G.baseWaves = lv.waves; G.lv = Object.assign({}, lv, { waves: lv.waves.map(w => JSON.parse(JSON.stringify(w))) }); endlessExtend(); }
   if (chal === 'i') { // Çıplak Kemik
@@ -8294,9 +8296,21 @@ function drawProps(air) {
 // Solda açılır panel: karşılaşılan düşmanlar (kodekste görülenler) sayfa sayfa; dokununca seçili sayıda o düşman sırayla çıkar.
 // Altta: sayı (1/5/10), yol (çok girişli haritada), beklemesiz büyü, hepsini temizle.
 const SB_N = [1, 5, 10], SB_COLS = 5, SB_ROWS = 2;
-const sbList = () => CODEX_ENEMIES.filter(t => ENEMIES[t] && codexSeen(t));
+var ADMIN_SB = { on: false, lv: null, hero: null }; // 18 Eki (Caner: "sefer ekranındaki deneme: tüm askerleri, kuleleri, çatışmaları test edeceğim admin sandbox; amaç güncelleme sonrası test")
+const SB_BOSS = ['champion', 'hierophant', 'centurion', 'shadowmaster', 'cavcaptain', 'ironwarden', 'gloriosus1', 'malleus', 'hubertus', 'campanus', 'agnes', 'ignis', 'lucia', 'colossus', 'godfrey', 'cathedral', 'severus'];
+const sbList = () => { const S = G.sandbox;
+  if (S && S.adm) return S.tab === 'b' ? SB_BOSS.filter(t => ENEMIES[t]) : [...new Set(CODEX_ENEMIES.concat(['legarcher']))].filter(t => ENEMIES[t] && !ENEMIES[t].chief);
+  return CODEX_ENEMIES.filter(t => ENEMIES[t] && codexSeen(t)); };
+function sbMaxTowers() { for (const t of G.towers) { while (t.lvl < t.def.levels.length - 1) { G.gold += 99999; if (!upgradeTower(t)) break; } } floatText(W / 2, H / 2, 'Kuleler en üst seviyede', '#ffe27a'); sfx('upgrade'); }
+function sbBreak() { for (const t of G.towers.slice()) damageTower(t, 1e9); floatText(W / 2, H / 2, 'Kuleler yıkıldı', '#ffb08a'); }
+function sbSig() { let n = 0; for (const e of G.enemies) if (e.def.chief && !e.dead) { e.sigP = 0.999; e.entryT = 0; n++; } floatText(W / 2, H / 2, n ? 'Boss gücü doldu' : 'Sahada boss yok', '#ffd08a'); sfx('pick'); }
+function sbRestart(dl, dh) { // bölüm ya da komutan değiştir: serbest mod baştan
+  const ids = HERO_ORDER.filter(id => HEROES[id]);
+  if (dh) { const cur = team()[0], i = ids.indexOf(cur); ADMIN_SB.hero = ids[(i + dh + ids.length) % ids.length]; }
+  ADMIN_SB.on = true; startLevel(((G.idx + (dl || 0)) % LEVELS.length + LEVELS.length) % LEVELS.length, 's'); }
 function updateSandbox(dt) {
   const S = G.sandbox; if (S.nocd) { for (const k in G.spells) G.spells[k] = 0; }
+  if (S.freeze) for (const e of G.enemies) if (!e.dead) e.stun = Math.max(e.stun || 0, 0.2);
   if (S.q.length && (S.qT -= dt) <= 0) { spawnEnemy(S.q.shift(), S.path % G.paths.length); S.qT = 0.45; }
 }
 function sbClear() {
@@ -8310,9 +8324,9 @@ function drawSandbox() {
   const x0 = EDGE.l + 12, ty = EDGE.t + 112;
   gameButton('sb_tog', x0 + 74, ty, 148, 38, S.open ? 'SERBEST ▲' : 'SERBEST ▼', () => { S.open = !S.open; sfx('pick'); }, 'blue', { size: 14 });
   if (!S.open) return;
-  const cw = 66, pw = SB_COLS * cw + 24, ph = 46 + SB_ROWS * cw + 66, px = x0, py = ty + 26;
+  const cw = S.adm ? 50 : 66, pw = SB_COLS * cw + 24, ph = 46 + SB_ROWS * cw + 66, px = x0, py = ty + 26;
   roundRect(px + 3, py + 5, pw, ph, 14, 'rgba(0,0,0,0.4)'); velvetCard(px, py, pw, ph, 14, { border: '#8ac8ff' });
-  txt('DÜŞMAN ÇAĞIR', px + 14, py + 20, 14, '#e8f4ff', 'left', '800', FONT_B, false);
+  if (!S.adm) txt('DÜŞMAN ÇAĞIR', px + 14, py + 20, 14, '#e8f4ff', 'left', '800', FONT_B, false);
   if (pages > 1) { gameButton('sb_prev', px + pw - 112, py + 20, 40, 30, '◀', () => { S.page = (S.page + pages - 1) % pages; sfx('pick'); }, 'dark', { size: 13 });
     txt((S.page + 1) + '/' + pages, px + pw - 66, py + 21, 13, '#cfe6ff', 'center', '800', FONT_B, false);
     gameButton('sb_next', px + pw - 24, py + 20, 40, 30, '▶', () => { S.page = (S.page + 1) % pages; sfx('pick'); }, 'dark', { size: 13 }); }
@@ -8325,11 +8339,25 @@ function drawSandbox() {
     ctx.restore();
     buttons.push({ key, x: cx - cw / 2, y: cy - cw / 2, w: cw, h: cw, fn: () => { for (let i = 0; i < S.n; i++) S.q.push(t); if (S.qT > 0.2) S.qT = 0.2; floatText(cx, cy - 30, '+' + S.n + ' ' + d.name, '#ffd8a0'); sfx('pick'); } });
   });
-  const by = py + ph - 30; let bx = px + 12;
-  for (const n of SB_N) { const on = S.n === n; gameButton('sb_n' + n, bx + 26, by, 52, 44, n + '×', () => { S.n = n; sfx('pick'); }, on ? 'gold' : 'dark', { size: 15 }); bx += 58; }
-  if (G.paths.length > 1) { gameButton('sb_path', bx + 32, by, 62, 44, 'YOL ' + (S.path % G.paths.length + 1), () => { S.path = (S.path + 1) % G.paths.length; sfx('pick'); }, 'dark', { size: 13 }); bx += 68; }
-  gameButton('sb_cd', bx + 30, by, 58, 44, '⏱', () => { S.nocd = !S.nocd; floatText(W / 2, H / 2, S.nocd ? 'Büyüler beklemesiz' : 'Büyü beklemesi açık', '#cfe6ff'); sfx('pick'); }, S.nocd ? 'green' : 'dark', { size: 18 }); bx += 64;
-  gameButton('sb_clr', px + pw - 40, by, 64, 44, 'SİL', sbClear, 'red', { size: 14 });
+  const by = py + ph - 30, k6 = S.adm ? 0.72 : 1, bw = 52 * k6, bh = S.adm ? 34 : 44; let bx = px + 10; // admin: sıra küçük (panel dar)
+  for (const n of SB_N) { const on = S.n === n; gameButton('sb_n' + n, bx + bw / 2, by, bw, bh, n + '×', () => { S.n = n; sfx('pick'); }, on ? 'gold' : 'dark', { size: 15 * k6 }); bx += bw + 5; }
+  if (G.paths.length > 1) { gameButton('sb_path', bx + 31 * k6, by, 62 * k6, bh, 'YOL ' + (S.path % G.paths.length + 1), () => { S.path = (S.path + 1) % G.paths.length; sfx('pick'); }, 'dark', { size: 13 * k6 }); bx += 62 * k6 + 5; }
+  gameButton('sb_cd', bx + 27 * k6, by, 54 * k6, bh, '⏱', () => { S.nocd = !S.nocd; floatText(W / 2, H / 2, S.nocd ? 'Büyüler beklemesiz' : 'Büyü beklemesi açık', '#cfe6ff'); sfx('pick'); }, S.nocd ? 'green' : 'dark', { size: 18 * k6 }); bx += 54 * k6 + 5;
+  gameButton('sb_clr', Math.max(bx + 30 * k6, px + pw - 36 * k6), by, 60 * k6, bh, 'SİL', sbClear, 'red', { size: 14 * k6 });
+  if (!S.adm) return;
+  // admin: başlıkta sekmeler (düşman / boss), panelin sağında araç sütunu (komutan portresinin üstüne binmesin)
+  gameButton('sb_tabE', px + 40, py + 20, 66, 28, 'DÜŞMAN', () => { S.tab = 'e'; S.page = 0; sfx('pick'); }, S.tab === 'b' ? 'dark' : 'gold', { size: 11 });
+  gameButton('sb_tabB', px + 102, py + 20, 54, 28, 'BOSS', () => { S.tab = 'b'; S.page = 0; sfx('pick'); }, S.tab === 'b' ? 'gold' : 'dark', { size: 11 });
+  const cx2 = px + pw + 56, BW = 100, BH = 32; let cy2 = py + 18;
+  roundRect(cx2 - BW / 2 - 6, py, BW + 12, 8 * 34 + 30, 12, 'rgba(10,6,14,0.82)', '#8ac8ff', 1.5);
+  const tool = (k, lab, fn, col = 'dark') => { gameButton(k, cx2, cy2, BW, BH - 2, lab, fn, col, { size: 10 }); cy2 += 34; };
+  tool('sb_sig', 'BOSS GÜCÜ', sbSig, 'red'); tool('sb_max', 'KULE MAKS', sbMaxTowers, 'gold'); tool('sb_brk', 'KULE YIK', sbBreak, 'dark');
+  tool('sb_frz', S.freeze ? 'ÇÖZ' : 'DONDUR', () => { S.freeze = !S.freeze; sfx('pick'); }, S.freeze ? 'green' : 'dark');
+  tool('sb_spd', 'HIZ ×' + speed, () => { speed = speed >= 3 ? 1 : speed + 1; sfx('pick'); }, 'blue');
+  tool('sb_hero', 'KOMUTAN', () => sbRestart(0, 1), 'purple');
+  tool('sb_lvp', '◀ BÖLÜM', () => sbRestart(-1), 'dark'); tool('sb_lvn', 'BÖLÜM ▶', () => sbRestart(1), 'dark');
+  fitTxt((G.idx + 1) + '. ' + TR(G.lv.name), cx2, cy2 - 8, BW + 6, 10, '#cfe6ff', 'center', '800', FONT_B, false, 8);
+  fitTxt(TR((HEROES[team()[0]] || {}).name || ''), cx2, cy2 + 6, BW + 6, 10, '#d8c0ff', 'center', '800', FONT_B, false, 8);
 }
 // ----- mekân öğeleri (15 Eki, Caner: her mekâna dokunulabilir bir harita öğesi) -----
 // Yolun kenarında, mekânın temasına göre bir öğe: dokununca savaşa etki eder, sonra cd sn dolar. Kodla çizilir (yeni görsel gerekmez).
@@ -20307,7 +20335,7 @@ function drawMap() {
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
   if (NECRO) { roundBtn('tutorial', bx2(3), by2, BR, (r) => uiIco('help', 0, 0, r * 1.15) || txt('?', 0, 2, r * 1.15, '#fff3d0', 'center', '400', FONT_T), () => go(() => startLevel(TUTOR.idx, 'o')), { appear: st - 0.25, tile: 'blue' }); lab(bx2(3), 'ÖĞRETİCİ'); }
   // 16 Eki (Caner): Deneme Alanı düğmesi (admin; yalnız TEST_OPEN, mağaza sürümünde görünmez)
-  if (TEST_OPEN) { roundBtn('admintest', bx2(NECRO ? 4 : 3), by2, BR, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => startLevel(adminIdx(), 'a')), { appear: st - 0.2, tile: 'ember' }); lab(bx2(NECRO ? 4 : 3), 'DENEME'); }
+  if (TEST_OPEN) { roundBtn('admintest', bx2(NECRO ? 4 : 3), by2, BR, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.2, tile: 'ember' }); lab(bx2(NECRO ? 4 : 3), 'DENEME'); } // 18 Eki (Caner): admin serbest mod
   const freeStars = starsTotal() - starsSpent();
   roundBtn('upgrades', bx2(0), by2, BR, (r) => uiIco('upgrades', 0, 0, r * 1.15) || fancyStar(0, -1, r * 0.62, true), () => go(() => { screen = 'upgrades'; }), { appear: st - 0.4, tile: 'rose', active: freeStars > 0 }); lab(bx2(0), 'GELİŞMELER');
   const badge = (i, n, col) => { const ex = bx2(i) + BR * 0.78, ey = by2 - BR * 0.78 + Math.sin(time * 5) * 1.5; circle(ex, ey, 11, col, '#fff', 1.5); txt(n + '', ex, ey + 1, n === '+' ? 15 : 12.5, '#fff', 'center', '400', FONT_T); };
