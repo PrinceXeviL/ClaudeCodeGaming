@@ -18001,7 +18001,7 @@ function drawEvent() {
 // 18 Eki (Caner: "hikâye: açılış sahnesi, boss giriş gösterisi, sefer sonu ödül sahnesi"): Veo sahne videoları (img/cine_*.mp4, varliklar/hikaye_video_isle.py).
 // Videoda yazı yok; altyazı kodla (6 dile çevrilir). Dokununca sonraki plan, ATLA bütün sahneyi geçer, her sahne bir kez (save.cine).
 // Dosyası olmayan plan atlanır (CINE_FILES); sahnenin hiç planı yoksa eski yol (çizgi roman, kodla boss gösterisi) sürer.
-const CINE_FILES = new Set(['cine_acilis_a']); // 18 Eki: video geldikçe eklenir (açılış: a hazır; b, c bekliyor)
+const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b']); // 18 Eki: video geldikçe eklenir (açılış: a, b hazır; c bekliyor)
 const CINE = {
   intro: [
     { v: 'cine_acilis_a', sub: [[0.4, 4.4, 'Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.'], [4.7, 9.4, 'Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.']] },
