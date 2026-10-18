@@ -9122,7 +9122,7 @@ function stormChain(x, y, U, dmg) {
 // Bulut oluşur, huni iner, yolda düşmanların geldiği yöne (geriye) ilerler. Huniye değen hafif düşman (en çok U.n) havalanıp huninin
 // çevresinde döner (hold sn), sonra rastgele yöne fırlatılır (flingStep ile düşer, seker, yola oturur, sersemler) ve hasar alır.
 // Ağır/büyük düşman, boss: havalanmaz, yere devrilir (FLING.kd) ve %60 hasar alır. Uçanlar: hasar. Buluttan aralıkla şimşek çakar.
-const TORNADO = { speed: 26, catchR: 22, hold: 1.15, liftH: 95, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
+const TORNADO = { speed: 26, catchR: 22, hold: 1.15, liftH: 72, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
 function tornadoCast(x, y, U, dmg) {
   const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60;
   G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
@@ -9159,6 +9159,13 @@ function tornadoStep(z, dt) {
       HERO_SKILL = true; damageEnemy(e, z.dmg() * T.boltK, 'magic'); HERO_SKILL = false; stunEnemy(e, T.boltStun); fxMagicHit(e.x, aimY(e)); z.flashT = 0.18; sfx('soulbolt'); }
   }
   if (z.flashT > 0) z.flashT -= dt;
+  if (tornadoGrow(z) > 0.4 && z.t < z.dur && (z.dirtT = (z.dirtT || 0) - dt) <= 0) { // 18 Eki (Caner: "geçtiği yerdeki toprak etrafa saçılsın, toz çıksın")
+    z.dirtT = CROWD ? 0.16 : 0.09;
+    for (let i = 0; i < (CROWD ? 3 : 6); i++) { const a = rand(0, Math.PI * 2), v = rand(70, 150); // savrulan toprak topakları (dışa, teğet yönde)
+      emit(G.parts, { kind: 'chunk', x: z.x + Math.cos(a) * 14, y: z.y + Math.sin(a) * 5, vx: Math.cos(a) * v - Math.sin(a) * 60, vy: -rand(80, 170), g: 520, vr: rand(-12, 12), rot: rand(0, 6),
+        col: ['#6a4e32', '#8a6a44', '#4a3826', '#a08060'][i % 4], s0: rand(1.6, 3.2), s1: 1, life: rand(0.6, 1) }); }
+    for (let i = 0; i < 2; i++) { const a = rand(0, Math.PI * 2); G.effects.push({ kind: 'dust', x: z.x + Math.cos(a) * rand(10, 30), y: z.y + Math.sin(a) * rand(3, 10), t: 0, dur: rand(0.5, 0.9) }); } // toz bulutu
+  }
   if (z.fxT <= 0 && tornadoGrow(z) > 0.3) { // tabanda dönen toz ve kopan parçalar
     z.fxT = CROWD ? 0.09 : 0.045; const a = rand(0, Math.PI * 2), rr = rand(8, 20);
     emit(G.parts, { kind: Math.random() < 0.35 ? 'chunk' : 'glow', x: z.x + Math.cos(a) * rr, y: z.y + Math.sin(a) * rr * 0.4, vx: -Math.sin(a) * 60 + rand(-10, 10), vy: -rand(30, 80), g: 60, drag: 1.5,
@@ -9195,7 +9202,7 @@ function puffTex(col) { // dolu, kenarı yumuşak öbek (bulut, duman): glowTex'
 }
 // öbek listesini tek yola çevirir: yarı saydam dolguda üst üste binen daireler koyulaşmaz (tek siluet)
 const blobPath = (D, grow = 0, k = 1, ox = 0, oy = 0) => { ctx.beginPath(); for (const [x, y, r] of D) { ctx.moveTo(x + ox + r * k + grow, y + oy); ctx.arc(x + ox, y + oy, r * k + grow, 0, Math.PI * 2); } };
-const TW_VEO = { k: 1.45 }; // Veo kasırgasının boyu: toz halkasından tepeye TORNADO.H'nin katı
+const TW_VEO = { k: 1.45 * 0.75 }; // Veo kasırgasının boyu: toz halkasından tepeye TORNADO.H'nin katı (18 Eki, Caner: %25 küçük)
 const TW_BANDS = 9, TW_SEG = 40, TW_CLOUD = [[-34, 4, 15], [34, 5, 14], [-18, -3, 19], [18, -4, 18], [0, -9, 21], [-46, 9, 10], [46, 10, 10], [-8, 6, 16], [12, 7, 15]];
 function tornadoDust(z, front, gr) { // tabanda dönen toz öbekleri (yarım: arkadakiler birimlerin arkasında); önce konturlar sonra dolgular: tek siluet
   const t = z.t, D = [];
@@ -13799,6 +13806,19 @@ function uiPill(key, x, y, w, h, label, fn, o = {}) { // uzun kızıl düğme
 function roundBtn(key, x, y, r, icon, fn, o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
   if (appear <= 0.01) return;
+  if (NECRO && icon === 'close') { // 18 Eki (Caner: "kemikli X çok daha minimal ve güzel olsun"): koyu daire, ince altın kenar, yuvarlak uçlu temiz X
+    const R = r * 0.78, sc = pressScale(key) * appear;
+    ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+    circle(0, 2.5, R + 1.5, 'rgba(0,0,0,0.4)');
+    const g = ctx.createLinearGradient(0, -R, 0, R); g.addColorStop(0, '#3a1830'); g.addColorStop(1, '#16080f'); circle(0, 0, R, g, '#d9b86a', 1.6);
+    circle(0, 0, R - 3, null, 'rgba(255,230,170,0.16)', 1);
+    const a = R * 0.36; ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(10,4,8,0.85)'; ctx.lineWidth = R * 0.24; ctx.beginPath(); ctx.moveTo(-a, -a); ctx.lineTo(a, a); ctx.moveTo(a, -a); ctx.lineTo(-a, a); ctx.stroke();
+    ctx.strokeStyle = '#f2e6c8'; ctx.lineWidth = R * 0.13; ctx.stroke();
+    ctx.restore();
+    if (fn) buttons.push({ key, x: x - r - 6, y: y - r - 6, w: 2 * r + 12, h: 2 * r + 12, fn });
+    return;
+  }
   if (NECRO && (o.tile || (key === 'back' && icon === 'back'))) { boneBtn(key, x, y, r * 0.86, icon, fn, o.tile ? o : Object.assign({ tile: 'red' }, o), appear); return; } // 15 Eki (2): yuvarlak, kemik halkalı
   const c = STYLES[o.style || 'wood'];
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
@@ -20016,7 +20036,7 @@ function drawMap() {
   const heroPts = HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0), freeSouls = soulsFree();
   // 15 Eki (Caner): alt düğmeler de yuvarlak, kemik halkalı; adı altında. BR: yarıçap, BS: aralık
   const BR = 30, BS = 76, bx2 = (i) => R0 - 46 - i * BS, by2 = EDGE.b - 58; // 18 Eki (Caner): aralık üstteki düğmeler gibi sık (104 → 76); uzun adlar sığacak kadar küçülür
-  const lab = (x, t) => { ctx.save(); t = TR(t); ctx.font = `400 13px ${FONT_T}`; const fw = ctx.measureText(t).width; if (fw > BS - 12) ctx.font = `400 ${Math.max(10, 13 * (BS - 12) / fw)}px ${FONT_T}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,4,14,0.95)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.strokeText(t, x, by2 + BR + 14); ctx.fillStyle = '#f2e6c8'; ctx.fillText(t, x, by2 + BR + 14); ctx.restore(); };
+  const lab = (x, t) => { t = TR(t); ctx.save(); ctx.font = `400 13px ${FONT_T}`; if (ctx.measureText(t).width > BS - 4 && t.includes(' ')) { const w = t.split(' '), h2 = Math.ceil(w.length / 2), a = w.slice(0, h2).join(' '), b = w.slice(h2).join(' '); ctx.restore(); fitTxt(a, x, by2 + BR + 9, BS - 4, 11.5, '#f2e6c8', 'center', '400', FONT_T, true, 8); fitTxt(b, x, by2 + BR + 21, BS - 4, 11.5, '#f2e6c8', 'center', '400', FONT_T, true, 8); return; } const fw = ctx.measureText(t).width; if (fw > BS - 4) ctx.font = `400 ${Math.max(8, 13 * (BS - 4) / fw)}px ${FONT_T}`; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(10,4,14,0.95)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.strokeText(t, x, by2 + BR + 14); ctx.fillStyle = '#f2e6c8'; ctx.fillText(t, x, by2 + BR + 14); ctx.restore(); };
   roundBtn('grim', bx2(2), by2, BR, 'grimoire', () => { tipDone('grim'); go(() => { screen = 'grim'; }); }, { appear: st - 0.3, tile: 'red', active: freeSouls > 0, activeCol: '190,110,255' }); lab(bx2(2), 'BÜYÜ KİTABI');
   roundBtn('heroes', bx2(1), by2, BR, (r) => uiIco('heroes', 0, 0, r * 1.15) || drawIcon('crown', 0, 0, r * 1.05), () => { if (HERO_ORDER.some(id => heroUnlocked(id) && recPoints(heroRec(id)) > 0)) tipDone('tree'); go(() => { screen = 'heroes'; }); }, { appear: st - 0.35, tile: 'purple', active: fresh.length > 0 }); lab(bx2(1), NECRO ? 'KOMUTANLAR' : 'KAHRAMANLAR');
   // 13 Eki (Caner): öğretici her an buradan: ilk 3 bölümün eğitimi sıfırlanır, 1. bölüm eğitimle açılır
@@ -20150,6 +20170,9 @@ function drawLevelCard(i, cx, cy, at) {
   roundRect(tx, ty, tw, th, 14, null, '#c9a865', 3); roundRect(tx + 3, ty + 3, tw - 6, th - 6, 11, null, 'rgba(255,255,255,0.22)', 1.2);
   const diff = (lv.ep === 2 ? DIFF2 : DIFF)[epLevels(lv.ep || 1).indexOf(i)] || 'Zor';
   txt(`${lv.waves.length} dalga  ·  ${diff}`, tx + tw / 2, ty + th - 16, 15, '#f2ecd8', 'center', '800', FONT_B, true);
+  { const sd = NECRO && SUR[i], sf = save.sur && save.sur[i]; // 18 Eki (Caner: "gizli sürpriz yazısı okunmuyor"): küçük resmin üst kenarında rozet
+    if (sd) { const t2 = sf ? '✦ ' + TR(sd.name) : TR('✦ Gizli sürpriz: ???'); ctx.font = `800 13px ${FONT_B}`; lastFont = null; const w2 = Math.min(tw - 16, ctx.measureText(t2).width + 20);
+      roundRect(tx + (tw - w2) / 2, ty + 8, w2, 22, 11, sf ? 'rgba(70,40,8,0.92)' : 'rgba(30,14,40,0.9)', sf ? '#ffd34d' : '#b8a0d8', 1.4); fitTxt(t2, tx + tw / 2, ty + 19.5, w2 - 12, 13, sf ? '#ffe9a0' : '#d8c8f0', 'center', '800', FONT_B, false, 10); } }
   for (let s = 0; s < 3; s++) fancyStar(tx + tw / 2 + (s - 1) * 56, ty + th + 34 - (s === 1 ? 5 : 0), s === 1 ? 23 : 20, s < st);
   // düşmanlar (önizlemenin altında)
   const foes = levelFoes(lv), codex = new Set(save.codex || []), nShow = Math.min(foes.length, Math.floor((tw - 20) / 50));
@@ -20189,8 +20212,8 @@ function drawLevelCard(i, cx, cy, at) {
     roundRect(bx, by, tile, bh, 14, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? '#ffd34d' : '#6a4a5a', sel ? 3 : 2);
     if (sel) { const hg = ctx.createLinearGradient(0, by, 0, by + bh); hg.addColorStop(0, 'rgba(255,220,140,0.16)'); hg.addColorStop(1, 'rgba(255,220,140,0)'); roundRect(bx + 3, by + 3, tile - 6, bh * 0.5, 11, hg); } // üstte parıltı
     modeIcon(o.m, bx + tile / 2, by + 32, 1.2);
-    fitTxt(o.name, bx + tile / 2, by + 68, tile - 8, 16, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true, 13);
-    fitTxt(o.stat, bx + tile / 2, by + 87, tile - 8, 14, (o.m === 'h' && hDone) || (o.m === 'i' && iDone) ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
+    fitTxt(o.name, bx + tile / 2, by + 68, tile - 6, 16, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true, 10.5);
+    fitTxt(o.stat, bx + tile / 2, by + 87, tile - 6, 14, (o.m === 'h' && hDone) || (o.m === 'i' && iDone) ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
     if (!o.open) { roundRect(bx, by, tile, bh, 14, 'rgba(10,6,14,0.62)'); drawIcon('lock', bx + tile / 2, by + 34, 28); }
     ctx.restore();
     buttons.push({ key, x: bx, y: by, w: tile, h: bh, fn: () => { if (mapMode !== o.m) { mapMode = o.m; sfx('pick'); } } });
@@ -20209,9 +20232,7 @@ function drawLevelCard(i, cx, cy, at) {
       ctx.restore();
       buttons.push({ key, x: bx, y: dy + 6, w: dw, h: dh, fn: () => { if (save.diff !== k) { save.diff = k; persist(); sfx('pick'); } } });
     });
-    { const ly = dy + dh + 30, lines = wrapLines(M.desc, rw - 8, 15, '700', FONT_B, 2); if (ly + lines.length * 19 < y0 + h - 140) lines.forEach((l, k) => txt(l, rx + 4, ly + k * 19, 15, '#e8dcc4', 'left', '700', FONT_B, false));
-      const sy = ly + lines.length * 19 + 8, sd = NECRO && SUR[i], sf = save.sur && save.sur[i]; // 18 Eki: bölümün gizli sürprizi (bulunduysa adı)
-      if (sd && sy < y0 + h - 128) { txt(sf ? '✦ Sürpriz: ' + sd.name : '✦ Gizli sürpriz: ???', rx + 4, sy, 15, sf ? '#ffd34d' : '#b8a0d8', 'left', '800', FONT_B, false); } } // 18 Eki: boş kalmasın, Sefer'in kısa açıklaması
+    { const ly = dy + dh + 28, nl = Math.min(2, Math.floor((y0 + h - 134 - ly) / 18) + 1), lines = nl > 0 ? wrapLines(M.desc, rw - 8, 14, '700', FONT_B, nl) : []; lines.forEach((l, k) => txt(l, rx + 4, ly + k * 18, 14, '#e8dcc4', 'left', '700', FONT_B, false)); }
   } else {
     // 18 Eki: seçili modun açıklaması kendi panelinde: başlık + simge + en çok 3 satır
     const py = tyy + 124, ph = Math.min(mapMode === 'e' && M.open ? 140 : 112, y0 + h - 140 - py);
@@ -20228,7 +20249,7 @@ function drawLevelCard(i, cx, cy, at) {
   // kilitli bölüm
   if (!unlocked) {
     ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
-    roundRect(x0, y0, w, h, 24, 'rgba(18,10,4,0.66)');
+    roundRect(x0, y0, w, h, 24, 'rgba(14,6,10,0.86)'); // 18 Eki: alttaki yazılar görünüp kilitle karışmasın
     drawIcon('lock', cx, fy - 20, 60);
     txt('Kilitli', cx, fy + 34, 28, '#f0e2c4', 'center', '400', FONT_T);
     txt(first ? 'Önceki bölgeyi tamamla' : 'Önceki bölümü tamamla', cx, fy + 62, 16, '#cdb894', 'center', '700', FONT_B, false);
