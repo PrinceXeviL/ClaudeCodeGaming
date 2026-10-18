@@ -562,10 +562,13 @@ function adaptQuality(real) {
   else if (work < 0.01 && quality < (liteMode() ? Math.min(QMAX, 1.5) : QMAX) && time - (perf.drop ?? -99) > 60) { if (++perf.good >= 4) { quality = Math.min(liteMode() ? Math.min(QMAX, 1.5) : QMAX, quality * 1.15); perf.good = 0; resize(); } }
   else perf.good = 0;
 }
+// 18 Eki (Caner: "PC'de çok kasıyor, telefonda değil"): 5K ekranda (2560x1440 pencere x 2 yoğunluk) tuval 13,7 milyon pikseldi, telefonun ~4 katı.
+// Tuvalin toplam pikseli MAXPIX'i aşmaz (telefon ~3-4 milyon; bu sınır telefona dokunmaz)
+const MAXPIX = window.__maxpix || 3.8e6; // ölçüm (5K, 9. bölüm, dolu sahne): sınırsız 8,8 fps · 5,5 M 22 fps · 3,7 M 32 fps
 function resize() {
-  const dpr = quality;
   // gizli/sıfır boyutlu pencere (ör. arka plandaki sekme): ölçek 0 olur, her şey NaN'a döner; önceki ölçüyle devam
   const cw = window.innerWidth || (view && view.cw) || W, ch = window.innerHeight || (view && view.ch) || H;
+  const dpr = Math.min(quality, Math.max(1, Math.sqrt(MAXPIX / Math.max(1, cw * ch))));
   canvas.width = Math.round(cw * dpr);
   canvas.height = Math.round(ch * dpr);
   const cs = getComputedStyle(safeProbe), px = (v) => parseFloat(v) || 0;
@@ -2294,7 +2297,7 @@ function startLevel(idx, chal = null) {
   (chal === 'a' ? ADMIN_TEST.waves : chal === 'o' ? TUTOR.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle'];
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle', '_sig1', '_sig2', '_block'];
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle', '_dash', '_guard').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
@@ -3192,6 +3195,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (HERO_SKILL) amount *= HERO_POWER * SKILL_K; // kahraman yetenek hasarı (SKILL_K: yeteneğin ağaçtaki kademesi)
   if (e.fearT > 0 && NECRO && grimRank('nm_fear') >= 5) amount *= 1.2; // Büyü Kitabı: korkan düşman %20 fazla hasar alır
   if (e.shieldT > 0) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.4)) { e.blockFx = time; floatText(e.x, e.y - 40, 'BLOK', '#9fd8ff'); } return; }
+  if (e.def.chief && !(e.skillT > 0) && !e.sigDash && G.t > (e.blockCd || 0) && amount > 4 && ANIM_META['enemy_' + e.type + '_block'] && Math.random() < 0.12) { e.blockCd = G.t + 6; e.skillSuf = '_block'; e.skillT = e.skillDur = 0.75; amount *= 0.5; if (!quiet) floatText(e.x, e.y - (e.def.h || 40) - 8, 'SAVUNDU', '#cfe6ff'); } // 18 Eki: boss savunma şeridi
   if (e.sigShT > 0) amount *= 0.5; else if (e.sigArmT > 0) amount *= 0.7; // 18 Eki: boss imza yetenekleri (kalkan kubbesi, sancak)
   if (src === 'arrow') { e.arrowG = G.t; // kıdemlinin "Kalkanlar!" komutu için
     if (!(e.wallT > 0) && isShielded(e) && G.t >= (e.selfShCd ?? 0) && (G.idx >= CAPTAIN.shield.from || G.lv.ep === 2)) { const SS = CAPTAIN.shield.self; e.selfShCd = G.t + SS.cd; e.wallT = e.wallD = SS.t; } // kıdemlisiz: kendi kalkanı (bu ok tam işler)
@@ -5087,7 +5091,7 @@ function updateEnemy(e, dt) {
   if (e.drumT > 0) e.drumT -= dt;
   if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt; if (e.wallT > 0) e.wallT -= dt;
   if (e.captain) updateCaptain(e, dt);
-  if (e.skillT > 0) e.skillT -= dt; if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; if (e.xrayT > 0) e.xrayT -= dt; // özel saldırı anı ve bekleme süresi
+  if (e.skillT > 0) { e.skillT -= dt; if (e.skillT <= 0) e.skillSuf = null; } if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; if (e.xrayT > 0) e.xrayT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
   if (AU) for (const o of G.enemies) {
@@ -11675,7 +11679,7 @@ function drawEnemy0(e) {
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0) + (e.flZ > 0 ? e.flZ : 0),
       atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? (d.dagger ? 1 : e.atkV) : 0, // Lejyon Okçusu: yakında hançer şeridi (_atk2)
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
-      skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null,
+      skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null, skillSuf: e.skillSuf, // 18 Eki: boss imza (_sig1/_sig2) ve savunma (_block) şeritleri
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
     if ((e.capT > 0 || e.captain) && !e.dead && !(uo.fly > 0)) { // kıdemli ve aurasındakiler: ayağın altında soluk altın halka
@@ -17298,7 +17302,7 @@ const sigOf = (e) => e.def.chief && (BOSS_SIG[e.type] || BOSS_SIG[e.def.base]) |
 const sigNext = (e) => { const S = sigOf(e); return S && S[(e.sigI || 0) % S.length]; };
 const sigK = (e) => (e.dmgMul || 1) * (e.mini ? 0.7 : 1);
 function sigPrepare(e, k) { // uyarı: hedefler seçilir, yerde işaret
-  const h = e.def.h || 40; e.sigW = SIG.wind; e.sigTg = null; G.sigBanner = { name: TR(k.name) + '!', who: e.def.name, col: k.col, t: 0, dur: 2.2 };
+  const h = e.def.h || 40; e.sigW = SIG.wind; e.sigTg = null; { const sf = '_sig' + ((e.sigI || 0) % 2 + 1), F = ANIM_META['enemy_' + e.type + sf]; if (F) { e.skillSuf = sf; e.skillT = e.skillDur = Math.max(SIG.wind + 0.5, F.n / 24); loadStrip('enemy_' + e.type + sf); } } G.sigBanner = { name: TR(k.name) + '!', who: e.def.name, col: k.col, t: 0, dur: 2.2 };
   bossCastFx(e, k.name + '!', k.col); sfx('roar');
   G.sigFx.push({ kind: 'aura', e, col: k.col, t: 0, dur: SIG.wind });
   if (k.k === 'nova' || k.k === 'silence' || k.k === 'banner' || k.k === 'shield') G.sigFx.push({ kind: 'warn', x: e.x, y: e.y, r: k.r || 130, col: k.col, t: 0, dur: SIG.wind, follow: e });

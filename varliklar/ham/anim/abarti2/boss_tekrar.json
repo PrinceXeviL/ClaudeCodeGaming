@@ -1,0 +1,34 @@
+[
+ {
+  "name": "enemy_shadowmaster_sig1",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades crouches low and dashes forward in one very fast blurring leap, both golden sickles slashing in a cross, he lands one big step further forward in a low pose, then stands up and returns exactly to the starting pose. NO smoke, NO mist, NO cloud, NO purple puff at any moment: the character is fully visible in every frame. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 57
+ },
+ {
+  "name": "enemy_ignis_sig1",
+  "ref": "ham/anim/enemy_ignis_ref.png",
+  "prompt": "a fierce cartoon nun in a black and crimson habit with a gold sun wimple carrying a brass sun-shaped flamethrower censer aims the brass flamethrower censer HIGH UP at the sky at a steep angle and shoots three big round fireballs upward one after another in a high arc, the fireballs fly up and out of the top of the frame, strong recoil on each shot, then she lowers the censer and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 57
+ },
+ {
+  "name": "enemy_ironwarden_sig2",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace lifts the massive iron tower shield high with both arms and SLAMS its bottom edge down hard into the ground in front of him, the whole body crouches behind the planted shield, a shock wave of dust and small stones bursts out at the ground, he holds the braced pose for a moment, then pulls the shield back up and returns exactly to the starting pose. Big, heavy, very visible motion. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 57
+ },
+ {
+  "name": "enemy_cathedral_sig1",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege tower built like a small gothic cathedral on big wooden wheels, with bells in its towers and a round rose window its two big wooden front doors swing WIDE open, a strong beam of bright golden light pours out of the doorway and out of the round rose window, the bells in its towers swing wildly back and forth ringing, the whole tower rocks back and forth on its wheels, then the doors slam shut and it returns exactly to the starting pose. Big, very visible motion. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 57
+ }
+]
