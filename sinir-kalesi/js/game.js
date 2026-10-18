@@ -169,7 +169,7 @@ const CHAR_H = { soldier: 21, militia: 21 };
 for (const k in ENEMIES) if (ENEMIES[k].h) CHAR_H['enemy_' + k] = ENEMIES[k].h;
 // Ortak ölçekler: UNIT_K tüm birimler (asker, kahraman, düşman), BUILD_K binalar (kule, kale, arsa),
 // ROAD_K yol genişliği. ZOOM_MAX: en yakın zoom (arka plan dokusunun keskin kaldığı sınır).
-const UNIT_K = 0.72 * 0.95, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5; // 17 Eki (Caner): tüm karakterler %5 küçük
+const UNIT_K = 0.72 * 0.95 * 0.95, BUILD_K = 0.81, ROAD_K = 1.57, ZOOM_MAX = 2.5; // 17 Eki (Caner): tüm karakterler %5 küçük
 for (const lv of LEVELS) if (lv.roadWide) lv.roadK = ROAD_K * lv.roadWide; // 16 Eki: sıkışık bölümlerde geniş yol (data.js BAL.wideRoad)
 for (const k in CHAR_H) CHAR_H[k] *= UNIT_K;
 const TOWER_S = 0.95; // 17 Eki (Caner): kuleler %5 küçük (kule üstündeki okçular da)
@@ -2851,7 +2851,7 @@ function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yü
   }
   return true;
 }
-const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.42, burn: 0.5, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.35, slow: [0.4, 2] }; // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
+const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.42, burn: 0.5, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.35, slow: [0.4, 2] }; METEOR_RAIN.burn = 0.3; // 18 Eki: eski yanan zemin (yanma payı 0,3) // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
 // Merlin'in ruh meteoru (16 Eki, Caner: "daha kaliteli, ihtişamlı"): hedefte dönen çift rün çemberi + alan kararır; çarpmada parlama, ışık sütunu,
 // iki şok halkası (yeşil, mor), saçılan kaya parçaları, yükselen kıvılcımlar, mor duman
 // yerde yanan küçük ruh alevleri (meteor çarpması): dalgalanan dil, yeşil çekirdek, mor uç, altında ışık; açılırken büyür, sönerken küçülür
@@ -2902,7 +2902,8 @@ function fxSoulMeteorImpact(x, y, r, first) {
     emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(30, 80), g: 560, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
       col: i % 3 === 0 ? '#7aff9a' : i % 3 === 1 ? '#3a2448' : '#5a3a68', s0: rand(1.4, 2.8), s1: 1.2, life: rand(0.6, 1), floor: y + rand(-8, 10) });
   }
-  for (let i = 0; i < 1; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
+  for (let i = 0; i < 9; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.4, y: y + rand(-r, r) * 0.2, vx: rand(-25, 25), vy: -rand(30, 90), drag: 1.4, col: cols[i % 3], s0: rand(1.6, 3.2), s1: 0.4, life: rand(0.5, 0.9) });
+  for (let i = 0; i < 3; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
   G.decals.push({ x, y, r: r * 1.05, t: 0, life: 12, hot: true });
 }
 // 16 Eki (Caner: "yerde obruk açılsın, hafif bir süre sonra geçsin"): ruh meteorunun açtığı çukur. Hızla açılır (open sn), çatlakları ve dibi
@@ -6300,13 +6301,9 @@ function updateProjectile(pr, dt) {
       if (pr.mini) { stunEnemy(e, METEOR_RAIN.stun * (e.def.chief ? 0.5 : 1)); slowEnemy(e, METEOR_RAIN.slow[0], METEOR_RAIN.slow[1]); } // sersemler, yavaşlar
       flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
     if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
-      if (pr.mini) { // 16 Eki (Caner: "yere düştükten sonra efekt yerine yangın: yerlerde ufak ateşler, üstünden geçen saniye başı yanma hasarı"): 2-4 küçük ruh alevi
-        const fl = []; for (let i = 0, n = randi(2, 4); i < n; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * Math.sqrt(Math.random()) * 0.55; fl.push({ dx: Math.cos(a) * d, dy: Math.sin(a) * d * 0.5, h: rand(9, 15), w: rand(4, 6), ph: rand(0, 9), t0: rand(0, 0.25) }); }
-        G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.75, dps: 0, burn: pr.mburn[0], t: 0, life: pr.mburn[1] + rand(-0.4, 0.6), fxT: 0, src: 'blast', kind: 'flames', fl });
-      } else {
-        G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast' });
-        G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * 1.7, t: 0, dur: 0.8 });
-      }
+      // 18 Eki (Caner: "meteor sonrası yangın çok basit, komik görünüyor, eski şekline çevir"): küçük ruh alevleri kalktı, yanan zemin + ateş halkası geri
+      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
+      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
       G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: pr.mini ? 2.5 : 16, hot: true, soul: pr.mini }); // 16 Eki (Caner): meteor yağmurunun kararması 1-2 sn'de geçer
       if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(METEOR_RAIN.crater[0], METEOR_RAIN.crater[1]), t: 0, life: CRATER.life + rand(-1, 1), seed: rand(0, 99) }); // her bilye kendi ufak krateri
       if (pr.mini) { shakeScreen(pr.first ? 6 : 2.5, 0.22); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
@@ -6895,7 +6892,7 @@ function mortimerPoint() {
   const c = G.castle, im = castleStageSprite();
   if (!im) return { x: c.x, y: c.y - 60, h: 30 };
   const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, S = mortStage(im);
-  return { x: cp.x - cp.w / 2 + S.at[0] * cp.w, y: cp.y - h + S.at[1] * h, h: (S.px || MORT_PX) * cp.w / im.width };
+  return { x: cp.x - cp.w / 2 + S.at[0] * cp.w, y: cp.y - h + S.at[1] * h, h: (S.px || MORT_PX) * cp.w / im.width * 0.95 }; // 18 Eki (Caner): Mortimer da %5 küçük
 }
 // ----- kemik kapı: düşmanlar önce kapıyı kırmalı; kırılınca avluya dalıp şapel kapısına yürürler, muhafızlar karşılar -----
 const GATE = { hp: 260, perLvl: 30, machine: 8, guard: { hp: 140, dmg: [5, 9], armor: 0.25, respawn: 14 } };
