@@ -1,0 +1,154 @@
+[
+ {
+  "name": "pet_wolf_1_run",
+  "ref": "ham/anim/pet_wolf_1_ref.png",
+  "prompt": "a cartoon undead spirit wolf with dark green fur, exposed ribs and skull face, glowing green eyes and green spirit flames on its back runs fast in place in a full gallop cycle: the legs stretch far out and gather under the body, the back flexes, the head pushes forward, the spirit flames stream back, a full looping run cycle. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "pet_wolf_1_atk",
+  "ref": "ham/anim/pet_wolf_1_ref.png",
+  "prompt": "a cartoon undead spirit wolf with dark green fur, exposed ribs and skull face, glowing green eyes and green spirit flames on its back attacks forward to the right: crouches low with a big anticipation, lunges and snaps its jaws hard, bites and shakes its head, then jumps back and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "pet_wolf_1_idle",
+  "ref": "ham/anim/pet_wolf_1_ref.png",
+  "prompt": "a cartoon undead spirit wolf with dark green fur, exposed ribs and skull face, glowing green eyes and green spirit flames on its back stands in place in a lively idle: breathing, the chest rises and falls, the tail sways, the ears twitch, the head turns a little to look around, the spirit flames flicker, a seamless idle loop. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "pet_wolf_1_die",
+  "ref": "ham/anim/pet_wolf_1_ref.png",
+  "prompt": "a cartoon undead spirit wolf with dark green fur, exposed ribs and skull face, glowing green eyes and green spirit flames on its back is struck hard and defeated: it yelps, staggers, the legs give way and it collapses onto its side on the ground, the green flames go out and it lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "pet_wolf_2_run",
+  "ref": "ham/anim/pet_wolf_2_ref.png",
+  "prompt": "a cartoon huge ancient undead spirit wolf with antlers, dark green fur, exposed bones and skull face, glowing green eyes and green spirit flames on its back runs fast in place in a full gallop cycle: the legs stretch far out and gather under the body, the back flexes, the head pushes forward, the spirit flames stream back, a full looping run cycle. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "pet_wolf_2_atk",
+  "ref": "ham/anim/pet_wolf_2_ref.png",
+  "prompt": "a cartoon huge ancient undead spirit wolf with antlers, dark green fur, exposed bones and skull face, glowing green eyes and green spirit flames on its back attacks forward to the right: crouches low with a big anticipation, lunges and snaps its jaws hard, bites and shakes its head, then jumps back and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "pet_wolf_2_idle",
+  "ref": "ham/anim/pet_wolf_2_ref.png",
+  "prompt": "a cartoon huge ancient undead spirit wolf with antlers, dark green fur, exposed bones and skull face, glowing green eyes and green spirit flames on its back stands in place in a lively idle: breathing, the chest rises and falls, the tail sways, the ears twitch, the head turns a little to look around, the spirit flames flicker, a seamless idle loop. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "pet_wolf_2_die",
+  "ref": "ham/anim/pet_wolf_2_ref.png",
+  "prompt": "a cartoon huge ancient undead spirit wolf with antlers, dark green fur, exposed bones and skull face, glowing green eyes and green spirit flames on its back is struck hard and defeated: it yelps, staggers, the legs give way and it collapses onto its side on the ground, the green flames go out and it lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "unit_skel_6_die",
+  "ref": "ham/anim/unit_skel_6_ref.png",
+  "prompt": "a cartoon skeleton archer in a tattered purple hooded cloak with glowing green eyes, holding a longbow, a quiver on the back is struck hard and destroyed: the skeleton staggers back, the bow drops from the bony hand, the bones come apart and the whole skeleton collapses down into a pile of loose bones on the ground with the skull rolling on top, then everything lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "unit_skel_7_die",
+  "ref": "ham/anim/unit_skel_7_ref.png",
+  "prompt": "a cartoon armored skeleton archer with an iron helmet, brown leather armor and a torn purple tabard, holding a longbow is struck hard and destroyed: the skeleton staggers back, the bow drops from the bony hand, the bones come apart and the whole skeleton collapses down into a pile of loose bones on the ground with the skull rolling on top, then everything lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "unit_skel_8_die",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow is struck hard and destroyed: the skeleton staggers back, the bow drops from the bony hand, the bones come apart and the whole skeleton collapses down into a pile of loose bones on the ground with the skull rolling on top, then everything lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_eagle_die",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest is shot down while flying: it jerks, the feathers burst out, the wings fold and it tumbles and spins down to the ground, lands on its back and lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "enemy_vulture_die",
+  "ref": "ham/anim/enemy_vulture_ref.png",
+  "prompt": "a cartoon big bald vulture is shot down while flying: it jerks, the feathers burst out, the wings fold and it tumbles and spins down to the ground, lands on its back and lies still. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 7
+ },
+ {
+  "name": "hero_bathory_lvlup",
+  "ref": "ham/anim/hero_bathory_ref.png",
+  "prompt": "a cartoon undead blood countess with a dark spiked crown, a high red collar, a long crimson and black gown and a ruby heart scepter, red blood ribbons swirl around her powers up in place: rises slightly, raises the ruby heart scepter high, the blood ribbons spiral up around her, she strikes a proud triumphant pose, then returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "hero_bathory_walk_hurt",
+  "ref": "ham/anim/hero_bathory_ref.png",
+  "prompt": "a cartoon undead blood countess with a dark spiked crown, a high red collar, a long crimson and black gown and a ruby heart scepter, red blood ribbons swirl around her walks forward wounded and exhausted in a slow limping walk cycle: hunched over, one hand pressed to the side, dragging one leg, the head hangs low, staggers a little with each step, a full looping walk cycle in place. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "hero_leonidas_walk_hurt",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest, bronze armor, a torn crimson cape, a big round bronze shield and a spear walks forward wounded and exhausted in a slow limping walk cycle: hunched over, one hand pressed to the side, dragging one leg, the head hangs low, staggers a little with each step, a full looping walk cycle in place. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "hero_merlin_cheer",
+  "ref": "ham/anim/hero_merlin_ref.png",
+  "prompt": "a cartoon ancient lich wizard with antlers, a long pale green beard, a dark blue robe and a crystal staff celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, a proud joyful pose, then returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "hero_robin_cheer",
+  "ref": "ham/anim/hero_robin_ref.png",
+  "prompt": "a cartoon skeleton ranger with antlers, a dark green hooded cloak, a big green bone longbow and a quiver celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, a proud joyful pose, then returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ },
+ {
+  "name": "hero_bathory_cheer",
+  "ref": "ham/anim/hero_bathory_ref.png",
+  "prompt": "a cartoon undead blood countess with a dark spiked crown, a high red collar, a long crimson and black gown and a ruby heart scepter, red blood ribbons swirl around her celebrates a great victory in place: raises the weapon high above the head and shakes it triumphantly, hops up and down twice on the same spot, a proud joyful pose, then returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": true,
+  "seed": 21
+ }
+]

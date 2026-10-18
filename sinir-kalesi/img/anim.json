@@ -477,24 +477,6 @@
   "base": 0.0146,
   "ch": 0.9539
  },
- "enemy_herald_walk": {
-  "n": 20,
-  "fw": 132,
-  "fh": 169,
-  "base": 0.0157,
-  "ch": 0.9449,
-  "idle": 12,
-  "sh": 1,
-  "stride": 0.837
- },
- "enemy_herald_atk": {
-  "n": 32,
-  "fw": 132,
-  "fh": 168,
-  "base": 0.0152,
-  "ch": 0.9544,
-  "sh": 1
- },
  "enemy_drummer_walk": {
   "n": 49,
   "fw": 126,
@@ -778,40 +760,6 @@
   "fh": 176,
   "base": 0.014,
   "ch": 0.9114
- },
- "tower_archer_nail_atk": {
-  "n": 48,
-  "fw": 333,
-  "fh": 176,
-  "tower": true,
-  "rel": 0.191,
-  "relPt": [
-   1.147,
-   0.421
-  ],
-  "box": [
-   -0.6488,
-   -0.1,
-   1.6481,
-   1.0
-  ]
- },
- "tower_archer_fan_atk": {
-  "n": 48,
-  "fw": 333,
-  "fh": 232,
-  "tower": true,
-  "rel": 0.34,
-  "relPt": [
-   0.531,
-   0.221
-  ],
-  "box": [
-   -1.2205,
-   -0.1,
-   1.3942,
-   1.0
-  ]
  },
  "enemy_hunter_walk": {
   "n": 32,
@@ -2152,14 +2100,6 @@
   "fh": 328,
   "cols": 37
  },
- "enemy_vulture_atk": {
-  "n": 73,
-  "fw": 350,
-  "fh": 318,
-  "base": 0.1556,
-  "ch": 0.4722,
-  "cols": 37
- },
  "enemy_cannon_walk": {
   "n": 36,
   "fw": 327,
@@ -2202,24 +2142,6 @@
   "ch": 0.6683,
   "cols": 33,
   "dur": 2.7
- },
- "tower_artillery_boneball_atk": {
-  "n": 240,
-  "fw": 285,
-  "fh": 364,
-  "tower": true,
-  "box": [
-   -0.3413,
-   -0.6086,
-   1.5556,
-   1.0322
-  ],
-  "rel": 0.0917,
-  "relPt": [
-   0.22,
-   -0.5
-  ],
-  "cols": 48
  },
  "tower_artillery_bonemortar_atk": {
   "n": 99,
@@ -2545,13 +2467,6 @@
   "fh": 166,
   "base": 0.0145,
   "ch": 0.9661
- },
- "enemy_shadowmaster_idle": {
-  "n": 32,
-  "fw": 181,
-  "fh": 168,
-  "base": 0.0144,
-  "ch": 0.952
  },
  "unit_bonegiant_idle": {
   "n": 32,
@@ -2998,16 +2913,6 @@
   "bx": 147.2,
   "by": 148.4
  },
- "tower_artillery_catapult_collapse": {
-  "n": 49,
-  "fw": 295,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 72.6,
-  "bx": 146.8,
-  "by": 148.4
- },
  "tower_artillery_plague_collapse": {
   "n": 49,
   "fw": 266,
@@ -3016,16 +2921,6 @@
   "fps": 16,
   "tw": 93.9,
   "bx": 147.5,
-  "by": 148.4
- },
- "tower_artillery_boneball_collapse": {
-  "n": 49,
-  "fw": 252,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 71.5,
-  "bx": 147.3,
   "by": 148.4
  },
  "tower_artillery_bonemortar_collapse": {
