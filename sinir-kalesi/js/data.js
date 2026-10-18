@@ -1518,6 +1518,13 @@ if (NECRO) for (const k in ENEMIES) {
   d.acl = CLASS_OF[k] || (d.base && CLASS_OF[d.base]) || (d.machine ? 'kusatma' : d.flying ? 'canavar' : d.armor >= 0.5 ? 'agir' : d.mr >= 0.4 ? 'kutsal' : 'hafif');
   d.wk = Object.assign({}, ARMOR_CLASS[d.acl].mult);
 }
+// 18 Eki (Caner: "ilk 10 bölümü farklı kulelerle oyna, zayıflık/dirençler iyi ayarlanmış mı"): yalnız okçu kuleli oyun 4-8. bölümleri kaybediyordu:
+// sıradan lejyoner (ilk bölümlerin ana düşmanı) oka %50 dirençliydi, en ucuz kule en sık düşmana karşı işe yaramıyordu. Kalkan duvarı sınıfının asıl
+// direnci Testudo ve Yüzbaşı'da kalır; sıradan lejyoner ve rütbelileri ok %75 (kıdemlinin "Kalkanlar!" komutu yine korur). Uçanlar oka zayıf:
+// topçu ve mahzen kuşlara ulaşamıyor, okçuya bir görev (8. bölümde kartallar 5/8 stratejide kaybettiriyordu).
+for (const k of ['legion', 'legion_k', 'legion_y', 'signifer']) if (ENEMIES[k]) ENEMIES[k].wk.arrow = 0.75;
+// okçu kulesi hasarı BAL.tower.archer 0,9 → 1,1 (yalnız okçu oynayan bot 5, 6 ve 8. bölümü hâlâ kaybediyordu)
+for (const k of ['eagle', 'vulture']) if (ENEMIES[k]) ENEMIES[k].wk.arrow = 1.3;
 // ----- Silah büyüleri (10 Eki): kemik kulesi ve mahzen son kademede tek bir büyü seçer; her vuruş düşmana durum etkisi bırakır -----
 const IMBUE_ORDER = ['fire', 'poison', 'frost']; // 10 Eki (Caner): lanet büyüsü yok (Lanet Kulesi var), kanama yok
 const IMBUE = {
@@ -1699,7 +1706,7 @@ const SKILL_CD_K = 1.1;
 // tools/denge-deney.js ile 10 strateji × 16 bölüm (iki sefer): "2 Ruh Feneri + mahzen" 16/16 ve ort. 17 canla geçiyordu (en güçlü),
 // Veba Kazanı tek başına 8/16 (en zayıf hasar kulesi; karışık oyunda öldürmelerin %1'i), karışık oyunda bölüm sonunda ort. 2650 altın artıyordu.
 // BAL.tower: kule hasar çarpanı (tüm kademeler), BAL.hp: düşman canı çarpanı, BAL.bounty: düşman ödülü ve erken çağrı bonusu çarpanı.
-const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 0.9 }, hp: 1.25, bounty: 0.875, hero: { bathory: 0.95 }, heroCd: { merlin: 1.15, bathory: 1.15 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
+const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.1 }, hp: 1.25, bounty: 0.875, hero: { bathory: 0.95 }, heroCd: { merlin: 1.15, bathory: 1.15 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
 for (const t in BAL.tower) for (const L of TOWERS[t].levels) if (L.dmg) L.dmg = L.dmg.map(v => Math.round(v * BAL.tower[t]));
 GAME_DIFF.hp *= BAL.hp; GAME_DIFF.bounty *= BAL.bounty;
 for (const h in BAL.hero) if (HEROES[h] && HEROES[h].dmg) HEROES[h].dmg = HEROES[h].dmg.map(v => Math.round(v * BAL.hero[h]));
