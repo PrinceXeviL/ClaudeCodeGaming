@@ -2306,10 +2306,10 @@ function startLevel(idx, chal = null) {
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   if (team().includes('merlin')) keep.add('fx_tornado'); // 18 Eki: Kasırga Fırtınası Veo şeridi
-  keep.add('fx_acid'); // 18 Eki: Veba Kazanı asidi
+  ACID_V.forEach(v => keep.add(v)); // 18 Eki: Veba Kazanı asidi (çeşitleri)
   useStrips(keep);
   if (team().includes('merlin') && ANIM_META.fx_tornado) loadStrip('fx_tornado');
-  if (ANIM_META.fx_acid) loadStrip('fx_acid');
+  ACID_V.forEach(v => { if (ANIM_META[v]) loadStrip(v); });
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
   [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
@@ -2690,17 +2690,20 @@ const SKEL_GUARD = { p: 0.15, cd: 5, k: 0.4 }; // mahzen iskeletinin savunması:
 const ACID = { k: 1.95, hold: 1.9, fade: 0.7, land: 3, fast: 1.8, a: 0.72 }; // a: saydamlık (18 Eki, Caner: "çok yoğun, seyrelt"); hold +1 sn // land: damlanın yere değdiği kareler (normal hız); sonrası fast kat hızlı (18 Eki, Caner: "düştükten sonra %80 hızlandır")
 const acidDur = (F) => ACID.land / F.fps + (F.n - ACID.land) / (F.fps * ACID.fast);
 const acidFrame = (F, t) => { const L = ACID.land / F.fps; return Math.min(F.n - 1, Math.floor(t < L ? t * F.fps : ACID.land + (t - L) * F.fps * ACID.fast)); };
+const ACID_V = ['fx_acid', 'fx_acidb', 'fx_acidc']; // 18 Eki: çeşit çeşit çarpma (varsa); her atışta rastgele biri, ayrıca rastgele ayna + boyut
 function drawAcidFx() {
-  const F = ANIM_META.fx_acid, im = F && spr('fx_acid'); if (!im || !G.acidFx) return;
-  const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), dur = acidDur(F);
+  if (!G.acidFx) return;
   for (const a of G.acidFx) {
-    const i = acidFrame(F, a.t), hd = a.hold ?? ACID.hold, al = ACID.a * (a.t < dur + hd ? 1 : 1 - (a.t - dur - hd) / ACID.fade), k = a.r * ACID.k / F.rw;
-    ctx.save(); ctx.globalAlpha = clamp(al, 0, 1); ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, a.x - F.bx * k, a.y - F.by * k, F.fw * k, F.fh * k); ctx.restore();
+    const F = ANIM_META[a.v], im = F && spr(a.v); if (!im) continue;
+    const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), dur = acidDur(F);
+    const i = acidFrame(F, a.t), hd = a.hold ?? ACID.hold, al = ACID.a * (a.t < dur + hd ? 1 : 1 - (a.t - dur - hd) / ACID.fade), k = a.r * ACID.k * (a.s || 1) / F.rw;
+    ctx.save(); ctx.globalAlpha = clamp(al, 0, 1); ctx.translate(a.x, a.y); if (a.flip) ctx.scale(-1, 1);
+    ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, -F.bx * k, -F.by * k, F.fw * k, F.fh * k); ctx.restore();
   }
 }
 function fxPlagueSplash(x, y, r, life) { // life: altındaki birikintinin süresi (sn); Veo asidi o kadar yerde kalır. Veo şeridi kullanıldıysa true döner
   const P = G.parts;
-  if (ANIM_META.fx_acid) { loadStrip('fx_acid'); if (spr('fx_acid')) { const F = ANIM_META.fx_acid; (G.acidFx ||= []).push({ x, y, r, t: 0, hold: Math.max(ACID.hold, (life || 0) - acidDur(F) - ACID.fade) }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return true; } }
+  const AV = ACID_V.filter(v => ANIM_META[v]); AV.forEach(loadStrip); const ok = AV.filter(v => spr(v)); if (ok.length) { const v = ok[Math.floor(Math.random() * ok.length)], F = ANIM_META[v]; (G.acidFx ||= []).push({ x, y, r, t: 0, v, flip: Math.random() < 0.5, s: rand(0.88, 1.12), hold: Math.max(ACID.hold, (life || 0) - acidDur(F) - ACID.fade) }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return true; }
   for (let i = 0; i < 22; i++) { // yere yakın, yayvan saçılan damlalar
     const a = rand(0, Math.PI * 2), v = rand(50, 150);
     emit(P, { kind: 'dot', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? '#6cc83c' : '#b8f27a', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
@@ -8216,7 +8219,7 @@ function setupProps() {
 }
 function updateProps(dt) {
   updateSurprise(dt); updateSigFx(dt); keepGolemTick(dt);
-  if (G.acidFx) { const F = ANIM_META.fx_acid, base = F ? acidDur(F) + ACID.fade : 0; for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => a.t < base + (a.hold ?? ACID.hold)); }
+  if (G.acidFx) { for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => { const F = ANIM_META[a.v]; return F && a.t < acidDur(F) + ACID.fade + (a.hold ?? ACID.hold); }); }
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
