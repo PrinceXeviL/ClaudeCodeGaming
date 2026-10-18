@@ -2686,12 +2686,15 @@ function shakeScreen(amp, dur) {
 // veba sıçraması: yeşil bulamaç damlaları, gaz bulutu, birkaç kemik parçası
 // veba sıçraması: çember yok; sıvı yere çarpıp dört bir yana saçılır, düzensiz bir birikinti ve çevresine damla lekeleri kalır
 // 18 Eki (Caner: "yeşil asit daha detaylı, Gemini + video"): Veo şeridi (img/fx_acid, varliklar/veba_asit_isle.py) çarpma yerinde oynar, son kare söner
-const ACID = { k: 1.95, hold: 0.9, fade: 0.7 };
+const SKEL_GUARD = { p: 0.15, cd: 5, k: 0.4 }; // mahzen iskeletinin savunması: yakın vuruşta şans, bekleme (sn), savunurken hasar çarpanı
+const ACID = { k: 1.95, hold: 0.9, fade: 0.7, land: 3, fast: 1.8 }; // land: damlanın yere değdiği kareler (normal hız); sonrası fast kat hızlı (18 Eki, Caner: "düştükten sonra %80 hızlandır")
+const acidDur = (F) => ACID.land / F.fps + (F.n - ACID.land) / (F.fps * ACID.fast);
+const acidFrame = (F, t) => { const L = ACID.land / F.fps; return Math.min(F.n - 1, Math.floor(t < L ? t * F.fps : ACID.land + (t - L) * F.fps * ACID.fast)); };
 function drawAcidFx() {
   const F = ANIM_META.fx_acid, im = F && spr('fx_acid'); if (!im || !G.acidFx) return;
-  const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), dur = F.n / F.fps;
+  const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), dur = acidDur(F);
   for (const a of G.acidFx) {
-    const i = Math.min(F.n - 1, Math.floor(a.t * F.fps)), al = a.t < dur + ACID.hold ? 1 : 1 - (a.t - dur - ACID.hold) / ACID.fade, k = a.r * ACID.k / F.rw;
+    const i = acidFrame(F, a.t), al = a.t < dur + ACID.hold ? 1 : 1 - (a.t - dur - ACID.hold) / ACID.fade, k = a.r * ACID.k / F.rw;
     ctx.save(); ctx.globalAlpha = clamp(al, 0, 1); ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, a.x - F.bx * k, a.y - F.by * k, F.fw * k, F.fh * k); ctx.restore();
   }
 }
@@ -3642,6 +3645,13 @@ function damageSoldier(s, amount, src) {
   // Ateş Bilgesi'nin buz zırhı aurası
   if (G.heroes.some(h => !h.dead && h.learned.frostarmor && dist(h.x, h.y, s.x, s.y) < 110)) amount *= 0.8;
   if (s.dodge && Math.random() < s.dodge) { if (Math.random() < 0.4) floatText(s.x, s.y - 30, 'Kaçtı!', '#ffe9b0'); return; }
+  { // 18 Eki (Caner): mahzen iskeleti ara sıra kalkanını kaldırıp savunur (Wan unit_skel_N_guard varsa); savunurken hasar azalır
+    const GF = NECRO && !s.hero && !s.bow && s.skelKey && !(s.tower && s.tower.spec === 'shield') && ANIM_META[s.skelKey + '_guard'];
+    if (GF && s.guardA > G.t) amount *= SKEL_GUARD.k;
+    else if (GF && src && src.hp != null && !(s.guardCd > G.t) && dist(src.x, src.y, s.x, s.y) < 45 && Math.random() < SKEL_GUARD.p) {
+      s.guardT0 = G.t; s.guardA = G.t + (GF.dur || GF.n / 24); s.guardCd = s.guardA + SKEL_GUARD.cd; amount *= SKEL_GUARD.k; sfx('bash');
+    }
+  }
   if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('bash'); return; }
   if (s.hero && s.def.parry && src && src.hp != null && dist(src.x, src.y, s.x, s.y) < 45 && !(s.parryCd > G.t) && Math.random() < s.def.parry) { // 17 Eki: Leonidas'ın Bronz Kalkan'ı
     s.parryCd = G.t + LEO.parryCd; s.blockA = HERO_ANIM.block; s.blockCd = G.t + 1.5; const dir = Math.sign(src.x - s.x) || s.face || 1;
@@ -8206,7 +8216,7 @@ function setupProps() {
 }
 function updateProps(dt) {
   updateSurprise(dt); updateSigFx(dt); keepGolemTick(dt);
-  if (G.acidFx) { const F = ANIM_META.fx_acid, end = F ? F.n / F.fps + ACID.hold + ACID.fade : 0; for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => a.t < end); }
+  if (G.acidFx) { const F = ANIM_META.fx_acid, end = F ? acidDur(F) + ACID.hold + ACID.fade : 0; for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => a.t < end); }
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
@@ -12107,9 +12117,9 @@ function drawSoldier0(s) {
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
     drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
       atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
-      skill: s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) && ANIM_META[key + '_guard'] && animStrip(key, null, '_guard') ? clamp((G.t - (s.guardT0 ?? G.t)) / (ANIM_META[key + '_guard'].dur || 3.4), 0, 0.999)
+      skill: s.guardA > G.t && sp2 !== 'shield' && animStrip(key, null, '_guard') ? clamp((G.t - s.guardT0) / (s.guardA - s.guardT0), 0, 0.999) : s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) && ANIM_META[key + '_guard'] && animStrip(key, null, '_guard') ? clamp((G.t - (s.guardT0 ?? G.t)) / (ANIM_META[key + '_guard'].dur || 3.4), 0, 0.999)
         : s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null,
-      skillSuf: s.dashT > 0 ? '_dash' : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) ? '_guard' : null }); // 16 Eki: Tabut Duvarı Veo şeridi baştan sona (çakış -> siper -> kalkış) // Tabut Duvarı süresince kalkan yerde
+      skillSuf: s.guardA > G.t && sp2 !== 'shield' && ANIM_META[key + '_guard'] ? '_guard' : s.dashT > 0 ? '_dash' : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) ? '_guard' : null }); // 16 Eki: Tabut Duvarı Veo şeridi baştan sona (çakış -> siper -> kalkış) // Tabut Duvarı süresince kalkan yerde
     if (fade < 1) ctx.restore();
     if (s.bow && s.melee && !s.melee.dead && dist(s.x, s.y, s.melee.x, s.melee.y) < 24) {
       // yakın dövüşte elindeki kemik hançer: vuruşta öne savrulur

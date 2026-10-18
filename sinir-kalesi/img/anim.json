@@ -3169,10 +3169,10 @@
  },
  "enemy_shadowmaster_sig1": {
   "n": 33,
-  "fw": 246,
-  "fh": 184,
-  "base": 0.0144,
-  "ch": 0.8705
+  "fw": 322,
+  "fh": 178,
+  "base": 0.0141,
+  "ch": 0.8965
  },
  "enemy_shadowmaster_atk2": {
   "n": 33,
@@ -3197,10 +3197,10 @@
  },
  "enemy_ironwarden_sig2": {
   "n": 33,
-  "fw": 147,
-  "fh": 168,
-  "base": 0.0145,
-  "ch": 0.9518
+  "fw": 218,
+  "fh": 189,
+  "base": 0.0133,
+  "ch": 0.8448
  },
  "enemy_ironwarden_block": {
   "n": 33,
@@ -3302,10 +3302,10 @@
  },
  "enemy_ignis_sig1": {
   "n": 33,
-  "fw": 162,
+  "fw": 153,
   "fh": 180,
-  "base": 0.0132,
-  "ch": 0.8896
+  "base": 0.0131,
+  "ch": 0.8911
  },
  "enemy_ignis_atk2": {
   "n": 33,
@@ -3358,10 +3358,10 @@
  },
  "enemy_cathedral_sig1": {
   "n": 33,
-  "fw": 165,
+  "fw": 166,
   "fh": 168,
-  "base": 0.0143,
-  "ch": 0.95
+  "base": 0.0147,
+  "ch": 0.9511
  },
  "enemy_severus_sig1": {
   "n": 33,
