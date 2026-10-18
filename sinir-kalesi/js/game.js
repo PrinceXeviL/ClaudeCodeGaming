@@ -7098,21 +7098,37 @@ function mortAnim(p) {
   if (mortStrip('mortimer_cay') && M.st !== 'panic') return { n: 'mortimer_cay', i: Math.floor(time * 12) % ANIM_META.mortimer_cay.n, k: MORT_SIT_K };
   return null;
 }
-// kapı ile balkon arası yürüyüş: kapının karanlığından çıkar (silik, küçük, kapı eşiğinde) → balkondaki yerine (tam boy); girerken tersi
+// 18 Eki (Caner: "balkonda silinip gidiyor; yeşil kapıdan girsin, boyu değişmesin, gerekirse kırmızı efektle ışınlansın"):
+// içeri girerken: (arkasını döner) → yerinde kızıl ışınlanmayla söner → yeşil kapının önünde belirir, sırtı dönük yürüyüp kapının karanlığında kaybolur.
+// çıkarken tersi: kapıdan yürüyerek çıkar → kızıl ışınlanmayla terastaki yerine geçer. Boy hep aynı (m.h); yandan yürüme şeridi olmadığı için ışınlanma.
+const MORT_TP = { t: 0.45, door: [0.5, 0.515] }; // t: ışınlanma süresi (MORT_IN.walk'ın içinden); door: yeşil kapı eşiği (castle_keep görselinin kesri)
+function mortTeleportFx(x, y, h) {
+  G.effects.push({ kind: 'ring', x, y: y - 2, r: h * 0.55, col: '255,60,60', t: 0, dur: 0.4 });
+  for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(20, 70);
+    emit(G.parts, { kind: 'glow', add: true, x: x + Math.cos(a) * rand(2, 8), y: y - rand(0, h * 0.95), vx: Math.cos(a) * v, vy: -rand(30, 100), drag: 2, col: i % 3 ? '255,50,60' : '255,160,120', s0: rand(2, 4.5), s1: 0.4, life: rand(0.35, 0.7) }); }
+}
 function drawMortDoor() {
   const M = G.mort, m = mortimerPoint(), TN = M.st === 'goin' && mortStrip('mortimer_don') ? MORT_IN.turn : 0;
   if (TN && M.t < TN) { // içeri girmeden önce yerinde arkasını döner
     const F = ANIM_META.mortimer_don; ctx.save(); ctx.translate(m.x, m.y); drawFrame(spr('mortimer_don'), F, Math.min(F.n - 1, Math.floor(M.t / TN * F.n)), m.h * 1.15); ctx.restore(); return;
   }
-  const q0 = clamp((M.t - TN) / MORT_IN.walk, 0, 1), q = M.st === 'out' ? q0 : 1 - q0, e = q * q * (3 - 2 * q);
-  const W = M.st === 'goin' && mortStrip('mortimer_arka') || mortStrip('mortimer_yuru'), im = spr('mortimer'); if (!W && !im) return;
-  const c = G.castle, ci = castleStageSprite(), cp = castlePlace(c.x, c.y, ci), h = cp.w * ci.height / ci.width;
-  const dy = (KEEP.door ? KEEP.door[1] : 0.536) * h + (cp.y - h), x = m.x, y = lerp(dy, m.y, e), sc = 0.82 + 0.18 * e;
-  ctx.save(); ctx.globalAlpha = clamp(e * 1.6, 0, 1); ctx.translate(x, y); ctx.scale(sc, sc);
-  if (W) { // 13 Eki: Gemini (Veo) yürüyüşü, kameraya doğru; içeri girerken kareler tersten (dönüş şeridi gelene kadar)
-    const F = ANIM_META[W], fi = Math.floor(M.t * 16) % F.n; drawFrame(spr(W), F, M.st === 'out' || W === 'mortimer_arka' ? fi : F.n - 1 - fi, m.h * 1.15);
-  } else { ctx.translate(0, -Math.abs(Math.sin(q0 * Math.PI * 4)) * 1.5); drawSprite(ctx, im, 0, 0, m.h * 1.15 * im.width / im.height); }
-  ctx.restore();
+  const c = G.castle, ci = castleStageSprite(), cp = castlePlace(c.x, c.y, ci), ch = cp.w * ci.height / ci.width, S = mortStage(ci);
+  const D = S.door || MORT_TP.door, dx = cp.x - cp.w / 2 + D[0] * cp.w, dy = cp.y - ch + D[1] * ch;
+  const u = M.t - TN, out = M.st === 'out', tp = MORT_TP.t, wk = Math.max(0.3, MORT_IN.walk - tp), run = M.st + Math.round((G.t - M.t) * 4), fxOnce = (k, x, y) => { if (!(M.fxS && M.fxS.has(run + k))) { if (!M.fxS || M.fxS.size > 8) M.fxS = new Set(); M.fxS.add(run + k); mortTeleportFx(x, y, m.h); } };
+  const still = (x, y, a) => { // terastaki yerinde, ışınlanırken kızıl parıltıyla söner / belirir
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - m.h * 0.5, m.h * 0.75, '255,50,60', 0.55 * Math.sin(Math.PI * clamp(a, 0, 1))); ctx.restore();
+    const im = spr('mortimer'); if (!im) return; ctx.save(); ctx.globalAlpha *= clamp(a, 0, 1); ctx.translate(x, y); drawSprite(ctx, im, 0, 0, m.h * 1.15 * im.width / im.height); ctx.restore(); };
+  const walk = (W, q, a) => { // kapının önünde yerinde yürür (boy sabit), kapının karanlığına girer / çıkar
+    const im = spr('mortimer'); ctx.save(); ctx.globalAlpha *= clamp(a, 0, 1); ctx.translate(dx, dy - 3 * q);
+    if (W) { const F = ANIM_META[W], fi = Math.floor(M.t * 16) % F.n; drawFrame(spr(W), F, fi, m.h * 1.15); } else if (im) drawSprite(ctx, im, 0, 0, m.h * 1.15 * im.width / im.height);
+    ctx.restore(); };
+  if (!out) {
+    if (u < tp) { fxOnce('a', m.x, m.y); still(m.x, m.y, 1 - u / tp); }
+    else { fxOnce('b', dx, dy); const q = clamp((u - tp) / wk, 0, 1); walk(mortStrip('mortimer_arka') || mortStrip('mortimer_yuru'), q, Math.min(q * 6, (1 - q) * 2.5)); }
+  } else {
+    if (u < wk) { const q = clamp(u / wk, 0, 1); walk(mortStrip('mortimer_yuru'), 1 - q, Math.min(q * 2.5, (1 - q) * 6 + 0.001)); }
+    else { fxOnce('c', dx, dy); if ((u - wk) > tp * 0.3) fxOnce('d', m.x, m.y); still(m.x, m.y, (u - wk) / tp); }
+  }
 }
 // balkon muhafızları: Mezar Bekçisi iskeletleri bekleme şeridiyle nefes alır; kale vurulunca kalkanını kaldırır (saldırı şeridi), boss gelince tetikte
 function drawKeepGuards(S, cp, h, sh) {
