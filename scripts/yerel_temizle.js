@@ -18,7 +18,7 @@ for (const pub of DIRS) {
   const img = path.join(pub, 'img'), manP = path.join(img, 'manifest.json');
   if (fs.existsSync(manP)) {
     const man = new Set(JSON.parse(fs.readFileSync(manP, 'utf8')));
-    for (const f of fs.readdirSync(img)) if (!f.endsWith('.json') && !man.has(f) && !/^(map_|atlas_|win_scene|cine_|ev_)/.test(f)) rm(path.join(img, f)); // map_*: önceden pişirilmiş harita zeminleri, atlas_*: küçük görsel sayfaları; 18 Eki: win_scene (zafer videosu), cine_* (hikâye), ev_* (etkinlik çizimleri) da kod doğrudan yükler
+    for (const f of fs.readdirSync(img)) if (!f.endsWith('.json') && !man.has(f) && !/^(map_|atlas_|win_scene|hero_panels|cine_|ev_)/.test(f)) rm(path.join(img, f)); // map_*: önceden pişirilmiş harita zeminleri, atlas_*: küçük görsel sayfaları; 18 Eki: win_scene (zafer videosu), cine_* (hikâye), ev_* (etkinlik çizimleri) da kod doğrudan yükler
   }
   for (const f of ['tools', 'yayin.html']) if (fs.existsSync(path.join(pub, f))) rm(path.join(pub, f));
   console.log(path.relative(ROOT, pub) + ': ' + n + ' dosya silindi, ' + (bytes / 1e6).toFixed(1) + ' MB');

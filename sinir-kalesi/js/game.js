@@ -3607,7 +3607,7 @@ function damageSoldier(s, amount, src) {
     if (pushable(src) && !src.def.chief) { src.knockT = KNOCK.t; src.knockV = 60; }
     if (Math.random() < 0.35) floatText(s.x, s.y - 34, 'Kalkan!', '#ffd88a'); sfx('clash', 1.25, 0.7); return; }
   if (s.wardT > 0) amount *= 1 - ELITE_SK.shield.red; // Tabut Duvarı
-  if (s.hero && !s.lowSaid && HERO_VOICE[s.id] && s.hp - amount < s.maxHp * 0.3 && s.hp - amount > 0) { s.lowSaid = true; heroVoice(s, 'bvlow'); } // canı azalınca bir kez
+  if (s.hero && !s.lowSaid && HERO_VOICE[s.id] && s.hp - amount < s.maxHp * 0.3 && s.hp - amount > 0) { s.lowSaid = true; hv(s, 'low'); } // canı azalınca bir kez
   if (s.hero && amount > s.maxHp * 0.04 && !(s.blockCd > G.t) && !(s.ultT > 0) && !(s.castA > 0)) { s.blockA = HERO_ANIM.block; s.blockCd = G.t + 3; } // komutan darbeyi karşılar
   const CA = !s.hero && (s.tower || s.minion) && curseAura(s.x, s.y); // lanet aurası: iskelete ek zırh
   s.hp -= amount * (1 - Math.min(0.85, s.armor + (CA ? CA.allyArm : 0)));
@@ -5618,7 +5618,7 @@ function updateSoldier(s, dt) {
     s.respawnT -= dt;
     if (s.respawnT <= 0) {
       s.dead = false; s.hp = s.maxHp;
-      if (s.hero) { G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,190', t: 0, dur: 0.8 }); s.lowSaid = false; heroVoice(s, 'bvback'); } // olduğu yerde, ışık sütunuyla dirilir
+      if (s.hero) { G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,240,190', t: 0, dur: 0.8 }); s.lowSaid = false; hv(s, 'back'); } // olduğu yerde, ışık sütunuyla dirilir
       else if (s.ghoul) { s.x = s.ghoul.x; s.y = s.ghoul.y; s.born = G.t + (s.ghoul.grave ? graveRise(s.ghoul) : 0); if (!s.ghoul.grave) ghoulRiseFx(s.ghoul); }
       else if (s.guard) { s.x = s.rx; s.y = s.ry; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '140,255,140', t: 0, dur: 0.6 }); }
       else { s.x = s.tower.x; s.y = s.tower.y + 6; riseFromGrave(s); }
@@ -5709,6 +5709,7 @@ function updateSoldier(s, dt) {
           if (s.learned.bleed) { t.bleedDps = Math.max(t.bleedT > 0 ? t.bleedDps : 0, 6 + s.lvl * 2); t.bleedT = 3; }
         }
         hitBy = s.hero ? 'hero' : s.minion ? 'minion' : 'melee'; damageEnemy(t, dmg, 'phys', false, s.hero ? null : 'melee'); s.zHitT = G.t;
+        if (s.hero && HERO_VOICE[s.id]) hv(s, t.hp < t.maxHp * 0.25 && Math.random() < 0.3 ? 'taunt' : 'atk'); // yakın dövüşçü komutan (Leonidas) da konuşur
         if (s.pet && s.pet.stun && !t.dead && !t.def.chief && Math.random() < 0.35) stunEnemy(t, s.pet.stun); // Kadim Ruh Kurdu: ısırık bazen sersemletir
         if (s.tower && s.tower.imbue && !s.hero) applyImbue(t, s.tower.imbue, 'melee'); // silah büyüsü
         if (s.plagueZ && !t.dead) poisonEnemy(t, s.plagueZ, 3); // veba zombisi: vuruşu zehirler
@@ -5810,7 +5811,7 @@ function heroSkills(h, dt) {
     const lr = h.learned[sk.id] || (HERO_INNATE[h.id] === sk.id ? 1 : 0); // doğuştan yetenek: puan harcanmadan 1. kademe
     if (sk.passive || !lr || (h.cds[sk.id] || 0) > 0) continue;
     const rk = lr; SKILL_K = (1 + HERO_TREE.dmg * (rk - 1)) * (h.gearK || 1);
-    hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null;
+    hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null; if (used && h.id !== 'bathory') hv(h, 'sk');
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
       h.cds[sk.id] = sk.cd * (1 - HERO_TREE.cd * (rk - 1)) * (h.cdK || 1); h.castT = 0.45; h.castK = sk.id; h.castA = h.castD = (ANIM_META[h.def.sprite + '_cast_' + sk.id] || ANIM_META[h.def.sprite + '_cast'] || {}).dur || HERO_ANIM.cast; // şeridin kendi süresi (Robin Kemik Ok 2,4 sn)
@@ -5937,7 +5938,7 @@ function useSkill(h, id) {
     case 'bloodlink': { // Báthory: en kalabalık yerdeki 4 düşmanı bağlar
       const c = densest(h.x, h.y, R + 10, 70, true);
       if (!c || c.n < 2) return false;
-      heroVoice(h, 'bvlink');
+      hv(h, 'link');
       const ts = enemiesNear(c.e.x, c.e.y, 70, true).slice(0, 4);
       (G.links ||= []).push({ ts, owner: h, dps: 9 + 2.5 * L, t: 0, life: 5 }); // 16 Eki: 12+3L → 9+2,5L (Báthory fazla güçlüydü)
       for (const e of ts) fxBloodHit(e.x, aimY(e));
@@ -5992,7 +5993,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
   sfx(h.def.soul ? 'soulorb' : h.def.blood ? 'bloodbolt' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
-  if (HERO_VOICE[h.id]) heroVoice(h, h.target && h.target.hp < h.target.maxHp * 0.25 && Math.random() < 0.3 ? 'bvtaunt' : 'bvatk'); // seyrek: Latince saldırı sözü ya da alay
+  if (HERO_VOICE[h.id]) hv(h, h.target && h.target.hp < h.target.maxHp * 0.25 && Math.random() < 0.3 ? 'taunt' : 'atk'); // seyrek: Latince saldırı sözü ya da alay
   if (h.learned.arcane && !extra && !HERO_SKILL && (h.shotN = (h.shotN || 0) + 1) % 4 === 0) // Kadim Bilgi: her 4. küre yakındaki iki düşmana daha bölünür
     for (const o of enemiesNear(e.x, e.y, 90, true).filter(o => o !== e).slice(0, 2)) fireHeroShot(h, o, 0.6, { split: true });
 }
@@ -9253,7 +9254,7 @@ function castUlt(h, x, y) {
   floatText(h.x, h.y - 46, U.name + '!', '#ffe27a');
   h.castT = 0.45; h.ultT = h.ultD = U.anim || ULT_ANIM; h.ultK = h.act; // komutanın güç şeridi (varsa) bu sürede bir kez oynar; ikinci aktifin kendi şeridi _skill2
   G.effects.push({ kind: 'ring', x, y, r: U.r, col: h.def.aura, t: 0, dur: 0.5 });
-  if (HERO_VOICE[h.id]) heroVoice(h, U.bats ? 'bvult2' : 'bvult'); // güç sözü (Latince)
+  if (HERO_VOICE[h.id]) hv(h, U.bats || h.act === 'ult2' ? 'ult2' : 'ult'); // güç sözü (Latince)
   if (U.bats) { // Báthory'nin Kan Yarasaları: kahramandan alana uçar, alanda döner, ısırır (hasar + yavaşlatma), komutan ısırıklarla iyileşir
     G.zones.push({ x, y, r: U.r, dps: roll(U.dps) * k, dtype: 'phys', t: 0, life: U.dur, fxT: 0, kind: 'bats', hx: h.x, hy: h.y - 20, hero: h, slow: U.slow, heal: U.heal, n: U.n, seed: rand(0, 9) }); sfx('bats');
     sfx('whirl'); setTimeout(() => sfx('scream', 1.8), 250);
@@ -14203,12 +14204,16 @@ function drawEnemyPanel() {
 // hsel_<id> seçince (homurtu, ıslık, kıkırtı...), hmove_<id> gönderince (adım, zincir, yarasa, kurt havlaması...)
 // 16 Eki (Caner: "Robin'in sesini beğenmedim, ulumasın, ıslık çalmasın"): BARK_V sürümü (hsel_robin2: iskelet okçu homurtusu + yay gerilmesi,
 // hmove_robin2: yaprakta adım + sadak + pelerin); eski dosyalar duruyor
-const BARK_V = { robin: '2', bathory: '2' }; // 17 Eki: Báthory konuşur (ElevenLabs Lily, varliklar/bathory_ses.py)
+const BARK_V = { robin: '3', bathory: '2', leonidas: '2', merlin: '2' }; // 17 Eki: Báthory konuşur (ElevenLabs Lily, varliklar/bathory_ses.py); 18 Eki: hepsi konuşur (varliklar/komutan_ses.py)
 function heroBark(h, k) { const n = k + '_' + h.id + (BARK_V[h.id] || ''); if (!SOUND[n]) return; if (HERO_VOICE[h.id]) { heroVoice(h, n); return; } sfx(n, null, 1, h); }
 // 17 Eki (Caner: "Báthory alaycı, kibirli bir büyücü; replikler seyrek; saldırı ve büyü sözleri Latince"): konuşan komutanlar. Sözler üst üste binmez
 // (any: herhangi iki söz arası en az sn), gap: aynı türün tekrarı, p: söyleme olasılığı (saldırı sözleri her vuruşta değil)
-const HERO_VOICE = { bathory: { any: 4, hsel_bathory2: { gap: 6, p: 0.7 }, hmove_bathory2: { gap: 10, p: 0.5 }, bvatk: { gap: 22, p: 0.08 }, bvult: { gap: 0, p: 1 }, bvult2: { gap: 0, p: 1 },
-  bvlink: { gap: 25, p: 0.5 }, bvtaunt: { gap: 45, p: 1 }, bvlow: { gap: 30, p: 1 }, bvback: { gap: 0, p: 1 } } };
+// 18 Eki (Caner: "Báthory gibi diğer tüm komutanları seslendir"): Leonidas (Harry), Merlin (George), Robin (Callum); önek HV_P, sözler <önek>atk/ult/ult2/sk/taunt/low/back
+const HV_P = { bathory: 'bv', leonidas: 'lv', merlin: 'mv', robin: 'rv' };
+const heroVoiceCfg = (id, atkP) => { const P = HV_P[id], v = BARK_V[id] || ''; return { any: 4, ['hsel_' + id + v]: { gap: 6, p: 0.7 }, ['hmove_' + id + v]: { gap: 10, p: 0.5 }, [P + 'atk']: { gap: 22, p: atkP },
+  [P + 'ult']: { gap: 0, p: 1 }, [P + 'ult2']: { gap: 0, p: 1 }, [P + 'sk']: { gap: 25, p: 0.5 }, [P + 'link']: { gap: 25, p: 0.5 }, [P + 'taunt']: { gap: 45, p: 1 }, [P + 'low']: { gap: 30, p: 1 }, [P + 'back']: { gap: 0, p: 1 } }; };
+const HERO_VOICE = { bathory: heroVoiceCfg('bathory', 0.08), leonidas: heroVoiceCfg('leonidas', 0.1), merlin: heroVoiceCfg('merlin', 0.08), robin: heroVoiceCfg('robin', 0.06) };
+const hv = (h, k) => HV_P[h.id] ? heroVoice(h, HV_P[h.id] + k) : false;
 function heroVoice(h, n) {
   const V = HERO_VOICE[h.id], c = V && V[n]; if (!c || !SOUND[n]) return false;
   const T = (h.voiceT ||= {}), now = G ? G.t : time;
@@ -14216,7 +14221,7 @@ function heroVoice(h, n) {
   T._any = now; T[n] = now; sfx(n, null, 1, h); return true;
 }
 for (const id of ['leonidas', 'merlin', 'robin', 'bathory']) { const v = BARK_V[id] || ''; SOUND['hsel_' + id + v] = { vol: 0.55, gap: 0.5, max: 1 }; SOUND['hmove_' + id + v] = { vol: 0.5, gap: 0.6, max: 1 }; }
-for (const n of ['bvatk', 'bvult', 'bvult2', 'bvlink', 'bvtaunt', 'bvlow', 'bvback']) SOUND[n] = { vol: 0.62, gap: 0.5, max: 1 }; // Báthory'nin sözleri (heroVoice)
+for (const P of Object.values(HV_P)) for (const n of ['atk', 'ult', 'ult2', 'sk', 'link', 'taunt', 'low', 'back']) SOUND[P + n] = { vol: 0.62, gap: 0.5, max: 1 }; // komutan sözleri (heroVoice)
 function setSel(sel) {
   const old = G.sel;
   const same = old && sel && old.kind === sel.kind && old.plot === sel.plot && old.tower === sel.tower && old.hero === sel.hero && old.enemy === sel.enemy;
@@ -16426,6 +16431,22 @@ function stepHeroPage(dir) { const i = HERO_ORDER.indexOf(heroPageId), n = HERO_
 function heroStatBars(d) {
   return [['Can', d.hp / 520, '#e8434b'], ['Saldırı', ((d.dmg[0] + d.dmg[1]) / 2 / d.rate) / 28, '#ffb347'], ['Hız', d.speed / 135, '#5ad0ff'], ['Menzil', (d.ranged || 40) / 215, '#9be06a']];
 }
+// komutan sayfası videosu: img/hero_panels.mp4 (varliklar/panel_video_isle.py), 2x2 ızgara; video hazır değilse eski çizim (şerit + evcil hayvan)
+const HERO_PANEL_V = { w: 787, h: 480, at: { leonidas: [0, 0], merlin: [1, 0], robin: [0, 1], bathory: [1, 1] }, v: null, seen: 0 };
+function heroPanelVideo(id) {
+  const P = HERO_PANEL_V, q = P.at[id]; if (!q) return null;
+  if (!P.v && typeof document !== 'undefined' && document.createElement('video').canPlayType) {
+    const v = document.createElement('video'); v.muted = true; v.defaultMuted = true; v.loop = true; v.playsInline = true; v.preload = 'auto';
+    v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
+    v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+    v.src = 'img/hero_panels.mp4' + (window.SURUM ? '?v=' + window.SURUM : ''); document.body.appendChild(v); P.v = v;
+    setInterval(() => { if (!v.paused && performance.now() - P.seen > 700) v.pause(); }, 500); // sayfadan çıkınca durur
+  }
+  const v = P.v; if (!v) return null; P.seen = performance.now();
+  if (v.paused) v.play().catch(() => {});
+  if (v.readyState < 2 || !v.videoWidth) return null;
+  return { v, sx: q[0] * P.w, sy: q[1] * P.h };
+}
 function drawHeroPage(id) {
   const st = time - heroPageT, d = HEROES[id], Rr = heroRec(id), pts = recPoints(Rr), open = heroUnlocked(id), sel = team()[0] === id, aide = team()[1] === id;
   if (window.__panelBg) { ctx.fillStyle = '#100816'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); } else menuBackdrop(st);
@@ -16455,6 +16476,8 @@ function drawHeroPage(id) {
   const RX = 606, RY = 114, RW = 332, RH = 412, cx = RX + RW / 2, feet = RY + 184;
   roundRect(RX, RY, RW, RH, 16, 'rgba(8,4,14,0.55)', 'rgba(201,168,101,0.45)', 1.4);
   ctx.save(); ctx.beginPath(); ctx.roundRect(RX + 2, RY + 2, RW - 4, 200, 14); ctx.clip();
+  const PV = !window.__panelBg && heroPanelVideo(id); // 18 Eki (Caner: "komutanlar sayfası süper olmuş"): Wan bekleme videosu (zemin + komutan + evcil hayvan tek parça)
+  if (PV) { if (!open) ctx.filter = 'brightness(0.18) saturate(0)'; ctx.drawImage(PV.v, PV.sx, PV.sy, HERO_PANEL_V.w, HERO_PANEL_V.h, RX + 2, RY + 2, RW - 4, 200); ctx.filter = 'none'; } else {
   { const g = ctx.createRadialGradient(cx, feet - 80, 10, cx, feet - 70, 170); g.addColorStop(0, `rgba(${d.aura || '200,120,255'},0.42)`); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(RX, RY, RW, 204); }
   { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= 0.5 + 0.15 * Math.sin(time * 2); ctx.strokeStyle = `rgba(${d.aura || '200,120,255'},0.6)`; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.ellipse(cx, feet + 2, 92, 16, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
@@ -16467,6 +16490,7 @@ function drawHeroPage(id) {
     ctx.save(); ctx.translate(hx, feet); if (!open) ctx.filter = 'brightness(0.18) saturate(0)';
     if (F) drawFrame(spr(ik), F, Math.floor(time * (F.fps || 12)) % F.n, 172); else { const im = heroSprite(d); if (im) drawSprite(ctx, im, 0, 0, 172 * im.width / im.height); }
     ctx.restore(); }
+  }
   if (!open) drawIcon('lock', cx, feet - 80, 46);
   ctx.restore();
   heroStatBars(d).forEach(([lab, v, col], j) => {
