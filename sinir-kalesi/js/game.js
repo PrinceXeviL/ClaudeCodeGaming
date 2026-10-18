@@ -2306,8 +2306,10 @@ function startLevel(idx, chal = null) {
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
   if (team().includes('merlin')) keep.add('fx_tornado'); // 18 Eki: Kasırga Fırtınası Veo şeridi
+  keep.add('fx_acid'); // 18 Eki: Veba Kazanı asidi
   useStrips(keep);
   if (team().includes('merlin') && ANIM_META.fx_tornado) loadStrip('fx_tornado');
+  if (ANIM_META.fx_acid) loadStrip('fx_acid');
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
   [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
@@ -2683,8 +2685,19 @@ function shakeScreen(amp, dur) {
 // Gülle / ateş yağmuru patlaması: parlama, ateş topu, şok dalgası, toprak parçaları, kıvılcım, duman ve yanık izi
 // veba sıçraması: yeşil bulamaç damlaları, gaz bulutu, birkaç kemik parçası
 // veba sıçraması: çember yok; sıvı yere çarpıp dört bir yana saçılır, düzensiz bir birikinti ve çevresine damla lekeleri kalır
+// 18 Eki (Caner: "yeşil asit daha detaylı, Gemini + video"): Veo şeridi (img/fx_acid, varliklar/veba_asit_isle.py) çarpma yerinde oynar, son kare söner
+const ACID = { k: 1.95, hold: 0.9, fade: 0.7 };
+function drawAcidFx() {
+  const F = ANIM_META.fx_acid, im = F && spr('fx_acid'); if (!im || !G.acidFx) return;
+  const C = F.cols || F.n, R = Math.ceil(F.n / C), sx = im.width / (F.fw * C), sy = im.height / (F.fh * R), dur = F.n / F.fps;
+  for (const a of G.acidFx) {
+    const i = Math.min(F.n - 1, Math.floor(a.t * F.fps)), al = a.t < dur + ACID.hold ? 1 : 1 - (a.t - dur - ACID.hold) / ACID.fade, k = a.r * ACID.k / F.rw;
+    ctx.save(); ctx.globalAlpha = clamp(al, 0, 1); ctx.drawImage(im, (i % C) * F.fw * sx, Math.floor(i / C) * F.fh * sy, F.fw * sx, F.fh * sy, a.x - F.bx * k, a.y - F.by * k, F.fw * k, F.fh * k); ctx.restore();
+  }
+}
 function fxPlagueSplash(x, y, r) {
   const P = G.parts;
+  if (ANIM_META.fx_acid) { loadStrip('fx_acid'); if (spr('fx_acid')) { (G.acidFx ||= []).push({ x, y, r, t: 0 }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return; } }
   for (let i = 0; i < 22; i++) { // yere yakın, yayvan saçılan damlalar
     const a = rand(0, Math.PI * 2), v = rand(50, 150);
     emit(P, { kind: 'dot', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? '#6cc83c' : '#b8f27a', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
@@ -8193,6 +8206,7 @@ function setupProps() {
 }
 function updateProps(dt) {
   updateSurprise(dt); updateSigFx(dt); keepGolemTick(dt);
+  if (G.acidFx) { const F = ANIM_META.fx_acid, end = F ? F.n / F.fps + ACID.hold + ACID.fade : 0; for (const a of G.acidFx) a.t += dt; G.acidFx = G.acidFx.filter(a => a.t < end); }
   if (G.teaT > 0) G.teaT -= dt;
   if (G.zitem && G.zitem.cd > 0) G.zitem.cd -= dt;
   for (const o of G.props || []) {
@@ -21274,7 +21288,7 @@ function drawPlay() {
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  drawPlaguePools(); drawSoulFlames(); drawTornadoes(true); drawSigFx(true);
+  drawPlaguePools(); drawAcidFx(); drawSoulFlames(); drawTornadoes(true); drawSigFx(true);
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) if (!PERF_OFF.has('ent' + k)) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
   drawGasClouds();

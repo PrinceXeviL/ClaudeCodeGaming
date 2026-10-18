@@ -1,0 +1,80 @@
+[
+ {
+  "name": "unit_archer3_shot",
+  "ref": "ham/anim/unit_archer3_ref.png",
+  "prompt": "a cartoon elite skeleton archer in ornate bone armor with a big curved bone bow and a quiver draws an arrow from the quiver, nocks it, raises the bow and pulls the string far back with a big anticipation, aims forward to the right, releases and the arrow flies out to the right, the bow arm recoils, then he lowers the bow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_ghostarcher_shot",
+  "ref": "ham/anim/unit_ghostarcher_ref.png",
+  "prompt": "a cartoon ghostly skeleton archer with a spectral bow draws an arrow from the quiver, nocks it, raises the bow and pulls the string far back with a big anticipation, aims forward to the right, releases and the arrow flies out to the right, the bow arm recoils, then he lowers the bow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_xbow1_shot",
+  "ref": "ham/anim/unit_xbow1_ref.png",
+  "prompt": "a cartoon skeleton crossbowman with a wooden crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_xbow2_shot",
+  "ref": "ham/anim/unit_xbow2_ref.png",
+  "prompt": "a cartoon skeleton crossbowman in bone armor with a heavy crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_xbow3_shot",
+  "ref": "ham/anim/unit_xbow3_ref.png",
+  "prompt": "a cartoon elite skeleton crossbowman in ornate bone armor with a big heavy crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_ghostxbow_shot",
+  "ref": "ham/anim/unit_ghostxbow_ref.png",
+  "prompt": "a cartoon ghostly skeleton crossbowman with a heavy spectral crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 21
+ },
+ {
+  "name": "unit_archer1_walk",
+  "ref": "ham/anim/unit_archer1_ref.png",
+  "prompt": "a cartoon skeleton archer with a simple wooden bow and a small quiver marches forward in place with a bouncy cartoon walk, the knees lift and the feet stomp down, the body bobs up and down, the bow held in one hand, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 33
+ },
+ {
+  "name": "unit_archer2_walk",
+  "ref": "ham/anim/unit_archer2_ref.png",
+  "prompt": "a cartoon skeleton archer in light bone armor with a recurve bow and a quiver marches forward in place with a bouncy cartoon walk, the knees lift and the feet stomp down, the body bobs up and down, the bow held in one hand, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 33
+ },
+ {
+  "name": "unit_archer3_walk",
+  "ref": "ham/anim/unit_archer3_ref.png",
+  "prompt": "a cartoon elite skeleton archer in ornate bone armor with a big curved bone bow and a quiver marches forward in place with a bouncy cartoon walk, the knees lift and the feet stomp down, the body bobs up and down, the bow held in one hand, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 33
+ }
+]
