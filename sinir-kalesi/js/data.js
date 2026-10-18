@@ -1537,7 +1537,8 @@ if (NECRO) {
     if (r === 2) ENEMIES[t + '_y'].ab = Object.assign({}, d.ab, { howl: { cd: 11, r: 85, say: 'Borazan!', soft: true } });
   }
   ENEMIES.legion_k.desc = 'Her dört lejyonerin kıdemlisi: önde yürür, komut verir, bölük başındayken iki kat canlıdır. Çevresindeki lejyonerler %15 sert vurur ve %15 az hasar alır. Ok gelince "Kalkanlar!" der: bütün bölük birden kalkan duvarı kurar (kalkanlılar tek başına da ok yiyince kalkan kaldırır), oklar %30-80 az işler ya da seker, ama yavaş yürürler. O ölünce bu avantajlar kaybolur'; // 17 Eki: bölük komutanı (game.js CAPTAIN)
-  ENEMIES.heavy_y.hp = Math.round(ENEMIES.heavy_y.hp * 0.7 * 0.8); // 16 Eki (Caner): Ağır Piyade Yüzbaşı %30 daha az canlı; 18 Eki: %20 daha
+  ENEMIES.heavy_y.hp = Math.round(ENEMIES.heavy_y.hp * 0.7 * 0.8 * 0.85); // 16 Eki (Caner): Ağır Piyade Yüzbaşı %30 daha az canlı; 18 Eki: %20 + %15 daha
+  ENEMIES.heavy_k.hp = Math.round(ENEMIES.heavy_k.hp * 0.7); // 18 Eki (Caner: "kıdemli ve yüzbaşı ölmek nedir bilmiyor"): 27. bölümde kıdemli 5075 / yüzbaşı 4440 / er 3172 candı; kıdemli %30 az
   // dalgalara rütbe dağıtımı (tohumlu, her oynanışta aynı): 2. bölümden itibaren kıdemliler, 5. bölümde yüzbaşılar.
   // Kıdemli oranı bölüm ve dalga ilerledikçe artar; yüzbaşı her dalgada 1-3 tane.
   LEVELS.forEach((lv, idx) => {
