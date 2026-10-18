@@ -994,10 +994,10 @@
  },
  "unit_gulyabani_die": {
   "n": 33,
-  "fw": 233,
-  "fh": 175,
-  "base": 0.0138,
-  "ch": 0.9126,
+  "fw": 303,
+  "fh": 179,
+  "base": 0.0134,
+  "ch": 0.8926,
   "sh": 1
  },
  "hero_wren_walk": {
@@ -1738,10 +1738,10 @@
  },
  "enemy_severus3_die": {
   "n": 33,
-  "fw": 249,
+  "fw": 225,
   "fh": 183,
-  "base": 0.0132,
-  "ch": 0.8725
+  "base": 0.013,
+  "ch": 0.8742
  },
  "enemy_legion_idle": {
   "n": 32,
@@ -2801,27 +2801,6 @@
   "base": 0.0146,
   "ch": 0.9708
  },
- "enemy_drummer_idlex": {
-  "n": 32,
-  "fw": 122,
-  "fh": 165,
-  "base": 0.0165,
-  "ch": 0.9669
- },
- "enemy_severus3_diex": {
-  "n": 33,
-  "fw": 225,
-  "fh": 183,
-  "base": 0.013,
-  "ch": 0.8742
- },
- "unit_gulyabani_diex": {
-  "n": 33,
-  "fw": 303,
-  "fh": 179,
-  "base": 0.0134,
-  "ch": 0.8926
- },
  "tower_xbow_2_collapse": {
   "n": 49,
   "fw": 239,
@@ -2848,5 +2827,265 @@
   "fh": 128,
   "cols": 12,
   "fps": 24
+ },
+ "tower_xbow_1_collapse": {
+  "n": 49,
+  "fw": 295,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 66.2,
+  "bx": 147.2,
+  "by": 148.4
+ },
+ "tower_xbow_3_collapse": {
+  "n": 49,
+  "fw": 250,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 80.4,
+  "bx": 147.2,
+  "by": 148.4
+ },
+ "tower_archer_bow_collapse": {
+  "n": 49,
+  "fw": 249,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 75.4,
+  "bx": 147.5,
+  "by": 148.4
+ },
+ "tower_archer_fan_collapse": {
+  "n": 49,
+  "fw": 249,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 81.1,
+  "bx": 147.5,
+  "by": 148.4
+ },
+ "tower_barracks_1_collapse": {
+  "n": 49,
+  "fw": 252,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 72.2,
+  "bx": 146.6,
+  "by": 148.4
+ },
+ "tower_barracks_2_collapse": {
+  "n": 49,
+  "fw": 245,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 74.0,
+  "bx": 146.8,
+  "by": 148.4
+ },
+ "tower_barracks_3_collapse": {
+  "n": 49,
+  "fw": 249,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 76.1,
+  "bx": 147.2,
+  "by": 148.4
+ },
+ "tower_barracks_shield_collapse": {
+  "n": 49,
+  "fw": 249,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 76.1,
+  "bx": 147.2,
+  "by": 148.4
+ },
+ "tower_barracks_blade_collapse": {
+  "n": 49,
+  "fw": 251,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 75.8,
+  "bx": 147.0,
+  "by": 148.4
+ },
+ "tower_mage_1_collapse": {
+  "n": 49,
+  "fw": 261,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 65.5,
+  "bx": 146.8,
+  "by": 148.4
+ },
+ "tower_mage_2_collapse": {
+  "n": 49,
+  "fw": 247,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 62.0,
+  "bx": 145.7,
+  "by": 148.4
+ },
+ "tower_mage_3_collapse": {
+  "n": 49,
+  "fw": 252,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 73.5,
+  "bx": 147.5,
+  "by": 148.4
+ },
+ "tower_mage_drain_collapse": {
+  "n": 49,
+  "fw": 253,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 71.5,
+  "bx": 146.6,
+  "by": 148.4
+ },
+ "tower_mage_ghost_collapse": {
+  "n": 49,
+  "fw": 253,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 72.6,
+  "bx": 146.8,
+  "by": 148.4
+ },
+ "tower_artillery_1_collapse": {
+  "n": 49,
+  "fw": 295,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 116.5,
+  "bx": 146.8,
+  "by": 148.4
+ },
+ "tower_artillery_2_collapse": {
+  "n": 49,
+  "fw": 251,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 83.2,
+  "bx": 147.2,
+  "by": 148.4
+ },
+ "tower_artillery_3_collapse": {
+  "n": 49,
+  "fw": 253,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 81.1,
+  "bx": 147.2,
+  "by": 148.4
+ },
+ "tower_artillery_catapult_collapse": {
+  "n": 49,
+  "fw": 295,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 72.6,
+  "bx": 146.8,
+  "by": 148.4
+ },
+ "tower_artillery_plague_collapse": {
+  "n": 49,
+  "fw": 266,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 93.9,
+  "bx": 147.5,
+  "by": 148.4
+ },
+ "tower_artillery_boneball_collapse": {
+  "n": 49,
+  "fw": 252,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 71.5,
+  "bx": 147.3,
+  "by": 148.4
+ },
+ "tower_artillery_bonemortar_collapse": {
+  "n": 49,
+  "fw": 251,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 77.9,
+  "bx": 147.3,
+  "by": 148.4
+ },
+ "tower_altar_1_collapse": {
+  "n": 49,
+  "fw": 196,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 55.7,
+  "bx": 95.8,
+  "by": 146.6
+ },
+ "tower_altar_2_collapse": {
+  "n": 49,
+  "fw": 225,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 62.4,
+  "bx": 116.2,
+  "by": 144.6
+ },
+ "tower_altar_3_collapse": {
+  "n": 49,
+  "fw": 319,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 62.7,
+  "bx": 192.6,
+  "by": 145.2
+ },
+ "tower_altar_rite_collapse": {
+  "n": 49,
+  "fw": 231,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 61.0,
+  "bx": 116.0,
+  "by": 143.6
+ },
+ "tower_altar_blight_collapse": {
+  "n": 49,
+  "fw": 250,
+  "fh": 170,
+  "cols": 10,
+  "fps": 16,
+  "tw": 53.6,
+  "bx": 118.0,
+  "by": 143.0
  }
 }

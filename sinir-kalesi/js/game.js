@@ -3820,7 +3820,7 @@ function giveCrystals(e) {
   if (G.diffKey === 'usta') n *= CRYSTAL.usta;
   n = Math.round(n); G.crystalGain = (G.crystalGain || 0) + n;
   if (!G.admin) { save.crystal = (save.crystal || 0) + n; persist(); cnt('crystal', n); } // Deneme Alanı: gösterilir, kaydedilmez
-  floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 40) - 14, `+${n} KRİSTAL`, '#e0b8ff');
+  floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 40) - 14, `+${n} KRİSTAL`, '#ff9a8a');
   for (let i = 0; i < 18; i++) { const a = rand(0, Math.PI * 2), v = rand(40, 120); emit(G.parts, { kind: 'glow', add: true, x: e.x, y: e.y - 20, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, col: i % 2 ? '200,140,255' : '140,255,200', s0: rand(3, 5), s1: 0.5, life: rand(0.5, 0.9) }); }
   sfx('coins');
   return n;
@@ -7725,7 +7725,7 @@ function drawAchievements() {
     ctx.restore();
   });
   ctx.restore();
-  for (const f of ACH_FX) { const k = (time - f.t) / 1.2; if (k > 1) continue; ctx.save(); ctx.globalAlpha = 1 - k; txt(f.txt, f.x, f.y - 30 - 40 * k, 18, '#e0b8ff', 'center', '400', FONT_T); ctx.restore(); }
+  for (const f of ACH_FX) { const k = (time - f.t) / 1.2; if (k > 1) continue; ctx.save(); ctx.globalAlpha = 1 - k; txt(f.txt, f.x, f.y - 30 - 40 * k, 18, '#ffb4a8', 'center', '400', FONT_T); ctx.restore(); }
   while (ACH_FX.length && time - ACH_FX[0].t > 1.2) ACH_FX.shift();
   save.achNew = 0;
 }
@@ -22601,6 +22601,8 @@ window.__game = {
     return { i: T.i, n: T.steps.length, card: !!T.card, on: !!T.on, text: S ? (typeof S.text === 'function' ? S.text() : S.text) : null, why: T.why, at, cl: at && { x: at.x * view.scale + view.ox, y: at.y * view.scale + view.oy }, wave: G.wave, gold: G.gold, overlay, sel: G.sel && G.sel.kind, mode: G.mode && G.mode.kind };
   },
   giveGear(hid, n = 1, tries = 3) { const out = []; for (let i = 0; i < n; i++) out.push(addGear(makeGear(hid, tries))); persist(); return out.map(g => gearName(g)); }, // test: komutana eşya
+  hurtS(s, n = 1e6) { damageSoldier(s, n, null); }, // test: askere hasar (ölüm animasyonu)
+  openHatchT() { const h = G && G.hatches.find(q => !q.grave && q.state === 'closed'); if (!h) return false; G.gold += HATCH.cost; return openHatch(h); }, // test: mahzen kapağından gulyabani
   openGrave() { const h = G && G.hatches.find(q => q.grave && q.state === 'closed'); if (!h) return false; G.gold += GRAVE.cost; return openHatch(h); }, // test: mezar bekçisini kaldır
   cut: (n) => spr(n) && ARMS[n] ? cutImage(spr(n), ARMS[n]) : null, ARMS,
   // arsa denetimi (test): yolun çizilen şekline (koyu kenar dahil) taşan arsaları bulur, en yakın uygun yeri önerir
