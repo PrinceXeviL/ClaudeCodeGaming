@@ -16324,6 +16324,7 @@ const isPremium = () => !!save.premium;
 // 18 Eki: sonraki bölüm: ücretsiz kısmın sonunda (10. bölüm, finale) bir kez merak sahnesi; tam oyun yoksa vitrin (önceden zafer ekranından kilitli bölüme geçilebiliyordu)
 function nextLevel() {
   const i = G.idx + 1;
+  if (!G.chal && !G.admin && G.idx >= 1 && cineReady('kahve')) { startCine('kahve', () => nextLevel()); return; } // ev sahnesi (bir kez)
   if (G.lv.finale && !G.chal && !(save.teaser || {}).f10) { save.teaser = Object.assign(save.teaser || {}, { f10: 1 }); persist(); screen = 'teaser'; screenT = time; TEASER.next = i; return; }
   if (needsPremium(i)) { menuBack = 'map'; shopTab = 'full'; screen = 'shop'; screenT = time; return; }
   startLevel(i);
@@ -18335,7 +18336,7 @@ function drawEvent() {
 // 18 Eki (Caner: "hikâye: açılış sahnesi, boss giriş gösterisi, sefer sonu ödül sahnesi"): Veo sahne videoları (img/cine_*.mp4, varliklar/hikaye_video_isle.py).
 // Videoda yazı yok; altyazı kodla (6 dile çevrilir). Dokununca sonraki plan, ATLA bütün sahneyi geçer, her sahne bir kez (save.cine).
 // Dosyası olmayan plan atlanır (CINE_FILES); sahnenin hiç planı yoksa eski yol (çizgi roman, kodla boss gösterisi) sürer.
-const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c']); // 18 Eki: video geldikçe eklenir (açılış tamam)
+const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve']); // 18 Eki: video geldikçe eklenir (açılış tamam)
 const CINE = {
   intro: [
     { v: 'cine_acilis_a', sub: [[0.4, 4.4, 'Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.'], [4.7, 9.4, 'Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.']] },
@@ -18345,6 +18346,8 @@ const CINE = {
   boss_gloriosus: [{ v: 'cine_boss_gloriosus', title: 'GENERAL GLORİOSUS', sub: [[1.2, 4.6, 'İmparatorluğun Güneş Generali'], [4.9, 9.4, '"Güneş adına! Bu kemik yığınını toz edin!"']] }],
   boss_severus: [{ v: 'cine_boss_severus', title: 'BÜYÜK ENGİZİTÖR SEVERUS', sub: [[1.2, 4.6, 'Çaydanlık hırsızı'], [4.9, 9.4, '"Kutsal ışık seni ve çaydanlığını arındıracak!"']] }],
   end1: [{ v: 'cine_sefer1_sonu', sub: [[0.4, 4.6, 'Gloriosus düştü. Altın miğferi artık Mortimer\'ın rafında.'], [4.9, 9.4, 'Ama İmparatorluk pes etmez. Engizisyon yola çıktı bile...']] }],
+  // 18 Eki (Caner: Mortimer'ın evi, bölümler arası sahneler): terasta kahve servisi; ilk zaferden sonra "sonraki bölüm"de bir kez
+  kahve: [{ v: 'cine_kahve', sub: [[0.4, 4.4, 'Bir zafer daha. Mortimer için bu, kahve vakti demek.'], [4.8, 9.6, '"Şekersiz, Bartholomew. Ve bu sefer dökme."']] }],
   end2: [{ v: 'cine_sefer2_sonu', sub: [[0.4, 4.6, 'Çaydanlık evine döndü. Lanetli Sınır yine sessiz.'], [4.9, 9.4, 'Şimdilik.']] }],
 };
 let CINE_S = null;

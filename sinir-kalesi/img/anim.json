@@ -3124,5 +3124,285 @@
   "fh": 172,
   "base": 0.0146,
   "ch": 0.9319
+ },
+ "enemy_champion_sig1": {
+  "n": 33,
+  "fw": 245,
+  "fh": 167,
+  "base": 0.0145,
+  "ch": 0.9566
+ },
+ "enemy_champion_atk2": {
+  "n": 33,
+  "fw": 203,
+  "fh": 173,
+  "base": 0.0146,
+  "ch": 0.927
+ },
+ "enemy_hierophant_sig1": {
+  "n": 33,
+  "fw": 131,
+  "fh": 174,
+  "base": 0.0139,
+  "ch": 0.9215
+ },
+ "enemy_hierophant_atk2": {
+  "n": 33,
+  "fw": 183,
+  "fh": 166,
+  "base": 0.0147,
+  "ch": 0.9633
+ },
+ "enemy_centurion_sig1": {
+  "n": 33,
+  "fw": 216,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9516
+ },
+ "enemy_centurion_atk2": {
+  "n": 33,
+  "fw": 286,
+  "fh": 170,
+  "base": 0.0146,
+  "ch": 0.9392
+ },
+ "enemy_shadowmaster_sig1": {
+  "n": 33,
+  "fw": 246,
+  "fh": 184,
+  "base": 0.0144,
+  "ch": 0.8705
+ },
+ "enemy_shadowmaster_atk2": {
+  "n": 33,
+  "fw": 232,
+  "fh": 172,
+  "base": 0.0143,
+  "ch": 0.9287
+ },
+ "enemy_cavcaptain_sig1": {
+  "n": 33,
+  "fw": 154,
+  "fh": 175,
+  "base": 0.0138,
+  "ch": 0.9149
+ },
+ "enemy_cavcaptain_atk2": {
+  "n": 33,
+  "fw": 214,
+  "fh": 179,
+  "base": 0.0141,
+  "ch": 0.8918
+ },
+ "enemy_ironwarden_sig2": {
+  "n": 33,
+  "fw": 147,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9518
+ },
+ "enemy_ironwarden_block": {
+  "n": 33,
+  "fw": 172,
+  "fh": 174,
+  "base": 0.0145,
+  "ch": 0.9177
+ },
+ "enemy_gloriosus1_sig2": {
+  "n": 33,
+  "fw": 234,
+  "fh": 173,
+  "base": 0.0136,
+  "ch": 0.9274
+ },
+ "enemy_gloriosus2_sig1": {
+  "n": 33,
+  "fw": 136,
+  "fh": 174,
+  "base": 0.0137,
+  "ch": 0.9199
+ },
+ "enemy_gloriosus2_atk2": {
+  "n": 33,
+  "fw": 161,
+  "fh": 176,
+  "base": 0.0146,
+  "ch": 0.9075
+ },
+ "enemy_gloriosus3_sig1": {
+  "n": 33,
+  "fw": 146,
+  "fh": 187,
+  "base": 0.0141,
+  "ch": 0.8541
+ },
+ "enemy_gloriosus3_atk2": {
+  "n": 33,
+  "fw": 239,
+  "fh": 193,
+  "base": 0.0144,
+  "ch": 0.8273
+ },
+ "enemy_malleus_sig1": {
+  "n": 33,
+  "fw": 281,
+  "fh": 167,
+  "base": 0.0146,
+  "ch": 0.9561
+ },
+ "enemy_malleus_atk2": {
+  "n": 33,
+  "fw": 243,
+  "fh": 167,
+  "base": 0.0146,
+  "ch": 0.9585
+ },
+ "enemy_hubertus_sig1": {
+  "n": 33,
+  "fw": 247,
+  "fh": 173,
+  "base": 0.0143,
+  "ch": 0.9236
+ },
+ "enemy_hubertus_atk2": {
+  "n": 33,
+  "fw": 251,
+  "fh": 174,
+  "base": 0.0143,
+  "ch": 0.9189
+ },
+ "enemy_campanus_sig1": {
+  "n": 33,
+  "fw": 187,
+  "fh": 176,
+  "base": 0.0139,
+  "ch": 0.9072
+ },
+ "enemy_campanus_atk2": {
+  "n": 33,
+  "fw": 192,
+  "fh": 180,
+  "base": 0.0139,
+  "ch": 0.8886
+ },
+ "enemy_agnes_sig1": {
+  "n": 33,
+  "fw": 205,
+  "fh": 173,
+  "base": 0.0145,
+  "ch": 0.9229
+ },
+ "enemy_agnes_atk2": {
+  "n": 33,
+  "fw": 241,
+  "fh": 180,
+  "base": 0.0146,
+  "ch": 0.8881
+ },
+ "enemy_ignis_sig1": {
+  "n": 33,
+  "fw": 162,
+  "fh": 180,
+  "base": 0.0132,
+  "ch": 0.8896
+ },
+ "enemy_ignis_atk2": {
+  "n": 33,
+  "fw": 189,
+  "fh": 172,
+  "base": 0.0144,
+  "ch": 0.9329
+ },
+ "enemy_lucia_sig1": {
+  "n": 33,
+  "fw": 199,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.95
+ },
+ "enemy_lucia_atk2": {
+  "n": 33,
+  "fw": 196,
+  "fh": 166,
+  "base": 0.0146,
+  "ch": 0.9659
+ },
+ "enemy_colossus_sig1": {
+  "n": 33,
+  "fw": 226,
+  "fh": 172,
+  "base": 0.0142,
+  "ch": 0.9314
+ },
+ "enemy_colossus_atk2": {
+  "n": 33,
+  "fw": 251,
+  "fh": 176,
+  "base": 0.0139,
+  "ch": 0.9072
+ },
+ "enemy_godfrey_sig1": {
+  "n": 33,
+  "fw": 196,
+  "fh": 177,
+  "base": 0.0136,
+  "ch": 0.9048
+ },
+ "enemy_godfrey_atk2": {
+  "n": 33,
+  "fw": 301,
+  "fh": 167,
+  "base": 0.0146,
+  "ch": 0.9562
+ },
+ "enemy_cathedral_sig1": {
+  "n": 33,
+  "fw": 165,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.95
+ },
+ "enemy_severus_sig1": {
+  "n": 33,
+  "fw": 212,
+  "fh": 182,
+  "base": 0.0133,
+  "ch": 0.8803
+ },
+ "enemy_severus_atk2": {
+  "n": 33,
+  "fw": 200,
+  "fh": 168,
+  "base": 0.0145,
+  "ch": 0.9542
+ },
+ "enemy_severus3_sig1": {
+  "n": 33,
+  "fw": 210,
+  "fh": 181,
+  "base": 0.0137,
+  "ch": 0.8815
+ },
+ "enemy_severus3_atk2": {
+  "n": 33,
+  "fw": 196,
+  "fh": 180,
+  "base": 0.014,
+  "ch": 0.8881
+ },
+ "enemy_gloriosus1_skill": {
+  "n": 33,
+  "fw": 209,
+  "fh": 169,
+  "base": 0.0142,
+  "ch": 0.948
+ },
+ "enemy_cathedral_idle": {
+  "n": 32,
+  "fw": 168,
+  "fh": 165,
+  "base": 0.0147,
+  "ch": 0.9707
  }
 }
