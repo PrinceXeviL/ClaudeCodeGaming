@@ -3868,6 +3868,7 @@ function bloodShare(h, amt) {
 const TEXTS = { max: 4, r: 46, recent: 0.6, size: 12.5, impSize: 15, shoutP: 0.2, shoutGap: 14 };
 function floatText(x, y, text, col, imp = false) {
   if (!imp) { if (G.floaters.filter(f => !f.imp).length >= TEXTS.max) return; if (G.floaters.some(f => f.t < TEXTS.recent && Math.abs(f.x - x) < TEXTS.r && Math.abs(f.y - y) < TEXTS.r * 0.6)) return; }
+  else for (let k = 0; k < 4 && G.floaters.some(f => f.t < 1.2 && Math.abs(f.x - x) < TEXTS.r * 2.2 && Math.abs(f.y - y) < 17); k++) y -= 18; // 19 Eki: önemli yazı yakındaki yazının üstüne binmesin, bir satır yukarı
   G.floaters.push({ x, y, text, col, t: 0, imp });
 }
 // düşman sözleri (savaş çığlığı, kıdemli komutları) seyrek: TEXTS.shoutP şansla ve bir önceki sözden TEXTS.shoutGap sn sonra
@@ -16017,7 +16018,7 @@ function drawCastle() {
     ctx.moveTo(hx, hy); ctx.bezierCurveTo(hx - 6, hy - 4, hx - 4, hy - 9, hx, hy - 6); ctx.bezierCurveTo(hx + 4, hy - 9, hx + 6, hy - 4, hx, hy); ctx.fill();
     ctx.fillStyle = '#4a1010'; ctx.fillRect(c.x - bw / 2 + 2, by - 2, bw, 5);
     ctx.fillStyle = ratio > 0.6 ? '#5bd35b' : ratio > 0.3 ? '#f2c230' : '#e8434b';
-    ctx.fillRect(c.x - bw / 2 + 2, by - 2, bw * ratio, 5);
+    ctx.fillRect(c.x - bw / 2 + 2, by - 2, bw * clamp(ratio, 0, 1), 5); // 19 Eki: can üst sınırı aşınca (serbest mod) çubuk ekran boyu uzuyordu
   }
 }
 
