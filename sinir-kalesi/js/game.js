@@ -10102,7 +10102,7 @@ function update(dt) {
   for (const d of G.decals) d.t += dt;
   G.decals = G.decals.filter(d => d.t < d.life);
   G.shakeT = Math.max(0, G.shakeT - dt);
-  G.ambT -= dt; ambientExtra(dt);
+  G.ambT -= dt; ambientExtra(dt); updateLevelBats(dt);
   if (G.ambT <= 0) { // havada süzülen polen / ateş böcekleri / kar taneleri / kor
     const th = THEMES[G.lv.theme];
     if (G.weather) {
@@ -20902,6 +20902,8 @@ function mapAmbient(E, V, dt) {
   }
   MAPFX.bats = MAPFX.bats.filter(b => b.x > V[0] - 120 && b.x < V[2] + 120);
   for (const b of MAPFX.bats) { b.x += b.v * dt; b.y += Math.sin(time * b.w + b.ph) * 22 * dt; drawBatMap(b.x, b.y + Math.sin(time * 7 + b.ph) * 2, b.v > 0 ? 1 : -1, time * 26 + b.ph, b.s); }
+  // 20 Eki (Caner): haritadaki yarasalar da ses çıkarsın: sürü görünürken 2,5-4,5 sn'de bir kanat + cıyaklama
+  if (MAPFX.bats.some(b => b.x > V[0] && b.x < V[2])) { if ((MAPFX.batSfx = (MAPFX.batSfx ?? 0) - dt) <= 0) { MAPFX.batSfx = rand(2.5, 4.5); sfx('bats', rand(1.0, 1.25), BAT_AMB.vol); } } else MAPFX.batSfx = 0;
   // kovalamaca: fare önde kaçar, peşinde ikinci bir fare (15 Eki, Caner: köpek olmasın)
   if (!MAPFX.chase && time > MAPFX.nextChase) {
     MAPFX.nextChase = time + rand(AMB.chase[0], AMB.chase[1]);
@@ -21627,6 +21629,28 @@ function drawPondFx(list) {
 const AMB_LEAF = { cursed: ['#9a8a50', '#a8763e', '#7e8a4a'], bog: ['#8a9a56', '#9a8a4e'], graveyard: ['#a07a46', '#8a7a50'], ravenwood: ['#c0662c', '#d88a38', '#a04a22'], blacklake: ['#8a9088', '#9a9a86'],
   plague: ['#a89a4a', '#b08a46'], monastery: ['#a8864a', '#c09048'] }; // koyu zeminde seçilsin diye açık, solgun güz renkleri
 const AMB_ASH = { necrogate: '200,190,210', ossuary: '220,210,190', bloodmoon: '220,170,170' };
+// 20 Eki (Caner): bataklık, karanlık orman ve gece bölümlerinde ara ara yarasa sürüsü gökten geçer, sesiyle
+const BAT_AMB = { themes: ['cursed', 'bog', 'ravenwood', 'bloodmoon', 'blacklake'], gap: [14, 26], first: [4, 9], n: [4, 8], v: [70, 105], s: [1.15, 1.5], vol: 0.5, shadow: 46, sfx: [2.2, 3.6] };
+function batAmbOn() { return G.weather === 'night' || BAT_AMB.themes.includes(G.lv && G.lv.theme); }
+function updateLevelBats(dt) {
+  if (!batAmbOn()) return;
+  const B = G.ambBats || (G.ambBats = { list: [], next: rand(BAT_AMB.first[0], BAT_AMB.first[1]), sfxT: 0 });
+  if ((B.next -= dt) <= 0) {
+    B.next = rand(BAT_AMB.gap[0], BAT_AMB.gap[1]); const l = Math.random() < 0.5, y0 = VIS.t + VIS.h * rand(0.1, 0.5), n = BAT_AMB.n[0] + Math.floor(Math.random() * (BAT_AMB.n[1] - BAT_AMB.n[0] + 1)), v = rand(BAT_AMB.v[0], BAT_AMB.v[1]);
+    for (let i = 0; i < n; i++) B.list.push({ x: (l ? VIS.l - 20 : VIS.l + VIS.w + 20) - (l ? 1 : -1) * i * rand(14, 34), y: y0 + rand(-35, 35), v: (l ? 1 : -1) * v * rand(0.9, 1.1), ph: rand(0, 6), w: rand(1.6, 3.2), s: rand(BAT_AMB.s[0], BAT_AMB.s[1]) });
+  }
+  B.list = B.list.filter(b => b.x > VIS.l - 260 && b.x < VIS.l + VIS.w + 260);
+  for (const b of B.list) { b.x += b.v * dt; b.y += Math.sin(G.t * b.w + b.ph) * 26 * dt; }
+  const vis = B.list.filter(b => b.x > VIS.l && b.x < VIS.l + VIS.w);
+  if (vis.length) { if ((B.sfxT -= dt) <= 0) { B.sfxT = rand(BAT_AMB.sfx[0], BAT_AMB.sfx[1]); const c = vis[Math.floor(vis.length / 2)]; sfx('bats', rand(1.0, 1.25), BAT_AMB.vol, c); } } else B.sfxT = 0;
+}
+function drawLevelBats() {
+  const B = G.ambBats; if (!B || !B.list.length) return;
+  ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.beginPath(); // yerdeki soluk gölge: yarasanın havada uçtuğu belli olsun
+  for (const b of B.list) { const gx = b.x + 10, gy = b.y + BAT_AMB.shadow; ctx.moveTo(gx + 6 * b.s, gy); ctx.ellipse(gx, gy, 6 * b.s, 1.8 * b.s, 0, 0, Math.PI * 2); }
+  ctx.fill();
+  for (const b of B.list) drawBatMap(b.x, b.y + Math.sin(G.t * 7 + b.ph) * 2.5, b.v > 0 ? 1 : -1, G.t * 24 + b.ph, b.s);
+}
 function ambientExtra(dt) {
   if (!ambOn() || G.weather) return;
   if ((G.leafT = (G.leafT ?? 1) - dt) > 0) return;
@@ -22004,7 +22028,7 @@ function drawPlay() {
   drawMenuRange();
   drawEnemyRing();
   ctx.restore();
-  if (!PERF_OFF.has('weather')) drawWeather();
+  if (!PERF_OFF.has('weather')) drawWeather(); drawLevelBats();
   if (!PERF_OFF.has('atmo')) drawAtmo();
   drawWhiteFlash();
   drawBloodMoon();
