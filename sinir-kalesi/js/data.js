@@ -1794,3 +1794,5 @@ const KEEP_UP = [
   { id: 'k2', name: 'Muhafız Balkonu', desc: 'Kale okçuları 3. kademeden başlar (3 okçu, kritik vuruş) · +2 can', cost: 30, lvl: 2, lives: 2 },
   { id: 'k3', name: 'Kapı Golemi', desc: 'Her bölüm başında kalenin kapısında Ceset Golemi kalkar; ölürse 30 sn sonra yeniden', cost: 50, golem: true },
 ];
+// 20 Eki (Caner): ahşap kuşatma araçları ateşe çok zayıf (game.js WOOD: yanma ×2, süre ×1,5)
+for (const k of ['ram', 'catapult', 'siegetower', 'cathedral']) if (ENEMIES[k]) ENEMIES[k].wood = true;

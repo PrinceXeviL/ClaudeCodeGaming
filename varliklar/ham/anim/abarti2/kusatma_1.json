@@ -1,0 +1,58 @@
+[
+ {
+  "name": "enemy_ram_walkA",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a golden lion head ram and a red shingled roof, pushed by Roman legionaries, rolls forward slowly in place: the big wooden wheels turn steadily, the legionaries lean into it and walk with steady pushing steps, their legs moving, the hanging ram sways very slightly on its ropes. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 61,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_ram_walkB",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a golden lion head ram and a red shingled roof, pushed by Roman legionaries, rolls forward slowly in place: the big wooden wheels turn steadily, the legionaries lean into it and walk with steady pushing steps, their legs moving, the hanging ram sways very slightly on its ropes. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 83,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_ram_atkA",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a golden lion head ram and a red shingled roof stands still while the legionaries inside pull the heavy ram log back on its ropes, hold it for a moment, then swing it forward hard so the lion head slams into a gate on the right with a strong impact, the ram bounces back a little and swings back to rest exactly in the starting pose. The cart and roof stay still, only the hanging ram log swings and the soldiers pull. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 61
+ },
+ {
+  "name": "enemy_ram_atkB",
+  "ref": "ham/anim/enemy_ram_ref.png",
+  "prompt": "a cartoon wooden siege battering ram cart with a golden lion head ram and a red shingled roof stands still while the legionaries inside pull the heavy ram log back on its ropes, hold it for a moment, then swing it forward hard so the lion head slams into a gate on the right with a strong impact, the ram bounces back a little and swings back to rest exactly in the starting pose. The cart and roof stay still, only the hanging ram log swings and the soldiers pull. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 83
+ },
+ {
+  "name": "enemy_catapult_walkA",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart with a red banner and a soldier walking behind it pushing, rolls forward slowly in place: the four wooden wheels turn steadily, the soldier walks with steady pushing steps, the banner flutters gently. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 61,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_catapult_walkB",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart with a red banner and a soldier walking behind it pushing, rolls forward slowly in place: the four wooden wheels turn steadily, the soldier walks with steady pushing steps, the banner flutters gently. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 83,
+  "cycle": true,
+  "loop_lo": 16
+ }
+]

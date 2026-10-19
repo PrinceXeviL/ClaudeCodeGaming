@@ -1,0 +1,58 @@
+[
+ {
+  "name": "enemy_catapult_atkA",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart with a red banner stands still and fires: the soldier pulls the release lever, the throwing arm swings up fast and hurls the round stone up and away to the right, the stone flies out of the frame, the arm slams against the padded crossbar and stops with a short shake, then the soldier cranks the winch and the arm is slowly pulled back down and he places a new round stone in the cup, back exactly to the starting pose. Only the throwing arm, the winch and the soldier move. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 61
+ },
+ {
+  "name": "enemy_catapult_atkB",
+  "ref": "ham/anim/enemy_catapult_ref.png",
+  "prompt": "a cartoon wooden catapult cart with a red banner stands still and fires: the soldier pulls the release lever, the throwing arm swings up fast and hurls the round stone up and away to the right, the stone flies out of the frame, the arm slams against the padded crossbar and stops with a short shake, then the soldier cranks the winch and the arm is slowly pulled back down and he places a new round stone in the cup, back exactly to the starting pose. Only the throwing arm, the winch and the soldier move. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 83
+ },
+ {
+  "name": "enemy_siegetower_walkA",
+  "ref": "ham/anim/enemy_siegetower_ref.png",
+  "prompt": "a tall cartoon wooden siege tower with red painted shields, a golden lion head and red banners on top, pushed from inside by Roman legionaries, rolls forward slowly in place: the big wooden wheels turn steadily, the legionaries at the bottom walk with steady pushing steps, the banners flutter gently. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 61,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_siegetower_walkB",
+  "ref": "ham/anim/enemy_siegetower_ref.png",
+  "prompt": "a tall cartoon wooden siege tower with red painted shields, a golden lion head and red banners on top, pushed from inside by Roman legionaries, rolls forward slowly in place: the big wooden wheels turn steadily, the legionaries at the bottom walk with steady pushing steps, the banners flutter gently. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 83,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_cathedral_walkA",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege machine built like a small gothic cathedral with glowing windows on big wooden wheels, pushed by hooded red monks, rolls forward slowly in place: the wheels turn steadily, the monks walk with steady pushing steps, the candle flames and window glow flicker softly, the red cloth drapes sway gently. The building is one solid rigid structure: it never bends, leans, tilts, wobbles or rotates, the towers and spires stay perfectly straight. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 61,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_cathedral_walkB",
+  "ref": "ham/anim/enemy_cathedral_ref.png",
+  "prompt": "a huge cartoon siege machine built like a small gothic cathedral with glowing windows on big wooden wheels, pushed by hooded red monks, rolls forward slowly in place: the wheels turn steadily, the monks walk with steady pushing steps, the candle flames and window glow flicker softly, the red cloth drapes sway gently. The building is one solid rigid structure: it never bends, leans, tilts, wobbles or rotates, the towers and spires stay perfectly straight. The wooden machine is one solid rigid object: it never bends, stretches, tilts, wobbles, turns or rotates, its shape and size stay exactly the same in every frame and it always faces right. The rolling never stops or pauses: a steady non-stop looping cycle. Realistic weighty mechanical motion, no squash and stretch. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 83,
+  "cycle": true,
+  "loop_lo": 16
+ }
+]

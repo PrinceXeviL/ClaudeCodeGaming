@@ -3344,8 +3344,10 @@ function poisonEnemy(e, dps, t, by) {
   e.poisonT = t; if (by) e.poisonBy = by;
 }
 // yanma (10 Eki): Veba/Ateş türünden süreli hasar; yanan düşman iyileşemez. Kuşatma (ahşap) ve canavar daha çok yanar.
+const WOOD = { burn: 2, t: 1.5 }; // 20 Eki (Caner): ahşap kuşatma araçları (data.js def.wood) ateşe çok zayıf: yanma hasarı ×2, süresi ×1,5
 function burnEnemy(e, dps, t, by) {
   dps *= (e.def.wk && e.def.wk.blast) || 1;
+  if (e.def.wood) { dps *= WOOD.burn; t *= WOOD.t; }
   e.burnDps = Math.max(e.burnT > 0 ? e.burnDps : 0, dps); e.burnT = Math.max(e.burnT || 0, t); e.burnBy = by;
 }
 // silah büyüsü (IMBUE, data.js): kemik kulesinin oku ya da mahzen iskeletinin kılıcı her vuruşta düşmana etkisini bırakır
@@ -8495,6 +8497,7 @@ function updateSurprise(dt) {
   const S = G.sur; if (!S || !S.def) return;
   for (const o of S.o) { o.t += dt; if (o.blink > 0) o.blink -= dt; }
   if (S.def.update) S.def.update(S, dt);
+  if (!S.found && !S.hinted && G.t > 25 && !(save.sur && save.sur[G.idx]) && !G.say) { S.hinted = true; surSay('Bu bölümde tuhaf bir şey var... parıldayan şeylere dokun bakalım.'); } // 20 Eki: sürpriz ipucu (bölüm başına bir kez, bulunana kadar)
   if (G.surBanner && (G.surBanner.t += dt) > 3.4) G.surBanner = null;
   if (G.surEclipse > 0) G.surEclipse -= dt;
   for (const e of G.enemies) { // sürprizin düşman durumları
@@ -8522,8 +8525,17 @@ function updateSurprise(dt) {
 function tapSurprise(x, y) {
   const S = G.sur; if (!S || !S.def) return false;
   if (S.def.tapAt && S.def.tapAt(S, x, y)) return true;
-  for (const o of S.o) { if (o.noTap || o.gone || !S.def.tap) continue; const im = spr(o.im), h = im ? o.w * im.height / im.width : o.w; if (Math.abs(x - o.x) < Math.max(24, o.w * 0.6) && y < o.y + 10 && y > o.y - h - 10) { S.def.tap(S, o); return true; } }
+  for (const o of S.o) { if (o.noTap || o.gone || !S.def.tap) continue; const im = spr(o.im), h = im ? o.w * im.height / im.width : o.w; if (Math.abs(x - o.x) < Math.max(34, o.w * 0.65) && y < o.y + 18 && y > o.y - h - 18) { S.def.tap(S, o); return true; } }
   return false;
+}
+// dokunulabilir nesne ipucu: 3 sn'de bir 0,7 sn süren dört köşeli yıldız parıltısı + yumuşak ışık
+const GLINT = { every: 3, dur: 0.7, r: 9 };
+function tapGlint(x, y, t) {
+  const u = t % GLINT.every; if (u > GLINT.dur) return; const k = Math.sin(u / GLINT.dur * Math.PI), r = GLINT.r * k;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, r * 2.2, '255,240,190', 0.7 * k);
+  ctx.translate(x, y); ctx.rotate(u * 1.5); ctx.fillStyle = `rgba(255,250,225,${0.95 * k})`; ctx.beginPath();
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * 0.22 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  ctx.closePath(); ctx.fill(); ctx.restore();
 }
 function drawSurprise(air) {
   const S = G.sur; if (!S || !S.def) return;
@@ -8550,7 +8562,7 @@ function drawSurprise(air) {
       if (o.lit) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x, o.y - o.w * 0.7, 26 + Math.sin(o.t * 9) * 2, '255,200,110', 0.5); ctx.restore(); }
       if (o.lying && !o.used && Math.sin(o.t * 2) > 0.3) txt('z', o.x + 6 + Math.sin(o.t) * 3, o.y - 22 - (o.t * 8) % 14, 11, '#e8e0ff', 'center', '800', FONT_B, true);
       // ipucu: ilk dalgadan sonra dokunulabilir nesne ara ara parıldar (KR'deki gibi)
-      if (!o.noTap && !o.used && G.wave >= 1 && S.def.tap && (o.t % 4.5) < 0.6) { const k = (o.t % 4.5) / 0.6, h = o.w * im.height / im.width; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, o.x + o.w * 0.25, o.y - h * 0.8, 14 * Math.sin(k * Math.PI), '255,240,190', 0.8); ctx.restore(); }
+      if (!o.noTap && !o.used && S.def.tap) { const h = o.w * im.height / im.width; tapGlint(o.x + o.w * 0.22, o.y - h * 0.78, o.t + o.x * 0.01); } // 20 Eki (Caner: "esprili şeyleri pek göremedim"): baştan itibaren 3 sn'de bir yıldız parıltısı
       if (o.deals && !o.open) { const bob = Math.abs(Math.sin(o.t * 3)) * 5; roundRect(o.x - 34, o.y - 78 - bob, 68, 22, 11, 'rgba(50,20,40,0.94)', '#e8bb4a', 2); txt('TÜCCAR', o.x, o.y - 66 - bob, 12, '#ffd34d', 'center', '800', FONT_B, false); }
       if (o.open && o.deals) o.deals.forEach((d, i) => { const bx = o.x + (i - 1) * 74, by = o.y - 92; roundRect(bx - 34, by - 22, 68, 44, 10, d.sold ? 'rgba(40,30,30,0.85)' : 'rgba(50,20,40,0.94)', d.sold ? '#6a5a5a' : '#e8bb4a', 2); txt(d.t, bx, by - 6, 11, d.sold ? '#8a7a7a' : '#fff', 'center', '800', FONT_B, false); txt(d.sold ? 'SATILDI' : d.c + ' altın', bx, by + 10, 11, d.sold ? '#8a7a7a' : '#ffd34d', 'center', '800', FONT_B, false); });
     }
@@ -8638,14 +8650,14 @@ function tapProps(x, y) {
     return true;
   }
   for (const o of G.props || []) {
-    if (o.kind === 'crow' && (o.state === 'idle' || o.state === 'land') && dist(x, y, o.x, o.y - 10) < 18) {
+    if (o.kind === 'crow' && (o.state === 'idle' || o.state === 'land') && dist(x, y, o.x, o.y - 10) < 30) {
       o.state = 'fly'; o.t = 0; o.face = x < o.x ? 1 : -1; crowCaw();
       for (let i = 0; i < 5; i++) emit(G.parts, { kind: 'chunk', x: o.x, y: o.y - 8, vx: rand(-30, 30), vy: -rand(20, 60), g: 120, drag: 1.5, vr: rand(-5, 5), rot: rand(0, 6), col: '#1a1420', s0: 2, s1: 1, life: 0.8 });
       if (Math.random() < 0.35) mortSay('crowtap');
       cnt('crow'); G.stat = G.stat || {}; G.stat.crow = (G.stat.crow || 0) + 1;
       return true;
     }
-    if (o.kind === 'grave' && dist(x, y, o.x, o.y - 10) < 18) {
+    if (o.kind === 'grave' && dist(x, y, o.x, o.y - 10) < 30) {
       if (o.state !== 'hand' || o.t > 1.6) {
         o.state = 'hand'; o.t = 0; o.taps++;
         o.say = o.taps === 3 ? 'Al bakalım, bahşiş!' : GRAVE_LINES[(o.taps + G.idx) % GRAVE_LINES.length];
@@ -8687,10 +8699,12 @@ function drawProps(air) {
       ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(o.face * s, s * (1 - Math.abs(flap) * 0.15));
       drawSprite(ctx, im, 0, 0, 24 * im.width / im.height);
       ctx.restore();
+      if (o.state === 'idle') tapGlint(x + o.face * 4, y - 20, o.t + 1.3 + o.x * 0.01); // 20 Eki: dokunulabilir ipucu
     } else if (o.kind === 'grave' && !air) {
       const im = spr('nm_tomb_' + o.look);
       shadow(o.x, o.y + 2, 11, 4);
       if (im) drawSprite(ctx, im, o.x, o.y + 3, 20);
+      if (o.state === 'idle') tapGlint(o.x + 5, o.y - 18, G.t + 2.1 + o.x * 0.01);
       if (o.state === 'hand') {
         // topraktan çıkan iskelet eli: yükselir, sallanır, iner
         const k = o.t < 0.3 ? o.t / 0.3 : o.t > 2.0 ? Math.max(0, 1 - (o.t - 2.0) / 0.4) : 1, wave = Math.sin(o.t * 9) * 0.35 * (o.t > 0.3 && o.t < 2 ? 1 : 0);
@@ -18556,6 +18570,7 @@ function drawIntro() {
     tx += tw + 6;
   };
   tag('Zayıf:', weak, '#ffd08a', 'rgba(150,60,10,0.6)');
+  if (d.wood) { const s = 'Ahşap: ateşte ×' + WOOD.burn; ctx.font = `800 10.5px ${FONT_B}`; const tw = ctx.measureText(s).width + 14; roundRect(tx, y0 + 64 + ex, tw, 16, 8, 'rgba(150,40,10,0.7)', '#ffb070', 1); txt(s, tx + tw / 2, y0 + 72.5 + ex, 10.5, '#ffb070', 'center', '800', FONT_B, false); tx += tw + 6; }
   tag('Dirençli:', res, '#a8d8ff', 'rgba(20,60,120,0.6)');
   ctx.restore();
 }
@@ -19452,6 +19467,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   if (NECRO && ARMOR_CLASS[d.acl]) { codexChip(cxp, y, `Zırh: ${ARMOR_CLASS[d.acl].name}`, '#efe1c0', 'rgba(90,20,50,0.7)'); y += 24; } // hasar türü tablosu (10 Eki)
   for (const q of weak) { const s2 = `Zayıf: ${WK_NAME[q]} +%${Math.round((wk[q] - 1) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#ffd08a', 'rgba(150,60,10,0.6)') + 4; }
   if (weak.length) { y += 24; cxp = x0; }
+  if (d.wood) { codexChip(x0, y, `Ahşap: yanınca ×${WOOD.burn} hasar, ×${WOOD.t} süre`, '#ffb070', 'rgba(150,40,10,0.7)'); y += 24; }
   for (const q of res) { const s2 = `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#a8d8ff', 'rgba(20,60,120,0.6)') + 4; }
   // alt: açıklama, yetenekler, Mortimer'ın notu
   let by = py + 268;
