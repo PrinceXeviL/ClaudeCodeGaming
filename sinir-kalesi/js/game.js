@@ -12131,6 +12131,45 @@ function bakeTowerGround() {
   for (const [t, ts] of list) { const L = towerLitTex(t, ts); g.drawImage(L.li, t.x + L.x0, ts.bottom + L.y0, L.w, L.h); }
   g.restore();
 }
+// 20 Eki (Caner: "kuleler yerle tümleşik duruyor, altında hafif neon ışık olsun, her kulenin rengi farklı"): kule tabanını saran
+// ince neon halka + soluk zemin parıltısı. Halkanın arkası kule görselinin altında kalır, önü tabanı çevreler. Doku renk başına bir kez çizilir.
+const TOWER_NEON = { on: false, mode: 'rune', rx: 0.62, a: 0.75, pulse: 0.12, col: { archer: '255,186,84', barracks: '255,64,76', mage: '84,222,255', artillery: '140,255,90', altar: '196,96,255' } };
+const NEON_TEX = {};
+function neonTex(col, kind) { // pool: yumuşak renkli ışık havuzu; rune: rünlü büyü çemberi (yukarıdan bakış, sonra basılır)
+  const key = kind + col; if (NEON_TEX[key]) return NEON_TEX[key];
+  const c = document.createElement('canvas'), S = 256; c.width = c.height = S; const g = c.getContext('2d'), R = S / 2;
+  g.translate(R, R);
+  if (kind === 'pool') { const gr = g.createRadialGradient(0, 0, 0, 0, 0, R); gr.addColorStop(0, `rgba(${col},0.55)`); gr.addColorStop(0.5, `rgba(${col},0.28)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(-R, -R, S, S); }
+  else {
+    const gr = g.createRadialGradient(0, 0, R * 0.5, 0, 0, R * 0.98); gr.addColorStop(0, `rgba(${col},0)`); gr.addColorStop(0.8, `rgba(${col},0.18)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(-R, -R, S, S);
+    g.strokeStyle = `rgba(${col},0.8)`; g.lineWidth = 2.2; g.beginPath(); g.arc(0, 0, R * 0.86, 0, TAU); g.stroke();
+    g.lineWidth = 1.4; g.beginPath(); g.arc(0, 0, R * 0.7, 0, TAU); g.stroke();
+    g.fillStyle = `rgba(${col},0.85)`; g.lineWidth = 1.6;
+    for (let i = 0; i < 12; i++) { g.save(); g.rotate(i * TAU / 12); g.translate(0, -R * 0.78); // iki çember arasında rünler
+      const k = i % 3; g.beginPath();
+      if (k === 0) { g.moveTo(0, -6); g.lineTo(0, 6); g.moveTo(-4, -2); g.lineTo(4, 2); }
+      else if (k === 1) { g.moveTo(-4, 5); g.lineTo(0, -6); g.lineTo(4, 5); }
+      else { g.arc(0, 0, 3.5, 0, TAU); g.moveTo(0, -6); g.lineTo(0, -3.5); }
+      g.stroke(); g.restore(); }
+  }
+  return (NEON_TEX[key] = c);
+}
+function drawTowerNeon() {
+  if (!TOWER_NEON.on || !NECRO || PERF_OFF.has('tlight')) return;
+  const M = TOWER_NEON.mode;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const t of G.towers) {
+    const col = TOWER_NEON.col[t.type], ts = col && towerSprite(t); if (!ts) continue;
+    const rx = ts.w * TOWER_NEON.rx, ry = rx * 0.42, y0 = ts.bottom - 1, pu = 1 - TOWER_NEON.pulse + TOWER_NEON.pulse * Math.sin(time * 2.2 + t.x * 0.05);
+    ctx.globalAlpha = TOWER_NEON.a * pu;
+    if (M === 'rune') { ctx.save(); ctx.translate(t.x, y0); ctx.scale(1, ry / rx); ctx.rotate(time * 0.25 + t.x); const r = rx * 1.08; ctx.drawImage(neonTex(col, 'rune'), -r, -r, r * 2, r * 2); ctx.restore(); }
+    else { const r = rx * 1.3; ctx.drawImage(neonTex(col, 'pool'), t.x - r, y0 - r * 0.42, r * 2, r * 0.84); }
+    if (M === 'motes') for (let i = 0; i < 7; i++) { // tabandan yükselen ışık zerreleri
+      const ph = (time * 0.45 + i / 7 + (t.x * 0.013) % 1) % 1, an = i * 2.4 + t.x, x = t.x + Math.cos(an) * rx * 0.9, y = y0 + Math.sin(an) * ry * 0.9 - ph * ts.h * 0.3;
+      ctx.globalAlpha = Math.sin(ph * Math.PI) * 0.9; glow(ctx, x, y, 3.2, col, 1); ctx.fillStyle = '#fff'; ctx.globalAlpha *= 0.8; ctx.fillRect(x - 0.6, y - 0.6, 1.2, 1.2); }
+  }
+  ctx.restore();
+}
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
@@ -12327,11 +12366,13 @@ function drawEnemy0(e) {
       for (let i = 0; i < 3; i++) { const an = time * 1.3 + i * 2.09 + e.off, x = e.x + Math.cos(an) * dh * 0.32, y = e.y - dh * (0.35 + 0.18 * Math.sin(an * 0.7 + i)), rr = dh * 0.42;
         const gm = ctx.createRadialGradient(x, y, 0, x, y, rr); gm.addColorStop(0, `rgba(150,70,220,${0.2 * a})`); gm.addColorStop(1, 'rgba(150,70,220,0)'); ctx.fillStyle = gm; ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
       if (Math.random() < 0.06) emit(G.parts, { kind: 'glow', x: e.x + rand(-5, 5), y: e.y - rand(dh * 0.2, dh * 0.7), vy: -rand(10, 22), col: '120,50,170', s0: rand(2, 3.2), s1: 0.6, life: 0.7, a: 0.5 });
-      { const C = e.curseCol || '210,120,255', y = top - 9 + Math.sin(time * 3 + e.off) * 1.2, r = 5.2; // 17 Eki: başın üstünde dönen rün mührü (lanetli kim, uzaktan okunsun)
-        ctx.save(); ctx.translate(e.x, y); ctx.globalAlpha = a; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 10, C, 0.45); ctx.restore();
-        ctx.strokeStyle = `rgb(${C})`; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke(); ctx.rotate(time * 2.4);
-        for (let i = 0; i < 3; i++) { ctx.rotate(TAU / 3); ctx.beginPath(); ctx.moveTo(r, 0); ctx.lineTo(r + 2.6, -1.4); ctx.lineTo(r + 2.6, 1.4); ctx.closePath(); ctx.fillStyle = `rgb(${C})`; ctx.fill(); }
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(0, 0, 1.5, 0, TAU); ctx.fill(); ctx.restore(); }
+      { const C = e.curseCol || '210,120,255', y = top - 6 + Math.sin(time * 3 + e.off) * 0.8; // 20 Eki (Caner: "çok büyük, farklı olsun, %50 küçük"): başın üstünde küçük lanet gözü (kulenin gözü gibi), ara ara kırpar
+        const bl = (time * 0.7 + e.off * 0.13) % 1, op = bl < 0.06 ? Math.abs(bl - 0.03) / 0.03 : 1, w = 3.6, h = 1.9 * Math.max(0.15, op);
+        ctx.save(); ctx.translate(e.x, y); ctx.globalAlpha = a; ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, 5.5, C, 0.35); ctx.restore();
+        ctx.beginPath(); ctx.moveTo(-w, 0); ctx.quadraticCurveTo(0, -h * 1.6, w, 0); ctx.quadraticCurveTo(0, h * 1.6, -w, 0); ctx.closePath();
+        ctx.fillStyle = '#1c0a26'; ctx.fill(); ctx.strokeStyle = `rgb(${C})`; ctx.lineWidth = 0.8; ctx.stroke();
+        if (op > 0.5) { ctx.fillStyle = `rgb(${C})`; ctx.beginPath(); ctx.arc(0, 0, 1.1, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillRect(-0.25, -0.7, 0.5, 1.4); } // dikey göz bebeği
+        ctx.restore(); }
     }
     if (e.nailT > 0) { ctx.save(); ctx.translate(e.x + 6, top - 4); ctx.rotate(0.3); ctx.fillStyle = '#1a1020'; ctx.strokeStyle = '#9dff8a'; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.moveTo(-2.4, -5); ctx.lineTo(2.4, -5); ctx.lineTo(0.6, 4); ctx.lineTo(-0.6, 4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
@@ -18686,11 +18727,10 @@ function drawCurseBolt(f) {
   if (p >= 1 && !f.hit) { f.hit = true; G.effects.push({ kind: 'ring', x: tx, y: ty + 6, r: 26, col: f.col[0], t: 0, dur: 0.45 });
     for (let i = 0; i < 14; i++) { const a = rand(0, TAU), v = rand(30, 90); emit(G.parts, { kind: 'glow', add: true, x: tx, y: ty, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6 - 20, col: i % 3 ? f.col[0] : '255,255,255', s0: rand(2, 3.4), s1: 0.3, life: rand(0.35, 0.6) }); } }
 }
-function drawCurseLock(t) { // kilit: gözden hedefe ince titreyen bakış çizgisi, lanet yaklaştıkça kalınlaşır
+function drawCurseLock(t) { // kilit: lanet yaklaştıkça göz ve hedef parlar (çizgi yok)
   const e = t.gaze; if (!e || e.dead || !(t.gazeT > 0)) return;
   const q = clamp(t.gazeT / GAZE.t[t.lvl], 0, 1), o = altarEye(t), C = curseCols(t), ty = aimY(e);
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.setLineDash([3, 5]); ctx.lineDashOffset = -time * 40;
-  ctx.strokeStyle = `rgba(${C[0]},${0.15 + 0.45 * q})`; ctx.lineWidth = 0.8 + 1.6 * q; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(e.x, ty); ctx.stroke(); ctx.setLineDash([]);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; // 20 Eki (Caner): gözden hedefe çizgi yok; yalnız göz ve hedef parlar
   glow(ctx, o.x, o.y, 10 + 16 * q, C[0], 0.25 + 0.35 * q); glow(ctx, e.x, ty, 8 + 10 * q, C[0], 0.2 + 0.3 * q);
   ctx.restore();
 }
@@ -21933,7 +21973,7 @@ function drawPlay() {
   ctx.globalAlpha = 1;
   if (!PERF_OFF.has('ground')) drawGround();
   drawGrassLive();
-  drawHolyLights();
+  drawHolyLights(); drawTowerNeon();
   for (const pl of G.plots) if (!pl.tower) (pl.rubble ? drawRubble(pl) : drawPlot(pl));
   drawHatches();
   drawMechGround();
@@ -23630,7 +23670,7 @@ requestAnimationFrame(frame);
 
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
-window.__game = {
+window.__game = { neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
   zBadgePreview() { const c = document.createElement('canvas'); c.width = 900; c.height = 300; const g = c.getContext('2d'); g.fillStyle = '#3a4a2a'; g.fillRect(0, 0, 900, 300);
     [['skull', '#d8c8a8'], ['sword', '#d8c8a8'], ['bow', '#d8c8a8']].forEach(([k, col], i) => { zBadge(g, k, 150 + i * 300, 110, 70, col, false); zBadge(g, k, 120 + i * 300, 250, 12, col, false); zBadge(g, k, 180 + i * 300, 250, 12, col, true); }); return c.toDataURL(); }, // 18 Eki: zombi rozeti önizlemesi
   rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme
