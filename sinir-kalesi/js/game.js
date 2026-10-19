@@ -4044,7 +4044,15 @@ function iconArt(name, paint) {
   return (ICON_C[name] = c);
 }
 const icoImg = (name) => spr('ico_' + (name === 'kristal' ? 'crystal' : name));
-function drawIconArt(name, paint, x, y, r) { if ((name === 'kristal' || name === 'crystal') && r >= 12 && crystalAnim(x, y, r)) return; const im = icoImg(name) || iconArt(name, paint); icoFit(im, x, y, r); }
+// 19 Eki: kristal artık pürüzsüz kırmızı cam kafatası (Gemini nm42_kristal_cam); eski köşeli taşın Veo parıltısı (fx_crystal) kalktı, yerine kodla pırıltı
+function drawIconArt(name, paint, x, y, r) { const im = icoImg(name) || iconArt(name, paint); icoFit(im, x, y, r); if ((name === 'kristal' || name === 'crystal') && r >= 9) crystalGlint(x, y, r); }
+function crystalGlint(x, y, r) { // alındaki parlamada ara sıra dört kollu pırıltı (her simgede başka anda)
+  const T = 2.8, t = (time + (x * 0.013 + y * 0.007)) % T; if (t > 0.55) return;
+  const k = Math.sin(t / 0.55 * Math.PI), px = x - r * 0.18, py = y - r * 0.72, L = r * 0.55 * k;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.9 * k; ctx.fillStyle = '#fff4ec';
+  ctx.beginPath(); ctx.moveTo(px, py - L); ctx.quadraticCurveTo(px, py, px + L * 0.6, py); ctx.quadraticCurveTo(px, py, px, py + L * 0.6); ctx.quadraticCurveTo(px, py, px - L * 0.6, py); ctx.quadraticCurveTo(px, py, px, py - L); ctx.fill();
+  glow(ctx, px, py, r * 0.35 * k, '255,200,190', 0.5 * k); ctx.restore();
+}
 // 18 Eki (Caner: "kristal için Veo ile animasyon"): büyük kristal gösterimlerinde (dükkân, ödül) dönen kafatası taşı (img/fx_crystal,
 // varliklar/kristal_veo_isle.py); şerit gelene dek ve küçük rozetlerde durağan ico_crystal.
 function crystalAnim(x, y, r) {

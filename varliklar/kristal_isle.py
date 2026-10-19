@@ -8,7 +8,7 @@ D = os.path.dirname(os.path.abspath(__file__)); IMG = os.path.join(D, '..', 'sin
 src = open(os.path.join(D, 'kale_v5_isle.py')).read(); ns = {'__file__': os.path.join(D, 'kale_v5_isle.py')}
 exec(src[src.index('import os'):src.index('new = beyaz_sil(')], ns)
 import serit_temizle
-a = ns['beyaz_sil'](np.asarray(Image.open(os.path.join(D, 'ham', 'nm41_kristal_kafatasi.jpg')).convert('RGB')))
+a = ns['beyaz_sil'](np.asarray(Image.open(os.path.join(D, 'ham', sys.argv[1] if len(sys.argv) > 1 else 'nm41_kristal_kafatasi.jpg')).convert('RGB')))
 ys, xs = np.nonzero(a[..., 3] > 20); a = a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
 im = Image.fromarray(a); s = 314 / im.height; im = im.resize((round(im.width * s), 314), Image.LANCZOS)
 im = Image.fromarray(serit_temizle.kare(np.asarray(im), 'ico_crystal'))
