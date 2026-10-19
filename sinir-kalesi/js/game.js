@@ -602,6 +602,13 @@ resize();
 // vol: ses düzeyi, gap: aynı türün iki çalışı arasındaki en kısa süre, max: aynı anda en çok kaç tane.
 const SOUND = {
   // 18 Eki (ElevenLabs, varliklar/yeni_sesler_18eki.py): ışınlanma, Ölüler Defteri, Ölü Lejyonu, 3/3 imza, kemiğe saplanan ok, dev ölü, feda patlaması
+  // 19 Eki (Caner: "yay germe sesi, her askerin adımını ayrı duymak"): ElevenLabs (varliklar/yeni_sesler_19eki.py)
+  bowdraw: { vol: 0.32, gap: 0.04, max: 4, rate: [0.94, 1.08] },     // yay germe (okçu nişan alırken; bırakınca arrow)
+  xbowload: { vol: 0.26, gap: 0.05, max: 3, rate: [0.94, 1.08] },    // arbalet kurma (atıştan sonra)
+  step_armor: { vol: 0.12, gap: 0.03, max: 6, rate: [0.9, 1.1] },    // zırhlı asker adımı (lejyoner, ağır piyade...)
+  step_paw: { vol: 0.12, gap: 0.03, max: 4, rate: [0.9, 1.12] },     // köpek patisi
+  step_heavy: { vol: 0.3, gap: 0.1, max: 3, rate: [0.9, 1.08] },     // dev adımı (fil, dev, golem)
+  towercrash: { vol: 0.55, gap: 0.4, max: 2 },                       // kule yıkılması
   teleport: { vol: 0.6, gap: 0.2, max: 2 }, tome: { vol: 0.5, gap: 1, max: 1 }, legion: { vol: 0.7, gap: 3, max: 1 }, sigfire: { vol: 0.55, gap: 0.6, max: 2 },
   stickbone: { vol: 0.35, gap: 0.08, max: 3, rate: [0.9, 1.15] }, bossraise: { vol: 0.8, gap: 2, max: 1 }, zboom: { vol: 0.65, gap: 0.15, max: 2, rate: [0.92, 1.08] },
   arrow:   { vol: 0.26, gap: 0.07, max: 3, rate: [0.92, 1.12] },   // kemik ok bırakma
@@ -1045,27 +1052,42 @@ Object.assign(SOUND.el_clash, { vol: 0.13, gap: 0.18 }); // 14 Eki (Caner: 1-2 k
 // ----- yürüyüş sesleri (13 Eki, Caner): ekranda yürüyenlere göre; her birime ayrı ses yerine kalabalığın ritmi -----
 // piyade: adım aralığı sabit, ses yürüyen sayısıyla artar ama tavanlı (rahatsız etmesin); atlılar dörtnal; iskeletler kemik takırtısı
 const HORSE = new Set(['cavalry', 'horsearcher', 'chariot', 'cavcaptain']);
+// 19 Eki (Caner: "her askerin adımında ayrı duymak istiyorum"): (1) düşmanın adım sesi yürüyüş şeridindeki ayak basışında çalar (şeridin
+// döngüsünde iki basış: kapalı ayak karesinden çeyrek döngü sonra); şeridi olmayan / askerlerde yürünen yol kadar. (2) Az kişide (STEP_SOLO)
+// her adım duyulur; kalabalıkta seyrelir ama eskisinden az (2,4/√n). (3) Her birimin kendi ses perdesi (u.stR). (4) Tür: zırhlı asker
+// step_armor, köpek step_paw, dev (fil, dev, golem) step_heavy, atlı step_gallop, iskelet step_bone, hafif piyade step_foot.
+const STEP_SOLO = 6, STEP_PAW = new Set(['wardog', 'hound']), STEP_HEAVY = new Set(['elephant', 'colossus', 'ironwarden', 'champion', 'testudo']);
+function stepKind(e) {
+  const d = e.def, b = d.base || e.type;
+  if (HORSE.has(e.type) || HORSE.has(d.base)) return 'step_gallop';
+  if (STEP_PAW.has(b)) return 'step_paw';
+  if (STEP_HEAVY.has(b) || d.chief || (d.r || 0) >= 16) return 'step_heavy';
+  return (d.armor || 0) >= 0.15 ? 'step_armor' : 'step_foot';
+}
 function updateSteps(dt) {
   if (muted || !G.t) return;
-  // 14 Eki (Caner: adım sesleri uyuşmuyor): eskiden kalabalığa göre rastgele aralıkla çalıyordu; artık her birim kendi yürüdüğü yol kadar adım atar
-  // 14 Eki (Caner: 1 at varsa ona göre, 2-5 at varsa ona göre): ekranda yürüyen aynı türden sayısı n; her adım 1,5/√n olasılıkla,
-  // 1/(1+0,12(n-1)) yükseklikte çalar (tek atta her adım tam ses, kalabalıkta ölçülü bir uğultu)
-  const N = G.stepN || (G.stepN = {}), M = G.stepM = { step_foot: 0, step_gallop: 0, step_bone: 0 };
-  const step = (u, kind, len) => {
-    const d = Math.hypot(u.x - (u.stx ?? u.x), u.y - (u.sty ?? u.y)); u.stx = u.x; u.sty = u.y;
-    if (d > len) { u.stD = 0; return; } // ışınlanma / savrulma adım sayılmaz
+  const N = G.stepN || (G.stepN = {}), M = G.stepM = { step_foot: 0, step_gallop: 0, step_bone: 0, step_armor: 0, step_paw: 0, step_heavy: 0 };
+  const play = (u, kind) => { const n = Math.max(1, N[kind] || 1); if (!onScreen(u, 0) || (n > STEP_SOLO && Math.random() > 2.4 / Math.sqrt(n))) return;
+    u.stR ??= rand(0.9, 1.1); sfx(kind, u.stR * rand(0.97, 1.03), Math.max(0.5, 1 / (1 + 0.08 * Math.max(0, n - STEP_SOLO))), u); };
+  const moved = (u, len) => { const d = Math.hypot(u.x - (u.stx ?? u.x), u.y - (u.sty ?? u.y)); u.stx = u.x; u.sty = u.y; return d > len ? -1 : d; }; // -1: ışınlanma/savrulma
+  const step = (u, kind, len) => { // yürünen yol kadar
+    const d = moved(u, len); if (d < 0) { u.stD = 0; return; }
     if (d > 0.01 && onScreen(u, 0)) M[kind]++;
     if ((u.stD = (u.stD ?? rand(0, len)) + d) < len) return;
-    u.stD -= len; const n = Math.max(1, N[kind] || 1);
-    if (onScreen(u, 0) && Math.random() < 1.5 / Math.sqrt(n)) sfx(kind, null, Math.max(0.45, 1 / (1 + 0.12 * (n - 1))), u);
+    u.stD -= len; play(u, kind);
   };
   for (const e of G.enemies) {
     if (e.dead || e.under) continue;
     const d = e.def; if (d.flying || d.machine) continue;
-    const h = CHAR_H['enemy_' + e.type] || 24;
-    if (HORSE.has(e.type) || HORSE.has(d.base)) step(e, 'step_gallop', h * 1.1); else if (!MUTE_VOICE(e) || e.type === 'wardog') step(e, 'step_foot', h * 0.42);
+    const name = 'enemy_' + e.type, rig = d.base ? 'enemy_' + d.base : null, h = CHAR_H[name] || d.r * 2.6, kind = stepKind(e);
+    const F = ANIM_META[name + '_walk'] || (rig && ANIM_META[rig + '_walk']);
+    if (!F || !F.stride || kind === 'step_gallop') { step(e, kind, kind === 'step_gallop' ? h * 1.1 : h * 0.42); continue; }
+    const dm = moved(e, h * 2); if (dm < 0) { e.stP = null; continue; } if (dm < 0.01) continue; // durana adım yok
+    if (onScreen(e, 0)) M[kind]++;
+    const ph = ((e.march && !(e.slowT > 0) ? G.t : e.anim) * walkRate(name, rig, d.speed * G.wspd, h)) / TAU, c0 = ((F.idle || 0) / (F.n || 1)) + 0.25;
+    const k = Math.floor((ph - c0) * 2); if (e.stP != null && k !== e.stP) play(e, kind); e.stP = k; // şeritte ayak basışı
   }
-  for (const s of G.soldiers) if (!s.dead && !s.hero && !s.wall && !s.golem && !s.pet) step(s, 'step_bone', unitH(s) * 0.42);
+  for (const s of G.soldiers) if (!s.dead && !s.hero && !s.wall && !s.pet) step(s, s.golem || (s.zh || 0) > 44 ? 'step_heavy' : s.zombie && s.zname ? stepKind({ type: s.zname.slice(6), def: ENEMIES[s.zname.slice(6)] || {} }) : 'step_bone', unitH(s) * 0.42);
   Object.assign(N, M); // sonraki karede kullanılacak sayılar
 }
 // 14 Eki (Caner: "yakınlaştığım yerdeki düşmanların, iskeletlerimin sesini yakınlığa göre daha fazla duyayım"):
@@ -1084,6 +1106,7 @@ function spatial(o) {
 }
 function sfx(kind, rate, volK = 1, pos = SFX_POS) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
+  if (window.__sfxLog && !muted) window.__sfxLog.push(kind); // test: çalınan sesler
   if (muted || !actx) return;
   const sp = pos && !NOPOS.has(kind) ? spatial(pos) : null;
   if (sp) { volK *= sp.k; if (volK < 0.03) return; } // uzaktaki çok kısık ses hiç çalmaz (kanal boşa dolmasın)
@@ -4538,7 +4561,7 @@ function collapseTower(t) {
   G.towers = G.towers.filter(x => x !== t); t.plot.tower = null;
   if (G.sel && (G.sel.tower === t || G.sel.plot === t.plot)) setSel(null);
   t.plot.rubble = { type: t.type, seed: rand(0, 1), snap: { lvl: t.lvl, spec: t.spec, ab: t.ab && Object.assign({}, t.ab), path: t.path, imbue: t.imbue, extra: t.extra, more: t.more, rx: t.rx, ry: t.ry, spent: t.spent, stackK: t.stackK, prio: t.prio } };
-  shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t);
+  shakeScreen(6, 0.5); sfx('castlehit', 1, 1, t); sfx('bonefall', 1, 1, t); sfx('towercrash', rand(0.95, 1.05), 1, t); // 19 Eki: yıkılma gürültüsü
   // 18 Eki (Caner: "yıkılma efektini çok beğendim, tüm kulelere"): Wan yıkılma şeridi varsa kule kendi görseliyle abartılı çöker, moloz şerit bitince belirir
   const cn = ts && ts.name.replace(/_side$/, '') + '_collapse', CF = cn && ANIM_META[cn];
   if (CF && spr(cn)) t.plot.rubble.anim = { name: cn, t0: G.t, w: ts.w, bottom: ts.bottom, dur: CF.n / (CF.fps || 16) };
@@ -5452,6 +5475,7 @@ function updateEnemy(e, dt) {
     e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt;
     if (tgt) {
       if (!RG.moving) faceTo(e, tgt.x);
+      if (RG.proj === 'arrow' && e.rcd < 0.5 && e.rcd + dt >= 0.5) sfx('bowdraw', rand(0.92, 1.06), 0.7, e); // 19 Eki: düşman okçusu atıştan önce yayı gerer
       if (e.rcd <= 0) {
         e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
@@ -10488,12 +10512,14 @@ function xbowShoot(t, ts, L, e0, opt) {
   a.tg = e; a.tx = null; a.walking = false; a.face = e.x < xbowFoot(t, ts, a).x ? -1 : 1; a.aimT = M.aim; a.kickT = M.aim + M.kick;
   const o = xbowTip(t, ts, a);
   ballisticShot(o, t.y, e, M.aim, M, { dmg: opt.dmg * (e.def.flying ? opt.fly || 1 : 1), dtype: opt.pierce ? 'true' : 'phys', crit: opt.crit, pierce: opt.pierce, pen: opt.pen || 0, poison: opt.poison || 0, knock: !!M.heavy, imbue: t.imbue });
-  t.relQ = (t.relQ || []).concat([{ t: M.aim, x: o.x, y: o.y, col: M.col, heavy: M.heavy, bow: M.bow }]); // bırakma anında parıltı ve ses
+  t.relQ = (t.relQ || []).concat([{ t: M.aim, x: o.x, y: o.y, col: M.col, heavy: M.heavy, bow: M.bow }], M.bow ? [] : [{ t: M.aim + (M.heavy ? 0.4 : 0.28), load: true, heavy: M.heavy }]); // bırakma anında parıltı ve ses; arbalet ardından kurulur
+  if (M.bow) sfx('bowdraw', rand(0.95, 1.08), 0.9, a.x != null ? a : { x: t.x, y: t.y - 30 }); // 19 Eki: okçu yayı gerer (nişan süresi boyunca)
   return a;
 }
 function updateXbowRelease(t, dt) {
   if (!t.relQ || !t.relQ.length) return;
   for (const r of t.relQ) if ((r.t -= dt) <= 0) {
+    if (r.load) { sfx('xbowload', r.heavy ? 0.85 : rand(0.96, 1.1), r.heavy ? 1 : 0.8, { x: t.x, y: t.y - 30 }); continue; } // 19 Eki: arbalet kurma
     for (let i = 0; i < (r.heavy ? 9 : 5); i++) emit(G.parts, { kind: 'glow', add: true, x: r.x, y: r.y, vx: rand(-30, 30), vy: rand(-30, 10), drag: 3, col: r.col, s0: r.heavy ? 3.4 : 2.6, s1: 0.4, life: 0.28 });
     sfx(r.heavy ? 'xbowh' : r.bow ? 'arrow' : 'xbow', r.bow ? rand(1.05, 1.2) : undefined); // hayalet okçular yay, ötekiler arbalet
   }
@@ -16346,7 +16372,7 @@ function updateKeepArchers(dt) {
     if (a.cd > 0) return;
     const tg = findTarget({ x: c.x, y: c.y - 30 }, CASTLE.range, true);
     if (!tg) { a.cd = 0.15; return; }
-    a.tg = tg; a.aimT = KEEP_ARCH.aim; a.face = tg.x < o.x ? -1 : 1;
+    a.tg = tg; a.aimT = KEEP_ARCH.aim; a.face = tg.x < o.x ? -1 : 1; sfx('bowdraw', rand(0.95, 1.08), 0.8, o); // 19 Eki: yay germe
   });
 }
 function drawKeepArchers() {

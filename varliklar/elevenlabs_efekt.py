@@ -163,6 +163,13 @@ SFX = {
     'stickbone': ('an arrow thunks hard into dry bone and old wood, short hollow crack with a tiny bone rattle, close-mic, dry, no music', 0.5, 2),
     'bossraise': ('a giant fallen warlord rises from death as an undead monster: deep rumbling earth crack, heavy bones grinding, a monstrous low zombie roar and a dark magic whoosh, short, no music, no words', 2.0, 1),
     'zboom': ('a zombie bursts apart in a gory cartoon explosion: wet squelchy pop, bones flying and clattering, a dark magic boom, short, no music', 0.9, 2),
+    # 19 Eki (Caner: "yayı germe sesi yoksa yap, gerçekçi; eksik sesleri belirle; her askerin adımını ayrı duymak istiyorum")
+    'bowdraw': ('an archer slowly drawing back a wooden longbow, creaking wood and a taut bowstring stretching tight, no release, no twang, close realistic recording, dry, no music', 0.7, 3),
+    'xbowload': ('a crossbow being reloaded, quick ratchet clicks and the string locking into the latch with a wooden clack, close realistic recording, dry, no music', 0.6, 3),
+    'step_armor': ('one single heavy footstep of an armored roman soldier on packed dirt, solid boot thud with a short jingle of metal armor plates and chainmail, close, dry, no music', 0.5, 6),
+    'step_paw': ('one single quick footstep of a big war dog on packed dirt, soft padded paw thud with a light scratch of claws, close, dry, no music', 0.5, 4),
+    'step_heavy': ('one single huge heavy footstep of a giant creature on the ground, deep booming thud with a little dirt and pebbles falling, close, no music', 0.6, 4),
+    'towercrash': ('a dark stone and bone tower collapsing, heavy rocks and bones crumbling and tumbling down, rumbling crash, dust settling, no music', 2.0, 2),
 }
 
 
