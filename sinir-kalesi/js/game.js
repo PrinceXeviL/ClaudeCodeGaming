@@ -609,6 +609,10 @@ const SOUND = {
   step_paw: { vol: 0.12, gap: 0.03, max: 4, rate: [0.9, 1.12] },     // köpek patisi
   step_heavy: { vol: 0.3, gap: 0.1, max: 3, rate: [0.9, 1.08] },     // dev adımı (fil, dev, golem)
   towercrash: { vol: 0.55, gap: 0.4, max: 2 },                       // kule yıkılması
+  wingflap: { vol: 0.24, gap: 0.05, max: 3, rate: [0.9, 1.1] },      // kartal / akbaba kanat çırpması (uçarken)
+  firecrackle: { vol: 0.2, gap: 0.1, max: 3, rate: [0.9, 1.1] },     // meşale / yanan düşman çıtırtısı
+  shieldblock: { vol: 0.42, gap: 0.05, max: 3, rate: [0.92, 1.08] }, // kalkanla savunma
+  acidbubble: { vol: 0.2, gap: 0.12, max: 3, rate: [0.85, 1.15] },   // veba birikintisinin köpürmesi
   teleport: { vol: 0.6, gap: 0.2, max: 2 }, tome: { vol: 0.5, gap: 1, max: 1 }, legion: { vol: 0.7, gap: 3, max: 1 }, sigfire: { vol: 0.55, gap: 0.6, max: 2 },
   stickbone: { vol: 0.35, gap: 0.08, max: 3, rate: [0.9, 1.15] }, bossraise: { vol: 0.8, gap: 2, max: 1 }, zboom: { vol: 0.65, gap: 0.15, max: 2, rate: [0.92, 1.08] },
   arrow:   { vol: 0.26, gap: 0.07, max: 3, rate: [0.92, 1.12] },   // kemik ok bırakma
@@ -1063,6 +1067,18 @@ function stepKind(e) {
   if (STEP_PAW.has(b)) return 'step_paw';
   if (STEP_HEAVY.has(b) || d.chief || (d.r || 0) >= 16) return 'step_heavy';
   return (d.armor || 0) >= 0.15 ? 'step_armor' : 'step_foot';
+}
+// 19 Eki (Caner): uçanların kanat çırpması, meşaleci ve yanan düşmanın çıtırtısı, veba birikintisinin köpürmesi; birim başına kendi aralığıyla,
+// aynı türden çoksa seyrelir (en çok ~3'ü aynı anda duyulsun)
+function updateAmbientSfx(dt) {
+  if (muted || !G.t) return;
+  const fl = [], fire = [], pools = [];
+  for (const e of G.enemies) { if (e.dead || e.under || !onScreen(e, 0)) continue; if (e.def.flying) fl.push(e); if (e.burnT > 0 || e.type === 'torch' || /ignis/.test(e.type)) fire.push(e); }
+  for (const z of G.zones) if (z.pool && (z.kind === 'plague') && !z.blood && z.t < z.life - 0.5 && onScreen(z, 0)) pools.push(z);
+  const run = (L, key, cd, kind, volK) => { const p = Math.min(1, 3 / Math.max(1, L.length)); for (const u of L) { if ((u[key] = (u[key] ?? rand(0, cd[1])) - dt) > 0) continue; u[key] = rand(cd[0], cd[1]); if (Math.random() < p) sfx(kind, null, volK, u); } };
+  run(fl, 'sfxFlap', [0.5, 0.85], 'wingflap', 1);
+  run(fire, 'sfxFire', [0.9, 1.5], 'firecrackle', 1);
+  run(pools, 'sfxBub', [0.7, 1.3], 'acidbubble', 1);
 }
 function updateSteps(dt) {
   if (muted || !G.t) return;
@@ -3262,7 +3278,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
     if (!(e.wallT > 0) && isShielded(e) && G.t >= (e.selfShCd ?? 0) && (G.idx >= CAPTAIN.shield.from || G.lv.ep === 2)) { const SS = CAPTAIN.shield.self; e.selfShCd = G.t + SS.cd; e.wallT = e.wallD = SS.t; } // kıdemlisiz: kendi kalkanı (bu ok tam işler)
     else
     if (e.wallT > 0) { const S = CAPTAIN.shield; // kalkan duvarı: ok seker ya da az işler
-      if (!raw && Math.random() < S.miss) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.5)) { e.blockFx = time; floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 28) - 4, 'SEKTİ', '#ffe2a0'); impactFx(e.x + (e.face || 1) * 6, e.y - (CHAR_H['enemy_' + e.type] || 28) * 0.55, '255,230,170', 0.6); } return; }
+      if (!raw && Math.random() < S.miss) { if (!quiet && (!e.blockFx || time - e.blockFx > 0.5)) { e.blockFx = time; sfx('shieldblock', rand(1, 1.12), 0.8, e); floatText(e.x, e.y - (CHAR_H['enemy_' + e.type] || 28) - 4, 'SEKTİ', '#ffe2a0'); impactFx(e.x + (e.face || 1) * 6, e.y - (CHAR_H['enemy_' + e.type] || 28) * 0.55, '255,230,170', 0.6); } return; }
       amount *= rand(S.k[0], S.k[1]); } }
   if (e.markT > 0) amount *= 1.6;
   // zırh barı: hasarı önce zırh karşılar (direnç uygulanmaz), artan kısım cana geçer
@@ -3694,12 +3710,12 @@ function damageSoldier(s, amount, src) {
     const GF = NECRO && !s.hero && !s.bow && s.skelKey && !(s.tower && s.tower.spec === 'shield') && ANIM_META[s.skelKey + '_guard'];
     if (GF && s.guardA > G.t) amount *= SKEL_GUARD.k;
     else if (GF && src && src.hp != null && !(s.guardCd > G.t) && dist(src.x, src.y, s.x, s.y) < 45 && Math.random() < SKEL_GUARD.p) {
-      s.guardT0 = G.t; s.guardA = G.t + (GF.dur || GF.n / 24); s.guardCd = s.guardA + SKEL_GUARD.cd; amount *= SKEL_GUARD.k; sfx('bash');
+      s.guardT0 = G.t; s.guardA = G.t + (GF.dur || GF.n / 24); s.guardCd = s.guardA + SKEL_GUARD.cd; amount *= SKEL_GUARD.k; sfx('shieldblock', null, 1, s);
     }
   }
-  if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('bash'); return; }
+  if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('shieldblock', null, 1, s); return; }
   if (s.hero && s.def.parry && src && src.hp != null && dist(src.x, src.y, s.x, s.y) < 45 && !(s.parryCd > G.t) && Math.random() < s.def.parry) { // 17 Eki: Leonidas'ın Bronz Kalkan'ı
-    s.parryCd = G.t + LEO.parryCd; s.blockA = HERO_ANIM.block; s.blockCd = G.t + 1.5; const dir = Math.sign(src.x - s.x) || s.face || 1;
+    s.parryCd = G.t + LEO.parryCd; s.blockA = HERO_ANIM.block; s.blockCd = G.t + 1.5; sfx('shieldblock', 0.9, 1, s); // 19 Eki: bronz kalkan const dir = Math.sign(src.x - s.x) || s.face || 1;
     for (let i = 0; i < 7; i++) emit(G.parts, { kind: 'streak', add: true, x: s.x + dir * 9, y: s.y - 18, vx: dir * rand(40, 130), vy: -rand(20, 110), g: 260, col: i % 3 ? '#ffd88a' : '#fff4d0', s0: 1.5, s1: 0.2, life: rand(0.2, 0.38) });
     if (pushable(src) && !src.def.chief) { src.knockT = KNOCK.t; src.knockV = 60; }
     if (Math.random() < 0.35) floatText(s.x, s.y - 34, 'Kalkan!', '#ffd88a'); sfx('clash', 1.25, 0.7); return; }
@@ -5307,7 +5323,7 @@ function updateEnemy(e, dt) {
         if (S && S.towerMan) { if (G.towers.includes(S.t) && !S.a.dead) { hitTowerMan(S.t, S.a, roll(DV.dmg)); impactFx(S.x, S.y - 8, '255,230,180', 0.8); sfx('dogbite', 1.1, 1, e); } } // kuledeki okçu: pençe ıskalamaz
         else if (S && !S.dead) {
           const blk = S.block > 0 && Math.random() < Math.min(0.6, S.block * 2); // kalkanlı iskelet pençeyi kalkanla karşılayabilir
-          if (blk) { floatText(S.x, S.y - 30, 'Blok!', '#cfe3ff'); sfx('clash', 1.2, 1, S); } else { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; sfx('dogbite', 1.15, 1, e); }
+          if (blk) { floatText(S.x, S.y - 30, 'Blok!', '#cfe3ff'); sfx('shieldblock', null, 1, S); } else { damageSoldier(S, roll(DV.dmg)); S.flash = 0.15; sfx('dogbite', 1.15, 1, e); }
           impactFx(S.x, S.y - 10, '255,230,180', 0.8);
           diveCounter(e, S, blk);
         }
@@ -9862,7 +9878,7 @@ function update(dt) {
   updateMortSay(dt);
   updatePets(dt);
   updateBloodLinks(dt);
-  updateSteps(dt);
+  updateSteps(dt); updateAmbientSfx(dt);
   // bekleyen iskeletler ara ara kemik takırdatır (15 Eki, Caner): ekranda görünen boşta bir iskelet, 7-14 sn'de bir, tek ses
   if ((G.rattleT = (G.rattleT ?? rand(4, 8)) - dt) <= 0) {
     G.rattleT = rand(7, 14);

@@ -170,6 +170,11 @@ SFX = {
     'step_paw': ('one single quick footstep of a big war dog on packed dirt, soft padded paw thud with a light scratch of claws, close, dry, no music', 0.5, 4),
     'step_heavy': ('one single huge heavy footstep of a giant creature on the ground, deep booming thud with a little dirt and pebbles falling, close, no music', 0.6, 4),
     'towercrash': ('a dark stone and bone tower collapsing, heavy rocks and bones crumbling and tumbling down, rumbling crash, dust settling, no music', 2.0, 2),
+    # 19 Eki (Caner): kalan eksikler
+    'wingflap': ('one single strong flap of large eagle wings, powerful feathered whoosh, close, dry, no bird call, no music', 0.5, 4),
+    'firecrackle': ('a burning torch flame crackling and flickering, short burst of dry fire crackle and pops, close, no music', 1.0, 3),
+    'shieldblock': ('a sword blow blocked by a heavy wooden shield with an iron rim, solid wooden thud with a metallic clank, close, dry, no music', 0.5, 4),
+    'acidbubble': ('thick toxic green slime bubbling, a few gloopy bubbles slowly popping, wet blorp, short, close, no music', 0.8, 3),
 }
 
 
