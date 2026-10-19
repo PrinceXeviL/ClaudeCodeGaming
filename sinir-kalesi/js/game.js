@@ -1407,7 +1407,7 @@ const HATCH = { cost: 120, respawn: 30, seal: 1.6, sealR: 64, w: 46,
 // ----- Mezar Bekçisi (12 Eki, Caner): 1. seferde 5. bölümden itibaren kalenin dibinde bir mezar; topraktan el uzanır (dokunulabilir),
 // altınla Ceset Golemi çıkar (vuruşu çevresine de işler), kapının önünü tutar; ölürse respawn sn sonra yeniden kalkar. Mahzen kapağı sistemiyle aynı.
 // rise: mezardan çıkış şeridinin (unit_corpsegolem_rise, 6 kare Gemini) kare süreleri; golem bu süre bitince savaşa girer
-const GRAVE = { cost: 110, respawn: 30, w: 56, from: 4, rise: [0.24, 0.24, 0.28, 0.22, 0.2, 0.5], knight: { hp: 620, dmg: [16, 24], armor: 0.3, rate: 1.2, speed: 34, engage: 80, aoe: 0.5 } }; // 12 Eki (Caner): mezardan Ceset Golemi kalkar; vuruşu çevresine de işler
+const GRAVE = { cost: 110, respawn: 30, w: 56, vis: 0.6, from: 4, rise: [0.24, 0.24, 0.28, 0.22, 0.2, 0.5], knight: { hp: 620, dmg: [16, 24], armor: 0.3, rate: 1.2, speed: 34, engage: 80, aoe: 0.5 } }; // 12 Eki (Caner): mezardan Ceset Golemi kalkar; vuruşu çevresine de işler
 const SPOT_GAP = { plot: 95, castle: 135 }; // mezar ve mahzen kapağının kule arsasına / kaleye en az uzaklığı
 const epRel = (lv) => LEVELS.indexOf(lv) - LEVELS.findIndex(l => l.ep === lv.ep); // seferin içindeki sıra (0..19)
 function hatchSpots(lv, paths) {
@@ -9449,14 +9449,14 @@ function drawHatches() {
   }
 }
 function drawGrave(h) {
-  const im = spr('nm3_grave'), w = GRAVE.w;
+  const im = spr('nm3_grave'), w = GRAVE.w * GRAVE.vis; // 20 Eki (Caner): mezar ve el %40 küçük (dokunma alanı aynı)
   ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(h.x + 2, h.y + 2, w * 0.5, w * 0.16, 0, 0, Math.PI * 2); ctx.fill();
   const zk = clamp(1.7 / (cam.z || 1), 1, 1.7); // 15 Eki (Caner): uzaktayken el görünmüyordu: uzaklaştıkça el ve ışık büyür
-  if (h.state === 'closed') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, h.x, h.y - 8, 44 * zk, Math.sin(time * 1.3 + h.x) > 0 ? '150,255,130' : '190,110,255', 0.42 + Math.sin(time * 3) * 0.12); ctx.restore(); }
+  if (h.state === 'closed') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, h.x, h.y - 8 * GRAVE.vis, 44 * zk * GRAVE.vis, Math.sin(time * 1.3 + h.x) > 0 ? '150,255,130' : '190,110,255', 0.42 + Math.sin(time * 3) * 0.12); ctx.restore(); }
   if (im) drawSprite(ctx, im, h.x, h.y + w * 0.2, w);
   if (h.state === 'closed') {
-    drawGraveHands([{ x: h.x + 4, y: h.y - 2, off: h.x % 7, T: 5.5, face: 1, k: 2 * zk }], G.parts); // topraktan uzanan el: dokun beni
-    if (G.gold >= GRAVE.cost) { const by = h.y - 52 + Math.sin(time * 3) * 2; circle(h.x, by, 10, 'rgba(26,12,22,0.9)', '#ffd34d', 1.6); drawIcon('coin', h.x, by, 12); } // alınabilir: altın işareti
+    drawGraveHands([{ x: h.x + 4 * GRAVE.vis, y: h.y - 2, off: h.x % 7, T: 5.5, face: 1, k: 2 * zk * GRAVE.vis }], G.parts); // topraktan uzanan el: dokun beni
+    if (G.gold >= GRAVE.cost) { const by = h.y - 52 * GRAVE.vis - 14 + Math.sin(time * 3) * 2; circle(h.x, by, 10, 'rgba(26,12,22,0.9)', '#ffd34d', 1.6); drawIcon('coin', h.x, by, 12); } // alınabilir: altın işareti
   }
   const g = h.ghoul;
   if (g && g.dead && h.state === 'open') { // yeniden kalkış sayacı
@@ -10478,6 +10478,8 @@ MEN.arch = Object.assign({}, MEN.bow, { n: (t) => Math.max(2, t.lvl + 1), col: '
 // 11 Eki: kademe iskelet okçuları (Gemini, her kare ayrı görsel: unit_archerN + _nock/_half/_draw/_rel); kademe görseli yoksa bir alt kademeninki
 const ARCH_TIP = [[0.93, 0.26], [0.744, 0.249], [0.99, 0.303]]; // kareler ayrı Gemini görsellerinden: varliklar/iskelet_okcu_kare_isle.py
 for (let k = 1; k <= 3; k++) MEN['a' + k] = Object.assign({}, MEN.arch, { pre: 'unit_archer' + k, tip: ARCH_TIP[k - 1] || ARCH_TIP[0] });
+// 20 Eki (Caner: "önce yayı gersinler sonra atsınlar"): 3. kademe yeni Wan şeridi (42 kare, bırakma 29): germe ~0,9 sn görünür, bırakma + dönüş 0,5 sn
+Object.assign(MEN.a3, { aim: 0.9, hold: 0.38 });
 const menOf = (t) => {
   if (t.spec === 'fan' || t.spec === 'bow') return MEN[t.spec];
   if (NECRO && (t.path === 'bow' || (!t.path && t.lvl === 0))) {
