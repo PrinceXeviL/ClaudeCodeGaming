@@ -178,6 +178,9 @@ SFX = {
     # 19 Eki (Caner: "zırha çarpan kılıç sesi; borazanı savaş borusu melodisinde çal")
     'swordarmor': ('a steel sword striking the metal plate armor of a soldier, sharp heavy metallic clang with a short ring, close, dry, no music', 0.5, 4),
     'horncall': ('a single brass military bugle playing a battle charge call: a quick rising fanfare of short staccato notes ending on one long held high note, like a cavalry charge signal before battle, realistic brass, outdoor battlefield echo, no drums, no other instruments, no music bed', 3.5, 4),
+    # 19 Eki (Caner: kemik topları yere düşünce kırılma sesi, ardından kemik dağılma sesleri)
+    'bonecrash': ('a big ball made of bones smashes onto the dirt ground and shatters, heavy dull thud with a sharp crack of breaking bones, close, dry, no music', 0.8, 4),
+    'boneclatter': ('many dry bones and skulls scattering and bouncing on hard dirt ground, light hollow clattering and rattling, settling, close, dry, no music', 1.2, 3),
 }
 
 

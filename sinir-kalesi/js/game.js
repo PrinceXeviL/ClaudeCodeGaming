@@ -609,6 +609,8 @@ const SOUND = {
   step_paw: { vol: 0.12, gap: 0.03, max: 4, rate: [0.9, 1.12] },     // köpek patisi
   step_heavy: { vol: 0.3, gap: 0.1, max: 3, rate: [0.9, 1.08] },     // dev adımı (fil, dev, golem)
   towercrash: { vol: 0.55, gap: 0.4, max: 2 },                       // kule yıkılması
+  bonecrash: { vol: 0.5, gap: 0.03, max: 4, rate: [0.9, 1.1] },     // kemik top yere çarpıp kırılır (Merlin)
+  boneclatter: { vol: 0.36, gap: 0.06, max: 4, rate: [0.9, 1.12] },  // kemik parçaları saçılıp yere düşer
   swordarmor: { vol: 0.3, gap: 0.05, max: 3, rate: [0.92, 1.1] },   // kılıcın metal zırha çarpması
   horncall: { vol: 0.42, gap: 2, max: 1 },                          // borazancı: savaş hücum borusu melodisi (19 Eki, Caner: trompet, hücum melodisi)
   wingflap: { vol: 0.24, gap: 0.05, max: 3, rate: [0.9, 1.1] },      // kartal / akbaba kanat çırpması (uçarken)
@@ -2697,14 +2699,14 @@ function drawParts(list, add) {
   for (const p of list) {
     if (!!p.add !== add) continue;
     const k = p.t / p.life, s = lerp(p.s0, p.s1, k);
-    const a = p.a * (p.fadeIn ? Math.min(1, k / p.fadeIn) : 1) * (1 - k);
+    const a = p.fadeOut ? (p.a ?? 1) * clamp((p.life - p.t) / p.fadeOut, 0, 1) : p.a * (p.fadeIn ? Math.min(1, k / p.fadeIn) : 1) * (1 - k); // fadeOut: sonuna dek tam görünür, son fadeOut sn'de solar
     if (p.kind === 'glow') { glow(ctx, p.x, p.y, s, p.col, a); continue; }
     ctx.globalAlpha = a;
     if (p.kind === 'streak') {
       ctx.strokeStyle = p.col; ctx.lineWidth = s; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.04, p.y - p.vy * 0.04); ctx.stroke();
     } else if (p.kind === 'sprite') { // 16 Eki: görselli parça (kemik gülle kırıkları)
-      ctx.globalAlpha = Math.min(1, a * 3); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); icoFit(p.im, 0, 0, p.h / 2.4 * 2); ctx.restore();
+      ctx.globalAlpha = p.fadeOut ? a : Math.min(1, a * 3); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0); icoFit(p.im, 0, 0, p.h / 2.4 * 2); ctx.restore();
     } else if (p.kind === 'bdrop') { // kan damlası görseli: ucu gidişin tersine
       const im = p.im; if (!im) continue; ctx.globalAlpha = Math.min(1, a * 3); const sp = Math.hypot(p.vx, p.vy), ww = s * 2, hh = ww * (1 + Math.min(1.6, sp / 160)); // hızlıyken uzar
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) - Math.PI / 2); ctx.drawImage(im, -ww / 2, -hh / 2, ww, hh); ctx.restore();
@@ -2970,12 +2972,27 @@ function drawSoulRune(p, pre, k) {
   glow(ctx, 0, 0, r * 0.9, '150,80,255', 0.18 * a + 0.06 * Math.sin(time * 6));
   ctx.restore();
 }
+// 19 Eki (Caner: "bunların içinde veba olmasın, Merlin'in büyüsü, sadece kemik topu"): Kemik Gülle görsellerinin vebasız kopyası (bir kez):
+// yeşil pikseller topta koyu kemik gölgesine döner, parçalarda (damlalar) silinir. Kemik Gülle kendi yeşil görsellerini kullanmaya devam eder.
+const BONE_CLEAN = new Map();
+function boneClean(name, drop) {
+  const key = name + (drop ? '_d' : ''); if (BONE_CLEAN.has(key)) return BONE_CLEAN.get(key);
+  const im = spr(name); if (!im) return null;
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d'); g.drawImage(im, 0, 0);
+  try { const D = g.getImageData(0, 0, c.width, c.height), a = D.data;
+    for (let i = 0; i < a.length; i += 4) { const r = a[i], gr = a[i + 1], b = a[i + 2]; if (!a[i + 3] || gr < r * 1.1 || gr < b * 1.15 || gr - Math.max(r, b) < 18) continue;
+      if (drop) { a[i + 3] = 0; continue; } const l = (r + gr + b) / 3; a[i] = 18 + l * 0.42; a[i + 1] = 14 + l * 0.35; a[i + 2] = 12 + l * 0.3; }
+    g.putImageData(D, 0, 0); } catch (e) {}
+  BONE_CLEAN.set(key, c); return c;
+}
 function fxSoulMeteorImpact(x, y, r, first) {
   // 19 Eki (Caner: "sadece kemik topu düşsün, yerde etrafa kemikler savrulsun, bolca kemik"): renkli parlama, halka, ışık sütunu, mor duman yok;
   // top kırılır: kaburga, kafatası, kemik parçaları her yana savrulup yere düşer, toz kalkar
-  const P = G.parts, SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean);
-  for (let i = 0; i < (SH.length ? 16 : 0); i++) { const a = rand(-Math.PI, 0), v = rand(60, 190);
-    emit(P, { kind: 'sprite', im: SH[i % SH.length], h: rand(2.8, 5.2), x: x + rand(-6, 6), y: y - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.75 - 60, g: 600, vr: rand(-14, 14), rot: rand(0, 6), life: rand(1.1, 1.7), floor: y + rand(-10, 12) }); }
+  // 19 Eki (Caner): parçalar iskelet boyuna oranlı (kafatası iskeletinkinden büyük değil), onlarcası saçılır, çoğu yolda kalır, yerde 4 sn durup solar
+  const P = G.parts, SH = [1, 2, 3, 4, 5, 6].map(i => boneClean('nm_bshard_' + i, true)), HK = [4.0, 2.6, 3.0, 2.7, 2.7, 3.5]; // 1 kaburga, 2 kafatası, 3 kemik yığını...
+  for (let i = 0; i < (SH.every(Boolean) ? 20 : 0); i++) { const j = i % 6, a = rand(-Math.PI, 0), v = rand(30, 105);
+    const DB = (G.debris ||= []); if (DB.length > 320) DB.shift(); // en eskisi gider
+    DB.push({ t: 0, drag: 0, s0: 2, s1: 0, a: 1, kind: 'sprite', im: SH[j], h: HK[j] * rand(0.85, 1.12), x: x + rand(-6, 6), y: y - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7 - 70, g: 620, vr: rand(-14, 14), rot: rand(0, 6), life: rand(4.4, 5), fadeOut: 0.8, floor: y + rand(-9, 9) }); }
   for (let i = 0; i < 12; i++) { const a = rand(0, Math.PI * 2), v = rand(40, 130); // kemik kırıntıları ve toprak
     emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(40, 100), g: 560, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
       col: i % 3 === 2 ? '#6a5640' : i % 2 ? '#e8dcc0' : '#c9bd98', s0: rand(1.2, 2.4), s1: 1, life: rand(0.6, 1), floor: y + rand(-8, 10) }); }
@@ -3021,7 +3038,7 @@ function drawMeteor0(p, noRing, ringOnly) {
   // 19 Eki (Caner: "yerdeki renkli büyü efektini kaldır, sadece kemik topu düşsün"): Merlin'in yağmuru: rün, kuyruk ışığı yok; gölge + dönen kemik top
   if (p.mini && spr('nm_boneball')) { if (p.t < 0 || ringOnly) return; const { x, y } = projPos(p, k);
     ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.25 * k})`; ctx.beginPath(); ctx.ellipse(p.tx, p.ty, 5 + 12 * k, (5 + 12 * k) * 0.4, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 6); icoFit(spr('nm_boneball'), 0, 0, 7.5 / (p.big || 1)); ctx.restore(); return; }
+    ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 6); icoFit(boneClean('nm_boneball', false) || spr('nm_boneball'), 0, 0, 7.5 / (p.big || 1)); ctx.restore(); return; }
   // hedef işareti: düşüşe yaklaştıkça parlaklaşan ve daralan halka
   if (p.mini && !noRing && !p.noRing) { drawSoulRune(p, pre, k); }
   else if (!noRing && !p.noRing) {
@@ -3052,7 +3069,7 @@ function drawMeteor0(p, noRing, ringOnly) {
   if (SO) { glow(ctx, x, y, 42, '150,70,255', 0.7); glow(ctx, x, y, 22, '110,255,150', 0.8); glow(ctx, x, y, 10, '240,255,240', 0.9); }
   else { glow(ctx, x, y, 34, '255,120,30', 0.85); glow(ctx, x, y, 16, '255,230,170', 0.9); }
   ctx.restore();
-  const BB = SO && spr('nm_boneball'); // 19 Eki (Caner): Merlin'in yağmuru kemik gülleleri (Kemik Gülle Mancınığı'nın Gemini güllesi), döne döne düşer
+  const BB = SO && boneClean('nm_boneball', false); // 19 Eki (Caner): Merlin'in yağmuru kemik gülleleri (Kemik Gülle Mancınığı'nın Gemini güllesi), döne döne düşer
   if (BB) { ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 6); icoFit(BB, 0, 0, 11); ctx.restore(); }
   else if (SO) ctx.drawImage(ironBall(), x - 12, y - 12, 24, 24); // ruh meteoru: yuvarlak demir bilye (ışığı sabit, dönmez)
   else { ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 5); ctx.drawImage(meteorRock(SO), -12, -12, 24, 24); ctx.restore(); }
@@ -6525,7 +6542,8 @@ function updateProjectile(pr, dt) {
     }
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
     else fxExplosion(pr.tx, pr.ty, pr.splash, false);
-    sfx(pr.kind === 'meteor' ? (pr.mini && spr('nm_boneball') ? 'bonefall' : 'meteor') : NECRO ? 'acidboom' : 'boom');
+    if (pr.kind === 'meteor' && pr.mini && spr('nm_boneball')) { sfx('bonecrash', null, 1, { x: pr.tx, y: pr.ty }); const bx = pr.tx, by = pr.ty; setTimeout(() => sfx('boneclatter', null, 1, { x: bx, y: by }), rand(160, 300)); } // 19 Eki: her top kendi kırılma + saçılma sesi
+    else sfx(pr.kind === 'meteor' ? 'meteor' : NECRO ? 'acidboom' : 'boom');
   } else if (pr.ballistic && !(pr.target && !pr.target.dead)) {
     stickArrow(pr, null); // hedef uçuşta öldü: ok yere saplanır
   } else if (pr.target && !pr.target.dead) {
@@ -10018,6 +10036,7 @@ function update(dt) {
   for (const f of G.effects) if (f.kind === 'corpse' && f.t >= f.dur) keepRemains(f);
   G.effects = G.effects.filter(f => f.t < f.dur);
   G.parts = updateParts(G.parts, dt);
+  if (G.debris) G.debris = updateParts(G.debris, dt); // 19 Eki: yerde kalan kemikler (ayrı liste, kendi sınırı)
   if (G.stormT > 0) G.stormT -= dt;
   for (const f of G.ground) f.t += dt;
   G.ground = G.ground.filter(f => f.t < f.dur);
@@ -21948,7 +21967,7 @@ function drawPlay() {
   if (avluOn()) { const im = castleStageSprite(), cp = castlePlace(G.castle.x, G.castle.y, im); ents.push([cp.y - cp.w * im.height / im.width, 3, G.castle]); ents.push([G.castle.y - 2, 5, G.castle]); }
   else ents.push([G.castle.y - 30, 3, G.castle]);
   ents.sort((a, b) => a[0] - b[0]);
-  drawPlaguePools(); drawAcidFx(); drawSoulFlames(); drawTornadoes(true); drawSigFx(true);
+  drawPlaguePools(); drawAcidFx(); if (G.debris && !PERF_OFF.has('parts')) drawParts(G.debris, false); drawSoulFlames(); drawTornadoes(true); drawSigFx(true);
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) if (!PERF_OFF.has('ent' + k)) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
   drawGasClouds();
