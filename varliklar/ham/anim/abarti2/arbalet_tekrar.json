@@ -1,0 +1,26 @@
+[
+ {
+  "name": "unit_xbow1_shot",
+  "ref": "ham/anim/unit_xbow1_ref.png",
+  "prompt": "a cartoon skeleton crossbowman with a wooden crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Smooth controlled motion, the crossbow stays solid, sharp and fully opaque in every frame, clean edges, no color fringes, no ghosting, no motion blur, no smear frames. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 34
+ },
+ {
+  "name": "unit_xbow2_shot",
+  "ref": "ham/anim/unit_xbow2_ref.png",
+  "prompt": "a cartoon skeleton crossbowman in bone armor with a heavy crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Smooth controlled motion, the crossbow stays solid, sharp and fully opaque in every frame, clean edges, no color fringes, no ghosting, no motion blur, no smear frames. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 34
+ },
+ {
+  "name": "unit_xbow3_shot",
+  "ref": "ham/anim/unit_xbow3_ref.png",
+  "prompt": "a cartoon elite skeleton crossbowman in ornate bone armor with a big heavy crossbow raises the crossbow to the shoulder, aims forward to the right, pulls the trigger and the bolt shoots out to the right with a strong kick recoil that jolts the whole body back, then he pulls the string back with effort to reload, places a new bolt and returns exactly to the starting pose. Smooth controlled motion, the crossbow stays solid, sharp and fully opaque in every frame, clean edges, no color fringes, no ghosting, no motion blur, no smear frames. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 34
+ }
+]

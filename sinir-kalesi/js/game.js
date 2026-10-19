@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero|pet)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -2304,6 +2304,7 @@ function startLevel(idx, chal = null) {
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle', '_dash', '_guard').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
+  for (const id of team()) { const pt = HEROES[id] && HEROES[id].pet && PET[HEROES[id].pet]; if (pt) for (const f of pt) for (const sf of ['_run', '_atk', '_idle', '_die']) { keep.add(f.img + sf); if (ANIM_META[f.img + sf]) loadStrip(f.img + sf); } } // 19 Eki: Robin'in kurdu (Wan şeritleri)
   for (const id of team()) if (HEROES[id] && HEROES[id].sprite) SUF.concat(['_idle', '_run', '_cast', '_block', '_skill2', '_walk_hurt', '_lvlup'], (HERO_PASSIVES[id] || []).map(k => '_cast_' + k)).forEach(sf => keep.add(HEROES[id].sprite + sf)); // komutan şeritleri (_skill2: ikinci aktif güç, _cast_<pasif>: pasifin kendi şeridi)
 
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
@@ -3702,6 +3703,7 @@ function damageSoldier(s, amount, src) {
     }
     const cn = s.hero ? s.def.sprite : s.militia && !s.merc ? 'militia' : 'soldier';
     if (s.big && ANIM_META[s.big + '_die']) G.effects.push({ kind: 'corpse', name: s.big, rig: s.big, h: s.bh, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: 3 }); // iri birim: Wan çöküş şeridi
+    if (s.pet && ANIM_META[s.pet.img + '_die'] && animStrip(s.pet.img, s.pet.img, '_die')) G.effects.push({ kind: 'corpse', name: s.pet.img, rig: s.pet.img, h: s.pet.h * UNIT_K, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: 2.5 }); // 19 Eki: kurt ölüm şeridi
     else if (!s.ghoul && !s.big && !s.pet) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: Math.max(CORPSE_DUR, ((s.hero && ANIM_META[cn + '_die'] || {}).dur || 0) + 0.8) });
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.chapel ? s.giant.respawn : s.guard ? GATE.guard.respawn : 0;
@@ -6826,7 +6828,25 @@ function drawBloodLinks() {
     ctx.restore();
   }
 }
+// 19 Eki: Ruh Kurdu'nun Wan şeritleri (pet_wolf_N_run/atk/idle): koşarken run, dövüşte atk (saldırı evresiyle), dururken idle; yoksa eski tek görsel
+function drawPetStrip(s) {
+  const moving = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05, fighting = s.target && !s.target.dead && dist(s.x, s.y, s.target.x, s.target.y) < 26;
+  const sf = fighting ? '_atk' : moving ? '_run' : '_idle', nm = s.pet.img + sf, F = ANIM_META[nm], im = F && spr(nm);
+  if (!im) { if (F) loadStrip(nm); return false; }
+  s.px = s.x; s.py = s.y; if (moving) s.anim += 1 / 60;
+  const h = s.pet.h * UNIT_K, fps = F.fps || 24;
+  const i = fighting ? Math.min(F.n - 1, Math.floor(atkPhase(s.rate, s.atk) * F.n)) : moving ? Math.floor(s.anim * fps * 1.1) % F.n : Math.floor((time + (s.slot || 0) * 0.7) * fps * 0.7) % F.n;
+  unitShadow(s.x, s.y + 1, h * 0.9);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - h * 0.3, h * 0.8, '110,255,150', 0.12 + Math.sin(time * 3 + s.x) * 0.03); ctx.restore();
+  ctx.save(); ctx.translate(s.x, s.y); ctx.scale(s.face || 1, 1); drawFrame(im, F, i, h);
+  if (s.flash > 0) { ctx.globalAlpha *= 0.5; ctx.globalCompositeOperation = 'lighter'; drawFrame(im, F, i, h); }
+  ctx.restore();
+  if (Math.random() < 0.08) emit(G.parts, { kind: 'glow', add: true, x: s.x + rand(-h * 0.4, h * 0.4), y: s.y - h * rand(0.4, 0.9), vy: -rand(10, 25), col: '110,255,150', s0: rand(2, 3.5), s1: 0.5, life: rand(0.4, 0.7) });
+  if (s.hp < s.maxHp || fighting) hpBar(s.x, s.y - h - 4, 14, s.hp / s.maxHp, '#7ae08a');
+  return true;
+}
 function drawPet(s) {
+  if (drawPetStrip(s)) return;
   const im = spr(s.pet.img); if (!im) return;
   const moving = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05; s.px = s.x; s.py = s.y;
   if (moving) s.anim += 1 / 60;

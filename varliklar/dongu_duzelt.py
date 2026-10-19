@@ -14,7 +14,7 @@ A = json.load(open(os.path.join(IMG, 'anim.json')))
 
 
 def frames(name):
-    M = A[name]; im = Image.open(os.path.join(IMG, name + '.webp')).convert('RGBA'); fw, fh = M['fw'], M['fh']; cols = im.width // fw
+    M = A[name]; im = Image.open(os.path.join(IMG, name + '.webp')).convert('RGBA'); fw, fh = M['fw'], M['fh']; cols = M.get('cols') or im.width // fw
     return [im.crop(((i % cols) * fw, (i // cols) * fh, (i % cols) * fw + fw, (i // cols) * fh + fh)) for i in range(M['n'])]
 
 
@@ -45,8 +45,10 @@ def fix(name, force=False):
     os.makedirs(OLD, exist_ok=True)
     if not os.path.exists(os.path.join(OLD, name + '.webp')):
         shutil.copy(os.path.join(IMG, name + '.webp'), OLD); json.dump(M, open(os.path.join(OLD, name + '.json'), 'w'))
-    out = Image.new('RGBA', (fw * len(sel), fh), (0, 0, 0, 0))
-    for k, i in enumerate(sel): out.paste(F[i], (k * fw, 0))
+    C = M.get('cols') or len(sel); C = min(C, len(sel)); R_ = (len(sel) + C - 1) // C  # 19 Eki: ızgaralı şerit ızgarada kalır (tek satır WebP'nin 16383 px sınırını aşmasın)
+    out = Image.new('RGBA', (fw * C, fh * R_), (0, 0, 0, 0))
+    for k, i in enumerate(sel): out.paste(F[i], ((k % C) * fw, (k // C) * fh))
+    if 'cols' in M: M['cols'] = C
     out.save(os.path.join(IMG, name + '.webp'), 'WEBP', quality=88, method=6)
     M['n'] = len(sel)
     if 'idle' in M:  # duruş karesi: ayakların en kapalı olduğu kare

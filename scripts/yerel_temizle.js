@@ -18,7 +18,9 @@ for (const pub of DIRS) {
   const img = path.join(pub, 'img'), manP = path.join(img, 'manifest.json');
   if (fs.existsSync(manP)) {
     const man = new Set(JSON.parse(fs.readFileSync(manP, 'utf8')));
-    for (const f of fs.readdirSync(img)) if (!f.endsWith('.json') && !man.has(f) && !/^(map_|atlas_|win_scene|hero_panels|cine_|ev_)/.test(f)) rm(path.join(img, f)); // map_*: önceden pişirilmiş harita zeminleri, atlas_*: küçük görsel sayfaları; 18 Eki: win_scene (zafer videosu), cine_* (hikâye), ev_* (etkinlik çizimleri) da kod doğrudan yükler
+    // 19 Eki: atlasa paketlenen kaynaklar (atlas.json items) kural dışı adla da olsa, manifeste geri girse de silinir; asıl dosyaları img/'de kalır (atlas_kur.py ve işleme betikleri okur)
+    const atP = path.join(img, 'atlas.json'), atlas = new Set(fs.existsSync(atP) ? Object.keys(JSON.parse(fs.readFileSync(atP, 'utf8')).items).map((n) => n + '.webp') : []);
+    for (const f of fs.readdirSync(img)) if (atlas.has(f) || (!f.endsWith('.json') && !man.has(f) && !/^(map_|atlas_|win_scene|hero_panels|cine_|ev_)/.test(f))) rm(path.join(img, f)); // map_*: önceden pişirilmiş harita zeminleri, atlas_*: küçük görsel sayfaları; 18 Eki: win_scene (zafer videosu), cine_* (hikâye), ev_* (etkinlik çizimleri) da kod doğrudan yükler
   }
   for (const f of ['tools', 'yayin.html']) if (fs.existsSync(path.join(pub, f))) rm(path.join(pub, f));
   console.log(path.relative(ROOT, pub) + ': ' + n + ' dosya silindi, ' + (bytes / 1e6).toFixed(1) + ' MB');

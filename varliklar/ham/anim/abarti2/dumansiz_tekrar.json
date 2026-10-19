@@ -1,0 +1,26 @@
+[
+ {
+  "name": "enemy_shadowmaster_sig2",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades raises both golden sickles crossed above his head, then slams them down and a dark purple shock wave bursts out around him, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, absolutely no smoke, no mist, no fog, no aura, no particles, no magic clouds anywhere, only the character moves, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_severus3_sig2",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes, holding a black teapot and a cracked sun staff raises the black teapot high and shouts a curse, the broken sun halo flickers, then returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, absolutely no smoke, no mist, no fog, no aura, no particles, no magic clouds anywhere, only the character moves, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 33
+ },
+ {
+  "name": "enemy_severus3_block",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes, holding a black teapot and a cracked sun staff defends: braces his feet, raises his weapon or arm up in front of his body to block an incoming blow, takes a hard hit and recoils back, then steadies and returns exactly to the starting pose. Exaggerated cartoon action, big anticipation, powerful motion, strong follow-through, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, absolutely no smoke, no mist, no fog, no aura, no particles, no magic clouds anywhere, only the character moves, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 44
+ }
+]
