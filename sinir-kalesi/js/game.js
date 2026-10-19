@@ -659,6 +659,7 @@ const SOUND = {
   raise:    { vol: 0.5, gap: 1, max: 1 },                         // ölüler kalkar
   fear:     { vol: 0.5, gap: 1, max: 1 },                         // korku ruhları uğuldar
   bats:     { vol: 0.45, gap: 1, max: 1 },                        // yarasa sürüsü
+  tornado:  { vol: 0.42 },                                        // 20 Eki: Merlin hortumu sürerken döngülü rüzgâr uğultusu (updateAmbience)
   bonefall: { vol: 0.13, gap: 0.2, max: 1, rate: [0.92, 1.1] },       // iskelet ölünce kemikleri saçılır (arka planda kalsın)
   magic:   { vol: 0.30, gap: 0.12, max: 2, rate: [0.85, 1.1] },
   cannon:  { vol: 0.45, gap: 0.10, max: 2, rate: [0.85, 1.0] },
@@ -3578,6 +3579,7 @@ function killEnemy0(e) {
     G.effects.push({ kind: 'puff', x: o.x, y: o.y - 8, t: 0, dur: 0.5, r: 6 });
   }
   if (e.curseT > 0 && e.blightN) { // kara lanet: en yakınlara sıçrar
+    if (G.enemies.some(o => !o.dead && o !== e && !(o.curseT > 0.5) && dist(o.x, o.y, e.x, e.y) < 90)) sfx('cursegaze', rand(1.15, 1.3), 0.7, e); // 20 Eki: sıçrayan lanetin sesi
     G.enemies.filter(o => !o.dead && o !== e && !(o.curseT > 0.5) && dist(o.x, o.y, e.x, e.y) < 90).sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))
       .slice(0, e.blightN).forEach(o => { o.curseT = 4; o.curseK = e.curseK; o.curseRise = e.curseRise; o.curseRes = e.curseRes; o.curseWeak = e.curseWeak; o.blightN = e.blightN;
         G.effects.push({ kind: 'zap', x0: e.x, y0: e.y - 14, target: o, x1: o.x, y1: aimY(o), t: 0, dur: 0.3, w: 0.7, seed: rand(0, 99), col: 'rgb(190,90,255)' }); });
@@ -6561,7 +6563,7 @@ function updateProjectile(pr, dt) {
     }
     else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
-    if (pr.kind === 'arrow') sfx(e.def.armor >= 0.3 ? 'armorhit' : 'arrowhit'); // zırhlıya saplanan cıvata metal tınlar (19 Eki: eşik 0,5 → 0,3)
+    if (/arrow/.test(pr.kind) || pr.ballistic) sfx(e.def.armor >= 0.3 ? 'armorhit' : 'arrowhit', null, 1, e); // 20 Eki: kule okları/cıvataları (ghostarrow, balistik) da saplanma sesi verir // zırhlıya saplanan cıvata metal tınlar (19 Eki: eşik 0,5 → 0,3)
     if (pr.inferno) for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.inferno) damageEnemy(o, pr.dmg * 0.5, 'magic');
     if (pr.splash) {
       for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.splash) damageEnemy(o, pr.dmg * 0.55, pr.dtype, false, pr.src);
@@ -21787,10 +21789,15 @@ function weatherAudio() {
     const v = n >= SOUND.battle.min ? SOUND.battle.vol * (BL === SND.el_battle ? 0.75 : 1) * (overlay ? 0.35 : 1) * clamp((n - SOUND.battle.min + 1) / (SOUND.battle.full - SOUND.battle.min + 1), 0.15, 1) : 0; // 14 Eki: 1-2 kavgada ordu sesi yok
     if (Math.abs((ambLast.battle ?? -1) - v) > 0.002) { ambLast.battle = v; amb.battle.gain.setTargetAtTime(v, actx.currentTime, v > 0 ? 0.35 : 0.8); }
   }
+  if (!amb.tornado && SND.tornado && SND.tornado.length) { const src = actx.createBufferSource(); src.buffer = SND.tornado[0]; src.loop = true;
+    const g = actx.createGain(); g.gain.value = 0; src.connect(g); g.connect(master); src.start(0, rand(0, 4)); amb.tornado = g; }
   const on = screen === 'play' && G && !muted, k = overlay ? 0.35 : 1;
   const rain = on && G.weather === 'rain' ? SOUND.rain.vol * k : 0;
   const windy = G && (G.weather === 'snow' || G.weather === 'sand' || G.stormT > 0), gust = G && (G.weather === 'sand' || G.stormT > 0) ? 1.6 : 1;
   const wind = on && windy ? SOUND.wind.vol * k * gust * (0.55 + 0.45 * Math.sin(time * 0.45) * Math.sin(time * 0.17)) : 0;
+  const tw = on && amb.tornado ? G.zones.filter(z => z.kind === 'tornado' && z.t < z.dur + 0.3).length : 0;
+  const tornado = tw ? SOUND.tornado.vol * k * Math.min(1.4, 1 + 0.2 * (tw - 1)) : 0;
+  if (amb.tornado && Math.abs((ambLast.tornado ?? -1) - tornado) > 0.002) { ambLast.tornado = tornado; amb.tornado.gain.setTargetAtTime(tornado, actx.currentTime, tornado > 0 ? 0.25 : 0.5); }
   for (const [key, v] of [['rain', rain], ['wind', wind]]) {
     if (Math.abs(ambLast[key] - v) < 0.002) continue;
     ambLast[key] = v;
