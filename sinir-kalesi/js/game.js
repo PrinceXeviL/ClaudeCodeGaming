@@ -6613,7 +6613,7 @@ function cmdMinions(x, y, g = null) { // g: yalnız o grup (null: hepsi)
   // 14 Eki (Caner): düşmana dokunulursa hepsi doğrudan ona saldırır (boş yere dokununca eskisi gibi oraya yürür)
   let foe = null, fd = 30; for (const e of G.enemies) { if (e.dead || e.under || e.def.flying || e.reviveT > 0) continue; const d = dist(e.x, e.y - 10, x, y); if (d < fd) { fd = d; foe = e; } }
   if (foe) {
-    for (const s of L) { if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.post = null; s.moving = false; s.order = foe; s.rx = foe.x; s.ry = foe.y; }
+    for (const s of L) { if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.post = null; s.moving = false; s.order = foe; s.rx = foe.x; s.ry = foe.y; s.zr = null; s.zResume = false; }
     G.effects.push({ kind: 'ring', x: foe.x, y: foe.y, r: 24, col: '255,80,60', t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: foe.x, y: foe.y, r: 12, col: '140,255,120', t: 0, dur: 0.35 });
     impactFx(foe.x, foe.y - 14, '255,90,70', 0.9); floatText(foe.x, foe.y - (CHAR_H['enemy_' + foe.type] || 24) - 14, 'Saldır!', '#ff8a7a'); sfx('spell');
     return;
@@ -6621,9 +6621,12 @@ function cmdMinions(x, y, g = null) { // g: yalnız o grup (null: hepsi)
   // 16 Eki (Caner: "yönlendirirken takılıyorlar; yalnız yoldan gitsinler, yol dışına çıkmasınlar"): gösterilen yer hep yolun üstüne oturur,
   // askerler yolun üstünde sıralanır (yol boyunca öne-arkaya ve şeritlere dağılır); oraya yol boyunca yürürler (zombieRoadTo)
   const n = nearestOnPaths(G.paths, x, y), px = n.x, py = n.y;
+  // 19 Eki (Caner: "savaşırken savaşı bıraktırıp bir yere göndermek"): emir anında dövüştüğü / dibindeki düşmanlar yürüyüş boyunca
+  // görmezden gelinir (s.zLeave), ilk ZOMBIE.free sn hiçbir düşmana takılmaz; yoksa az önceki rakibine yeniden takılıp kalıyordu
+  for (const s of L) { s.zLeave = new Set(); if (s.target) s.zLeave.add(s.target); for (const e of G.enemies) if (!e.dead && (e.blocker === s || dist(e.x, e.y, s.x, s.y) < 40)) s.zLeave.add(e); s.zFree = G.t + ZOMBIE.free; }
   L.forEach((s, j) => { const row = Math.floor(j / 3), col = j % 3, al = n.along + (row % 2 ? -1 : 1) * Math.ceil(row / 2) * ZOMBIE.sep * 1.15, lane = (col - 1) * ZOMBIE.sep * 0.75; // 17 Eki: aralık itme mesafesinden geniş (yer kavgası, titreme)
     const q = pathPos(n.p, clamp(al, SOLDIER_REACH, n.p.total - 10), lane); s.post = { x: q.x, y: q.y, p: n.p, along: clamp(al, SOLDIER_REACH, n.p.total - 10), lane };
-    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.zlane = lane; s.atPost = false; zombieRoadTo(s, s.post.x, s.post.y); });
+    if (s.target && s.target.blocker === s) s.target.blocker = null; s.target = null; s.order = null; s.moving = true; s.zlane = lane; s.atPost = false; s.zr = null; s.zProg = null; s.zResume = false; zombieRoadTo(s, s.post.x, s.post.y); }); // 19 Eki: her emirde rota bulunduğu yerden baştan
   const RC = g == null ? '140,255,120' : ZGROUP[g].rgb; G.effects.push({ kind: 'ring', x: px, y: py, r: 26, col: RC, t: 0, dur: 0.5 }); G.effects.push({ kind: 'ring', x: px, y: py, r: 14, col: '200,120,255', t: 0, dur: 0.35 });
   floatText(px, py - 24, 'İleri!', '#9aff8a'); sfx('spell');
 }
@@ -6755,7 +6758,7 @@ function castNecro(id, x, y) {
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
 // dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
 // sep = birimler arası en az uzaklık (separateUnits)
-const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150, march: 85, touch: 16, stuck: 4, ignore: 3 }; // touch: emirle yürürken yalnız bu kadar yakındakiyle dövüşür; stuck: bu kadar sn vuramazsa hedefi bırakır (ignore sn ona dönmez)
+const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150, march: 85, touch: 16, stuck: 4, ignore: 3, cut: 1.15, cutAdd: 30, free: 1.5 }; // free: emirden sonra bu kadar sn hiçbir düşmana takılmadan yürür // cut/cutAdd: yol bu kadar uzunsa (düz uzaklık × cut + cutAdd) kestirir // touch: emirle yürürken yalnız bu kadar yakındakiyle dövüşür; stuck: bu kadar sn vuramazsa hedefi bırakır (ignore sn ona dönmez)
 const zIgnored = (s, o) => s.zIgn && s.zIgn.o === o && G.t < s.zIgn.until;
 function zLock(s) { s.zTgT = G.t; s.zHitT = G.t; } // yeni hedef: takılma sayacı sıfırlanır // march: emirle yürürken saldırdığı düşman uzaklığı (17 Eki) // 14 Eki (Caner): menzil ~10 adam (bir düşman ~20 birim geniş) = 200; drop: kovaladığını bu uzaklıkta bırakır // 14 Eki (Caner): sep 10 -> 15 (iç içe geçiyorlardı); aggro: düşman bu kadar yakına gelince saldırır, yoksa yerinde bekler
 function separateUnits(dt) {
@@ -6891,13 +6894,14 @@ function zombieHunt(s) {
     // 17 Eki (Caner: "zombilerim saldırgan olsun, menzile giren düşmana doğrudan saldırsın"): yürürken yanına gelen düşmanı bırakmaz; işi bitince emir yerine (yol boyunca) döner
     // 17 Eki (Caner: "zombiler ilk olarak bizim komutumuzu dinlesin, sonra menzile giren en yakın düşmana saldırsın"): yürürken yalnız önünü kesen
     // (değecek kadar yakın) düşmanla dövüşür; gerisini görmezden gelip emir yerine varır
-    let near = null, nd = ZOMBIE.touch; for (const o of G.enemies) { if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nd) { nd = d; near = o; } }
+    const left = (o) => G.t < (s.zFree || 0) || (s.zLeave && s.zLeave.has(o)); // emirle bırakılan rakip
+    let near = null, nd = ZOMBIE.touch; for (const o of G.enemies) { if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nd) { nd = d; near = o; } }
     // ilerleyemiyor (kalabalık itiyor): 1,2 sn yerinde sayarsa önündeki düşmanla dövüşür, düşman yoksa şerit değiştirip yandan geçer
     if (!near) { const P = s.zProg; if (!P || dist(s.x, s.y, P.x, P.y) > 5) s.zProg = { x: s.x, y: s.y, t: G.t }; else if (G.t - P.t > 1.2) { s.zProg = null;
-      let nb = null, nbd = 48; for (const o of G.enemies) { if (o.dead || o.def.flying || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nbd) { nbd = d; nb = o; } }
+      let nb = null, nbd = 48; for (const o of G.enemies) { if (o.dead || o.def.flying || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nbd) { nbd = d; nb = o; } }
       if (nb) near = nb; else s.zlane = -(s.zlane || ZOMBIE.lane); } }
     if (near) { s.moving = false; s.zResume = true; s.zProg = null; s.target = near; if (!near.blocker) near.blocker = s; s.rx = s.x; s.ry = s.y; zLock(s); return; }
-    if (zombieRoadTo(s, s.post.x, s.post.y)) s.moving = false; return; }
+    if (zombieRoadTo(s, s.post.x, s.post.y)) { s.moving = false; s.zLeave = null; } return; } // vardı: bırakılan rakipler yeniden hedef olabilir
   if (s.order) { // Mortimer'ın emri: gösterilen düşmana yol boyunca yürür (yakındaysa doğrudan); yetişince olağan dövüş seçimi onu tutar
     let o = s.order; if (o.dead || o.under || o.reviveT > 0) { s.order = o = zNextFoe(s, o); if (!o) { s.post = null; s.rx = s.x; s.ry = s.y; } } // 18 Eki: hedef ölünce aynı gruptan sıradakine
     if (o) { if (dist(o.x, o.y, s.x, s.y) < 40) { s.rx = o.x; s.ry = o.y; } else zombieRoadTo(s, o.x, o.y); if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; zLock(s); if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
@@ -6930,16 +6934,31 @@ function idleFace(s) {
 // 16 Eki (Caner: "yalnız yoldan gitsinler, yol dışına çıkamasınlar, çıkarlarsa yola dönsünler"): dirilenin yol boyunca yürüyüşü.
 // Rota emir anında bir kez planlanır (zRoute): hedef başka koldaysa önce kendi kolunda kavşağa, sonra hedefin kolunda hedefe. Her adımda
 // izlediği koldan çıkmışsa önce o kolun en yakın noktasına döner. true: vardı
+// 19 Eki (Caner: "zombileri bir yere gönderince önce kaleye gidiyor, sonra dönüp istediğim yere gidiyor"): birçok bölümde iki yol yalnız
+// kale kapısında birleşiyor (7, 10, 18, 25, 27, 32, 35, 38, 39); yalnız yoldan yürüyen dirilen öteki yola geçmek için kaleye inip dönüyordu.
+// Artık: (1) hedef kendi yolunun üstündeyse (yollar ortak gövdede üst üste biner) tek ayak; (2) başka yoldaysa geçiş noktası iki yolun
+// değdiği yerlerden toplam yürüyüşü en kısa olanı (eskiden en tam çakıştığı yer = çoğu bölümde kale kapısı); (3) yol üzerinden gitmek düz
+// gitmekten çok uzunsa (ZOMBIE.cut) araziyi kestirip doğrudan yürür (Kingdom Rush askerleri gibi).
 function zRoute(s, tx, ty) {
-  const me = nearestOnPaths(G.paths, s.x, s.y), T = nearestOnPaths(G.paths, tx, ty);
-  if (T.p === me.p) return { tx, ty, legs: [{ p: T.p, a: T.along }], i: 0 };
-  let ja = me.along, bd = 1e9; for (let a = 0; a <= me.p.total; a += 6) { const q = pathPos(me.p, a, 0), k = nearestOnPaths([T.p], q.x, q.y); if (k.d < bd) { bd = k.d; ja = a; } }
-  return { tx, ty, legs: [{ p: me.p, a: ja }, { p: T.p, a: T.along }], i: 0 };
+  const me = nearestOnPaths(G.paths, s.x, s.y), D = dist(s.x, s.y, tx, ty);
+  let legs, len;
+  const Tm = nearestOnPaths([me.p], tx, ty);
+  if (Tm.d < 14) { legs = [{ p: me.p, a: Tm.along }]; len = Math.abs(Tm.along - me.along); }
+  else {
+    const T = nearestOnPaths(G.paths, tx, ty);
+    let ja = null, jb = 0, bc = 1e9;
+    for (let a = 0; a <= me.p.total; a += 6) { const q = pathPos(me.p, a, 0), k = nearestOnPaths([T.p], q.x, q.y); if (k.d >= 14) continue; const c = Math.abs(a - me.along) + Math.abs(T.along - k.along); if (c < bc) { bc = c; ja = a; jb = k.along; } }
+    if (ja == null) { let bd = 1e9; ja = me.along; for (let a = 0; a <= me.p.total; a += 6) { const q = pathPos(me.p, a, 0), k = nearestOnPaths([T.p], q.x, q.y); if (k.d < bd) { bd = k.d; ja = a; jb = k.along; } } }
+    legs = [{ p: me.p, a: ja }, { p: T.p, a: T.along }]; len = Math.abs(ja - me.along) + Math.abs(T.along - jb);
+  }
+  if (me.d > 60 || len > D * ZOMBIE.cut + ZOMBIE.cutAdd) return { tx, ty, direct: true, legs: [], i: 0 }; // kestirme
+  return { tx, ty, legs, i: 0 };
 }
 function zombieRoadTo(s, tx, ty) {
   s.zlane ??= rand(-1, 1) * ZOMBIE.lane;
   if (!s.zr || dist(s.zr.tx, s.zr.ty, tx, ty) > 20) s.zr = zRoute(s, tx, ty); // yürüyen hedefte rota yalnız hedef 20 birim kayınca yenilenir
-  const R = s.zr, leg = R.legs[R.i], last = R.i === R.legs.length - 1, cur = nearestOnPaths([leg.p], s.x, s.y);
+  const R = s.zr; if (R.direct) { s.rx = tx; s.ry = ty; return dist(s.x, s.y, tx, ty) < 8; } // kestirme: doğrudan yürür
+  const leg = R.legs[R.i], last = R.i === R.legs.length - 1, cur = nearestOnPaths([leg.p], s.x, s.y);
   if (cur.d > 10 + Math.abs(s.zlane)) { const q0 = pathPos(leg.p, cur.along, s.zlane); s.rx = q0.x; s.ry = q0.y; return false; } // yoldan çıkmış: yola dön
   const dA = leg.a - cur.along;
   if (Math.abs(dA) < 3) { if (!last) { R.i++; return zombieRoadTo(s, tx, ty); } s.rx = tx; s.ry = ty; return dist(s.x, s.y, tx, ty) < 8; } // 17 Eki: kalabalıkta 3 birime yaklaşamayan dursun (8)
@@ -9464,7 +9483,7 @@ function stormChain(x, y, U, dmg) {
 // Bulut oluşur, huni iner, yolda düşmanların geldiği yöne (geriye) ilerler. Huniye değen hafif düşman (en çok U.n) havalanıp huninin
 // çevresinde döner (hold sn), sonra rastgele yöne fırlatılır (flingStep ile düşer, seker, yola oturur, sersemler) ve hasar alır.
 // Ağır/büyük düşman, boss: havalanmaz, yere devrilir (FLING.kd) ve %60 hasar alır. Uçanlar: hasar. Buluttan aralıkla şimşek çakar.
-const TORNADO = { pullR: 70, pull: 34, landK: 0.4, landStun: 1.2, speed: 26, catchR: 26, hold: 1.4, liftH: 92, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
+const TORNADO = { vis: 0.8, /* 19 Eki (Caner): hortum %20 küçük (yalnız görünüş; çekim/kapma alanı aynı) */ pullR: 70, pull: 34, landK: 0.4, landStun: 1.2, speed: 26, catchR: 26, hold: 1.4, liftH: 92, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
 function tornadoCast(x, y, U, dmg) {
   const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60;
   G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
@@ -9496,7 +9515,7 @@ function tornadoStep(z, dt) {
       HERO_SKILL = false; continue;
     }
     z.got++; HERO_SKILL = false;
-    e.twT = T.hold * rand(0.85, 1.15); e.twH = T.liftH * rand(0.45, 1); e.twZ = z; e.twA = Math.atan2((e.y - z.y) / 0.45, e.x - z.x); e.twR = Math.min(T.orbit * 1.6, Math.hypot(e.x - z.x, (e.y - z.y) / 0.45)); e.flZ = null;
+    e.twT = T.hold * rand(0.85, 1.15); e.twH = T.liftH * T.vis * rand(0.45, 1); e.twZ = z; e.twA = Math.atan2((e.y - z.y) / 0.45, e.x - z.x); e.twR = Math.min(T.orbit * 1.6, Math.hypot(e.x - z.x, (e.y - z.y) / 0.45)); e.flZ = null;
     e.blocker = null; e.inMelee = false; for (const s of G.soldiers) if (s.target === e) s.target = null;
   }
   if (live && (z.boltT -= dt) <= 0) { // buluttan şimşek: kasırga çevresindeki rastgele bir düşmana
@@ -9524,7 +9543,7 @@ function tornadoStep(z, dt) {
 function twistStep(e, dt) { // kasırgaya kapılan düşman: huninin çevresinde dönerek yükselir, sonra savrulur (true: yürüme yok)
   if (!(e.twT > 0)) return false;
   const T = TORNADO, z = e.twZ; e.twT -= dt; const u = clamp(1 - e.twT / T.hold, 0, 1);
-  e.twZh = (e.twH || T.liftH) * Math.sin(Math.min(1, u * 1.25) * Math.PI / 2); // her biri başka yüksekliğe: sarmal
+  e.twZh = (e.twH || T.liftH * T.vis) * Math.sin(Math.min(1, u * 1.25) * Math.PI / 2); // her biri başka yüksekliğe: sarmal
   const fw = lerp(6, 38, Math.pow(clamp(e.twZh / T.H, 0, 1), 1.45)); // o yükseklikte huninin yarıçapı
   e.twA += dt * (7 + 7 * u); const R = lerp(e.twR || T.orbit, fw * 0.9 + 3, Math.min(1, u * 2.5));
   e.x = z.x + Math.cos(e.twA) * R; e.y = z.y + Math.sin(e.twA) * R * 0.27 + 1;
@@ -9559,14 +9578,14 @@ const TW_PAL = [
   { body: ['rgba(11,28,23,0.85)', 'rgba(28,64,51,0.75)', 'rgba(64,112,89,0.7)', 'rgba(112,149,128,0.7)', 'rgba(23,51,42,0.85)'], b1: '210,255,200', b2: '200,240,226', bb: '30,80,64', mid: '34,78,64' },
   { body: ['rgba(36,11,21,0.85)', 'rgba(77,28,43,0.75)', 'rgba(114,64,81,0.7)', 'rgba(147,112,123,0.7)', 'rgba(62,21,35,0.85)'], b1: '255,200,190', b2: '246,214,226', bb: '96,34,56', mid: '92,34,52' }];
 function tornadoVar() {
-  return { pal: TW_PAL[Math.floor(Math.random() * TW_PAL.length)], lean: rand(-1, 1), wk: rand(0.8, 1.25), hk: rand(0.85, 1.15), sa: rand(5, 13), sf: rand(1.6, 3), dir: Math.random() < 0.5 ? -1 : 1, nb: 7 + Math.floor(rand(0, 5)) };
+  return { pal: TW_PAL[Math.floor(Math.random() * TW_PAL.length)], lean: rand(-1, 1), wk: rand(0.8, 1.25) * TORNADO.vis, hk: rand(0.85, 1.15) * TORNADO.vis, sa: rand(5, 13), sf: rand(1.6, 3), dir: Math.random() < 0.5 ? -1 : 1, nb: 7 + Math.floor(rand(0, 5)) };
 }
 function tornadoDust(z, front, gr) { // tabanda dönen toz öbekleri (yarım: arkadakiler birimlerin arkasında); önce konturlar sonra dolgular: tek siluet
   const t = z.t, D = [];
   for (let i = 0; i < 10; i++) {
     const a = t * 5.5 + i * 0.628, sn = Math.sin(a); if ((sn >= 0) !== front) continue;
-    const R = (22 + (i % 3) * 5) * (0.6 + 0.4 * gr);
-    D.push([z.x + Math.cos(a) * R, z.y + sn * R * 0.32 - 3 - (i % 2) * 3, (5.5 + (i % 4) * 1.5) * (0.85 + 0.15 * Math.sin(t * 7 + i))]);
+    const R = (22 + (i % 3) * 5) * (0.6 + 0.4 * gr) * TORNADO.vis;
+    D.push([z.x + Math.cos(a) * R, z.y + sn * R * 0.32 - 3 - (i % 2) * 3, (5.5 + (i % 4) * 1.5) * (0.85 + 0.15 * Math.sin(t * 7 + i)) * TORNADO.vis]);
   }
   ctx.globalAlpha = 0.7 * gr; ctx.fillStyle = 'rgba(30,22,36,0.6)'; blobPath(D, 1.2); ctx.fill();
   ctx.fillStyle = front ? '#8a7c84' : '#675b69'; blobPath(D); ctx.fill();
@@ -9580,7 +9599,7 @@ function drawTornadoes(back) {
     const V = z.vr || (z.vr = tornadoVar()), HH = T.H * V.hk, top = z.y - HH, bot = top + HH * gr, t = z.t;
     if (back) {
       if (gr <= 0) continue;
-      ctx.save(); ctx.globalAlpha = 0.4 * gr; ctx.fillStyle = '#140c1a'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 30, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.globalAlpha = 0.4 * gr; ctx.fillStyle = '#140c1a'; ctx.beginPath(); ctx.ellipse(z.x, z.y + 1, 30 * T.vis, 9 * T.vis, 0, 0, Math.PI * 2); ctx.fill();
       if (!(z.veo && spr('fx_tornado'))) tornadoDust(z, false, gr); ctx.restore(); continue;
     }
     // 18 Eki (Caner: "Merlin'in bulutlu tornadosu için çok daha etkileyici"): Gemini çizimi + Veo (img/fx_tornado, varliklar/merlin_kasirga_isle.py).
@@ -11291,7 +11310,7 @@ function boneBallHit(pr) {
       stunEnemy(e, e.tossD + (cr.stun || 0) * k);
     }
   }
-  G.zones.push({ x: pr.tx, y: pr.ty, r: R * 0.75, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: LOB.pool * 1.2, fxT: 0, src: 'blast', kind: 'plague', pool: true, seed: rand(0, 6), boneball: true });
+  G.zones.push({ x: pr.tx, y: pr.ty, r: R * 0.75, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: LOB.pool * 1.2, fxT: 0, src: 'blast', kind: 'plague', pool: true, seed: rand(0, 6), boneball: true }); // 19 Eki (Caner): Gemini göl bilerek böyle, kalsın
   fxPlagueSplash(pr.tx, pr.ty, R * 1.3);
   // gülle kırılır: kemik parçaları (Gemini: nm_bshard_1..5 varsa) döne döne her yana, veba sıvısı fışkırır
   const SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean);
@@ -11308,6 +11327,15 @@ function plagueBounce(q) {
   G.zones.push({ x: q.x, y: q.y, r: q.r, dps: 0, t: 0, life: q.life, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: q.black, seed: rand(0, 9) });
   G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: q.r * 1.4, col: '140,255,90', t: 0, dur: 0.35 });
 }
+// 19 Eki: veba damlasının sıçraması ayrı işlev (Kemik Gülle de kullanır)
+function plagueDrops(x, y, sp, pl2, black, veo) {
+  // 18 Eki (Caner: "her seferinde aynı sıçrama olmasın"): kodla 3 çeşit, her atışta rastgele: 0 yelpaze, 1 taç (dik yukarı), 2 sekme (damla bir kez daha sıçrar)
+  const sty = Math.floor(Math.random() * 3), dcol = (i) => black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0';
+  if (sty === 1) for (let i = 0; i < 30; i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'dot', x: x + rand(-6, 6), y: y - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: y + rand(-6, 6) }); }
+  else for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: y + rand(-10, 10) }); }
+  if (sty === 2) { const a = rand(0, Math.PI * 2), d = sp * rand(0.7, 1); (G.plagueQ ||= []).push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: sp * 0.45, t: -rand(0.28, 0.4), life: pl2 * 0.8, black: black }); }
+  if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = sp * (sty === 1 ? rand(0.45, 0.8) : rand(0.75, 1.15)); G.zones.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: black, seed: rand(0, 9) }); }
+}
 function plagueBomb(pr) {
   for (const e of G.enemies) {
     if (e.dead || e.def.flying) continue;
@@ -11323,12 +11351,7 @@ function plagueBomb(pr) {
   const pool = { x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) }; G.zones.push(pool);
   const veo = fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2, pl2); if (veo) pool.veo = true; // 18 Eki: Veo asidi varsa kodla çizilen birikinti görünmez (altında ikinci asit kalıyordu), hasarı sürer
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
-  // 18 Eki (Caner: "her seferinde aynı sıçrama olmasın"): kodla 3 çeşit, her atışta rastgele: 0 yelpaze, 1 taç (dik yukarı), 2 sekme (damla bir kez daha sıçrar)
-  const sty = Math.floor(Math.random() * 3), dcol = (i) => pr.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0';
-  if (sty === 1) for (let i = 0; i < 30; i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-6, 6), y: pr.ty - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: pr.ty + rand(-6, 6) }); }
-  else for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: pr.tx + rand(-4, 4), y: pr.ty - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: pr.ty + rand(-10, 10) }); }
-  if (sty === 2) { const a = rand(0, Math.PI * 2), d = pr.splash * rand(0.7, 1); (G.plagueQ ||= []).push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: pr.splash * 0.45, t: -rand(0.28, 0.4), life: pl2 * 0.8, black: pr.black }); }
-  if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = pr.splash * (sty === 1 ? rand(0.45, 0.8) : rand(0.75, 1.15)); G.zones.push({ x: pr.tx + Math.cos(a) * d, y: pr.ty + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: pr.black, seed: rand(0, 9) }); }
+  plagueDrops(pr.tx, pr.ty, pr.splash, pl2, pr.black, veo);
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
