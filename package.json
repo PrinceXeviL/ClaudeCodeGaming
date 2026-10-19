@@ -5,8 +5,10 @@
   "description": "Kule savunma oyunu (Capacitor ile iOS/Android paketi; web dosyaları sinir-kalesi/)",
   "scripts": {
     "ios": "npx cap sync ios && node scripts/yerel_temizle.js && npx cap open ios",
-    "android": "npx cap sync android && node scripts/yerel_temizle.js",
-    "sync": "npx cap sync && node scripts/yerel_temizle.js"
+    "android": "npx cap sync android && node scripts/yerel_temizle.js && node scripts/android_paket.js",
+    "sync": "npx cap sync && node scripts/yerel_temizle.js && node scripts/android_paket.js",
+    "magaza:ios": "npx cap sync ios && node scripts/yerel_temizle.js && node scripts/magaza.js",
+    "magaza:android": "npx cap sync android && node scripts/yerel_temizle.js && node scripts/magaza.js && node scripts/android_paket.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",

@@ -2168,7 +2168,10 @@ let swipe = null;                 // harita sayfasını parmakla kaydırma      
 
 // TEST_OPEN (11 Eki, Caner oyunu test ediyor): bütün bölgeler, bölümler, kuleler, komutanlar, büyüler, kodeks ve meydan okumalar açık.
 // MAĞAZA SÜRÜMÜNDEN ÖNCE false YAP.
-const TEST_OPEN = true;
+// 19 Eki: mağaza derlemesi (scripts/magaza.js index.html'e window.MAGAZA = true yazar): test kapıları kapalı, sahte reklam/satın alma yok.
+// Geliştirme ve test kurulumlarında (npm run ios/android, web) her şey açık kalır.
+const MAGAZA = !!window.MAGAZA;
+const TEST_OPEN = !MAGAZA;
 const LOCK_TEST = new Set(['leonidas']); // 18 Eki: test sürümünde de kilitli kalanlar (kristalle açma denensin)
 function heroUnlocked(id) {
   if (HEROES[id].cost) return (TEST_OPEN && !window.__paywallTest && !LOCK_TEST.has(id)) || (save.heroBuy || []).includes(id); // 12 Eki: kristalle açılır
@@ -16700,6 +16703,7 @@ function drawTeaser() {
 function showRewardedAd(cb) {
   if (isPremium()) { cb(); return; }
   if (window.NativeAds && window.NativeAds.showRewarded) { window.NativeAds.showRewarded().then(ok => ok && cb()).catch(() => {}); return; }
+  if (MAGAZA) { mapNote = { text: 'Reklam şu an yüklenemedi, sonra dene', t: time }; sfx('error'); return; } // mağazada sahte (bedava) reklam yok
   AD = { kind: 'rew', t0: time, dur: 3, cb };
 }
 function levelEndAd() {
@@ -16709,11 +16713,13 @@ function levelEndAd() {
   lastInterAd = time;
   setTimeout(() => {
     if (window.NativeAds && window.NativeAds.showInterstitial) { window.NativeAds.showInterstitial().catch(() => {}); return; }
+    if (MAGAZA) return;
     AD = { kind: 'int', t0: time, dur: 2.5 };
   }, 1600); // zafer/yenilgi ekranı önce görünsün
 }
 function buyPremium() {
   if (window.NativeIAP && window.NativeIAP.buy) { window.NativeIAP.buy(MONET.product).then(ok => { if (ok) { save.premium = true; persist(); sfx('levelup'); } }).catch(() => {}); return; }
+  if (MAGAZA) { mapNote = { text: 'Satın alma şu an kullanılamıyor, sonra dene', t: time }; sfx('error'); return; } // mağazada ödemesiz açma yok
   save.premium = true; persist(); sfx('levelup'); // tarayıcı: deneme satın alma
   mapNote = { text: 'Deneme satın alma: gerçek ödeme mağaza sürümünde', t: time };
 }
@@ -19224,8 +19230,13 @@ if (document.fonts) {
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
 // logo: üstte koyu kızıl, altın çerçeveli kurdelede "DON'T MESS WITH" (arayüz yazı tipi, kemik beyazı),
 // altta Metal Mania ile kan kırmızısı "THE NECROMANCER"
+// 19 Eki: Android WebView bu yazı tipinin T'sinin süslü ucunu kırpıyordu: hazır çizilmiş logo görseli (ui_logo_title: üst yarı logo, alt yarı
+// parıltı maskesi; masaüstü Chrome'da bu işlevle çizildi, __game.logoPng) varsa o kullanılır, yoksa yazı tipiyle çizilir
 function titleLogo() {
-  if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER) return TITLE_C.logo;
+  if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER && (TITLE_C.logo.img || TITLE_C.live || !spr('ui_logo_title'))) return TITLE_C.logo; // görsel sonradan yüklenince yeniden kurulur
+  { const im = !TITLE_C.live && spr('ui_logo_title'); if (im && im.height) { const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), [m, mg] = offscreen(LW, LH);
+      g.drawImage(im, 0, 0, im.width, im.height / 2, 0, 0, LW, LH); mg.drawImage(im, 0, im.height / 2, im.width, im.height / 2, 0, 0, LW, LH);
+      return (TITLE_C.logo = { c, m, w: LW, h: LH, ver: FONT_VER, img: true }); } }
   const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), cx = LW / 2;
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
   // kurdele: iki yanda katlanmış uçlar, ortada gövde
@@ -19254,10 +19265,20 @@ function titleLogo() {
   // ana yazı
   const ty = 150, T = 'THE NECROMANCER';
   let sz = 100; g.font = `${sz}px ${FONT_LOGO}`;
-  while (g.measureText(T).width > LW - 40) { sz -= 4; g.font = `${sz}px ${FONT_LOGO}`; } // geniş yazı tipinde taşmasın
-  const tw = g.measureText(T).width;
-  // harf maskesi (2x): üzerinden geçen ışık yalnız harflere düşsün
-  const [m, mg] = offscreen(LW, LH); mg.font = g.font; mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#fff'; mg.fillText(T, cx, ty);
+  // 19 Eki (Android'de "THE"nin T'si kesikti): genişliğe kalın kontur (sz*0,2), kızıl hale (28) ve harf taşması da katılır; mürekkep sınırı (actualBoundingBox) varsa o ölçülür
+  const inkW = () => { const M = g.measureText(T); return Math.max(M.width, (M.actualBoundingBoxLeft || 0) + (M.actualBoundingBoxRight || 0)) + sz * 0.2 + 56; };
+  while (inkW() > LW && sz > 40) { sz -= 4; g.font = `${sz}px ${FONT_LOGO}`; } // geniş yazı tipinde taşmasın
+  // harf maskesi (2x): üzerinden geçen ışık yalnız harflere düşsün. Ölçüme güvenilmez (Android yazı tipini dar ölçüyor): maske çizilip
+  // mürekkebin gerçek sol/sağ sınırı piksellerden bulunur; kontur payı (sz*0,1) + 14 px kenara sığmıyorsa küçültülüp yeniden çizilir
+  const [m, mg] = offscreen(LW, LH); mg.textAlign = 'center'; mg.textBaseline = 'middle'; mg.fillStyle = '#fff';
+  for (let it = 0; it < 10; it++) {
+    mg.font = g.font; mg.clearRect(0, 0, LW, LH); mg.fillText(T, cx, ty);
+    const D = mg.getImageData(0, 0, m.width, m.height).data, W2 = m.width, H2 = m.height; let x0 = W2, x1 = -1;
+    for (let y = Math.max(0, Math.floor((ty - sz * 0.7) * 2)); y < Math.min(H2, (ty + sz * 0.7) * 2); y += 2) for (let x = 0; x < W2; x += 2) if (D[(y * W2 + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; }
+    const pad = (sz * 0.1 + 14) * 2;
+    if (x1 < 0 || (x0 >= pad && x1 <= W2 - pad) || sz <= 40) break;
+    sz -= 4; g.font = `${sz}px ${FONT_LOGO}`;
+  }
   // gölge, kalın koyu kontur, iç koyu kızıl kontur (kan damlaları 10 Eki'de kaldırıldı, Caner)
   g.save(); g.shadowColor = 'rgba(255,30,20,0.7)'; g.shadowBlur = 28; g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.2; g.strokeText(T, cx, ty); g.restore();
   g.strokeStyle = '#0c0204'; g.lineWidth = sz * 0.2; g.strokeText(T, cx, ty + 5);
@@ -23461,7 +23482,7 @@ window.__game = {
     for (let i = 0; i < n; i++) { const t0 = performance.now(); ctx.save(); ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * ox, dpr * oy); buttons.length = 0; drawNecroTitle(5 + i / 60); drawPartsAll(uiParts); ctx.restore(); D.push(performance.now() - t0); time += 1 / 60; }
     D.sort((a, b) => a - b); return { ort: +(D.reduce((a, b) => a + b) / n).toFixed(2), p95: +D[Math.floor(n * 0.95)].toFixed(2), max: +D[n - 1].toFixed(2) };
   },
-  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, cast: (id, x, y) => castSpell(id, x, y), ztap: (x, y) => zombieTap(x, y), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
+  learn: (i, id) => treeBuy(heroRec(G.heroes[i].id), id === 'ult' ? 'ult' : 'sk', id), grimBuy: buyGrim, cast: (id, x, y) => castSpell(id, x, y), logoPng: () => { TITLE_C.logo = null; TITLE_C.live = true; const L = titleLogo(); const o = document.createElement('canvas'); o.width = L.c.width; o.height = L.c.height * 2; const g = o.getContext('2d'); g.drawImage(L.c, 0, 0); g.drawImage(L.m, 0, L.c.height); return o.toDataURL('image/png'); }, ztap: (x, y) => zombieTap(x, y), kill: (e) => damageEnemy(e, 1e9, 'true'), hurt: (s, a = 1e9) => damageSoldier(s, a), openSkills: (i) => openSkills(G.heroes[i]), save: () => save,
   // test: adıyla bir düğmenin ekran (CSS piksel) merkezi; son çizilen karedeki buttons listesinden (tools/akis-testi.js)
   btn(key) { const b = buttons.find(o => o.key === key || (key.endsWith('*') && o.key.startsWith(key.slice(0, -1)))); return b ? { x: view.ox + (b.x + b.w / 2) * view.scale, y: view.oy + (b.y + b.h / 2) * view.scale, key: b.key } : null; },
   btnKeys() { return buttons.map(b => b.key); },

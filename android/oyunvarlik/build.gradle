@@ -1,0 +1,12 @@
+// 19 Eki: Google Play kurulumda gelen varlık paketi (install-time asset pack). Play'de uygulamanın ana paketi en çok 200 MB;
+// oyunun görselleri (~315 MB) bu pakette. Kurulumda uygulamayla birlikte iner, AssetManager'dan uygulamanın kendi varlıkları gibi okunur
+// (Capacitor web dosyalarını oradan sunar: oyun kodu değişmez). İçerik: scripts/android_paket.js her cap sync'ten sonra img/'i buraya taşır.
+plugins {
+    id 'com.android.asset-pack'
+}
+assetPack {
+    packName = "oyunvarlik"
+    dynamicDelivery {
+        deliveryType = "install-time"
+    }
+}

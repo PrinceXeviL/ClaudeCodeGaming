@@ -104,3 +104,6 @@ app/src/main/res/xml/config.xml
 *.jks
 *.keystore
 keystore.properties
+
+# 19 Eki: cap sync'ten taşınan görseller (depoda sinir-kalesi/img var)
+oyunvarlik/src/main/assets/

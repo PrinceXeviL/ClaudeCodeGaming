@@ -8,6 +8,7 @@ if (imzaDosya.exists()) imza.load(new FileInputStream(imzaDosya))
 
 android {
     namespace = "com.princexevil.necromancer"
+    assetPacks = [":oyunvarlik"] // 19 Eki: görseller Play varlık paketinde (ana paket 200 MB sınırı)
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.princexevil.necromancer"
