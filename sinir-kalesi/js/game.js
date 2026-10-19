@@ -2931,7 +2931,7 @@ function flingStep(e, dt) { // savrulan / devrilen düşman (true: bu karede yü
   }
   return true;
 }
-const METEOR_RAIN = { n: 14, gap: [0.03, 0.12], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.42, burn: 0.5, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.5, slow: [0.5, 2.6] }; // 19 Eki (Caner: kemik gülleler 'ezsin, yavaşlatsın'): sersemlik 0,35 → 0,5, yavaşlatma %40/2 sn → %50/2,6 sn METEOR_RAIN.burn = 0.3; // 18 Eki: eski yanan zemin (yanma payı 0,3) // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
+const METEOR_RAIN = { n: 12, gap: [0.04, 0.14], spread: 0.9, r: 0.34, size: [0.34, 0.5], dmg: 0.56, /* 19 Eki: kemik toplar: 14 → 12 top, yanan zeminin payı çarpmaya (0,42 → 0,56) */ burn: 0.5, minD: 0.22, crater: [0.42, 0.56], road: 12, stun: 0.5, slow: [0.5, 2.6] }; // 19 Eki (Caner: kemik gülleler 'ezsin, yavaşlatsın'): sersemlik 0,35 → 0,5, yavaşlatma %40/2 sn → %50/2,6 sn METEOR_RAIN.burn = 0.3; // 18 Eki: eski yanan zemin (yanma payı 0,3) // 16 Eki (2): daha küçük; road: yol ortasından en çok bu kadar dışarı; vurulan sersemler (stun sn) ve yavaşlar (slow [oran, sn]) // 16 Eki (Caner: "küçük, yuvarlak, demir bilye gibi, daha çok, her biri ufak krater, simetrik düşmesin"): gap düzensiz aralık, minD noktalar arası en az uzaklık (U.r katı) // Merlin'in Meteor'u: küçük meteor sayısı, aralık (sn), yayılma, tek patlama yarıçapı (U.r katı), kaya boyu, hasar/yanma payı
 // Merlin'in ruh meteoru (16 Eki, Caner: "daha kaliteli, ihtişamlı"): hedefte dönen çift rün çemberi + alan kararır; çarpmada parlama, ışık sütunu,
 // iki şok halkası (yeşil, mor), saçılan kaya parçaları, yükselen kıvılcımlar, mor duman
 // yerde yanan küçük ruh alevleri (meteor çarpması): dalgalanan dil, yeşil çekirdek, mor uç, altında ışık; açılırken büyür, sönerken küçülür
@@ -2971,23 +2971,15 @@ function drawSoulRune(p, pre, k) {
   ctx.restore();
 }
 function fxSoulMeteorImpact(x, y, r, first) {
-  const P = G.parts, cols = ['120,255,150', '190,120,255', '255,80,90'];
-  // 16 Eki (2) (Caner: "parça efektini azalt, yolun dışına çok çıkmasın"): daha küçük parlama ve halkalar, az ve kısa saçılan parça
-  emit(P, { kind: 'glow', add: true, x, y: y - 6, col: '240,255,240', s0: r * 1.0, s1: r * 1.3, life: 0.12, a: 0.85 }); // parlama
-  emit(P, { kind: 'glow', add: true, x, y: y - 6, col: '150,80,255', s0: r * 0.8, s1: r * 1.5, life: 0.3, a: 0.6 });
-  if (first) G.effects.push({ kind: 'beam', x, y, t: 0, dur: 0.3, col: '170,255,190', w: 12 }); // kısa ışık sütunu (yalnız ilkinde)
-  G.effects.push({ kind: 'ring', x, y, r: r * 1.5, col: '120,255,150', t: 0, dur: 0.4, a: 0.8 });
-  const SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean); // 19 Eki: gülle kırılır, kemik parçaları her yana dağılır
-  if (SH.length) for (let i = 0; i < 9; i++) { const a = rand(-Math.PI, 0), v = rand(50, 150);
-    emit(P, { kind: 'sprite', im: SH[i % SH.length], h: rand(2.4, 4.4), x: x + rand(-5, 5), y: y - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7 - 50, g: 560, vr: rand(-12, 12), rot: rand(0, 6), life: rand(0.8, 1.2), floor: y + rand(-6, 10) }); }
-  for (let i = 0; i < (SH.length ? 4 : 7); i++) { // kaya parçaları her yöne saçılır, yere düşüp seker (az, kısa)
-    const a = rand(0, Math.PI * 2), v = rand(40, 110);
-    emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(30, 80), g: 560, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
-      col: i % 3 === 0 ? '#7aff9a' : i % 3 === 1 ? '#3a2448' : '#5a3a68', s0: rand(1.4, 2.8), s1: 1.2, life: rand(0.6, 1), floor: y + rand(-8, 10) });
-  }
-  for (let i = 0; i < 9; i++) emit(P, { kind: 'glow', add: true, x: x + rand(-r, r) * 0.4, y: y + rand(-r, r) * 0.2, vx: rand(-25, 25), vy: -rand(30, 90), drag: 1.4, col: cols[i % 3], s0: rand(1.6, 3.2), s1: 0.4, life: rand(0.5, 0.9) });
-  for (let i = 0; i < 3; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 12), vx: rand(-16, 16), vy: rand(-50, -22), drag: 0.6, col: i % 2 ? '50,28,62' : '78,52,92', s0: rand(10, 15), s1: rand(26, 38), life: rand(1.3, 2), a: 0.5, fadeIn: 0.12 });
-  G.decals.push({ x, y, r: r * 1.05, t: 0, life: 12, hot: true });
+  // 19 Eki (Caner: "sadece kemik topu düşsün, yerde etrafa kemikler savrulsun, bolca kemik"): renkli parlama, halka, ışık sütunu, mor duman yok;
+  // top kırılır: kaburga, kafatası, kemik parçaları her yana savrulup yere düşer, toz kalkar
+  const P = G.parts, SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean);
+  for (let i = 0; i < (SH.length ? 16 : 0); i++) { const a = rand(-Math.PI, 0), v = rand(60, 190);
+    emit(P, { kind: 'sprite', im: SH[i % SH.length], h: rand(2.8, 5.2), x: x + rand(-6, 6), y: y - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.75 - 60, g: 600, vr: rand(-14, 14), rot: rand(0, 6), life: rand(1.1, 1.7), floor: y + rand(-10, 12) }); }
+  for (let i = 0; i < 12; i++) { const a = rand(0, Math.PI * 2), v = rand(40, 130); // kemik kırıntıları ve toprak
+    emit(P, { kind: 'chunk', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.55 - rand(40, 100), g: 560, drag: 0.4, vr: rand(-16, 16), rot: rand(0, 6),
+      col: i % 3 === 2 ? '#6a5640' : i % 2 ? '#e8dcc0' : '#c9bd98', s0: rand(1.2, 2.4), s1: 1, life: rand(0.6, 1), floor: y + rand(-8, 10) }); }
+  G.effects.push({ kind: 'dust', x, y, t: 0, dur: 0.8 }); if (first) G.effects.push({ kind: 'dust', x: x + rand(-8, 8), y: y + 3, t: 0, dur: 1 });
 }
 // 16 Eki (Caner: "yerde obruk açılsın, hafif bir süre sonra geçsin"): ruh meteorunun açtığı çukur. Hızla açılır (open sn), çatlakları ve dibi
 // mor-yeşil ışıldar (sönerek), kenarında taş halkası; life sonunda close sn'de toprakla kapanır (küçülüp solar).
@@ -3026,6 +3018,10 @@ function drawMeteor(p) {
 }
 function drawMeteor0(p, noRing, ringOnly) {
   const k = clamp(p.t / p.dur, 0, 1), pre = p.t < 0 ? clamp(1 + p.t / 0.6, 0, 1) : 1;
+  // 19 Eki (Caner: "yerdeki renkli büyü efektini kaldır, sadece kemik topu düşsün"): Merlin'in yağmuru: rün, kuyruk ışığı yok; gölge + dönen kemik top
+  if (p.mini && spr('nm_boneball')) { if (p.t < 0 || ringOnly) return; const { x, y } = projPos(p, k);
+    ctx.fillStyle = `rgba(0,0,0,${0.12 + 0.25 * k})`; ctx.beginPath(); ctx.ellipse(p.tx, p.ty, 5 + 12 * k, (5 + 12 * k) * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(x, y); ctx.rotate((p.spin || 0) + time * 6); icoFit(spr('nm_boneball'), 0, 0, 7.5 / (p.big || 1)); ctx.restore(); return; }
   // hedef işareti: düşüşe yaklaştıkça parlaklaşan ve daralan halka
   if (p.mini && !noRing && !p.noRing) { drawSoulRune(p, pre, k); }
   else if (!noRing && !p.noRing) {
@@ -6379,6 +6375,7 @@ function updateProjectile(pr, dt) {
         pr.fxT = 0.03;
         if (NECRO) emit(G.parts, { kind: 'dot', x: q.x, y: q.y, vx: rand(-8, 8), vy: rand(0, 20), g: 160, col: '#7ae04a', s0: 1.6, s1: 0.8, life: 0.4 });
         else emit(G.parts, { kind: 'glow', x: q.x, y: q.y, vx: rand(-5, 5), vy: -8, col: '130,124,118', s0: 2.5, s1: 7, life: 0.5, a: 0.4 });
+      } else if (pr.kind === 'meteor' && pr.mini && spr('nm_boneball')) { // 19 Eki: kemik top: renkli kıvılcım/duman yok
       } else if (pr.kind === 'meteor' && pr.mini) { // Merlin'in ruh meteoru: mor-yeşil-kızıl kıvılcım, mor duman, kayadan kopan ufak parçalar (zamana bağlı, kare hızından bağımsız)
         pr.fxT = 0.03; const C = ['150,80,255', '110,255,150', '255,80,100']; // 16 Eki (2): seyrek, küçük (Caner: "parça efektini azalt")
         emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3), y: q.y + rand(-3, 3), vx: rand(-15, 15), vy: rand(-20, 5), drag: 2, col: C[Math.floor(rand(0, 2.4))], s0: rand(4, 7), s1: 1, life: rand(0.2, 0.35) });
@@ -6518,16 +6515,17 @@ function updateProjectile(pr, dt) {
       flingEnemy(e, pr.tx, pr.ty, clamp(1 - d / (pr.splash * 1.15), 0, 1)); } // hafif düşmanlar savrulur, ağırlar devrilir
     if (pr.mburn) { // Merlin'in meteoru: yanan zemin, şok halkası, krater, sarsıntı (yağmurdaki küçük meteorlarda ölçülü)
       // 18 Eki (Caner: "meteor sonrası yangın çok basit, komik görünüyor, eski şekline çevir"): küçük ruh alevleri kalktı, yanan zemin + ateş halkası geri
-      G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
-      G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
-      G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: pr.mini ? 2.5 : 16, hot: true, soul: pr.mini }); // 16 Eki (Caner): meteor yağmurunun kararması 1-2 sn'de geçer
-      if (pr.mini) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(METEOR_RAIN.crater[0], METEOR_RAIN.crater[1]), t: 0, life: CRATER.life + rand(-1, 1), seed: rand(0, 99) }); // her bilye kendi ufak krateri
+      const BONE = pr.mini && spr('nm_boneball'); // 19 Eki: kemik top: yanan zemin, ateş halkası, krater yok (hasarı çarpmaya eklendi)
+      if (!BONE) G.zones.push({ x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 0.9 : 0.7), dps: pr.mburn[0], t: 0, life: pr.mburn[1], fxT: 0, src: 'blast', soul: pr.mini });
+      if (!BONE) G.effects.push({ kind: 'firering', x: pr.tx, y: pr.ty, r: pr.splash * (pr.mini ? 1.4 : 1.7), t: 0, dur: pr.mini ? 0.55 : 0.8, soul: pr.mini });
+      if (!BONE) G.decals.push({ x: pr.tx, y: pr.ty, r: pr.splash * 1.3, t: 0, life: pr.mini ? 2.5 : 16, hot: true, soul: pr.mini }); // 16 Eki (Caner): meteor yağmurunun kararması 1-2 sn'de geçer
+      if (pr.mini && !BONE) G.decals.push({ kind: 'crater', x: pr.tx, y: pr.ty, r: pr.splash * rand(METEOR_RAIN.crater[0], METEOR_RAIN.crater[1]), t: 0, life: CRATER.life + rand(-1, 1), seed: rand(0, 99) }); // her bilye kendi ufak krateri
       if (pr.mini) { shakeScreen(pr.first ? 6 : 2.5, 0.22); if (pr.first) { G.hitStop = 0.05; setTimeout(() => sfx('stomp'), 60); } }
       else { shakeScreen(11, 0.7); G.hitStop = 0.08; setTimeout(() => sfx('stomp'), 60); }
     }
     else if (NECRO) fxPlagueSplash(pr.tx, pr.ty, pr.splash);
     else fxExplosion(pr.tx, pr.ty, pr.splash, false);
-    sfx(pr.kind === 'meteor' ? 'meteor' : NECRO ? 'acidboom' : 'boom');
+    sfx(pr.kind === 'meteor' ? (pr.mini && spr('nm_boneball') ? 'bonefall' : 'meteor') : NECRO ? 'acidboom' : 'boom');
   } else if (pr.ballistic && !(pr.target && !pr.target.dead)) {
     stickArrow(pr, null); // hedef uçuşta öldü: ok yere saplanır
   } else if (pr.target && !pr.target.dead) {
