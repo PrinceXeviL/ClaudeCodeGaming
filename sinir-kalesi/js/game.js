@@ -2668,6 +2668,12 @@ function drawParts(list, add) {
       ctx.globalAlpha = Math.min(1, a * 3); ctx.save(); ctx.translate(p.x + Math.sin(p.t * 2.2 + p.ph) * 6, p.y); ctx.rotate(p.rot || 0); ctx.scale(Math.cos(p.t * 3 + p.ph), 1);
       ctx.fillStyle = p.col; ctx.beginPath(); ctx.ellipse(0, 0, s * 1.3, s * 0.6, 0, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(20,14,8,0.5)'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(-s * 1.2, 0); ctx.lineTo(s * 1.2, 0); ctx.stroke(); ctx.restore();
+    } else if (p.kind === 'slime') { // 19 Eki: çizgi film sümük damlası: koyu kontur, gövde, parlak nokta; hızlıyken gidiş yönünde uzar
+      const P = SLIME.pal[p.pal || 'g'], sp = Math.hypot(p.vx, p.vy), st = 1 + Math.min(1.2, sp / 220);
+      ctx.globalAlpha = Math.min(1, a * 2); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(p.vy, p.vx) + Math.PI / 2);
+      ctx.fillStyle = P.dk; ctx.beginPath(); ctx.ellipse(0, 0, s * 1.2, s * 1.2 * st, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = p.col; ctx.beginPath(); ctx.ellipse(0, 0, s, s * st, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = P.gl; ctx.beginPath(); ctx.ellipse(-s * 0.35, -s * 0.3 * st, s * 0.32, s * 0.24 * st, 0, 0, 6.283); ctx.fill(); ctx.restore();
     } else if (p.kind === 'chunk') {
       ctx.globalAlpha = Math.min(1, a * 2.5);
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot || 0);
@@ -2715,11 +2721,11 @@ function fxPlagueSplash(x, y, r, life) { // life: altındaki birikintinin süres
   const AV = ACID_V.filter(v => ANIM_META[v]); AV.forEach(loadStrip); const ok = AV.filter(v => spr(v)); if (ok.length) { const v = ok[Math.floor(Math.random() * ok.length)], F = ANIM_META[v]; (G.acidFx ||= []).push({ x, y, r, t: 0, v, flip: Math.random() < 0.5, s: rand(0.88, 1.12), hold: Math.max(ACID.hold, (life || 0) - acidDur(F) - ACID.fade) }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return true; }
   for (let i = 0; i < 22; i++) { // yere yakın, yayvan saçılan damlalar
     const a = rand(0, Math.PI * 2), v = rand(50, 150);
-    emit(P, { kind: 'dot', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? '#6cc83c' : '#b8f27a', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
+    emit(P, { kind: SLIME.on ? 'slime' : 'dot', pal: 'g', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? (SLIME.on ? SLIME.pal.g.bd : '#6cc83c') : (SLIME.on ? SLIME.pal.g.lt : '#b8f27a'), s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
   }
   for (let i = 0; i < 5; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 8), vx: rand(-12, 12), vy: -rand(8, 20), col: '110,190,80', s0: r * 0.3, s1: r * 0.7, life: rand(0.7, 1.1), a: 0.4 });
   for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 });
-  if (!G.decals) return;
+  if (!G.decals || SLIME.on) return; // 19 Eki: sümük çiziminde yer lekeleri birikinti ve uydu damlacıklarla geliyor
   G.decals.push({ kind: 'splat', x, y, r: r * 0.8, rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 3.2 });
   for (let i = 0; i < 7; i++) { // damlaların düştüğü yerler: biraz gecikmeyle beliren küçük lekeler
     const a = rand(0, Math.PI * 2), d = rand(0.8, 1.6) * r;
@@ -11380,16 +11386,16 @@ function boneBallHit(pr) {
 }
 // sekme çeşidi: asit topağı yere vurup bir kez daha sıçrar, yanında ikinci küçük birikinti (görsel; hasar yok)
 function plagueBounce(q) {
-  for (let i = 0; i < 14; i++) { const a = rand(-Math.PI, 0), v = rand(50, 150); emit(G.parts, { kind: 'dot', x: q.x + rand(-3, 3), y: q.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.8 - 20, g: 520, col: q.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1, 2.2), s1: 0.8, life: rand(0.35, 0.6), floor: q.y + rand(-6, 6) }); }
+  for (let i = 0; i < 14; i++) { const a = rand(-Math.PI, 0), v = rand(50, 150); emit(G.parts, { kind: 'slime', pal: q.black ? 'p' : 'g', x: q.x + rand(-3, 3), y: q.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.8 - 20, g: 520, col: q.black ? SLIME.pal.p.bd : i % 3 ? SLIME.pal.g.bd : SLIME.pal.g.lt, s0: rand(1, 2.2), s1: 0.8, life: rand(0.35, 0.6), floor: q.y + rand(-6, 6) }); }
   G.zones.push({ x: q.x, y: q.y, r: q.r, dps: 0, t: 0, life: q.life, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: q.black, seed: rand(0, 9) });
   G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: q.r * 1.4, col: '140,255,90', t: 0, dur: 0.35 });
 }
 // 19 Eki: veba damlasının sıçraması ayrı işlev (Kemik Gülle de kullanır)
 function plagueDrops(x, y, sp, pl2, black, veo) {
   // 18 Eki (Caner: "her seferinde aynı sıçrama olmasın"): kodla 3 çeşit, her atışta rastgele: 0 yelpaze, 1 taç (dik yukarı), 2 sekme (damla bir kez daha sıçrar)
-  const sty = Math.floor(Math.random() * 3), dcol = (i) => black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0';
-  if (sty === 1) for (let i = 0; i < 30; i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'dot', x: x + rand(-6, 6), y: y - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: y + rand(-6, 6) }); }
-  else for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: y + rand(-10, 10) }); }
+  const sty = Math.floor(Math.random() * 3), dcol = (i) => black ? (i % 3 ? SLIME.pal.p.bd : SLIME.pal.p.lt) : (i % 3 ? SLIME.pal.g.bd : SLIME.pal.g.lt);
+  if (sty === 1) for (let i = 0; i < 30; i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'slime', pal: black ? 'p' : 'g', x: x + rand(-6, 6), y: y - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: y + rand(-6, 6) }); }
+  else for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'slime', pal: black ? 'p' : 'g', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: y + rand(-10, 10) }); }
   if (sty === 2) { const a = rand(0, Math.PI * 2), d = sp * rand(0.7, 1); (G.plagueQ ||= []).push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: sp * 0.45, t: -rand(0.28, 0.4), life: pl2 * 0.8, black: black }); }
   if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = sp * (sty === 1 ? rand(0.45, 0.8) : rand(0.75, 1.15)); G.zones.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: black, seed: rand(0, 9) }); }
 }
@@ -11413,12 +11419,60 @@ function plagueBomb(pr) {
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
 // zehir gölü: yolda köpüren yeşil birikinti (içinden geçen zehirlenir)
+// 19 Eki (Caner, çizgi film sümük örneği: "şekline değil yapısına ve çizimine bak"): Veba Kazanı birikintisi vektör çizgi film tarzında:
+// koyu kenar (alt yanda kalınlık), orta gövde, üstte açık ışık bölgesi ve daha açık parlama, beyaz parlak lekeler, içi koyu kenarı parlak
+// kabarcık çukurları, çevresinde konturlu uydu damlacıklar. Şekiller az sayıda ortak dokudan (SLIME.v çeşit × renk) seçilir, ölçek/ayna ile
+// çeşitlenir (her birikintiye ayrı tuval yok: ekran kartı yorulmasın).
+const SLIME = { v: 6, K: 3, R: 40, on: true, a: 0.8, k: 0.85, // a: saydamlık, k: boyut (yolu fazla kapatmasın)
+  pal: { g: { dk: '#1c4a10', bd: '#47a81c', lt: '#86d936', hi: '#c9f56e', gl: '#f4ffd8', pit: '#2a6c14', rim: '#a4ec58' },
+         p: { dk: '#2a1046', bd: '#6b3aa6', lt: '#9c6ad8', hi: '#c9a4f2', gl: '#f4e8ff', pit: '#3c1a62', rim: '#7ce858' } } };
+const SLIME_C = new Map();
+function slimeTex(pal, v, small) {
+  const key = pal + v + (small ? 's' : ''); let c = SLIME_C.get(key); if (c) return c;
+  const P = SLIME.pal[pal], K = SLIME.K, rx = SLIME.R, ry = rx * 0.48, W = rx * 3, H = rx * 1.7, cx = W / 2, cy = H * 0.56;
+  c = document.createElement('canvas'); c.width = Math.ceil(W * K); c.height = Math.ceil(H * K); const g = c.getContext('2d'); g.scale(K, K);
+  let sd = v * 977 + (small ? 31 : 7); const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
+  const ph = [rnd() * 6, rnd() * 6, rnd() * 6], tong = small ? [] : [0, 1, 2].slice(0, 1 + Math.floor(rnd() * 3)).map(() => [rnd() * 6.283, 0.25 + rnd() * 0.3]);
+  const rr = (th) => { let r = 1 + 0.13 * Math.sin(3 * th + ph[0]) + 0.08 * Math.sin(5 * th + ph[1]) + 0.05 * Math.sin(8 * th + ph[2]);
+    for (const [a, k] of tong) { let d = Math.abs(((th - a + Math.PI) % 6.283 + 6.283) % 6.283 - Math.PI); r += k * Math.exp(-((d / 0.22) ** 2)); } return r; };
+  const shape = (k, ox, oy) => { const N = 48, pts = []; for (let i = 0; i < N; i++) { const th = i / N * 6.283, r = rr(th) * k; pts.push([cx + ox + Math.cos(th) * rx * r, cy + oy + Math.sin(th) * ry * r]); }
+    g.beginPath(); for (let i = 0; i < N; i++) { const a = pts[i], b = pts[(i + 1) % N], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; i ? g.quadraticCurveTo(a[0], a[1], mx, my) : g.moveTo(mx, my); } g.closePath(); };
+  // uydu damlacıklar (arkada değil, kenarın dışında)
+  const sats = []; for (let i = 0, n = small ? 2 : 3 + Math.floor(rnd() * 3); i < n; i++) { const th = rnd() * 6.283, d = 1.2 + rnd() * 0.3, r = rx * (small ? 0.12 : 0.06 + rnd() * 0.07); sats.push([cx + Math.cos(th) * rx * d * rr(th), cy + Math.sin(th) * ry * d * rr(th), r]); }
+  const drop = (x, y, r) => { g.fillStyle = P.dk; g.beginPath(); g.ellipse(x, y + r * 0.25, r * 1.15, r * 0.8, 0, 0, 6.283); g.fill(); g.fillStyle = P.bd; g.beginPath(); g.ellipse(x, y, r, r * 0.68, 0, 0, 6.283); g.fill();
+    g.fillStyle = P.lt; g.beginPath(); g.ellipse(x - r * 0.15, y - r * 0.18, r * 0.62, r * 0.38, 0, 0, 6.283); g.fill(); g.fillStyle = P.gl; g.beginPath(); g.ellipse(x - r * 0.35, y - r * 0.3, r * 0.22, r * 0.13, -0.3, 0, 6.283); g.fill(); };
+  shape(1.04, 0, ry * 0.12); g.fillStyle = P.dk; g.fill(); // koyu kenar + alt yandaki kalınlık
+  shape(0.97, 0, 0); g.fillStyle = P.bd; g.fill();
+  shape(0.74, -rx * 0.04, -ry * 0.16); g.fillStyle = P.lt; g.fill();
+  shape(0.44, -rx * 0.16, -ry * 0.32); g.globalAlpha = 0.85; g.fillStyle = P.hi; g.fill(); g.globalAlpha = 1;
+  if (!small) for (let i = 0, n = 2 + Math.floor(rnd() * 2); i < n; i++) { // kabarcık çukurları: koyu iç, alt kenarda parlak hilal
+    const a = rnd() * 6.283, d = rnd() * 0.55, x = cx + Math.cos(a) * rx * d, y = cy + Math.sin(a) * ry * d, w = rx * (0.07 + rnd() * 0.06);
+    g.fillStyle = P.pit; g.beginPath(); g.ellipse(x, y, w, w * 0.55, 0, 0, 6.283); g.fill();
+    g.strokeStyle = P.rim; g.lineWidth = w * 0.28; g.lineCap = 'round'; g.beginPath(); g.ellipse(x, y, w * 0.95, w * 0.5, 0, 0.35, Math.PI - 0.35); g.stroke(); }
+  g.fillStyle = P.gl; g.beginPath(); g.ellipse(cx - rx * 0.36, cy - ry * 0.42, rx * 0.2, rx * 0.065, -0.12, 0, 6.283); g.fill(); // parlak lekeler
+  g.beginPath(); g.ellipse(cx - rx * 0.08, cy - ry * 0.5, rx * 0.06, rx * 0.035, 0, 0, 6.283); g.fill();
+  if (!small) { g.globalAlpha = 0.7; g.beginPath(); g.ellipse(cx + rx * 0.42, cy - ry * 0.1, rx * 0.07, rx * 0.03, 0.3, 0, 6.283); g.fill(); g.globalAlpha = 1; }
+  for (const [x, y, r] of sats) drop(x, y, r);
+  c.cx = cx; c.cy = cy; c.W = W; c.H = H; SLIME_C.set(key, c); return c;
+}
+function drawSlimePool(z, a, rx) {
+  const pal = z.black ? 'p' : 'g', small = z.kind === 'splat' || z.r < 12, v = Math.floor((z.seed || 0) * 97) % SLIME.v, im = slimeTex(pal, v, small), k = rx * SLIME.k / SLIME.R;
+  ctx.save(); ctx.globalAlpha = a * SLIME.a; ctx.translate(z.x, z.y); if (((z.seed || 0) * 13 | 0) % 2) ctx.scale(-1, 1);
+  ctx.drawImage(im, -im.cx * k, -im.cy * k, im.W * k, im.H * k); ctx.restore();
+  if (small) return;
+  const P = SLIME.pal[pal]; // kabaran ve patlayan kabarcıklar: konturlu, parlak noktalı
+  for (let i = 0; i < 3; i++) { const ph = (time * 0.8 + i * 0.33 + z.seed) % 1, an = z.seed * 3 + i * 2.1, x = z.x + Math.cos(an) * rx * 0.45, y = z.y + Math.sin(an) * rx * 0.18, r = (0.8 + ph * 2.2) * Math.min(1.6, rx / 20);
+    ctx.globalAlpha = a * (ph < 0.85 ? 1 : (1 - ph) / 0.15); ctx.fillStyle = P.dk; ctx.beginPath(); ctx.arc(x, y - ph * 1.5, r + 0.6, 0, 6.283); ctx.fill();
+    ctx.fillStyle = P.lt; ctx.beginPath(); ctx.arc(x, y - ph * 1.5, r, 0, 6.283); ctx.fill(); ctx.fillStyle = P.gl; ctx.beginPath(); ctx.arc(x - r * 0.35, y - ph * 1.5 - r * 0.35, r * 0.3, 0, 6.283); ctx.fill(); }
+  ctx.globalAlpha = 1;
+}
 function drawPlaguePools() {
   for (const z of G.zones) {
     if (!z.pool || z.veo) continue;
     if (z.boneball && spr('nm_bonepool')) { const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a > 0) { const im = spr('nm_bonepool'), w = z.r * 1.75 * (0.6 + 0.4 * Math.min(1, z.t / 0.3)); ctx.save(); ctx.globalAlpha = a * 0.92; ctx.drawImage(im, z.x - w / 2, z.y - w * im.height / im.width / 2, w, w * im.height / im.width); ctx.restore(); } continue; } // 16 Eki: kemik gülle gölü (Gemini)
     const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a <= 0) continue;
     const rx = z.r * (0.6 + 0.4 * Math.min(1, z.t / 0.3));
+    if (SLIME.on && !z.blood) { drawSlimePool(z, a, rx); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y, rx, z.black ? '170,90,255' : '120,255,90', 0.1 * a); ctx.restore(); continue; }
     ctx.save(); ctx.globalAlpha = a * 0.7; ctx.translate(z.x, z.y); ctx.scale(1, 0.45);
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
     g.addColorStop(0, z.blood ? 'rgba(200,20,40,0.9)' : z.black ? 'rgba(170,110,230,0.85)' : 'rgba(150,240,90,0.85)'); g.addColorStop(0.55, z.blood ? 'rgba(110,0,16,0.85)' : z.black ? 'rgba(90,50,140,0.8)' : 'rgba(70,160,40,0.8)'); g.addColorStop(1, z.blood ? 'rgba(40,0,6,0)' : 'rgba(30,70,20,0)');
