@@ -8164,7 +8164,28 @@ function drawHeralds() {
       ctx.strokeStyle = `rgba(255,228,150,${0.6 * (1 - ph) * k})`; ctx.lineWidth = 1.6 * (1 - ph * 0.5);
       ctx.beginPath(); ctx.arc(bx, by, 4 * u + ph * 26 * u, face > 0 ? -0.8 : Math.PI - 0.7, face > 0 ? 0.7 : Math.PI + 0.8); ctx.stroke();
     }
+    // 19 Eki (Caner: "trompeti çalınca ucundan ses gibi küçük notalar çıksın"): borunun ağzından dalgalanarak yükselip sönen notalar
+    for (let n = 0; n < 5; n++) {
+      const ph = (h.t * 0.75 + n / 5) % 1, a = k * Math.min(1, ph * 6) * (1 - ph);
+      if (a <= 0.02) continue;
+      const nx = bx + face * (6 + ph * 34) * u, ny = by - ph * 26 * u + Math.sin(ph * 9 + n * 2) * 3 * u;
+      drawNote(nx, ny, (2.1 + 0.7 * (n % 2)) * u * (0.8 + 0.4 * ph), a, n % 3 === 1, Math.sin(ph * 6 + n) * 0.35);
+    }
   }
+}
+// küçük nota (sekizlik ya da bağlı iki sekizlik): koyu kontur + altın dolgu
+function drawNote(x, y, s, a, dbl, rot = 0) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha *= a; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const heads = dbl ? [[-s * 1.1, 0], [s * 1.1, -s * 0.5]] : [[0, 0]];
+  const path = () => { ctx.beginPath();
+    for (const [hx, hy] of heads) { ctx.moveTo(hx + s * 0.75, hy); ctx.ellipse(hx, hy, s * 0.75, s * 0.52, -0.45, 0, TAU); }
+    for (const [hx, hy] of heads) { ctx.moveTo(hx + s * 0.62, hy - s * 0.1); ctx.lineTo(hx + s * 0.62, hy - s * 2.6); }
+    if (dbl) { ctx.moveTo(heads[0][0] + s * 0.62, heads[0][1] - s * 2.6); ctx.lineTo(heads[1][0] + s * 0.62, heads[1][1] - s * 2.6); }
+    else { ctx.moveTo(s * 0.62, -s * 2.6); ctx.quadraticCurveTo(s * 1.5, -s * 2.1, s * 1.35, -s * 1.3); } };
+  path(); ctx.strokeStyle = 'rgba(40,20,8,0.9)'; ctx.lineWidth = s * 0.75; ctx.stroke();
+  path(); ctx.strokeStyle = '#ffd96a'; ctx.lineWidth = s * 0.3; ctx.stroke();
+  ctx.fillStyle = '#ffd96a'; ctx.beginPath(); for (const [hx, hy] of heads) { ctx.moveTo(hx + s * 0.75, hy); ctx.ellipse(hx, hy, s * 0.75, s * 0.52, -0.45, 0, TAU); } ctx.fill();
+  ctx.restore();
 }
 // Çalan borazancı: gövde durağan görsel olarak çizilir; borazanın ağzı (görselin sağ üstü) ağızlıktan dönerek hafifçe kalkar
 // ve nefesle kabarır, borazanı tutan el ritimle azıcık iner kalkar. Parçalar büyütülerek çizilir ki alttaki asıl hali görünmesin.
