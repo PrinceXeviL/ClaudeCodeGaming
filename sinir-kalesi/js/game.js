@@ -11837,18 +11837,42 @@ function towerLitTex(t, ts) {
   L = { li: lcv, x0, y0, w, h }; LIT_C.set(key, L); return L;
 }
 const PERF_OFF = new Set(); // test: çizim katmanlarını tek tek kapatıp maliyet ölçmek için (__game.perfOff)
+// 19 Eki (performans; ölçüm: kalabalık sahnede ışık havuzları kapalıyken 41→60 fps, yük boyanan alanın büyüklüğü): kulelerin temas
+// gölgesi ve ayağındaki soluk ışık havuzu her karede çizilmez, zemin görseline (G.bg) işlenir. Kuleler kıpırdamaz; kule kurulup,
+// yükseltilip, satılıp yıkılınca (imza değişince) yalnız kule bölgeleri yeniden boyanır: her arsanın el değmemiş zemin parçası
+// (G.tg.patch) bir kez saklanır, önce hepsi yerine konur, sonra bütün kuleler yeniden işlenir. Zemin yeniden çizilince (ekran boyu) baştan.
+function bakeTowerGround() {
+  if (!NECRO || !G.bg) return;
+  let TG = G.tg; if (!TG || TG.bg !== G.bg) TG = G.tg = { bg: G.bg, patch: new Map(), sig: '' };
+  const off = PERF_OFF.has('tlight'), list = []; let sig = off ? 'off' : '';
+  if (!off) for (const t of G.towers) { const ts = towerSprite(t); if (!ts) continue; list.push([t, ts]); sig += `${t.x | 0},${t.y | 0},${t.type},${ts.name},${ts.w.toFixed(1)},${ts.h.toFixed(1)},${ts.bottom.toFixed(1)};`; }
+  if (sig === TG.sig) return; TG.sig = sig;
+  const bg = G.bg, m = bg.m || { x: 0, y: 0 }, K = bg.width / (W + 2 * m.x), g = bg.getContext('2d');
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  for (const P of TG.patch.values()) g.drawImage(P.c, P.x, P.y); // el değmemiş zemin geri
+  for (const [t, ts] of list) { // kulenin kapladığı bölge (ışık havuzu kutusu, towerLitTex) saklı parçanın dışına taşıyorsa parça büyütülür
+    const W0 = ts.w, H0 = ts.h, x0 = Math.floor((t.x - W0 * 0.8 + m.x) * K) - 2, y0 = Math.floor((ts.bottom - H0 * 0.32 - W0 * 0.8 + m.y) * K) - 2;
+    const x1 = Math.ceil((t.x + W0 * 0.8 + m.x) * K) + 2, y1 = Math.ceil((ts.bottom + W0 * 0.45 + m.y) * K) + 2, key = `${t.x | 0},${t.y | 0}`, P = TG.patch.get(key);
+    if (P && P.x <= x0 && P.y <= y0 && P.x + P.c.width >= x1 && P.y + P.c.height >= y1) continue;
+    const X0 = Math.max(0, Math.min(x0, P ? P.x : x0)), Y0 = Math.max(0, Math.min(y0, P ? P.y : y0));
+    const X1 = Math.min(bg.width, Math.max(x1, P ? P.x + P.c.width : x1)), Y1 = Math.min(bg.height, Math.max(y1, P ? P.y + P.c.height : y1));
+    if (X1 <= X0 || Y1 <= Y0) continue;
+    const c = document.createElement('canvas'); c.width = X1 - X0; c.height = Y1 - Y0; c.getContext('2d').drawImage(bg, X0, Y0, c.width, c.height, 0, 0, c.width, c.height);
+    TG.patch.set(key, { c, x: X0, y: Y0 });
+  }
+  g.setTransform(K, 0, 0, K, m.x * K, m.y * K);
+  if (!SHADOW_IMG) unitShadow(-99, -99, 1);
+  g.globalAlpha = TOWER_LIT.shade / 0.7; // temas gölgesi: askerlerle aynı paylaşılan küçük doku
+  for (const [t, ts] of list) { const rx = ts.w * 0.62, ry = rx * 0.42; g.drawImage(SHADOW_IMG, t.x - rx, ts.bottom - 2 - ry, rx * 2, ry * 2); }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'lighter'; // soluk ışık havuzu (arkadan sıcak ışık + ayak dibi)
+  for (const [t, ts] of list) { const L = towerLitTex(t, ts); g.drawImage(L.li, t.x + L.x0, ts.bottom + L.y0, L.w, L.h); }
+  g.restore();
+}
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
-    if (NECRO && !PERF_OFF.has('tlight')) { // temas gölgesi (binayı zemine oturtur) ve ayağındaki soluk ışık havuzu
-      const L = towerLitTex(t, ts); // 16 Eki (performans): gölge ve ışık havuzu kule başına bir kez çizilir (her karede degrade + 3 parıltı yerine 2 drawImage)
-      // 19 Eki (Caner: "gölgeler askerlerdeki gibi hafif, basit"): temas gölgesi askerlerle aynı paylaşılan küçük doku (kule başına ayrı tuval yok, ekran kartı topluca çizer)
-      if (!PERF_OFF.has('tsh')) { if (!SHADOW_IMG) unitShadow(-99, -99, 1); const rx = ts.w * 0.62, ry = rx * 0.42; ctx.globalAlpha = TOWER_LIT.shade / 0.7; ctx.drawImage(SHADOW_IMG, t.x - rx, ts.bottom - 2 - ry, rx * 2, ry * 2); ctx.globalAlpha = 1; }
-      if (!PERF_OFF.has('tpool')) { const op = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
-      ctx.drawImage(L.li, t.x + L.x0, ts.bottom + L.y0, L.w, L.h);
-      ctx.globalCompositeOperation = op; }
-      if (!PERF_OFF.has('tfog')) drawTowerFog(t, ts, false);
-    }
+    // temas gölgesi ve ışık havuzu zemine işli (bakeTowerGround)
+    if (NECRO && !PERF_OFF.has('tlight') && !PERF_OFF.has('tfog')) drawTowerFog(t, ts, false);
     const age = G.t - (t.born ?? -9);
     const pop = age < 0.45 ? easeOutBack(clamp(age / 0.45, 0, 1)) : 1; // inşa/yükseltme zıplaması
     // top ateşlediğinde kule hafifçe sarsılır (top kendi içinde geri teper)
@@ -21612,6 +21636,7 @@ function drawPlay() {
   if (sh > 0) ctx.translate(rand(-sh, sh), rand(-sh, sh));
   ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
   const bm = G.bg.m || { x: 0, y: 0 };
+  bakeTowerGround(); // kule gölgesi ve ışık havuzu zemine işli (yalnız kuleler değişince yeniden)
   if (!PERF_OFF.has('bg')) ctx.drawImage(G.bg, -bm.x, -bm.y, W + 2 * bm.x, H + 2 * bm.y);
   if (!PERF_OFF.has('bgl')) drawBgLights(G.bg.lights, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
   drawGraveHands(G.bg.hands, G.parts); drawBanners(G.bg.banners, [cam.x + VIS.l / cam.z - 20, cam.y + VIS.t / cam.z - 20, cam.x + VIS.r / cam.z + 20, cam.y + VIS.b / cam.z + 20]);
@@ -23462,7 +23487,7 @@ window.__game = {
   stripScale: () => { const o = {}; for (const k in SPR) if (LAZY_RE.test(k) && ANIM_META[k]) { const F = ANIM_META[k], C = F.cols || F.n; o[k] = +(SPR[k].width / (F.fw * C)).toFixed(2); } const v = Object.values(o); return { n: v.length, kucuk: v.filter(x => x < 0.9).length, PAINT_OK, STRIP_K }; },
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
-  build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower),
+  build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower), sell: (i) => G.plots[i].tower && sellTower(G.plots[i].tower), // test: kule sat
   path: (i, p) => buyPath(G.plots[i].tower, p), imbue: (i, k) => buyImbue(G.plots[i].tower, k), // test: Kemik Kulesi yolu ve silah büyüsü
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
