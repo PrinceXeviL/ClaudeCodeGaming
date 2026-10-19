@@ -2721,11 +2721,11 @@ function fxPlagueSplash(x, y, r, life) { // life: altındaki birikintinin süres
   const AV = ACID_V.filter(v => ANIM_META[v]); AV.forEach(loadStrip); const ok = AV.filter(v => spr(v)); if (ok.length) { const v = ok[Math.floor(Math.random() * ok.length)], F = ANIM_META[v]; (G.acidFx ||= []).push({ x, y, r, t: 0, v, flip: Math.random() < 0.5, s: rand(0.88, 1.12), hold: Math.max(ACID.hold, (life || 0) - acidDur(F) - ACID.fade) }); for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 }); return true; }
   for (let i = 0; i < 22; i++) { // yere yakın, yayvan saçılan damlalar
     const a = rand(0, Math.PI * 2), v = rand(50, 150);
-    emit(P, { kind: SLIME.on ? 'slime' : 'dot', pal: 'g', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? (SLIME.on ? SLIME.pal.g.bd : '#6cc83c') : (SLIME.on ? SLIME.pal.g.lt : '#b8f27a'), s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
+    emit(P, { kind: 'dot', x, y: y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.45 - rand(30, 80), g: 340, col: i % 3 ? '#6cc83c' : '#b8f27a', s0: rand(1.4, 2.6), s1: 0.8, life: rand(0.35, 0.6) });
   }
   for (let i = 0; i < 5; i++) emit(P, { kind: 'glow', x: x + rand(-r, r) * 0.4, y: y - rand(0, 8), vx: rand(-12, 12), vy: -rand(8, 20), col: '110,190,80', s0: r * 0.3, s1: r * 0.7, life: rand(0.7, 1.1), a: 0.4 });
   for (let i = 0; i < 3; i++) emit(P, { kind: 'dot', x, y: y - 4, vx: rand(-60, 60), vy: -rand(60, 110), g: 300, col: '#efe6cc', s0: 1.8, s1: 1.2, life: 0.6 });
-  if (!G.decals || SLIME.on) return; // 19 Eki: sümük çiziminde yer lekeleri birikinti ve uydu damlacıklarla geliyor
+  if (!G.decals) return;
   G.decals.push({ kind: 'splat', x, y, r: r * 0.8, rot: rand(0, 6.28), v: Math.floor(rand(0, SPLAT_N)), t: 0, life: 3.2 });
   for (let i = 0; i < 7; i++) { // damlaların düştüğü yerler: biraz gecikmeyle beliren küçük lekeler
     const a = rand(0, Math.PI * 2), d = rand(0.8, 1.6) * r;
@@ -11303,7 +11303,9 @@ const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Cane
   poison: 1.2, pool: 3, down: 1 };
 // 15 Eki (Caner: kazan fazla güçlü): çarpma anında çok az alan hasarı (hit), sonra saniyede vuruşun dot kadarı zehir (dotT sn),
 // vurulanlar ve gazın içindekiler yavaşlar (slow oranı, slowT sn); gaz bulutunun hasarı gas ile çarpılır
-const POOL_LV = [3, 5, 6.5], POOL_SPEC = 1; // veba birikintisinin yolda kalma süresi (sn): kule kademesine göre (Kaynayan = 2. kademe), uzmanlıkta +1
+const POOL_LV = [3, 5, 6.5], POOL_SPEC = 1;
+// 19 Eki (Caner: "level atladıkça %20 daha çok sıvı atsın tek seferde"): kademe başına sıvı ×1,2 (birikinti alanı +%20, damla ve küçük birikinti sayısı +%20); bilgi kartında "Sıvı +%20"
+const PLAGUE_LIQ = 1.2, plagueLiq = (lvl) => Math.pow(PLAGUE_LIQ, Math.max(0, lvl || 0)); // veba birikintisinin yolda kalma süresi (sn): kule kademesine göre (Kaynayan = 2. kademe), uzmanlıkta +1
 const PLAGUE_HIT = { hit: 0.14, dot: 0.09, dotT: 4, slow: 0.35, slowT: 2.5, gas: 0.35 }; // 15 Eki (2): hâlâ güçlüydü, bir kez daha kısıldı; düşman geri tepmez, üstü vebayla kaplanır (coat)
 const SPRAY_RATE = 1.6, GUSH = 0.4; // püskürtme bekleme çarpanı (Caner: "çok sık atış yapamasın"), fışkırma süresi
 // Ceset Mancınığı (4. kademe): rate bekleme çarpanı, dmg cesedin çarpma hasarı çarpanı, max kule başına ayaktaki zombi, bodies fırlatılan cesetler
@@ -11386,18 +11388,18 @@ function boneBallHit(pr) {
 }
 // sekme çeşidi: asit topağı yere vurup bir kez daha sıçrar, yanında ikinci küçük birikinti (görsel; hasar yok)
 function plagueBounce(q) {
-  for (let i = 0; i < 14; i++) { const a = rand(-Math.PI, 0), v = rand(50, 150); emit(G.parts, { kind: 'slime', pal: q.black ? 'p' : 'g', x: q.x + rand(-3, 3), y: q.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.8 - 20, g: 520, col: q.black ? SLIME.pal.p.bd : i % 3 ? SLIME.pal.g.bd : SLIME.pal.g.lt, s0: rand(1, 2.2), s1: 0.8, life: rand(0.35, 0.6), floor: q.y + rand(-6, 6) }); }
+  for (let i = 0; i < 14; i++) { const a = rand(-Math.PI, 0), v = rand(50, 150); emit(G.parts, { kind: 'dot', x: q.x + rand(-3, 3), y: q.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.8 - 20, g: 520, col: q.black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1, 2.2), s1: 0.8, life: rand(0.35, 0.6), floor: q.y + rand(-6, 6) }); }
   G.zones.push({ x: q.x, y: q.y, r: q.r, dps: 0, t: 0, life: q.life, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: q.black, seed: rand(0, 9) });
   G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: q.r * 1.4, col: '140,255,90', t: 0, dur: 0.35 });
 }
 // 19 Eki: veba damlasının sıçraması ayrı işlev (Kemik Gülle de kullanır)
-function plagueDrops(x, y, sp, pl2, black, veo) {
+function plagueDrops(x, y, sp, pl2, black, veo, liq = 1) {
   // 18 Eki (Caner: "her seferinde aynı sıçrama olmasın"): kodla 3 çeşit, her atışta rastgele: 0 yelpaze, 1 taç (dik yukarı), 2 sekme (damla bir kez daha sıçrar)
-  const sty = Math.floor(Math.random() * 3), dcol = (i) => black ? (i % 3 ? SLIME.pal.p.bd : SLIME.pal.p.lt) : (i % 3 ? SLIME.pal.g.bd : SLIME.pal.g.lt);
-  if (sty === 1) for (let i = 0; i < 30; i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'slime', pal: black ? 'p' : 'g', x: x + rand(-6, 6), y: y - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: y + rand(-6, 6) }); }
-  else for (let i = 0; i < 26; i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'slime', pal: black ? 'p' : 'g', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: y + rand(-10, 10) }); }
+  const sty = Math.floor(Math.random() * 3), dcol = (i) => black && i % 2 ? '#a86ae8' : i % 3 ? '#8cff5a' : '#d8ffb0';
+  if (sty === 1) for (let i = 0; i < Math.round(30 * liq); i++) { const a = rand(-Math.PI * 0.8, -Math.PI * 0.2), v = rand(140, 260); emit(G.parts, { kind: 'dot', x: x + rand(-6, 6), y: y - 4, vx: Math.cos(a) * v * 0.6, vy: Math.sin(a) * v, g: 620, col: dcol(i), s0: rand(1.4, 2.8), s1: 1, life: rand(0.55, 0.9), floor: y + rand(-6, 6) }); }
+  else for (let i = 0; i < Math.round(26 * liq); i++) { const a = rand(-Math.PI, 0), v = rand(60, 210); emit(G.parts, { kind: 'dot', x: x + rand(-4, 4), y: y - 4, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.9 - 30, g: 520, col: dcol(i), s0: rand(1.2, 2.6), s1: 1, life: rand(0.45, 0.8), floor: y + rand(-10, 10) }); }
   if (sty === 2) { const a = rand(0, Math.PI * 2), d = sp * rand(0.7, 1); (G.plagueQ ||= []).push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: sp * 0.45, t: -rand(0.28, 0.4), life: pl2 * 0.8, black: black }); }
-  if (!veo) for (let i = 0; i < 5; i++) { const a = rand(0, Math.PI * 2), d = sp * (sty === 1 ? rand(0.45, 0.8) : rand(0.75, 1.15)); G.zones.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: black, seed: rand(0, 9) }); }
+  if (!veo) for (let i = 0; i < Math.round(5 * liq); i++) { const a = rand(0, Math.PI * 2), d = sp * (sty === 1 ? rand(0.45, 0.8) : rand(0.75, 1.15)); G.zones.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * 0.5, r: rand(5, 9), dps: 0, t: -rand(0.2, 0.45), life: pl2 * 0.7, fxT: 9, src: 'blast', kind: 'splat', pool: true, black: black, seed: rand(0, 9) }); }
 }
 function plagueBomb(pr) {
   for (const e of G.enemies) {
@@ -11411,10 +11413,11 @@ function plagueBomb(pr) {
   // 16 Eki (Caner: "kaynayan veba kazanı yüksek seviyede attığı zehir yolda daha uzun kalsın, üstünden geçen saniyede zehir hasarı alsın"):
   // birikinti süresi kademeyle (POOL_LV, uzmanlıkta +POOL_SPEC), içinden geçene bulaşan zehir kademe başına +%40
   const pl2 = POOL_LV[pr.plvl ?? 0] + (pr.pspec ? POOL_SPEC : 0), inf = 1 + 0.4 * (pr.plvl ?? 0);
-  const pool = { x: pr.tx, y: pr.ty, r: pr.splash * 0.7, dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) }; G.zones.push(pool);
+  const liq = plagueLiq(pr.plvl);
+  const pool = { x: pr.tx, y: pr.ty, r: pr.splash * 0.7 * Math.sqrt(liq), dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) }; G.zones.push(pool);
   const veo = fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2, pl2); if (veo) pool.veo = true; // 18 Eki: Veo asidi varsa kodla çizilen birikinti görünmez (altında ikinci asit kalıyordu), hasarı sürer
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
-  plagueDrops(pr.tx, pr.ty, pr.splash, pl2, pr.black, veo);
+  plagueDrops(pr.tx, pr.ty, pr.splash, pl2, pr.black, veo, liq);
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
@@ -11423,7 +11426,7 @@ function plagueBomb(pr) {
 // koyu kenar (alt yanda kalınlık), orta gövde, üstte açık ışık bölgesi ve daha açık parlama, beyaz parlak lekeler, içi koyu kenarı parlak
 // kabarcık çukurları, çevresinde konturlu uydu damlacıklar. Şekiller az sayıda ortak dokudan (SLIME.v çeşit × renk) seçilir, ölçek/ayna ile
 // çeşitlenir (her birikintiye ayrı tuval yok: ekran kartı yorulmasın).
-const SLIME = { v: 6, K: 3, R: 40, on: true, a: 0.8, k: 0.85, // a: saydamlık, k: boyut (yolu fazla kapatmasın)
+const SLIME = { v: 6, K: 3, R: 40, on: false, /* 19 Eki (Caner: "çok kötü oldu, eski 3'lü haline al"): kapalı */ a: 0.8, k: 0.85, // a: saydamlık, k: boyut (yolu fazla kapatmasın)
   pal: { g: { dk: '#1c4a10', bd: '#47a81c', lt: '#86d936', hi: '#c9f56e', gl: '#f4ffd8', pit: '#2a6c14', rim: '#a4ec58' },
          p: { dk: '#2a1046', bd: '#6b3aa6', lt: '#9c6ad8', hi: '#c9a4f2', gl: '#f4e8ff', pit: '#3c1a62', rim: '#7ce858' } } };
 const SLIME_C = new Map();
@@ -15838,7 +15841,7 @@ function drawHud() {
   // dalga düğmeleri drawPlay'de en sonda (her şeyin üstünde) çizilir
 
   // bilgi paneli
-  const info = infoText();
+  const info = infoText(); G.infoCardR = null;
   if (info) drawInfoCard(info);
   const hint = G.mode ? (G.mode.kind === 'minions' ? 'Ölüleri' + ' göndereceğin yeri seç (haritanın her yeri)' : G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : G.mode.kind === 'item' ? `${ITEMS[G.mode.id].name}: patlayacağı yeri seç` : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
@@ -15882,7 +15885,7 @@ function drawInfoCard(info) {
   const w = clamp(Math.max(headW, chipsW, 280) + 40, 300, Math.min(maxW, 560)), bw = w - 36;
   const bl = I.bullets; // her madde tek satır: sığmazsa fitTxt küçültür
   const rows = []; { let cur = [], rw = -8; for (const c of chips) { if (cur.length && rw + 8 + c.w > bw) { rows.push(cur); cur = []; rw = -8; } cur.push(c); rw += 8 + c.w; } if (cur.length) rows.push(cur); } // 18 Eki: sığmayan değerler alt satıra
-  const ph = 36 + rows.length * 26 + bl.length * 19 + 8, y0 = cardY(ph), x0 = clamp(W / 2 - w / 2, cardLeft(y0), cardRight(y0) - w), cx = x0 + w / 2; G.cardBot = y0 < H / 2 ? y0 + ph : null;
+  const ph = 36 + rows.length * 26 + bl.length * 19 + 8, y0 = cardY(ph), x0 = clamp(W / 2 - w / 2, cardLeft(y0), cardRight(y0) - w), cx = x0 + w / 2; G.cardBot = y0 < H / 2 ? y0 + ph : null; G.infoCardR = { x: x0, y: y0, w, h: ph };
   roundRect(x0 + 3, y0 + 6, w, ph, 16, 'rgba(0,0,0,0.38)');
   const g = ctx.createLinearGradient(0, y0, 0, y0 + ph); g.addColorStop(0, 'rgba(76,15,36,0.97)'); g.addColorStop(0.6, 'rgba(51,16,46,0.97)'); g.addColorStop(1, 'rgba(30,11,38,0.97)');
   roundRect(x0, y0, w, ph, 16, g, '#d4ab5a', 2); roundRect(x0 + 4, y0 + 4, w - 8, ph - 8, 12, null, 'rgba(201,168,101,0.28)', 1);
@@ -18635,6 +18638,7 @@ function pctSum(type, A, B) {
   if (type === 'altar') { add('Lanet', Math.round((B.curse - A.curse) * 100), true); add('Direnç kırma', Math.round((B.res - A.res) * 100), true); add('Güçlendirme', Math.round((B.ally - A.ally) * 100), true); add('Menzil', P(A.range, B.range)); return out.join(', '); }
   if (type === 'barracks') { add('Can', P(A.hp, B.hp)); add('Hasar', P(avg(A), avg(B))); add('Zırh', Math.round(((B.armor || 0) - (A.armor || 0)) * 100), true); return out.join(', '); }
   add('Hasar', P(avg(A), avg(B))); if (A.rate && B.rate) add('Atış hızı', P(B.rate, A.rate)); add('Menzil', P(A.range, B.range)); if (A.splash && B.splash) add('Alan', P(A.splash, B.splash));
+  if (type === 'artillery' && NECRO) add('Sıvı', Math.round((PLAGUE_LIQ - 1) * 100)); // 19 Eki: her kademe tek atışta %20 daha çok veba sıvısı
   return out.join(', ');
 }
 // uzmanlık kademesi kartı: bu kademenin kazandırdıkları (eski → yeni simgeli değerler)
@@ -19141,7 +19145,8 @@ function drawCodex() {
   }
   const rk = easeOutBack(clamp(st / 0.45, 0, 1));
   ctx.save(); ctx.translate(W / 2, 46); ctx.scale(rk, rk); ribbon(0, 0, 300, 'KODEKS', 'blue', 26); ctx.restore();
-  roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st - 0.1 });
+  if (menuBack === 'play' && G) gameButton('back', EDGE.l + 104, 44, 180, 46, 'OYUNA DÖN', () => go(() => { screen = 'play'; screenT = time; menuBack = 'map'; }), 'red', { size: 17, appear: st - 0.1 });
+  else roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = menuBack; screenT = time; }), { appear: st - 0.1 });
   // sekmeler
   const tab = CODEX.tab, nE = CODEX_ENEMIES.filter(codexSeen).length;
   gameButton('cx_e', 140, 100, 210, 42, `DÜŞMANLAR ${nE}/${CODEX_ENEMIES.length}`, () => { CODEX.tab = 'e'; CODEX.t0 = time; }, tab === 'e' ? 'red' : 'dark', { size: 16, appear: st - 0.15 });
@@ -19317,8 +19322,8 @@ function drawCodexTower(id, px, py, pw, ph) {
   const Ls = T.levels, rows = [['Maliyet', l => l.cost + ''], ['Menzil', l => l.range + '']];
   if (id === 'barracks') rows.push(['İskelet canı', l => l.hp + ''], ['İsk. hasarı', l => `${l.dmg[0]}–${l.dmg[1]}`], ['İsk. zırhı', l => `%${Math.round(l.armor * 100)}`], ['Doğma', l => l.respawn + ' sn']);
   else if (id === 'altar') rows.push(['Fazla hasar', l => `+%${Math.round(l.curse * 100)}`], ['Yavaşlık', l => `%${Math.round(l.slow * 100)}`], ['Güçsüzlük', l => `%${Math.round(l.weak * 100)}`], ['Direnç kırma', l => `%${Math.round(l.res * 100)}`]);
-  else { rows.push(['Hasar', l => `${l.dmg[0]}–${l.dmg[1]}`], ['Atış arası', l => l.rate + ' sn'], ['Saniyede', l => Math.round((l.dmg[0] + l.dmg[1]) / 2 / l.rate) + '']); if (Ls.some(l => l.splash)) rows.push(['Alan', l => (l.splash || 0) + '']); }
-  const ty = py + 92, lw = Math.min(104, wR * 0.32), cw = (wR - lw) / 3, rh = 19;
+  else { rows.push(['Hasar', l => `${l.dmg[0]}–${l.dmg[1]}`], ['Atış arası', l => l.rate + ' sn'], ['Saniyede', l => Math.round((l.dmg[0] + l.dmg[1]) / 2 / l.rate) + '']); if (Ls.some(l => l.splash)) rows.push(['Alan', l => (l.splash || 0) + '']); if (id === 'artillery' && NECRO) rows.push(['Sıvı', l => '×' + (+plagueLiq(Ls.indexOf(l)).toFixed(2)).toLocaleString('tr')]); }
+  const ty = py + 92, lw = Math.min(104, wR * 0.32), cw = (wR - lw) / 3, rh = rows.length >= 7 ? 16 : 19; // 19 Eki: satır çoksa (Sıvı) sıkışır, alttaki uzmanlıklara binmesin
   roundRect(x0 + lw + li * cw - 2, ty - 12, cw, rh * (rows.length + 1) + 4, 8, 'rgba(255,211,77,0.12)', 'rgba(255,211,77,0.45)', 1.2); // seçili seviye sütunu
   ['1. sv', '2. sv', '3. sv'].forEach((h, i) => txt(h, x0 + lw + (i + 0.5) * cw, ty, 11.5, i === li ? '#ffd34d' : '#9a88b0', 'center', '800', FONT_B, false));
   rows.forEach(([lab, f], r) => { const y = ty + (r + 1) * rh;
@@ -19326,12 +19331,13 @@ function drawCodexTower(id, px, py, pw, ph) {
     fitTxt(lab, x0, y, lw - 6, 12.5, '#b8a8c8', 'left', '700', FONT_B, false, 10);
     Ls.forEach((l, i) => fitTxt(f(l), x0 + lw + (i + 0.5) * cw, y, cw - 6, 13.5, i === li ? '#fff' : '#cdbfd8', 'center', '400', FONT_T, false, 10)); });
   let y = ty + (rows.length + 1) * rh + 8;
+  if (li > 0) { const inc = pctSum(id, Ls[li - 1], Ls[li]); if (inc) { wrapLines(`${li}. → ${li + 1}. sv: ${inc}`, wR, 12.5, '800', FONT_B, 2).forEach(l => { txt(l, x0, y, 12.5, '#9aff8a', 'left', '800', FONT_B, false); y += 16; }); y += 2; } } // 19 Eki: yükseltmenin artışları
   // zırh sınıflarına etkisi
   const src = CODEX_SRC[id];
   if (src) { let x = x0; txt('Etkisi:', x, y, 12, '#b8a8c8', 'left', '800', FONT_B, false); x += 46;
     for (const [cid, C] of Object.entries(ARMOR_CLASS)) { const m = C.mult[src]; if (m == null || Math.abs(m - 1) < 0.05) continue; const good = m > 1, w = codexChip(x, y, `${C.name.split(' ')[0]} ×${+m.toFixed(2)}`, good ? '#9aff8a' : '#ff9a8a', good ? 'rgba(30,70,30,0.8)' : 'rgba(80,25,25,0.8)', 11); x += w + 4; if (x > x0 + wR - 70) break; }
     y += 20; }
-  wrapLines(L.perk || T.desc, wR, 12.5, '700', FONT_B, 2).forEach(l => { txt(l, x0, y, 12.5, '#f0e2c4', 'left', '700', FONT_B, false); y += 16; });
+  { const nl = Math.min(2, Math.floor((py + 284 - y) / 16)); if (nl > 0) wrapLines(L.perk || T.desc, wR, 12.5, '700', FONT_B, nl).forEach(l => { txt(l, x0, y, 12.5, '#f0e2c4', 'left', '700', FONT_B, false); y += 16; }); } // 19 Eki: uzmanlık başlığına binmesin
   { const nmax = Math.floor((py + 280 - y) / 14), nl = CODEX_NOTE[id] && nmax > 1 ? wrapLines('Mortimer: ' + CODEX_NOTE[id], wR, 11.5, '700', FONT_B, nmax) : []; nl.forEach(l => { txt(l, x0, y + 2, 11.5, '#c8a8ff', 'left', '700', FONT_B, false); y += 14; }); } // Mortimer'ın notu (kısa)
   // uzmanlık kartları
   let by = py + 292;
@@ -23198,6 +23204,7 @@ window.addEventListener('pointerup', (ev) => release(ev, false));
 window.addEventListener('pointercancel', (ev) => release(ev, true));
 
 const hit = (b, x, y, pad = 6) => dist(b.x, b.y, x, y) <= b.r + pad;
+const inRect = (R, x, y) => x >= R.x && x <= R.x + R.w && y >= R.y && y <= R.y + R.h; // 19 Eki: kart/panel (dikdörtgen); hit daire içindir
 
 // Ekran koordinatlı öğeler (HUD, büyüler, dalga işareti, halka menü, düşman paneli).
 // Parmak değdiği an çalışır; dokunuş bunlardan birine denk geldiyse true döner.
@@ -23290,8 +23297,25 @@ function hudTap(x, y) {
     }
   }
   // açık düşman paneline dokunmak paneli kapatmaz
-  if (G.sel && G.sel.kind === 'enemy' && G.enemyPanelR && hit(G.enemyPanelR, x, y)) return true;
+  if (G.sel && G.sel.kind === 'enemy' && G.enemyPanelR && inRect(G.enemyPanelR, x, y)) { openCodexFromPlay('e', G.sel.enemy && G.sel.enemy.type); return true; }
+  // 19 Eki (Caner): kule / kurulacak kule bilgi kartına dokununca Kodeks'te o kule (yükseltme önizlemesinde gelecek kademe ve artışları)
+  if (G.infoCardR && inRect(G.infoCardR, x, y) && G.sel) {
+    const pv = G.preview, t = G.sel.kind === 'tower' && G.sel.tower;
+    if (t && TOWERS[t.type]) { openCodexFromPlay('t', t.type, pv && pv.id === 'upgrade' && pv.type !== 'castle' ? Math.min(t.lvl + 1, t.def.levels.length - 1) : t.lvl); return true; }
+    if (G.sel.kind === 'plot' && pv && TOWERS[pv.type]) { openCodexFromPlay('t', pv.type, 0); return true; }
+  }
   return false;
+}
+// 19 Eki (Caner: "oyundayken bilgi kartına tıklayınca kodeks sayfasına gitsin, sol üstte oyuna dön"): oyun durur (ekran 'play' değil), geri dönünce sürer
+function openCodexFromPlay(tab, id, lvl = 0) {
+  if (!id) return false;
+  if (tab === 'e') {
+    let base = id, rk = 0;
+    for (let r = 1; r < RANKS.length; r++) { const suf = '_' + RANKS[r].id; if (id.endsWith(suf) && RANKED.includes(id.slice(0, -suf.length))) { base = id.slice(0, -suf.length); rk = r; } }
+    if (!CODEX_ENEMIES.includes(base)) { const d = ENEMIES[id]; if (d && d.base && CODEX_ENEMIES.includes(d.base)) base = d.base; else return false; }
+    CODEX.sel.e = base; CODEX.rank = rk;
+  } else { if (!TOWERS[id]) return false; CODEX.sel.t = id; CODEX.lvl = lvl; }
+  CODEX.tab = tab; CODEX.t0 = time; menuBack = 'play'; sfx('pick'); go(() => { screen = 'codex'; screenT = time; }); return true;
 }
 
 // Dünya koordinatlı dokunuş (parmak kaymadan kalkınca): altın, hedefleme, kahraman, düşman, kule, arsa
@@ -23623,6 +23647,7 @@ window.__game = {
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower), sell: (i) => G.plots[i].tower && sellTower(G.plots[i].tower), // test: kule sat
+  codexFrom: (tab, id, lvl) => openCodexFromPlay(tab, id, lvl), infoCardR: () => G.infoCardR, enemyPanelR: () => G.enemyPanelR, ui2s: (x, y) => ({ x: view.ox + x * view.scale, y: view.oy + y * view.scale }), // test: oyundan Kodeks
   path: (i, p) => buyPath(G.plots[i].tower, p), imbue: (i, k) => buyImbue(G.plots[i].tower, k), // test: Kemik Kulesi yolu ve silah büyüsü
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
