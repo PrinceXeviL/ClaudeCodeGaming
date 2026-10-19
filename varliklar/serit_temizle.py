@@ -68,11 +68,18 @@ def main():
     for n in names:
         p = os.path.join(IMG, n + '.webp'); b = os.path.join(BAK, n + '.webp')
         if n not in A or not os.path.exists(p): continue
+        # 19 Eki: şerit yeniden üretildiyse (Wan/Veo yeni sürüm) eski yedek geçersiz: yeni şerit yedek olur. Ölçüt: bu betiğin son yazdığı
+        # zaman (yedeğin yanındaki .t) dosyanın şimdiki zamanından eskiyse ya da boyutlar tutmuyorsa dosya başka biri tarafından değiştirilmiştir.
+        st = b[:-5] + '.t'
+        if os.path.exists(b):
+            last = float(open(st).read()) if os.path.exists(st) else None
+            if (last is not None and os.path.getmtime(p) > last + 1) or Image.open(b).size != Image.open(p).size or last is None and os.path.getmtime(p) > os.path.getmtime(b) + 1:
+                shutil.copy(p, b); print('yeni sürüm, yedek yenilendi', n)
         a = np.asarray(Image.open(b if os.path.exists(b) else p).convert('RGBA'))
         o = temizle(a, n)
         if dene: sheet.append((n, a, o)); continue
         if not os.path.exists(b): shutil.copy(p, b)
-        Image.fromarray(o).save(p, 'WEBP', quality=86, method=6); print('temizlendi', n)
+        Image.fromarray(o).save(p, 'WEBP', quality=86, method=6); open(st, 'w').write(str(os.path.getmtime(p))); print('temizlendi', n)
     if dene:
         rows = []
         for n, a, o in sheet:

@@ -3583,10 +3583,10 @@
  },
  "enemy_shadowmaster_sig2": {
   "n": 33,
-  "fw": 258,
-  "fh": 179,
-  "base": 0.0136,
-  "ch": 0.8957
+  "fw": 232,
+  "fh": 183,
+  "base": 0.0133,
+  "ch": 0.8758
  },
  "enemy_shadowmaster_block": {
   "n": 33,
