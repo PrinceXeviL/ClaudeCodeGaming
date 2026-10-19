@@ -1126,12 +1126,15 @@ function spatial(o) {
   const focus = d <= 1 ? 1 - (1 - SPATIAL.edge) * d : Math.max(SPATIAL.out, SPATIAL.edge - 0.42 * (d - 1));
   return { k: (1 - zf) * (SPATIAL.wide + (1 - SPATIAL.wide) * focus) + zf * SPATIAL.near * focus, pan: clamp(dx, -1, 1) * SPATIAL.pan };
 }
+const SFX_BAD = new Set();
 function sfx(kind, rate, volK = 1, pos = SFX_POS) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (window.__sfxLog && !muted) window.__sfxLog.push(kind); // test: çalınan sesler
   if (muted || !actx) return;
   const sp = pos && !NOPOS.has(kind) ? spatial(pos) : null;
   if (sp) { volK *= sp.k; if (volK < 0.03) return; } // uzaktaki çok kısık ses hiç çalmaz (kanal boşa dolmasın)
+  // 19 Eki (Caner: "oyun donuyor"): konumu bozuk (NaN) ses AudioParam'a NaN yazınca hata fırlatıp oyun döngüsünü durduruyordu: bozuk değerde ses çalmaz
+  if (!Number.isFinite(volK) || (rate != null && !Number.isFinite(rate))) { if (!SFX_BAD.has(kind)) { SFX_BAD.add(kind); console.warn('[ses] bozuk değer:', kind, volK, rate); } return; }
   if (ELEVEN_ON && EL_ALIAS[kind] && SND[EL_ALIAS[kind]] && SND[EL_ALIAS[kind]].length) kind = EL_ALIAS[kind];
   else if (FREESOUND_ON && FS_ALIAS[kind] && SND[FS_ALIAS[kind]] && SND[FS_ALIAS[kind]].length) kind = FS_ALIAS[kind];
   if (kind === 'wave') { const st = sndState.wave || (sndState.wave = { last: -9, playing: 0 }); if (actx.currentTime - st.last > 0.6) { st.last = actx.currentTime; waveSound(); } return; }
@@ -10600,7 +10603,7 @@ function xbowShoot(t, ts, L, e0, opt) {
   const o = xbowTip(t, ts, a);
   ballisticShot(o, t.y, e, M.aim, M, { dmg: opt.dmg * (e.def.flying ? opt.fly || 1 : 1), dtype: opt.pierce ? 'true' : 'phys', crit: opt.crit, pierce: opt.pierce, pen: opt.pen || 0, poison: opt.poison || 0, knock: !!M.heavy, imbue: t.imbue });
   t.relQ = (t.relQ || []).concat([{ t: M.aim, x: o.x, y: o.y, col: M.col, heavy: M.heavy, bow: M.bow }], M.bow ? [] : [{ t: M.aim + (M.heavy ? 0.4 : 0.28), load: true, heavy: M.heavy }]); // bırakma anında parıltı ve ses; arbalet ardından kurulur
-  if (M.bow) sfx('bowdraw', rand(0.95, 1.08), 0.9, a.x != null ? a : { x: t.x, y: t.y - 30 }); // 19 Eki: okçu yayı gerer (nişan süresi boyunca)
+  if (M.bow) sfx('bowdraw', rand(0.95, 1.08), 0.9, { x: t.x, y: t.y - 30 }); // 19 Eki: okçu yayı gerer (nişan süresi boyunca); konum kuleden (okçunun x'i NaN olabiliyordu → oyun donuyordu)
   return a;
 }
 function updateXbowRelease(t, dt) {
@@ -12106,7 +12109,7 @@ function bakeTowerGround() {
   let TG = G.tg; if (!TG || TG.bg !== G.bg) TG = G.tg = { bg: G.bg, patch: new Map(), sig: '' };
   const off = PERF_OFF.has('tlight'), list = []; let sig = off ? 'off' : '';
   if (!off) for (const t of G.towers) { const ts = towerSprite(t); if (!ts) continue; list.push([t, ts]); sig += `${t.x | 0},${t.y | 0},${t.type},${ts.name},${ts.w.toFixed(1)},${ts.h.toFixed(1)},${ts.bottom.toFixed(1)};`; }
-  if (sig === TG.sig) return; TG.sig = sig;
+  if (sig === TG.sig) return; TG.sig = sig; TG.n = (TG.n || 0) + 1; TG.last = sig; // test: kaç kez yeniden işlendi
   const bg = G.bg, m = bg.m || { x: 0, y: 0 }, K = bg.width / (W + 2 * m.x), g = bg.getContext('2d');
   g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   for (const P of TG.patch.values()) g.drawImage(P.c, P.x, P.y); // el değmemiş zemin geri
@@ -23769,7 +23772,16 @@ window.__game = {
   perfOff: (k, on = true) => { on ? PERF_OFF.add(k) : PERF_OFF.delete(k); return [...PERF_OFF]; }, // test: çizim katmanı kapat
   get G() { return G; }, get overlay() { return overlay; }, get screen() { return screen; }, startLevel, setSpeed: (s) => { speed = s; },
   build: (i, type) => buildTower(G.plots[i], type), upgrade: (i) => G.plots[i].tower && upgradeTower(G.plots[i].tower), sell: (i) => G.plots[i].tower && sellTower(G.plots[i].tower), // test: kule sat
-  codexFrom: (tab, id, lvl) => openCodexFromPlay(tab, id, lvl), infoCardR: () => G.infoCardR, enemyPanelR: () => G.enemyPanelR, ui2s: (x, y) => ({ x: view.ox + x * view.scale, y: view.oy + y * view.scale }), // test: oyundan Kodeks
+  codexFrom: (tab, id, lvl) => openCodexFromPlay(tab, id, lvl), infoCardR: () => G.infoCardR, enemyPanelR: () => G.enemyPanelR, ui2s: (x, y) => ({ x: view.ox + x * view.scale, y: view.oy + y * view.scale }), // 19 Eki: arsa/arayüz denetimi (tools/arsa-ui-denetim.js): arayüz dokunma alanları (arayüz koordinatı) ve dünya→arayüz dönüşümü
+  w2u: (x, y) => worldToScreen(x, y), vis: () => ({ VIS, EDGE }),
+  uiZones: () => { const Z = [], c = (b, k = 1, tag = '') => b && Z.push({ x: b.x, y: b.y, r: b.r * k, tag });
+    for (let pi = 0; pi < G.paths.length; pi++) { const b = waveBtnScreen(pi); if (b) Z.push({ x: b.x, y: b.y, r: 24 * WAVE_BTN_K + 4, tag: 'dalga' }); }
+    c(HUD.pause, 1 + UI_HIT, 'duraklat'); c(HUD.speed, 1 + UI_HIT, 'hız'); c(HUD.mute, 1 + UI_HIT, 'ses');
+    (HUD.heroes || []).forEach(hb => { c(hb, 1 + UI_HIT, 'komutan'); c(heroBadge(hb), 1, 'komutan'); });
+    c(itemBag(), 1 + UI_HIT, 'çanta'); spellIds().forEach((id, i) => c(spellBtn(i), 1 + UI_HIT, 'büyü'));
+    const ri = spellIds().indexOf('nm_raise'); if (ri >= 0) { const b = spellBtn(ri), r = Math.max(20 * UI_K, b.r * 0.6); for (const g of [-1, 0, 1]) Z.push({ x: b.x + g * r * 1.12, y: b.y - b.r * 1.95, r: r * 1.3, tag: 'sancak' }); }
+    Z.push({ rect: true, x: EDGE.l, y: EDGE.t, w: 245, h: 128, tag: 'göstergeler' });
+    return Z; }, // test: oyundan Kodeks
   path: (i, p) => buyPath(G.plots[i].tower, p), imbue: (i, k) => buyImbue(G.plots[i].tower, k), // test: Kemik Kulesi yolu ve silah büyüsü
   warmMapNow: () => { const t0 = performance.now(), T = []; for (let i = 0; i < 8; i++) { const a = performance.now(); warmT = -1; warmMap(); T.push(Math.round(performance.now() - a)); } return T; }, // test: önceden hazırlama süreleri
   mapReady: () => ({ img: IMG_READY, ep: mapEp, done: !!(REGION_BG[ensureMapEp()] && REGION_BG[ensureMapEp()].done) }), // test: harita zemini önceden hazır mı
