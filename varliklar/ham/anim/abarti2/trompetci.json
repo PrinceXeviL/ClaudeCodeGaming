@@ -1,0 +1,26 @@
+[
+ {
+  "name": "enemy_herald_walk",
+  "ref": "ham/anim/enemy_herald_ref.png",
+  "prompt": "a cartoon Roman legion trumpeter wearing a grey wolf pelt hood over a gold-trimmed white helmet, white and gold muscle armor, red tunic and red cape, a short sword at his belt, holding a long straight golden brass trumpet marches in place in a proud steady military walk cycle, holding the trumpet horizontally at his waist with both hands, legs swing forward and back, knees lift, the cape and wolf pelt sway, a full looping walk cycle. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character, the trumpet stays one single straight golden brass trumpet in every frame. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke, no music notes",
+  "frames": 33,
+  "loop": true,
+  "seed": 31
+ },
+ {
+  "name": "enemy_herald_blow",
+  "ref": "ham/anim/enemy_herald_ref.png",
+  "prompt": "a cartoon Roman legion trumpeter wearing a grey wolf pelt hood over a gold-trimmed white helmet, white and gold muscle armor, red tunic and red cape, a short sword at his belt, holding a long straight golden brass trumpet stands still, lifts the trumpet with his right hand up to his lips, points the trumpet forward and slightly upward and blows a loud battle charge call: his cheeks puff out, his chest swells, his body leans back with effort and he holds the long note, the trumpet bell trembles, then he lowers the trumpet back to his waist and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character, the trumpet stays one single straight golden brass trumpet in every frame. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke, no music notes",
+  "frames": 49,
+  "loop": false,
+  "seed": 32
+ },
+ {
+  "name": "enemy_herald_turn",
+  "ref": "ham/anim/enemy_herald_ref.png",
+  "prompt": "a cartoon Roman legion trumpeter wearing a grey wolf pelt hood over a gold-trimmed white helmet, white and gold muscle armor, red tunic and red cape, a short sword at his belt, holding a long straight golden brass trumpet turns around on the spot from facing right to facing left in a few quick steps, holding the trumpet at his waist, and ends standing still facing left, ready to walk away. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character, the trumpet stays one single straight golden brass trumpet in every frame. Side view, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke, no music notes",
+  "frames": 25,
+  "loop": false,
+  "seed": 33
+ }
+]

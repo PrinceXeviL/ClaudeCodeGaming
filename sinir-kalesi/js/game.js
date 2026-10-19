@@ -2355,6 +2355,7 @@ function startLevel(idx, chal = null) {
 
   for (const k in ANIM_META) if (k.startsWith('mortimer_')) keep.add(k); // 15 Eki: Mortimer'ın kale şeritleri de tembel yüklenir (telefonda küçültülür)
   keep.add('castle_keep_1_idle'); // hasarlı evrelerin döngüleri evre gelince yüklenir (drawCastle)
+  for (const n of ['enemy_herald_walk', 'enemy_herald_blow', 'enemy_herald_turn']) keep.add(n); // 19 Eki: trompetçi (her bölümde dalga başında gelir)
   if (team().includes('merlin')) keep.add('fx_tornado'); // 18 Eki: Kasırga Fırtınası Veo şeridi
   ACID_V.forEach(v => keep.add(v)); // 18 Eki: Veba Kazanı asidi (çeşitleri)
   useStrips(keep);
@@ -8149,16 +8150,19 @@ function drawHeralds() {
     const face = h.state === 'out' ? -fwd : fwd; // çalarken düşmanın yürüyeceği yöne bakar
     const blowing = h.state === 'blow', dur = h.long ? HERALD.blowLong : HERALD.blow;
     // kaldırma: borazan 0,3 sn'de omuzdan ağza kalkar, çalarken gövde geriye yaslanır ve nefesle kabarır, sonunda iner
-    const k = blowing ? easeInOut(clamp(h.t / 0.3, 0, 1)) * easeInOut(clamp((dur - h.t) / 0.3, 0, 1)) : 0;
+    let k = blowing ? easeInOut(clamp(h.t / 0.3, 0, 1)) * easeInOut(clamp((dur - h.t) / 0.3, 0, 1)) : 0;
     const breath = blowing ? Math.sin(h.t * 7) * 0.5 + 0.5 : 0;
     ctx.save(); ctx.globalAlpha *= fa; if (!hr) { ctx.translate(q.x, q.y); ctx.rotate(-face * 0.1 * k); ctx.scale(1, 1 + 0.025 * k * breath); ctx.translate(-q.x, -q.y); } // Gemini borazancısında gövde sabit
     if (!hr) { ctx.save(); ctx.translate(q.x, q.y); drawCornu(face, hgt, k, breath); ctx.restore(); } // boru askerin arkasında: gövdeyi sarar
-    if (blowing && hr) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath, h.t, dur); // nefes alır, öne eğilip üfler; borazan ve el oynar
+    const HB = hr && heraldStrip(h, q, face, hgt, dur, fa);
+    if (HB) { /* şerit çizildi */ }
+    else if (blowing && hr && HERALD_CORNU) drawHeraldBlow(hr, q.x, q.y, face, hgt, k, breath, h.t, dur); // eski cornu: nefes alır, öne eğilip üfler; borazan ve el oynar
     else drawUnit(name, im, q.x, q.y, face, { rig: 'enemy_legion', h: hgt, phase: time * 6, walking: !blowing && h.state !== 'wait', fly: 0, seed: h.i }); // çaldıktan sonra durup bekler
     ctx.restore();
     if (!blowing || h.i !== 0) continue;
     // ses dalgaları borazanın ağzından ileri yayılır
-    const u = hgt / 24, bx = q.x + face * hgt * (hr ? 0.27 : 0.1 + 0.55 * k), by = q.y - hgt * (hr ? 0.86 : 1.02 + 0.12 * k); // borazanın ağzı
+    const stripB = !!(ANIM_META.enemy_herald_blow && spr('enemy_herald_blow')); if (stripB) k = heraldMouth(h, dur);
+    const TP = HERALD_TRUMPET[stripB ? 'blow' : 'still'], u = hgt / 24, bx = q.x + face * hgt * (hr ? (HERALD_CORNU ? 0.27 : TP[0]) : 0.1 + 0.55 * k), by = q.y - hgt * (hr ? (HERALD_CORNU ? 0.86 : TP[1]) : 1.02 + 0.12 * k); // borazanın / trompetin ağzı
     for (let r = 0; r < 4; r++) {
       const ph = (h.t * 1.6 + r / 4) % 1;
       ctx.strokeStyle = `rgba(255,228,150,${0.6 * (1 - ph) * k})`; ctx.lineWidth = 1.6 * (1 - ph * 0.5);
@@ -8189,6 +8193,26 @@ function drawNote(x, y, s, a, dbl, rot = 0) {
 }
 // Çalan borazancı: gövde durağan görsel olarak çizilir; borazanın ağzı (görselin sağ üstü) ağızlıktan dönerek hafifçe kalkar
 // ve nefesle kabarır, borazanı tutan el ritimle azıcık iner kalkar. Parçalar büyütülerek çizilir ki alttaki asıl hali görünmesin.
+// 19 Eki (Caner: "borazan değil trompet, önde tek elle çalınan"): yeni trompetçi (Gemini nm43, varliklar/trompetci_isle.py); eski cornu parçalı
+// üfleme çizimi kapalı. Wan şeritleri (enemy_herald_walk / _blow / _turn) gelince heraldStrip onları oynatır; trompet ağzı (notalar, ses dalgası)
+// HERALD_TRUMPET: [ileri (boy oranı), yukarı (boy oranı)]; still: bel hizasında tutulan, blow: ağza kaldırılmış (şeride göre ölçülecek)
+const HERALD_CORNU = false, HERALD_TRUMPET = { still: [0.45, 0.4], blow: [0.44, 0.86] };
+// 19 Eki: Wan şeritleri (yayın 830): gelirken yürüyüş, çalarken trompet (kaldırma gerçek hızda, ağızda tutma bölümü ses bitene dek
+// ileri-geri, indirme sonda), beklerken arkasını döner, giderken yürüyüşün aynası. Şerit yoksa eski tek resim. true: çizdi
+const HERALD_ANIM = { fps: 24, hold: [13, 32], lower: 33 };
+function heraldStrip(h, q, face, hgt, dur, fa) {
+  const nm = h.state === 'blow' ? 'enemy_herald_blow' : h.state === 'wait' ? 'enemy_herald_turn' : 'enemy_herald_walk', F = ANIM_META[nm], im = F && spr(nm);
+  if (!F) return false; if (!im) { loadStrip(nm); return false; }
+  const A = HERALD_ANIM, n = F.n; let i;
+  if (h.state === 'blow') { const t = h.t * A.fps, [a, b] = A.hold, low = (dur - (n - A.lower) / A.fps) * A.fps;
+    if (t < a) i = t; else if (t < low) { const L = b - a, u = (t - a) % (2 * L); i = a + (u < L ? u : 2 * L - u); } else i = Math.min(n - 1, A.lower + (t - low)); }
+  else if (h.state === 'wait') i = Math.min(n - 1, h.t * A.fps / Math.max(0.6, HERALD.wait) * (n / A.fps)); // dönüş bekleme süresine yayılır
+  else i = (time * A.fps * (h.state === 'out' ? HERALD.back / HERALD.speed : 1) + h.i * 7) % n;
+  ctx.save(); ctx.translate(q.x, q.y); ctx.scale(face, 1); drawFrame(im, F, Math.floor(i), hgt); ctx.restore();
+  return true;
+}
+// çalarken trompet ağızda mı (notalar ve ses dalgası yalnız o sürede): 0..1
+const heraldMouth = (h, dur) => { const A = HERALD_ANIM, low = dur - ((ANIM_META.enemy_herald_blow || { n: 49 }).n - A.lower) / A.fps; return clamp((h.t - (A.hold[0] - 3) / A.fps) / 0.15, 0, 1) * clamp((low - h.t) / 0.15, 0, 1); };
 const HERALD_PART = { bell: [0.67, 0, 1, 0.285], bellPivot: [0.7, 0.27], hand: [0.79, 0.4, 0.97, 0.5] };
 function heraldPart(im, r) {
   const key = r.join(','), C = heraldPart.c || (heraldPart.c = {});
