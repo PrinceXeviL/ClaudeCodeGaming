@@ -12754,9 +12754,9 @@ function drawSoldier0(s) {
     // ayağın altında hafif yeşil ruh ışığı: koyu zeminde iskelet seçilsin
     if (!elite) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - 2, 13, '110,255,140', 0.22); ctx.restore(); }
     // 18 Eki (Caner: "iskeletler düşmanın içinden dikkat çekmiyor"): ayağın altında açık mavi takım halkası (strateji oyunlarındaki gibi), dövüşte daha belirgin
-    if (!XRAY && !(s.born != null && G.t < s.born)) { const fr = fighting ? 1 : 0.6, rw = 9 + ch * 0.12;
-      ctx.save(); ctx.globalAlpha *= 0.85 * fr; ctx.strokeStyle = 'rgba(10,20,40,0.7)'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, rw, rw * 0.38, 0, 0, TAU); ctx.stroke();
-      ctx.strokeStyle = 'rgba(140,215,255,0.95)'; ctx.lineWidth = 1.3; ctx.stroke(); ctx.restore(); }
+    if (!XRAY && !(s.born != null && G.t < s.born)) { const fr = fighting ? 1 : 0.6, rw = 6.5 + ch * 0.08; // 20 Eki (Caner): daha küçük ve daha az belirgin
+      ctx.save(); ctx.globalAlpha *= 0.5 * fr; ctx.strokeStyle = 'rgba(10,20,40,0.5)'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, rw, rw * 0.38, 0, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = 'rgba(140,215,255,0.8)'; ctx.lineWidth = 0.9; ctx.stroke(); ctx.restore(); }
     if (s.born != null && G.t < s.born) return; // sırası gelmemiş minyon henüz yerde
     const rise = !s.door && s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir

@@ -1,0 +1,18 @@
+[
+ {
+  "name": "unit_archer3_shotA",
+  "ref": "ham/anim/unit_archer3_ref.png",
+  "prompt": "a cartoon elite skeleton archer with ram horns, green glowing eyes, dark green armor with green runes, a tattered green cloak and a long curved bone longbow with a thin glowing green bowstring. He stands still, takes one arrow from the bundle in his back hand and nocks it on the bowstring, raises the bow up in front of him with the bow upright and pointing forward to the right, then slowly and clearly pulls the bowstring far back to his cheek with the arrow resting on the bow: the bow bends deeply, the string forms a sharp V, his back arm and shoulder pull back with visible effort, he holds the full draw for a short moment aiming to the right, then releases: the arrow shoots straight out to the right and flies out of the frame, the string snaps forward and vibrates, the bow arm recoils slightly, then he lowers the bow and returns exactly to the starting pose. The draw is slow and readable, the release is snappy. The bow stays the same single bone longbow held in the front hand in every frame, it never flips or spins, the bowstring is always visible, there is only one arrow. Exaggerated punchy cartoon action, squash and stretch. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke",
+  "frames": 49,
+  "loop": false,
+  "seed": 41
+ },
+ {
+  "name": "unit_archer3_shotB",
+  "ref": "ham/anim/unit_archer3_ref.png",
+  "prompt": "a cartoon elite skeleton archer with ram horns, green glowing eyes, dark green armor with green runes, a tattered green cloak and a long curved bone longbow with a thin glowing green bowstring. He stands still, takes one arrow from the bundle in his back hand and nocks it on the bowstring, raises the bow up in front of him with the bow upright and pointing forward to the right, then slowly and clearly pulls the bowstring far back to his cheek with the arrow resting on the bow: the bow bends deeply, the string forms a sharp V, his back arm and shoulder pull back with visible effort, he holds the full draw for a short moment aiming to the right, then releases: the arrow shoots straight out to the right and flies out of the frame, the string snaps forward and vibrates, the bow arm recoils slightly, then he lowers the bow and returns exactly to the starting pose. The draw is slow and readable, the release is snappy. The bow stays the same single bone longbow held in the front hand in every frame, it never flips or spins, the bowstring is always visible, there is only one arrow. Exaggerated punchy cartoon action, squash and stretch. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke",
+  "frames": 49,
+  "loop": false,
+  "seed": 57
+ }
+]
