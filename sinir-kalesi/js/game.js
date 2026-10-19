@@ -11829,14 +11829,12 @@ function towerLitTex(t, ts) {
   let L = LIT_C.get(key); if (L) return L;
   const x0 = -W0 * 0.8, y0 = -H0 * 0.32 - W0 * 0.8, w = W0 * 1.6, h = -y0 + W0 * 0.45, K = 2;
   const mk = () => { const c = document.createElement('canvas'); c.width = Math.ceil(w * K); c.height = Math.ceil(h * K); const g = c.getContext('2d'); g.scale(K, K); g.translate(-x0, -y0); return [c, g]; };
-  const [sc, sg] = mk(), sh = sg.createRadialGradient(0, -2, 2, 0, -2, W0 * 0.62);
-  sh.addColorStop(0, `rgba(8,4,12,${TOWER_LIT.shade})`); sh.addColorStop(1, 'rgba(8,4,12,0)');
-  sg.translate(0, -2); sg.scale(1, 0.42); sg.fillStyle = sh; sg.beginPath(); sg.arc(0, 0, W0 * 0.62, 0, Math.PI * 2); sg.fill();
+  // 19 Eki: temas gölgesi artık paylaşılan SHADOW_IMG (drawTowerBody); burada yalnız ışık havuzu
   const [lcv, lg] = mk(); lg.globalCompositeOperation = 'lighter';
   glow(lg, 0, -H0 * 0.32, W0 * 0.78, lc[0], TOWER_LIT.back); // arkadan: siluet zeminden ayrılır
   glow(lg, -W0 * 0.2, -3, W0 * 0.42, lc[0], TOWER_LIT.pool);
   glow(lg, W0 * 0.2, -3, W0 * 0.42, lc[1], TOWER_LIT.pool);
-  L = { sh: sc, li: lcv, x0, y0, w, h }; LIT_C.set(key, L); return L;
+  L = { li: lcv, x0, y0, w, h }; LIT_C.set(key, L); return L;
 }
 const PERF_OFF = new Set(); // test: çizim katmanlarını tek tek kapatıp maliyet ölçmek için (__game.perfOff)
 function drawTowerBody(t) {
@@ -11844,10 +11842,11 @@ function drawTowerBody(t) {
   if (ts) {
     if (NECRO && !PERF_OFF.has('tlight')) { // temas gölgesi (binayı zemine oturtur) ve ayağındaki soluk ışık havuzu
       const L = towerLitTex(t, ts); // 16 Eki (performans): gölge ve ışık havuzu kule başına bir kez çizilir (her karede degrade + 3 parıltı yerine 2 drawImage)
-      ctx.drawImage(L.sh, t.x + L.x0, ts.bottom + L.y0, L.w, L.h);
-      const op = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      // 19 Eki (Caner: "gölgeler askerlerdeki gibi hafif, basit"): temas gölgesi askerlerle aynı paylaşılan küçük doku (kule başına ayrı tuval yok, ekran kartı topluca çizer)
+      if (!PERF_OFF.has('tsh')) { if (!SHADOW_IMG) unitShadow(-99, -99, 1); const rx = ts.w * 0.62, ry = rx * 0.42; ctx.globalAlpha = TOWER_LIT.shade / 0.7; ctx.drawImage(SHADOW_IMG, t.x - rx, ts.bottom - 2 - ry, rx * 2, ry * 2); ctx.globalAlpha = 1; }
+      if (!PERF_OFF.has('tpool')) { const op = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
       ctx.drawImage(L.li, t.x + L.x0, ts.bottom + L.y0, L.w, L.h);
-      ctx.globalCompositeOperation = op;
+      ctx.globalCompositeOperation = op; }
       if (!PERF_OFF.has('tfog')) drawTowerFog(t, ts, false);
     }
     const age = G.t - (t.born ?? -9);
