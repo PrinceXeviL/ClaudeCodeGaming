@@ -609,6 +609,8 @@ const SOUND = {
   step_paw: { vol: 0.12, gap: 0.03, max: 4, rate: [0.9, 1.12] },     // köpek patisi
   step_heavy: { vol: 0.3, gap: 0.1, max: 3, rate: [0.9, 1.08] },     // dev adımı (fil, dev, golem)
   towercrash: { vol: 0.55, gap: 0.4, max: 2 },                       // kule yıkılması
+  swordarmor: { vol: 0.3, gap: 0.05, max: 3, rate: [0.92, 1.1] },   // kılıcın metal zırha çarpması
+  horncall: { vol: 0.42, gap: 2, max: 1 },                          // borazancı: savaş hücum borusu melodisi (19 Eki, Caner: trompet, hücum melodisi)
   wingflap: { vol: 0.24, gap: 0.05, max: 3, rate: [0.9, 1.1] },      // kartal / akbaba kanat çırpması (uçarken)
   firecrackle: { vol: 0.2, gap: 0.1, max: 3, rate: [0.9, 1.1] },     // meşale / yanan düşman çıtırtısı
   shieldblock: { vol: 0.42, gap: 0.05, max: 3, rate: [0.92, 1.08] }, // kalkanla savunma
@@ -1070,6 +1072,8 @@ function stepKind(e) {
 }
 // 19 Eki (Caner): uçanların kanat çırpması, meşaleci ve yanan düşmanın çıtırtısı, veba birikintisinin köpürmesi; birim başına kendi aralığıyla,
 // aynı türden çoksa seyrelir (en çok ~3'ü aynı anda duyulsun)
+// 19 Eki (Caner: "zırha çarpan kılıç sesi"): zırhlı düşmana (zırh ≥ %30) inen kılıç çoğunlukla metal zırh çınlaması, ötekiler kılıç şakırtısı
+const meleeHitSfx = (e) => sfx(e && e.def && (e.def.armor || 0) >= 0.3 && Math.random() < 0.65 ? 'swordarmor' : 'clash', null, 1, e);
 function updateAmbientSfx(dt) {
   if (muted || !G.t) return;
   const fl = [], fire = [], pools = [];
@@ -5752,7 +5756,7 @@ function updateBowSoldier(s, dt) {
       damageEnemy(s.melee, dmg, 'phys', false, 'melee'); if (s.tower && s.tower.imbue) applyImbue(s.melee, s.tower.imbue, 'melee');
       slashFx(s.melee.x, s.melee.y - (CHAR_H['enemy_' + s.melee.type] || 22) * 0.5, s.face, '#d8ffcf', crit ? 1.2 : 0.7);
       if (crit) impactFx(s.melee.x, s.melee.y - 14, '235,255,220');
-      sfx('clash');
+      meleeHitSfx(s.melee);
     }
     return;
   }
@@ -5971,7 +5975,7 @@ function updateSoldier(s, dt) {
         if (s.steal) s.hp = Math.min(s.maxHp, s.hp + dmg * s.steal);
         if (crit) impactFx(t.x, t.y - 14, '255,245,220');
         slashFx(t.x, t.y - (CHAR_H['enemy_' + t.type] || 20) * 0.55, s.face, s.gear >= 2 ? '#ffe9a0' : '#ffffff', crit ? 1.5 : 1);
-        sfx('clash');
+        meleeHitSfx(t);
       }
     }
   } else {
@@ -6532,7 +6536,7 @@ function updateProjectile(pr, dt) {
     }
     else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
-    if (pr.kind === 'arrow') sfx(e.def.armor >= 0.5 ? 'armorhit' : 'arrowhit'); // zırhlıya saplanan cıvata metal tınlar
+    if (pr.kind === 'arrow') sfx(e.def.armor >= 0.3 ? 'armorhit' : 'arrowhit'); // zırhlıya saplanan cıvata metal tınlar (19 Eki: eşik 0,5 → 0,3)
     if (pr.inferno) for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.inferno) damageEnemy(o, pr.dmg * 0.5, 'magic');
     if (pr.splash) {
       for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.splash) damageEnemy(o, pr.dmg * 0.55, pr.dtype, false, pr.src);
@@ -8102,7 +8106,7 @@ function drawAchievements() {
 // step: ekrana girdiği yerden yürüdüğü yol, side: yol ortasından kenara uzaklığı (yarı genişliğin oranı)
 // davul: vuruş aralığı (sn); davulun duyulduğu yerdeki askerler hızlanır (aura.speed) ve daha sert vurur (dmg)
 const DRUM = { beat: 0.3, dmg: 1.2 };
-const HERALD = { step: 8, side: 0.6, speed: 70, blow: 2.9, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
+const HERALD = { step: 24, /* 19 Eki (Caner): 2 adım daha öne (8 → 24) */ side: 0.6, speed: 70, blow: 2.9, blowLong: 3.8, wait: 1, back: 90 }; // step: görünen ekran kenarından bir adım; blow: borazan kaydının iki üflemesi; wait: çaldıktan sonra bekleyiş (10 Eki, Caner)
 function setupHeralds() { G.heralds = []; }
 function heraldSpot(p) {
   let d0 = -entryLead(p); while (d0 < p.total) { const q = pathPos(p, d0); if (q.x > VIS.l + 14 && q.y > VIS.t + 30 && q.x < VIS.r - 14 && q.y < VIS.b - 8) break; d0 += 4; } // görünen alanın (telefonda geniş) kenarı: fazla yürümesin
@@ -8125,7 +8129,7 @@ function updateHeralds(dt) {
   for (const h of G.heralds || []) {
     h.t += dt;
     if (h.t < 0) continue;
-    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'blow'; h.t = 0; if (h.i === 0) sfx(h.long ? 'hornboss' : 'horn'); } }
+    if (h.state === 'in') { h.d += HERALD.speed * dt; if (h.d >= h.dW) { h.d = h.dW; h.state = 'blow'; h.t = 0; if (h.i === 0) sfx(h.long ? 'hornboss' : SND.horncall ? 'horncall' : 'horn'); } }
     else if (h.state === 'blow') {
       if (h.t > (h.long ? HERALD.blowLong : HERALD.blow)) { h.state = 'wait'; h.t = 0; if (h.i === 0 && !G.musicOn) { G.musicOn = true; musicRestartBattle(); } }
     }

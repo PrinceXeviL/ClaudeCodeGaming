@@ -175,6 +175,9 @@ SFX = {
     'firecrackle': ('a burning torch flame crackling and flickering, short burst of dry fire crackle and pops, close, no music', 1.0, 3),
     'shieldblock': ('a sword blow blocked by a heavy wooden shield with an iron rim, solid wooden thud with a metallic clank, close, dry, no music', 0.5, 4),
     'acidbubble': ('thick toxic green slime bubbling, a few gloopy bubbles slowly popping, wet blorp, short, close, no music', 0.8, 3),
+    # 19 Eki (Caner: "zırha çarpan kılıç sesi; borazanı savaş borusu melodisinde çal")
+    'swordarmor': ('a steel sword striking the metal plate armor of a soldier, sharp heavy metallic clang with a short ring, close, dry, no music', 0.5, 4),
+    'horncall': ('a single brass military bugle playing a battle charge call: a quick rising fanfare of short staccato notes ending on one long held high note, like a cavalry charge signal before battle, realistic brass, outdoor battlefield echo, no drums, no other instruments, no music bed', 3.5, 4),
 }
 
 
