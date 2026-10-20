@@ -12418,7 +12418,7 @@ function drawEnemy(e) {
   if (e.markT > G.t && !e._dv && !e._mk) { e._mk = true; try { drawEnemy(e); } finally { e._mk = false; } // Kıyamet Damgası: başının üstünde dönen kızıl kafatası
     const h = (CHAR_H['enemy_' + (e.def.base || e.type)] || 30) * (e.def.h ? e.def.h / 30 : 1), y = e.y - h - 16 - (e.flZ || 0) + Math.sin(time * 4) * 2;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, y, 14, '255,40,60', 0.45); ctx.restore(); drawIcon('skull', e.x, y, 13, '#ff5a5a'); return; }
-  if (e.bashHit != null && G.t - e.bashHit < 0.4 && !e._dv) { // koçbaşı vuruşu: ileri atılıp geri çekilir
+  if (e.bashHit != null && G.t - e.bashHit < 0.4 && !e._dv && !ANIM_META.enemy_ram_atk) { // koçbaşı vuruşu: ileri atılıp geri çekilir
     ctx.save(); ctx.translate(Math.sin((G.t - e.bashHit) / 0.4 * Math.PI) * 8 * (e.face || 1), 0); e._dv = true; try { drawEnemy(e); } finally { e._dv = false; ctx.restore(); }
     return;
   }
@@ -12447,6 +12447,11 @@ function drawSiegeCrew(e, h, tim) {
       atk: dt < 0.62 ? dt - 0.17 : null, flash: e.flash });
   }
 }
+// 20 Eki: koçbaşı kuleye vururken Wan vuruş şeridi (enemy_ram_atk): bir sonraki vuruşa ATK_PREP kala kurulur, vuruştan sonra ATK_AFTER toparlanır
+function ramPhase(e) {
+  if (e.bashHit != null && G.t - e.bashHit < ATK_AFTER) return G.t - e.bashHit;
+  return e.bashCd < ATK_PREP ? -e.bashCd : null;
+}
 function drawEnemy0(e) {
   const d = e.def;
   const fly = d.flying ? 26 + Math.sin(e.anim * 3) * 3 - (e.diveT > 0 ? 12 * Math.sin(Math.PI * clamp((1 - e.diveT / d.dive.dur) / 0.6, 0, 1)) : 0) : 0; // pikede yere yaklaşır
@@ -12474,7 +12479,7 @@ function drawEnemy0(e) {
       // yürüyor mu: gerçekten yer değiştiriyorsa (askere doğru yürürken de; yoksa tek pozda kayar gibi görünür)
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0 && !d.crew) && !(e.reviveT > 0), // kuşatma kulesi okçular atarken de yürür
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0) + (e.flZ > 0 ? e.flZ : 0),
-      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? (d.dagger ? 1 : e.atkV) : 0, // Lejyon Okçusu: yakında hançer şeridi (_atk2)
+      atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.def.bash && e.bashT && e.bashCd != null ? ramPhase(e) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? (d.dagger ? 1 : e.atkV) : 0, // Lejyon Okçusu: yakında hançer şeridi (_atk2)
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null, skillSuf: e.skillSuf, // 18 Eki: boss imza (_sig1/_sig2) ve savunma (_block) şeritleri
     };
