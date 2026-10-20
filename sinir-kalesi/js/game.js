@@ -3412,7 +3412,7 @@ function abRank(t, id) {
 // 17 Eki (Caner: "lejyonerlerin başında hep bir kıdemli olsun, komut versin; çevresindekilerin saldırı ve savunmasını arttırsın, ölürse avantaj kalksın"):
 // her lejyoner bölüğünün (2+ kişi) başında kıdemli yürür. Aurası (r) içindeki lejyonerler dmg kat sert vurur, def kat hasar alır; aura her karede
 // yenilenir, kıdemli ölünce 0,6 sn içinde söner. Ayağın altındaki soluk altın halka kimin güçlendiğini gösterir.
-const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15,
+const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.8, ahead: 150, rushT: 2.4, hit: 1.35, // 20 Eki (Caner: "lejyonerler kıdemlinin talimatıyla koşarak saldırıya geçsin"): önde iskelet görünce "Hücum!": bölük 2,4 sn koşar, ilk vuruş ×1,35
   // 17 Eki (Caner: "okçular saldırınca kıdemlinin komutuyla kalkan kullanıp guard alsınlar; oklar en çok %80 az işlesin, bazen ıska"):
   // ok değince kıdemli "Kalkanlar!" der; çevresindeki kalkanlılar t sn kalkan duvarı kurar: okların miss'i seker, kalanı k kat işler; yürüyüş spd kat
   // from: kalkan duvarı bu bölümden (0'dan) itibaren; ilk boss bölümüne kadar yok (bot 4-7'de çok can kaybetti: 3 sn/9 sn/%20/0,2-0,5 sertti)
@@ -3420,6 +3420,11 @@ const CAPTAIN = { r: 80, cd: 12, dmg: 1.15, def: 0.85, spd: 1.05, rush: 1.15,
   hp: 2 }; // bölük başındaki kıdemlinin canı (Caner: 2 kat)
 const SHIELDED = new Set(['legion', 'heavy', 'paladin', 'signifer']); // kalkanlı piyade (rütbelileri base ile)
 const isShielded = (o) => SHIELDED.has(o.def.base || o.type);
+function capFoeAhead(e) { // yolda önünde (CAPTAIN.ahead içinde) dövüşe hazır iskelet/komutan var mı
+  for (const s of G.soldiers) { if (s.dead || s.wall || s.zFly) continue; const d = dist(s.x, s.y, e.x, e.y); if (d > CAPTAIN.ahead || d < 30) continue;
+    if (((s.x - e.x) * (e.face || 1)) > -10) return true; }
+  return false;
+}
 function updateCaptain(e, dt) {
   const near = [];
   for (const o of G.enemies) if (o !== e && !o.dead && (o.def.base || o.type) === 'legion' && dist(o.x, o.y, e.x, e.y) < CAPTAIN.r) { near.push(o); if (!(o.curseT > 0)) o.capT = 0.6; }
@@ -3435,8 +3440,9 @@ function updateCaptain(e, dt) {
   }
   if (e.cmdCd > 0 || e.d < 0 || !onScreen(e, 60) || MUTE_VOICE(e)) return;
   let cmd = null;
-  if (!e.saidIn) { e.saidIn = true; cmd = 'Saf tutun!'; }
-  else if (e.inMelee || near.some(o => o.inMelee)) { cmd = 'Hücum!'; for (const o of near.concat(e)) o.capRushT = 3; }
+  if (!e.inMelee && !near.some(o => o.inMelee) && G.t - (e.rushed ?? -99) > 10 && capFoeAhead(e)) { e.rushed = G.t; e.saidIn = true; cmd = 'Hücum!'; for (const o of near.concat(e)) { o.capRushT = CAPTAIN.rushT; o.chargeHit = true; } sfx('horncall', 1.15, 0.5, e); } // koşarak saldırı
+  else if (!e.saidIn) { e.saidIn = true; cmd = 'Saf tutun!'; }
+  else if (e.inMelee || near.some(o => o.inMelee)) { cmd = 'Hücum!'; for (const o of near.concat(e)) o.capRushT = 1.5; }
   else if ([e, ...near].some(o => G.t - (o.hitG ?? -9) < 0.4)) { cmd = 'Saf tutun!'; for (const o of near.concat(e)) o.armT = Math.max(o.armT || 0, 2.5); } // ok dışı vuruş: zırh sıkılaşır
   if (!cmd) return;
   e.cmdCd = CAPTAIN.cd; G.cryCd = Math.max(G.cryCd || 0, 2);
@@ -5607,7 +5613,7 @@ function updateEnemy(e, dt) {
         const victim = e.blocker, A = e.def.alt;
         if (A && !A.ranged && (e.altT ??= A.cd * 0.4) <= 0) { e.altT = A.cd; playSkill(e, A.kind === 'net' ? NET.skill : undefined); doAlt(e, A, victim); return; } // özel saldırı
         slashFx(victim.x, victim.y - unitH(victim) * 0.55, e.face, '#ffd9b0');
-        damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1), e);
+        damageSoldier(victim, roll(e.def.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (victim.hero ? HERO_AGGRO.dmg : 1) * (e.chargeHit ? CAPTAIN.hit : 1), e); if (e.chargeHit) { e.chargeHit = false; impactFx(victim.x, victim.y - 12, '255,220,160', 0.9); }
         { const n = Math.max(1, G.meleeN || 1); // 14 Eki: kavga sayısına göre ölçülü (2 kavga: her vuruş, 12 kavga: yarısı ve kısık)
           if (Math.random() < Math.min(1, 3 / Math.sqrt(n * 2))) sfx(DOGS.has(e.type) || DOGS.has(e.def.base) ? 'dogbite' : WHIPS.has(e.type) || WHIPS.has(e.def.base) ? 'whip' : 'clash', null, Math.max(0.5, 1 / (1 + 0.07 * (n - 1)))); } // köpek ısırır, kırbaçlı şaklatır
       }
@@ -12428,6 +12434,10 @@ function drawEnemy(e) {
   if (e.markT > G.t && !e._dv && !e._mk) { e._mk = true; try { drawEnemy(e); } finally { e._mk = false; } // Kıyamet Damgası: başının üstünde dönen kızıl kafatası
     const h = (CHAR_H['enemy_' + (e.def.base || e.type)] || 30) * (e.def.h ? e.def.h / 30 : 1), y = e.y - h - 16 - (e.flZ || 0) + Math.sin(time * 4) * 2;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, y, 14, '255,40,60', 0.45); ctx.restore(); drawIcon('skull', e.x, y, 13, '#ff5a5a'); return; }
+  if (e.capRushT > 0 && !e.inMelee && !e._dv && !e.def.machine) { // hücum koşusu: öne eğilir, ayağından toz kalkar
+    if (Math.random() < 0.25) emit(G.parts, { kind: 'glow', x: e.x - (e.face || 1) * 6, y: e.y, vx: -(e.face || 1) * rand(10, 30), vy: -rand(4, 12), col: '170,150,120', s0: rand(2, 3.5), s1: 5, life: 0.5, a: 0.35 });
+    ctx.save(); ctx.translate(e.x, e.y); ctx.rotate((e.face || 1) * 0.12); ctx.translate(-e.x, -e.y); e._dv = true; try { drawEnemy(e); } finally { e._dv = false; ctx.restore(); } return;
+  }
   if (e.bashHit != null && G.t - e.bashHit < 0.4 && !e._dv && !ANIM_META.enemy_ram_atk) { // koçbaşı vuruşu: ileri atılıp geri çekilir
     ctx.save(); ctx.translate(Math.sin((G.t - e.bashHit) / 0.4 * Math.PI) * 8 * (e.face || 1), 0); e._dv = true; try { drawEnemy(e); } finally { e._dv = false; ctx.restore(); }
     return;
