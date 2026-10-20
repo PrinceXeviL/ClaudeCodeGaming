@@ -23248,7 +23248,7 @@ function hudTap(x, y) {
     if (hitU(bag)) { tapPop('hud_bag'); G.bagOpen = !G.bagOpen; G.mode = null; sfx('pick'); return true; }
     if (G.bagOpen) for (const [i, id] of ITEM_ORDER.entries()) if (hitU(itemBtn(i))) { tapPop('it_' + id); pickItem(id); return true; }
   }
-  for (const g of [0, 1]) { const mc = minionCmdBtn(g); if (mc && dist(mc.x, mc.y, x, y) <= mc.r * (1 + UI_HIT * 0.6)) { tapPop('hud_mcmd' + g); setSel(null); G.mode = G.mode && G.mode.kind === 'minions' && G.mode.g === g ? null : { kind: 'minions', g }; sfx('pick'); return true; } } // 17 Eki: iki grup sancağı
+  for (const g of [0, 1]) { const mc = minionCmdBtn(g); if (mc && dist(mc.x, mc.y, x, y) <= mc.r * (1 + UI_HIT * 0.6)) { tapPop('hud_mcmd' + g); setSel(null); G.mode = G.mode && G.mode.kind === 'minions' && G.mode.g === g ? null : { kind: 'minions', g }; sfx('pick'); if (G.mode) { sfx('skelsel'); sfx('spell', 1.25, 0.5); } return true; } } // 20 Eki (Caner): ölüler seçilince de ses (gönderme sesine benzer) // 17 Eki: iki grup sancağı
   for (const [i, id] of spellIds().entries()) {
     if (i === spellAt(x, y).i) {
       tapPop('hud_' + id);
