@@ -19,9 +19,9 @@ FH_MAX = 300  # şerit kare yüksekliği (px); 49 kare x ~300 px genişlik doku 
 
 
 def process(job):
-    name = job['name']; base = name[:-4]  # tower_..._atk -> görsel adı
+    name = job['name']; base = job.get('base') or name[:-4]  # tower_..._atk -> görsel adı (20 Eki: bekleme döngüsü adayları 'base' verir)
     im = Image.open(os.path.join(IMG, base + '.webp')); iw, ih = im.size
-    k = min(400 / ih, 560 / iw); sw, sh = iw * k, ih * k; sx0 = (832 - int(sw)) // 2; sy0 = 480 - int(sh) - 40
+    k = min(400 / ih, 560 / iw) * job.get('refK', 1); sw, sh = iw * k, ih * k; sx0 = (832 - int(sw)) // 2; sy0 = 480 - int(sh) - 40
     rgb = video_isle.frames_of(os.path.join(OUT, name + '.mp4'), 16)
     L = len(rgb) - (1 if job.get('loop') else 0)
     fr = [remove_magenta(a) for a in rgb[:L]]

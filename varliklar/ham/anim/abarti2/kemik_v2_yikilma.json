@@ -1,0 +1,92 @@
+[
+ {
+  "name": "tower_xbow_1_collapseA",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 21,
+  "ref": "ham/anim/tower_xbow_1_v2col_ref.png",
+  "prompt": "a watchtower made of a giant ribcage of bones tied with ropes, with a wooden lookout platform on top and a ladder collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_1_collapseB",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 45,
+  "ref": "ham/anim/tower_xbow_1_v2col_ref.png",
+  "prompt": "a watchtower made of a giant ribcage of bones tied with ropes, with a wooden lookout platform on top and a ladder collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_2_collapseA",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 21,
+  "ref": "ham/anim/tower_xbow_2_v2col_ref.png",
+  "prompt": "a tower made of a giant bone spine and ribs around a stone column, with a wooden platform on top and two green lanterns collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_2_collapseB",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 45,
+  "ref": "ham/anim/tower_xbow_2_v2col_ref.png",
+  "prompt": "a tower made of a giant bone spine and ribs around a stone column, with a wooden platform on top and two green lanterns collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_3_collapseA",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 21,
+  "ref": "ham/anim/tower_xbow_3_v2col_ref.png",
+  "prompt": "the upper body of a giant skeleton sunk into the ground with a huge skull on top whose crown is a bowl-shaped platform collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_3_collapseB",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 45,
+  "ref": "ham/anim/tower_xbow_3_v2col_ref.png",
+  "prompt": "the upper body of a giant skeleton sunk into the ground with a huge skull on top whose crown is a bowl-shaped platform collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_bow_collapseA",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 21,
+  "ref": "ham/anim/tower_archer_bow_v2col_ref.png",
+  "prompt": "the upper body of a giant horned skeleton sunk into the ground, a spiked bone crown on the skull, quivers full of arrows on its shoulders collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_bow_collapseB",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 45,
+  "ref": "ham/anim/tower_archer_bow_v2col_ref.png",
+  "prompt": "the upper body of a giant horned skeleton sunk into the ground, a spiked bone crown on the skull, quivers full of arrows on its shoulders collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_fan_collapseA",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 21,
+  "ref": "ham/anim/tower_archer_fan_v2col_ref.png",
+  "prompt": "the upper body of a giant armored skeleton sunk into the ground, iron-banded skull with a chained jaw, a barrel-like iron crown on top and a rack of iron bolts collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_fan_collapseB",
+  "raw": true,
+  "key": "magenta",
+  "frames": 49,
+  "seed": 45,
+  "ref": "ham/anim/tower_archer_fan_v2col_ref.png",
+  "prompt": "the upper body of a giant armored skeleton sunk into the ground, iron-banded skull with a chained jaw, a barrel-like iron crown on top and a rack of iron bolts collapses in an exaggerated cartoon way: first it shakes violently and wobbles, cracks spread over the bones and stones, the top part tilts and snaps, then the whole tower crumbles and falls straight down into itself, bones, skulls and stone blocks fly out and bounce on the ground, a big puff of plain grey dust bursts out, at the end only a low pile of rubble, broken bones and a few skulls stays on the same spot while the dust settles. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, the dust is plain grey. Static camera, the tower stays in the center of the frame on the same spot, every flying piece and the dust always stay fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ }
+]

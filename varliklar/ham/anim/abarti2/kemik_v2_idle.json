@@ -1,0 +1,102 @@
+[
+ {
+  "name": "tower_xbow_1_idleA",
+  "base": "tower_xbow_1",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 7,
+  "ref": "ham/anim/tower_xbow_1_v2idle_ref.png",
+  "prompt": "a watchtower made of a giant ribcage of bones tied with ropes, with a wooden lookout platform on top and a ladder. It comes alive in a looping idle animation: the giant ribs flex and breathe in and out like a living chest, the ropes creak and stretch, the ladder wobbles, the small bone banner flaps hard in the wind, little bones on the ground rattle. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_1_idleB",
+  "base": "tower_xbow_1",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 31,
+  "ref": "ham/anim/tower_xbow_1_v2idle_ref.png",
+  "prompt": "a watchtower made of a giant ribcage of bones tied with ropes, with a wooden lookout platform on top and a ladder. It comes alive in a looping idle animation: the giant ribs flex and breathe in and out like a living chest, the ropes creak and stretch, the ladder wobbles, the small bone banner flaps hard in the wind, little bones on the ground rattle. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_2_idleA",
+  "base": "tower_xbow_2",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 7,
+  "ref": "ham/anim/tower_xbow_2_v2idle_ref.png",
+  "prompt": "a tower made of a giant bone spine and ribs around a stone column, with a wooden platform on top and two green lanterns. It comes alive in a looping idle animation: the ribs breathe in and out like a living chest, the spine wiggles a little, the two green lanterns swing back and forth, the green runes on the stones pulse brighter and dimmer, the rope railing sways. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_2_idleB",
+  "base": "tower_xbow_2",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 31,
+  "ref": "ham/anim/tower_xbow_2_v2idle_ref.png",
+  "prompt": "a tower made of a giant bone spine and ribs around a stone column, with a wooden platform on top and two green lanterns. It comes alive in a looping idle animation: the ribs breathe in and out like a living chest, the spine wiggles a little, the two green lanterns swing back and forth, the green runes on the stones pulse brighter and dimmer, the rope railing sways. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_3_idleA",
+  "base": "tower_xbow_3",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 7,
+  "ref": "ham/anim/tower_xbow_3_v2idle_ref.png",
+  "prompt": "the upper body of a giant skeleton sunk into the ground with a huge skull on top whose crown is a bowl-shaped platform. It comes alive in a looping idle animation: the giant skull chatters its jaw and grins, the green eyes flicker and blink, the ribcage breathes in and out, the shoulders bob, the torn banners whip in the wind, the purple rune stones pulse. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_xbow_3_idleB",
+  "base": "tower_xbow_3",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 31,
+  "ref": "ham/anim/tower_xbow_3_v2idle_ref.png",
+  "prompt": "the upper body of a giant skeleton sunk into the ground with a huge skull on top whose crown is a bowl-shaped platform. It comes alive in a looping idle animation: the giant skull chatters its jaw and grins, the green eyes flicker and blink, the ribcage breathes in and out, the shoulders bob, the torn banners whip in the wind, the purple rune stones pulse. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_bow_idleA",
+  "base": "tower_archer_bow",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 7,
+  "ref": "ham/anim/tower_archer_bow_v2idle_ref.png",
+  "prompt": "the upper body of a giant horned skeleton sunk into the ground, a spiked bone crown on the skull, quivers full of arrows on its shoulders. It comes alive in a looping idle animation: the giant horned skull chatters its jaw and grins, the eye sockets flicker, the ribcage breathes in and out, the arrows in the quivers rattle and bounce, the green and purple banners whip in the wind, the green runes pulse. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_bow_idleB",
+  "base": "tower_archer_bow",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 31,
+  "ref": "ham/anim/tower_archer_bow_v2idle_ref.png",
+  "prompt": "the upper body of a giant horned skeleton sunk into the ground, a spiked bone crown on the skull, quivers full of arrows on its shoulders. It comes alive in a looping idle animation: the giant horned skull chatters its jaw and grins, the eye sockets flicker, the ribcage breathes in and out, the arrows in the quivers rattle and bounce, the green and purple banners whip in the wind, the green runes pulse. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_fan_idleA",
+  "base": "tower_archer_fan",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 7,
+  "ref": "ham/anim/tower_archer_fan_v2idle_ref.png",
+  "prompt": "the upper body of a giant armored skeleton sunk into the ground, iron-banded skull with a chained jaw, a barrel-like iron crown on top and a rack of iron bolts. It comes alive in a looping idle animation: the armored giant skull chatters its chained jaw against the iron band, the heavy chain swings and clanks, the eye sockets flicker, the ribcage breathes in and out, the crimson banners whip in the wind, the crimson runes pulse. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "tower_archer_fan_idleB",
+  "base": "tower_archer_fan",
+  "kule": true,
+  "loop": true,
+  "frames": 49,
+  "seed": 31,
+  "ref": "ham/anim/tower_archer_fan_v2idle_ref.png",
+  "prompt": "the upper body of a giant armored skeleton sunk into the ground, iron-banded skull with a chained jaw, a barrel-like iron crown on top and a rack of iron bolts. It comes alive in a looping idle animation: the armored giant skull chatters its chained jaw against the iron band, the heavy chain swings and clanks, the eye sockets flicker, the ribcage breathes in and out, the crimson banners whip in the wind, the crimson runes pulse. Exaggerated bouncy cartoon motion with squash and stretch, lively and fun. The flat top platform stays at the same place and the tower never moves away from its spot. The colors and the drawing stay exactly the same as in the reference image. No smoke, no fog, no mist. Static camera, the whole tower always stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur"
+ }
+]
