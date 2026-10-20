@@ -5903,7 +5903,7 @@ function updateSoldier(s, dt) {
     if (s.life <= 0 && !s.dead) { s.dead = true; releaseSoldier(s); }
   }
   if (s.hero && !s.dead) {
-    if (s.spear2 && (s.spear2.t -= dt) <= 0) { const d2 = s.spear2.dmg; s.spear2 = null; leoSpearHit(s, d2); }
+    if (s.spear2 && (s.spear2.t -= dt) <= 0) { const S2 = s.spear2, d2 = S2.dmg; s.spear2 = S2.n > 1 ? { t: LEO.spear.gap, dmg: d2, n: S2.n - 1 } : null; leoSpearHit(s, d2); }
     if (s.chg) { leoCharge(s, dt); s.anim += dt; return; } // Kalkan Hücumu sürerken saldırmaz, yürümez
   }
   if (s.dead) {
@@ -6063,7 +6063,7 @@ function leoCharge(h, dt) { // atılma: kolay başlar, hızlanır, sona doğru y
   for (const t of G.enemies) {
     if (t.dead || t.under || t.def.flying || C.hit.has(t) || dist(t.x, t.y, h.x, h.y) > D.w) continue;
     C.hit.add(t); hitBy = 'hero'; damageEnemy(t, C.dmg, 'phys'); hitBy = null;
-    if (!t.dead) { if (!t.def.chief) stunEnemy(t, D.stun); if (pushable(t) && !t.def.chief) { t.knockT = KNOCK.t * 1.6; t.knockV = D.knock; t.hopT = Math.max(t.hopT || 0, 0.3); } }
+    if (!t.dead) { if (!t.def.chief) stunEnemy(t, C.stun || D.stun); if (pushable(t) && !t.def.chief) { t.knockT = KNOCK.t * 1.6; t.knockV = D.knock; t.hopT = Math.max(t.hopT || 0, 0.3); } }
     impactFx(t.x - C.ux * 4, t.y - 12, '255,215,140', 1.2); slashFx(t.x, t.y - 14, h.face || 1, '#ffd88a', 1.1);
   }
   if (k >= 1) {
@@ -6073,7 +6073,7 @@ function leoCharge(h, dt) { // atılma: kolay başlar, hızlanır, sona doğru y
   }
 }
 function leoSpearHit(h, dm) {
-  for (const e of enemiesNear(h.x, h.y, LEO.spear.r)) {
+  for (const e of enemiesNear(h.x, h.y, LEO.spear.r * (h.spearR || 1))) {
     hitBy = 'hero'; damageEnemy(e, dm, 'phys'); hitBy = null;
     const a = Math.atan2(e.y - h.y, e.x - h.x); slashFx(e.x, e.y - 14, Math.cos(a) >= 0 ? 1 : -1, Math.random() < 0.5 ? '#ffd88a' : '#d8b0ff', 0.9);
     if (!e.dead && pushable(e) && !e.def.chief) { e.knockT = KNOCK.t; e.knockV = 70; }
@@ -6106,7 +6106,7 @@ function heroSkills(h, dt) {
   for (const p of h.def.paths) for (const sk of p.skills) {
     const lr = h.learned[sk.id] || (HERO_INNATE[h.id] === sk.id ? 1 : 0); // doğuştan yetenek: puan harcanmadan 1. kademe
     if (sk.passive || !lr || (h.cds[sk.id] || 0) > 0) continue;
-    const rk = lr; SKILL_K = (1 + HERO_TREE.dmg * (rk - 1)) * (h.gearK || 1);
+    const rk = lr; SKILL_K = (1 + HERO_TREE.dmg * (rk - 1)) * (h.gearK || 1); SKILL_RK = rk;
     hitBy = 'hero'; const used = useSkill(h, sk.id); hitBy = null; if (used && h.id !== 'bathory') hv(h, 'sk');
     if (!used) { h.cds[sk.id] = 0.3; continue; }
     {
@@ -6163,14 +6163,14 @@ function useSkill(h, id) {
       const c = densest(h.x, h.y, LEO.charge.r, 40); if (!c || c.n < 2) return false;
       const d = dist(h.x, h.y, c.e.x, c.e.y); if (d < LEO.charge.min) return false;
       const ux = (c.e.x - h.x) / d, uy = (c.e.y - h.y) / d, len = Math.min(LEO.charge.r, d + 26);
-      h.chg = { t: 0, from: { x: h.x, y: h.y }, to: { x: h.x + ux * len, y: h.y + uy * len }, ux, uy, hit: new Set(), dmg: (LEO.charge.dmg + LEO.charge.lvl * L) * SKILL_K, trail: 0 };
+      h.chg = { t: 0, from: { x: h.x, y: h.y }, to: { x: h.x + ux * len, y: h.y + uy * len }, ux, uy, hit: new Set(), dmg: (LEO.charge.dmg + LEO.charge.lvl * L) * SKILL_K, trail: 0, stun: LEO.charge.stun * (SKILL_RK >= 5 ? 2 : SKILL_RK >= 3 ? 1.5 : 1) };
       faceTo(h, c.e.x); sfx('whirl'); setTimeout(() => sfx('bash'), 120);
       return true;
     }
     case 'spear': { // 17 Eki: Mızrak Dansı: iki tam tur, her turda çevresindekilere vurur (ikinci vuruş LEO.spear.gap sn sonra)
       if (enemiesNear(h.x, h.y, LEO.spear.r).length < 2) return false;
       const dm = (LEO.spear.dmg + LEO.spear.lvl * L) * SKILL_K;
-      leoSpearHit(h, dm); h.spear2 = { t: LEO.spear.gap, dmg: dm };
+      h.spearR = SKILL_RK >= 5 ? 1.3 : 1; leoSpearHit(h, dm); h.spear2 = { t: LEO.spear.gap, dmg: dm, n: SKILL_RK >= 3 ? 2 : 1 }; // 3. kademe: 3 tur, 5. kademe: alan +%30
       G.effects.push({ kind: 'spearDance', x: h.x, y: h.y - 12, t: 0, dur: LEO.spear.gap * 2 + 0.15, face: h.face || 1 });
       sfx('whirl'); setTimeout(() => sfx('whirl', 1.15), LEO.spear.gap * 1000);
       return true;
@@ -6215,13 +6215,13 @@ function useSkill(h, id) {
     case 'timegate': { // Merlin (pasif): en kalabalık yere zaman kapısı, düşmanlar yolun gerisine
       const c = densest(h.x, h.y, R + 20, 60), TG = MERLIN_GATE;
       if (!c || c.n < TG.min) return false;
-      timeGate(c.e.x, c.e.y, TG.r, () => 30 + 8 * L, TG.back, 1);
+      timeGate(c.e.x, c.e.y, TG.r * (SKILL_RK >= 3 ? 1.25 : 1), () => 30 + 8 * L, TG.back * (SKILL_RK >= 5 ? 1.5 : 1), 1); // 3. kademe: alan +%25, 5. kademe: %50 daha geri
       return true;
     }
     case 'frog': { // Merlin (pasif): menzildeki en güçlü (en yüksek can, eşitse en zırhlı) düşman FROG.t sn kurbağa
-      let e = null; for (const o of G.enemies) if (frogable(o) && dist(h.x, h.y - 10, o.x, o.y) <= R && (!e || o.maxHp > e.maxHp || o.maxHp === e.maxHp && (o.def.armor || 0) > (e.def.armor || 0))) e = o;
-      if (!e) return false;
-      frogEnemy(e);
+      const fr = G.enemies.filter(o => frogable(o) && dist(h.x, h.y - 10, o.x, o.y) <= R).sort((a, b) => b.maxHp - a.maxHp || (b.def.armor || 0) - (a.def.armor || 0)).slice(0, SKILL_RK >= 5 ? 2 : 1); // 5. kademe: 2 düşman
+      if (!fr.length) return false;
+      for (const e of fr) { frogEnemy(e); if (SKILL_RK >= 3) e.frogT += 10; } // 3. kademe: +10 sn
       return true;
     }
     case 'mist': { // Merlin: en kalabalık yere mor-yeşil mezar sisi
@@ -6235,7 +6235,7 @@ function useSkill(h, id) {
       const c = densest(h.x, h.y, R + 10, 70, true);
       if (!c || c.n < 2) return false;
       hv(h, 'link');
-      const ts = enemiesNear(c.e.x, c.e.y, 70, true).slice(0, 4);
+      const ts = enemiesNear(c.e.x, c.e.y, 70, true).slice(0, SKILL_RK >= 5 ? 8 : SKILL_RK >= 3 ? 6 : 4); // 3. kademe 6, 5. kademe 8 düşman
       (G.links ||= []).push({ ts, owner: h, dps: 9 + 2.5 * L, t: 0, life: 5 }); // 16 Eki: 12+3L → 9+2,5L (Báthory fazla güçlüydü)
       for (const e of ts) fxBloodHit(e.x, aimY(e));
       sfx('blooddrain'); return true;
@@ -6243,13 +6243,13 @@ function useSkill(h, id) {
     case 'sacrifice': { // Báthory: canından verir, iskeletler iyileşir ve güçlenir
       const near = G.soldiers.filter(s => !s.dead && !s.hero && !s.wall && dist(s.x, s.y, h.x, h.y) < 130);
       if (near.length < 2 || h.hp < h.maxHp * 0.4 || !G.enemies.some(e => !e.dead && dist(e.x, e.y, h.x, h.y) < 160)) return false;
-      h.hp -= h.maxHp * 0.15;
-      for (const s of near) { s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.4); s.buffT = 6; G.effects.push({ kind: 'heal', x: s.x, y: s.y, t: 0, dur: 0.6 }); fxBloodHit(s.x, s.y - 10); }
+      h.hp -= h.maxHp * (SKILL_RK >= 3 ? 0.1 : 0.15); // 3. kademe: bedel %10
+      for (const s of near) { s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.4); s.buffT = SKILL_RK >= 5 ? 9 : 6; /* 5. kademe: 9 sn */ G.effects.push({ kind: 'heal', x: s.x, y: s.y, t: 0, dur: 0.6 }); fxBloodHit(s.x, s.y - 10); }
       G.effects.push({ kind: 'ring', x: h.x, y: h.y, r: 130, col: '220,30,50', t: 0, dur: 0.6 }); sfx('blooddrain');
       return true;
     }
     case 'knives': { // Robin: en yakın 5 düşmana yeşil alevli bıçak
-      const ts = enemiesNear(h.x, h.y, 135, true).sort((a, b) => dist(a.x, a.y, h.x, h.y) - dist(b.x, b.y, h.x, h.y)).slice(0, 5);
+      const ts = enemiesNear(h.x, h.y, 135, true).sort((a, b) => dist(a.x, a.y, h.x, h.y) - dist(b.x, b.y, h.x, h.y)).slice(0, SKILL_RK >= 5 ? 9 : SKILL_RK >= 3 ? 7 : 5); // 3. kademe 7, 5. kademe 9 bıçak
       if (ts.length < 2) return false;
       for (const e of ts) fireHeroShot(h, e, 0.9, { kind: 'dagger', soul: true });
       sfx('whirl'); return true;
@@ -6260,7 +6260,8 @@ function useSkill(h, id) {
       const sx = h.x + h.face * 6, sy = h.y - h.def.h * UNIT_K * 0.6, a = Math.atan2(aimY(tg) - sy, tg.x - sx), ex = sx + Math.cos(a) * R * 1.15, ey = sy + Math.sin(a) * R * 1.15;
       let n = 0;
       for (const o of G.enemies) { if (o.dead || o.under) continue; const t = clamp(((o.x - sx) * (ex - sx) + (o.y - sy) * (ey - sy)) / ((ex - sx) ** 2 + (ey - sy) ** 2), 0, 1);
-        if (dist(o.x, o.y, sx + (ex - sx) * t, sy + (ey - sy) * t) < 20) { damageEnemy(o, 60 + 12 * L, 'phys'); fxArrowHit(o.x, aimY(o), true); n++; } }
+        if (dist(o.x, o.y, sx + (ex - sx) * t, sy + (ey - sy) * t) < 20) { damageEnemy(o, (60 + 12 * L) * (SKILL_RK >= 3 ? 1.4 : 1), 'phys'); fxArrowHit(o.x, aimY(o), true); n++; } } // 3. kademe: +%40
+      if (SKILL_RK >= 5 && !h.boneEcho) { h.boneEcho = true; setTimeout(() => { if (G && !h.dead) { const SR = SKILL_RK, SK = SKILL_K; SKILL_RK = 4; SKILL_K = SK; hitBy = 'hero'; useSkill(h, 'bonearrow'); hitBy = null; SKILL_RK = SR; } h.boneEcho = false; }, 320); } // 5. kademe: ikinci ok
       G.effects.push({ kind: 'bolt', pts: [[sx, sy], [ex, ey]], col: 'soul', t: 0, dur: 0.25 }); sfx('arrow'); shakeScreen(1.2, 0.1);
       return n > 0;
     }
@@ -16773,10 +16774,20 @@ function upLadder(x, y, w, rows, cur, rh = 46) { // rh: satır aralığı (16 Ek
     if (rw.right) rw.right(x + w - 34, ry, done, next);
   });
 }
+let SKILL_RK = 1; // o an kullanılan komutan yeteneğinin kademesi (useSkill)
+// 20 Eki (Caner: "skill level atlanınca mantıklı, istenen kazanımlar"; rakipler: KR yetenek kademesinde yeni etki açar): 3. ve 5. kademe yeni özellik
+const SKILL_MILE = {
+  charge: { 3: 'sersemletme 1,5 sn', 5: 'sersemletme 2 sn' }, spear: { 3: '3 tur döner', 5: 'alan +%30' },
+  timegate: { 3: 'alan +%25', 5: 'düşmanlar %50 daha geri' }, frog: { 3: 'kurbağa +10 sn', 5: 'aynı anda 2 düşman' },
+  knives: { 3: '7 bıçak', 5: '9 bıçak' }, bonearrow: { 3: 'delici ok +%40', 5: 'ardından ikinci ok' },
+  bloodlink: { 3: '6 düşman bağlar', 5: '8 düşman bağlar' }, sacrifice: { 3: 'bedel %10 can', 5: 'güçlenme 9 sn' },
+};
 function heroRankNote(sk, r) {
   if (sk.id === 'iron') return `Zırh +%${10 + 5 * r} · can yenilenmesi ×${(1.4 + 0.2 * r).toFixed(1).replace('.', ',')}`;
   if (sk.passive) return `${r}. kademe`;
-  return r > 1 ? `Hasar +%${Math.round(HERO_TREE.dmg * 100 * (r - 1))} · bekleme -%${Math.round(HERO_TREE.cd * 100 * (r - 1))}` : 'Yetenek açılır';
+  const M = SKILL_MILE[sk.id] && SKILL_MILE[sk.id][r];
+  if (M) return '★ ' + M.charAt(0).toLocaleUpperCase('tr') + M.slice(1); // 3. ve 5. kademe: yeni özellik (hasar ve bekleme kazancı da sürer)
+  return r > 1 ? `Hasar +%${Math.round(HERO_TREE.dmg * 100 * (r - 1))} · süre -%${Math.round(HERO_TREE.cd * 100 * (r - 1))}` : 'Yetenek açılır';
 }
 const ultRankNote = (r) => (r > 1 ? `Güç +%${Math.round(HERO_TREE.ultK * 100 * (r - 1))} · bekleme -%${5 * (r - 1)}` : 'Güç açık');
 let treeSel = {};

@@ -1,0 +1,42 @@
+[
+ {
+  "name": "enemy_chariot_walkA",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it, gallops in place: the horse runs with a proper gallop, all four legs moving in the correct gallop order, mane and tail flowing, the chariot wheels turn steadily, the charioteer holds the reins and leans forward. The chariot is rigid and never tilts or bends. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 71,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_chariot_walkB",
+  "ref": "ham/anim/enemy_chariot_ref.png",
+  "prompt": "a cartoon roman war chariot pulled by an armored white horse, an armored charioteer with a spear standing in it, gallops in place: the horse runs with a proper gallop, all four legs moving in the correct gallop order, mane and tail flowing, the chariot wheels turn steadily, the charioteer holds the reins and leans forward. The chariot is rigid and never tilts or bends. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 93,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_cavalry_walkA",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "prompt": "a cartoon roman cavalryman with a lance riding a white horse gallops in place: the horse runs with a proper gallop, all four legs moving in the correct gallop order, mane and tail flowing, the rider moves with the horse, holding the lance steady and pointed forward. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 71,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_cavalry_walkB",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "prompt": "a cartoon roman cavalryman with a lance riding a white horse gallops in place: the horse runs with a proper gallop, all four legs moving in the correct gallop order, mane and tail flowing, the rider moves with the horse, holding the lance steady and pointed forward. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 49,
+  "loop": false,
+  "seed": 93,
+  "cycle": true,
+  "loop_lo": 16
+ }
+]

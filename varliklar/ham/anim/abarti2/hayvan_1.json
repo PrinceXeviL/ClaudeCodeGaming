@@ -1,0 +1,58 @@
+[
+ {
+  "name": "enemy_eagle_walkA",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest flies in place, hovering at the same height: its wings beat up and down in a strong regular flight rhythm, the body bobs only slightly with each beat, the tail and head stay steady. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 71,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_eagle_walkB",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest flies in place, hovering at the same height: its wings beat up and down in a strong regular flight rhythm, the body bobs only slightly with each beat, the tail and head stay steady. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 93,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_vulture_walkA",
+  "ref": "ham/anim/enemy_vulture_ref.png",
+  "prompt": "a cartoon big bald vulture with brown feathers, a white neck ruff and a red studded leather harness flies in place, hovering at the same height: its wide wings beat slowly up and down in a regular flight rhythm, the body bobs only slightly, the bald head looks forward. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 71,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_vulture_walkB",
+  "ref": "ham/anim/enemy_vulture_ref.png",
+  "prompt": "a cartoon big bald vulture with brown feathers, a white neck ruff and a red studded leather harness flies in place, hovering at the same height: its wide wings beat slowly up and down in a regular flight rhythm, the body bobs only slightly, the bald head looks forward. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. A steady non-stop looping cycle with no pauses, every cycle identical. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 93,
+  "cycle": true,
+  "loop_lo": 16
+ },
+ {
+  "name": "enemy_eagle_atkA",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest hovers, then pulls its wings back and swoops down a little, strikes forward and down with its open sharp talons, and flaps back up to exactly the starting hovering pose. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 71
+ },
+ {
+  "name": "enemy_eagle_atkB",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest hovers, then pulls its wings back and swoops down a little, strikes forward and down with its open sharp talons, and flaps back up to exactly the starting hovering pose. It always stays exactly the same size: it never comes closer to the camera, never moves away, never turns around and never rotates, it always faces right. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on it. Side view facing right, static camera, it stays in the center of the frame at the same size in every frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game animation, crisp clean frames, no motion blur, no smoke, no dust",
+  "frames": 33,
+  "loop": false,
+  "seed": 93
+ }
+]
