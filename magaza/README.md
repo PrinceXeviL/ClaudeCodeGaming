@@ -46,17 +46,18 @@ Bold thick dark outlines, rich saturated colors, dark gothic cartoon style, very
 
 **Ad (en çok 30):** Don't Mess with the Necromancer
 **Alt başlık (App Store, en çok 30):** Kemik kuleli kule savunması
-**Kısa açıklama (Play, en çok 80):** Kemik kuleler kur, ölüleri dirilt, Mortimer'ın çayını böldürme!
+**Kısa açıklama (Play, en çok 80):** Kemik kuleler kur, ölüleri dirilt, ruhları şimşeğe çevir!
 
 **Açıklama:**
 
-Mortimer sadece huzur içinde çayını içmek istiyordu. Sonra Solarian İmparatorluğu kapısına dayandı. Şimdi de engizisyon cadı avına çıktı. Kötü fikir.
+Mortimer sadece kulesinde huzur içinde kahvesini içmek istiyordu. Sonra Solarian İmparatorluğu kapısına dayandı. Şimdi de engizisyon cadı avına çıktı. Kötü fikir.
 
 Kemik kuleler kur, mahzenlerinden iskelet savaşçılar çıkar, düşmüş düşmanları kendi ordunda dirilt. Don't Mess with the Necromancer, karanlık mizahlı, el çizimi bir kule savunma oyunu.
 
 • 40 bölüm, iki sefer: Davetsiz Misafirler ve Cadı Avı
-• 5 kule, her biri 3 kademe ve 4. kademede iki farklı uzmanlık
-• Okçu mu arbaletçi mi? Mezar Bekçisi mi Ölüm Şövalyesi mi? Yolunu sen seç
+• 5 kule, her biri 3 kademe ve 4. kademede ayrı uzmanlık yolları; her uzmanlığın parayla geliştirilen ikinci gücü
+• Okçu mu arbaletçi mi? Mahzende kalkan duvarı mı, ölüm şövalyeleri mi, beş düşmanı birden tutan Kemik Golem mi? Yolunu sen seç
+• Ruh Feneri düşmanların ruhunu emer, biriken ruhları şimşek olarak çarpar
 • Mortimer'ın büyü kitabı: Ölüleri Diriltme, Korku, Kemik Duvarı, Ceset Patlatma, Ceset Golemi. Büyüler kullandıkça güçlenir
 • Seviye atlayan komutanlar ve yetenek ağaçları
 • 40'tan fazla düşman: lejyonerler, savaş filleri, kuşatma kuleleri, engizisyoncular, yürüyen katedraller
@@ -76,17 +77,18 @@ kule savunma,strateji,necromancer,iskelet,büyü,zombi,fantastik,çevrimdışı,
 
 **Name:** Don't Mess with the Necromancer
 **Subtitle (≤30):** Bone tower defense
-**Short description (Play, ≤80):** Build bone towers, raise the dead, and never interrupt Mortimer's tea.
+**Short description (Play, ≤80):** Build bone towers, raise the dead, turn stolen souls into lightning!
 
 **Description:**
 
-Mortimer only wanted to drink his tea in peace. Then the Solarian Empire came knocking. Now the Inquisition is on a witch hunt. Bad idea.
+Mortimer only wanted to drink his coffee in peace in his tower. Then the Solarian Empire came knocking. Now the Inquisition is on a witch hunt. Bad idea.
 
 Build bone towers, send skeleton warriors out of your crypts and raise fallen enemies into your own army. Don't Mess with the Necromancer is a hand-drawn tower defense game with a dark sense of humor.
 
 • 40 levels across two campaigns: Uninvited Guests and Witch Hunt
-• 5 towers, each with 3 tiers and two specializations at tier 4
-• Archers or crossbowmen? Grave Warden or Death Knight? Choose your path
+• 5 towers, each with 3 tiers and specialization paths at tier 4; every specialization has a second power you buy with gold
+• Archers or crossbowmen? In the crypt: a shield wall, death knights, or a Bone Golem that holds five enemies at once? Choose your path
+• The Soul Lantern drains your enemies' souls and strikes them with the stored souls as lightning
 • Mortimer's grimoire: Raise Dead, Fear, Bone Wall, Corpse Explosion, Corpse Golem. Spells grow stronger as you use them
 • Commanders that level up, with skill trees
 • 40+ enemies: legionaries, war elephants, siege towers, inquisitors, walking cathedrals
@@ -111,7 +113,7 @@ Build bone towers, send skeleton warriors out of your crypts and raise fallen en
 | Horror/Fear Themes | Infrequent/Mild (iskeletler, kafatasları, mezardan çıkan eller) |
 | Mature/Suggestive Themes | None |
 | Profanity or Crude Humor | None |
-| Alcohol, Tobacco, Drugs | None (Mortimer çay içiyor) |
+| Alcohol, Tobacco, Drugs | None (Mortimer kahve içiyor) |
 | Gambling / Simulated Gambling | None |
 | Sexual Content / Nudity | None |
 | Medical/Treatment | None |
@@ -122,7 +124,7 @@ Beklenen sonuç: **9+** (Frequent cartoon violence ile 9+, korku temasıyla değ
 
 ### Google Play (IARC anketi)
 - Kategori: Oyun
-- Şiddet: Evet, fantastik/çizgi film karakterlerine yönelik, gerçekçi değil, kan yok denecek kadar az
+- Şiddet: Evet, fantastik/çizgi film karakterlerine yönelik, gerçekçi değil. **Kan: evet, çizgi film tarzı az kan** (isabette damla, ölünce küçük leke; ayarlardan kapanır). Düşmanlar insan olduğu için Avrupa'da **PEGI 12–16** çıkabilir (bkz. not)
 - Korku: Hafif korku öğeleri (iskelet, kafatası)
 - Cinsellik, küfür, uyuşturucu, kumar: Hayır
 - Kullanıcılar arası etkileşim / içerik paylaşımı: Hayır
@@ -130,17 +132,19 @@ Beklenen sonuç: **9+** (Frequent cartoon violence ile 9+, korku temasıyla değ
 - Dijital ürün satın alma: **Evet** (tek seferlik "Mortimer'ın Hazinesi", mağaza sürümünde açılınca)
 - Reklam: **Evet** (AdMob açılınca; kapalıysa Hayır)
 
-Beklenen sonuç: **PEGI 7 / USK 6 / ESRB Everyone 10+** civarı.
+Beklenen sonuç: **PEGI 12 (insana karşı kan varsa 16'ya çıkabilir) / USK 12 / ESRB Everyone 10+ (Mild Blood)**. Derece istenenden yüksek çıkarsa kanı varsayılan olarak kapalı başlatmak bir seçenek.
 
 ## Gizlilik soruları (App Store "App Privacy" ve Play "Data safety")
 
-Şu anki sürüm: **Hiçbir veri toplanmıyor.** Oyun internete bağlanmıyor; ilerleme yalnız cihazda (localStorage + Capacitor Preferences) tutuluyor; hesap yok.
-- App Store: "Data Not Collected"
-- Play Data safety: "No data collected", "No data shared"
+Şu anki sürüm (20 Eki): **GameAnalytics ile anonim oyun verisi** toplanıyor, yalnız oyuncu ilk açılıştaki izin kutusunda "Evet" derse (Ayarlar'dan kapatılabilir). Hesap yok, ilerleme yalnız cihazda (localStorage + Capacitor Preferences).
+- Toplananlar: uygulama etkileşimi (bölüm başla/bitir, kule/büyü kullanımı), cihaz/işletim sistemi bilgisi, rastgele kurulum kimliği, kaba konum (IP'den ülke); çökme/hata kaydı. Reklam ya da takip amacı yok, üçüncü tarafa satılmaz.
+- App Store "App Privacy": Usage Data → Product Interaction; Identifiers → Device ID (kurulum kimliği); Diagnostics. Amaç: Analytics. "Linked to you": Hayır. "Used for tracking": Hayır.
+- Play Data safety: "App activity" + "App info and performance" + "Device or other IDs" toplanır, paylaşılmaz, amaç Analytics, isteğe bağlı (kullanıcı reddedebilir), aktarımda şifreli.
+- iOS `PrivacyInfo.xcprivacy` bu veri türlerine göre güncellenmeli; `gizlilik.html`'e GameAnalytics bölümü eklenmeli.
 
 **AdMob eklenirse değişir:** Cihaz kimliği (reklam kimliği), kaba konum (IP'den), ürün etkileşimi, çökme verisi → "Third-party advertising" amacıyla toplanır. iOS'ta App Tracking Transparency izni ve SKAdNetwork ayarı gerekir; Play'de Data safety formu yeniden doldurulur. `gizlilik.html` içinde bu bölüm hazır, reklam açılınca "henüz yok" notu kaldırılır.
 
 ## Sürüm notu (ilk sürüm)
 
-TR: İlk sürüm! Mortimer'ın çayı soğumadan savunmaya geç.
-EN: First release! Defend the chapel before Mortimer's tea gets cold.
+TR: İlk sürüm! Mortimer'ın kahvesi soğumadan savunmaya geç.
+EN: First release! Defend the tower before Mortimer's coffee gets cold.
