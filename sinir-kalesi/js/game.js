@@ -21481,7 +21481,7 @@ function drawMap() {
   if (freeStars > 0) badge(0, freeStars, '#e8434b');
   if (mapSel == null) { // tanıtım: önce Büyü Kitabı, sonra yetenek puanı
     if (freeSouls > 0 && !tipSeen('grim')) drawTip(bx2(2), by2 - BR - 6, 'Büyülerin seviye atladı! Büyü Kitabı\'nda puanlarını harca');
-    else if (heroPts && !tipSeen('tree')) drawTip(bx2(1), by2 - BR - 6, 'Komutanın seviye atladı! Yetenek puanını Komutanlar ekranında harca');
+    else if (heroPts && !tipSeen('tree')) drawTip(bx2(1), by2 - BR - 6, 'Komutanının harcanmamış yetenek puanı var: Komutanlar ekranında harca');
   }
   if (heroPts && !fresh.length) badge(1, '+', '#3cbf3c');
   if (fresh.length) { const ex = bx2(1), ey = by2 - BR - 10 + Math.sin(time * 5) * 2; roundRect(ex - 24, ey - 11, 48, 22, 11, '#e8434b', '#fff', 1.5); txt('YENİ', ex, ey + 1, 12, '#fff', 'center', '400', FONT_T); }
