@@ -18667,7 +18667,7 @@ function drawBossAura(e, dh) {
   g.addColorStop(0, `rgba(30,0,0,${0.45 + pulse * 0.1})`); g.addColorStop(1, 'rgba(30,0,0,0)');
   ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(e.x, e.y + 2, dh * 0.95, dh * 0.36, 0, 0, Math.PI * 2); ctx.fill();
   ctx.globalCompositeOperation = 'lighter';
-  glow(ctx, e.x, e.y - 2, dh * 1.05, col, 0.32 + pulse * 0.14 + (e.enraged ? 0.15 : 0));
+  glow(ctx, e.x, e.y - 2, dh * 0.9, col, 0.15 + pulse * 0.07 + (e.enraged ? 0.08 : 0)); // 20 Eki (Caner): boss halesi var ama az
   ctx.restore();
   ctx.save(); ctx.translate(e.x, e.y + 1); ctx.scale(1, 0.36);
   ctx.strokeStyle = `rgba(${col},${0.55 + pulse * 0.3})`; ctx.lineWidth = 2.2;
@@ -18676,11 +18676,11 @@ function drawBossAura(e, dh) {
   ctx.setLineDash([]); ctx.lineWidth = 1.2; ctx.strokeStyle = `rgba(${col},0.4)`;
   ctx.beginPath(); ctx.arc(0, 0, dh * 0.78, 0, Math.PI * 2); ctx.stroke();
   ctx.restore();
-  if (Math.random() < (e.enraged ? 0.7 : 0.35)) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.45, dh * 0.45), y: e.y - rand(0, dh * 0.3), vy: -rand(18, 45), col: e.enraged ? '255,80,40' : '255,140,70', s0: rand(1.5, 3), s1: 0.3, life: rand(0.6, 1) });
+  if (Math.random() < (e.enraged ? 0.35 : 0.15)) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.45, dh * 0.45), y: e.y - rand(0, dh * 0.3), vy: -rand(18, 45), col: e.enraged ? '255,80,40' : '255,140,70', s0: rand(1.5, 3), s1: 0.3, life: rand(0.6, 1) });
   if (Math.random() < 0.18) emit(G.parts, { kind: 'glow', x: e.x + rand(-dh * 0.4, dh * 0.4), y: e.y - rand(0, 6), vy: -rand(8, 20), col: '30,18,22', s0: rand(5, 8), s1: rand(12, 18), life: rand(0.8, 1.3), a: 0.35 });
   if (d.glow || e.guardT > 0 || e.invT > 0) { // Güneş Formu alevi, Kalkan Duvarı, evre değişirken beyaz parlama
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    if (d.glow) { glow(ctx, e.x, e.y - dh * 0.55, dh * 1.1, d.glow, 0.28 + pulse * 0.12); if (Math.random() < 0.6) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.3, dh * 0.3), y: e.y - rand(0, dh * 0.9), vy: -rand(30, 70), col: '255,190,70', s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.7) }); }
+    if (d.glow) { glow(ctx, e.x, e.y - dh * 0.55, dh * 0.9, d.glow, 0.14 + pulse * 0.06); if (Math.random() < 0.6) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-dh * 0.3, dh * 0.3), y: e.y - rand(0, dh * 0.9), vy: -rand(30, 70), col: '255,190,70', s0: rand(3, 5), s1: 0.5, life: rand(0.4, 0.7) }); }
     if (e.guardT > 0) glow(ctx, e.x + e.face * dh * 0.25, e.y - dh * 0.45, dh * 0.7, '255,215,120', 0.25 + 0.1 * Math.sin(time * 9));
     if (e.invT > 0) glow(ctx, e.x, e.y - dh * 0.5, dh * 1.4, '255,240,200', 0.5 * Math.min(1, e.invT));
     ctx.restore();
@@ -22188,12 +22188,14 @@ function drawNets() {
 function drawHolyLights() {
   for (const e of G.enemies) {
     const L = e.def.light; if (!L || e.dead) continue;
-    const k = 0.9 + Math.sin(time * 7 + e.anim) * 0.05;
+    // 20 Eki (Caner: "fener arabaları yerde çok ışık yayıyor, hiçbir şey görünmüyor"): boss olmayanda dolgu yok, yalnız soluk kesik çizgi
+    // (ışık alanı oyunu etkiler: içinde iskelet zayıf, ceset kalkmaz); bossta dolgu eskisinin %35'i
+    const k = 0.9 + Math.sin(time * 7 + e.anim) * 0.05, boss = e.def.chief || e.def.boss;
     ctx.save(); ctx.translate(e.x, e.y); ctx.scale(1, 1 / 1.3); ctx.globalCompositeOperation = 'lighter';
-    const g = ctx.createRadialGradient(0, 0, L.r * 0.2, 0, 0, L.r * k);
-    g.addColorStop(0, 'rgba(255,220,130,0.32)'); g.addColorStop(0.75, 'rgba(255,200,100,0.16)'); g.addColorStop(1, 'rgba(255,190,90,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, L.r * k, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,215,120,0.35)'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]); ctx.lineDashOffset = -time * 12;
+    if (boss) { const g = ctx.createRadialGradient(0, 0, L.r * 0.2, 0, 0, L.r * k);
+      g.addColorStop(0, 'rgba(255,220,130,0.11)'); g.addColorStop(0.75, 'rgba(255,200,100,0.055)'); g.addColorStop(1, 'rgba(255,190,90,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, L.r * k, 0, Math.PI * 2); ctx.fill(); }
+    ctx.strokeStyle = boss ? 'rgba(255,215,120,0.3)' : 'rgba(255,215,120,0.2)'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]); ctx.lineDashOffset = -time * 12;
     ctx.beginPath(); ctx.arc(0, 0, L.r * 0.97, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     ctx.restore();
   }
