@@ -2434,8 +2434,9 @@ function startLevel(idx, chal = null) {
   screen = 'play'; setOverlay(null); paused = false; speed = 1; screenT = time;
   // hikâye panelleri: bölge girişi (1. bölüm) ya da bu bölümün bossu ilk kez geliyorsa, bir kez
   if (NECRO && chal !== 'a' && chal !== 'o') {
-    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : null;
-    if (key === 'intro' && cineReady('intro')) { save.comics = Object.assign(save.comics || {}, { intro: 1 }); startCine('intro'); } // 18 Eki: açılış Veo sahnesi (20 Eki: çizgi roman paneli yok)
+    const seen = (save.comics || {}), key = idx === 0 ? 'intro' : idx === 1 ? 'oyun' : null;
+    if (key === 'oyun' && cineReady('oyun') && !G.admin) startCine('oyun'); // 20 Eki: Mortimer oyun oynarken ordu gelir (bir kez)
+    else if (key === 'intro' && cineReady('intro')) { save.comics = Object.assign(save.comics || {}, { intro: 1 }); startCine('intro'); } // 18 Eki: açılış Veo sahnesi (20 Eki: çizgi roman paneli yok)
   }
 }
 function bakeNext() {
@@ -17102,7 +17103,7 @@ const isPremium = () => !!save.premium;
 // 18 Eki: sonraki bölüm: ücretsiz kısmın sonunda (10. bölüm, finale) bir kez merak sahnesi; tam oyun yoksa vitrin (önceden zafer ekranından kilitli bölüme geçilebiliyordu)
 function nextLevel() {
   const i = G.idx + 1;
-  if (!G.chal && !G.admin && G.idx >= 1 && cineReady('kahve')) { startCine('kahve', () => nextLevel()); return; } // ev sahnesi (bir kez)
+  if (!G.chal && !G.admin && G.idx >= 2 && cineReady('kahve')) { startCine('kahve', () => nextLevel()); return; } // ev sahnesi (bir kez); 20 Eki: 2. bölümün başında oyun sahnesi var, kahve bir sonrakine
   if (G.lv.finale && !G.chal && !(save.teaser || {}).f10) { save.teaser = Object.assign(save.teaser || {}, { f10: 1 }); persist(); screen = 'teaser'; screenT = time; TEASER.next = i; return; }
   if (needsPremium(i)) { menuBack = 'map'; shopTab = 'full'; screen = 'shop'; screenT = time; return; }
   startLevel(i);
@@ -19150,7 +19151,7 @@ function drawEvent() {
 // 18 Eki (Caner: "hikâye: açılış sahnesi, boss giriş gösterisi, sefer sonu ödül sahnesi"): Veo sahne videoları (img/cine_*.mp4, varliklar/hikaye_video_isle.py).
 // Videoda yazı yok; altyazı kodla (6 dile çevrilir). Dokununca sonraki plan, ATLA bütün sahneyi geçer, her sahne bir kez (save.cine).
 // Dosyası olmayan plan atlanır (CINE_FILES); sahnenin hiç planı yoksa eski yol (çizgi roman, kodla boss gösterisi) sürer.
-const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve']); // 18 Eki: video geldikçe eklenir (açılış tamam)
+const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve', 'cine_oyun']); // 18 Eki: video geldikçe eklenir (açılış tamam)
 const CINE = {
   intro: [
     { v: 'cine_acilis_a', sub: [[0.4, 4.4, 'Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.'], [4.7, 9.4, 'Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.']] },
@@ -19162,6 +19163,8 @@ const CINE = {
   end1: [{ v: 'cine_sefer1_sonu', sub: [[0.4, 4.6, 'Gloriosus düştü. Altın miğferi artık Mortimer\'ın rafında.'], [4.9, 9.4, 'Ama İmparatorluk pes etmez. Engizisyon yola çıktı bile...']] }],
   // 18 Eki (Caner: Mortimer'ın evi, bölümler arası sahneler): terasta kahve servisi; ilk zaferden sonra "sonraki bölüm"de bir kez
   kahve: [{ v: 'cine_kahve', sub: [[0.4, 4.4, 'Bir zafer daha. Mortimer için bu, kahve vakti demek.'], [4.8, 9.6, '"Şekersiz, Bartholomew. Ve bu sefer dökme."']] }],
+  // 20 Eki (Caner): Mortimer'ın evinden bölüm öncesi sahneler (Veo, sesli: ses/<aud>.mp3 videoyla eş zamanlı). 2. bölümün başında bir kez.
+  oyun: [{ v: 'cine_oyun', aud: 'cine_oyun', sub: [[0.4, 4.4, 'Mortimer\'ın boş vakti kutsaldır.'], [5.0, 9.6, 'Ama İmparatorluğun takvimi başka işliyor.']] }],
   end2: [{ v: 'cine_sefer2_sonu', sub: [[0.4, 4.6, 'Engizisyon dağıldı. Lanetli Sınır yine sessiz.'], [4.9, 9.4, 'Şimdilik.']] }],
 };
 let CINE_S = null;
@@ -19173,15 +19176,29 @@ function startCine(key, done) {
   CINE_S = { key, shots, i: -1, done, wasPaused: paused, t0: time }; if (screen === 'play') paused = true;
   cineShot(0); return true;
 }
+// sahne sesi: videonun kendi sesi telefonda kendiliğinden çalmayabilir (sessiz oynatma kuralı); ses ayrı dosyadan Web Audio ile, video başlayınca aynı noktadan
+const CINE_AUD = {};
+function cineAudio(C, name, v) {
+  if (!actx || muted) return;
+  const go = (buf) => { if (CINE_S !== C || C.v !== v || !buf) return; const start = () => { if (CINE_S !== C || C.v !== v || C.src) return;
+      const src = actx.createBufferSource(), g = actx.createGain(); src.buffer = buf; g.gain.value = 0.9; src.connect(g); g.connect(master); src.start(0, Math.max(0, v.currentTime || 0)); C.src = src; };
+    if (!v.paused && v.currentTime > 0) start(); else v.addEventListener('playing', start, { once: true }); };
+  if (CINE_AUD[name]) { if (CINE_AUD[name].then) CINE_AUD[name].then(go); else go(CINE_AUD[name]); return; }
+  CINE_AUD[name] = fetch('ses/' + name + '.mp3' + (window.SURUM ? '?v=' + window.SURUM : '')).then(r => r.arrayBuffer()).then(b => new Promise((ok, no) => actx.decodeAudioData(b, ok, no)))
+    .then(buf => (CINE_AUD[name] = buf)).catch(() => (CINE_AUD[name] = null));
+  CINE_AUD[name].then(go);
+}
 function cineShot(i) {
   const C = CINE_S; if (!C) return;
   if (C.v) { try { C.v.pause(); C.v.remove(); } catch (e) {} C.v = null; }
+  if (C.src) { try { C.src.stop(); } catch (e) {} C.src = null; }
   if (i >= C.shots.length) { const d = C.done; paused = C.wasPaused; CINE_S = null; if (d) d(); return; }
   C.i = i; C.st = time; const S = C.shots[i], v = document.createElement('video');
   v.muted = true; v.playsInline = true; v.preload = 'auto'; v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', '');
   v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
   v.src = 'img/' + S.v + '.mp4' + (window.SURUM ? '?v=' + window.SURUM : ''); document.body.appendChild(v); C.v = v;
   v.onerror = () => { if (CINE_S === C && C.v === v) cineShot(i + 1); };
+  if (S.aud) cineAudio(C, S.aud, v);
   const pr = v.play(); if (pr && pr.catch) pr.catch(() => {});
   if (!C.poster || C.poster.src.indexOf(S.v) < 0) { const im = new Image(); im.src = 'img/' + S.v + '.jpg' + (window.SURUM ? '?v=' + window.SURUM : ''); C.poster = im; }
 }
