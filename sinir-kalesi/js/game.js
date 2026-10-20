@@ -4755,7 +4755,7 @@ function sellTower(t) {
 const PRIO = { first: { name: 'İlk', desc: 'Kaleye en yakın düşmanı vurur (varsayılan)' }, last: { name: 'Son', desc: 'En arkadaki düşmanı vurur: arkadan gelen şifacı, davulcu, sancaktar' },
   strong: { name: 'Güçlü', desc: 'Canı en çok olan düşmanı vurur: boss ve ağır zırhlılar' }, fly: { name: 'Uçan', desc: 'Önce uçanları vurur (kartal, akbaba); uçan yoksa kaleye en yakını' } };
 const prioList = (t) => (TOWERS[t.type] && TOWERS[t.type].air ? ['first', 'last', 'strong', 'fly'] : ['first', 'last', 'strong']);
-const prioOpen = (t) => t.type === 'archer' || t.type === 'mage' || t.type === 'artillery';
+const prioOpen = (t) => t.type === 'archer' || t.type === 'mage'; // 20 Eki (Caner): Veba Kazanı alana vurur, hedef önceliği yok
 function findTarget(t, range, allowAir) {
   const P = (t && t.prio) || 'first';
   let best = null, bestK = -1e18;
@@ -4857,7 +4857,14 @@ function updateObeliskForm(t, dt, L, ts, F) {
 // Mahzen: bir iskelet daha (3 → 4, uzmanlıkta 4 → 5). Kemik Kulesi: bir okçu daha; atış okçulara bölüşüldüğü için hız da okçu sayısıyla artar.
 const TOWER_MORE = { barracks: { cost: 130, name: '+1 İskelet', desc: 'Mahzenden bir iskelet daha kalkar, yolu tutar' },
   archer: { cost: 150, name: '+1 Okçu', desc: 'Kuleye bir okçu daha çıkar: kule daha sık atar' } };
-const moreOpen = (t) => NECRO && TOWER_MORE[t.type] && t.lvl >= t.def.levels.length - 1 && (t.type !== 'barracks' || !!t.spec); // mahzende uzmanlıktan sonra (menüde iki uzmanlık düğmesiyle çakışmasın)
+const moreBase = (t) => NECRO && TOWER_MORE[t.type] && t.lvl >= t.def.levels.length - 1 && (t.type !== 'barracks' || !!t.spec);
+const moreOpen = (t) => moreBase(t) && (t.more || skillsMaxed(t));
+// 20 Eki (Caner): +1 asker, kulenin bütün yetenekleri (uzmanlık ve ikinci güç son kademede) açıldıktan sonra
+function skillsMaxed(t) {
+  const id = t.spec || (t.path && ARCHER_PATH[t.path] && ARCHER_PATH[t.path].spec), a = id && t.def.abilities.find(b => b.id === id); if (!a) return false;
+  if (((t.ab && t.ab[id]) || 0) < a.ranks.length) return false;
+  return !TOWER_EXTRA[id] || (+t.extra || 0) >= EXTRA_RK.n;
+} // mahzende uzmanlıktan sonra (menüde iki uzmanlık düğmesiyle çakışmasın)
 const barrN = (t) => (t.spec ? 4 : 3) + (t.more ? 1 : 0);
 function buyMore(t) {
   const M = TOWER_MORE[t.type], c = M && priceK(M.cost, t.stackK || 1);
@@ -15058,8 +15065,8 @@ function towerMenuItems(t) {
   const EX = t.spec && TOWER_EXTRA[t.spec];
   if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 74, y: t.y - 52, cost: extraCost(t), owned: (+t.extra || 0) >= EXTRA_RK.n, rank: +t.extra || 0 });
   if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -66), y: t.y + (t.type === 'archer' ? -34 : 30), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
-  if (moreOpen(t)) items.push({ id: 'more', type: t.type, x: t.x + (t.type === 'archer' ? -62 : 62), y: t.y + (t.type === 'archer' ? 12 : 34), cost: t.more ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
-  if (prioOpen(t)) items.push({ id: 'target', type: t.prio || 'first', x: t.x + (t.type === 'archer' ? 72 : -72), y: t.y + 46 }); // hedef önceliği
+  if (moreBase(t)) items.push({ id: 'more', type: t.type, blocked: !moreOpen(t), x: t.x + (t.type === 'archer' ? -62 : 62), y: t.y + (t.type === 'archer' ? 12 : 34), cost: t.more || !moreOpen(t) ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
+  if (prioOpen(t)) items.push({ id: 'target', type: t.prio || 'first', x: t.x + 64, y: t.y + 62 }); // hedef önceliği: 20 Eki (Caner) yeteneklerden ayrı, satış düğmesinin yanında, çelik halkalı
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: sellValue(t) });
   if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
   return items;
@@ -15322,17 +15329,18 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   const ok = itemAffordable(it), R = MENU_R;
   const active = preview && preview.id === it.id && preview.type === it.type;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
-  const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
+  const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : it.id === 'target' ? 0.88 : 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
   ctx.scale(s, s);
   if (active) glow(ctx, 0, 0, R * 2.2, '255,215,110', 0.6);
   const abIm = it.id === 'ability' && spr('ico_ab_' + it.type); // 18 Eki (Caner): yetenek düğmesinin halkası simgenin renginde
   if (abIm) { const c = icoColor(abIm); skillRing(0, 0, R - R * SPELL_FR.w * 0.5, c, ok); icoBg(0, 0, R - R * SPELL_FR.w * 0.5, c, ok); } else {
   circle(0, 5, R + 3, 'rgba(0,0,0,0.38)');
   const rim = ctx.createLinearGradient(0, -R, 0, R);
-  rim.addColorStop(0, '#fff2b8'); rim.addColorStop(0.45, '#e2a93c'); rim.addColorStop(1, '#7a4c10');
+  const stl = it.id === 'target'; // hedef önceliği bir ayar: altın değil çelik halka (yeteneklerle karışmaz)
+  rim.addColorStop(0, stl ? '#eef4ff' : '#fff2b8'); rim.addColorStop(0.45, stl ? '#8ea2bd' : '#e2a93c'); rim.addColorStop(1, stl ? '#2f3a4c' : '#7a4c10');
   circle(0, 0, R + 3.5, rim, '#2e1a06', 1.5);
   const body = ctx.createRadialGradient(-7, -9, 2, 0, 0, R + 2);
-  body.addColorStop(0, active ? '#fff6d0' : '#7d664b'); body.addColorStop(1, active ? '#d99a2a' : '#271b10');
+  body.addColorStop(0, active ? '#fff6d0' : stl ? '#4b5a70' : '#7d664b'); body.addColorStop(1, active ? '#d99a2a' : stl ? '#141a24' : '#271b10');
   circle(0, 0, R, body); }
   ctx.save(); ctx.beginPath(); ctx.arc(0, 0, R - 1, 0, Math.PI * 2); ctx.clip();
   if (!ok) ctx.globalAlpha = a * 0.45;
@@ -16317,6 +16325,7 @@ function infoText() {
   }
   if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'more') {
     const M = TOWER_MORE[G.preview.type], t = G.sel.tower;
+    if (!moreOpen(t)) return [`${M.name} (kilitli)`, 'Önce kulenin bütün yeteneklerini son kademeye çıkar'];
     return [t.more ? `${M.name} (alındı)` : `${M.name} — ${priceK(M.cost, t.stackK || 1)} altın`, M.desc];
   }
   if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'extra') {
@@ -23330,7 +23339,7 @@ function hudTap(x, y) {
         if (it.id === 'build') { if (buildTower(G.sel.plot, it.type)) setSel(null); else sfx('error'); }
         else if (it.id === 'ghoul') { if (openHatch(G.sel.hatch)) setSel(null); else sfx('error'); }
         else if (it.id === 'extra') { if (it.cost != null && buyExtra(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
-        else if (it.id === 'more') { if (it.cost != null && buyMore(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
+        else if (it.id === 'more') { if (it.blocked) sfx('error'); else if (it.cost != null && buyMore(G.sel.tower)) { G.preview = null; G.menuT = time; } else if (it.cost != null) sfx('error'); }
         else if (it.id === 'upgrade' && it.type === 'castle') { if (upgradeCastle()) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'upgrade') { if (upgradeTower(G.sel.tower)) { G.preview = null; G.menuT = time; } else sfx('error'); }
         else if (it.id === 'ability') { if (it.cost != null && buyAbility(G.sel.tower, it.type)) G.preview = null; else sfx('error'); }
