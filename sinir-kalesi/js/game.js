@@ -2018,8 +2018,8 @@ function renderBackground0(lv, paths, res) {
   }
   const blocked = (x, y, pad) => {
     if (nearestOnPaths(paths, x, y).d < 40 + 23 * (R - 1) + pad) return true; // dalgalı kenar payı dahil
-    for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 38 + pad) return true;
-    if (!lv.decorK) for (const pl of lv.plots) if (Math.abs(x - pl[0]) < 34 + pad * 0.5 && y < pl[1] && y > pl[1] - 100) return true; // 16 Eki: kulenin yükseldiği şerit (arsanın arkası) boş
+    for (const pl of lv.plots) if (dist(x, y, pl[0], pl[1]) < 46 + pad) return true; // 20 Eki (Caner: "çimenler kulelerle iç içe"): 38 → 46
+    if (!lv.decorK) for (const pl of lv.plots) if (Math.abs(x - pl[0]) < 42 + pad * 0.5 && y < pl[1] && y > pl[1] - 125) return true; // 16 Eki: kulenin yükseldiği şerit (arsanın arkası) boş; 20 Eki: 34x100 → 42x125
     for (const hq of hatchSpots(lv, paths)) if (dist(x, y, hq[0], hq[1]) < 30 + pad) return true;
     if (y < 52 && (x < 300 || x > 860)) return true;
     if (y > 465 && x < 230) return true;
@@ -2367,6 +2367,7 @@ function startLevel(idx, chal = null) {
   useStrips(keep);
   if (team().includes('merlin') && ANIM_META.fx_tornado) loadStrip('fx_tornado');
   ACID_V.forEach(v => { if (ANIM_META[v]) loadStrip(v); });
+  squashArcher();
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
   { // 20 Eki: kule görsellerinin küçük kopyaları: 1. kademe yüklenirken, 2-3. kademe ve uzmanlıklar sahada düşman yokken (mipIdle)
     const ty = TOWER_ORDER.filter(t => TOWERS[t] && towerUnlocked(t)), all = Object.keys(SPR).filter(n => /^tower_/.test(n) && !/_(collapse|atk|idle|front|side|shot)$/.test(n) && SPR[n]);
@@ -2377,7 +2378,7 @@ function startLevel(idx, chal = null) {
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
   [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
     if (d.base) SUF.forEach(sf => G.bakeQ.push('s:' + t + ':' + sf));
-    if (!d.flying && !d.chief && !d.machine && !d.noraise) G.bakeQ.push('r:' + t); });
+    if (!d.chief && raiseOkDef(d)) G.bakeQ.push('r:' + t); });
   // 14 Eki (Caner: "açılışta yükleme ekranı olsun, her şey yüklensin"): bölüm, şeritler + boyalı kopyalar + sesler bitene kadar başlamaz
   // 14 Eki (Caner: 17 sn çok, en çok 2-3 sn): yalnız açılışta görünenler beklenir (komutan, kale); düşman ve iskelet şeritleri arkada yüklenir
   // (ilk dalgaya dek hazır; ortak olanlar zaten menüde önceden yüklendi: preloadCommon)
@@ -2527,7 +2528,8 @@ const heroUltRank = (h) => (h.act === 'ult2' ? h.ult2 || 1 : h.ult || 1);
 
 // ---------- dalgalar ----------
 const SPAWN_LANE = { k: 1.5, min: 0.3, row: 1.6 }; // yol başına doğuş aralığı (yukarıda, spawner döngüsü)
-const WAVE_REST = 20; // iki dalga arası dinlenme (sn); oyuncu dalgayı erken çağırıp altın kazanabilir
+const WAVE_REST = 14; // 20 Eki: 20 → 14 (bölüm süresi)
+// // iki dalga arası dinlenme (sn); oyuncu dalgayı erken çağırıp altın kazanabilir
 function waveBonusAndStart() {
   endlessExtend();
   if (!G || G.wave >= G.lv.waves.length) return;
@@ -2548,7 +2550,7 @@ function waveBonusAndStart() {
   let lastSpawn = 0;
   G.waveN = def.reduce((a, grp) => a + grp.n, 0); // dalganın asker sayısı (erken çağrı eşiği için)
   for (const grp of def) {
-    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, loot: grp.loot, mini: grp.mini, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
+    G.spawners.push({ t: grp.t, types: grp.types, pack: grp.pack, hpK: grp.hpK, goldK: grp.goldK, loot: grp.loot, mini: grp.mini, left: grp.n, n: grp.n, gap: grp.gap, timer: (grp.at || 0) + wait, p: grp.p || 0 });
     lastSpawn = Math.max(lastSpawn, (grp.at || 0) + wait + grp.gap * (grp.n - 1));
   }
   if (!G.endless && bloodWaves(G.lv).includes(G.wave)) startBloodMoon();
@@ -2665,7 +2667,7 @@ function fogTex(col, v) {
 }
 // Kulenin ayağında dönerek süzülen sis (Caner, 10 Eki: kuleler hareketli olsun, çevresindeki sis hareket etsin).
 // front=false: binanın arkasında kalan yarı (binadan önce çizilir), true: önündeki yarı (soluk, binayı örtmesin).
-const TOWER_FOG = { altar: { n: 9, a: 0.9, col: ['150,110,200', '120,70,170'] }, archer: { n: 11, a: 1, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.95, col: ['200,220,205', '195,180,220'] } };
+const TOWER_FOG = { altar: { n: 9, a: 0.45, col: ['150,110,200', '120,70,170'] }, archer: { n: 11, a: 0.5, col: ['205,215,210', '190,180,215'] }, barracks: { n: 9, a: 0.48, col: ['200,220,205', '195,180,220'] } }; // 20 Eki: yarıya (taban zeminle karışıyordu)
 function drawTowerFog(t, ts, front) {
   const F = NECRO && TOWER_FOG[t.type] && t.spec !== 'bow' ? TOWER_FOG[t.type] : null; if (!F) return; // 11 Eki (Caner): Hayalet Okçular dumansız
   const s = ts.w / 50, R = ts.w * 0.56, cy = ts.bottom - 3 * s;
@@ -3568,7 +3570,7 @@ function killEnemy0(e) {
   G.kills = (G.kills || 0) + 1;
   if (G.stats) { const by = e.lastBy || 'other'; G.stats.by[by] = (G.stats.by[by] || 0) + 1; }
   cnt('kills'); if (e.def.chief) cnt('bosses'); if (e.def.flying) cnt('fly'); if (e.def.machine) cnt('mach'); G.killN = (G.killN || 0) + 1; // bölümdeki öldürülen düşman (sol üst sayaç)
-  { const gv = Math.max(1, Math.round(e.def.gold * diff().bounty)); if (e.def.chief && !e.mini && !e.leaked) G.bossGold = (G.bossGold || 0) + gv; // kasa: boss altını ayrı sayılır
+  { const gv = Math.max(1, Math.round(e.def.gold * diff().bounty * (e.goldK || 1))); if (e.def.chief && !e.mini && !e.leaked) G.bossGold = (G.bossGold || 0) + gv; // kasa: boss altını ayrı sayılır
   dropCoins(e.x, e.y, gv, false, e.def.chief && !e.mini && !e.leaked ? [44, 2.1] : null); } // boss: altın yağmuru (14 Eki: daha bol)
   sfx('death');
   if (e.def.machine && !e.leaked) sfx('castlehit', rand(0.8, 0.95), 0.8, e); // 16 Eki: kuşatma makinesi parçalanırken tahta çatırtısı
@@ -3576,7 +3578,7 @@ function killEnemy0(e) {
   G.effects.push({ kind: 'corpse', name: 'enemy_' + e.type, rig: e.def.base ? 'enemy_' + e.def.base : null, h: CHAR_H['enemy_' + e.type],
     x: e.x, y: e.y, face: (e.face || 1) * (NECRO && Math.random() < 0.45 ? -1 : 1), fly: e.def.flying ? 26 : 0, t: 0, // 16 Eki: ölenler hep aynı yöne düşmesin
     vr: rand(-0.1, 0.1), vs: rand(0.93, 1.07), blood: !e.def.machine && !e.def.ghost,
-    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && !e.def.flying && (!e.def.chief || (ZOMBIE_X.boss.on && !e.def.final && !e.leaked)) && !e.def.machine && !e.def.noraise, // 18 Eki: kutsal ışık engeli kalıcı değil (corpseOk); boss/ara boss bir kez dev ölü olur
+    dur: NECRO ? corpseStay() * (e.def.flying ? BIRD_STAY : 1) : CORPSE_DUR, raisable: NECRO && raiseOkDef(e.def) && (!e.def.chief || (ZOMBIE_X.boss.on && !e.def.final && !e.leaked)), // 18 Eki: kutsal ışık engeli kalıcı değil (corpseOk); boss/ara boss bir kez dev ölü olur
     boss: e.def.chief && !e.def.final ? { hp: e.maxHp || e.def.hp, dmg: e.def.dmg, mini: !!e.mini } : null,
     pw: corpsePower(e), str: (e.maxHp || e.def.hp) * (e.def.chief ? 3 : 1) }); // kuşatma makinesi diriltilemez (yalnız insan ve hayvan)
   const body = G.effects[G.effects.length - 1];
@@ -3606,7 +3608,7 @@ function killEnemy0(e) {
     emit(G.parts, { kind: 'glow', x: e.x + rand(-7, 7), y: e.y + rand(-6, 2), vx: rand(-14, 14), vy: rand(-22, -6), drag: 1.5,
       col: '205,195,175', s0: rand(3, 5), s1: rand(9, 13), life: rand(0.5, 0.8), a: 0.5 });
   }
-  for (const h of G.heroes) if (!h.dead) gainXp(h, e.def.gold * HERO_XP.kill);
+  for (const h of G.heroes) if (!h.dead) gainXp(h, e.def.gold * (e.goldK || 1) * HERO_XP.kill);
 }
 // seviye eğrisi (11 Eki): 1. bölümün sonunda ~4. seviye, iki seferin sonunda ~20. seviye (toplam düşman altını ~190 bin XP)
 // 16 Eki (Caner: "komutanlar çok hızlı seviye atlıyor, bütün yetenekleri hemen açıyor"): öldürme XP'si yarıya indi. Tek oynayışta
@@ -5950,20 +5952,20 @@ function updateSoldier(s, dt) {
   if (s.zombie && s.target && s.zTgT != null && G.t - Math.max(s.zHitT ?? 0, s.zTgT) > ZOMBIE.stuck) { // 17 Eki: vuramadan bekliyor (yetişemiyor, sıkıştı): bırakır, bir süre ona dönmez
     s.zIgn = { o: s.target, until: G.t + ZOMBIE.ignore }; if (s.target.blocker === s) s.target.blocker = null; s.target = null; s.zTgT = null; }
   const e = s.target, lim = e && e === s.provoker ? PROVOKE.r + 20 : s.engage + (s.leash ?? 40);
-  if (e && (e.dead || e.under || e.reviveT > 0 || (!s.hero && !inReach(e)) || (s.zombie ? dist(e.x, e.y, s.x, s.y) > ZOMBIE.drop : dist(e.x, e.y, home.x, home.y) > lim) || s.moving)) {
+  if (e && (e.dead || e.under || e.reviveT > 0 || (s.hero ? (e.p && e.d < FRIEND_ENTRY) : !inReach(e)) || (s.zombie && !zReach(e)) || (s.zombie ? dist(e.x, e.y, s.x, s.y) > ZOMBIE.drop : dist(e.x, e.y, home.x, home.y) > lim) || s.moving)) {
     if (e.blocker === s) e.blocker = null;
     s.target = null;
   }
   // yardımcı (düşmanı başkası durdurmuş): menzilde kimsenin durdurmadığı düşman varsa ona geçer; her iskelet ayrı birini tutsun
   if (s.target && !s.moving && !s.zombie && s.target.blocker && s.target.blocker !== s && !s.hero && (s.retgT = (s.retgT || 0) - dt) <= 0) {
     s.retgT = 0.4;
-    const free = G.enemies.find(o => !o.dead && !o.blocker && !o.def.flying && !o.def.noblock && !o.under && !(o.reviveT > 0) && o.siege === undefined && (s.hero || inReach(o)) && dist(o.x, o.y, home.x, home.y) <= s.engage);
+    const free = G.enemies.find(o => !o.dead && !o.blocker && (!o.def.flying || s.zFly) && !o.def.noblock && !o.under && !(o.reviveT > 0) && o.siege === undefined && (s.hero ? (!o.p || o.d >= FRIEND_ENTRY) : inReach(o)) && !(s.zombie && !zReach(o)) && dist(o.x, o.y, home.x, home.y) <= s.engage);
     if (free) { s.target = free; free.blocker = s; }
   }
   if (!s.target && !s.moving) {
     let best = null, bestScore = 1e9;
     for (const o of G.enemies) {
-      if (o.dead || o.def.flying || o.under || o.reviveT > 0 || (!s.hero && !inReach(o)) || (s.zombie && zIgnored(s, o))) continue; // uçmayan her şeye saldırır (araba gibi durdurulamayanlar dahil); girişteki düşmana gitmez
+      if (o.dead || (o.def.flying && !s.zFly) || o.under || o.reviveT > 0 || (s.hero ? (o.p && o.d < FRIEND_ENTRY) : !inReach(o)) || (s.zombie && (zIgnored(s, o) || !zReach(o)))) continue; // uçmayan her şeye saldırır (araba gibi durdurulamayanlar dahil); girişteki düşmana gitmez
       const d = dist(o.x, o.y, home.x, home.y);
       if (d > s.engage) continue;
       const busy = G.soldiers.reduce((n, x) => n + (x !== s && !x.dead && x.target === o ? 1 : 0), 0); // ona zaten saldıranlar
@@ -6632,6 +6634,11 @@ function updateProjectile(pr, dt) {
 // büyü açık mı (unlock: o bölüm kazanılmış olmalı)
 // büyü kademesi Büyü Kitabı'ndan (kalıcı); bölüm içi altınla geliştirme 11 Eki'de kalktı
 const spellRank = (id) => grimRank(id);
+// 20 Eki (Caner: "fil, köpek, kuş gibi düşmanların cesetleri de diriltilebilsin; skill ağacında puanla açılsın"): Ölüleri Diriltme 3. kademe (Büyü Kitabı)
+// kuş ve fil ölülerini de kaldırır; dirilen kuş havada süzülür ve uçan düşmanlara da saldırır (s.zFly).
+const BEAST_RANK = 3;
+const beastOn = () => NECRO && spellRank('nm_raise') >= BEAST_RANK;
+const raiseOkDef = (d) => !!d && !d.machine && (!(d.flying || d.noraise) || (beastOn() && (d.flying || d.acl === 'canavar')));
 function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM, data.js)
   const S = NECRO_SPELLS[id], r = spellRank(id); if (!r) return S;
   const o = Object.assign({}, S), b = Math.min(r, 4), top = r >= 5;
@@ -6986,14 +6993,27 @@ const SOLDIER_REACH = 40;
 // 20 Eki (denge botu, 28. bölüm 4 koşunun 3'ünde kilitlendi): girişte kalkan zombiler yol ağzındaki ağır düşmanlarla kule menzili dışında sonsuz
 // dövüşe tutuluyor, dalga sayacı duruyordu. Zombiler yolun ilk ZOMBIE_ENTRY px'indeki düşmana saldırmaz (düşman kule menziline gelir).
 const ZOMBIE_ENTRY = 120;
-const inReach = (o) => !o.p || (o.d >= ZOMBIE_ENTRY && o.x > 6 && o.x < W - 6 && o.y > 6 && o.y < H - 6);
+// 20 Eki (Caner: "askerlerimiz düşmanın çıktığı yolun 2-3 asker boyu sonrasına geçemesin, düşmanlar rahatça çıksın"): giriş ağzı yasak bölge.
+// FRIEND_ENTRY: kimse yolun ilk bu kadar px'indeki düşmana saldırmaz; ENTRY_KEEP: yolun ekrana girdiği noktanın çevresine dost birim giremez (entryPush).
+const FRIEND_ENTRY = 70, ENTRY_KEEP = 65;
+const inReach = (o) => !o.p || (o.d >= FRIEND_ENTRY && o.x > 6 && o.x < W - 6 && o.y > 6 && o.y < H - 6);
+const zReach = (o) => !o.p || o.d >= ZOMBIE_ENTRY; // zombiler girişten daha da uzak durur (28. bölüm kilitlenmesi)
+function entryPts() { // her yolun ekrana girdiği nokta (bölüm başında bir kez)
+  if (G.entryPts && G.entryPts.paths === G.paths) return G.entryPts;
+  const L = G.paths.map(p => { for (let d = 0; d < p.total; d += 4) { const q = pathPos(p, d); if (q.x > 2 && q.x < W - 2 && q.y > 2 && q.y < H - 2) return { x: q.x, y: q.y }; } return null; }).filter(Boolean);
+  L.paths = G.paths; return (G.entryPts = L);
+}
+function entryPush(s) { // dost birim giriş ağzına girdiyse çemberin kenarına itilir
+  for (const E of entryPts()) { const dx = s.x - E.x, dy = s.y - E.y, d = Math.hypot(dx, dy); if (d >= ENTRY_KEEP) continue;
+    const k = d > 0.5 ? ENTRY_KEEP / d : 1, nx = d > 0.5 ? dx : 0, ny = d > 0.5 ? dy : ENTRY_KEEP; s.x = E.x + nx * (d > 0.5 ? k : 1); s.y = E.y + ny * (d > 0.5 ? k : 1); }
+}
 // 18 Eki (Caner: "zombilere bir yere saldır dediğimde tek adama değil o gruba saldırsınlar; o kişi ölünce duruyorlar"): gösterilen düşman ölünce
 // onun çevresindeki (ZOMBIE_GROUP_R) en yakın düşmana geçilir; aynı düşmana yığılmasınlar diye üzerinde emirli zombi sayısı kadar uzak sayılır. Grup bitince emir biter.
 const ZOMBIE_GROUP_R = 130;
 function zNextFoe(s, o) {
   let best = null, bs = 1e9;
   for (const e of G.enemies) {
-    if (e.dead || e.def.flying || e.under || e.reviveT > 0 || !inReach(e) || zIgnored(s, e)) continue;
+    if (e.dead || (e.def.flying && !s.zFly) || e.under || e.reviveT > 0 || !inReach(e) || !zReach(e) || zIgnored(s, e)) continue;
     const dg = dist(e.x, e.y, o.x, o.y); if (dg > ZOMBIE_GROUP_R) continue;
     let n = 0; for (const z of G.soldiers) if (z !== s && z.zombie && !z.dead && z.order === e) n++;
     const sc = dist(e.x, e.y, s.x, s.y) + n * 28; if (sc < bs) { bs = sc; best = e; }
@@ -7007,10 +7027,10 @@ function zombieHunt(s) {
     // 17 Eki (Caner: "zombiler ilk olarak bizim komutumuzu dinlesin, sonra menzile giren en yakın düşmana saldırsın"): yürürken yalnız önünü kesen
     // (değecek kadar yakın) düşmanla dövüşür; gerisini görmezden gelip emir yerine varır
     const left = (o) => G.t < (s.zFree || 0) || (s.zLeave && s.zLeave.has(o)); // emirle bırakılan rakip
-    let near = null, nd = ZOMBIE.touch; for (const o of G.enemies) { if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nd) { nd = d; near = o; } }
+    let near = null, nd = ZOMBIE.touch; for (const o of G.enemies) { if (o.dead || (o.def.flying && !s.zFly) || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || !zReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nd) { nd = d; near = o; } }
     // ilerleyemiyor (kalabalık itiyor): 1,2 sn yerinde sayarsa önündeki düşmanla dövüşür, düşman yoksa şerit değiştirip yandan geçer
     if (!near) { const P = s.zProg; if (!P || dist(s.x, s.y, P.x, P.y) > 5) s.zProg = { x: s.x, y: s.y, t: G.t }; else if (G.t - P.t > 1.2) { s.zProg = null;
-      let nb = null, nbd = 48; for (const o of G.enemies) { if (o.dead || o.def.flying || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nbd) { nbd = d; nb = o; } }
+      let nb = null, nbd = 48; for (const o of G.enemies) { if (o.dead || (o.def.flying && !s.zFly) || o.under || o.reviveT > 0 || !inReach(o) || !zReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nbd) { nbd = d; nb = o; } }
       if (nb) near = nb; else s.zlane = -(s.zlane || ZOMBIE.lane); } }
     if (near) { s.moving = false; s.zResume = true; s.zProg = null; s.target = near; if (!near.blocker) near.blocker = s; s.rx = s.x; s.ry = s.y; zLock(s); return; }
     if (zombieRoadTo(s, s.post.x, s.post.y)) { s.moving = false; s.zLeave = null; } return; } // vardı: bırakılan rakipler yeniden hedef olabilir
@@ -7019,7 +7039,7 @@ function zombieHunt(s) {
     if (o) { if (dist(o.x, o.y, s.x, s.y) < 40) { s.rx = o.x; s.ry = o.y; } else zombieRoadTo(s, o.x, o.y); if (dist(o.x, o.y, s.x, s.y) < s.engage) { s.target = o; zLock(s); if (!o.blocker && !o.def.noblock) o.blocker = s; } return; } }
   let best = null, bd = ZOMBIE.aggro; // 14 Eki (Caner): yalnız yakına gelen düşmana gider; düşman yoksa bulunduğu yerde bekler
   for (const o of G.enemies) {
-    if (o.dead || o.def.flying || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || zIgnored(s, o)) continue;
+    if (o.dead || (o.def.flying && !s.zFly) || o.def.noblock || o.under || o.reviveT > 0 || !inReach(o) || !zReach(o) || zIgnored(s, o)) continue;
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
@@ -7210,7 +7230,7 @@ function raiseMinion(e, delay = 0) {
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
     const D = ENEMIES[e.name.slice(6)];
-    s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true;
+    s.zname = e.name; s.zrig = e.rig; s.zh = e.h || (D ? D.r * 2.6 : 30); s.zombie = true; if (D && D.flying) s.zFly = true; // kemik kartal/akbaba: havada
     // 16 Eki (Caner: "dirilen düşman yeteneğini korusun"): okçu/avcı uzaktan ok atar, rahip iskeletleri iyileştirir, meşaleci yakar (RAISED_ROLE)
     if (D && D.ranged && !D.machine) { s.zRanged = { r: Math.min(RAISED_ROLE.rangeMax, D.ranged.r || 130), rate: (D.ranged.rate || 1.6) * RAISED_ROLE.rateK, proj: D.ranged.proj, splash: D.ranged.splash || 0, dmg: (D.ranged.dmg || D.dmg).map(v => v * RAISED_ROLE.dmgK * Math.pow(up, 0.8)) }; s.zRole = D.ranged.proj === 'flask' ? 'flask' : 'bow'; }
     if (D && (D.heals || (D.ab && D.ab.heal))) { s.zHeal = { t: 1.2 }; s.zRole = 'heal'; }
@@ -10014,7 +10034,9 @@ function update(dt) {
   if (G.waveCountdown != null && G.wave > 0 && !G.tutorial) {
     // önceki dalga bitmeden yenisi gelmesin: sahada düşman varken sayaç durur, 1-2 kaçak kalınca yavaş işler
     const alive = G.spawners.length ? 99 : G.enemies.reduce((n, e) => n + (e.dead ? 0 : 1), 0);
-    G.waveCountdown -= dt * (alive === 0 ? 1 : alive <= 2 ? 0.35 : 0);
+    // 20 Eki (Caner: bölümler ortalama 12 dk olsun): dalganın %15'inden azı kalınca sayaç yavaş işler (eskiden 2 kaçak kalana dek dururdu)
+    const tail = Math.max(3, Math.round((G.waveN || 20) * 0.15));
+    G.waveCountdown -= dt * (alive === 0 ? 1 : alive <= tail ? 0.6 : 0);
     if (G.waveCountdown <= 0) { G.waveCountdown = null; waveBonusAndStart(); }
   }
   for (const sp of G.spawners) {
@@ -10043,6 +10065,7 @@ function update(dt) {
       if (sp.loot) e.lootCarrier = true; // 17 Eki: boss gelmeyen bölümde ödülü taşıyan Yüzbaşı
       if (R) e.march = true;
       if (sp.hpK && (!e.def.chief || sp.hpK < 1)) { e.hp *= sp.hpK; e.maxHp *= sp.hpK; } // ikili generaller (chief) de zayıflar
+      if (sp.goldK) e.goldK = sp.goldK; // 20 Eki: seyreltilen grubun düşmanı daha çok altın ve XP verir (data.js COUNT_K)
       sp.left--;
       // paket: küme içinde sık, kümeler arasında uzun ara (ortalama sıklık aynı kalır)
       if (sp.pack) sp.timer += (i + 1) % sp.pack ? sp.gap * 0.35 : sp.gap * (sp.pack - 0.35 * (sp.pack - 1));
@@ -10066,7 +10089,7 @@ function update(dt) {
   CV_IDX = convoyIdx();
   for (const e of G.enemies) if (!e.dead) { SFX_POS = e; updateEnemy(e, dt); }
   CV_IDX = null;
-  for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); }
+  for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); if (!s.dead && !s.wall) entryPush(s); } // 20 Eki: giriş ağzına dost birim girmez
   SFX_POS = null;
   separateUnits(dt);
   for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; SFX_POS = p; updateProjectile(p, dt); }
@@ -10797,7 +10820,22 @@ function formPoint(t, ts, p) {
   const fl = towerForm(t) && towerForm(t).flip && t.face === -1 ? -1 : 1;
   return { x: t.x + (p[0] - 0.5) * ts.w * fl, y: ts.bottom - ts.h + p[1] * ts.h };
 }
+// 20 Eki (Caner: "Kemik Kulesi tüm kademelerde %15 kısa olsun, genişlik aynı"): ana görsel ve ön korkuluk yüklenince dikeyde ARCHER_SQ'ya sıkıştırılır.
+// Balkon, okçular, bayrak/fener/rün kutuları görsel boyuna oranla çizildiği için kendiliğinden iner. Taban (meta m[2], genişliğe oranlı) yerinde kalır.
+const ARCHER_SQ = 0.85, ARCHER_SQ_N = ['tower_xbow_1', 'tower_xbow_2', 'tower_xbow_3', 'tower_archer_bow', 'tower_archer_fan'];
+let ARCHER_SQ_OK = false;
+function squashArcher() {
+  if (ARCHER_SQ_OK) return; let n2 = 0;
+  for (const b of ARCHER_SQ_N) for (const n of [b, b + '_front']) {
+    const im = SPR[n]; if (!im || im.__sq || !(im.naturalWidth || im.width)) continue;
+    const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, c = document.createElement('canvas'); c.width = w; c.height = Math.max(1, Math.round(h * ARCHER_SQ));
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, w, c.height); c.__sq = true; SPR[n] = c;
+  }
+  for (const b of ARCHER_SQ_N) for (const n of [b, b + '_front']) if (SPR[n] && SPR[n].__sq) n2++;
+  ARCHER_SQ_OK = n2 === ARCHER_SQ_N.length * 2;
+}
 function towerSprite(t) {
+  if (!ARCHER_SQ_OK && t.type === 'archer') squashArcher();
   const F = towerForm(t);
   const xb = !F && xbowCount(t), MV = !F && mahzenView(t), name = F ? formImg(t) : xb ? xbowTowerName(t.lvl) : NECRO && t.type === 'artillery' && t.spec === 'corpse' && spr('tower_artillery_bonemortar') ? 'tower_artillery_bonemortar' : NECRO && t.type === 'artillery' && t.spec === 'plague' && spr('tower_artillery_plague') ? 'tower_artillery_plague' : NECRO && t.type === 'altar' && t.spec && spr('tower_altar_' + t.spec) ? 'tower_altar_' + t.spec : MV ? MV.name : `tower_${t.type}_${t.lvl + 1}`, im = spr(name);
   if (!im) return null;
@@ -10813,6 +10851,7 @@ const CAM_S = 0.45, CAM_C = Math.sqrt(1 - CAM_S * CAM_S);
 // arbaletçi kulesinin kademe görseli: tower_xbow_1..3 yoksa platformlu Hayalet Arbaletçiler kulesi (geçici)
 const xbowTowerName = (lvl) => (spr(`tower_xbow_${lvl + 1}`) ? `tower_xbow_${lvl + 1}` : 'tower_archer_fan');
 function towerIcon(type, lvl) {
+  if (!ARCHER_SQ_OK && type === 'archer') squashArcher();
   if (NECRO && type === 'archer') return spr(xbowTowerName(lvl - 1));
   return spr(`tower_${type}_${lvl}`);
 }
@@ -12816,12 +12855,12 @@ function drawSoldier0(s) {
       // zombi gibi: öne eğik, sallanarak ağır ağır yürür (her adımda öne yalpalar), dövüşte saldırıya atılır gibi öne kapanır
       const sd = (s.slot || 0) * 1.9, fc = s.face || 1, lurch = walking ? Math.max(0, Math.sin(s.anim * 3.2 + sd)) * 0.09 : 0;
       const lean = fc * (0.1 + 0.035 * Math.sin(time * 1.7 + sd) + lurch + (fighting ? 0.06 * Math.max(0, Math.sin(atkPhase(s.rate, s.atk) * Math.PI)) : 0)) + Math.sin(time * 2.3 + sd) * 0.04;
-      ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(lean); ctx.translate(-s.x, -s.y);
-      drawUnit(key, im, s.x, s.y, fc, { logId: s.logId, h: ch, rig: s.zrig || s.zname, phase: s.anim * walkRate(s.zname, s.zrig, s.speed * G.wspd, ch), walking, fly: 0, rise,
+      ctx.save(); ctx.translate(s.x, s.y); if (!s.zFly) ctx.rotate(lean); ctx.translate(-s.x, -s.y);
+      drawUnit(key, im, s.x, s.y, fc, { logId: s.logId, h: ch, rig: s.zrig || s.zname, phase: s.anim * walkRate(s.zname, s.zrig, s.speed * G.wspd, ch), walking: walking || !!s.zFly, fly: s.zFly ? 26 : 0, rise,
         atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       ctx.restore();
       // 18 Eki (Caner): başın üstündeki mor ruh alevi kalktı; bizim taraf olduğu rozetten belli (drawZombieMark)
-      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8, 12, s.hp / s.maxHp, '#9a5ac7');
+      if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8 - (s.zFly ? 26 : 0), 12, s.hp / s.maxHp, '#9a5ac7');
       return;
     }
   }
@@ -21740,7 +21779,7 @@ function setupGrass() {
     const side = rnd() < 0.5 ? -1 : 1, q = pathPos(p, d, side * (24 + rnd() * 10) * R);
     if (q.x < -20 || q.x > W + 20 || q.y < 40 || q.y > H) continue;
     if (nearestOnPaths(G.paths, q.x, q.y).d < 20 * R) continue;
-    if (G.plots.some(pl => dist(pl.x, pl.y, q.x, q.y) < 34)) continue;
+    if (G.plots.some(pl => dist(pl.x, pl.y, q.x, q.y) < 50 || (Math.abs(q.x - pl.x) < 42 && q.y < pl.y && q.y > pl.y - 125))) continue; // 20 Eki: kule tabanına ve arkasına çimen girmez (34 → 50)
     G.grass.push({ x: q.x, y: q.y, s: 0.8 + rnd() * 0.6, n: 3 + Math.floor(rnd() * 3), ph: rnd() * 6.3 });
   }
   G.grass.sort((a, b) => a.y - b.y);

@@ -797,7 +797,7 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 const RAISE_MAX = [4, 6, 8, 11, 13, 16]; // 20 Eki (Caner): başta 4, en üst kademede en çok 16 (eskiden 4/7/10/13/16/20) // Ölüleri Diriltme: kademeye göre aynı anda en çok dirilen (game.js spellStats)
 const GRIM = {
   lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
-  nm_raise: ['+2 dirilen (6) · +%10 güç · ceset +2 sn', '+2 dirilen (8) · +%10 güç · ceset +2 sn', '+3 dirilen (11) · +%10 güç · ceset +2 sn', '+2 dirilen (13) · +%10 güç · ceset +2 sn', '+3 dirilen (16) · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 20 Eki (Caner): en çok 4/6/8/11/13/16 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
+  nm_raise: ['+2 dirilen (6) · +%10 güç · ceset +2 sn', '+2 dirilen (8) · +%10 güç · ceset +2 sn', '+3 dirilen (11) · +%10 güç · ceset +2 sn · CANAVARLAR: kuş, fil ve at ölüleri de kalkar', '+2 dirilen (13) · +%10 güç · ceset +2 sn', '+3 dirilen (16) · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 20 Eki (Caner): en çok 4/6/8/11/13/16 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],
@@ -1807,3 +1807,12 @@ const KEEP_UP = [
 ];
 // 20 Eki (Caner): ahşap kuşatma araçları ateşe çok zayıf (game.js WOOD: yanma ×2, süre ×1,5)
 for (const k of ['ram', 'catapult', 'siegetower', 'cathedral']) if (ENEMIES[k]) ENEMIES[k].wood = true;
+// 20 Eki (Caner: "bölümler ortalama 12 dk olsun; düşman sayısını azaltmak kasmayı önler mi"): kalabalık gruplarda (4+, boss/mini değil) sayı %15 az,
+// toplam can aynı kalsın diye her düşmanın canı ve verdiği altın/XP aynı oranda fazla (game.js goldK). Daha az birim: daha az çizim, daha kısa doğma süresi.
+const COUNT_K = 0.85;
+for (const lv of LEVELS) for (const w of lv.waves || []) for (const g of (w.groups || w)) {
+  const d = ENEMIES[g.t]; if (!d || d.chief || d.boss || g.mini || !(g.n >= 4)) continue;
+  const n2 = Math.max(3, Math.round(g.n * COUNT_K)); if (n2 >= g.n) continue;
+  const k = g.n / n2; g.hpK = +((g.hpK || 1) * k).toFixed(3); g.goldK = +((g.goldK || 1) * k).toFixed(3);
+  if (g.types) g.types = g.types.slice(0, n2); g.n = n2;
+}
