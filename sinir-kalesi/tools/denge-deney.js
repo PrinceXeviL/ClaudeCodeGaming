@@ -7,24 +7,28 @@
 // Strateji: kule yerleri yolu en çok gördükleri sıraya göre; karışık kule; en ucuz geliştirme; okçu yolu sırayla bow/xbow;
 // büyüler: duvar kaleye yaklaşan durdurulamayanların (noblock/hızlı) önüne, korku kalabalığa, diriltme/patlatma/golem ceset kümesine.
 const { chromium } = require('playwright');
-const arg = process.argv[2] || '0-39', STRAT = process.argv[3] || 'mix', team = (process.argv[4] || 'leonidas').split(','), STARS = +(process.argv[5] || 3);
+// 20 Eki: komutan 'yok' = komutansız; NOSPELL=1 Mortimer büyüleri yok; NORAISE=1 yalnız diriltme yok; çıktıda dmg (kaynak) ve mx (tür|zırh sınıfı) hasar toplamları
+const arg = process.argv[2] || '0-39', STRAT = process.argv[3] || 'mix', team = (process.argv[4] || 'leonidas').split(',').filter(t => t !== 'yok'), STARS = +(process.argv[5] || 3), NOSPELL = !!process.env.NOSPELL, NORAISE = !!process.env.NORAISE;
 const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, (_, i) => a + i))(arg.split('-').map(Number)) : arg.split(',').map(Number);
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
+  if (process.env.WK2) await p.addInitScript(() => { window.__WK2 = true; }); // 20 Eki: yeni karşıtlık tablosu (data.js WK_V2)
+  if (process.env.HPX) await p.addInitScript((k) => { window.__HPX = k; }, +process.env.HPX);
   await p.goto('http://localhost:8765/index.html?' + Date.now(), { timeout: 180000 }); await p.waitForFunction(() => window.__game && window.__game.G !== undefined, null, { timeout: 180000 }).catch(() => {});
   await p.waitForTimeout(1500);
   for (const lvl of lvls) {
-    const r = await p.evaluate(({ lvl, team, STARS, STRAT }) => {
+    const r = await p.evaluate(({ lvl, team, STARS, STRAT, NOSPELL, NORAISE }) => {
       const g = window.__game, S = g.save();
       // --- oyuncu ilerlemesi ---
-      S.stars = Array.from({ length: lvl }, () => STARS); S.team = team; S.heroBuy = [...new Set((S.heroBuy || []).concat(team))]; /* 18 Eki: kristalle açılan komutan (LOCK_TEST) bot için açık */ S.upg = {}; S.grim = {}; S.sxp = {}; S.tutDone = 1; S.tut3 = { 0: 1, 1: 1, 2: 1 }; S.comics = S.comics || {};
+      const TM = team.length ? team : ['leonidas']; // komutansız: kayıt için bir komutan kurulur, bölüm başında sahadan kaldırılır
+      S.stars = Array.from({ length: lvl }, () => STARS); S.team = TM; S.heroBuy = [...new Set((S.heroBuy || []).concat(TM))]; /* 18 Eki: kristalle açılan komutan (LOCK_TEST) bot için açık */ S.upg = {}; S.grim = {}; S.sxp = {}; S.tutDone = 1; S.tut3 = { 0: 1, 1: 1, 2: 1 }; S.comics = S.comics || {};
       let free = S.stars.reduce((a, b) => a + b, 0), bought = true;
       while (bought) { bought = false; for (const u of UPGRADES) { const r = S.upg[u.id] || 0; if (r < u.ranks.length && u.ranks[r].cost <= free) { free -= u.ranks[r].cost; S.upg[u.id] = r + 1; bought = true; } } }
       for (const id of ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem']) { S.sxp[id] = 85 * lvl; for (let k = 0; k < 5; k++) g.grimBuy(id); }
-      S.hero = {}; for (const id of team) S.hero[id] = { lvl: Math.min(10, 1 + Math.floor(lvl / 2)), xp: 0, sk: {}, ult: 1 };
-      g.startLevel(lvl); const G = g.G; if (g.overlay === 'comic') g.setOverlay(null);
+      S.hero = {}; for (const id of TM) S.hero[id] = { lvl: Math.min(10, 1 + Math.floor(lvl / 2)), xp: 0, sk: {}, ult: 1 };
+      g.startLevel(lvl); const G = g.G; if (!team.length) { G.soldiers = G.soldiers.filter(s => !s.hero); G.heroes.length = 0; } /* 20 Eki: gerçekten komutansız (boş takım ilk açık komutana düşüyordu) */ window.__dmgAcc = { by: {}, mx: {} }; if (g.overlay === 'comic') g.setOverlay(null);
       // komutan puanları
       if (G.heroes[0]) for (let k = 0; k < 12; k++) { g.learn(0, 'ult'); for (const pth of G.heroes[0].def.paths) for (const sk of pth.skills) g.learn(0, sk.id); }
       // --- yol örnekleri ve kule yeri sırası ---
@@ -39,7 +43,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
       if (SK === 'iki') plan = (g.towerOn(ST) ? [ST, ST] : []).concat(Array(20).fill('barracks'));
       const specAlt = {}; let spent = 0;
       const leaks = {}, alive = new Map(); let time = 0, casts = 0, xbow = 0;
-      const cast = (id, x, y) => { g.cast(id, x, y); if (G.spells[id] > 0) { casts++; used[id] = (used[id] || 0) + 1; } }, used = {};
+      const cast = (id, x, y) => { if (NOSPELL && id.startsWith('nm_')) return; if (NORAISE && id === 'nm_raise') return; g.cast(id, x, y); if (G.spells[id] > 0) { casts++; used[id] = (used[id] || 0) + 1; } }, used = {};
       g.wave();
       const dens = (list, r) => { let best = null, bn = 0; for (const e of list) { const n = list.filter(o => Math.hypot(o.x - e.x, o.y - e.y) < r).length; if (n > bn) { bn = n; best = e; } } return [best, bn]; };
       while (!g.overlay && time < 2400) {
@@ -70,7 +74,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
         if (ready('nm_raise') && corpses.length >= 3) cast('nm_raise'); // 13 Eki: diriltme hedefsiz (sahadaki bütün cesetler)
         if (ready('nm_burst')) { const [c, n] = dens(corpses, 100); if (c && n >= 3 && ground.some(e => Math.hypot(e.x - c.x, e.y - c.y) < 110)) { cast('nm_burst', c.x, c.y); } }
         if (ready('nm_golem')) { const [c, n] = dens(corpses, 100); if (c && n >= 3) { cast('nm_golem', c.x, c.y); } }
-        if (ready('ult0')) { const [e, n] = dens(live, 60); if (e && n >= 4) { cast('ult0', e.x, e.y); } }
+        if (G.heroes.length && ready('ult0')) { const [e, n] = dens(live, 60); if (e && n >= 4) { cast('ult0', e.x, e.y); } }
         // sızanlar: bir önceki adımda yolun sonuna yakın olup bu adımda yok olanlar
         const now = new Set(G.enemies.filter(e => !e.dead));
         for (const [e, rem] of alive) if (!now.has(e) && (e.leaked || rem < 40)) leaks[e.type] = (leaks[e.type] || 0) + 1;
@@ -78,8 +82,8 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
         g.sim(0.5); time += 0.5;
       }
       const stuck = g.overlay ? null : G.enemies.filter(e => !e.dead).sort((a, b) => b.d - a.d).slice(0, 6).map(e => ({ t: e.type, d: e.p ? Math.round(e.d) + '/' + Math.round(e.p.total) : '-', x: Math.round(e.x), y: Math.round(e.y), under: !!e.under, blk: !!e.blocker, st: e.siege, hp: Math.round(e.hp), fear: +(e.fearT || 0).toFixed(1), stun: +(e.stun || 0).toFixed(1), spd: +(e.curSpd || 0).toFixed(1), slow: +(e.slowT || 0).toFixed(1), n: G.enemies.filter(o => !o.dead).length }));
-      return { lvl, name: G.lv.name, result: g.overlay, stuck, spawners: G.spawners.length, cd: G.waveCountdown, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time), gold: G.gold, strat: STRAT, spent, by: G.stats && G.stats.by, towers: G.towers.map(t => t.type.slice(0, 3) + t.lvl).join(''), casts, used, leaks };
-    }, { lvl, team, STARS, STRAT });
+      return { lvl, name: G.lv.name, result: g.overlay, stuck, spawners: G.spawners.length, cd: G.waveCountdown, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time), gold: G.gold, strat: STRAT, spent, by: G.stats && G.stats.by, towers: G.towers.map(t => t.type.slice(0, 3) + t.lvl).join(''), casts, used, leaks, heroes: G.heroes.map(h => h.id), dmg: Object.fromEntries(Object.entries(window.__dmgAcc.by).map(([k, v]) => [k, Math.round(v)])), mx: Object.fromEntries(Object.entries(window.__dmgAcc.mx).map(([k, v]) => [k, Math.round(v)])) };
+    }, { lvl, team, STARS, STRAT, NOSPELL, NORAISE });
     console.log(JSON.stringify(r));
   }
   if (errs.length) console.log('HATALAR', JSON.stringify([...new Set(errs)].slice(0, 20)));

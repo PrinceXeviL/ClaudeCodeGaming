@@ -3843,5 +3843,54 @@
   "fh": 168,
   "base": 0.0146,
   "ch": 0.9538
+ },
+ "enemy_ram_walkA": {
+  "n": 16,
+  "fw": 331,
+  "fh": 169,
+  "base": 0.0205,
+  "ch": 0.9486
+ },
+ "enemy_ram_walkB": {
+  "n": 21,
+  "fw": 333,
+  "fh": 167,
+  "base": 0.0208,
+  "ch": 0.9585
+ },
+ "enemy_ram_atkA": {
+  "n": 33,
+  "fw": 482,
+  "fh": 168,
+  "base": 0.0208,
+  "ch": 0.955
+ },
+ "enemy_ram_atkB": {
+  "n": 33,
+  "fw": 391,
+  "fh": 215,
+  "base": 0.0157,
+  "ch": 0.7441
+ },
+ "enemy_catapult_walkA": {
+  "n": 16,
+  "fw": 184,
+  "fh": 167,
+  "base": 0.0145,
+  "ch": 0.9566
+ },
+ "enemy_catapult_walkB": {
+  "n": 16,
+  "fw": 183,
+  "fh": 165,
+  "base": 0.0146,
+  "ch": 0.9708
+ },
+ "enemy_catapult_atkA": {
+  "n": 49,
+  "fw": 178,
+  "fh": 168,
+  "base": 0.0143,
+  "ch": 0.9499
  }
 }

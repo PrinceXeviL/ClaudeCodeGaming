@@ -1504,6 +1504,13 @@ const ARMOR_CLASS = {
   kusatma: { name: 'Kuşatma',       mult: { arrow: 0.5, melee: 1, magic: 0.8, blast: 1.5 }, immune: ['poison', 'bleed'] }, // makine: zehirlenmez, kanamaz
   canavar: { name: 'Canavar',       mult: { arrow: 1, melee: 0.8, magic: 1, blast: 1.2 } },
 };
+// 20 Eki (Caner: "kimin neye zaafı var, RPG'lerdeki gibi kur"): karşıtlık tablosu v2. Her sınıfın en az iki iyi cevabı, bir de açık zaafı var:
+// hafif sürüye ok ve veba (Ruh ışını zayıf hedefe israf), ağır zırha Ruh ve veba asidi (zırhın yarısını eritir: game.js WK_PEN), kalkana veba ve Ruh,
+// kutsala Kesici ve veba (Ruh'u iter), kuşatmaya veba/ateş ve Kesici (ahşabı yarar), canavara ok ve veba.
+const WK_V2 = typeof window !== 'undefined' && !!window.__WK2; // denge testi bitene kadar kapalı (bot: WK2=1)
+if (WK_V2) for (const [k, m] of Object.entries({ hafif: { arrow: 1.3, melee: 1.1, magic: 0.8, blast: 1.1 }, agir: { arrow: 0.6, melee: 0.8, magic: 1.35, blast: 1.2 },
+  kalkan: { arrow: 0.5, melee: 1, magic: 1, blast: 1.4 }, kutsal: { arrow: 1, melee: 1.25, magic: 0.6, blast: 1.1 }, kusatma: { arrow: 0.5, melee: 1.2, magic: 0.8, blast: 1.5 },
+  canavar: { arrow: 1.2, melee: 0.8, magic: 1, blast: 1.2 } })) ARMOR_CLASS[k].mult = m;
 const CLASS_OF = {
   legion: 'kalkan', testudo: 'kalkan', signifer: 'kalkan', centurion: 'kalkan',
   heavy: 'agir', paladin: 'agir', ironwarden: 'agir', gloriosus: 'agir', gloriosus1: 'agir', gloriosus2: 'agir', gloriosus3: 'agir', cavcaptain: 'agir',

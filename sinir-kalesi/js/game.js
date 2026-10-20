@@ -316,10 +316,10 @@ let MAKE_BUDGET = 2;
 let ASYNC_MIP = false;
 try { const t = document.createElement('canvas'); t.width = t.height = 4;
   createImageBitmap(t, { resizeWidth: 2, resizeHeight: 2, resizeQuality: 'high' }).then((b) => { ASYNC_MIP = b.width === 2; b.close && b.close(); }).catch(() => {}); } catch (e) {}
-function mipsAsync(im, list) {
-  let w = im.width, h = im.height, chain = Promise.resolve();
+function mipsAsync(im, list) { // 20 Eki: her kopya bir öncekinden (eskiden hepsi 960x1539 asıl görselden küçültülüyordu: ilk kurulumda 50-200 ms takılma)
+  let w = im.width, h = im.height, chain = Promise.resolve(im);
   while (w > 48 && h > 48) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const W2 = w, H2 = h;
-    chain = chain.then(() => createImageBitmap(im, { resizeWidth: W2, resizeHeight: H2, resizeQuality: 'high' })).then((bm) => { MIP_OK.add(bm); list.push(bm); }); }
+    chain = chain.then((src) => createImageBitmap(src, { resizeWidth: W2, resizeHeight: H2, resizeQuality: 'high' })).then((bm) => { MIP_OK.add(bm); list.push(bm); return bm; }); }
   chain.catch(() => {});
 }
 function mipsOf(im) {
@@ -2368,6 +2368,12 @@ function startLevel(idx, chal = null) {
   if (team().includes('merlin') && ANIM_META.fx_tornado) loadStrip('fx_tornado');
   ACID_V.forEach(v => { if (ANIM_META[v]) loadStrip(v); });
   G.bakeQ = [...types].map(t => 'e:' + t).concat(team().map(id => 'h:' + id));
+  { // 20 Eki: kule görsellerinin küçük kopyaları: 1. kademe yüklenirken, 2-3. kademe ve uzmanlıklar sahada düşman yokken (mipIdle)
+    const ty = TOWER_ORDER.filter(t => TOWERS[t] && towerUnlocked(t)), all = Object.keys(SPR).filter(n => /^tower_/.test(n) && !/_(collapse|atk|idle|front|side|shot)$/.test(n) && SPR[n]);
+    const own = (n, t) => n.startsWith('tower_' + t + '_') || (t === 'archer' && n.startsWith('tower_xbow_'));
+    const first = ty.flatMap(t => [0, 1].map(l => (t === 'archer' && NECRO ? xbowTowerName(l) : 'tower_' + t + '_' + (l + 1)))); // 1. ve 2. kademe
+    G.bakeQ.unshift(...first.filter(n => SPR[n]).map(n => 'm:' + n)); // kuyruğun başı: yükleme ekranında biter G.mipQ = all.filter(n => ty.some(t => own(n, t)) && !first.includes(n)); G.mipT = 2;
+  }
   // 13 Eki: boyalı (rütbe/boss kılığı) şeritlerin hepsi ve dirilecek düşmanların kızıl ölüm şeritleri savaş başlamadan, karede bir tane hazırlanır
   [...types].forEach(t => { const d = ENEMIES[t]; if (!d) return;
     if (d.base) SUF.forEach(sf => G.bakeQ.push('s:' + t + ':' + sf));
@@ -2435,6 +2441,7 @@ function startLevel(idx, chal = null) {
 }
 function bakeNext() {
   const k = G.bakeQ.shift();
+  if (k[0] === 'm') { const im = SPR[k.slice(2)]; if (im && im.width > 96 && !MIPS.has(im)) mipsOf(im); return; } // kule görselinin kopyaları
   if (k[0] === 's' || k[0] === 'r') { // tek şerit boya / dirilen ölünün koyu ölüm şeridi
     const [, t, sf] = k.split(':'), d = ENEMIES[t]; if (!d) return;
     const rig = d.base ? 'enemy_' + d.base : 'enemy_' + t, suf = k[0] === 'r' ? '_die' : sf;
@@ -3215,6 +3222,13 @@ let hitBy = null;
 const DIVE_VULN = 1.5;
 const CANNON_FIRE = 0.8; // Güneş Topu ateş şeridinin süresi (sn); bu sürede durur
 const CONVOY = { gap: 1.8, walk: 1.05 };
+let CV_IDX = null; // kare başında: yol → d'ye göre sıralı düşmanlar (konvoy aralığı için; update kurar)
+function convoyIdx() {
+  const M = new Map(); let maxR = 0;
+  for (const o of G.enemies) { if (o.dead || o.under || o.def.flying || o.blocker || o.leader) continue; let a = M.get(o.p); if (!a) M.set(o.p, a = []); a.push(o); if (o.def.r > maxR) maxR = o.def.r; }
+  for (const a of M.values()) a.sort((x, y) => x.d - y.d);
+  M.maxR = maxR; return M;
+}
 const CROWD_SPILL = 4; // yol kenarından taşma payı (yol ölçeğinde birim; ~6 px, bir adım) // yürürken önündekiyle en az boşluk (yarıçaplar toplamının katı): araçlar gap, ötekiler walk
 const PROJ_BY = { arrow: 'arrow', rainarrow: 'arrow', bolt: 'magic', vapor: 'blast', ultsword: 'hero' };
 // ---- çizgi film kanı (16 Eki, Caner: "kırmızı kan olsun, kurallara uygun en yüksek"): isabette 2-5 küçük damla (sert vuruşta yere minik leke),
@@ -3317,10 +3331,12 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
     if (e.plate <= 0) plateBreak(e);
     if (amount <= 0) return;
   }
+  if (WK_V2 && src === 'blast') pen = Math.max(pen, WK_PEN.blast); // 20 Eki: veba asidi zırhın yarısını eritir (karşıtlık v2)
   const red = (type === 'magic' ? e.def.mr : type === 'phys' ? Math.min(0.85, (e.def.armor + (e.armT > 0 ? 0.25 : 0)) * (e.rotT > 0 ? 0.5 : 1)) * (1 - pen) : 0) // veba: zırh yarıya iner; sancak +zırh
     * (e.curseT > 0 ? 1 - (e.curseRes || 0) : 1); // lanet: zırh ve büyü direnci kırılır
   const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
+  if (window.__dmgAcc && dealt > 0) { const A = window.__dmgAcc, who = hitBy ? hitBy + ':' + (src || type) : (src || type), k = (wkK || type) + '|' + (e.def.acl || '?'); A.by[who] = (A.by[who] || 0) + dealt; A.mx[k] = (A.mx[k] || 0) + dealt; } // test (denge-deney): hasar kaynağı ve tür × zırh sınıfı
   dmgNum(e, dealt, quiet);
   if (!quiet && !raw) bloodHit(e, dealt); // çizgi film kanı / taş tozu / kıymık
   if (!quiet) knockback(e, dealt, src);
@@ -3745,7 +3761,8 @@ function damageSoldier(s, amount, src) {
   }
   if (s.block && Math.random() < s.block) { s.flash = 0.06; if (Math.random() < 0.3) floatText(s.x, s.y - 30, 'Savuşturdu!', '#cfe8ff'); sfx('shieldblock', null, 1, s); return; }
   if (s.hero && s.def.parry && src && src.hp != null && dist(src.x, src.y, s.x, s.y) < 45 && !(s.parryCd > G.t) && Math.random() < s.def.parry) { // 17 Eki: Leonidas'ın Bronz Kalkan'ı
-    s.parryCd = G.t + LEO.parryCd; s.blockA = HERO_ANIM.block; s.blockCd = G.t + 1.5; sfx('shieldblock', 0.9, 1, s); // 19 Eki: bronz kalkan const dir = Math.sign(src.x - s.x) || s.face || 1;
+    s.parryCd = G.t + LEO.parryCd; s.blockA = HERO_ANIM.block; s.blockCd = G.t + 1.5; sfx('shieldblock', 0.9, 1, s); // 19 Eki: bronz kalkan
+    const dir = Math.sign(src.x - s.x) || s.face || 1; // 20 Eki: bu tanım yorumun içinde kalmıştı → Leonidas savuşturunca oyun donuyordu
     for (let i = 0; i < 7; i++) emit(G.parts, { kind: 'streak', add: true, x: s.x + dir * 9, y: s.y - 18, vx: dir * rand(40, 130), vy: -rand(20, 110), g: 260, col: i % 3 ? '#ffd88a' : '#fff4d0', s0: 1.5, s1: 0.2, life: rand(0.2, 0.38) });
     if (pushable(src) && !src.def.chief) { src.knockT = KNOCK.t; src.knockV = 60; }
     if (Math.random() < 0.35) floatText(s.x, s.y - 34, 'Kalkan!', '#ffd88a'); sfx('clash', 1.25, 0.7); return; }
@@ -5644,7 +5661,12 @@ function updateEnemy(e, dt) {
   if (e.cvFree > 0) e.cvFree -= dt;
   if (!e.def.flying && e.d > 0 && !(e.cvFree > 0)) {
     let gap = Infinity, need = 0, lead = null;
-    for (const o of G.enemies) {
+    // 20 Eki (kalabalıkta kasma): eskiden her düşman bütün düşmanları tarıyordu (200 düşmanda kare başına 40 bin karşılaştırma).
+    // Artık kare başında yol başına d'ye göre sıralı dizin (CV_IDX); yalnız öndeki pencereye bakılır.
+    const A = CV_IDX && CV_IDX.get(e.p), W = CV_IDX ? (CV_IDX.maxR + e.def.r) * Math.max(CONVOY.gap, CONVOY.walk) + 6 : 0;
+    let i0 = 0; if (A) { let lo = 0, hi = A.length; while (lo < hi) { const m = (lo + hi) >> 1; if (A[m].d <= e.d) lo = m + 1; else hi = m; } i0 = lo; }
+    for (let ci = i0, CL = A || G.enemies; ci < CL.length; ci++) {
+      const o = CL[ci]; if (A && o.d - e.d > W) break;
       if (o === e || o.dead || o.under || o.def.flying || o.p !== e.p || o.d <= e.d || o.blocker || o.leader || e.leader === o) continue; // önder ile muhafız birbirini beklemez; 15 Eki: muhafızlar kimsenin önünü kesmez (boss → lejyoner → muhafız → boss döngüsel kilitlenmesi, bot 2/29/31/37'de bölüm bitmiyordu)
       const g = o.d - e.d, rr = o.def.r + e.def.r, mach = o.def.machine || e.def.machine, n = rr * (mach ? CONVOY.gap : CONVOY.walk);
       if (g >= n || (!mach && Math.abs(o.off - e.off) > rr * 0.75)) continue;
@@ -10037,7 +10059,10 @@ function update(dt) {
   updateSwarms(dt);
   updateLegion();
   if ((G.armyT = (G.armyT || 0) - dt) <= 0) { G.armyT = 1; if (G.soldiers.filter(s => !s.dead && !s.hero).length >= 25) achGive('sec_army'); } // Kara Defter: Ölüler Ordusu // ses konumu: o an işlenen birim (spatial)
+  if (G.mipQ && G.mipQ.length && (G.mipT -= dt) <= 0) { G.mipT = 1.5; if (!G.enemies.some(e => !e.dead && onScreen(e, 0))) { const im = SPR[G.mipQ.pop()]; if (im && im.width > 96 && !MIPS.has(im)) mipsOf(im); } } // 20 Eki: sahada düşman yokken kule kopyası
+  CV_IDX = convoyIdx();
   for (const e of G.enemies) if (!e.dead) { SFX_POS = e; updateEnemy(e, dt); }
+  CV_IDX = null;
   for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); }
   SFX_POS = null;
   separateUnits(dt);
@@ -12128,8 +12153,11 @@ const TOWER_SOIL = { on: true, rx: 0.7, ry: 0.32, dark: 0.42, sat: 0.55, a: 1, a
 function towerSoil(g, bg, K, m, t, ts) {
   const S = TOWER_SOIL, rx = ts.w * S.rx, ry = ts.w * S.ry, cx = t.x, cy = ts.bottom - 1;
   let col = [70, 58, 44];
-  try { const px = Math.round((cx + m.x) * K), py = Math.round((cy + ry * 1.6 + m.y) * K), d = bg.getContext('2d').getImageData(Math.max(0, px - 30), Math.max(0, py - 6), 60, 12).data; let r = 0, gg = 0, b = 0, n = 0;
-    for (let i = 0; i < d.length; i += 16) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; } if (n) { col = [r / n, gg / n, b / n]; } } catch (e) {}
+  try { // zemin rengi: bölüm başına bir kez küçültülmüş kopyadan okunur (büyük tuvalden tekrar tekrar okumak kasıyordu)
+    const MS = 8; if (!bg.mini) { const c = document.createElement('canvas'); c.width = Math.ceil(bg.width / MS); c.height = Math.ceil(bg.height / MS); const cg = c.getContext('2d', { willReadFrequently: true }); cg.drawImage(bg, 0, 0, c.width, c.height); bg.mini = cg.getImageData(0, 0, c.width, c.height); bg.miniW = c.width; }
+    const px = Math.round((cx + m.x) * K / MS), py = Math.round((cy + ry * 1.6 + m.y) * K / MS), d = bg.mini.data; let r = 0, gg = 0, b = 0, n = 0;
+    for (let yy = py - 1; yy <= py + 1; yy++) for (let xx = px - 4; xx <= px + 4; xx++) { if (xx < 0 || yy < 0 || xx >= bg.miniW || yy >= bg.mini.height) continue; const i = (yy * bg.miniW + xx) * 4; r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; }
+    if (n) col = [r / n, gg / n, b / n]; } catch (e) {}
   const L = (col[0] + col[1] + col[2]) / 3; col = col.map(v => Math.round((L + (v - L) * S.sat) * S.dark)); // solgun, koyu
   let seed = Math.abs(Math.round(t.x * 13 + t.y * 7)) + 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   g.save(); g.translate(cx, cy);
@@ -15000,6 +15028,27 @@ function cardY(ph) {
 // kartın yatay sınırları: üstte sol üst kaynak kutusu ile sağ üst düğmeler arası, altta büyü düğmeleri ile çanta arası
 const cardLeft = (y) => (y < H / 2 ? EDGE.l + 200 : hudLeft());
 const cardRight = (y) => (y < H / 2 ? HUD.mute.x - HUD.mute.r - 10 : hudRight());
+// 20 Eki (Caner: "kimin neye zaafı var, RPG'lerdeki gibi"): kulenin bu düşmana gerçek etkisi = sınıf çarpanı × (1 − zırh ya da büyü direnci).
+// Kart ve kodeks bunu kule simgesiyle yüzde olarak gösterir (yeşil: güçlü, sarı: orta, kırmızı: zayıf).
+const WK_PEN = { blast: 0.5 };
+const TOWER_HIT = { archer: ['arrow', 'phys'], barracks: ['melee', 'phys'], mage: ['magic', 'magic'], artillery: ['blast', 'phys'] };
+function towerEff(d, type) {
+  const H = TOWER_HIT[type]; if (!H) return 1;
+  const wk = (d.wk && d.wk[H[0]]) || 1, red = H[1] === 'magic' ? d.mr || 0 : Math.min(0.85, d.armor || 0) * (WK_V2 && H[0] === 'blast' ? 1 - WK_PEN.blast : 1);
+  return wk * (1 - red);
+}
+const effCol = (v) => (v >= 1.1 ? '#9fe870' : v >= 0.7 ? '#ffd98a' : '#ff8a7a');
+function drawEffRow(d, x, y, maxW, sz = 14) { // kule simgesi + yüzde dizisi; çizdiği genişliği döndürür
+  let wx = x; ctx.font = `800 ${sz}px ${FONT_B}`;
+  for (const t of ['archer', 'barracks', 'mage', 'artillery']) {
+    if (!TOWERS[t]) continue; const v = towerEff(d, t), s = `%${Math.round(v * 100)}`, ww = 34 + ctx.measureText(s).width, col = effCol(v);
+    if (wx + ww > x + maxW + 2) break;
+    roundRect(wx, y - 11, ww, 22, 11, 'rgba(0,0,0,0.42)', col, 1.2);
+    const im = towerIcon(t, 1); if (im) { const hh = 20, w2 = hh * im.width / im.height; ctx.drawImage(im, wx + 14 - w2 / 2, y - hh / 2 - 1, w2, hh); }
+    txt(s, wx + 26, y + 1, sz, col, 'left', '800', FONT_B, false); wx += ww + 5; ctx.font = `800 ${sz}px ${FONT_B}`;
+  }
+  return wx - x;
+}
 function drawEnemyPanel() {
   // 16 Eki (Caner: "kısa, basit, simgeli, profesyonel"): portre + ad + rütbe/sınıf etiketi, can çubuğu, simgeli değerler,
   // zayıflık (yeşil ▲) ve direnç (mavi ▼) hasar türü simgesiyle, en çok 2 satır açıklama. Yazılar ≥ 13 px.
@@ -15015,7 +15064,7 @@ function drawEnemyPanel() {
   const st = [['shield', `%${Math.round(d.armor * 100)}`, 'Zırh'], ['magic', `%${Math.round(d.mr * 100)}`, 'Büyü dir.'], ['boot', SPD, null], ['heart', `-${d.lives}`, null]];
   if (d.flying) st.push(['wing', 'Uçar', null]);
   const wkRow = weak.map(q => [q, 1]).concat(res.map(q => [q, -1]));
-  const ph = 100 + (wkRow.length ? 28 : 0) + dl.length * 17 + 6;
+  const ph = 100 + (NECRO || wkRow.length ? 28 : 0) + dl.length * 17 + 6;
   const cy0 = cardY(ph), P = { x: clamp(W / 2 - w / 2, cardLeft(cy0), cardRight(cy0) - w), y: cy0, w, h: ph }; G.enemyPanelR = P; G.cardBot = cy0 < H / 2 ? cy0 + ph : null;
   const k = easeOutBack(clamp((time - G.menuT) / 0.25, 0, 1));
   ctx.save(); ctx.translate(P.x + P.w / 2, P.y + P.h / 2); ctx.scale(k, k); ctx.translate(-(P.x + P.w / 2), -(P.y + P.h / 2));
@@ -15047,21 +15096,9 @@ function drawEnemyPanel() {
     ctx.save(); ctx.translate(cx + 13, cy); ctx.scale(1.25, 1.25); statGlyph(gl, 0, 0); ctx.restore();
     txt(t, cx + 24, cy + 1, 14, '#f8eed8', 'left', '800', FONT_B, false); cx += ww + 6; ctx.font = `800 14px ${FONT_B}`;
   });
-  // zayıflık / direnç: hasar türü simgesi + oran
+  // 20 Eki: zayıflık/direnç yerine her kulenin bu düşmana gerçek etkisi (sınıf × zırh/büyü direnci)
   let ry = P.y + 98;
-  if (wkRow.length) {
-    let wx = x0; ctx.font = `800 14px ${FONT_B}`;
-    wkRow.forEach(([q, sgn]) => {
-      const t = `${TR(WK_NAME[q])} ${sgn > 0 ? '+' : '−'}%${Math.round(Math.abs(wk[q] - 1) * 100)}`, ww = 44 + ctx.measureText(t).width;
-      if (wx + ww > x0 + cw + 2) return;
-      const col = sgn > 0 ? '#9fe870' : '#8ac8ff';
-      roundRect(wx, ry - 11, ww, 22, 11, sgn > 0 ? 'rgba(40,90,30,0.55)' : 'rgba(20,50,100,0.55)', col, 1.2);
-      ctx.fillStyle = col; ctx.beginPath(); if (sgn > 0) { ctx.moveTo(wx + 9, ry + 4); ctx.lineTo(wx + 15, ry - 5); ctx.lineTo(wx + 21, ry + 4); } else { ctx.moveTo(wx + 9, ry - 4); ctx.lineTo(wx + 15, ry + 5); ctx.lineTo(wx + 21, ry - 4); } ctx.closePath(); ctx.fill();
-      ctx.save(); ctx.translate(wx + 31, ry); ctx.scale(1.2, 1.2); statGlyph(q === 'arrow' ? 'arrow' : q === 'melee' ? 'sword' : q, 0, 0); ctx.restore();
-      txt(t, wx + 40, ry + 1, 14, col, 'left', '800', FONT_B, false); wx += ww + 6; ctx.font = `800 14px ${FONT_B}`;
-    });
-    ry += 28;
-  }
+  if (NECRO) { drawEffRow(d, x0, ry, cw); ry += 28; }
   dl.forEach((l, i) => txt(l, x0, ry - 2 + i * 17, 13, '#d8ccb4', 'left', '700', FONT_B, false));
   ctx.restore();
 }
@@ -19503,6 +19540,7 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   const wk = d.wk || {}, weak = Object.keys(wk).filter(q => wk[q] > 1), res = Object.keys(wk).filter(q => wk[q] < 1);
   let cxp = x0;
   if (NECRO && ARMOR_CLASS[d.acl]) { codexChip(cxp, y, `Zırh: ${ARMOR_CLASS[d.acl].name}`, '#efe1c0', 'rgba(90,20,50,0.7)'); y += 24; } // hasar türü tablosu (10 Eki)
+  if (NECRO) { txt('Kule etkisi', x0, y + 1, 12, '#d8ccb4', 'left', '800', FONT_B, false); ctx.font = `800 12px ${FONT_B}`; drawEffRow(d, x0 + ctx.measureText(TR('Kule etkisi')).width + 10, y, px + pw - 20 - x0 - 90, 13); y += 26; } // 20 Eki: kulelerin gerçek etkisi
   for (const q of weak) { const s2 = `Zayıf: ${WK_NAME[q]} +%${Math.round((wk[q] - 1) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#ffd08a', 'rgba(150,60,10,0.6)') + 4; }
   if (weak.length) { y += 24; cxp = x0; }
   if (d.wood) { codexChip(x0, y, `Ahşap: yanınca ×${WOOD.burn} hasar, ×${WOOD.t} süre`, '#ffb070', 'rgba(150,40,10,0.7)'); y += 24; }
