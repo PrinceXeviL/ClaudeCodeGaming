@@ -601,7 +601,7 @@ if (NECRO) {
   Object.assign(ENEMIES, {
     hunter:     { name: 'Cadı Avcısı', h: 31, hp: 110, speed: 24, armor: 0.15, mr: 0, gold: 12, dmg: [3, 6], rate: 1, lives: 1, r: 9,
       ranged: { r: 140, dmg: [9, 14], rate: 2, proj: 'harrow', any: true, hold: true } },
-    torch:      { name: 'Meşaleci', h: 31, hp: 130, speed: 22, armor: 0.1, mr: 0.1, gold: 13, dmg: [5, 9], rate: 1, lives: 1, r: 10, purify: { r: 80, every: 3, dmg: 18, fire: true } },
+    torch:      { name: 'Meşaleci', h: 31, hp: 105, speed: 22, armor: 0.1, mr: 0.1, gold: 13, dmg: [5, 9], rate: 1, lives: 1, r: 10, purify: { r: 68, every: 4, dmg: 8, fire: true } }, // 20 Eki (denge botu): Leonidas dışındaki komutanlar meşaleli bölümlerde (21, 22, 33) kaybediyordu: iskelet yakma 80/3 sn/18 → 68/4 sn/8, can 130 → 105 (kırılgan, öncelikli hedef)
     hound:      { name: 'Ak Tazı', h: 17, hp: 85, speed: 48, armor: 0, mr: 0, gold: 7, dmg: [4, 7], rate: 0.7, lives: 1, r: 9 },
     holywater:  { name: 'Kutsal Su Taşıyıcı', h: 32, hp: 160, speed: 18, armor: 0, mr: 0.3, gold: 16, dmg: [2, 4], rate: 1, lives: 1, r: 10,
       ranged: { r: 120, dmg: [10, 14], rate: 3, proj: 'flask', any: true, hold: true, splash: 30, noTower: true } }, // 16 Eki (Caner): kuledeki iskeletlere atmaz (durup yolu tıkıyordu)
@@ -1507,7 +1507,7 @@ const ARMOR_CLASS = {
 // 20 Eki (Caner: "kimin neye zaafı var, RPG'lerdeki gibi kur"): karşıtlık tablosu v2. Her sınıfın en az iki iyi cevabı, bir de açık zaafı var:
 // hafif sürüye ok ve veba (Ruh ışını zayıf hedefe israf), ağır zırha Ruh ve veba asidi (zırhın yarısını eritir: game.js WK_PEN), kalkana veba ve Ruh,
 // kutsala Kesici ve veba (Ruh'u iter), kuşatmaya veba/ateş ve Kesici (ahşabı yarar), canavara ok ve veba.
-const WK_V2 = typeof window !== 'undefined' && !!window.__WK2; // denge testi bitene kadar kapalı (bot: WK2=1)
+const WK_V2 = !(typeof window !== 'undefined' && window.__WK1); // 20 Eki: denge botuyla doğrulandı, açık (window.__WK1 = eski tablo, karşılaştırma için)
 if (WK_V2) for (const [k, m] of Object.entries({ hafif: { arrow: 1.3, melee: 1.1, magic: 0.8, blast: 1.1 }, agir: { arrow: 0.6, melee: 0.8, magic: 1.35, blast: 1.2 },
   kalkan: { arrow: 0.5, melee: 1, magic: 1, blast: 1.4 }, kutsal: { arrow: 1, melee: 1.25, magic: 0.6, blast: 1.1 }, kusatma: { arrow: 0.5, melee: 1.2, magic: 0.8, blast: 1.5 },
   canavar: { arrow: 1.2, melee: 0.8, magic: 1, blast: 1.2 } })) ARMOR_CLASS[k].mult = m;
@@ -1715,7 +1715,7 @@ const SKILL_CD_K = 1.1;
 // tools/denge-deney.js ile 10 strateji × 16 bölüm (iki sefer): "2 Ruh Feneri + mahzen" 16/16 ve ort. 17 canla geçiyordu (en güçlü),
 // Veba Kazanı tek başına 8/16 (en zayıf hasar kulesi; karışık oyunda öldürmelerin %1'i), karışık oyunda bölüm sonunda ort. 2650 altın artıyordu.
 // BAL.tower: kule hasar çarpanı (tüm kademeler), BAL.hp: düşman canı çarpanı, BAL.bounty: düşman ödülü ve erken çağrı bonusu çarpanı.
-const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.2 }, /* 18 Eki: 1,1 → 1,2 (yalnız okçu 2. seferde hiç geçemiyordu) */ hp: 1.25, bounty: 0.875, hero: { bathory: 0.95 }, heroCd: { merlin: 1.15, bathory: 1.15 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
+const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.2 }, /* 18 Eki: 1,1 → 1,2 (yalnız okçu 2. seferde hiç geçemiyordu) */ hp: 1.25, bounty: 0.875, hero: { bathory: 1.2 } /* 20 Eki: 0,95 → 1,2 (bot: en zayıf komutan, 32-34/40) */, heroCd: { merlin: 1.15, bathory: 1 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
 for (const t in BAL.tower) for (const L of TOWERS[t].levels) if (L.dmg) L.dmg = L.dmg.map(v => Math.round(v * BAL.tower[t]));
 GAME_DIFF.hp *= BAL.hp; GAME_DIFF.bounty *= BAL.bounty;
 for (const h in BAL.hero) if (HEROES[h] && HEROES[h].dmg) HEROES[h].dmg = HEROES[h].dmg.map(v => Math.round(v * BAL.hero[h]));
@@ -1793,6 +1793,10 @@ for (const i in BAL.lvl7) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1
 // 16/20/39 yalnız 2 stratejiyle; 27/35/38'de karışık oyun bir önceki bölüme göre çakılıyordu. Hedef: her bölüm ≥ 3 stratejiyle, karışık ≥ 8 canla
 BAL.lvl8 = { 6: 0.92, 16: 0.72, 19: 0.92, 32: 0.92, 38: 0.92 }; // 4. tur: 16 karışıkta hâlâ 6 can (15 ve 17'de 20) → 0,8; 19 6 can → 0,92 // düzeltilmiş botla (harcama hatası giderildi): 16 yalnız 1 stratejiyle geçiliyordu; 6/32/38'de karışık oyunda can çakılması
 for (const i in BAL.lvl8) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl8[i];
+// 20 Eki (denge botu, 12 strateji/komutan × 40 bölüm): Darağacı Yolu (21) ve Kafatası Kapısı (33) yalnız Leonidas'la geçiliyordu (meşaleci + kırbaççı
+// iskelet duvarını yakıp geçiyor, Leonidas kapıyı tutuyor). Merlin/Robin/Báthory 6/6 kaybediyordu: can %15 düşük.
+BAL.lvl9 = { 20: 0.75, 21: 0.9, 30: 0.9, 32: 0.85 }; // 21: 0,85 de Robin/Báthory 0/2 → 0,75
+for (const i in BAL.lvl9) if (LEVELS[i]) LEVELS[i].hpMul = (LEVELS[i].hpMul || 1) * BAL.lvl9[i];
 if (typeof window !== 'undefined' && window.__HPX) for (const L of LEVELS) L.hpMul = (L.hpMul || 1) * window.__HPX; // test: denge botu eşik araması (HPX)
 // 18 Eki (Caner: "kristalle ana kalemizin kalıcı level özelliğini açıcam: balkonda iskelet okçular, bir üst levelde daha fazla, kapısında golem her oyun başında"):
 // kalıcı kale seviyeleri (kristal dükkânı, KALE sekmesi). lvl: her bölüm kale bu seviyeden başlar; golem: kapıda Ceset Golemi; lives: ek can

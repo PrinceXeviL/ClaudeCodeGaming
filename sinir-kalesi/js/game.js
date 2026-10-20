@@ -6983,7 +6983,10 @@ function drawPet(s) {
 // 18 Eki (Caner: "bazı bölümlerde sıkıntı; düşman yaklaştığı an saldırsınlar"): giriş sınırı kalktı; yalnız ekran dışındaki (henüz görünmeyen) düşmana gidilmez.
 // SOLDIER_REACH artık yalnız emir yeri için (zombi sancağı yolun ağzına dikilmesin)
 const SOLDIER_REACH = 40;
-const inReach = (o) => !o.p || (o.d >= 0 && o.x > 6 && o.x < W - 6 && o.y > 6 && o.y < H - 6);
+// 20 Eki (denge botu, 28. bölüm 4 koşunun 3'ünde kilitlendi): girişte kalkan zombiler yol ağzındaki ağır düşmanlarla kule menzili dışında sonsuz
+// dövüşe tutuluyor, dalga sayacı duruyordu. Zombiler yolun ilk ZOMBIE_ENTRY px'indeki düşmana saldırmaz (düşman kule menziline gelir).
+const ZOMBIE_ENTRY = 120;
+const inReach = (o) => !o.p || (o.d >= ZOMBIE_ENTRY && o.x > 6 && o.x < W - 6 && o.y > 6 && o.y < H - 6);
 // 18 Eki (Caner: "zombilere bir yere saldır dediğimde tek adama değil o gruba saldırsınlar; o kişi ölünce duruyorlar"): gösterilen düşman ölünce
 // onun çevresindeki (ZOMBIE_GROUP_R) en yakın düşmana geçilir; aynı düşmana yığılmasınlar diye üzerinde emirli zombi sayısı kadar uzak sayılır. Grup bitince emir biter.
 const ZOMBIE_GROUP_R = 130;

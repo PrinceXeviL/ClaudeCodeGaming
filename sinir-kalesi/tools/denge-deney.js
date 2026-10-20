@@ -14,7 +14,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  if (process.env.WK2) await p.addInitScript(() => { window.__WK2 = true; }); // 20 Eki: yeni karşıtlık tablosu (data.js WK_V2)
+  if (process.env.WK1) await p.addInitScript(() => { window.__WK1 = true; }); // 20 Eki: eski karşıtlık tablosu (karşılaştırma; data.js WK_V2)
   if (process.env.HPX) await p.addInitScript((k) => { window.__HPX = k; }, +process.env.HPX);
   await p.goto('http://localhost:8765/index.html?' + Date.now(), { timeout: 180000 }); await p.waitForFunction(() => window.__game && window.__game.G !== undefined, null, { timeout: 180000 }).catch(() => {});
   await p.waitForTimeout(1500);
