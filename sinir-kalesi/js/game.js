@@ -196,14 +196,15 @@ function rottenOf(name, im) {
 // 15 Eki (Caner: %10 daha koyu, çürümüş görünsün): ten tonları hastalıklı yeşil-griye kayar, renkler %22 solar,
 // gölgeler morumsu (çürük) olur, sonra %54'e kararır. Yama yama leke yok: şeritte kareler ayrı boyandığı için titrerdi.
 // Boyacı iş parçacığı da bunu kullanır (toString): dışarıdan değişken kullanma
-function rotPixels(a) {
+function rotPixels(a) { // 20 Eki (Caner: "zombilere daha çok zombi havası"): ten soluk ceset yeşili, kumaş ve metal %45 solar, gölgeler morumsu, %66'ya kararır
   for (let i = 0; i < a.length; i += 4) {
     let r = a[i], g = a[i + 1], b = a[i + 2];
     const L = r * 0.3 + g * 0.59 + b * 0.11;
-    const rg = r - g, gb = g - b, skin = rg > 15 && rg < 95 && gb > 6 && gb < 75 ? Math.min(1, (rg - 15) / 25, (95 - rg) / 25, (75 - gb) / 25) * Math.min(1, L / 90) : 0; // yalnız ten tonları (kırmızı kumaş, altın girmez)
-    r += (L * 0.78 - r) * 0.55 * skin; g += (L * 0.98 - g) * 0.55 * skin; b += (L * 0.62 - b) * 0.55 * skin;
+    const rg = r - g, gb = g - b, skin = rg > 10 && rg < 110 && gb > 0 && gb < 90 ? Math.max(0, Math.min(1, (rg - 10) / 20, (110 - rg) / 25, (90 - gb) / 25)) * Math.min(1, L / 70) : 0;
+    r += (L * 0.70 - r) * 0.9 * skin; g += (L * 1.08 + 10 - g) * 0.9 * skin; b += (L * 0.62 - b) * 0.9 * skin;
+    r = r * 0.55 + L * 0.414; g = g * 0.55 + L * 0.459; b = b * 0.55 + L * 0.396;
     const D = 1 - Math.min(1, L / 120);
-    a[i] = Math.max(0, (r * 0.78 + L * 0.22 + 6 * D) * 0.54); a[i + 1] = Math.max(0, (g * 0.78 + L * 0.22 - 4 * D) * 0.54); a[i + 2] = Math.max(0, (b * 0.78 + L * 0.22 + 8 * D) * 0.54);
+    a[i] = Math.min(255, Math.max(0, (r + 10 * D) * 0.66)); a[i + 1] = Math.min(255, Math.max(0, (g - 2 * D) * 0.66)); a[i + 2] = Math.min(255, Math.max(0, (b + 14 * D) * 0.66));
   }
 }
 // ---------- boyacı iş parçacığı (13 Eki) ----------
@@ -12246,7 +12247,7 @@ function bakeTowerGround() {
 }
 // 20 Eki (Caner: "kuleler yerle tümleşik duruyor, altında hafif neon ışık olsun, her kulenin rengi farklı"): kule tabanını saran
 // ince neon halka + soluk zemin parıltısı. Halkanın arkası kule görselinin altında kalır, önü tabanı çevreler. Doku renk başına bir kez çizilir.
-const TOWER_NEON = { on: true, mode: 'rune', rx: 0.62, a: 0.75, pulse: 0.12, col: { archer: '255,186,84', barracks: '255,64,76', mage: '84,222,255', artillery: '140,255,90', altar: '196,96,255' } };
+const TOWER_NEON = { on: false, mode: 'rune', rx: 0.62, a: 0.75, pulse: 0.12, col: { archer: '255,186,84', barracks: '255,64,76', mage: '84,222,255', artillery: '140,255,90', altar: '196,96,255' } };
 const NEON_TEX = {};
 function neonTex(col, kind) { // pool: yumuşak renkli ışık havuzu; rune: rünlü büyü çemberi (yukarıdan bakış, sonra basılır)
   const key = kind + col; if (NEON_TEX[key]) return NEON_TEX[key];
@@ -12297,6 +12298,29 @@ function drawTowerNeon() {
   }
   ctx.restore();
 }
+// 20 Eki (Caner: "kulelerin altındaki ışıklı yuvarlakları kaldır; yalnız kulenin arkasında, sınırlarında hafif loş renk; her kulenin rengi farklı,
+// tıklayınca"): kule silüetinin dışına taşan bulanık renkli kenar ışığı (kulenin arkasında çizilir). Dururken çok soluk, seçiliyken belirgin ve nabızlı.
+// Doku görsel ve renk başına bir kez küçük boyda üretilir (shadowBlur: her tarayıcıda çalışır).
+const TOWER_RIM = { on: true, a: 0.3, sel: 0.9, blur: 0.06, W: 150, col: { archer: '255,186,84', barracks: '255,70,80', mage: '90,225,255', artillery: '140,255,90', altar: '200,100,255' } };
+const RIM_C = new Map();
+function rimTex(im, col) {
+  let m = RIM_C.get(im); if (!m) RIM_C.set(im, m = {}); if (m[col]) return m[col];
+  const iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height; if (!iw || !ih) return null;
+  const w = TOWER_RIM.W, h = Math.round(w * ih / iw), b = Math.round(w * TOWER_RIM.blur), pad = b * 2;
+  const s = document.createElement('canvas'); s.width = w; s.height = h; const sg = s.getContext('2d'); sg.drawImage(im, 0, 0, w, h); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = `rgb(${col})`; sg.fillRect(0, 0, w, h);
+  const c = document.createElement('canvas'); c.width = w + pad * 2; c.height = h + pad * 2; const g = c.getContext('2d');
+  g.shadowColor = `rgba(${col},1)`; g.shadowBlur = b; g.shadowOffsetX = 0; g.shadowOffsetY = 0; g.drawImage(s, pad, pad); g.drawImage(s, pad, pad);
+  return (m[col] = { c, k: pad / w });
+}
+function drawTowerRim(t, ts) {
+  if (!TOWER_RIM.on || !NECRO) return; const col = TOWER_RIM.col[t.type]; if (!col || !ts.im) return;
+  const R = rimTex(ts.im, col); if (!R) return;
+  const sel = G.sel && G.sel.kind === 'tower' && G.sel.tower === t, a = sel ? TOWER_RIM.sel * (0.8 + 0.2 * Math.sin(time * 4)) : TOWER_RIM.a;
+  const ex = ts.w * R.k;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a;
+  ctx.drawImage(R.c, -ts.w / 2 - ex, -ts.h - ex, ts.w + ex * 2, ts.h + ex * 2);
+  ctx.restore();
+}
 function drawTowerBody(t) {
   const ts = towerSprite(t);
   if (ts) {
@@ -12309,6 +12333,7 @@ function drawTowerBody(t) {
     const OF = towerForm(t), MV = mahzenView(t), fl = MV ? MV.fl : OF && OF.flip && t.face === -1 ? -1 : 1;
     const recoil = OF && OF.tip && !balLay(t) && t.shotAnim > 0 ? -Math.sin(t.shotAnim / 0.3 * Math.PI) * 3.5 * fl : 0; // balista geri teper
     ctx.save(); ctx.translate(t.x + recoil, ts.bottom); ctx.scale(pop * fl, pop * ksy);
+    drawTowerRim(t, ts); // 20 Eki: kulenin arkasında renkli kenar ışığı
     const TA = towerAnim(t) || boneAnim(t);
     if (TA && t.animT != null && t.animT < TA.dur) { // atış animasyonu: şeridin karesi, görselle aynı yere oturur
       const M = TA.M, i = Math.min(M.n - 1, Math.floor(t.animT * (TA.fps || TOWER_ANIM_FPS))), b = M.box, lim = TA.noLit || !TA.im.src || M.cols ? TA.im : litOf(TA.im, TOWER_LIT.cols[t.type] || TOWER_LIT.col, M) || TA.im; // 16 Eki: tembel (adressiz ImageBitmap) ya da satırlı şeritte ışık kopyası yok (anahtar çakışır, kare yeri yanlış, bellek 2 kat)
@@ -12861,6 +12886,8 @@ function drawSoldier0(s) {
         atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       ctx.restore();
       // 18 Eki (Caner): başın üstündeki mor ruh alevi kalktı; bizim taraf olduğu rozetten belli (drawZombieMark)
+      if (!CROWD && !s.zFly) { const hy = s.y - ch * 0.95, sd2 = (s.slot || 0) * 2.3; ctx.fillStyle = 'rgba(20,24,16,0.85)'; // başının çevresinde dönen iki sinek (ceset havası)
+        for (let k = 0; k < 2; k++) { const an = time * (5 + k * 1.7) + sd2 + k * 3.1, fx = s.x + Math.cos(an) * ch * 0.28, fy = hy + Math.sin(an * 1.3) * ch * 0.12; ctx.fillRect(fx - 0.9, fy - 0.9, 1.8, 1.8); } }
       if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8 - (s.zFly ? 26 : 0), 12, s.hp / s.maxHp, '#9a5ac7');
       return;
     }
