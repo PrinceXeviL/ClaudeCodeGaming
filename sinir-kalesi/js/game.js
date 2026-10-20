@@ -10636,8 +10636,9 @@ const MEN_K = 1.22, OUTL = new WeakMap(); // 15 Eki: zayıf anahtar (atılan şe
 // Tuval boyu bekleme pozundaki gövde oranından bulunur: yayı başın üstüne taşan çizimler küçük görünmesin.
 // 11 Eki (2): kule büyüdükçe okçular aynı boyda kalınca büyük kulede küçük görünüyordu → kademeyle büyür, mahzen iskeletinin
 // o kademedeki boyunu geçmez (1. kademe 21, 2. 23, 3. ve 4. kademe 25; yoldaki iskelet savaşçılar 23..26)
-const MEN_BODY_T = [21, 23, 25], MEN_BODY = 21;
-const menBody = (t) => (t.spec ? 25 : MEN_BODY_T[Math.min(2, t.lvl)]) * TOWER_S;
+// 20 Eki (Caner): "okçuların her levelde boyları eşit olsun" → bütün kademelerde ve 4. kademede aynı gövde boyu
+const MEN_BODY = 23;
+const menBody = (t) => MEN_BODY * TOWER_S;
 const menH = (t) => { const M = menOf(t); return menBody(t) / bodyRatio(spr(M.pre)); };
 function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   let c = OUTL.get(im); if (c) return c;

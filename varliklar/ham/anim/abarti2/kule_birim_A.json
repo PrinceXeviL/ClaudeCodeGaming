@@ -1,0 +1,146 @@
+[
+ {
+  "name": "unit_xbow1_shotA",
+  "ref": "ham/anim/unit_xbow1_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 11,
+  "prompt": "a cartoon skeleton crossbowman with a rusty helmet and a ragged loincloth holding a wooden crossbow raises the loaded crossbow to his shoulder with a big anticipation, aims forward to the right, pulls the trigger and the bolt shoots out to the right, the crossbow kicks back hard with a big recoil that jolts his whole body back, then he lowers the crossbow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow1_reloadA",
+  "ref": "ham/anim/unit_xbow1_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 14,
+  "prompt": "a cartoon skeleton crossbowman with a rusty helmet and a ragged loincloth holding a wooden crossbow reloads the crossbow: he tips the crossbow down, puts his foot in the stirrup at the front, pulls the string back with both hands with a big exaggerated effort and a strong squash and stretch, takes a new bolt from his belt, slots it into the crossbow with a snap, then stands up straight and returns exactly to the starting pose holding the loaded crossbow. Exaggerated punchy cartoon action, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow1_walkA",
+  "ref": "ham/anim/unit_xbow1_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon skeleton crossbowman with a rusty helmet and a ragged loincloth holding a wooden crossbow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the crossbow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow2_shotA",
+  "ref": "ham/anim/unit_xbow2_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 11,
+  "prompt": "a cartoon skeleton crossbowman in leather armor with a chainmail hood holding a wooden crossbow raises the loaded crossbow to his shoulder with a big anticipation, aims forward to the right, pulls the trigger and the bolt shoots out to the right, the crossbow kicks back hard with a big recoil that jolts his whole body back, then he lowers the crossbow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow2_reloadA",
+  "ref": "ham/anim/unit_xbow2_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 14,
+  "prompt": "a cartoon skeleton crossbowman in leather armor with a chainmail hood holding a wooden crossbow reloads the crossbow: he tips the crossbow down, puts his foot in the stirrup at the front, pulls the string back with both hands with a big exaggerated effort and a strong squash and stretch, takes a new bolt from his belt, slots it into the crossbow with a snap, then stands up straight and returns exactly to the starting pose holding the loaded crossbow. Exaggerated punchy cartoon action, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow2_walkA",
+  "ref": "ham/anim/unit_xbow2_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon skeleton crossbowman in leather armor with a chainmail hood holding a wooden crossbow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the crossbow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow3_shotA",
+  "ref": "ham/anim/unit_xbow3_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 11,
+  "prompt": "a cartoon elite skeleton crossbowman in dark green and black armor with a horned helmet and a green cloak holding a heavy crossbow raises the loaded crossbow to his shoulder with a big anticipation, aims forward to the right, pulls the trigger and the bolt shoots out to the right, the crossbow kicks back hard with a big recoil that jolts his whole body back, then he lowers the crossbow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow3_reloadA",
+  "ref": "ham/anim/unit_xbow3_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 14,
+  "prompt": "a cartoon elite skeleton crossbowman in dark green and black armor with a horned helmet and a green cloak holding a heavy crossbow reloads the crossbow: he tips the crossbow down, puts his foot in the stirrup at the front, pulls the string back with both hands with a big exaggerated effort and a strong squash and stretch, takes a new bolt from his belt, slots it into the crossbow with a snap, then stands up straight and returns exactly to the starting pose holding the loaded crossbow. Exaggerated punchy cartoon action, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_xbow3_walkA",
+  "ref": "ham/anim/unit_xbow3_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon elite skeleton crossbowman in dark green and black armor with a horned helmet and a green cloak holding a heavy crossbow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the crossbow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_ghostxbow_shotA",
+  "ref": "ham/anim/unit_ghostxbow_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 11,
+  "prompt": "a cartoon hooded skeleton crossbowman in a torn crimson robe with skull shoulder pads holding a dark heavy crossbow raises the loaded crossbow to his shoulder with a big anticipation, aims forward to the right, pulls the trigger and the bolt shoots out to the right, the crossbow kicks back hard with a big recoil that jolts his whole body back, then he lowers the crossbow and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_ghostxbow_reloadA",
+  "ref": "ham/anim/unit_ghostxbow_v2_ref.png",
+  "frames": 33,
+  "loop": false,
+  "seed": 14,
+  "prompt": "a cartoon hooded skeleton crossbowman in a torn crimson robe with skull shoulder pads holding a dark heavy crossbow reloads the crossbow: he tips the crossbow down, puts his foot in the stirrup at the front, pulls the string back with both hands with a big exaggerated effort and a strong squash and stretch, takes a new bolt from his belt, slots it into the crossbow with a snap, then stands up straight and returns exactly to the starting pose holding the loaded crossbow. Exaggerated punchy cartoon action, snappy timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_ghostxbow_walkA",
+  "ref": "ham/anim/unit_ghostxbow_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon hooded skeleton crossbowman in a torn crimson robe with skull shoulder pads holding a dark heavy crossbow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the crossbow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_archer1_walkA",
+  "ref": "ham/anim/unit_archer1_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon skeleton archer with a rusty helmet and a ragged loincloth holding a simple wooden bow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the bow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_archer2_walkA",
+  "ref": "ham/anim/unit_archer2_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon skeleton archer in leather armor with a chainmail hood holding a wooden bow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the bow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_archer3_walkA",
+  "ref": "ham/anim/unit_archer3_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon elite skeleton archer in dark green and black armor with a horned helmet and a green cloak holding a big curved bone bow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the bow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_ghostarcher_walkA",
+  "ref": "ham/anim/unit_ghostarcher_v2_ref.png",
+  "frames": 49,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 16,
+  "seed": 18,
+  "prompt": "a cartoon hooded skeleton archer in a torn crimson robe with skull shoulder pads holding a big dark bow walks in place with small careful steps as if walking along a narrow wooden platform on top of a tower, the bow held ready in front of him, the knees bend a little, the body bobs gently up and down, the head turns a little as if looking out for enemies, a full walk cycle. The walk never stops or pauses: a steady non-stop walk cycle, every step the same length. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]
