@@ -2748,36 +2748,6 @@
   "bx": 147.0,
   "by": 148.4
  },
- "tower_mage_1_collapse": {
-  "n": 49,
-  "fw": 261,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 65.5,
-  "bx": 146.8,
-  "by": 148.4
- },
- "tower_mage_2_collapse": {
-  "n": 49,
-  "fw": 247,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 62.0,
-  "bx": 145.7,
-  "by": 148.4
- },
- "tower_mage_3_collapse": {
-  "n": 49,
-  "fw": 252,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 73.5,
-  "bx": 147.5,
-  "by": 148.4
- },
  "tower_mage_drain_collapse": {
   "n": 49,
   "fw": 253,

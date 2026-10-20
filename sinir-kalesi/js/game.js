@@ -4810,7 +4810,7 @@ function findTarget(t, range, allowAir) {
 const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 
 // Necromancer kulelerinde merminin çıktığı nokta (görsel oranı): dikilitaş tepesi, fener kafesi, kazan ağzı
-const TOWER_EYE = { altar: [[0.5, 0.14], [0.48, 0.12], [0.505, 0.38]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.72, 0.5], [0.5, 0.28], [0.5, 0.3]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
+const TOWER_EYE = { altar: [[0.5, 0.14], [0.48, 0.12], [0.505, 0.38]], archer: [[0.5, 0.14], [0.5, 0.1], [0.5, 0.12]], mage: [[0.51, 0.17], [0.5, 0.235], [0.5, 0.2]], artillery: [[0.47, 0.36], [0.42, 0.37], [0.45, 0.36]] };
 function towerEye(t, ts) {
   ts = ts || towerSprite(t);
   if (NECRO && t.type === 'mage' && ts && lanternRig(t, ts)) return lanternPt(t, ts, lanternRig(t, ts).core); // ışın ve ruhlar fenerin (kristalin, kafesin) içinden
@@ -5058,12 +5058,13 @@ function updateSoulLamp(t, dt, L) {
     if (e) { t.zapCd = S.zap.cd; t.souls -= S.zap.cost; lampZap(t, src, e, L); }
   }
 }
-function lampZap(t, src, e, L) {
-  const S = SOUL_LAMP.zap, gh = abRank(t, 'ghost'), jumps = gh ? gh.jumps || 0 : 0, hit = new Set([e]);
-  let from = src, cur = e, dmg = (L.dmg[0] + L.dmg[1]) / 2 * S.dmgK * rand(0.9, 1.1);
+function lampZap(t, src, e, L, v3) {
+  const S = SOUL_LAMP.zap, gh = abRank(t, 'ghost'), lv = Math.min(2, t.lvl), jumps = (gh ? gh.jumps || 0 : 0) + (v3 ? SOUL_V3.jumps[lv] : 0), hit = new Set([e]);
+  let from = src, cur = e, dmg = (L.dmg[0] + L.dmg[1]) / 2 * (v3 ? SOUL_V3.dmgK[lv] : S.dmgK) * rand(0.9, 1.1);
   // 16 Eki (Caner: "önceki hali zaten şimşek gibiydi, önceki haline çevir"): eski ruh ışınının görünümü (tek renk, ince, kaynakta parlama)
   const MF = towerForm(t), dr = abRank(t, 'drain'), col = NECRO ? (MF ? MF.col : dr ? 'rgb(120,255,150)' : 'rgb(170,130,255)') : undefined;
-  const bolt = (a, b) => G.effects.push({ kind: 'zap', x0: a.x, y0: a.y - 8, target: b.e, x1: b.x, y1: b.y, t: 0, dur: 0.28, w: 1 + t.lvl * 0.25, seed: rand(0, 99), col });
+  const bolt = (a, b) => { G.effects.push({ kind: 'zap', x0: a.x, y0: a.y - 8, target: b.e, x1: b.x, y1: b.y, t: 0, dur: v3 ? 0.36 : 0.28, w: v3 ? 2 + lv * 0.45 : 1 + t.lvl * 0.25, seed: rand(0, 99), col: v3 ? 'rgb(225,205,255)' : col });
+    if (v3) G.effects.push({ kind: 'zap', x0: a.x, y0: a.y - 8, target: b.e, x1: b.x, y1: b.y, t: 0, dur: 0.3, w: 0.9 + lv * 0.2, seed: rand(0, 99), col: lv >= 2 ? 'rgb(255,90,110)' : 'rgb(150,255,200)' }); }; // 20 Eki: ruh şimşeği beyaz-mor, içinde yeşil (3. kademede kızıl) damar
   fxMagicCharge(src.x, src.y - 8);
   for (let i = 0; i <= jumps && cur; i++) {
     bolt(from, { x: cur.x, y: aimY(cur), e: cur });
@@ -5074,16 +5075,16 @@ function lampZap(t, src, e, L) {
     cur = nx; if (cur) hit.add(cur);
   }
   const MA = towerAnim(t); if (MA && !(t.animT != null && t.animT < MA.dur)) t.animT = 0;
-  t.shotAnim = 0.2; t.lastFire = G.t; sfx('zap');
+  t.shotAnim = 0.2; t.lastFire = G.t; sfx('zap'); if (v3) { shakeScreen(1.5 + lv, 0.15); sfx('zap', 0.7, 1.1); }
 }
 function drawSoulThieves() { // ruh hırsızları ve fenerin çevresinde dönen biriken ruhlar
   const out = spr('nm31_thief_out'), drn = spr('nm31_thief_drain'), bk = spr('nm31_thief_back'), orb = spr('nm31_soul_orb');
   for (const t of G.towers) {
-    if (t.type !== 'mage' || !t.thieves) continue;
+    if (t.type !== 'mage' || (!t.thieves && !t.souls)) continue;
     if (orb && t.souls > 0) { const c = lampSrc(t); // biriken ruhlar fenerin çevresinde döner
       for (let i = 0; i < t.souls; i++) { const a = time * 1.6 + i * Math.PI * 2 / t.souls + t.x * 0.01, x = c.x + Math.cos(a) * 15, y = c.y - 4 + Math.sin(a) * 6, pop = t.soulPop && G.t - t.soulPop < 0.3 && i === t.souls - 1 ? 1.5 : 1;
         ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 7, '200,150,255', 0.35); ctx.restore(); ctx.drawImage(orb, x - 3.5 * pop, y - 3.5 * pop, 7 * pop, 7 * pop); } }
-    for (const q of t.thieves) {
+    for (const q of t.thieves || []) {
       if (q.st === 'home') continue;
       const im = q.st === 'drain' ? drn : q.st === 'back' ? bk : out; if (!im) continue;
       const w = q.st === 'drain' ? 21 : 19, h = w * im.height / im.width, bob = Math.sin(time * 7 + t.x) * 1.5, f = q.st === 'back' ? -q.face : q.face; // dönüş görseli sola bakar
@@ -5214,6 +5215,7 @@ function updateTower(t, dt) {
     }
   }
   if (NECRO && t.type === 'mage' && typeof SOUL_LAMP !== 'undefined' && SOUL_LAMP.on) { updateSoulLamp(t, dt, L); return; } // 16 Eki: ruh hırsızları + şimşek (ışın yerine)
+  if (t.zapQ && G.t >= t.zapQ.at) { const Q = t.zapQ; t.zapQ = null; let e2 = Q.e && !Q.e.dead && !Q.e.under ? Q.e : findTarget(t, L.range, t.def.air); if (e2) lampZap(t, lampSrc(t), e2, L, true); } // 20 Eki: ruh şimşeği
   t.cd -= dt;
   if (t.cd > 0) return;
   let e = findTarget(t, L.range, t.def.air);
@@ -5234,10 +5236,17 @@ function updateTower(t, dt) {
     if (MF && MF.ramp) { t.ramp = t.lastHit === e ? Math.min(MF.rampMax, (t.ramp || 0) + MF.ramp) : 0; t.lastHit = e; mul = 1 + t.ramp; t.cd *= MF.rate; } // Ruh Emici: aynı hedefe güçlenir
     if (MF) { const MA = towerAnim(t); if (MA && !(t.animT != null && t.animT < MA.dur)) t.animT = 0; } // ışın anında; kule animasyonu sürüyorsa baştan başlamaz
     // ruh ışını: kuleden hedefe neredeyse anında çakar; Ruh Emici'de yeşil, canı iskeletlere aktarır
-    G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: 0.07, dmg: roll(L.dmg) * mul, dtype: 'magic', arc: 0, src: 'magic',
-      slow: t.lvl >= 1 ? { k: 0.3, t: 1 } : null, chain: t.lvl >= 2, drain: dr ? dr.heal : 0 });
-    G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: 0.28, w: 1 + t.lvl * 0.25 + (t.ramp || 0) * (MF && MF.ramp ? 1.5 : 0), seed: rand(0, 99),
-      col: NECRO ? (MF ? MF.col : dr ? 'rgb(120,255,150)' : 'rgb(170,130,255)') : undefined });
+    const V3 = NECRO && typeof SOUL_V3 !== 'undefined' && SOUL_V3.on && !MF; // 20 Eki: ruh emme + ruh şimşeği (uzmanlık biçimleri kendi ışınlarıyla)
+    G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: 0.07, dmg: roll(L.dmg) * mul * (V3 ? SOUL_V3.baseK : 1), dtype: 'magic', arc: 0, src: 'magic',
+      slow: t.lvl >= 1 ? { k: 0.3, t: 1 } : null, chain: t.lvl >= 2 && !V3, drain: dr ? dr.heal : 0 });
+    G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: V3 ? 0.34 : 0.28, w: V3 ? 0.55 + t.lvl * 0.1 : 1 + t.lvl * 0.25 + (t.ramp || 0) * (MF && MF.ramp ? 1.5 : 0), seed: rand(0, 99),
+      col: NECRO ? (MF ? MF.col : V3 ? 'rgb(150,255,200)' : dr ? 'rgb(120,255,150)' : 'rgb(170,130,255)') : undefined });
+    if (V3) { // emilen ruh fenere süzülür; yeterince birikince fener şimşek olarak boşaltır
+      G.effects.push({ kind: 'soulwisp', x0: e.x, y0: aimY(e), x1: sx, y1: sy - 8, t: 0, dur: 0.55, seed: rand(0, 9) });
+      t.souls = Math.min(SOUL_V3.cap, (t.souls || 0) + 1); t.soulPop = G.t;
+      const need = SOUL_V3.cost[Math.min(2, t.lvl)];
+      if (t.souls >= need) { t.souls -= need; t.zapQ = { e, at: G.t + 0.5, L }; } // ruh fenere varınca çakar
+    }
     if (MF && MF.ramp && dr) G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: 0.22, w: 0.6, seed: rand(0, 99), col: 'rgb(120,255,150)' }); // emilen can: ince yeşil damar
     fxMagicCharge(sx, sy - 8);
     sfx('zap');
@@ -14260,6 +14269,12 @@ function drawEffect(f) {
     ctx.restore();
   } else if (f.kind === 'zap') {
     drawZap(f);
+  } else if (f.kind === 'soulwisp') { // 20 Eki: düşmandan fenere süzülen ruh (kavisli, yeşil-mor iz)
+    const u = k * k * (3 - 2 * k), x = lerp(f.x0, f.x1, u), y = lerp(f.y0, f.y1, u) - Math.sin(u * Math.PI) * 22, orb = spr('nm31_soul_orb');
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 1; i <= 4; i++) { const v = Math.max(0, u - i * 0.06), tx = lerp(f.x0, f.x1, v), ty = lerp(f.y0, f.y1, v) - Math.sin(v * Math.PI) * 22; glow(ctx, tx, ty, 5 - i * 0.8, i % 2 ? '150,255,200' : '200,150,255', 0.4 * (1 - i / 5)); }
+    glow(ctx, x, y, 8, '170,255,210', 0.55); ctx.restore();
+    if (orb) ctx.drawImage(orb, x - 3.5, y - 3.5, 7, 7);
   } else if (f.kind === 'bolt') {
     ctx.save(); ctx.globalAlpha = 1 - k; ctx.lineJoin = 'round';
     const bc = f.col === 'soul' ? 'rgba(130,255,160,0.6)' : f.col === 'arcane' ? 'rgba(190,120,255,0.55)' : f.col === 'frost' ? 'rgba(140,210,255,0.55)' : f.col === 'holy' ? 'rgba(255,235,160,0.6)' : f.col === 'blood' ? 'rgba(255,50,60,0.6)' : 'rgba(140,180,255,0.5)';
@@ -23775,7 +23790,7 @@ window.__game = { neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "
    buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   towerOn: (type) => towerUnlocked(type), // test: kule bu bölümde kurulabilir mi (öğretici kilidi)
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
-  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), treeSkip: () => TREE_SKIP, sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
+  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), treeSkip: () => TREE_SKIP, camSet: (z, x, y) => { cam.z = z; cam.x = x; cam.y = y; }, camGet: () => ({ ...cam }), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), nextLevel: () => nextLevel(), pathPos: (p, d, o) => pathPos(p, d, o), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
    surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi

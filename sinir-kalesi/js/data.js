@@ -1756,6 +1756,10 @@ TOWERS.mage.levels[2].dmg = TOWERS.mage.levels[2].dmg.map(v => Math.round(v * 0.
 // fenere taşır; ruhlar fenerde birikir. 3. kademede ikinci saldırı: biriken ruhlarla şimşek (eski ruh ışını görünümünde) (çarpılan 1 sn röntgen iskelet olur).
 // Uzmanlık: Ruh Emici +1 hırsız/kademe ve emilen can iskeletlere; Ruh Kafesi şimşeği 1/2/3 düşmana sıçratır. Mantık game.js updateSoulLamp.
 // 16 Eki (Caner: "hayaletlerin ruh çalması saçma, eski haline al, sonra baştan yapacağız"): on: false, kule eski ruh ışınıyla saldırır
+// 20 Eki (Caner: "düşmanlardan ruh çalacak ve onu elektrik olarak düşmanlara çarpacak"): Ruh Feneri v3, hayaletsiz. Fener ince ruh ışınıyla
+// düşmanın ruhunu emer (normal vuruş, hasarı baseK kadar), her vuruşta bir ruh fenere süzülür; cost[kademe] ruh birikince fener boşalır:
+// büyük ruh şimşeği (ortalama hasar × dmgK), kademeyle jumps kadar düşmana sıçrar, çarpılanın iskeleti görünür. Mantık game.js mage dalı + lampZap.
+const SOUL_V3 = { on: true, baseK: 0.72, cost: [4, 3, 3], dmgK: [1.5, 1.7, 1.9], jumps: [0, 1, 2], cap: 6 };
 const SOUL_LAMP = { on: false, thieves: [1, 2, 2], speed: 140, drainT: 0.75, slow: 0.3, share3: 0.55, cap: 10,
   zap: { cost: 2, cd: 1.4, dmgK: 0.95, jumpR: 75, jumpK: 0.7, xray: 0.9 } };
 if (SOUL_LAMP.on) { Object.assign(TOWERS.mage, { desc: 'Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır · 3. kademede biriken ruhlarla şimşek çarpar' });
