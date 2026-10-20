@@ -1023,7 +1023,7 @@ function haptic(kind = 'light') {
 // 15 Eki (Caner): ölçüm (GameAnalytics, ücretsiz). Hangi bölümde bırakılıyor, hangi kule kurulmuyor, hangi büyü kullanılıyor.
 // Anahtarlar GA_KEYS'e (GameAnalytics panelinden: Game key + Secret key). Boşsa hiçbir şey gönderilmez. Oyuncu ilk açılışta izin verir (setting 'stats').
 // Olaylar: ilerleme (bölüm başla/bitir/kaybet, puan = yıldız) ve tasarım olayları (kule:kur:okcu, buyu:nm_raise ...).
-const GA_KEYS = { game: '', secret: '' };
+const GA_KEYS = Object.assign({ game: '', secret: '' }, window.GA_KEYS || {}); // 20 Eki: anahtarlar js/ga_anahtar.js içinde (.gitignore, depoya girmez; yoksa ölçüm kapalı)
 let GA = null, GA_TRY = false;
 function gaInit() {
   if (GA || GA_TRY || !GA_KEYS.game || !setting('stats')) return GA;
