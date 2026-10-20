@@ -3843,5 +3843,47 @@
   "ch": 0.9276,
   "idle": 0,
   "stride": 1.2236
+ },
+ "enemy_vulture_atk": {
+  "n": 33,
+  "fw": 383,
+  "fh": 257,
+  "base": 0.0133,
+  "ch": 0.6231
+ },
+ "hero_merlin_run": {
+  "n": 20,
+  "fw": 290,
+  "fh": 323,
+  "base": 0.0145,
+  "ch": 0.9277
+ },
+ "hero_merlin_block": {
+  "n": 33,
+  "fw": 327,
+  "fh": 324,
+  "base": 0.0142,
+  "ch": 0.9269
+ },
+ "hero_robin_block": {
+  "n": 33,
+  "fw": 309,
+  "fh": 324,
+  "base": 0.014,
+  "ch": 0.9254
+ },
+ "hero_bathory_block": {
+  "n": 33,
+  "fw": 318,
+  "fh": 321,
+  "base": 0.0144,
+  "ch": 0.9351
+ },
+ "hero_leonidas_cast": {
+  "n": 33,
+  "fw": 447,
+  "fh": 337,
+  "base": 0.0133,
+  "ch": 0.8891
  }
 }

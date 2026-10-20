@@ -601,5 +601,11 @@
 "unit_xbow2_walk.webp",
 "unit_xbow3_idle.webp",
 "unit_xbow3_shot.webp",
-"unit_xbow3_walk.webp"
+"unit_xbow3_walk.webp",
+"enemy_vulture_atk.webp",
+"hero_merlin_run.webp",
+"hero_merlin_block.webp",
+"hero_robin_block.webp",
+"hero_bathory_block.webp",
+"hero_leonidas_cast.webp"
 ]
