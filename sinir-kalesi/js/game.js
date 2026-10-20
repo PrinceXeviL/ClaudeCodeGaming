@@ -5157,7 +5157,7 @@ function sigTick(t, dt) {
     for (const e of foes) { if (e.siege !== undefined || e.def.machine) continue; const f = e.def.chief ? 1 : 2; e.fearT = Math.max(e.fearT || 0, f); e.fearMax = f; e.hopT = 0.4; }
     G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R, col: '200,160,255', t: 0, dur: 0.7 }); G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '150,255,190', t: 0, dur: 0.55 }); sfx('soulbolt'); fire(); return; }
   if (t.spec === 'corpse') { if (!foes.length) { t.sigT = 0.5; return; } t.burst = 3; t.cd = 0; t.cdP = 0; fire(); return; }
-  if (t.spec === 'plague') { const sick = foes.filter(e => e.plagueT > 0 || e.coatT > 0 || e.poisonT > 0); if (!sick.length) { t.sigT = 0.5; return; }
+  if (t.spec === 'plague') { const sick = foes.filter(e => e.plagueT > 0 || e.coatT > VEBA_COAT.dur - PLAGUE_HIT.dotT || e.poisonT > 0); // 20 Eki: görüntü uzadı, hastalık süresi aynı if (!sick.length) { t.sigT = 0.5; return; }
     for (const e of sick.slice(0, 8)) { const x = e.x, y = e.y; for (const f of G.enemies) if (!f.dead && dist(f.x, f.y, x, y) < 42) { NO_KNOCK = true; damageEnemy(f, base * 0.8, 'phys', false, 'blast'); NO_KNOCK = false; }
       G.effects.push({ kind: 'ring', x, y, r: 34, col: '140,255,90', t: 0, dur: 0.4 }); for (let i = 0; i < 10; i++) { const a = rand(-Math.PI, 0), v = rand(60, 150); emit(G.parts, { kind: 'dot', x, y: y - 6, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 20, g: 480, col: i % 3 ? '#8cff5a' : '#d8ffb0', s0: rand(1.4, 2.6), s1: 1, life: rand(0.4, 0.7), floor: y + rand(-6, 6) }); } }
     shakeScreen(2.5, 0.2); sfx('acidboom'); fire(); return; }
@@ -6604,7 +6604,7 @@ function updateProjectile(pr, dt) {
       const d = dist(e.x, e.y, pr.tx, pr.ty);
       if (d <= pr.splash) {
         NO_KNOCK = veba; damageEnemy(e, pr.dmg * (1 - 0.4 * d / pr.splash) * (veba ? PLAGUE_HIT.hit : 1), 'phys', false, pr.src); NO_KNOCK = false; e.rotT = 4; if (pr.stun && Math.random() < pr.stun) stunEnemy(e, 0.5);
-        if (veba && !e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = PLAGUE_HIT.dotT; }
+        if (veba && !e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = Math.max(e.coatT || 0, VEBA_COAT.dur); }
         if (pr.plague && !e.dead) { poisonEnemy(e, pr.plague, 4); e.plagueT = 4; e.plagueDps = pr.plague; } // kara veba
       }
     }
@@ -11630,26 +11630,45 @@ const cauldronPt = (t, ts, q) => ({ x: t.x + (q[0] - 0.5) * ts.w, y: ts.bottom -
 // veba kaplaması (15 Eki, Caner): vurulan düşmanın gövdesine yapışan yeşil veba lekeleri, ara ara damlar; zehir süresince solar
 // 16 Eki (performans): kabarcıklar her karede 18 şekil çiziliyordu (kalabalıkta kare başına ~380 dolgu); şimdi boy ve tohuma göre bir kez
 // küçük bir tuvale çizilir (önbellek), karede tek drawImage. Hafif soluma: tuval dikeyde ±%3 nefes alır.
+// 20 Eki (Caner: "yeşil sıvı daha detaylı, daha uzun kalsın, daha sıvı gibi, hafif duman"): parlak yansımalı yapışkan lekeler + aşağı akan
+// gözyaşı damlalar (önbellek), üstünde canlı damlalar uzayıp kopar, ara ara soluk duman tüter. Görüntü VEBA_COAT.dur sn (zehir hasarı PLAGUE_HIT.dotT).
+const VEBA_COAT = { dur: 7, fade: 2, drips: 2, smoke: 0.035 };
 const COAT_C = new Map();
 function coatTex(h, v) {
   const H = Math.round(h / 4) * 4, key = H + '|' + v; let c = COAT_C.get(key); if (c) return c;
-  const K = 3, r = seeded(v * 97 + 13), W2 = H * 0.6; c = document.createElement('canvas'); c.width = Math.ceil(W2 * K); c.height = Math.ceil(H * K);
+  const K = 3, r = seeded(v * 97 + 13), W2 = H * 0.62; c = document.createElement('canvas'); c.width = Math.ceil(W2 * K); c.height = Math.ceil(H * K);
   const g = c.getContext('2d'); g.scale(K, K);
-  for (let i = 0; i < 6; i++) {
-    const bx = W2 / 2 + (r() - 0.5) * H * 0.36, by = H - H * (0.18 + r() * 0.62), br = H * (0.05 + r() * 0.05);
-    g.fillStyle = 'rgba(40,90,20,0.7)'; g.beginPath(); g.ellipse(bx, by + br * 0.25, br * 1.1, br * 0.9, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = i % 3 ? 'rgba(140,230,80,0.85)' : 'rgba(170,110,230,0.8)'; g.beginPath(); g.ellipse(bx, by, br, br * 0.8, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = 'rgba(235,255,210,0.8)'; g.beginPath(); g.arc(bx - br * 0.35, by - br * 0.3, br * 0.25, 0, Math.PI * 2); g.fill();
+  const tear = (x, y, w, L, col) => { // lekeden aşağı akan damla: incelen kuyruk, ucunda yuvarlak damla
+    g.fillStyle = col; g.beginPath(); g.moveTo(x - w, y); g.quadraticCurveTo(x - w * 0.5, y + L * 0.6, x - w * 0.35, y + L); g.arc(x, y + L, w * 0.42, Math.PI, 0, true);
+    g.quadraticCurveTo(x + w * 0.5, y + L * 0.6, x + w, y); g.closePath(); g.fill(); };
+  for (let i = 0; i < 12; i++) {
+    const bx = W2 / 2 + (r() - 0.5) * H * 0.32, by = H - H * (0.14 + r() * 0.52), br = H * (0.017 + r() * 0.018), pur = i % 5 === 4; // gövdede, başın üstünde değil; 20 Eki (Caner: "daha küçük"): lekeler ~%40 küçük
+    const dk = pur ? 'rgba(70,30,100,0.8)' : 'rgba(30,80,15,0.82)', md = pur ? 'rgba(165,105,230,0.88)' : 'rgba(125,220,70,0.9)', lt = pur ? 'rgba(210,170,255,0.9)' : 'rgba(190,255,130,0.9)';
+    g.fillStyle = dk; g.beginPath(); g.ellipse(bx, by + br * 0.2, br * 1.5, br * 0.85, r() * 0.6 - 0.3, 0, Math.PI * 2); g.fill();
+    if (r() < 0.88) tear(bx + (r() - 0.5) * br, by + br * 0.5, br * 0.45, br * (2 + r() * 3.2), dk);
+    const gr = g.createRadialGradient(bx - br * 0.3, by - br * 0.35, br * 0.1, bx, by, br * 1.05); gr.addColorStop(0, lt); gr.addColorStop(1, md);
+    g.fillStyle = gr; g.beginPath(); g.ellipse(bx, by, br * 1.3, br * 0.7, 0, 0, Math.PI * 2); g.fill(); // yassı, yapışmış sıvı
+    if (r() < 0.75) tear(bx + (r() - 0.5) * br * 0.8, by + br * 0.4, br * 0.32, br * (1.6 + r() * 2.6), md);
+    g.fillStyle = 'rgba(245,255,230,0.85)'; g.beginPath(); g.ellipse(bx - br * 0.38, by - br * 0.32, br * 0.3, br * 0.18, -0.5, 0, Math.PI * 2); g.fill(); // ıslak parlama
+    g.fillStyle = 'rgba(245,255,230,0.5)'; g.beginPath(); g.arc(bx + br * 0.35, by + br * 0.2, br * 0.1, 0, Math.PI * 2); g.fill();
   }
   if (COAT_C.size > 60) COAT_C.delete(COAT_C.keys().next().value);
   COAT_C.set(key, c); return c;
 }
 function drawPlagueCoat(e, x, h, fly) {
-  const a = clamp(e.coatT / 1.2, 0, 1) * 0.85, c = coatTex(h, Math.floor(e.off * 97) & 3), H = Math.round(h / 4) * 4, br = 1 + Math.sin(time * 2 + e.off) * 0.03;
+  const V = VEBA_COAT, a = clamp(e.coatT / V.fade, 0, 1) * 0.9, c = coatTex(h, Math.floor(e.off * 97) & 3), H = Math.round(h / 4) * 4, br = 1 + Math.sin(time * 2 + e.off) * 0.03;
   const pa = ctx.globalAlpha; ctx.globalAlpha = pa * a;
-  ctx.drawImage(c, x - H * 0.3, e.y - fly - H * br, H * 0.6, H * br);
+  ctx.drawImage(c, x - H * 0.31, e.y - fly - H * br, H * 0.62, H * br);
+  for (let i = 0; i < V.drips; i++) { // canlı damla: uzar, kopar (koparken yere düşen damla salınır)
+    const sd = e.off * 7.3 + i * 2.1, ph = (((time * (0.45 + i * 0.12) + sd) % 1) + 1) % 1, dx = x + Math.sin(sd * 3.1) * h * 0.13, dy = e.y - fly - h * (0.32 + 0.12 * Math.sin(sd)), L = h * 0.07 * ph, w = 0.7 + 0.3 * (1 - ph);
+    ctx.fillStyle = 'rgba(120,215,70,0.9)'; ctx.beginPath(); ctx.ellipse(dx, dy + L * 0.5, w * 0.6, L * 0.5 + w * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(150,235,95,0.95)'; ctx.beginPath(); ctx.arc(dx, dy + L, w, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(240,255,220,0.8)'; ctx.beginPath(); ctx.arc(dx - w * 0.35, dy + L - w * 0.35, w * 0.32, 0, Math.PI * 2); ctx.fill();
+    if (ph > 0.96 && (e.dripK = (e.dripK || 0) + 1) % 3 === i) emit(G.parts, { kind: 'dot', x: dx, y: dy + L, vy: 20, g: 300, col: Math.random() < 0.8 ? '#8fe85a' : '#b07ae0', s0: w * 1.1, s1: 0.8, life: 0.6, floor: e.y + 2 });
+  }
   ctx.globalAlpha = pa;
-  if (Math.random() < 0.06) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
+  if (Math.random() < 0.05) emit(G.parts, { kind: 'dot', x: x + rand(-h * 0.15, h * 0.15), y: e.y - fly - h * rand(0.2, 0.5), vy: rand(5, 20), g: 260, col: Math.random() < 0.7 ? '#8fe85a' : '#b07ae0', s0: rand(1.1, 1.8), s1: 0.8, life: 0.5, floor: e.y + 2 });
+  if (Math.random() < V.smoke * a) emit(G.parts, { kind: 'glow', x: x + rand(-h * 0.14, h * 0.14), y: e.y - fly - h * rand(0.45, 0.8), vx: rand(-4, 4), vy: -rand(8, 16), drag: 0.6, col: Math.random() < 0.7 ? '120,175,95' : '140,120,170', s0: rand(2.5, 3.5), s1: rand(7, 10), life: rand(1, 1.6), a: 0.16 }); // hafif veba dumanı
 }
 // 16 Eki (Caner): Kemik Gülle Mancınığı. dur uçuş sn, arc kavis, splash alan çarpanı, rate bekleme çarpanı, toss savrulma süresi
 const BONEBALL = { dur: 1.35, arc: 190, splash: 1.15, rate: 1.5, toss: 0.62, anim: 4.0, r: 6 }; // 16 Eki (Caner): kazan havan gibi yukarı atar, gülle küçük (r) // anim: Veo atış döngüsünün süresi (atış aralığına sığar) // arc: gerçek parabolün tepe yüksekliği (önce yukarı fırlar, sonra düşer)
@@ -11661,7 +11680,7 @@ function boneBallHit(pr) {
     const k = 1 - d / R;
     NO_KNOCK = true; damageEnemy(e, pr.dmg * (0.55 + 0.45 * k), 'phys', false, 'blast'); NO_KNOCK = false;
     if (e.dead) continue;
-    poisonEnemy(e, pr.dmg * 0.08, 4); e.coatT = 4;
+    poisonEnemy(e, pr.dmg * 0.08, 4); e.coatT = Math.max(e.coatT || 0, VEBA_COAT.dur);
     if (!e.def.chief && !e.def.machine && e.siege === undefined) { // havaya savrulur: merkezden dışa, yolda geriye; yere düşünce kısa sersemler
       e.tossT = e.tossD = BONEBALL.toss * (0.8 + 0.4 * k); e.tossH = (cr.h || 30) * (0.55 + 0.45 * k);
       const side = Math.sign((e.off || 0) - 0) || (Math.random() < 0.5 ? -1 : 1); e.tossOff = clamp((e.off || 0) + side * rand(5, 11), -14, 14);
@@ -11702,7 +11721,7 @@ function plagueBomb(pr) {
     const d = dist(e.x, e.y, pr.tx, pr.ty); if (d > pr.splash) continue;
     const k = 1 - d / pr.splash;
     NO_KNOCK = true; damageEnemy(e, pr.dmg * (0.6 + 0.4 * k) * PLAGUE_HIT.hit, 'phys', false, pr.src); NO_KNOCK = false; e.rotT = 4;
-    if (!e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = PLAGUE_HIT.dotT; }
+    if (!e.dead) { poisonEnemy(e, pr.dmg * PLAGUE_HIT.dot, PLAGUE_HIT.dotT); slowEnemy(e, PLAGUE_HIT.slow, PLAGUE_HIT.slowT); e.coatT = Math.max(e.coatT || 0, VEBA_COAT.dur); }
     if (pr.plague && !e.dead) { poisonEnemy(e, pr.plague, 4); e.plagueT = 4; e.plagueDps = pr.plague; } // kara veba
   }
   // 16 Eki (Caner: "kaynayan veba kazanı yüksek seviyede attığı zehir yolda daha uzun kalsın, üstünden geçen saniyede zehir hasarı alsın"):
@@ -15134,7 +15153,7 @@ function towerMenuItems(t) {
   const EX = t.spec && TOWER_EXTRA[t.spec];
   if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 74, y: t.y - 52, cost: extraCost(t), owned: (+t.extra || 0) >= EXTRA_RK.n, rank: +t.extra || 0 });
   if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -66), y: t.y + (t.type === 'archer' ? -34 : 30), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
-  if (moreBase(t)) items.push({ id: 'more', type: t.type, blocked: !moreOpen(t), x: t.x + (t.type === 'archer' ? -62 : 62), y: t.y + (t.type === 'archer' ? 12 : 34), cost: t.more || !moreOpen(t) ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
+  if (moreBase(t)) items.push({ id: 'more', type: t.type, blocked: !moreOpen(t), x: t.x + (t.type === 'archer' ? -64 : 62), y: t.y + (t.type === 'archer' ? 32 : 34), cost: t.more || !moreOpen(t) ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
   if (prioOpen(t)) items.push({ id: 'target', type: t.prio || 'first', x: t.x + 64, y: t.y + 62 }); // hedef önceliği: 20 Eki (Caner) yeteneklerden ayrı, satış düğmesinin yanında, çelik halkalı
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: sellValue(t) });
   if (t.type === 'barracks') items.push({ id: 'rally', x: t.x + 62, y: t.y + (t.spec ? -20 : 12) }); // 3 yol düğmesiyle çakışmasın
@@ -15394,11 +15413,13 @@ function drawPathIcon(k, x, y, s) {
   }
   ctx.restore();
 }
+// 20 Eki (Caner: "kule menüsü çok sıkışık; +1 asker ve ateş/zehir/buz büyüsü küçük yuvarlak olsun"): yan düğmeler küçük, dokunma alanı da ona göre
+const MENU_SMALL = { imbue: 0.72, more: 0.72, target: 0.8 };
 function drawMenuItem(it, x, y, sc, a, preview) {
   const ok = itemAffordable(it), R = MENU_R;
   const active = preview && preview.id === it.id && preview.type === it.type;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y);
-  const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : it.id === 'target' ? 0.88 : 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
+  const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : MENU_SMALL[it.id] || 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
   ctx.scale(s, s);
   if (active) glow(ctx, 0, 0, R * 2.2, '255,215,110', 0.6);
   const abIm = it.id === 'ability' && spr('ico_ab_' + it.type); // 18 Eki (Caner): yetenek düğmesinin halkası simgenin renginde
@@ -15469,7 +15490,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   ctx.fillStyle = 'rgba(255,255,255,0.13)'; ctx.beginPath(); ctx.ellipse(0, -R * 0.5, R * 0.62, R * 0.32, 0, 0, Math.PI * 2); ctx.fill();
   if (it.blocked) { circle(0, 0, R - 1, 'rgba(10,4,12,0.55)'); drawIcon('lock', 0, -2, 20); }
   if ((it.id === 'extra' || it.id === 'imbue' || it.id === 'more') && it.owned) { roundRect(-22, R + 0.5, 44, 17, 8.5, 'rgba(24,15,7,0.94)', '#e8bb4a', 1.6); txt('VAR', 0, R + 9.5, 12, '#ffe27a', 'center', '400', FONT_T); }
-  if (it.id === 'imbue' && !it.owned) { roundRect(-26, R + 0.5, 52, 17, 8.5, 'rgba(24,15,7,0.94)', '#c9a0ff', 1.6); txt('BÜYÜ', 0, R + 9.5, 12, '#e8d0ff', 'center', '400', FONT_T); }
+  // 20 Eki: küçük büyü düğmesinin altındaki 'BÜYÜ' etiketi kalktı (simge yeter, menü sıkışmasın)
   if (it.id === 'ability') {
     for (let i = 0; i < it.ab.ranks.length; i++) {
       const px = (i - 1) * 9, py = -R - 2;
@@ -23398,7 +23419,7 @@ function hudTap(x, y) {
   // açık menü
   if (!G.mode && G.sel && (G.sel.kind === 'plot' || G.sel.kind === 'tower' || G.sel.kind === 'castle' || G.sel.kind === 'hatch')) {
     for (const it of currentMenu()) {
-      if (dist(it.x, it.y, x, y) <= MENU_R * MENU_K * (it.id === 'build' ? BUILD_ICON_K : 1) + 8) {
+      if (dist(it.x, it.y, x, y) <= MENU_R * MENU_K * (it.id === 'build' ? BUILD_ICON_K : MENU_SMALL[it.id] || 1) + (MENU_SMALL[it.id] ? 6 : 8)) {
         const same = G.preview && G.preview.id === it.id && G.preview.type === it.type;
         tapPop('mi' + it.id + (it.type || ''));
         if (it.id === 'rally') { const tw = G.sel.tower; setSel(null); G.mode = tw ? { kind: 'rally', tower: tw } : { kind: 'rally', castle: true }; sfx('pick'); return true; }
