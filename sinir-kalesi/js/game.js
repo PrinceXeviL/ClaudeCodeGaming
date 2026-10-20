@@ -10636,10 +10636,12 @@ const MEN_K = 1.22, OUTL = new WeakMap(); // 15 Eki: zayıf anahtar (atılan şe
 // Tuval boyu bekleme pozundaki gövde oranından bulunur: yayı başın üstüne taşan çizimler küçük görünmesin.
 // 11 Eki (2): kule büyüdükçe okçular aynı boyda kalınca büyük kulede küçük görünüyordu → kademeyle büyür, mahzen iskeletinin
 // o kademedeki boyunu geçmez (1. kademe 21, 2. 23, 3. ve 4. kademe 25; yoldaki iskelet savaşçılar 23..26)
-// 20 Eki (Caner): "okçuların her levelde boyları eşit olsun" → bütün kademelerde ve 4. kademede aynı gövde boyu
-const MEN_BODY = 23;
+// 20 Eki (Caner): "okçuların her levelde boyları eşit olsun", "yerdeki iskelet savaşçılardan çok az küçük" → bütün kademelerde aynı
+// kafa→ayak boyu (yerdeki iskelet savaşçı ~21 birim). bodyRatio en üst pikselden ölçer: yayı başın üstüne taşan çizimde HEAD_K düzeltir.
+// SHOT_K: atış şeridinin ilk karesinde kafa→ayak boyu şeridin karakter boyundan (ch, yay dahil) kısa olanlar (varliklar ölçümü, 20 Eki)
+const MEN_BODY = 21.6, HEAD_K = { unit_archer3: 1.06 }, SHOT_K = { unit_archer3: 160 / 122 / 1.06, unit_ghostarcher: 160 / 147 };
 const menBody = (t) => MEN_BODY * TOWER_S;
-const menH = (t) => { const M = menOf(t); return menBody(t) / bodyRatio(spr(M.pre)); };
+const menH = (t) => { const M = menOf(t); return menBody(t) / bodyRatio(spr(M.pre)) * (HEAD_K[M.pre] || 1); };
 function outlined(im, R = 7, col = 'rgba(14,6,12,0.92)') {
   let c = OUTL.get(im); if (c) return c;
   const s = document.createElement('canvas'); s.width = im.width; s.height = im.height;
@@ -10750,7 +10752,7 @@ function drawXbowMen(t, ts, redraw) {
     // 11 Eki (Caner): koyu kontur kaldırıldı, yoldaki iskeletler gibi düz çizilir
     const shot = !CK && M.bow && !a.walking && archShot(pre, up && a.aimT > 0 ? rise : null, up && a.aimT <= 0 ? sinceRel : null, M.kick + M.hold);
     if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
-    else if (shot) drawFrame(shot.im, shot.F, shot.i, h * bodyRatio(spr(pre)) * 1.04); // Veo şeridi (boy: gövde, miğfer dahil)
+    else if (shot) drawFrame(shot.im, shot.F, shot.i, h * bodyRatio(spr(pre)) * (SHOT_K[pre] || 1)); // Veo şeridi (boy: gövde, miğfer dahil)
     else { const w0 = h * im.width / im.height; drawSprite(ctx, im, 0, 0, w0);
       if (a.flash > 0) { const wi = whiteOf(pre + pose + '_w', im); ctx.globalAlpha *= 0.7; drawSprite(ctx, wi, 0, 0, w0); } } // isabet anında beyaz parlar
     ctx.restore();
