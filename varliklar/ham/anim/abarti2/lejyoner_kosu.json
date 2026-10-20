@@ -1,0 +1,22 @@
+[
+ {
+  "name": "enemy_legion_runA",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular red shield and a spear charges forward in place, running fast in a fierce battle charge: leaning forward, long running strides with the knees lifted high, both feet leave the ground between steps, the shield held firmly in front of the body, the spear pointed forward ready to strike, the red cape and helmet crest flying back, a full looping run cycle. The run never stops or pauses: a steady non-stop run cycle, every stride the same length. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame on the same spot at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no dust, no smoke",
+  "frames": 33,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 12,
+  "seed": 41
+ },
+ {
+  "name": "enemy_legion_runB",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "prompt": "a cartoon roman legionary with a big rectangular red shield and a spear charges forward in place, running fast in a fierce battle charge: leaning forward, long running strides with the knees lifted high, both feet leave the ground between steps, the shield held firmly in front of the body, the spear pointed forward ready to strike, the red cape and helmet crest flying back, a full looping run cycle. The run never stops or pauses: a steady non-stop run cycle, every stride the same length. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame on the same spot at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no dust, no smoke",
+  "frames": 33,
+  "loop": false,
+  "cycle": true,
+  "loop_lo": 12,
+  "seed": 67
+ }
+]

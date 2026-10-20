@@ -286,13 +286,6 @@
   "idle": 0,
   "stride": 0.885
  },
- "mortimer_panik": {
-  "n": 28,
-  "fw": 217,
-  "fh": 219,
-  "base": 0.0143,
-  "ch": 0.9145
- },
  "enemy_solarcher_die": {
   "n": 33,
   "fw": 293,
@@ -1832,15 +1825,6 @@
   "ch": 0.9739,
   "cols": 46,
   "fps": 24.0
- },
- "mortimer_ofke": {
-  "n": 156,
-  "fw": 310,
-  "fh": 233,
-  "base": 0.0091,
-  "ch": 0.8765,
-  "cols": 39,
-  "fps": 30.0
  },
  "unit_archer1_shot": {
   "n": 27,

@@ -2353,7 +2353,7 @@ function startLevel(idx, chal = null) {
   (chal === 'a' ? ADMIN_TEST.waves : chal === 'o' ? TUTOR.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle', '_sig1', '_sig2', '_block'];
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle', '_sig1', '_sig2', '_block', '_run']; // 20 Eki: _run lejyoner hücum koşusu
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle', '_dash', '_guard').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
@@ -7477,13 +7477,13 @@ function mortAnim(p) {
   if (p >= 0 && mortStrip('mortimer_buyu')) return { n: 'mortimer_buyu', i: Math.min(ANIM_META.mortimer_buyu.n - 1, Math.floor(p * ANIM_META.mortimer_buyu.n)), k: 1 };
   if (!M) return null;
   // 15 Eki (Caner): Mortimer oturmaz, balkonun önünde ayakta durur (diriltme şeridinin ilk karesi + nefes); ayakta bekleme videosu gelince o oynar
-  if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_bekle')) return { n: 'mortimer_bekle', i: Math.floor(time * (ANIM_META.mortimer_bekle.fps || 10)) % ANIM_META.mortimer_bekle.n, k: 1, cx: 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
+  if ((M.st === 'tea' || M.st === 'up' || M.st === 'down' || M.st === 'panic') && mortStrip('mortimer_bekle')) // 20 Eki (Caner): panik ve öfke animasyonları kaldırıldı; savaşta da sakin bekler
+    return { n: 'mortimer_bekle', i: Math.floor(time * (ANIM_META.mortimer_bekle.fps || 10)) % ANIM_META.mortimer_bekle.n, k: 1, cx: 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
   if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_dirilt')) return { n: 'mortimer_dirilt', i: 0, k: 1, breathe: true };
   if ((M.st === 'up' || M.st === 'down') && mortStrip('mortimer_otur')) {
     const q = clamp(M.t / MORT_TRANS, 0, 1), N = ANIM_META.mortimer_otur.n;
     return { n: 'mortimer_otur', i: Math.round((M.st === 'down' ? q : 1 - q) * (N - 1)), k: (1 + MORT_SIT_K) / 2 };
   }
-  if (M.st === 'panic' && mortStrip('mortimer_panik')) return { n: 'mortimer_panik', i: Math.floor(time * 16) % ANIM_META.mortimer_panik.n, k: 1 };
   if (mortStrip('mortimer_cay') && M.st !== 'panic') return { n: 'mortimer_cay', i: Math.floor(time * 12) % ANIM_META.mortimer_cay.n, k: MORT_SIT_K };
   return null;
 }
@@ -12434,7 +12434,7 @@ function drawEnemy(e) {
   if (e.markT > G.t && !e._dv && !e._mk) { e._mk = true; try { drawEnemy(e); } finally { e._mk = false; } // Kıyamet Damgası: başının üstünde dönen kızıl kafatası
     const h = (CHAR_H['enemy_' + (e.def.base || e.type)] || 30) * (e.def.h ? e.def.h / 30 : 1), y = e.y - h - 16 - (e.flZ || 0) + Math.sin(time * 4) * 2;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, e.x, y, 14, '255,40,60', 0.45); ctx.restore(); drawIcon('skull', e.x, y, 13, '#ff5a5a'); return; }
-  if (e.capRushT > 0 && !e.inMelee && !e._dv && !e.def.machine) { // hücum koşusu: öne eğilir, ayağından toz kalkar
+  if (e.capRushT > 0 && !e.inMelee && !e._dv && !e.def.machine && !ANIM_META['enemy_' + (e.def.base || e.type) + '_run']) { // hücum koşusu (koşu şeridi yoksa): öne eğilir, ayağından toz kalkar
     if (Math.random() < 0.25) emit(G.parts, { kind: 'glow', x: e.x - (e.face || 1) * 6, y: e.y, vx: -(e.face || 1) * rand(10, 30), vy: -rand(4, 12), col: '170,150,120', s0: rand(2, 3.5), s1: 5, life: 0.5, a: 0.35 });
     ctx.save(); ctx.translate(e.x, e.y); ctx.rotate((e.face || 1) * 0.12); ctx.translate(-e.x, -e.y); e._dv = true; try { drawEnemy(e); } finally { e._dv = false; ctx.restore(); } return;
   }
@@ -12500,7 +12500,7 @@ function drawEnemy0(e) {
       walking: moved && !e.inMelee && e.siege === undefined && !(e.stun > 0) && !(e.shootT > 0 && !d.crew) && !(e.reviveT > 0), // kuşatma kulesi okçular atarken de yürür
       fly: (d.flying ? fly : 0) + (e.hopT > 0 ? Math.sin((1 - e.hopT / 0.4) * Math.PI) * 10 : 0) + (e.tossT > 0 ? Math.sin((1 - e.tossT / e.tossD) * Math.PI) * e.tossH : 0) + (e.flZ > 0 ? e.flZ : 0),
       atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.def.bash && e.bashT && e.bashCd != null ? ramPhase(e) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? (d.dagger ? 1 : e.atkV) : 0, // Lejyon Okçusu: yakında hançer şeridi (_atk2)
-      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
+      flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : e.capRushT > 0 && !e.inMelee ? '_run' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null, skillSuf: e.skillSuf, // 18 Eki: boss imza (_sig1/_sig2) ve savunma (_block) şeritleri
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);

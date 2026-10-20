@@ -1,0 +1,54 @@
+[
+ {
+  "name": "enemy_vulture_atkA",
+  "ref": "ham/anim/enemy_vulture_ref.png",
+  "prompt": "a cartoon big bald vulture with brown feathers, a white neck ruff and a red studded leather harness hovers, then folds its wings and dives down steeply, strikes down with its open sharp talons at something on the ground below, flaps hard and climbs back up to exactly the starting hovering pose. It always stays the same size and faces right, never turns around. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 51
+ },
+ {
+  "name": "enemy_vulture_atkB",
+  "ref": "ham/anim/enemy_vulture_ref.png",
+  "prompt": "a cartoon big bald vulture with brown feathers, a white neck ruff and a red studded leather harness hovers, then folds its wings and dives down steeply, strikes down with its open sharp talons at something on the ground below, flaps hard and climbs back up to exactly the starting hovering pose. It always stays the same size and faces right, never turns around. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 77
+ },
+ {
+  "name": "hero_merlin_runA",
+  "ref": "ham/anim/hero_merlin_ref.png",
+  "prompt": "a cartoon skeleton wizard Merlin with a long pale green ghostly beard, an antler crown with a skull, a dark purple and blue robe with bone shoulder pads and a gnarled staff topped with a glowing orb runs in place with hurried long strides, holding his robe up with one hand and the staff in the other, the beard and robe streaming back, a full looping run cycle. The run never stops or pauses: a steady non-stop run cycle, every stride the same length. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 51,
+  "cycle": true,
+  "loop_lo": 12
+ },
+ {
+  "name": "hero_merlin_runB",
+  "ref": "ham/anim/hero_merlin_ref.png",
+  "prompt": "a cartoon skeleton wizard Merlin with a long pale green ghostly beard, an antler crown with a skull, a dark purple and blue robe with bone shoulder pads and a gnarled staff topped with a glowing orb runs in place with hurried long strides, holding his robe up with one hand and the staff in the other, the beard and robe streaming back, a full looping run cycle. The run never stops or pauses: a steady non-stop run cycle, every stride the same length. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 77,
+  "cycle": true,
+  "loop_lo": 12
+ },
+ {
+  "name": "hero_merlin_blockA",
+  "ref": "ham/anim/hero_merlin_ref.png",
+  "prompt": "a cartoon skeleton wizard Merlin with a long pale green ghostly beard, an antler crown with a skull, a dark purple and blue robe with bone shoulder pads and a gnarled staff topped with a glowing orb stands still, then raises his staff in front of him and a round glowing green magic shield appears in front of his body, he braces as a heavy blow hits the shield and slides back a little, then the shield fades and he returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 51
+ },
+ {
+  "name": "hero_merlin_blockB",
+  "ref": "ham/anim/hero_merlin_ref.png",
+  "prompt": "a cartoon skeleton wizard Merlin with a long pale green ghostly beard, an antler crown with a skull, a dark purple and blue robe with bone shoulder pads and a gnarled staff topped with a glowing orb stands still, then raises his staff in front of him and a round glowing green magic shield appears in front of his body, he braces as a heavy blow hits the shield and slides back a little, then the shield fades and he returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 77
+ }
+]

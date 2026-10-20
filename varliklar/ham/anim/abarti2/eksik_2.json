@@ -1,0 +1,50 @@
+[
+ {
+  "name": "hero_robin_blockA",
+  "ref": "ham/anim/hero_robin_ref.png",
+  "prompt": "a cartoon skeleton ranger Robin with an antler hood, a tattered green cloak, leather armor and a long curved bone bow with a glowing green string stands still, then raises the bow crosswise in front of his body like a staff and blocks a heavy sword blow with it, leans back from the impact, then steps forward and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 51
+ },
+ {
+  "name": "hero_robin_blockB",
+  "ref": "ham/anim/hero_robin_ref.png",
+  "prompt": "a cartoon skeleton ranger Robin with an antler hood, a tattered green cloak, leather armor and a long curved bone bow with a glowing green string stands still, then raises the bow crosswise in front of his body like a staff and blocks a heavy sword blow with it, leans back from the impact, then steps forward and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 77
+ },
+ {
+  "name": "hero_bathory_blockA",
+  "ref": "ham/anim/hero_bathory_ref.png",
+  "prompt": "a cartoon skeletal vampire countess Bathory with a tall spiked crown, a high lace collar, a long black and crimson gown and a heart-topped blood staff stands still, then swirls her blood staff in front of her and a curved wall of red blood rises in front of her body, she blocks a heavy blow behind it, the blood splashes back down into the staff and she returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 51
+ },
+ {
+  "name": "hero_bathory_blockB",
+  "ref": "ham/anim/hero_bathory_ref.png",
+  "prompt": "a cartoon skeletal vampire countess Bathory with a tall spiked crown, a high lace collar, a long black and crimson gown and a heart-topped blood staff stands still, then swirls her blood staff in front of her and a curved wall of red blood rises in front of her body, she blocks a heavy blow behind it, the blood splashes back down into the staff and she returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 77
+ },
+ {
+  "name": "hero_leonidas_castA",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead spartan king Leonidas with a crested bronze helmet, a big round bronze shield and a spear stands tall, raises his spear high to the sky and shouts a war cry, bangs the spear against the round shield twice with powerful blows, then plants the spear on the ground and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 51
+ },
+ {
+  "name": "hero_leonidas_castB",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "prompt": "a cartoon undead spartan king Leonidas with a crested bronze helmet, a big round bronze shield and a spear stands tall, raises his spear high to the sky and shouts a war cry, bangs the spear against the round shield twice with powerful blows, then plants the spear on the ground and returns exactly to the starting pose. Exaggerated punchy cartoon action, squash and stretch, snappy timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame at the same size and never turns toward the camera, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur",
+  "frames": 33,
+  "loop": false,
+  "seed": 77
+ }
+]
