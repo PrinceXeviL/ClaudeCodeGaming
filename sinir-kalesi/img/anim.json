@@ -2748,26 +2748,6 @@
   "bx": 147.0,
   "by": 148.4
  },
- "tower_mage_drain_collapse": {
-  "n": 49,
-  "fw": 253,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 71.5,
-  "bx": 146.6,
-  "by": 148.4
- },
- "tower_mage_ghost_collapse": {
-  "n": 49,
-  "fw": 253,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 72.6,
-  "bx": 146.8,
-  "by": 148.4
- },
  "tower_artillery_1_collapse": {
   "n": 49,
   "fw": 295,

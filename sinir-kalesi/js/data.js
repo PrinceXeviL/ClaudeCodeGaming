@@ -1759,9 +1759,12 @@ TOWERS.mage.levels[2].dmg = TOWERS.mage.levels[2].dmg.map(v => Math.round(v * 0.
 // 20 Eki (Caner: "düşmanlardan ruh çalacak ve onu elektrik olarak düşmanlara çarpacak"): Ruh Feneri v3, hayaletsiz. Fener ince ruh ışınıyla
 // düşmanın ruhunu emer (normal vuruş, hasarı baseK kadar), her vuruşta bir ruh fenere süzülür; cost[kademe] ruh birikince fener boşalır:
 // büyük ruh şimşeği (ortalama hasar × dmgK), kademeyle jumps kadar düşmana sıçrar, çarpılanın iskeleti görünür. Mantık game.js mage dalı + lampZap.
-const SOUL_V3 = { on: true, baseK: 0.72, cost: [4, 3, 3], dmgK: [1.5, 1.7, 1.9], jumps: [0, 1, 2], cap: 6 };
+const SOUL_V3 = { on: true, baseK: 0.72, cost: [4, 3, 3], dmgK: [1.5, 1.7, 1.9], jumps: [0, 1, 2], cap: 6,
+  spec: { drain: { cost: 3, jumps: 1, baseK: 0.85 }, ghost: { cost: 2, jumps: 3, baseK: 0.72 } } }; // 4. kademe: Ruh Emici ışını güçlenir, Ruh Kafesi şimşeği çok sıçrar
 const SOUL_LAMP = { on: false, thieves: [1, 2, 2], speed: 140, drainT: 0.75, slow: 0.3, share3: 0.55, cap: 10,
   zap: { cost: 2, cd: 1.4, dmgK: 0.95, jumpR: 75, jumpK: 0.7, xray: 0.9 } };
+if (SOUL_V3.on) { TOWERS.mage.desc = "Ruh ışını düşmanın ruhunu emer, ruhlar fenerde birikir ve şimşek olarak çarpar · zırhı deler · menzilinde ölenlerin ruhunu toplar"; // 20 Eki: ruh emme + ruh şimşeği metinleri
+  TOWERS.mage.levels[0].perk = "Ruh ışını ruhu emer (zırhı deler) · 4 ruhta ruh şimşeği"; TOWERS.mage.levels[1].perk = "Emilen düşman %30 yavaşlar · 3 ruhta şimşek, 1 düşmana sıçrar"; TOWERS.mage.levels[2].perk = "Şimşek 2 düşmana sıçrar · çarpılanın iskeleti görünür"; }
 if (SOUL_LAMP.on) { Object.assign(TOWERS.mage, { desc: 'Ruh hırsızları düşmanın ruhunu emer: zırhı deler, yavaşlatır · 3. kademede biriken ruhlarla şimşek çarpar' });
 TOWERS.mage.levels[0].perk = 'Ruh hırsızı: düşmanın ruhunu emer, büyü hasarı zırhı deler';
 TOWERS.mage.levels[1].perk = 'İki ruh hırsızı · emilen düşman %30 yavaşlar';

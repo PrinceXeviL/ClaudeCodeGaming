@@ -5059,7 +5059,7 @@ function updateSoulLamp(t, dt, L) {
   }
 }
 function lampZap(t, src, e, L, v3) {
-  const S = SOUL_LAMP.zap, gh = abRank(t, 'ghost'), lv = Math.min(2, t.lvl), jumps = (gh ? gh.jumps || 0 : 0) + (v3 ? SOUL_V3.jumps[lv] : 0), hit = new Set([e]);
+  const S = SOUL_LAMP.zap, gh = abRank(t, 'ghost'), lv = Math.min(2, t.lvl), jumps = (gh ? gh.jumps || 0 : 0) + (v3 ? (t.spec && SOUL_V3.spec[t.spec] ? SOUL_V3.spec[t.spec].jumps : SOUL_V3.jumps[lv]) : 0), hit = new Set([e]);
   let from = src, cur = e, dmg = (L.dmg[0] + L.dmg[1]) / 2 * (v3 ? SOUL_V3.dmgK[lv] : S.dmgK) * rand(0.9, 1.1);
   // 16 Eki (Caner: "önceki hali zaten şimşek gibiydi, önceki haline çevir"): eski ruh ışınının görünümü (tek renk, ince, kaynakta parlama)
   const MF = towerForm(t), dr = abRank(t, 'drain'), col = NECRO ? (MF ? MF.col : dr ? 'rgb(120,255,150)' : 'rgb(170,130,255)') : undefined;
@@ -5236,15 +5236,15 @@ function updateTower(t, dt) {
     if (MF && MF.ramp) { t.ramp = t.lastHit === e ? Math.min(MF.rampMax, (t.ramp || 0) + MF.ramp) : 0; t.lastHit = e; mul = 1 + t.ramp; t.cd *= MF.rate; } // Ruh Emici: aynı hedefe güçlenir
     if (MF) { const MA = towerAnim(t); if (MA && !(t.animT != null && t.animT < MA.dur)) t.animT = 0; } // ışın anında; kule animasyonu sürüyorsa baştan başlamaz
     // ruh ışını: kuleden hedefe neredeyse anında çakar; Ruh Emici'de yeşil, canı iskeletlere aktarır
-    const V3 = NECRO && typeof SOUL_V3 !== 'undefined' && SOUL_V3.on && !MF; // 20 Eki: ruh emme + ruh şimşeği (uzmanlık biçimleri kendi ışınlarıyla)
-    G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: 0.07, dmg: roll(L.dmg) * mul * (V3 ? SOUL_V3.baseK : 1), dtype: 'magic', arc: 0, src: 'magic',
+    const V3 = NECRO && typeof SOUL_V3 !== 'undefined' && SOUL_V3.on, SV = V3 && t.spec && SOUL_V3.spec[t.spec] || null; // 20 Eki: ruh emme + ruh şimşeği (uzmanlıkta kendi değerleri)
+    G.projectiles.push({ kind: 'bolt', sx, sy: sy - 8, target: e, tx: e.x, ty: aimY(e), t: 0, dur: 0.07, dmg: roll(L.dmg) * mul * (V3 ? (SV ? SV.baseK : SOUL_V3.baseK) : 1), dtype: 'magic', arc: 0, src: 'magic',
       slow: t.lvl >= 1 ? { k: 0.3, t: 1 } : null, chain: t.lvl >= 2 && !V3, drain: dr ? dr.heal : 0 });
-    G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: V3 ? 0.34 : 0.28, w: V3 ? 0.55 + t.lvl * 0.1 : 1 + t.lvl * 0.25 + (t.ramp || 0) * (MF && MF.ramp ? 1.5 : 0), seed: rand(0, 99),
+    G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: V3 ? 0.34 : 0.28, w: V3 && !MF ? 0.55 + t.lvl * 0.1 : 1 + t.lvl * 0.25 + (t.ramp || 0) * (MF && MF.ramp ? 1.5 : 0), seed: rand(0, 99),
       col: NECRO ? (MF ? MF.col : V3 ? 'rgb(150,255,200)' : dr ? 'rgb(120,255,150)' : 'rgb(170,130,255)') : undefined });
     if (V3) { // emilen ruh fenere süzülür; yeterince birikince fener şimşek olarak boşaltır
       G.effects.push({ kind: 'soulwisp', x0: e.x, y0: aimY(e), x1: sx, y1: sy - 8, t: 0, dur: 0.55, seed: rand(0, 9) });
       t.souls = Math.min(SOUL_V3.cap, (t.souls || 0) + 1); t.soulPop = G.t;
-      const need = SOUL_V3.cost[Math.min(2, t.lvl)];
+      const need = SV ? SV.cost : SOUL_V3.cost[Math.min(2, t.lvl)];
       if (t.souls >= need) { t.souls -= need; t.zapQ = { e, at: G.t + 0.5, L }; } // ruh fenere varınca çakar
     }
     if (MF && MF.ramp && dr) G.effects.push({ kind: 'zap', x0: sx, y0: sy - 8, target: e, x1: e.x, y1: aimY(e), t: 0, dur: 0.22, w: 0.6, seed: rand(0, 99), col: 'rgb(120,255,150)' }); // emilen can: ince yeşil damar
@@ -10507,8 +10507,8 @@ const TOWER_FORM = {
   // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
   archer_fan: { noAnim: true, w: 1.25, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
   archer_bow: { noAnim: true, w: 1.35, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
-  mage_drain: { noAnim: true, w: 1, src: [0.73, 0.24], rate: 0.9, ramp: 0.12, rampMax: 0.4, col: 'rgb(190,140,255)' },
-  mage_ghost: { noAnim: true, w: 1, src: [0.73, 0.33], cageAt: [0.73, 0.33], col: 'rgb(255,80,80)', cage: { cd: 10, t: 1.8 } },
+  mage_drain: { noAnim: true, w: 1, src: [0.5, 0.15], /* 20 Eki v2: dev ruh kristali */ rate: 0.9, ramp: 0.12, rampMax: 0.4, col: 'rgb(190,140,255)' },
+  mage_ghost: { noAnim: true, w: 1, src: [0.11, 0.5], cageAt: [0.11, 0.5], /* 20 Eki v2: kanatlı ölümün kafesi */ col: 'rgb(255,80,80)', cage: { cd: 10, t: 1.8 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)
   // Lanet Kulesi: rite -> Kan Mabedi (kızıl bağlar kâseden çıkar), blight -> Kara Lanet Mabedi (lanet küreden, ölenlerin kalkma şansı +%10)
 };
@@ -16288,7 +16288,7 @@ function drawHud() {
 // ---- alt bilgi kartı (16 Eki, Caner: "daha kısa, basit, anlaşılır; simge kullan, profesyonel"): kadife kart, başlık satırında ad + etiket + fiyat,
 // simgeli değerler (yükseltmede yalnız değişenler: eski → yeni), açıklama en çok 3 kısa madde (uzun cümle " · " ayraçlarından bölünür). Yazılar ≥ 13 px.
 // kurma kartında kulenin kısa tanımı (16 Eki: uzun cümle yerine 2-3 madde)
-const TOWER_SHORT = { archer: 'Kara ve havayı vurur · 2. kademede okçu ya da arbaletçi yolu', barracks: 'İskelet savaşçılar yolu keser', mage: 'Zırhı deler · Yavaşlatır · Ruh toplar, büyüler çabuk dolar',
+const TOWER_SHORT = { archer: 'Kara ve havayı vurur · 2. kademede okçu ya da arbaletçi yolu', barracks: 'İskelet savaşçılar yolu keser', mage: SOUL_V3.on ? "Ruh emer, şimşek çarpar · Zırhı deler · Yavaşlatır" : 'Zırhı deler · Yavaşlatır · Ruh toplar, büyüler çabuk dolar',
   artillery: 'Alan hasarı · Zehir ve yavaşlatma · Zırhı çürütür', altar: 'Haritada tek kurulur · Düşmanı lanetler, korkutur · İskeletleri güçlendirir' };
 function infoParse(info) {
   let title = TR(info[0]), cost = null, tag = null;
