@@ -1,0 +1,17 @@
+Kemik Kulesi v2 (20 Eki 2026) - 1. adım: 3 kademe tek sayfada.
+Ekler: 1_stil_mahzen.png (tarz), 2_simdiki_kemik_kulesi.png (eski tasarım, yalnız taban boyu için)
+
+Draw a NEW archer tower for a dark-cartoon tower defense game, in EXACTLY the same art style as the crypt buildings in the first image (thick dark outlines, hand-painted cartoon shading, front 3/4 view, round grey stone base plate at the bottom). Do NOT copy the second image; it is only the old design, use it for size of the base plate.
+
+Concept: "the Giant's Bones" — an archer tower built from the remains of a fallen giant skeleton. Show 3 upgrade levels side by side, left to right, each clearly bigger and more impressive than the last, with a different silhouette:
+1) Level 1: a giant's ribcage standing upright on the stone base, the ribs tied together with rope, a simple wooden lookout platform on top of the ribs, one small bone banner.
+2) Level 2: the ribcage grows a spine column, stone blocks fill the bottom, a wider platform of planks and bones on top with a low bone railing, two green candle lanterns hanging from the ribs, faint green runes carved on the stones.
+3) Level 3: the upper body of a huge giant skeleton sunk into the ground up to its chest: a giant skull at the top whose flat crown is a wide archer platform with a bone railing, glowing green eyes, shoulder bones and rib arches around it, torn dark-red banners, purple rune stones at the base.
+
+Rules:
+- Every level has a FLAT, EMPTY platform on top where archers will stand (draw NO archers, no people).
+- The front edge of the platform has a low railing.
+- Colors: bone ivory, dark stone grey, dark wood, accents of green + purple + crimson.
+- No smoke, no fog, no mist, no aura, no glow halo around the tower. No crosses.
+- Plain flat magenta (#FF00FF) background, no shadow on the background, no ground, no text.
+- The three towers are separate with clear magenta space between them.

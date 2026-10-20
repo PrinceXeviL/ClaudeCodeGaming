@@ -2698,36 +2698,6 @@
   "base": 0.0146,
   "ch": 0.9708
  },
- "tower_xbow_2_collapse": {
-  "n": 49,
-  "fw": 239,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 64.8,
-  "bx": 147.2,
-  "by": 148.4
- },
- "tower_xbow_1_collapse": {
-  "n": 49,
-  "fw": 295,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 66.2,
-  "bx": 147.2,
-  "by": 148.4
- },
- "tower_xbow_3_collapse": {
-  "n": 49,
-  "fw": 250,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 80.4,
-  "bx": 147.2,
-  "by": 148.4
- },
  "tower_archer_bow_collapse": {
   "n": 49,
   "fw": 249,

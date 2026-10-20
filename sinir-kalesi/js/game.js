@@ -10526,9 +10526,10 @@ const XBOW_T = {
   // floor: platform zemininin baklavası [arka, sol, sağ, ön köşe] (görsel kesri); ayak bu baklavanın gövde genişliği kadar içinde kalır (Caner, 11 Eki: çitlerin üstüne çıkmasın)
   // 11 Eki (Caner): platform %20 genişledi, dört yanı kemik korkuluklu (Gemini, nm_kemik_kulesi_k1_korkuluk.jpg). front: ön korkuluk katmanı
   // (<ad>_front.webp, görselin üstten bu kesri kadar), okçulardan sonra çizilir; kırpma çokgeni yerine geçer
-  tower_xbow_1: { x: [0.25, 0.75], y: [0.17, 0.3], h: 0.229, clip: null, front: 0.42, floor: [[0.5, 0.125], [0.1, 0.235], [0.89, 0.235], [0.5, 0.35]] },
-  tower_xbow_2: { x: [0.25, 0.75], y: [0.18, 0.29], h: 0.181, clip: null, front: 0.42, floor: [[0.5, 0.15], [0.14, 0.23], [0.86, 0.23], [0.5, 0.33]] }, // 11 Eki: kemik korkuluklu (nm_kemik_kulesi_k2_korkuluk.jpg)
-  tower_xbow_3: { x: [0.28, 0.72], y: [0.19, 0.29], h: 0.15, clip: null, front: 0.5, floor: [[0.5, 0.15], [0.23, 0.245], [0.77, 0.245], [0.5, 0.33]] }, // 11 Eki: gövde daraldı, kemik korkuluklu geniş balkon (nm_kemik_kulesi_k3_korkuluk.jpg)
+  // 20 Eki: v2 "Devin Kemikleri" (Gemini, ham/nm_kemik_v2_kademe.jpg, varliklar/kemik_v2_isle.py): kaburga kafesi -> omurga kulesi -> gömülü dev iskeletin kafatası çanağı
+  tower_xbow_1: { x: [0.28, 0.7], y: [0.11, 0.21], h: 0.25, clip: null, front: 0.32, floor: [[0.5, 0.075], [0.19, 0.165], [0.79, 0.17], [0.47, 0.27]] },
+  tower_xbow_2: { x: [0.25, 0.75], y: [0.085, 0.19], h: 0.187, clip: null, front: 0.3, floor: [[0.5, 0.05], [0.12, 0.14], [0.87, 0.14], [0.5, 0.245]] },
+  tower_xbow_3: { x: [0.36, 0.72], y: [0.2, 0.245], h: 0.144, clip: null, front: 0.3, floor: [[0.53, 0.15], [0.3, 0.21], [0.78, 0.2], [0.52, 0.29]] }, // okçular kafatası çanağında, ön kenar beli örter
   tower_archer_fan: { x: [0.32, 0.68], y: [0.16, 0.26], h: 0.1586, clip: null, front: 0.5, floor: [[0.49, 0.14], [0.25, 0.22], [0.74, 0.22], [0.5, 0.29]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini); kemik korkuluklu balkon (nm_kemik_kulesi_fan_korkuluk.jpg)
   tower_archer_bow: { x: [0.3, 0.7], y: [0.16, 0.26], h: 0.149, clip: null, front: 0.5, floor: [[0.5, 0.13], [0.22, 0.21], [0.78, 0.21], [0.5, 0.29]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini); dar gövde, kemik korkuluklu balkon (nm_kemik_kulesi_bow_korkuluk.jpg)
 };
@@ -10847,7 +10848,7 @@ function squashArcher() {
   for (const b of ARCHER_SQ_N) for (const n of [b, b + '_front']) {
     const im = SPR[n]; if (!im || im.__sq || !(im.naturalWidth || im.width)) continue;
     const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, c = document.createElement('canvas'); c.width = w; c.height = Math.max(1, Math.round(h * ARCHER_SQ));
-    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, w, c.height); c.__sq = true; SPR[n] = c;
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, w, c.height); c.__sq = true; c.src = (im.src || n) + '#sq'; SPR[n] = c; // src: litOf önbelleği görseli src ile tanır (yoksa bütün kademeler 1. kademenin ışıklı kopyasını çizer)
   }
   for (const b of ARCHER_SQ_N) for (const n of [b, b + '_front']) if (SPR[n] && SPR[n].__sq) n2++;
   ARCHER_SQ_OK = n2 === ARCHER_SQ_N.length * 2;
@@ -11792,9 +11793,9 @@ function drawPlagueCauldron(t, ts) {
 // runes: [x, üst y, alt y, renk] aşağıdan yukarı akan run ışığı; flames: yandaki ruh alevleri (titrer, kıvılcım savurur);
 // eyes: kafatası gözleri; top: tepedeki kafes (çevresinde dönen ruh zerreleri) [x, y, yarıçap]
 const BONE_FX = {
-  tower_xbow_1: { runes: [[0.17, 0.74, 0.79, '110,255,140'], [0.43, 0.74, 0.79, '110,255,140']], top: [0.47, 0.12, 0.3] },
-  tower_xbow_2: { runes: [[0.36, 0.44, 0.65, '110,255,140'], [0.68, 0.44, 0.62, '110,255,140']], top: [0.5, 0.13, 0.36] }, // 11 Eki: köşe kafatasları kanlı, alevsiz
-  tower_xbow_3: { runes: [[0.354, 0.47, 0.67, '110,255,140'], [0.637, 0.515, 0.647, '110,255,140']], top: [0.5, 0.18, 0.36] }, // 11 Eki: kafataslar kanlı, alevsiz ve göz ışıksız
+  tower_xbow_1: {}, // 20 Eki v2: 1-2. kademede parıltı yok
+  tower_xbow_2: { runes: [[0.19, 0.6, 0.67, '110,255,140'], [0.47, 0.61, 0.68, '110,255,140'], [0.81, 0.58, 0.68, '110,255,140']] },
+  tower_xbow_3: { runes: [[0.255, 0.77, 0.8, '170,90,230'], [0.66, 0.79, 0.82, '170,90,230']] }, // v2: mor rün taşları
   tower_archer_fan: { runes: [[0.36, 0.49, 0.615, '230,90,210'], [0.625, 0.49, 0.6, '230,90,210']], top: [0.5, 0.2, 0.4] }, // Ağır Arbaletçiler burcu
   tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular (11 Eki: kanlı kafataslı, dumansız; fenerler TOWER_LIVE.swing ile sallanır)
 };
@@ -12098,9 +12099,6 @@ function litOf(im, cols, strip) {
 const TOWER_LIVE = {
   tower_archer_bow: {flags: [[0.0396, 0.5896, 0.1344, 0.7349], [0.8542, 0.5896, 0.95, 0.7349]], swing: [[0.0396, 0.3648, 0.1542, 0.5162, 0.0917, 0.3648], [0.8521, 0.3648, 0.9583, 0.5162, 0.9042, 0.3648]], rune: [0.3396, 0.4598, 0.6698, 0.7496]},
   tower_archer_fan: {flags: [[0.0292, 0.2843, 0.1594, 0.5599], [0.8292, 0.2843, 0.9698, 0.5599]], rune: [0.3, 0.3299, 0.7594, 0.6494]},
-  tower_xbow_1: {rune: [0.2792, 0.7096, 0.7198, 0.8194]},
-  tower_xbow_2: {rune: [0.2792, 0.4399, 0.6792, 0.6899]},
-  tower_xbow_3: {flags: [[0.0292, 0.2548, 0.1594, 0.5397], [0.8375, 0.2548, 0.9594, 0.5397]], rune: [0.3094, 0.4595, 0.6792, 0.7397]},
 };
 const RUNE_COLS = { base: ['110,255,140', '185,110,255', '255,70,95'], tower_archer_fan: ['235,80,235', '150,90,255', '255,70,95'] };
 const TINT = new Map();
