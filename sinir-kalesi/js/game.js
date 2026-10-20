@@ -15416,6 +15416,9 @@ function drawPathIcon(k, x, y, s) {
   ctx.restore();
 }
 // 20 Eki (Caner: "kule menüsü çok sıkışık; +1 asker ve ateş/zehir/buz büyüsü küçük yuvarlak olsun"): yan düğmeler küçük, dokunma alanı da ona göre
+// 20 Eki (Caner: "menü simgeleri kötü, efekt olmasın, kaliteli çizim"): uzmanlık düğmesi o uzmanlığın kendi kule çizimini gösterir
+const SPEC_ART = { bow: 'tower_archer_bow', fan: 'tower_archer_fan', drain: 'tower_mage_drain', ghost: 'tower_mage_ghost', shield: 'tower_barracks_shield', blade: 'tower_barracks_blade', golem: 'unit_bonegiant',
+  corpse: 'tower_artillery_bonemortar', plague: 'tower_artillery_plague', rite: 'tower_altar_rite', blight: 'tower_altar_blight' };
 const MENU_SMALL = { imbue: 0.72, more: 0.72, target: 0.8 };
 function drawMenuItem(it, x, y, sc, a, preview) {
   const ok = itemAffordable(it), R = MENU_R;
@@ -15424,7 +15427,8 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   const s = MENU_K * (it.id === 'build' ? BUILD_ICON_K : MENU_SMALL[it.id] || 1) * sc * pressScale('mi' + it.id + (it.type || '')) * (active ? 1.07 + Math.sin(time * 6) * 0.025 : 1);
   ctx.scale(s, s);
   if (active) glow(ctx, 0, 0, R * 2.2, '255,215,110', 0.6);
-  const abIm = it.id === 'ability' && spr('ico_ab_' + it.type); // 18 Eki (Caner): yetenek düğmesinin halkası simgenin renginde
+  const artIm = it.id === 'ability' && SPEC_ART[it.type] && spr(SPEC_ART[it.type]); // 20 Eki: uzmanlık düğmesinde o uzmanlığın kule çizimi (efektli simge yerine)
+  const abIm = !artIm && it.id === 'ability' && spr('ico_ab_' + it.type); // 18 Eki (Caner): yetenek düğmesinin halkası simgenin renginde
   if (abIm) { const c = icoColor(abIm); skillRing(0, 0, R - R * SPELL_FR.w * 0.5, c, ok); icoBg(0, 0, R - R * SPELL_FR.w * 0.5, c, ok); } else {
   circle(0, 5, R + 3, 'rgba(0,0,0,0.38)');
   const rim = ctx.createLinearGradient(0, -R, 0, R);
@@ -15447,6 +15451,9 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(12, 0); ctx.lineTo(5, 0); ctx.lineTo(5, 12); ctx.lineTo(-5, 12); ctx.lineTo(-5, 0); ctx.lineTo(-12, 0); ctx.closePath();
     const g = ctx.createLinearGradient(0, -14, 0, 12); g.addColorStop(0, '#d4ff9a'); g.addColorStop(1, '#3a9a22');
     ctx.lineJoin = 'round'; ctx.strokeStyle = '#123a08'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = g; ctx.fill();
+  } else if (it.id === 'ability' && artIm) { // kulenin üst kısmı (taban plakası dışarıda) düğmeyi doldurur
+    const sh = artIm.height * 0.8, k = (R * 2.05) / Math.max(artIm.width, sh), w = artIm.width * k, h = sh * k;
+    ctx.drawImage(artIm, 0, 0, artIm.width, sh, -w / 2, -h / 2 + R * 0.12, w, h);
   } else if (it.id === 'ability') {
     drawAbilityIcon(it.type, 0, abIm ? 1 : -1, abIm ? 1.5 : 1); // 18 Eki: Gemini simgesi halkayı doldursun
   } else if (it.id === 'max') {
@@ -15464,11 +15471,10 @@ function drawMenuItem(it, x, y, sc, a, preview) {
   } else if (it.id === 'grim') {
     drawGrimIcon(0, 0, 1); if (soulsFree() > 0) { glow(ctx, 0, 0, 22, '200,120,255', 0.3 + Math.sin(time * 4) * 0.1); }
   } else if (it.id === 'extra') {
-    glow(ctx, 0, 0, 20, '255,215,110', 0.3 + Math.sin(time * 4) * 0.08); drawAbilityIcon(it.type, 0, -1, 0.85); fancyStar(9, -10, 5, true);
+    drawAbilityIcon(it.type, 0, -1, 0.85); // 20 Eki (Caner: "efekt olmasın"): parıltı ve yıldız kalktı
     for (let k = 0; k < EXTRA_RK.n; k++) circle(-8 + k * 8, 17, 2.6, k < (it.rank || 0) ? '#ffd34d' : 'rgba(20,12,8,0.85)', '#3a2410', 1); // kademe noktaları
   } else if (it.id === 'more') { // +1 asker: iskelet/okçu simgesi ve +1 rozeti
-    glow(ctx, 0, 0, 20, '255,215,110', 0.25 + Math.sin(time * 4) * 0.08);
-    if (!mi(it.type === 'archer' ? 'ico_ab_bow' : 'ico_sp_nm_raise', 0.8)) drawSkullIcon(0, 1, 13);
+    { const uim = spr(it.type === 'archer' ? 'unit_archer2' : 'unit_skel_2'); if (uim) icoFit(uim, 0, 3, R * 0.75); else drawSkullIcon(0, 1, 13); } // 20 Eki: efektsiz, birimin kendi çizimi
     roundRect(2, -19, 22, 15, 7, 'rgba(24,15,7,0.95)', '#e8bb4a', 1.4); txt('+1', 13, -11, 11, '#ffe27a', 'center', '400', FONT_T);
   } else if (it.id === 'ghoul') {
     glow(ctx, 0, 2, 20, '140,255,120', 0.35); if (!mi('ico_mn_ghoul')) drawSkullIcon(0, 1, 15);
