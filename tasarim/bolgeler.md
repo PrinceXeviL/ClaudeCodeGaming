@@ -1,5 +1,8 @@
 # Bölgeler — KARAR (9 Eki): toplam 4 bölge × 15 bölüm = 60 bölüm
 
+> **20 Eki 2026 (Caner): çaydanlık hikâyesi oyundan tamamen çıkarıldı, çizgi roman panelleri de kaldırıldı (ara sahneler yalnız Veo videoları).** Severus'un elindeki nesne artık *kutsal su ibriği*; Engizisyon'un amacı Mortimer'ı ve ölülerini arındırmak (yakmak). Aşağıdaki çaydanlık geçen kısımlar eski taslaktır.
+
+
 Her bölgede ~18 düşman türü olacak (ilk sürümdeki 9 temel türün 2 katı). Türlerin yaklaşık yarısı o bölgeye özel, kalanı önceki bölgelerden gelir.
 Bölüm başına en çok 1–2 yeni tür tanıtılır. Bütün düşmanların yürüme ve saldırı animasyonu `varliklar/video_uret.py` ile ücretsiz üretilir (aşağıda).
 

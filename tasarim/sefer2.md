@@ -1,5 +1,8 @@
 # Sefer 2 — "Cadı Avı" · taslak 10 Eki 2026 (çöl fikri bırakıldı: Necromancer havasına uymuyor)
 
+> **20 Eki 2026 (Caner): çaydanlık hikâyesi oyundan tamamen çıkarıldı, çizgi roman panelleri de kaldırıldı (ara sahneler yalnız Veo videoları).** Severus'un elindeki nesne artık *kutsal su ibriği*; Engizisyon'un amacı Mortimer'ı ve ölülerini arındırmak (yakmak). Aşağıdaki çaydanlık geçen kısımlar eski taslaktır.
+
+
 Harita başlığı: **Cadı Avı** · İngilizce: **The Witch Hunt**. 15 bölüm, 1. seferden belirgin zor.
 Mortimer: "Ben cadı değilim. Cadılar kibar olur."
 

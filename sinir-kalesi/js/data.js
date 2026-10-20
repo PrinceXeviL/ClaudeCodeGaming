@@ -530,23 +530,23 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   ];
   // 10 Eki: her sefer 20 bölüm. Her bölgenin finalinden önce bir yeni bölüm (bölge başına 4 bölüm, finaller yerinde)
   const EK1 = [
-    { name: 'Dikenli Patika', theme: 'cursed', gold: 330, bossT: 'centurion', comic: 'patika', waves: [
+    { name: 'Dikenli Patika', theme: 'cursed', gold: 330, bossT: 'centurion', waves: [
       [W_('legion', 8, 1)], [W_('legion', 6, 1), W_('solarcher', 3, 1.8, 5)], [W_('gladiator', 3, 1.4), W_('legion', 6, 1, 4)],
       [W_('legion', 10, 0.8), W_('solarcher', 4, 1.4, 6)], [W_('gladiator', 5, 1.1), W_('legion', 8, 0.9, 5)], [W_('solarcher', 6, 1), W_('legion', 10, 0.8, 4)],
       [W_('gladiator', 6, 1), W_('solarcher', 5, 1.2, 5), W_('legion', 8, 0.8, 9)], [W_('legion', 12, 0.7), W_('gladiator', 6, 1, 5), W_('solarcher', 6, 1, 9)] ] },
-    { name: 'Kurbağa Adası', theme: 'bog', gold: 420, bossT: 'champion', comic: 'kurbaga', waves: [
+    { name: 'Kurbağa Adası', theme: 'bog', gold: 420, bossT: 'champion', waves: [
       [W_('legion', 8, 1), W_('assassin', 2, 1.5, 6)], [W_('gladiator', 5, 1.1), W_('solarcher', 4, 1.4, 4)], [W_('assassin', 5, 1), W_('legion', 8, 0.9, 4)],
       [W_('legion', 10, 0.8), W_('gladiator', 4, 1.2, 6)], [W_('assassin', 6, 0.9), W_('solarcher', 6, 1, 5)], [W_('gladiator', 6, 1), W_('legion', 10, 0.8, 5)],
       [W_('assassin', 8, 0.8), W_('solarcher', 6, 1, 6), W_('legion', 8, 0.8, 10)], [W_('legion', 12, 0.7), W_('gladiator', 8, 0.9, 5), W_('assassin', 8, 0.8, 10)] ] },
-    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, hpMul: 0.64, bossT: 'shadowmaster', comic: 'bekci', waves: [
+    { name: 'Fener Bekçisinin Mezarı', theme: 'graveyard', gold: 500, hpMul: 0.64, bossT: 'shadowmaster', waves: [
       [W_('legion', 10, 0.9), W_('priest', 1, 1, 6)], [W_('heavy', 2, 2.4), W_('solarcher', 5, 1.2, 4)], [W_('assassin', 6, 1), W_('gladiator', 5, 1.1, 5)],
       [W_('priest', 2, 3), W_('legion', 10, 0.8, 3)], [W_('heavy', 3, 2.2), W_('assassin', 6, 0.9, 6)], [W_('gladiator', 8, 0.9), W_('priest', 2, 3, 6)],
       [W_('heavy', 4, 2), W_('solarcher', 8, 0.9, 4), W_('legion', 10, 0.7, 10)], [W_('assassin', 10, 0.7), W_('heavy', 4, 2, 5), W_('priest', 3, 2.4, 9), W_('gladiator', 8, 0.8, 12)] ] },
-    { name: 'Sazlık Kıyı', theme: 'blacklake', gold: 580, bossT: 'cavcaptain', comic: 'sazlik', waves: [
+    { name: 'Sazlık Kıyı', theme: 'blacklake', gold: 580, bossT: 'cavcaptain', waves: [
       [W_('legion', 10, 0.9), W_('cavalry', 2, 2, 7)], [W_('heavy', 3, 2.2), W_('solarcher', 6, 1.1, 4)], [W_('cavalry', 4, 1.6), W_('assassin', 6, 1, 5)],
       [W_('ram', 1, 1), W_('legion', 10, 0.8, 2), W_('priest', 2, 3, 8)], [W_('gladiator', 8, 0.9), W_('cavalry', 4, 1.5, 6)], [W_('heavy', 4, 2), W_('priest', 3, 2.4, 4), W_('assassin', 6, 0.9, 9)],
       [W_('ram', 1, 1), W_('cavalry', 5, 1.4, 3), W_('legion', 12, 0.6, 8)], [W_('heavy', 5, 1.8), W_('cavalry', 6, 1.3, 5), W_('priest', 3, 2.4, 8), W_('gladiator', 8, 0.8, 12)] ] },
-    { name: 'Kemik Köprü', theme: 'necrogate', gold: 640, bossT: 'ironwarden', comic: 'kopru', waves: [
+    { name: 'Kemik Köprü', theme: 'necrogate', gold: 640, bossT: 'ironwarden', waves: [
       [W_('legion', 12, 0.8), W_('solarcher', 6, 1.1, 5)], [W_('catapult', 1, 1), W_('gladiator', 8, 0.9, 3)], [W_('cavalry', 6, 1.3), W_('priest', 2, 3, 6)],
       [W_('heavy', 5, 1.8), W_('assassin', 8, 0.9, 5)], [W_('ram', 2, 6), W_('legion', 14, 0.6, 2), W_('solarcher', 6, 1, 9)], [W_('cannon', 2, 8), W_('heavy', 5, 1.8, 3), W_('cavalry', 6, 1.2, 9)],
       [W_('assassin', 10, 0.7), W_('gladiator', 10, 0.8, 5), W_('priest', 3, 2.4, 10)], [W_('heavy', 6, 1.6), W_('cavalry', 8, 1.1, 5), W_('legion', 14, 0.6, 10), W_('priest', 4, 2, 14)] ] },
@@ -627,7 +627,7 @@ if (NECRO) {
       desc: 'Canlanan katedral heykeli: iskeletleri ezip geçer, lanet tutmaz. Adımlarıyla yeri sarsar',
       nocurse: true, noblock: true, trample: { dmg: 50, r: 24 }, ab: { slam: { cd: 9, r: 100, stun: 1.5, dmg: 20, say: 'Taş Adım!' } } },
     severus:  { name: 'Büyük Engizitör Severus', h: 50, hp: 2000, speed: 12, armor: 0.3, mr: 0.5, gold: 300, dmg: [20, 30], rate: 1.2, lives: 15, r: 15, boss: true, chief: true, hpK: 1.1,
-      desc: 'Çaydanlığı elinde. Kuleleri sorguya çeker, dostlarını iyileştirir, kalkan açar, paladin ve tövbekâr çağırır',
+      desc: 'Kutsal su ibriği elinde. Kuleleri sorguya çeker, dostlarını iyileştirir, kalkan açar, paladin ve tövbekâr çağırır',
       ab: { hex: { cd: 9, r: 200, t: 4, say: 'Sorgu!', col: '255,210,110' }, heal: { cd: 8, amt: 120, r: 100 }, shield: { cd: 15, t: 2.5 }, summon: { t: ['paladin', 'flagellant'], n: 2, cd: 13 } } },
     cathedral:{ name: 'Yürüyen Katedral', h: 80, hp: 3000, speed: 6, armor: 0.5, mr: 0.3, gold: 300, dmg: [4, 6], rate: 2, lives: 10, r: 26, boss: true, chief: true, hpK: 1.15,
       desc: 'Rahiplerin ittiği dev kuşatma katedrali. Çanı iskeletleri sersemletir, içinden asker döker. Yıkılınca Severus iner',
@@ -670,11 +670,11 @@ if (NECRO) {
   ];
   // 10 Eki: 20 bölüm. Her bölgenin finalinden önce yeni bir bölüm
   const EK2 = [
-    { name: 'Avcı Kampı', theme: 'ravenwood', gold: 360, comic: 'kamp', waves: mk([['legion', 8, 0.9], ['hunter', 4, 1.3], ['gladiator', 4, 1.1]], [['hound', 5, 0.7], ['torch', 2, 2.2]], [['heavy', 2, 2.4]]) },
-    { name: 'Veba Hendeği', theme: 'plague', gold: 460, weather: 'rain', comic: 'hendek', waves: mk([['legion', 10, 0.8], ['holywater', 3, 2], ['flagellant', 3, 1.5]], [['hound', 6, 0.7], ['lantern', 1, 1]], [['heavy', 3, 2.2], ['torch', 3, 2]]) },
-    { name: 'Mum Işığı Koridoru', theme: 'monastery', gold: 540, comic: 'koridor', waves: mk([['hunter', 6, 1.1], ['bellpriest', 2, 2.4], ['legion', 10, 0.8]], [['paladin', 2, 2.6], ['lantern', 1, 1]], [['flagellant', 4, 1.3], ['holywater', 3, 2]]) },
-    { name: 'Kemik Mahzeni', theme: 'ossuary', gold: 620, comic: 'mahzen', waves: mk([['paladin', 3, 2.2], ['flagellant', 5, 1.2], ['hunter', 6, 1]], [['saint', 1, 1], ['inquisitor', 1, 1], ['bellpriest', 2, 2.2]], [['lantern', 1, 1], ['torch', 4, 1.8]]) },
-    { name: 'Kızıl Sur', theme: 'bloodmoon', gold: 700, comic: 'sur', waves: mk([['legion', 14, 0.6], ['paladin', 3, 2], ['hound', 8, 0.5]], [['saint', 1, 1], ['inquisitor', 2, 3], ['lantern', 1, 1]], [['cavalry', 5, 1.3], ['flagellant', 6, 1.1], ['holywater', 4, 1.8]]) },
+    { name: 'Avcı Kampı', theme: 'ravenwood', gold: 360, waves: mk([['legion', 8, 0.9], ['hunter', 4, 1.3], ['gladiator', 4, 1.1]], [['hound', 5, 0.7], ['torch', 2, 2.2]], [['heavy', 2, 2.4]]) },
+    { name: 'Veba Hendeği', theme: 'plague', gold: 460, weather: 'rain', waves: mk([['legion', 10, 0.8], ['holywater', 3, 2], ['flagellant', 3, 1.5]], [['hound', 6, 0.7], ['lantern', 1, 1]], [['heavy', 3, 2.2], ['torch', 3, 2]]) },
+    { name: 'Mum Işığı Koridoru', theme: 'monastery', gold: 540, waves: mk([['hunter', 6, 1.1], ['bellpriest', 2, 2.4], ['legion', 10, 0.8]], [['paladin', 2, 2.6], ['lantern', 1, 1]], [['flagellant', 4, 1.3], ['holywater', 3, 2]]) },
+    { name: 'Kemik Mahzeni', theme: 'ossuary', gold: 620, waves: mk([['paladin', 3, 2.2], ['flagellant', 5, 1.2], ['hunter', 6, 1]], [['saint', 1, 1], ['inquisitor', 1, 1], ['bellpriest', 2, 2.2]], [['lantern', 1, 1], ['torch', 4, 1.8]]) },
+    { name: 'Kızıl Sur', theme: 'bloodmoon', gold: 700, waves: mk([['legion', 14, 0.6], ['paladin', 3, 2], ['hound', 8, 0.5]], [['saint', 1, 1], ['inquisitor', 2, 3], ['lantern', 1, 1]], [['cavalry', 5, 1.3], ['flagellant', 6, 1.1], ['holywater', 4, 1.8]]) },
   ];
   const GEO2 = LEVELS2_GEO.slice();
   [14, 11, 8, 5, 2].forEach((at, k) => { L2.splice(at, 0, EK2[4 - k]); GEO2.splice(at, 0, LEVELS_EK2_GEO[4 - k]); });
@@ -794,10 +794,10 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 // her seviye o büyüye 1 puan verir; puan, büyünün 5 kademesinden sıradakini açar. Her kademe beklemeyi %4 kısaltır, 5. kademe yeni etki.
 // lv: seviye eşikleri (toplam XP; 2..6. seviye), cast: büyü başına XP + per × etkilenen düşman (en çok 10). ~55 XP/bölüm: 1. seferin
 // sonunda 5. kademe. Sonradan açılan büyü geç kalmasın: açıldığı bölüm × catchup XP ile başlar (Genesis: geç açılanlar ek XP'li gelir).
-const RAISE_MAX = [4, 7, 10, 13, 16, 20]; // Ölüleri Diriltme: kademeye göre aynı anda en çok dirilen (game.js spellStats)
+const RAISE_MAX = [4, 6, 8, 11, 13, 16]; // 20 Eki (Caner): başta 4, en üst kademede en çok 16 (eskiden 4/7/10/13/16/20) // Ölüleri Diriltme: kademeye göre aynı anda en çok dirilen (game.js spellStats)
 const GRIM = {
   lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
-  nm_raise: ['+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+3 dirilen · +%10 güç · ceset +2 sn', '+4 dirilen · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 16 Eki (Caner): en çok 4/7/10/13/16/20 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
+  nm_raise: ['+2 dirilen (6) · +%10 güç · ceset +2 sn', '+2 dirilen (8) · +%10 güç · ceset +2 sn', '+3 dirilen (11) · +%10 güç · ceset +2 sn', '+2 dirilen (13) · +%10 güç · ceset +2 sn', '+3 dirilen (16) · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 20 Eki (Caner): en çok 4/6/8/11/13/16 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],
@@ -1131,7 +1131,7 @@ if (NECRO) {
   { const L10 = LEVELS.filter(l => (l.ep || 1) === 1)[9]; if (L10) { L10.noBoss = false; L10.bossT = 'ironwarden'; L10.finale = true; } } // 18 Eki (Caner): ücretsiz kısmın son bölümü büyük bir bossla biter (Demir Muhafız Brutus), ardından merak bırakan sahne
 }
 // 2. sefer bossları (12 Eki, Caner): engizisyonun kendi komutanları (varliklar/ham/nm_boss_D.jpg; haç yerine güneş amblemi),
-// her mekânın kendi komutanı, 17-19 ikili; 20. bölüm üç evre: Yürüyen Katedral → çaydanlıklı Severus → Lanetli Severus (nm_boss_E.jpg).
+// her mekânın kendi komutanı, 17-19 ikili; 20. bölüm üç evre: Yürüyen Katedral → ibrikli Severus → Lanetli Severus (nm_boss_E.jpg).
 if (NECRO) {
   const OFF = { boss: true, chief: true, rate: 1.1, r: 15 };
   Object.assign(ENEMIES, {
@@ -1149,16 +1149,16 @@ if (NECRO) {
       ab: { burn: { cd: 9, r: 75, dps: 12, t: 4, say: 'Kutsanmış Toprak!' }, slam: { cd: 8, r: 64, stun: 1.4, dmg: 30 }, summon: { t: 'paladin', n: 1, cd: 15, max: 5 } } }),
   });
   Object.assign(BOSS_ESCORT, { hubertus: [['hound', 2]], agnes: [['flagellant', 2]], lucia: [['holywater', 1], ['bellpriest', 1]], godfrey: [['paladin', 2]] });
-  // final: Katedral (1. evre, kendi çizimi) → Severus (mevcut çizim, çaydanlıklı) → Lanetli Severus
+  // final: Katedral (1. evre, kendi çizimi) → Severus (mevcut çizim, elinde kutsal su ibriği) → Lanetli Severus
   const CT = ENEMIES.cathedral;
   CT.hpK = +(CT.hpK * 2.2).toFixed(2);
-  CT.desc = 'Tepesinde Büyük Engizitör Severus ile gelir. Katedral yıkılınca Severus çaydanlıkla iner, en sonunda çaydanlığın laneti onu ele geçirir';
+  CT.desc = 'Tepesinde Büyük Engizitör Severus ile gelir. Katedral yıkılınca Severus kutsal ibriğiyle iner, en sonunda Mortimer\'ın laneti onu ele geçirir';
   CT.phases = [
-    { at: 0.55, to: 'severus', title: 'Katedral yıkıldı!', sub: 'Severus çaydanlığı kaldırıp iniyor: kulelere hüküm yağdırıyor', say: 'Çaydanlık benim!', mort: 'sev2' },
-    { at: 0.25, to: 'severus3', title: 'LANETLİ SEVERUS', sub: 'Çaydanlığın laneti Severus\'u ele geçirdi: ölüm yeşili alev saçıyor', say: 'BU GÜÇ... BENİM!', mort: 'sev3' }];
+    { at: 0.55, to: 'severus', title: 'Katedral yıkıldı!', sub: 'Severus kutsal ibriği kaldırıp iniyor: kulelere hüküm yağdırıyor', say: 'Arınma vakti!', mort: 'sev2' },
+    { at: 0.25, to: 'severus3', title: 'LANETLİ SEVERUS', sub: 'Mortimer\'ın laneti Severus\'u ele geçirdi: ölüm yeşili alev saçıyor', say: 'BU GÜÇ... BENİM!', mort: 'sev3' }];
   ENEMIES.severus.legion = [['paladin', 2], ['inquisitor', 1]];
   ENEMIES.severus3 = { name: 'Lanetli Severus', h: 58, hp: 2000, speed: 14, armor: 0.25, mr: 0.6, gold: 400, dmg: [26, 40], rate: 1, lives: 20, r: 16, boss: true, chief: true, hpK: 1.1, final: true, glow: '120,255,140', float: true,
-    desc: 'Çaydanlığın laneti onu ele geçirdi: iskeletlerden can emer, yeşil veba alevi saçar, öfkelenince yarı hasar alır. Kaleye ulaşırsa her şey biter',
+    desc: 'Mortimer\'ın laneti onu ele geçirdi: iskeletlerden can emer, yeşil veba alevi saçar, öfkelenince yarı hasar alır. Kaleye ulaşırsa her şey biter',
     ab: { drain: { cd: 7, r: 95, dmg: 18 }, burn: { cd: 8, r: 100, dps: 12, t: 4, poison: true, say: 'Lanetli Çay!' }, rage: { cd: 13, t: 3 } } };
   for (const t of ['hubertus', 'agnes', 'lucia', 'godfrey', 'severus3']) CLASS_OF_EXTRA[t] = t === 'godfrey' ? 'agir' : t === 'hubertus' ? 'hafif' : 'kutsal';
   // her mekânın kendi komutanı (2. sefer bölüm 1-20); 17-19 ikili
