@@ -1304,7 +1304,12 @@ const TOWER_EXTRA = {
   plague: { name: 'Veba Sisi',        cost: 230, cd: 10, desc: 'Kalabalığın üstüne veba sisi çöker: 5 sn güçlü zehir' },
   rite:   { name: 'Kan Ayini',        cost: 220, cd: 14, desc: 'Menzildeki iskeletler %40 iyileşir, 6 sn %50 sert vurur' },
   blight: { name: 'Çürük Dokunuş',    cost: 240, cd: 9,  desc: 'Menzildeki herkes 5 sn ağır lanetlenir ve zehirlenir' },
+  // 20 Eki (Caner: "uzmanlığın parayla açılan ikinci özel yeteneği"): eksik iki uzmanlık
+  shield: { name: 'Kemik Siper',     cost: 220, cd: 13, desc: 'İskeletler kalkanlarını kenetler: 4 sn %60 az hasar alır, %20 iyileşir' },
+  blade:  { name: 'Kemik Kasırgası', cost: 240, cd: 10, desc: 'İskeletler dönerek çevrelerini biçer: vuruş hasarının 3 katı, kanatır' },
 };
+// 20 Eki (KR'deki gibi): ikinci yetenek de 3 kademe. Kademe başına bekleme kısalır, güç artar (game.js updateExtra: XK). Fiyat: 1. kademe cost, sonrakiler ×0,8
+const EXTRA_RK = { n: 3, cd: [1, 0.85, 0.72], k: [1, 1.35, 1.75], price: [1, 0.8, 0.8] };
 const SPEC = {
   fan:    { title: 'Ağır Arbaletçiler', who: 'İki kızıl arbaletçi: yavaş, ağır, zırh delen cıvata' }, // 11 Eki: okçu / arbaletçi yolu
   bow:    { title: 'Hayalet Okçular', who: 'Üç kızıl okçu: çok sık, yüksek kavisli oklar' },
@@ -1815,4 +1820,13 @@ for (const lv of LEVELS) for (const w of lv.waves || []) for (const g of (w.grou
   const n2 = Math.max(3, Math.round(g.n * COUNT_K)); if (n2 >= g.n) continue;
   const k = g.n / n2; g.hpK = +((g.hpK || 1) * k).toFixed(3); g.goldK = +((g.goldK || 1) * k).toFixed(3);
   if (g.types) g.types = g.types.slice(0, n2); g.n = n2;
+}
+// 20 Eki (Caner: "bazı dalgalarda 2 tane adam geliyor; böyle durumlarda en düşük birimler eşlik etsin, lejyoner gibi"): az kişilik (seçkin/nefes) dalgalara
+// bölümün en çok gelen ucuz piyadesinden (lejyoner vb.) 5-8 kişilik eskort bölüğü eklenir; seçkinlerin önünde yürür.
+for (const [li, lv] of LEVELS.entries()) {
+  const cnt = {}; for (const w of lv.waves || []) for (const g of (w.groups || w)) { const d = ENEMIES[g.t]; if (d && !d.chief && !d.flying && !d.machine && d.hp <= 90) cnt[g.t] = (cnt[g.t] || 0) + g.n; }
+  const fod = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0] || 'legion'; if (!ENEMIES[fod]) continue;
+  for (const w of lv.waves || []) { const gs = w.groups || w; const n = gs.reduce((a, g) => a + ((ENEMIES[g.t] || {}).chief ? 0 : g.n), 0);
+    if (n > 4 || !gs.length) continue;
+    gs.unshift({ t: fod, n: 5 + Math.min(3, Math.floor(li / 10)), gap: 0.9, at: 0, p: gs[0].p || 0, hpK: 1, escort: true }); }
 }

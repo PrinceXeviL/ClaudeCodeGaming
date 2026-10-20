@@ -3850,5 +3850,47 @@
   "fh": 168,
   "base": 0.0208,
   "ch": 0.955
+ },
+ "enemy_eagle_walkA": {
+  "n": 16,
+  "fw": 306,
+  "fh": 246,
+  "base": 0.0143,
+  "ch": 0.6516
+ },
+ "enemy_eagle_walkB": {
+  "n": 17,
+  "fw": 315,
+  "fh": 235,
+  "base": 0.0147,
+  "ch": 0.6822
+ },
+ "enemy_vulture_walkA": {
+  "n": 22,
+  "fw": 469,
+  "fh": 272,
+  "base": 0.0148,
+  "ch": 0.5887
+ },
+ "enemy_vulture_walkB": {
+  "n": 22,
+  "fw": 499,
+  "fh": 283,
+  "base": 0.0172,
+  "ch": 0.5645
+ },
+ "enemy_eagle_atkA": {
+  "n": 33,
+  "fw": 329,
+  "fh": 234,
+  "base": 0.0148,
+  "ch": 0.6847
+ },
+ "enemy_eagle_atkB": {
+  "n": 33,
+  "fw": 292,
+  "fh": 230,
+  "base": 0.0148,
+  "ch": 0.6963
  }
 }

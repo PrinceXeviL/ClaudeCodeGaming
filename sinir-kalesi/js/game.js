@@ -3744,6 +3744,7 @@ function provoke(s, src) {
 }
 function damageSoldier(s, amount, src) {
   if (s.dead) return;
+  if (s.guardT > G.t) amount *= 0.4; // Kemik Siper
   if (src) provoke(s, src);
   if (s.wall) {
     if (s.phalanx && s.thorns && src && src.hp != null && !src.dead && dist(src.x, src.y, s.x, s.y) < 60) { // Termopylae: duvara vuran hasar yer
@@ -4860,35 +4861,44 @@ function buyMore(t) {
   if (t.type === 'barracks' && t.soldiers.length < barrN(t)) { const s5 = makeSoldier(t, t.soldiers.length); riseFromGrave(s5); t.soldiers.push(s5); G.soldiers.push(s5); applySoldierStats(t); }
   return true;
 }
+const extraCost = (t) => { const E = t && t.spec && TOWER_EXTRA[t.spec], rk = +(t && t.extra) || 0; return E && rk < EXTRA_RK.n ? Math.round(priceK(E.cost * EXTRA_RK.price[rk], t.stackK || 1)) : null; };
 function buyExtra(t) {
   const E = t && t.spec && TOWER_EXTRA[t.spec];
-  if (!E || t.extra || G.gold < E.cost) return false;
-  G.gold -= E.cost; spendOn(t, E.cost); t.extra = true; t.exT = 1.5;
-  floatText(t.x, t.y - 80, E.name + '!', '#ffe27a'); sfx('upgrade');
+  const rk = +t.extra || 0, cost = extraCost(t); if (!E || rk >= EXTRA_RK.n || G.gold < cost) return false;
+  G.gold -= cost; spendOn(t, cost); t.extra = rk + 1; t.exT = Math.min(t.exT ?? 1.5, 1.5);
+  floatText(t.x, t.y - 80, E.name + (rk ? ' ' + (rk + 1) + '!' : '!'), '#ffe27a'); sfx('upgrade');
   G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: 44, col: '255,215,100', t: 0, dur: 0.5 });
   return true;
 }
 function densestOf(list, r) { let best = null, bn = 0; for (const e of list) { const n = list.filter(o => dist(o.x, o.y, e.x, e.y) < r).length; if (n > bn) { bn = n; best = e; } } return best; }
 function updateExtra(t, dt) {
   if ((t.exT = (t.exT ?? 1.5) - dt) > 0) return;
-  const E = TOWER_EXTRA[t.spec], L = effLevel(t), R = (L.range || 140) * 1.05, eye = towerEye(t);
+  const E = TOWER_EXTRA[t.spec], L = effLevel(t), R = (L.range || 140) * 1.05, eye = towerEye(t), RK = Math.max(0, Math.min(EXTRA_RK.n, +t.extra || 1) - 1), XK = EXTRA_RK.k[RK], CD = E.cd * EXTRA_RK.cd[RK];
   const near = G.enemies.filter(e => !e.dead && !e.under && dist(t.x, t.y - 10, e.x, e.y) <= R && (t.type === 'archer' || !e.def.flying));
   const avg = L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 20;
   if (t.spec === 'rite') { // iskeletleri güçlendirir: menzilde savaşan iskelet yoksa bekler
     const sol = G.soldiers.filter(s => !s.dead && !s.wall && dist(s.x, s.y, t.x, t.y) <= R && s.target);
     if (!sol.length) { t.exT = 0.5; return; }
-    for (const s of sol) { s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.4); s.buffT = 6; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,60,70', t: 0, dur: 0.6, small: true }); }
-    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.5, col: '255,60,70', t: 0, dur: 0.6 }); sfx('portal'); t.exT = E.cd; return;
+    for (const s of sol) { s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.4); s.buffT = 6 + 2 * RK; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,60,70', t: 0, dur: 0.6, small: true }); }
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.5, col: '255,60,70', t: 0, dur: 0.6 }); sfx('portal'); t.exT = CD; return;
+  }
+  if (t.spec === 'shield' || t.spec === 'blade') { // 20 Eki: Mahzen uzmanlıklarının ikinci yeteneği; dövüşen iskelet yoksa bekler
+    const sol = (t.soldiers || []).filter(s => !s.dead && s.target);
+    if (!sol.length) { t.exT = 0.5; return; }
+    if (t.spec === 'shield') { for (const s of sol) { s.guardT = G.t + 4 + RK; s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.2 * XK); G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: 16, col: '200,220,255', t: 0, dur: 0.5 }); } sfx('shieldblock'); }
+    else { for (const s of sol) { const d = roll(s.dmg) * 3 * XK; G.effects.push({ kind: 'ring', x: s.x, y: s.y - 6, r: 34, col: '255,120,90', t: 0, dur: 0.4 });
+        for (const e of G.enemies) if (!e.dead && !e.def.flying && dist(e.x, e.y, s.x, s.y) < 40) { hitBy = 'melee'; damageEnemy(e, d, 'phys', false, 'melee'); hitBy = null; if (!(e.def.machine)) { e.bleedDps = Math.max(e.bleedT > 0 ? e.bleedDps : 0, 6 * XK); e.bleedT = 3; } } } sfx('whirl'); }
+    t.exT = CD; return;
   }
   if (!near.length) { t.exT = 0.3; return; }
-  t.exT = E.cd; t.shotAnim = 0.3;
+  t.exT = CD; t.shotAnim = 0.3;
   if (t.spec === 'bow' || t.spec === 'fan') {
     const ts = towerSprite(t), A = ts && xbowMen(t).filter(o => !o.dead), M = menOf(t), w = M.aim * 1.3;
     if (!A || !A.length) { t.exT = 0.5; return; }
     const c = densestOf(near, 50);
     A.forEach(a => { a.tx = null; a.walking = false; a.aimT = w; a.kickT = w + M.kick; a.face = c.x < xbowFoot(t, ts, a).x ? -1 : 1; });
     if (t.spec === 'bow') { // Ok Yağmuru: okçular göğe 18 ok salar, kalabalığın çevresine yüksek kavisle yağar
-      for (let i = 0; i < 18; i++) {
+      for (let i = 0, NA = Math.round(18 * XK); i < NA; i++) {
         const o = xbowTip(t, ts, A[i % A.length]), px = c.x + rand(-45, 45), py = c.y + rand(-18, 18);
         G.projectiles.push({ kind: 'ghostarrow', ballistic: true, longArrow: true, col: M.col, sx: o.x, sy: o.y, gy0: t.y, ax: px, ay: py - 10, tx: px, ty: py - 10, fy: py, fy0: py,
           target: null, t: -w - i * 0.05, dur: 0.85 + dist(o.x, o.y, px, py) / 900, arc: rand(110, 150), dmg: avg * 0.6, rain: 18, src: 'arrow' });
@@ -4896,7 +4906,7 @@ function updateExtra(t, dt) {
       t.relQ = (t.relQ || []).concat(A.map(a => { const o = xbowTip(t, ts, a); return { t: w, x: o.x, y: o.y, col: M.col, bow: true }; }));
     } else { // Delici Cıvata: dev cıvata en öndeki düşmana, arkasındaki hattı delip geçer
       const e = near.slice().sort((a, b) => (a.p.total - a.d) - (b.p.total - b.d))[0], o = xbowTip(t, ts, A[0]);
-      ballisticShot(o, t.y, e, w, M, { giant: true, dmg: avg * 4, dtype: 'true', pierceLine: 99, pierceLen: 320, pierceK: 0.8, knock: true });
+      ballisticShot(o, t.y, e, w, M, { giant: true, dmg: avg * 4 * XK, dtype: 'true', pierceLine: 99, pierceLen: 320, pierceK: 0.8, knock: true });
       t.relQ = (t.relQ || []).concat([{ t: w, x: o.x, y: o.y, col: M.col, heavy: true }]);
       setTimeout(() => G && shakeScreen(1.6, 0.15), w * 1000);
     }
@@ -4910,24 +4920,24 @@ function updateExtra(t, dt) {
         for (const e of near) if (!e.dead && dist(e.x, e.y, x, y) < 26) { damageEnemy(e, 45, 'true', false, 'arrow'); slowEnemy(e, 0.5, 2.5); }
       } else {
         for (let i = 0; i < 30; i++) emit(G.parts, { kind: 'glow', x: x + rand(-50, 50), y: y + rand(-20, 20), vx: rand(-10, 10), vy: -rand(2, 10), col: i % 3 ? '120,230,90' : '160,90,220', s0: rand(10, 18), s1: rand(14, 24), life: rand(2.5, 4), a: 0.35 });
-        for (const e of near) if (dist(e.x, e.y, x, y) < 60) poisonEnemy(e, 14, 5);
+        for (const e of near) if (dist(e.x, e.y, x, y) < 60 * Math.sqrt(XK)) poisonEnemy(e, 14 * XK, 5);
       }
     }
     shakeScreen(t.spec === 'nail' ? 2.5 : 0.8, 0.25); sfx(t.spec === 'nail' ? 'stomp' : 'splash');
   } else if (t.spec === 'drain') {
     const c = near.reduce((a, e) => (e.hp > a.hp ? e : a), near[0]);
     G.effects.push({ kind: 'ring', x: c.x, y: c.y, r: 60, col: '190,140,255', t: 0, dur: 0.5 }); impactFx(c.x, c.y - 12, '190,140,255', 1.6);
-    for (const e of near) if (dist(e.x, e.y, c.x, c.y) < 60) damageEnemy(e, 55, 'magic', false, 'magic');
-    for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, c.x, c.y) < 90) s.hp = Math.min(s.maxHp, s.hp + 30);
+    for (const e of near) if (dist(e.x, e.y, c.x, c.y) < 60) damageEnemy(e, 55 * XK, 'magic', false, 'magic');
+    for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, c.x, c.y) < 90) s.hp = Math.min(s.maxHp, s.hp + 30 * XK);
     sfx('zap');
   } else if (t.spec === 'ghost') {
-    near.sort((a, b) => dist(a.x, a.y, t.x, t.y) - dist(b.x, b.y, t.x, t.y)).slice(0, 4).forEach(e => {
-      stunEnemy(e, 1.6); damageEnemy(e, 25, 'magic', false, 'magic');
+    near.sort((a, b) => dist(a.x, a.y, t.x, t.y) - dist(b.x, b.y, t.x, t.y)).slice(0, 4 + RK).forEach(e => {
+      stunEnemy(e, 1.6); damageEnemy(e, 25 * XK, 'magic', false, 'magic');
       G.effects.push({ kind: 'zap', x0: eye.x, y0: eye.y, x1: e.x, y1: e.y - 12, t: 0, dur: 0.45, w: 1, col: 'rgb(255,80,80)', seed: rand(0, 9) });
     });
     sfx('zap');
   } else if (t.spec === 'corpse') {
-    for (let k = 0; k < 3; k++) {
+    for (let k = 0; k < 3 + RK; k++) {
       const e = near[Math.floor(Math.random() * near.length)];
       { if (e.dead) continue;
         impactFx(e.x, e.y - 6, '200,120,90', 1.3); G.effects.push({ kind: 'dust', x: e.x, y: e.y, t: 0, dur: 0.7 });
@@ -4936,7 +4946,7 @@ function updateExtra(t, dt) {
         sfx('boom'); }
     }
   } else if (t.spec === 'blight') {
-    for (const e of near) { if (e.def.nocurse) continue; e.curseT = Math.max(e.curseT || 0, 5); e.curseK = Math.max(e.curseK || 0, 0.3); poisonEnemy(e, 8, 5);
+    for (const e of near) { if (e.def.nocurse) continue; e.curseT = Math.max(e.curseT || 0, 5 + RK); e.curseK = Math.max(e.curseK || 0, 0.3); poisonEnemy(e, 8 * XK, 5);
       for (let i = 0; i < 4; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(15, 35), col: '140,60,200', s0: 3, s1: 0.5, life: 0.6 }); }
     G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '140,60,200', t: 0, dur: 0.6 }); sfx('portal');
   }
@@ -12193,7 +12203,7 @@ const PERF_OFF = new Set(); // test: çizim katmanlarını tek tek kapatıp mali
 // (G.tg.patch) bir kez saklanır, önce hepsi yerine konur, sonra bütün kuleler yeniden işlenir. Zemin yeniden çizilince (ekran boyu) baştan.
 // Kule tabanının altındaki toprak: rengi kulenin durduğu zeminin ortalamasından (koyulaştırılmış, solgun), kenarı düzensiz ve yumuşak,
 // ön kenarda birkaç çakıl. Arkasından temas gölgesi (SHADOW_IMG) ve yakın, koyu bir ayak dibi gölgesi gelir: kule zemine oturur.
-const TOWER_SOIL = { on: true, rx: 0.7, ry: 0.32, dark: 0.42, sat: 0.55, a: 1, ao: 0.78 };
+const TOWER_SOIL = { on: true, rx: 0.5, ry: 0.22, dark: 0.5, sat: 0.55, a: 0.55, ao: 0.45 }; // 20 Eki (Caner: "gölgemsi şey çok büyük, küçült, saydamlaştır")
 function towerSoil(g, bg, K, m, t, ts) {
   const S = TOWER_SOIL, rx = ts.w * S.rx, ry = ts.w * S.ry, cx = t.x, cy = ts.bottom - 1;
   let col = [70, 58, 44];
@@ -12240,7 +12250,7 @@ function bakeTowerGround() {
   if (TOWER_SOIL.on) for (const [t, ts] of list) towerSoil(g, bg, K, m, t, ts); // 20 Eki (Caner: "kuleler uçmasın, toprağa değsin"): tabanın altında zeminden koyu toprak yaması
   if (!SHADOW_IMG) unitShadow(-99, -99, 1);
   g.globalAlpha = TOWER_LIT.shade / 0.7; // temas gölgesi: askerlerle aynı paylaşılan küçük doku
-  for (const [t, ts] of list) { const rx = ts.w * 0.62, ry = rx * 0.42; g.drawImage(SHADOW_IMG, t.x - rx, ts.bottom - 2 - ry, rx * 2, ry * 2); }
+  for (const [t, ts] of list) { const rx = ts.w * 0.5, ry = rx * 0.4; g.drawImage(SHADOW_IMG, t.x - rx, ts.bottom - 2 - ry, rx * 2, ry * 2); }
   g.globalAlpha = 1; g.globalCompositeOperation = 'lighter'; // soluk ışık havuzu (arkadan sıcak ışık + ayak dibi)
   for (const [t, ts] of list) { const L = towerLitTex(t, ts); g.drawImage(L.li, t.x + L.x0, ts.bottom + L.y0, L.w, L.h); }
   g.restore();
@@ -15038,8 +15048,8 @@ function towerMenuItems(t) {
     });
   }
   const EX = t.spec && TOWER_EXTRA[t.spec];
-  if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 64, y: t.y - 34, cost: t.extra ? null : EX.cost, owned: !!t.extra });
-  if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -62), y: t.y + (t.type === 'archer' ? -34 : 12), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
+  if (EX) items.push({ id: 'extra', type: t.spec, x: t.x - 74, y: t.y - 52, cost: extraCost(t), owned: (+t.extra || 0) >= EXTRA_RK.n, rank: +t.extra || 0 });
+  if (imbueOpen(t)) items.push({ id: 'imbue', type: t.imbue || null, x: t.x + (t.type === 'archer' ? 64 : -66), y: t.y + (t.type === 'archer' ? -34 : 30), owned: !!t.imbue }); // mahzende bayrağın karşısı (uzmanlık düğmeleriyle çakışmaz)
   if (moreOpen(t)) items.push({ id: 'more', type: t.type, x: t.x + (t.type === 'archer' ? -62 : 62), y: t.y + (t.type === 'archer' ? 12 : 34), cost: t.more ? null : priceK(TOWER_MORE[t.type].cost, t.stackK || 1), owned: !!t.more });
   if (prioOpen(t)) items.push({ id: 'target', type: t.prio || 'first', x: t.x + (t.type === 'archer' ? 72 : -72), y: t.y + 46 }); // hedef önceliği
   items.push({ id: 'sell', x: t.x, y: t.y + 40, refund: sellValue(t) });
@@ -15347,6 +15357,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
     drawGrimIcon(0, 0, 1); if (soulsFree() > 0) { glow(ctx, 0, 0, 22, '200,120,255', 0.3 + Math.sin(time * 4) * 0.1); }
   } else if (it.id === 'extra') {
     glow(ctx, 0, 0, 20, '255,215,110', 0.3 + Math.sin(time * 4) * 0.08); drawAbilityIcon(it.type, 0, -1, 0.85); fancyStar(9, -10, 5, true);
+    for (let k = 0; k < EXTRA_RK.n; k++) circle(-8 + k * 8, 17, 2.6, k < (it.rank || 0) ? '#ffd34d' : 'rgba(20,12,8,0.85)', '#3a2410', 1); // kademe noktaları
   } else if (it.id === 'more') { // +1 asker: iskelet/okçu simgesi ve +1 rozeti
     glow(ctx, 0, 0, 20, '255,215,110', 0.25 + Math.sin(time * 4) * 0.08);
     if (!mi(it.type === 'archer' ? 'ico_ab_bow' : 'ico_sp_nm_raise', 0.8)) drawSkullIcon(0, 1, 13);
@@ -16302,7 +16313,8 @@ function infoText() {
   }
   if (G.sel && G.sel.kind === 'tower' && G.preview && G.preview.id === 'extra') {
     const E = TOWER_EXTRA[G.preview.type], t = G.sel.tower;
-    return [t.extra ? `${E.name} (alındı)` : `${E.name} — ${E.cost} altın`, `${E.desc} · ${E.cd} sn'de bir`];
+    const rk = +t.extra || 0, nx = Math.min(rk, EXTRA_RK.n - 1), c = extraCost(t);
+    return [rk >= EXTRA_RK.n ? `${E.name} ${rk}/${EXTRA_RK.n} (tam)` : `${E.name} ${rk ? rk + 1 + '. kademe' : ''} — ${c} altın`, `${E.desc} · ${Math.round(E.cd * EXTRA_RK.cd[nx])} sn'de bir · güç ×${EXTRA_RK.k[nx].toFixed(2).replace('.', ',')}`];
   }
   if (G.sel && G.sel.kind === 'hatch' && G.sel.hatch.grave) { const K = GRAVE.knight; return [`Mezar — ${GRAVE.cost} altın`, `Ceset Golemi kalkar (Can ${K.hp} · Hasar ${K.dmg[0]}-${K.dmg[1]} · Zırh %${Math.round(K.armor * 100)}), kalenin kapısını tutar; ölürse ${HATCH.respawn} sn sonra yeniden kalkar.`]; }
   if (G.sel && G.sel.kind === 'hatch') {
