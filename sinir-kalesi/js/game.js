@@ -12122,11 +12122,34 @@ const PERF_OFF = new Set(); // test: çizim katmanlarını tek tek kapatıp mali
 // gölgesi ve ayağındaki soluk ışık havuzu her karede çizilmez, zemin görseline (G.bg) işlenir. Kuleler kıpırdamaz; kule kurulup,
 // yükseltilip, satılıp yıkılınca (imza değişince) yalnız kule bölgeleri yeniden boyanır: her arsanın el değmemiş zemin parçası
 // (G.tg.patch) bir kez saklanır, önce hepsi yerine konur, sonra bütün kuleler yeniden işlenir. Zemin yeniden çizilince (ekran boyu) baştan.
+// Kule tabanının altındaki toprak: rengi kulenin durduğu zeminin ortalamasından (koyulaştırılmış, solgun), kenarı düzensiz ve yumuşak,
+// ön kenarda birkaç çakıl. Arkasından temas gölgesi (SHADOW_IMG) ve yakın, koyu bir ayak dibi gölgesi gelir: kule zemine oturur.
+const TOWER_SOIL = { on: true, rx: 0.7, ry: 0.32, dark: 0.42, sat: 0.55, a: 1, ao: 0.78 };
+function towerSoil(g, bg, K, m, t, ts) {
+  const S = TOWER_SOIL, rx = ts.w * S.rx, ry = ts.w * S.ry, cx = t.x, cy = ts.bottom - 1;
+  let col = [70, 58, 44];
+  try { const px = Math.round((cx + m.x) * K), py = Math.round((cy + ry * 1.6 + m.y) * K), d = bg.getContext('2d').getImageData(Math.max(0, px - 30), Math.max(0, py - 6), 60, 12).data; let r = 0, gg = 0, b = 0, n = 0;
+    for (let i = 0; i < d.length; i += 16) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; n++; } if (n) { col = [r / n, gg / n, b / n]; } } catch (e) {}
+  const L = (col[0] + col[1] + col[2]) / 3; col = col.map(v => Math.round((L + (v - L) * S.sat) * S.dark)); // solgun, koyu
+  let seed = Math.abs(Math.round(t.x * 13 + t.y * 7)) + 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  g.save(); g.translate(cx, cy);
+  const N = 30, ph = rnd() * 6, gr = g.createRadialGradient(0, 0, rx * 0.2, 0, 0, rx * 1.08);
+  gr.addColorStop(0, `rgba(${col},${S.a})`); gr.addColorStop(0.72, `rgba(${col},${S.a * 0.85})`); gr.addColorStop(1, `rgba(${col},0)`);
+  // yumuşak kenarlı dolgu: basık uzayda daire gradyanı
+  g.save(); g.scale(1, ry / rx); g.beginPath(); for (let i = 0; i <= N; i++) { const a = i / N * TAU, k = 1 + 0.08 * Math.sin(a * 3 + ph) + 0.05 * Math.sin(a * 7 + ph * 2); g.lineTo(Math.cos(a) * rx * k * 1.06, Math.sin(a) * rx * k * 1.06); }
+  g.fillStyle = gr; g.fill(); g.restore();
+  for (let i = 0; i < 9; i++) { const a = 0.15 * Math.PI + rnd() * 0.7 * Math.PI, rr = 0.82 + rnd() * 0.2, x = Math.cos(a) * rx * rr, y = Math.sin(a) * ry * rr, w = 1.2 + rnd() * 1.8; // ön kenarda çakıllar
+    g.fillStyle = `rgba(${col.map(v => Math.min(255, v * 1.9 + 20))},0.8)`; g.beginPath(); g.ellipse(x, y, w, w * 0.6, 0, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x + 0.4, y + w * 0.45, w, w * 0.35, 0, 0, TAU); g.fill(); }
+  const ao = g.createRadialGradient(0, 0, 0, 0, 0, rx * 0.72); ao.addColorStop(0, `rgba(12,8,6,${S.ao})`); ao.addColorStop(0.75, `rgba(12,8,6,${S.ao * 0.6})`); ao.addColorStop(1, 'rgba(12,8,6,0)');
+  g.scale(1, ry / rx * 0.85); g.fillStyle = ao; g.beginPath(); g.arc(0, -2, rx * 0.72, 0, TAU); g.fill(); // ayak dibi: koyu, sıkı temas gölgesi
+  g.restore();
+}
 function bakeTowerGround() {
   if (!NECRO || !G.bg) return;
   let TG = G.tg; if (!TG || TG.bg !== G.bg) TG = G.tg = { bg: G.bg, patch: new Map(), sig: '' };
   const off = PERF_OFF.has('tlight'), list = []; let sig = off ? 'off' : '';
-  if (!off) for (const t of G.towers) { const ts = towerSprite(t); if (!ts) continue; list.push([t, ts]); sig += `${t.x | 0},${t.y | 0},${t.type},${ts.name},${ts.w.toFixed(1)},${ts.h.toFixed(1)},${ts.bottom.toFixed(1)};`; }
+  if (!off) for (const t of G.towers) { const ts = towerSprite(t); if (!ts) continue; list.push([t, ts]); sig += `s${TOWER_SOIL.on ? 1 : 0}${t.x | 0},${t.y | 0},${t.type},${ts.name},${ts.w.toFixed(1)},${ts.h.toFixed(1)},${ts.bottom.toFixed(1)};`; }
   if (sig === TG.sig) return; TG.sig = sig; TG.n = (TG.n || 0) + 1; TG.last = sig; // test: kaç kez yeniden işlendi
   const bg = G.bg, m = bg.m || { x: 0, y: 0 }, K = bg.width / (W + 2 * m.x), g = bg.getContext('2d');
   g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -12142,6 +12165,7 @@ function bakeTowerGround() {
     TG.patch.set(key, { c, x: X0, y: Y0 });
   }
   g.setTransform(K, 0, 0, K, m.x * K, m.y * K);
+  if (TOWER_SOIL.on) for (const [t, ts] of list) towerSoil(g, bg, K, m, t, ts); // 20 Eki (Caner: "kuleler uçmasın, toprağa değsin"): tabanın altında zeminden koyu toprak yaması
   if (!SHADOW_IMG) unitShadow(-99, -99, 1);
   g.globalAlpha = TOWER_LIT.shade / 0.7; // temas gölgesi: askerlerle aynı paylaşılan küçük doku
   for (const [t, ts] of list) { const rx = ts.w * 0.62, ry = rx * 0.42; g.drawImage(SHADOW_IMG, t.x - rx, ts.bottom - 2 - ry, rx * 2, ry * 2); }
@@ -12151,26 +12175,40 @@ function bakeTowerGround() {
 }
 // 20 Eki (Caner: "kuleler yerle tümleşik duruyor, altında hafif neon ışık olsun, her kulenin rengi farklı"): kule tabanını saran
 // ince neon halka + soluk zemin parıltısı. Halkanın arkası kule görselinin altında kalır, önü tabanı çevreler. Doku renk başına bir kez çizilir.
-const TOWER_NEON = { on: false, mode: 'rune', rx: 0.62, a: 0.75, pulse: 0.12, col: { archer: '255,186,84', barracks: '255,64,76', mage: '84,222,255', artillery: '140,255,90', altar: '196,96,255' } };
+const TOWER_NEON = { on: true, mode: 'rune', rx: 0.62, a: 0.75, pulse: 0.12, col: { archer: '255,186,84', barracks: '255,64,76', mage: '84,222,255', artillery: '140,255,90', altar: '196,96,255' } };
 const NEON_TEX = {};
 function neonTex(col, kind) { // pool: yumuşak renkli ışık havuzu; rune: rünlü büyü çemberi (yukarıdan bakış, sonra basılır)
   const key = kind + col; if (NEON_TEX[key]) return NEON_TEX[key];
   const c = document.createElement('canvas'), S = 256; c.width = c.height = S; const g = c.getContext('2d'), R = S / 2;
   g.translate(R, R);
   if (kind === 'pool') { const gr = g.createRadialGradient(0, 0, 0, 0, 0, R); gr.addColorStop(0, `rgba(${col},0.55)`); gr.addColorStop(0.5, `rgba(${col},0.28)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(-R, -R, S, S); }
-  else {
-    const gr = g.createRadialGradient(0, 0, R * 0.5, 0, 0, R * 0.98); gr.addColorStop(0, `rgba(${col},0)`); gr.addColorStop(0.8, `rgba(${col},0.18)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(-R, -R, S, S);
-    g.strokeStyle = `rgba(${col},0.8)`; g.lineWidth = 2.2; g.beginPath(); g.arc(0, 0, R * 0.86, 0, TAU); g.stroke();
-    g.lineWidth = 1.4; g.beginPath(); g.arc(0, 0, R * 0.7, 0, TAU); g.stroke();
-    g.fillStyle = `rgba(${col},0.85)`; g.lineWidth = 1.6;
-    for (let i = 0; i < 12; i++) { g.save(); g.rotate(i * TAU / 12); g.translate(0, -R * 0.78); // iki çember arasında rünler
-      const k = i % 3; g.beginPath();
-      if (k === 0) { g.moveTo(0, -6); g.lineTo(0, 6); g.moveTo(-4, -2); g.lineTo(4, 2); }
-      else if (k === 1) { g.moveTo(-4, 5); g.lineTo(0, -6); g.lineTo(4, 5); }
-      else { g.arc(0, 0, 3.5, 0, TAU); g.moveTo(0, -6); g.lineTo(0, -3.5); }
-      g.stroke(); g.restore(); }
+  else { // 20 Eki (Caner): kuleye özel mühür: iki çember arasında kulenin simgesi dizili (ortası kulenin altında kalır)
+    const gr = g.createRadialGradient(0, 0, R * 0.5, 0, 0, R * 0.98); gr.addColorStop(0, `rgba(${col},0)`); gr.addColorStop(0.8, `rgba(${col},0.16)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(-R, -R, S, S);
+    g.strokeStyle = `rgba(${col},0.85)`; g.lineWidth = 2.4; g.beginPath(); g.arc(0, 0, R * 0.9, 0, TAU); g.stroke();
+    g.lineWidth = 1.4; g.beginPath(); g.arc(0, 0, R * 0.6, 0, TAU); g.stroke();
+    g.fillStyle = `rgba(${col},0.9)`; g.strokeStyle = `rgba(${col},0.9)`; g.lineWidth = 2; g.lineCap = 'round'; g.lineJoin = 'round';
+    const N = 8, u = R * 0.075;
+    for (let i = 0; i < N; i++) { g.save(); g.rotate(i * TAU / N); g.translate(0, -R * 0.75); neonGlyph(g, kind.slice(5), u, col); g.restore();
+      g.save(); g.rotate((i + 0.5) * TAU / N); g.beginPath(); g.arc(0, -R * 0.75, u * 0.35, 0, TAU); g.fill(); g.restore(); } // aradaki küçük noktalar
   }
   return (NEON_TEX[key] = c);
+}
+function neonGlyph(g, type, u, col) { // kulenin simgesi (yukarıdan bakış; doku sonra yere basılır)
+  if (type === 'barracks') { // kafatası
+    g.beginPath(); g.arc(0, -u * 0.3, u * 1.1, 0, TAU); g.fill(); g.fillRect(-u * 0.6, u * 0.4, u * 1.2, u * 0.8);
+    g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.arc(-u * 0.42, -u * 0.35, u * 0.32, 0, TAU); g.arc(u * 0.42, -u * 0.35, u * 0.32, 0, TAU); g.fill(); g.fillRect(-u * 0.1, u * 0.45, u * 0.2, u * 0.75); g.restore();
+  } else if (type === 'altar') { // göz
+    g.beginPath(); g.moveTo(-u * 1.4, 0); g.quadraticCurveTo(0, -u * 1.3, u * 1.4, 0); g.quadraticCurveTo(0, u * 1.3, -u * 1.4, 0); g.closePath(); g.stroke();
+    g.beginPath(); g.ellipse(0, 0, u * 0.3, u * 0.6, 0, 0, TAU); g.fill();
+  } else if (type === 'archer') { // ok
+    g.beginPath(); g.moveTo(0, -u * 1.4); g.lineTo(0, u * 1.2); g.stroke();
+    g.beginPath(); g.moveTo(0, -u * 1.6); g.lineTo(-u * 0.6, -u * 0.7); g.lineTo(u * 0.6, -u * 0.7); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(0, u * 0.7); g.lineTo(-u * 0.5, u * 1.3); g.moveTo(0, u * 0.7); g.lineTo(u * 0.5, u * 1.3); g.stroke();
+  } else if (type === 'mage') { // ruh alevi
+    g.beginPath(); g.moveTo(0, -u * 1.5); g.bezierCurveTo(u * 1.1, -u * 0.4, u * 0.9, u * 1.1, 0, u * 1.1); g.bezierCurveTo(-u * 0.9, u * 1.1, -u * 1.1, -u * 0.2, -u * 0.2, -u * 0.6); g.bezierCurveTo(-u * 0.1, -u * 0.1, u * 0.2, -u * 0.6, 0, -u * 1.5); g.fill();
+  } else { // veba damlası
+    g.beginPath(); g.moveTo(0, -u * 1.4); g.bezierCurveTo(u * 0.4, -u * 0.6, u * 1, 0, u * 1, u * 0.45); g.arc(0, u * 0.45, u, 0, Math.PI); g.bezierCurveTo(-u, 0, -u * 0.4, -u * 0.6, 0, -u * 1.4); g.fill();
+  }
 }
 function drawTowerNeon() {
   if (!TOWER_NEON.on || !NECRO || PERF_OFF.has('tlight')) return;
@@ -12180,7 +12218,7 @@ function drawTowerNeon() {
     const col = TOWER_NEON.col[t.type], ts = col && towerSprite(t); if (!ts) continue;
     const rx = ts.w * TOWER_NEON.rx, ry = rx * 0.42, y0 = ts.bottom - 1, pu = 1 - TOWER_NEON.pulse + TOWER_NEON.pulse * Math.sin(time * 2.2 + t.x * 0.05);
     ctx.globalAlpha = TOWER_NEON.a * pu;
-    if (M === 'rune') { ctx.save(); ctx.translate(t.x, y0); ctx.scale(1, ry / rx); ctx.rotate(time * 0.25 + t.x); const r = rx * 1.08; ctx.drawImage(neonTex(col, 'rune'), -r, -r, r * 2, r * 2); ctx.restore(); }
+    if (M === 'rune') { ctx.save(); ctx.translate(t.x, y0); ctx.scale(1, ry / rx); ctx.rotate(time * 0.2 + t.x); const r = rx * 1.12; ctx.drawImage(neonTex(col, 'rune:' + t.type), -r, -r, r * 2, r * 2); ctx.restore(); }
     else { const r = rx * 1.3; ctx.drawImage(neonTex(col, 'pool'), t.x - r, y0 - r * 0.42, r * 2, r * 0.84); }
     if (M === 'motes') for (let i = 0; i < 7; i++) { // tabandan yükselen ışık zerreleri
       const ph = (time * 0.45 + i / 7 + (t.x * 0.013) % 1) % 1, an = i * 2.4 + t.x, x = t.x + Math.cos(an) * rx * 0.9, y = y0 + Math.sin(an) * ry * 0.9 - ph * ts.h * 0.3;
