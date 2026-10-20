@@ -10874,8 +10874,9 @@ function towerSprite(t) {
 // Dünya: X sağ, Y yukarı, Z izleyiciye doğru. Kamera yukarıdan CAM_S açısıyla bakar.
 const CAM_S = 0.45, CAM_C = Math.sqrt(1 - CAM_S * CAM_S);
 
-// arbaletçi kulesinin kademe görseli: tower_xbow_1..3 yoksa platformlu Hayalet Arbaletçiler kulesi (geçici)
-const xbowTowerName = (lvl) => (spr(`tower_xbow_${lvl + 1}`) ? `tower_xbow_${lvl + 1}` : 'tower_archer_fan');
+// arbaletçi kulesinin kademe görseli: tower_xbow_1..3
+// 20 Eki (Caner: "arada eski kuleler çıkıyor"): görsel henüz yüklenmediyse 4. kademe yerine hazır olan bir alt kademe çizilir
+const xbowTowerName = (lvl) => { for (let k = lvl + 1; k >= 1; k--) if (spr(`tower_xbow_${k}`)) return `tower_xbow_${k}`; return `tower_xbow_${lvl + 1}`; };
 function towerIcon(type, lvl) {
   if (!ARCHER_SQ_OK && type === 'archer') squashArcher();
   if (NECRO && type === 'archer') return spr(xbowTowerName(lvl - 1));
