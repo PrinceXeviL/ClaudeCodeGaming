@@ -1798,6 +1798,14 @@ function snowCover(c, lv, paths, res) {
   }
   g.restore();
 }
+// 20 Eki (Caner: "bazı bölümlerde yolun üstünde ağaçlar var"): ağacın kökü yoldan uzak olsa da tepesi yukarıdaki yolun üstüne taşabiliyordu.
+// Gövde ve taç bölgesinde örnek noktalar yola (yol yarı genişliği) değerse ağaç çizilmez. TREE_SKIP: test için atlanan ağaçlar.
+const TREE_SKIP = [];
+function treeOverRoad(paths, x, y, w, h, R) {
+  const lim = 21 * R * 0.95;
+  for (let fy = 0.08; fy <= 0.92; fy += 0.12) for (let fx = -0.3; fx <= 0.301; fx += 0.15) if (nearestOnPaths(paths, x + fx * w, y - fy * h).d < lim) return true;
+  return false;
+}
 let BG_ISMAP = false, BG_DK = 1; // sefer haritası zemini çiziliyor (lv.decorK); BG_DK: dekor ölçeği (haritada MAP_DECOR_K)
 const MAP_DECOR_K = 0.9, MAP_TEX_K = 0.4; // 16 Eki (Caner): haritadaki ev, harabe, sancak, ağaç %10 küçük; zemin ve yol dokusu haritada 0,4 ölçekte (askerlere orantılı ince, yakınlaşınca keskin)
 function renderBackground(lv, paths, res = 2, m = null) {
@@ -2090,10 +2098,10 @@ function renderBackground0(lv, paths, res) {
       let q = null;
       for (let k = 0; k < 40 && !q; k++) {
         const c = place(w * 0.42); if (!c) break;
-        if (![[0, -h * 0.5], [0, -h * 0.85], [-w * 0.4, -h * 0.3], [w * 0.4, -h * 0.3]].some(([dx, dy]) => blocked(c[0] + dx, c[1] + dy, 14)) && !(ruinAt[name] || []).some(o => Math.hypot(o[0] - c[0], o[1] - c[1]) < 380)) q = c;
+        if (![[0, -h * 0.5], [0, -h * 0.85], [-w * 0.4, -h * 0.3], [w * 0.4, -h * 0.3]].some(([dx, dy]) => blocked(c[0] + dx, c[1] + dy, 14)) && !treeOverRoad(paths, c[0], c[1] + 4, w * 1.15, h, R) && !(ruinAt[name] || []).some(o => Math.hypot(o[0] - c[0], o[1] - c[1]) < 380)) q = c; // 20 Eki: gövdenin her yeri yoldan uzak (darağacı/ağaç yolun üstüne taşmasın)
       }
       if (!q) continue;
-      (ruinAt[name] = ruinAt[name] || []).push(q);
+      (ruinAt[name] = ruinAt[name] || []).push(q); if (window.__ruinLog) window.__ruinLog.push([lv.name, name, Math.round(q[0]), Math.round(q[1]), Math.round(w), Math.round(h), Math.round(nearestOnPaths(paths, q[0], q[1]).d)]);
       props.push([q[0], q[1], w * 0.45], [q[0], q[1] - h * 0.5, w * 0.4]);
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(q[0] + 4, q[1] + 2, w * 0.45, w * 0.12, 0, 0, Math.PI * 2); g.fill();
       if (name === 'nm4_banner' && spr('nm4_banner_pole') && spr('nm4_banner_cloth')) { drawSprite(g, spr('nm4_banner_pole'), q[0], q[1] + 4, w); BG_BANNERS.push({ x: q[0], y: q[1] + 4, w, ph: rnd() * 9 }); } // bez canlı çizilir
@@ -2175,6 +2183,8 @@ function renderBackground0(lv, paths, res) {
     const treeIm = spr(treeName), fl = vr() < 0.5 ? -1 : 1, sk = VARY.size[0] + vr() * (VARY.size[1] - VARY.size[0]);
     if (treeIm) {
       const m = SPR_META[treeName], w = m ? m[0] * TREE_K * BG_DK * (th.treeK || 1) * (0.75 + (s - 10) / 9 * 0.4) * sk : s * 3.4;
+      if (window.__ruinLog) window.__ruinLog.push([lv.name, treeName, Math.round(x), Math.round(y), Math.round(w), Math.round(w * treeIm.height / treeIm.width), Math.round(nearestOnPaths(paths, x, y).d), 'agac']);
+      if (treeOverRoad(paths, x, y + 5, w, w * treeIm.height / treeIm.width, R)) { TREE_SKIP.push([lv.name, Math.round(x), Math.round(y)]); continue; } // 20 Eki (Caner): tepesi yolun üstüne taşan ağaç dikilmez
       g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.ellipse(x + 5 * fl, y + 3, w * 0.36, w * 0.11, 0, 0, Math.PI * 2); g.fill();
       drawVaried(g, treeIm, x, y + 5, w, fl); bgLight(treeName, x, y + 5, w, fl);
       continue;
@@ -8402,18 +8412,21 @@ const surAlive = (e) => !e.dead && !e.under && !(e.reviveT > 0) && e.siege === u
 const surNear = (x, y, r, air) => G.enemies.filter(e => surAlive(e) && (air || !e.def.flying) && dist(e.x, e.y, x, y) < r);
 function surSpot(f, side = 1, off = 58, pi = 0) { // yolun yanında boş yer (f: yol boyunca oran)
   const P = G.paths[pi] || G.paths[0];
-  for (let k = 0; k < 26; k++) {
+  for (const of2 of [off, off + 18, off + 36]) for (let k = 0; k < 26; k++) { // 20 Eki: bulunamazsa yoldan biraz daha uzakta dener
     const ff = clamp(f + Math.ceil(k / 2) * 0.03 * (k % 2 ? -1 : 1), 0.08, 0.92);
     for (const sd of [side, -side]) {
-      const q = pathPos(P, P.total * ff, sd * off), r = pathPos(P, P.total * ff);
+      const q = pathPos(P, P.total * ff, sd * of2), r = pathPos(P, P.total * ff);
       if (q.x < 40 || q.x > W - 40 || q.y < 100 || q.y > H - 115) continue; // alt düğme şeridine düşmesin
-      if (nearestOnPaths(G.paths, q.x, q.y).d < off * 0.6) continue;
+      if (nearestOnPaths(G.paths, q.x, q.y).d < Math.max(44, off * 0.7)) continue;
+      if (nearestOnPaths(G.paths, q.x, q.y - 24).d < 38 || nearestOnPaths(G.paths, q.x, q.y - 46).d < 36) continue; // 20 Eki (Caner: "yolun üstünde ağaçlar"): yukarı uzanan sürpriz (darağacı, ağaç, karga) yola taşmasın
       if (G.plots.some(p => dist(p.x, p.y, q.x, q.y) < 46) || dist(q.x, q.y, G.castle.x, G.castle.y) < 100) continue;
       if ((G.sur.o || []).concat(G.props || []).some(o => dist(o.x, o.y, q.x, q.y) < 50)) continue;
+      if (G.mech && (G.mech.spots || []).some(o => dist(o.x, o.y, q.x, q.y) < 70)) continue; // darağacı, kemik yığını, mezar gibi mekanik nesnelerinin üstüne düşmesin
       return { x: q.x, y: q.y, rx: r.x, ry: r.y, p: P, d: P.total * ff };
     }
   }
-  const r = pathPos(P, P.total * f); return { x: r.x, y: r.y - 50, rx: r.x, ry: r.y, p: P, d: P.total * f };
+  const r = pathPos(P, P.total * f), ps = propSpot(seeded(G.idx * 977 + 5), 12); // yer bulunamazsa yoldan uzak boş bir yer (eskiden yolun 50 px üstü: yola düşebiliyordu)
+  return ps ? { x: ps.x, y: ps.y, rx: r.x, ry: r.y, p: P, d: P.total * f } : { x: r.x, y: r.y - 70, rx: r.x, ry: r.y, p: P, d: P.total * f };
 }
 const surRoad = (f, pi = 0) => { const P = G.paths[pi] || G.paths[0], q = pathPos(P, P.total * f); return { x: q.x, y: q.y, p: P, d: P.total * f }; };
 function surSay(text) { if (NECRO) { G.say = { text, t: 0, dur: 2.4 + text.length * 0.05 }; G.sayCd = 6; } }
@@ -8704,6 +8717,7 @@ function propSpot(rnd, pad) {
   for (let k = 0; k < 80; k++) {
     const x = 60 + rnd() * (W - 120), y = 110 + rnd() * (H - 170);
     if (nearestOnPaths(G.paths, x, y).d < 42 + pad) continue;
+    if (nearestOnPaths(G.paths, x, y - 22).d < 38 + pad || nearestOnPaths(G.paths, x, y - 40).d < 34) continue; // 20 Eki: direkli karga/mezar yukarı uzar, tepesi yola taşmasın
     if (G.plots.some(p => dist(p.x, p.y, x, y) < 40 + pad)) continue;
     if (dist(x, y, G.castle.x, G.castle.y - 40) < 110) continue;
     if ((G.props || []).some(o => dist(o.x, o.y, x, y) < 70)) continue;
@@ -8914,12 +8928,13 @@ const ZONE_ITEM = {
 // 16 Eki (Caner: "Bubu'yu iptal et, sil"): Mortimer'ın evcil solucanı Bubu kaldırıldı; akşam yeniden tasarlanan Bubu da (Caner: "hiçbir şeyini beğenmedim") tamamen silindi (git geçmişinde)
 function setupZoneItem() {
   const Z = NECRO && ZONE_ITEM[G.lv.theme]; G.zitem = null; if (!Z) return;
-  const free = (x, y) => x > 50 && x < W - 50 && y > 100 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 40
+  const free = (x, y) => x > 50 && x < W - 50 && y > 100 && y < H - 60 && !(x < 300 && y > H - 110) && nearestOnPaths(G.paths, x, y).d > 42
+    && nearestOnPaths(G.paths, x, y - 24).d > 38 && nearestOnPaths(G.paths, x, y - 46).d > 34 // 20 Eki (Caner: "yolun üstünde ağaçlar"): eşya yukarı uzanır, tepesi yola taşmasın
     && G.plots.every(p => dist(p.x, p.y, x, y) > 52) && dist(x, y, G.castle.x, G.castle.y - 40) > 120 && (G.props || []).every(o => dist(o.x, o.y, x, y) > 50)
     && (G.hatches || []).every(h => dist(h.x, h.y, x, y) > 60);
-  for (const P of G.paths) for (const f of [0.42, 0.55, 0.3, 0.66, 0.48, 0.22, 0.75]) {
+  for (const off of [1, 1.3, 1.6]) for (const P of G.paths) for (const f of [0.42, 0.55, 0.3, 0.66, 0.48, 0.22, 0.75]) {
     const q = pathPos(P, P.total * f), L = Math.hypot(q.dx, q.dy) || 1;
-    for (const sd of [1, -1]) { const x = q.x - q.dy / L * 58 * sd, y = q.y + q.dx / L * 50 * sd; if (free(x, y)) { G.zitem = Object.assign({ x, y, cd: 6, t: 0, used: 0 }, Z); return; } }
+    for (const sd of [1, -1]) { const x = q.x - q.dy / L * 58 * off * sd, y = q.y + q.dx / L * 50 * off * sd; if (free(x, y)) { G.zitem = Object.assign({ x, y, cd: 6, t: 0, used: 0 }, Z); return; } }
   }
 }
 function tapZoneItem(x, y) {
@@ -9017,9 +9032,11 @@ function setupMech() {
     }
   } else if (kind === 'gallows' || kind === 'bonepile' || kind === 'chime') {
     const n = kind === 'bonepile' ? 3 : kind === 'gallows' ? 2 : 1, gap = kind === 'chime' ? 0 : 150;
-    for (let f = kind === 'chime' ? 0.45 : 0.2; f <= 0.85 && M.spots.length < n; f += 0.05) for (const side of [1, -1]) {
-      const q = pathPos(P0, P0.total * f, side * 52), near = nearestOnPaths(G.paths, q.x, q.y);
-      if (near.d > 36 && free(q.x, q.y, 50) && spaced(q.x, q.y, gap) && q.y > 110) { const r = pathPos(P0, P0.total * f); M.spots.push({ x: q.x, y: q.y, rx: r.x, ry: r.y, face: q.x < r.x ? 1 : -1, ready: true, t: 0, seed: Math.random() * 9 }); break; }
+    // 20 Eki (Caner: "yolun üstünde ağaçlar"): darağacı/çan kulesi yukarı uzanır; tepesi de yoldan uzak olmalı, olmazsa yoldan biraz daha uzağa konur
+    const tallOk = (x, y) => nearestOnPaths(G.paths, x, y - 26).d > 38 && nearestOnPaths(G.paths, x, y - 52).d > 36 && nearestOnPaths(G.paths, x, y - 74).d > 32;
+    for (const off of [52, 66, 80]) for (let f = kind === 'chime' ? 0.45 : 0.2; f <= 0.85 && M.spots.length < n; f += 0.05) for (const side of [1, -1]) {
+      const q = pathPos(P0, P0.total * f, side * off), near = nearestOnPaths(G.paths, q.x, q.y);
+      if (near.d > 40 && tallOk(q.x, q.y) && free(q.x, q.y, 50) && spaced(q.x, q.y, gap) && q.y > 110) { const r = pathPos(P0, P0.total * f); M.spots.push({ x: q.x, y: q.y, rx: r.x, ry: r.y, face: q.x < r.x ? 1 : -1, ready: true, t: 0, seed: Math.random() * 9 }); break; }
     }
     if (kind === 'gallows') for (const m of M.spots) gallowsBody(m);
   } else if (kind === 'quarantine') {
@@ -23758,7 +23775,7 @@ window.__game = { neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "
    buy: buyAbility, selectTower: (t) => setSel({ kind: 'tower', tower: t }), select: (i) => setSel({ kind: 'plot', plot: G.plots[i] }),
   towerOn: (type) => towerUnlocked(type), // test: kule bu bölümde kurulabilir mi (öğretici kilidi)
   goScreen: (n) => { screen = n; screenT = time; }, setOv: (o) => { overlay = o; overlayT = time; }, // test: ekran / pencere aç (ekran görüntüsü taraması)
-  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
+  goMap: () => { screen = 'map'; screenT = time; }, mapCam: MAPCAM, mapFx: MAPFX, zfire: () => fireZoneItem(G.zitem), treeSkip: () => TREE_SKIP, sprOk: (n) => ({ spr: !!SPR[n], meta: !!ANIM_META[n], lazy: LAZY[n] || null, wait: STRIP_WAIT.has(n) }), /* test: şerit durumu */ waveBtn: (pi = 0) => { const b = waveBtnScreen(pi); return { x: view.ox + b.x * view.scale, y: view.oy + b.y * view.scale }; }, // test: dalga düğmesinin sayfadaki yeri
   goPlay: (i = 0) => go(() => startLevel(i)), ult: (x, y) => castUlt(G.heroes[0], x, y), /* test: komutan gücü */ // test: geçişli bölüm başlatma
   card: (i) => { screen = 'map'; mapSel = i; mapSelT = time; }, goHeroes: () => { screen = 'heroes'; screenT = time; }, goUpgrades: () => { screen = 'upgrades'; screenT = time; },   goCodex: () => { screen = 'codex'; screenT = time; CODEX.t0 = time; }, goSettings: () => openSettings('map'), mortPose: (k) => { const M = G.mort || (G.mort = { st: 'tea', t: 0, calm: 0, quiet: 0 }); M.st = 'tea'; M.calm = 99; M.quiet = 0; M.poseOld = M.pose; M.pose = k; M.poseA = 1; M.poseT = 999; }, hitTower: (i, d) => G.plots[i].tower && damageTower(G.plots[i].tower, d), buyMore: (i) => buyMore(G.plots[i].tower), nextLevel: () => nextLevel(), pathPos: (p, d, o) => pathPos(p, d, o), spec: (i, id) => { const t = G.plots[i].tower; G.gold += 999; return buyAbility ? buyAbility(t, id) : null; }, // test: kule yıkılması, +1 asker
    surS: () => G.sur, surTap: (i) => { const S = G.sur, o = S.o[i]; if (S.def.tap && o) S.def.tap(S, o); }, surTapAt: (x, y) => tapSurprise(x, y), // test: bölüm sürprizi
