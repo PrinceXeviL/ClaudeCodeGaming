@@ -11641,8 +11641,10 @@ function coatTex(h, v) {
   const tear = (x, y, w, L, col) => { // lekeden aşağı akan damla: incelen kuyruk, ucunda yuvarlak damla
     g.fillStyle = col; g.beginPath(); g.moveTo(x - w, y); g.quadraticCurveTo(x - w * 0.5, y + L * 0.6, x - w * 0.35, y + L); g.arc(x, y + L, w * 0.42, Math.PI, 0, true);
     g.quadraticCurveTo(x + w * 0.5, y + L * 0.6, x + w, y); g.closePath(); g.fill(); };
-  for (let i = 0; i < 12; i++) {
-    const bx = W2 / 2 + (r() - 0.5) * H * 0.32, by = H - H * (0.14 + r() * 0.52), br = H * (0.017 + r() * 0.018), pur = i % 5 === 4; // gövdede, başın üstünde değil; 20 Eki (Caner: "daha küçük"): lekeler ~%40 küçük
+  // 20 Eki (Caner: "kafalarında da olsun, yüzlerinde, omuzlarında"): ilk 3 leke kafa/yüz, sonraki 2 omuz, kalanı gövde
+  const SPOT = (i) => i < 3 ? [(r() - 0.5) * H * 0.12, 0.8 + r() * 0.1] : i < 5 ? [(i === 3 ? -1 : 1) * H * (0.1 + r() * 0.05), 0.68 + r() * 0.06] : [(r() - 0.5) * H * 0.32, 0.14 + r() * 0.5];
+  for (let i = 0; i < 14; i++) {
+    const sp = SPOT(i), bx = W2 / 2 + sp[0], by = H - H * sp[1], br = H * (0.017 + r() * 0.018), pur = i % 5 === 4; // gövdede, başın üstünde değil; 20 Eki (Caner: "daha küçük"): lekeler ~%40 küçük
     const dk = pur ? 'rgba(70,30,100,0.8)' : 'rgba(30,80,15,0.82)', md = pur ? 'rgba(165,105,230,0.88)' : 'rgba(125,220,70,0.9)', lt = pur ? 'rgba(210,170,255,0.9)' : 'rgba(190,255,130,0.9)';
     g.fillStyle = dk; g.beginPath(); g.ellipse(bx, by + br * 0.2, br * 1.5, br * 0.85, r() * 0.6 - 0.3, 0, Math.PI * 2); g.fill();
     if (r() < 0.88) tear(bx + (r() - 0.5) * br, by + br * 0.5, br * 0.45, br * (2 + r() * 3.2), dk);
