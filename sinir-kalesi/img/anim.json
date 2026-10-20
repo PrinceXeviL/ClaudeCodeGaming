@@ -2698,26 +2698,6 @@
   "base": 0.0146,
   "ch": 0.9708
  },
- "tower_archer_bow_collapse": {
-  "n": 49,
-  "fw": 249,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 75.4,
-  "bx": 147.5,
-  "by": 148.4
- },
- "tower_archer_fan_collapse": {
-  "n": 49,
-  "fw": 249,
-  "fh": 170,
-  "cols": 10,
-  "fps": 16,
-  "tw": 81.1,
-  "bx": 147.5,
-  "by": 148.4
- },
  "tower_barracks_1_collapse": {
   "n": 49,
   "fw": 252,

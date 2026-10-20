@@ -8,17 +8,21 @@ from PIL import Image
 from scipy import ndimage as nd
 from anim_isle import remove_magenta
 
-HAM = 'ham/nm_kemik_v2_kademe.jpg'
 IMG = '../sinir-kalesi/img'
 ESKI = 'cikti/kemik_eski'
-SEGS = [(88, 649), (719, 1275), (1321, 1973)]  # sayfadaki kule sütunları (px)
 SCALE = 1.6  # oyundaki çözünürlük (eski görseller ~960 px genişlikteydi)
 # ön kenar: [sol köşe, ön köşe, sağ köşe] (görsel kesri) ya da çanak yayı ('arc', cx, cy, rx, ry); rail: kenarın üstündeki korkuluk payı
-FRONT = [
-    dict(edge=[[0.19, 0.165], [0.47, 0.27], [0.79, 0.17]], rail=0.075, front=0.32),
-    dict(edge=[[0.12, 0.14], [0.5, 0.245], [0.87, 0.14]], rail=0.07, front=0.30),
-    dict(arc=[0.54, 0.15, 0.235, 0.065], rail=0.0, front=0.30),
-]
+# işler: ham sayfa, sütunlar (px), görsel adları, ön kenarlar; eskiden kalan katmanlar (yedeklenir)
+JOBS = {
+    'kademe': dict(ham='ham/nm_kemik_v2_kademe.jpg', segs=[(88, 649), (719, 1275), (1321, 1973)], names=['tower_xbow_1', 'tower_xbow_2', 'tower_xbow_3'], front=[
+        dict(edge=[[0.19, 0.165], [0.47, 0.27], [0.79, 0.17]], rail=0.075, front=0.32),
+        dict(edge=[[0.12, 0.14], [0.5, 0.245], [0.87, 0.14]], rail=0.07, front=0.30),
+        dict(arc=[0.54, 0.15, 0.235, 0.065], rail=0.0, front=0.30)]),
+    # 4. kademe: sol Ölüm Okçuları (bow), sağ Ölüm Arbaletçileri (fan)
+    'yollar': dict(scale=1.15, ham='ham/nm_kemik_v2_yollar.jpg', segs=[(57, 920), (1041, 1961)], names=['tower_archer_bow', 'tower_archer_fan'], front=[
+        dict(arc=[0.51, 0.17, 0.15, 0.05], rail=0.0, front=0.30),
+        dict(arc=[0.5, 0.14, 0.17, 0.06], rail=0.0, front=0.30)]),
+}
 
 
 def cut(src, rgba, a, b):
@@ -45,23 +49,23 @@ def front_mask(W, H, F):
     return (fy > line - F['rail']) & (fy < F['front'])
 
 
-def main():
-    os.makedirs(ESKI, exist_ok=True)
-    src = np.array(Image.open(HAM).convert('RGB')).astype(int)
+def main(job='kademe'):
+    J = JOBS[job]; os.makedirs(ESKI, exist_ok=True)
+    src = np.array(Image.open(J['ham']).convert('RGB')).astype(int)
     rgba = remove_magenta(src.astype(np.uint8))
-    meta = json.load(open(IMG + '/meta.json'))
-    for k, (a, b) in enumerate(SEGS):
-        name = f'tower_xbow_{k + 1}'
-        for suf in ('', '_front', '_rune', '_collapse') + (('_flag1', '_flag2') if k == 2 else ()):
+    for k, (a, b) in enumerate(J['segs']):
+        name = J['names'][k]
+        for suf in ('', '_front', '_rune', '_collapse', '_flag1', '_flag2', '_sw1', '_sw2'):
             p = f'{IMG}/{name}{suf}.webp'
             if os.path.exists(p) and not os.path.exists(f'{ESKI}/{name}{suf}.webp'): shutil.copy(p, f'{ESKI}/{name}{suf}.webp')
-        c = Image.fromarray(cut(src, rgba, a, b)); c = c.resize((round(c.width * SCALE), round(c.height * SCALE)), Image.LANCZOS)
+        c = Image.fromarray(cut(src, rgba, a, b)); S = J.get('scale', SCALE); c = c.resize((round(c.width * S), round(c.height * S)), Image.LANCZOS)
         c.save(f'{IMG}/{name}.webp', quality=90)
-        F = FRONT[k]; arr = np.array(c); m = front_mask(c.width, c.height, F); fr = arr.copy(); fr[~m] = 0
+        F = J['front'][k]; arr = np.array(c); m = front_mask(c.width, c.height, F); fr = arr.copy(); fr[~m] = 0
         Image.fromarray(fr[:round(F['front'] * c.height)]).save(f'{IMG}/{name}_front.webp', quality=90)
         print(name, c.size)
-    print('meta (elle): tower_xbow_1..3 genişlik/taban oranlarını game.js ile birlikte ayarla')
+    print('meta (elle): genişlik/taban oranlarını game.js XBOW_T ile birlikte ayarla')
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(sys.argv[1] if len(sys.argv) > 1 else 'kademe')  # python3 kemik_v2_isle.py [kademe|yollar]

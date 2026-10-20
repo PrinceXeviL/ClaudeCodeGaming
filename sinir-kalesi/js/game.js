@@ -10537,8 +10537,8 @@ const XBOW_T = {
   tower_xbow_1: { x: [0.28, 0.7], y: [0.11, 0.21], h: 0.25, clip: null, front: 0.32, floor: [[0.5, 0.075], [0.19, 0.165], [0.79, 0.17], [0.47, 0.27]] },
   tower_xbow_2: { x: [0.25, 0.75], y: [0.085, 0.19], h: 0.187, clip: null, front: 0.3, floor: [[0.5, 0.05], [0.12, 0.14], [0.87, 0.14], [0.5, 0.245]] },
   tower_xbow_3: { x: [0.36, 0.72], y: [0.2, 0.245], h: 0.144, clip: null, front: 0.3, floor: [[0.53, 0.15], [0.3, 0.21], [0.78, 0.2], [0.52, 0.29]] }, // okçular kafatası çanağında, ön kenar beli örter
-  tower_archer_fan: { x: [0.32, 0.68], y: [0.16, 0.26], h: 0.1586, clip: null, front: 0.5, floor: [[0.49, 0.14], [0.25, 0.22], [0.74, 0.22], [0.5, 0.29]] }, // 11 Eki: Ağır Arbaletçiler burcu (Gemini); kemik korkuluklu balkon (nm_kemik_kulesi_fan_korkuluk.jpg)
-  tower_archer_bow: { x: [0.3, 0.7], y: [0.16, 0.26], h: 0.149, clip: null, front: 0.5, floor: [[0.5, 0.13], [0.22, 0.21], [0.78, 0.21], [0.5, 0.29]] }, // 11 Eki: Hayalet Okçular kulesi (Gemini); dar gövde, kemik korkuluklu balkon (nm_kemik_kulesi_bow_korkuluk.jpg)
+  tower_archer_fan: { x: [0.37, 0.63], y: [0.18, 0.23], h: 0.161, clip: null, front: 0.3, floor: [[0.5, 0.1], [0.33, 0.17], [0.67, 0.17], [0.5, 0.27]] }, // 20 Eki v2: Ölüm Arbaletçileri, demir zırhlı kafatasının tepesindeki fıçı (ham/nm_kemik_v2_yollar.jpg)
+  tower_archer_bow: { x: [0.38, 0.64], y: [0.2, 0.24], h: 0.145, clip: null, front: 0.3, floor: [[0.51, 0.15], [0.35, 0.2], [0.67, 0.2], [0.51, 0.28]] }, // 20 Eki v2: Ölüm Okçuları, boynuzlu kafatasının çanağı
 };
 // ayak derinliği d (0 arka .. 1 ön) için zeminde izinli x aralığı: baklavanın o satırdaki genişliği, iki yandan gövde yarı genişliği kadar daraltılmış
 function xbowRange(t, d) {
@@ -11803,8 +11803,8 @@ const BONE_FX = {
   tower_xbow_1: {}, // 20 Eki v2: 1-2. kademede parıltı yok
   tower_xbow_2: { runes: [[0.19, 0.6, 0.67, '110,255,140'], [0.47, 0.61, 0.68, '110,255,140'], [0.81, 0.58, 0.68, '110,255,140']] },
   tower_xbow_3: { runes: [[0.255, 0.77, 0.8, '170,90,230'], [0.66, 0.79, 0.82, '170,90,230']] }, // v2: mor rün taşları
-  tower_archer_fan: { runes: [[0.36, 0.49, 0.615, '230,90,210'], [0.625, 0.49, 0.6, '230,90,210']], top: [0.5, 0.2, 0.4] }, // Ağır Arbaletçiler burcu
-  tower_archer_bow: { runes: [[0.38, 0.5, 0.72, '110,255,170'], [0.634, 0.5, 0.72, '110,255,170']], top: [0.5, 0.2, 0.4] }, // Hayalet Okçular (11 Eki: kanlı kafataslı, dumansız; fenerler TOWER_LIVE.swing ile sallanır)
+  tower_archer_fan: { runes: [[0.3, 0.77, 0.81, '255,70,80'], [0.66, 0.79, 0.82, '255,70,80'], [0.8, 0.73, 0.77, '255,70,80']], top: [0.5, 0.1, 0.24], eyeGlow: [[0.545, 0.355, 0.045], [0.685, 0.33, 0.04]] }, // v2: kızıl rünler
+  tower_archer_bow: { runes: [[0.28, 0.78, 0.82, '110,255,140'], [0.6, 0.8, 0.83, '110,255,140'], [0.76, 0.77, 0.8, '110,255,140']], top: [0.51, 0.12, 0.24], eyeGlow: [[0.49, 0.39, 0.05], [0.665, 0.37, 0.045]] }, // v2: yeşil rünler
 };
 // Ruh Feneri (10 Eki, 3. tasarım, Caner'in görseli): fener (1. kademe) / feneri tutan kol (2-3. kademe) ayrı katman (tower_mage_N_arm,
 // varliklar/ruh_feneri_isle.py), pivot [%x, %y] çevresinde döner. Boşta hafifçe sallanır (swing, f); savaşırken ya da ruh çekerken
@@ -11859,6 +11859,7 @@ function drawLanternFx(t, ts) {
 }
 // layer: 'back' = okçuların arkasında kalanlar (arka köşe alevleri, tepede dönen ruhlar), 'front' = önündekiler (run, göz, ön alev), yoksa hepsi.
 // Okçular parıltının altında bulanık görünmesin (Caner, 11 Eki: yerdeki birimler daha net)
+const EYE_GLOW_COLS = [[190, 90, 255], [255, 55, 60], [255, 205, 70]]; // mor, kızıl, sarı
 function drawBoneTowerFx(t, ts, layer) {
   const F = BONE_FX[ts.name]; if (!F) return;
   // 11 Eki (Caner): parıltılar kademeyle gelir: 1-2. kademede yok, 3. kademede run ve alev (kıvılcımsız), 4. kademede hepsi
@@ -11876,6 +11877,11 @@ function drawBoneTowerFx(t, ts, layer) {
     const q = P(f), fk = 0.7 + 0.18 * Math.sin(time * 9 + i * 2.3 + sd) + 0.12 * Math.sin(time * 21 + i);
     glow(ctx, q.x, q.y, 9 * s * fk, f[2], 0.4 * fk);
     if (tier >= 4 && Math.random() < 0.1 && !(men && f[1] >= 0.18)) emit(G.parts, { kind: 'glow', add: true, x: q.x + rand(-3, 3) * s, y: q.y - 4 * s, vx: rand(-8, 8), vy: -rand(18, 40), col: f[2], s0: 2.6, s1: 0.4, life: rand(0.6, 1) });
+  }
+  if (front && F.eyeGlow) { // 20 Eki (Caner): 4. kademe kafatasının gözlerinden ışık; renk mor → kızıl → sarı döner, nabız gibi atar
+    const EC = EYE_GLOW_COLS, u = (time * 0.35 + sd) % EC.length, c0 = EC[Math.floor(u)], c1 = EC[(Math.floor(u) + 1) % EC.length], f = u % 1;
+    const col = c0.map((v, k) => Math.round(v + (c1[k] - v) * f)).join(','), beat = 0.75 + 0.25 * Math.sin(time * 3.3 + sd);
+    for (const e of F.eyeGlow) { const q = P(e); glow(ctx, q.x, q.y, e[2] * ts.w * 2.2 * beat, col, 0.5); glow(ctx, q.x, q.y, e[2] * ts.w * 0.9, col, 0.75 * beat); }
   }
   if (front) for (const [i, e] of (F.eyes || []).entries()) { const q = P(e); glow(ctx, q.x, q.y, 2.2 * s, '120,255,140', 0.45 + 0.3 * Math.sin(time * 3.1 + i * 1.9 + sd)); } // kafatası gözlerinde yeşil kor
   if (F.top && back && tier >= 4) { // tepedeki kafesin çevresinde dönen üç ruh zerresi (önden geçerken parlak, arkada sönük)
@@ -12104,8 +12110,6 @@ function litOf(im, cols, strip) {
 // kaydırılır, direğe yakın kısım sabit), rünlerin rengi yavaşça yeşil → mor → kızıl döner (<ad>_rune beyaz maske, boyanıp üstüne çizilir).
 // Kıvılcım/parıltı yok. Katmanlar ve kutular: varliklar/kule_canli_isle.py (kutular görsel kesri x0, y0, x1, y1).
 const TOWER_LIVE = {
-  tower_archer_bow: {flags: [[0.0396, 0.5896, 0.1344, 0.7349], [0.8542, 0.5896, 0.95, 0.7349]], swing: [[0.0396, 0.3648, 0.1542, 0.5162, 0.0917, 0.3648], [0.8521, 0.3648, 0.9583, 0.5162, 0.9042, 0.3648]], rune: [0.3396, 0.4598, 0.6698, 0.7496]},
-  tower_archer_fan: {flags: [[0.0292, 0.2843, 0.1594, 0.5599], [0.8292, 0.2843, 0.9698, 0.5599]], rune: [0.3, 0.3299, 0.7594, 0.6494]},
 };
 const RUNE_COLS = { base: ['110,255,140', '185,110,255', '255,70,95'], tower_archer_fan: ['235,80,235', '150,90,255', '255,70,95'] };
 const TINT = new Map();
