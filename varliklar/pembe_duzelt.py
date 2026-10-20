@@ -17,7 +17,7 @@ for n in sys.argv[1:]:
     p = os.path.join(IMG, n + '.webp')
     if not os.path.exists(p): print('yok:', n); continue
     os.makedirs(BAK, exist_ok=True); b = os.path.join(BAK, n + '.webp')
-    if not os.path.exists(b): shutil.copy(p, b)
+    if not os.path.exists(b) or os.path.getmtime(p) > os.path.getmtime(b): shutil.copy(p, b)  # 20 Eki: dosya yenilendiyse yedek de yenilenir (eski yedekten okuyup yeni şeridi eziyordu)
     a = np.asarray(Image.open(b).convert('RGBA')).astype(np.float32)
     r, g, bl, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
     mg = np.minimum(r, bl) - g
