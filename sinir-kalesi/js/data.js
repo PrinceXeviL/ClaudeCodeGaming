@@ -37,6 +37,9 @@ const TOWERS = {
         ranks: [{ cost: 140, armor: 0.1, hp: 30 }, { cost: 190, armor: 0.18, hp: 60 }, { cost: 240, armor: 0.25, hp: 100 }] },
       { id: 'blade', name: 'Kılıç Ustası', desc: (r) => `Hasar x${r.mult} · %${Math.round(r.crit * 100)} kritik · hızlı vurur, savurması yandakine de işler · 4. iskelet · Ruh Biçimi: iki kılıçla döner, çevresine vurur, iyileşir`,
         ranks: [{ cost: 160, mult: 1.3, crit: 0.1 }, { cost: 220, mult: 1.6, crit: 0.15 }, { cost: 280, mult: 2, crit: 0.2 }] },
+      // 20 Eki (Caner: "mahzen 2 değil 3 yola ayrılsın, diğeri kemik golem: 5 düşmanı üzerine çekip aynı anda başetsin")
+      { id: 'golem', name: 'Kemik Golem', desc: (r) => `Mahzenden tek bir dev Kemik Golem kalkar: yanındaki 5 düşmanı birden durdurur ve hepsine vurur · ${r.hp} can · yere vurup sersemletir`,
+        ranks: [{ cost: 150, hp: 620, mult: 1 }, { cost: 210, hp: 820, mult: 1.3 }, { cost: 270, hp: 1080, mult: 1.65 }] },
       // okçu yolu kaldırıldı (11 Eki): okçuluk artık Arbaletçi Kulesinin işi
     ],
   },
@@ -713,7 +716,7 @@ TOWERS.artillery.levels[0].perk = 'Veba bulamacı: hafif alan hasarı, 4 sn zehi
 TOWERS.artillery.levels[1].perk = 'Daha ağır veba, daha geniş gaz bulutu';
 TOWERS.artillery.levels[2].perk = 'Kaynayan veba: %30 şansla 0.6 sn sersemletir';
 TOWERS.mage.levels[0].perk = 'Ruh ışını: büyü hasarı zırhı deler';
-const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
+const NAMES = { poison: 'Veba Kemiği', snipe: 'Kemik Mızrak', shield: 'Mezar Bekçisi', blade: 'Ölüm Şövalyesi', golem: 'Kemik Golem', frost: 'Lanet', blast: 'Ruh Fırtınası', napalm: 'Çürüme Bulutu', double: 'Çifte Kazan' };
 for (const k in TOWERS) for (const a of TOWERS[k].abilities || []) if (NAMES[a.id]) a.name = NAMES[a.id];
 // komutanlar (tek seçilir). Wailing Wren 11 Eki'de, eski komutan 14 Eki'de (Caner) çıkarıldı: HERO_ORDER'da yok, başlangıç komutanı Leonidas
 Object.assign(HEROES.zeynep, { name: 'Wailing Wren', role: 'Banshee · Uzun menzil', sprite: 'hero_wren', h: 30, aura: '150,255,190', unlock: 2 });
@@ -1307,6 +1310,7 @@ const TOWER_EXTRA = {
   // 20 Eki (Caner: "uzmanlığın parayla açılan ikinci özel yeteneği"): eksik iki uzmanlık
   shield: { name: 'Kemik Siper',     cost: 220, cd: 13, desc: 'İskeletler kalkanlarını kenetler: 4 sn %60 az hasar alır, %20 iyileşir' },
   blade:  { name: 'Kemik Kasırgası', cost: 240, cd: 10, desc: 'İskeletler dönerek çevrelerini biçer: vuruş hasarının 3 katı, kanatır' },
+  golem:  { name: 'Kemik Patlaması', cost: 200, cd: 0, passive: true, desc: 'Golem yıkılınca patlar: kemikleri etrafa saçılır, çevresindeki düşmanlara ağır hasar verip sersemletir' }, // 20 Eki: pasif (game.js golemBurst)
 };
 // 20 Eki (KR'deki gibi): ikinci yetenek de 3 kademe. Kademe başına bekleme kısalır, güç artar (game.js updateExtra: XK). Fiyat: 1. kademe cost, sonrakiler ×0,8
 const EXTRA_RK = { n: 3, cd: [1, 0.85, 0.72], k: [1, 1.35, 1.75], price: [1, 0.8, 0.8] };
@@ -1319,6 +1323,7 @@ const SPEC = {
   plague: { title: 'Kara Veba Kazanı', who: 'Ölümle yayılan kara veba' },
   shield: { title: 'Muhafız Kışlası', who: 'Muhafızlar: ağır plaka zırh, kule kalkanı' },
   blade:  { title: 'Akıncı Ocağı',    who: 'Akıncılar: hafif zırh, çift kılıç' },
+  golem:  { title: 'Golem Mahzeni',   who: 'Tek dev kemik golem: 5 düşmanı birden tutar' },
   poison: { title: 'Zehir Avcıları',  who: 'Maskeli avcılar, yeşil zehirli oklar' },
   snipe:  { title: 'Kartal Göz Kalesi', who: 'Şapkalı nişancılar, uzun kara yay' },
   frost:  { title: 'Ayaz Kulesi',     who: 'Buz kristalleri, mavi küre' },
@@ -1426,6 +1431,7 @@ if (NECRO) {
   for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
   Object.assign(SPEC.shield, { title: 'Mezar Bekçileri', who: 'Tabut kalkanlı, dev topuzlu iskeletler' });
   Object.assign(SPEC.blade, { title: 'Ölüm Şövalyeleri', who: 'Yeşil alevli çift kemik kılıç' });
+  Object.assign(SPEC.golem, { title: 'Kemik Golem', who: 'Tek dev kemik golem: yanındaki 5 düşmanı birden tutar ve hepsine vurur' });
   Object.assign(SPEC.poison, { title: 'Veba Kemiği', who: 'Zehirli yeşil kıymıklar' });
   Object.assign(SPEC.snipe, { title: 'Kemik Mızrak', who: 'Uzun menzilli dev kemik mızrak' });
   Object.assign(SPEC.frost, { title: 'Lanet Feneri', who: 'Düşmanları donduran soğuk lanet' });

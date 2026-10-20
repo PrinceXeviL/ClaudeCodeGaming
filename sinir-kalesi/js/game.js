@@ -3791,6 +3791,7 @@ function damageSoldier(s, amount, src) {
       return;
     }
     s.dead = true; s.hp = 0;
+    if (s.bgolem && s.tower && +s.tower.extra > 0) golemBurst(s, +s.tower.extra);
     if (s.hero) { mortSay('heroDown'); sfx('herodie', null, 1, s); }
     else if (s.ghoul || s.big || s.pet) { // gulyabani / golem / dev / ruh kurdu çürük bir toz bulutuyla yere çöker
       sfx('bonefall');
@@ -4449,8 +4450,9 @@ function soldierStats(t) {
   };
 }
 function applySoldierStats(t) {
-  const st = soldierStats(t);
+  const st0 = soldierStats(t), gst = t.spec === 'golem' ? golemStats(t) : null;
   for (const s of t.soldiers) {
+    const st = s.bgolem && gst ? gst : st0;
     const gain = st.maxHp - s.maxHp;
     s.maxHp = st.maxHp; s.hp = s.dead ? 0 : Math.min(st.maxHp, s.hp + Math.max(0, gain) + st.maxHp * 0.5);
     if (s.gear !== t.lvl && !s.dead) {
@@ -4523,7 +4525,19 @@ function riseFromGrave(s) {
   for (let k = 0; k < 7; k++) emit(G.parts, { kind: 'chunk', x: q.x + rand(-4, 4), y: q.y, vx: rand(-40, 40), vy: -rand(60, 130), g: 420, vr: rand(-10, 10), rot: rand(0, 6), col: k % 2 ? '#5a4430' : '#3a2a1a', s0: rand(1.2, 2.2), s1: 1, life: rand(0.35, 0.6) });
   G.effects.push({ kind: 'ring', x: q.x, y: q.y, r: 12, col: Math.random() < 0.5 ? '190,120,255' : '120,255,150', t: 0, dur: 0.5 });
 }
+// 20 Eki (Caner): Mahzen'in 3. uzmanlığı Kemik Golem. Tek dev golem: yanındaki 5 düşmanı birden tutar (bigHold), savurması hepsine işler (aoe),
+// arada yere vurup sersemletir; ikinci güç Kemik Patlaması alındıysa yıkılınca patlar (golemBurst). Görsel: Kemik Devi (unit_bonegiant), golem boyunda.
+const GOLEM = { block: 5, r: 44, aoe: 0.85, dmgK: 2.4, armor: 0.3, rate: 1.45, burst: { r: 74, dmg: 70, stun: 0.9 } };
+function golemStats(t) {
+  const L = TOWERS.barracks.levels[t.lvl], g = abRank(t, 'golem') || { hp: 620, mult: 1 }, ur = upgRank('barracks'), um = (ur >= 1 ? 1.2 : 1) * (ur >= 4 ? 1.15 : 1);
+  return { bow: null, maxHp: Math.round(g.hp * um), armor: GOLEM.armor + (ur >= 3 ? 0.1 : 0), dmg: L.dmg.map(v => v * GOLEM.dmgK * g.mult * (ur >= 2 ? 1.2 : 1)), crit: 0, steal: 0.08,
+    rate: GOLEM.rate, block: 0, bash: 0, cleave: 0, speed: 40, engage: 110, leash: 60, aggro: true };
+}
+const isGolemSlot = (t, i) => t.spec === 'golem' && i === 0;
 function makeSoldier(t, i) {
+  if (isGolemSlot(t, i)) { const st = golemStats(t); return { tower: t, slot: 0, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: 0, steal: st.steal, bow: null,
+    block: 0, bash: 0, cleave: 0, gear: t.lvl, rate: st.rate, speed: st.speed, engage: st.engage, leash: st.leash, aggro: true, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5),
+    big: 'unit_bonegiant', bh: BIG_H.giant * 0.95, aoe: GOLEM.aoe, giant: { block: GOLEM.block, stomp: true, r: GOLEM.r }, bgolem: true }; }
   const st = soldierStats(t);
   return { tower: t, slot: i, x: t.x, y: t.y + 6, hp: st.maxHp, maxHp: st.maxHp, dmg: st.dmg, armor: st.armor, crit: st.crit, steal: st.steal, bow: st.bow,
     block: st.block, bash: st.bash, cleave: st.cleave, gear: t.lvl, rate: st.rate, speed: st.speed, engage: st.engage, leash: st.leash, aggro: st.aggro, atk: 0, target: null, dead: false, respawnT: 0, face: 1, anim: rand(0, 5),
@@ -4531,14 +4545,22 @@ function makeSoldier(t, i) {
 }
 // iri birimler (Kemik Devi, Ceset Golemi, gulyabani): boy, alan vuruşu, birden çok düşmanı durdurma
 const BIG_H = { giant: 21 * 2.4 * UNIT_K, golem: 21 * 2.1 * UNIT_K, ghoul: 21 * 2 * UNIT_K };
-function bigHold(s, dt, n) { // çevresindeki serbest düşmanları da durdurur (en çok n)
+function bigHold(s, dt, n, R = 30) { // çevresindeki serbest düşmanları da durdurur (en çok n, R yarıçapında)
   if ((s.holdT = (s.holdT || 0) - dt) > 0) return; s.holdT = 0.25;
   let k = G.enemies.filter(e => e.blocker === s && !e.dead).length;
   for (const e of G.enemies) {
     if (k >= n) break;
-    if (e.dead || e.blocker || e.def.flying || e.def.noblock || e.under || e.siege !== undefined || dist(e.x, e.y, s.x, s.y) > 30) continue;
+    if (e.dead || e.blocker || e.def.flying || e.def.noblock || e.under || e.siege !== undefined || dist(e.x, e.y, s.x, s.y) > R) continue;
     e.blocker = s; k++;
   }
+}
+function golemBurst(s, rk) { // Kemik Patlaması: kemikler saçılır, çevredeki düşmanlar hasar alır ve sersemler (kademe EXTRA_RK.k ile güçlenir)
+  const B = GOLEM.burst, k = EXTRA_RK.k[Math.max(0, Math.min(EXTRA_RK.n, rk) - 1)], R = B.r * (1 + 0.1 * (rk - 1));
+  for (const e of G.enemies) { if (e.dead || e.def.flying || e.under) continue; const d = dist(e.x, e.y, s.x, s.y); if (d > R) continue;
+    hitBy = 'melee'; damageEnemy(e, B.dmg * k * (1 - 0.45 * d / R), 'phys', false, 'melee'); hitBy = null; if (!e.dead) stunEnemy(e, B.stun); }
+  for (let i = 0; i < 26; i++) { const a = rand(0, TAU), v = rand(60, 170); emit(G.parts, { kind: 'glow', x: s.x, y: s.y - rand(6, 30), vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.6 - 60, drag: 1.6, col: i % 4 ? '236,226,200' : '190,110,255', s0: rand(3, 5.5), s1: 1, life: rand(0.5, 1) }); }
+  G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: R, col: '236,226,200', t: 0, dur: 0.5 }); G.effects.push({ kind: 'dust', x: s.x, y: s.y, t: 0, dur: 0.8 });
+  shakeScreen(6, 0.4); sfx('stomp'); sfx('bonefall'); floatText(s.x, s.y - 50, TOWER_EXTRA.golem.name + '!', '#f2e6c8');
 }
 function bigStomp(s) {
   shakeScreen(3, 0.25); sfx('stomp');
@@ -4556,6 +4578,12 @@ function buyAbility(t, id) {
   const first = !t.spec;
   t.spec = id;
   if (cur + 1 >= def.ranks.length) cnt('specmax');
+  if (t.type === 'barracks' && first && id === 'golem') { // iskeletler mahzene döner, yerine dev golem kalkar
+    for (const s of t.soldiers) { for (const e of G.enemies) if (e.blocker === s) e.blocker = null; const k = G.soldiers.indexOf(s); if (k >= 0) G.soldiers.splice(k, 1); }
+    t.soldiers = []; const gs = makeSoldier(t, 0); gs.x = t.rx ?? t.x; gs.y = (t.ry ?? t.y + 6); t.soldiers.push(gs); G.soldiers.push(gs);
+    if (t.more) { const s2 = makeSoldier(t, 1); t.soldiers.push(s2); G.soldiers.push(s2); }
+    G.effects.push({ kind: 'pillar', x: gs.x, y: gs.y, col: '230,220,190', t: 0, dur: 0.9 }); shakeScreen(4, 0.35); sfx('bonewall');
+  }
   if (t.type === 'barracks') {
     if (first && t.soldiers.length < barrN(t)) { // uzmanlık seçilince 4. iskelet mahzenden kalkar (+1 alınmışsa 5.)
       const s4 = makeSoldier(t, t.soldiers.length);
@@ -4865,7 +4893,7 @@ function skillsMaxed(t) {
   if (((t.ab && t.ab[id]) || 0) < a.ranks.length) return false;
   return !TOWER_EXTRA[id] || (+t.extra || 0) >= EXTRA_RK.n;
 } // mahzende uzmanlıktan sonra (menüde iki uzmanlık düğmesiyle çakışmasın)
-const barrN = (t) => (t.spec ? 4 : 3) + (t.more ? 1 : 0);
+const barrN = (t) => (t.spec === 'golem' ? 1 : t.spec ? 4 : 3) + (t.more ? 1 : 0); // Kemik Golem: tek dev golem (+1 alınırsa yanında bir iskelet)
 function buyMore(t) {
   const M = TOWER_MORE[t.type], c = M && priceK(M.cost, t.stackK || 1);
   if (!M || t.more || !moreOpen(t) || G.gold < c) return false;
@@ -4886,6 +4914,7 @@ function buyExtra(t) {
 function densestOf(list, r) { let best = null, bn = 0; for (const e of list) { const n = list.filter(o => dist(o.x, o.y, e.x, e.y) < r).length; if (n > bn) { bn = n; best = e; } } return best; }
 function updateExtra(t, dt) {
   if ((t.exT = (t.exT ?? 1.5) - dt) > 0) return;
+  if (TOWER_EXTRA[t.spec] && TOWER_EXTRA[t.spec].passive) { t.exT = 99; return; } // Kemik Patlaması: golem yıkılınca (golemBurst)
   const E = TOWER_EXTRA[t.spec], L = effLevel(t), R = (L.range || 140) * 1.05, eye = towerEye(t), RK = Math.max(0, Math.min(EXTRA_RK.n, +t.extra || 1) - 1), XK = EXTRA_RK.k[RK], CD = E.cd * EXTRA_RK.cd[RK];
   const near = G.enemies.filter(e => !e.dead && !e.under && dist(t.x, t.y - 10, e.x, e.y) <= R && (t.type === 'archer' || !e.def.flying));
   const avg = L.dmg ? (L.dmg[0] + L.dmg[1]) / 2 : 20;
@@ -5948,7 +5977,7 @@ function updateSoldier(s, dt) {
     if (moveToward(s, s.exit.x, s.exit.y, dt * 26 / s.speed) || G.t - s.born > 4) s.exit = s.exit.then && G.t - s.born <= 4 ? s.exit.then : null; // ~26 px/sn, ağır adımlarla
     return;
   }
-  if (s.giant) { bigHold(s, dt, s.giant.block); if (s.giant.stomp && s.target && (s.stompT = (s.stompT ?? 3) - dt) <= 0) { s.stompT = 6; bigStomp(s); } }
+  if (s.giant) { bigHold(s, dt, s.giant.block, s.giant.r); if (s.giant.stomp && s.target && (s.stompT = (s.stompT ?? 3) - dt) <= 0) { s.stompT = 6; bigStomp(s); } }
   else if (s.golem) bigHold(s, dt, 3);
   if (s.netT > 0) s.netT -= dt;
   if (s.dotT > 0) { // yanma / zehir: yarım saniyede bir hasar, üstünden kıvılcım ya da zehir kabarcığı
@@ -15432,6 +15461,7 @@ function drawMenuItem(it, x, y, sc, a, preview) {
 // kule yeteneklerinin ikonları (menü düğmesinde ve kule altındaki rozetlerde)
 function drawAbilityIcon(id, x, y, s) {
   { const im = spr('ico_ab_' + id); if (im) { icoFit(im, x, y, 10.5 * s); return; } } // 15 Eki: Gemini yetenek simgesi (nm10_yetenek_*), yoksa kodla çizim
+  if (id === 'golem') { const im = spr('unit_bonegiant'); if (im) { icoFit(im, x, y + 1 * s, 11.5 * s); return; } } // 20 Eki: Kemik Golem (Gemini simgesi gelene kadar golemin kendisi)
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const dark = 'rgba(20,10,4,0.9)';
   if (id === 'poison') {
