@@ -2359,7 +2359,7 @@ function startLevel(idx, chal = null) {
     G.heroes.push(h); G.soldiers.push(h);
     G.spells['ult' + i] = 0;
   });
-  if (NECRO && !G.early) for (const id of loadout()) G.spells[id] = 0; // yalnız savaşa götürülen 3 büyü
+  if (NECRO && !G.early) for (const id of loadout()) G.spells[id] = 0; // yalnız savaşa götürülen büyüler (SPELL_SLOTS)
   // bölümde görünecek karakterlerin kol kesimleri her karede bir tane hazırlanır (ilk görünüşte takılma olmasın)
   const types = new Set();
   (chal === 'a' ? ADMIN_TEST.waves : chal === 'o' ? TUTOR.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
@@ -6726,8 +6726,8 @@ function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM
   return o;
 }
 const necroSpellOn = (id) => { const u = NECRO_SPELLS[id].unlock; return TEST_OPEN || u == null || (save.stars[u] || 0) > 0; };
-// 16 Eki (Caner): Mortimer savaşa en çok 3 büyü götürür; hangileri Büyü Kitabı'ndan seçilir (save.loadout). Seçim yoksa ya da eksikse açık büyülerle sırayla dolar.
-const SPELL_SLOTS = 3;
+// 16 Eki (Caner): Mortimer savaşa en çok 3 büyü götürür (22 Eki: 2); hangileri Büyü Kitabı'ndan seçilir (save.loadout). Seçim yoksa ya da eksikse açık büyülerle sırayla dolar.
+const SPELL_SLOTS = 2; // 22 Eki (Caner): Mortimer en çok 2 büyü kullanır
 function loadout() {
   const open = ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem'].filter(necroSpellOn), L = (save.loadout || []).filter(id => open.includes(id));
   // hiç seçim yapılmadıysa (ya da seçilenlerin hepsi kapalıysa) açık büyülerle sırayla dolar; oyuncu bir büyüyü çıkardıysa boş yer boş kalır
@@ -7259,23 +7259,12 @@ function thrallNote(tp, D, e) { // Ölüler Defteri: ilk kez dirilen tür kayded
   save.thralls = save.thralls || {}; tp = (D && D.base) || tp.replace(/_(k|y)$/, ''); // rütbe çeşitleri (kıdemli, yüzbaşı) aynı tür
   if (!save.thralls[tp]) { save.thralls[tp] = 1; sfx('tome'); floatText(e.x, e.y - 50, `Ölüler Defteri: ${(ENEMIES[tp] || D || {}).name || tp}`, '#ffb0ff'); persist(); } else save.thralls[tp]++;
 }
-// Ölü Lejyonu: sayaç ve güç (updateLegion her karede, drawLegionMeter kale üstünde)
+// Ölü Lejyonu: sayaç ve güç (updateLegion her karede; 22 Eki (Caner): kale üstündeki LEJYON sayacı kaldırıldı)
 function updateLegion() {
   const n = G.soldiers.filter(s => s.zombie && !s.dead).length, on = n >= ZOMBIE_X.legion.n;
   if (on && !G.legionOn) { const c = G.castle; floatText(c.x, c.y - 120, 'ÖLÜ LEJYONU!', '#ff5a5a', true); cnt('legion'); sfx('legion'); shakeScreen(3, 0.3);
     for (const s of G.soldiers) if (s.zombie && !s.dead) G.effects.push({ kind: 'ring', x: s.x, y: s.y, r: 18, col: '255,60,60', t: 0, dur: 0.5 }); }
   G.legionN = n; G.legionOn = on;
-}
-function drawLegionMeter() {
-  const n = G.legionN || 0; if (!n && !G.legionOn) return;
-  const c = G.castle, im = castleStageSprite(); if (!im) return;
-  const cp = castlePlace(c.x, c.y, im), h = cp.w * im.height / im.width, x = cp.x, y = cp.y - h - 10, N = ZOMBIE_X.legion.n, k = Math.min(1, n / N), on = G.legionOn, w = 66;
-  ctx.save();
-  roundRect(x - w / 2, y - 8, w, 16, 8, 'rgba(20,6,10,0.85)', on ? '#ff6a5a' : '#c9a865', 1.3);
-  roundRect(x - w / 2 + 2, y - 6, (w - 4) * k, 12, 6, on ? `rgba(255,${60 + 40 * Math.sin(time * 6)},60,0.9)` : 'rgba(190,60,70,0.85)');
-  txt(on ? 'LEJYON' : `${n}/${N}`, x, y + 1, 10, '#fff2e0', 'center', '800', FONT_B, true);
-  if (on) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 30, '255,60,60', 0.25 + 0.1 * Math.sin(time * 5)); }
-  ctx.restore();
 }
 // Fedakârlık: dirilene dokun (kafatası belirir) → tekrar dokun: patlar, yakındaki cesetler zincirleme patlar
 function zombieTap(x, y) {
@@ -17094,7 +17083,7 @@ function drawGrimoire(px, py, pw, ph, k, canBuy) {
     ctx.restore();
     buttons.push({ key: 'gs' + id, x: lx, y, w: lw - 56, h: 50, fn: () => { grimSel = id; sfx('pick'); } });
     if (open) buttons.push({ key: 'gl' + id, x: lx + lw - 56, y, w: 56, h: 50, fn: () => { grimSel = id; const r2 = toggleLoadout(id);
-      if (r2 === 'full') { grimMsg = { text: 'En fazla 3 büyü götürülür · önce birini çıkar', t: time }; sfx('error'); } else if (r2) sfx('pick'); else sfx('error'); } });
+      if (r2 === 'full') { grimMsg = { text: 'En fazla 2 büyü götürülür · önce birini çıkar', t: time }; sfx('error'); } else if (r2) sfx('pick'); else sfx('error'); } });
   });
   // sağ sütun: seçilen büyü
   const id = grimSel, S = NECRO_SPELLS[id], r = grimRank(id), open = necroSpellOn(id);
@@ -22390,7 +22379,6 @@ function drawPlay() {
   if (!PERF_OFF.has('parts')) drawPartsAll(G.parts);
   drawSigFx(false);
   drawAllyXray();
-  drawLegionMeter();
   drawMechFx();
   drawProps(true);
   drawFG();
