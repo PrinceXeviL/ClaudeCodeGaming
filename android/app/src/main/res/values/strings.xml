@@ -4,4 +4,8 @@
     <string name="title_activity_main">Necromancer</string>
     <string name="package_name">com.princexevil.necromancer</string>
     <string name="custom_url_scheme">com.princexevil.necromancer</string>
+    <!-- 21 Eki: mağaza kimlikleri (NecroStorePlugin). AdMob: şimdilik Google'ın herkese açık TEST kimlikleri; hesap açılınca gerçekleri yazılır -->
+    <string name="iap_full_game">mortimer_hazine</string>
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_rewarded">ca-app-pub-3940256099942544/5224354917</string>
 </resources>

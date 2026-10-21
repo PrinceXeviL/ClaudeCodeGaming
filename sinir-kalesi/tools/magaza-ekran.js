@@ -23,12 +23,14 @@ const setup = (lv, towers, spawns, simT, gold, zoom) => async (p) => {
 };
 const SCENES = [
   ['0_baslik', async (p) => { await p.waitForTimeout(2500); }],
-  // 1_savas: 11 Eki çekimi kullanılıyor (yoğun dövüş anı elle seçildi)
+  // 1_savas: 21 Eki yeniden (yeni Kemik Kulesi, Ruh Feneri; yoğun dövüş, boss yok)
+  ['1_savas', setup(9, [['archer', 3], ['barracks', 3], ['mage', 3], ['artillery', 3], ['archer', 2], ['mage', 2], ['barracks', 2]], [['heavy', 4], ['legion', 10], ['legion_k', 4], ['cavalry', 3]], 10.5, 960, 1.4)],
   ['2_boss', setup(19, [['barracks', 3], ['archer', 3], ['mage', 3], ['artillery', 3], ['altar', 2], ['mage', 2], ['archer', 2]], [['gloriosus1', 1], ['heavy', 3], ['legion', 4]], 12, 1210, 1.7)],
   ['3_final', setup(39, [['barracks', 3], ['mage', 3], ['artillery', 3], ['archer', 3], ['altar', 2], ['barracks', 2]], [['severus3', 1], ['paladin', 3], ['inquisitor', 3], ['torch', 3], ['flagellant', 3]], 9, 1875, 1.7)],
   ['4_harita', async (p) => { await p.evaluate(() => window.__game.goMap()); await p.waitForTimeout(3000); }],
   ['5_kodeks', async (p) => {
-    await p.evaluate(() => window.__game.goMap()); await p.waitForTimeout(1500);
+    await p.evaluate(() => { const S = window.__game.save(); S.codex = Object.keys(ENEMIES).filter(k => !ENEMIES[k].rank); S.codexNew = []; window.__game.goMap(); }); // 21 Eki: kodeks dolu görünsün
+    await p.waitForTimeout(1500);
     const q = await p.evaluate(() => window.__game.btn('codex') || window.__game.btn('t_codex')); if (q) await p.mouse.click(q.x, q.y);
     await p.waitForTimeout(1200);
     const c = await p.evaluate(() => window.__game.btn('cxecenturion')); if (c) await p.mouse.click(c.x, c.y);
@@ -40,20 +42,22 @@ const SCENES = [
   const b = await chromium.launch();
   for (const [dir, w, h, dpr] of SIZES) {
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
+    await ctx.addInitScript(() => { window.MAGAZA = true; }); // 21 Eki: mağaza sürümü görünümü (admin/deneme düğmeleri yok)
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
     await p.goto('http://localhost:8765/index.html?' + Date.now()); await p.waitForTimeout(2500);
     // bütün bölümler açık, ipuçları görülmüş say (kayıt yeniden yüklenince geçerli)
     await p.evaluate(() => {
       const k = 'sinirKalesi.v1', s = JSON.parse(localStorage.getItem(k) || '{}');
-      s.tips = { castle: 1, grim: 1, pts: 1, tree: 1 }; Object.assign(s, { burstSeen: true, golemSeen: true, graveSeen: true, hatchSeen: true, mapSeen: true });
+      s.tips = { castle: 1, grim: 1, pts: 1, tree: 1 }; Object.assign(s, { burstSeen: true, golemSeen: true, graveSeen: true, hatchSeen: true, mapSeen: true, statsAsked: 1, tdAsked: 1 }); { const d = new Date(); s.login = Object.assign(s.login || {}, { last: d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() }); } // günlük hediye penceresi çıkmasın // 21 Eki: izin kutusu ve öğretici sorusu çıkmasın
       s.stars = s.stars || []; for (let i = 0; i < 31; i++) s.stars[i] = s.stars[i] || (i < 27 ? 3 : 2);
       localStorage.setItem(k, JSON.stringify(s)); localStorage.setItem('sinirKalesi.muted', '1');
     });
     for (const [name, prep] of SCENES) {
       await p.goto('http://localhost:8765/index.html?' + Date.now()); await p.waitForTimeout(4500);
       await prep(p);
-      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.intro = null; } });
+      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.intro = null; G.sigBanner = null; G.floaters = []; G.dmgNums = []; G.lvlBanner = null; G.toast = null; } window.__hideWaveBtn = true; }); // 21 Eki: boss yetenek adı ve uçan yazılar arayüze binmesin
       await p.waitForTimeout(300);
+      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.sigBanner = null; G.floaters = []; G.dmgNums = []; } });
       require('fs').mkdirSync(path.join(OUT, dir), { recursive: true }); await p.screenshot({ path: path.join(OUT, dir, name + '.png') });
     }
     console.log(dir, 'tamam', errs.length ? errs : '');

@@ -25,7 +25,7 @@ Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üst
 2. **Gizlilik politikası adresi:** `gizlilik.html` içindeki `[İLETİŞİM E-POSTASI]` yerine mağazada görünecek bir iletişim adresi yazılmalı (depo herkese açık, kişisel adres yazılmadı). Sonra sayfa bir yere yüklenmeli (ör. GitHub Pages; depo zaten herkese açık). Bu, herkese açık yayın olduğu için Caner'in onayıyla yapılacak.
 3. **Hesaplar:** Apple Developer Program (yıllık 99 $), Google Play Console (tek sefer 25 $), vergi ve banka bilgileri.
 4. **Gelir modeli (12 Eki, Caner onayı):** ücretsiz indirme, ilk 10 bölüm ücretsiz; tam oyun tek seferlik **4,99 $ / 149,99 ₺** (`mortimer_hazine`, game.js MONET). Zorunlu ara reklam YOK; yalnız isteğe bağlı ödüllü reklam (tam oyunda reklamsız). Araştırma: `arastirma/gelir-ve-pazarlama.md`.
-5. **Reklam ve satın alma:** AdMob hesabı + App Store Connect / Play Console'da `mortimer_hazine` ürünü. Reklam açılırsa gizlilik politikası ve yaş derecelendirmesi yanıtları güncellenir (aşağıda işaretli).
+5. **Reklam ve satın alma (21 Eki: Android kodu HAZIR, Play Billing 8 + AdMob + UMP):** AdMob hesabı + App Store Connect / Play Console'da `mortimer_hazine` ürünü. Reklam açılırsa gizlilik politikası ve yaş derecelendirmesi yanıtları güncellenir (aşağıda işaretli).
 6. **Android derlemesi: HAZIR (11 Eki).** İmzalı paket `android/app/build/outputs/bundle/release/app-release.aab` (123 MB), emülatörde denendi. Yükleme imzası `~/.android-imza/` içinde (depoda değil) — bu klasör yedeklenmeli. Play Console hesabı açılınca bu AAB yüklenir; Play App Signing açık bırakılır.
 7. **TEST_OPEN = false** (game.js) — göndermeden önce.
 
@@ -140,7 +140,15 @@ Beklenen sonuç: **PEGI 12 (insana karşı kan varsa 16'ya çıkabilir) / USK 12
 - Toplananlar: uygulama etkileşimi (bölüm başla/bitir, kule/büyü kullanımı), cihaz/işletim sistemi bilgisi, rastgele kurulum kimliği, kaba konum (IP'den ülke); çökme/hata kaydı. Reklam ya da takip amacı yok, üçüncü tarafa satılmaz.
 - App Store "App Privacy": Usage Data → Product Interaction; Identifiers → Device ID (kurulum kimliği); Diagnostics. Amaç: Analytics. "Linked to you": Hayır. "Used for tracking": Hayır.
 - Play Data safety: "App activity" + "App info and performance" + "Device or other IDs" toplanır, paylaşılmaz, amaç Analytics, isteğe bağlı (kullanıcı reddedebilir), aktarımda şifreli.
-- iOS `PrivacyInfo.xcprivacy` bu veri türlerine göre güncellenmeli; `gizlilik.html`'e GameAnalytics bölümü eklenmeli.
+- iOS `PrivacyInfo.xcprivacy` güncellendi (20 Eki); `gizlilik.html`'de GameAnalytics ve AdMob bölümleri var (21 Eki).
+
+**21 Eki: AdMob ödüllü reklam bağlandı (Android, NecroStorePlugin).** Play Data safety'ye EK olarak:
+- "Device or other IDs" → Advertising ID: toplanır, **paylaşılır** (Google AdMob), amaç **Advertising or marketing** + Analytics; isteğe bağlı değil (reklam izlenirse), şifreli.
+- "App activity" → App interactions: AdMob da toplar (reklam ölçümü). "Approximate location" (IP'den): AdMob, amaç reklam.
+- Play Console → "Ads" sorusu: **Evet, reklam içeriyor**. "Advertising ID" bildirimi: **Evet** (AD_ID izni play-services-ads ile gelir).
+- Hedef kitle: 13+ önerilir (çocuklara yönelik değil); 13 altı seçilirse Families politikası ve sertifikalı reklam SDK'sı gerekir.
+- Uygulama içi ürün: Play Console → Monetize → In-app products → **`mortimer_hazine`**, tek seferlik (managed), fiyat 4,99 $ / 149,99 ₺. Kimlik koddaki ile aynı olmalı (android/app/src/main/res/values/strings.xml `iap_full_game`).
+- AdMob kimlikleri: strings.xml `admob_app_id`, `admob_rewarded` (şimdi Google TEST kimlikleri; gerçekleri gelince değişir, yoksa mağazada reklam gelmez).
 
 **AdMob eklenirse değişir:** Cihaz kimliği (reklam kimliği), kaba konum (IP'den), ürün etkileşimi, çökme verisi → "Third-party advertising" amacıyla toplanır. iOS'ta App Tracking Transparency izni ve SKAdNetwork ayarı gerekir; Play'de Data safety formu yeniden doldurulur. `gizlilik.html` içinde bu bölüm hazır, reklam açılınca "henüz yok" notu kaldırılır.
 

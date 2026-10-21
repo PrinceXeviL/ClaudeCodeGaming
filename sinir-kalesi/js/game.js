@@ -15731,7 +15731,7 @@ function waveBtnScreen(pi) {
 }
 const WAVE_BTN_K = 2.1; // 16 Eki (Caner): %20 daha (1,75 → 2,1) // 14 Eki (Caner): %10 daha // erken çağrı düğmesinin büyüklüğü (Caner, 10 Eki: biraz daha büyük; 15 Eki: %30 daha)
 function drawWaveButtons() {
-  const show = waveCallable();
+  const show = waveCallable() && !window.__hideWaveBtn; // __hideWaveBtn: mağaza çekimi (tools/magaza-ekran.js)
   if (show && G.waveShowT == null) G.waveShowT = time;
   if (!show) G.waveShowT = null;
   if (!show) return;
@@ -17245,6 +17245,7 @@ function settingsList(inGame) {
   if (inGame) rows.splice(5, 1); // öğretici satırı yalnız ana ayarlarda
   if (inGame || !GA_KEYS.game) rows.splice(4, 1); // oyun verisi izni yalnız ana ayarlarda ve ölçüm anahtarı girilince
   if (inGame) rows.splice(3, 1); // 17 Eki: oyun içi pencereye 7 satır sığar; titreşim yalnız ana ayarlarda (Ortam efektleri oyun içinde kalsın: kasarsa hemen kapatılır)
+  if (NSTORE_PRIV && !inGame) rows.push(['map', 'Reklam gizliliği', [[true, 'DEĞİŞTİR']], false, () => { NSTORE.privacyOptions().catch(() => {}); }]); // 21 Eki: UMP (Avrupa) onayını değiştirme
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
   return rows;
 }
@@ -17308,6 +17309,19 @@ function drawLangMenu(cx, y, cw) {
 // 12 Eki (Caner onayı, arastirma/gelir-ve-pazarlama.md): ilk FREE_LEVELS bölüm ücretsiz, tam oyun tek seferlik ("Mortimer'ın Hazinesi"),
 // zorunlu ara reklam YOK (interEvery 0). İsteğe bağlı ödüllü reklamlar kalır; tam oyunda reklamsız verilir.
 const MONET = { interEvery: 0, interMinSec: 120, price: '₺149,99', priceUsd: '$4.99', product: 'mortimer_hazine', boostGold: 150, freeLevels: 10 };
+// 21 Eki: Android mağaza köprüsü (android NecroStorePlugin: Play Billing 8 + AdMob ödüllü + UMP onayı). Fiyat Play'den gelir (yerel para birimi),
+// açılışta önceki satın alma sessizce geri yüklenir (yeniden kurulum), reklam onayı (Avrupa) açılıştan biraz sonra sorulur.
+const NSTORE = (() => { const C = window.Capacitor; return C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.NecroStore; })();
+let NSTORE_PRIV = false; // Avrupa: reklam onayını değiştirme seçeneği Ayarlar'da görünmeli
+if (NSTORE) {
+  const ok = (r) => !!(r && r.ok);
+  window.NativeIAP = { buy: () => NSTORE.buy().then(ok), restore: () => NSTORE.restore().then(ok) };
+  window.NativeAds = { showRewarded: () => NSTORE.showRewarded().then(ok) };
+  const price = (n) => NSTORE.price().then(r => { if (r && r.price) MONET.price = r.price; else if (n < 6) setTimeout(() => price(n + 1), 2500); }).catch(() => {});
+  setTimeout(() => price(0), 1500);
+  setTimeout(() => NSTORE.restore().then(r => { if (ok(r) && !save.premium) { save.premium = true; persist(); } }).catch(() => {}), 2500);
+  setTimeout(() => NSTORE.initAds().then(() => NSTORE.privacyRequired()).then(r => { NSTORE_PRIV = !!(r && r.required); }).catch(() => {}), 4000);
+}
 // tam oyun kilidi: 1. seferin ilk 10 bölümünden sonrası (2. sefer dahil). TEST_OPEN açıkken kilit yok (test).
 const needsPremium = (i) => (!TEST_OPEN || window.__paywallTest) && !isPremium() && i >= MONET.freeLevels; // __paywallTest: test modunda kilidi görmek için
 let AD = null, lastInterAd = -1e9; // AD: { kind: 'rew' | 'int', t0, dur, cb }
@@ -19776,8 +19790,9 @@ function drawCodexEnemy(id, px, py, pw, ph) {
   if (weak.length) { y += 24; cxp = x0; }
   if (d.wood) { codexChip(x0, y, `Ahşap: yanınca ×${WOOD.burn} hasar, ×${WOOD.t} süre`, '#ffb070', 'rgba(150,40,10,0.7)'); y += 24; }
   for (const q of res) { const s2 = `Dirençli: ${WK_NAME[q]} −%${Math.round((1 - wk[q]) * 100)}`; ctx.font = `800 12px ${FONT_B}`; if (cxp > x0 && cxp + ctx.measureText(s2).width + 16 > px + pw - 10) { y += 24; cxp = x0; } cxp += codexChip(cxp, y, s2, '#a8d8ff', 'rgba(20,60,120,0.6)') + 4; }
+  if (res.length) y += 24; // son rozet satırının altı
   // alt: açıklama, yetenekler, Mortimer'ın notu
-  let by = py + 268;
+  let by = Math.max(py + 268, y + 8); // 21 Eki: rozetler uzayınca açıklama altına kayar (üstüne binmesin)
   const desc = enemyDesc(id, ENEMY_DESC[id] || d.desc);
   if (r) { fitTxt(r === 1 ? 'Kıdemli: %60 daha canlı, daha sert vurur, biraz daha zırhlı' : 'Yüzbaşı: 2,5 kat canlı, borazanıyla çevresini hızlandırır', px + 18, by, pw - 36, 13, r === 2 ? '#ffe27a' : '#ff9a8a', 'left', '800', FONT_B, false); by += 20; }
   wrapLines(d.chief ? d.desc : desc, pw - 36, 13.5, '700', FONT_B, 2).forEach(l => { txt(l, px + 18, by, 13.5, '#f0e2c4', 'left', '700', FONT_B, false); by += 18; });

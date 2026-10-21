@@ -58,6 +58,10 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // 21 Eki: mağaza (NecroStorePlugin): Play Billing 8 (Google, 31 Ağu 2026'dan beri yeni uygulamalarda zorunlu sürüm), AdMob ödüllü reklam, UMP onay penceresi
+    implementation "com.android.billingclient:billing:8.0.0"
+    implementation "com.google.android.gms:play-services-ads:24.6.0"
+    implementation "com.google.android.ump:user-messaging-platform:3.2.0"
 }
 
 apply from: 'capacitor.build.gradle'
