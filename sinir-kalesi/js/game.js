@@ -6863,7 +6863,7 @@ function castSpell(id, x, y) {
 // ----- Mortimer'ın büyüleri -----
 function castNecro(id, x, y) {
   const S = spellStats(id), c = G.castle, m = mortimerPoint();
-  G.mortCast = G.mortCastT = id === 'nm_raise' && mortStrip('mortimer_dirilt') ? MORT_RAISE.t : MORT_CAST_T; G.mortCastN = id === 'nm_raise' ? 'mortimer_dirilt' : null; G.mortFlash = false; // balkonda büyü kareleri (diriltmede Veo şeridi)
+  G.mortCast = G.mortCastT = id === 'nm_raise' && mortStrip('mortimer_dirilt') ? mortV2T('mortimer_dirilt', MORT_RAISE.t) : mortV2T('mortimer_buyu', MORT_CAST_T); G.mortCastN = id === 'nm_raise' ? 'mortimer_dirilt' : null; G.mortFlash = false; G.mortSlam = false; // balkonda büyü kareleri (diriltmede Veo şeridi)
   if (id === 'nm_raise') {
     const alive = G.soldiers.filter(s => s.minion && !s.dead).length, hasXY = x != null && y != null;
     const B0 = G.effects.filter(f => f.kind === 'corpse' && corpseOk(f) && f.t > 0.3 && f.t < f.dur - 0.15 && (!hasXY || dist(f.x, f.y, x, y) <= CORPSE_ECO.r))
@@ -7473,7 +7473,12 @@ function mortDanger() {
 // kale vurulunca ya da büyü yapınca kapıdan çıkar ('out'). MORT_IN: çıkış/giriş süresi, sakinlik süreleri, kalabalık eşiği
 const MORT_IN = { walk: 1.4, turn: 1.1, quiet: 14, crowd: 12, near: 260 };
 // diriltme şeridi (Veo, 42 kare): süre ve videodan kesilen tam ekran patlamanın yeri (şeridin kesri)
-const MORT_RAISE = { t: 2.2, flash: 0.7 };
+const MORT_RAISE = { t: 2.2, flash: 0.7, flash2: 0.24 };
+// 21 Eki (Mortimer v2, Veo): yeni şeritler (anim.json v2) kendi süreleriyle oynar; eski Mortimer'ın kalan şeritleri (koltuk, yürüme, dönüş) yenisi gelene dek kapalı
+const mortV2 = (n) => !!(ANIM_META[n] && ANIM_META[n].v2);
+const mortV2T = (n, t) => (mortV2(n) ? ANIM_META[n].n / (ANIM_META[n].fps || 24) : t);
+const MORT_V1_OFF = new Set(['mortimer_cay', 'mortimer_otur', 'mortimer_don', 'mortimer_arka', 'mortimer_yuru', 'mortimer_ofke']);
+const MORT_SLAM = 0.68; // v2 büyü şeridinde asanın yere vurduğu an (şeridin kesri)
 function mortLoud() {
   const c = G.castle, alive = G.enemies.filter(e => !e.dead);
   return c.shake > 0 || G.mortCast > 0 || alive.length >= MORT_IN.crowd || alive.some(e => e.def.chief || dist(e.x, e.y, c.x, c.y) < MORT_IN.near);
@@ -7501,7 +7506,7 @@ function updateMortState(dt) {
 // fx, fy: kale görselinde dayanak noktası (kesir), ax, ay: görselin kendi dayanağı (kesir), hk: boy / kale görseli boyu. Yalnız v5 1-2. evrede.
 const MORT_POSE = { sofa: { im: 'mortimer_pose_koltuk', fx: 0.673, fy: 0.539, ax: 0.48, ay: 0.875, hk: 106 / 1025 },
   scope: { im: 'mortimer_pose_teleskop', fx: 667 / 760, fy: 539 / 1025, ax: 0.47, ay: 0.36, hk: 150 / 1025 }, fade: 0.35, dur: [9, 16] };
-function mortPoseOk(k) { const im = castleStageSprite(); return !!(spr(MORT_POSE[k].im) && im && (im === spr('castle_keep_1') || im === spr('castle_keep_2'))); }
+function mortPoseOk(k) { if (mortV2('mortimer_bekle')) return false; const im = castleStageSprite(); return !!(spr(MORT_POSE[k].im) && im && (im === spr('castle_keep_1') || im === spr('castle_keep_2'))); }
 function mortPoseUpdate(M, dt) {
   M.pose = M.pose || 'stand'; M.poseA = Math.min(1, (M.poseA ?? 1) + dt / MORT_POSE.fade);
   const set = (k) => { if (k !== M.pose) { M.poseOld = M.pose; M.pose = k; M.poseA = 0; } };
@@ -7517,7 +7522,7 @@ function drawMortPose(k, a) {
   const x = cp.x - cp.w / 2 + P.fx * cp.w, y = cp.y - h + P.fy * h, br = k === 'sofa' ? Math.sin(time * 1.4) * 0.008 : Math.sin(time * 1.1) * 0.006; // hafif nefes
   ctx.save(); ctx.globalAlpha *= a; ctx.translate(x, y + dh * (1 - P.ay)); ctx.scale(1, 1 + br); ctx.drawImage(im, -P.ax * dw, -dh, dw, dh); ctx.restore();
 }
-const mortStrip = (n) => (ANIM_META[n] && spr(n) ? n : (ANIM_META[n] && loadStrip(n), null)); // yüklü değilse yükletir (haritada çay)
+const mortStrip = (n) => (mortV2('mortimer_bekle') && MORT_V1_OFF.has(n) ? null : ANIM_META[n] && spr(n) ? n : (ANIM_META[n] && loadStrip(n), null)); // yüklü değilse yükletir (haritada çay)
 // 15 Eki: ruh hali animasyonları (Veo, tek seferlik): kale vurulunca öfke (ayak vurur, yumruk sallar). MORT_MOOD: kare/sn, tekrar bekleme (sn)
 const MORT_MOOD = { fps: 10, cd: 14 };
 function mortRage() {
@@ -7536,7 +7541,7 @@ function mortAnim(p) {
   if (!M) return null;
   // 15 Eki (Caner): Mortimer oturmaz, balkonun önünde ayakta durur (diriltme şeridinin ilk karesi + nefes); ayakta bekleme videosu gelince o oynar
   if ((M.st === 'tea' || M.st === 'up' || M.st === 'down' || M.st === 'panic') && mortStrip('mortimer_bekle')) // 20 Eki (Caner): panik ve öfke animasyonları kaldırıldı; savaşta da sakin bekler
-    return { n: 'mortimer_bekle', i: Math.floor(time * (ANIM_META.mortimer_bekle.fps || 10)) % ANIM_META.mortimer_bekle.n, k: 1, cx: 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
+    return { n: 'mortimer_bekle', i: Math.floor(time * (ANIM_META.mortimer_bekle.fps || 10)) % ANIM_META.mortimer_bekle.n, k: 1, cx: mortV2('mortimer_bekle') ? 0 : 0.617 }; // 15 Eki: Veo bekleme (10 kare/sn, baş sağa sola döner)
   if ((M.st === 'tea' || M.st === 'up' || M.st === 'down') && mortStrip('mortimer_dirilt')) return { n: 'mortimer_dirilt', i: 0, k: 1, breathe: true };
   if ((M.st === 'up' || M.st === 'down') && mortStrip('mortimer_otur')) {
     const q = clamp(M.t / MORT_TRANS, 0, 1), N = ANIM_META.mortimer_otur.n;
@@ -7605,12 +7610,17 @@ function drawMortimer() {
 }
 function drawMortimer0() {
   const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / (G.mortCastT || MORT_CAST_T), 0, 1) : -1;
-  if (p >= MORT_RAISE.flash && G.mortCastN === 'mortimer_dirilt' && !G.mortFlash) { // videodaki tam ekran patlama kesildi: yerine kodla yeşil patlama
+  if (p >= (mortV2('mortimer_dirilt') ? MORT_RAISE.flash2 : MORT_RAISE.flash) && G.mortCastN === 'mortimer_dirilt' && !G.mortFlash) { // videodaki tam ekran patlama kesildi: yerine kodla yeşil patlama
     G.mortFlash = true; G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.9, col: '130,255,140', t: 0, dur: 0.45 });
     for (let i = 0; i < 22; i++) { const a = rand(0, Math.PI * 2), v = rand(60, 160); emit(G.parts, { kind: 'glow', add: true, x: m.x, y: m.y - hgt * 0.55, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, drag: 2.5, col: i % 3 ? '140,255,150' : '200,130,255', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.8) }); }
     shakeScreen(2.5, 0.25);
   }
-  const k = p >= 0 ? Math.sin(p * Math.PI) * (G.mortCastN ? 0.3 : 1) : 0; // Veo şeridinin kendi büyü ışığı var: kod ışığı hafif
+  if (p >= MORT_SLAM && !G.mortCastN && mortV2('mortimer_buyu') && !G.mortSlam) { // v2 büyü: asa yere vurulunca yeşil-mor-kızıl şok dalgası
+    G.mortSlam = true; shakeScreen(3, 0.3);
+    G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 1.1, col: '190,110,255', t: 0, dur: 0.5 }, { kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.7, col: '130,255,140', t: 0, dur: 0.4 });
+    for (let i = 0; i < 26; i++) { const a = rand(0, Math.PI * 2), v = rand(50, 150); emit(G.parts, { kind: 'glow', add: true, x: m.x + Math.cos(a) * 6, y: m.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.35 - rand(10, 40), drag: 2.4, col: i % 3 === 0 ? '255,70,80' : i % 3 === 1 ? '140,255,150' : '200,130,255', s0: rand(2.5, 5), s1: 0.4, life: rand(0.4, 0.8) }); }
+  }
+  const k = p >= 0 ? Math.min(1, Math.sin(p * Math.PI) * 1.6) * (G.mortCastN && !mortV2(G.mortCastN) ? 0.3 : 1) : 0; // Veo şeridinin kendi büyü ışığı var: kod ışığı hafif
   const F = ANIM_META.mortimer_cast, fim = F && spr('mortimer_cast'), im = spr('mortimer');
   if (!fim && !im) return;
   // arkasında hafif parlayan hale: mor, yeşil ve kızıl yavaşça birbirine karışır; büyüde ışık sütunu, dönen rün çemberi ve kıvılcımlar
@@ -14453,7 +14463,7 @@ function gatePanels() {
     const im = spr('mortimer');
     if (im) { // kapüşon ve kafatası (görselin üst kısmı)
       g.save(); g.beginPath(); g.arc(seam, cy, R - 3, 0, Math.PI * 2); g.clip();
-      const sw = im.width * 0.42, sh = im.height * 0.34, sx = im.width * 0.41, sy = 0, dw = R * 2.25, dh = dw * sh / sw;
+      const sw = im.width * 0.36, sh = im.height * 0.28, sx = im.width * 0.4, sy = im.height * 0.03, dw = R * 2.25, dh = dw * sh / sw;
       g.drawImage(im, sx, sy, sw, sh, seam - dw / 2, cy - dh * 0.52, dw, dh); g.restore();
     }
     g.strokeStyle = 'rgba(160,255,170,0.55)'; g.lineWidth = 2; g.beginPath(); g.arc(seam, cy, R - 2, 0, Math.PI * 2); g.stroke();
@@ -14468,7 +14478,7 @@ function gatePanels() {
 // 15 Eki (Caner: kapı Kingdom Rush'a benzedi): Mortimer'ın kara silüeti ekranın ortasından büyüyüp her yeri kaplar; karanlıkta yalnız kızıl
 // gözleri yanar (bölüm başlarken göz kırpar), sonra silüet küçülerek yeni sayfayı açar. TRANS_STYLE: 'mort' | 'gate' (taş kapı)
 const TRANS_STYLE = 'mort';
-const MORT_SIL = { ax: 0.6, ay: 0.56, eyes: [[199, 51], [217, 51]] }; // büyüme ekseni (görsel kesri; cübbenin dolu yeri), gözler (mortimer.webp pikseli)
+const MORT_SIL = { ax: 0.6, ay: 0.56, eyes: [[113, 57], [129, 56]] }; // büyüme ekseni (görsel kesri; cübbenin dolu yeri), gözler (mortimer.webp pikseli)
 let SIL_C = null;
 function mortSil() {
   const im = spr('mortimer'); if (!im) return null;
@@ -17345,7 +17355,7 @@ function drawTeaser() {
     ctx.save(); ctx.globalAlpha = clamp(t / 1.2, 0, 1); ctx.drawImage(im, W / 2 - w / 2, VIS.t + VIS.h / 2 - h / 2 - 20, w, h);
     const g = ctx.createLinearGradient(0, VIS.t, 0, VIS.b); g.addColorStop(0, 'rgba(10,4,20,0.55)'); g.addColorStop(0.6, 'rgba(10,4,20,0.25)'); g.addColorStop(1, 'rgba(5,2,10,0.92)'); ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
     ctx.fillStyle = `rgba(60,0,10,${0.25 + 0.1 * Math.sin(t * 2)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); ctx.restore(); }
-  const mt = spr('mortimer_pose_teleskop'); if (mt) { const a = clamp((t - 2.6) / 0.8, 0, 1), h = 250; ctx.save(); ctx.globalAlpha = a; ctx.translate(VIS.l + 150 - (1 - a) * 40, VIS.b - 64); drawSprite(ctx, mt, 0, 0, h * mt.width / mt.height); ctx.restore(); }
+  const mt = spr('mortimer'); if (mt) { /* 21 Eki: Mortimer v2 (teleskop pozu eski tasarım) */ const a = clamp((t - 2.6) / 0.8, 0, 1), h = 250; ctx.save(); ctx.globalAlpha = a; ctx.translate(VIS.l + 150 - (1 - a) * 40, VIS.b - 64); drawSprite(ctx, mt, 0, 0, h * mt.width / mt.height); ctx.restore(); }
   let y = VIS.b - 150; for (const [at, s] of TEASER.lines) { const a = clamp((t - at) / 0.6, 0, 1); if (!a) continue; ctx.save(); ctx.globalAlpha = a; txt(TR(s), W / 2 + 80, y, 19, s.startsWith('"') ? '#ffe27a' : '#f2e6c8', 'center', '400', FONT_T, true); ctx.restore(); y += 28; }
   const done = t > 11.2;
   gameButton('teaser_go', W / 2 + 80, VIS.b - 32, 300, 48, done ? (isPremium() ? 'SAVAŞA DEVAM' : 'HİKÂYE DEVAM EDİYOR ▶') : 'ATLA ▶▶', () => { if (!done) { screenT = time - 11.3; return; } go(() => { if (needsPremium(TEASER.next)) { menuBack = 'map'; shopTab = 'full'; screen = 'shop'; screenT = time; } else startLevel(TEASER.next); }); }, done ? 'green' : 'dark', { size: done ? 17 : 13, shine: done });
@@ -20377,7 +20387,7 @@ function drawLoginBonus(st) {
   crimsonRibbon(W / 2, py + 50, "MORTİMER'IN HEDİYESİ", 22, Math.min(420, pw - 40));
   if (Math.random() < 0.35) emit(uiParts, { kind: 'glow', add: true, x: px + rand(30, pw - 30), y: py + rand(60, ph - 30), vx: rand(-6, 6), vy: -rand(8, 22), col: Math.random() < 0.6 ? '255,215,130' : '200,150,255', s0: rand(1.4, 2.6), s1: 0.3, life: rand(0.8, 1.6) });
   // sol: Mortimer (işaret eden poz) + konuşma balonu
-  const lw = Math.min(250, pw * 0.3), mp = spr('mortimer_pose_point') || spr('mortimer_pose_relax'), mx = px + 26 + lw / 2, mb = py + ph - 22;
+  const lw = Math.min(250, pw * 0.3), mp = spr('mortimer'), /* 21 Eki: Mortimer v2 (eski işaret eden poz eski tasarım) */ mx = px + 26 + lw / 2, mb = py + ph - 22;
   if (mp) { const mh = Math.min(ph - 120, 250), mw = mh * mp.width / mp.height, br = Math.sin(time * 1.8);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, mx, mb - mh * 0.45, mh * 0.55, '150,90,255', 0.14); ctx.restore();
     ctx.save(); ctx.translate(mx, mb); ctx.scale(1 - br * 0.004, 1 + br * 0.008); ctx.drawImage(mp, -mw / 2, -mh, mw, mh); ctx.restore(); }
@@ -21219,7 +21229,7 @@ function drawRegionMap(E, ep, st) {
         ctx.drawImage(ch, x0 * ch.width, y0 * ch.height, (x1 - x0) * ch.width, (y1 - y0) * ch.height, cx - cw / 2 + x0 * cw, cy - chh + y0 * chh, (x1 - x0) * cw, (y1 - y0) * chh);
       }
       // çay buharı: fincandan kıvrılarak yükselen üç ince tel
-      const tx = mx + mh * 0.29, ty = my - mh * 0.66;
+      const v2 = !tea && mortV2('mortimer_bekle'), tx = mx + mh * (v2 ? 0.05 : 0.29), ty = my - mh * (v2 ? 0.6 : 0.66); // v2: ayakta, fincan göğüs hizasında
       ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 1.3;
       for (let i = 0; i < 3; i++) {
         const ph = (time * 0.55 + i / 3) % 1, a = Math.sin(ph * Math.PI) * 0.75;

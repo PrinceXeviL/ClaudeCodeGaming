@@ -1,0 +1,10 @@
+Mortimer v2 koltuk referansı (Veo balkon animasyonları için). Ekler: 1_ana_ayakta.png, 2_eski_koltuk.png
+
+Draw the character from the FIRST image (MORTIMER, tall skeleton necromancer in the crimson hood, gold skull medallion, bone shoulder pads, long crimson robe, fluffy black slippers) sitting relaxed in the SAME crimson velvet armchair as in the SECOND image. Keep the armchair exactly the same shape, color, size and angle as in the second image; replace only the old character with the new one. Keep EXACTLY the same art style, colors and outline thickness as the first image.
+
+Pose: front 3/4 view, leaning back comfortably, legs crossed, an open old spell book resting on his lap held by his left hand, a coffee mug in his right hand resting on the armrest. Grumpy but relaxed face. His horned-skull staff leans against the side of the armchair.
+
+Rules:
+- Whole armchair and character visible, nothing cut off, generous empty margin.
+- No smoke, no steam, no fog, no aura, no glow halo; light only in his eye sockets and in the staff skull.
+- clean hard silhouette, plain flat white background, no ground, no shadow, no text.

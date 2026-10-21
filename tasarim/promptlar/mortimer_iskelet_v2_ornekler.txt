@@ -1,0 +1,3 @@
+Mortimer iskelet v2 (21 Eki 2026): Azrail izleri yok (başlık, tırpan); maskot oranları. Kara elf denemesi reddedildi (cikti/iptal/mortimer_kara_elf_21eki.jpg).
+Ekler: 1_simdiki_mortimer.png, 2_oyunun_cizim_tarzi.png
+(prompt mesajda)

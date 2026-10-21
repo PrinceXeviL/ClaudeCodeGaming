@@ -1,0 +1,10 @@
+Mortimer v2 yandan duruş referansı (Veo yürüyüş + dönüş). Ekler: 1_ana_ayakta.png, 3_model_sayfasi.jpg
+
+Draw the character from the FIRST image (MORTIMER, tall skeleton necromancer in the crimson hood, gold skull medallion, bone shoulder pads with small skulls, belt, long crimson robe, fluffy black slippers) in a pure SIDE VIEW facing RIGHT, using the side view of the second image as the guide. Keep EXACTLY the same design, art style, proportions, colors and outline thickness as the first image.
+
+Pose: standing upright in a calm mid-stride walking pose, the horned-skull staff held in his front hand like a walking stick touching the ground ahead of him, the coffee mug in his other hand. Grumpy face in profile.
+
+Rules:
+- Whole figure and the whole staff visible, nothing cut off, generous empty margin.
+- No steam from the mug. No smoke, no fog, no aura, no glow halo; light only in his eye socket and in the staff skull.
+- clean hard silhouette, plain flat white background, no ground, no shadow, no text.
