@@ -4952,10 +4952,11 @@ function updateExtra(t, dt) {
     const c = densestOf(near, 50);
     A.forEach(a => { a.tx = null; a.walking = false; a.aimT = w; a.kickT = w + M.kick; a.face = c.x < xbowFoot(t, ts, a).x ? -1 : 1; });
     if (t.spec === 'bow') { // Ok Yağmuru: okçular göğe 18 ok salar, kalabalığın çevresine yüksek kavisle yağar
+      const lead = c.p && !c.blocker ? pathPos(c.p, c.d + c.def.speed * G.wspd * (w + 1.1), c.off) : c; // 21 Eki (Güç Raporu): oklar düşmanın ~1 sn sonra varacağı yere yağar (eskiden çoğu arkasına düşüyordu)
       for (let i = 0, NA = Math.round(18 * XK); i < NA; i++) {
-        const o = xbowTip(t, ts, A[i % A.length]), px = c.x + rand(-45, 45), py = c.y + rand(-18, 18);
+        const o = xbowTip(t, ts, A[i % A.length]), px = lead.x + rand(-34, 34), py = lead.y + rand(-14, 14);
         G.projectiles.push({ kind: 'ghostarrow', ballistic: true, longArrow: true, col: M.col, sx: o.x, sy: o.y, gy0: t.y, ax: px, ay: py - 10, tx: px, ty: py - 10, fy: py, fy0: py,
-          target: null, t: -w - i * 0.05, dur: 0.85 + dist(o.x, o.y, px, py) / 900, arc: rand(110, 150), dmg: avg * 0.6, rain: 18, src: 'arrow' });
+          target: null, t: -w - i * 0.05, dur: 0.85 + dist(o.x, o.y, px, py) / 900, arc: rand(110, 150), dmg: avg * 1.1, rain: 18, src: 'arrow' }); // 21 Eki: ok başına 0,6 → 1,1 (Delici Cıvata'nın ~6'da biri kadar vuruyordu)
       }
       t.relQ = (t.relQ || []).concat(A.map(a => { const o = xbowTip(t, ts, a); return { t: w, x: o.x, y: o.y, col: M.col, bow: true }; }));
     } else { // Delici Cıvata: dev cıvata en öndeki düşmana, arkasındaki hattı delip geçer
@@ -10508,7 +10509,7 @@ const TOWER_FORM = {
   // Hayalet Okçular (10 Eki): tepesi boş kule; üstünde iki elit kızıl okçu gezip ayrı hedeflere nişan alır (GHOST_ARCH)
   // 4. kademe yolları (11 Eki): aynı açık tepeli kule; Ağır Arbaletçiler seyrek ve ağır, Hayalet Okçular sık ve hafif (ikisi de 3. kademenin ~1,3 katı hasar/sn)
   archer_fan: { noAnim: true, w: 1.25, rate: 1.9, dmg: 2.6, range: 1.12, fly: 1, archers: true },
-  archer_bow: { noAnim: true, w: 1.35, rate: 0.42, dmg: 0.55, range: 1.08, fly: 1.3, archers: true },
+  archer_bow: { noAnim: true, w: 1.35, rate: 0.42, dmg: 0.8, /* 21 Eki (Güç Raporu): 0,55 → 0,8, arbaletçi yolundan %25 az vuruyordu */ range: 1.08, fly: 1.3, archers: true },
   mage_drain: { noAnim: true, w: 1, src: [0.5, 0.15], /* 20 Eki v2: dev ruh kristali */ rate: 0.9, ramp: 0.12, rampMax: 0.4, col: 'rgb(190,140,255)' },
   mage_ghost: { noAnim: true, w: 1, src: [0.11, 0.5], cageAt: [0.11, 0.5], /* 20 Eki v2: kanatlı ölümün kafesi */ col: 'rgb(255,80,80)', cage: { cd: 10, t: 1.8 } },
   // Veba Kazanı: corpse -> Ceset Mancınığı (kova sağ üstte; hep ceset yığını fırlatır, uzun menzil), plague -> Kara Veba Kazanı (ağızdan veba topu)

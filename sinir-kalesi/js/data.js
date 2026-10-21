@@ -1556,7 +1556,7 @@ const IMBUE = {
 // ----- Kemik Kulesi yolları (10 Eki, Caner: A seçeneği): 1. kademe iskelet okçu; 2. kademeye yükseltirken okçu ya da arbaletçi yolu seçilir.
 // Yol 4. kademe uzmanlığını da belirler (okçu -> Hayalet Okçular, arbaletçi -> Ağır Arbaletçiler). rate/dmg: kademe değerlerine çarpan.
 const ARCHER_PATH = {
-  bow:  { name: 'Okçu Yolu',      spec: 'bow', rate: 0.65, dmg: 0.68, fly: 1.3, titles: ['Kemik Kulesi', 'Kemik Okçular', 'Ölüm Okçuları'],
+  bow:  { name: 'Okçu Yolu',      spec: 'bow', rate: 0.65, dmg: 0.78, /* 21 Eki (Güç Raporu): 0,68 → 0,78 */ fly: 1.3, titles: ['Kemik Kulesi', 'Kemik Okçular', 'Ölüm Okçuları'],
     desc: 'Hızlı ve hafif: sık ok, uçanlara +%30 · 4. kademede Hayalet Okçular',
     perks: [null, '2 iskelet okçu, sık atış · uçanlara +%30 · +menzil', '3 okçu, çok sık atış · %15 kritik · çok daha uzun menzil'] },
   xbow: { name: 'Arbaletçi Yolu', spec: 'fan', rate: 1.45, dmg: 1.5, pen: 0.35, titles: ['Kemik Kulesi', 'Kemik Arbaletçiler', 'Ölüm Arbaletçileri'],
@@ -1726,7 +1726,7 @@ const SKILL_CD_K = 1.1;
 // tools/denge-deney.js ile 10 strateji × 16 bölüm (iki sefer): "2 Ruh Feneri + mahzen" 16/16 ve ort. 17 canla geçiyordu (en güçlü),
 // Veba Kazanı tek başına 8/16 (en zayıf hasar kulesi; karışık oyunda öldürmelerin %1'i), karışık oyunda bölüm sonunda ort. 2650 altın artıyordu.
 // BAL.tower: kule hasar çarpanı (tüm kademeler), BAL.hp: düşman canı çarpanı, BAL.bounty: düşman ödülü ve erken çağrı bonusu çarpanı.
-const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.2 }, /* 18 Eki: 1,1 → 1,2 (yalnız okçu 2. seferde hiç geçemiyordu) */ hp: 1.25, bounty: 0.875, hero: { bathory: 1.2 } /* 20 Eki: 0,95 → 1,2 (bot: en zayıf komutan, 32-34/40) */, heroCd: { merlin: 1.15, bathory: 1 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
+const BAL = { tower: { mage: 0.85, artillery: 1.5, archer: 1.2 }, /* 18 Eki: 1,1 → 1,2 (yalnız okçu 2. seferde hiç geçemiyordu) */ hp: 1.25, bounty: 0.875, hero: { bathory: 1.35 } /* 21 Eki (Güç Raporu): 1,2 → 1,35 (yine en geride, %91) */ /* 20 Eki: 0,95 → 1,2 (bot: en zayıf komutan, 32-34/40) */, heroCd: { merlin: 1.15, bathory: 1 } }; // 6. tur: Zaman Kapısı zayıfladı (game.js MERLIN_GATE), Merlin beklemesi 1,3 → 1,15; // 5. tur: Merlin'in gücü yeteneklerinde (Zaman Kapısı kalabalığı geri atar, Kurbağa): saldırı kesintisi geri, yetenek beklemesi %30 uzun; Báthory saldırı %5, yetenek beklemesi %15
 for (const t in BAL.tower) for (const L of TOWERS[t].levels) if (L.dmg) L.dmg = L.dmg.map(v => Math.round(v * BAL.tower[t]));
 GAME_DIFF.hp *= BAL.hp; GAME_DIFF.bounty *= BAL.bounty;
 for (const h in BAL.hero) if (HEROES[h] && HEROES[h].dmg) HEROES[h].dmg = HEROES[h].dmg.map(v => Math.round(v * BAL.hero[h]));

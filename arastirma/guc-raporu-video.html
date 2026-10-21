@@ -1,0 +1,130 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css">
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style>
+</head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Güç Raporu videosu (21 Eki): 1080x1920, kare kare çizilir (draw(t) belirlenimci), Playwright ile kare kare alınır.
+const C = document.getElementById('c'), MAIN = C.getContext('2d'), W = 1080, H = 1920;
+const O = document.createElement('canvas'); O.width = W; O.height = H; const OX = O.getContext('2d'); let X = MAIN; // sahne önce ayrı tuvale çizilir, geçişte saydamlıkla karışır
+const COL = { bg: '#120b12', panel: 'rgba(29,18,28,0.92)', line: '#3a2834', ink: '#f2e7d0', muted: '#b7a796', soul: '#86e3a6', bone: '#d9c9a6', gold: '#e8bb4a', blood: '#d9475a', track: '#2a1c27' };
+const FD = "'Metal Mania', 'Rubik', sans-serif", FB = "'Rubik', sans-serif";
+const NAMES = ['key', 'bg_boss', 'bg_savas', 'mortimer_pose_throne', 'mortimer_pose_point', 'mortimer_pose_win', 'hero_leonidas', 'hero_merlin', 'hero_robin', 'hero_bathory',
+  'tower_mage_3', 'tower_artillery_3', 'tower_barracks_3', 'tower_xbow_3', 'tower_mage_ghost', 'tower_mage_drain', 'tower_artillery_plague', 'tower_artillery_bonemortar', 'tower_altar_rite', 'tower_archer_fan', 'tower_archer_bow', 'unit_bonegiant', 'tower_barracks_shield', 'ico_sp_nm_raise', 'ico_sp_nm_fear', 'ico_sp_nm_wall'];
+const IM = {};
+window.ready = Promise.all([document.fonts.load("96px 'Metal Mania'"), document.fonts.load("800 60px 'Rubik'"), document.fonts.load("400 40px 'Rubik'"),
+  ...NAMES.map(n => new Promise(r => { const i = new Image(); i.onload = () => { IM[n] = i; r(); }; i.onerror = r; i.src = 'img/' + n + (n.startsWith('bg') ? '.png' : n === 'key' ? '.jpg' : '.webp'); }))]);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), ease = (k) => 1 - Math.pow(1 - clamp(k, 0, 1), 3), lerp = (a, b, k) => a + (b - a) * k;
+function txt(s, x, y, size, col, font = FB, weight = '800', align = 'left', a = 1) { X.save(); X.globalAlpha *= a; X.font = `${weight} ${size}px ${font}`; X.fillStyle = col; X.textAlign = align; X.textBaseline = 'alphabetic'; X.fillText(s, x, y); X.restore(); }
+function wrap(s, x, y, size, col, maxW, lh, font = FB, weight = '500', a = 1) { X.save(); X.font = `${weight} ${size}px ${font}`; const words = s.split(' '); let line = '', yy = y; for (const w of words) { const t = line ? line + ' ' + w : w; if (X.measureText(t).width > maxW && line) { txt(line, x, yy, size, col, font, weight, 'left', a); line = w; yy += lh; } else line = t; } if (line) txt(line, x, yy, size, col, font, weight, 'left', a); X.restore(); return yy; }
+function img(n, x, y, h, a = 1, anchor = 'bottom') { const i = IM[n]; if (!i) return 0; const w = h * i.width / i.height; X.save(); X.globalAlpha *= a; X.drawImage(i, x - (anchor === 'center' ? w / 2 : 0), anchor === 'bottom' ? y - h : y - h / 2, w, h); X.restore(); return w; }
+function cover(n, a = 1, zoom = 1, dx = 0) { const i = IM[n]; if (!i) return; const k = Math.max(W / i.width, H / i.height) * zoom, w = i.width * k, h = i.height * k; X.save(); X.globalAlpha = a; X.drawImage(i, (W - w) / 2 + dx, (H - h) / 2, w, h); X.restore(); }
+function rr(x, y, w, h, r, fill, stroke) { X.beginPath(); X.roundRect(x, y, w, h, r); if (fill) { X.fillStyle = fill; X.fill(); } if (stroke) { X.strokeStyle = stroke; X.lineWidth = 3; X.stroke(); } }
+function bar(x, y, w, k, val, top) { rr(x, y, w, 30, [0, 8, 8, 0], COL.track); if (k > 0.005) rr(x, y, Math.max(8, w * k), 30, [0, 8, 8, 0], top ? COL.soul : COL.bone); }
+const fmt = (v) => '%' + (Math.round(v * 10) / 10).toString().replace('.', ',');
+// sahne: [başlangıç, bitiş, çizim(yerel t, giriş k, çıkış a)]
+const SC = [];
+function scene(t0, t1, fn) { SC.push([t0, t1, fn]); }
+function header(eyebrow, title, a, k, y = 250) { txt(eyebrow.toLocaleUpperCase('tr'), 80, y - 120 + (1 - k) * 30, 34, COL.soul, FB, '800', 'left', a); X.save(); X.globalAlpha = a; X.font = `400 96px ${FD}`; X.fillStyle = COL.ink; const lines = title.split('\n'); lines.forEach((l, i) => X.fillText(l, 80, y + i * 104 + (1 - k) * 30)); X.restore(); return y + (lines.length - 1) * 104; }
+function bgDark(n, t, a = 0.28) { cover(n, 1, 1.08 + t * 0.006, -t * 6); X.fillStyle = `rgba(18,11,18,${1 - a})`; X.fillRect(0, 0, W, H); const g = X.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(18,11,18,0.2)'); g.addColorStop(0.5, 'rgba(18,11,18,0)'); g.addColorStop(1, 'rgba(18,11,18,0.9)'); X.fillStyle = g; X.fillRect(0, 0, W, H); }
+
+// 0 Başlık
+scene(0, 4, (t, k, a) => {
+  cover('key', 1, 1.05 + t * 0.012); X.fillStyle = 'rgba(18,11,18,0.55)'; X.fillRect(0, 0, W, H);
+  const g = X.createLinearGradient(0, H * 0.45, 0, H); g.addColorStop(0, 'rgba(18,11,18,0)'); g.addColorStop(1, 'rgba(18,11,18,0.95)'); X.fillStyle = g; X.fillRect(0, 0, W, H);
+  img('mortimer_pose_throne', W / 2 + 20, 1200, 760 * (0.9 + 0.1 * ease(k)), a, 'center');
+  txt("DON'T MESS WITH THE NECROMANCER", W / 2, 1520, 36, COL.soul, FB, '800', 'center', a * ease((t - 0.3) * 2));
+  txt('Güç Raporu', W / 2, 1660, 150, COL.ink, FD, '400', 'center', a * ease((t - 0.1) * 2));
+  txt('Oyunu test ettik, sonra 680 bölüm oynadık', W / 2, 1750, 40, COL.muted, FB, '500', 'center', a * ease((t - 0.6) * 2));
+});
+// 1 Test
+scene(4, 9.5, (t, k, a) => {
+  bgDark('bg_savas', t, 0.18);
+  header('1 · Test', 'Her şey\nçalışıyor', a, ease(k));
+  const items = [['193', 'düğmeye basıldı'], ['11', 'uzmanlığın hepsi denendi'], ['4', 'komutanla tam bölüm'], ['680', 'bölüm botla oynandı']];
+  items.forEach(([n, l], i) => { const kk = ease((t - 0.5 - i * 0.35) * 2.5), y = 560 + i * 190; if (kk <= 0) return;
+    X.save(); X.globalAlpha = a * kk; rr(80, y, W - 160, 160, 22, COL.panel, COL.line); X.restore();
+    const val = Math.round(+n * ease((t - 0.5 - i * 0.35) * 1.4)); txt(String(val), 130, y + 110, 96, COL.ink, FB, '800', 'left', a * kk); txt(l, 420, y + 98, 42, COL.muted, FB, '500', 'left', a * kk); });
+  const sk = ease((t - 2.6) * 3);
+  if (sk > 0) { X.save(); X.globalAlpha = a * sk; X.translate(W / 2, 1460); X.rotate(-0.06); X.scale(1.6 - 0.6 * sk, 1.6 - 0.6 * sk); rr(-300, -110, 600, 200, 24, 'rgba(134,227,166,0.14)', COL.soul); txt('0 HATA', 0, 40, 130, COL.soul, FB, '800', 'center'); X.restore(); }
+  wrap('Tek kusur: kodeksteki bir yazı taşması. Düzeltildi.', 80, 1700, 40, COL.muted, W - 160, 52, FB, '500', a * ease((t - 3.4) * 2));
+});
+// 2 En baskın güç
+scene(9.5, 15.5, (t, k, a) => {
+  bgDark('bg_boss', t, 0.16);
+  header('2 · En baskın güç', 'Komutan oyunu\ntaşıyor', a, ease(k));
+  img('hero_leonidas', W - 60 - 300, 1020, 560 * (0.92 + 0.08 * ease(k)), a * ease((t - 0.2) * 2), 'bottom');
+  txt('Bölüm kazanma', 80, 620, 40, COL.muted, FB, '500', 'left', a);
+  const rows = [['Komutanla', 95.4, true], ['Komutansız', 33.8, false]];
+  rows.forEach(([l, v, top], i) => { const y = 1120 + i * 230, kk = ease((t - 0.8 - i * 0.5) * 1.2); txt(l, 80, y, 54, COL.ink, FB, '800', 'left', a); txt(fmt(v * kk), W - 80, y, 76, top ? COL.soul : COL.ink, FB, '800', 'right', a); X.save(); X.globalAlpha = a; X.translate(0, 0); bar(80, y + 34, W - 160, kk * v / 100, v, top); X.restore(); });
+  wrap('Komutan olmadan her üç bölümden ikisi kaybediliyor.', 80, 1640, 46, COL.ink, W - 160, 60, FB, '700', a * ease((t - 2.6) * 2));
+});
+// 3 Komutanlar
+scene(15.5, 21.5, (t, k, a) => {
+  bgDark('bg_savas', t, 0.12);
+  header('3 · Komutanlar', 'Leonidas en\ngüçlüsü', a, ease(k));
+  const R = [['Leonidas', 'hero_leonidas', 98.8, 'hasarın %16’sı'], ['Merlin', 'hero_merlin', 97.5, 'hasarın %8’i'], ['Robin', 'hero_robin', 95.0, 'hasarın %9’u'], ['Báthory', 'hero_bathory', 91.2, 'hasarın %10’u']];
+  R.forEach(([n, im, v, s], i) => { const y = 620 + i * 270, kk = ease((t - 0.5 - i * 0.3) * 1.5); X.save(); X.globalAlpha = a * clamp(kk * 3, 0, 1); rr(80, y, W - 160, 240, 22, COL.panel, i === 0 ? COL.soul : COL.line); X.restore();
+    img(im, 110, y + 226, 210, a * clamp(kk * 3, 0, 1)); txt(n, 330, y + 82, 58, COL.ink, FB, '800', 'left', a * clamp(kk * 3, 0, 1)); txt(s, 330, y + 130, 34, COL.muted, FB, '500', 'left', a * clamp(kk * 3, 0, 1));
+    txt(fmt(v * kk), W - 120, y + 88, 62, i === 0 ? COL.soul : COL.ink, FB, '800', 'right', a * clamp(kk * 3, 0, 1)); X.save(); X.globalAlpha = a * clamp(kk * 3, 0, 1); bar(330, y + 168, W - 450, kk * v / 100, v, i === 0); X.restore(); });
+  wrap('Kazanılan bölüm yüzdesi. Fark küçük, Báthory en geride.', 80, 1760, 36, COL.muted, W - 160, 48, FB, '500', a * ease((t - 2.2) * 2));
+});
+// 4 Kuleler
+scene(21.5, 27.5, (t, k, a) => {
+  bgDark('bg_boss', t, 0.12);
+  header('4 · Kuleler', 'Tek başına en\ngüçlü: Ruh Feneri', a, ease(k));
+  const R = [['Ruh Feneri', 'tower_mage_3', 88.8], ['Veba Kazanı', 'tower_artillery_3', 87.5], ['Mahzen', 'tower_barracks_3', 80.0], ['Kemik Kulesi', 'tower_xbow_3', 63.7]];
+  R.forEach(([n, im, v], i) => { const y = 620 + i * 270, kk = ease((t - 0.5 - i * 0.3) * 1.5), aa = a * clamp(kk * 3, 0, 1); X.save(); X.globalAlpha = aa; rr(80, y, W - 160, 240, 22, COL.panel, i === 0 ? COL.soul : i === 3 ? COL.blood : COL.line); X.restore();
+    img(im, 115, y + 228, 210, aa); txt(n, 330, y + 82, 58, COL.ink, FB, '800', 'left', aa); txt(i === 3 ? 'en zayıf tek kule' : 'tek tür kurunca', 330, y + 130, 34, COL.muted, FB, '500', 'left', aa);
+    txt(fmt(v * kk), W - 120, y + 88, 62, i === 0 ? COL.soul : COL.ink, FB, '800', 'right', aa); X.save(); X.globalAlpha = aa; bar(330, y + 168, W - 450, kk * v / 100, v, i === 0); X.restore(); });
+  wrap('Bütün arsalara tek tür kule kurulup 40 bölüm oynandı.', 80, 1760, 36, COL.muted, W - 160, 48, FB, '500', a * ease((t - 2.2) * 2));
+});
+// 5 Uzmanlıklar
+scene(27.5, 33, (t, k, a) => {
+  bgDark('bg_savas', t, 0.1);
+  header('5 · Uzmanlıklar', 'En çok hasar\nRuh Kafesi', a, ease(k));
+  const R = [['Ruh Kafesi', 'tower_mage_ghost', 116], ['Ruh Emici', 'tower_mage_drain', 114], ['Kara Veba', 'tower_artillery_plague', 111], ['Kemik Gülle', 'tower_artillery_bonemortar', 110], ['Ölüm Arbaletçileri', 'tower_archer_fan', 98], ['Ölüm Okçuları', 'tower_archer_bow', 73], ['Kemik Golem', 'unit_bonegiant', 34]];
+  txt('saniyede hasar', W - 80, 600, 34, COL.muted, FB, '500', 'right', a);
+  R.forEach(([n, im, v], i) => { const y = 650 + i * 160, kk = ease((t - 0.4 - i * 0.18) * 1.6), aa = a * clamp(kk * 3, 0, 1);
+    img(im, 80, y + 130, 120, aa); txt(n, 230, y + 56, 44, COL.ink, FB, '800', 'left', aa); txt(String(Math.round(v * kk)), W - 80, y + 58, 54, i === 0 ? COL.soul : COL.ink, FB, '800', 'right', aa);
+    X.save(); X.globalAlpha = aa; bar(230, y + 82, W - 310, kk * v / 120, v, i === 0); X.restore(); });
+  wrap('Kemik Golem ve Kalkan Duvarı az vurur: işleri düşmanı tutmak.', 80, 1800, 36, COL.muted, W - 160, 48, FB, '500', a * ease((t - 2.4) * 2));
+});
+// 6 Büyüler
+scene(33, 38.5, (t, k, a) => {
+  bgDark('bg_boss', t, 0.12);
+  header("6 · Mortimer'ın büyüleri", 'Ölüler hasarın\nbeşte birini veriyor', a, ease(k));
+  // halka: diriltilen ölülerin hasar payı %21
+  const cx = W / 2, cy = 900, R = 230, kk = ease((t - 0.4) * 1.1);
+  X.save(); X.globalAlpha = a; X.lineWidth = 64; X.strokeStyle = COL.track; X.beginPath(); X.arc(cx, cy, R, 0, Math.PI * 2); X.stroke();
+  X.strokeStyle = COL.soul; X.lineCap = 'butt'; X.beginPath(); X.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * 0.209 * kk); X.stroke(); X.restore();
+  img('ico_sp_nm_raise', cx, cy - 10, 170, a, 'center'); txt(fmt(20.9 * kk), cx, cy + 140, 64, COL.soul, FB, '800', 'center', a);
+  const rows = [['Büyüsüz kazanma', 77.5], ['Diriltmesiz kazanma', 92.5]];
+  rows.forEach(([l, v], i) => { const y = 1310 + i * 190, k2 = ease((t - 1.6 - i * 0.4) * 1.4); txt(l, 80, y, 48, COL.ink, FB, '800', 'left', a * clamp(k2 * 3, 0, 1)); txt(fmt(v * k2), W - 80, y, 60, COL.ink, FB, '800', 'right', a * clamp(k2 * 3, 0, 1)); X.save(); X.globalAlpha = a * clamp(k2 * 3, 0, 1); bar(80, y + 30, W - 160, k2 * v / 100, v, false); X.restore(); });
+  wrap('Her şey açıkken %95. Büyüler olmadan 18 puan düşüyor.', 80, 1760, 38, COL.muted, W - 160, 50, FB, '500', a * ease((t - 2.8) * 2));
+});
+// 7 Öneriler
+scene(38.5, 44, (t, k, a) => {
+  bgDark('key', t, 0.1);
+  header('7 · Öneri', 'Üç küçük\ndengeleme', a, ease(k));
+  const R = [['Ölüm Okçuları +%20 hasar', 'Okçu yolu arbaletçiden %25 az vuruyor'], ['Báthory’ye küçük güç', 'Komutanlar arasında en geride (%91)'], ['Ruh Feneri’ni izle', 'En güçlü kule, oyuncu verisiyle bakılacak']];
+  R.forEach(([h, s], i) => { const y = 640 + i * 300, kk = ease((t - 0.5 - i * 0.45) * 2), aa = a * kk; X.save(); X.globalAlpha = aa; X.translate((1 - kk) * 60, 0); rr(80, y, W - 160, 250, 22, COL.panel, COL.line); X.restore();
+    txt(String(i + 1), 130 + (1 - kk) * 60, y + 160, 120, COL.gold, FD, '400', 'left', aa); txt(h, 250 + (1 - kk) * 60, y + 110, 50, COL.ink, FB, '800', 'left', aa); wrap(s, 250 + (1 - kk) * 60, y + 170, 36, COL.muted, W - 380, 46, FB, '500', aa); });
+  img('mortimer_pose_win', W - 80 - 280, 1880, 420, a * ease((t - 1.8) * 2));
+  txt('Raporun tamamı Claude’da', 80, 1700, 40, COL.soul, FB, '800', 'left', a * ease((t - 2.4) * 2));
+});
+window.DUR = 44;
+window.draw = (t) => {
+  MAIN.globalAlpha = 1; MAIN.fillStyle = COL.bg; MAIN.fillRect(0, 0, W, H);
+  for (const [t0, t1, fn] of SC) {
+    const F = 0.5; if (t < t0 || t > t1 + F) continue;
+    const lt = t - t0, k = clamp(lt / 0.7, 0, 1);
+    let al = t > t1 ? clamp(1 - (t - t1) / F, 0, 1) : clamp(lt / F, 0, 1);
+    if (t0 === 0) al = Math.max(al, clamp(lt / 0.6, 0, 1));
+    if (t1 >= window.DUR) al *= clamp((t1 - t) / 0.8, 0, 1);
+    X = OX; OX.globalAlpha = 1; OX.clearRect(0, 0, W, H); fn(lt, k, 1); X = MAIN;
+    MAIN.globalAlpha = al; MAIN.drawImage(O, 0, 0); MAIN.globalAlpha = 1;
+  }
+};
+</script></body></html>
