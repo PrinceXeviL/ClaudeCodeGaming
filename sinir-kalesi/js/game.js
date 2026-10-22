@@ -1134,6 +1134,10 @@ const SFX_BAD = new Set();
 function sfx(kind, rate, volK = 1, pos = SFX_POS) {
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (window.__sfxLog && !muted) window.__sfxLog.push(kind); // test: çalınan sesler
+  if (window.__REC && window.__recLog) { // 22 Eki: fragman kaydı: çalınacak ses oyun zamanıyla yazılır (sesler sonradan miksajda yerleşir)
+    const k2 = ELEVEN_ON && EL_ALIAS[kind] ? EL_ALIAS[kind] : FREESOUND_ON && FS_ALIAS[kind] ? FS_ALIAS[kind] : kind, d2 = SOUND[k2], s2 = pos && !NOPOS.has(kind) ? spatial(pos) : null;
+    if (d2) window.__recLog.push([time, k2, volK * (s2 ? s2.k : 1), rate || 0, d2.vol || 1, d2.gap || 0, d2.max || 3, s2 ? s2.pan || 0 : 0]);
+  }
   if (muted || !actx) return;
   const sp = pos && !NOPOS.has(kind) ? spatial(pos) : null;
   if (sp) { volK *= sp.k; if (volK < 0.03) return; } // uzaktaki çok kısık ses hiç çalmaz (kanal boşa dolmasın)
@@ -2513,11 +2517,13 @@ function makeHero(id, x, y, slot) {
 // seviye ve kalıcı yeteneklerden kahraman değerleri
 // Kahramanların genel gücü (can, saldırı ve yetenek hasarı) bu çarpanla ölçeklenir
 // Kahraman dengesi: HERO_POWER hasar ve yetenek hasarı, HERO_HP can ve can yenileme çarpanı
-const HERO_POWER = 0.64, HERO_HP = 0.64;
+// 22 Eki (Caner: "komutanlar daha güçlüydü, en güçlü şey anlık güçler dışında kuleler olsun"): 0,64 / 0,64 → 0,4 / 0,5; anlık güçler (ult) değişmedi. __BALX: bot denemesi
+const HERO_POWER = (window.__BALX && window.__BALX.hp) || 0.4, HERO_HP = (window.__BALX && window.__BALX.hh) || 0.5;
 // Düşmanların kahramanlara saldırganlığı: yakından geçen düşman kahramana saldırmak için durur
 // (bir kahramana en çok HERO_AGGRO.max düşman), kahramana vuruşları HERO_AGGRO.dmg kat sert
 const HERO_AGGRO = { r: 30, max: 3, dmg: 1.3 };
 let HERO_SKILL = false; // yetenek hasarı işlenirken true
+let ACC_HERO = false, ACC_ULT = false; // 22 Eki: yalnız hasar sayımı (komutanın mermisi işlenirken true; oynanışı etkilemez)
 let SKILL_K = 1; // işlenen yeteneğin ağaç kademesinden hasar çarpanı (mermi / alanlar kendi kopyasını taşır)
 function heroStats(h) {
   const d = h.def, lk = 1 + 0.035 * (h.lvl - 1), k = lk * HERO_POWER, L = h.learned, ir = L.iron || 0; // seviye 20'de can ve hasar ×1,67 (11 Eki denge: ×2,33 fazla güçlüydü)
@@ -3351,7 +3357,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
     * (e.curseT > 0 ? 1 - (e.curseRes || 0) : 1); // lanet: zırh ve büyü direnci kırılır
   const dealt = Math.min(Math.max(0, e.hp), amount * (1 - red));
   e.hp -= amount * (1 - red);
-  if (window.__dmgAcc && dealt > 0) { const A = window.__dmgAcc, who = hitBy ? hitBy + ':' + (src || type) : (src || type), k = (wkK || type) + '|' + (e.def.acl || '?'); A.by[who] = (A.by[who] || 0) + dealt; A.mx[k] = (A.mx[k] || 0) + dealt; } // test (denge-deney): hasar kaynağı ve tür × zırh sınıfı
+  if (window.__dmgAcc && dealt > 0) { const A = window.__dmgAcc, who = ACC_ULT ? 'hero:ult' : HERO_SKILL ? 'hero:skill' : hitBy === 'hero' || ACC_HERO ? 'hero:attack' : hitBy ? hitBy + ':' + (src || type) : (src || type), /* 22 Eki: komutan (atış/yetenek) ayrı */ k = (wkK || type) + '|' + (e.def.acl || '?'); A.by[who] = (A.by[who] || 0) + dealt; A.mx[k] = (A.mx[k] || 0) + dealt; } // test (denge-deney): hasar kaynağı ve tür × zırh sınıfı
   dmgNum(e, dealt, quiet);
   if (!quiet && !raw) bloodHit(e, dealt); // çizgi film kanı / taş tozu / kıymık
   if (!quiet) knockback(e, dealt, src);
@@ -3766,7 +3772,7 @@ function damageSoldier(s, amount, src) {
   if (src) provoke(s, src);
   if (s.wall) {
     if (s.phalanx && s.thorns && src && src.hp != null && !src.dead && dist(src.x, src.y, s.x, s.y) < 60) { // Termopylae: duvara vuran hasar yer
-      hitBy = 'hero'; damageEnemy(src, amount * s.thorns, 'phys'); hitBy = null; if (Math.random() < 0.5) impactFx(src.x, src.y - 12, '255,215,140', 0.7); }
+      hitBy = 'hero'; ACC_ULT = true; damageEnemy(src, amount * s.thorns, 'phys'); hitBy = null; ACC_ULT = false; if (Math.random() < 0.5) impactFx(src.x, src.y - 12, '255,215,140', 0.7); }
     s.hp -= amount * (1 - s.armor); s.flash = 0.08;
     if (s.hp <= 0) { s.dead = true; s.hp = 0; s.life = 0; wallCrumble(s); releaseSoldier(s); }
     return;
@@ -6160,7 +6166,7 @@ function phalanxThrust(s) { // falanksın son anı: hoplitler hep birden mızrak
   for (const e of G.enemies) {
     if (e.dead || e.under || e.def.flying || dist(e.x, e.y, s.x, s.y) > 52) continue;
     if ((e.x - s.x) * s.dx + (e.y - s.y) * s.dy > 14) continue; // yalnız duvarın önündekiler (yolun geldiği taraf)
-    hitBy = 'hero'; damageEnemy(e, roll(s.thrust) * (s.skK || 1), 'phys'); hitBy = null; n++;
+    hitBy = 'hero'; ACC_ULT = true; damageEnemy(e, roll(s.thrust) * (s.skK || 1), 'phys'); hitBy = null; ACC_ULT = false; n++;
     if (!e.dead && !e.def.chief) { stunEnemy(e, 0.7); if (pushable(e)) { e.knockT = KNOCK.t * 1.4; e.knockV = 130; } }
     impactFx(e.x, e.y - 12, '255,215,140', 1);
   }
@@ -6362,6 +6368,7 @@ function fireHeroShot(h, e, mult = 1, extra) {
   if (h.def.soul) p.soul = true; // Merlin: yeşil-mor ruh küresi
   if (h.learned.hunter && (e.def.chief || e.def.boss)) p.dmg *= 1.2; // Robin: Gölge Avcı
   if (h.def.blood) { p.blood = true; p.owner = h; p.leech = h.learned.thirst ? 0.3 : 0.15; if (h.learned.thirst) p.dmg *= 1.1; } // 16 Eki: can çalma %20/%40 → %15/%30, susamışlık +%15 → +%10 // Báthory: kan oku, can çalar
+  p.byHero = true; // 22 Eki: hasar sayımı (komutanın atışı)
   if (extra) Object.assign(p, extra);
   G.projectiles.push(p);
   sfx(h.def.soul ? 'soulorb' : h.def.blood ? 'bloodbolt' : h.def.proj === 'fireball' ? 'magic' : 'arrow');
@@ -6854,7 +6861,7 @@ function spellInfo(id) {
 function castSpell(id, x, y) {
   if (NECRO_SPELLS[id] && G.mod && G.mod.nospell) { floatText(x, y - 20, 'Bu gece büyü yok!', '#d8a8ff'); sfx('error'); return; }
   if (NECRO_SPELLS[id]) { const n = enemiesNear(x, y, NECRO_SPELLS[id].r || 90).length; if (castNecro(id, x, y) === false) return; gainSpellXp(id, n); }
-  else { hitBy = 'hero'; const ok = castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; if (ok === false) return; } // yanlış yere: bekleme başlamaz
+  else { const n0 = [G.projectiles.length, G.zones.length, G.soldiers.length]; hitBy = 'hero'; ACC_ULT = true; const ok = castUlt(G.heroes[+id.slice(3)], x, y); hitBy = null; ACC_ULT = false; [G.projectiles, G.zones, G.soldiers].forEach((A, j) => { for (let q = n0[j]; q < A.length; q++) A[q].ult = true; }); if (ok === false) return; } /* 22 Eki: ult: hasar sayımında komutan gücü ayrı */ // yanlış yere: bekleme başlamaz
   if (G.stats) G.stats.spells++;
   if (NECRO_SPELLS[id]) { cnt('spells'); G.spellUsed = true; if (id === 'nm_golem') cnt('golem'); } else cnt('ult'); // Kara Defter
   gaDesign('buyu:' + id);
@@ -7839,13 +7846,13 @@ const TUTS = [
       at: () => spellBtn(spellIds().indexOf('nm_raise')) },
     { text: () => (spellMode('ult0') ? 'Şimdi hedefe dokun' : 'Altın çerçeveli düğme komutanının gücü: dokun, sonra hedefe dokun'), when: () => G.heroes.length && G.wave >= 2 && tutFoes().length >= 3, done: () => tutSpell('ult0'), timeout: 30,
       at: () => { if (spellMode('ult0')) { const e = tutCrowd(); return e && worldToScreen(e.x, e.y - 20); } return spellBtn(spellIds().indexOf('ult0')); } },
-    { card: true, icon: 'skull', title: 'Hazırsın!', text: "Dört kule, üç büyü ve bir komutan. Gerisi senin elinde: Mortimer'ın kulesini koru!" },
+    { card: true, icon: 'skull', title: 'Hazırsın!', text: "Dört kule, iki büyü ve bir komutan. Gerisi senin elinde: Mortimer'ın kulesini koru!" },
   ],
 ];
 // ----- ÖĞRETİCİ bölüm (16 Eki, Caner: "haritadaki öğretici tek bölümde her şeyi öğretsin, düşmanlar senaryoya göre gelsin") -----
 // Ölü Orman'ın yolunda 6 kısa dalga; her dalga bir şey öğretir ve yalnız o adıma gelince çağrılabilir (waveCallable). Altın adım adım verilir (enter).
 // Bitince zafer ekranı (EĞİTİM TAMAM) → haritaya; hiçbir şey kaydedilmez (G.admin). Test: node tools/ogretici-test.js (oku tıklayarak dener).
-const TUTOR = { idx: 0, gold: 80, spells: ['nm_raise', 'nm_fear', 'nm_wall'], waves: [
+const TUTOR = { idx: 0, gold: 80, spells: ['nm_raise', 'nm_fear'], /* 22 Eki (Caner): eğitimde de 2 büyü */ waves: [
   [{ t: 'legion', n: 4, gap: 1.8, hpK: 0.6 }], // 1: okçular yoldan geçeni vurur
   [{ t: 'legion', n: 6, gap: 1.2, hpK: 0.7 }, { t: 'gladiator', n: 2, gap: 2.2, at: 5, hpK: 0.6 }], // 2: Mahzen yolu tutar
   [{ t: 'heavy', n: 3, gap: 2.6, hpK: 0.55 }], // 3: zırhlıya Ruh Feneri
@@ -10174,8 +10181,8 @@ function update(dt) {
   for (const s of G.soldiers) { SFX_POS = s; updateSoldier(s, dt); if (!s.dead && !s.wall) entryPush(s); } // 20 Eki: giriş ağzına dost birim girmez
   SFX_POS = null;
   separateUnits(dt);
-  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; SFX_POS = p; updateProjectile(p, dt); }
-  hitBy = null; SFX_POS = null;
+  for (const p of G.projectiles) { HERO_SKILL = !!p.heroSkill; SKILL_K = p.skK || 1; hitBy = p.heroSkill ? 'hero' : PROJ_BY[p.kind] || null; ACC_HERO = !!p.byHero || p.kind === 'rainarrow'; /* ok/mızrak yağmuru yalnız komutanlarda */ ACC_ULT = !!p.ult; SFX_POS = p; updateProjectile(p, dt); }
+  hitBy = null; SFX_POS = null; ACC_HERO = false; ACC_ULT = false;
   HERO_SKILL = false; SKILL_K = 1;
 
   G.enemies = G.enemies.filter(e => !e.dead);
@@ -10212,7 +10219,7 @@ function update(dt) {
   for (const z of G.zones) {
     z.t += dt; z.fxT -= dt;
     if (z.kind === 'tornado') { tornadoStep(z, dt); continue; }
-    HERO_SKILL = !!z.heroSkill; SKILL_K = z.skK || 1;
+    HERO_SKILL = !!z.heroSkill; SKILL_K = z.skK || 1; ACC_HERO = !!z.hero; ACC_ULT = !!z.ult;
     const bats = z.kind === 'bats', live = !bats || z.t > 0.35; // yarasalar önce uçup gelir
     if (live) for (const e of G.enemies) if (!e.dead && (bats || !e.def.flying) && dist(e.x, e.y, z.x, z.y) <= z.r) {
       const hp0 = e.hp; damageEnemy(e, z.dps * dt, z.dtype || 'true', true, z.src);
@@ -10223,7 +10230,7 @@ function update(dt) {
       if (bats) { e.slowT = Math.max(e.slowT || 0, 0.3); e.slowK = Math.max(e.slowK || 0, z.slow); if (z.hero && !z.hero.dead) z.hero.hp = Math.min(z.hero.maxHp, z.hero.hp + (hp0 - Math.max(0, e.hp)) * z.heal); }
     }
     if (z.kind === 'bloodpool') for (const s of G.soldiers) if (!s.dead && !s.wall && dist(s.x, s.y, z.x, z.y) <= z.r) s.hp = Math.min(s.maxHp, s.hp + z.heal * dt);
-    HERO_SKILL = false; SKILL_K = 1;
+    HERO_SKILL = false; SKILL_K = 1; ACC_HERO = false; ACC_ULT = false;
     if (z.fxT <= 0) {
       z.fxT = 0.04;
       const a = rand(0, Math.PI * 2), rr = Math.sqrt(Math.random()) * z.r, holy = z.kind === 'holy';
@@ -22390,7 +22397,7 @@ function drawPlay() {
     txt(f.text, 0, 0, f.imp ? TEXTS.impSize : TEXTS.size, f.col, 'center', '400', FONT_T);
     ctx.restore();
   }
-  drawMortSay();
+  if (!window.__CLEAN) drawMortSay();
   drawMenuRange();
   drawEnemyRing();
   ctx.restore();
@@ -22412,6 +22419,8 @@ function drawPlay() {
     ctx.fillStyle = g; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
   }
   drawSlowMo();
+  const CLEAN = !!window.__CLEAN; // 22 Eki: fragman çekimi (arayüzsüz sahne)
+  if (!CLEAN) {
   drawMenu();
   if (!PERF_OFF.has('hud')) drawHud();
   drawEnemyPanel(); // 17 Eki: HUD'un üstünde
@@ -22423,6 +22432,7 @@ function drawPlay() {
   drawIntro();
   drawBanner();
   drawTut();
+  }
   if (G.tutorial && !overlay) gameButton('tut_skip', W / 2, EDGE.t + 30, 150, 44, 'EĞİTİMİ ATLA ›', () => { save.tdAsked = 1; persist(); go(() => { screen = 'map'; setOverlay(null); }); }, 'wood', { size: 14 }); // 16 Eki: öğretici atlanabilir, haritaya döner
   if (NECRO && overlay === 'win' && !G.winSnap) { const c = document.createElement('canvas'); c.width = ctx.canvas.width; c.height = ctx.canvas.height; c.getContext('2d').drawImage(ctx.canvas, 0, 0); G.winSnap = c; }
   if (overlay) drawOverlay();
@@ -23670,13 +23680,13 @@ function frame(now) {
     txt('Telefonu yan çevir ↻', view.cw / 2, view.ch - 40, 16, '#ffd34d', 'center', '400', FONT_T);
   }
   perf.last = (performance.now() - w0) / 1000; // bu karenin iş süresi (kalite ayarı için)
-  requestAnimationFrame(frame);
+  if (!window.__REC) requestAnimationFrame(frame); // 22 Eki: fragman kaydı (__REC) kareleri dışarıdan sürer: __game.recStep(ms)
 }
 requestAnimationFrame(frame);
 
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
-window.__game = { neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
+window.__game = { recStep: (ms) => { window.__REC = true; frame(last + ms); return time; }, recStop: () => { window.__REC = false; requestAnimationFrame(frame); }, neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
   zBadgePreview() { const c = document.createElement('canvas'); c.width = 900; c.height = 300; const g = c.getContext('2d'); g.fillStyle = '#3a4a2a'; g.fillRect(0, 0, 900, 300);
     [['skull', '#d8c8a8'], ['sword', '#d8c8a8'], ['bow', '#d8c8a8']].forEach(([k, col], i) => { zBadge(g, k, 150 + i * 300, 110, 70, col, false); zBadge(g, k, 120 + i * 300, 250, 12, col, false); zBadge(g, k, 180 + i * 300, 250, 12, col, true); }); return c.toDataURL(); }, // 18 Eki: zombi rozeti önizlemesi
   rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme

@@ -12,7 +12,7 @@ const { chromium } = require('playwright');
   const st = () => p.evaluate(() => { const g = window.__game, G = g.G; return JSON.stringify({ screen: g.screen, overlay: g.overlay, sel: G && G.sel && G.sel.kind, towers: G && G.towers.length, wave: G && G.wave, peek: !!(G && G.wavePeek), idx: G && G.idx }); }).then(JSON.parse);
   const tap = async (x, y, w = 700) => { await p.mouse.click(x, y); await p.waitForTimeout(w); };
   const btn = (key) => p.evaluate((k) => window.__game.btn(k), key);
-  const tapBtn = async (key, w = 900) => { const q = await btn(key); if (!q) { console.log('düğme yok:', key, await p.evaluate(() => window.__game.btnKeys().join(','))); return false; } await tap(q.x, q.y, w); return true; };
+  const tapBtn = async (key, w = 900) => { let q = await btn(key); for (let i = 0; !q && i < 16; i++) { await p.waitForTimeout(500); q = await btn(key); } /* 22 Eki: harita açılışı yavaşsa düğme biraz geç gelir */ if (!q) { console.log('düğme yok:', key, await p.evaluate(() => window.__game.btnKeys().join(','))); return false; } await tap(q.x, q.y, w); return true; };
   let ok = true; const check = (cond, msg) => { if (!cond) { ok = false; console.log('HATA:', msg); } };
   // çizgi roman / tanıtım kaplamaları: varsa geç
   const skipOverlays = async () => { { const cs = await btn('cine_skip'); if (cs) await tap(cs.x, cs.y, 900); } /* 18 Eki: açılış Veo sahnesi: ATLA */ await p.evaluate(() => { const G = window.__game.G; if (G) G.tut = null; }); /* 13 Eki: öğretici ayrı denenir (scratchpad tut_test) */ for (let i = 0; i < 12; i++) { const o = await p.evaluate(() => window.__game.overlay); if (!o || o === 'pause' || o === 'win' || o === 'lose') return; await p.evaluate(() => window.__game.setOverlay(null)); await p.waitForTimeout(300); } };

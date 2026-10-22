@@ -9,17 +9,19 @@
 const { chromium } = require('playwright');
 // 20 Eki: komutan 'yok' = komutansız; NOSPELL=1 Mortimer büyüleri yok; NORAISE=1 yalnız diriltme yok; çıktıda dmg (kaynak) ve mx (tür|zırh sınıfı) hasar toplamları
 const arg = process.argv[2] || '0-39', STRAT = process.argv[3] || 'mix', team = (process.argv[4] || 'leonidas').split(',').filter(t => t !== 'yok'), STARS = +(process.argv[5] || 3), NOSPELL = !!process.env.NOSPELL, NORAISE = !!process.env.NORAISE;
+const LOADOUT = process.env.LOADOUT ? process.env.LOADOUT.split(',') : null; // 22 Eki: götürülen büyüler (ör. LOADOUT=nm_raise,nm_wall)
 const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, (_, i) => a + i))(arg.split('-').map(Number)) : arg.split(',').map(Number);
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 960, height: 540 } });
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   if (process.env.WK1) await p.addInitScript(() => { window.__WK1 = true; }); // 20 Eki: eski karşıtlık tablosu (karşılaştırma; data.js WK_V2)
+  if (process.env.BALX) await p.addInitScript((j) => { window.__BALX = JSON.parse(j); }, process.env.BALX); // 22 Eki: {hp: HERO_POWER, tw: kule hasar çarpanı}
   if (process.env.HPX) await p.addInitScript((k) => { window.__HPX = k; }, +process.env.HPX);
   await p.goto('http://localhost:8765/index.html?' + Date.now(), { timeout: 180000 }); await p.waitForFunction(() => window.__game && window.__game.G !== undefined, null, { timeout: 180000 }).catch(() => {});
   await p.waitForTimeout(1500);
   for (const lvl of lvls) {
-    const r = await p.evaluate(({ lvl, team, STARS, STRAT, NOSPELL, NORAISE }) => {
+    const r = await p.evaluate(({ lvl, team, STARS, STRAT, NOSPELL, NORAISE, LOADOUT }) => {
       const g = window.__game, S = g.save();
       // --- oyuncu ilerlemesi ---
       const TM = team.length ? team : ['leonidas']; // komutansız: kayıt için bir komutan kurulur, bölüm başında sahadan kaldırılır
@@ -27,6 +29,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
       let free = S.stars.reduce((a, b) => a + b, 0), bought = true;
       while (bought) { bought = false; for (const u of UPGRADES) { const r = S.upg[u.id] || 0; if (r < u.ranks.length && u.ranks[r].cost <= free) { free -= u.ranks[r].cost; S.upg[u.id] = r + 1; bought = true; } } }
       for (const id of ['nm_raise', 'nm_fear', 'nm_wall', 'nm_burst', 'nm_golem']) { S.sxp[id] = 85 * lvl; for (let k = 0; k < 5; k++) g.grimBuy(id); }
+      if (LOADOUT) S.loadout = LOADOUT;
       S.hero = {}; for (const id of TM) S.hero[id] = { lvl: Math.min(10, 1 + Math.floor(lvl / 2)), xp: 0, sk: {}, ult: 1 };
       g.startLevel(lvl); const G = g.G; if (!team.length) { G.soldiers = G.soldiers.filter(s => !s.hero); G.heroes.length = 0; } /* 20 Eki: gerçekten komutansız (boş takım ilk açık komutana düşüyordu) */ window.__dmgAcc = { by: {}, mx: {} }; if (g.overlay === 'comic') g.setOverlay(null);
       // komutan puanları
@@ -83,7 +86,7 @@ const lvls = arg.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, 
       }
       const stuck = g.overlay ? null : G.enemies.filter(e => !e.dead).sort((a, b) => b.d - a.d).slice(0, 6).map(e => ({ t: e.type, d: e.p ? Math.round(e.d) + '/' + Math.round(e.p.total) : '-', x: Math.round(e.x), y: Math.round(e.y), under: !!e.under, blk: !!e.blocker, st: e.siege, hp: Math.round(e.hp), fear: +(e.fearT || 0).toFixed(1), stun: +(e.stun || 0).toFixed(1), spd: +(e.curSpd || 0).toFixed(1), slow: +(e.slowT || 0).toFixed(1), n: G.enemies.filter(o => !o.dead).length }));
       return { lvl, name: G.lv.name, result: g.overlay, stuck, spawners: G.spawners.length, cd: G.waveCountdown, lives: G.lives, wave: G.wave + '/' + G.lv.waves.length, t: Math.round(time), gold: G.gold, strat: STRAT, spent, by: G.stats && G.stats.by, towers: G.towers.map(t => t.type.slice(0, 3) + t.lvl).join(''), casts, used, leaks, heroes: G.heroes.map(h => h.id), dmg: Object.fromEntries(Object.entries(window.__dmgAcc.by).map(([k, v]) => [k, Math.round(v)])), mx: Object.fromEntries(Object.entries(window.__dmgAcc.mx).map(([k, v]) => [k, Math.round(v)])) };
-    }, { lvl, team, STARS, STRAT, NOSPELL, NORAISE });
+    }, { lvl, team, STARS, STRAT, NOSPELL, NORAISE, LOADOUT });
     console.log(JSON.stringify(r));
   }
   if (errs.length) console.log('HATALAR', JSON.stringify([...new Set(errs)].slice(0, 20)));
