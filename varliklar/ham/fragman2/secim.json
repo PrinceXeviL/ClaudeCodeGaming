@@ -1,0 +1,102 @@
+{
+ "tr_1": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Her gece hep aynı şey"
+ },
+ "tr_2": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Tek istediğim sessiz bir fincan kahve"
+ },
+ "tr_3": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Ve her gece imparatorluk kapımı çalıyor"
+ },
+ "tr_4": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Yeter!"
+ },
+ "tr_5": {
+  "take": "v2b",
+  "sim": 1.0,
+  "heard": "Kemik, veba, şimşek. Seç birini."
+ },
+ "tr_6": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Kalkın dostlarım, misafirlerimiz var"
+ },
+ "tr_7": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Bir de general getirmişler. Ne incelik"
+ },
+ "tr_8": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Efsaneler. Buyurun"
+ },
+ "tr_9": {
+  "take": "v2a",
+  "sim": 1.0,
+  "heard": "Şimdi nerede kalmıştım?"
+ },
+ "tr_10": {
+  "take": "v2a",
+  "sim": 1.0,
+  "heard": "Necromancer'a bulaşma"
+ },
+ "en_1": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Every night, the same thing"
+ },
+ "en_2": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "All I ask for is one quiet cup of coffee"
+ },
+ "en_3": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "And every night the empire comes knocking"
+ },
+ "en_4": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Enough"
+ },
+ "en_5": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Bones, plague, lightning. Pick your poison"
+ },
+ "en_6": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Rise, my friends. We have guests"
+ },
+ "en_7": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Oh, they brought a general. How thoughtful"
+ },
+ "en_8": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Legends, if you please"
+ },
+ "en_9": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Now, where was I?"
+ },
+ "en_10": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Don't mess with the necromancer"
+ }
+}
