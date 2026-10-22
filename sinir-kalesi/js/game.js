@@ -3988,6 +3988,7 @@ function bloodShare(h, amt) {
 // imp: önemli yazı (kule yıkıldı, imza, lejyon, boss dirildi, satış): sınırsız ve büyük
 const TEXTS = { max: 4, r: 46, recent: 0.6, size: 12.5, impSize: 15, shoutP: 0.2, shoutGap: 14 };
 function floatText(x, y, text, col, imp = false) {
+  if (window.__CLEAN && !/^[+\-]?[\d.,]+$/.test(String(text))) return; // 22 Eki: fragman çekiminde yalnız sayılar (yazılar dile bağlı)
   if (!imp) { if (G.floaters.filter(f => !f.imp).length >= TEXTS.max) return; if (G.floaters.some(f => f.t < TEXTS.recent && Math.abs(f.x - x) < TEXTS.r && Math.abs(f.y - y) < TEXTS.r * 0.6)) return; }
   else for (let k = 0; k < 4 && G.floaters.some(f => f.t < 1.2 && Math.abs(f.x - x) < TEXTS.r * 2.2 && Math.abs(f.y - y) < 17); k++) y -= 18; // 19 Eki: önemli yazı yakındaki yazının üstüne binmesin, bir satır yukarı
   G.floaters.push({ x, y, text, col, t: 0, imp });
@@ -18134,7 +18135,7 @@ function miniIntro(e) { // 18 Eki: ara boss: boss müziği ve sinematik yok, kı
   G.banner = { title: 'ARA KOMUTAN', sub: TR(e.def.name), t: 0, dur: 3 };
 }
 function bossIntro(e) {
-  { const bk = /^gloriosus/.test(e.type) ? 'boss_gloriosus' : /^severus/.test(e.type) ? 'boss_severus' : null; if (bk && cineReady(bk) && !G.admin) startCine(bk); } // 18 Eki: büyük bossun Veo girişi (bir kez)
+  { const bk = /^gloriosus/.test(e.type) ? 'boss_gloriosus' : /^(severus|cathedral)/.test(e.type) ? 'boss_severus' : null; if (bk && cineReady(bk) && !G.admin) startCine(bk); } // 18 Eki: büyük bossun Veo girişi (bir kez)
   G.bossT = 0; e.entryT = BOSS_ENTRY;
   G.intro = { type: e.type, t: 0, dur: 6.5, boss: true };
   G.bossFx = { t: 0, dur: 5.5 };
@@ -19384,7 +19385,7 @@ function drawEvent() {
 // 18 Eki (Caner: "hikâye: açılış sahnesi, boss giriş gösterisi, sefer sonu ödül sahnesi"): Veo sahne videoları (img/cine_*.mp4, varliklar/hikaye_video_isle.py).
 // Videoda yazı yok; altyazı kodla (6 dile çevrilir). Dokununca sonraki plan, ATLA bütün sahneyi geçer, her sahne bir kez (save.cine).
 // Dosyası olmayan plan atlanır (CINE_FILES); sahnenin hiç planı yoksa eski yol (çizgi roman, kodla boss gösterisi) sürer.
-const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve', 'cine_oyun']); // 18 Eki: video geldikçe eklenir (açılış tamam)
+const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve', 'cine_oyun', 'cine_boss_severus']); // 22 Eki: Severus girişi (Veo; haçlar varliklar/hac_boya.py ile güneşe) // 18 Eki: video geldikçe eklenir (açılış tamam)
 const CINE = {
   intro: [
     { v: 'cine_acilis_a', sub: [[0.4, 4.4, 'Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.'], [4.7, 9.4, 'Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.']] },
@@ -19392,7 +19393,7 @@ const CINE = {
     { v: 'cine_acilis_c', sub: [[0.4, 4.4, 'Mortimer kahvesini asla yarım bırakmaz. Bu gece bıraktı.'], [4.7, 9.4, '"Kalkın tembeller. Davetsiz misafirlerimiz var."']] },
   ],
   boss_gloriosus: [{ v: 'cine_boss_gloriosus', title: 'GENERAL GLORİOSUS', sub: [[1.2, 4.6, 'İmparatorluğun Güneş Generali'], [4.9, 9.4, '"Güneş adına! Bu kemik yığınını toz edin!"']] }],
-  boss_severus: [{ v: 'cine_boss_severus', title: 'BÜYÜK ENGİZİTÖR SEVERUS', sub: [[1.2, 4.6, 'Ateşin ve kutsal suyun efendisi'], [4.9, 9.4, '"Kutsal ışık seni ve ölülerini arındıracak!"']] }],
+  boss_severus: [{ v: 'cine_boss_severus', aud: 'cine_boss_severus', title: 'BÜYÜK ENGİZİTÖR SEVERUS', sub: [[1.2, 4.6, 'Ateşin ve kutsal suyun efendisi'], [4.9, 9.4, '"Kutsal ışık seni ve ölülerini arındıracak!"']] }],
   end1: [{ v: 'cine_sefer1_sonu', sub: [[0.4, 4.6, 'Gloriosus düştü. Altın miğferi artık Mortimer\'ın rafında.'], [4.9, 9.4, 'Ama İmparatorluk pes etmez. Engizisyon yola çıktı bile...']] }],
   // 18 Eki (Caner: Mortimer'ın evi, bölümler arası sahneler): terasta kahve servisi; ilk zaferden sonra "sonraki bölüm"de bir kez
   kahve: [{ v: 'cine_kahve', sub: [[0.4, 4.4, 'Bir zafer daha. Mortimer için bu, kahve vakti demek.'], [4.8, 9.6, '"Şekersiz, Bartholomew. Ve bu sefer dökme."']] }],
@@ -23669,7 +23670,7 @@ function frame(now) {
   else if (screen === 'event') drawEvent();
   else drawPlay();
   drawPartsAll(uiParts);
-  drawAchToast();
+  if (!window.__CLEAN) drawAchToast();
   drawAd();
   if (CINE_S) drawCine();
   if (trans) drawTrans();
@@ -23686,7 +23687,7 @@ requestAnimationFrame(frame);
 
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
-window.__game = { recStep: (ms) => { window.__REC = true; frame(last + ms); return time; }, recStop: () => { window.__REC = false; requestAnimationFrame(frame); }, neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
+window.__game = { mortPt: () => mortimerPoint(), recStep: (ms) => { window.__REC = true; frame(last + ms); return time; }, recStop: () => { window.__REC = false; requestAnimationFrame(frame); }, neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
   zBadgePreview() { const c = document.createElement('canvas'); c.width = 900; c.height = 300; const g = c.getContext('2d'); g.fillStyle = '#3a4a2a'; g.fillRect(0, 0, 900, 300);
     [['skull', '#d8c8a8'], ['sword', '#d8c8a8'], ['bow', '#d8c8a8']].forEach(([k, col], i) => { zBadge(g, k, 150 + i * 300, 110, 70, col, false); zBadge(g, k, 120 + i * 300, 250, 12, col, false); zBadge(g, k, 180 + i * 300, 250, 12, col, true); }); return c.toDataURL(); }, // 18 Eki: zombi rozeti önizlemesi
   rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme
