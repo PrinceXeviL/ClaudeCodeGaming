@@ -528,7 +528,7 @@ setTimeout(svcLogin, 1500);
 
 // ---------- canvas & ölçek ----------
 const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d'); // 23 Eki: let (giriş ekranı yarasaları ayrı tuvale çizilip gökyüzü maskesiyle kesilir: drawTitleBats)
 let view = { scale: 1, ox: 0, oy: 0, dpr: 1 };
 // Tam ekran (Caner, 10 Eki): oyun çerçevesi (960x540) güvenli bölgeye sığdırılır, ama siyah kenar kalmaz.
 // VIS: ekranın tamamı, EDGE: çentik/ana ekran çubuğu dışındaki güvenli bölge (ikisi de çerçevenin mantıksal koordinatında).
@@ -20101,7 +20101,7 @@ function drawSkullIcon(x, y, r) {
 }
 // giriş görseli v2 (17 Eki: sağda bütün Solarian ordusu, bosslar önde): ışıklar görseldeki yerlerine (0..1) bağlı canlandırılır
 const KEY_FX = { // 23 Eki: giriş resmi v3 (varliklar/ham/giris_v3.jpg): yeni Mortimer, asa, porselen fincan, kale v5, düzenli Solarian ordusu
-  eyes: [[0.197, 0.272], [0.219, 0.272]], skull: [[0.169, 0.104], [0.204, 0.104]], cup: [0.352, 0.388], moon: [0.873, 0.1],
+  eyes: [[0.189, 0.299], [0.212, 0.301]], skull: [[0.179, 0.096], [0.2, 0.1]], cup: [0.352, 0.388], moon: [0.873, 0.1],
   torch: [[0.373, 0.553], [0.484, 0.521], [0.706, 0.463], [0.741, 0.566], [0.939, 0.505], [0.975, 0.51], [0.918, 0.432], [0.958, 0.428], [0.81, 0.514]],
   win: [[0.385, 0.205], [0.406, 0.197], [0.39, 0.322], [0.411, 0.24], [0.426, 0.272], [0.445, 0.255], [0.371, 0.325], [0.443, 0.36], [0.405, 0.322]],
   flame: [[0.326, 0.17, 40, '110,255,120']],
@@ -20250,6 +20250,11 @@ function drawTitleBats() {
     const l = Math.random() < 0.5;
     spawnTitleBat(l ? -20 : W + 20, H * rand(0.06, 0.3), l ? 1 : -1, rand(0.95, 1.2));
   }
+  // 23 Eki (Caner: "yarasalar Mortimer'ın üstünden uçmasın, uzaktalar; nesnelerin arkasında uçsunlar"): yarasalar ayrı tuvale çizilir,
+  // giriş resminin gökyüzü maskesiyle (img/nm_key_sky.png: tepeden kesintisiz gök) kesilir: kale, ağaç, taht, ordu önlerinde kalır
+  const SK = spr('nm_key_sky'), BC = SK && KP ? (TITLE_C.batC && TITLE_C.batC.width === ctx.canvas.width && TITLE_C.batC.height === ctx.canvas.height ? TITLE_C.batC : (TITLE_C.batC = Object.assign(document.createElement('canvas'), { width: ctx.canvas.width, height: ctx.canvas.height }))) : null;
+  const octx = ctx; let bg2 = null;
+  if (BC) { bg2 = BC.getContext('2d'); bg2.setTransform(1, 0, 0, 1, 0, 0); bg2.clearRect(0, 0, BC.width, BC.height); bg2.setTransform(octx.getTransform()); ctx = bg2; }
   ctx.save(); ctx.fillStyle = '#120a18'; ctx.strokeStyle = 'rgba(170,120,220,0.45)'; ctx.lineJoin = 'round';
   for (const b of TITLE_C.bats) {
     const t = time - b.t0; if (t < 0) { b.cx = b.x; continue; }
@@ -20261,6 +20266,8 @@ function drawTitleBats() {
     ctx.lineWidth = 1 / k; drawTitleBat(x, y, k, fl, b.vx > 0 ? 1 : -1);
   }
   ctx.restore();
+  if (BC) { ctx.save(); ctx.globalCompositeOperation = 'destination-in'; ctx.drawImage(SK, KP.ox, KP.oy, KP.iw, KP.ih); ctx.restore(); ctx = octx;
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(BC, 0, 0); ctx.restore(); }
 }
 // mağaza uygulaması (Capacitor): açılış görseli kapak çizilene kadar kalır, sonra yumuşakça kaybolur
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
