@@ -49,15 +49,15 @@ const SCENES = [
     await p.evaluate(() => {
       const k = 'sinirKalesi.v1', s = JSON.parse(localStorage.getItem(k) || '{}');
       s.tips = { castle: 1, grim: 1, pts: 1, tree: 1 }; Object.assign(s, { burstSeen: true, golemSeen: true, graveSeen: true, hatchSeen: true, mapSeen: true, statsAsked: 1, tdAsked: 1 }); { const d = new Date(); s.login = Object.assign(s.login || {}, { last: d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() }); } // günlük hediye penceresi çıkmasın // 21 Eki: izin kutusu ve öğretici sorusu çıkmasın
-      s.stars = s.stars || []; for (let i = 0; i < 31; i++) s.stars[i] = s.stars[i] || (i < 27 ? 3 : 2);
+      s.cine = Object.assign(s.cine || {}, { intro: 1, boss_gloriosus: 1, boss_severus: 1, end1: 1, end2: 1, kahve: 1, oyun: 1 }); /* 23 Eki: sahne videoları araya girmesin */ s.stars = s.stars || []; for (let i = 0; i < 31; i++) s.stars[i] = s.stars[i] || (i < 27 ? 3 : 2);
       localStorage.setItem(k, JSON.stringify(s)); localStorage.setItem('sinirKalesi.muted', '1');
     });
     for (const [name, prep] of SCENES) {
       await p.goto('http://localhost:8765/index.html?' + Date.now()); await p.waitForTimeout(4500);
       await prep(p);
-      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.intro = null; G.sigBanner = null; G.floaters = []; G.dmgNums = []; G.lvlBanner = null; G.toast = null; } window.__hideWaveBtn = true; }); // 21 Eki: boss yetenek adı ve uçan yazılar arayüze binmesin
+      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.intro = null; G.sigBanner = null; G.say = null; G.floaters = []; G.dmgNums = []; G.lvlBanner = null; G.toast = null; } window.__hideWaveBtn = true; }); // 21 Eki: boss yetenek adı ve uçan yazılar arayüze binmesin
       await p.waitForTimeout(300);
-      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.sigBanner = null; G.floaters = []; G.dmgNums = []; } });
+      await p.evaluate(() => { const G = window.__game.G; if (G) { G.banner = null; G.sigBanner = null; G.say = null; G.floaters = []; G.dmgNums = []; } });
       require('fs').mkdirSync(path.join(OUT, dir), { recursive: true }); await p.screenshot({ path: path.join(OUT, dir, name + '.png') });
     }
     console.log(dir, 'tamam', errs.length ? errs : '');

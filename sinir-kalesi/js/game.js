@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero|pet)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero|pet)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|tower_(?:xbow_\d|archer_[a-z]+)_idle|unit_[a-z0-9]+_(?:reload|shotdown|pwalk)|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -3934,7 +3934,7 @@ function siegeCrewOut(e) {
   });
   shakeScreen(5, 0.45);
 }
-// 16 Eki (Caner: "kuşlar askerlere saldırıyor, bizimkiler boş durmasın"): yerdeki birimler uçana vuramaz (Kingdom Rush'taki gibi), ama kartal/akbaba
+// 16 Eki (Caner: "kuşlar askerlere saldırıyor, bizimkiler boş durmasın"): yerdeki birimler uçana vuramaz (rakip oyunlardaki gibi), ama kartal/akbaba
 // pikeyle aşağı indiği an hedef aldığı yakın dövüşçü ve yanındakiler (iskelet, golem, dirilen ölü, komutan) bir kez karşılık verir.
 // Kalkanı karşılayan tam vurur; yanındakiler yarım. Okçu iskelet ve kuledekiler zaten oklarıyla vurur.
 const DIVE_COUNTER = { r: 30, side: 0.5, block: 1.25, max: 3 };
@@ -4968,7 +4968,7 @@ function updateExtra(t, dt) {
     const sol = G.soldiers.filter(s => !s.dead && !s.wall && dist(s.x, s.y, t.x, t.y) <= R && s.target);
     if (!sol.length) { t.exT = 0.5; return; }
     for (const s of sol) { s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.4); s.buffT = 6 + 2 * RK; G.effects.push({ kind: 'pillar', x: s.x, y: s.y, col: '255,60,70', t: 0, dur: 0.6, small: true }); }
-    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.5, col: '255,60,70', t: 0, dur: 0.6 }); sfx('portal'); t.exT = CD; return;
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.5, col: '255,60,70', t: 0, dur: 0.6 }); sfx('blooddrain', null, 2.2); sfx('heal'); t.exT = CD; return; // 23 Eki: Kara Lanet'ten ayrı ses (ikisi de 'portal'dı)
   }
   if (t.spec === 'shield' || t.spec === 'blade') { // 20 Eki: Mahzen uzmanlıklarının ikinci yeteneği; dövüşen iskelet yoksa bekler
     const sol = (t.soldiers || []).filter(s => !s.dead && s.target);
@@ -4993,6 +4993,7 @@ function updateExtra(t, dt) {
           target: null, t: -w - i * 0.05, dur: 0.85 + dist(o.x, o.y, px, py) / 900, arc: rand(110, 150), dmg: avg * 1.1, rain: 18, src: 'arrow' }); // 21 Eki: ok başına 0,6 → 1,1 (Delici Cıvata'nın ~6'da biri kadar vuruyordu)
       }
       t.relQ = (t.relQ || []).concat(A.map(a => { const o = xbowTip(t, ts, a); return { t: w, x: o.x, y: o.y, col: M.col, bow: true }; }));
+      setTimeout(() => G && sfx('volley', null, 1, t), w * 1000 + 120); // 23 Eki: 18 okluk yağmura yaylım sesi (tek ok sesi çıkıyordu)
     } else { // Delici Cıvata: dev cıvata en öndeki düşmana, arkasındaki hattı delip geçer
       const e = near.slice().sort((a, b) => (a.p.total - a.d) - (b.p.total - b.d))[0], o = xbowTip(t, ts, A[0]);
       ballisticShot(o, t.y, e, w, M, { giant: true, dmg: avg * 4 * XK, dtype: 'true', pierceLine: 99, pierceLen: 320, pierceK: 0.8, knock: true });
@@ -5018,13 +5019,13 @@ function updateExtra(t, dt) {
     G.effects.push({ kind: 'ring', x: c.x, y: c.y, r: 60, col: '190,140,255', t: 0, dur: 0.5 }); impactFx(c.x, c.y - 12, '190,140,255', 1.6);
     for (const e of near) if (dist(e.x, e.y, c.x, c.y) < 60) damageEnemy(e, 55 * XK, 'magic', false, 'magic');
     for (const s of G.soldiers) if (!s.dead && dist(s.x, s.y, c.x, c.y) < 90) s.hp = Math.min(s.maxHp, s.hp + 30 * XK);
-    sfx('zap');
+    sfx('zap'); sfx('soulsuck', null, 1.6); // 23 Eki: Ruh Kafesi'nden ayrı ses
   } else if (t.spec === 'ghost') {
     near.sort((a, b) => dist(a.x, a.y, t.x, t.y) - dist(b.x, b.y, t.x, t.y)).slice(0, 4 + RK).forEach(e => {
       stunEnemy(e, 1.6); damageEnemy(e, 25 * XK, 'magic', false, 'magic');
       G.effects.push({ kind: 'zap', x0: eye.x, y0: eye.y, x1: e.x, y1: e.y - 12, t: 0, dur: 0.45, w: 1, col: 'rgb(255,80,80)', seed: rand(0, 9) });
     });
-    sfx('zap');
+    sfx('zap'); sfx('fear', null, 0.8);
   } else if (t.spec === 'corpse') {
     for (let k = 0; k < 3 + RK; k++) {
       const e = near[Math.floor(Math.random() * near.length)];
@@ -5037,7 +5038,7 @@ function updateExtra(t, dt) {
   } else if (t.spec === 'blight') {
     for (const e of near) { if (e.def.nocurse) continue; e.curseT = Math.max(e.curseT || 0, 5 + RK); e.curseK = Math.max(e.curseK || 0, 0.3); poisonEnemy(e, 8 * XK, 5);
       for (let i = 0; i < 4; i++) emit(G.parts, { kind: 'glow', add: true, x: e.x + rand(-8, 8), y: e.y - rand(0, 20), vy: -rand(15, 35), col: '140,60,200', s0: 3, s1: 0.5, life: 0.6 }); }
-    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '140,60,200', t: 0, dur: 0.6 }); sfx('portal');
+    G.effects.push({ kind: 'ring', x: t.x, y: t.y, r: R * 0.6, col: '140,60,200', t: 0, dur: 0.6 }); sfx('cursegaze', null, 2.4); sfx('portal', null, 0.6); // 23 Eki: Kan Sülüğü'nden ayrı ses
   }
 }
 // ---- Ruh Feneri (16 Eki, Caner): ruh hırsızları ve biriken ruhlarla şimşek (data.js SOUL_LAMP) ----
@@ -5683,15 +5684,18 @@ function updateEnemy(e, dt) {
   }
   if (e.blocker) {
     const B = e.blocker, bd = dist(e.x, e.y, B.x, B.y);
-    e.inMelee = bd < 22;
+    e.inMelee = bd < (B.big ? BLOCK_HOLD.bigR : 22); // 23 Eki: iri birimin (golem, dev) tuttuğu düşman ona sokulmaz, olduğu yerde dövüşür
     if (e.inMelee && !e.cried && G.cryCd <= 0) { e.cried = true; G.cryCd = 5; warCry(e); } // göğüs göğüse: hücum çığlığı
     if (!e.inMelee) {
       // Kilitlendiği asker/kahraman yanına gelmiyorsa (kahraman yol dışında durur, asker başka düşmanla uğraşır)
       // düşman kısa bir bekleyişten sonra kendisi ona yürür; çok uzaklaşan hedefi bırakır.
-      const coming = !B.hero && B.target === e && !B.moving;
+      // 23 Eki (Caner: "iskeletlerin durdurduğu düşmanlar durmalı, kaleye doğru ilerleyerek savaşıyorlar"): asker sersemlemişse (hücumla geri
+      // savrulan) ya da iriyse düşman onun peşinden yürümez, yerinde bekler; başka düşmanla uğraşan askeri de kovalamaz (3 sn sonra bırakır).
+      // Kendisi yürüyerek yaklaşma yalnız komutana ve kendisine gelemeyen (sıkışan) askere kaldı.
+      const coming = !B.hero && B.target === e && !B.moving, held = !B.hero && (B.stunT > 0 || B.big);
       e.waitT = (e.waitT || 0) + dt;
-      if (bd > 75 || (!coming && !B.hero && e.waitT > 3)) { e.blocker = null; e.waitT = 0; }
-      else if (!coming || e.waitT > 1.2) {
+      if (bd > 75 || (!coming && !held && !B.hero && e.waitT > 3)) { e.blocker = null; e.waitT = 0; }
+      else if (B.hero || (coming && !held && e.waitT > BLOCK_HOLD.stuck)) {
         const sp = e.def.speed * G.wspd * (e.spdMul || 1) * slow, k = Math.min(sp * dt, Math.max(0, bd - 18)) / Math.max(1, bd); // 17 Eki: adım hızla sınırlı (yakındayken bir karede 6 px sıçrıyor, gidip geliyordu)
         e.face = B.x < e.x ? -1 : 1; e.x += (B.x - e.x) * k; e.y += (B.y - e.y) * k; e.offPath = true;
       }
@@ -7181,7 +7185,7 @@ function idleFace(s) {
 // kale kapısında birleşiyor (7, 10, 18, 25, 27, 32, 35, 38, 39); yalnız yoldan yürüyen dirilen öteki yola geçmek için kaleye inip dönüyordu.
 // Artık: (1) hedef kendi yolunun üstündeyse (yollar ortak gövdede üst üste biner) tek ayak; (2) başka yoldaysa geçiş noktası iki yolun
 // değdiği yerlerden toplam yürüyüşü en kısa olanı (eskiden en tam çakıştığı yer = çoğu bölümde kale kapısı); (3) yol üzerinden gitmek düz
-// gitmekten çok uzunsa (ZOMBIE.cut) araziyi kestirip doğrudan yürür (Kingdom Rush askerleri gibi).
+// gitmekten çok uzunsa (ZOMBIE.cut) araziyi kestirip doğrudan yürür (rakip oyunlardaki askerler gibi).
 function zRoute(s, tx, ty) {
   const me = nearestOnPaths(G.paths, s.x, s.y), D = dist(s.x, s.y, tx, ty);
   let legs, len;
@@ -8450,7 +8454,7 @@ function drawCornu(face, hgt, k, breath) {
   ctx.restore();
   ctx.restore();
 }
-// ===== Bölüm sürprizleri (18 Eki, Caner: "40 bölüm birbirine benziyor; KR her bölüme özel sürpriz, mekanik ya da gizli şaka koyar;
+// ===== Bölüm sürprizleri (18 Eki, Caner: "40 bölüm birbirine benziyor; rakipler her bölüme özel sürpriz, mekanik ya da gizli şaka koyar;
 // ilgi çekici, sıra dışı, şaşırtacak şeyler olsun"). Her bölümde tekrarsız bir imza sürpriz: dokunulan nesne, dalga ortasında beklenmedik olay
 // ya da bossa karşı sahne. Tasarım listesi: tasarim/bolum-surprizleri.md. SUR[bölüm] = { name, setup(S), update(S, dt), tap(S, o) }.
 // Dokunulabilir nesneler S.o (ilk dalgadan sonra ara ara parıldar), hareketli efektler S.fx. İlk bulunuşta üstte altın şerit + save.sur
@@ -10613,6 +10617,27 @@ function boneIdle(t) { // havan kazanının bekleme döngüsü (köpüren sıvı
   const im = spr(n); if (!im) { loadStrip(n); return null; }
   return { im, M, n };
 }
+// 23 Eki: Kemik Kulesi bekleme döngüsü (Wan kemik_v2_idle: tower_xbow_N_idle, tower_archer_bow|fan_idle). Şerit gövdeyle aynı kutuda (box),
+// ön korkuluk ayrı katman olarak yine üstüne çizilir. anim.json'a eklenince kendiliğinden oynar.
+function boneTowerIdle(t, ts) {
+  if (!NECRO || t.type !== 'archer' || !ts) return null;
+  const n = ts.name.replace(/_side$/, '') + '_idle', M = ANIM_META[n]; if (!M) return null;
+  const im = spr(n); if (!im) { loadStrip(n); return null; }
+  return { im, M, n };
+}
+// 23 Eki: kule okçularının yeni Wan şeritleri (kule_birim_A/B, kule_egilme): _shot (arbaletçi atış), _reload (kurma), _pwalk (platformda
+// yürüme), _shotdown (eğilip aşağı atış). Eski şeritler yanlışlıkla açılmasın diye yalnız anim.json'da v2: true olanlar kullanılır.
+function manStrip(pre, k) {
+  const n = pre + k, F = ANIM_META[n]; if (!F || !F.v2) return null;
+  const im = spr(n); if (!im) { loadStrip(n); return null; }
+  return { im, F };
+}
+function manPhase(S, rise, since, relDur) { // atış şeridinde kare: nişana kalkarken bırakma karesine (F.rel) kadar, bırakınca sonuna
+  const F = S.F, R = F.rel || Math.round(F.n * 0.66); let i = 0;
+  if (rise != null) i = Math.min(R - 1, Math.floor(rise * R));
+  else if (since != null) i = R + Math.floor(Math.min(1, since / relDur) * (F.n - R));
+  return { im: S.im, F, i: clamp(i, 0, F.n - 1) };
+}
 const formImg = (t) => { const F = TOWER_FORM[t.type + '_' + t.spec]; return (F && F.img) || `tower_${t.type}_${t.spec}`; }; // img: başka uzmanlığın görselini paylaşır
 const towerForm = (t) => (t.spec && TOWER_FORM[t.type + '_' + t.spec] && spr(formImg(t)) ? TOWER_FORM[t.type + '_' + t.spec] : null);
 const obeliskForm = (t) => (t.type === 'archer' ? towerForm(t) : null);
@@ -10843,9 +10868,20 @@ function drawXbowMen(t, ts, redraw) {
     if (pose.startsWith('_load')) back = Math.sin(a.anim * 13) * h * 0.006; // kurma kolu çevrilirken gövde hafifçe sallanır
     ctx.translate(-h * 0.07 * kk * (M.bow ? 0 : 1) - back, -bob); ctx.rotate(lean); ctx.scale(sx, sy);
     const wk = null; // 11 Eki (2): eski yürüme şeritleri (Kaggle Wan, 168 px, 3. kademede eski tasarım) kalktı; yürürken de net Gemini çizimi + adım sekmesi
+    // 23 Eki: yeni Wan şeritleri (v2): platformda yürüme, aşağıdaki hedefe eğilip atış, arbaletçide atış + kurma
+    const tg = a.tg && !a.tg.dead ? a.tg : null, steep = tg && aimY(tg) - f.y > Math.abs(tg.x - f.x) * 0.9;
+    const PW = a.walking && !CK && manStrip(pre, '_pwalk');
+    let v2 = null;
+    if (!CK && !a.walking && up) {
+      const SD = steep && manStrip(pre, '_shotdown'), SH = !SD && !M.bow && manStrip(pre, '_shot'), RL = !SD && !M.bow && manStrip(pre, '_reload');
+      if (RL && a.aimT <= 0 && M.load && sinceRel >= (M.rel || 0) && sinceRel < (M.rel || 0) + M.load) { const F = RL.F; v2 = { im: RL.im, F, i: Math.min(F.n - 1, Math.floor((sinceRel - (M.rel || 0)) / M.load * F.n)) }; }
+      else if (SD || SH) v2 = manPhase(SD || SH, a.aimT > 0 ? rise : null, a.aimT <= 0 ? sinceRel : null, M.rel || M.kick + M.hold);
+    }
     // 11 Eki (Caner): koyu kontur kaldırıldı, yoldaki iskeletler gibi düz çizilir
     const shot = !CK && M.bow && !a.walking && archShot(pre, up && a.aimT > 0 ? rise : null, up && a.aimT <= 0 ? sinceRel : null, M.kick + M.hold);
-    if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
+    if (PW) drawFrame(PW.im, PW.F, Math.floor(a.anim * (PW.F.fps || 24)) % PW.F.n, h * bodyRatio(spr(pre)) * (SHOT_K[pre] || 1));
+    else if (v2) drawFrame(v2.im, v2.F, v2.i, h * bodyRatio(spr(pre)) * (SHOT_K[pre] || 1));
+    else if (wk) drawFrame(spr(wk), ANIM_META[wk], Math.floor(a.anim * 20) % ANIM_META[wk].n, h * bodyRatio(spr(pre))); // bekleme pozundaki boyla aynı
     else if (shot) drawFrame(shot.im, shot.F, shot.i, h * bodyRatio(spr(pre)) * (SHOT_K[pre] || 1)); // Veo şeridi (boy: gövde, miğfer dahil)
     else { const w0 = h * im.width / im.height; drawSprite(ctx, im, 0, 0, w0);
       if (a.flash > 0) { const wi = whiteOf(pre + pose + '_w', im); ctx.globalAlpha *= 0.7; drawSprite(ctx, wi, 0, 0, w0); } } // isabet anında beyaz parlar
@@ -12496,6 +12532,9 @@ function drawTowerBody(t) {
       ctx.drawImage(PC.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (boneIdle(t) || plagueStrip(t, 'idle')) { // 16 Eki: Kemik Havan / Kara Veba Kazanı boşta: Veo bekleme döngüsü (çağrıdan sonra 0. kareden)
       const TI = boneIdle(t) || plagueStrip(t, 'idle'), M = TI.M, PD = t.call0 != null && plagueStrip(t, 'call'), i = Math.floor(PD ? (time - t.call0 - PD.dur) * M.fps : time * M.fps + (t.x % 7)) % M.n, b = M.box, C = M.cols || M.n, sx = TI.im.width / (M.fw * C), sy = TI.im.height / (M.fh * Math.ceil(M.n / C));
+      ctx.drawImage(TI.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
+    } else if (boneTowerIdle(t, ts)) { // 23 Eki: Kemik Kulesi Wan bekleme döngüsü
+      const TI = boneTowerIdle(t, ts), M = TI.M, i = Math.floor(time * (M.fps || 24) + (t.x % 7)) % M.n, b = M.box || [0, 0, 1, 1], C = M.cols || M.n, sx = TI.im.width / (M.fw * C), sy = TI.im.height / (M.fh * Math.ceil(M.n / C));
       ctx.drawImage(TI.im, (i % C) * M.fw * sx, Math.floor(i / C) * M.fh * sy, M.fw * sx, M.fh * sy, (b[0] - 0.5) * ts.w, (b[1] - 1) * ts.h, (b[2] - b[0]) * ts.w, (b[3] - b[1]) * ts.h);
     } else if (balLay(t)) drawBallista(t, ts, OF);
     else {
@@ -14445,7 +14484,7 @@ const tapPop = (key) => { pops[key] = time; };
 let trans = null;
 // ekran geçişi (Caner, 11 Eki): hışırtı sesi, ekran kenarlardan ortaya doğru kararır (göz kapanır gibi), yeni ekran ortadan açılır
 const TRANS = { in: 0.36, out: 0.36, hold: 0.4, shut: 0.08, fade: 0.16 }; // fade: sade geçişin yarı süresi
-// 15 Eki (Caner: Kingdom Rush gibi): iki yandan kapanan taş kapı kanatları. Kanatlar ortada çarpışır (sarsıntı + toz), ortada Mortimer madalyonu;
+// 15 Eki (Caner: rakip oyunlar gibi): iki yandan kapanan taş kapı kanatları. Kanatlar ortada çarpışır (sarsıntı + toz), ortada Mortimer madalyonu;
 // bölüm başlarken kapı biraz daha uzun kapalı kalır (hold), sonra iki yana açılır. Kanatlar bir kez çizilip önbellekte tutulur.
 let GATE_C = null;
 function gatePanels() {
@@ -14502,7 +14541,7 @@ function gatePanels() {
   };
   return (GATE_C = { key, w, h, L: mk(true), R: mk(false) });
 }
-// 15 Eki (Caner: kapı Kingdom Rush'a benzedi): Mortimer'ın kara silüeti ekranın ortasından büyüyüp her yeri kaplar; karanlıkta yalnız kızıl
+// 15 Eki (Caner: kapı rakip oyuna benzedi): Mortimer'ın kara silüeti ekranın ortasından büyüyüp her yeri kaplar; karanlıkta yalnız kızıl
 // gözleri yanar (bölüm başlarken göz kırpar), sonra silüet küçülerek yeni sayfayı açar. TRANS_STYLE: 'mort' | 'gate' (taş kapı)
 const TRANS_STYLE = 'mort';
 const MORT_SIL = { ax: 0.6, ay: 0.56, eyes: [[113, 57], [129, 56]] }; // büyüme ekseni (görsel kesri; cübbenin dolu yeri), gözler (mortimer.webp pikseli)
@@ -15690,7 +15729,7 @@ function drawRally(x, y) {
 }
 
 // ---------- HUD ----------
-// Arayüz yerleşimi (KR düzeninden esinli): sol üst can/altın + dalga, sağ üst kare düğmeler,
+// Arayüz yerleşimi (türün yaygın düzeni): sol üst can/altın + dalga, sağ üst kare düğmeler,
 // sol alt çerçeveli komutan portresi (altında seviye ve can plakası), yanında kare büyü kartları
 const HUD = (() => { // sağ üst düğmeler ve sol alt portre (UI_K ile büyütülmüş); tam ekranda güvenli bölgenin köşelerine yaslanır (EDGE)
   const rb = 19 * UI_K * 1.1, rm = 16 * UI_K * 1.1, gap = 11 * UI_GAP, hr = HERO_R; // sağ üst düğmeler %10 daha büyük (Caner, 10 Eki)
@@ -16540,7 +16579,7 @@ function towerStats(type, L) {
   if (type === 'mage') s += ' · Büyü';
   return s;
 }
-// Kingdom Rush tarzı kısa değerler (10 Eki): simge + kısa söz; alt panelde uzun cümle yerine
+// rakip oyunlar tarzı kısa değerler (10 Eki): simge + kısa söz; alt panelde uzun cümle yerine
 const RATE_WORD = (r) => (r < 0.6 ? 'Çok hızlı' : r < 1 ? 'Hızlı' : r < 1.6 ? 'Orta' : 'Yavaş');
 const RANGE_WORD = (r) => (r > 185 ? 'Çok uzun' : r > 150 ? 'Uzun' : r > 115 ? 'Orta' : 'Kısa');
 function towerChips(type, L) {
@@ -16973,7 +17012,7 @@ function upLadder(x, y, w, rows, cur, rh = 46) { // rh: satır aralığı (16 Ek
   });
 }
 let SKILL_RK = 1; // o an kullanılan komutan yeteneğinin kademesi (useSkill)
-// 20 Eki (Caner: "skill level atlanınca mantıklı, istenen kazanımlar"; rakipler: KR yetenek kademesinde yeni etki açar): 3. ve 5. kademe yeni özellik
+// 20 Eki (Caner: "skill level atlanınca mantıklı, istenen kazanımlar"; rakipler yetenek kademesinde yeni etki açar): 3. ve 5. kademe yeni özellik
 const SKILL_MILE = {
   charge: { 3: 'sersemletme 1,5 sn', 5: 'sersemletme 2 sn' }, spear: { 3: '3 tur döner', 5: 'alan +%30' },
   timegate: { 3: 'alan +%25', 5: 'düşmanlar %50 daha geri' }, frog: { 3: 'kurbağa +10 sn', 5: 'aynı anda 2 düşman' },
@@ -18282,6 +18321,7 @@ function drawNetMesh(cx, cy, rx, ry, rot, lx, ly, seed, a = 1) {
     P.push(row); }
   ctx.save(); ctx.globalAlpha *= a; ctx.lineCap = 'round'; netLattice(P, N, M); ctx.restore();
 }
+const BLOCK_HOLD = { bigR: 46, stuck: 2.5 }; // 23 Eki: iri tutucunun dövüş mesafesi; askeri bekleyen düşman en çok bu kadar bekleyip kendisi yürür
 function doAlt(e, A, v) {
   const m = foeDmgMul(e), base = roll(e.def.dmg) * m, hy = v ? v.y - unitH(v) * 0.55 : e.y;
   if (A.kind === 'net') throwNet(e, v, A.stun, e.skillT > 0 ? NET.skill * NET.rel : 0);
@@ -18298,7 +18338,7 @@ function doAlt(e, A, v) {
     G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: A.r, col: '255,200,150', t: 0, dur: 0.4 }); sfx('whirl');
   } else if (A.kind === 'charge') {
     damageSoldier(v, base * (A.mul || 1.2), e);
-    if (!v.wall && !v.hero) { v.x += e.face * A.d; v.stunT = Math.max(v.stunT || 0, A.stun || 0.8); }
+    if (!v.wall && !v.hero && !v.big) { v.x += e.face * A.d; v.stunT = Math.max(v.stunT || 0, A.stun || 0.8); } // 23 Eki: golem/dev savrulmaz
     G.effects.push({ kind: 'dust', x: v.x, y: v.y, t: 0, dur: 0.5 }); impactFx(v.x, hy, '235,225,200', 1.2); sfx('bash');
   }
 }
@@ -18602,7 +18642,7 @@ function bossAbilities(e, dt) {
   }
   if (ab.charge && e.blocker && ready('charge', ab.charge.cd)) { // hücum: önündeki iskeleti savurup ilerler
     const v = e.blocker; doAlt(e, { kind: 'charge', d: ab.charge.d, stun: ab.charge.stun, mul: 0 }, v); damageSoldier(v, ab.charge.dmg * (e.dmgMul || 1), e);
-    for (const o of near(40)) if (o !== v && !o.hero) { o.x += e.face * ab.charge.d * 0.6; o.stunT = Math.max(o.stunT || 0, ab.charge.stun * 0.6); }
+    for (const o of near(40)) if (o !== v && !o.hero && !o.big) { o.x += e.face * ab.charge.d * 0.6; o.stunT = Math.max(o.stunT || 0, ab.charge.stun * 0.6); }
     bossCastFx(e, ab.charge.say || 'Hücum!', '255,200,120'); shakeScreen(4, 0.3);
   }
   if (ab.burn && ready('burn', ab.burn.cd)) { // ateş/zehir halkası: alandaki iskeletler yanar
@@ -18994,7 +19034,7 @@ function treeBuy(R, kind, id) {
 function treeReset(R) { R.sk = {}; R.ult = 1; R.ult2 = 0; R.act = 'ult'; persist(); }
 // bölüm sonu XP: kazanınca tam, kaybedince yarım
 function heroEndXp(win) { if (!G) return; for (const h of G.heroes) gainXp(h, Math.round((100 + 40 * G.idx) * (win ? 1 : 0.5)), true); persist(); }
-// Zorluk seçimi (12 Eki, arastirma/oyuncu-istekleri.md: Kingdom Rush'taki Rahat/Normal/Usta gibi): bölüm kartında seçilir, save.diff'te
+// Zorluk seçimi (12 Eki, arastirma/oyuncu-istekleri.md: rakip oyunlardaki Rahat/Normal/Usta gibi): bölüm kartında seçilir, save.diff'te
 // kalır. Yalnız Sefer modunda geçerli (Kahramanlık ve Sonsuz Gece kendi kurallarıyla, Normal). Yıldızlar her zorlukta aynı; Usta zaferi
 // save.usta[i] ile kaydedilir (haritada kafatası rozeti).
 const DIFFS = {
@@ -19228,7 +19268,7 @@ function drawUpgrades() {
   if (NECRO) velvetCard(W - 160, 26, 138, 38, 19); else roundRect(W - 160, 26, 138, 38, 19, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
   fancyStar(W - 139, 45, 13, true);
   txt(`${free} yıldız`, W - 84, 46, 18, '#ffe27a', 'center', '400', FONT_T);
-  // 18 Eki (Caner: "gelişmeler kısmı çok basit, daha güzel ve detaylı"): Kingdom Rush usulü ağaç. Her kule bir sütun, 5 kademe yukarıdan aşağı açılır;
+  // 18 Eki (Caner: "gelişmeler kısmı çok basit, daha güzel ve detaylı"): rakip oyunlar usulü ağaç. Her kule bir sütun, 5 kademe yukarıdan aşağı açılır;
   // düğüme dokununca altta ayrıntı paneli ve SATIN AL. Seçim yoksa ilk alınabilir kademe seçili gelir.
   fitTxt('Bölümlerden kazandığın yıldızlarla kalıcı güç satın al · her sütun yukarıdan aşağı açılır', W / 2, 88, 760, 14, '#f0e2c4', 'center', '700', FONT_B, false, 12);
   const n = UPGRADES.length, avail = Math.min(VIS.r, EDGE.r) - Math.max(VIS.l, EDGE.l) - 60, cw = Math.min(176, avail / n), x0 = W / 2 - cw * n / 2;
@@ -19420,7 +19460,7 @@ function drawEvent() {
 // 18 Eki (Caner: "hikâye: açılış sahnesi, boss giriş gösterisi, sefer sonu ödül sahnesi"): Veo sahne videoları (img/cine_*.mp4, varliklar/hikaye_video_isle.py).
 // Videoda yazı yok; altyazı kodla (6 dile çevrilir). Dokununca sonraki plan, ATLA bütün sahneyi geçer, her sahne bir kez (save.cine).
 // Dosyası olmayan plan atlanır (CINE_FILES); sahnenin hiç planı yoksa eski yol (çizgi roman, kodla boss gösterisi) sürer.
-const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve', 'cine_oyun', 'cine_boss_severus']); // 22 Eki: Severus girişi (Veo; haçlar varliklar/hac_boya.py ile güneşe) // 18 Eki: video geldikçe eklenir (açılış tamam)
+const CINE_FILES = new Set(['cine_acilis_a', 'cine_acilis_b', 'cine_acilis_c', 'cine_kahve', 'cine_oyun', 'cine_boss_severus', 'cine_final_a']); // 22 Eki: Severus girişi (Veo; haçlar varliklar/hac_boya.py ile güneşe) // 18 Eki: video geldikçe eklenir (açılış tamam)
 const CINE = {
   intro: [
     { v: 'cine_acilis_a', sub: [[0.4, 4.4, 'Lanetli Sınır. Ölülerin huzurla uyuduğu topraklar.'], [4.7, 9.4, 'Burada tek bir necromancer yaşar: Mortimer. Ve kahvesini sessizlikte içer.']] },
@@ -19434,7 +19474,10 @@ const CINE = {
   kahve: [{ v: 'cine_kahve', sub: [[0.4, 4.4, 'Bir zafer daha. Mortimer için bu, kahve vakti demek.'], [4.8, 9.6, '"Şekersiz, Bartholomew. Ve bu sefer dökme."']] }],
   // 20 Eki (Caner): Mortimer'ın evinden bölüm öncesi sahneler (Veo, sesli: ses/<aud>.mp3 videoyla eş zamanlı). 2. bölümün başında bir kez.
   oyun: [{ v: 'cine_oyun', aud: 'cine_oyun', sub: [[0.4, 4.4, 'Mortimer\'ın boş vakti kutsaldır.'], [5.0, 9.6, 'Ama İmparatorluğun takvimi başka işliyor.']] }],
-  end2: [{ v: 'cine_sefer2_sonu', sub: [[0.4, 4.6, 'Engizisyon dağıldı. Lanetli Sınır yine sessiz.'], [4.9, 9.4, 'Şimdilik.']] }],
+  // 23 Eki (final hikâye F2 + F3, Veo): Lanetli Severus yenilir, mitresi Mortimer'ın terliğine yuvarlanır; şafakta teras. İki plan birlikte hazır
+  // olmadan sahne oynamaz (cineReady): F3 gelince CINE_FILES'a 'cine_final_b' eklemek yeter (ses/cine_final_b.mp3 varsa aud ekle).
+  end2: [{ v: 'cine_final_a', aud: 'cine_final_a', sub: [[0.4, 4.6, 'Büyük Engizitör düştü. Kendi ışığı onu yaktı.'], [4.9, 9.6, "Mitresi yuvarlandı... tam Mortimer'ın terliğinin önüne."]] },
+    { v: 'cine_final_b', sub: [[0.4, 4.6, "Şafak. Topraklar yine Mortimer'ın."], [4.9, 9.6, '"İmparatorluğa söyleyin: bir dahaki sefere randevu alsınlar."']] }],
 };
 let CINE_S = null;
 const cineReady = (key) => !!(CINE[key] && CINE[key].every(S => CINE_FILES.has(S.v)) && !(save.cine && save.cine[key])); // sahnenin bütün planları hazır olmalı (yarım hikâye oynamasın)
@@ -20769,7 +20812,7 @@ const MAPFX = { cat: null, nextCat: 8, frogs: [], nextFrog: 3, spiders: [], next
 // 15 Eki (Caner): haritaya hava katan seyrek ayrıntılar: ara sıra yarasa sürüsü geçer, yerde hayvanlar birbirini kovalar. AMB: aralıklar (sn)
 const AMB = { bats: [16, 28], chase: [20, 36], cat: [18, 30], frog: [9, 16], spider: [12, 22] }; // 14 Eki: kedi, kurbağa, örümcek
 let mapFogC = null;
-// Sis perdesi (11 Eki, Caner; Kingdom Rush / Bloons haritaları gibi): bitirilen bölümler, sıradaki ve ondan sonraki FOG2.ahead bölüm
+// Sis perdesi (11 Eki, Caner; rakip oyunlar haritaları gibi): bitirilen bölümler, sıradaki ve ondan sonraki FOG2.ahead bölüm
 // (kilitli) görünür; ötesi (yol, zemin, işaretler) tamamen karanlıkta. Yeni bölüm açılınca sis o bölümün çevresinden çekilir,
 // yeni bir bölgeye girilince bölgenin adı kurdeleyle belirir. Şapelin (yolun sonu) yalnız pencere ışıkları sisin içinden seçilir.
 // Görülen sınır save.mapSeen[ep]; ayarlardaki "Harita sisi: Yeni oyuncu" (yalnız TEST_OPEN) haritayı sıfırdan başlamış gibi gösterir.
@@ -21612,7 +21655,7 @@ function drawEpMenu() {
   ctx.restore();
 }
 
-// Bölüm kartı (11 Eki, Caner: "çok sıkışık, rakiplerden esinlen, mobilde rahat basılsın"). Kingdom Rush düzeni: geniş panel,
+// Bölüm kartı (11 Eki, Caner: "çok sıkışık, rakiplerden esinlen, mobilde rahat basılsın"). rakip düzeni: geniş panel,
 // solda büyük önizleme + yıldızlar, sağda büyük mod kutuları (Sefer / Kahramanlık / Sonsuz Gece), mod açıklaması, bölümün düşmanları
 // ve tek büyük SAVAŞ düğmesi. Dokunma hedefleri en az ~60 birim (telefonda ≥44 pt). Kartın kendisine dokunmak artık bölümü başlatmaz.
 let mapMode = 'c';
@@ -21963,7 +22006,7 @@ function drawAtmo() {
 // ---- 17 Eki (Caner: "görüntüyü daha iyi hale getirelim; kasarsa ayardan kapansın"): görsel cila. Ayar: Ortam efektleri (amb).
 // Varsayılan: hafif kipte (zayıf cihaz / DÜŞÜK kalite) kapalı, öbür cihazlarda açık. Zemine pişirilen yol kenarı dekoru ayardan bağımsızdır (karede yük yok).
 const ambOn = () => { const v = save.settings && save.settings.amb; return v != null ? !!v : !liteMode(); };
-// Ön plan siluetleri: ekranın kenarına taşan büyük, koyu ağaç/kaya/çalı (Kingdom Rush derinliği). Temanın kendi dekor görselleri,
+// Ön plan siluetleri: ekranın kenarına taşan büyük, koyu ağaç/kaya/çalı (rakip oyunlardaki derinlik). Temanın kendi dekor görselleri,
 // koyu boyanmış önbellek kopyası. Yola, arsaya, kaleye değmeyen kenar yerleri seçilir; kamera kayınca biraz daha hızlı kayar (paralaks),
 // ağaçlar rüzgârda tabanından hafifçe salınır.
 const FG = { dark: 'rgba(12,8,18,0.78)', par: 0.16, n: 4, edge: 0.3 }; // 17 Eki (Caner: "12. bölümde altta siyah kocaman ağaçlar hoş durmuyor"): yalnız köşeler (alt kenarın orta %40'ı boş), daha küçük, tam kara değil
@@ -22939,7 +22982,7 @@ function crimsonRibbon(cx, cy, text, size = 24, w = 0) {
   txt(text, cx, cy + 1, tw > bw - 24 ? size * (bw - 24) / tw : size, '#fff0d8', 'center', '400', FONT_T);
 }
 // ---- Duraklatma menüsü (10 Eki, 2. tasarım; Caner: "rakip oyunlardan beğenilen özellikleri örnek al, desen olsun, koyu kırmızı-mor").
-// Kingdom Rush / Iron Marines duraklatmalarından alınanlar: süslü çerçeve ve arma, büyük ana düğme, savaş durumu özeti, hızlı ses
+// rakip oyunlar duraklatmalarından alınanlar: süslü çerçeve ve arma, büyük ana düğme, savaş durumu özeti, hızlı ses
 // düğmeleri, her açılışta bir ipucu. Arkada yavaş dönen ritüel çemberi, kadife zeminde Necromancer deseni, köşelerde yakut süsler.
 const PAUSE_TIPS = [
   'Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.',

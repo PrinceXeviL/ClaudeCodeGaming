@@ -1,4 +1,4 @@
-Polished hand-painted 2D mobile tower defense art in the style of Kingdom Rush: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
+Polished hand-painted 2D mobile tower defense art: chunky cartoon proportions, thick dark brown outlines, soft cel shading, rich saturated colors, slightly humorous dark-fantasy mood. Three-quarter top-down view (camera slightly above).
 I attached two images.
 IMAGE 1: a legionnaire from my game (side view facing RIGHT), or his model sheet; use the SIDE view as the character reference.
 IMAGE 2: a POSE GUIDE: 8 stick-figure poses of a WALK CYCLE in 4 columns and 2 rows. Red = his NEAR leg and NEAR arm (closer to the viewer), blue = his FAR leg and FAR arm.

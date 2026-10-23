@@ -576,7 +576,7 @@ Object.assign(BOSS_ESCORT, { centurion: [['legion', 4]], champion: [['gladiator'
   // 15 Eki (Caner: "oyun kolay, iki seferi oyna, zorluğu ayarla"): botun hiç can kaybetmeden geçtiği bölümler 1. seferde ×1,12, 2. seferde ×1,15 (öğretici 1-3 ve zorlanılanlar hariç); 2. turda hâlâ tam canla geçilenler 1. seferde ×1,15, 2. seferde ×1,1; 21. bölüm geri (2,5: bot kaybetti); 3. turda üç turda da tam canla geçilenler +%10 / +%8, 23 (1,7) gevşedi; 4. tur: 14 (0,947), 15 (0,659), 31 (2,657) geri (bot kaybetti/zorlandı)
   // 15 Eki (Caner: "oyun kolay, iki seferi oyna, zorluğu ayarla"): botun hiç can kaybetmeden geçtiği bölümler 1. seferde ×1,12, 2. seferde ×1,15 (öğretici 1-3 ve zorlanılanlar hariç); 2. turda hâlâ tam canla geçilenler 1. seferde ×1,15, 2. seferde ×1,1; 21. bölüm geri (2,5: bot kaybetti); 3. turda üç turda da tam canla geçilenler +%10 / +%8, 23 (1,7) gevşedi; 4. tur: 14 (0,947), 15 (0,659), 31 (2,657) geri (bot kaybetti/zorlandı)
   const HPMUL = [0.5, 0.6, 0.68, 1.932, 1.044, 1.73, 0.976, 0.511, 0.449, 0.594, 0.602, 1.035, 0.624, 0.947, 0.659, 0.422, 0.572, 0.801, 0.364, 0.501]; // 15 Eki (Caner: 18-20'yi kolay geçti, oyun kolay): bot için yapılan 14/18/19 indirimleri geri alındı. Eski not: 14. bölüm 0.947→0.78 (muhafızlı kuşatma sonrası bot sınırda); 18 ve 19 kuşatma (yıkılabilir kule, 15 askerli kuşatma kulesi) sonrası botta kayıp: 0.801→0.62, 0.257→0.22. 11 Eki (2): kalıcı gelişimle (komutan seviyesi + büyü XP'si, denge-sayfa __prog) botla 3 tur ayarlandı (hedef 19→7 can)
-  // 13 Eki (Caner): ilk 3 bölüm öğretici: Kingdom Rush'taki gibi kısa ve seyrek (140/150/165 -> ~80/90/100 düşman)
+  // 13 Eki (Caner): ilk 3 bölüm öğretici: rakip oyunlardaki gibi kısa ve seyrek (140/150/165 -> ~80/90/100 düşman)
   const TOTK1 = [0.57, 0.6, 0.6, 0.8, 0.9]; // 4-5. bölüm ara basamak
   L.forEach((l, i) => Object.assign(l, old[i], { lives: 20, ep: 1, total: Math.round(TOTAL[i] * MORE_FOES), grow: 1.3, hpMul: HPMUL[i], totK: TOTK1[i] || 1 }));
   // bölüme özel mekanikler (game.js MECH)
@@ -793,7 +793,7 @@ Object.assign(HERO_ULT.zeynep, { name: 'Ölüm Çığlığı', cd: 50, r: 82, dm
 Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); // şapel: iki kulenin çıkıntısı ve alınlık tepesi
 // Mortimer'ın büyüleri (sol altta, bekleme süreli). raise: hedefsiz, süre boyunca ölen düşmanlar iskelet minyon olur.
 // fear: hedefli alan, düşmanlar kavgayı bırakıp yolda geri kaçar (bosslar yarı süre).
-// Büyü Kitabı (11 Eki; Kingdom Rush 6: Genesis modeli): her büyü KULLANILDIKÇA XP kazanır (yalnız yapılınca), seviye atlar,
+// Büyü Kitabı (11 Eki; rakip oyun modeli): her büyü KULLANILDIKÇA XP kazanır (yalnız yapılınca), seviye atlar,
 // her seviye o büyüye 1 puan verir; puan, büyünün 5 kademesinden sıradakini açar. Her kademe beklemeyi %4 kısaltır, 5. kademe yeni etki.
 // lv: seviye eşikleri (toplam XP; 2..6. seviye), cast: büyü başına XP + per × etkilenen düşman (en çok 10). ~55 XP/bölüm: 1. seferin
 // sonunda 5. kademe. Sonradan açılan büyü geç kalmasın: açıldığı bölüm × catchup XP ile başlar (Genesis: geç açılanlar ek XP'li gelir).
@@ -968,7 +968,7 @@ LEVELS.forEach((lv) => {
   lv.castle = [end[0], end[1]]; // kapı eşiği = yolun ucu (game.js castlePlace şapeli buna göre koyar)
   lv.waves.forEach((w, k) => w.forEach((g, j) => { g.p = lv.entr > 1 ? (g.p != null ? g.p % lv.entr : (k + j) % lv.entr) : 0; }));
 });
-// ----- Dalga yapısı v2 (11 Eki, Kingdom Rush karşılaştırması: arastirma/dalga-analizi.md) -----
+// ----- Dalga yapısı v2 (11 Eki, rakip karşılaştırması: arastirma/dalga-analizi.md) -----
 // 1) dalga sayısı bölüme göre: 6'dan 12'ye, her bölgenin son bölümü +2 (14'e kadar)
 // 2) toplam düşman seferde ~3,5 kat büyür (1. seferde 140 -> 470, 2. seferde 180 -> 500)
 // 3) testere dişi: her 4. dalga "nefes": az sayıda seçkin düşman (sayıları ölçeklenmez, canı x1,5); sonra yükseliş sürer
@@ -1007,7 +1007,7 @@ function restructureWaves() {
       if (!grp.length || !W[tj] || breath[tj] || W[tj].intro) continue;
       const seenT = new Set(); W[tj] = grp.filter(x => !seenT.has(x.t) && seenT.add(x.t)).map(x => Object.assign({}, x, { at: 0 })); W[tj].theme = cat; break;
     }
-    // girişler (18 Eki, Caner: "hep her yerden geliyor; bazı dalgalar tek yerden, bazen her yerden"): KR gibi dalga başına desen.
+    // girişler (18 Eki, Caner: "hep her yerden geliyor; bazı dalgalar tek yerden, bazen her yerden"): rakipler gibi dalga başına desen.
     // ilk iki dalga tek giriş (sırayla tanıtır), sonra tohumlu karışım: tek giriş %45, iki giriş %25 (3+ girişte), hepsi %30;
     // nefes dalgası tek giriş, baskın (sondan üçüncü) tümden beklenmeyen girişten, son dalga her yerden. Aynı tek giriş üst üste 2'den çok gelmez.
     if (lv.entr > 1) { const E = lv.entr; let sd = 0; for (const ch of lv.name) sd = (sd * 31 + ch.charCodeAt(0)) >>> 0;
@@ -1174,7 +1174,7 @@ if (NECRO) {
 }
 // 17 Eki (Caner: "2. sefer çok sıkıcı ve zor, keyif vermiyor"; dalga analizi: 2. seferde yem düşman yok, orta bölümlerde tür az, sert başlıyor):
 // (1) 2. seferin her dalgasında sıradan lejyoner payı en az FODDER.share: özel birlik grupları aynı oranda küçülür, yerine lejyon bölüğü gelir
-//     (Kingdom Rush gibi: ortalık sıradan askerle dolar, özel birim içinde göze çarpar; kıdemli ve kalkan duvarıyla lejyon da tehdit)
+//     (rakip oyunlar gibi: ortalık sıradan askerle dolar, özel birim içinde göze çarpar; kıdemli ve kalkan duvarıyla lejyon da tehdit)
 // (2) 25-36. bölümlerde iki dalgada bir yeni bölüğün bir kısmı 1. seferden bir tür (FODDER.mix, sırayla) — tür çeşidi
 // (3) 21-22. bölümler kısalır (FODDER.short), (4) 4. ve 7. bölüm biraz hafif (bot sınırdaydı)
 const FODDER = { share: 0.35, plain: ['legion', 'legion_k', 'legion_y'], mix: ['solarcher', 'gladiator', 'wardog', 'heavy', 'cavalry', 'assassin'], mixK: 0.3, short: { 20: 0.7, 21: 0.75 }, soft: { 3: 0.8, 6: 0.8, 22: 0.85, 28: 0.8, 37: 0.85 },
@@ -1292,7 +1292,7 @@ for (const id in HERO_SKILLS) {
   HEROES[id].paths = [{ name: 'Yetenekler', col: '#ffd34d', skills: HERO_SKILLS[id].map(k => all.find(s => s.id === k)) }];
 }
 
-// Kingdom Rush usulü: kule her seviyede yeni bir ad alır
+// rakip oyunlar usulü: kule her seviyede yeni bir ad alır
 const TOWER_TITLES = {'archer': ['Okçu Kulesi', 'Nişancı Kulesi', 'Keskin Nişancı Kalesi'], 'barracks': ['Milis Kışlası', 'Piyade Kışlası', 'Şövalye Kışlası'], 'mage': ['Çırak Kulesi', 'Büyücü Kulesi', 'Yıldırım Ustası Kulesi'], 'artillery': ['Topçu Kulesi', 'Ağır Topçu', 'Büyük Bombard']};
 for (const k in TOWER_TITLES) TOWERS[k].levels.forEach((L, i) => { L.title = TOWER_TITLES[k][i]; });
 // Uzmanlık: son seviyede iki yetenekten biri seçilir (ilk alınan yetenek yolu belirler, diğeri kapanır).
