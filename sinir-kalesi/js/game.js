@@ -648,6 +648,14 @@ const SOUND = {
   xbow:    { vol: 0.24, gap: 0.06, max: 3, rate: [0.94, 1.08] },    // arbalet atışı (kiriş şaklaması)
   xbowh:   { vol: 0.34, gap: 0.12, max: 2, rate: [0.95, 1.05] },    // ağır arbalet atışı (kalın kiriş, mekanizma)
   armorhit: { vol: 0.2, gap: 0.08, max: 2, rate: [0.9, 1.12] },     // cıvata zırha çarpar (metal tınlaması)
+  // 23 Eki (Caner: "bütün birimlerin yay germe ve fırlatma sesleri, ok zırha saplanınca ses"): ElevenLabs (varliklar/yay_sesleri.py, yay_isle.py);
+  // eski türler YAY_ALIAS ile bunlara yönlenir (dosyası yoksa eskisi çalar)
+  bowdraw2: { vol: 0.3, gap: 0.05, max: 3, rate: [0.94, 1.08] },    // ahşap yay germe (insan okçular, Robin)
+  bonedraw: { vol: 0.3, gap: 0.05, max: 3, rate: [0.94, 1.08] },    // kemik yay germe (iskelet okçular)
+  bowshot:  { vol: 0.28, gap: 0.06, max: 3, rate: [0.94, 1.1] },    // yay bırakma (kiriş + ok vınlaması)
+  xbowshot: { vol: 0.3, gap: 0.07, max: 3, rate: [0.94, 1.06] },    // arbalet atışı
+  armorhit2: { vol: 0.24, gap: 0.07, max: 2, rate: [0.92, 1.1] },   // ok zırha saplanır (metal çınlaması)
+  shieldarrow: { vol: 0.26, gap: 0.08, max: 2, rate: [0.92, 1.1] }, // ok kalkana saplanır (ahşap tok ses)
   rattle:  { vol: 0.2, gap: 0.25, max: 1, rate: [0.92, 1.1] },      // iskelet mahzenden çıkarken kemik takırtısı
   // 16 Eki (Caner): iskelet sesleri (ElevenLabs, kelimesiz): Mahzen seçilince, bayrağa gönderilince, öldürünce kahkaha
   skelsel:  { vol: 0.42, gap: 0.7, max: 1, rate: [0.9, 1.1] },
@@ -1140,7 +1148,10 @@ function spatial(o) {
   return { k: (1 - zf) * (SPATIAL.wide + (1 - SPATIAL.wide) * focus) + zf * SPATIAL.near * focus, pan: clamp(dx, -1, 1) * SPATIAL.pan };
 }
 const SFX_BAD = new Set();
+const SHIELD_FOES = new Set(['legion', 'legarcher', 'paladin', 'centurion', 'gloriosus1']); // 23 Eki: büyük kalkanlılar (oka kalkan sesi)
+const YAY_ALIAS = { bowdraw: 'bowdraw2', arrow: 'bowshot', xbow: 'xbowshot', xbowh: 'xbowshot', armorhit: 'armorhit2' }; // 23 Eki: yeni ok sesleri
 function sfx(kind, rate, volK = 1, pos = SFX_POS) {
+  if (YAY_ALIAS[kind] && SND[YAY_ALIAS[kind]] && SND[YAY_ALIAS[kind]].length) { if (kind === 'xbowh') { rate = rate || 0.8; volK *= 1.25; } kind = YAY_ALIAS[kind]; } // ağır arbalet: aynı ses, kalın
   if (HAPTIC_SFX[kind]) haptic(HAPTIC_SFX[kind]);
   if (window.__sfxLog && !muted) window.__sfxLog.push(kind); // test: çalınan sesler
   if (window.__REC && window.__recLog) { // 22 Eki: fragman kaydı: çalınacak ses oyun zamanıyla yazılır (sesler sonradan miksajda yerleşir)
@@ -5658,7 +5669,7 @@ function updateEnemy(e, dt) {
     e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt * ATK_SPD;
     if (tgt) {
       if (!RG.moving) faceTo(e, tgt.x);
-      if (RG.proj === 'arrow' && e.rcd < 0.5 && e.rcd + dt >= 0.5) sfx('bowdraw', rand(0.92, 1.06), 0.7, e); // 19 Eki: düşman okçusu atıştan önce yayı gerer
+      if ((RG.proj === 'arrow' || RG.proj === 'harrow') && e.rcd < 0.5 && e.rcd + dt * ATK_SPD >= 0.5) sfx('bowdraw2', rand(0.92, 1.06), 0.7, e); // 19 Eki: düşman okçusu atıştan önce yayı gerer (23 Eki: harrow okçular da; eskiden hiç çalmıyordu)
       if (e.rcd <= 0) {
         e.rcd = RG.rate * curseSlowAtk(e); e.shootT = 0.45;
         if (RG.ammo != null) e.ammo = (e.ammo ?? RG.ammo) - 1;
@@ -5667,6 +5678,7 @@ function updateEnemy(e, dt) {
         const CA = e.def.crew && siegeArcher(e, e.crewK = ((e.crewK ?? -1) + 1) % e.def.crew.top[1]); // kuşatma kulesi: tepedeki okçular sırayla atar
         if (CA) { (e.crewShot ??= [])[e.crewK] = G.t; (e.crewF ??= [])[e.crewK] = tgt.x < CA.x ? -1 : 1; }
         if (AR && AR.kind === 'net') throwNet(e, tgt, AR.stun, NET.skill * NET.rel); else
+        if (RG.proj === 'harrow' || RG.proj === 'arrow') sfx('bowshot', rand(0.92, 1.08), 0.75, e); // 23 Eki: düşman yayı bırakır
         G.projectiles.push({ kind: RG.proj, foe: true, splash: RG.splash, burn: AR && AR.kind === 'burn' ? AR : null, hero: tgt, from: e, sx: CA ? CA.x : e.x + e.face * 6, sy: CA ? CA.y - 16 : RG.top ? e.y - (CHAR_H['enemy_' + e.type] || 30) * RG.top : aimY(e), tx: tgt.x, ty: tgt.y - 12, t: -0.18,
           dur: clamp(bd / 300, 0.12, 0.6), arc: RG.proj === 'axe' ? 22 : RG.proj === 'knife' ? 12 : RG.lob ? 14 + bd * 0.32 : 4 + bd * 0.06, edmg: roll(RG.dmg) * foeDmgMul(e) * (e.drumT > 0 ? DRUM.dmg : 1) * (tgt.hero ? HERO_AGGRO.dmg : 1) });
       }
@@ -5879,7 +5891,8 @@ function updateRangedHero(h, dt) {
   if (!best) { if (h.hp < h.maxHp) h.hp = Math.min(h.maxHp, h.hp + h.regen * dt); h.atk = Math.min(h.atk, h.rate * 0.4); return; }
   h.face = best.x < h.x ? -1 : 1;
   h.anim += dt;
-  h.atk -= dt * ATK_SPD;
+  const ha0 = h.atk; h.atk -= dt * ATK_SPD;
+  if (h.def.proj === 'harrow' && ha0 > 0.45 && h.atk <= 0.45) sfx('bowdraw2', rand(0.95, 1.06), 0.9, h); // 23 Eki: Robin yayı gerer
   if (h.atk <= 0) { h.atk = h.rate; fireHeroShot(h, best); }
 }
 // kahraman yürürken ayağından toz kalkar
@@ -5915,7 +5928,8 @@ function updateBowSoldier(s, dt) {
     if (remain < bestRemain) { bestRemain = remain; best = e; }
   }
   s.aim = best;
-  s.atk -= dt * ATK_SPD;
+  const sa0 = s.atk; s.atk -= dt * ATK_SPD;
+  if (best && sa0 > 0.4 && s.atk <= 0.4) sfx('bonedraw', rand(0.95, 1.1), 0.6, s); // 23 Eki: iskelet okçu yayı gerer
   if (!best) { if (s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt); s.atk = Math.max(s.atk, 0.15 * (s.slot || 0)); return; }
   s.face = best.x < s.x ? -1 : 1;
   s.anim += dt;
@@ -6460,10 +6474,14 @@ function dropStuck(f) { // düşmandaki ok yere düşer (düşman öldü ya da �
   groundArrow(x + rand(-4, 4), T.y + rand(-3, 4), rand(0.5, Math.PI - 0.5), f, rem);
 }
 // düşman oku: askerde STUCK.on sn saplı (en çok STUCK.max), yoksa yere eğik saplanır; saplanınca küçük toz/kıymık
+// 23 Eki: düşman oku bizim birime saplanınca: kalkanlı (Mezar Bekçisi, savunmadaki iskelet, Leonidas) ahşap kalkan, zırhlı (Ölüm Şövalyesi,
+// golem/dev) metal, ötekiler kemik
+const arrowSndOn = (s) => (s.hero ? (s.id === 'leonidas' ? 'shieldarrow' : 'stickbone') : (s.guardT > G.t || (s.tower && s.tower.spec === 'shield')) ? 'shieldarrow'
+  : (s.big || (s.tower && s.tower.spec === 'blade')) ? 'armorhit2' : 'stickbone');
 function foeStick(pr, s) {
   const ang = Math.atan2(pr.ty - pr.sy, pr.tx - pr.sx) + (pr.arc ? 0.35 * Math.sign(pr.tx - pr.sx || 1) : 0), st = pr.poison ? 'poison' : 'foe';
   if (s) { const mine = G.effects.filter(f => f.kind === 'stuck' && f.target === s && !f.gone && f.t < f.dur); if (mine.length >= STUCK.max) dropStuck(mine[0]);
-    s.stuckN = (s.stuckN || 0) + 1; sfx('stickbone', null, 1, s);
+    s.stuckN = (s.stuckN || 0) + 1; sfx(arrowSndOn(s), null, 1, s); // 23 Eki: kalkanlı/zırhlıda kalkan ya da zırh sesi
     G.effects.push({ kind: 'stuck', target: s, face0: s.face || 1, dx: pr.tx - s.x + Math.cos(ang) * 2, dy: pr.ty - s.y + Math.sin(ang) * 2, ang, t: 0, dur: STUCK.on * 0.6, foe: st });
     for (let i = 0; i < 3; i++) emit(G.parts, { kind: 'dot', x: pr.tx, y: pr.ty, vx: rand(-30, 30) - Math.cos(ang) * 20, vy: -rand(10, 40), g: 260, col: i % 2 ? '#efe6cc' : '#9a8a6a', s0: 1.2, s1: 0.5, life: 0.3 }); // kemik kıymığı
   } else { const gy = pr.ty + 12, a = clamp(Math.abs(ang), 0.45, Math.PI - 0.45);
@@ -6712,7 +6730,7 @@ function updateProjectile(pr, dt) {
     }
     else if (pr.shard) fxShardHit(pr.tx, pr.ty, pr.crit);
     else fxArrowHit(pr.tx, pr.ty, e.def.armor >= 0.5 || pr.pierce);
-    if (/arrow/.test(pr.kind) || pr.ballistic) sfx(e.def.armor >= 0.3 ? 'armorhit' : 'arrowhit', null, 1, e); // 20 Eki: kule okları/cıvataları (ghostarrow, balistik) da saplanma sesi verir // zırhlıya saplanan cıvata metal tınlar (19 Eki: eşik 0,5 → 0,3)
+    if (/arrow/.test(pr.kind) || pr.ballistic) sfx(e.def.armor >= 0.3 ? 'armorhit' : SHIELD_FOES.has(e.def.base || e.type) && Math.random() < 0.5 ? 'shieldarrow' : 'arrowhit', null, 1, e); // 20 Eki: kule okları/cıvataları (ghostarrow, balistik) da saplanma sesi verir // zırhlıya saplanan cıvata metal tınlar (19 Eki: eşik 0,5 → 0,3)
     if (pr.inferno) for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.inferno) damageEnemy(o, pr.dmg * 0.5, 'magic');
     if (pr.splash) {
       for (const o of G.enemies) if (o !== e && !o.dead && dist(o.x, o.y, e.x, e.y) < pr.splash) damageEnemy(o, pr.dmg * 0.55, pr.dtype, false, pr.src);
@@ -7235,7 +7253,8 @@ function zombieShoot(s, dt) { // true: bu kare ok attı ya da nişan aldı (yür
   if (!best) { let bd = R.r; for (const e of G.enemies) { if (e.dead || e.under || e.reviveT > 0) continue; const d = dist(s.x, s.y - 10, e.x, e.y); if (d < bd) { bd = d; best = e; } } }
   s.zShot = best;
   if (!best) return false;
-  s.face = best.x < s.x ? -1 : 1; s.anim += dt; s.atk -= dt * ATK_SPD;
+  s.face = best.x < s.x ? -1 : 1; s.anim += dt; const za0 = s.atk; s.atk -= dt * ATK_SPD;
+  if (R.proj !== 'flask' && za0 > 0.45 && s.atk <= 0.45) sfx('bonedraw', rand(0.92, 1.05), 0.6, s); // 23 Eki: dirilen okçu yayı gerer
   if (s.atk <= 0) {
     s.atk = R.rate; const sx = s.x + s.face * 5, sy = s.y - (s.zh || 28) * 0.62, d = dist(sx, sy, best.x, best.y);
     if (R.proj === 'flask') { // 17 Eki (Caner: dirilen su atıcı ok atıyordu): kendi kutsal su şişesini kavisle fırlatır, düştüğü yerde alan hasarı
@@ -10828,7 +10847,7 @@ function xbowShoot(t, ts, L, e0, opt) {
   const o = xbowTip(t, ts, a);
   ballisticShot(o, t.y, e, M.aim, M, { dmg: opt.dmg * (e.def.flying ? opt.fly || 1 : 1), dtype: opt.pierce ? 'true' : 'phys', crit: opt.crit, pierce: opt.pierce, pen: opt.pen || 0, poison: opt.poison || 0, knock: !!M.heavy, imbue: t.imbue });
   t.relQ = (t.relQ || []).concat([{ t: M.aim, x: o.x, y: o.y, col: M.col, heavy: M.heavy, bow: M.bow }], M.bow ? [] : [{ t: M.aim + (M.heavy ? 0.4 : 0.28), load: true, heavy: M.heavy }]); // bırakma anında parıltı ve ses; arbalet ardından kurulur
-  if (M.bow) sfx('bowdraw', rand(0.95, 1.08), 0.9, { x: t.x, y: t.y - 30 }); // 19 Eki: okçu yayı gerer (nişan süresi boyunca); konum kuleden (okçunun x'i NaN olabiliyordu → oyun donuyordu)
+  if (M.bow) sfx('bonedraw', rand(0.95, 1.08), 0.9, { x: t.x, y: t.y - 30 }); // 19 Eki: okçu yayı gerer (nişan süresi boyunca); konum kuleden (okçunun x'i NaN olabiliyordu → oyun donuyordu)
   return a;
 }
 function updateXbowRelease(t, dt) {
@@ -16886,7 +16905,7 @@ function updateKeepArchers(dt) {
     if (a.cd > 0) return;
     const tg = findTarget({ x: c.x, y: c.y - 30 }, CASTLE.range, true);
     if (!tg) { a.cd = 0.15; return; }
-    a.tg = tg; a.aimT = KEEP_ARCH.aim; a.face = tg.x < o.x ? -1 : 1; sfx('bowdraw', rand(0.95, 1.08), 0.8, o); // 19 Eki: yay germe
+    a.tg = tg; a.aimT = KEEP_ARCH.aim; a.face = tg.x < o.x ? -1 : 1; sfx('bonedraw', rand(0.95, 1.08), 0.8, o); // 19 Eki: yay germe
   });
 }
 function drawKeepArchers() {
