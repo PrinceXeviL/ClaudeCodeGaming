@@ -23213,6 +23213,16 @@ function velvetCard(x, y, w, h, r = 14, o = {}) {
 }
 // tam ekran menülerin arka planı: bulanık kapak, üstüne kızıl-mor karartma, yavaş dönen ritüel çemberi ve sis
 function menuBackdrop(st) {
+  const mbg = NECRO && spr('menu_bg');
+  if (mbg) { // 24 Eki: Gemini menü arka planı (varliklar/ham/menu_arkaplan.jpg: necromancer kütüphane salonu); orta koyu, pencereler okunur
+    coverImage(mbg, 1.03 + Math.sin(time * 0.12) * 0.01);
+    ctx.fillStyle = 'rgba(10,4,14,0.28)'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    const cg = ctx.createRadialGradient(W / 2, H * 0.5, 30, W / 2, H * 0.5, VIS.w * 0.42); cg.addColorStop(0, 'rgba(6,2,10,0.42)'); cg.addColorStop(1, 'rgba(6,2,10,0)');
+    ctx.fillStyle = cg; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    const vg = ctx.createRadialGradient(W / 2, H / 2, VIS.h * 0.4, W / 2, H / 2, VIS.w * 0.7); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = vg; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    return;
+  }
   if (ukOk()) { // 24 Eki (Caner: "arkaplan aynı"): kit çerçevesinin koyu damask içi tüm ekrana, kenarlar karanlık; bordo sis ve dönen mühür yok
     const fr = spr('ui_k_frame'), [L, T, R, B] = UIK.frame, sw = fr.width - L - R, sh = fr.height - T - B, k = Math.max(VIS.w / sw, VIS.h / sh) * 1.02;
     ctx.fillStyle = '#0d0710'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
