@@ -11636,7 +11636,8 @@ const LOB = { dur: 0.85, arc: 95, dmg: 1.05, splash: 1, rate: 2, // 11 Eki (Cane
   poison: 1.2, pool: 3, down: 1 };
 // 15 Eki (Caner: kazan fazla güçlü): çarpma anında çok az alan hasarı (hit), sonra saniyede vuruşun dot kadarı zehir (dotT sn),
 // vurulanlar ve gazın içindekiler yavaşlar (slow oranı, slowT sn); gaz bulutunun hasarı gas ile çarpılır
-const POOL_LV = [3, 5, 6.5], POOL_SPEC = 1;
+const POOL_LV = [4.5, 7.5, 10], POOL_SPEC = 2; // 23 Eki (Caner: "asit yolda daha da uzun kalsın"): 3/5/6,5 → 4,5/7,5/10 sn, uzmanlık +2
+const ACID_DENSE = 2; // 23 Eki (Caner): ileri seviyede (3. kademe ve uzmanlık) asit sıçraması 2 kat yoğun (damla, uydu birikinti)
 // 19 Eki (Caner: "level atladıkça %20 daha çok sıvı atsın tek seferde"): kademe başına sıvı ×1,2 (birikinti alanı +%20, damla ve küçük birikinti sayısı +%20); bilgi kartında "Sıvı +%20"
 const PLAGUE_LIQ = 1.2, plagueLiq = (lvl) => Math.pow(PLAGUE_LIQ, Math.max(0, lvl || 0)); // veba birikintisinin yolda kalma süresi (sn): kule kademesine göre (Kaynayan = 2. kademe), uzmanlıkta +1
 const PLAGUE_HIT = { hit: 0.14, dot: 0.09, dotT: 4, slow: 0.35, slowT: 2.5, gas: 0.35 }; // 15 Eki (2): hâlâ güçlüydü, bir kez daha kısıldı; düşman geri tepmez, üstü vebayla kaplanır (coat)
@@ -11730,7 +11731,8 @@ function boneBallHit(pr) {
     }
   }
   const bLiq = plagueLiq(2 + (pr.tower ? specRk(pr.tower) : 1)); // 19 Eki: uzmanlık kademesiyle %20'şer daha çok sıvı (alan); göl normal kazandan %40 sert
-  G.zones.push({ x: pr.tx, y: pr.ty, r: R * 0.75 * Math.sqrt(bLiq / 1.44), dps: pr.gas * 0.6 * PLAGUE_HIT.gas * 1.4, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: LOB.pool * 1.2, fxT: 0, src: 'blast', kind: 'plague', pool: true, seed: rand(0, 6), boneball: true }); // 19 Eki (Caner): Gemini göl bilerek böyle, kalsın
+  G.zones.push({ x: pr.tx, y: pr.ty, r: R * 0.75 * Math.sqrt(bLiq / 1.44), dps: pr.gas * 0.6 * PLAGUE_HIT.gas * 1.4, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5, t: 0, life: POOL_LV[2] + POOL_SPEC, fxT: 0, src: 'blast', kind: 'plague', pool: true, seed: rand(0, 6), boneball: true }); // 23 Eki (Caner): Gemini göl kaldırıldı, kodla asit (3 çeşit sıçrama, 2 kat yoğun), yolda uzun kalır
+  plagueDrops(pr.tx, pr.ty, R, POOL_LV[2] + POOL_SPEC, false, false, bLiq * ACID_DENSE);
   fxPlagueSplash(pr.tx, pr.ty, R * 1.3);
   // gülle kırılır: kemik parçaları (Gemini: nm_bshard_1..5 varsa) döne döne her yana, veba sıvısı fışkırır
   const SH = [1, 2, 3, 4, 5, 6].map(i => spr('nm_bshard_' + i)).filter(Boolean);
@@ -11768,11 +11770,11 @@ function plagueBomb(pr) {
   // 16 Eki (Caner: "kaynayan veba kazanı yüksek seviyede attığı zehir yolda daha uzun kalsın, üstünden geçen saniyede zehir hasarı alsın"):
   // birikinti süresi kademeyle (POOL_LV, uzmanlıkta +POOL_SPEC), içinden geçene bulaşan zehir kademe başına +%40
   const pl2 = POOL_LV[pr.plvl ?? 0] + (pr.pspec ? POOL_SPEC : 0), inf = 1 + 0.4 * (pr.plvl ?? 0);
-  const liq = plagueLiq(pr.plvl);
+  const liq = plagueLiq(pr.plvl), dense = (pr.plvl ?? 0) >= 2 || pr.pspec ? ACID_DENSE : 1;
   const pool = { x: pr.tx, y: pr.ty, r: pr.splash * 0.7 * Math.sqrt(liq), dps: pr.gas * 0.6 * PLAGUE_HIT.gas, slowK: PLAGUE_HIT.slow, infect: pr.dmg * PLAGUE_HIT.dot * 0.5 * inf, t: 0, life: pl2, fxT: 0, src: 'blast', kind: 'plague', pool: true, black: pr.black, seed: rand(0, 9) }; G.zones.push(pool);
   const veo = fxPlagueSplash(pr.tx, pr.ty, pr.splash * 1.2, pl2); if (veo) pool.veo = true; // 18 Eki: Veo asidi varsa kodla çizilen birikinti görünmez (altında ikinci asit kalıyordu), hasarı sürer
   // damla patlar: parçaları her yana sıçrar, düştükleri yerde küçük birikintiler kalır
-  plagueDrops(pr.tx, pr.ty, pr.splash, pl2, pr.black, veo, liq);
+  plagueDrops(pr.tx, pr.ty, pr.splash, pl2, pr.black, veo, liq * dense);
   G.effects.push({ kind: 'ring', x: pr.tx, y: pr.ty, r: pr.splash, col: '140,255,90', t: 0, dur: 0.45 });
   shakeScreen(2, 0.15); sfx('acidboom'); // 12 Eki (Caner): eski patlama sesi kalktı, yalnız asit köpürmesi
 }
@@ -11827,7 +11829,6 @@ function drawSlimePool(z, a, rx) {
 function drawPlaguePools() {
   for (const z of G.zones) {
     if (!z.pool || z.veo) continue;
-    if (z.boneball && spr('nm_bonepool')) { const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a > 0) { const im = spr('nm_bonepool'), w = z.r * 1.75 * (0.6 + 0.4 * Math.min(1, z.t / 0.3)); ctx.save(); ctx.globalAlpha = a * 0.92; ctx.drawImage(im, z.x - w / 2, z.y - w * im.height / im.width / 2, w, w * im.height / im.width); ctx.restore(); } continue; } // 16 Eki: kemik gülle gölü (Gemini)
     const a = Math.min(1, z.t / 0.2, (z.life - z.t) / 0.8); if (a <= 0) continue;
     const rx = z.r * (0.6 + 0.4 * Math.min(1, z.t / 0.3));
     if (SLIME.on && !z.blood) { drawSlimePool(z, a, rx); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, z.x, z.y, rx, z.black ? '170,90,255' : '120,255,90', 0.1 * a); ctx.restore(); continue; }
