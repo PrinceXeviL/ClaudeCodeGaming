@@ -1,121 +1,57 @@
 {
-"bathory/tr/hsel_bathory2_1": [
+"merlin/tr/hsel_merlin2_1": [
+0.8,
+"v2"
+],
+"merlin/tr/hsel_merlin2_2": [
 1.0,
 "v2"
 ],
-"bathory/tr/hsel_bathory2_2": [
+"merlin/tr/hsel_merlin2_3": [
 1.0,
 "v2"
 ],
-"bathory/tr/hsel_bathory2_3": [
+"merlin/tr/hmove_merlin2_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/hmove_bathory2_1": [
+"merlin/tr/hmove_merlin2_2": [
 1.0,
 "v2"
 ],
-"bathory/tr/hmove_bathory2_2": [
+"merlin/tr/mvatk_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvatk_1": [
+"merlin/tr/mvatk_2": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvatk_2": [
+"merlin/tr/mvatk_3": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvatk_3": [
+"merlin/tr/mvult_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvult_1": [
+"merlin/tr/mvult2_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvult2_1": [
+"merlin/tr/mvsk_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvlink_1": [
+"merlin/tr/mvtaunt_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvtaunt_1": [
+"merlin/tr/mvlow_1": [
 1.0,
 "v2"
 ],
-"bathory/tr/bvtaunt_2": [
-1.0,
-"v2"
-],
-"bathory/tr/bvlow_1": [
-1.0,
-"v2"
-],
-"bathory/tr/bvback_1": [
-1.0,
-"v2"
-],
-"bathory/en/hsel_bathory2_1": [
-1.0,
-"v2"
-],
-"bathory/en/hsel_bathory2_2": [
-1.0,
-"v2"
-],
-"bathory/en/hsel_bathory2_3": [
-1.0,
-"v2"
-],
-"bathory/en/hmove_bathory2_1": [
-1.0,
-"v2"
-],
-"bathory/en/hmove_bathory2_2": [
-1.0,
-"v2"
-],
-"bathory/en/bvatk_1": [
-1.0,
-"v2"
-],
-"bathory/en/bvatk_2": [
-1.0,
-"v2"
-],
-"bathory/en/bvatk_3": [
-1.0,
-"v2"
-],
-"bathory/en/bvult_1": [
-1.0,
-"v2"
-],
-"bathory/en/bvult2_1": [
-1.0,
-"v2"
-],
-"bathory/en/bvlink_1": [
-1.0,
-"v2"
-],
-"bathory/en/bvtaunt_1": [
-1.0,
-"v2"
-],
-"bathory/en/bvtaunt_2": [
-1.0,
-"v2"
-],
-"bathory/en/bvlow_1": [
-1.0,
-"v2"
-],
-"bathory/en/bvback_1": [
+"merlin/tr/mvback_1": [
 1.0,
 "v2"
 ]
