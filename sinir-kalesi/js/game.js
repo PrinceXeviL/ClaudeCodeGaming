@@ -19941,8 +19941,8 @@ if (document.fonts) {
   setTimeout(() => clearInterval(fontPoll), 20000);
 }
 function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.width = w * k; c.height = h * k; const g = c.getContext('2d'); g.scale(k, k); return [c, g]; }
-// logo: üstte koyu kızıl, altın çerçeveli kurdelede "DON'T MESS WITH" (arayüz yazı tipi, kemik beyazı),
-// altta Metal Mania ile kan kırmızısı "THE NECROMANCER"
+// logo (23 Eki, oyunun adı: Lord of Graves: Tower Defense): üstte koyu kızıl, altın çerçeveli kurdelede "LORD OF" (kemik beyazı),
+// ortada Metal Mania ile kan kırmızısı "GRAVES", altında kemik beyazı "TOWER DEFENSE"
 // 19 Eki: Android WebView bu yazı tipinin T'sinin süslü ucunu kırpıyordu: hazır çizilmiş logo görseli (ui_logo_title: üst yarı logo, alt yarı
 // parıltı maskesi; masaüstü Chrome'da bu işlevle çizildi, __game.logoPng) varsa o kullanılır, yoksa yazı tipiyle çizilir
 function titleLogo() {
@@ -19953,7 +19953,7 @@ function titleLogo() {
   const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), cx = LW / 2;
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
   // kurdele: iki yanda katlanmış uçlar, ortada gövde
-  const ry = 50, rw = 430, rh = 56;
+  const ry = 42, rw = 300, rh = 54;
   for (const sd of [-1, 1]) {
     g.beginPath();
     g.moveTo(cx + sd * (rw / 2 - 10), ry - rh / 2 + 12); g.lineTo(cx + sd * (rw / 2 + 52), ry - rh / 2 + 12);
@@ -19970,14 +19970,14 @@ function titleLogo() {
   g.fillStyle = gr; g.fillRect(cx - rw / 2 + 4, ry - rh / 2 + 4, rw - 8, rh / 2 - 4);
   g.font = `40px ${FONT_LOGO}`;
   if ('letterSpacing' in g) g.letterSpacing = '3px';
-  const DM = "DON'T MESS WITH", dx = ('letterSpacing' in g) ? 1.5 : 0;
+  const DM = 'LORD OF', dx = ('letterSpacing' in g) ? 1.5 : 0;
   g.strokeStyle = '#0c0204'; g.lineWidth = 8; g.strokeText(DM, cx + dx, ry + 3);
   gr = g.createLinearGradient(0, ry - 16, 0, ry + 18); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.55, '#fbf1d6'); gr.addColorStop(1, '#e2cc93');
   g.fillStyle = gr; g.fillText(DM, cx + dx, ry + 2);
   if ('letterSpacing' in g) g.letterSpacing = '0px';
   // ana yazı
-  const ty = 150, T = 'THE NECROMANCER';
-  let sz = 100; g.font = `${sz}px ${FONT_LOGO}`;
+  const ty = 138, T = 'GRAVES';
+  let sz = 132; g.font = `${sz}px ${FONT_LOGO}`;
   // 19 Eki (Android'de "THE"nin T'si kesikti): genişliğe kalın kontur (sz*0,2), kızıl hale (28) ve harf taşması da katılır; mürekkep sınırı (actualBoundingBox) varsa o ölçülür
   const inkW = () => { const M = g.measureText(T); return Math.max(M.width, (M.actualBoundingBoxLeft || 0) + (M.actualBoundingBoxRight || 0)) + sz * 0.2 + 56; };
   while (inkW() > LW && sz > 40) { sz -= 4; g.font = `${sz}px ${FONT_LOGO}`; } // geniş yazı tipinde taşmasın
@@ -20002,6 +20002,11 @@ function titleLogo() {
   g.fillStyle = gr; g.fillText(T, cx, ty);
   gr = g.createLinearGradient(0, ty - sz / 2, 0, ty); gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
   g.fillStyle = gr; g.fillText(T, cx, ty - 2);
+  // alt satır: TOWER DEFENSE (kemik beyazı, geniş aralıklı)
+  g.font = `30px ${FONT_LOGO}`; if ('letterSpacing' in g) g.letterSpacing = '7px';
+  g.strokeStyle = '#0c0204'; g.lineWidth = 7; g.strokeText('TOWER DEFENSE', cx + 3, 232);
+  gr = g.createLinearGradient(0, 218, 0, 246); gr.addColorStop(0, '#fff7e2'); gr.addColorStop(1, '#d8c08a'); g.fillStyle = gr; g.fillText('TOWER DEFENSE', cx + 3, 231);
+  if ('letterSpacing' in g) g.letterSpacing = '0px';
   // parıltı maskesi: yalnız ana yazının harfleri
   TITLE_C.logo = { c, m, w: LW, h: LH, ver: FONT_VER };
   return TITLE_C.logo;

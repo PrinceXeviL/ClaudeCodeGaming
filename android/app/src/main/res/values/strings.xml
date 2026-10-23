@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Necromancer</string>
-    <string name="title_activity_main">Necromancer</string>
+    <string name="app_name">Lord of Graves</string>
+    <string name="title_activity_main">Lord of Graves</string>
     <string name="package_name">com.princexevil.necromancer</string>
     <string name="custom_url_scheme">com.princexevil.necromancer</string>
     <!-- 21 Eki: mağaza kimlikleri (NecroStorePlugin). AdMob: şimdilik Google'ın herkese açık TEST kimlikleri; hesap açılınca gerçekleri yazılır -->

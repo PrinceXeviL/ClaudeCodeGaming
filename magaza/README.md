@@ -1,6 +1,6 @@
 # Mağaza malzemeleri (App Store + Google Play)
 
-Hazırlandı: 11 Eki 2026. Oyunun adı şimdilik **Don't Mess with the Necromancer**; kalıcı ad Caner'in kararı.
+Hazırlandı: 11 Eki 2026. Oyunun adı (23 Eki, Caner): **Lord of Graves: Tower Defense** (telefonda kısa ad: Lord of Graves).
 Uygulama kimliği: `com.princexevil.necromancer` (iOS ve Android aynı).
 
 ## Klasörler
@@ -32,7 +32,7 @@ Ekran görüntüleri oyunun kendisinden alındı (tarayıcı, test kaydı). Üst
 ## Simge için Gemini promptu
 
 ```
-App icon for a mobile tower defense game "Don't Mess with the Necromancer", square 1024x1024, no text, no letters, no border, no rounded corners (the store rounds them).
+App icon for a mobile tower defense game "Lord of Graves", square 1024x1024, no text, no letters, no border, no rounded corners (the store rounds them).
 Close-up of a grinning skeleton necromancer in a deep red hood with glowing red eyes, holding a steaming teacup in a bony hand, a green-glowing gothic chapel window behind him, dark purple night sky.
 Bold thick dark outlines, rich saturated colors, dark gothic cartoon style, very readable at small size, the face fills most of the icon, strong silhouette, high contrast.
 ```
@@ -44,15 +44,15 @@ Bold thick dark outlines, rich saturated colors, dark gothic cartoon style, very
 
 ## Metinler — Türkçe
 
-**Ad (en çok 30):** Don't Mess with the Necromancer
-**Alt başlık (App Store, en çok 30):** Kemik kuleli kule savunması
-**Kısa açıklama (Play, en çok 80):** Kemik kuleler kur, ölüleri dirilt, ruhları şimşeğe çevir!
+**Ad (en çok 30):** Lord of Graves: Tower Defense
+**Alt başlık (App Store, en çok 30):** Necromancer kule savunması
+**Kısa açıklama (Play, en çok 80):** Necromancer tower defense: kemik kuleler kur, ölüleri dirilt, ordunu büyüt!
 
 **Açıklama:**
 
-Mortimer sadece kulesinde huzur içinde kahvesini içmek istiyordu. Sonra Solarian İmparatorluğu kapısına dayandı. Şimdi de engizisyon cadı avına çıktı. Kötü fikir.
+Lanetli Sınır, Mortimer'ın toprağı. Mezarlar onun, ölüler onun. Solarian İmparatorluğu bu toprakları istiyor, ardından engizisyon cadı avına çıkıyor. Kötü fikir: topraklarına izinsiz giren, onun ordusunda dirilir.
 
-Kemik kuleler kur, mahzenlerinden iskelet savaşçılar çıkar, düşmüş düşmanları kendi ordunda dirilt. Don't Mess with the Necromancer, karanlık mizahlı, el çizimi bir kule savunma oyunu.
+Kemik kuleler kur, mahzenlerinden iskelet savaşçılar çıkar, düşmüş düşmanları kendi ordunda dirilt. Lord of Graves, karanlık mizahlı, el çizimi bir kule savunma oyunu.
 
 • 40 bölüm, iki sefer: Davetsiz Misafirler ve Cadı Avı
 • 5 kule, her biri 3 kademe ve 4. kademede ayrı uzmanlık yolları; her uzmanlığın parayla geliştirilen ikinci gücü
@@ -75,15 +75,15 @@ kule savunma,strateji,necromancer,iskelet,büyü,zombi,fantastik,çevrimdışı,
 
 ## Texts — English
 
-**Name:** Don't Mess with the Necromancer
-**Subtitle (≤30):** Bone tower defense
-**Short description (Play, ≤80):** Build bone towers, raise the dead, turn stolen souls into lightning!
+**Name:** Lord of Graves: Tower Defense
+**Subtitle (≤30):** Necromancer Tower Defense
+**Short description (Play, ≤80):** Necromancer tower defense: build bone towers, raise the dead, grow your army!
 
 **Description:**
 
-Mortimer only wanted to drink his coffee in peace in his tower. Then the Solarian Empire came knocking. Now the Inquisition is on a witch hunt. Bad idea.
+The Cursed Border is Mortimer's land. The graves are his, and so are the dead. The Solarian Empire wants this land, and then the Inquisition starts a witch hunt. Bad idea: whoever trespasses on his land rises again in his army.
 
-Build bone towers, send skeleton warriors out of your crypts and raise fallen enemies into your own army. Don't Mess with the Necromancer is a hand-drawn tower defense game with a dark sense of humor.
+Build bone towers, send skeleton warriors out of your crypts and raise fallen enemies into your own army. Lord of Graves is a hand-drawn tower defense game with a dark sense of humor.
 
 • 40 levels across two campaigns: Uninvited Guests and Witch Hunt
 • 5 towers, each with 3 tiers and specialization paths at tier 4; every specialization has a second power you buy with gold
@@ -154,5 +154,5 @@ Beklenen sonuç: **PEGI 12 (insana karşı kan varsa 16'ya çıkabilir) / USK 12
 
 ## Sürüm notu (ilk sürüm)
 
-TR: İlk sürüm! Mortimer'ın kahvesi soğumadan savunmaya geç.
-EN: First release! Defend the tower before Mortimer's coffee gets cold.
+TR: İlk sürüm! Mortimer'ın topraklarını savun: izinsiz girenler dirilir.
+EN: First release! Defend Mortimer's land: trespassers will rise.
