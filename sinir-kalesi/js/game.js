@@ -2535,6 +2535,8 @@ function makeHero(id, x, y, slot) {
 // Kahramanların genel gücü (can, saldırı ve yetenek hasarı) bu çarpanla ölçeklenir
 // Kahraman dengesi: HERO_POWER hasar ve yetenek hasarı, HERO_HP can ve can yenileme çarpanı
 // 22 Eki (Caner: "komutanlar daha güçlüydü, en güçlü şey anlık güçler dışında kuleler olsun"): 0,64 / 0,64 → 0,4 / 0,5; anlık güçler (ult) değişmedi. __BALX: bot denemesi
+// 23 Eki (Caner: "oyundaki saldırı hızı %10 düşsün, tüm birimlerde"): kuleler, askerler, komutanlar, düşmanlar ve kale okçularının saldırı sayaçları 0,9 hızla işler
+const ATK_SPD = (window.__BALX && window.__BALX.as) || 0.9;
 const HERO_POWER = (window.__BALX && window.__BALX.hp) || 0.4, HERO_HP = (window.__BALX && window.__BALX.hh) || 0.5;
 // Düşmanların kahramanlara saldırganlığı: yakından geçen düşman kahramana saldırmak için durur
 // (bir kahramana en çok HERO_AGGRO.max düşman), kahramana vuruşları HERO_AGGRO.dmg kat sert
@@ -4857,7 +4859,7 @@ function updateObelisk(t, dt, L) {
   const ts = towerSprite(t), F = obeliskForm(t);
   if (F) { L = Object.assign({}, L, { rate: L.rate * F.rate, dmg: [L.dmg[0] * F.dmg, L.dmg[1] * F.dmg], range: L.range * F.range }); return updateObeliskForm(t, dt, L, ts, F); }
   if (xbowCount(t) && ts) { // arbaletçiler: kulenin atış aralığı arbaletçiler arasında sırayla bölüşülür
-    t.cd -= dt;
+    t.cd -= dt * ATK_SPD;
     if (t.cd > 0) return;
     const e = findTarget(t, L.range, true);
     if (!e) { t.cd = 0.1; return; }
@@ -4867,7 +4869,7 @@ function updateObelisk(t, dt, L) {
     xbowShoot(t, ts, L, e, { dmg: roll(L.dmg) * (P ? P.dmg : 1) * (crit ? 2 : 1), crit, pen: P && P.pen || 0, fly: P && P.fly || 1 });
     return;
   }
-  t.cd -= dt;
+  t.cd -= dt * ATK_SPD;
   // hazırlık: ateşten hemen önce kıymıklar göze toplanır (yalnız hedef varken)
   t.charge = t.hasFoe ? clamp(1 - t.cd / Math.min(0.35, L.rate * 0.6), 0, 1) : 0;
   if (t.cd <= 0) {
@@ -4892,7 +4894,7 @@ function updateObelisk(t, dt, L) {
 // Hayalet Okçular: hedef soldaysa yeşil, sağdaysa mor okçu atar; çok hızlı, uçanlara ek hasar.
 function updateObeliskForm(t, dt, L, ts, F) {
   if (F.layers) balTrack(t, dt, L, ts, F);
-  t.cd -= dt;
+  t.cd -= dt * ATK_SPD;
   if (t.cd > 0) return;
   let e = findTarget(t, L.range, true);
   if (!e) { t.cd = 0.1; return; }
@@ -5251,7 +5253,7 @@ function updateTower(t, dt) {
   }
   if (NECRO && t.type === 'mage' && typeof SOUL_LAMP !== 'undefined' && SOUL_LAMP.on) { updateSoulLamp(t, dt, L); return; } // 16 Eki: ruh hırsızları + şimşek (ışın yerine)
   if (t.zapQ && G.t >= t.zapQ.at) { const Q = t.zapQ; t.zapQ = null; let e2 = Q.e && !Q.e.dead && !Q.e.under ? Q.e : findTarget(t, L.range, t.def.air); if (e2) lampZap(t, lampSrc(t), e2, L, true); } // 20 Eki: ruh şimşeği
-  t.cd -= dt;
+  t.cd -= dt * ATK_SPD;
   if (t.cd > 0) return;
   let e = findTarget(t, L.range, t.def.air);
   const LF = t.type === 'mage' && towerForm(t); // Ruh Emici ışını hedefine kilitlenir (ölene ya da menzilden çıkana kadar)
@@ -5644,7 +5646,7 @@ function updateEnemy(e, dt) {
       for (const a of t.ga) { if (!a.pr || a.dead) continue; const d = dist(e.x, e.y, a.pr.x, a.pr.y) + TMAN.prefer; if (d <= bd) { bd = d; tgt = a.pr; } }
     }
     if (e.shootT > 0) { e.shootT -= dt; if (!RG.moving) { e.inMelee = false; return; } }
-    e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt;
+    e.rcd = (e.rcd ?? rand(0.3, 0.9)) - dt * ATK_SPD;
     if (tgt) {
       if (!RG.moving) faceTo(e, tgt.x);
       if (RG.proj === 'arrow' && e.rcd < 0.5 && e.rcd + dt >= 0.5) sfx('bowdraw', rand(0.92, 1.06), 0.7, e); // 19 Eki: düşman okçusu atıştan önce yayı gerer
@@ -5697,7 +5699,7 @@ function updateEnemy(e, dt) {
     } else e.waitT = 0;
     if (e.inMelee) {
       faceTo(e, e.blocker.x);
-      e.atk -= dt;
+      e.atk -= dt * ATK_SPD;
       if (e.atk <= 0) {
         e.atk = e.def.rate * curseSlowAtk(e); e.atkV = Math.floor(Math.random() * 3);
         const victim = e.blocker, A = e.def.alt;
@@ -5865,7 +5867,7 @@ function updateRangedHero(h, dt) {
   if (!best) { if (h.hp < h.maxHp) h.hp = Math.min(h.maxHp, h.hp + h.regen * dt); h.atk = Math.min(h.atk, h.rate * 0.4); return; }
   h.face = best.x < h.x ? -1 : 1;
   h.anim += dt;
-  h.atk -= dt;
+  h.atk -= dt * ATK_SPD;
   if (h.atk <= 0) { h.atk = h.rate; fireHeroShot(h, best); }
 }
 // kahraman yürürken ayağından toz kalkar
@@ -5901,7 +5903,7 @@ function updateBowSoldier(s, dt) {
     if (remain < bestRemain) { bestRemain = remain; best = e; }
   }
   s.aim = best;
-  s.atk -= dt;
+  s.atk -= dt * ATK_SPD;
   if (!best) { if (s.hp < s.maxHp) s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.08 * dt); s.atk = Math.max(s.atk, 0.15 * (s.slot || 0)); return; }
   s.face = best.x < s.x ? -1 : 1;
   s.anim += dt;
@@ -6100,7 +6102,7 @@ function updateSoldier(s, dt) {
     if (arrived || dist(s.x, s.y, t.x, t.y) < 19) {
       faceTo(s, t.x);
       if (eliteSkill(s, dt)) { s.anim += dt; return; } // Tabut Duvarı / Ruh Biçimi oynarken saldırmaz
-      s.atk -= dt;
+      s.atk -= dt * ATK_SPD;
       s.anim += dt;
       if (s.atk <= 0) {
         s.atk = s.rate; s.atkV = Math.floor(Math.random() * 3);
@@ -7221,7 +7223,7 @@ function zombieShoot(s, dt) { // true: bu kare ok attı ya da nişan aldı (yür
   if (!best) { let bd = R.r; for (const e of G.enemies) { if (e.dead || e.under || e.reviveT > 0) continue; const d = dist(s.x, s.y - 10, e.x, e.y); if (d < bd) { bd = d; best = e; } } }
   s.zShot = best;
   if (!best) return false;
-  s.face = best.x < s.x ? -1 : 1; s.anim += dt; s.atk -= dt;
+  s.face = best.x < s.x ? -1 : 1; s.anim += dt; s.atk -= dt * ATK_SPD;
   if (s.atk <= 0) {
     s.atk = R.rate; const sx = s.x + s.face * 5, sy = s.y - (s.zh || 28) * 0.62, d = dist(sx, sy, best.x, best.y);
     if (R.proj === 'flask') { // 17 Eki (Caner: dirilen su atıcı ok atıyordu): kendi kutsal su şişesini kavisle fırlatır, düştüğü yerde alan hasarı
@@ -16790,7 +16792,7 @@ function updateCastleArchers(dt) {
   if (G.lives <= 0) return;
   const tgt = findTarget({ x: c.x, y: c.y - 30 }, CASTLE.range, true);
   c.archers.forEach((a, i) => {
-    a.fx = Math.max(0, a.fx - dt); a.cd -= dt;
+    a.fx = Math.max(0, a.fx - dt); a.cd -= dt * ATK_SPD;
     const o = castleArcherPoint(i); o.y -= 16.4 * CASTLE_ARCHER_S;
     const goal = tgt ? Math.atan2(aimY(tgt) - o.y, tgt.x - o.x) : a.ang + Math.sin(G.t * 0.6 + a.seed) * 0.4 * dt;
     a.ang += clamp(angDiff(goal, a.ang), -8 * dt, 8 * dt);
@@ -16821,7 +16823,7 @@ function updateKeepArchers(dt) {
   if (G.lives <= 0) return;
   const P = keepArcherPre(); if (!P) return;
   c.archers.forEach((a, i) => {
-    const o = keepArcherPoint(i); a.anim += dt; a.relT = Math.max(0, a.relT - dt); a.cd -= dt;
+    const o = keepArcherPoint(i); a.anim += dt; a.relT = Math.max(0, a.relT - dt); a.cd -= dt * ATK_SPD;
     if (a.aimT > 0) {
       const tg = a.tg && !a.tg.dead ? a.tg : null; if (tg) a.face = tg.x < o.x ? -1 : 1;
       if ((a.aimT -= dt) > 0) return;
@@ -19101,7 +19103,7 @@ function updateAltar(t, dt) {
   if (Math.random() < dt * 4) { const C = curseCols(t), a = rand(0, TAU); emit(G.parts, { kind: 'glow', add: true, x: t.x + Math.cos(a) * 18, y: t.y - 2 + Math.sin(a) * 6, vx: rand(-4, 4), vy: -rand(14, 30), col: Math.random() < 0.7 ? C[0] : '255,255,255', s0: rand(1.4, 2.4), s1: 0.2, life: rand(0.9, 1.6), a: 0.8 }); } // 17 Eki: bekleme havası
   if (!(t.disabledT > 0)) updateGaze(t, L, dt);
   // lanet dalgası: kuleden yayılan mor halka (hasar vermez, yalnız laneti tazeler ve gösterir)
-  t.pulseCd = (t.pulseCd ?? 0.6) - dt;
+  t.pulseCd = (t.pulseCd ?? 0.6) - dt * ATK_SPD;
   if (t.pulseCd <= 0) {
     const near = G.enemies.filter(e => !e.dead && !e.under && dist(e.x, e.y, t.x, t.y) <= L.range);
     if (near.length) {
@@ -20098,19 +20100,15 @@ function drawSkullIcon(x, y, r) {
   ctx.restore();
 }
 // giriş görseli v2 (17 Eki: sağda bütün Solarian ordusu, bosslar önde): ışıklar görseldeki yerlerine (0..1) bağlı canlandırılır
-const KEY_FX = {
-  eyes: [[0.187, 0.304], [0.207, 0.305]], skull: [[0.175, 0.104], [0.197, 0.106]], cup: [0.348, 0.378], moon: [0.914, 0.083],
-  torch: [[0.48, 0.517], [0.569, 0.632], [0.635, 0.487], [0.697, 0.462], [0.734, 0.562], [0.757, 0.46], [0.887, 0.448], [0.924, 0.442],
-    [0.931, 0.479], [0.932, 0.562], [0.966, 0.509], [0.983, 0.503]],
-  win: [[0.326, 0.257], [0.345, 0.251], [0.357, 0.263], [0.358, 0.159], [0.376, 0.159], [0.376, 0.263], [0.376, 0.354], [0.39, 0.247],
-    [0.392, 0.325], [0.406, 0.18], [0.422, 0.253], [0.428, 0.329], [0.443, 0.175], [0.443, 0.362], [0.444, 0.274]],
-  flame: [[0.042, 0.583, 70, '110,255,120'], [0.05, 0.72, 50, '190,120,255'], [0.333, 0.507, 46, '110,255,120'], [0.381, 0.645, 50, '190,120,255']],
-  // görselin kendisi dalgalandırılan bölgeler [x0, y0, x1, y1, genlik(kaynak px), sıklık, hız]: tahtın yanındaki büyü alevleri, çay buharı
-  // tür: 'fire' yalnız yeşil/mor alev pikselleri, 'steam' yalnız açık renkli buhar pikselleri kıpırdar (kol, cübbe, fincan yerinde kalır)
-  warp: [[0.0, 0.40, 0.075, 0.70, 5, 0.05, 5, 'fire'], [0.025, 0.62, 0.105, 0.80, 4, 0.06, 4.5, 'fire'], [0.305, 0.43, 0.36, 0.525, 4, 0.07, 5.5, 'fire'],
-    [0.365, 0.42, 0.425, 0.64, 5, 0.05, 4.6, 'fire'], [0.33, 0.28, 0.36, 0.352, 3, 0.13, 3, 'steam']],
-  // yarasalar şapelin çan kulesinden sürü hâlinde çıkar; tekler göğün her yerinden geçer
-  belfry: [0.405, 0.15],
+const KEY_FX = { // 23 Eki: giriş resmi v3 (varliklar/ham/giris_v3.jpg): yeni Mortimer, asa, porselen fincan, kale v5, düzenli Solarian ordusu
+  eyes: [[0.197, 0.272], [0.219, 0.272]], skull: [[0.169, 0.104], [0.204, 0.104]], cup: [0.352, 0.388], moon: [0.873, 0.1],
+  torch: [[0.373, 0.553], [0.484, 0.521], [0.706, 0.463], [0.741, 0.566], [0.939, 0.505], [0.975, 0.51], [0.918, 0.432], [0.958, 0.428], [0.81, 0.514]],
+  win: [[0.385, 0.205], [0.406, 0.197], [0.39, 0.322], [0.411, 0.24], [0.426, 0.272], [0.445, 0.255], [0.371, 0.325], [0.443, 0.36], [0.405, 0.322]],
+  flame: [[0.326, 0.17, 40, '110,255,120']],
+  // görselin kendisi dalgalandırılan bölgeler [x0, y0, x1, y1, genlik(kaynak px), sıklık, hız, tür]: asanın yeşil ateşi ('fire': yalnız alev pikselleri)
+  warp: [[0.3, 0.12, 0.36, 0.215, 4, 0.07, 5.5, 'fire']],
+  // yarasalar kalenin kulesinden sürü hâlinde çıkar; tekler göğün her yerinden geçer
+  belfry: [0.405, 0.07],
 };
 // dalgalanan bölge: görselin dikdörtgeni yatay şeritlere bölünür, her şerit yukarı doğru akan bir dalga kadar kayar,
 // kenarlar yumuşak maskeyle asıl resme karışır (dikiş görünmez). Kaynak piksel uzayında önbellekli tuval.
