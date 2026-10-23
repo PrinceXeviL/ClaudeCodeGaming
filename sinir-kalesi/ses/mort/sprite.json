@@ -1,558 +1,618 @@
 {
-"Bir yudum daha, sonra kıyamet.": [
-0.0,
-2.6935
-],
-"Soğumuş. Tıpkı düşmanlarım gibi.": [
-2.9435,
-2.74
-],
-"Kargalarıma dokunma! Dedikodu taşıyorlar.": [
-5.9335,
-3.065
-],
-"O karga bana borçlu, bilesin.": [
-9.2485,
-2.1362
-],
-"Kapıyı çalmadan girmek yok. Hiç.": [
-11.6347,
-2.74
-],
-"Solarianlar... Bugün de mi?": [
-14.6247,
-2.322
-],
-"Bahçeme basan mezara basar.": [
-17.1967,
-2.0434
-],
-"Bir dalga daha. Ne azimliler.": [
-19.49,
-2.5542
-],
-"Sıraya girin. Mezarlıkta herkese yer var.": [
-22.2942,
-3.2972
-],
-"Yeni gönüllüler! İskeletim azalmıştı.": [
-25.8415,
-2.6006
-],
-"İmparator hiç mi ders almaz?": [
-28.6921,
-2.0898
-],
-"Son dalga mı? Sonunda biraz sessizlik.": [
-31.0319,
-2.74
-],
-"Hepsi bu mu? Kalanlar da gelsin!": [
-34.0219,
-2.7864
-],
-"Hey! Halıma basma!": [
-37.0583,
-1.6254
-],
-"Kapı kilitli değil diye girilmez!": [
-38.9337,
-2.2291
-],
-"Bu kaç oldu? Saymayı bıraktım.": [
-41.4128,
-2.3684
-],
-"Kim açtı o kapıyı?!": [
-44.0312,
-1.5325
-],
-"Kalkın! Mesai bitmedi.": [
-45.8137,
-2.0434
-],
-"Ölmek bahane değil. Kalk!": [
-48.1071,
-1.9505
-],
-"Emekliliğiniz iptal.": [
-50.3076,
-1.6254
-],
-"Kalkın tembeller!": [
-52.1829,
-1.6254
-],
-"Böö!": [
-54.0583,
-0.7895
-],
-"Annenizi mi istiyorsunuz?": [
-55.0978,
-1.7183
-],
-"Koşun! Koşun! Hah!": [
-57.0661,
-2.2756
-],
-"Arkanıza bakmayın.": [
-59.5917,
-1.579
-],
-"Oo, rütbeli biri. Kafası rafıma yakışır.": [
-61.4206,
-3.2044
-],
-"Bu da kim? Kartını bırakıp gitsin.": [
-64.875,
-2.5542
-],
-"Büyük adam, büyük mezar.": [
-67.6792,
-1.6718
-],
-"Güneş mi? Perdeleri kapatın!": [
-69.601,
-2.322
-],
-"Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.": [
-72.173,
-4.3189
-],
-"Komşular uyandı!": [
-76.7419,
-1.5325
-],
-"Mezarlıkta herkes bizden.": [
-78.5244,
-1.9505
-],
-"Gölde bir şey var. Ve aç.": [
-80.7249,
-2.1827
-],
-"Kapımı kırdılar! Kemiklerini sayacağım.": [
-83.1576,
-2.5078
-],
-"Kapı mı? Ben onu yeniden yaparım. Sizden.": [
-85.9153,
-3.2972
-],
-"Muhafızlar! Misafirleri karşılayın!": [
-89.4626,
-2.9722
-],
-"Geri dönüşüm, necromancer usulü.": [
-92.6847,
-2.7864
-],
-"Pat! Biraz dağınık oldu.": [
-95.7211,
-2.1827
-],
-"Cesetler de bir işe yarasın.": [
-98.1538,
-1.8112
-],
-"Kimse temizlemeyecek bunu, değil mi?": [
-100.2149,
-2.6935
-],
-"Buradan geçiş yok!": [
-103.1585,
-1.6718
-],
-"Kemikten çit. Komşuluk ilişkileri böyle başlar.": [
-105.0803,
-3.8545
-],
-"Duvara toslamak sağlığa zararlıdır.": [
-109.1848,
-2.6471
-],
-"Biri bahçeme girdi! Balkabaklarım!": [
-112.0819,
-2.6935
-],
-"İlk misafir kapıda. Davetsiz, tabii.": [
-115.0254,
-3.065
-],
-"Kule sallanıyor... Kitaplarım!": [
-118.3404,
-2.5542
-],
-"Az kaldı! Biri şu kapıyı tutsun!": [
-121.1446,
-2.6935
-],
-"Kıdemliler. Kemikleri daha sağlam olur.": [
-124.0881,
-2.8328
-],
-"Kırmızı sorguç mu? Ne kadar da şık.": [
-127.171,
-2.8793
-],
-"Tecrübeli askerler. Tecrübeli iskelet olurlar.": [
-130.3002,
-3.9938
-],
-"Yüzbaşı! Borazanı da benim olacak.": [
-134.5441,
-2.6471
-],
-"Altın sorguç... Rafımda tam yeri var.": [
-137.4412,
-3.0186
-],
-"Rütbe yükseldikçe mezar derinleşir.": [
-140.7098,
-2.7864
-],
-"Sinirlendi mi? Ne tatlı.": [
-143.7461,
-1.904
-],
-"Bağırmak kibarlığa sığmaz, general.": [
-145.9002,
-2.9257
-],
-"Öfke kalbe zararlı. Benim kalbim yok tabii.": [
-149.0759,
-3.2972
-],
-"Bir general daha koleksiyonda.": [
-152.6231,
-2.2291
-],
-"Kartını bıraktı. Ve kafasını.": [
-155.1022,
-2.4613
-],
-"Rütbesi mezar taşına yazılsın.": [
-157.8136,
-2.1827
-],
-"Kuleme taş atmak ayıp!": [
-160.2462,
-1.6254
-],
-"Hey! O kule kiralık değil!": [
-162.1216,
-2.1362
-],
-"Taşlarını geri al, kaba adam.": [
-164.5079,
-2.4149
-],
-"İşte şimdi oldu.": [
-167.1727,
-1.4396
-],
-"Böyle bir kulem olsun isterdim. Dur, var.": [
-168.8624,
-3.8081
-],
-"Mimari harikası. Biraz da ürkütücü.": [
-172.9205,
-2.9257
-],
-"Kalk, uyuklama!": [
-176.0962,
-1.4861
-],
-"Ölmek mi? Bizde bu geçici.": [
-177.8322,
-1.904
-],
-"Kısa bir mola. Hemen döner.": [
-179.9863,
-2.0434
-],
-"Kimse geçemedi. Beklendiği gibi.": [
-182.2796,
-2.5542
-],
-"Bahçe güvende. Şimdilik.": [
-185.0838,
-2.2756
-],
-"Altınlar mezara gömülmez. Bir şey kur!": [
-187.6094,
-3.2044
-],
-"Kese dolu, kuleler boş. Garip.": [
-191.0637,
-2.6935
-],
-"O altınla iki kule olur. Sadece diyorum.": [
-194.0073,
-2.9722
-],
-"Koçbaşı mı? Kapımı çalmanın kaba yolu.": [
-197.2294,
-3.0186
-],
-"Kapıma koç mu? Ne kadar kaba.": [
-200.498,
-2.6935
-],
-"Mükemmel. Yeni malzeme.": [
-203.4415,
-2.2291
-],
-"Hepsini kemik deposuna!": [
-205.9206,
-1.7183
-],
-"Bir, iki, on... yetmez.": [
-207.8889,
-2.2291
-],
-"İşte buna verimlilik denir.": [
-210.368,
-1.8576
-],
-"Cadı avı mı? Yanlış kapıyı çaldınız.": [
-212.4756,
-2.6006
-],
-"Meşaleler, çanlar... Ne kadar gürültücü bir din.": [
-215.3263,
-3.901
-],
-"Aşağıda biri çok acıkmış.": [
-219.4772,
-1.7647
-],
-"Kapağımı mühürledi! Terbiyesiz.": [
-221.4919,
-2.74
-],
-"O mahzenin kirasını kim ödeyecek?": [
-224.4819,
-2.4149
-],
-"Ay kızardı. Benden utandı herhalde.": [
-227.1468,
-2.8328
-],
-"Kızıl Ay! Kalkın çocuklar, gece bizim.": [
-230.2296,
-3.1115
-],
-"Dua edin bakalım. Ben de güleyim.": [
-233.5911,
-2.6006
-],
-"Fener mi? Söndürün şunu, gözüm kamaştı!": [
-236.4417,
-3.7616
-],
-"Işık arabası. Ne kadar da kaba.": [
-240.4533,
-2.6935
-],
 "Kalk bakalım, nöbet senin.": [
-243.3968,
-2.0434
+0.0,
+1.4732
 ],
 "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": [
-245.6902,
-3.7152
+1.7232,
+4.4622
 ],
 "Kapıya kimse girmeyecek. Kimse.": [
-249.6554,
-2.4149
+6.4354,
+2.8103
 ],
 "Katedral yıkıldı. Kirasını kim ödeyecek?": [
-252.3203,
-3.2044
-],
-"İniyor! Merdiven yokmuş demek.": [
-255.7746,
-2.4613
-],
-"Yeşil sana yakışmadı, Severus.": [
-258.4859,
-2.2291
-],
-"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": [
-260.9651,
-3.6223
-],
-"Aslanlar kaçtı. Akıllı hayvanlar.": [
-264.8374,
-2.7864
-],
-"Yayan general mi? Ne kadar da mütevazı.": [
-267.8738,
-2.9257
-],
-"Parlıyor. Kahvemi ısıtabilir mi acaba?": [
-271.0495,
-3.1579
-],
-"Güneş formu mu? Ben de gece formundayım.": [
-274.4574,
-2.8793
-],
-"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": [
-277.5867,
-3.3901
-],
-"Mahzen açık! Misafir geldi.": [
-281.2268,
-2.1362
-],
-"Golem, misafirlerle ilgilen.": [
-283.613,
-2.4149
-],
-"Türk kahvesi. Ölüleri bile diriltir.": [
-286.2779,
-2.7864
-],
-"Şşş. Kahve saati.": [
-289.3143,
-1.6718
-],
-"Sade. Ben zaten yeterince tatlıyım.": [
-291.2361,
-2.9257
-],
-"Fincanı kapattım. Falımda bol ceset var.": [
-294.4118,
-3.1579
-],
-"Yine mi misafir? Kahvemi yeni pişirmiştim.": [
-297.8198,
-3.2044
-],
-"Kalabalık geldiler. Bir kahve daha pişireyim.": [
-301.2741,
-2.9722
-],
-"Kahvemi döktürdün!": [
-304.4963,
-1.4396
-],
-"Karantina! Kimse giremez, kimse çıkamaz.": [
-306.1859,
-3.2044
-],
-"Kapıyı kapattım. Veba da bizden yana.": [
-309.6402,
-2.8328
-],
-"Şu çan beni deli ediyor.": [
-312.7231,
-1.7183
-],
-"Dua çanı... iskeletlerim sersemledi.": [
-314.6914,
-3.1579
-],
-"Afiyet olsun, gölün sahibi!": [
-318.0993,
-2.0898
-],
-"Kahveme toz kaçtı. Bu kişisel oldu.": [
-320.4391,
-3.065
-],
-"Kemik torbaları! Kapıyı tutun demedim mi?!": [
-323.7541,
-3.065
-],
-"İskeletler! Uyumak için mezarınız var!": [
-327.0691,
-2.6471
-],
-"Size yeniden kas mı takayım? Durdurun şunları!": [
-329.9662,
-3.2508
-],
-"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": [
-333.467,
-4.4118
-],
-"Kaburganız boş, kafanız da mı boş?!": [
-338.1288,
-2.5078
-],
-"Kim nöbetteydi? Kafatasını görmek istiyorum!": [
-340.8866,
-3.1115
-],
-"{h}! Seni kapıya süs olsun diye mi diktim?!": [
-344.248,
-3.1579
-],
-"{h}, kale yanıyor, sen manzara mı seyrediyorsun?": [
-347.6559,
-3.4366
-],
-"Hey {h}! Komutan dediğin önden gider!": [
-351.3425,
-3.1115
-],
-"{h}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!": [
-354.704,
-3.901
-],
-"{h}, seni mezardan çıkardığıma pişman ettirme!": [
-358.8549,
-3.3437
-],
-"Bu gidişle kahveyi bahçede içeceğim.": [
-362.4486,
-2.4613
-],
-"Tertemiz. Tek damla kahve dökülmedi.": [
-365.1599,
-2.6471
-],
-"Solarian vergisi... ters yönde.": [
-368.057,
-2.6471
-],
-"İmparatorluğun parası. Artık benim.": [
-370.9541,
-2.8328
-],
-"Bu sikkede güneş var. Ne ironi.": [
-374.0369,
-2.6006
-],
-"Ölüler cüzdan taşımaz. Ben taşırım.": [
-376.8875,
-2.74
-],
-"Bağışınız için teşekkürler, lejyoner.": [
-379.8775,
-2.5542
-],
-"Hazine bakanlığı: ben.": [
-382.6817,
-1.8576
+9.4957,
+3.0165
 ],
 "O ibrikle beni mi yıkayacak? Ben zaten temizim.": [
-384.7893,
-3.3901
+12.7622,
+4.0175
+],
+"İniyor! Merdiven yokmuş demek.": [
+17.0296,
+3.0989
 ],
 "Kutsal suyuna biraz lanet kattım. Afiyet olsun.": [
-388.4294,
-3.9938
+20.3785,
+4.4198
 ],
 "Söylemiştim: ölülerle oynanmaz.": [
-392.6732,
-2.8793
+25.0483,
+2.8835
+],
+"Yeşil sana yakışmadı, Severus.": [
+28.1817,
+2.4376
+],
+"Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": [
+30.8694,
+3.3726
+],
+"Aslanlar kaçtı. Akıllı hayvanlar.": [
+34.492,
+2.9906
+],
+"Yayan general mi? Ne kadar da mütevazı.": [
+37.7325,
+2.3111
+],
+"Parlıyor. Mezarlığımı aydınlattığın için teşekkürler.": [
+40.2936,
+4.7914
+],
+"Güneş formu mu? Ben de gece formundayım.": [
+45.335,
+2.6801
+],
+"Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": [
+48.2651,
+3.1271
+],
+"Cadı avı mı? Yanlış kapıyı çaldınız.": [
+51.6422,
+3.0706
+],
+"Meşaleler, çanlar... Ne kadar gürültücü bir din.": [
+54.9628,
+4.1544
 ],
 "Beni yakmaya mı geldiniz? Islak odun getirmişsiniz.": [
-395.8025,
-3.3901
+59.3673,
+4.7263
+],
+"Mahzen açık! Misafir geldi.": [
+64.3435,
+2.0944
+],
+"Golem, misafirlerle ilgilen.": [
+66.6879,
+2.4498
+],
+"Aşağıda biri çok acıkmış.": [
+69.3877,
+1.2599
+],
+"Kapağımı mühürledi! Terbiyesiz.": [
+70.8976,
+2.9032
+],
+"O mahzenin kirasını kim ödeyecek?": [
+74.0508,
+3.1323
+],
+"Ay kızardı. Benden utandı herhalde.": [
+77.433,
+2.7908
+],
+"Kızıl Ay! Kalkın çocuklar, gece bizim.": [
+80.4739,
+2.3483
+],
+"Dua edin bakalım. Ben de güleyim.": [
+83.0721,
+2.4
+],
+"Fener mi? Söndürün şunu, gözüm kamaştı!": [
+85.7221,
+2.9038
+],
+"Işık arabası. Ne kadar da kaba.": [
+88.8759,
+2.9449
+],
+"Türk kahvesi. Ölüleri bile diriltir.": [
+92.0709,
+2.8116
+],
+"Şşş. Efendiniz dinleniyor.": [
+95.1325,
+2.397
+],
+"Sade. Ben zaten yeterince tatlıyım.": [
+97.7795,
+2.698
+],
+"Bir yudum daha, sonra kıyamet.": [
+100.7276,
+2.7942
+],
+"Soğumuş. Tıpkı düşmanlarım gibi.": [
+103.7718,
+2.6724
+],
+"Fincanı kapattım. Falımda bol ceset var.": [
+106.6942,
+3.142
+],
+"Kargalarıma dokunma! Dedikodu taşıyorlar.": [
+110.0861,
+2.6962
+],
+"O karga bana borçlu, bilesin.": [
+113.0324,
+2.0201
+],
+"Yine mi misafir? Bu topraklar benim, unuttunuz mu?": [
+115.3025,
+3.9162
+],
+"Kapıyı çalmadan girmek yok. Hiç.": [
+119.4687,
+2.4993
+],
+"Solarianlar... Bugün de mi?": [
+122.218,
+1.9615
+],
+"Bahçeme basan mezara basar.": [
+124.4295,
+2.48
+],
+"Bir dalga daha. Ne azimliler.": [
+127.1595,
+2.8
+],
+"Sıraya girin. Mezarlıkta herkese yer var.": [
+130.2095,
+3.0379
+],
+"Yeni gönüllüler! İskeletim azalmıştı.": [
+133.4974,
+2.571
+],
+"Kalabalık geldiler. Ne güzel, ordum büyüyecek.": [
+136.3185,
+3.2961
+],
+"İmparator hiç mi ders almaz?": [
+139.8646,
+1.941
+],
+"Son dalga mı? Sonunda biraz sessizlik.": [
+142.0556,
+2.9097
+],
+"Hepsi bu mu? Kalanlar da gelsin!": [
+145.2153,
+2.2379
+],
+"Hey! Halıma basma!": [
+147.7032,
+1.7537
+],
+"Kapı kilitli değil diye girilmez!": [
+149.7068,
+2.1217
+],
+"Kahvemi döktürdün!": [
+152.0785,
+1.2349
+],
+"Bu kaç oldu? Saymayı bıraktım.": [
+153.5634,
+2.5244
+],
+"Kim açtı o kapıyı?!": [
+156.3378,
+1.26
+],
+"Kalkın! Mesai bitmedi.": [
+157.8478,
+1.6614
+],
+"Ölmek bahane değil. Kalk!": [
+159.7591,
+1.7039
+],
+"Emekliliğiniz iptal.": [
+161.713,
+1.2327
+],
+"Kalkın tembeller!": [
+163.1957,
+1.1515
+],
+"Böö!": [
+164.5973,
+0.6007
+],
+"Annenizi mi istiyorsunuz?": [
+165.448,
+1.4784
+],
+"Koşun! Koşun! Hah!": [
+167.1763,
+5.04
+],
+"Arkanıza bakmayın.": [
+172.4663,
+1.0785
+],
+"Oo, rütbeli biri. Kafası rafıma yakışır.": [
+173.7949,
+2.6925
+],
+"Bu da kim? Kartını bırakıp gitsin.": [
+176.7374,
+2.4765
+],
+"Büyük adam, büyük mezar.": [
+179.4639,
+1.7083
+],
+"Güneş mi? Perdeleri kapatın!": [
+181.4222,
+2.4555
+],
+"Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.": [
+184.1278,
+3.8385
+],
+"Komşular uyandı!": [
+188.2162,
+1.2592
+],
+"Mezarlıkta herkes bizden.": [
+189.7254,
+1.763
+],
+"Karantina! Kimse giremez, kimse çıkamaz.": [
+191.7384,
+3.1462
+],
+"Kapıyı kapattım. Veba da bizden yana.": [
+195.1346,
+3.28
+],
+"Şu çan beni deli ediyor.": [
+198.6646,
+1.76
+],
+"Dua çanı... iskeletlerim sersemledi.": [
+200.6746,
+3.1254
+],
+"Gölde bir şey var. Ve aç.": [
+204.05,
+2.0691
+],
+"Afiyet olsun, gölün sahibi!": [
+206.3691,
+2.1359
+],
+"Kapımı kırdılar! Kemiklerini sayacağım.": [
+208.755,
+2.9054
+],
+"Kapı mı? Ben onu yeniden yaparım. Sizden.": [
+211.9104,
+2.9597
+],
+"Muhafızlar! Misafirleri karşılayın!": [
+215.1201,
+2.9227
+],
+"Geri dönüşüm, necromancer usulü.": [
+218.2929,
+2.9207
+],
+"Pat! Biraz dağınık oldu.": [
+221.4636,
+1.7073
+],
+"Cesetler de bir işe yarasın.": [
+223.4209,
+2.0102
+],
+"Kimse temizlemeyecek bunu, değil mi?": [
+225.6811,
+2.9453
+],
+"Buradan geçiş yok!": [
+228.8764,
+1.7118
+],
+"Kemikten çit. Komşuluk ilişkileri böyle başlar.": [
+230.8383,
+3.5819
+],
+"Duvara toslamak sağlığa zararlıdır.": [
+234.6701,
+2.5291
+],
+"Biri bahçeme girdi! Balkabaklarım!": [
+237.4493,
+2.9059
+],
+"İlk misafir kapıda. Davetsiz, tabii.": [
+240.6052,
+3.5199
+],
+"Kapımı izinsiz açtın. Bu kişisel oldu.": [
+244.3751,
+3.3972
+],
+"Kemik torbaları! Kapıyı tutun demedim mi?!": [
+248.0223,
+2.4019
+],
+"İskeletler! Uyumak için mezarınız var!": [
+250.6742,
+3.2208
+],
+"Size yeniden kas mı takayım? Durdurun şunları!": [
+254.145,
+3.6936
+],
+"Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": [
+258.0886,
+4.734
+],
+"Kaburganız boş, kafanız da mı boş?!": [
+263.0727,
+2.6026
+],
+"Kim nöbetteydi? Kafatasını görmek istiyorum!": [
+265.9253,
+3.5325
+],
+"Leonidas! Seni kapıya süs olsun diye mi diktim?!": [
+269.7078,
+3.4558
+],
+"Merlin! Seni kapıya süs olsun diye mi diktim?!": [
+273.4136,
+3.1017
+],
+"Robin! Seni kapıya süs olsun diye mi diktim?!": [
+276.7653,
+3.2555
+],
+"Báthory! Seni kapıya süs olsun diye mi diktim?!": [
+280.2708,
+2.7505
+],
+"Leonidas, kale yanıyor, sen manzara mı seyrediyorsun?": [
+283.2713,
+4.3663
+],
+"Merlin, kale yanıyor, sen manzara mı seyrediyorsun?": [
+287.8876,
+3.6379
+],
+"Robin, kale yanıyor, sen manzara mı seyrediyorsun?": [
+291.7754,
+3.4362
+],
+"Báthory, kale yanıyor, sen manzara mı seyrediyorsun?": [
+295.4616,
+4.1
+],
+"Hey Leonidas! Komutan dediğin önden gider!": [
+299.8117,
+3.354
+],
+"Hey Merlin! Komutan dediğin önden gider!": [
+303.4157,
+2.701
+],
+"Hey Robin! Komutan dediğin önden gider!": [
+306.3667,
+2.9694
+],
+"Hey Báthory! Komutan dediğin önden gider!": [
+309.586,
+2.9771
+],
+"Leonidas! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!": [
+312.8131,
+4.3682
+],
+"Merlin! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!": [
+317.4313,
+4.2336
+],
+"Robin! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!": [
+321.9149,
+4.6653
+],
+"Báthory! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!": [
+326.8301,
+4.4425
+],
+"Leonidas, seni mezardan çıkardığıma pişman ettirme!": [
+331.5227,
+3.6375
+],
+"Merlin, seni mezardan çıkardığıma pişman ettirme!": [
+335.4102,
+3.5803
+],
+"Robin, seni mezardan çıkardığıma pişman ettirme!": [
+339.2405,
+3.2246
+],
+"Báthory, seni mezardan çıkardığıma pişman ettirme!": [
+342.7151,
+3.6231
+],
+"Kule sallanıyor... Kitaplarım!": [
+346.5883,
+3.0391
+],
+"Kaleme dokunan, mezarını kendi kazar.": [
+349.8773,
+2.7841
+],
+"Az kaldı! Biri şu kapıyı tutsun!": [
+352.9114,
+2.9991
+],
+"Kıdemliler. Kemikleri daha sağlam olur.": [
+356.1605,
+3.2712
+],
+"Kırmızı sorguç mu? Ne kadar da şık.": [
+359.6817,
+2.981
+],
+"Tecrübeli askerler. Tecrübeli iskelet olurlar.": [
+362.9127,
+3.8792
+],
+"Yüzbaşı! Borazanı da benim olacak.": [
+367.0419,
+2.9535
+],
+"Altın sorguç... Rafımda tam yeri var.": [
+370.2454,
+3.4142
+],
+"Rütbe yükseldikçe mezar derinleşir.": [
+373.9096,
+3.1411
+],
+"Sinirlendi mi? Ne tatlı.": [
+377.3007,
+1.6914
+],
+"Bağırmak kibarlığa sığmaz, general.": [
+379.2421,
+2.5911
+],
+"Öfke kalbe zararlı. Benim kalbim yok tabii.": [
+382.0832,
+3.5659
+],
+"Bir general daha koleksiyonda.": [
+385.899,
+1.8774
+],
+"Kartını bıraktı. Ve kafasını.": [
+388.0265,
+2.46
+],
+"Rütbesi mezar taşına yazılsın.": [
+390.7364,
+1.954
+],
+"Kuleme taş atmak ayıp!": [
+392.9405,
+2.24
+],
+"Hey! O kule kiralık değil!": [
+395.4305,
+2.0472
+],
+"Taşlarını geri al, kaba adam.": [
+397.7277,
+1.9819
+],
+"İşte şimdi oldu.": [
+399.9596,
+1.1651
+],
+"Böyle bir kulem olsun isterdim. Dur, var.": [
+401.3746,
+3.0484
+],
+"Mimari harikası. Biraz da ürkütücü.": [
+404.6731,
+3.0986
+],
+"Kalk, uyuklama!": [
+408.0216,
+1.2115
+],
+"Ölmek mi? Bizde bu geçici.": [
+409.4831,
+1.5475
+],
+"Kısa bir mola. Hemen döner.": [
+411.2806,
+2.1439
+],
+"Tertemiz. Mezarların efendisi yine kazandı.": [
+413.6745,
+3.298
+],
+"Kimse geçemedi. Beklendiği gibi.": [
+417.2225,
+2.9355
+],
+"Bahçe güvende. Şimdilik.": [
+420.408,
+1.7537
+],
+"Solarian vergisi... ters yönde.": [
+422.4117,
+2.9246
+],
+"İmparatorluğun parası. Artık benim.": [
+425.5862,
+2.7309
+],
+"Bu sikkede güneş var. Ne ironi.": [
+428.5671,
+2.8806
+],
+"Ölüler cüzdan taşımaz. Ben taşırım.": [
+431.6977,
+3.4366
+],
+"Bağışınız için teşekkürler, lejyoner.": [
+435.3843,
+2.9316
+],
+"Hazine bakanlığı: ben.": [
+438.5659,
+1.6607
+],
+"Altınlar mezara gömülmez. Bir şey kur!": [
+440.4765,
+3.3131
+],
+"Kese dolu, kuleler boş. Garip.": [
+444.0396,
+2.5581
+],
+"O altınla iki kule olur. Sadece diyorum.": [
+446.8477,
+2.9317
+],
+"Koçbaşı mı? Kapımı çalmanın kaba yolu.": [
+450.0293,
+3.28
+],
+"Kapıma koç mu? Ne kadar kaba.": [
+453.5593,
+2.5169
+],
+"Mükemmel. Yeni malzeme.": [
+456.3263,
+1.3124
+],
+"Hepsini kemik deposuna!": [
+457.8887,
+1.3041
+],
+"Bir, iki, on... yetmez.": [
+459.4428,
+1.6988
+],
+"İşte buna verimlilik denir.": [
+461.3916,
+1.7143
 ]
 }

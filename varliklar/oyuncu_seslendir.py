@@ -52,9 +52,10 @@ def say(voice, text, tag, lang, out):
             try: heard = stt(p)
             except Exception as e: heard = ''
             sim = difflib.SequenceMatcher(None, norm(text), norm(heard)).ratio()
+            if 'sersemledi' in norm(text) and 'sersemlemedi' in norm(heard): sim = 0  # 23 Eki: olumsuz okunmuş (anlam tersine)
             if re.search(r'\[|laugh|whisper|sarcastic|shouting', heard, re.I) and not re.search(r'laugh|whisper', text, re.I): sim -= 0.5  # etiket okunmuş
         if not best or sim > best[0] + 0.02: best = (sim, name, p, heard)
-        if best[0] >= 0.85: break
+        if best[0] >= 0.85 and not (text.endswith('sersemledi.') and 'sersemlemedi' in norm(heard)): break
     if best: shutil.copyfile(best[2], out)
     return best
 

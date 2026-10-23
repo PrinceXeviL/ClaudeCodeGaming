@@ -8,9 +8,10 @@ import difflib, json, os, re, shutil, sys, uuid, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 argv = sys.argv; sys.argv = [argv[0]]
 import elevenlabs_seslendir as E
-OUT = os.path.join(E.ROOT, 'varliklar', 'ham', 'fragman3'); os.makedirs(OUT, exist_ok=True)
+SEC = json.load(open(os.path.join(E.ROOT, 'varliklar', 'oyuncu_secim.json')))['mortimer']  # 23 Eki: seçilen ses oyuncusu (TR Emin, EN Mordred)
+OUT = os.path.join(E.ROOT, 'varliklar', 'ham', os.environ.get('VO_DIR', 'fragman3b')); os.makedirs(OUT, exist_ok=True)
 OLD = os.path.join(E.ROOT, 'varliklar', 'ham', 'fragman2')
-for n in range(4, 10):  # aynı metin, aynı numara
+for n in (range(4, 10) if os.environ.get('VO_DIR') == 'fragman3' else []):  # aynı metin, aynı numara (yalnız eski Callum klasöründe)
     for lang in ('tr', 'en'):
         for tag in ('v3', 'v2a', 'v2b'):
             a, b = os.path.join(OLD, f'take_{lang}_{n}_{tag}.mp3'), os.path.join(OUT, f'take_{lang}_{n}_{tag}.mp3')
@@ -29,7 +30,7 @@ LINES = [
     ('[menacing, deep]', 'Mezarların efendisine bulaşma.', 'Never cross the Lord of Graves.'),
 ]
 k = E.key()
-V = next(x for x in E.req('GET', '/voices', k)['voices'] if x['name'].startswith('Callum'))['voice_id']
+V = None  # dile göre SEC[lang]
 TAKES = [('v3', 'eleven_v3', {'stability': 0.5, 'similarity_boost': 0.8}, True),
          ('v2a', 'eleven_multilingual_v2', {'stability': 0.38, 'similarity_boost': 0.8, 'style': 0.45, 'use_speaker_boost': True}, False),
          ('v2b', 'eleven_multilingual_v2', {'stability': 0.55, 'similarity_boost': 0.85, 'style': 0.25, 'use_speaker_boost': True}, False)]
@@ -48,7 +49,7 @@ for lang_i, lang in ((1, 'tr'), (2, 'en')):
     for n, L in enumerate(LINES, 1):
         text, best = L[lang_i], None
         for tag, model, st, tagged in TAKES:
-            p = os.path.join(OUT, f'take_{lang}_{n}_{tag}.mp3')
+            p = os.path.join(OUT, f'take_{lang}_{n}_{tag}.mp3'); V = SEC[lang]
             if not os.path.exists(p):
                 body = {'text': (L[0] + ' ' + text) if tagged else text, 'model_id': model, 'voice_settings': st}
                 if model != 'eleven_v3': body['language_code'] = lang

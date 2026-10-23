@@ -770,6 +770,10 @@ function decodeOne(name) {
   if (!buf) return;
   delete rawSnd[name];
   const kind = name.replace(/_\d+$/, '');
+  // 23 Eki: komutan konuşmaları iki dilde (Türkçe + en_ İngilizce); yalnız seçili dilinki belleğe açılır (iPhone bellek sınırı). Dil sonradan değişirse
+  // yeniden açılışa kadar öteki dilin sesi çalar (heroVoice en_ yoksa Türkçeye düşer).
+  const hv = name.match(/^(en_)?(?:hsel_|hmove_|(?:bv|lv|mv|rv)(?:atk|ult|ult2|sk|link|taunt|low|back)_)/);
+  if (hv && !!hv[1] === ((window.LANG || 'tr') === 'tr')) { SES_LOG.skip = (SES_LOG.skip || 0) + 1; return; }
   const done = (ab) => { if (ab) { (SND[kind] = SND[kind] || []).push(ab); SES_LOG.dec++; } else { SES_LOG.fail++; if (SES_LOG.fail <= 5) console.log('[ses] düşen', name); }
     if ((SES_LOG.dec + SES_LOG.fail) % 50 === 0 || SES_LOG.dec + SES_LOG.fail === SES_LOG.n) console.log('[ses] çözülen', SES_LOG.dec, 'düşen', SES_LOG.fail, '/', SES_LOG.n); };
   const dec = (b) => new Promise((res) => {
