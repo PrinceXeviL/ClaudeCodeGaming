@@ -20,3 +20,7 @@ for i, L in enumerate(['en', 'es', 'de', 'fr', 'ru', 'zh']):
     for tr, v in T.items(): d['exact'][tr] = v[i]
     json.dump(d, open(p, 'w'), ensure_ascii=False, indent=1)
 print('eklendi', len(T))
+
+# 24 Eki: ayarlardaki AÇIK düğmesi kapı anlamında çevrilmişti (OPEN/ABIERTO...): KAPALI'nın karşıtı
+for L, v in {'en': 'ON', 'es': 'SÍ', 'de': 'AN', 'fr': 'OUI', 'ru': 'ВКЛ', 'zh': '开'}.items():
+    p = os.path.join(D, L + '_extra.json'); d = json.load(open(p)); d['exact']['AÇIK'] = v; json.dump(d, open(p, 'w'), ensure_ascii=False, indent=1)

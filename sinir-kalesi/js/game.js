@@ -770,18 +770,20 @@ fetch('ses/paket.json' + SV).then(r => (r.ok ? r.json() : Promise.reject('json '
 // çözmeler sessizce düşüyordu (Chrome'da sorun yok). Artık kuyrukla çözülür; düşen bir kez daha denenir.
 // Aynı anda en çok DEC_N çözme; yanıt vermeyen çözme DEC_T sn sonra bırakılır (telefonda bir ses takılırsa ötekiler beklemesin).
 const DEC_N = 6, DEC_T = 4000, DECW = []; let decRun = 0;
+const VOICE_RAW = {}; // 24 Eki: seçili olmayan dilin konuşma sesleri (ham), dil değişince çözülür
+window.addEventListener('langchange', () => { if (!actx) return; for (const n of Object.keys(VOICE_RAW)) { const en = n.startsWith('en_'); if (en === ((window.LANG || 'tr') !== 'tr')) { rawSnd[n] = VOICE_RAW[n]; delete VOICE_RAW[n]; decodeOne(n); } } });
 function decPump() {
   while (decRun < DEC_N && DECW.length) { decRun++; DECW.shift()().then(() => { decRun--; decPump(); }); }
 }
 function decodeOne(name) {
   const buf = rawSnd[name];
   if (!buf) return;
-  delete rawSnd[name];
   const kind = name.replace(/_\d+$/, '');
-  // 23 Eki: komutan konuşmaları iki dilde (Türkçe + en_ İngilizce); yalnız seçili dilinki belleğe açılır (iPhone bellek sınırı). Dil sonradan değişirse
-  // yeniden açılışa kadar öteki dilin sesi çalar (heroVoice en_ yoksa Türkçeye düşer).
+  // 23 Eki: komutan konuşmaları iki dilde (Türkçe + en_ İngilizce); yalnız seçili dilinki belleğe açılır (iPhone bellek sınırı).
+  // 24 Eki: atlanan dilin ham verisi VOICE_RAW'da kalır; dil değişince (langchange) o an çözülür, uygulamayı yeniden açmak gerekmez
   const hv = name.match(/^(en_)?(?:hsel_|hmove_|(?:bv|lv|mv|rv)(?:atk|ult|ult2|sk|link|taunt|low|back)_)/);
-  if (hv && !!hv[1] === ((window.LANG || 'tr') === 'tr')) { SES_LOG.skip = (SES_LOG.skip || 0) + 1; return; }
+  if (hv && !!hv[1] === ((window.LANG || 'tr') === 'tr')) { VOICE_RAW[name] = buf; delete rawSnd[name]; SES_LOG.skip = (SES_LOG.skip || 0) + 1; return; }
+  delete rawSnd[name];
   const done = (ab) => { if (ab) { (SND[kind] = SND[kind] || []).push(ab); SES_LOG.dec++; } else { SES_LOG.fail++; if (SES_LOG.fail <= 5) console.log('[ses] düşen', name); }
     if ((SES_LOG.dec + SES_LOG.fail) % 50 === 0 || SES_LOG.dec + SES_LOG.fail === SES_LOG.n) console.log('[ses] çözülen', SES_LOG.dec, 'düşen', SES_LOG.fail, '/', SES_LOG.n); };
   const dec = (b) => new Promise((res) => {
@@ -17386,13 +17388,13 @@ function settingsRows(x0, y0, w, st, inGame) {
     drawIcon(icon, c.lx + 12, c.y, 22, col || '#f2d58a'); fitTxt(label, c.lx + 32, c.y + 1, c.cx - c.lx - 40, LS, LC, 'left', '400', FONT_T, false, 11); }; /* 22 Eki: uzun ad kesilmesin, sığacak kadar küçülür */
   if (cols > 1) { ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.28)' : 'rgba(92,58,22,0.2)'; ctx.fillRect(x0 + CW[0] - 0.75, y0 + 6, 1.5, per * step - 12); } // sütun ayracı
   rows.forEach(([icon, label, opts, cur, pick], j) => {
-    const c = cell(j), ap = st - 0.2 - j * 0.04;
+    const c = cell(j + 1), ap = st - 0.2 - j * 0.04; // 24 Eki (Caner: "dil ayarı rahat tıklanabilir yerde değil"): dil en üstte, öteki satırlar bir aşağıda
     head(c, icon, label);
     if (opts === 'slider') volSlider('vol' + j, c.cx, c.y, c.cw, sh, cur, pick, ap);
     else segmented('seg' + j + '_', c.cx, c.y, c.cw, sh, opts, cur, pick, ap);
   });
   // dil: dokununca dil listesi açılır (dil adı kendi dilinde yazar, herkes kendi dilini tanır)
-  const L = cell(rows.length); head(L, 'map', 'Dil / Language');
+  const L = cell(0); head(L, 'map', 'Dil / Language');
   const BTN = uiOk() ? (k, x, y, w, h, l, fn, sty, o) => uiPill(k, x, y, w, h + 4, l, fn, o) : gameButton; // Gemini stili: kızıl uzun düğme
   BTN('setlang', L.cx + L.cw / 2, L.y, L.cw, 40, lang[1] + '  ▼', () => { langMenu = langMenu ? null : { t0: time }; }, 'blue', { appear: st - 0.4, size: 15 });
   if (!inGame) {
@@ -20447,13 +20449,18 @@ function drawTitle() {
     // 16 Eki (Caner: "sağ üstteki simgeler çok ufak, logo üst üste binmesin"): r 21 → 30 (dokunma ≥ 60), ekranın gerçek sağ üst köşesine yaslı
     const TB = (i) => [EDGE.r - 46 - i * 70, EDGE.t + 44];
     roundBtn('snd', ...TB(0), 30, muted ? 'mute' : 'sound', () => setMuted(!muted), { appear: st - 0.7, tile: 'blue' });
-    roundBtn('settings', ...TB(1), 30, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
-    roundBtn('t_codex', ...TB(2), 30, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
-    roundBtn('t_ach', ...TB(3), 30, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
-    if (TEST_OPEN) { const [ax, ay] = TB(4); roundBtn('t_admin', ax, ay, 30, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.9, tile: 'ember' }); // 18 Eki (Caner): admin serbest mod ana sayfada da
+    // 24 Eki (Caner: "dil ayarı daha uygun, rahat tıklanabilir yerde olsun"): giriş ekranında ayrı dil düğmesi (yerküre + seçili dilin kodu)
+    roundBtn('t_lang', ...TB(1), 30, (r) => { ctx.save(); ctx.strokeStyle = 'rgba(255,243,208,0.55)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0, 0, r * 0.62, 0, TAU); ctx.moveTo(-r * 0.62, 0); ctx.lineTo(r * 0.62, 0);
+      ctx.ellipse(0, 0, r * 0.28, r * 0.62, 0, 0, TAU); ctx.stroke(); ctx.restore(); txt(String(window.LANG || 'tr').toUpperCase(), 0, 2, r * 0.62, '#fff3d0', 'center', '400', FONT_T, true); },
+      () => { langMenu = langMenu ? null : { t0: time }; sfx('click'); }, { appear: st - 0.72, tile: 'green' });
+    roundBtn('settings', ...TB(2), 30, 'gear', () => openSettings('title'), { appear: st - 0.75, tile: 'violet' });
+    roundBtn('t_codex', ...TB(3), 30, codexBookIcon, () => go(() => { menuBack = 'title'; screen = 'codex'; screenT = time; CODEX.t0 = time; }), { appear: st - 0.8, tile: 'green' });
+    roundBtn('t_ach', ...TB(4), 30, (r) => { ctx.save(); ctx.scale(0.9, 0.9); uiIco('ach', 0, 0, r * 1.25) || drawIcon('crown', 0, 0, r * 1.3); ctx.restore(); }, () => go(() => { menuBack = 'title'; screen = 'ach'; screenT = time; }), { appear: st - 0.85, tile: 'purple' });
+    if (TEST_OPEN) { const [ax, ay] = TB(5); roundBtn('t_admin', ax, ay, 30, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.9, tile: 'ember' }); // 18 Eki (Caner): admin serbest mod ana sayfada da
     }
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
     if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
+    if (langMenu) drawLangMenu(W / 2 - 170, H / 2, 340); // 24 Eki: dil listesi ekranın ortasında, izin penceresinin de üstünde
     return;
   }
 // ----- günlük giriş hediyesi (15 Eki, data.js DAILY_LOGIN) -----
