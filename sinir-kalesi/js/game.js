@@ -17269,7 +17269,7 @@ function drawSettings() {
   else roundBtn('back', 44, 44, 23, 'back', () => go(() => { screen = settingsBack; }), { appear: st - 0.1 });
   // 15 Eki (Caner: dil satırı kemik çerçevenin dışına taşmış): satırlar çoğalınca (titreşim, oyun verisi) iki sütuna geçildi; yükseklik satır sayısından
   // Gemini çerçevesinde (U) satırlar başlık plakasının altından başlar
-  const pw = U ? 920 : 880, ph = Math.ceil(settingsCount(false) / 2) * (U ? 58 : 52) + (U ? 148 : 50), px = W / 2 - pw / 2, py = U ? 104 : 92; // 22 Eki: kemik çerçeve ekrana sığsın
+  const pw = U ? 920 : 860, ph = U ? 430 : 400, px = W / 2 - pw / 2, py = U ? 104 : 96; // 24 Eki: sekmeli ayarlar, sabit boy // 22 Eki: kemik çerçeve ekrana sığsın
   const pk = easeOutBack(clamp((st - 0.05) / 0.4, 0, 1));
   ctx.save(); ctx.translate(W / 2, py + ph / 2); ctx.scale(pk, pk); ctx.translate(-W / 2, -(py + ph / 2));
   let UF = null;
@@ -17284,9 +17284,8 @@ function drawSettings() {
   }
   ctx.restore();
   if (pk < 0.9) return;
-  if (UF) settingsRows(UF.l + 22, UF.t + 6, UF.r - UF.l - 44, st, false); // çerçeve içinden pay bırakılır (yazılar kenara yapışmasın)
-  else settingsRows(px + 14, py + 22, pw - 28, st, false);
-  if (resetArm && time - resetArm < 3) txt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', W / 2, py + ph + 22, 13, '#ffb0a0', 'center', '700', FONT_B, false);
+  if (UF) settingsTabs(UF.l + 22, UF.t + 12, UF.r - UF.l - 44, UF.b - UF.t - 24, st, false);
+  else settingsTabs(px + 34, py + 34, pw - 68, ph - 68, st, false);
   (U ? (k, x, y, w, h, l, fn, sty, o) => uiPill(k, EDGE.r - 112, 46, w, h + 6, l, fn, o) : gameButton)('credits', EDGE.r - 112, 46, 190, 44, /* 22 Eki: altta Kayıt kodu satırının üstüne biniyordu */ 'EMEĞİ GEÇENLER', () => go(() => { screen = 'credits'; screenT = time; }), 'wood', { appear: st - 0.5, size: 14 });
 }
 // Ayar satırları (ana menüdeki ayarlar ekranı ve oyun içi duraklatma menüsü ortak). Kolay anlaşılsın diye (Caner, 10 Eki):
@@ -17375,6 +17374,67 @@ function settingsList(inGame) {
   if (NSTORE_PRIV && !inGame) rows.push(['map', 'Reklam gizliliği', [[true, 'DEĞİŞTİR']], false, () => { NSTORE.privacyOptions().catch(() => {}); }]); // 21 Eki: UMP (Avrupa) onayını değiştirme
   if (TEST_OPEN && !inGame) rows.push(['map', 'Harita sisi', [[false, 'GERÇEK'], [true, 'YENİ OYUNCU']], !!setting('fogTest'), (v) => { setSetting('fogTest', v); MAPFX.rev = null; MAPFX.seen = {}; mapFogC = null; }]);
   return rows;
+}
+// 24 Eki (Caner: "dil en altta, tasarım berbat; menüleri daha kaliteli şablona geçir"): sekmeli ayarlar. Solda sekmeler (Ses, Görüntü, Oyun, Dil,
+// Kayıt), sağda yalnız seçili sekmenin satırları: hiçbir satır pencereden taşmaz, dokunma hedefleri büyük. Ana ayarlar ve oyun içi aynı düzen.
+let SET_TAB = 'ses';
+const SET_TABS = [['ses', 'Ses', 'sound'], ['goruntu', 'Görüntü', 'gear'], ['oyun', 'Oyun', 'fast'], ['dil', 'Dil / Language', 'map'], ['kayit', 'Kayıt', 'grimoire']];
+const SET_OF = { 'Müzik': 'ses', 'Ses efektleri': 'ses', 'Sarsıntı ve parlama': 'goruntu', 'Renk körü modu': 'goruntu', 'Görüntü kalitesi': 'goruntu', 'Ortam efektleri': 'goruntu',
+  'Kan efektleri': 'goruntu', 'Titreşim': 'oyun', 'Anonim oyun verisi': 'oyun', 'Öğretici': 'oyun', 'Reklam gizliliği': 'oyun', 'Harita sisi': 'oyun' };
+function settingsTabs(x0, y0, w, h, st, inGame) {
+  const tabs = SET_TABS.filter(t => !(inGame && t[0] === 'kayit'));
+  if (!tabs.some(t => t[0] === SET_TAB)) SET_TAB = 'ses';
+  const tw = inGame ? 150 : 190, th = inGame ? 62 : 58, gap = 8, LC = NECRO ? '#eadfc4' : '#4a2a0e';
+  // sekmeler
+  tabs.forEach(([id, label, icon], i) => {
+    const x = x0, y = y0 + i * (th + gap), on = id === SET_TAB, a = clamp((st - 0.15 - i * 0.04) / 0.2, 0, 1); if (a <= 0) return;
+    ctx.save(); ctx.globalAlpha *= a;
+    const gr = ctx.createLinearGradient(0, y, 0, y + th);
+    if (on) { gr.addColorStop(0, '#b8243e'); gr.addColorStop(1, '#5a0a1e'); } else { gr.addColorStop(0, 'rgba(40,14,34,0.92)'); gr.addColorStop(1, 'rgba(20,6,18,0.92)'); }
+    roundRect(x, y, tw, th, 14, gr, on ? '#f2d58a' : 'rgba(201,168,101,0.45)', on ? 2.4 : 1.4);
+    if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + tw * 0.5, y + th * 0.5, tw * 0.55, '255,90,110', 0.16); ctx.restore(); }
+    drawIcon(icon, x + 30, y + th / 2, 26, on ? '#fff3d0' : '#c9a865');
+    fitTxt(label, x + 52, y + th / 2 + 1, tw - 60, inGame ? 17 : 17, on ? '#fff6e0' : LC, 'left', '400', FONT_T, false, 11);
+    ctx.restore();
+    buttons.push({ key: 'settab_' + id, x, y, w: tw, h: th, fn: () => { if (SET_TAB !== id) { SET_TAB = id; langMenu = null; sfx('click'); } } });
+  });
+  // içerik alanı
+  const cx0 = x0 + tw + 18, cw = w - tw - 18, rowH = inGame ? 68 : 64, sh = inGame ? 46 : 44, LS = inGame ? 18 : 17;
+  ctx.save(); ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.28)' : 'rgba(92,58,22,0.2)'; ctx.fillRect(cx0 - 10, y0 + 4, 1.5, h - 8); ctx.restore();
+  const ap = (j) => st - 0.25 - j * 0.04;
+  const label = (j, icon, text) => { const y = y0 + j * rowH + rowH / 2; drawIcon(icon, cx0 + 16, y, 24, '#f2d58a'); fitTxt(text, cx0 + 38, y + 1, cw * 0.42 - 40, LS, LC, 'left', '400', FONT_T, false, 11); return y; };
+  const ctlX = cx0 + cw * 0.42, ctlW = cw * 0.58;
+  if (SET_TAB === 'dil') {
+    // 7 dil tek dokunuşla (açılır liste yok); seçili dil yeşil. Seslendirme notu: Türkçe ve İngilizce dublaj, öteki dillerde İngilizce ses
+    const cols = 2, bw = (cw - 14) / 2, bh = inGame ? 52 : 50, g2 = 10;
+    LANGS.forEach(([code, name], i) => {
+      const bx = cx0 + (i % cols) * (bw + 14) + bw / 2, by = y0 + 8 + Math.floor(i / cols) * (bh + g2) + bh / 2;
+      gameButton('lang_' + code, bx, by, bw, bh, name, () => { if (window.LANG !== code) window.setLang(code, () => {}); sfx('click'); }, code === window.LANG ? 'green' : 'blue', { size: 16, appear: ap(i) });
+    });
+    const rows = Math.ceil(LANGS.length / cols), ny = y0 + 8 + rows * (bh + g2) + 14;
+    fitTxt('Seslendirme: Türkçe ve İngilizce · Öteki dillerde İngilizce ses', cx0 + cw / 2, ny, cw, 13, 'rgba(234,223,196,0.75)', 'center', '700', FONT_B, false, 9);
+    return;
+  }
+  if (SET_TAB === 'kayit') {
+    const BTN = gameButton;
+    let y = label(0, 'grimoire', 'Kayıt kodu'); const hw = (ctlW - 10) / 2;
+    BTN('savexp', ctlX + hw / 2, y, hw, sh, 'AKTAR', () => saveExport(), 'green', { appear: ap(0), size: 16 });
+    BTN('savimp', ctlX + hw * 1.5 + 10, y, hw, sh, 'YÜKLE', () => saveImport(), 'blue', { appear: ap(0), size: 16 });
+    if (saveMsg && time - saveMsg.t < 4) fitTxt(saveMsg.text, ctlX + ctlW / 2, y + sh / 2 + 14, ctlW, 13, saveMsg.col, 'center', '800', FONT_B, true, 9);
+    y = label(1, 'restart', 'İlerlemeyi sıfırla');
+    BTN('setreset', ctlX + ctlW / 2, y, ctlW, sh, resetArm && time - resetArm < 3 ? 'EMİN MİSİN?' : 'SIFIRLA', () => {
+      if (resetArm && time - resetArm < 3) { save = { stars: [], settings: save.settings }; persist(); resetArm = 0; mapEp = null; sfx('error'); }
+      else resetArm = time;
+    }, 'red', { appear: ap(1), size: 16 });
+    if (resetArm && time - resetArm < 3) fitTxt('Bütün yıldızlar ve gelişmeler silinir. Onaylamak için tekrar dokun.', cx0 + cw / 2, y0 + 2 * rowH + 20, cw, 13, '#ffb0a0', 'center', '700', FONT_B, false, 9);
+    return;
+  }
+  settingsList(inGame).filter(r => (SET_OF[r[1]] || 'oyun') === SET_TAB).forEach(([icon, text, opts, cur, pick], j) => {
+    const y = label(j, icon, text);
+    if (j) { ctx.save(); ctx.fillStyle = NECRO ? 'rgba(201,168,101,0.18)' : 'rgba(92,58,22,0.16)'; ctx.fillRect(cx0, y - rowH / 2, cw, 1.2); ctx.restore(); }
+    if (opts === 'slider') volSlider('vol_' + text, ctlX, y, ctlW, sh, cur, pick, ap(j));
+    else segmented('seg_' + text + '_', ctlX, y, ctlW, sh, opts, cur, pick, ap(j));
+  });
 }
 // ana ayarlarda iki sütun (yukarıdan aşağı dolar), oyun içinde tek sütun
 function settingsRows(x0, y0, w, st, inGame) {
@@ -23289,7 +23349,7 @@ function drawOverlay() {
   const big = overlay === 'skills' || overlay === 'psettings';
   const sum = overlay === 'win' && NECRO; // zafer: bölüm özeti kartı için uzun panel
   const pz = overlay === 'pause'; // duraklatma: telefonda yanlış dokunulmasın diye büyük, aralıklı düğmeler (Caner, 10 Eki)
-  const pw = big ? 600 : pz ? 480 : sum ? 680 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 476 : 420) : 400) : sum ? (G && G.vault && G.lootGot ? 512 : 472) : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
+  const pw = big ? (overlay === 'psettings' ? 720 : 600) : pz ? 480 : sum ? 680 : 500, ph = big ? (NECRO ? (overlay === 'psettings' ? 440 : 420) : 400) : sum ? (G && G.vault && G.lootGot ? 512 : 472) : pz ? 430 : 350, cx = W / 2, cy = H / 2 + (big ? 14 : sum ? 8 : 18), px = cx - pw / 2, py = cy - ph / 2;
   const e = easeOutBack(clamp(k / 0.42, 0, 1));
   const wn = overlay === 'win' && NECRO; // 16 Eki (Caner: zafer ekranı konsepte uysun): kararma, panel aşağıdan kayar, başlık yere çakılır, yıldızlar tek tek düşer
   if (wn) { ctx.fillStyle = `rgba(6,2,12,${0.62 * clamp(k / 0.35, 0, 1)})`; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); if (G.winLaughT && G.t >= G.winLaughT) { G.winLaughT = 0; sfx('mlaugh'); }
@@ -23313,7 +23373,7 @@ function drawOverlay() {
     // duraklatma menüsünden ayarlar: ana ayarlarla aynı satırlar (sıfırlama hariç), geri ok duraklatmaya döner
     if (NECRO) plaqueTitle(cx, py + 50, 'AYARLAR'); else ribbon(cx, py + 4, 290, 'AYARLAR', 'blue', 26);
     roundBtn('ov_setback', px + 44, py + 46, 22, 'back', () => setOverlay('pause'), { appear: k - 0.1 });
-    settingsRows(px + 16, py + 84, pw - 32, k, true);
+    settingsTabs(px + 28, py + 92, pw - 56, ph - 120, k, true);
   } else if (overlay === 'win') {
     if (NECRO) { const ts = clamp((k - 0.5) / 0.22, 0, 1); if (ts > 0) { // başlık yukarıdan yere çakılır
       if (ts >= 1 && !G.winSlam) { G.winSlam = true; shakeScreen(5, 0.3); sfx('stomp'); for (let j = 0; j < 26; j++) { const a = rand(-Math.PI, 0), v = rand(90, 260); emit(uiParts, { kind: 'glow', add: true, x: cx + rand(-120, 120), y: py + 56, vx: Math.cos(a) * v, vy: Math.sin(a) * v, drag: 3, col: j % 3 ? '140,255,150' : '200,120,255', s0: rand(4, 8), s1: 1, life: rand(0.5, 0.9) }); } }
