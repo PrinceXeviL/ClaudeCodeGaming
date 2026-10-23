@@ -6027,6 +6027,9 @@ function shieldDash(s, t, dt) { // 16 Eki: Mezar Bekçisinin Kalkan Hamlesi
 }
 function updateSoldier(s, dt) {
   if (s.born != null && G.t < s.born) return; // diriltilen minyon sırasını bekliyor
+  // 23 Eki (Caner: "dirilttiğim zombiler daha ayağa kalkmadan düşmana gidiyor; önce olduğu yerde kalksın, yarım saniye beklesin, sonra ilerlesin"):
+  // kalkış (ölüm kareleri tersten, DIE_T; şerit yoksa 0,6 sn) + ZRISE.hold boyunca yerinden kıpırdamaz, saldırmaz
+  if (s.minion && s.born != null) { s.riseHold ??= (s.zname ? DIE_T : 0.6) + ZRISE.hold; if (G.t < s.born + s.riseHold) { s.moving = false; s.target = null; return; } }
   if (s.flash > 0) s.flash -= dt;
   if (s.buffT > 0) s.buffT -= dt;
   if (s.spinT > 0) s.spinT -= dt;
@@ -7019,7 +7022,7 @@ const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150, march: 85
 const zIgnored = (s, o) => s.zIgn && s.zIgn.o === o && G.t < s.zIgn.until;
 function zLock(s) { s.zTgT = G.t; s.zHitT = G.t; } // yeni hedef: takılma sayacı sıfırlanır // march: emirle yürürken saldırdığı düşman uzaklığı (17 Eki) // 14 Eki (Caner): menzil ~10 adam (bir düşman ~20 birim geniş) = 200; drop: kovaladığını bu uzaklıkta bırakır // 14 Eki (Caner): sep 10 -> 15 (iç içe geçiyorlardı); aggro: düşman bu kadar yakına gelince saldırır, yoksa yerinde bekler
 function separateUnits(dt) {
-  const L = G.soldiers.filter(s => !s.dead && !s.wall && !s.hero && !s.big && !s.bow && !(s.born != null && G.t < s.born) && !s.exit);
+  const L = G.soldiers.filter(s => !s.dead && !s.wall && !s.hero && !s.big && !s.bow && !(s.born != null && G.t < s.born + (s.riseHold || 0)) && !s.exit); // 23 Eki: kalkan ölü yerinden itilmez
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
     const a = L[i], b = L[j], dx = b.x - a.x, dy = (b.y - a.y) * 1.6, d = Math.hypot(dx, dy);
     if (d >= ZOMBIE.sep || !(a.zombie || b.zombie)) continue; // yalnız dirilenler (kışla askerlerinin düzeni kendi yuvalarından)
@@ -13863,6 +13866,7 @@ const CORPSE_DUR = 1.15;
 let CORPSE_BAKE = 3; // kare başına en çok bu kadar ceset önbelleğe alınır (çok ölüm aynı karede takılma yapmasın)
 // ölüm şeridi süresi (sn): kareler bu sürede oynar, ceset son karede yatar; dirilişte tersten
 const DIE_T = 0.9;
+const ZRISE = { hold: 0.5 }; // 23 Eki: dirilen ölü ayağa kalktıktan sonra bu kadar bekler, sonra ilerler
 function drawCorpse(f) {
   if (f.hang) return; // darağacında asılı (drawMechGround çizer)
   const im = spr(f.name);
