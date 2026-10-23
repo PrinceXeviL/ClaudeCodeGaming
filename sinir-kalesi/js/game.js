@@ -20483,8 +20483,9 @@ const epOf = (i) => LEVELS[i].ep || 1;
 // 16 Eki (Caner: "2. seferde 1. bölüm aslında 21. bölüm"): bölüm numarası seferler boyunca sürer
 function lvlNo(i) { let n = 0; for (let e = 1; e < epOf(i); e++) n += epLevels(e).length; return n + epLevels(epOf(i)).indexOf(i) + 1; }
 // sefer, önceki seferin son bölümü bitince açılır
-// 23 Eki (Caner: "ilk sürümde 2. sefer 'yakında' kilitli, ilk 20 bölüm cilalı"): mağaza derlemesinde EP_SOON seferleri kapalı, haritada YAKINDA yazar
-const EP_SOON = new Set(MAGAZA ? [2] : []);
+// 23 Eki (Caner): "yakında" = sonradan talebe göre yapılacak 20 bölümlük 3. sefer; 1-2. sefer açık (ilk 10 bölüm ücretsiz, tam oyun 30 bölüm).
+// EP_SOON boş; haritanın en üstünde son seferin ötesine kaydırınca "Yeni sefer yakında!" yazar (EP_FUTURE).
+const EP_SOON = new Set(), EP_FUTURE = true;
 const epSoon = (ep) => EP_SOON.has(ep) && !window.__epSoonOff;
 function epUnlocked(ep) {
   if (epSoon(ep)) return false;
@@ -20947,6 +20948,7 @@ function mapEpCross(E, X, NB) { // kameranın ortası komşu seferin zeminine ge
 }
 function mapEpScroll() { // 16 Eki: seferler tek haritada; taşma yalnız kilitli komşu sefer sınırında ("önce bu seferi bitir") gösterilir
   const o = MAPCAM.over, ne = mapEp + (o > 0 ? 1 : -1), k = Math.min(1, Math.abs(o) / MAPCAM.switchAt);
+  if (EP_FUTURE && ne === EPISODES.length + 1 && Math.abs(o) >= 6) { const y = o > 0 ? 196 : EDGE.b - MAPCAM.bar - 18; ctx.save(); ctx.globalAlpha = Math.min(1, k * 1.3); roundRect(W / 2 - 140, y - 20, 280, 40, 20, 'rgba(24,10,14,0.82)', '#e2a93c', 2); fitTxt('Yeni sefer yakında!', W / 2, y, 256, 17, '#ffd98a', 'center', '400', FONT_T, false, 12); ctx.restore(); return; }
   if (Math.abs(o) < 6 || ne < 1 || ne > EPISODES.length || !EPISODES[ne - 1].zones) return;
   const open = epUnlocked(ne); if (open) return;
   if (k >= 1 && open && MAPCAM.drag) { // geç
