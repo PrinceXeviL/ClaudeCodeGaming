@@ -10697,8 +10697,14 @@ function xbowRange(t, d) {
   const ts = towerSprite(t), m = ts ? menBody(t) * 0.17 / ts.w : 0.06; // gövde yarı genişliği (boyun ~%17'si, kule genişliğinin kesri)
   let lo = Math.max(side(Lf) + m, C.x[0]), hi = Math.min(side(Rt) - m, C.x[1]);
   if (lo > hi) lo = hi = (lo + hi) / 2;
-  return [lo, hi];
+  const mid = (lo + hi) / 2, hw = (hi - lo) / 2 * XMEN.inset; // 23 Eki (Caner: "tek ayakları terasın sınırını aşıyor"): sınır her yandan %10 içeride
+  return [mid - hw, mid + hw];
 }
+// 23 Eki (Caner: "kule okçuları birbirinin içine geçmesin, ortaya doğru dursunlar, hareket serbest ama çok dışarı çıkmasınlar"):
+// inset: yürünebilir genişliğin kullanılan kesri, d: derinlik sınırı (öne-arkaya), center: yeni yer seçerken ortaya yakın kalma (0 = her yer, 1 = hep orta),
+// gap: iki okçu arası en az x (kule genişliğinin kesri; derinlikleri dD'den yakınsa), push: çok yaklaşanların aralanma hızı
+const XMEN = { inset: 0.9, d: [0.08, 0.92], center: 0.55, gap: 0.16, dD: 0.35, push: 0.12 };
+const xmenNear = (a, o, x, d) => Math.abs(x - o.x) < XMEN.gap && Math.abs(d - o.d) < XMEN.dD;
 // kuledeki iskeletler: 1-3. kademe yeşil arbaletçiler; 4. kademede ya 2 kızıl ağır arbaletçi (fan) ya da 3 kızıl hayalet okçu (bow).
 // aim: nişan / yay germe süresi (ok bu sürenin sonunda çıkar), kick: bırakınca geri tepme, hold: atıştan sonra silahı indirmeden bekleme,
 // tip: atış pozunda okun çıktığı nokta (görsel kesri), spd: mermi hızı (px/sn), arc: kavis (uzaklığın kesri; okçular yüksek atar)
@@ -10751,7 +10757,7 @@ function xbowMen(t) {
   const n = xbowCount(t); if (!t.ga) t.ga = [];
   if (t.ga.length > n) t.ga.length = n;
   const C = xbowCfg(t);
-  while (t.ga.length < n) { const d = rand(0.2, 0.8), r = xbowRange(t, d); t.ga.push({ hp: tmanHp(t), x: n === 1 ? (r[0] + r[1]) / 2 : lerp(r[0], r[1], t.ga.length / (n - 1)), d, tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null }); }
+  while (t.ga.length < n) { const d = rand(0.3, 0.7), r = xbowRange(t, d), c = (r[0] + r[1]) / 2; t.ga.push({ hp: tmanHp(t), x: n === 1 ? c : c + (t.ga.length / (n - 1) - 0.5) * Math.max((n - 1) * XMEN.gap * 1.1, (r[1] - r[0]) * 0.75), d, tx: null, face: t.ga.length % 2 ? 1 : -1, aimT: 0, kickT: -1, moveT: rand(1, 3), anim: rand(0, 5), tg: null }); }
   return t.ga;
 }
 function updateXbowMen(t, dt) {
@@ -10766,15 +10772,19 @@ function updateXbowMen(t, dt) {
     a.anim += dt; if (a.aimT > 0) a.aimT -= dt; if (a.kickT > -M.hold) a.kickT -= dt;
     const busy = a.aimT > 0 || a.kickT > -M.hold;
     if (a.tx == null && !busy && (a.moveT -= dt) <= 0) { // ara ara platformda yer değiştirir (diğerlerine çok yaklaşmadan)
-      for (let k = 0; k < 8; k++) { const td = rand(0, 1), r = xbowRange(t, td), nx = rand(r[0], r[1]); if (A.every((o, j) => j === i || Math.abs(nx - o.x) > X.gap) && Math.abs(nx - a.x) > 0.05) { a.tx = nx; a.td = td; break; } }
+      for (let k = 0; k < 10; k++) { const td = rand(XMEN.d[0], XMEN.d[1]), r = xbowRange(t, td), u = rand(0, 1), nx = lerp(r[0], r[1], 0.5 + (u - 0.5) * (1 - XMEN.center * (k < 6 ? 1 : 0.5)));
+        if (A.every((o, j) => j === i || o.dead || (!xmenNear(a, o, nx, td) && (o.tx == null || !xmenNear(a, { x: o.tx, d: o.td ?? o.d }, nx, td)))) && Math.abs(nx - a.x) > 0.05) { a.tx = nx; a.td = td; break; } }
       a.moveT = rand(2.5, 5);
     }
     if (a.tx != null && !busy) {
       const dx = a.tx - a.x, st = X.speed * dt;
+      if (A.some((o, j) => j !== i && !o.dead && Math.sign(o.x - a.x) === Math.sign(dx) && xmenNear(a, o, a.x + Math.sign(dx) * XMEN.gap * 0.5, a.d))) { a.tx = null; a.walking = false; a.moveT = rand(0.8, 1.6); return; } // önünde biri var: durur, sonra başka yer seçer
       a.face = dx < 0 ? -1 : 1; a.walking = true;
       if (Math.abs(dx) <= st) { a.x = a.tx; a.tx = null; a.walking = false; } else a.x += Math.sign(dx) * st;
       a.d += (a.td - a.d) * Math.min(1, dt * 2);
     } else a.walking = false;
+    for (const o of A) if (o !== a && !o.dead && !busy && xmenNear(a, o, a.x, a.d)) { a.x += (a.x < o.x || (a.x === o.x && a.d < o.d) ? -1 : 1) * XMEN.push * dt; a.d += (a.d < o.d ? -1 : 1) * XMEN.push * 2 * dt; } // çok yakınsa hafifçe aralanır (dar platformda öne-arkaya)
+    a.d = clamp(a.d, XMEN.d[0], XMEN.d[1]);
     const r = xbowRange(t, a.d); a.x = clamp(a.x, r[0], r[1]); // derinlik değişirken de zeminin içinde kalır
   });
 }
@@ -13033,8 +13043,16 @@ function drawZombieMark(s) {
   // 18 Eki (Caner: "simgeyi kaldır, küçük hafif saydam kırmızı nokta olsun"): bizden olduğu kızıl noktadan belli; komut seçiliyken parlak + halka
   if ((s.sacArm || 0) > G.t) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, y - 2, 14, '255,60,60', 0.5); ctx.restore(); drawIcon('skull', s.x, y - 2, 12 + 2 * Math.sin(time * 10), '#ff6a5a'); return; } // feda: ikinci dokunuşu bekler
   if (G.legionOn) { ctx.save(); ctx.globalAlpha *= 0.55; ctx.strokeStyle = '#ff4a4a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, 10, 4, 0, 0, TAU); ctx.stroke(); ctx.restore(); } // Ölü Lejyonu halkası
-  ctx.save(); ctx.globalAlpha *= sel ? 0.95 : 0.55; circle(s.x, y + 4, (sel ? 2.6 : 2.2) * (s.zBoss ? 1.6 : 1), '#ff3a3a', 'rgba(60,0,0,0.8)', 0.6); ctx.restore();
-  if (sel) { ctx.save(); ctx.globalAlpha *= 0.7; ctx.strokeStyle = '#ffd0d0'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(s.x, y + 4, 4.2, 0, TAU); ctx.stroke(); ctx.restore(); }
+  { // 23 Eki (Caner: "kafalarındaki yuvarlak biraz daha küçük ve 3B gibi"): parlak kızıl küre: koyu kenar, ışıklı üst, beyaz parıltı, altında küçük gölge
+    const r = (sel ? 2.1 : 1.7) * (s.zBoss ? 1.5 : 1), cx = s.x, cy = y + 4;
+    ctx.save(); ctx.globalAlpha *= sel ? 1 : 0.85;
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(cx + r * 0.25, cy + r * 1.05, r * 0.85, r * 0.3, 0, 0, TAU); ctx.fill();
+    const gr = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r); gr.addColorStop(0, '#ff9a8a'); gr.addColorStop(0.45, '#e2202a'); gr.addColorStop(1, '#5a0008');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(40,0,4,0.9)'; ctx.lineWidth = Math.max(0.35, r * 0.18); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(cx - r * 0.38, cy - r * 0.42, r * 0.26, 0, TAU); ctx.fill();
+    ctx.restore(); }
+  if (sel) { ctx.save(); ctx.globalAlpha *= 0.7; ctx.strokeStyle = '#ffd0d0'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.arc(s.x, y + 4, 3.4, 0, TAU); ctx.stroke(); ctx.restore(); }
 }
 function drawSoldier1(s) {
   const C = celebK();
@@ -13109,8 +13127,7 @@ function drawSoldier0(s) {
         atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       ctx.restore();
       // 18 Eki (Caner): başın üstündeki mor ruh alevi kalktı; bizim taraf olduğu rozetten belli (drawZombieMark)
-      if (!CROWD && !s.zFly) { const hy = s.y - ch * 0.95, sd2 = (s.slot || 0) * 2.3; ctx.fillStyle = 'rgba(20,24,16,0.85)'; // başının çevresinde dönen iki sinek (ceset havası)
-        for (let k = 0; k < 2; k++) { const an = time * (5 + k * 1.7) + sd2 + k * 3.1, fx = s.x + Math.cos(an) * ch * 0.28, fy = hy + Math.sin(an * 1.3) * ch * 0.12; ctx.fillRect(fx - 0.9, fy - 0.9, 1.8, 1.8); } }
+      // 23 Eki (Caner: "kafalarının çevresinde dönen toplar ne, kaldır"): başın çevresindeki iki sinek kalktı
       if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 8 - (s.zFly ? 26 : 0), 12, s.hp / s.maxHp, '#9a5ac7');
       return;
     }
