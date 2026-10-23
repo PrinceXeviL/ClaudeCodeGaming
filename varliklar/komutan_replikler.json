@@ -1,0 +1,287 @@
+{
+ "hsel_leonidas2_1": {
+  "tag": "[commanding]",
+  "tr": "Emrindeyim! Sparta asla diz çökmez.",
+  "en": "At your command! Sparta never kneels."
+ },
+ "hsel_leonidas2_2": {
+  "tag": "[proud, deep]",
+  "tr": "Kalkanım hazır.",
+  "en": "My shield is ready."
+ },
+ "hsel_leonidas2_3": {
+  "tag": "[gruff laugh]",
+  "tr": "Ölüm mü? Onu çoktan yendim.",
+  "en": "Death? I already beat it once."
+ },
+ "hmove_leonidas2_1": {
+  "tag": "[firm]",
+  "tr": "İleri!",
+  "en": "Forward!"
+ },
+ "hmove_leonidas2_2": {
+  "tag": "[commanding]",
+  "tr": "Safları koruyun!",
+  "en": "Hold the line!"
+ },
+ "lvatk_1": {
+  "tag": "[battle cry, shouting]",
+  "tr": "Spartaaa!",
+  "en": "Spartaaa!"
+ },
+ "lvatk_2": {
+  "tag": "[fierce]",
+  "tr": "Molon labe!",
+  "en": "Molon labe!"
+ },
+ "lvatk_3": {
+  "tag": "[grunting, effort]",
+  "tr": "Hah!",
+  "en": "Hah!"
+ },
+ "lvult_1": {
+  "tag": "[shouting]",
+  "tr": "Mızraklar, gökyüzünü karartın!",
+  "en": "Spears, darken the sky!"
+ },
+ "lvult2_1": {
+  "tag": "[roaring]",
+  "tr": "Falanks! Geçit yok!",
+  "en": "Phalanx! None shall pass!"
+ },
+ "lvsk_1": {
+  "tag": "[battle cry]",
+  "tr": "Hücum!",
+  "en": "Charge!"
+ },
+ "lvtaunt_1": {
+  "tag": "[contemptuous laugh]",
+  "tr": "Persler bile sizden iyi savaşırdı.",
+  "en": "Even the Persians fought better than you."
+ },
+ "lvlow_1": {
+  "tag": "[strained, defiant]",
+  "tr": "Bir Spartalı... düşmez!",
+  "en": "A Spartan... does not fall!"
+ },
+ "lvback_1": {
+  "tag": "[proud]",
+  "tr": "Sparta geri döndü!",
+  "en": "Sparta has returned!"
+ },
+ "hsel_merlin2_1": {
+  "tag": "[wise, amused]",
+  "tr": "Hımm... bir büyü mü lazım?",
+  "en": "Hmm... in need of a spell?"
+ },
+ "hsel_merlin2_2": {
+  "tag": "[mysterious, slow]",
+  "tr": "Yıldızlar bugün kanlı konuşuyor.",
+  "en": "The stars speak of blood tonight."
+ },
+ "hsel_merlin2_3": {
+  "tag": "[grumpy]",
+  "tr": "Asam nerede... Ah, elimdeymiş.",
+  "en": "Where is my staff... Ah, in my hand."
+ },
+ "hmove_merlin2_1": {
+  "tag": "[sighs]",
+  "tr": "Bu yaşta yürüyüş...",
+  "en": "Marching, at my age..."
+ },
+ "hmove_merlin2_2": {
+  "tag": "[calm]",
+  "tr": "Yolu görüyorum.",
+  "en": "I see the path."
+ },
+ "mvatk_1": {
+  "tag": "[chanting]",
+  "tr": "Fulgur!",
+  "en": "Fulgur!"
+ },
+ "mvatk_2": {
+  "tag": "[chanting]",
+  "tr": "Ignis arcana!",
+  "en": "Ignis arcana!"
+ },
+ "mvatk_3": {
+  "tag": "[intense whisper]",
+  "tr": "Ictus.",
+  "en": "Ictus."
+ },
+ "mvult_1": {
+  "tag": "[booming, commanding]",
+  "tr": "Caelum, cade!",
+  "en": "Caelum, cade!"
+ },
+ "mvult2_1": {
+  "tag": "[chanting, rising]",
+  "tr": "Turbo tempestatis!",
+  "en": "Turbo tempestatis!"
+ },
+ "mvsk_1": {
+  "tag": "[mischievous]",
+  "tr": "Vrak vrak, sevgili düşmanım.",
+  "en": "Ribbit, ribbit, my dear foe."
+ },
+ "mvtaunt_1": {
+  "tag": "[chuckles]",
+  "tr": "Bin yıldır böyle beceriksiz görmedim.",
+  "en": "A thousand years, and never such clumsiness."
+ },
+ "mvlow_1": {
+  "tag": "[coughing]",
+  "tr": "Kemiklerim eskisi gibi değil...",
+  "en": "My bones are not what they used to be..."
+ },
+ "mvback_1": {
+  "tag": "[amused]",
+  "tr": "Ölüm mü? Onu zaten denemiştim.",
+  "en": "Death? I have tried that already."
+ },
+ "hsel_robin3_1": {
+  "tag": "[sly]",
+  "tr": "Hedefi göster, gerisi bende.",
+  "en": "Show me the mark, I'll do the rest."
+ },
+ "hsel_robin3_2": {
+  "tag": "[whispering, playful]",
+  "tr": "Ormanın gölgesi benim evim.",
+  "en": "The forest's shadow is my home."
+ },
+ "hsel_robin3_3": {
+  "tag": "[smirking]",
+  "tr": "Zenginden alırım... ölüden de.",
+  "en": "I rob the rich... and the dead."
+ },
+ "hmove_robin3_1": {
+  "tag": "[quietly]",
+  "tr": "Sessizce...",
+  "en": "Quietly..."
+ },
+ "hmove_robin3_2": {
+  "tag": "[confident]",
+  "tr": "Kurdum, peşimden.",
+  "en": "Wolves, follow me."
+ },
+ "rvatk_1": {
+  "tag": "[cocky]",
+  "tr": "Al bakalım!",
+  "en": "Here, catch!"
+ },
+ "rvatk_2": {
+  "tag": "[cocky]",
+  "tr": "Bir ok, bir ölü.",
+  "en": "One arrow, one corpse."
+ },
+ "rvatk_3": {
+  "tag": "[sly]",
+  "tr": "Kaçamazsın.",
+  "en": "You can't run."
+ },
+ "rvult_1": {
+  "tag": "[shouting]",
+  "tr": "Gökyüzü ok yağdıracak!",
+  "en": "The sky will rain arrows!"
+ },
+ "rvult2_1": {
+  "tag": "[fierce, shouting]",
+  "tr": "Kurtlarım! Av zamanı!",
+  "en": "My wolves! Time to hunt!"
+ },
+ "rvsk_1": {
+  "tag": "[playful]",
+  "tr": "Bıçaklar uçuyor!",
+  "en": "Knives are flying!"
+ },
+ "rvtaunt_1": {
+  "tag": "[mocking]",
+  "tr": "Şerif bile senden iyi nişan alırdı.",
+  "en": "Even the Sheriff aimed better than you."
+ },
+ "rvlow_1": {
+  "tag": "[pained, wry]",
+  "tr": "Bu yara... iz bırakacak.",
+  "en": "This wound... will leave a mark."
+ },
+ "rvback_1": {
+  "tag": "[cheeky]",
+  "tr": "Özlediniz mi beni?",
+  "en": "Did you miss me?"
+ },
+ "hsel_bathory2_1": {
+  "tag": "[arrogant]",
+  "tr": "Emret bakalım, ölümlü.",
+  "en": "Command me, mortal."
+ },
+ "hsel_bathory2_2": {
+  "tag": "[haughty]",
+  "tr": "Güzelliğim ebedi... Sabrım değil.",
+  "en": "My beauty is eternal... my patience is not."
+ },
+ "hsel_bathory2_3": {
+  "tag": "[whispering, seductive]",
+  "tr": "Kan çağırıyor... dinliyorum.",
+  "en": "Blood is calling... I am listening."
+ },
+ "hmove_bathory2_1": {
+  "tag": "[annoyed]",
+  "tr": "Eteklerim kirlenmesin.",
+  "en": "Mind my skirts."
+ },
+ "hmove_bathory2_2": {
+  "tag": "[amused]",
+  "tr": "Kanın kokusu oradan geliyor.",
+  "en": "The scent of blood comes from there."
+ },
+ "bvatk_1": {
+  "tag": "[fierce]",
+  "tr": "Sanguis!",
+  "en": "Sanguis!"
+ },
+ "bvatk_2": {
+  "tag": "[cold, cruel]",
+  "tr": "Morere!",
+  "en": "Morere!"
+ },
+ "bvatk_3": {
+  "tag": "[fierce]",
+  "tr": "Cruor!",
+  "en": "Cruor!"
+ },
+ "bvult_1": {
+  "tag": "[commanding, powerful]",
+  "tr": "Lacus sanguinis, surge!",
+  "en": "Lacus sanguinis, surge!"
+ },
+ "bvult2_1": {
+  "tag": "[commanding]",
+  "tr": "Vespertiliones, ad me!",
+  "en": "Vespertiliones, ad me!"
+ },
+ "bvlink_1": {
+  "tag": "[hissing]",
+  "tr": "Vincula sanguinis!",
+  "en": "Vincula sanguinis!"
+ },
+ "bvtaunt_1": {
+  "tag": "[sarcastic laugh]",
+  "tr": "Bu mu imparatorluğun en iyisi? Yazık.",
+  "en": "Is this the Empire's finest? Pathetic."
+ },
+ "bvtaunt_2": {
+  "tag": "[disgusted]",
+  "tr": "Kanın tadı bile sıradan.",
+  "en": "Even your blood tastes ordinary."
+ },
+ "bvlow_1": {
+  "tag": "[furious]",
+  "tr": "Elbisemi yırttın. Bunu ödeyeceksin!",
+  "en": "You tore my gown. You will pay for this!"
+ },
+ "bvback_1": {
+  "tag": "[smug]",
+  "tr": "Geri döndüm. Özlediniz mi?",
+  "en": "I'm back. Did you miss me?"
+ }
+}

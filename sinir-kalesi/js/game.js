@@ -884,19 +884,23 @@ const MORT_LAUGH = ['fear', 'raise', 'burst', 'bossDown', 'streak', 'wall', 'bos
 // Mortimer'ın seslendirilmiş replikleri (ElevenLabs, varliklar/elevenlabs_seslendir.py). Hepsi tek dosyada (ses ızgarası,
 // varliklar/mort_sprite.py): ses/mort/mort_all.mp3 + sprite.json {yazı: [başlangıç, süre]}; ilk replikte bir kez çözülür.
 // Dosyası olan replik birebir seslendirilir; olmayanlar aşağıdaki sentez mırıltıya düşer.
-let MORT_VO = null, mortVoiceUntil = 0, MORT_ALL = null, MORT_ALL_P = null;
-fetch('ses/mort/sprite.json?v=' + (window.SURUM || ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { MORT_VO = j; }).catch(() => {});
+// 23 Eki (Caner: "hem Türkçe hem İngilizce"): Türkçe dışındaki dillerde İngilizce kayıtlar (ses/mort/sprite_en.json + mort_all_en.mp3, anahtar yine Türkçe replik)
+let mortVoiceUntil = 0; const MORT_V = { tr: { f: '' }, en: { f: '_en' } };
+const mortVoiceSet = () => { const S = MORT_V[window.LANG && window.LANG !== 'tr' ? 'en' : 'tr'];
+  if (!S.idxP) S.idxP = fetch('ses/mort/sprite' + S.f + '.json?v=' + (window.SURUM || ''), { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).then(j => { S.idx = j; }).catch(() => {});
+  return S; };
+mortVoiceSet();
 function mortVoice(text) {
-  const sp = MORT_VO && MORT_VO[text];
-  if (!sp || muted || !actx || !master || window.LANG === 'en') return false; // kayıtlar Türkçe: İngilizcede mırıltı çalar
+  const S = mortVoiceSet(), sp = S.idx && S.idx[text];
+  if (!sp || muted || !actx || !master) return false; // kaydı olmayan dilde/replikte mırıltı çalar
   const play = (buf) => {
     const src = actx.createBufferSource(), g = actx.createGain();
     g.gain.value = 0.76; src.buffer = buf; src.connect(g); g.connect(master); src.start(0, sp[0], sp[1] + 0.06); // 10 Eki: %20 kısıldı (0.95 -> 0.76)
     mortVoiceUntil = time + sp[1] + 0.2;
   };
-  if (MORT_ALL) { play(MORT_ALL); return true; }
-  if (!MORT_ALL_P) MORT_ALL_P = fetch('ses/mort/mort_all.mp3?v=' + (window.SURUM || '')).then(r => r.arrayBuffer()).then(a => actx.decodeAudioData(a)).then(b => (MORT_ALL = b)).catch(() => { MORT_ALL_P = null; });
-  MORT_ALL_P.then(b => b && play(b));
+  if (S.all) { play(S.all); return true; }
+  if (!S.allP) S.allP = fetch('ses/mort/mort_all' + S.f + '.mp3?v=' + (window.SURUM || '')).then(r => r.arrayBuffer()).then(a => actx.decodeAudioData(a)).then(b => (S.all = b)).catch(() => { S.allP = null; });
+  S.allP.then(b => b && play(b));
   return true;
 }
 function mortMumble(text, kind) {
@@ -7688,17 +7692,17 @@ const MORT_LINES = {
   sev2: ['Katedral yıkıldı. Kirasını kim ödeyecek?', 'O ibrikle beni mi yıkayacak? Ben zaten temizim.', 'İniyor! Merdiven yokmuş demek.'],
   sev3: ['Kutsal suyuna biraz lanet kattım. Afiyet olsun.', 'Söylemiştim: ölülerle oynanmaz.', 'Yeşil sana yakışmadı, Severus.'],
   glor2: ['Arabası kırıldı. Yürüsün biraz, sağlığa iyi.', 'Aslanlar kaçtı. Akıllı hayvanlar.', 'Yayan general mi? Ne kadar da mütevazı.'],
-  glor3: ['Parlıyor. Kahvemi ısıtabilir mi acaba?', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
+  glor3: ['Parlıyor. Mezarlığımı aydınlattığın için teşekkürler.', 'Güneş formu mu? Ben de gece formundayım.', 'Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.'],
   // 2. sefer (Cadı Avı)
   start2: ['Cadı avı mı? Yanlış kapıyı çaldınız.', 'Meşaleler, çanlar... Ne kadar gürültücü bir din.', 'Beni yakmaya mı geldiniz? Islak odun getirmişsiniz.'],
   hatch: ['Mahzen açık! Misafir geldi.', 'Golem, misafirlerle ilgilen.', 'Aşağıda biri çok acıkmış.'],
   sealed: ['Kapağımı mühürledi! Terbiyesiz.', 'O mahzenin kirasını kim ödeyecek?'],
   blood: ['Ay kızardı. Benden utandı herhalde.', 'Kızıl Ay! Kalkın çocuklar, gece bizim.', 'Dua edin bakalım. Ben de güleyim.'],
   light: ['Fener mi? Söndürün şunu, gözüm kamaştı!', 'Işık arabası. Ne kadar da kaba.'],
-  tea: ['Türk kahvesi. Ölüleri bile diriltir.', 'Şşş. Kahve saati.', 'Sade. Ben zaten yeterince tatlıyım.', 'Bir yudum daha, sonra kıyamet.', 'Soğumuş. Tıpkı düşmanlarım gibi.', 'Fincanı kapattım. Falımda bol ceset var.'],
+  tea: ['Türk kahvesi. Ölüleri bile diriltir.', 'Şşş. Efendiniz dinleniyor.', 'Sade. Ben zaten yeterince tatlıyım.', 'Bir yudum daha, sonra kıyamet.', 'Soğumuş. Tıpkı düşmanlarım gibi.', 'Fincanı kapattım. Falımda bol ceset var.'],
   crowtap: ['Kargalarıma dokunma! Dedikodu taşıyorlar.', 'O karga bana borçlu, bilesin.'],
-  start: ['Yine mi misafir? Kahvemi yeni pişirmiştim.', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
-  wave: ['Bir dalga daha. Ne azimliler.', 'Sıraya girin. Mezarlıkta herkese yer var.', 'Yeni gönüllüler! İskeletim azalmıştı.', 'Kalabalık geldiler. Bir kahve daha pişireyim.', 'İmparator hiç mi ders almaz?'],
+  start: ['Yine mi misafir? Bu topraklar benim, unuttunuz mu?', 'Kapıyı çalmadan girmek yok. Hiç.', 'Solarianlar... Bugün de mi?', 'Bahçeme basan mezara basar.'],
+  wave: ['Bir dalga daha. Ne azimliler.', 'Sıraya girin. Mezarlıkta herkese yer var.', 'Yeni gönüllüler! İskeletim azalmıştı.', 'Kalabalık geldiler. Ne güzel, ordum büyüyecek.', 'İmparator hiç mi ders almaz?'],
   last: ['Son dalga mı? Sonunda biraz sessizlik.', 'Hepsi bu mu? Kalanlar da gelsin!'],
   leak: ['Hey! Halıma basma!', 'Kapı kilitli değil diye girilmez!', 'Kahvemi döktürdün!', 'Bu kaç oldu? Saymayı bıraktım.', 'Kim açtı o kapıyı?!'],
   raise: ['Kalkın! Mesai bitmedi.', 'Ölmek bahane değil. Kalk!', 'Emekliliğiniz iptal.', 'Kalkın tembeller!'],
@@ -7711,13 +7715,13 @@ const MORT_LINES = {
   gatebreak: ['Kapımı kırdılar! Kemiklerini sayacağım.', 'Kapı mı? Ben onu yeniden yaparım. Sizden.', 'Muhafızlar! Misafirleri karşılayın!'],
   burst: ['Geri dönüşüm, necromancer usulü.', 'Pat! Biraz dağınık oldu.', 'Cesetler de bir işe yarasın.', 'Kimse temizlemeyecek bunu, değil mi?'],
   wall: ['Buradan geçiş yok!', 'Kemikten çit. Komşuluk ilişkileri böyle başlar.', 'Duvara toslamak sağlığa zararlıdır.'],
-  firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Kahveme toz kaçtı. Bu kişisel oldu.'],
+  firstleak: ['Biri bahçeme girdi! Balkabaklarım!', 'İlk misafir kapıda. Davetsiz, tabii.', 'Kapımı izinsiz açtın. Bu kişisel oldu.'],
   // 15 Eki (Caner): kale vurulunca Mortimer askerlerine ve komutana kızar ({h}: takımdaki komutanın adı)
   scold: ['Kemik torbaları! Kapıyı tutun demedim mi?!', 'İskeletler! Uyumak için mezarınız var!', 'Size yeniden kas mı takayım? Durdurun şunları!',
     'Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!', 'Kaburganız boş, kafanız da mı boş?!', 'Kim nöbetteydi? Kafatasını görmek istiyorum!'],
   scoldHero: ['{h}! Seni kapıya süs olsun diye mi diktim?!', '{h}, kale yanıyor, sen manzara mı seyrediyorsun?', 'Hey {h}! Komutan dediğin önden gider!',
     '{h}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!', '{h}, seni mezardan çıkardığıma pişman ettirme!'],
-  low: ['Kule sallanıyor... Kitaplarım!', 'Bu gidişle kahveyi bahçede içeceğim.', 'Az kaldı! Biri şu kapıyı tutsun!'],
+  low: ['Kule sallanıyor... Kitaplarım!', 'Kaleme dokunan, mezarını kendi kazar.', 'Az kaldı! Biri şu kapıyı tutsun!'],
   veteran: ['Kıdemliler. Kemikleri daha sağlam olur.', 'Kırmızı sorguç mu? Ne kadar da şık.', 'Tecrübeli askerler. Tecrübeli iskelet olurlar.'],
   captain: ['Yüzbaşı! Borazanı da benim olacak.', 'Altın sorguç... Rafımda tam yeri var.', 'Rütbe yükseldikçe mezar derinleşir.'],
   bossRage: ['Sinirlendi mi? Ne tatlı.', 'Bağırmak kibarlığa sığmaz, general.', 'Öfke kalbe zararlı. Benim kalbim yok tabii.'],
@@ -7725,7 +7729,7 @@ const MORT_LINES = {
   stunned: ['Kuleme taş atmak ayıp!', 'Hey! O kule kiralık değil!', 'Taşlarını geri al, kaba adam.'],
   maxTower: ['İşte şimdi oldu.', 'Böyle bir kulem olsun isterdim. Dur, var.', 'Mimari harikası. Biraz da ürkütücü.'],
   heroDown: ['Kalk, uyuklama!', 'Ölmek mi? Bizde bu geçici.', 'Kısa bir mola. Hemen döner.'],
-  clean: ['Tertemiz. Tek damla kahve dökülmedi.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
+  clean: ['Tertemiz. Mezarların efendisi yine kazandı.', 'Kimse geçemedi. Beklendiği gibi.', 'Bahçe güvende. Şimdilik.'],
   loot: ['Solarian vergisi... ters yönde.', 'İmparatorluğun parası. Artık benim.', 'Bu sikkede güneş var. Ne ironi.', 'Ölüler cüzdan taşımaz. Ben taşırım.', 'Bağışınız için teşekkürler, lejyoner.', 'Hazine bakanlığı: ben.'],
   rich: ['Altınlar mezara gömülmez. Bir şey kur!', 'Kese dolu, kuleler boş. Garip.', 'O altınla iki kule olur. Sadece diyorum.'],
   ram: ['Koçbaşı mı? Kapımı çalmanın kaba yolu.', 'Kapıma koç mu? Ne kadar kaba.'],
@@ -15390,10 +15394,11 @@ function heroVoice(h, n) {
   const V = HERO_VOICE[h.id], c = V && V[n]; if (!c || !SOUND[n]) return false;
   const T = (h.voiceT ||= {}), now = G ? G.t : time;
   if (now - (T._any ?? -99) < V.any || now - (T[n] ?? -99) < c.gap || Math.random() > c.p) return false;
-  T._any = now; T[n] = now; sfx(n, null, 1, h); return true;
+  T._any = now; T[n] = now; sfx(window.LANG && window.LANG !== 'tr' && SND['en_' + n] && SND['en_' + n].length ? 'en_' + n : n, null, 1, h); return true; // 23 Eki: Türkçe dışında İngilizce kayıt (en_<tür>_N)
 }
 for (const id of ['leonidas', 'merlin', 'robin', 'bathory']) { const v = BARK_V[id] || ''; SOUND['hsel_' + id + v] = { vol: 0.55, gap: 0.5, max: 1 }; SOUND['hmove_' + id + v] = { vol: 0.5, gap: 0.6, max: 1 }; }
 for (const P of Object.values(HV_P)) for (const n of ['atk', 'ult', 'ult2', 'sk', 'link', 'taunt', 'low', 'back']) SOUND[P + n] = { vol: 0.62, gap: 0.5, max: 1 }; // komutan sözleri (heroVoice)
+for (const k of Object.keys(SOUND)) if (/^(hsel_|hmove_|bv|lv|mv|rv)/.test(k) && !SOUND['en_' + k]) SOUND['en_' + k] = SOUND[k]; // 23 Eki: İngilizce komutan sözleri aynı ayarla
 function setSel(sel) {
   const old = G.sel;
   const same = old && sel && old.kind === sel.kind && old.plot === sel.plot && old.tower === sel.tower && old.hero === sel.hero && old.enemy === sel.enemy;

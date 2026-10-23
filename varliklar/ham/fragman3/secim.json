@@ -1,0 +1,102 @@
+{
+ "tr_1": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Bu topraklar benim"
+ },
+ "tr_2": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Ölüleri de, sessizliği de"
+ },
+ "tr_3": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Ama imparatorluk her gece kapımı çalıyor"
+ },
+ "tr_4": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Yeter!"
+ },
+ "tr_5": {
+  "take": "v2b",
+  "sim": 1.0,
+  "heard": "Kemik, veba, şimşek. Seç birini"
+ },
+ "tr_6": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Kalkın dostlarım, misafirlerimiz var"
+ },
+ "tr_7": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Bir de general getirmişler. Ne incelik"
+ },
+ "tr_8": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Efsaneler. Buyurun"
+ },
+ "tr_9": {
+  "take": "v2a",
+  "sim": 1.0,
+  "heard": "Şimdi nerede kalmıştım?"
+ },
+ "tr_10": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Mezarların efendisine bulaşma"
+ },
+ "en_1": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "These lands are mine"
+ },
+ "en_2": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "The dead and the silence"
+ },
+ "en_3": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Yet every night the empire comes knocking"
+ },
+ "en_4": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Enough"
+ },
+ "en_5": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Bones, plague, lightning. Pick your poison"
+ },
+ "en_6": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Rise, my friends. We have guests"
+ },
+ "en_7": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Oh, they brought a general. How thoughtful"
+ },
+ "en_8": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Legends, if you please"
+ },
+ "en_9": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Now, where was I?"
+ },
+ "en_10": {
+  "take": "v3",
+  "sim": 1.0,
+  "heard": "Never cross the Lord of Graves"
+ }
+}

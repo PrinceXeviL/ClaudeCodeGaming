@@ -1,0 +1,558 @@
+{
+ "Kalk bakalım, nöbet senin.": {
+  "kind": "grave",
+  "en": "Up you get, your watch now."
+ },
+ "Mezarında rahat yatıyordun, biliyorum. Kusura bakma.": {
+  "kind": "grave",
+  "en": "You were resting comfortably in your grave, I know. Sorry."
+ },
+ "Kapıya kimse girmeyecek. Kimse.": {
+  "kind": "grave",
+  "en": "Nobody gets through that gate. Nobody."
+ },
+ "Katedral yıkıldı. Kirasını kim ödeyecek?": {
+  "kind": "sev2",
+  "en": "The cathedral fell. Who pays the rent now?"
+ },
+ "O ibrikle beni mi yıkayacak? Ben zaten temizim.": {
+  "kind": "sev2",
+  "en": "He means to wash me with that jug? I'm already clean."
+ },
+ "İniyor! Merdiven yokmuş demek.": {
+  "kind": "sev2",
+  "en": "He is coming down! So there were no stairs."
+ },
+ "Kutsal suyuna biraz lanet kattım. Afiyet olsun.": {
+  "kind": "sev3",
+  "en": "I added a little curse to your holy water. Enjoy."
+ },
+ "Söylemiştim: ölülerle oynanmaz.": {
+  "kind": "sev3",
+  "en": "I told you: you don't play with the dead."
+ },
+ "Yeşil sana yakışmadı, Severus.": {
+  "kind": "sev3",
+  "en": "Green is not your color, Severus."
+ },
+ "Arabası kırıldı. Yürüsün biraz, sağlığa iyi.": {
+  "kind": "glor2",
+  "en": "His chariot broke. A little walk is good for his health."
+ },
+ "Aslanlar kaçtı. Akıllı hayvanlar.": {
+  "kind": "glor2",
+  "en": "The lions ran off. Smart animals."
+ },
+ "Yayan general mi? Ne kadar da mütevazı.": {
+  "kind": "glor2",
+  "en": "A general on foot? How humble."
+ },
+ "Parlıyor. Mezarlığımı aydınlattığın için teşekkürler.": {
+  "kind": "glor3",
+  "en": "Shiny. Thanks for lighting up my graveyard."
+ },
+ "Güneş formu mu? Ben de gece formundayım.": {
+  "kind": "glor3",
+  "en": "Sun form? Well, I am in night form."
+ },
+ "Gözlerimi kamaştırdı. Şimdi gerçekten kızdım.": {
+  "kind": "glor3",
+  "en": "He dazzled me. Now I am really angry."
+ },
+ "Cadı avı mı? Yanlış kapıyı çaldınız.": {
+  "kind": "start2",
+  "en": "A witch hunt? You knocked on the wrong door."
+ },
+ "Meşaleler, çanlar... Ne kadar gürültücü bir din.": {
+  "kind": "start2",
+  "en": "Torches, bells... What a noisy religion."
+ },
+ "Beni yakmaya mı geldiniz? Islak odun getirmişsiniz.": {
+  "kind": "start2",
+  "en": "You came to burn me? You brought wet firewood."
+ },
+ "Mahzen açık! Misafir geldi.": {
+  "kind": "hatch",
+  "en": "The crypt is open! We have guests."
+ },
+ "Golem, misafirlerle ilgilen.": {
+  "kind": "hatch",
+  "en": "Golem, see to our guests."
+ },
+ "Aşağıda biri çok acıkmış.": {
+  "kind": "hatch",
+  "en": "Someone down there is very hungry."
+ },
+ "Kapağımı mühürledi! Terbiyesiz.": {
+  "kind": "sealed",
+  "en": "He sealed my hatch! How rude."
+ },
+ "O mahzenin kirasını kim ödeyecek?": {
+  "kind": "sealed",
+  "en": "Who's going to pay the rent on that crypt?"
+ },
+ "Ay kızardı. Benden utandı herhalde.": {
+  "kind": "blood",
+  "en": "The moon turned red. Embarrassed by me, I suppose."
+ },
+ "Kızıl Ay! Kalkın çocuklar, gece bizim.": {
+  "kind": "blood",
+  "en": "Blood Moon! Rise, children, the night is ours."
+ },
+ "Dua edin bakalım. Ben de güleyim.": {
+  "kind": "blood",
+  "en": "Go on, pray. I'll have a laugh."
+ },
+ "Fener mi? Söndürün şunu, gözüm kamaştı!": {
+  "kind": "light",
+  "en": "A lantern? Put that out, it's blinding me!"
+ },
+ "Işık arabası. Ne kadar da kaba.": {
+  "kind": "light",
+  "en": "A light wagon. How very rude."
+ },
+ "Türk kahvesi. Ölüleri bile diriltir.": {
+  "kind": "tea",
+  "en": "Turkish coffee. It could raise the dead."
+ },
+ "Şşş. Efendiniz dinleniyor.": {
+  "kind": "tea",
+  "en": "Shh. Your master is resting."
+ },
+ "Sade. Ben zaten yeterince tatlıyım.": {
+  "kind": "tea",
+  "en": "No sugar. I'm sweet enough already."
+ },
+ "Bir yudum daha, sonra kıyamet.": {
+  "kind": "tea",
+  "en": "One more sip, then the apocalypse."
+ },
+ "Soğumuş. Tıpkı düşmanlarım gibi.": {
+  "kind": "tea",
+  "en": "It's gone cold. Just like my enemies."
+ },
+ "Fincanı kapattım. Falımda bol ceset var.": {
+  "kind": "tea",
+  "en": "I turned the cup over. My fortune shows plenty of corpses."
+ },
+ "Kargalarıma dokunma! Dedikodu taşıyorlar.": {
+  "kind": "crowtap",
+  "en": "Don't touch my crows! They carry gossip."
+ },
+ "O karga bana borçlu, bilesin.": {
+  "kind": "crowtap",
+  "en": "That crow owes me, you know."
+ },
+ "Yine mi misafir? Bu topraklar benim, unuttunuz mu?": {
+  "kind": "start",
+  "en": "Guests again? These lands are mine, did you forget?"
+ },
+ "Kapıyı çalmadan girmek yok. Hiç.": {
+  "kind": "start",
+  "en": "No entering without knocking. Ever."
+ },
+ "Solarianlar... Bugün de mi?": {
+  "kind": "start",
+  "en": "The Solarians... Today as well?"
+ },
+ "Bahçeme basan mezara basar.": {
+  "kind": "start",
+  "en": "Step on my garden, step into a grave."
+ },
+ "Bir dalga daha. Ne azimliler.": {
+  "kind": "wave",
+  "en": "Another wave. So determined."
+ },
+ "Sıraya girin. Mezarlıkta herkese yer var.": {
+  "kind": "wave",
+  "en": "Form a queue. There's room for everyone in the graveyard."
+ },
+ "Yeni gönüllüler! İskeletim azalmıştı.": {
+  "kind": "wave",
+  "en": "New volunteers! I was running low on skeletons."
+ },
+ "Kalabalık geldiler. Ne güzel, ordum büyüyecek.": {
+  "kind": "wave",
+  "en": "They came in numbers. Lovely, my army will grow."
+ },
+ "İmparator hiç mi ders almaz?": {
+  "kind": "wave",
+  "en": "Does the Emperor never learn?"
+ },
+ "Son dalga mı? Sonunda biraz sessizlik.": {
+  "kind": "last",
+  "en": "The last wave? Finally, some quiet."
+ },
+ "Hepsi bu mu? Kalanlar da gelsin!": {
+  "kind": "last",
+  "en": "Is that all? Bring the rest!"
+ },
+ "Hey! Halıma basma!": {
+  "kind": "leak",
+  "en": "Hey! Off my rug!"
+ },
+ "Kapı kilitli değil diye girilmez!": {
+  "kind": "leak",
+  "en": "An unlocked door is not an invitation!"
+ },
+ "Kahvemi döktürdün!": {
+  "kind": "leak",
+  "en": "You made me spill my coffee!"
+ },
+ "Bu kaç oldu? Saymayı bıraktım.": {
+  "kind": "leak",
+  "en": "How many is that now? I've stopped counting."
+ },
+ "Kim açtı o kapıyı?!": {
+  "kind": "leak",
+  "en": "Who opened that door?!"
+ },
+ "Kalkın! Mesai bitmedi.": {
+  "kind": "raise",
+  "en": "Rise! Your shift isn't over."
+ },
+ "Ölmek bahane değil. Kalk!": {
+  "kind": "raise",
+  "en": "Dying is no excuse. Get up!"
+ },
+ "Emekliliğiniz iptal.": {
+  "kind": "raise",
+  "en": "Your retirement is cancelled."
+ },
+ "Kalkın tembeller!": {
+  "kind": "raise",
+  "en": "Up, you lazybones!"
+ },
+ "Böö!": {
+  "kind": "fear",
+  "en": "Boo!"
+ },
+ "Annenizi mi istiyorsunuz?": {
+  "kind": "fear",
+  "en": "Want your mommy?"
+ },
+ "Koşun! Koşun! Hah!": {
+  "kind": "fear",
+  "en": "Run! Run! Hah!"
+ },
+ "Arkanıza bakmayın.": {
+  "kind": "fear",
+  "en": "Don't look behind you."
+ },
+ "Oo, rütbeli biri. Kafası rafıma yakışır.": {
+  "kind": "boss",
+  "en": "Ooh, someone with rank. His head will suit my shelf."
+ },
+ "Bu da kim? Kartını bırakıp gitsin.": {
+  "kind": "boss",
+  "en": "Who's this? Leave your card and go."
+ },
+ "Büyük adam, büyük mezar.": {
+  "kind": "boss",
+  "en": "Big man, big grave."
+ },
+ "Güneş mi? Perdeleri kapatın!": {
+  "kind": "sun",
+  "en": "The sun? Close the curtains!"
+ },
+ "Solarian ışığı... gözüm kamaştı. Şaka, gözüm yok.": {
+  "kind": "sun",
+  "en": "Solarian light... it's blinding me. Kidding, I have no eyes."
+ },
+ "Komşular uyandı!": {
+  "kind": "graves",
+  "en": "The neighbors are awake!"
+ },
+ "Mezarlıkta herkes bizden.": {
+  "kind": "graves",
+  "en": "Everyone in the graveyard is on our side."
+ },
+ "Karantina! Kimse giremez, kimse çıkamaz.": {
+  "kind": "quarantine",
+  "en": "Quarantine! Nobody gets in, nobody gets out."
+ },
+ "Kapıyı kapattım. Veba da bizden yana.": {
+  "kind": "quarantine",
+  "en": "Gate's shut. Even the plague is on our side."
+ },
+ "Şu çan beni deli ediyor.": {
+  "kind": "chime",
+  "en": "That bell is driving me mad."
+ },
+ "Dua çanı... iskeletlerim sersemledi.": {
+  "kind": "chime",
+  "en": "Prayer bells... my skeletons are dazed."
+ },
+ "Gölde bir şey var. Ve aç.": {
+  "kind": "lake",
+  "en": "There's something in the lake. And it's hungry."
+ },
+ "Afiyet olsun, gölün sahibi!": {
+  "kind": "lake",
+  "en": "Enjoy your meal, lord of the lake!"
+ },
+ "Kapımı kırdılar! Kemiklerini sayacağım.": {
+  "kind": "gatebreak",
+  "en": "They broke my gate! I'll count their bones."
+ },
+ "Kapı mı? Ben onu yeniden yaparım. Sizden.": {
+  "kind": "gatebreak",
+  "en": "The gate? I'll rebuild it. Out of you."
+ },
+ "Muhafızlar! Misafirleri karşılayın!": {
+  "kind": "gatebreak",
+  "en": "Guards! Greet our guests!"
+ },
+ "Geri dönüşüm, necromancer usulü.": {
+  "kind": "burst",
+  "en": "Recycling, necromancer style."
+ },
+ "Pat! Biraz dağınık oldu.": {
+  "kind": "burst",
+  "en": "Pop! That got a bit messy."
+ },
+ "Cesetler de bir işe yarasın.": {
+  "kind": "burst",
+  "en": "Corpses might as well be useful."
+ },
+ "Kimse temizlemeyecek bunu, değil mi?": {
+  "kind": "burst",
+  "en": "Nobody's going to clean that up, are they?"
+ },
+ "Buradan geçiş yok!": {
+  "kind": "wall",
+  "en": "None shall pass!"
+ },
+ "Kemikten çit. Komşuluk ilişkileri böyle başlar.": {
+  "kind": "wall",
+  "en": "A bone fence. That's how neighborly relations begin."
+ },
+ "Duvara toslamak sağlığa zararlıdır.": {
+  "kind": "wall",
+  "en": "Running into walls is bad for your health."
+ },
+ "Biri bahçeme girdi! Balkabaklarım!": {
+  "kind": "firstleak",
+  "en": "Someone got into my garden! My pumpkins!"
+ },
+ "İlk misafir kapıda. Davetsiz, tabii.": {
+  "kind": "firstleak",
+  "en": "First guest at the gate. Uninvited, of course."
+ },
+ "Kapımı izinsiz açtın. Bu kişisel oldu.": {
+  "kind": "firstleak",
+  "en": "You opened my gate uninvited. Now it is personal."
+ },
+ "Kemik torbaları! Kapıyı tutun demedim mi?!": {
+  "kind": "scold",
+  "en": "Bags of bones! Didn't I say hold the gate?!"
+ },
+ "İskeletler! Uyumak için mezarınız var!": {
+  "kind": "scold",
+  "en": "Skeletons! You have graves for sleeping!"
+ },
+ "Size yeniden kas mı takayım? Durdurun şunları!": {
+  "kind": "scold",
+  "en": "Shall I give you muscles again? Stop them!"
+ },
+ "Bir düşmanı bile tutamadınız. Hepinizi kemik unu yapacağım!": {
+  "kind": "scold",
+  "en": "You couldn't hold even one enemy. I'll grind you all into bone meal!"
+ },
+ "Kaburganız boş, kafanız da mı boş?!": {
+  "kind": "scold",
+  "en": "Your ribcages are empty, are your skulls too?!"
+ },
+ "Kim nöbetteydi? Kafatasını görmek istiyorum!": {
+  "kind": "scold",
+  "en": "Who was on guard? I want to see their skull!"
+ },
+ "{h}! Seni kapıya süs olsun diye mi diktim?!": {
+  "kind": "scoldHero",
+  "en": "{h}! Did I put you at the gate as decoration?!"
+ },
+ "{h}, kale yanıyor, sen manzara mı seyrediyorsun?": {
+  "kind": "scoldHero",
+  "en": "{h}, the castle is burning and you are enjoying the view?"
+ },
+ "Hey {h}! Komutan dediğin önden gider!": {
+  "kind": "scoldHero",
+  "en": "Hey {h}! A commander leads from the front!"
+ },
+ "{h}! Bir daha kapıdan biri geçerse seni mezarına geri gömerim!": {
+  "kind": "scoldHero",
+  "en": "{h}! If anyone else gets through that gate, I will bury you back in your grave!"
+ },
+ "{h}, seni mezardan çıkardığıma pişman ettirme!": {
+  "kind": "scoldHero",
+  "en": "{h}, don't make me regret raising you from the grave!"
+ },
+ "Kule sallanıyor... Kitaplarım!": {
+  "kind": "low",
+  "en": "The tower is shaking... My books!"
+ },
+ "Kaleme dokunan, mezarını kendi kazar.": {
+  "kind": "low",
+  "en": "Whoever touches my keep digs their own grave."
+ },
+ "Az kaldı! Biri şu kapıyı tutsun!": {
+  "kind": "low",
+  "en": "Almost! Someone hold that gate!"
+ },
+ "Kıdemliler. Kemikleri daha sağlam olur.": {
+  "kind": "veteran",
+  "en": "Veterans. Their bones are sturdier."
+ },
+ "Kırmızı sorguç mu? Ne kadar da şık.": {
+  "kind": "veteran",
+  "en": "A red crest? How stylish."
+ },
+ "Tecrübeli askerler. Tecrübeli iskelet olurlar.": {
+  "kind": "veteran",
+  "en": "Experienced soldiers make experienced skeletons."
+ },
+ "Yüzbaşı! Borazanı da benim olacak.": {
+  "kind": "captain",
+  "en": "A centurion! His horn will be mine too."
+ },
+ "Altın sorguç... Rafımda tam yeri var.": {
+  "kind": "captain",
+  "en": "A golden crest... There's a spot for it on my shelf."
+ },
+ "Rütbe yükseldikçe mezar derinleşir.": {
+  "kind": "captain",
+  "en": "The higher the rank, the deeper the grave."
+ },
+ "Sinirlendi mi? Ne tatlı.": {
+  "kind": "bossRage",
+  "en": "Is he angry? How cute."
+ },
+ "Bağırmak kibarlığa sığmaz, general.": {
+  "kind": "bossRage",
+  "en": "Shouting is impolite, general."
+ },
+ "Öfke kalbe zararlı. Benim kalbim yok tabii.": {
+  "kind": "bossRage",
+  "en": "Anger is bad for the heart. Not that I have one."
+ },
+ "Bir general daha koleksiyonda.": {
+  "kind": "bossDown",
+  "en": "Another general for the collection."
+ },
+ "Kartını bıraktı. Ve kafasını.": {
+  "kind": "bossDown",
+  "en": "He left his card. And his head."
+ },
+ "Rütbesi mezar taşına yazılsın.": {
+  "kind": "bossDown",
+  "en": "Carve his rank on his tombstone."
+ },
+ "Kuleme taş atmak ayıp!": {
+  "kind": "stunned",
+  "en": "Throwing rocks at my tower is rude!"
+ },
+ "Hey! O kule kiralık değil!": {
+  "kind": "stunned",
+  "en": "Hey! That tower isn't for rent!"
+ },
+ "Taşlarını geri al, kaba adam.": {
+  "kind": "stunned",
+  "en": "Take your rocks back, you brute."
+ },
+ "İşte şimdi oldu.": {
+  "kind": "maxTower",
+  "en": "Now that's more like it."
+ },
+ "Böyle bir kulem olsun isterdim. Dur, var.": {
+  "kind": "maxTower",
+  "en": "I wish I had a tower like this. Wait, I do."
+ },
+ "Mimari harikası. Biraz da ürkütücü.": {
+  "kind": "maxTower",
+  "en": "An architectural marvel. And a bit creepy."
+ },
+ "Kalk, uyuklama!": {
+  "kind": "heroDown",
+  "en": "Get up, no napping!"
+ },
+ "Ölmek mi? Bizde bu geçici.": {
+  "kind": "heroDown",
+  "en": "Dying? That's temporary around here."
+ },
+ "Kısa bir mola. Hemen döner.": {
+  "kind": "heroDown",
+  "en": "A short break. Back in a moment."
+ },
+ "Tertemiz. Mezarların efendisi yine kazandı.": {
+  "kind": "clean",
+  "en": "Spotless. The Lord of Graves wins again."
+ },
+ "Kimse geçemedi. Beklendiği gibi.": {
+  "kind": "clean",
+  "en": "Nobody got through. As expected."
+ },
+ "Bahçe güvende. Şimdilik.": {
+  "kind": "clean",
+  "en": "The garden is safe. For now."
+ },
+ "Solarian vergisi... ters yönde.": {
+  "kind": "loot",
+  "en": "Solarian tax... in reverse."
+ },
+ "İmparatorluğun parası. Artık benim.": {
+  "kind": "loot",
+  "en": "The Empire's money. Mine now."
+ },
+ "Bu sikkede güneş var. Ne ironi.": {
+  "kind": "loot",
+  "en": "There's a sun on this coin. How ironic."
+ },
+ "Ölüler cüzdan taşımaz. Ben taşırım.": {
+  "kind": "loot",
+  "en": "The dead don't carry wallets. I do."
+ },
+ "Bağışınız için teşekkürler, lejyoner.": {
+  "kind": "loot",
+  "en": "Thank you for your donation, legionary."
+ },
+ "Hazine bakanlığı: ben.": {
+  "kind": "loot",
+  "en": "Minister of the Treasury: me."
+ },
+ "Altınlar mezara gömülmez. Bir şey kur!": {
+  "kind": "rich",
+  "en": "Gold isn't buried with you. Build something!"
+ },
+ "Kese dolu, kuleler boş. Garip.": {
+  "kind": "rich",
+  "en": "Purse full, towers empty. Odd."
+ },
+ "O altınla iki kule olur. Sadece diyorum.": {
+  "kind": "rich",
+  "en": "That gold could make two towers. Just saying."
+ },
+ "Koçbaşı mı? Kapımı çalmanın kaba yolu.": {
+  "kind": "ram",
+  "en": "A battering ram? What a rude way to knock."
+ },
+ "Kapıma koç mu? Ne kadar kaba.": {
+  "kind": "ram",
+  "en": "A ram at my door? How rude."
+ },
+ "Mükemmel. Yeni malzeme.": {
+  "kind": "streak",
+  "en": "Perfect. New material."
+ },
+ "Hepsini kemik deposuna!": {
+  "kind": "streak",
+  "en": "All of them to the bone store!"
+ },
+ "Bir, iki, on... yetmez.": {
+  "kind": "streak",
+  "en": "One, two, ten... not enough."
+ },
+ "İşte buna verimlilik denir.": {
+  "kind": "streak",
+  "en": "Now that's what I call efficiency."
+ }
+}
