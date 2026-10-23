@@ -14864,13 +14864,52 @@ function drawBoneRing(r, rot, w, col) {
 }
 // kemik halkanın rengi: düğme renginin açık tonu (beyaza %35 yaklaşır ki kemik dokusu ve parıltı okunur)
 const boneTint = (hex) => { const n = parseInt(hex.slice(1), 16), m = (v) => Math.round(v + (255 - v) * 0.35); return `rgb(${m(n >> 16)},${m((n >> 8) & 255)},${m(n & 255)})`; };
+// 24 Eki: arayüz v4 2. set (varliklar/arayuz_v4b_kes.py): boş yuvarlak düğmeler (demir halka, altın perçin, parlak kubbe) ve kare karolar
+const UK_RB = { red: 'rb_red', rose: 'rb_red', ember: 'rb_gold', gold: 'rb_gold', green: 'rb_green', teal: 'rb_green', purple: 'rb_purple', violet: 'rb_purple', blue: 'rb_blue', slate: 'rb_gray', gray: 'rb_gray',
+  wood: 'rb_purple', dark: 'rb_gray' };
+function ukRound(key, x, y, r, icon, fn, col, o, appear) {
+  const im = spr('ui_k_' + (UK_RB[col] || 'rb_purple')); if (!im) return false;
+  const sc = (1 - (1 - pressScale(key)) * 1.7) * appear, R = r * 1.3;
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowOffsetY = 4; ctx.shadowBlur = 7; ctx.drawImage(im, -R, -R * im.height / im.width, 2 * R, 2 * R * im.height / im.width); ctx.restore();
+  ctx.shadowColor = 'rgba(10,0,16,0.75)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
+  if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.0, '#f6ecd4');
+  ctx.restore();
+  if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn: () => { sfx('pick'); fn(); } });
+  return true;
+}
+function ukTile(x, y, w, h, state) { // kare karo: '' | 'sel' | 'lock'
+  const im = spr('ui_k_tile' + (state ? '_' + state : '')); if (!im) return false;
+  if (state === 'sel') { const e = w * 0.06; nine(im, x - e, y - e, w + 2 * e, h + 2 * e, 48, 48, 48, 48, 0.42); }
+  else nine(im, x, y, w, h, 40, 40, 40, 40, 0.42);
+  return true;
+}
+function ukPortrait(x, y, w, h, sel) { // portre kartı: genişliğe ölçeklenir, üst (zümrüt süs) ve alt (kafatası) sabit, yan kenarlar dikey esner
+  const im = spr(sel ? 'ui_k_port_sel' : 'ui_k_port'); if (!im) return false;
+  const ex = sel ? w * 0.036 : 0, ey = sel ? h * 0.027 : 0, X = x - ex, Y = y - ey - h * 0.03, Wd = w + 2 * ex, Hd = h + 2 * ey + h * 0.06;
+  const s = Wd / im.width, T = 120, B = 120, th = T * s, bh = B * s;
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowOffsetY = 8; ctx.shadowBlur = 14;
+  ctx.drawImage(im, 0, 0, im.width, T, X, Y, Wd, th);
+  ctx.drawImage(im, 0, T, im.width, im.height - T - B, X, Y + th - 0.3, Wd, Hd - th - bh + 0.6);
+  ctx.drawImage(im, 0, im.height - B, im.width, B, X, Y + Hd - bh, Wd, bh);
+  ctx.restore(); return true;
+}
 function boneBtn(key, x, y, r, icon, fn, o, appear) {
+  if (ukOk() && !o.sq && ukRound(key, x, y, r * 0.98, icon, fn, o.tile, o, appear)) return;
   const C = TILE[o.tile] || TILE.violet;
   const sp = pops[key] != null ? clamp((time - pops[key]) / BONE_RING.spin, 0, 1) : 1, rot = sp < 1 ? (1 - Math.pow(1 - sp, 3)) * Math.PI * 2 / BONE_RING.n * 2 : 0; // iki kemik boyu döner, yavaşlayarak
   ctx.save(); ctx.translate(x, y); const sc = (1 - (1 - pressScale(key)) * 1.7) * appear; ctx.scale(sc, sc); // 15 Eki: basınca daha derin çöker, tok sekme
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
   if (o.sq) { // köşeleri yuvarlatılmış kare (15 Eki, Caner: sefer haritasında yine yuvarlak, kemik halkalı; kare yalnız o.sq ile)
     const R = r * 1.02, cr = R * 0.34, sq = (k, fill, stroke, lw) => roundRect(-R - k, -R - k, 2 * (R + k), 2 * (R + k), cr + k, fill, stroke, lw);
+    if (ukOk() && ukTile(-R - 4, -R - 4, 2 * R + 8, 2 * R + 8, o.active ? 'sel' : o.locked ? 'lock' : '')) {
+      ctx.shadowColor = 'rgba(10,0,16,0.7)'; ctx.shadowOffsetY = 2.5; ctx.shadowBlur = 0;
+      if (typeof icon === 'function') icon(r); else drawIcon(icon, 0, -1, r * 1.05, '#f6ecd4');
+      ctx.restore();
+      if (fn) buttons.push({ key, x: x - r - 8, y: y - r - 8, w: 2 * r + 16, h: 2 * r + 16, fn: () => { sfx('pick'); fn(); } });
+      return;
+    }
     roundRect(-R - 4, -R + 2, 2 * R + 8, 2 * R + 8, cr + 4, 'rgba(0,0,0,0.42)'); // gölge
     const fr = ctx.createLinearGradient(0, -R - 5, 0, R + 5); fr.addColorStop(0, '#f2e6c8'); fr.addColorStop(0.5, '#b8a47a'); fr.addColorStop(1, '#6e5a3a');
     sq(5, fr, '#120712', 2); // kemik rengi dış çerçeve
@@ -15001,6 +15040,7 @@ function uiPill(key, x, y, w, h, label, fn, o = {}) { // uzun kızıl düğme
 function roundBtn(key, x, y, r, icon, fn, o = {}) {
   const appear = o.appear == null ? 1 : easeOutBack(clamp(o.appear / 0.35, 0, 1));
   if (appear <= 0.01) return;
+  if (ukOk() && (icon === 'close' || icon === 'back') && ukRound(key, x, y, r * 0.95, icon, fn, 'red', o, appear)) return; // 24 Eki: 2. set kızıl kubbe
   if (ukOk() && (icon === 'close' || icon === 'back')) { // 24 Eki: arayüz v4: kemik X ve kemik ok düğmeleri
     const im = spr(icon === 'close' ? 'ui_k_close' : 'ui_k_back'), R = r * 1.12, sc = pressScale(key) * appear;
     ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 6; ctx.drawImage(im, -R, -R * im.height / im.width, 2 * R, 2 * R * im.height / im.width); ctx.restore();
@@ -15021,6 +15061,7 @@ function roundBtn(key, x, y, r, icon, fn, o = {}) {
     return;
   }
   if (NECRO && (o.tile || (key === 'back' && icon === 'back'))) { boneBtn(key, x, y, r * 0.86, icon, fn, o.tile ? o : Object.assign({ tile: 'red' }, o), appear); return; } // 15 Eki (2): yuvarlak, kemik halkalı
+  if (NECRO && ukOk() && ukRound(key, x, y, r, icon, fn, o.style || 'wood', o, appear)) return; // 24 Eki: kit yuvarlak düğme
   const c = STYLES[o.style || 'wood'];
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear; ctx.scale(sc, sc);
   if (o.active) glow(ctx, 0, 0, r * 2.2, o.activeCol || '255,220,120', 0.55 + Math.sin(time * 6) * 0.15);
@@ -17901,7 +17942,7 @@ function drawHeroes() {
   // 16 Eki (Caner: her komutanın kendi sayfası): kartın altında harcanmamış puan / yeni eşya hatırlatması; ayrıntılar sayfada
   HERO_ORDER.forEach((id, i) => { if (!heroUnlocked(id)) return; const x = W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, pts = recPoints(heroRec(id)), nw = gearNewFor(id);
     const L = [pts > 0 ? `${pts} puan` : null, nw ? `${nw} yeni eşya` : null].filter(Boolean); if (!L.length) return;
-    const pu = 1 + 0.04 * Math.sin(time * 4 + i); ctx.save(); ctx.translate(x, 488); ctx.scale(pu, pu);
+    const pu = 1 + 0.04 * Math.sin(time * 4 + i); ctx.save(); ctx.translate(x, 497); ctx.scale(pu, pu);
     if (ukOk()) three(spr('ui_k_btn_green'), -80, -18, 160, 36, UIK.pill); else roundRect(-80, -16, 160, 32, 16, 'rgba(30,70,24,0.95)', '#b8ff8a', 1.8); fitTxt(L.join(' · '), 0, 0, 140, 15, ukOk() ? '#ffffff' : '#eaffd8', 'center', '800', FONT_B, ukOk(), 11); ctx.restore(); });
   ctx.restore();
   for (let i = hb0; i < buttons.length; i++) { const bt = buttons[i]; bt.x = W / 2 + (bt.x - W / 2) * HS; bt.y = HY + (bt.y - HY) * HS; bt.w *= HS; bt.h *= HS; }
@@ -18150,7 +18191,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(cx, fy); ctx.scale(sc, sc);
   const x0 = -w / 2, y0 = -h / 2;
   if (sel) glow(ctx, 0, 0, w * 0.8, d.aura, 0.4 + Math.sin(time * 3) * 0.1);
-  if (NECRO) { velvetCard(x0, y0, w, h, 20, { border: sel ? '#7be05a' : null, ac: sel ? d.aura : null }) }
+  if (NECRO) { if (!(ukOk() && ukPortrait(x0, y0, w, h, sel))) velvetCard(x0, y0, w, h, 20, { border: sel ? '#7be05a' : null, ac: sel ? d.aura : null }) }
   else {
     roundRect(x0 + 5, y0 + 12, w, h, 20, 'rgba(0,0,0,0.5)');
     const fr = ctx.createLinearGradient(0, y0, 0, y0 + h); fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
@@ -19960,7 +20001,8 @@ function drawCodex() {
     const boss = tab === 'e' && ENEMIES[id].chief;
     ctx.save(); ctx.translate(x + tw / 2, y + th / 2); ctx.scale(sc, sc); ctx.translate(-(x + tw / 2), -(y + th / 2));
     if (on) glow(ctx, x + tw / 2, y + th / 2, tw * 0.8, boss ? '255,110,80' : '170,120,255', 0.35 + Math.sin(time * 4) * 0.1);
-    if (NECRO) velvetCard(x, y, tw, th, 12, { border: on ? '#ffe9a0' : boss ? '#e0603e' : null, top: boss ? '#5e1018' : null });
+    if (NECRO && ukOk() && ukTile(x, y, tw, th, on ? 'sel' : '')) { if (boss && !on) roundRect(x + 5, y + 5, tw - 10, th - 10, 10, null, 'rgba(224,96,62,0.8)', 2); } // 24 Eki: kit karo
+    else if (NECRO) velvetCard(x, y, tw, th, 12, { border: on ? '#ffe9a0' : boss ? '#e0603e' : null, top: boss ? '#5e1018' : null });
     else { const bgc = ctx.createLinearGradient(0, y, 0, y + th); bgc.addColorStop(0, boss ? 'rgba(90,24,20,0.95)' : 'rgba(58,36,70,0.95)'); bgc.addColorStop(1, 'rgba(18,10,22,0.95)');
       roundRect(x, y, tw, th, 12, bgc, on ? '#ffe9a0' : boss ? '#c8563a' : 'rgba(170,140,210,0.55)', on ? 2.5 : 1.5); }
     ctx.save(); ctx.beginPath(); ctx.roundRect(x + 3, y + 3, tw - 6, th - 22, 9); ctx.clip();
@@ -22023,11 +22065,12 @@ function drawLevelCard(i, cx, cy, at) {
       txt('İlk ' + MONET.freeLevels + ' bölüm ücretsiz · sonrası tek seferlik', bxc, y0 + h - 40, 13, '#e8d8c0', 'center', '700', FONT_B, false);
       ctx.restore();
     } else {
-    gameButton('play' + i, bxc, byc, rw, 64, lbl, () => {
+    const two = mapMode === 'c', pw2 = two ? rw * 0.54 : rw, bw2 = rw - pw2 - 12, pyc = two ? y0 + h - 72 : byc; // 24 Eki (Caner): SAVAŞ ve +altın düğmeleri yan yana
+    gameButton('play' + i, two ? rx + pw2 / 2 : bxc, pyc, pw2, 64, lbl, () => {
       if (!M.open) { mapNote = { text: M.lock, t: time }; sfx('error'); return; }
       go(() => startLevel(i, mapMode === 'c' ? undefined : mapMode));
     }, !M.open ? 'gold' : mapMode === 'h' || mapMode === 'i' ? 'red' : mapMode === 'e' ? 'blue' : 'green', { icon: mapMode === 'c' && st ? 'restart' : 'play', shine: current && mapMode === 'c', size: 22 });
-    if (mapMode === 'c') gameButton('boost' + i, bxc, y0 + h - 40, rw, 44, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA',
+    if (two) gameButton('boost' + i, rx + rw - bw2 / 2, pyc, bw2, 64, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA',
       () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 14 });
     ctx.restore();
     }

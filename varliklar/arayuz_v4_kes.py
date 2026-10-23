@@ -23,8 +23,11 @@ meta = {}
 for name, (x, y, w, h) in BOX.items():
     crop = rgb[y:y + h, x:x + w]
     rgba = remove_magenta(crop)
+    if name == 'btn_purple':  # 24 Eki: magenta silme mor düğmenin ortasını koyulaştırıyordu (leke); tam opak yerlerde kaynak renk
+        inner = ndimage.binary_erosion(ndimage.binary_fill_holes(rgba[..., 3] > 100), iterations=4)
+        rgba[..., :3] = np.where(inner[..., None], crop, rgba[..., :3]); rgba[..., 3] = np.where(inner, 255, rgba[..., 3])
     # yarı saydam ışıltıda kalan pembe saçak (yeşil ışıltı magentaya karışmış): kırmızı ve maviyi yeşile indir
-    f = rgba.astype(np.float32); al = f[..., 3]; pink = (al < 245) & (((f[..., 0] + f[..., 2]) / 2 - f[..., 1]) > 8)
+    f = rgba.astype(np.float32); al = f[..., 3]; pink = (al < 245) & (((f[..., 0] + f[..., 2]) / 2 - f[..., 1]) > 8) & (name != 'btn_purple')
     for ch in (0, 2): f[..., ch] = np.where(pink, np.minimum(f[..., ch], f[..., 1] * 0.9), f[..., ch])
     if name in ('star_gold', 'star_green', 'tab_on'):  # dış ışıltı: yarı saydam pikseller tek renk yeşil ışık
         soft = al < 215; f[..., 0] = np.where(soft, 110, f[..., 0]); f[..., 1] = np.where(soft, 255, f[..., 1]); f[..., 2] = np.where(soft, 130, f[..., 2])
