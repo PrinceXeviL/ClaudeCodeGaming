@@ -17902,7 +17902,7 @@ function drawHeroes() {
   HERO_ORDER.forEach((id, i) => { if (!heroUnlocked(id)) return; const x = W / 2 + (i - (HERO_ORDER.length - 1) / 2) * 182, pts = recPoints(heroRec(id)), nw = gearNewFor(id);
     const L = [pts > 0 ? `${pts} puan` : null, nw ? `${nw} yeni eşya` : null].filter(Boolean); if (!L.length) return;
     const pu = 1 + 0.04 * Math.sin(time * 4 + i); ctx.save(); ctx.translate(x, 488); ctx.scale(pu, pu);
-    roundRect(-80, -16, 160, 32, 16, 'rgba(30,70,24,0.95)', '#b8ff8a', 1.8); fitTxt(L.join(' · '), 0, 1, 146, 15, '#eaffd8', 'center', '800', FONT_B, false, 11); ctx.restore(); });
+    if (ukOk()) three(spr('ui_k_btn_green'), -80, -18, 160, 36, UIK.pill); else roundRect(-80, -16, 160, 32, 16, 'rgba(30,70,24,0.95)', '#b8ff8a', 1.8); fitTxt(L.join(' · '), 0, 0, 140, 15, ukOk() ? '#ffffff' : '#eaffd8', 'center', '800', FONT_B, ukOk(), 11); ctx.restore(); });
   ctx.restore();
   for (let i = hb0; i < buttons.length; i++) { const bt = buttons[i]; bt.x = W / 2 + (bt.x - W / 2) * HS; bt.y = HY + (bt.y - HY) * HS; bt.w *= HS; bt.h *= HS; }
   drawHeroOverlays();
@@ -18150,8 +18150,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1); ctx.translate(cx, fy); ctx.scale(sc, sc);
   const x0 = -w / 2, y0 = -h / 2;
   if (sel) glow(ctx, 0, 0, w * 0.8, d.aura, 0.4 + Math.sin(time * 3) * 0.1);
-  if (NECRO) velvetCard(x0, y0, w, h, 20, { border: sel ? '#7be05a' : null, ac: sel ? d.aura : null });
-  if (sel && tm.length > 1) { const two = tm[1] === id; roundRect(-46, y0 - 12, 92, 24, 12, two ? 'rgba(60,40,90,0.95)' : 'rgba(40,90,30,0.95)', two ? '#c8a0ff' : '#9fff8a', 1.6); txt(two ? 'YARDIMCI' : 'BAŞ KOMUTAN', 0, y0, 12, '#fff', 'center', '800', FONT_B, false); } // 17 Eki: iki yuva
+  if (NECRO) { velvetCard(x0, y0, w, h, 20, { border: sel ? '#7be05a' : null, ac: sel ? d.aura : null }) }
   else {
     roundRect(x0 + 5, y0 + 12, w, h, 20, 'rgba(0,0,0,0.5)');
     const fr = ctx.createLinearGradient(0, y0, 0, y0 + h); fr.addColorStop(0, '#b07a46'); fr.addColorStop(1, '#4a2c14');
@@ -18159,6 +18158,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
     const pg = ctx.createLinearGradient(0, y0 + 10, 0, y0 + h - 10); pg.addColorStop(0, '#f8ebcc'); pg.addColorStop(1, '#dcc089');
     roundRect(x0 + 10, y0 + 10, w - 20, h - 20, 15, pg, 'rgba(92,58,22,0.6)', 1.5);
   }
+  if (sel && tm.length > 1) { const two = tm[1] === id; roundRect(-46, y0 - 12, 92, 24, 12, two ? 'rgba(60,40,90,0.95)' : 'rgba(40,90,30,0.95)', two ? '#c8a0ff' : '#9fff8a', 1.6); txt(two ? 'YARDIMCI' : 'BAŞ KOMUTAN', 0, y0, 12, '#fff', 'center', '800', FONT_B, false); } // 17 Eki: iki yuva (24 Eki: kartın üstünde; önceden else'i yutup parşömeni kadifenin üstüne çizdiriyordu)
   // portre
   ctx.save(); ctx.beginPath(); ctx.roundRect(x0 + 18, y0 + 18, w - 36, 150, 12); ctx.clip();
   const bgc = ctx.createRadialGradient(0, y0 + 90, 10, 0, y0 + 90, 120);
@@ -18185,7 +18185,7 @@ function drawHeroCard(id, cx, cy, at, tm) {
   const bars = !unlocked ? [] : [['Can', d.hp / 520, '#e8434b'], ['Saldırı', ((d.dmg[0] + d.dmg[1]) / 2 / d.rate) / 28, '#ffb347'], ['Hız', d.speed / 135, '#5ad0ff'], ['Menzil', (d.ranged || 40) / 215, '#9be06a']];
   bars.forEach(([lab, v, col], j) => {
     const by = y0 + 228 + j * 14; // 16 Eki: son satır köşe süsüne binmesin
-    fitTxt(lab, x0 + 20, by, 52, 13, '#5a3818', 'left', '800', FONT_B, false, 10);
+    fitTxt(lab, x0 + 20, by, 52, 13, NECRO ? '#e6d2b0' : '#5a3818', 'left', '800', FONT_B, false, 10);
     roundRect(x0 + 74, by - 3.5, 80, 7, 3.5, NECRO ? 'rgba(0,0,0,0.45)' : 'rgba(60,40,20,0.25)'); roundRect(x0 + 74, by - 3.5, 80 * clamp(v, 0.08, 1), 7, 3.5, col);
   });
   const by2 = NECRO ? -7 : 0; // necro: kart çerçevesinin süslerine değmesin
@@ -23170,6 +23170,16 @@ function velvetCard(x, y, w, h, r = 14, o = {}) {
 }
 // tam ekran menülerin arka planı: bulanık kapak, üstüne kızıl-mor karartma, yavaş dönen ritüel çemberi ve sis
 function menuBackdrop(st) {
+  if (ukOk()) { // 24 Eki (Caner: "arkaplan aynı"): kit çerçevesinin koyu damask içi tüm ekrana, kenarlar karanlık; bordo sis ve dönen mühür yok
+    const fr = spr('ui_k_frame'), [L, T, R, B] = UIK.frame, sw = fr.width - L - R, sh = fr.height - T - B, k = Math.max(VIS.w / sw, VIS.h / sh) * 1.02;
+    ctx.fillStyle = '#0d0710'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    ctx.drawImage(fr, L, T, sw, sh, W / 2 - sw * k / 2, H / 2 - sh * k / 2, sw * k, sh * k);
+    const lg = ctx.createRadialGradient(W / 2, H * 0.42, 40, W / 2, H * 0.42, VIS.w * 0.62); lg.addColorStop(0, 'rgba(120,40,90,0.22)'); lg.addColorStop(1, 'rgba(120,40,90,0)');
+    ctx.fillStyle = lg; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    const vg = ctx.createRadialGradient(W / 2, H / 2, VIS.h * 0.35, W / 2, H / 2, VIS.w * 0.66); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.72)');
+    ctx.fillStyle = vg; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    return;
+  }
   const bg = spr('nm_title');
   if (bg) coverImage(blurOf('title_bg', bg), 1.1 + Math.sin(time * 0.1) * 0.02);
   else { ctx.fillStyle = '#1a0816'; ctx.fillRect(VIS.l, VIS.t, VIS.w, VIS.h); }
