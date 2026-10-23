@@ -1,0 +1,122 @@
+[
+ {
+  "name": "enemy_ironwarden_hitA",
+  "ref": "ham/anim/enemy_ironwarden_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 76,
+  "prompt": "a cartoon huge hulking praetorian warden in thick dark iron plate armor with gold trim, a closed great helm with a red crest, a massive iron tower shield with a golden sun and a heavy flanged mace defends: braces his feet gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_legarcher_hitA",
+  "ref": "ham/anim/enemy_legarcher_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 77,
+  "prompt": "a cartoon roman legion archer with a pointed conical silver helmet with a red plume, a lean bearded face, silver armor, a red tunic, a wooden recurve bow in his left hand, a red quiver full of arrows on his back and a short dagger in a sheath on his belt gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_legion_hitA",
+  "ref": "ham/anim/enemy_legion_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 78,
+  "prompt": "a cartoon roman legionary with a big rectangular shield and a spear keeps gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_lucia_hitA",
+  "ref": "ham/anim/enemy_lucia_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 79,
+  "prompt": "a cartoon stern exorcist sister in a white and gold habit with a crimson stole and a round golden sun pendant on her chest, holding a glowing holy book and a silver censer defends: braces his feet gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_malleus_hitA",
+  "ref": "ham/anim/enemy_malleus_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 80,
+  "prompt": "a towering cartoon witch hunter general in a huge black feathered hat and a crimson-lined black coat with two silver crossbows defends: braces his feet gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_paladin_hitA",
+  "ref": "ham/anim/enemy_paladin_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 81,
+  "prompt": "a big cartoon knight in shining silver and gold plate armor with a crimson tabard, a tall sun tower shield and a mace keeps gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_priest_hitA",
+  "ref": "ham/anim/enemy_priest_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 82,
+  "prompt": "a cartoon roman war priest with a golden scepter gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_severus_hitA",
+  "ref": "ham/anim/enemy_severus_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 84,
+  "prompt": "an old imposing cartoon grand inquisitor in a magnificent crimson and gold robe with a tall gold mitre, holding a gold sun staff and a black iron teapot defends: braces his feet gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_severus3_hitA",
+  "ref": "ham/anim/enemy_severus3_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 85,
+  "prompt": "a cartoon cursed old grand inquisitor in torn crimson and gold robes with a cracked golden mitre and a broken sun halo, glowing green eyes and veins, holding a black teapot that pours green necromantic smoke and a cracked sun staff gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_shadowmaster_hitA",
+  "ref": "ham/anim/enemy_shadowmaster_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 86,
+  "prompt": "a cartoon assassin master in a dark crimson hooded cloak with a white porcelain sun mask, black leather armor with throwing knives and two curved golden sickle blades sneaks forward in place in a low crouch with quick light gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_solarcher_hitA",
+  "ref": "ham/anim/enemy_solarcher_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 87,
+  "prompt": "a cartoon roman archer with a bow gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_torch_hitA",
+  "ref": "ham/anim/enemy_torch_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 88,
+  "prompt": "a cartoon hooded zealot monk in a dark crimson robe holding a big burning torch high gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_vulture_hitA",
+  "ref": "ham/anim/enemy_vulture_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 89,
+  "prompt": "a cartoon big bald vulture is shot down while flying: it jerks, the feathers burst out, the wings fold and it tumbles and gets hit hard while hovering in the air: the whole body jerks backwards with a big exaggerated cartoon flinch, feathers ruffle, the head snaps back, the wings flap wildly, then it quickly recovers and returns exactly to the starting pose. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_wardog_hitA",
+  "ref": "ham/anim/enemy_wardog_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 90,
+  "prompt": "a cartoon roman war hound, a big brown mastiff with a red spiked harness gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_saint_hitA",
+  "ref": "ham/anim/enemy_saint_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 99,
+  "prompt": "a cartoon cracked white marble statue of a robed saint with a stone halo and a stone sword gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]

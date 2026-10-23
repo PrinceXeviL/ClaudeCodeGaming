@@ -71,7 +71,7 @@ function stripTrim() {
 // Düşman/iskelet animasyon şeritleri açılışta yüklenmez: bölüm başında yalnız o bölümde görünecekler yüklenir,
 // gerekmeyenler bellekten atılır (hepsi birden yüzlerce MB tutup tablet/telefonda oyunu donduruyordu).
 // 16 Eki (Android bellek): kule atış şeritleri de tembel (Kemik Gülle atışı tek başına 95 MB açılışta yükleniyordu)
-const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero|pet)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|tower_(?:xbow_\d|archer_[a-z]+)_idle|unit_[a-z0-9]+_(?:reload|shotdown|pwalk)|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
+const LAZY = {}, LAZY_RE = /^(?:(enemy|unit|hero|pet)_.+_(walk|walk_on|walk_arka|atk|atk2|atk3|skill|skill2|die|idle|run|cast|cast_[a-z]+|block|walk_hurt|lvlup|dash|guard|cheer|shield|sig1|sig2|hit)x?|castle_keep_\d_idle|tower_artillery_bonemortar_idle|tower_[a-z]+_[a-z]+_atk|tower_artillery_plague_(?:call|idle)|tower_[a-z0-9_]+_collapse|tower_(?:xbow_\d|archer_[a-z]+)_idle|unit_[a-z0-9]+_(?:reload|shotdown|pwalk)|fx_[a-z]+|mortimer_[a-z]+)$/, STRIP_WAIT = new Set(); // 13 Eki: kale evre döngüleri de gerekince yüklenir
 function loadStrip(name) {
   if (SPR[name] || !LAZY[name] || STRIP_WAIT.has(name)) return;
   STRIP_WAIT.add(name);
@@ -2407,7 +2407,7 @@ function startLevel(idx, chal = null) {
   (chal === 'a' ? ADMIN_TEST.waves : chal === 'o' ? TUTOR.waves : lv.waves).forEach(w => w.forEach(g => { types.add(g.t); (g.types || []).forEach(t => types.add(t)); (BOSS_ESCORT[g.t] || []).forEach(([t]) => types.add(t)); }));
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.phases) d.phases.forEach(P => { types.add(P.to); const d2 = ENEMIES[P.to]; if (d2 && d2.ab && d2.ab.summon) [].concat(d2.ab.summon.t).forEach(x => types.add(x)); }); });
   [...types].forEach(t => { const d = ENEMIES[t]; if (d && d.split) types.add(d.split[0]); if (d && d.crew) [d.crew.top, ...d.crew.in].forEach(([t]) => types.add(t)); if (d && d.ab && d.ab.summon) types.add(d.ab.summon.t); });
-  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle', '_sig1', '_sig2', '_block', '_run']; // 20 Eki: _run lejyoner hücum koşusu
+  const keep = new Set(), SUF = ['_walk', '_walk_on', '_walk_arka', '_atk', '_atk2', '_atk3', '_skill', '_die', '_idle', '_sig1', '_sig2', '_block', '_run', '_hit']; // 20 Eki: _run lejyoner hücum koşusu
   types.forEach(t => { const d = ENEMIES[t]; if (!d) return; SUF.forEach(sf => { keep.add('enemy_' + t + sf); if (d.base) keep.add('enemy_' + d.base + sf); }); });
   for (let i = 1; i <= 8; i++) SUF.concat('_idle', '_dash', '_guard').forEach(sf => keep.add('unit_skel_' + i + sf));
   for (const b of ['unit_bonegiant', 'unit_corpsegolem', 'unit_gulyabani']) SUF.forEach(sf => keep.add(b + sf)); // iri birimler
@@ -3403,6 +3403,7 @@ function damageEnemy(e, amount, type, quiet, src, pen = 0, raw = false) { // pen
   if (!quiet && !raw) bloodHit(e, dealt); // çizgi film kanı / taş tozu / kıymık
   if (!quiet) knockback(e, dealt, src);
   if (!quiet) { e.flash = 0.1; e.hitT = NO_KNOCK ? 0 : 0.18; if (e.hp > 0) painVoice(e); } // veba: geriye sarsılma yok
+  if (!quiet && !raw && e.hp > 0 && dealt >= e.maxHp * HITANIM.min && !(e.hurtCd > G.t)) { e.hurtT = HITANIM.dur; e.hurtCd = G.t + HITANIM.cd; } // 24 Eki: darbe yeme şeridi (_hit)
   e.hitAt = time;
   const PHS = e.phases || e.def.phases, PH = PHS && PHS[e.phase || 0]; // evre listesi ilk türden gelir (dönüşünce e.phases'te kalır)
   if (PH && e.hp <= e.maxHp * PH.at) { e.hp = e.maxHp * PH.at; bossPhase(e, PH); return; } // evreli boss ölmeden dönüşür
@@ -3814,8 +3815,12 @@ function heroDownFx(s) {
   G.banner = { title: 'Mortimer öfkelendi!', sub: 'Komutanın dönene dek büyüler iki kat hızlı dolar', t: 0, dur: 2.6 };
   sfx('roar');
 }
+// 24 Eki (Caner: "darbeyi yiyen bütün birimlerin, komutanların, düşmanların hasar alış animasyonu olsun"): <ad>_hit Wan şeridi varsa darbede bir kez oynar
+// (saldırının vuruş anı ve büyü/yetenek şeritleri önce gelir); şerit yoksa eski parlama + sarsılma. min: canın bu kesrinden küçük darbede oynamaz
+const HITANIM = { dur: 0.42, cd: 1.4, min: 0.04 };
 function damageSoldier(s, amount, src) {
   if (s.dead) return;
+  if (!(s.hurtCd > G.t) && s.maxHp && amount >= s.maxHp * HITANIM.min) { s.hurtT = HITANIM.dur; s.hurtCd = G.t + HITANIM.cd; }
   if (s.guardT > G.t) amount *= 0.4; // Kemik Siper
   if (src) provoke(s, src);
   if (s.wall) {
@@ -5461,6 +5466,7 @@ function updateEnemy(e, dt) {
   if (e.drumT > 0) e.drumT -= dt;
   if (e.capT > 0) e.capT -= dt; if (e.capRushT > 0) e.capRushT -= dt; if (e.wallT > 0) e.wallT -= dt;
   if (e.captain) updateCaptain(e, dt);
+  if (e.hurtT > 0) e.hurtT -= dt;
   if (e.skillT > 0) { e.skillT -= dt; if (e.skillT <= 0) e.skillSuf = null; } if (e.altT > 0) e.altT -= dt; if (e.fireT > 0) e.fireT -= dt; if (e.cageT > 0) e.cageT -= dt; if (e.xrayT > 0) e.xrayT -= dt; // özel saldırı anı ve bekleme süresi
   // sancaktar / davulcu: çevresindekilere zırh ya da hız (kendisi dahil değil)
   const AU = e.def.aura;
@@ -5644,8 +5650,8 @@ function updateEnemy(e, dt) {
   }
   if (e.frozenT > 0) e.frozenT -= dt; if (e.frostCdT > 0) e.frostCdT -= dt; // buz (frostHit)
   if (e.stun > 0) { e.stun -= dt; return; } // sersemlemiş: yürümez, vurmaz
-  if (e.frogT > 0) { // kurbağa: kimseye saldırmaz, kimse onu tutmaz; süre bitince eski hâline döner
-    e.frogT -= dt; e.blocker = null; e.inMelee = false;
+  if (e.frogT > 0) { // kurbağa: kimseye saldırmaz; süre bitince eski hâline döner. 24 Eki (Caner): ona vuran iskelet/zombi onu durdurur (eskiden kimse tutamıyordu)
+    e.frogT -= dt; e.inMelee = false;
     if (e.frogT <= 0) { frogPuff(e); sfx('magic'); }
   }
   if (e.def.ab) bossAbilities(e, dt);
@@ -5705,9 +5711,12 @@ function updateEnemy(e, dt) {
     if (e.atk <= 0) { e.atk = e.def.rate * curseSlowAtk(e); gateHit(e, roll(e.def.dmg) * foeDmgMul(e) * (e.def.machine ? GATE.machine : 1) * (e.def.chief ? 3 : 1)); }
     return;
   }
+  if (!e.blocker && !e.def.noblock && !e.def.flying && !e.under && !e.leader) { // 24 Eki (Caner: "iskeletler/zombiler saldırıyor ama yürümeye devam ediyor"): dibinden vuran asker onu tutar
+    for (const q of G.soldiers) if (q.target === e && !q.dead && !q.bow && !q.removed && dist(q.x, q.y, e.x, e.y) < 30) { e.blocker = q; e.waitT = 0; break; }
+  }
   if (e.blocker) {
     const B = e.blocker, bd = dist(e.x, e.y, B.x, B.y);
-    e.inMelee = bd < (B.big ? BLOCK_HOLD.bigR : 22); // 23 Eki: iri birimin (golem, dev) tuttuğu düşman ona sokulmaz, olduğu yerde dövüşür
+    e.inMelee = bd < (B.big ? BLOCK_HOLD.bigR : B.target === e ? 30 : 22); // 24 Eki: kendisine vuran askerin erimindeyse yerinde dövüşür (yaklaşma adımı yok) // 23 Eki: iri birimin (golem, dev) tuttuğu düşman ona sokulmaz, olduğu yerde dövüşür
     if (e.inMelee && !e.cried && G.cryCd <= 0) { e.cried = true; G.cryCd = 5; warCry(e); } // göğüs göğüse: hücum çığlığı
     if (!e.inMelee) {
       // Kilitlendiği asker/kahraman yanına gelmiyorsa (kahraman yol dışında durur, asker başka düşmanla uğraşır)
@@ -5724,6 +5733,7 @@ function updateEnemy(e, dt) {
       }
       if (!e.blocker) return;
     } else e.waitT = 0;
+    if (e.inMelee && e.frogT > 0) return; // kurbağa tutulur ama vurmaz
     if (e.inMelee) {
       faceTo(e, e.blocker.x);
       e.atk -= dt * ATK_SPD;
@@ -6033,7 +6043,7 @@ function updateSoldier(s, dt) {
   // 23 Eki (Caner: "dirilttiğim zombiler daha ayağa kalkmadan düşmana gidiyor; önce olduğu yerde kalksın, yarım saniye beklesin, sonra ilerlesin"):
   // kalkış (ölüm kareleri tersten, DIE_T; şerit yoksa 0,6 sn) + ZRISE.hold boyunca yerinden kıpırdamaz, saldırmaz
   if (s.minion && s.born != null) { s.riseHold ??= (s.zname ? DIE_T : 0.6) + ZRISE.hold; if (G.t < s.born + s.riseHold) { s.moving = false; s.target = null; return; } }
-  if (s.flash > 0) s.flash -= dt;
+  if (s.flash > 0) s.flash -= dt; if (s.hurtT > 0) s.hurtT -= dt;
   if (s.buffT > 0) s.buffT -= dt;
   if (s.spinT > 0) s.spinT -= dt;
   if (s.wardT > 0) s.wardT -= dt;
@@ -12724,6 +12734,7 @@ function drawEnemy0(e) {
       atk: e.fireT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.fireT / CANNON_FIRE) : e.diveT > 0 ? -ATK_PREP + (ATK_PREP + ATK_AFTER) * Math.min(0.999, 1 - e.diveT / d.dive.dur) : e.def.bash && e.bashT && e.bashCd != null ? ramPhase(e) : e.siege !== undefined ? e.siege - SIEGE_HIT : e.inMelee ? atkPhase(d.rate, e.atk) : e.shootT > 0 && !d.crew ? 0.27 - e.shootT : null, atkVar: e.inMelee ? (d.dagger ? 1 : e.atkV) : 0, // Lejyon Okçusu: yakında hançer şeridi (_atk2)
       flash: e.flash, hit: e.hitT, wings: d.flying ? e.anim : null, seed: e.off, dir, logId: e.logId, walkSuf: e.wallT > 0 ? '_shield' : e.capRushT > 0 && !e.inMelee ? '_run' : null, // 17 Eki: kalkan duvarında Wan şeridi (kalkan başın üstünde yürür)
       skill: e.skillT > 0 && !d.flying ? 1 - e.skillT / e.skillDur : null, skillSuf: e.skillSuf, // 18 Eki: boss imza (_sig1/_sig2) ve savunma (_block) şeritleri
+      hurt: e.hurtT > 0 && !moved ? 1 - e.hurtT / HITANIM.dur : null, // yürürken değil: dururken / dövüşürken
     };
     const ux = e.x + (e.fearT > 0 ? Math.sin(time * 70 + e.off * 9) * 0.9 : 0);
     if ((e.capT > 0 || e.captain) && !e.dead && !(uo.fly > 0)) { // kıdemli ve aurasındakiler: ayağın altında soluk altın halka
@@ -13108,7 +13119,7 @@ function drawSoldier0(s) {
       const F = ANIM_META[sk], i = sk.endsWith('_atk') ? (CHEER_ATK != null ? Math.floor((0.12 + 0.22 * celebPump()) * celebK() * F.n) : Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.n)) : Math.floor(s.anim * 16) % F.n;
       ctx.save(); ctx.translate(s.x, s.y + 1); ctx.scale(s.face || 1, 1); drawFrame(spr(sk), F, i, ch); ctx.restore();
       if (window.__animLog && s.logId != null) window.__animLog.push([s.logId, sk, i, s.face || 1, walking, '', +s.x.toFixed(2), +s.y.toFixed(2)]);
-    } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
+    } else drawUnit(lunge ? s.bigAtk : s.big, im, s.x, s.y, s.face || 1, { logId: s.logId, hurt: s.hurtT > 0 && !walking ? 1 - s.hurtT / HITANIM.dur : null, h: ch, rig: s.big, phase: s.anim * 5, walking, fly: 0, rise,
       atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: 0.7 });
     if (s.golem && s.life < 4) { ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 10); glow(ctx, s.x, s.y - ch * 0.5, ch * 0.5, '150,255,110', 0.3); ctx.restore(); } // dağılmak üzere
     if (s.hp < s.maxHp) hpBar(s.x, s.y - ch - 6, 22, s.hp / s.maxHp, s.golem ? '#9dff6a' : '#d8c8a8');
@@ -13137,7 +13148,7 @@ function drawSoldier0(s) {
       const sd = (s.slot || 0) * 1.9, fc = s.face || 1, lurch = walking ? Math.max(0, Math.sin(s.anim * 3.2 + sd)) * 0.09 : 0;
       const lean = fc * (0.1 + 0.035 * Math.sin(time * 1.7 + sd) + lurch + (fighting ? 0.06 * Math.max(0, Math.sin(atkPhase(s.rate, s.atk) * Math.PI)) : 0)) + Math.sin(time * 2.3 + sd) * 0.04;
       ctx.save(); ctx.translate(s.x, s.y); if (!s.zFly) ctx.rotate(lean); ctx.translate(-s.x, -s.y);
-      drawUnit(key, im, s.x, s.y, fc, { logId: s.logId, h: ch, rig: s.zrig || s.zname, phase: s.anim * walkRate(s.zname, s.zrig, s.speed * G.wspd, ch), walking: walking || !!s.zFly, fly: s.zFly ? 26 : 0, rise,
+      drawUnit(key, im, s.x, s.y, fc, { logId: s.logId, hurt: s.hurtT > 0 && !walking ? 1 - s.hurtT / HITANIM.dur : null, h: ch, rig: s.zrig || s.zname, phase: s.anim * walkRate(s.zname, s.zrig, s.speed * G.wspd, ch), walking: walking || !!s.zFly, fly: s.zFly ? 26 : 0, rise,
         atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7 });
       ctx.restore();
       // 18 Eki (Caner): başın üstündeki mor ruh alevi kalktı; bizim taraf olduğu rozetten belli (drawZombieMark)
@@ -13169,7 +13180,7 @@ function drawSoldier0(s) {
     const rise = !s.door && s.born != null && G.t - s.born < 0.6 ? 0.1 + 0.9 * easeOutBack(clamp((G.t - s.born) / 0.6, 0, 1)) : null;
     const fade = s.door && s.born != null ? clamp((G.t - s.born) / 0.55, 0, 1) : 1; // mahzen kapısının karanlığından belirir
     if (fade < 1) { ctx.save(); ctx.globalAlpha *= fade; }
-    drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
+    drawUnit(key, im, s.x, s.y, s.face || 1, { logId: s.logId, hurt: s.hurtT > 0 && !walking ? 1 - s.hurtT / HITANIM.dur : null, h: ch, rig: key, phase: s.anim * walkRate(key, null, s.exit ? 26 : s.speed * G.wspd, ch), walking: walking || !!s.exit, fly: 0, rise,
       atk: CHEER_ATK != null ? CHEER_ATK : fighting ? atkPhase(s.rate, s.atk) : null, atkVar: s.atkV, flash: s.flash, seed: (s.slot || 0) * 1.7, buff: s.buffT,
       skill: s.guardA > G.t && sp2 !== 'shield' && animStrip(key, null, '_guard') ? clamp((G.t - s.guardT0) / (s.guardA - s.guardT0), 0, 0.999) : s.dashT > 0 ? clamp(1 - s.dashT / ELITE_SK.shield.dash.dur, 0, 0.999) : sp2 === 'shield' && (s.skT > 0 || s.wardT > 0) && ANIM_META[key + '_guard'] && animStrip(key, null, '_guard') ? clamp((G.t - (s.guardT0 ?? G.t)) / (ANIM_META[key + '_guard'].dur || 3.4), 0, 0.999)
         : s.skT > 0 ? clamp(1 - s.skT / ELITE_SK[sp2].dur, 0, 0.999) : s.wardT > 0 && sp2 === 'shield' ? 0.999 : null,
@@ -13220,12 +13231,13 @@ function drawSoldier0(s) {
     const cst = !ult && s.hero && s.castA > 0 && ((s.castK && ANIM_META[name + '_cast_' + s.castK] && animStrip(name, null, '_cast_' + s.castK)) || animStrip(name, null, '_cast')); // pasifin kendi şeridi varsa o
     const blk = !ult && !cst && s.hero && s.blockA > 0 && animStrip(name, null, '_block');
     const lup = !ult && !cst && !blk && s.hero && s.lvlA > 0 && !walking && !fighting && animStrip(name, null, '_lvlup'); // 16 Eki: seviye atlama / zafer pozu
+    const hrt = !ult && !cst && !blk && !lup && s.hero && s.hurtT > 0 && !walking && !(fighting && Math.abs(atkPhase(s.rate, s.atk)) < 0.12) && animStrip(name, null, '_hit'); // 24 Eki: darbe yeme
     // 16 Eki (Caner): canı %30'un altındaki komutan topallar (Veo _walk_hurt varsa; koşu yerine de)
     const mov = walking && ((s.hero && s.hp < s.maxHp * 0.3 && animStrip(name, null, '_walk_hurt')) || (s.moving && animStrip(name, null, '_run')) || animStrip(name, null, '_walk'));
-    const hsk = ult || cst || blk || lup || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
+    const hsk = ult || cst || blk || lup || hrt || (s.hero && !(s.castT > 0) && (((fighting || s.shooting) && animStrip(name, null, '_atk')) || mov || (!walking && !fighting && !s.shooting && animStrip(name, null, '_idle'))));
     if (hsk) {
       const F = ANIM_META[hsk], prog = (t, T) => Math.floor(clamp(1 - t / T, 0, 0.999) * F.n);
-      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : lup ? prog(s.lvlA, s.lvlD) : hsk.endsWith('_atk') ? (F.order ? F.order[Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.order.length)] : prog(s.atk, s.rate))
+      const i = ult ? prog(s.ultT, s.ultD || ULT_ANIM) : cst ? prog(s.castA, s.castD || HERO_ANIM.cast) : blk ? prog(s.blockA, HERO_ANIM.block) : lup ? prog(s.lvlA, s.lvlD) : hrt ? prog(s.hurtT, HITANIM.dur) : hsk.endsWith('_atk') ? (F.order ? F.order[Math.floor(clamp(1 - s.atk / s.rate, 0, 0.999) * F.order.length)] : prog(s.atk, s.rate))
         : hsk.endsWith('_idle') || hsk.endsWith('_walk_hurt') ? Math.floor(time * (F.fps || 12) + (s.slot || 0) * 7) % F.n : Math.floor(s.anim * (hsk.endsWith('_run') ? 22 : walkRate(name, null, s.speed * G.wspd, ch) / TAU * F.n * (s.moving && s.hero ? 1.6 : 1))) % F.n; // koşu şeridi yoksa (Merlin süzülür) emirle giderken yürüyüş hızlı oynar
       unitShadow(s.x, s.y + 1, ch);
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, s.x, s.y - ch * 0.4, ch * 0.7, s.def.aura, 0.18); ctx.restore();
@@ -13729,11 +13741,13 @@ function drawUnit(name, im, x, y, face, o) {
   const atkKey = atkOn && ((o.atkVar && animStrip(name, o.rig, ['_atk', '_atk2', '_atk3'][o.atkVar % 3])) || animStrip(name, o.rig, '_atk'));
   // özel saldırı / büyü anı: <ad>_skill şeridi (yoksa saldırı şeridi) baştan sona bir kez oynar
   const skillKey = o.skill != null && ((o.skillSuf && animStrip(name, o.rig, o.skillSuf)) || animStrip(name, o.rig, '_skill') || animStrip(name, o.rig, '_atk')); // skillSuf: Veo şeridi (_dash, _guard) varsa o
+  const hurtKey = o.hurt != null && !skillKey && !(atkOn && Math.abs(o.atk) < 0.12) && animStrip(name, o.rig, '_hit'); // darbe yeme (vuruş anı hariç)
   const chB = CHEER_POSE && o.atk === CHEER_ATK && animStrip(name, o.rig, '_atk'), chM = chB && ANIM_META[chB].cheer, chK = chM && animStrip(name, o.rig, chM[0]);
   const chS = CHEER_POSE && animStrip(name, o.rig, '_cheer'); // 17 Eki (Caner): zafer sevinci Wan şeridi (unit_skel_N_cheer) varsa o döner, yoksa kılıç havada kare
   if (chS) { fName = chS; fi = Math.floor((time + (CHEER_POSE.seed || 0) * 0.37) * 14) % ANIM_META[chS].n; }
   else if (chK) { fName = chK; fi = Math.max(0, Math.round(chM[1] * CHEER_POSE.c) - (CHEER_POSE.p > 0.55 ? 1 : 0)); } // 16 Eki: kutlama: şeridin kılıç-havada karesine kalkar, orada tutar (varliklar/kutlama_kare.py)
   else if (skillKey) { fName = skillKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.skill * ANIM_META[fName].n)); }
+  else if (hurtKey) { fName = hurtKey; fi = Math.min(ANIM_META[fName].n - 1, Math.floor(o.hurt * ANIM_META[fName].n)); }
   else if (atkKey) {
     fName = atkKey;
     const T = ANIM_META[fName].n === 8 ? ATK_FRAME_T : null;

@@ -1,0 +1,122 @@
+[
+ {
+  "name": "hero_leonidas_hitA",
+  "ref": "ham/anim/hero_leonidas_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 31,
+  "prompt": "a cartoon undead skeleton Spartan king in a cracked bronze Corinthian helmet with a tall crimson horsehair crest, bronze armor, a torn crimson cape, a big round bronze shield and a spear gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "hero_merlin_hitA",
+  "ref": "ham/anim/hero_merlin_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 32,
+  "prompt": "a cartoon skeleton wizard Merlin with a long pale green ghostly beard, an antler crown with a skull, a dark purple and blue robe with bone shoulder pads and a gnarled staff topped with a glowing orb gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "hero_robin_hitA",
+  "ref": "ham/anim/hero_robin_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 33,
+  "prompt": "a cartoon skeleton ranger Robin with an antler hood, a tattered green cloak, leather armor and a long curved bone bow with a glowing green string gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "hero_bathory_hitA",
+  "ref": "ham/anim/hero_bathory_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 34,
+  "prompt": "a cartoon undead blood countess with a dark spiked crown, a high red collar, a long crimson and black gown and a ruby heart scepter, red blood ribbons swirl around her powers up in place: gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_1_hitA",
+  "ref": "ham/anim/unit_skel_1_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 35,
+  "prompt": "a cartoon skeleton recruit with a rusty sword, round wooden shield and a cooking pot helmet quickly gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_2_hitA",
+  "ref": "ham/anim/unit_skel_2_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 36,
+  "prompt": "a cartoon skeleton guard in chainmail with a skull shield and a long sword quickly gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_3_hitA",
+  "ref": "ham/anim/unit_skel_3_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 37,
+  "prompt": "a cartoon skeleton knight in dark armor with a green flaming sword and shield quickly gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_4_hitA",
+  "ref": "ham/anim/unit_skel_4_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 38,
+  "prompt": "a cartoon huge armored skeleton grave warden in black spiked plate armor and horned helmet, with a big coffin tower shield and a spiked mace with green runes gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_5_hitA",
+  "ref": "ham/anim/unit_skel_5_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 39,
+  "prompt": "a cartoon armored skeleton death knight with a spiked crown, tattered purple cape and two curved rune swords, glowing green eyes slashes forward with both swords in one fast diagonal strike, the raised sword gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_6_hitA",
+  "ref": "ham/anim/unit_skel_6_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 40,
+  "prompt": "a cartoon skeleton archer in a tattered purple hooded cloak with glowing green eyes, holding a longbow, a quiver on the back gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_7_hitA",
+  "ref": "ham/anim/unit_skel_7_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 41,
+  "prompt": "a cartoon armored skeleton archer with an iron helmet, brown leather armor and a torn purple tabard, holding a longbow, a quiver on the hip gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_skel_8_hitA",
+  "ref": "ham/anim/unit_skel_8_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 42,
+  "prompt": "a cartoon armored skeleton archer with a glowing green bone bow gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_bonegiant_hitA",
+  "ref": "ham/anim/unit_bonegiant_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 43,
+  "prompt": "a huge cartoon bone golem made of bones and skulls tied with red rags, green soul fire glowing in its ribcage, holding a giant thigh bone club is destroyed: it staggers, falls apart and gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_corpsegolem_hitA",
+  "ref": "ham/anim/unit_corpsegolem_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 44,
+  "prompt": "a huge cartoon stitched corpse golem with grey rotting skin, green slime dripping, chains across its chest, a second zombie head on its shoulder is destroyed: it staggers, falls apart and gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "unit_gulyabani_hitA",
+  "ref": "ham/anim/unit_gulyabani_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 45,
+  "prompt": "a tall lanky cartoon ghoul with a bald head, huge bulging glowing eyes, a very long matted grey beard and long stringy hair down to its feet, torn pale burial rags, cobwebs and tiny spiders, long thin arms with clawed fingers gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]

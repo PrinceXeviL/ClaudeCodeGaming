@@ -1,0 +1,122 @@
+[
+ {
+  "name": "pet_wolf_1_hitA",
+  "ref": "ham/anim/pet_wolf_1_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 46,
+  "prompt": "a cartoon undead spirit wolf with dark green fur, exposed ribs and skull face, glowing green eyes and green spirit flames on its back gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "pet_wolf_2_hitA",
+  "ref": "ham/anim/pet_wolf_2_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 47,
+  "prompt": "a cartoon huge ancient undead spirit wolf with antlers, dark green fur, exposed bones and skull face, glowing green eyes and green spirit flames on its back gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_agnes_hitA",
+  "ref": "ham/anim/enemy_agnes_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 48,
+  "prompt": "a cartoon gaunt fanatical abbess in a torn black and crimson habit with a crown of iron thorns, holding a chain whip and a burning brazier staff stalks forward in place with jerky fanatical gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_assassin_hitA",
+  "ref": "ham/anim/enemy_assassin_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 49,
+  "prompt": "a cartoon hooded assassin with daggers gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_bellpriest_hitA",
+  "ref": "ham/anim/enemy_bellpriest_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 50,
+  "prompt": "a thin old cartoon priest in a black and gold robe holding a big bronze hand bell high gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_campanus_hitA",
+  "ref": "ham/anim/enemy_campanus_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 51,
+  "prompt": "a huge cartoon monk in black and gold robes carrying an enormous bronze church bell on his back with chains and holding a big hammer gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_cavalry_hitA",
+  "ref": "ham/anim/enemy_cavalry_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 52,
+  "prompt": "a cartoon armored roman cavalryman on a horse rears the horse up and gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_cavcaptain_hitA",
+  "ref": "ham/anim/enemy_cavcaptain_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 53,
+  "prompt": "a cartoon cavalry captain with a winged golden helmet and red cape riding a big black armored warhorse with golden barding, holding a long lance with a red pennant the horse rears up high on its hind legs while the captain gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_centurion_hitA",
+  "ref": "ham/anim/enemy_centurion_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 54,
+  "prompt": "a cartoon roman centurion boss with a huge red transverse crest on his helmet, gilded scale armor with medals, a red cape, a big red tower shield with a golden sun and a bundle of javelins on his back, holding a javelin defends: braces his feet gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_champion_hitA",
+  "ref": "ham/anim/enemy_champion_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 55,
+  "prompt": "a cartoon giant muscular gladiator champion wearing a lion pelt as a hood and a golden face mask, holding a long golden trident and a rope net defends: braces his feet gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_colossus_hitA",
+  "ref": "ham/anim/enemy_colossus_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 56,
+  "prompt": "a gigantic cracked marble statue knight lowers its shoulder and gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_drummer_hitA",
+  "ref": "ham/anim/enemy_drummer_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 57,
+  "prompt": "a cartoon roman war drummer, a stern clean-shaven old soldier with no beard, white and gold armor, a black bear pelt hood over his head, a red drum with a golden sun emblem at his hip. He gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_eagle_hitA",
+  "ref": "ham/anim/enemy_eagle_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 58,
+  "prompt": "a cartoon golden imperial war eagle wearing a small gold helmet with a red crest is shot down while flying: it jerks, the feathers burst out, the wings fold and it tumbles and gets hit hard while hovering in the air: the whole body jerks backwards with a big exaggerated cartoon flinch, feathers ruffle, the head snaps back, the wings flap wildly, then it quickly recovers and returns exactly to the starting pose. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_elephant_hitA",
+  "ref": "ham/anim/enemy_elephant_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 59,
+  "prompt": "a cartoon armored war elephant with red and gold barding and a small wooden tower with an archer on its back rears up on its hind legs trumpeting and gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ },
+ {
+  "name": "enemy_flagellant_hitA",
+  "ref": "ham/anim/enemy_flagellant_ref.png",
+  "frames": 25,
+  "loop": true,
+  "seed": 60,
+  "prompt": "a bare-chested hooded cartoon fanatic with a crimson hood and rope belt holding a knotted whip gets hit hard by a blow from the front: the whole body jerks backwards with a big exaggerated cartoon flinch, the head snaps back, the arms fly up, the body squashes and stretches, the feet stay on the same spot, then the character quickly recovers and returns exactly to the starting pose, ready to fight again. Snappy punchy cartoon timing. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. No smoke, no fog, no mist, no blood, no sparks, no impact effects. Side view facing right, static camera, the character stays in the center of the frame, everything stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur"
+ }
+]
