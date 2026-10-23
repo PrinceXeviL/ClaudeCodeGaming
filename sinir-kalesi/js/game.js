@@ -824,6 +824,7 @@ function audioRebuild() {
 function initAudio() {
   if (actx && (AUDIO_DEAD || actx.state === 'closed' || actx.state === 'interrupted')) { AUDIO_DEAD = false; audioRebuild(); } // dokunuş içinde yeniden kur
   if (actx) { if (actx.state !== 'running') actx.resume().catch(() => {}); return; }
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {} // 24 Eki (Caner): iPhone sessiz düğmesi oyunun sesini kesmesin (iOS 16.4+; uygulamada AppDelegate de .playback)
   try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
   const comp = actx.createDynamicsCompressor();
   comp.threshold.value = -14; comp.ratio.value = 4;
