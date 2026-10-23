@@ -3783,6 +3783,13 @@ function provoke(s, src) {
     m.provoker = src; m.provokeT = PROVOKE.t;
   }
 }
+// 23 Eki (Caner: "komutansız oyun zor; oyuncu komutanını kaybedince geri dönüş yardımı"): komutan ölünce yeniden doğana dek
+// Mortimer'ın büyüleri HERO_DOWN.cd kat hızlı dolar, ekranda kısa uyarı çıkar.
+const HERO_DOWN = { cd: 2 };
+function heroDownFx(s) {
+  G.banner = { title: 'Mortimer öfkelendi!', sub: 'Komutanın dönene dek büyüler iki kat hızlı dolar', t: 0, dur: 2.6 };
+  sfx('roar');
+}
 function damageSoldier(s, amount, src) {
   if (s.dead) return;
   if (s.guardT > G.t) amount *= 0.4; // Kemik Siper
@@ -3847,6 +3854,7 @@ function damageSoldier(s, amount, src) {
     if (s.pet && ANIM_META[s.pet.img + '_die'] && animStrip(s.pet.img, s.pet.img, '_die')) G.effects.push({ kind: 'corpse', name: s.pet.img, rig: s.pet.img, h: s.pet.h * UNIT_K, x: s.x, y: s.y, face: s.face || 1, fly: 0, t: 0, dur: 2.5 }); // 19 Eki: kurt ölüm şeridi
     else if (!s.ghoul && !s.big && !s.pet) G.effects.push({ kind: 'corpse', name: cn, rig: s.hero ? s.def.sprite : null,
       h: s.hero ? s.def.h * UNIT_K : CHAR_H[cn], x: s.x, y: s.y, face: s.face, fly: 0, t: 0, dur: Math.max(CORPSE_DUR, ((s.hero && ANIM_META[cn + '_die'] || {}).dur || 0) + 0.8) });
+    if (s.hero && !G.admin) heroDownFx(s);
     s.respawnT = s.hero ? s.def.respawn * (s.learned.ninelives ? 0.5 : 1) : s.tower ? (TOWERS.barracks.levels[s.tower.lvl].respawn - (upgRank('barracks') >= 3 ? 3 : 0)) * (s.giant ? 2 : 1) : s.ghoul ? HATCH.respawn : s.chapel ? s.giant.respawn : s.guard ? GATE.guard.respawn : 0;
     releaseSoldier(s);
   }
@@ -8646,7 +8654,7 @@ function updateSurprise(dt) {
   const S = G.sur; if (!S || !S.def) return;
   for (const o of S.o) { o.t += dt; if (o.blink > 0) o.blink -= dt; }
   if (S.def.update) S.def.update(S, dt);
-  if (!S.found && !S.hinted && G.t > 25 && !(save.sur && save.sur[G.idx]) && !G.say) { S.hinted = true; surSay('Bu bölümde tuhaf bir şey var... parıldayan şeylere dokun bakalım.'); } // 20 Eki: sürpriz ipucu (bölüm başına bir kez, bulunana kadar)
+  if (!S.found && !S.hinted && G.t > 25 && G.idx >= NOVICE.levels && !(save.sur && save.sur[G.idx]) && !G.say) { S.hinted = true; surSay('Bu bölümde tuhaf bir şey var... parıldayan şeylere dokun bakalım.'); } // 20 Eki: sürpriz ipucu (bölüm başına bir kez, bulunana kadar)
   if (G.surBanner && (G.surBanner.t += dt) > 3.4) G.surBanner = null;
   if (G.surEclipse > 0) G.surEclipse -= dt;
   for (const e of G.enemies) { // sürprizin düşman durumları
@@ -10113,7 +10121,8 @@ function castUlt(h, x, y) {
 function update(dt) {
   G.t += dt;
   if (G.bloodT > 0) G.bloodT -= dt;
-  for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt * (G.bloodT > 0 ? BLOOD.cd : 1));
+  const heroDown = G.heroes.length && G.heroes.every(h => h.dead) ? HERO_DOWN.cd : 1; // 23 Eki (Caner): komutan düşünce Mortimer öfkelenir: büyüleri hızlı dolar
+  for (const k in G.spells) G.spells[k] = Math.max(0, G.spells[k] - dt * (G.bloodT > 0 ? BLOOD.cd : 1) * (k.startsWith('ult') ? 1 : heroDown));
   if (G.raiseT > 0) G.raiseT -= dt;
   if (G.mortCast > 0) G.mortCast -= dt;
   updateMortState(dt);
@@ -16255,7 +16264,12 @@ function drawHud() {
   G.heroes.forEach((h, i) => drawHeroPortrait(h, HUD.heroes[i], i));
   if (!overlay && !G.sel && !G.tut && !G.mode) { // tanıtım ipuçları (bir kez; eğitim sürerken çıkmaz)
     const h0 = G.heroes[0], hb = HUD.heroes[0];
-    if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts') && (G.ptsTipT = (G.ptsTipT || 0) + 1 / 60) < 6) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
+    const NOV = G.idx === 0 && !G.tutorial && !G.chal;
+    if (NOV && G.towers.length && !tipSeen('nov_build')) tipDone('nov_build');
+    if (NOV && G.wave > 0 && !tipSeen('nov_wave')) tipDone('nov_wave'); // 23 Eki (Caner: ilk bölümler hızlı açılsın): 1. bölümde kart yok, yalnız iki küçük ok: kule kur, dalgayı çağır
+    if (NOV && !tipSeen('nov_build') && !G.towers.length && !G.sel) { const pl = tutPlot('archer') || G.plots[0]; if (pl) { const q = worldToScreen(pl.x, pl.y - 8); drawTip(q.x, q.y - 14, 'Boş arsaya dokun: kule kur'); } }
+    else if (NOV && !tipSeen('nov_wave') && G.towers.length && G.wave === 0 && waveCallable()) { const b = waveBtnScreen(0); drawTip(b.x, b.y - 30, 'Hazırsan boruya iki kez dokun: ordu gelsin'); }
+    else if (h0 && hb && heroPoints(h0) > 0 && !tipSeen('pts') && G.idx >= NOVICE.levels && (G.ptsTipT = (G.ptsTipT || 0) + 1 / 60) < 6) { const b = heroBadge(hb); drawTip(b.x + 6, b.y - 10, 'Yetenek puanı! + simgesine dokun'); }
     else if (G.idx < NOVICE.levels && !tipSeen('spell') && spellIds().includes('nm_raise') && G.spells.nm_raise <= 0 && G.effects.filter(f => f.kind === 'corpse' && corpseOk(f)).length >= 3) { // büyüyü öğret
       const b = spellBtn(spellIds().indexOf('nm_raise')); drawTip(b.x, b.y - 34, 'Cesetleri dirilt: büyüye dokun!'); }
     else if (G.wave > 0 && G.zitem && G.zitem.cd <= 0 && !tipSeen('zitem')) { const q = worldToScreen(G.zitem.x, G.zitem.y - 56); drawTip(q.x, q.y, G.zitem.name + ': dokun! ' + G.zitem.sub); } // mekân öğesi
@@ -17560,11 +17574,11 @@ function drawShop() {
     roundRect(2, 4, tw, th, 12, 'rgba(0,0,0,0.45)'); const g = ctx.createLinearGradient(0, 0, 0, th); g.addColorStop(0, '#3a1218'); g.addColorStop(1, '#14060a'); roundRect(0, 0, tw, th, 12, g, '#e8bb52', 1.6);
     ctx.save(); ctx.beginPath(); ctx.roundRect(5, 5, tw - 10, 104, 9); ctx.clip(); draw(tw / 2, 57); ctx.restore();
     fitTxt(title, tw / 2, 124, tw - 10, 15, '#ffe27a', 'center', '400', FONT_T, false, 11); fitTxt(sub, tw / 2, 146, tw - 10, 11, '#e8d8c0', 'center', '700', FONT_B, false, 9); ctx.restore(); };
-  tile(0, '30 YENİ BÖLÜM', 'Cadı Avı seferi dahil', (cx, cy) => { [12, 24, 37].forEach((li, n) => { const T = thumbOf(li); if (!T) return; ctx.save(); ctx.translate(cx - 22 + n * 22, cy - 14 + n * 14); ctx.rotate(-0.08 + n * 0.08); ctx.drawImage(T, -58, -33, 116, 65); ctx.strokeStyle = '#e8bb52'; ctx.lineWidth = 1.5; ctx.strokeRect(-58, -33, 116, 65); ctx.restore(); }); });
-  tile(1, '16 BOSS', 'her biri iki imza yetenekli', (cx, cy) => { [['severus', -30, 0.9], ['cathedral', 32, 0.9], ['gloriosus1', 0, 1]].forEach(([t, dx, k]) => { const im = ENEMIES[t] && (enemySprite(t) || spr('enemy_' + t)); if (im) drawSprite(ctx, im, cx + dx, cy + 48, 70 * k * im.width / im.height); }); });
+  tile(0, epSoon(2) ? '10 YENİ BÖLÜM' : '30 YENİ BÖLÜM', epSoon(2) ? 'Cadı Avı seferi gelince ücretsiz' : 'Cadı Avı seferi dahil', (cx, cy) => { [12, 24, 37].forEach((li, n) => { const T = thumbOf(li); if (!T) return; ctx.save(); ctx.translate(cx - 22 + n * 22, cy - 14 + n * 14); ctx.rotate(-0.08 + n * 0.08); ctx.drawImage(T, -58, -33, 116, 65); ctx.strokeStyle = '#e8bb52'; ctx.lineWidth = 1.5; ctx.strokeRect(-58, -33, 116, 65); ctx.restore(); }); });
+  tile(1, epSoon(2) ? 'BOSSLAR' : '16 BOSS', 'her biri iki imza yetenekli', (cx, cy) => { [['severus', -30, 0.9], ['cathedral', 32, 0.9], ['gloriosus1', 0, 1]].forEach(([t, dx, k]) => { const im = ENEMIES[t] && (enemySprite(t) || spr('enemy_' + t)); if (im) drawSprite(ctx, im, cx + dx, cy + 48, 70 * k * im.width / im.height); }); });
   tile(2, 'YENİ BÜYÜLER', 'Ceset Patlatma · Ceset Golemi', (cx, cy) => { const a = spr('ico_sp_nm_burst'), b = spr('ico_sp_nm_golem'); if (a) icoFit(a, cx - 24, cy - 6, 26); if (b) icoFit(b, cx + 24, cy + 10, 26); });
   tile(3, 'AYRICALIKLAR', 'reklamsız · 3x hız', (cx, cy) => { const f = spr('ico_ui_fast'), c = spr('ico_crystal'); if (f) icoFit(f, cx - 22, cy, 22); if (c) icoFit(c, cx + 24, cy, 20); });
-  { const sy = ty0 + th + 26; txt('"Kalan 30 bölüm için kahve param bitti. Bir fincan ısmarlar mısın?"', W / 2, sy, 13, '#cfe0a8', 'center', '700', FONT_B, false); txt('— Mortimer', W / 2 + 200, sy + 18, 11, '#a89878', 'center', '700', FONT_B, false); }
+  { const sy = ty0 + th + 26; txt('"Topraklarımın geri kalanı da seni bekliyor. Tabii cesaretin varsa."', W / 2, sy, 13, '#cfe0a8', 'center', '700', FONT_B, false); txt('— Mortimer', W / 2 + 200, sy + 18, 11, '#a89878', 'center', '700', FONT_B, false); }
   if (isPremium()) txt('SATIN ALINDI — teşekkürler!', W / 2, py + ph - 38, 18, '#a8f0a0', 'center', '400', FONT_T, false);
   else gameButton('buy', W / 2, py + ph - 42, 320, 60, 'SATIN AL · ' + MONET.price, buyPremium, 'green', { shine: true, size: 20 });
   gameButton('restore_b', W / 2, EDGE.b - 26, 300, 42, 'SATIN ALIMLARI GERİ YÜKLE', null, 'dark', { size: 14 }); // 11 Eki: mobilde basılacak boyda
@@ -20469,7 +20483,11 @@ const epOf = (i) => LEVELS[i].ep || 1;
 // 16 Eki (Caner: "2. seferde 1. bölüm aslında 21. bölüm"): bölüm numarası seferler boyunca sürer
 function lvlNo(i) { let n = 0; for (let e = 1; e < epOf(i); e++) n += epLevels(e).length; return n + epLevels(epOf(i)).indexOf(i) + 1; }
 // sefer, önceki seferin son bölümü bitince açılır
+// 23 Eki (Caner: "ilk sürümde 2. sefer 'yakında' kilitli, ilk 20 bölüm cilalı"): mağaza derlemesinde EP_SOON seferleri kapalı, haritada YAKINDA yazar
+const EP_SOON = new Set(MAGAZA ? [2] : []);
+const epSoon = (ep) => EP_SOON.has(ep) && !window.__epSoonOff;
 function epUnlocked(ep) {
+  if (epSoon(ep)) return false;
   if (ep <= 1 || TEST_OPEN) return true;
   const prev = epLevels(ep - 1);
   return (save.stars[prev[prev.length - 1]] || 0) > 0;
@@ -20937,7 +20955,7 @@ function mapEpScroll() { // 16 Eki: seferler tek haritada; taşma yalnız kilitl
   }
   const y = o > 0 ? 196 : EDGE.b - MAPCAM.bar - 18; // üstte bölge adı kurdelesinin (y 130) altında
   ctx.save(); ctx.globalAlpha = Math.min(1, k * 1.3);
-  const label = open ? EPISODES[ne - 1].name + (o > 0 ? ' ▲' : ' ▼') : 'Önce bu seferi bitir'; // 16 Eki: sefer adıyla
+  const label = open ? EPISODES[ne - 1].name + (o > 0 ? ' ▲' : ' ▼') : epSoon(ne) ? 'Yeni sefer yakında!' : 'Önce bu seferi bitir'; // 16 Eki: sefer adıyla
   roundRect(W / 2 - 140, y - 20, 280, 40, 20, 'rgba(24,10,14,0.82)', open ? '#e2a93c' : '#7a6a5a', 2);
   if (open) { ctx.fillStyle = 'rgba(226,169,60,0.35)'; ctx.fillRect(W / 2 - 134, y + 13, 268 * k, 3); }
   fitTxt(label, W / 2, y, 256, 17, open ? '#ffd98a' : '#c8b8a0', 'center', '400', FONT_T, false, 12);
@@ -21477,7 +21495,7 @@ function drawMap() {
   ctx.save(); ctx.globalAlpha = clamp((st - 0.15) / 0.25, 0, 1);
   roundRect(px, TY - 25, pw, 50, 25, 'rgba(24,14,6,0.9)', '#d4ab5a', 2);
   fancyStar(px + 24, TY, 15, true);
-  txt(`${total} / ${LEVELS.length * 5}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
+  txt(`${total} / ${LEVELS.filter(lv => !epSoon(lv.ep)).length * 5}`, px + 86, TY + 1, 21, '#ffe27a', 'center', '400', FONT_T);
   ctx.restore();
   const bx = (i) => px - 14 - RB - i * RS;
   roundBtn('settings', bx(0), TY, RB, 'gear', () => openSettings('map'), { appear: st - 0.15, tile: 'slate' });
@@ -21568,7 +21586,8 @@ function drawEpMenu() {
     const ps = pressScale(key); ctx.save(); ctx.translate(x + w / 2, ry + rh / 2); ctx.scale(ps, ps); ctx.translate(-x - w / 2, -ry - rh / 2);
     fitTxt(ep.name, x + 22, ry + 24, w - 90, 19, open ? '#ffe9b0' : '#a89878', 'left', '400', FONT_T, false, 13);
     fitTxt(ids.length ? `Bölüm ${lvlNo(ids[0])}–${lvlNo(ids[ids.length - 1])}` : '', x + 22, ry + 49, 130, 14, '#c8b898', 'left', '800', FONT_B, false, 11);
-    fancyStar(x + 166, ry + 48, 8, true); txt(`${stars} / ${ids.length * 5}`, x + 180, ry + 49, 14, '#ffe27a', 'left', '800', FONT_B, false);
+    if (epSoon(n)) txt('YAKINDA', x + 166, ry + 49, 14, '#ff9a8a', 'left', '400', FONT_T, false);
+    else { fancyStar(x + 166, ry + 48, 8, true); txt(`${stars} / ${ids.length * 5}`, x + 180, ry + 49, 14, '#ffe27a', 'left', '800', FONT_B, false); }
     if (!open) drawIcon('lock', x + w - 36, ry + rh / 2 - 2, 26);
     else if (on) drawIcon('check', x + w - 36, ry + rh / 2 - 2, 24);
     ctx.restore();
@@ -22672,6 +22691,7 @@ function drawWinMinimal(k) {
   const top = Math.max(VIS.t, EDGE.t), bot = Math.min(VIS.b, EDGE.b), hh = bot - top, Y = (f) => top + hh * f;
   // 17 Eki (Caner: "Mortimer çok küçük, daha büyük ve kaliteli"): solda ekran boyunun ~%64'ü kadar havalı Mortimer; içerik sağda kalan alanın ortasında
   const fa = (t0, d = 0.3) => clamp((k - t0) / d, 0, 1);
+  if (k < 0.05) { G.chestT0 = null; G.chestBurst = false; }
   const SC = drawWinScene(fa(0, 0.45)); // sahne videosu: Mortimer içinde, ayrı poz çizilmez
   if (!SC && !SPR.mortimer_throne) loadStrip('mortimer_throne'); // sahne yoksa eski yol: koltukta Mortimer şeridi
   const pose = SC ? null : spr('mortimer_pose_throne') || spr('mortimer_pose_win'), mh = pose ? Math.min(hh * 0.66, 390) : 0, mw = pose ? mh * pose.width / pose.height : 0;
@@ -22734,20 +22754,40 @@ function drawWinMinimal(k) {
   const V = G.vault, L = G.lootGot, ra = fa(1.45, 0.35);
   if (ra > 0) {
     let vc = 0, bank = 0;
-    if (V) { if (V.t0 == null) V.t0 = time; const u = clamp((time - V.t0 - 0.25) / 1.3, 0, 1), e = 1 - (1 - u) ** 3; vc = Math.floor(V.c * e + 1e-6); bank = Math.round(lerp(V.bank0, V.bank1, e));
+    const chestWait = !!(spr('ico_em_treasure') && ((V && V.c > 0) || (L && (L.c || (L.gear && L.gear.length))) || (G.evReward && G.evReward.c)) && (G.chestT0 == null || time - G.chestT0 < 1.05)); // 23 Eki: sandık açılana dek kasa beklesin
+    if (V && !chestWait) { if (V.t0 == null) V.t0 = time; const u = clamp((time - V.t0 - 0.25) / 1.3, 0, 1), e = 1 - (1 - u) ** 3; vc = Math.floor(V.c * e + 1e-6); bank = Math.round(lerp(V.bank0, V.bank1, e));
       if (vc > (V.n || 0)) { V.n = vc; sfx('coin', 1 + vc * 0.06); } if (u >= 1 && !V.done) { V.done = true; if (V.c > 0) sfx('lootchime'); } }
     if (L && !G.winLoot) { G.winLoot = true; sfx('lootchime'); }
     const cr = vc + (L ? L.c : 0) + (G.evReward && G.evReward.c || 0), gear = L ? L.gear : [], y = Y(0.69), a = easeOutBack(ra); // 18 Eki: etkinlik ödülü kristali
+    // 23 Eki (Caner: "bölüm sonu ödülü belirgin olsun, kasa açılması anı"): ödül varsa önce sandık gelir, sallanır, ışık patlamasıyla açılır;
+    // kristal ve eşyalar sandıktan fırlayıp yanına dizilir. Ödül yoksa eski satır.
+    const CH = spr('ico_em_treasure'), hasR = cr > 0 || gear.length || !!(V && V.c > 0);
+    if (hasR && CH) { if (G.chestT0 == null) G.chestT0 = time; }
+    const ct = G.chestT0 == null ? 9 : time - G.chestT0, CB = 1.05; // CB: açılma anı (sn)
+    if (hasR && CH && ct < CB + 0.6) {
+      const inK = easeOutBack(clamp(ct / 0.35, 0, 1)), sh = ct > 0.35 && ct < CB ? Math.sin(ct * 46) * 0.07 * ((ct - 0.35) / (CB - 0.35)) : 0;
+      const open = ct >= CB, pk = open ? 1 + 0.25 * Math.max(0, 1 - (ct - CB) / 0.25) : 1, cs = 140 * inK * pk;
+      if (open && !G.chestBurst) { G.chestBurst = true; sfx('lootchime'); sfx('coin', 1.2); shakeScreen(3, 0.2);
+        for (let j = 0; j < 30; j++) { const an = rand(0, TAU), v = rand(90, 260); emit(uiParts, { kind: 'glow', add: true, x: cx, y: y - 10, vx: Math.cos(an) * v, vy: Math.sin(an) * v - 60, drag: 2.6, col: j % 3 ? '255,215,110' : j % 2 ? '200,140,255' : '140,255,160', s0: rand(3, 6), s1: 0.4, life: rand(0.5, 1) }); } }
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      glow(ctx, cx, y - 6, 70 + (open ? 90 : 40 * (ct / CB)), '200,140,255', (open ? 0.55 : 0.25 * (ct / CB)) * ra);
+      if (open) { ctx.globalAlpha = ra * Math.max(0, 1 - (ct - CB) / 0.6); ctx.translate(cx, y - 10); ctx.rotate(time * 0.6); const rs = 260; ctx.drawImage(winRays(), -rs / 2, -rs * 0.4, rs, rs * 0.8); }
+      ctx.restore();
+      ctx.save(); ctx.globalAlpha = ra * (open ? Math.max(0, 1 - (ct - CB) / 0.6) : 1); ctx.translate(cx, y + 62); ctx.rotate(sh); ctx.drawImage(CH, -cs / 2, -cs * CH.height / CH.width, cs, cs * CH.height / CH.width); ctx.restore();
+    }
+    const showR = !hasR || !CH || ct >= CB, rk = !CH || !hasR ? 1 : clamp((ct - CB) / 0.35, 0, 1);
     ctx.save(); ctx.translate(cx, y); ctx.scale(a, a);
-    if (cr > 0 || gear.length) {
-      ctx.font = `400 24px ${FONT_T}`; const cw = cr > 0 ? 34 + ctx.measureText('+' + cr).width : 0, gw = gear.length * 50, tw = cw + gw + (cw && gw ? 20 : 0);
+    if (hasR && showR) {
+      if (CH && rk < 1) { ctx.globalAlpha = rk; ctx.translate(0, (1 - easeOutBack(rk)) * 30); }
+      ctx.font = `400 24px ${FONT_T}`; const cw = cr > 0 ? 34 + ctx.measureText('+' + cr).width : 0, gw = gear.length * 50, chw = CH ? 64 : 0, tw = chw + cw + gw + (cw && gw ? 20 : 0);
       let x = -tw / 2;
+      if (CH) { const s2 = 56; ctx.drawImage(CH, x, -s2 * CH.height / CH.width / 2 - 4, s2, s2 * CH.height / CH.width); x += chw; } // açılan sandık ödüllerin başında küçük kalır
       if (cr > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, x + 13, 0, 26, '200,140,255', 0.35 + 0.1 * Math.sin(time * 4)); ctx.restore();
         drawIconArt('crystal', paintCrystal, x + 13, 0, 14); txt('+' + cr, x + 32, 1, 24, '#ffc0b4', 'left', '400', FONT_T, true); x += cw + 20; }
       gear.forEach((it, i) => gearCell(it, x + 22 + i * 50, 0, 42));
     }
     ctx.restore();
-    if (V) {
+    if (V && !chestWait) {
       const bw = 200, bx = cx - bw / 2, by = Y(0.76), f = clamp(bank / VAULT.per, 0, 1);
       ctx.save(); ctx.globalAlpha = ra;
       txt('Kasa', bx - 10, by + 1, 14, '#cfc4a8', 'right', '800', FONT_B, true);

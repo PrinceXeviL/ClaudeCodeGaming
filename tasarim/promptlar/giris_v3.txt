@@ -1,0 +1,37 @@
+Giriş ekranı v3 (23 Eki). Ekler sırayla: 1_simdiki_giris.jpg, 2_mortimer_model.jpg, 3_kale.jpg, 4_iskelet_ordusu.jpg, 5_fincan.jpg
+
+Redraw the title key art from image 1 in EXACTLY the same hand-painted dark cartoon art style, the same wide 16:9 composition, the same night sky, full moon and lighting. Keep the necromancer seated on the big bone throne on the LEFT, but make these changes:
+1) The necromancer is now EXACTLY the character from image 2: tall slim skeleton in the crimson hood with gold trim, gold skull medallion, bone shoulder pads with small skulls, long crimson robe, skeletal bony hands. NO scythe: he holds the horned-skull staff from image 2 (green fire in its eye sockets, red crystal) upright in one hand. In the other bony hand he holds EXACTLY the small cup from image 5: a pale mint-white porcelain teacup with a thin red-and-gold patterned rim. No steam. He sits relaxed and confident, chin up, a proud, smug grin, legs crossed in fluffy black slippers.
+2) The house in the background on the hill is EXACTLY the castle from image 3 (purple stone keep with the bone-railed balcony, green glowing windows), replacing the old chapel.
+3) The enemy army on the right is neatly organized: clear ordered ranks of red-and-gold legionaries with shields and spears marching in formation, banners raised in a straight line, a war elephant and a siege tower behind them, priests and knights in their own rank. Less chaos, every unit readable.
+4) Facing them, between the throne and the enemy army, a disciplined skeleton army from image 4 stands in ranks: shield skeletons in front, armored skeleton knights in the middle, skeleton archers at the back with bows drawn, purple tattered cloaks, green eye lights. The two armies face each other across an empty strip of cursed ground in the center.
+Rules: no crosses anywhere (the enemy holy symbol is a golden sun disk). No text, no logo, no letters. Keep the top-center area of the sky simple and dark (room for the game logo). Clean hard silhouettes, no smoke clouds, no fog banks.
+
+--- 2. tur düzeltme (ekler: 6_deneme1.jpg, 2_mortimer_model.jpg, 4_iskelet_ordusu.jpg) ---
+Edit image 1. Keep the whole composition, the castle, the moon, the throne, the staff, the cup and the enemy army exactly as they are, and only make these fixes:
+1) The necromancer must match image 2 exactly: he is a SKELETON everywhere, so his hands, wrists, ankles and feet are bare bones, never skin. Replace his old robe details (black feather collar, chains, hourglass) with the outfit from image 2: bone shoulder pads with small skulls, the gold skull medallion on his chest, a belt, the long crimson robe with gold trim. Keep the fluffy black slippers on his bony feet.
+2) Remove all green and purple smoke and flame wisps around the throne. Clean background there.
+3) Make the skeleton army from image 4 much bigger and clearly visible in the center-left foreground: three neat ranks facing right toward the enemy, shield skeletons in the front rank, armored skeleton knights behind them, skeleton archers with drawn bows in the back rank, purple tattered cloaks, green eye lights. About 15 to 20 skeletons, ordered like a real army.
+4) Leave a clear empty strip of ground between the skeleton ranks and the enemy front line.
+No text, no crosses, no new smoke or fog.
+
+--- 3. tur (Caner: boş görünüyor, iskeletler olmasın, eskisi gibi yalnız düşman). Ekler: 7_deneme2.jpg, 6_deneme1.jpg ---
+Edit image 1. Keep the necromancer on his throne EXACTLY as he is in image 1 (skeleton body, crimson hood, bone shoulder pads, gold medallion, staff, teacup, slippers), keep the castle, the moon and the throne exactly as they are.
+Changes:
+1) Remove ALL the skeleton soldiers in the middle.
+2) Fill the whole center and right side with the enemy army exactly like in image 2: a big, dense crowd of red-and-gold legionaries with sun shields, torches and banners, knights, cavalry, priests, hunters with dogs, the golden sun champion, marching toward the necromancer and reaching close to his throne, so the picture feels full and crowded like image 2. Siege tower, war elephant, lion cannon and the rolling shrine wagon stay behind them.
+3) The small gravestone at the bottom left has a cross carved on it: replace it with a plain round gravestone with a small skull, no cross.
+No skeleton soldiers, no text, no crosses, no smoke or fog.
+
+--- 4. tur (Caner: bacaklar görünmesin, cübbe kapatsın; el insan gibi; düşman çok aşağıda). Ek: 8_deneme3.jpg ---
+Edit this image. Keep everything else exactly as it is (the castle, the moon, the throne, the staff, the teacup, the whole enemy army and its units).
+1) The necromancer's long crimson robe falls all the way down to the ground and fully covers his legs: no bare leg bones visible at all, only the tips of his fluffy black slippers peek out from under the robe hem. He sits upright and regal.
+2) Both of his hands are clearly bare skeleton bones: thin separate finger bones and knuckles, bone-white, no flesh, no skin-colored palm. This includes the hand resting on the skull armrest and the hand holding the teacup.
+3) Move the whole enemy army a bit higher and further back in the picture: the front line stands around the middle height of the image on the open ground, not at the bottom edge; leave a calm strip of dark ground along the bottom of the image.
+4) The armored knight at the bottom right has a red cross-shaped emblem on his white tabard: replace it with a round golden sun disk emblem.
+No crosses anywhere, no text, no smoke or fog.
+
+--- 5. tur (Caner: yine bacak bacak üstüne atsın). Ek: 9_deneme4.jpg ---
+Edit this image. Keep everything exactly as it is (the castle, moon, throne, staff, teacup, his bony hands, the whole enemy army).
+Only change the necromancer's pose: he sits relaxed and confident with his legs crossed, one knee over the other, like a king who is not impressed. His long crimson robe drapes over the crossed legs and covers them completely: no leg bones visible, only one fluffy black slipper sticks out forward from under the robe hem at the crossed foot, the other slipper just peeks out at the ground.
+No crosses, no text, no smoke or fog.
