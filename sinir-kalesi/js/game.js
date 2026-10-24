@@ -6144,7 +6144,10 @@ function updateSoldier(s, dt) {
       const a = (k + 1) / (n + 1) * Math.PI - Math.PI / 2; spot = { x: t.x + side * 13 * Math.cos(a) + side * 4, y: t.y + 11 * Math.sin(a) };
     }
     if (shieldDash(s, t, dt)) { s.anim += dt; return; } // Kalkan Hamlesi: hedefe tabutla atılır
-    const arrived = moveToward(s, spot.x, spot.y, dt);
+    // 24 Eki (Caner: "zombiler durdukları yerde adım atıyor"): kalabalıkta yan noktaya (spot) varamayan zombi düşmana 19'dan yakın olamayınca
+    // ne vuruyor ne duruyordu; zombi ZREACH içindeyse yürümeyi bırakıp vurur
+    const zr = s.zombie && dist(s.x, s.y, t.x, t.y) < ZREACH;
+    const arrived = zr || moveToward(s, spot.x, spot.y, dt);
     if (arrived || dist(s.x, s.y, t.x, t.y) < 19) {
       faceTo(s, t.x);
       if (eliteSkill(s, dt)) { s.anim += dt; return; } // Tabut Duvarı / Ruh Biçimi oynarken saldırmaz
@@ -7036,7 +7039,7 @@ function castNecro(id, x, y) {
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
 // dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
 // sep = birimler arası en az uzaklık (separateUnits)
-const ZMOVE = 0.9; // 24 Eki (Caner): dirilen zombiler %10 yavaş yürür (yürüyüş şeridi de hıza bağlı, o da yavaşlar)
+const ZMOVE = 0.9, ZREACH = 25; // 24 Eki (Caner): dirilen zombiler %10 yavaş yürür (yürüyüş şeridi de hıza bağlı, o da yavaşlar)
 // 24 Eki (Caner: "zombilere çürüme efekti"): gövdeden ara ara koyu yeşil çürük sıvı damlar, yere düşünce söner; ömrü azaldıkça sıklaşır
 const ZROT = { min: 0.9, max: 2.2, col: '#3f5a22' };
 const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150, march: 85, touch: 16, stuck: 4, ignore: 3, cut: 1.15, cutAdd: 30, free: 1.5 }; // free: emirden sonra bu kadar sn hiçbir düşmana takılmadan yürür // cut/cutAdd: yol bu kadar uzunsa (düz uzaklık × cut + cutAdd) kestirir // touch: emirle yürürken yalnız bu kadar yakındakiyle dövüşür; stuck: bu kadar sn vuramazsa hedefi bırakır (ignore sn ona dönmez)
@@ -7205,7 +7208,7 @@ function zombieHunt(s) {
     // ilerleyemiyor (kalabalık itiyor): 1,2 sn yerinde sayarsa önündeki düşmanla dövüşür, düşman yoksa şerit değiştirip yandan geçer
     if (!near) { const P = s.zProg; if (!P || dist(s.x, s.y, P.x, P.y) > 5) s.zProg = { x: s.x, y: s.y, t: G.t }; else if (G.t - P.t > 1.2) { s.zProg = null;
       let nb = null, nbd = 48; for (const o of G.enemies) { if (o.dead || (o.def.flying && !s.zFly) || o.under || o.reviveT > 0 || !inReach(o) || !zReach(o) || zIgnored(s, o) || left(o)) continue; const d = dist(o.x, o.y, s.x, s.y); if (d < nbd) { nbd = d; nb = o; } }
-      if (nb) near = nb; else s.zlane = -(s.zlane || ZOMBIE.lane); } }
+      if (nb) near = nb; else if (dist(s.x, s.y, s.post.x, s.post.y) < 48) { s.moving = false; s.atPost = true; s.zLeave = null; s.rx = s.x; s.ry = s.y; return; } else s.zlane = -(s.zlane || ZOMBIE.lane); } } // 24 Eki: hedefe yakın ve kalabalıktan ilerleyemiyor: vardı say (yerinde adım atmasın)
     if (near) { s.moving = false; s.zResume = true; s.zProg = null; s.target = near; if (!near.blocker) near.blocker = s; s.rx = s.x; s.ry = s.y; zLock(s); return; }
     if (zombieRoadTo(s, s.post.x, s.post.y)) { s.moving = false; s.zLeave = null; } return; } // vardı: bırakılan rakipler yeniden hedef olabilir
   if (s.order) { // Mortimer'ın emri: gösterilen düşmana yol boyunca yürür (yakındaysa doğrudan); yetişince olağan dövüş seçimi onu tutar
@@ -7217,7 +7220,11 @@ function zombieHunt(s) {
     const d = dist(o.x, o.y, s.x, s.y);
     if (d < bd) { bd = d; best = o; }
   }
-  if (!best) { if (s.post) { const pd = dist(s.x, s.y, s.post.x, s.post.y); if (pd > (s.atPost ? 26 : 10)) { s.atPost = false; zombieRoadTo(s, s.post.x, s.post.y); } else { s.atPost = true; s.rx = s.x; s.ry = s.y; idleFace(s); } } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; idleFace(s); } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler; 16 Eki: yerinden itildiyse yol boyunca döner
+  if (!best) { if (s.post) { const pd = dist(s.x, s.y, s.post.x, s.post.y);
+      // 24 Eki (Caner: "zombiler durdukları yerde adım atıyor"): aynı yere gönderilen kalabalık hedefe 10 birim yaklaşamayınca hiç varmıyor, itişip yerinde sayıyordu;
+      // hedefe 48 birimden yakınken 0,8 sn ilerleyemeyen zombi vardı sayılır ve durur
+      const PP = s.postProg; if (!PP || dist(s.x, s.y, PP.x, PP.y) > 4) s.postProg = { x: s.x, y: s.y, t: G.t }; else if (!s.atPost && pd < 48 && G.t - PP.t > 0.8) s.atPost = true;
+      if (pd > (s.atPost ? 52 : 10)) { s.atPost = false; zombieRoadTo(s, s.post.x, s.post.y); } else { s.atPost = true; s.rx = s.x; s.ry = s.y; idleFace(s); } } else if (!(s.born != null && G.t < s.born)) { s.rx = s.x; s.ry = s.y; idleFace(s); } return; } // olduğu yerde (emir verildiyse emir yerinde) bekler; 16 Eki: yerinden itildiyse yol boyunca döner
   // 16 Eki (Caner: "bir düşmanı öldürünce önce gönderdiğim yere dönüyor, sonra saldırıyor"): yakındaki düşmana yola ya da emir yerine
   // dönmeden doğrudan yürür ve onu hedef alır; yol boyunca yürüme yalnız uzaktaki düşman için
   if (bd <= ZOMBIE.direct && !(s.born != null && G.t < s.born)) { s.target = best; if (!best.blocker && !best.def.noblock) best.blocker = s; s.rx = s.x; s.ry = s.y; zLock(s); return; }
@@ -7328,7 +7335,8 @@ function strongCorpseMark(f) { // güçlü ceset (iri düşmanın ölüsü): üs
 // legion: sahada n ya da daha fazla dirilen varken hepsi dmg kat sert vurur (kale üstünde sayaç)
 // terror: kalkan ölünün yanındaki düşmanlar kısa korkar ya da donup kalır (r yarıçap, fear sn, stun sn, cd: aynı düşman için bekleme)
 // sac: dirilene iki kez dokununca patlar (r, taban hasar + azami canın payı); yakındaki cesetler zincirleme patlar (chainR, chain hasar)
-const ZOMBIE_X = { boss: { on: true, hp: 0.18, dmg: 0.6, life: 2, h: 1.1 }, legion: { n: 12, dmg: 1.15 }, // 24 Eki (Caner: "zombilerle bölüm bitiyor"): dev ölü 0,3/1 → 0,18/0,6, lejyon 10/1,25 → 12/1,15 terror: { on: false, r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
+// 24 Eki (Caner: "zombilerle bölüm bitiyor"): dev ölü 0,3/1 → 0,18/0,6, lejyon 10/1,25 → 12/1,15
+const ZOMBIE_X = { boss: { on: true, hp: 0.18, dmg: 0.6, life: 2, h: 1.1 }, legion: { n: 12, dmg: 1.15 }, terror: { on: false, r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
   sac: { r: 55, base: 30, hpK: 0.5, chainR: 80, chain: 45, chainHit: 40, arm: 2 } };
 const TERROR_LINES = ['Marcus?!', 'O benim kardeşimdi!', 'Annem!', 'Bu adil değil!', 'Dün beraber yemek yemiştik!', 'Geri çekilin!', 'Kalktı!'];
 function zombieKind(s, tp, D) { // türe göre özellik: kalkanlı lejyoner kalkan tutar, atlı hücum eder, köpek hızlı koşar
@@ -13120,6 +13128,14 @@ function drawSoldier1(s) {
   // silahlı kol başın üstünde havada, coşkuda hep birlikte biraz daha yukarı itilir. Şeritli iri birimler (CHEER_ATK) saldırının kurulma karesini tutar.
   CHEER_ATK = -ATK_PREP * (0.35 * C + 0.6 * P * C); CHEER_POSE = { c: C, p: P, seed: s.slot || 0 }; drawSoldier0(s); CHEER_ATK = null; CHEER_POSE = null;
 }
+// 24 Eki (Caner: "dirilen zombiler durdukları yerde adım atıyor"): yürüme kararı tek karelik kaymaya (>0,05) değil, yumuşatılmış hıza bakar;
+// ayırma itişi ve küçük düzeltmeler yürüyüş şeridini oynatmaz. Hız eşiği birimin kendi hızının WALK_K katı
+const WALK_K = 0.3;
+function unitWalking(s) {
+  const now = time, dtf = Math.max(0.004, now - (s.pt ?? now - 0.016)), d = s.px === undefined ? 0 : dist(s.x, s.y, s.px, s.py);
+  s.px = s.x; s.py = s.y; s.pt = now; const v = d / dtf; s.wv = (s.wv || 0) + (v - (s.wv || 0)) * Math.min(1, dtf * 12);
+  return s.wv > (s.speed || 40) * WALK_K;
+}
 function drawSoldier0(s) {
   if (s.wall) { drawBoneWall(s); return; }
   if (s.pet && !s.dead) { drawPet(s); return; }
@@ -13133,7 +13149,7 @@ function drawSoldier0(s) {
     return;
   }
   const bob = Math.abs(Math.sin(s.anim * 9)) * 1.5;
-  const fighting = (s.target && dist(s.x, s.y, s.target.x, s.target.y) < 21) || s.shootT > 0;
+  const fighting = (s.target && dist(s.x, s.y, s.target.x, s.target.y) < (s.zombie ? ZREACH + 1 : 21)) || s.shootT > 0;
   const r = s.hero ? 8 : 5.5;
   const name = s.hero ? s.def.sprite : s.merc ? 'soldier' : s.militia ? 'militia' : 'soldier';
   // iri birimler kendi görselleriyle (çürük tonu yok)
@@ -13164,7 +13180,7 @@ function drawSoldier0(s) {
     if (base) {
       const key = s.zname + '_rot', im = rottenOf(s.zname, base);
       if (ARMS[s.zname] && !ARMS[key]) ARMS[key] = ARMS[s.zname];
-      const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
+      const walking = unitWalking(s); // 24 Eki: yerinde itişme (ayırma) adım attırmasın
       s.px = s.x; s.py = s.y;
       const ch = s.zh || 30 * UNIT_K;
       if (s.born != null && G.t < s.born) return; // 13 Eki: ayaktaki mor ışık kalktı, gölge drawUnit'te
@@ -13197,7 +13213,7 @@ function drawSoldier0(s) {
     if (look >= 6 && !spr('unit_skel_' + look)) look = spr('unit_skel_6') ? 6 : 2; // okçu görseli gelene kadar
     const key = 'unit_skel_' + look, im = spr(key) || spr('unit_skel_1');
     s.skelKey = spr(key) ? key : 'unit_skel_1'; // ölünce kemik yığını bu görselden kesilir
-    const walking = s.px !== undefined && dist(s.x, s.y, s.px, s.py) > 0.05;
+    const walking = unitWalking(s);
     s.px = s.x; s.py = s.y;
     const spR = sp2 && sp2 !== 'bow' && s.tower.ab ? s.tower.ab[sp2] || 0 : 0; // kalkan/kılıç kademesi
     const ch = SKEL_H[look] * UNIT_K * (1 + 0.05 * Math.max(0, spR - 1));
@@ -20547,8 +20563,9 @@ function keyTorch(bg, ox, oy, iw, ih, f, i) {
 }
 function drawKeyArt(bg) {
   // kapak görseli ekranın tamamını kaplar (geniş telefonda üstten/alttan biraz kırpılır, yanlarda boşluk kalmaz)
-  const z = 1.035 + Math.sin(time * 0.1) * 0.012, k = Math.max(VIS.w / bg.width, VIS.h / bg.height) * z, iw = bg.width * k, ih = bg.height * k;
-  const ox = VIS.l + (VIS.w - iw) / 2 + Math.sin(time * 0.07) * 6, oy = VIS.t + (VIS.h - ih) / 2 + Math.cos(time * 0.09) * 3, s = iw / W;
+  // 24 Eki (Caner: "giriş resmi bulanık"): resim sabit (yavaş yakınlaşma/kayma her karede yeniden örnekleyip bulanıklaştırıyordu); 2560 px keskin kopya
+  const k = Math.max(VIS.w / bg.width, VIS.h / bg.height), iw = bg.width * k, ih = bg.height * k;
+  const ox = VIS.l + (VIS.w - iw) / 2, oy = VIS.t + (VIS.h - ih) / 2, s = iw / W;
   ctx.drawImage(bg.width > iw * 1.5 ? pickMip(ctx, bg, iw) : bg, ox, oy, iw, ih);
   const P = (f) => [ox + f[0] * iw, oy + f[1] * ih];
   TITLE_C.keyP = { ox, oy, iw, ih };
@@ -20556,14 +20573,14 @@ function drawKeyArt(bg) {
   for (const [i, f] of KEY_FX.torch.entries()) keyTorch(bg, ox, oy, iw, ih, f, i);
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   const [mx, my] = P(KEY_FX.moon);
-  glow(ctx, mx, my, 120 * s, '210,240,255', 0.2 + Math.sin(time * 0.8) * 0.04);
+  glow(ctx, mx, my, 120 * s, '210,240,255', 0.12 + Math.sin(time * 0.8) * 0.03); // 24 Eki: ışıklar %35 kısık (aşırı parlak)
   // büyü alevleri ve kule pencereleri: yavaş nabız
-  for (const [i, f] of KEY_FX.flame.entries()) { const [x, y] = P(f); glow(ctx, x, y - Math.sin(time * 3 + i) * 4, f[2] * s * (1 + Math.sin(time * 4.3 + i * 2) * 0.12), f[3], 0.22 + Math.sin(time * 5.1 + i) * 0.07); }
-  for (const [i, f] of KEY_FX.win.entries()) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '120,255,140', 0.18 + Math.sin(time * 1.3 + i * 0.8) * 0.12); }
+  for (const [i, f] of KEY_FX.flame.entries()) { const [x, y] = P(f); glow(ctx, x, y - Math.sin(time * 3 + i) * 4, f[2] * s * (1 + Math.sin(time * 4.3 + i * 2) * 0.12), f[3], 0.15 + Math.sin(time * 5.1 + i) * 0.05); }
+  for (const [i, f] of KEY_FX.win.entries()) { const [x, y] = P(f); glow(ctx, x, y, 13 * s, '120,255,140', 0.12 + Math.sin(time * 1.3 + i * 0.8) * 0.08); }
   // meşale ışığı titrer
   for (const [i, f] of KEY_FX.torch.entries()) {
     const [x, y] = P(f), fl = Math.sin(time * 11 + i * 1.7) * 0.5 + Math.sin(time * 17.3 + i) * 0.5;
-    glow(ctx, x, y, (16 + fl * 3) * s, '255,170,70', 0.32 + fl * 0.1);
+    glow(ctx, x, y, (16 + fl * 3) * s, '255,170,70', 0.2 + fl * 0.07);
     if (Math.random() < 0.025) emit(uiParts, { kind: 'glow', add: true, x, y: y - 6 * s, vx: rand(-5, 5), vy: rand(-28, -16), col: '255,170,70', s0: rand(1, 2), s1: 0.3, life: rand(0.8, 1.5), a: 0.9 });
   }
   // Mortimer'ın gözleri ve tahttaki kafatası: kızıl parıltı, ara ara göz kırpar
@@ -20699,7 +20716,7 @@ function drawNecroTitle(st) {
     const g = ctx, x0 = VIS.l + VIS.w * 0.3, x1 = VIS.l + VIS.w * 0.46; // her karede (geniş ekranda VIS 0..W dışına taşar, önbellek tuvali kapsamaz)
     let gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(10,4,16,0)'); gr.addColorStop(1, 'rgba(10,4,16,0.5)'); g.fillStyle = gr; g.fillRect(x0, VIS.t, x1 - x0, VIS.h);
     g.fillStyle = 'rgba(10,4,16,0.5)'; g.fillRect(x1, VIS.t, VIS.r - x1, VIS.h);
-    gr = g.createRadialGradient(W * 0.57, 160, 40, W * 0.57, 160, 300); gr.addColorStop(0, 'rgba(6,2,10,0.42)'); gr.addColorStop(1, 'rgba(6,2,10,0)'); g.fillStyle = gr; g.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    gr = g.createRadialGradient(W * 0.57, 192, 40, W * 0.57, 192, 300); gr.addColorStop(0, 'rgba(6,2,10,0.42)'); gr.addColorStop(1, 'rgba(6,2,10,0)'); g.fillStyle = gr; g.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
     gr = g.createLinearGradient(0, VIS.b - 170, 0, VIS.b); gr.addColorStop(0, 'rgba(6,2,10,0)'); gr.addColorStop(1, 'rgba(6,2,10,0.55)'); g.fillStyle = gr; g.fillRect(VIS.l, VIS.b - 170, VIS.w, 170);
   }
   // uzakta ara ara şimşek
@@ -20719,7 +20736,7 @@ function drawNecroTitle(st) {
   // logo: düşerek gelir, sonra hafifçe süzülür
   const e = easeOutBack(clamp(st / 0.8, 0, 1));
   ctx.save(); ctx.globalAlpha = clamp(st / 0.3, 0, 1);
-  if (key) drawTitleLogo(W * 0.57, 156 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.62 * (0.85 + 0.15 * e)); // sağ üst düğmelerin altında kalsın (16 Eki: düğmeler büyüdü, logo aşağıda)
+  if (key) drawTitleLogo(W * 0.57, 192 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.6 * (0.85 + 0.15 * e)); // 24 Eki: sağ üst düğmelerden uzak // sağ üst düğmelerin altında kalsın (16 Eki: düğmeler büyüdü, logo aşağıda)
   else drawTitleLogo(W / 2, 102 + Math.sin(time * 1.2) * 3 - (1 - e) * 40, 0.92 * (0.85 + 0.15 * e));
   ctx.restore();
   necroPlayButton('play', W / 2, 452, 230, 56, 'OYNA', () => goTitle(() => { screen = 'map'; }), st - 0.6);
@@ -23363,6 +23380,7 @@ function crimsonRibbon(cx, cy, text, size = 24, w = 0) {
 // rakip oyunlar duraklatmalarından alınanlar: süslü çerçeve ve arma, büyük ana düğme, savaş durumu özeti, hızlı ses
 // düğmeleri, her açılışta bir ipucu. Arkada yavaş dönen ritüel çemberi, kadife zeminde Necromancer deseni, köşelerde yakut süsler.
 // 24 Eki (Caner: "tips and tricks"): duraklatma ve yükleme ekranında Mortimer'ın tavsiyeleri; kurallar koddan doğrulandı (ARMOR_CLASS, SELL_RATIO, VAULT, SPELL_SLOTS, HERO_DOWN). Çeviri: tools/dil/ceviri_24eki_tavsiye.py
+const TIP_EVERY = 5; // sn
 const PAUSE_TIPS = [
   "Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.",
   "Kalabalık bölüğe Korku büyüsü at: geri kaçarlar, kuleler bu arada işini görür.",
@@ -23571,28 +23589,30 @@ function drawPauseMenu(k, cx, cy) {
   // sağ: savaş durumu ve hızlı ses düğmeleri
   const rx = x2 + tw / 2 + 26, rw = px + pw - 40 - rx, rcx = rx + rw / 2, a = clamp((k - 0.25) / 0.3, 0, 1);
   ctx.save(); ctx.globalAlpha *= a;
-  roundRect(rx, y1 - th / 2, rw, 164, 12, 'rgba(10,3,10,0.45)', 'rgba(201,168,101,0.45)', 1.5);
+  const CH = 150; // 24 Eki (Caner: ses düğmeleri tabloya biniyordu): tablo kısaldı, düğmeler altında boşlukla
+  if (ukOk()) ukCard(rx, y1 - th / 2, rw, CH); else roundRect(rx, y1 - th / 2, rw, CH, 12, 'rgba(10,3,10,0.45)', 'rgba(201,168,101,0.45)', 1.5);
   txt('SAVAŞ DURUMU', rcx, y1 - th / 2 + 20, 14, '#e6c27a', 'center', '400', FONT_T, false);
   ctx.fillStyle = 'rgba(201,168,101,0.35)'; ctx.fillRect(rx + 16, y1 - th / 2 + 34, rw - 32, 1.2);
   const mm = Math.floor(G.t / 60), ss = Math.floor(G.t % 60), nW = G.endless ? '∞' : G.lv.waves.length;
   const rows = [['skull', 'Dalga', `${Math.max(0, G.wave)}/${nW}`], ['heart', 'Can', `${G.lives}/${G.maxLives}`], ['coin', 'Altın', String(Math.floor(G.gold))], ['fast', 'Süre', `${mm}:${String(ss).padStart(2, '0')}`], ['skull', 'Öldürülen', String(G.killN || 0)]];
-  rows.forEach(([ic, lb, v], i) => { const yy = y1 - th / 2 + 52 + i * 24;
+  rows.forEach(([ic, lb, v], i) => { const yy = y1 - th / 2 + 48 + i * 21;
     drawIcon(ic, rx + 26, yy, 20); txt(lb, rx + 44, yy + 1, 14, '#d8c8e0', 'left', '700', FONT_B, false); txt(v, rx + rw - 18, yy + 1, 17, '#fff0d8', 'right', '400', FONT_T, false); });
   ctx.restore();
-  const mOn = !muted && setting('music'), sOn = !muted && setting('sfx'), ty = y2 + 22;
+  const mOn = !muted && setting('music'), sOn = !muted && setting('sfx'), ty = y1 - th / 2 + CH + 40;
   const tog = (kk, xx, on, lb, fn) => { roundBtn(kk, xx, ty, 25, on ? 'sound' : 'mute', fn, { appear: k - 0.32, style: on ? 'blue' : 'wood', active: on, activeCol: '190,120,255' });
-    txt(lb, xx, ty + 38, 13, on ? '#e8d8f0' : '#8a7a90', 'center', '700', FONT_B, false); };
+    txt(lb, xx, ty + 36, 13, on ? '#e8d8f0' : '#8a7a90', 'center', '700', FONT_B, false); };
   tog('ov_mus', rcx - rw * 0.24, mOn, 'Müzik', () => { if (mOn) setSetting('music', false); else { setMuted(false); setSetting('music', true); } sfx('click'); });
   tog('ov_sfx', rcx + rw * 0.24, sOn, 'Efektler', () => { if (sOn) setSetting('sfx', false); else { setMuted(false); setSetting('sfx', true); } sfx('click'); });
   // alt: Mortimer'ın tavsiyesi (her açılışta başka)
-  const tip = PAUSE_TIPS[Math.floor(overlayT * 7.3) % PAUSE_TIPS.length], tyy = py + ph - 76, ta = clamp((k - 0.4) / 0.4, 0, 1); // 24 Eki (Caner: sıkışık): başlık ayrı satırda, yazı tam genişlikte ortalı
+  const tE = time - overlayT, tN = Math.floor(tE / TIP_EVERY), tPh = tE - tN * TIP_EVERY; // 24 Eki (Caner): tavsiye 5 sn'de bir yenilenir, yumuşak geçişle
+  const tip = PAUSE_TIPS[(Math.floor(overlayT * 7.3) + tN) % PAUSE_TIPS.length], tyy = py + ph - 76, ta = clamp((k - 0.4) / 0.4, 0, 1), tf = clamp(Math.min(tN ? tPh : 1, TIP_EVERY - tPh) / 0.35, 0, 1); // 24 Eki (Caner: sıkışık): başlık ayrı satırda, yazı tam genişlikte ortalı
   ctx.save(); ctx.globalAlpha *= ta;
   ctx.fillStyle = 'rgba(201,168,101,0.3)'; ctx.fillRect(px + 70, tyy - 14, pw - 140, 1.2);
   ctx.font = `800 13px ${FONT_B}`; const lw = ctx.measureText(TR("Mortimer'ın tavsiyesi")).width;
   drawSkullIcon(cx - lw / 2 - 12, tyy + 3, 8);
   txt("Mortimer'ın tavsiyesi", cx + 6, tyy + 3, 13, '#e6c27a', 'center', '800', FONT_B, false);
   const lines = wrapLines(tip, pw - 150, 14, '700', FONT_B, 2);
-  lines.forEach((l, i) => txt(l, cx, tyy + 24 + i * 18, 14, '#d9c8ea', 'center', '700', FONT_B, false));
+  ctx.save(); ctx.globalAlpha *= tf; lines.forEach((l, i) => txt(l, cx, tyy + 24 + i * 18, 14, '#d9c8ea', 'center', '700', FONT_B, false)); ctx.restore();
   ctx.restore();
 }
 // duraklatma: panelin solunda Mortimer, elinde ruh ışığı; yerde süzülen sis (Necromancer havası)
@@ -23726,7 +23746,7 @@ function drawOverlay() {
   } else if (overlay === 'lose') {
     const LY = NECRO ? 22 : 0; // 24 Eki: pencere 50 yüksek, içerik aşağı
     if (NECRO) plaqueTitle(cx, py + 50, G.endless ? 'SONSUZ GECE BİTTİ' : 'KALE DÜŞTÜ', '#ff9a8a', 28); else ribbon(cx, py + 4, 280, 'KALE DÜŞTÜ', 'red', 28);
-    ctx.save(); ctx.translate(cx, py + (NECRO ? 132 : 110)); // 24 Eki: kafatası başlığa binmesin ctx.rotate(Math.sin(time * 2) * 0.05);
+    ctx.save(); ctx.translate(cx, py + (NECRO ? 132 : 110)); ctx.rotate(Math.sin(time * 2) * 0.05); /* 24 Eki: kafatası başlığa binmesin */
     uiEm('defeat', 0, -6, 50) || drawIcon('skull', 0, 0, 64); ctx.restore();
     if (G.endless) {
       txt(`${G.wave} dalga dayandın`, cx, py + LY + 164, 22, '#e8dcc0', 'center', '400', FONT_T, false);
