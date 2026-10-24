@@ -20664,6 +20664,13 @@ function drawNecroTitle(st) {
     TITLE_C.vig = c;
   }
   if (!key) ctx.drawImage(TITLE_C.vig, 0, 0, W, H); // yeni kapak görselinde karartma yok (Caner istemedi)
+  else { // 24 Eki (Caner: "arka plan çok parlak, yazı ve Mortimer daha ön planda olmalı"): Mortimer'ın sağındaki ordu ve gök kararır, logonun arkası koyu
+    const g = ctx, x0 = VIS.l + VIS.w * 0.3, x1 = VIS.l + VIS.w * 0.46; // her karede (geniş ekranda VIS 0..W dışına taşar, önbellek tuvali kapsamaz)
+    let gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(10,4,16,0)'); gr.addColorStop(1, 'rgba(10,4,16,0.5)'); g.fillStyle = gr; g.fillRect(x0, VIS.t, x1 - x0, VIS.h);
+    g.fillStyle = 'rgba(10,4,16,0.5)'; g.fillRect(x1, VIS.t, VIS.r - x1, VIS.h);
+    gr = g.createRadialGradient(W * 0.57, 160, 40, W * 0.57, 160, 300); gr.addColorStop(0, 'rgba(6,2,10,0.42)'); gr.addColorStop(1, 'rgba(6,2,10,0)'); g.fillStyle = gr; g.fillRect(VIS.l, VIS.t, VIS.w, VIS.h);
+    gr = g.createLinearGradient(0, VIS.b - 170, 0, VIS.b); gr.addColorStop(0, 'rgba(6,2,10,0)'); gr.addColorStop(1, 'rgba(6,2,10,0.55)'); g.fillStyle = gr; g.fillRect(VIS.l, VIS.b - 170, VIS.w, 170);
+  }
   // uzakta ara ara şimşek
   TITLE_C.bolt = TITLE_C.bolt ?? time + 5;
   if (time > TITLE_C.bolt) { TITLE_C.bolt = time + rand(7, 13); TITLE_C.flash = time; }
