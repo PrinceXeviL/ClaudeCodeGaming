@@ -6044,6 +6044,10 @@ function updateSoldier(s, dt) {
   // kalkış (ölüm kareleri tersten, DIE_T; şerit yoksa 0,6 sn) + ZRISE.hold boyunca yerinden kıpırdamaz, saldırmaz
   if (s.minion && s.born != null) { s.riseHold ??= (s.zname ? DIE_T : 0.6) + ZRISE.hold; if (G.t < s.born + s.riseHold) { s.moving = false; s.target = null; return; } }
   if (s.flash > 0) s.flash -= dt; if (s.hurtT > 0) s.hurtT -= dt;
+  if (s.zombie && !s.zFly && !s.dead && G.t > (s.dripAt ?? (s.dripAt = G.t + rand(0, ZROT.max)))) { // çürük damla
+    const lk = s.maxLife ? clamp(s.life / s.maxLife, 0.25, 1) : 1; s.dripAt = G.t + rand(ZROT.min, ZROT.max) * lk;
+    const hh = s.zh || 30; emit(G.parts, { kind: 'dot', x: s.x + rand(-hh * 0.15, hh * 0.15), y: s.y - hh * rand(0.3, 0.65), vx: rand(-6, 6), vy: rand(4, 14), g: 320, floor: s.y + rand(-1, 3), col: ZROT.col, s0: rand(1.6, 2.4), s1: 1.4, life: 1.6, a: 0.9, fadeOut: 0.5 });
+  }
   if (s.buffT > 0) s.buffT -= dt;
   if (s.spinT > 0) s.spinT -= dt;
   if (s.wardT > 0) s.wardT -= dt;
@@ -7032,6 +7036,9 @@ function castNecro(id, x, y) {
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
 // dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
 // sep = birimler arası en az uzaklık (separateUnits)
+const ZMOVE = 0.9; // 24 Eki (Caner): dirilen zombiler %10 yavaş yürür (yürüyüş şeridi de hıza bağlı, o da yavaşlar)
+// 24 Eki (Caner: "zombilere çürüme efekti"): gövdeden ara ara koyu yeşil çürük sıvı damlar, yere düşünce söner; ömrü azaldıkça sıklaşır
+const ZROT = { min: 0.9, max: 2.2, col: '#3f5a22' };
 const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150, march: 85, touch: 16, stuck: 4, ignore: 3, cut: 1.15, cutAdd: 30, free: 1.5 }; // free: emirden sonra bu kadar sn hiçbir düşmana takılmadan yürür // cut/cutAdd: yol bu kadar uzunsa (düz uzaklık × cut + cutAdd) kestirir // touch: emirle yürürken yalnız bu kadar yakındakiyle dövüşür; stuck: bu kadar sn vuramazsa hedefi bırakır (ignore sn ona dönmez)
 const zIgnored = (s, o) => s.zIgn && s.zIgn.o === o && G.t < s.zIgn.until;
 function zLock(s) { s.zTgT = G.t; s.zHitT = G.t; } // yeni hedef: takılma sayacı sıfırlanır // march: emirle yürürken saldırdığı düşman uzaklığı (17 Eki) // 14 Eki (Caner): menzil ~10 adam (bir düşman ~20 birim geniş) = 200; drop: kovaladığını bu uzaklıkta bırakır // 14 Eki (Caner): sep 10 -> 15 (iç içe geçiyorlardı); aggro: düşman bu kadar yakına gelince saldırır, yoksa yerinde bekler
@@ -7041,6 +7048,15 @@ function separateUnits(dt) {
     const a = L[i], b = L[j], dx = b.x - a.x, dy = (b.y - a.y) * 1.6, d = Math.hypot(dx, dy);
     if (d >= ZOMBIE.sep || !(a.zombie || b.zombie)) continue; // yalnız dirilenler (kışla askerlerinin düzeni kendi yuvalarından)
     const push = (ZOMBIE.sep - d) * Math.min(1, dt * 8) * 0.5, ux = d > 0.01 ? dx / d : (i % 2 ? 1 : -1), uy = d > 0.01 ? dy / d / 1.6 : 0;
+    // 24 Eki (Caner: "zombileri gönderince önlerinde duran askerlerimize takılıyorlar, onlar yol versin"): emirle yürüyen zombi itilmez,
+    // duran dost kendi yönüne dik olarak yana kayar (yolu açar); ikisi de yürüyorsa eskisi gibi ikisi de itilir
+    const mv = (o) => o.zombie && G.t < (o.zFree || 0) && dist(o.x, o.y, o.rx ?? o.x, o.ry ?? o.y) > 6;
+    const ma = mv(a), mb = mv(b);
+    if (ma !== mb) {
+      const M = ma ? a : b, O = ma ? b : a, vx = (M.rx - M.x), vy = (M.ry - M.y), vl = Math.hypot(vx, vy) || 1, px = -vy / vl, py = vx / vl;
+      const sd = ((O.x - M.x) * px + (O.y - M.y) * py) >= 0 ? 1 : -1, k = (ZOMBIE.sep - d) * Math.min(1, dt * 10) + 0.4;
+      O.x += px * sd * k; O.y += py * sd * k * 0.7; O.yieldT = G.t + 0.5; continue;
+    }
     a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push;
   }
 }
@@ -7324,7 +7340,7 @@ function zombieKind(s, tp, D) { // türe göre özellik: kalkanlı lejyoner kalk
 }
 function zombieBoss(s, e) {
   const B = ZOMBIE_X.boss, b = e.boss;
-  s.hp = s.maxHp = Math.round(b.hp * B.hp); s.dmg = (b.dmg || s.dmg).map(v => v * B.dmg); s.armor = 0.3; s.zBoss = true; s.aoe = 0.5; s.life = (s.life || 30) * B.life; s.speed = 34; s.zh = (s.zh || 40) * B.h; s.engage = 120;
+  s.hp = s.maxHp = Math.round(b.hp * B.hp); s.dmg = (b.dmg || s.dmg).map(v => v * B.dmg); s.armor = 0.3; s.zBoss = true; s.aoe = 0.5; s.life = (s.life || 30) * B.life; s.speed = 34 * ZMOVE; s.zh = (s.zh || 40) * B.h; s.engage = 120;
   floatText(e.x, e.y - 60, b.mini ? 'DEV ÖLÜ!' : 'BOSS DİRİLDİ!', '#ff7a5a', true); shakeScreen(6, 0.5); cnt('bossraise');
   G.effects.push({ kind: 'ring', x: e.x, y: e.y, r: 60, col: '255,60,60', t: 0, dur: 0.7 }); G.effects.push({ kind: 'pillar', x: e.x, y: e.y, col: '255,70,90', t: 0, dur: 0.9 }); sfx('bossraise');
 }
@@ -7373,7 +7389,7 @@ function raiseMinion(e, delay = 0) {
   if (!e.boss && G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg.map(v => v * Math.pow(up, 0.8)), armor: M.armor, pw: up,
-    rate: 1, speed: 44, engage: 100, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, born: G.t + delay };
+    rate: 1, speed: 44 * ZMOVE, engage: 100, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, maxLife: M.life, born: G.t + delay };
   if (up >= CORPSE_ECO.strong && !delay) floatText(e.x, e.y - 36, 'Güçlü ölü!', '#ff8a7a'); // engage 80: dirilenler düşmana daha uzaktan saldırır
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
@@ -13074,10 +13090,10 @@ function drawZombieMark(s) {
     const r = (sel ? 2.1 : 1.7) * (s.zBoss ? 1.5 : 1), cx = s.x, cy = y + 4;
     ctx.save(); ctx.globalAlpha *= sel ? 1 : 0.85;
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(cx + r * 0.25, cy + r * 1.05, r * 0.85, r * 0.3, 0, 0, TAU); ctx.fill();
-    const gr = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r); gr.addColorStop(0, '#ff9a8a'); gr.addColorStop(0.45, '#e2202a'); gr.addColorStop(1, '#5a0008');
+    const gr = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r); gr.addColorStop(0, '#8a8290'); gr.addColorStop(0.45, '#26202c'); gr.addColorStop(1, '#050307'); // 24 Eki (Caner): kırmızı yerine siyah küre
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
-    ctx.strokeStyle = 'rgba(40,0,4,0.9)'; ctx.lineWidth = Math.max(0.35, r * 0.18); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.arc(cx - r * 0.38, cy - r * 0.42, r * 0.26, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.95)'; ctx.lineWidth = Math.max(0.35, r * 0.18); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(cx - r * 0.38, cy - r * 0.42, r * 0.26, 0, TAU); ctx.fill();
     ctx.restore(); }
   if (sel) { ctx.save(); ctx.globalAlpha *= 0.7; ctx.strokeStyle = '#ffd0d0'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.arc(s.x, y + 4, 3.4, 0, TAU); ctx.stroke(); ctx.restore(); }
 }
@@ -22009,10 +22025,11 @@ function drawLevelCard(i, cx, cy, at) {
   ctx.save(); ctx.globalAlpha = clamp(p * 2, 0, 1);
   buttons.push({ key: 'card_bg', x: x0, y: y0, w, h, fn: () => {} }); // kartın boş yerine dokunmak kapatmaz
   if (current) glow(ctx, cx, fy, w * 0.6, '255,200,90', 0.18 + Math.sin(time * 3) * 0.06);
-  velvetCard(x0, y0, w, h, 24, { border: current ? '#ffd34d' : null });
+  if (ukOk()) ukFrame(x0 - 10, y0 - 10, w + 20, h + 20); else velvetCard(x0, y0, w, h, 24, { border: current ? '#ffd34d' : null }); // 24 Eki: kit pencere
   // başlık: numara madalyonu + kızıl kurdele
   crimsonRibbon(cx + 10, y0 + 36, lv.name, 27, 460);
-  { const mx = x0 + 58, my = y0 + 34, mg = ctx.createLinearGradient(0, my - 26, 0, my + 26); mg.addColorStop(0, '#fff0b0'); mg.addColorStop(1, '#a8681a');
+  if (ukOk() && spr('ui_k_rb_gold')) { const mx = x0 + 58, my = y0 + 36, im = spr('ui_k_rb_gold'), R0 = 30; ctx.drawImage(im, mx - R0, my - R0, 2 * R0, 2 * R0); TXT_HEAVY = true; txt(num + '', mx, my + 1, 24, '#fff6e0', 'center', '400', FONT_T); TXT_HEAVY = false; }
+  else { const mx = x0 + 58, my = y0 + 34, mg = ctx.createLinearGradient(0, my - 26, 0, my + 26); mg.addColorStop(0, '#fff0b0'); mg.addColorStop(1, '#a8681a');
     circle(mx, my, 27, mg, '#2e1606', 2.2); const mb = ctx.createRadialGradient(mx - 5, my - 6, 2, mx, my, 21); mb.addColorStop(0, '#f05a4a'); mb.addColorStop(1, '#7a140e');
     circle(mx, my, 20.5, mb); txt(num + '', mx, my + 1, 25, '#fff', 'center', '400', FONT_T); }
   // sol: önizleme
@@ -22066,14 +22083,13 @@ function drawLevelCard(i, cx, cy, at) {
     const bx = rx + k * (tile + 8), by = tyy + 12, bh = 100, sel = o.m === mapMode, key = 'mode_' + o.m + i, sc2 = pressScale(key);
     ctx.save(); ctx.translate(bx + tile / 2, by + bh / 2); ctx.scale(sc2, sc2); ctx.translate(-(bx + tile / 2), -(by + bh / 2));
     if (sel) glow(ctx, bx + tile / 2, by + bh / 2, tile * 0.75, o.m === 'h' ? '255,90,70' : o.m === 'e' ? '170,110,255' : o.m === 'i' ? '230,220,200' : '255,210,110', 0.3 + Math.sin(time * 3) * 0.08);
-    if (ukOk()) { if (sel) nine(spr('ui_k_tab_on'), bx - 6, by - 6, tile + 12, bh + 12, 70, 50, 70, 50, 0.5); else nine(spr('ui_k_tab_off'), bx, by, tile, bh, 50, 40, 50, 40, 0.5); } // 24 Eki: arayüz v4 mod karoları
+    if (ukOk()) ukTile(bx, by, tile, bh, sel ? 'sel' : o.open ? '' : 'lock'); // 24 Eki: kit kare karo (seçili: zümrüt kenar)
     else roundRect(bx, by, tile, bh, 14, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? '#ffd34d' : '#6a4a5a', sel ? 3 : 2);
-    if (sel) { const hg = ctx.createLinearGradient(0, by, 0, by + bh); hg.addColorStop(0, 'rgba(255,220,140,0.16)'); hg.addColorStop(1, 'rgba(255,220,140,0)'); roundRect(bx + 3, by + 3, tile - 6, bh * 0.5, 11, hg); } // üstte parıltı
-    modeIcon(o.m, bx + tile / 2, by + 32, 1.2);
+    modeIcon(o.m, bx + tile / 2, by + 31, 1.1);
     { const nm = TR(o.name), nc = sel ? '#fff4d0' : '#e8d8c0'; ctx.font = `800 14px ${FONT_B}`; // 24 Eki: iki kelimelik ad sıkışmasın, iki satıra insin
-      if (ctx.measureText(nm).width > tile - 10 && nm.includes(' ')) { const w = nm.split(' '), h2 = Math.ceil(w.length / 2); [w.slice(0, h2).join(' '), w.slice(h2).join(' ')].forEach((l, q) => fitTxt(l, bx + tile / 2, by + 61 + q * 14, tile - 10, 13, nc, 'center', '800', FONT_B, true, 10.5)); }
-      else fitTxt(nm, bx + tile / 2, by + 67, tile - 10, 14.5, nc, 'center', '800', FONT_B, true, 10.5); }
-    fitTxt(o.stat, bx + tile / 2, by + 88, tile - 6, 14, (o.m === 'h' && hDone) || (o.m === 'i' && iDone) ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
+      if (ctx.measureText(nm).width > tile - 18 && nm.includes(' ')) { const w = nm.split(' '), h2 = Math.ceil(w.length / 2); [w.slice(0, h2).join(' '), w.slice(h2).join(' ')].forEach((l, q) => fitTxt(l, bx + tile / 2, by + 58 + q * 13, tile - 18, 12.5, nc, 'center', '800', FONT_B, true, 10)); }
+      else fitTxt(nm, bx + tile / 2, by + 64, tile - 18, 14, nc, 'center', '800', FONT_B, true, 10); }
+    fitTxt(o.stat, bx + tile / 2, by + 85, tile - 18, 12, (o.m === 'h' && hDone) || (o.m === 'i' && iDone) ? '#8af07a' : '#c8b8a8', 'center', '700', FONT_B, false);
     if (!o.open) { roundRect(bx, by, tile, bh, 14, 'rgba(10,6,14,0.62)'); drawIcon('lock', bx + tile / 2, by + 34, 28); }
     ctx.restore();
     buttons.push({ key, x: bx, y: by, w: tile, h: bh, fn: () => { if (mapMode !== o.m) { mapMode = o.m; sfx('pick'); } } });
@@ -22086,10 +22102,19 @@ function drawLevelCard(i, cx, cy, at) {
       const bx = rx + j * (dw + 8), sel = k === cur, key = 'diff_' + k + i, sc2 = pressScale(key), col = k === 'kolay' ? '120,220,120' : k === 'usta' ? '255,90,70' : '255,210,110';
       ctx.save(); ctx.translate(bx + dw / 2, dy + 6 + dh / 2); ctx.scale(sc2, sc2); ctx.translate(-(bx + dw / 2), -(dy + 6 + dh / 2));
       if (sel) glow(ctx, bx + dw / 2, dy + 6 + dh / 2, dw * 0.7, col, 0.25);
-      if (ukOk()) { if (sel) three(spr('ui_k_tab_on'), bx - 5, dy + 1, dw + 10, dh + 10, UIK.tab + 14); else three(spr('ui_k_tab_off'), bx, dy + 6, dw, dh, UIK.tab); } // 24 Eki: arayüz v4 zorluk
-      else roundRect(bx, dy + 6, dw, dh, 12, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? `rgb(${col})` : '#6a4a5a', sel ? 3 : 2);
+      if (ukOk()) { // 24 Eki (Caner: "zorluk düğmeleri çok basit"): kit karo + solda zorluğun renginde kubbe (içinde kafatası), sağda ad ve 1-3 kafatası
+        ukTile(bx, dy + 6, dw, dh, sel ? 'sel' : '');
+        const gx = bx + 32, gy = dy + 6 + dh / 2, rb = spr('ui_k_' + (sel ? (k === 'kolay' ? 'rb_green' : k === 'usta' ? 'rb_red' : 'rb_gold') : 'rb_gray')), R0 = 21;
+        if (rb) ctx.drawImage(rb, gx - R0, gy - R0, 2 * R0, 2 * R0);
+        drawSkullIcon(gx, gy, 8.5);
+        const tx0 = gx + R0 + 10, tw0 = bx + dw - 12 - tx0;
+        TXT_HEAVY = sel; fitTxt(D.name, tx0 + tw0 / 2, gy - 8, tw0, 17, sel ? '#fff4d0' : '#cdbfae', 'center', '400', FONT_T, true, 11); TXT_HEAVY = false;
+        for (let q = 0; q < 3; q++) { ctx.save(); ctx.globalAlpha *= q <= j ? 1 : 0.22; drawSkullIcon(tx0 + tw0 / 2 + (q - 1) * 15, gy + 13, 5.5); ctx.restore(); }
+      } else {
+      roundRect(bx, dy + 6, dw, dh, 12, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? `rgb(${col})` : '#6a4a5a', sel ? 3 : 2);
       for (let q = 0; q <= j; q++) drawSkullIcon(bx + dw / 2 + (q - j / 2) * 16, dy + 22, 7); // 1-3 kafatası
       fitTxt(D.name, bx + dw / 2, dy + 48, dw - 26, 16, sel ? '#fff4d0' : '#e8d8c0', 'center', '800', FONT_B, true);
+      }
       ctx.restore();
       buttons.push({ key, x: bx, y: dy + 6, w: dw, h: dh, fn: () => { if (save.diff !== k) { save.diff = k; persist(); sfx('pick'); } } });
     });
@@ -22097,7 +22122,7 @@ function drawLevelCard(i, cx, cy, at) {
   } else {
     // 18 Eki: seçili modun açıklaması kendi panelinde: başlık + simge + en çok 3 satır
     const py = tyy + 124, ph = Math.min(mapMode === 'e' && M.open ? 140 : 112, y0 + h - 140 - py);
-    roundRect(rx, py, rw, ph, 12, 'rgba(14,6,14,0.72)', M.open ? '#8a6a3a' : '#7a3a3a', 1.6);
+    if (ukOk()) ukCard(rx, py, rw, ph); else roundRect(rx, py, rw, ph, 12, 'rgba(14,6,14,0.72)', M.open ? '#8a6a3a' : '#7a3a3a', 1.6);
     modeIcon(M.m, rx + 26, py + 26, 0.8);
     fitTxt(mapMode === 'e' && M.open ? 'Sonsuz Gece · Rekorların' : M.name, rx + 50, py + 26, rw - 64 - (mapMode === 'e' && M.open ? 166 : 0), 18, M.open ? '#ffe9b0' : '#ffb0a0', 'left', '400', FONT_T, true, 12); // 24 Eki: sağdaki düğmeye binmesin
     const nl = clamp(Math.floor((ph - 44) / 18), 1, 3), lines = mapMode === 'e' && M.open ? [] : wrapLines(M.open ? M.desc : M.lock, rw - 28, 14.5, '700', FONT_B, nl); // kutuya sığan satır kadar
