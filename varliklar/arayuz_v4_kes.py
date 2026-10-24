@@ -7,6 +7,7 @@ from PIL import Image
 from scipy import ndimage
 H = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H)
 from anim_isle import remove_magenta
+from arayuz_ton import ton
 SRC = os.path.join(H, 'ham', 'arayuz_v4.jpg'); IMG = os.path.join(H, '..', 'sinir-kalesi', 'img')
 rgb = np.asarray(Image.open(SRC).convert('RGB'))
 # x, y, w, h (kaynak pikseli; magenta payıyla)
@@ -49,6 +50,7 @@ for name, (x, y, w, h) in BOX.items():
         # kafatasının yolun üstüne/altına taşan yerleri saydam (bant zaten yalnız yol yüksekliğinde dolu)
         rgba = track; meta['knob'] = [knob.shape[1], knob.shape[0]]
     ys, xs = np.where(rgba[..., 3] > 8); rgba = rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    rgba = ton(rgba, name)  # 24 Eki: tok renkler (arayuz_ton.py)
     Image.fromarray(rgba).save(os.path.join(IMG, f'ui_k_{name}.webp'), lossless=False, quality=92)
     meta[name] = [rgba.shape[1], rgba.shape[0]]; print(name, rgba.shape[1], rgba.shape[0])
 # süssüz kart (iç kartlar için): üstteki kafatası-kemik süsü, üst kenarın sol düz parçası kaydırılarak örtülür

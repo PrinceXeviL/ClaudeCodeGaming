@@ -10405,6 +10405,7 @@ if (document.fonts && document.fonts.load) {
 let lastFont = '', lastFontNorm = '';
 // Necromancer menüleri kadife (koyu) zeminli: parşömen için seçilmiş koyu kahve yazı renkleri açık karşılıklarına çevrilir
 const INK = { '#4a2a0e': '#f0e2c4', '#8a6238': '#cdb0d8', '#7a5530': '#d8c0e0', '#6a4420': '#d8c8e0', '#5a3a1a': '#d0bcd8', '#5a3410': '#e6c27a', '#8a1a14': '#e6c27a' };
+let TXT_HEAVY = false; // 24 Eki (Caner: "butonların üstündeki beyaz yazılar iyi okunmuyor"): düğme yazısı kalın koyu konturlu
 // 24 Eki: düzen denetimi (tools/duzen-denetim.js): açıkken her yazının ve kutunun (düğme, kart, pencere, hap) ekran dikdörtgeni kaydedilir
 const LAYDBG = { on: false, t: [], b: [] };
 function ldRect(x, y, w, h, kind, s) {
@@ -10419,7 +10420,8 @@ function txt(s, x, y, size, col = '#fff', align = 'center', weight = '800', font
   ctx.textAlign = align; ctx.textBaseline = 'middle';
   if (LAYDBG.on && s !== '' && ctx.globalAlpha > 0.3) { const tw = ctx.measureText(s).width; ldRect(align === 'center' ? x - tw / 2 : align === 'right' || align === 'end' ? x - tw : x, y - size * 0.4, tw, size * 0.8, 'txt', window.tr ? window.tr(s) : s); LAYDBG.t[LAYDBG.t.length - 1].z = size * ctx.getTransform().d; }
   if (stroke) {
-    ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(2.5, size / 4.2); ctx.strokeStyle = 'rgba(28,16,6,0.88)';
+    if (TXT_HEAVY) { ctx.save(); ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(14,4,12,0.55)'; ctx.lineWidth = Math.max(4, size * 0.36); ctx.strokeText(s, x, y + Math.max(1.2, size * 0.08)); ctx.restore(); } // 24 Eki: düğme yazısı: alttan koyu gölge
+    ctx.lineJoin = 'round'; ctx.lineWidth = TXT_HEAVY ? Math.max(3.4, size * 0.3) : Math.max(2.5, size / 4.2); ctx.strokeStyle = TXT_HEAVY ? 'rgba(16,6,14,0.96)' : 'rgba(28,16,6,0.88)';
     ctx.strokeText(s, x, y);
   }
   ctx.fillStyle = col; ctx.fillText(s, x, y);
@@ -14768,7 +14770,7 @@ function necroButton(key, x, y, w, h, label, fn, style, o, appear) {
     roundRect(-w / 2, -h / 2 + dy, w, h, r, null, '#c9a865', 2);
     if (h >= 30) roundRect(-w / 2 + 4, -h / 2 + dy + 4, w - 8, h - 8, Math.max(2, r - 3), null, 'rgba(201,168,101,0.28)', 1);
   }
-  const size = o.size || Math.round(h * 0.44), lc = '#efe1c0';
+  const size = o.size || Math.round(h * 0.44), lc = '#fff3dc'; TXT_HEAVY = true;
   if (o.tile) {
     const my = dy - h * 0.13, mr = Math.min(25, h * 0.24);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, my, mr * 1.8, ac, 0.3); ctx.restore();
@@ -14785,7 +14787,7 @@ function necroButton(key, x, y, w, h, label, fn, style, o, appear) {
     drawIcon(o.icon, -total / 2 + iw / 2, dy, iw);
     if (label) txt(label, -total / 2 + iw + gap + tw / 2, dy + 1, fs, lc, 'center', '400', FONT_T);
   } else { ctx.font = `${size}px ${FONT_T}`; const tw0 = ctx.measureText(label).width, room = w - h * 0.7; txt(label, 0, dy + 1, tw0 > room ? Math.max(9, size * room / tw0) : size, lc, 'center', '400', FONT_T); }
-  ctx.restore();
+  ctx.restore(); TXT_HEAVY = false;
   if (fn && o.reg !== false) buttons.push({ key, x: x - w / 2, y: y - h / 2, w, h: h + 6, fn });
 }
 function gameButton(key, x, y, w, h, label, fn, style = 'gold', o = {}) {
@@ -15009,7 +15011,7 @@ function ukCard(x, y, w, h, o = {}) { // iç kart: koyu erik, ince altın kenar
 function ukBanner(cx, cy, text, size = 24, w = 0) { // başlık: kızıl şerit, uçlarda kemik
   const im = spr('ui_k_banner'); ctx.font = `400 ${size}px ${FONT_T}`; const tw = ctx.measureText(TR(text)).width, bh = size * 2.25, bw = Math.max(w, tw + bh * 2.4);
   three(im, cx - bw / 2, cy - bh * 0.46, bw, bh, UIK.banner);
-  txt(text, cx, cy + 1, size, '#fff3dc', 'center', '400', FONT_T, true);
+  TXT_HEAVY = true; txt(text, cx, cy + 1, size, '#fff3dc', 'center', '400', FONT_T, true); TXT_HEAVY = false;
 }
 const UK_PILL = { green: 'ui_k_btn_green', gold: 'ui_k_btn_green', ember: 'ui_k_btn_green', red: 'ui_k_btn_red', blue: 'ui_k_btn_purple', violet: 'ui_k_btn_purple', purple: 'ui_k_btn_purple', wood: 'ui_k_btn_purple', dark: 'ui_k_btn_purple' };
 function ukToggle(key, x, y, h, on, fn, appear = 1) { // AÇIK/KAPALI anahtarı
@@ -15496,6 +15498,17 @@ function drawEffRow(d, x, y, maxW, sz = 14) { // kule simgesi + yüzde dizisi; �
     txt(s, wx + 26, y + 1, sz, col, 'left', '800', FONT_B, false); wx += ww + 5; ctx.font = `800 ${sz}px ${FONT_B}`;
   }
   return wx - x;
+}
+// 24 Eki (Caner: "bilgi kartları telefondan iyi okunmuyor, %5 büyük olsun"): kart kendi ortası çevresinde büyütülür (bir önceki karenin
+// dikdörtgeni ekseni), dokunma alanı da büyütülmüş hâle çevrilir; ekrandan taşmasın diye kenara itilir
+const CARD_ZOOM = 1.05;
+const CARD_PIV = {};
+function cardZoom(rk, fn) {
+  const P = CARD_PIV[rk]; if (!P) { fn(); const Q = G[rk]; if (Q) CARD_PIV[rk] = { x: Q.x, y: Q.y, w: Q.w, h: Q.h }; return; } // ilk kare: ölçü alınır
+  const k = CARD_ZOOM, cx = clamp(P.x + P.w / 2, EDGE.l + P.w * k / 2 + 4, EDGE.r - P.w * k / 2 - 4), cy = clamp(P.y + P.h / 2, VIS.t + P.h * k / 2 + 2, VIS.b - P.h * k / 2 - 2);
+  const dx = cx - (P.x + P.w / 2), dy = cy - (P.y + P.h / 2), ox = P.x + P.w / 2, oy = P.y + P.h / 2;
+  ctx.save(); ctx.translate(ox + dx, oy + dy); ctx.scale(k, k); ctx.translate(-ox, -oy); fn(); ctx.restore();
+  const Q = G[rk]; if (Q) { CARD_PIV[rk] = { x: Q.x, y: Q.y, w: Q.w, h: Q.h }; G[rk] = { x: ox + dx + (Q.x - ox) * k, y: oy + dy + (Q.y - oy) * k, w: Q.w * k, h: Q.h * k }; } else delete CARD_PIV[rk];
 }
 function drawEnemyPanel() {
   // 16 Eki (Caner: "kısa, basit, simgeli, profesyonel"): portre + ad + rütbe/sınıf etiketi, can çubuğu, simgeli değerler,
@@ -16560,7 +16573,7 @@ function drawHud() {
 
   // bilgi paneli
   const info = infoText(); G.infoCardR = null;
-  if (info) drawInfoCard(info);
+  if (info) cardZoom('infoCardR', () => drawInfoCard(info));
   const hint = G.mode ? (G.mode.kind === 'minions' ? 'Ölüleri' + ' göndereceğin yeri seç (haritanın her yeri)' : G.mode.kind === 'rally' ? (G.mode.castle ? (NECRO ? 'Ölüleri' : 'Paralı askerleri') + ' göndereceğin yeri seç (haritanın her yeri)' : 'Askerlerin toplanma noktasını seç') : G.mode.kind === 'item' ? `${ITEMS[G.mode.id].name}: patlayacağı yeri seç` : `${spellInfo(G.mode.id).name}: hedefi seç`)
     : (G.sel && G.sel.kind === 'hero') ? `${G.sel.hero.def.name}: göndermek için haritaya dokun` : null;
   if (hint) {
@@ -22105,7 +22118,7 @@ function drawLevelCard(i, cx, cy, at) {
       go(() => startLevel(i, mapMode === 'c' ? undefined : mapMode));
     }, !M.open ? 'gold' : mapMode === 'h' || mapMode === 'i' ? 'red' : mapMode === 'e' ? 'blue' : 'green', { icon: mapMode === 'c' && st ? 'restart' : 'play', shine: current && mapMode === 'c', size: 22 });
     if (two) gameButton('boost' + i, rx + rw - bw2 / 2, pyc, bw2, 64, (isPremium() ? '' : '▶ ') + '+' + MONET.boostGold + ' ALTINLA BAŞLA',
-      () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 14 });
+      () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'blue', { size: 17 });
     ctx.restore();
     }
   }
@@ -22808,7 +22821,7 @@ function drawPlay() {
   if (!CLEAN) {
   drawMenu();
   if (!PERF_OFF.has('hud')) drawHud();
-  drawEnemyPanel(); // 17 Eki: HUD'un üstünde
+  cardZoom('enemyPanelR', drawEnemyPanel); // 17 Eki: HUD'un üstünde
   if (G.sandbox && !overlay) drawSandbox();
   drawCombo();
   drawCoinsFlying();

@@ -7,6 +7,7 @@ from PIL import Image
 from scipy import ndimage
 H = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H)
 from anim_isle import remove_magenta
+from arayuz_ton import ton
 SRC = os.path.join(H, 'ham', 'arayuz_v4b.jpg'); IMG = os.path.join(H, '..', 'sinir-kalesi', 'img')
 rgb = np.asarray(Image.open(SRC).convert('RGB'))
 # x, y, w, h (kaynak pikseli; bileşen kutuları, kesimde 8 px pay)
@@ -39,6 +40,7 @@ for name, (x, y, w, h) in BOX.items():
         sizes = ndimage.sum(np.ones_like(a), lab, range(1, n + 1)); keep = sizes >= sizes.max() * 0.05
         m = ndimage.binary_dilation(np.isin(lab, np.where(keep)[0] + 1), iterations=3); rgba[..., 3] = np.where(m, a, 0)
     ys, xs = np.where(rgba[..., 3] > 8); rgba = rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    rgba = ton(rgba, name)  # 24 Eki: tok renkler (arayuz_ton.py)
     im = Image.fromarray(rgba)
     if name.startswith('rb_'): im = im.resize((180, round(180 * im.height / im.width)), Image.LANCZOS)  # düğmeler en çok ~70 px çizilir
     elif name.startswith('port'): im = im.resize((360, round(360 * im.height / im.width)), Image.LANCZOS)
