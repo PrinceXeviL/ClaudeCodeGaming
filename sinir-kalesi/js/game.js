@@ -7895,12 +7895,12 @@ function drawMortSay() {
   const S = G.say; if (!S) return;
   const m = mortimerPoint(), a = Math.min(1, S.t / 0.15, (S.dur - S.t) / 0.3), pop = easeOutBack(clamp(S.t / 0.25, 0, 1));
   // yazı 14 px; uzun laf tek geniş satır olmaz, eşit uzunlukta 2 (çok uzunsa 3) satıra bölünür
-  const FS = 17, LH = 20, text = TR(S.text); // 14 Eki: 14 -> 17 px (%20 büyük, okunmuyordu)
+  const FS = 13.6, LH = 16, text = TR(S.text); // 14 Eki: 14 -> 17 px; 24 Eki (Caner): %20 küçük -> 13,6
   ctx.save(); ctx.font = `800 ${FS}px ${FONT_B}`;
-  const full = ctx.measureText(text).width, n = full > 600 ? 3 : full > 230 ? 2 : 1, lim = full / n + FS * 1.6;
+  const full = ctx.measureText(text).width, n = full > 480 ? 3 : full > 184 ? 2 : 1, lim = full / n + FS * 1.6;
   const words = text.split(' '), lines = [];
   for (const w of words) { const cur = lines[lines.length - 1]; if (cur && ctx.measureText(cur + ' ' + w).width <= lim) lines[lines.length - 1] = cur + ' ' + w; else lines.push(w); }
-  const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 26, bh = lines.length * LH + 14;
+  const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 22, bh = lines.length * LH + 12;
   // balon: Mortimer'ın başının üstünde, ekran içinde kalır
   let bx = clamp(m.x - bw / 2, 6, W - bw - 6), by = Math.max(6, m.y - m.h - bh - 14);
   ctx.globalAlpha = clamp(a, 0, 1);
@@ -7910,7 +7910,7 @@ function drawMortSay() {
   ctx.beginPath(); ctx.moveTo(clamp(m.x - 6, bx + 8, bx + bw - 20), by + bh - 1); ctx.lineTo(m.x, m.y - m.h - 2); ctx.lineTo(clamp(m.x + 6, bx + 14, bx + bw - 8), by + bh - 1);
   ctx.closePath(); ctx.fillStyle = '#f2ecd8'; ctx.fill(); ctx.strokeStyle = '#1a1024'; ctx.lineWidth = 2; ctx.stroke();
   ctx.fillRect(clamp(m.x - 5, bx + 9, bx + bw - 19), by + bh - 3, 10, 3);
-  lines.forEach((l, i) => txt(l, bx + bw / 2, by + 7 + LH / 2 + i * LH, FS, '#2a1838', 'center', '800', FONT_B, false));
+  lines.forEach((l, i) => txt(l, bx + bw / 2, by + 6 + LH / 2 + i * LH, FS, '#2a1838', 'center', '800', FONT_B, false));
   ctx.restore();
 }
 // ----- ilk 3 bölümün eğitimi (13 Eki, Caner) -----
