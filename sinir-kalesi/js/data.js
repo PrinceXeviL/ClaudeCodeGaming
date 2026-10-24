@@ -800,7 +800,7 @@ Object.assign(CASTLE, { spots: [[0.21, 0.385], [0.67, 0.41], [0.46, 0.16]] }); /
 const RAISE_MAX = [4, 6, 8, 11, 13, 16]; // 20 Eki (Caner): başta 4, en üst kademede en çok 16 (eskiden 4/7/10/13/16/20) // Ölüleri Diriltme: kademeye göre aynı anda en çok dirilen (game.js spellStats)
 const GRIM = {
   lv: [0, 60, 180, 380, 680, 1100], cast: 20, per: 3, catchup: 45, cd: 0.04,
-  nm_raise: ['+2 dirilen (6) · +%10 güç · ceset +2 sn', '+2 dirilen (8) · +%10 güç · ceset +2 sn', '+3 dirilen (11) · +%10 güç · ceset +2 sn · CANAVARLAR: kuş, fil ve at ölüleri de kalkar', '+2 dirilen (13) · +%10 güç · ceset +2 sn', '+3 dirilen (16) · +%25 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 20 Eki (Caner): en çok 4/6/8/11/13/16 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
+  nm_raise: ['+2 dirilen (6) · +%6 güç · ceset +2 sn', '+2 dirilen (8) · +%6 güç · ceset +2 sn', '+3 dirilen (11) · +%6 güç · ceset +2 sn · CANAVARLAR: kuş, fil ve at ölüleri de kalkar', '+2 dirilen (13) · +%6 güç · ceset +2 sn', '+3 dirilen (16) · +%15 can ve hasar · ceset +2 sn · 2 ayrı grup'], // 20 Eki (Caner): en çok 4/6/8/11/13/16 dirilen (RAISE_MAX), ceset %30 uzun // 16 Eki: her kademe cesetlerin yerde kalma süresini de uzatır (game.js CORPSE_T)
   nm_fear:  ['+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · alan +%8', '+0,3 sn · korkan %20 fazla hasar alır'],
   nm_wall:  ['+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%15 dayanıklı · +0,75 sn', '+%40 dayanıklı · +2 sn'],
   nm_burst: ['+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', '+%12 hasar · alan +%5', 'Patlama 1 sn sersemletir'],

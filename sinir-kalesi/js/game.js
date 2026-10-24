@@ -6804,7 +6804,7 @@ const raiseOkDef = (d) => !!d && !d.machine && (!(d.flying || d.noraise) || (bea
 function spellStats(id) { // kademelere göre büyünün o anki değerleri (GRIM, data.js)
   const S = NECRO_SPELLS[id], r = spellRank(id); if (!r) return S;
   const o = Object.assign({}, S), b = Math.min(r, 4), top = r >= 5;
-  if (id === 'nm_raise') { o.max = RAISE_MAX[Math.min(r, RAISE_MAX.length - 1)]; const k = 1 + 0.1 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k * (top ? 1.25 : 1), dmg: S.minion.dmg.map(v => v * k * (top ? 1.25 : 1)) }); } // ömür sınırsız (ölene dek)
+  if (id === 'nm_raise') { o.max = RAISE_MAX[Math.min(r, RAISE_MAX.length - 1)]; const k = 1 + 0.06 * b; o.minion = Object.assign({}, S.minion, { hp: S.minion.hp * k * (top ? 1.15 : 1), dmg: S.minion.dmg.map(v => v * k * (top ? 1.15 : 1)) }); } // 24 Eki: kademe +%10 → +%6, son kademe ×1,25 → ×1,15 (sayı 4 → 16 aynı, sürekli kalırlar) // ömür sınırsız (ölene dek)
   if (id === 'nm_fear') { o.t = S.t + 0.3 * r; o.r = S.r * (1 + 0.08 * b); }
   if (id === 'nm_wall') { o.hp = S.hp * (1 + 0.15 * b + (top ? 0.4 : 0)); o.life = S.life + 0.75 * b + (top ? 2 : 0); }
   if (id === 'nm_burst') { o.dmg = S.dmg * (1 + 0.12 * b); o.r = S.r * (1 + 0.05 * b); o.blast = S.blast * (1 + 0.05 * b); o.stun = top ? 1 : 0; }
@@ -7273,7 +7273,7 @@ function zombieRoadTo(s, tx, ty) {
 // ölen düşman, diriltme açıkken yerinde iskelet minyon olarak kalkar
 // 15 Eki (Caner): ceset ekonomisi. İri düşmanın ölüsü daha güçlü kalkar: güç = sqrt(düşman canı / CORPSE_ECO.base) (alt/üst sınırlı).
 // Diriltme hedefli: dokunulan yerin CORPSE_ECO.r çevresindeki cesetler, en güçlüler önce. Rahip ve fener arabası çevrelerindeki cesetleri kutsar.
-const CORPSE_ECO = { base: 110, min: 0.8, max: 2.4, r: 95, strong: 1.5 };
+const CORPSE_ECO = { base: 110, min: 0.8, max: 1.9, /* 24 Eki (Caner: zombiler çok güçlü): 2,4 → 1,9 */ r: 95, strong: 1.5 };
 const corpsePower = (e) => clamp(Math.sqrt((e.def.hp || 100) / CORPSE_ECO.base), CORPSE_ECO.min, CORPSE_ECO.max); // düşmanın temel canı (bölüm çarpanı değil)
 // ---- dirilenlerin yetenekleri (16 Eki): rangeMax/rateK/dmgK okçu, heal rahip (cd sn'de bir r içindeki iskeletlere), burn meşaleci (dps, burnT sn) ----
 const RAISED_ROLE = { rangeMax: 150, rateK: 1.1, dmgK: 0.9, heal: { cd: 4.5, amt: 26, r: 95 }, burn: 6, burnT: 2.5 };
@@ -7328,7 +7328,7 @@ function strongCorpseMark(f) { // güçlü ceset (iri düşmanın ölüsü): üs
 // legion: sahada n ya da daha fazla dirilen varken hepsi dmg kat sert vurur (kale üstünde sayaç)
 // terror: kalkan ölünün yanındaki düşmanlar kısa korkar ya da donup kalır (r yarıçap, fear sn, stun sn, cd: aynı düşman için bekleme)
 // sac: dirilene iki kez dokununca patlar (r, taban hasar + azami canın payı); yakındaki cesetler zincirleme patlar (chainR, chain hasar)
-const ZOMBIE_X = { boss: { on: true, hp: 0.3, dmg: 1, life: 2, h: 1.1 }, legion: { n: 10, dmg: 1.25 }, terror: { on: false, r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
+const ZOMBIE_X = { boss: { on: true, hp: 0.18, dmg: 0.6, life: 2, h: 1.1 }, legion: { n: 12, dmg: 1.15 }, // 24 Eki (Caner: "zombilerle bölüm bitiyor"): dev ölü 0,3/1 → 0,18/0,6, lejyon 10/1,25 → 12/1,15 terror: { on: false, r: 75, fear: 1.3, stun: 0.6, cd: 6, p: 0.55 },
   sac: { r: 55, base: 30, hpK: 0.5, chainR: 80, chain: 45, chainHit: 40, arm: 2 } };
 const TERROR_LINES = ['Marcus?!', 'O benim kardeşimdi!', 'Annem!', 'Bu adil değil!', 'Dün beraber yemek yemiştik!', 'Geri çekilin!', 'Kalktı!'];
 function zombieKind(s, tp, D) { // türe göre özellik: kalkanlı lejyoner kalkan tutar, atlı hücum eder, köpek hızlı koşar
@@ -7699,14 +7699,14 @@ function drawMortimer() {
 function drawMortimer0() {
   const m = mortimerPoint(), hgt = m.h, p = G.mortCast > 0 ? clamp(1 - G.mortCast / (G.mortCastT || MORT_CAST_T), 0, 1) : -1;
   if (p >= (mortV2('mortimer_dirilt') ? MORT_RAISE.flash2 : MORT_RAISE.flash) && G.mortCastN === 'mortimer_dirilt' && !G.mortFlash) { // videodaki tam ekran patlama kesildi: yerine kodla yeşil patlama
-    G.mortFlash = true; G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.9, col: '130,255,140', t: 0, dur: 0.45 });
-    for (let i = 0; i < 22; i++) { const a = rand(0, Math.PI * 2), v = rand(60, 160); emit(G.parts, { kind: 'glow', add: true, x: m.x, y: m.y - hgt * 0.55, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, drag: 2.5, col: i % 3 ? '140,255,150' : '200,130,255', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.8) }); }
+    G.mortFlash = true; G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 1.3, col: '190,90,255', t: 0, dur: 0.55 }, { kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.9, col: '255,60,80', t: 0, dur: 0.45 }); // 24 Eki: kızıl-mor (yeşil az)
+    for (let i = 0; i < 34; i++) { const a = rand(0, Math.PI * 2), v = rand(70, 190); emit(G.parts, { kind: 'glow', add: true, x: m.x, y: m.y - hgt * 0.55, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.7, drag: 2.5, col: i % 5 === 0 ? '140,255,150' : i % 2 ? '255,70,90' : '200,120,255', s0: rand(3, 6), s1: 0.5, life: rand(0.4, 0.8) }); }
     shakeScreen(2.5, 0.25);
   }
   if (p >= MORT_SLAM && !G.mortCastN && mortV2('mortimer_buyu') && !G.mortSlam) { // v2 büyü: asa yere vurulunca yeşil-mor-kızıl şok dalgası
-    G.mortSlam = true; shakeScreen(3, 0.3);
-    G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 1.1, col: '190,110,255', t: 0, dur: 0.5 }, { kind: 'ring', x: m.x, y: m.y - 2, r: hgt * 0.7, col: '130,255,140', t: 0, dur: 0.4 });
-    for (let i = 0; i < 26; i++) { const a = rand(0, Math.PI * 2), v = rand(50, 150); emit(G.parts, { kind: 'glow', add: true, x: m.x + Math.cos(a) * 6, y: m.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.35 - rand(10, 40), drag: 2.4, col: i % 3 === 0 ? '255,70,80' : i % 3 === 1 ? '140,255,150' : '200,130,255', s0: rand(2.5, 5), s1: 0.4, life: rand(0.4, 0.8) }); }
+    G.mortSlam = true; shakeScreen(4, 0.35); G.mortBoom = time; // 24 Eki: görkemli: üç halka, kızıl parlama
+    G.effects.push({ kind: 'ring', x: m.x, y: m.y - 2, r: Math.max(hgt * 1.9, 44) * 1.7, col: '190,90,255', t: 0, dur: 0.65 }, { kind: 'ring', x: m.x, y: m.y - 2, r: Math.max(hgt * 1.9, 44) * 1.15, col: '255,60,80', t: 0, dur: 0.5 }, { kind: 'ring', x: m.x, y: m.y - 2, r: Math.max(hgt * 1.9, 44) * 0.6, col: '140,255,150', t: 0, dur: 0.35 });
+    for (let i = 0; i < 40; i++) { const a = rand(0, Math.PI * 2), v = rand(50, 150); emit(G.parts, { kind: 'glow', add: true, x: m.x + Math.cos(a) * 6, y: m.y - 3, vx: Math.cos(a) * v, vy: Math.sin(a) * v * 0.35 - rand(10, 40), drag: 2.4, col: i % 3 === 0 ? '255,70,80' : i % 3 === 1 ? '140,255,150' : '200,130,255', s0: rand(2.5, 5), s1: 0.4, life: rand(0.4, 0.8) }); }
   }
   const k = p >= 0 ? Math.min(1, Math.sin(p * Math.PI) * 1.6) * (G.mortCastN && !mortV2(G.mortCastN) ? 0.3 : 1) : 0; // Veo şeridinin kendi büyü ışığı var: kod ışığı hafif
   const F = ANIM_META.mortimer_cast, fim = F && spr('mortimer_cast'), im = spr('mortimer');
@@ -7715,16 +7715,31 @@ function drawMortimer0() {
   const cx = m.x, cy = m.y - hgt * 0.5, mix = (Math.sin(time * 0.7) + 1) / 2;
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   glow(ctx, cx, cy, hgt * 0.95, '160,70,255', 0.26 + 0.35 * k + Math.sin(time * 2) * 0.06);
-  glow(ctx, cx, cy, hgt * 0.6, mix > 0.5 ? '110,255,140' : '255,70,70', 0.12 + 0.08 * Math.abs(mix - 0.5) * 2 + 0.45 * k + (G.raiseT > 0 ? 0.2 : 0));
-  if (k > 0) {
-    const pg = ctx.createLinearGradient(0, m.y, 0, m.y - hgt * 3.2);
-    pg.addColorStop(0, `rgba(170,110,255,${0.5 * k})`); pg.addColorStop(0.5, `rgba(120,255,150,${0.25 * k})`); pg.addColorStop(1, 'rgba(120,255,150,0)');
-    ctx.fillStyle = pg; ctx.beginPath(); ctx.moveTo(cx - hgt * 0.3, m.y); ctx.lineTo(cx - hgt * 0.12, m.y - hgt * 3.2); ctx.lineTo(cx + hgt * 0.12, m.y - hgt * 3.2); ctx.lineTo(cx + hgt * 0.3, m.y); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = `rgba(190,140,255,${0.8 * k})`; ctx.lineWidth = 1.2; // dönen rün çemberi (ayak hizasında)
-    for (let j = 0; j < 12; j++) { const a0 = time * 2 + j * Math.PI / 6; ctx.beginPath(); ctx.ellipse(cx, m.y - 1, hgt * 0.62, hgt * 0.2, 0, a0, a0 + 0.32); ctx.stroke(); }
-    ctx.strokeStyle = `rgba(120,255,150,${0.6 * k})`; ctx.beginPath(); ctx.ellipse(cx, m.y - 1, hgt * 0.45 * (1 + 0.2 * k), hgt * 0.14, 0, 0, Math.PI * 2); ctx.stroke();
-    if (Math.random() < 0.5 * k) emit(G.parts, { kind: 'glow', add: true, x: cx + rand(-hgt * 0.4, hgt * 0.4), y: m.y - rand(0, hgt * 0.6), vx: rand(-8, 8), vy: -rand(30, 60), col: Math.random() < 0.5 ? '190,130,255' : '120,255,150', s0: rand(1.5, 3), s1: 0.3, life: rand(0.6, 1.1), a: 0.9 });
+  glow(ctx, cx, cy, hgt * 0.6, mix > 0.5 ? '230,60,110' : '255,70,70', 0.12 + 0.08 * Math.abs(mix - 0.5) * 2 + 0.45 * k + (G.raiseT > 0 ? 0.2 : 0)); // 24 Eki: yeşil yerine kızıl
+  if (k > 0) { // 24 Eki (Caner: "daha görkemli, ihtişamlı; yeşili abartma, mor-kızıl olsun"): iki kat dönen yer çemberi, geniş ışık sütunu, baş üstü rün halkası, sarmal kıvılcım
+    const H = Math.max(hgt * 1.9, 44), t = time, fy = m.y - 1; // balkondaki Mortimer küçük: efekt sahnede görünür boyda
+    // ışık sütunu: dış mor, iç kızıl, çekirdek beyaz-pembe; nabız gibi genişler
+    const pw = 1 + 0.12 * Math.sin(t * 9);
+    for (const [wk, c0, a] of [[0.55, '150,60,255', 0.42], [0.32, '255,50,90', 0.5], [0.12, '255,220,240', 0.6]]) {
+      const pg = ctx.createLinearGradient(0, m.y, 0, m.y - H * 3.6); pg.addColorStop(0, `rgba(${c0},${a * k})`); pg.addColorStop(0.55, `rgba(${c0},${a * 0.45 * k})`); pg.addColorStop(1, `rgba(${c0},0)`);
+      ctx.fillStyle = pg; ctx.beginPath(); ctx.moveTo(cx - H * wk * pw, m.y); ctx.lineTo(cx - H * wk * 0.35, m.y - H * 3.6); ctx.lineTo(cx + H * wk * 0.35, m.y - H * 3.6); ctx.lineTo(cx + H * wk * pw, m.y); ctx.closePath(); ctx.fill();
+    }
+    // yer çemberi: dış kızıl halka (saat yönü, rün çentikli), iç mor halka (ters), arada yedi köşeli yıldız (çizgi)
+    const R1 = H * (0.78 + 0.1 * k), R2 = H * 0.55;
+    ctx.lineWidth = 2; ctx.strokeStyle = `rgba(255,60,90,${0.85 * k})`; ctx.beginPath(); ctx.ellipse(cx, fy, R1, R1 * 0.3, 0, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 1.2; for (let j = 0; j < 18; j++) { const a = t * 1.4 + j * TAU / 18; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * R1 * 0.9, fy + Math.sin(a) * R1 * 0.27); ctx.lineTo(cx + Math.cos(a) * R1 * 1.06, fy + Math.sin(a) * R1 * 0.318); ctx.stroke(); }
+    ctx.strokeStyle = `rgba(190,110,255,${0.9 * k})`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(cx, fy, R2, R2 * 0.3, 0, 0, TAU); ctx.stroke();
+    ctx.lineWidth = 1.1; ctx.beginPath(); for (let j = 0; j <= 7; j++) { const a = -t * 1.1 + j * TAU * 3 / 7; const x = cx + Math.cos(a) * R2, y = fy + Math.sin(a) * R2 * 0.3; j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+    // baş üstünde dönen rün halkası (kızıl-mor), dikey dalgalanır
+    const hy = m.y - H * 1.35 - 4 * Math.sin(t * 3), hr = H * 0.38 * (0.85 + 0.15 * k);
+    ctx.strokeStyle = `rgba(230,90,255,${0.8 * k})`; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse(cx, hy, hr, hr * 0.32, 0, 0, TAU); ctx.stroke();
+    for (let j = 0; j < 8; j++) { const a = t * 2.6 + j * TAU / 8, x = cx + Math.cos(a) * hr, y = hy + Math.sin(a) * hr * 0.32; glow(ctx, x, y, 5, j % 2 ? '255,70,100' : '200,120,255', 0.8 * k); }
+    // nabız gibi büyüyen kızıl-mor ışık küresi göğüs hizasında
+    glow(ctx, cx, m.y - H * 0.62, H * (0.5 + 0.18 * Math.sin(t * 7)), '255,60,110', 0.35 * k); glow(ctx, cx, m.y - H * 0.62, H * 0.9, '150,60,255', 0.28 * k);
+    // sarmal kıvılcımlar: çemberden yukarı dönerek yükselir (çoğu mor/kızıl, az yeşil)
+    if (Math.random() < 0.95 * k) for (let q = 0; q < 2; q++) { const a = rand(0, TAU), r0 = R1 * rand(0.5, 1); emit(G.parts, { kind: 'glow', add: true, x: cx + Math.cos(a) * r0, y: fy + Math.sin(a) * r0 * 0.3, vx: -Math.sin(a) * 40, vy: -rand(50, 110), drag: 0.8, col: Math.random() < 0.12 ? '140,255,150' : Math.random() < 0.5 ? '255,70,100' : '200,120,255', s0: rand(1.8, 3.4), s1: 0.3, life: rand(0.7, 1.3), a: 0.95 }); }
   }
+  if (G.mortBoom && time - G.mortBoom < 0.5) { const q = (time - G.mortBoom) / 0.5, H2 = Math.max(hgt * 1.9, 44); glow(ctx, cx, m.y - hgt * 0.5, H2 * (1.2 + 2.6 * q), '255,60,90', 0.6 * (1 - q)); glow(ctx, cx, m.y - hgt * 0.5, H2 * (0.8 + 1.6 * q), '190,90,255', 0.5 * (1 - q)); } // asa vuruşu: kızıl parlama
   ctx.restore();
   ctx.save(); ctx.translate(m.x, m.y);
   const MA = mortAnim(p);
