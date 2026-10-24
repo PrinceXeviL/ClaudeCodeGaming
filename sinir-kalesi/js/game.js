@@ -103,14 +103,16 @@ function loadAtlas(done) {
     if (!A || !A.pages.length) return done();
     const byPage = A.pages.map(() => []);
     for (const [name, e] of Object.entries(A.items)) byPage[e[0]].push([name, e]);
-    const next = (i) => {
-      if (i >= A.pages.length) { bgDirty = Math.max(time, 0.001); return done(); }
+    const ord = A.pages.map((_, i) => i).sort((a, b) => (byPage[b].some(([n]) => /^(ui_|ico_ui_)/.test(n)) - byPage[a].some(([n]) => /^(ui_|ico_ui_)/.test(n))) || a - b); // 24 Eki: arayüz parçaları olan sayfalar önce (giriş ekranı eski yedekle açılmasın)
+    const next = (j) => {
+      if (j >= A.pages.length) { bgDirty = Math.max(time, 0.001); return done(); }
+      const i = ord[j];
       const im = new Image();
       im.onload = () => {
         for (const [name, e] of byPage[i]) { const c = document.createElement('canvas'); c.width = e[3]; c.height = e[4]; c.getContext('2d').drawImage(im, e[1], e[2], e[3], e[4], 0, 0, e[3], e[4]); SPR[name] = c; }
-        next(i + 1);
+        next(j + 1);
       };
-      im.onerror = () => next(i + 1);
+      im.onerror = () => next(j + 1);
       im.src = 'img/' + A.pages[i] + (window.SURUM ? '?v=' + window.SURUM : '');
     };
     next(0);
@@ -20848,8 +20850,13 @@ function drawNecroTitle(st) {
   if (Math.random() < 0.4) emit(uiParts, { kind: 'glow', add: true, x: rand(0, W), y: rand(H * 0.55, H), vx: rand(-6, 6), vy: rand(-26, -10),
     col: Math.random() < 0.7 ? '120,255,140' : '190,140,255', s0: rand(1.5, 3.4), s1: 0.4, life: rand(3, 5), a: 0.9, fadeIn: 0.4 });
 }
+let TITLE_UI_T = null;
 function drawTitle() {
-    const st = time - screenT;
+    // 24 Eki (Caner: "oyun açılırken ana ekranda önceki hali görünüyor"): yeni logo/düğme görselleri atlastan gelene kadar eski yedek çizimler gösterilmez;
+    // gelince (en geç 6 sn) logo ve düğmeler kendi giriş animasyonuyla belirir
+    const uiOk = spr('ui_logo_v3') && spr('ui_k_cta_green') && spr('ui_k_rb_purple') && spr('ico_ui_ach') && spr('ico_ui_codex');
+    if (TITLE_UI_T == null && (uiOk || time - screenT > 6)) TITLE_UI_T = Math.max(time, screenT);
+    const st = TITLE_UI_T == null ? -1 : time - Math.max(screenT, TITLE_UI_T);
     drawNecroTitle(st);
     // 16 Eki (Caner: "sağ üstteki simgeler çok ufak, logo üst üste binmesin"): r 21 → 30 (dokunma ≥ 60), ekranın gerçek sağ üst köşesine yaslı
     const TB = (i) => [EDGE.r - 46 - i * 70, EDGE.t + 44];
@@ -23616,7 +23623,7 @@ function crimsonRibbon(cx, cy, text, size = 24, w = 0) {
 // rakip oyunlar duraklatmalarından alınanlar: süslü çerçeve ve arma, büyük ana düğme, savaş durumu özeti, hızlı ses
 // düğmeleri, her açılışta bir ipucu. Arkada yavaş dönen ritüel çemberi, kadife zeminde Necromancer deseni, köşelerde yakut süsler.
 // 24 Eki (Caner: "tips and tricks"): duraklatma ve yükleme ekranında Mortimer'ın tavsiyeleri; kurallar koddan doğrulandı (ARMOR_CLASS, SELL_RATIO, VAULT, SPELL_SLOTS, HERO_DOWN). Çeviri: tools/dil/ceviri_24eki_tavsiye.py
-const TIP_EVERY = 5; // sn
+const TIP_EVERY = 6; // sn (24 Eki, Caner: 5 → 6, tam 6 sn okunur kalsın)
 const PAUSE_TIPS = [
   "Mahzenin bayrağını yolun dar yerine dik: iskeletler düşmanı orada tutar, kuleler rahat vurur.",
   "Kalabalık bölüğe Korku büyüsü at: geri kaçarlar, kuleler bu arada işini görür.",
