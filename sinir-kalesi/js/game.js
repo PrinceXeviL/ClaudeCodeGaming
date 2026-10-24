@@ -22025,6 +22025,7 @@ function levelFoes(lv) { // bölümde çıkan düşman türleri (rütbeliler as�
 }
 function modeIcon(m, x, y, s) {
   ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+  { const im = spr('ico_mode_' + m); if (im) { icoFit(im, 0, 0, 15); ctx.restore(); return; } } // 24 Eki: Gemini mod simgeleri (varliklar/mod_simge_kes.py)
   if (m === 'c') { fancyStar(0, 1, 15, true); }
   else if (m === 's') { const im = spr('ico_bomb'); if (im) icoFit(im, 0, 0, 14); else drawSkullIcon(0, 0, 12); }
   else if (m === 'i') { const im = spr('ico_ui_close'); if (im) icoFit(im, 0, 0, 14); else { ctx.strokeStyle = '#e8dcc0'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-11, -11); ctx.lineTo(11, 11); ctx.moveTo(11, -11); ctx.lineTo(-11, 11); ctx.stroke(); } drawSkullIcon(0, 0, 6); }
@@ -22117,7 +22118,7 @@ function drawLevelCard(i, cx, cy, at) {
     if (sel) glow(ctx, bx + tile / 2, by + bh / 2, tile * 0.75, o.m === 'h' ? '255,90,70' : o.m === 'e' ? '170,110,255' : o.m === 'i' ? '230,220,200' : '255,210,110', 0.3 + Math.sin(time * 3) * 0.08);
     if (ukOk()) ukTile(bx, by, tile, bh, sel ? 'sel' : o.open ? '' : 'lock'); // 24 Eki: kit kare karo (seçili: zümrüt kenar)
     else roundRect(bx, by, tile, bh, 14, sel ? 'rgba(70,24,40,0.95)' : 'rgba(26,12,22,0.9)', sel ? '#ffd34d' : '#6a4a5a', sel ? 3 : 2);
-    modeIcon(o.m, bx + tile / 2, by + 31, 1.1);
+    modeIcon(o.m, bx + tile / 2, by + 27, 1.3);
     { const nm = TR(o.name), nc = sel ? '#fff4d0' : '#e8d8c0'; ctx.font = `800 14px ${FONT_B}`; // 24 Eki: iki kelimelik ad sıkışmasın, iki satıra insin
       if (ctx.measureText(nm).width > tile - 18 && nm.includes(' ')) { const w = nm.split(' '), h2 = Math.ceil(w.length / 2); [w.slice(0, h2).join(' '), w.slice(h2).join(' ')].forEach((l, q) => fitTxt(l, bx + tile / 2, by + 58 + q * 13, tile - 18, 12.5, nc, 'center', '800', FONT_B, true, 10)); }
       else fitTxt(nm, bx + tile / 2, by + 64, tile - 18, 14, nc, 'center', '800', FONT_B, true, 10); }
@@ -22136,9 +22137,9 @@ function drawLevelCard(i, cx, cy, at) {
       if (sel) glow(ctx, bx + dw / 2, dy + 6 + dh / 2, dw * 0.7, col, 0.25);
       if (ukOk()) { // 24 Eki (Caner: "zorluk düğmeleri çok basit"): kit karo + solda zorluğun renginde kubbe (içinde kafatası), sağda ad ve 1-3 kafatası
         ukTile(bx, dy + 6, dw, dh, sel ? 'sel' : '');
-        const gx = bx + 32, gy = dy + 6 + dh / 2, rb = spr('ui_k_' + (sel ? (k === 'kolay' ? 'rb_green' : k === 'usta' ? 'rb_red' : 'rb_gold') : 'rb_gray')), R0 = 21;
-        if (rb) ctx.drawImage(rb, gx - R0, gy - R0, 2 * R0, 2 * R0);
-        drawSkullIcon(gx, gy, 8.5);
+        const gx = bx + 32, gy = dy + 6 + dh / 2, R0 = 21, di = spr('ico_diff_' + k); // 24 Eki: Gemini zorluk simgeleri; seçili değilse soluk
+        if (di) { ctx.save(); if (!sel) ctx.globalAlpha *= 0.55; else { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, gx, gy, R0 * 1.6, col, 0.35); ctx.restore(); } icoFit(di, gx, gy, R0 - 1); ctx.restore(); }
+        else { const rb = spr('ui_k_' + (sel ? (k === 'kolay' ? 'rb_green' : k === 'usta' ? 'rb_red' : 'rb_gold') : 'rb_gray')); if (rb) ctx.drawImage(rb, gx - R0, gy - R0, 2 * R0, 2 * R0); drawSkullIcon(gx, gy, 8.5); }
         const tx0 = gx + R0 + 10, tw0 = bx + dw - 12 - tx0;
         TXT_HEAVY = sel; fitTxt(D.name, tx0 + tw0 / 2, gy - 8, tw0, 17, sel ? '#fff4d0' : '#cdbfae', 'center', '400', FONT_T, true, 11); TXT_HEAVY = false;
         for (let q = 0; q < 3; q++) { ctx.save(); ctx.globalAlpha *= q <= j ? 1 : 0.22; drawSkullIcon(tx0 + tw0 / 2 + (q - 1) * 15, gy + 13, 5.5); ctx.restore(); }
@@ -22155,7 +22156,7 @@ function drawLevelCard(i, cx, cy, at) {
     // 18 Eki: seçili modun açıklaması kendi panelinde: başlık + simge + en çok 3 satır
     const py = tyy + 124, ph = Math.min(mapMode === 'e' && M.open ? 140 : 112, y0 + h - 140 - py);
     if (ukOk()) ukCard(rx, py, rw, ph); else roundRect(rx, py, rw, ph, 12, 'rgba(14,6,14,0.72)', M.open ? '#8a6a3a' : '#7a3a3a', 1.6);
-    modeIcon(M.m, rx + 26, py + 26, 0.8);
+    modeIcon(M.m, rx + 26, py + 26, 1.05);
     fitTxt(mapMode === 'e' && M.open ? 'Sonsuz Gece · Rekorların' : M.name, rx + 50, py + 26, rw - 64 - (mapMode === 'e' && M.open ? 166 : 0), 18, M.open ? '#ffe9b0' : '#ffb0a0', 'left', '400', FONT_T, true, 12); // 24 Eki: sağdaki düğmeye binmesin
     const nl = clamp(Math.floor((ph - 44) / 18), 1, 3), lines = mapMode === 'e' && M.open ? [] : wrapLines(M.open ? M.desc : M.lock, rw - 28, 14.5, '700', FONT_B, nl); // kutuya sığan satır kadar
     lines.slice(0, nl).forEach((l, k) => txt(l, rx + 14, py + 54 + k * 18, 14.5, M.open ? '#f2ecd8' : '#ffb0a0', 'left', '700', FONT_B, false));

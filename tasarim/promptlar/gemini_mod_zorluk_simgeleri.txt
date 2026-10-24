@@ -1,0 +1,15 @@
+Image 1 is the icon sheet of my dark gothic cartoon tower defense game. Draw a NEW sheet of 8 ICONS in exactly the same style, line weight, thick dark outlines, colors and quality as image 1. They are shown small inside square game-mode buttons, so each one must be one bold, simple, instantly readable symbol, centered, no frame, no badge, no background plate. Colors: mostly crimson red, violet purple, bone white and gold; green only as a small accent.
+
+Top row, GAME MODES:
+1) Campaign: a tattered crimson war banner with a golden skull emblem, planted on a bone pole
+2) Heroic: a dark iron shield with a fierce red-eyed horned skull on it and three glowing red claw marks
+3) Endless Night: a big violet crescent moon with a glowing purple infinity loop made of small bones in front of it
+4) Bare Bones: one cracked bone-white skull with a single small glowing red heart inside one eye socket
+
+Bottom row, GAME MODE 5 and DIFFICULTY:
+5) Sandbox: an open treasure chest overflowing with gold coins and violet gems, a skull-shaped lock hanging open
+6) Easy: a small round friendly-looking skull with calm pale violet eyes and one small candle flame on top
+7) Normal: a grim skull wearing a dented iron helmet, glowing amber eyes
+8) Master: a terrifying horned skull wearing a spiked crimson crown, burning red eyes and small red flames around the horns
+
+Arranged in a clean grid of 4 columns and 2 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines, no crosses, no smoke, no fog. 16:9 image.
