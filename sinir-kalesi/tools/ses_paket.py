@@ -14,6 +14,22 @@ import re
 ESKI = re.compile(r'^(hsel|hmove)_(spartacus|robin2?|leonidas|merlin|bathory)_\d+$')
 drop = [n for n in names if ESKI.match(n)]
 if drop: names = [n for n in names if not ESKI.match(n)]; json.dump(sorted(names), open(os.path.join(D, 'manifest.json'), 'w')); print('pakette yok (eski):', len(drop))
+# 24 Eki (bellek): game.js'de yerine yenisi geçen (gölgede kalan) sesler de pakete girmez: YAY_ALIAS (yeni ok sesleri), ELEVEN_ON + EL_ALIAS
+# (el_* varsa eskisi ve Freesound karşılığı çalınmaz). Telefonda hepsi açılıp bellek tutuyordu. Dosyalar silinmez; bayrak kapanırsa geri gelir.
+G = open(os.path.join(D, '..', 'js', 'game.js'), encoding='utf8').read()
+kind = lambda n: re.sub(r'_\d+$', '', n); have = {kind(n) for n in names}
+shadow = set()
+def dct(name):
+    m = re.search(r'const ' + name + r' = \{([^}]*)\}', G); return dict(re.findall(r"(\w+): '(\w+)'", m.group(1))) if m else {}
+YAY, FS = dct('YAY_ALIAS'), dct('FS_ALIAS')
+for k, v in YAY.items():
+    if v in have: shadow |= {k, 'el_' + k} | ({FS[k]} if k in FS else set())
+if re.search(r'const ELEVEN_ON = true', G):
+    m = re.search(r"const EL_ALIAS = \{\};\s*for \(const k of \[([^\]]*)\]", G)
+    for k in re.findall(r"'(\w+)'", m.group(1) if m else ''):
+        if 'el_' + k in have: shadow |= {k} | ({FS[k]} if k in FS else set())
+gone = [n for n in names if kind(n) in shadow]
+if gone: names = [n for n in names if kind(n) not in shadow]; print('pakette yok (gölgede):', len(gone), sorted(shadow))
 for p in glob.glob(os.path.join(D, 'paket[0-9]*.wav')): os.remove(p)  # eski fazla parçalar kalmasın
 idx, part, off, total = [], 0, 0, 0
 fname = lambda k: os.path.join(D, 'paket.wav' if k == 0 else f'paket{k + 1}.wav')

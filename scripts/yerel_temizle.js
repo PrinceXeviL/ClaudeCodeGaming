@@ -22,6 +22,8 @@ for (const pub of DIRS) {
     const atP = path.join(img, 'atlas.json'), atlas = new Set(fs.existsSync(atP) ? Object.keys(JSON.parse(fs.readFileSync(atP, 'utf8')).items).map((n) => n + '.webp') : []);
     for (const f of fs.readdirSync(img)) if (atlas.has(f) || (!f.endsWith('.json') && !man.has(f) && !/^(map_|atlas_|win_scene|hero_panels|cine_|ev_)/.test(f))) rm(path.join(img, f)); // map_*: önceden pişirilmiş harita zeminleri, atlas_*: küçük görsel sayfaları; 18 Eki: win_scene (zafer videosu), cine_* (hikâye), ev_* (etkinlik çizimleri) da kod doğrudan yükler
   }
+  // 24 Eki: Mortimer telefonda replik başına dosya kullanır (ses/mort/tr|en); tek parça mort_all*.mp3 gereksiz
+  const mort = path.join(pub, 'ses', 'mort'); if (fs.existsSync(path.join(mort, 'parca.json'))) for (const f of fs.readdirSync(mort)) if (/^mort_all.*\.mp3$/.test(f)) rm(path.join(mort, f));
   for (const f of ['tools', 'yayin.html']) if (fs.existsSync(path.join(pub, f))) rm(path.join(pub, f));
   console.log(path.relative(ROOT, pub) + ': ' + n + ' dosya silindi, ' + (bytes / 1e6).toFixed(1) + ' MB');
 }

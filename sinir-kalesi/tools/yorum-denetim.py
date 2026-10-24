@@ -19,9 +19,9 @@ bad = []
 for l in d.splitlines():
     if not l.startswith('+') or l.startswith('+++'): continue
     s = l[1:]; i = comment_at(s)
-    if i < 0: continue
+    if i < 0 or not s[:i].strip(): continue  # yalnız yorum olan satır kod yutamaz
     tail = s[i + 2:]
-    if re.search(r'(\)\s*;|\}\s*[;,)]|=>\s*[{(]|\bconst \w+ =|\blet \w+ =|\bif \(|\breturn\b[^.]*;|\w+: (\d|\'|\[|\{|true|false)[^,]*,\s*\w+:)', tail): bad.append(s.strip()[:200])
+    if re.search(r'([\w\]]\([^)]*\)\s*;|\}\s*[;,)]\s*\S|=>\s*[{(]|\bconst \w+ =|\blet \w+ =|\bif \(\w|\breturn [\w(]|\w+: (\d|\'|\[|\{|true|false)[^,]*,\s*\w+:)', tail): bad.append(s.strip()[:200])
 if bad:
     print('SATIR İÇİ YORUM KODU YUTUYOR OLABİLİR:'); [print('  ', b) for b in bad]; sys.exit(1)
 print('yorum denetimi temiz')
