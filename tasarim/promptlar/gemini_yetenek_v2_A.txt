@@ -1,0 +1,21 @@
+Image 1 is the icon sheet of my dark gothic cartoon tower defense game. Draw a NEW sheet of 12 SKILL ICONS in exactly the same style as image 1: same bold sticker look, thick dark outlines, clean shapes, same colors and quality. They are shown small inside round skill buttons, so each one must be one bold, simple, instantly readable symbol, centered, no frame, no badge, no background plate. Colors: mostly crimson red, violet purple, bone white, dark iron and gold; green only as a small accent.
+
+Row 1, the necromancer's spells:
+1) Raise the Dead: a skeletal hand bursting out of a grave mound with violet sparks
+2) Fear: a screaming violet ghost skull face with wide hollow eyes
+3) Bone Wall: a short wall of big sharp bones and ribs rising from cracked earth
+4) Corpse Explosion: a bloated corpse bursting in a crimson and violet blast with flying bones
+
+Row 2:
+5) Corpse Golem: the stitched head and shoulders of a huge grey corpse golem with glowing eyes
+6) Spellbook: a thick dark iron-bound spellbook with a skull on the cover and violet runes
+7) Spear Rain (Spartan king): many bronze spears falling diagonally from above in a volley
+8) Thermopylae Phalanx: a row of three overlapping round bronze Greek shields with spear tips above
+
+Row 3:
+9) Hero Charge: a bronze Spartan helmet with a crimson crest rushing forward with speed lines
+10) Spear Dance: a bronze spear spinning in a fast circle with a crimson motion arc
+11) Meteor: a flaming violet-crimson meteor falling with a fiery tail
+12) Tornado Storm: a dark storm cloud with a violet tornado funnel and a small lightning bolt
+
+Arranged in a clean grid of 4 columns and 3 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines, no crosses, no smoke, no fog. 16:9 image.

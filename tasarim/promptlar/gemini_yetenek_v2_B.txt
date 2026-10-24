@@ -1,0 +1,17 @@
+Image 1 is the icon sheet of my dark gothic cartoon tower defense game. Draw a NEW sheet of 10 SKILL ICONS in exactly the same style as image 1: same bold sticker look, thick dark outlines, clean shapes, same colors and quality. They are shown small inside round skill buttons, so each one must be one bold, simple, instantly readable symbol, centered, no frame, no badge, no background plate. Colors: crimson red, violet purple, bone white, dark iron and gold; the forest archer's icons may use ghostly green.
+
+Row 1:
+1) Time Gate (wizard): a swirling violet magic portal ring with a small hourglass in its center
+2) Frog Curse: a cartoon green frog wearing a tiny golden crown, with violet magic sparkles
+3) Arrow Rain (forest archer): many glowing green arrows falling diagonally from above in a volley
+4) Wolf Howl: the head of a ghostly green spirit wolf howling upward, with sound rings
+5) Bone Arrow: one long sharp arrow made of bone flying horizontally with a speed trail
+
+Row 2:
+6) Shadow Hunter: a dark green hooded hunter's eye glowing behind a drawn bone bow, a small red crit spark
+7) Blood Pool (blood countess): a boiling round pool of crimson blood with bubbles and a small skull floating in it
+8) Blood Bats: three crimson vampire bats flying in a swirl
+9) Blood Link: four crimson blood threads linking into one glowing red heart
+10) Bloodthirst: an ornate golden goblet overflowing with crimson blood, with two small fangs on the rim
+
+Arranged in a clean grid of 5 columns and 2 rows, each icon centered in its own square cell with plenty of empty magenta space around it, nothing touching the cell edges or each other, all icons at a similar size. Plain flat magenta (#FF00FF) background everywhere, no shadows on the background, no text, no letters, no numbers, no labels, no grid lines, no crosses, no smoke, no fog. 16:9 image.
