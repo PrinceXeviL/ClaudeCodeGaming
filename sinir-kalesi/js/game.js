@@ -22423,7 +22423,7 @@ function drawLevelCard(i, cx, cy, at) {
     }
   }
   { // 24 Eki (Caner: "bölüm ekranında da en altta Mortimer'ın tavsiyeleri"): 5 sn'de bir yumuşak geçişle değişir
-    const tE = time - at, tN = Math.floor(tE / TIP_EVERY), tPh = tE - tN * TIP_EVERY, tip = PAUSE_TIPS[(i * 7 + Math.floor(at * 3.1) + tN) % PAUSE_TIPS.length], tf = clamp(Math.min(tN ? tPh : 1, TIP_EVERY - tPh) / 0.35, 0, 1), ty2 = y0 + h - 34;
+    const tE = Math.max(0, at), tN = Math.floor(tE / TIP_EVERY), tPh = tE - tN * TIP_EVERY, tip = PAUSE_TIPS[(i * 7 + Math.floor(mapSelT * 3.1) + tN) % PAUSE_TIPS.length], tf = clamp(Math.min(tN ? tPh : 1, TIP_EVERY - tPh) / 0.35, 0, 1), ty2 = y0 + h - 34;
     ctx.save(); ctx.globalAlpha *= clamp(p * 2 - 0.6, 0, 1);
     ctx.fillStyle = 'rgba(201,168,101,0.3)'; ctx.fillRect(x0 + 40, ty2 - 24, w - 80, 1.2);
     ctx.font = `800 13px ${FONT_B}`; const lab = TR("Mortimer'ın tavsiyesi") + ':', lw = ctx.measureText(lab).width, lx = x0 + 52;
