@@ -20869,6 +20869,8 @@ function drawTitle() {
     if (TEST_OPEN) { const [ax, ay] = TB(5); roundBtn('t_admin', ax, ay, 30, (r) => txt('A', 0, 2, r * 1.1, '#fff3d0', 'center', '400', FONT_T), () => go(() => { ADMIN_SB.on = true; startLevel(ADMIN_SB.lv ?? adminIdx(), 's'); }), { appear: st - 0.9, tile: 'ember' }); // 18 Eki (Caner): admin serbest mod ana sayfada da
     }
     txt('v0.3' + (window.SURUM ? ' · yayın ' + window.SURUM : ''), W - 14, H - 14, 12, 'rgba(255,255,255,0.6)', 'right', '700', FONT_B, false);
+    if (TEST_OPEN) { let E = null; try { E = JSON.parse(localStorage.getItem(ERRS.key) || '[]')[0]; } catch (x) {} // deneme: son yakalanan hata
+      if (E) txt('son hata (' + E.v + ', ' + E.sc + (E.tut ? ' öğretici' : E.lv != null ? ' b' + (E.lv + 1) : '') + '): ' + E.m + ' · ' + (E.st.split(' | ')[1] || '').replace(/.*\//, '').slice(0, 60), W - 14, H - 32, 11, 'rgba(255,140,140,0.85)', 'right', '700', FONT_B, false); }
     if (!save.statsAsked && GA_KEYS.game && st > 1.2) statsConsent(); // ilk açılışta bir kez: anonim oyun verisi izni
     if (langMenu) drawLangMenu(W / 2 - 170, H / 2, 340); // 24 Eki: dil listesi ekranın ortasında, izin penceresinin de üstünde
     return;
@@ -24424,7 +24426,30 @@ window.addEventListener('focus', audioCheck);
 
 // ---------- döngü ----------
 let last = performance.now();
+// 24 Eki (Caner: "öğreticide dondu, arkadan sesler geliyor ama oyun komple dondu"): bir karede hata çıkınca döngü duruyordu (sonraki kare istenmiyordu).
+// Artık hata yakalanır, kaydedilir (localStorage 'sinirKalesi.err', son 5; GameAnalytics hata olayı), çizim durumu sıfırlanır ve oyun sürer.
+// Deneme sürümünde giriş ekranının sağ altında son hata yazar (Caner ekran görüntüsüyle iletebilsin).
+const ERRS = { n: 0, key: 'sinirKalesi.err' };
+function noteErr(e, where) {
+  try {
+    if (++ERRS.n > 6) return;
+    const m = String((e && e.message) || e).slice(0, 160), st = String((e && e.stack) || '').split('\n').slice(0, 4).join(' | ').slice(0, 400);
+    console.error('[oyun hatası]', where, e);
+    let L = []; try { L = JSON.parse(localStorage.getItem(ERRS.key) || '[]'); } catch (x) {}
+    L.unshift({ m, st, w: where, sc: screen, lv: G ? G.idx : null, tut: !!(G && G.tutorial), v: window.SURUM, at: Date.now() }); localStorage.setItem(ERRS.key, JSON.stringify(L.slice(0, 5)));
+    const A = gaInit(); if (A) A.addErrorEvent(window.gameanalytics.EGAErrorSeverity.Error, (where + ': ' + m + ' @ ' + st).slice(0, 8000));
+  } catch (x) {}
+}
+window.addEventListener('error', (ev) => noteErr(ev.error || ev.message, 'olay'));
+window.addEventListener('unhandledrejection', (ev) => noteErr(ev.reason, 'söz'));
 function frame(now) {
+  try { frameBody(now); } catch (e) {
+    noteErr(e, 'kare');
+    try { for (let i = 0; i < 60; i++) ctx.restore(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none'; ctx.shadowColor = 'transparent'; TXT_HEAVY = false; } catch (x) {}
+    if (!window.__REC) requestAnimationFrame(frame);
+  }
+}
+function frameBody(now) {
   if (LAYDBG.on) { LAYDBG.t = []; LAYDBG.b = []; }
   CB_ON = !!setting('cb');
   const w0 = performance.now(), real = Math.min(0.05, (now - last) / 1000);

@@ -1,0 +1,34 @@
+[
+ {
+  "name": "unit_archer1_shotupB",
+  "ref": "ham/anim/unit_archer1_ref.png",
+  "prompt": "a cartoon skeleton archer with a rusty helmet and a ragged loincloth holding a simple wooden bow. He stands still, takes one arrow and nocks it on the bowstring, then raises the bow and tilts it so the arrow points diagonally UP into the sky at a 45 degree angle toward the upper right, like a high lob shot over a wall. His whole upper body leans back a little and his chest opens toward the sky. He slowly and clearly pulls the bowstring far back to his cheek: the bow bends deeply, the string forms a sharp V, the back elbow points down and back, he holds the full draw aiming 45 degrees upward for a short moment, then releases: the arrow shoots diagonally up to the upper right and flies out of the frame, the string snaps forward and vibrates, the bow arm recoils upward, then he lowers the bow and returns exactly to the starting pose. The aim stays clearly diagonal, about 45 degrees upward, never horizontal. The draw is slow and readable, the release is snappy. The bow stays the same single bow held in the front hand in every frame, it never flips or spins, the bowstring is always visible, there is only one arrow. Exaggerated punchy cartoon action, squash and stretch. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, the raised bow stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke",
+  "frames": 49,
+  "loop": false,
+  "seed": 77
+ },
+ {
+  "name": "unit_archer2_shotupB",
+  "ref": "ham/anim/unit_archer2_ref.png",
+  "prompt": "a cartoon skeleton archer in leather armor with a chainmail hood holding a wooden bow. He stands still, takes one arrow and nocks it on the bowstring, then raises the bow and tilts it so the arrow points diagonally UP into the sky at a 45 degree angle toward the upper right, like a high lob shot over a wall. His whole upper body leans back a little and his chest opens toward the sky. He slowly and clearly pulls the bowstring far back to his cheek: the bow bends deeply, the string forms a sharp V, the back elbow points down and back, he holds the full draw aiming 45 degrees upward for a short moment, then releases: the arrow shoots diagonally up to the upper right and flies out of the frame, the string snaps forward and vibrates, the bow arm recoils upward, then he lowers the bow and returns exactly to the starting pose. The aim stays clearly diagonal, about 45 degrees upward, never horizontal. The draw is slow and readable, the release is snappy. The bow stays the same single bow held in the front hand in every frame, it never flips or spins, the bowstring is always visible, there is only one arrow. Exaggerated punchy cartoon action, squash and stretch. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, the raised bow stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke",
+  "frames": 49,
+  "loop": false,
+  "seed": 77
+ },
+ {
+  "name": "unit_archer3_shotupB",
+  "ref": "ham/anim/unit_archer3_ref.png",
+  "prompt": "a cartoon elite skeleton archer with ram horns, green glowing eyes, dark green armor with green runes, a tattered green cloak and a long curved bone longbow with a thin glowing green bowstring. He stands still, takes one arrow and nocks it on the bowstring, then raises the bow and tilts it so the arrow points diagonally UP into the sky at a 45 degree angle toward the upper right, like a high lob shot over a wall. His whole upper body leans back a little and his chest opens toward the sky. He slowly and clearly pulls the bowstring far back to his cheek: the bow bends deeply, the string forms a sharp V, the back elbow points down and back, he holds the full draw aiming 45 degrees upward for a short moment, then releases: the arrow shoots diagonally up to the upper right and flies out of the frame, the string snaps forward and vibrates, the bow arm recoils upward, then he lowers the bow and returns exactly to the starting pose. The aim stays clearly diagonal, about 45 degrees upward, never horizontal. The draw is slow and readable, the release is snappy. The bow stays the same single bow held in the front hand in every frame, it never flips or spins, the bowstring is always visible, there is only one arrow. Exaggerated punchy cartoon action, squash and stretch. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, the raised bow stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke",
+  "frames": 49,
+  "loop": false,
+  "seed": 77
+ },
+ {
+  "name": "unit_ghostarcher_shotupB",
+  "ref": "ham/anim/unit_ghostarcher_ref.png",
+  "prompt": "a cartoon hooded skeleton archer in a torn crimson robe with skull shoulder pads holding a big dark bow. He stands still, takes one arrow and nocks it on the bowstring, then raises the bow and tilts it so the arrow points diagonally UP into the sky at a 45 degree angle toward the upper right, like a high lob shot over a wall. His whole upper body leans back a little and his chest opens toward the sky. He slowly and clearly pulls the bowstring far back to his cheek: the bow bends deeply, the string forms a sharp V, the back elbow points down and back, he holds the full draw aiming 45 degrees upward for a short moment, then releases: the arrow shoots diagonally up to the upper right and flies out of the frame, the string snaps forward and vibrates, the bow arm recoils upward, then he lowers the bow and returns exactly to the starting pose. The aim stays clearly diagonal, about 45 degrees upward, never horizontal. The draw is slow and readable, the release is snappy. The bow stays the same single bow held in the front hand in every frame, it never flips or spins, the bowstring is always visible, there is only one arrow. Exaggerated punchy cartoon action, squash and stretch. The colors stay exactly the same as in the reference image, no purple, no pink and no magenta colors appear on the character. Side view facing right, static camera, the character stays in the center of the frame, the raised bow stays fully inside the frame, flat solid magenta background, 2D cartoon game character animation, crisp clean frames, no motion blur, no smoke",
+  "frames": 49,
+  "loop": false,
+  "seed": 77
+ }
+]
