@@ -22188,7 +22188,7 @@ function drawCardHero(i, x, cy, w, h, sl = 0) {
     circle(px, cy, R0, 'rgba(20,10,24,0.85)', '#d9b86a', 2); ctx.save(); if (!many) ctx.globalAlpha *= 0.4; txt('+', px, cy + 1, 30, '#ffe9b0', 'center', '400', FONT_T, true); ctx.restore();
     const tx = px + R0 + 8, tw = x + w - 8 - tx;
     TXT_HEAVY = true; fitTxt('2. KOMUTAN', tx + tw / 2, cy - 9, tw, 14, '#fff3dc', 'center', '400', FONT_T, true, 9); TXT_HEAVY = false;
-    fitTxt(!many ? 'kilitli' : isPremium() ? 'ücretsiz' : '▶ reklam izle', tx + tw / 2, cy + 11, tw, 11.5, '#f3e4ff', 'center', '800', FONT_B, false, 9);
+    fitTxt(!many ? 'kilitli' : isPremium() ? 'ücretsiz' : '▶ reklamla', tx + tw / 2, cy + 11, tw, 11.5, '#f3e4ff', 'center', '800', FONT_B, false, 9);
     ctx.restore();
     buttons.push({ key, x, y: cy - h / 2, w, h, fn: () => { if (!many) { mapNote = { text: TR('Önce ikinci bir komutan aç'), t: time }; sfx('error'); return; } sfx('click'); showRewardedAd(duoOn()); } });
     return;

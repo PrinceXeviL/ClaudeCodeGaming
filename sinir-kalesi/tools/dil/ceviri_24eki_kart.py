@@ -14,6 +14,7 @@ R = [
  ("Henüz rekor yok", "No record yet", "Aún sin récord", "Noch kein Rekord", "Pas encore de record", "Рекорда пока нет", "暂无纪录"),
  ("SIRALAMA", "RANKING", "RANKING", "RANGLISTE", "CLASSEMENT", "РЕЙТИНГ", "排行"),
  ("değiştir ▸", "change ▸", "cambiar ▸", "ändern ▸", "changer ▸", "сменить ▸", "更换 ▸"),
+ ("▶ reklamla", "▶ with ad", "▶ con anuncio", "▶ per Werbung", "▶ avec pub", "▶ за рекламу", "▶ 看广告"),
  ("kapat ▾", "close ▾", "cerrar ▾", "schließen ▾", "fermer ▾", "закрыть ▾", "关闭 ▾"),
 ]
 OLD = "Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar"
