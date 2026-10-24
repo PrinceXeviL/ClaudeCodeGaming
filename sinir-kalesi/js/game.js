@@ -20283,6 +20283,11 @@ function offscreen(w, h, k = 2) { const c = document.createElement('canvas'); c.
 // 19 Eki: Android WebView bu yazı tipinin T'sinin süslü ucunu kırpıyordu: hazır çizilmiş logo görseli (ui_logo_title: üst yarı logo, alt yarı
 // parıltı maskesi; masaüstü Chrome'da bu işlevle çizildi, __game.logoPng) varsa o kullanılır, yoksa yazı tipiyle çizilir
 function titleLogo() {
+  if (TITLE_C.logo && TITLE_C.logo.v3) return TITLE_C.logo;
+  { const im = !TITLE_C.live && spr('ui_logo_v3'); if (im && im.height) { // 24 Eki (Caner: "oyunun adının yazılışını sevmedim"): Gemini logo v3 (varliklar/ham/logo_v3.jpg), parıltı maskesi görselin kendisi
+      const LW = 560, LH = Math.round(LW * im.height / im.width), [c, g] = offscreen(LW, LH), [m, mg] = offscreen(LW, LH);
+      g.drawImage(im, 0, 0, LW, LH); mg.drawImage(im, 0, 0, LW, LH);
+      return (TITLE_C.logo = { c, m, w: LW, h: LH, ver: FONT_VER, img: true, v3: true }); } }
   if (TITLE_C.logo && TITLE_C.logo.ver === FONT_VER && (TITLE_C.logo.img || TITLE_C.live || !spr('ui_logo_title'))) return TITLE_C.logo; // görsel sonradan yüklenince yeniden kurulur
   { const im = !TITLE_C.live && spr('ui_logo_title'); if (im && im.height) { const LW = 780, LH = 260, [c, g] = offscreen(LW, LH), [m, mg] = offscreen(LW, LH);
       g.drawImage(im, 0, 0, im.width, im.height / 2, 0, 0, LW, LH); mg.drawImage(im, 0, im.height / 2, im.width, im.height / 2, 0, 0, LW, LH);
