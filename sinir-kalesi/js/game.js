@@ -7080,7 +7080,8 @@ function castNecro(id, x, y) {
 // dirilen ceset: en yakın yol noktasından yolun başına (düşman girişine) doğru yürür; yolda düşmana rastlarsa dövüşür
 // dirilen ölüler (13 Eki, Caner: üst üste biniyor, takılıyorlar): drop = hedefi bırakma uzaklığı (kendi konumundan), lane = yoldaki şerit sapması,
 // sep = birimler arası en az uzaklık (separateUnits)
-const ZMOVE = 0.9, ZREACH = 25; // 24 Eki (Caner): dirilen zombiler %10 yavaş yürür (yürüyüş şeridi de hıza bağlı, o da yavaşlar)
+// 24 Eki (2) (Caner: "zombiler normal hızda yürüsün, yalnız atak hızları %10 düşsün"): ZMOVE 0.9 → 1; saldırı aralığı ZATK ile %10 uzun
+const ZMOVE = 1, ZATK = 1 / 0.9, ZREACH = 25;
 // 24 Eki (Caner: "zombilere çürüme efekti"): gövdeden ara ara koyu yeşil çürük sıvı damlar, yere düşünce söner; ömrü azaldıkça sıklaşır
 const ZROT = { min: 0.9, max: 2.2, col: '#3f5a22' };
 const ZOMBIE = { drop: 230, lane: 9, sep: 15, aggro: 200, direct: 150, march: 85, touch: 16, stuck: 4, ignore: 3, cut: 1.15, cutAdd: 30, free: 1.5 }; // free: emirden sonra bu kadar sn hiçbir düşmana takılmadan yürür // cut/cutAdd: yol bu kadar uzunsa (düz uzaklık × cut + cutAdd) kestirir // touch: emirle yürürken yalnız bu kadar yakındakiyle dövüşür; stuck: bu kadar sn vuramazsa hedefi bırakır (ignore sn ona dönmez)
@@ -7438,7 +7439,7 @@ function raiseMinion(e, delay = 0) {
   if (!e.boss && G.soldiers.filter(s => s.minion && !s.dead).length >= (G.testRaiseMax || S.max)) return;
   if (G.stats) G.stats.raised++;
   const s = { militia: true, merc: true, minion: true, x: e.x, y: e.y, rx: e.x, ry: e.y, hp: M.hp * up, maxHp: M.hp * up, dmg: M.dmg.map(v => v * Math.pow(up, 0.8)), armor: M.armor, pw: up,
-    rate: 1, speed: 44 * ZMOVE, engage: 100, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, maxLife: M.life, born: G.t + delay };
+    rate: ZATK, speed: 44 * ZMOVE, engage: 100, atk: 0, target: null, dead: false, face: e.face || 1, anim: 0, slot: G.soldiers.length % 4, life: M.life, maxLife: M.life, born: G.t + delay };
   if (up >= CORPSE_ECO.strong && !delay) floatText(e.x, e.y - 36, 'Güçlü ölü!', '#ff8a7a'); // engage 80: dirilenler düşmana daha uzaktan saldırır
   // ceset düşmanın kendi kılığında kalkar (çürümüş renkte), en yakın düşmana saldırır
   if (e.name) {
@@ -13144,6 +13145,44 @@ function drawBoneWall(s) {
   if (sk > 0) for (let j = 0; j < 4; j++) { const [x, y] = P(((j + 0.5) / 4 - 0.5) * BWALL.span * 0.85, 7); drawSkullIcon(x, y - 2 * sk, 4.6 * sk); }
   ctx.restore();
   if (s.hp < s.maxHp && !sink) hpBar(s.x, s.y - 46, 22, s.hp / s.maxHp, '#e8dcb8');
+}
+// 24 Eki (Caner: "kuleler yolu kapatıyor, arkasından geçen askerler görünmüyor; diğer oyunlar gibi göster"): strateji oyunlarındaki gibi (Age of Empires,
+// StarCraft II) kulenin ARKASINDA kalan birim, kulenin üstünde düz renkli siluet olarak görünür: düşman kızıl, bizimkiler (iskelet, dirilen, komutan) yeşil.
+// Siluet yalnız kulenin piksellerinin üstüne düşer (kule görseliyle maskelenir); birimin açıkta kalan kısmı zaten normal çizilmiştir.
+const TOWER_XRAY = { on: true, a: 0.72, foe: '#ff4a3a', ally: '#7dff8a', max: 8 };
+const XR_C = [null, null];
+function xrCanvas(i, w, h) { let c = XR_C[i]; if (!c) c = XR_C[i] = document.createElement('canvas'); if (c.width < w || c.height < h) { c.width = Math.max(c.width, w); c.height = Math.max(c.height, h); } return c; }
+function drawTowerXray() {
+  if (!TOWER_XRAY.on || PERF_OFF.has('xray')) return;
+  const k = Math.min(2, Math.abs(ctx.getTransform().a) || 1); TOWER_XRAY.n = 0;
+  for (const t of G.towers) {
+    const ts = towerSprite(t); if (!ts) continue;
+    const rx = t.x - ts.w * 0.5, ry = ts.bottom - ts.h, rw = ts.w, rh = ts.h, ix0 = t.x - ts.w * 0.36, ix1 = t.x + ts.w * 0.36;
+    const E = [], A = [];
+    for (const e of G.enemies) { if (e.dead || e.under || e.twT > 0 || e.def.flying || e.y >= t.y || E.length >= TOWER_XRAY.max) continue;
+      const h = (CHAR_H['enemy_' + (e.def.base || e.type)] || 30) * (e.def.h ? e.def.h / 30 : 1);
+      if (e.x + h * 0.3 > ix0 && e.x - h * 0.3 < ix1 && e.y > ry + rh * 0.12 && e.y - h < ts.bottom) E.push(e); }
+    for (const o of G.soldiers) { if (o.dead || o.wall || o.removed || !o._p0 || (o.born != null && G.t < o.born) || (o.exit && o.tower) || o.y >= t.y || A.length >= TOWER_XRAY.max) continue;
+      if (o.x + 11 > ix0 && o.x - 11 < ix1 && o.y > ry + rh * 0.12 && o.y - 36 < ts.bottom) A.push(o); }
+    if (!E.length && !A.length) continue;
+    TOWER_XRAY.n += E.length + A.length;
+    const cw = Math.ceil(rw * k) + 2, ch = Math.ceil(rh * k) + 2;
+    [[E, 0, TOWER_XRAY.foe], [A, 1, TOWER_XRAY.ally]].forEach(([L, ci, col]) => {
+      if (!L.length) return;
+      const c = xrCanvas(ci, cw, ch), g = c.getContext('2d'), sv = ctx;
+      g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, cw, ch);
+      g.setTransform(k, 0, 0, k, -rx * k, -ry * k);
+      XRAY = true; ctx = g;
+      try { for (const o of L) { if (ci) { const ax = o.px, ay = o.py, an = o.anim; o.px = o._p0[0]; o.py = o._p0[1]; try { drawSoldier1(o); } finally { o.px = ax; o.py = ay; o.anim = an; } } else drawEnemy(o); } }
+      catch (x) {} finally { ctx = sv; XRAY = false; }
+      g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, cw, ch); // düz renk
+      g.globalCompositeOperation = 'destination-in'; g.setTransform(k, 0, 0, k, -rx * k, -ry * k); // yalnız kulenin pikselleri
+      const MV = mahzenView(t), OF = towerForm(t), fl = MV ? MV.fl : OF && OF.flip && t.face === -1 ? -1 : 1;
+      g.translate(t.x, ts.bottom); g.scale(fl, 1); drawSprite(g, ts.im, 0, 0, ts.w);
+      g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over';
+      ctx.save(); ctx.globalAlpha *= TOWER_XRAY.a; ctx.drawImage(c, 0, 0, cw, ch, rx, ry, cw / k, ch / k); ctx.restore();
+    });
+  }
 }
 // 18 Eki (Caner: "mahzendeki iskeletleri göremiyorum, çatışmada kaybolup gidiyorlar"): efektler, gaz ve parçacıklar birimlerin üstüne çizilir;
 // dövüşen müttefikler (iskelet, dirilen, golem, komutan) efektlerin üstüne yarı saydam bir kez daha çizilir: sisin içinden görünürler
@@ -23081,6 +23120,7 @@ function drawPlay() {
   drawPlaguePools(); drawAcidFx(); if (G.debris && !PERF_OFF.has('parts')) drawParts(G.debris, false); drawSoulFlames(); drawTornadoes(true); drawSigFx(true);
   for (const f of G.effects) if (f.kind === 'corpse' || f.kind === 'remains') drawCorpse(f); else if (f.kind === 'bones') drawBones(f); else if (f.kind === 'skyfall') drawSkyFall(f);
   for (const [, k, o] of ents) if (!PERF_OFF.has('ent' + k)) k === 0 ? (drawTower(o), drawTowerHp(o)) : k === 1 ? (o.bloodT > G.t ? drawEnemyInBlood(o) : drawEnemy(o), o.inMud && drawWade(o)) : k === 2 ? (drawSoldier(o), o.inMud && drawWade(o)) : k === 4 ? drawCoinWorld(o) : k === 5 ? drawAvluFront() : k === 6 ? drawLootWorld(o) : drawCastle();
+  drawTowerXray(); // 24 Eki: kule arkasındaki birimlerin silueti
   drawGasClouds();
   drawBloodLinks(); drawBatSwarms(); drawSwarms(); drawTornadoes(false);
   drawFearGhosts();
@@ -24519,7 +24559,7 @@ requestAnimationFrame(frame);
 
 // test/geliştirme kancası
 const PLOT_ENTRY = { len: 150, r: 92 }; // yol ağzında arsasız kalan uzunluk ve yarıçap (plotAudit)
-window.__game = { audMem: () => { let snd = 0, n = 0; for (const k in SND) for (const b of SND[k]) { snd += b.length * b.numberOfChannels * 4; n++; } let raw = 0; for (const k in VOICE_RAW) raw += VOICE_RAW[k].byteLength; for (const k in rawSnd) raw += rawSnd[k].byteLength; let mort = 0; for (const k in MORT_V) { const b = MORT_V[k].all; if (b) mort += b.length * b.numberOfChannels * 4; } return { snd: Math.round(snd / 1048576), n, raw: Math.round(raw / 1048576), mort: Math.round(mort / 1048576), rate: actx ? actx.sampleRate : 0 }; }, zBtn: (g = 0) => { const B = minionCmdBtn(g); return B && { x: view.ox + B.x * view.scale, y: view.oy + B.y * view.scale }; }, lay: (on) => { if (on != null) { LAYDBG.on = on; return; } return { t: LAYDBG.t, b: LAYDBG.b }; }, mortPt: () => mortimerPoint(), recStep: (ms) => { window.__REC = true; frame(last + ms); return time; }, recStop: () => { window.__REC = false; requestAnimationFrame(frame); }, neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
+window.__game = { xray: (o) => Object.assign(TOWER_XRAY, o || {}), audMem: () => { let snd = 0, n = 0; for (const k in SND) for (const b of SND[k]) { snd += b.length * b.numberOfChannels * 4; n++; } let raw = 0; for (const k in VOICE_RAW) raw += VOICE_RAW[k].byteLength; for (const k in rawSnd) raw += rawSnd[k].byteLength; let mort = 0; for (const k in MORT_V) { const b = MORT_V[k].all; if (b) mort += b.length * b.numberOfChannels * 4; } return { snd: Math.round(snd / 1048576), n, raw: Math.round(raw / 1048576), mort: Math.round(mort / 1048576), rate: actx ? actx.sampleRate : 0 }; }, zBtn: (g = 0) => { const B = minionCmdBtn(g); return B && { x: view.ox + B.x * view.scale, y: view.oy + B.y * view.scale }; }, lay: (on) => { if (on != null) { LAYDBG.on = on; return; } return { t: LAYDBG.t, b: LAYDBG.b }; }, mortPt: () => mortimerPoint(), recStep: (ms) => { window.__REC = true; frame(last + ms); return time; }, recStop: () => { window.__REC = false; requestAnimationFrame(frame); }, neonMode: (m) => (TOWER_NEON.mode = m, TOWER_NEON.on = m !== "off"),
   zBadgePreview() { const c = document.createElement('canvas'); c.width = 900; c.height = 300; const g = c.getContext('2d'); g.fillStyle = '#3a4a2a'; g.fillRect(0, 0, 900, 300);
     [['skull', '#d8c8a8'], ['sword', '#d8c8a8'], ['bow', '#d8c8a8']].forEach(([k, col], i) => { zBadge(g, k, 150 + i * 300, 110, 70, col, false); zBadge(g, k, 120 + i * 300, 250, 12, col, false); zBadge(g, k, 180 + i * 300, 250, 12, col, true); }); return c.toDataURL(); }, // 18 Eki: zombi rozeti önizlemesi
   rotPreview() { const c = document.createElement('canvas'); c.width = 720; c.height = 200; const g = c.getContext('2d'); g.fillStyle = '#b89a70'; g.fillRect(0, 0, 720, 200); let x = 10; for (const n of ['enemy_legion', 'enemy_gladiator', 'enemy_heavy']) { const im = spr(n); if (!im) continue; const w = 180 * im.width / im.height; g.drawImage(im, x, 10, w, 180); x += w + 5; g.drawImage(rottenOf(n, im), x, 10, w, 180); x += w + 20; } return c.toDataURL(); }, // test: dirilen renk önizleme
