@@ -23541,7 +23541,30 @@ function pauseCrest(cx, cy) { // tepe arması: yarasa kanatlı kafatası madalyo
   drawSkullIcon(0, 1, 15);
   ctx.restore();
 }
+// 24 Eki (Caner: "duraklatma simgeleri kalitesiz, daha keskin güzel; basınca tıklama animasyonu"): kit karo + işin renginde kit kubbe (Devam yeşil,
+// Ayarlar mor, Yeniden kızıl, Harita altın), keskin simge, kalın konturlu yazı. Basınca karo çöker, kubbe iner ve parlar; bırakınca yaylanır, iş 0,14 sn sonra
+const PT_RB = { '120,255,150': 'rb_green', '190,130,255': 'rb_purple', '255,110,110': 'rb_red', '235,200,140': 'rb_gold' };
+function pauseTileKit(key, x, y, w, h, label, icon, fn, ac, ap, primary) {
+  const appear = easeOutBack(clamp(ap / 0.35, 0, 1)); if (appear <= 0.01) return true;
+  const rb = spr('ui_k_' + (PT_RB[ac] || 'rb_purple')); if (!rb) return false;
+  const down = press.key === key, dy = down ? 2.5 : 0, sc = pressScale(key) * appear * (primary && !down ? 1 + Math.sin(time * 3) * 0.012 : 1);
+  ctx.save(); ctx.translate(x, y); ctx.scale(sc, sc);
+  if (primary) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, w * 0.7, ac, 0.22 + Math.sin(time * 3) * 0.06); ctx.restore(); }
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowOffsetY = down ? 2 : 6; ctx.shadowBlur = 10; ukTile(-w / 2, -h / 2 + dy, w, h, primary ? 'sel' : ''); ctx.restore();
+  const tg = ctx.createLinearGradient(0, h / 2 + dy, 0, -h / 2 + dy); tg.addColorStop(0, `rgba(${ac},${down ? 0.3 : 0.18})`); tg.addColorStop(0.7, `rgba(${ac},0)`);
+  ctx.fillStyle = tg; ctx.beginPath(); ctx.roundRect(-w / 2 + 8, -h / 2 + dy + 8, w - 16, h - 16, 10); ctx.fill();
+  const R0 = Math.min(30, h * 0.29), my = dy - h * 0.12 + (down ? 1.5 : 0);
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowOffsetY = 3; ctx.shadowBlur = 5; ctx.drawImage(rb, -R0, my - R0, 2 * R0, 2 * R0); ctx.restore();
+  if (down) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, my, R0 * 1.3, ac, 0.45); ctx.restore(); }
+  ctx.save(); ctx.shadowColor = 'rgba(10,0,16,0.8)'; ctx.shadowOffsetY = 2; drawIcon(icon, 0, my - 1, R0 * 1.05, '#fff6e6'); ctx.restore();
+  ctx.font = `17px ${FONT_T}`; const tw = ctx.measureText(TR(label)).width, fs = Math.min(17, 17 * (w - 26) / Math.max(1, tw));
+  TXT_HEAVY = true; txt(label, 0, dy + h * 0.32, fs, '#fff3dc', 'center', '400', FONT_T); TXT_HEAVY = false;
+  ctx.restore();
+  buttons.push({ key, x: x - w / 2, y: y - h / 2, w, h: h + 6, fn: () => { sfx('click'); BONE_DEFER = { fn, at: time + 0.14 }; } });
+  return true;
+}
 function pauseTile(key, x, y, w, h, label, icon, fn, ac, ap, primary) {
+  if (ukOk() && pauseTileKit(key, x, y, w, h, label, icon, fn, ac, ap, primary)) return;
   const appear = easeOutBack(clamp(ap / 0.35, 0, 1)); if (appear <= 0.01) return;
   const down = press.key === key, dy = down ? 3 : 0, r = 14;
   ctx.save(); ctx.translate(x, y); const sc = pressScale(key) * appear * (primary ? 1 + Math.sin(time * 3) * 0.015 : 1); ctx.scale(sc, sc);
