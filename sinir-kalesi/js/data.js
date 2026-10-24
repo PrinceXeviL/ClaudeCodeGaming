@@ -779,7 +779,7 @@ const HERO_ULT2 = {
     desc: 'Beş hayalet hoplit yolda kalkan duvarı örer: 6 sn yolu kapatır, duvara vuran hasar yer; sonunda hepsi birden mızrak saplar', short: 'Kalkan duvarı: yolu kapatır, sonunda mızrak saplar' },
   // 16 Eki (Caner: "tornadolu fırtına olabilir; tornadoya kapılan düşman dönerek etrafa saçılır, savrulur"): Zincir Şimşek yerine Kasırga Fırtınası (game.js TORNADO)
   merlin: { name: 'Kasırga Fırtınası', cd: 45, anim: 1.5, r: 70, dmg: [40, 55], dur: 4, n: 12, tornado: true,
-    desc: 'Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar', short: 'Yolda ilerleyen kasırga: kapılanı döndürüp savurur' },
+    desc: 'Fırtına bulutundan kasırga iner, yolda geriye ilerler: kapılan düşmanlar dönerek havalanır, hasar alıp etrafa savrulur (ağırlar ve boss yere devrilir), buluttan şimşek çakar. Güç kademesi arttıkça yanına 1-3 küçük hortum katılır; son kademede hortumların içinde kızıl-mor şimşekler çakar', short: 'Yolda ilerleyen kasırga: kapılanı döndürüp savurur' },
   robin: { name: 'Kurt Uluması', cd: 45, anim: 2.2, r: 86, dmg: [14, 20], stun: 1.3, scream: true, col: '150,255,170',
     desc: 'Ruh kurtlarının uluması alanı sarar: düşmanlar hasar alır ve 1,3 sn korkudan donar', short: 'Alanda uluma: hasar ve 1,3 sn sersemletme' },
   bathory: { name: 'Kan Yarasaları', cd: 50, anim: 2.2, r: 70, dps: [13, 18], dur: 3, slow: 0.35, heal: 0.3, n: 14, bats: true, // 16 Eki: 16-22 → 13-18, iyileşme %40 → %30
