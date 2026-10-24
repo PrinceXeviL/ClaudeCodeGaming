@@ -9929,18 +9929,16 @@ function stormChain(x, y, U, dmg) {
 // Ağır/büyük düşman, boss: havalanmaz, yere devrilir (FLING.kd) ve %60 hasar alır. Uçanlar: hasar. Buluttan aralıkla şimşek çakar.
 const TORNADO = { vis: 0.8, /* 19 Eki (Caner): hortum %20 küçük (yalnız görünüş; çekim/kapma alanı aynı) */ pullR: 70, pull: 34, landK: 0.4, landStun: 1.2, speed: 26, catchR: 26, hold: 1.4, liftH: 92, orbit: 13, H: 118, boltEvery: 0.9, boltR: 85, boltK: 0.45, boltStun: 0.4, heavyK: 0.6, v: [70, 115], vz: [90, 150] };
 // 24 Eki (Caner: "hortum skili geliştirilince 2-3 küçük hortum daha, en son levelde hortumların içinde kırmızı mor beyaz şimşekler"): güç kademesine göre
-const TW_MINI = { n: [0, 0, 1, 2, 3, 3], sc: [0.5, 0.62], dmg: 0.45, nCatch: 4, gap: [46, 84], zapAt: 5, zapEvery: [0.12, 0.3] };
+const TW_MINI = { n: [0, 0, 1, 2, 3, 3], sc: [0.5, 0.62], dmg: 0.45, nCatch: 4, orbit: [30, 40], spin: 1.6, zapAt: 5, zapEvery: [0.12, 0.3] }; // 24 Eki (Caner: "birbirine yakın, dev hortumun etrafında"): küçükler büyüğün çevresinde döner
 function tornadoCast(x, y, U, dmg, rank = 1) {
   const q = nearestOnPaths(G.paths, x, y), onRoad = q.d < 60, zap = rank >= TW_MINI.zapAt;
-  G.zones.push({ kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
-    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0, veo: TW_VEO.on && !!(ANIM_META.fx_tornado && spr('fx_tornado')), vr: tornadoVar(), zap, zapT: 0 }); // veo: şerit hazırsa baştan sona o (yarıda çizim değişmesin)
+  const main = { kind: 'tornado', x: onRoad ? q.x : x, y: onRoad ? q.y : y, p: onRoad ? q.p : null, d: onRoad ? q.along : 0, t: 0, life: U.dur + 0.6, dur: U.dur, r: U.r, dmg, n: U.n || 12, got: 0,
+    hit: new Set(), boltT: 0.55, whT: 0, fxT: 0, seed: rand(0, 9), dps: 0, veo: TW_VEO.on && !!(ANIM_META.fx_tornado && spr('fx_tornado')), vr: tornadoVar(), zap, zapT: 0 }; G.zones.push(main); // veo: şerit hazırsa baştan sona o (yarıda çizim değişmesin)
   const nm = TW_MINI.n[clamp(rank, 0, 5)];
-  for (let j = 0; j < nm; j++) { // küçük hortumlar: yolda büyüğün önünde ve arkasında, biraz gecikmeli iner
-    const side = j % 2 ? -1 : 1, off = side * rand(TW_MINI.gap[0], TW_MINI.gap[1]) * (1 + Math.floor(j / 2) * 0.8), sc = rand(TW_MINI.sc[0], TW_MINI.sc[1]);
-    let mx = x + off * 0.8, my = y + rand(-14, 14), mp = null, md = 0;
-    if (onRoad) { md = clamp(q.along + off, 0, q.p.total || 1e9); const qq = pathPos(q.p, md, rand(-10, 10)); mx = qq.x; my = qq.y; mp = q.p; }
-    const dl = 0.15 + j * 0.12;
-    G.zones.push({ kind: 'tornado', mini: true, sc, x: mx, y: my, p: mp, d: md, t: -dl, life: U.dur + 0.6 - 0.3, dur: U.dur - 0.3, r: U.r * sc, dmg: () => dmg() * TW_MINI.dmg, n: TW_MINI.nCatch, got: 0,
+  const a0 = rand(0, TAU);
+  for (let j = 0; j < nm; j++) { // küçük hortumlar: dev hortumun hemen çevresinde döner, onunla birlikte ilerler; biraz gecikmeli iner
+    const sc = rand(TW_MINI.sc[0], TW_MINI.sc[1]), oa = a0 + j * TAU / nm + rand(-0.3, 0.3), oR = rand(TW_MINI.orbit[0], TW_MINI.orbit[1]), dl = 0.15 + j * 0.12;
+    G.zones.push({ kind: 'tornado', mini: true, sc, par: main, oa, oR, x: main.x + Math.cos(oa) * oR, y: main.y + Math.sin(oa) * oR * 0.45, p: null, d: 0, t: -dl, life: U.dur + 0.6 - 0.3, dur: U.dur - 0.3, r: U.r * sc, dmg: () => dmg() * TW_MINI.dmg, n: TW_MINI.nCatch, got: 0,
       hit: new Set(), boltT: 99, whT: 9, fxT: 0, seed: rand(0, 9), dps: 0, veo: false, vr: tornadoVar(), zap, zapT: rand(0, 0.2) });
   }
   if (TW_VEO.on) loadStrip('fx_tornado');
@@ -9949,6 +9947,7 @@ function tornadoCast(x, y, U, dmg, rank = 1) {
 const tornadoGrow = (z) => clamp((z.t - 0.2) / 0.45, 0, 1) * clamp((z.dur + 0.6 - z.t) / 0.45, 0, 1); // huni iner / çekilir
 function tornadoStep(z, dt) {
   const T = TORNADO, live = z.t < z.dur && tornadoGrow(z) > 0.85;
+  if (z.par) { z.oa += TW_MINI.spin * dt; z.x = z.par.x + Math.cos(z.oa) * z.oR; z.y = z.par.y + Math.sin(z.oa) * z.oR * 0.45; }
   if (z.t < 0) return; const zs = z.sc || 1;
   if (z.zap && tornadoGrow(z) > 0.6 && z.t < z.dur && (z.zapT -= dt) <= 0) { z.zapT = rand(TW_MINI.zapEvery[0], TW_MINI.zapEvery[1]); z.zapF = 0.09; if (Math.random() < 0.35) sfx('zap'); }
   if (z.zapF > 0) z.zapF -= dt;
@@ -10200,17 +10199,16 @@ function drawTornadoes(back) {
     } finally { if (zsc !== 1) ctx.restore(); }
   }
 }
-const TW_ZAP_COL = ['255,70,80', '190,90,255', '255,245,255'];
-function tornadoZap(z, P, cl) { // huninin içinde zikzak şimşek: alttan üste kısa parçalar, her çakışta yeni biçim
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = cl; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  for (let b = 0, nb = 1 + (Math.random() < 0.5 ? 1 : 0); b < nb; b++) { // ufak: huninin bir parçasında 1-2 kısa çakış
-    const u0 = rand(0.2, 0.7), u1 = Math.min(0.9, u0 + rand(0.12, 0.22)), N = 4, col = TW_ZAP_COL[Math.floor(Math.random() * 3)], pts = [];
-    for (let i = 0; i <= N; i++) { const u = lerp(u0, u1, i / N), Q = P(u); pts.push([Q.x + rand(-0.6, 0.6) * Q.w, Q.y]); }
-    const path = () => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); };
-    ctx.strokeStyle = `rgba(${col},0.4)`; ctx.lineWidth = 3.2; path(); ctx.stroke();
-    ctx.strokeStyle = `rgba(${col},0.95)`; ctx.lineWidth = 1.2; path(); ctx.stroke();
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 0.5; path(); ctx.stroke();
-    const m = pts[2]; glow(ctx, m[0], m[1], 16, col, 0.3);
+const TW_ZAP_COL = ['rgb(255,70,80)', 'rgb(190,90,255)', 'rgb(240,225,255)'];
+function tornadoZap(z, P, cl) { // 24 Eki (Caner: "Ruh Kulesi'nin saldırısına benzer kıvılcımlar"): huninin içinde Ruh Kulesi çiziminde (lightningPts/strokeLightning) kısa çıtırtılar
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const a = cl * clamp(z.zapF / 0.09, 0, 1), sd = Math.floor(z.t * 25) + Math.floor(z.seed * 100);
+  for (let b = 0, nb = 2 + (sd % 3); b < nb; b++) {
+    const u = 0.18 + ((sd * 13 + b * 37) % 60) / 100, Q = P(u), col = TW_ZAP_COL[(sd + b) % 3];
+    const ang = ((sd * 7 + b * 53) % 628) / 100, L = Q.w * (0.7 + ((sd + b * 11) % 5) * 0.12);
+    const x0 = Q.x + Math.cos(ang) * Q.w * 0.35, y0 = Q.y + Math.sin(ang) * Q.w * 0.12, x1 = x0 + Math.cos(ang + 2.4) * L, y1 = y0 + Math.sin(ang + 2.4) * L * 0.5 - L * 0.25;
+    strokeLightning(lightningPts(x0, y0, x1, y1, sd + b * 5, 0.32), 0.55, col, a);
+    glow(ctx, x1, y1, 7, col.slice(4, -1), a * 0.5);
   }
   ctx.restore();
 }
