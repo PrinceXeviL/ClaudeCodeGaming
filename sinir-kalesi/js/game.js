@@ -20550,6 +20550,11 @@ function playButtonBody(w, h, label) {
 function necroPlayButton(key, x, y, w, h, label, fn, appear) {
   const a = appear == null ? 1 : easeOutBack(clamp(appear / 0.35, 0, 1));
   if (a <= 0.01) return;
+  if (spr('ui_k_cta_green') && ukOk()) { // 24 Eki (Caner: "play tuşunu beğenmiyorum"): bölüm kartındaki Gemini SAVAŞA düğmesinin aynısı
+    ctx.save(); ctx.translate(x, y); ctx.scale(a, a); ctx.translate(-x, -y);
+    cardCTA(key, x, y, Math.max(w, 330), 52, label, null, fn, 'ui_k_btn_green', (ix, iy, r) => drawIcon('play', ix + r * 0.08, iy, r * 1.05, '#fff6e6'), true, '130,255,140');
+    ctx.restore(); return;
+  }
   const B = playButtonBody(w, h, label), down = press.key === key;
   const sc = pressScale(key) * a * (1 + Math.sin(time * 2) * 0.012), dy = down ? 2 : 0;
   ctx.save(); ctx.translate(x, y + dy); ctx.scale(sc, sc);
@@ -22141,17 +22146,28 @@ function modeIcon(m, x, y, s) {
 // 24 Eki (Caner: "SAVAŞA ve +150 altın düğmeleri amatör, yazı küçük; tasarımcı gözüyle"): bölüm kartı başlatma düğmeleri.
 // Kit hap gövdesi, solda altın kubbe içinde simge, sağda büyük konturlu ana yazı, isteğe bağlı küçük alt yazı; birincil düğmede nefes alan ışık
 // ve ara ara parıltı; basınca çöker, kubbe parlar, iş kısa gecikmeyle (yaylanma görünsün)
+// 24 Eki (Caner: "butonların arkasında çizgiler, konseptimize uygun hale getir"): Gemini büyük düğme seti (varliklar/cta_kes.py): demir çerçeve,
+// uçlarda kafatası-kemik süsü, ortada renkli mücevher gövde. h = mücevher gövdenin yüksekliği (resmin %47'si); uçlar L kaynak pikseli kadar sabit
+const CTA_K = { L: 130, gem: 0.47, gx: 66, inset: 76 };
 function cardCTA(key, cx, cy, w, h, main, sub, fn, body, iconFn, primary, ac) {
-  const im = spr(body); if (!im) return false;
+  const cta = spr(body.replace('_btn_', '_cta_')), im = cta || spr(body); if (!im) return false;
   const down = press.key === key, sc = pressScale(key) * (primary && !down ? 1 + Math.sin(time * 3) * 0.012 : 1), dy = down ? 2 : 0;
   ctx.save(); ctx.translate(cx, cy); ctx.scale(sc, sc);
   if (primary) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, w * 0.62, ac, 0.2 + Math.sin(time * 3) * 0.06); ctx.restore(); }
-  const ph = h * 1.12; ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowOffsetY = down ? 2 : 6; ctx.shadowBlur = 10; three(im, -w / 2, -ph / 2 + dy, w, ph, UIK.pill); ctx.restore();
-  if (down) roundRect(-w / 2 + 6, -h / 2 + dy + 4, w - 12, h - 8, h / 2, 'rgba(0,0,0,0.18)');
-  if (primary) { const q = (time * 0.4) % 2; if (q < 1) { ctx.save(); ctx.beginPath(); ctx.roundRect(-w / 2 + 8, -h / 2 + dy + 4, w - 16, h - 8, h / 2); ctx.clip(); const sx = -w / 2 + q * (w + 60) - 30, g = ctx.createLinearGradient(sx - 26, 0, sx + 26, 0);
-    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,240,0.3)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.restore(); } }
+  let ins = h * 0.25, gl = -w / 2 + 8, gw = w - 16;
+  if (cta) {
+    const IH = h / CTA_K.gem, s = IH / cta.height, dn = down && spr(body.replace('_btn_', '_cta_') + '_dn'), img = dn || cta;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowOffsetY = down ? 2 : 6; ctx.shadowBlur = 10; three(img, -w / 2, -IH / 2 + dy, w, IH, CTA_K.L); ctx.restore();
+    gl = -w / 2 + CTA_K.gx * s; gw = w - 2 * CTA_K.gx * s; ins = CTA_K.inset * s;
+    if (down && !dn) roundRect(gl + 2, -h / 2 + dy + 3, gw - 4, h - 6, h / 2, 'rgba(0,0,0,0.2)');
+  } else {
+    const ph = h * 1.12; ctx.save(); ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowOffsetY = down ? 2 : 6; ctx.shadowBlur = 10; three(im, -w / 2, -ph / 2 + dy, w, ph, UIK.pill); ctx.restore();
+    if (down) roundRect(-w / 2 + 6, -h / 2 + dy + 4, w - 12, h - 8, h / 2, 'rgba(0,0,0,0.18)');
+  }
+  if (primary) { const q = (time * 0.4) % 2; if (q < 1) { ctx.save(); ctx.beginPath(); ctx.roundRect(gl, -h / 2 + dy + 4, gw, h - 8, h / 2); ctx.clip(); const sx = gl + q * (gw + 60) - 30, g = ctx.createLinearGradient(sx - 26, 0, sx + 26, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,240,0.3)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.fillRect(gl, -h / 2, gw, h); ctx.restore(); } }
   // 24 Eki (Caner: "yazı ortalı değil"): simge + yazı TEK GRUP olarak düğmenin tam ortasında; yazı sığmazsa küçülür, grup yine ortalanır
-  const IS = h * 0.74, gap = h * 0.1, mainS = sub ? 21 : 26, room = w - h * 0.5 - IS - gap;
+  const IS = h * (cta ? 0.86 : 0.74), gap = h * 0.1, mainS = sub ? 21 : 26, room = w - 2 * ins - IS - gap;
   ctx.font = `400 ${mainS}px ${FONT_T}`; const mw0 = ctx.measureText(TR(main)).width; ctx.font = `800 13px ${FONT_B}`; const sw0 = sub ? ctx.measureText(TR(sub)).width : 0;
   const k = Math.min(1, room / Math.max(1, mw0, sw0)), tW = Math.max(mw0, sw0) * k, gx = -(IS + gap + tW) / 2, icx = gx + IS / 2, txc = gx + IS + gap + tW / 2;
   if (down) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, icx, dy, IS * 0.7, ac || '255,220,140', 0.45); ctx.restore(); }
@@ -22162,6 +22178,16 @@ function cardCTA(key, cx, cy, w, h, main, sub, fn, body, iconFn, primary, ac) {
   TXT_HEAVY = false;
   ctx.restore();
   buttons.push({ key, x: cx - w / 2, y: cy - h / 2, w, h, fn: () => { sfx('click'); BONE_DEFER = { fn, at: time + 0.12 }; } });
+  return true;
+}
+function cardBoost(i, x, y) { // 24 Eki: +altın ödüllü reklam: mor yuvarlak düğme, içinde kese, altında +150 rozeti, köşede reklam işareti
+  const r = 32, key = 'boost' + i;
+  const ok = ukRound(key, x, y, r, (R0) => { const im = spr('ico_kese'); if (im) icoFit(im, 0, -3, R0 * 0.82); else drawCoin(0, -3, R0 * 0.5, 0); }, () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'purple', {}, 1);
+  if (!ok) return false;
+  const lb = '+' + MONET.boostGold; ctx.font = `400 15px ${FONT_T}`; const lw = ctx.measureText(lb).width + 30;
+  roundRect(x - lw / 2, y + r - 4, lw, 22, 11, '#2a1206', '#e0b45a', 1.6); drawCoin(x - lw / 2 + 12, y + r + 7, 6, 0);
+  TXT_HEAVY = true; txt(lb, x + 7, y + r + 7.5, 15, '#ffe08a', 'center', '400', FONT_T, true); TXT_HEAVY = false;
+  if (!isPremium()) { circle(x + r * 0.78, y - r * 0.78, 11, '#c02a3a', '#fff0e0', 1.6); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x + r * 0.78 - 3.5, y - r * 0.78 - 5); ctx.lineTo(x + r * 0.78 + 5, y - r * 0.78); ctx.lineTo(x + r * 0.78 - 3.5, y - r * 0.78 + 5); ctx.closePath(); ctx.fill(); }
   return true;
 }
 // 24 Eki (Caner: "komutan seçimi de bu ekranda olsun"): bölüm kartında komutan yuvası; dokununca üstünde açık komutanların seçici balonu
@@ -22372,14 +22398,14 @@ function drawLevelCard(i, cx, cy, at) {
       ctx.restore();
     } else {
     const pyc = byc, rx2 = rx, rw2 = rw; // 24 Eki (2): komutan yuvaları sol sütunda, düğmeler sağın tam genişliği
-    const two = mapMode === 'c', pw2 = two ? rw2 * 0.56 : rw2, bw2 = rw2 - pw2 - 12;
+    const newCta = !!spr('ui_k_cta_green'), two = mapMode === 'c', pw2 = two ? (newCta ? rw2 - 92 : rw2 * 0.56) : rw2, bw2 = rw2 - pw2 - 12, cyB = newCta ? pyc - 12 : pyc;
     if (ukOk() && team().length) { const sw = (tw - 10) / 2; txt('KOMUTANLAR', tx, pyc - 47, 13.5, '#d8c0a0', 'left', '800', FONT_B, false);
       drawCardHero(i, tx, pyc, sw, 60, 0); if (NECRO) drawCardHero(i, tx + sw + 10, pyc, sw, 60, 1); }
     const playFn = () => { if (!M.open) { mapNote = { text: M.lock, t: time }; sfx('error'); return; } go(() => startLevel(i, mapMode === 'c' ? undefined : mapMode)); };
     const pBody = !M.open ? 'ui_k_btn_purple' : mapMode === 'h' || mapMode === 'i' ? 'ui_k_btn_red' : mapMode === 'e' || mapMode === 's' ? 'ui_k_btn_purple' : 'ui_k_btn_green';
     const icoImg = (n, fb) => (x, y, r) => { const im = spr(n); if (im) icoFit(im, x, y, r * 0.86); else fb(x, y, r); };
-    const okCTA = ukOk() && cardCTA('play' + i, rx2 + pw2 / 2, pyc, pw2, 66, lbl, null, playFn, pBody, mapMode === 'c' && st ? icoImg('ico_ui_restart', (x, y, r) => drawIcon('restart', x, y, r * 1.05, '#fff6e6')) : icoImg('ico_ach_cat_battle', (x, y, r) => drawIcon('play', x, y, r * 1.05, '#fff6e6')), true, mapMode === 'h' || mapMode === 'i' ? '255,90,70' : '130,255,140')
-      && (!two || cardCTA('boost' + i, rx + rw - bw2 / 2, pyc, bw2, 66, '+' + MONET.boostGold + ' ' + TR('ALTIN'), isPremium() ? 'ile başla' : '▶ reklam izle', () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'ui_k_btn_purple', icoImg('ico_kese', (x, y, r) => drawCoin(x, y, r * 0.62, 0)), false));
+    const okCTA = ukOk() && cardCTA('play' + i, rx2 + pw2 / 2, cyB, pw2, newCta ? 50 : 66, lbl, null, playFn, pBody, mapMode === 'c' && st ? icoImg('ico_ui_restart', (x, y, r) => drawIcon('restart', x, y, r * 1.05, '#fff6e6')) : icoImg('ico_ach_cat_battle', (x, y, r) => drawIcon('play', x, y, r * 1.05, '#fff6e6')), true, mapMode === 'h' || mapMode === 'i' ? '255,90,70' : '130,255,140')
+      && (!two || (newCta ? cardBoost(i, rx + rw - 40, cyB) : cardCTA('boost' + i, rx + rw - bw2 / 2, pyc, bw2, 66, '+' + MONET.boostGold + ' ' + TR('ALTIN'), isPremium() ? 'ile başla' : '▶ reklam izle', () => showRewardedAd(() => go(() => { startLevel(i); G.gold += MONET.boostGold; })), 'ui_k_btn_purple', icoImg('ico_kese', (x, y, r) => drawCoin(x, y, r * 0.62, 0)), false)));
     if (!okCTA) {
     gameButton('play' + i, two ? rx + pw2 / 2 : bxc, pyc, pw2, 64, lbl, () => {
       if (!M.open) { mapNote = { text: M.lock, t: time }; sfx('error'); return; }
